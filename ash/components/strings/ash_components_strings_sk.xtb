@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> alebo <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Režim prehľadu</translation>
 <translation id="4472417192667361414">Nastavenia systému a zobrazenia</translation>
-<translation id="4484292984055789039">Prepnutie na metódu vstupu predchádzajúceho jazyka</translation>
 <translation id="4556221320735744018">Zobrazenie pomocníka pre klávesové skratky</translation>
 <translation id="4628718545549558538">Otvorenie stavovej oblasti (kde je obrázok vášho účtu)</translation>
 <translation id="4642092649622328492">Vytvorenie čiastočnej snímky obrazovky</translation>
 <translation id="4698850295812410683">Zobrazenie nástrojov dotykového pera</translation>
 <translation id="4801989101741319327">Posunutie kurzora na koniec ďalšieho slova</translation>
 <translation id="4916163929714267752">Otvorenie odkazu v novom okne</translation>
-<translation id="5002047168347153398">Zameranie neaktívneho kontextového okna pre dostupnosť</translation>
 <translation id="5030659775136592441">Zobrazenie správcu záložiek</translation>
 <translation id="5034421018520995080">Prechod na začiatok stránky</translation>
 <translation id="5042305953558921026">Kláves režimu prehľadu</translation>
@@ -149,12 +147,11 @@
 <translation id="7379254767514753910"><ph name="ALT" /> alebo <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Odopnutie aplikácie</translation>
 <translation id="7439718573248533901">Odstránenie nasledujúceho písmena (odstránenie nasledujúceho znaku)</translation>
-<translation id="7449669175878568981">Spustí alebo zastaví diktovanie (zapíšte, čo hovoríte)</translation>
+<translation id="7449669175878568981">Spustí alebo zastaví diktovanie (zápis diktovaného textu)</translation>
 <translation id="766326951329901120">Prilepenie obsahu zo schránky ako obyčajného textu</translation>
 <translation id="7724603315864178912">Vystrihnúť</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, potom <ph name="SPACE" /> alebo <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Otvorenie súboru v prehliadači</translation>
-<translation id="7822267121073044318">Prepnutie na metódu vstupu ďalšieho jazyka</translation>
 <translation id="7917881398263220094">Zastavenie načítavania aktuálnej stránky</translation>
 <translation id="7952165122793773711">Prechod na karty 1 až 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> alebo <ph name="MINUS" /></translation>

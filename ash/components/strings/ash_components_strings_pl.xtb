@@ -42,7 +42,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="TAB" /> lub <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">Zapisz bieżącą stronę internetową jako zakładkę</translation>
 <translation id="2750942583782703988">Ponownie załaduj bieżącą stronę</translation>
-<translation id="2764005613199379871">Ustaw fokus na pasku adresu i wyszukiwania</translation>
+<translation id="2764005613199379871">Ustaw zaznaczenie na pasku adresu i wyszukiwania</translation>
 <translation id="2789868185375229787">Pomniejsz widok strony</translation>
 <translation id="2804480015716812239">Naciśnij <ph name="ALT" /> i kliknij link</translation>
 <translation id="2830827904629746450">Zadokuj okno po prawej stronie</translation>
@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> lub <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Tryb przeglądu</translation>
 <translation id="4472417192667361414">Ustawienia systemu i wyświetlania</translation>
-<translation id="4484292984055789039">Przełącz na poprzednią metodę wprowadzania tekstu</translation>
 <translation id="4556221320735744018">Wyświetl pomoc do skrótów klawiszowych</translation>
 <translation id="4628718545549558538">Otwórz pasek stanu (tam, gdzie widać obraz konta)</translation>
 <translation id="4642092649622328492">Zrób zrzut części ekranu</translation>
 <translation id="4698850295812410683">Pokaż narzędzia rysika</translation>
 <translation id="4801989101741319327">Przejdź na koniec następnego słowa</translation>
 <translation id="4916163929714267752">Otwórz link w nowym oknie</translation>
-<translation id="5002047168347153398">Przenieś fokus do nieaktywnego wyskakującego okienka, by było łatwiej dostępne</translation>
 <translation id="5030659775136592441">Pokaż menedżera zakładek</translation>
 <translation id="5034421018520995080">Przejdź na górę strony</translation>
 <translation id="5042305953558921026">Klawisz trybu przeglądu</translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">Wytnij</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="SPACE" /> lub <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Otwórz plik w przeglądarce</translation>
-<translation id="7822267121073044318">Przełącz na następną metodę wprowadzania tekstu</translation>
 <translation id="7917881398263220094">Zatrzymaj wczytywanie bieżącej strony</translation>
 <translation id="7952165122793773711">Przejdź do karty 1–8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> lub <ph name="MINUS" /></translation>
@@ -162,7 +159,7 @@
 <translation id="8104889575691864804">Pokaż menu aplikacji</translation>
 <translation id="8130528849632411619">Przejdź na początek dokumentu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> lub <ph name="E" /></translation>
-<translation id="8232835244134740473">Przełączaj fokus między: paskiem stanu (tam, gdzie widać obraz konta), Menu z aplikacjami, paskiem adresu, paskiem zakładek (jeśli jest widoczny), otwartą aktualnie stroną, paskiem pobranych plików (jeśli jest widoczny).</translation>
+<translation id="8232835244134740473">Przełączaj zaznaczenie między: paskiem stanu (tam, gdzie widać obraz konta), Menu z aplikacjami, paskiem adresu, paskiem zakładek (jeśli jest widoczny), otwartą aktualnie stroną, paskiem pobranych plików (jeśli jest widoczny).</translation>
 <translation id="8234414138295101081">Obróć ekran o 90 stopni</translation>
 <translation id="8264941229485248811">Pokaż lub ukryj inspektora z Narzędzi dla programistów</translation>
 <translation id="836869401750819675">Otwórz stronę Pobrane pliki</translation>

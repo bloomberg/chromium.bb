@@ -498,7 +498,7 @@
 <translation id="4325863107915753736">Hindi nahanap ang artikulo</translation>
 <translation id="4326324639298822553">Tingnan ang iyong petsa ng pag-expire at subukang muli</translation>
 <translation id="4331708818696583467">Hindi Secure</translation>
-<translation id="4340982228985273705">Hindi na-detect ang computer na ito bilang pinamamahalaan ng enterprise kaya awtomatikong lang na mai-install ng patakaran ang mga extension na hino-host sa Chrome Webstore. Ang URL ng pag-update ng Chrome Webstore ay "<ph name="CWS_UPDATE_URL" />."</translation>
+<translation id="4340982228985273705">Hindi na-detect ang computer na ito bilang pinamamahalaan ng enterprise kaya awtomatiko lang na mai-install ng patakaran ang mga extension na hino-host sa Chrome Webstore. Ang URL ng pag-update ng Chrome Webstore ay "<ph name="CWS_UPDATE_URL" />."</translation>
 <translation id="4346197816712207223">Mga Tinatanggap na Credit Card</translation>
 <translation id="4356973930735388585">Maaaring subukan ng mga attacker sa site na ito na mag-install ng mga mapanganib na program sa iyong computer na magnanakaw o magde-delete ng impormasyon mo (halimbawa, mga larawan, password, mensahe at credit card).</translation>
 <translation id="4372948949327679948">Inaasahang <ph name="VALUE_TYPE" /> na halaga.</translation>
@@ -598,7 +598,6 @@
 <translation id="5201306358585911203">Isinasaad ng naka-embed na page sa page na ito na</translation>
 <translation id="5205222826937269299">Kailangan ng pangalan</translation>
 <translation id="5222812217790122047">Kailangan ng email</translation>
-<translation id="522700295135997067">Maaaring ninakaw ng site na ito ang iyong password</translation>
 <translation id="5230733896359313003">Address na Padadalhan</translation>
 <translation id="5250209940322997802">"Kumonekta sa network"</translation>
 <translation id="5251803541071282808">Cloud</translation>

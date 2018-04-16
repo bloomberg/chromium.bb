@@ -52,12 +52,6 @@
 
 Si esta política se establece en False, no se informará sobre el estado del conector de modo de desarrollador.</translation>
 <translation id="1160939557934457296">Inhabilitar seguir navegando desde la página de advertencia sobre Navegación Segura</translation>
-<translation id="1166377463685560145">Especifica las impresoras que un usuario no puede utilizar.
-
-      Esta política solo se usará si se asigna <ph name="PRINTERS_BLACKLIST" /> a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Si se usa esta política, el usuario tendrá acceso a todas las impresoras, excepto a los ID indicados en ella.
-      </translation>
 <translation id="1198465924256827162">Frecuencia con la que se envían los informes del estado del dispositivo, expresada en milisegundos.
 
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
@@ -162,19 +156,6 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1561424797596341174">La política anula las compilaciones de depuración del host de acceso remoto.</translation>
 <translation id="1561967320164410511">U2F y extensiones de confirmación individual</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de forma predeterminada</translation>
-<translation id="1603058613431276040">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
-
-      Esta política permite proporcionar opciones de configuración de impresoras a los dispositivos <ph name="PRODUCT_OS_NAME" />. El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON. El formato es el mismo que el del diccionario NativePrinters. Se estima que un archivo que contiene aproximadamente 21.000 impresoras tiene un tamaño de 5 MB. El hash criptográfico se utiliza para verificar la integridad de la descarga.
-
-      El archivo se descarga y almacena en la memoria caché, y se vuelve a descargar cada vez que la URL o el hash cambian.
-
-      Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo con las configuraciones de las impresoras y estas estarán disponibles según lo especificado en las políticas <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> y <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Esta política no afecta a la capacidad de los usuarios para configurar impresoras en determinados dispositivos. La política se ha diseñado como complemento a la configuración de impresoras que realizan los usuarios.
-
-      Esta política es complementaria a <ph name="BULK_PRINTERS_POLICY" />.
-
-      Si se anula la selección de esta política, no habrá impresoras para los dispositivos y se ignorará el resto de las políticas <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />.</translation>
 <translation id="1608755754295374538">URLs a las que se concederá acceso a dispositivos de captura de audio sin confirmación</translation>
 <translation id="1617235075406854669">Habilitar eliminación de historial de navegación y de descargas</translation>
 <translation id="163200210584085447">Los patrones de esta lista se compararán con el origen de seguridad
@@ -591,12 +572,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2762164719979766599">Permite especificar la lista de cuentas locales del dispositivo que se mostrarán en la pantalla de inicio de sesión.
 
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
-<translation id="2766302473082018239">Especifica las impresoras que puede utilizar un usuario.
-
-      Esta política solo se usará si se asigna <ph name="PRINTERS_WHITELIST" /> a <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Si se usa esta política, el usuario solo podrá acceder a las impresoras cuyos ID se correspondan con los valores incluidos en ella. Los ID se deben corresponder con las entradas del archivo especificado en la política <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Configurar el nombre de dominio obligatorio para hosts de acceso remoto</translation>
 <translation id="2787173078141616821">Proporcionar información sobre el estado de Android</translation>
 <translation id="2793923553868251161">Orígenes que se deben considerar contexto seguro.</translation>
@@ -780,12 +755,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo y su propietario (o un usuario del dominio que gestiona el dispositivo) podrá cambiarlo. El nombre tiene un límite de 24 caracteres.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
-<translation id="3395348522300156660">Especifica las impresoras que puede utilizar un usuario.
-
-      Esta política solo se usará si se asigna <ph name="PRINTERS_WHITELIST" /> a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
-
-      Si se usa esta política, el usuario solo podrá acceder a las impresoras cuyos ID se correspondan con los valores incluidos en ella. Los ID se deben corresponder con las entradas del archivo especificado en la política <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Si esta política no se configura, <ph name="PRODUCT_NAME" /> usa una versión mínima predeterminada (TLS 1.0).
 
       En caso contrario, se le asignará uno de estos valores: "tls1", "tls1.1" o "tls1.2". Si se habilita, <ph name="PRODUCT_NAME" /> no usará las versiones de SSL/TLS inferiores a la versión especificada y se ignorarán los valores no reconocidos.</translation>
@@ -2441,12 +2410,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 
       Advertencia: No se recomienda configurar restricciones de versiones porque pueden evitar que los usuarios reciban actualizaciones de software y correcciones de seguridad muy importantes. Restringir las actualizaciones al prefijo de una versión específica podría suponer un riesgo para los usuarios.</translation>
 <translation id="8519264904050090490">URLs de excepción manual de usuario administrado</translation>
-<translation id="8527932539502116028">Especifica las impresoras que un usuario no puede utilizar.
-
-      Esta política solo se usará si se asigna <ph name="PRINTERS_BLACKLIST" /> a <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Si se usa esta política, el usuario tendrá acceso a todas las impresoras, excepto a los ID indicados en ella.
-      </translation>
 <translation id="8538235451413605457">Configura el requisito de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones que se incluyen a continuación se consideran obsoletas y los dispositivos no permitirán que los usuarios inicien sesión antes de actualizar el SO.
      Si la versión actual queda obsoleta durante una sesión, se cerrará la sesión del usuario de manera forzada.
 
@@ -2563,18 +2526,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
 <translation id="891435090623616439">codificado como cadena JSON, consulta <ph name="COMPLEX_POLICIES_URL" /> para obtener más información</translation>
-<translation id="8927384992072706174">Proporciona opciones de configuración de impresoras de empresa.
-
-      Esta política permite proporcionar opciones de configuración de impresoras a los dispositivos <ph name="PRODUCT_OS_NAME" />. El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON. El formato es el mismo que el del diccionario NativePrinters. Se estima que un archivo que contiene aproximadamente 21.000 impresoras tiene un tamaño de 5 MB. El hash criptográfico se utiliza para verificar la integridad de la descarga.
-
-      El archivo se descarga y almacena en la memoria caché y se vuelve a descargar cada vez que la URL o el hash cambian.
-
-      Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo con las configuraciones de las impresoras y estas estarán disponibles según lo especificado en las políticas <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> y <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
-
-      Esta política no afecta a la capacidad de los usuarios para configurar impresoras en determinados dispositivos. La política se ha diseñado como complemento a la configuración de impresoras que realizan los usuarios.
-      </translation>
 <translation id="8934944553121392674">Controla a qué impresoras de la política <ph name="DEVICE_PRINTERS_POLICY" /> tienen acceso los usuarios.
 
       Designa qué política de acceso se utiliza para configurar impresoras en bloque. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, se mostrarán todas las impresoras. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, se utilizará <ph name="DEVICE_PRINTERS_BLACKLIST" /> para restringir el acceso a impresoras específicas. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> designará únicamente las impresoras que se puedan seleccionar.

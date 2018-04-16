@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> أو <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">وضع "النظرة العامة"</translation>
 <translation id="4472417192667361414">النظام وإعدادات العرض</translation>
-<translation id="4484292984055789039">التبديل إلى أسلوب إدخال اللغة السابق</translation>
 <translation id="4556221320735744018">الاطلاع على "مساعد اختصارات لوحة المفاتيح"</translation>
 <translation id="4628718545549558538">فتح منطقة الحالة (التي تظهر فيها صورة الحساب)</translation>
 <translation id="4642092649622328492">أخذ لقطة شاشة جزئية</translation>
 <translation id="4698850295812410683">عرض أدوات قلم الشاشة</translation>
 <translation id="4801989101741319327">الانتقال إلى نهاية الكلمة التالية</translation>
 <translation id="4916163929714267752">فتح الرابط في نافذة جديدة</translation>
-<translation id="5002047168347153398">التركيز على نافذة منبثقة غير نشطة لتوفير إمكانية الوصول</translation>
 <translation id="5030659775136592441">عرض "مدير الإشارات"</translation>
 <translation id="5034421018520995080">الانتقال إلى أعلى الصفحة</translation>
 <translation id="5042305953558921026">مفتاح وضع النظرة العامة</translation>
@@ -129,7 +127,7 @@
 <translation id="6435207348963613811">تحديد العنصر السابق على الرف</translation>
 <translation id="6445033640292336367">إرجاع علامة التبويب إلى موضعها الأصلي</translation>
 <translation id="649811797655257835">حدِّد الملف، ثم اضغط على <ph name="SPACE" /></translation>
-<translation id="6556040137485212400">فتح النافذة التي لم يتم استخدامها منذ فترة زمنية طويلة</translation>
+<translation id="6556040137485212400">فَتحُ النافذة غير المُستخدمة للفترة الأطول</translation>
 <translation id="666343722268997814">النقر بالزر الأيمن لفتح قائمة العنصر المُحدَّد</translation>
 <translation id="6671538777808758331">الانتقال إلى المطابقة التالية للبحث</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> أو <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">قص</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />، ثم <ph name="SPACE" /> أو <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">فتح ملف في المتصفح</translation>
-<translation id="7822267121073044318">التبديل إلى أسلوب إدخال اللغة التالي</translation>
 <translation id="7917881398263220094">إيقاف تحميل الصفحة الحالية</translation>
 <translation id="7952165122793773711">الانتقال من علامة التبويب الأولى إلى الثامنة</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> أو <ph name="MINUS" /></translation>

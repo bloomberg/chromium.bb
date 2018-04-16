@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> หรือ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">โหมดภาพรวม</translation>
 <translation id="4472417192667361414">การตั้งค่าระบบและการแสดงผล</translation>
-<translation id="4484292984055789039">เปลี่ยนไปใช้วิธีการป้อนข้อมูลของภาษาก่อนหน้า</translation>
 <translation id="4556221320735744018">ดูตัวช่วยเหลือสำหรับแป้นพิมพ์ลัด</translation>
 <translation id="4628718545549558538">เปิดพื้นที่แสดงสถานะ (ตรงตำแหน่งที่รูปสำหรับบัญชีของคุณปรากฏ)</translation>
 <translation id="4642092649622328492">ถ่ายภาพหน้าจอบางส่วน</translation>
 <translation id="4698850295812410683">แสดงเครื่องมือสไตลัส</translation>
 <translation id="4801989101741319327">ย้ายไปท้ายคำถัดไป</translation>
 <translation id="4916163929714267752">เปิดลิงก์ในหน้าต่างใหม่</translation>
-<translation id="5002047168347153398">โฟกัสป๊อปอัปที่ไม่ได้ใช้เพื่อการเข้าถึงพิเศษ</translation>
 <translation id="5030659775136592441">แสดงการจัดการบุ๊กมาร์ก</translation>
 <translation id="5034421018520995080">ไปที่ด้านบนสุดของหน้า</translation>
 <translation id="5042305953558921026">แป้นโหมดภาพรวม</translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">ตัด</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="SPACE" /> หรือ <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">เปิดไฟล์ในเบราว์เซอร์</translation>
-<translation id="7822267121073044318">เปลี่ยนไปใช้วิธีการป้อนข้อมูลของภาษาถัดไป</translation>
 <translation id="7917881398263220094">หยุดโหลดหน้าเว็บปัจจุบันของคุณ</translation>
 <translation id="7952165122793773711">ไปที่แท็บ 1 ถึง 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> หรือ <ph name="MINUS" /></translation>

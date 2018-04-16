@@ -472,7 +472,7 @@
     &lt;li&gt;Öppna en webbplats som börjar med &lt;code&gt;http://&lt;/code&gt;, till exempel&lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
     &lt;li&gt;När inloggningssidan visas loggar du in så att du kommer ut på internet.&lt;/li&gt;
     &lt;/ol&gt;
-    &lt;h4&gt;Öppna sidan i inkognitoläge (endast datorer)&lt;/h4&gt;
+    &lt;h4&gt;Steg 2: Öppna sidan i inkognitoläge (endast datorer)&lt;/h4&gt;
     &lt;p&gt;Öppna sidan du försökte besöka i ett inkognitofönster.&lt;/p&gt;
     &lt;p&gt;Om sidan öppnas är det ett tillägg i Chrome som inte fungerar som det ska. Åtgärda problemet genom att inaktivera tillägget.&lt;/p&gt;
     &lt;h4&gt;Steg 3: Uppdatera operativsystemet&lt;/h4&gt;
@@ -598,7 +598,6 @@
 <translation id="5201306358585911203">På en inbäddad sida på den här sidan står det</translation>
 <translation id="5205222826937269299">Namn måste anges</translation>
 <translation id="5222812217790122047">E-postadress måste anges</translation>
-<translation id="522700295135997067">Webbplatsen kan ha stulit ditt lösenord</translation>
 <translation id="5230733896359313003">Leveransadress</translation>
 <translation id="5250209940322997802">Anslut till ett nätverk</translation>
 <translation id="5251803541071282808">Moln</translation>

@@ -52,12 +52,6 @@
 
       Če je pravilnik nastavljen na »False«, se o stanju stikala za razvijalce ne poroča.</translation>
 <translation id="1160939557934457296">Onemogoči nadaljevanje z opozorilne strani varnega brskanja</translation>
-<translation id="1166377463685560145">Določa tiskalnike, ki jih uporabnik ne more uporabljati.
-
-      Ta pravilnik se uporablja samo, če je za <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_BLACKLIST" />.
-
-      Če se uporablja ta pravilnik, so uporabniku na voljo vsi tiskalniki z izjemo ID-jev, navedenih v tem pravilniku.
-      </translation>
 <translation id="1198465924256827162">Kako pogosto se pošljejo nalaganja stanja naprave (v milisekundah).
 
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
@@ -166,19 +160,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1561424797596341174">Preglasitve pravilnika za delovne različice gostitelja za oddaljeni dostop, namenjene odpravljanju napak</translation>
 <translation id="1561967320164410511">U2F in razširitve za posamezno potrditev</translation>
 <translation id="1583248206450240930">Privzeto uporabi <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="1603058613431276040">Posreduje konfiguracije za tiskalnike v podjetjih, vezane na naprave.
-
-      Ta pravilnik vam omogoča, da posredujete konfiguracije tiskalnikov napravam z operacijskim sistemom <ph name="PRODUCT_OS_NAME" />. Velikost datoteke ne sme presegati 5 MB in mora biti kodirana v obliki JSON. Oblika je enaka obliki imenika NativePrinters. Ocenjuje se, da je datoteka, ki vsebuje približno 21.000 tiskalnikov, kodirana kot datoteka velikosti 5 MB. Za preverjanje celovitosti se uporablja kriptografska zgoščevalna vrednost.
-
-      Datoteka se prenese in shrani v predpomnilnik. Ob vsaki spremembi URL-ja ali zgoščevalne vrednosti se znova prenese.
-
-      Če je ta pravilnik nastavljen, <ph name="PRODUCT_OS_NAME" /> prenese datoteko s konfiguracijami tiskalnikov in omogoči, da so tiskalniki na voljo skladno s pravilniki <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> in <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Ta pravilnik ne vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike v posameznih napravah. Namenjen je kot dopolnilo konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.
-
-      Ta pravilnik je dodatek pravilniku <ph name="BULK_PRINTERS_POLICY" />.
-
-      Če ta pravilnik ni nastavljen, ne bo tiskalnikov za naprave in drugi pravilniki <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> bodo prezrti.</translation>
 <translation id="1608755754295374538">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem zvoka</translation>
 <translation id="1617235075406854669">Omogočanje brisanja zgodovine brskalnika in prenosov</translation>
 <translation id="163200210584085447">Vzorci na tem seznamu se bodo primerjali z varnostnim
@@ -596,12 +577,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2762164719979766599">Določa seznam lokalnih računov za napravo, ki bodo prikazani na zaslonu za prijavo.
 
       Vsak vnos na seznamu določa identifikator, ki se uporablja interno za razlikovanje med lokalnimi računi za napravo.</translation>
-<translation id="2766302473082018239">Določa tiskalnike, ki jih uporabnik lahko uporablja.
-
-      Ta pravilnik se uporablja samo, če je za pravilnik <ph name="BULK_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_WHITELIST" />.
-
-      Če se uporablja ta pravilnik, so uporabniku na voljo samo tiskalniki z ID-ji, ki se ujemajo z vrednostmi v tem pravilniku. ID-ji morajo ustrezati vnosom v datoteki, določeni v pravilniku <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Nastavitev zahtevanega imena domene za dostop do oddaljenih gostiteljev</translation>
 <translation id="2787173078141616821">Poročanje podatkov o stanju Androida</translation>
 <translation id="2793923553868251161">Izvori naj se obravnavajo kot varni kontekst.</translation>
@@ -612,7 +587,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je pravilnik omogočen ali sploh ni nastavljen, lahko uporabniki dodajajo, konfigurirajo in tiskajo s svojimi izvornimi tiskalniki.
 
-      Če je pravilnik onemogočen, uporabniki ne morejo dodajati ali konfigurirati svojih izvornih tiskalnikov. Prav tako ne morejo tiskati s konfiguriranimi izvornimi tiskalniki.
+      Če je pravilnik onemogočen, uporabniki ne morejo dodajati ali konfigurirati svojih izvornih tiskalnikov. Prav tako ne morejo tiskati z že konfiguriranimi izvornimi tiskalniki.
       </translation>
 <translation id="2805707493867224476">Dovoli vsem mestom, da pokažejo pojavna okna</translation>
 <translation id="2808013382476173118">Omogoča uporabo strežnikov STUN, ko oddaljeni odjemalci poskušajo vzpostaviti zvezo s tem računalnikom.
@@ -788,12 +763,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če je pravilnik nastavljen na niz, ki ni prazen, je ta niz uporabljen kot ime cilja za napravo <ph name="PRODUCT_NAME" />, sicer pa je ime cilja ime naprave. Če ta pravilnik ni nastavljen, je ime cilja ime naprave in lastnik naprave (ali uporabnik v domeni, ki upravlja napravo) ga sme spremeniti. Ime je omejeno na 24 znakov dolžine.</translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
-<translation id="3395348522300156660">Določa tiskalnike, ki jih uporabnik lahko uporablja.
-
-      Ta pravilnik se uporablja samo, če je za pravilnik <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_WHITELIST" />.
-
-      Če se uporablja ta pravilnik, so uporabniku na voljo samo tiskalniki z ID-ji, ki se ujemajo z vrednostmi v tem pravilniku. ID-ji morajo ustrezati vnosom v datoteki, določeni v pravilniku <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Če ta pravilnik ni konfiguriran, <ph name="PRODUCT_NAME" /> uporablja privzeto najnižjo različico, ki je TLS 1.0.
 
       Sicer bo nastavljen na eno od teh vrednosti: »tls1«, »tls1.1« ali »tls1.2«. Če je nastavljen, <ph name="PRODUCT_NAME" /> ne bo uporabljal različic protokolov SSL/TLS, nižjih od navedene različice. Neprepoznane vrednosti bodo prezrte.</translation>
@@ -2448,12 +2417,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Opozorilo: priporočamo, da ne konfigurirate omejitev različic, ker lahko s tem preprečite, da bi uporabniki prejeli posodobitve programske opreme in nujne varnostne popravke. Če posodobitve omejite na predpono določene različice, so lahko uporabniki izpostavljeni tveganju.</translation>
 <translation id="8519264904050090490">URL-ji ročnih izjem za upravljanega uporabnika</translation>
-<translation id="8527932539502116028">Določa tiskalnike, ki jih uporabnik ne more uporabljati.
-
-      Ta pravilnik se uporablja samo, če je za pravilnik <ph name="BULK_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_BLACKLIST" />.
-
-      Če se uporablja ta pravilnik, so uporabniku na voljo vsi tiskalniki z izjemo ID-jev, navedenih v tem pravilniku.
-      </translation>
 <translation id="8538235451413605457">Konfigurira zahtevo za najmanjšo dovoljeno različico za <ph name="PRODUCT_NAME" />. Različice, starejše od najmanjše dovoljene različice, se obravnavajo kot zastarele, in naprava uporabniku ne dovoli prijave, preden se operacijski sistem ne posodobi.
       Če trenutna različica postane zastarela med uporabniško sejo, je uporabnik na silo odjavljen.
 
@@ -2570,18 +2533,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše od časovnega zamika nedejavnosti.</translation>
 <translation id="891435090623616439">kodirano kot niz JSON; več informacij je na voljo na <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Posreduje konfiguracije za tiskalnike v podjetjih.
-
-      Ta pravilnik vam omogoča, da posredujete konfiguracije tiskalnikov napravam z operacijskim sistemom <ph name="PRODUCT_OS_NAME" />. Velikost datoteke ne sme presegati 5 MB in mora biti kodirana v obliki JSON. Oblika je enaka obliki imenika NativePrinters. Ocenjuje se, da je datoteka, ki vsebuje približno 21.000 tiskalnikov, kodirana kot datoteka velikosti 5 MB. Za preverjanje celovitosti se uporablja kriptografska zgoščevalna vrednost.
-
-      Datoteka se prenese in shrani v predpomnilnik. Ob vsaki spremembi URL-ja ali zgoščevalne vrednosti se znova prenese.
-
-      Če je ta pravilnik nastavljen, <ph name="PRODUCT_OS_NAME" /> prenese datoteko s konfiguracijami tiskalnikov in omogoči, da so tiskalniki na voljo skladno s pravilniki <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> in <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Če nastavite ta pravilnik, ga uporabniki ne bodo mogli spremeniti ali preglasiti.
-
-      Ta pravilnik ne vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike v posameznih napravah. Namenjen je kot dopolnilo konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.
-      </translation>
 <translation id="8934944553121392674">Nadzira, kateri tiskalniki iz pravilnika <ph name="DEVICE_PRINTERS_POLICY" /> so na voljo uporabnikom.
 
       Določa, kateri pravilnik o dostopu se uporablja za konfiguracijo tiskalnikov v velikem obsegu. Če je izbrana možnost <ph name="PRINTERS_ALLOW_ALL" />, so prikazani vsi tiskalniki. Če je izbrana možnost <ph name="PRINTERS_BLACKLIST" />, se omeji dostop do določenih tiskalnikov s pravilnikom <ph name="DEVICE_PRINTERS_BLACKLIST" />. Če je izbrana možnost <ph name="PRINTERS_WHITELIST" />, pravilnik <ph name="DEVICE_PRINTERS_WHITELIST" /> določa samo tiste tiskalnike, ki jih je mogoče izbrati.

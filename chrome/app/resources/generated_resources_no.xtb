@@ -710,7 +710,6 @@
 <translation id="2099686503067610784">Slette tjenersertifikatet «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="2100273922101894616">Automatisk pålogging</translation>
 <translation id="2101225219012730419">Versjon:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Ikke innlastet</translation>
 <translation id="2107494551712864447">Legg til et fingeravtrykk</translation>
 <translation id="2112877397266219826">Slå på berøringskontrolleren din for å konfigurere meg</translation>
@@ -790,7 +789,6 @@
 <translation id="2218320521449013367">Det oppsto en feil mens Chrome fjernet skadelig programvare</translation>
 <translation id="2218515861914035131">Lim inn som ren tekst</translation>
 <translation id="221872881068107022">Omvendt rulling</translation>
-<translation id="2218947405056773815">Beklager. <ph name="API_NAME" /> støtte på et hinder.</translation>
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2220572644011485463">PIN-kode eller passord</translation>
 <translation id="2222641695352322289">Den eneste måten du kan angre dette på er ved å installere <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> på nytt.</translation>
@@ -810,7 +808,7 @@
 <translation id="2239921694246509981">Legg til en administrert person</translation>
 <translation id="2241053333139545397">lese og endre opplysningene dine på mange nettsteder</translation>
 <translation id="2242687258748107519">Filinformasjon</translation>
-<translation id="2243194103992005307">For å fjerne apper, gå til Innstillinger &gt; Apper eller Appstyring. Trykk deretter på appen du vil avinstallere (du må kanskje sveipe til høyre eller venstre for å finne den). Trykk deretter på Avinstaller eller Slå av.</translation>
+<translation id="2243194103992005307">For å fjerne apper, gå til Innstillinger &gt; Apper eller Appstyring. Trykk deretter på appen du vil avinstallere (du må kanskje sveipe til høyre eller venstre for å finne den). Trykk deretter på Avinstaller, Deaktiver eller Slå av.</translation>
 <translation id="2245240762616536227">Kontrollér hvordan Søk, annonser og andre Google-tjenester blir personlig tilpasset av loggen din</translation>
 <translation id="2249605167705922988">f.eks. 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Åpne med visningsprogrammet for systemet</translation>
@@ -1704,6 +1702,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3576324189521867626">Installert</translation>
 <translation id="3578594933904494462">Innholdet i denne fanen blir delt.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vil dele skriveren &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; med en gruppe du eier: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Hvis du godtar, kan alle gruppemedlemmene skrive ut til skriveren.</translation>
+<translation id="3582972582564653026">Synkroniser og gi Chrome et personlig preg på alle enhetene dine</translation>
 <translation id="3584169441612580296">lese og endre bilder, musikk og andre medier fra datamaskinen din</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="358796204584394954">Skriv inn denne koden på «<ph name="DEVICE_NAME" />» for å koble til:</translation>
@@ -1741,7 +1740,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3627320433825461852">Mindre enn ett minutt igjen</translation>
 <translation id="3627588569887975815">Åpne linken i inko&amp;gnitovindu</translation>
 <translation id="3627671146180677314">Tid for fornying av Netscape-sertifikat</translation>
-<translation id="3627879631695760395">Installer <ph name="APP" /> …</translation>
+<translation id="3627879631695760395">Installer <ph name="APP" />…</translation>
 <translation id="3630995161997703415">Legg til dette nettstedet på hyllen din, slik at det kan brukes når som helst</translation>
 <translation id="3635030235490426869">Fane 1</translation>
 <translation id="3636096452488277381">Heisann, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2006,7 +2005,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4033471457476425443">Legg til ny mappe</translation>
 <translation id="4034042927394659004">Reduser lysstyrke for taster</translation>
 <translation id="4035758313003622889">&amp;Oppgavebehandling</translation>
-<translation id="4036758022112812315">Fremhev det du vil høre, og trykk på Søk + S. Eller trykk og hold på Søk og klikk eller dra for å velge innhold.</translation>
+<translation id="4036758022112812315">Fremhev det du vil høre, og trykk på Søk + S. Eller trykk og hold på Søk, og klikk eller dra for å velge innhold.</translation>
 <translation id="4037084878352560732">Hest</translation>
 <translation id="4037889604535939429">Endre person</translation>
 <translation id="4042264909745389898">Vilkår for Google Chrome OS</translation>
@@ -2104,6 +2103,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4206944295053515692">Be Google om forslag</translation>
 <translation id="4208390505124702064">Søk på <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Stor</translation>
+<translation id="4209464433672152343">Dokumenter <ph name="BEGIN_LINK_HELP" />sendes til Google<ph name="END_LINK_HELP" /> for å forberede dem for utskrift. Se, rediger og administrer skriverne dine og skriverloggen i <ph name="BEGIN_LINK_DASHBOARD" />Google Cloud Print-oversikten<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Du må ha Internett-tilkobling for å få tilgang til denne filen.</translation>
 <translation id="421182450098841253">&amp;Vis bokmerkerad</translation>
 <translation id="42126664696688958">Eksportér</translation>
@@ -2525,7 +2525,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4907824805858067479">Administratoren din har slått av lagrede kort</translation>
 <translation id="4908811072292128752">Åpne en ny fane for å surfe på to nettsteder samtidig</translation>
 <translation id="4909038193460299775">Siden denne kontoen administreres av <ph name="DOMAIN" />, slettes bokmerkene, loggen, passordene og andre innstillinger du har, fra denne enheten. Data du har lagret i Google-kontoen din, blir imidlertid værende og kan administreres ved hjelp av <ph name="BEGIN_LINK" />Google Oversikt<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Ingen utvidelser har tildelte hurtigtaster.</translation>
 <translation id="4912643508233590958">Inaktive oppvåkninger</translation>
 <translation id="491691592645955587">Bytt til en sikker nettleser</translation>
@@ -3274,6 +3273,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6064217302520318294">Skjermlås</translation>
 <translation id="6065289257230303064">Katalogattributter for sertifikatemne</translation>
 <translation id="6068338049763724728">Slå på ekstern registrering</translation>
+<translation id="6069671174561668781">Angi bakgrunnsbilde</translation>
 <translation id="6071181508177083058">bekreft passordet</translation>
 <translation id="6073903501322152803">Legg til tilgjengelighetsfunksjoner</translation>
 <translation id="6074825444536523002">Google-skjema</translation>
@@ -4017,7 +4017,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="7229570126336867161">Krever EVDO</translation>
 <translation id="7230787553283372882">Tilpass tekststørrelsen</translation>
 <translation id="7232750842195536390">Navneendringen mislyktes</translation>
-<translation id="7233309214676155451">Synkroniser og gi Chrome et personlig preg på enheten din</translation>
 <translation id="7238585580608191973">SHA-256-fingeravtrykk</translation>
 <translation id="7240120331469437312">Alternativt navn på sertifikatemne</translation>
 <translation id="7240339475467890413">Vil du koble til den nye Wi-Fi-sonen?</translation>
@@ -4514,7 +4513,6 @@ Nøkkelfil: <ph name="KEY_FILE" />
 Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal opprette nye versjoner av utvidelsen.</translation>
 <translation id="799923393800005025">Kan se</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
-<translation id="8001504501378762252">Et nettsted kan ha stjålet passordet ditt</translation>
 <translation id="8004582292198964060">Nettleser</translation>
 <translation id="8005600846065423578">Tillat alltid at <ph name="HOST" /> ser utklippstavlen</translation>
 <translation id="8008356846765065031">Internett er frakoblet. Sjekk Internett-forbindelsen din .</translation>

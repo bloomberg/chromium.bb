@@ -714,7 +714,6 @@
 <translation id="2099686503067610784">サーバー証明書「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="2101225219012730419">バージョン:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">まだ読み込まれていません</translation>
 <translation id="2107494551712864447">指紋の登録</translation>
 <translation id="2112877397266219826">設定するにはタッチ コントローラをオンにしてください</translation>
@@ -794,7 +793,6 @@
 <translation id="2218320521449013367">Chrome での有害なソフトウェアの削除中にエラーが発生しました</translation>
 <translation id="2218515861914035131">プレーン テキストとして貼り付ける</translation>
 <translation id="221872881068107022">逆スクロール</translation>
-<translation id="2218947405056773815"><ph name="API_NAME" /> がブロックされました。</translation>
 <translation id="2220529011494928058">問題を報告</translation>
 <translation id="2220572644011485463">PIN またはパスワード</translation>
 <translation id="2222641695352322289">これを元に戻すには、<ph name="IDS_SHORT_PRODUCT_OS_NAME" /> の再インストールが必要です。</translation>
@@ -1710,6 +1708,7 @@
 <translation id="3576324189521867626">インストールが完了しました</translation>
 <translation id="3578594933904494462">このタブのコンテンツは共有されています。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; さんがあなたのグループ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; と &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; プリンタを共有することを希望しています。共有を許可すると、グループのメンバー全員がこのプリンタに印刷できるようになります。</translation>
+<translation id="3582972582564653026">同期してカスタマイズした Chrome をどの端末でも使用できます</translation>
 <translation id="3584169441612580296">パソコンからの写真、音楽、その他のメディアの読み取りと変更</translation>
 <translation id="3587482841069643663">すべて</translation>
 <translation id="358796204584394954">ペア設定するには「<ph name="DEVICE_NAME" />」で次のコードを入力してください:</translation>
@@ -2112,6 +2111,7 @@
 <translation id="4206944295053515692">候補を表示する</translation>
 <translation id="4208390505124702064"><ph name="SITE_NAME" /> を検索</translation>
 <translation id="4209092469652827314">大</translation>
+<translation id="4209464433672152343">ドキュメントは印刷準備のため <ph name="BEGIN_LINK_HELP" />Google に送信<ph name="END_LINK_HELP" />されます。<ph name="BEGIN_LINK_DASHBOARD" />Google クラウド プリントのダッシュボード<ph name="END_LINK_DASHBOARD" />でプリンタとプリンタの履歴を表示、編集、管理できます。</translation>
 <translation id="421017592316736757">このファイルにアクセスするには、オンライン接続が必要です。</translation>
 <translation id="421182450098841253">ブックマーク バーを表示(&amp;S)</translation>
 <translation id="42126664696688958">エクスポート</translation>
@@ -2533,7 +2533,6 @@
 <translation id="4907824805858067479">保存したカードは管理者によって無効になっています</translation>
 <translation id="4908811072292128752">新しいタブを開いて 2 つのサイトを同時に閲覧できます</translation>
 <translation id="4909038193460299775">このアカウントは <ph name="DOMAIN" /> で管理されているため、ブックマーク、履歴、パスワードなどの設定はこの端末から消去されます。ただし、データは Google アカウントに保存され、<ph name="BEGIN_LINK" />Google ダッシュボード<ph name="END_LINK" />で管理できます。</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">どの拡張機能にもキーボード ショートカットは割り当てられていません。</translation>
 <translation id="4912643508233590958">アイドル状態からの復帰</translation>
 <translation id="491691592645955587">安全なブラウザをぜひご利用ください</translation>
@@ -3283,6 +3282,7 @@
 <translation id="6064217302520318294">画面ロック</translation>
 <translation id="6065289257230303064">証明書のサブジェクトのディレクトリ属性</translation>
 <translation id="6068338049763724728">リモート登録を有効にする</translation>
+<translation id="6069671174561668781">壁紙の設定</translation>
 <translation id="6071181508177083058">パスワードの確認入力</translation>
 <translation id="6073903501322152803">ユーザー補助機能を追加</translation>
 <translation id="6074825444536523002">Google フォーム</translation>
@@ -4027,7 +4027,6 @@
 <translation id="7229570126336867161">EVDO が必要です</translation>
 <translation id="7230787553283372882">テキストサイズをカスタマイズします</translation>
 <translation id="7232750842195536390">名前を変更できませんでした</translation>
-<translation id="7233309214676155451">同期してカスタマイズした Chrome をどの端末でも使用できます</translation>
 <translation id="7238585580608191973">SHA-256 指紋</translation>
 <translation id="7240120331469437312">証明書のサブジェクトの代替名</translation>
 <translation id="7240339475467890413">新しいアクセス ポイントに接続しますか？</translation>
@@ -4534,7 +4533,6 @@
 鍵ファイルは安全な場所に保管してください。拡張機能の新しいバージョンの作成時に必要となります。</translation>
 <translation id="799923393800005025">閲覧者</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
-<translation id="8001504501378762252">サイトでパスワードを盗まれた可能性があります</translation>
 <translation id="8004582292198964060">ブラウザ</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> によるクリップボードへのアクセスを常に許可する</translation>
 <translation id="8008356846765065031">インターネットが切断されました。インターネット接続を確認してください。</translation>

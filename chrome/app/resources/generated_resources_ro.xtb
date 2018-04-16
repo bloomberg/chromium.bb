@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">Șterge certificatul de server „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="2100273922101894616">Conectare automată</translation>
 <translation id="2101225219012730419">Versiune:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Nu s-a încărcat încă</translation>
 <translation id="2107494551712864447">Adaugă o amprentă</translation>
 <translation id="2112877397266219826">Activează controlerul tactil pentru a mă configura</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">A apărut o eroare în timp ce Chrome elimina un software dăunător</translation>
 <translation id="2218515861914035131">Inserează ca text simplu</translation>
 <translation id="221872881068107022">Derulare inversă</translation>
-<translation id="2218947405056773815">Hopa! <ph name="API_NAME" /> are o mică problemă.</translation>
 <translation id="2220529011494928058">Semnalați o problemă</translation>
 <translation id="2220572644011485463">PIN sau parolă</translation>
 <translation id="2222641695352322289">Singura modalitate de anulare este să reinstalați <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1709,6 +1707,7 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3576324189521867626">S-a instalat</translation>
 <translation id="3578594933904494462">La conținutul acestei file se permite accesul.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; dorește să permită accesul la o imprimantă &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; pentru un grup pe care îl deții: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Dacă accepți, toți membrii grupului vor putea printa la imprimantă.</translation>
+<translation id="3582972582564653026">Sincronizează și personalizează Chrome pe toate dispozitivele</translation>
 <translation id="3584169441612580296">Citește și modifică fotografii, muzică și alte tipuri de conținut media de pe computer</translation>
 <translation id="3587482841069643663">Toate</translation>
 <translation id="358796204584394954">Pentru a conecta, introduceți acest cod pe „<ph name="DEVICE_NAME" />”:</translation>
@@ -2111,6 +2110,7 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="4206944295053515692">Solicitați sugestii de la Google</translation>
 <translation id="4208390505124702064">Caută pe <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Mare</translation>
+<translation id="4209464433672152343">Documentele sunt <ph name="BEGIN_LINK_HELP" />trimise la Google<ph name="END_LINK_HELP" /> pentru a le pregăti de printare. Afișează, modifică și gestionează imprimantele și istoricul de printare din <ph name="BEGIN_LINK_DASHBOARD" />tabloul de bord Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Trebuie să fiți online pentru a accesa acest fișier.</translation>
 <translation id="421182450098841253">&amp;Afișați bara de marcaje</translation>
 <translation id="42126664696688958">Exportă</translation>
@@ -2532,7 +2532,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="4907824805858067479">Cardurile salvate sunt dezactivate de administrator</translation>
 <translation id="4908811072292128752">Deschide o filă nouă pentru a naviga pe două site-uri simultan</translation>
 <translation id="4909038193460299775">Deoarece acest cont este gestionat de <ph name="DOMAIN" />, vor fi șterse marcajele, istoricul, parolele și alte setări de pe acest dispozitiv. Totuși, datele vor rămâne stocate în Contul Google și pot fi gestionate din <ph name="BEGIN_LINK" />Tabloul de bord Google<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Nu există extensii pentru care să fie atribuite comenzi rapide de la tastatură.</translation>
 <translation id="4912643508233590958">Ieșiri din modul inactiv</translation>
 <translation id="491691592645955587">Comută la un browser securizat</translation>
@@ -3282,6 +3281,7 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="6064217302520318294">Blocarea ecranului</translation>
 <translation id="6065289257230303064">Atribute director pentru subiectul certificatului</translation>
 <translation id="6068338049763724728">Activează înscrierea la distanță</translation>
+<translation id="6069671174561668781">Setați o imagine de fundal</translation>
 <translation id="6071181508177083058">confirmă parola</translation>
 <translation id="6073903501322152803">Adaugă funcții de accesibilitate</translation>
 <translation id="6074825444536523002">Formular Google</translation>
@@ -4026,7 +4026,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="7229570126336867161">Este necesar EVDO</translation>
 <translation id="7230787553283372882">Personalizează dimensiunea textului</translation>
 <translation id="7232750842195536390">Redenumirea nu a reușit</translation>
-<translation id="7233309214676155451">Sincronizează și personalizează Chrome pe dispozitivul tău</translation>
 <translation id="7238585580608191973">Amprentă digitală SHA-256</translation>
 <translation id="7240120331469437312">Nume alternativ subiect certificat</translation>
 <translation id="7240339475467890413">Te conectezi la noul hotspot?</translation>
@@ -4531,7 +4530,6 @@ Fișier cheie: <ph name="KEY_FILE" />
 Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crearea noilor versiuni ale extensiei.</translation>
 <translation id="799923393800005025">Poate vedea</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
-<translation id="8001504501378762252">Este posibil ca un site să fi furat parola</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8005600846065423578">Permite întotdeauna ca <ph name="HOST" /> să vadă clipboardul</translation>
 <translation id="8008356846765065031">Internet deconectat. Verificați conexiunea la internet.</translation>
@@ -5242,7 +5240,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9137916601698928395">Deschide linkul ca <ph name="USER" /></translation>
 <translation id="9138978632494473300">Adaugă comenzi rapide către următoarele locații:</translation>
-<translation id="9140067245205650184">Folosești un semnalizator de funcție neacceptat: <ph name="BAD_FLAG" />. Stabilitatea și securitatea ar putea fi compromise.</translation>
+<translation id="9140067245205650184">Folosești un semnalizator de funcție neacceptat: <ph name="BAD_FLAG" />. Stabilitatea și securitatea vor fi afectate.</translation>
 <translation id="9147392381910171771">&amp;Opțiuni</translation>
 <translation id="9148058034647219655">Ieși</translation>
 <translation id="9148116311817999634">Setează o blocare a ecranului pentru siguranță</translation>

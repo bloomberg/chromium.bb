@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">Servercertificaat '<ph name="CERTIFICATE_NAME" />' verwijderen?</translation>
 <translation id="2100273922101894616">Automatisch inloggen</translation>
 <translation id="2101225219012730419">Versie:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Nog niet geladen</translation>
 <translation id="2107494551712864447">Een vingerafdruk toevoegen</translation>
 <translation id="2112877397266219826">Schakel je touch-controller in om mij in te stellen</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">Er is een fout opgetreden terwijl Chrome schadelijke software verwijderde</translation>
 <translation id="2218515861914035131">Plakken als tekst zonder opmaak</translation>
 <translation id="221872881068107022">Omgekeerd scrollen</translation>
-<translation id="2218947405056773815">Er is een fout opgetreden in <ph name="API_NAME" />.</translation>
 <translation id="2220529011494928058">Een probleem melden</translation>
 <translation id="2220572644011485463">Pincode of wachtwoord</translation>
 <translation id="2222641695352322289">Je kunt dit alleen ongedaan maken door <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> opnieuw te installeren.</translation>
@@ -1077,7 +1075,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2653266418988778031">Als je een certificaat van een certificeringsinstantie verwijdert, vertrouwt je browser geen certificaten meer die door die certificeringsinstantie zijn verleend.</translation>
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="265390580714150011">Veldwaarde</translation>
-<translation id="2654166010170466751">Toestaan dat sites betalingsverwerkers installeren</translation>
+<translation id="2654166010170466751">Toestaan dat sites betalingshandlers installeren</translation>
 <translation id="2655386581175833247">Gebruikerscertificaat:</translation>
 <translation id="2660779039299703961">Gebeurtenis</translation>
 <translation id="266079277508604648">Verbinding met printer niet mogelijk. Controleer of de printer is ingeschakeld en via wifi of USB is verbonden met je Chromebook.</translation>
@@ -1709,6 +1707,7 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3576324189521867626">Installatie geslaagd</translation>
 <translation id="3578594933904494462">De content van dit tabblad wordt gedeeld.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; wil een printer delen &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; met een van je groepen: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Als je akkoord gaat, kunnen alle groepsleden de printer gebruiken voor afdrukken.</translation>
+<translation id="3582972582564653026">Chrome op al je apparaten synchroniseren en personaliseren</translation>
 <translation id="3584169441612580296">Foto's, muziek en andere media van je computer lezen en wijzigen</translation>
 <translation id="3587482841069643663">Alles</translation>
 <translation id="358796204584394954">Typ deze code op '<ph name="DEVICE_NAME" />' om te koppelen:</translation>
@@ -2111,6 +2110,7 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="4206944295053515692">Google om suggesties vragen</translation>
 <translation id="4208390505124702064">Zoeken op <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Groot</translation>
+<translation id="4209464433672152343">Documenten worden <ph name="BEGIN_LINK_HELP" />naar Google verzonden<ph name="END_LINK_HELP" /> om de afdruktaak voor te bereiden. Bekijk, bewerk en beheer je printers en printergeschiedenis via het <ph name="BEGIN_LINK_DASHBOARD" />dashboard van Google Cloudprinter<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Je moet online zijn om dit bestand te openen.</translation>
 <translation id="421182450098841253">&amp;Bladwijzerbalk weergeven</translation>
 <translation id="42126664696688958">Exporteren</translation>
@@ -2532,7 +2532,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="4907824805858067479">Opgeslagen kaarten zijn uitgeschakeld door je beheerder</translation>
 <translation id="4908811072292128752">Een nieuw tabblad openen om op twee sites tegelijk te browsen</translation>
 <translation id="4909038193460299775">Omdat dit account wordt beheerd door <ph name="DOMAIN" />, worden je bladwijzers, geschiedenis, wachtwoorden en andere instellingen gewist van dit apparaat. Je gegevens blijven opgeslagen in je Google-account en kunnen worden beheerd via <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Er zijn geen sneltoetsen aan extensies toegewezen.</translation>
 <translation id="4912643508233590958">Activeringen vanuit inactief</translation>
 <translation id="491691592645955587">Overschakelen naar een veilige browser</translation>
@@ -2810,7 +2809,7 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="5337771866151525739">Geïnstalleerd door derden.</translation>
 <translation id="5338503421962489998">Lokale opslag</translation>
 <translation id="5340217413897845242">Plankartikel 6</translation>
-<translation id="5340638867532133571">Toestaan dat sites betalingsverwerkers installeren (aanbevolen)</translation>
+<translation id="5340638867532133571">Toestaan dat sites betalingshandlers installeren (aanbevolen)</translation>
 <translation id="5341793073192892252">De volgende cookies zijn geblokkeerd (cookies van derden worden zonder uitzondering geblokkeerd)</translation>
 <translation id="5341980496415249280">Inpakken. Een ogenblik geduld...</translation>
 <translation id="5342091991439452114">Pincode moet minimaal <ph name="MINIMUM" /> cijfers bevatten</translation>
@@ -3283,6 +3282,7 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="6064217302520318294">Schermvergrendeling</translation>
 <translation id="6065289257230303064">Directorykenmerken van certificaatonderwerp</translation>
 <translation id="6068338049763724728">Externe aanmelding inschakelen</translation>
+<translation id="6069671174561668781">Achtergrond instellen</translation>
 <translation id="6071181508177083058">wachtwoord bevestigen</translation>
 <translation id="6073903501322152803">Toegankelijkheidsfuncties toevoegen</translation>
 <translation id="6074825444536523002">Google-formulier</translation>
@@ -3841,7 +3841,7 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="694592694773692225">Omleiding geblokkeerd op deze pagina.</translation>
 <translation id="6949306908218145636">Bladwijzer toevoegen voor geopende pagina's...</translation>
-<translation id="6951153907720526401">Betalingsverwerkers</translation>
+<translation id="6951153907720526401">Betalingshandlers</translation>
 <translation id="6955446738988643816">Pop-up controleren</translation>
 <translation id="6957231940976260713">Servicenaam</translation>
 <translation id="696203921837389374">Synchroniseren via mobiele data inschakelen</translation>
@@ -4027,7 +4027,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="7229570126336867161">EVDO vereist</translation>
 <translation id="7230787553283372882">Tekstgrootte aanpassen</translation>
 <translation id="7232750842195536390">Kan naam niet wijzigen</translation>
-<translation id="7233309214676155451">Chrome op al je apparaten synchroniseren en personaliseren</translation>
 <translation id="7238585580608191973">SHA-256-vingerafdruk</translation>
 <translation id="7240120331469437312">Alternatieve naam voor entiteit van certificaat</translation>
 <translation id="7240339475467890413">Verbinding maken met nieuwe hotspot?</translation>
@@ -4287,7 +4286,7 @@ Als je <ph name="APP_NAME" /> installeert, wordt er <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7629827748548208700">Tabblad: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Altijd bestanden van dit type openen</translation>
 <translation id="7632948528260659758">Bijwerken van de volgende kiosk-apps is mislukt:</translation>
-<translation id="763632859238619983">Niet toestaan dat sites betalingsverwerkers installeren</translation>
+<translation id="763632859238619983">Niet toestaan dat sites betalingshandlers installeren</translation>
 <translation id="7639178625568735185">Begrepen!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> logt je automatisch in bij geschikte sites met wachtwoorden die je hebt opgeslagen.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eigenaar)</translation>
@@ -4531,7 +4530,6 @@ Sleutelbestand: <ph name="KEY_FILE" />
 Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nieuwe versies van je extensie te maken.</translation>
 <translation id="799923393800005025">Kan weergeven</translation>
 <translation id="8000066093800657092">Geen netwerk</translation>
-<translation id="8001504501378762252">Een site heeft je wachtwoord mogelijk gestolen</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> altijd toestaan om het klembord te bekijken</translation>
 <translation id="8008356846765065031">Verbinding met internet verbroken. Controleer je internetverbinding.</translation>

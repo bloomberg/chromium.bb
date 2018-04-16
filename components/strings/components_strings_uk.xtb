@@ -53,11 +53,11 @@
 <translation id="1264126396475825575">Звіт про аварійне завершення роботи о <ph name="CRASH_TIME" /> (ще не завантажено або пропущено)</translation>
 <translation id="1270502636509132238">Спосіб отримання</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
-<translation id="1292701964462482250">"Програмне забезпечення на вашому комп’ютері перешкоджає веб-переглядачеві Chrome безпечно підключатися до Інтернету" (лише для комп’ютерів Windows)</translation>
+<translation id="1292701964462482250">"Програмне забезпечення на вашому комп’ютері перешкоджає веб-переглядачеві Chrome безпечно під’єднуватися до Інтернету" (лише для комп’ютерів з ОС Windows)</translation>
 <translation id="1294154142200295408">Варіанти командного рядка</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Спробуйте видалити файли cookie<ph name="END_LINK" /></translation>
-<translation id="1314614906530272393">Вибрана сесія не існує.</translation>
+<translation id="1314614906530272393">Вибраний сеанс не існує.</translation>
 <translation id="1323433172918577554">Показати більше</translation>
 <translation id="1333989956347591814">Дані про вашу активність <ph name="BEGIN_EMPHASIS" />усе ще можуть бачити<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
@@ -598,7 +598,6 @@
 <translation id="5201306358585911203">Повідомлення з вбудованої сторінки на цій сторінці</translation>
 <translation id="5205222826937269299">Укажіть ім’я</translation>
 <translation id="5222812217790122047">Укажіть електронну адресу</translation>
-<translation id="522700295135997067">Можливо, хтось на цьому сайті щойно викрав ваш пароль</translation>
 <translation id="5230733896359313003">Адреса доставки</translation>
 <translation id="5250209940322997802">"Під’єднайте пристрій до мережі"</translation>
 <translation id="5251803541071282808">Хмара</translation>

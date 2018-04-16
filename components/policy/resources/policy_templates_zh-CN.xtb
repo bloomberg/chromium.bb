@@ -52,12 +52,6 @@
 
       如果此政策设为False，则不报告dev开关的状态。</translation>
 <translation id="1160939557934457296">禁止从安全浏览警告页面继续访问</translation>
-<translation id="1166377463685560145">指定用户无法使用的打印机。
-
-      仅当为 <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_BLACKLIST" /> 时，才可使用此政策。
-
-      如果使用此政策，那么除了与此政策中所列 ID 对应的打印机之外，其他所有打印机都可供用户使用。
-      </translation>
 <translation id="1198465924256827162">发送设备状态上传内容的频率（以毫秒为单位）。
 
       如果此政策未设置，默认频率为 3 小时。允许的最低频率为 60 秒。</translation>
@@ -155,19 +149,6 @@
 <translation id="1561424797596341174">覆盖与远程访问主机的调试版本号相关的政策</translation>
 <translation id="1561967320164410511">用于个人认证的 U2F 和扩展程序</translation>
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME" />”</translation>
-<translation id="1603058613431276040">为绑定到设备的企业打印机提供配置。
-
-      此政策让您能够为 <ph name="PRODUCT_OS_NAME" />设备提供打印机配置。该文件不得超过 5MB，且必须用 JSON 编码。在格式方面，与 NativePrinters 字典一样。据估计，一个包含大约 21000 台打印机的文件编码后的大小将会是 5MB。相关加密哈希值用于验证下载内容是否完整。
-
-      该文件会被下载并缓存。只要相关网址或哈希值发生了变化，系统就会重新下载该文件。
-
-      如果设置了此政策，<ph name="PRODUCT_OS_NAME" />即会下载该文件以进行打印机配置，并会根据 <ph name="DEVICE_PRINTERS_ACCESS_MODE" />、<ph name="DEVICE_PRINTERS_WHITELIST" /> 和 <ph name="DEVICE_PRINTERS_BLACKLIST" /> 向用户提供可用的打印机。
-
-      此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
-
-      此政策是 <ph name="BULK_PRINTERS_POLICY" /> 的附加内容。
-
-      如果未设置此政策，便不存在任何设备打印机，同时其他 <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> 政策会被忽略。</translation>
 <translation id="1608755754295374538">无需提示用户即可使用音频捕获设备的网址</translation>
 <translation id="1617235075406854669">允许删除浏览器历史记录和下载记录</translation>
 <translation id="163200210584085447">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，系统将允许相应网址通过 SAML 登录页面访问视频捕获设备。如果未找到匹配项，系统将自动拒绝授予访问权限。不允许使用通配符模式。</translation>
@@ -551,12 +532,6 @@
 <translation id="2762164719979766599">指定要在登录屏幕上显示的设备本地帐号列表。
 
       每个列表条目指定一个标识符，用于在内部区分不同的设备本地帐号。</translation>
-<translation id="2766302473082018239">指定用户可以使用的打印机。
-
-      仅当为 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_WHITELIST" /> 时，才可使用此政策。
-
-      如果使用此政策，则只有那些具有与此政策中所列值匹配的 ID 的打印机才可供用户使用。ID 必须与 <ph name="BULK_PRINTERS_POLICY" /> 中指定的文件内的条目对应。
-      </translation>
 <translation id="2769952903507981510">为远程访问主机配置所需的域名</translation>
 <translation id="2787173078141616821">报告有关 Android 状态的信息</translation>
 <translation id="2793923553868251161">指定将被视为安全上下文的来源。</translation>
@@ -733,12 +708,6 @@
 
           如果此政策设为非空字符串，该字符串将被用作 <ph name="PRODUCT_NAME" /> 目标名称。否则，目标名称便是设备名称。如果此政策未设置，则目标名称将是设备名称，且设备所有者（或者该设备的托管网域内的用户）将能更改该名称。该名称的长度不得超过 24 个字符。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
-<translation id="3395348522300156660">指定用户可以使用的打印机。
-
-      仅当为 <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_WHITELIST" /> 时，才可使用此政策。
-
-      如果使用此政策，则只有那些具有与此政策中所列值匹配的 ID 的打印机才可供用户使用。ID 必须与 <ph name="DEVICE_PRINTERS_POLICY" /> 中指定的文件内的条目对应。
-      </translation>
 <translation id="3414260318408232239">如果未配置此政策，<ph name="PRODUCT_NAME" /> 将会使用默认的最低版本（即 TLS 1.0）。
 
       倘若您想配置此政策，则可将其设为下列值之一：“tls1”、“tls1.1”或“tls1.2”。如果您设置了此政策，<ph name="PRODUCT_NAME" /> 将不会使用低于指定版本的 SSL/TLS 版本。无法识别的值都会被忽略。</translation>
@@ -2265,12 +2234,6 @@
 
       警告：建议您不要配置版本限制，因为这可能会阻止用户接收软件更新和关键的安全修补程序。限制更新到特定版本前缀可能会将用户置于风险之中。</translation>
 <translation id="8519264904050090490">托管用户手动管理的例外网址</translation>
-<translation id="8527932539502116028">指定用户无法使用的打印机。
-
-      仅当为 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_BLACKLIST" /> 时，才可使用此政策。
-
-      如果使用此政策，那么除了与此政策中所列 ID 对应的打印机之外，其他所有打印机都可供用户使用。
-      </translation>
 <translation id="8538235451413605457">配置对允许使用的最低 <ph name="PRODUCT_NAME" /> 版本的要求。低于指定值的版本将被视为过时；在这种情况下，如果用户不更新操作系统，相应设备就不会允许其登录。
       如果当前版本在用户会话期间变为过时版本，系统将会强制用户退出。
 
@@ -2377,18 +2340,6 @@
 
           指定的政策值应以毫秒为单位，并且必须少于闲置延迟时间。</translation>
 <translation id="891435090623616439">已编码为 JSON 字符串。有关详情，请访问 <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">为企业打印机提供配置。
-
-      此政策让您能够为 <ph name="PRODUCT_OS_NAME" />设备提供打印机配置。该文件不得超过 5MB，且必须用 JSON 编码。在格式方面，与 NativePrinters 字典一样。据估计，一个包含大约 21000 台打印机的文件编码后的大小将会是 5MB。相关加密哈希值用于验证下载内容是否完整。
-
-      该文件会被下载并缓存。只要相关网址或哈希值发生了变化，系统就会重新下载该文件。
-
-      如果设置了此政策，<ph name="PRODUCT_OS_NAME" />即会下载该文件以配置打印机，并会根据 <ph name="BULK_PRINTERS_ACCESS_MODE" />、<ph name="BULK_PRINTERS_WHITELIST" /> 和 <ph name="BULK_PRINTERS_BLACKLIST" /> 向用户提供可用的打印机。
-
-      如果您设置了此政策，用户便无法更改或替换它。
-
-      此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
-      </translation>
 <translation id="8934944553121392674">控制用户可以使用 <ph name="DEVICE_PRINTERS_POLICY" /> 中的哪些打印机。
 
       指定对批量打印机配置使用哪项访问政策。如果选择 <ph name="PRINTERS_ALLOW_ALL" />，则系统会显示所有打印机。如果选择 <ph name="PRINTERS_BLACKLIST" />，则系统会使用 <ph name="DEVICE_PRINTERS_BLACKLIST" /> 来限制用户使用指定的打印机。如果选择 <ph name="PRINTERS_WHITELIST" />，则 <ph name="DEVICE_PRINTERS_WHITELIST" /> 只会指定可供用户选择的打印机。

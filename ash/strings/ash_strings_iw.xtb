@@ -273,7 +273,7 @@
 <translation id="7098389117866926363">‏מכשיר עם יציאת USB-C (יציאה שמאלית מאחור)</translation>
 <translation id="7131634465328662194">המערכת תוציא אותך מהחשבון באופן אוטומטי.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
-<translation id="7165511658052620796">‏(TEMP) הצגת התחברות ל-webui. אם נעשה שימוש בדיווח על באג (crbug.com) או משוב (alt+shift+i)</translation>
+<translation id="7165511658052620796">(TEMP) Show webui login; if used file bug (crbug.com) or feedback (alt+shift+i)</translation>
 <translation id="7168224885072002358">חוזר לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">מיקרופון אחורי</translation>
 <translation id="726276584504105859">לשימוש במסך מפוצל יש לגרור לכאן</translation>
@@ -334,7 +334,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">חובר מטען בעל מתח נמוך</translation>
 <translation id="8734991477317290293">ייתכן שהיא מנסה לתעד את ההקשות שלך.</translation>
-<translation id="8809737090443522491">אפשר להקיש על השם של אחת מהאפליקציות או אחד מהמסמכים</translation>
+<translation id="8809737090443522491">יש להזין שם של אפליקציה או מסמך</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">העברת חלונות לשולחן עבודה אחר עלולה לגרום להתנהגות בלתי צפויה.
 

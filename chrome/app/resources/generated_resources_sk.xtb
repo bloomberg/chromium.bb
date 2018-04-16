@@ -497,7 +497,7 @@
 <translation id="1736419249208073774">Preskúmať</translation>
 <translation id="1737968601308870607">Nahlásiť chybu</translation>
 <translation id="1743570585616704562">Nerozpoznané</translation>
-<translation id="1743970419083351269">Zatvoriť panel sťahovania</translation>
+<translation id="1743970419083351269">Zatvoriť panel so stiahnutými súbormi</translation>
 <translation id="1744108098763830590">stránka na pozadí</translation>
 <translation id="1745520510852184940">Vždy prekladať</translation>
 <translation id="174937106936716857">Celkový počet súborov</translation>
@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">Odstrániť certifikát servera „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="2100273922101894616">Automatické prihlasovanie</translation>
 <translation id="2101225219012730419">Verzia:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Ešte nenačítané</translation>
 <translation id="2107494551712864447">Pridanie odtlačku prsta</translation>
 <translation id="2112877397266219826">Zariadenie nastavíte zapnutím nástroja na ovládanie 
@@ -794,7 +793,6 @@ dotyku</translation>
 <translation id="2218320521449013367">Pri odstraňovaní škodlivého softvéru sa v Chrome vyskytla chyba</translation>
 <translation id="2218515861914035131">Prilepiť ako čistý text</translation>
 <translation id="221872881068107022">Obrátené posúvanie</translation>
-<translation id="2218947405056773815">Ach jaj! Rozhranie <ph name="API_NAME" /> zlyhalo.</translation>
 <translation id="2220529011494928058">Nahlásiť problém</translation>
 <translation id="2220572644011485463">PIN alebo heslo</translation>
 <translation id="2222641695352322289">Jediný spôsob ako to napraviť, je zopakovať inštaláciu systému <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1709,6 +1707,7 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3576324189521867626">Úspešne nainštalovaná</translation>
 <translation id="3578594933904494462">Obsah tejto karty sa zdieľa.</translation>
 <translation id="357886715122934472">Používateľ &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce zdieľať tlačiareň &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; so skupinou, ktorú vlastníte: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ak žiadosť prijmete, tlačiareň budú môcť využívať všetci členovia skupiny.</translation>
+<translation id="3582972582564653026">Synchronizujte a prispôsobte si Chrome v rôznych zariadeniach</translation>
 <translation id="3584169441612580296">Čítať a meniť fotky, hudbu a ďalšie médiá z tohto počítača</translation>
 <translation id="3587482841069643663">Všetko</translation>
 <translation id="358796204584394954">Na zariadení „<ph name="DEVICE_NAME" />“ zadajte tento kód:</translation>
@@ -2111,6 +2110,7 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4206944295053515692">Žiadať návrhy od spoločnosti Google</translation>
 <translation id="4208390505124702064">Hľadať <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Veľké</translation>
+<translation id="4209464433672152343">Dokumenty sa <ph name="BEGIN_LINK_HELP" />odosielajú Googlu<ph name="END_LINK_HELP" />, kde sa pripravia na tlač. Na <ph name="BEGIN_LINK_DASHBOARD" />hlavnom paneli služby Google Cloud Print<ph name="END_LINK_DASHBOARD" /> môžete zobraziť, upraviť a spravovať tlačiarne a ich históriu.</translation>
 <translation id="421017592316736757">Ak chcete pristupovať k tomuto súboru, musíte byť online.</translation>
 <translation id="421182450098841253">&amp;Zobraziť panel so záložkami</translation>
 <translation id="42126664696688958">Exportovať</translation>
@@ -2532,7 +2532,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4907824805858067479">Uložené karty zakázal váš správca</translation>
 <translation id="4908811072292128752">Otvorte novú kartu a prehliadajte dva weby súčasne</translation>
 <translation id="4909038193460299775">Keďže tento účet spravuje doména <ph name="DOMAIN" />, budú z tohto zariadenia vymazané vaše záložky, história, heslá a ďalšie nastavenia. Vaše údaje však zostanú uložené v účte Google a môžete ich spravovať pomocou panela <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Klávesové skratky nie sú priradené k žiadnym rozšíreniam.</translation>
 <translation id="4912643508233590958">Prebudenia z nečinnosti</translation>
 <translation id="491691592645955587">Prepnite na bezpečný prehliadač</translation>
@@ -3282,6 +3281,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6064217302520318294">Zámka obrazovky</translation>
 <translation id="6065289257230303064">Atribúty adresára subjektu certifikátu</translation>
 <translation id="6068338049763724728">Aktivovať vzdialenú registráciu</translation>
+<translation id="6069671174561668781">Nastavenie tapety</translation>
 <translation id="6071181508177083058">potvrdenie hesla</translation>
 <translation id="6073903501322152803">Pridať funkcie dostupnosti</translation>
 <translation id="6074825444536523002">Formulár Google</translation>
@@ -3326,7 +3326,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6132383530370527946">Zmluvné podmienky</translation>
 <translation id="6133173853026656527">Prebieha presúvanie súboru <ph name="FILE_NAME" />...</translation>
 <translation id="6135622770221372891">ID kanála</translation>
-<translation id="6136114942382973861">Zatvoriť panel sťahovania</translation>
+<translation id="6136114942382973861">Zatvoriť panel so stiahnutými súbormi</translation>
 <translation id="6136285399872347291">backspace</translation>
 <translation id="6137767437444130246">Certifikát používateľa</translation>
 <translation id="6138680304137685902">Podpis X9.62 ECDSA s SHA-384</translation>
@@ -3660,7 +3660,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6644846457769259194">Zariadenie sa aktualizuje (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Webová adresa pre odvolanie certifikačnej autority služby Netscape</translation>
 <translation id="6647838571840953560">Momentálne v kanáli <ph name="CHANNEL_NAME" /></translation>
-<translation id="6648911618876616409">K dispozícii na inštaláciu je závažná aktualizácia. Prihláste sa a spustite ju.</translation>
+<translation id="6648911618876616409">K dispozícii na inštaláciu je kritická aktualizácia. Prihláste sa a spustite ju.</translation>
 <translation id="6649018507441623493">Moment...</translation>
 <translation id="6649563841575838401">Formát archívu nie je podporovaný alebo je súbor poškodený.</translation>
 <translation id="665061930738760572">Otvoriť v &amp;novom okne</translation>
@@ -3999,7 +3999,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7191454237977785534">Uložiť súbor ako</translation>
 <translation id="7193374945610105795">Žiadne uložené heslá pre <ph name="ORIGIN" /></translation>
 <translation id="7196835305346730603">Vyhľadávajú sa zariadenia Chromebox v okolí...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Toto sú všeobecné informácie o zariadení a jeho používaní (napr. stav batérie, využívanie aplikácií a sieťové pripojenie). Údaje sa použijú na zlepšenie produktov a služieb Googlu pre všetkých. Niektoré súhrnné informácie tiež pomôžu našim partnerom (napríklad vývojárom Androidu) zlepšiť svoje aplikácie a produkty.<ph name="END_PARAGRAPH1" />
+<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Toto sú všeobecné informácie o zariadení a jeho používaní (napr. stav batérie, využívanie aplikácií a sieťové pripojenie). Údaje sa použijú na zlepšenie produktov a služieb Googlu pre všetkých. Niektoré súhrnné informácie tiež pomôžu našim partnerom (napríklad vývojárom Androidu) zlepšiť ich aplikácie a produkty.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Vypnutím tejto funkcie neovplyvníte schopnosť zariadenia odosielať informácie potrebné na fungovanie základných služieb, ako sú aktualizácie systému a zabezpečenie.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Túto funkciu môžete ovládať v časti Nastavenia &gt; Google. V ponuke vyberte položku Využitie a diagnostika.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Získať p&amp;omoc</translation>
@@ -4024,7 +4024,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7229570126336867161">Je potrebné pripojenie EVDO</translation>
 <translation id="7230787553283372882">Prispôsobiť veľkosť textu</translation>
 <translation id="7232750842195536390">Nepodarilo sa premenovať</translation>
-<translation id="7233309214676155451">Synchronizujte a prispôsobte si Chrome v zariadení</translation>
 <translation id="7238585580608191973">Odtlačok SHA-256</translation>
 <translation id="7240120331469437312">Alternatívny názov subjektu certifikátu</translation>
 <translation id="7240339475467890413">Pripojiť k novému hotspotu?</translation>
@@ -4529,7 +4528,6 @@ Súbor kľúča: <ph name="KEY_FILE" />
 Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvorenie nových verzií svojho rozšírenia.</translation>
 <translation id="799923393800005025">Môže zobraziť</translation>
 <translation id="8000066093800657092">Žiadna sieť</translation>
-<translation id="8001504501378762252">Web možno ukradol vaše heslo</translation>
 <translation id="8004582292198964060">Prehliadač</translation>
 <translation id="8005600846065423578">Webu <ph name="HOST" /> vždy povoliť čítať obsah schránky</translation>
 <translation id="8008356846765065031">Internet je odpojený. Skontrolujte svoje pripojenie k internetu.</translation>
@@ -4806,7 +4804,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="84613761564611563">Sieťová konfigurácia používateľského rozhrania bola vyžiadaná, čakajte…</translation>
 <translation id="8461914792118322307">Server proxy</translation>
 <translation id="8463215747450521436">Tohto kontrolovaného používateľa mohol odstrániť alebo zakázať jeho správca. Ak sa chcete naďalej prihlasovať ako tento používateľ, kontaktujte správcu.</translation>
-<translation id="846374874681391779">Panel preberania</translation>
+<translation id="846374874681391779">Panel so stiahnutými súbormi</translation>
 <translation id="8463955938112983119">Doplnok <ph name="PLUGIN_NAME" /> je zakázaný.</translation>
 <translation id="8464132254133862871">Tento používateľský účet nie je pre danú službu vhodný.</translation>
 <translation id="8465252176946159372">Neplatné</translation>
@@ -4848,7 +4846,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8534656636775144800">Ojoj, pri pripájaní k doméne sa vyskytla chyba. Skúste to znova.</translation>
 <translation id="8535005006684281994">Netscape – webová adresa pre obnovenie certifikátu</translation>
 <translation id="8539727552378197395">Nie (HttpOnly)</translation>
-<translation id="8541166929715485291">Odosielanie systémových údajov. Automaticky odosielajte Googlu diagnostiku a údaje o využívaní aplikácií. Používanie tohto nastavenia je vynútené vlastníkom. Vlastník môže odosielať Googlu diagnostiku a údaje o využití pre toto zariadenie. Môžete si to zobraziť v <ph name="BEGIN_LINK1" />nastaveniach<ph name="END_LINK1" />. Ak ste zapli ďalšiu aktivitu na internete a v aplikáciách, tieto informácie sa budú ukladať vo vašom účte a budete ich môcť spravovať na stránke Moja aktivita. <ph name="BEGIN_LINK2" />Ďalšie informácie<ph name="END_LINK2" /></translation>
+<translation id="8541166929715485291">Odosielanie systémových údajov. Automaticky odosielajte Googlu diagnostiku a údaje o využívaní aplikácií. Používanie tohto nastavenia je vynútené vlastníkom. Vlastník môže odosielať Googlu diagnostiku a údaje o využití tohto zariadenia. Môžete si to zobraziť v <ph name="BEGIN_LINK1" />nastaveniach<ph name="END_LINK1" />. Ak ste zapli ďalšiu aktivitu na internete a v aplikáciách, tieto informácie sa budú ukladať vo vašom účte a budete ich môcť spravovať na stránke Moja aktivita. <ph name="BEGIN_LINK2" />Ďalšie informácie<ph name="END_LINK2" /></translation>
 <translation id="8545107379349809705">Skryť informácie...</translation>
 <translation id="8545575359873600875">Je nám to ľúto, ale vaše heslo sa nepodarilo overiť. Dané heslo mohol nedávno zmeniť správca tohto spravovaného používateľa. Ak sa tak stalo, nové heslo sa použije pri najbližšom prihlásení. Skúste použiť svoje staré heslo.</translation>
 <translation id="8546186510985480118">Zariadenie nemá dostatok miesta</translation>

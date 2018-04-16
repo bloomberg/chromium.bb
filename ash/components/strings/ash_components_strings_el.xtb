@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ή <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Λειτουργία επισκόπησης</translation>
 <translation id="4472417192667361414">Ρυθμίσεις συστήματος και οθόνης</translation>
-<translation id="4484292984055789039">Εναλλαγή στην προηγούμενη μέθοδο εισαγωγής γλώσσας</translation>
 <translation id="4556221320735744018">Ανατρέξτε στον Βοηθό συντομεύσεων πληκτρολογίου</translation>
 <translation id="4628718545549558538">Άνοιγμα της περιοχής κατάστασης (εκεί που εμφανίζεται η εικόνα του λογαριασμού σας)</translation>
 <translation id="4642092649622328492">Λήψη μερικού στιγμιότυπου οθόνης</translation>
 <translation id="4698850295812410683">Εμφάνιση εργαλείων γραφίδας</translation>
 <translation id="4801989101741319327">Μετακίνηση στο τέλος της επόμενης λέξης</translation>
 <translation id="4916163929714267752">Άνοιγμα του συνδέσμου σε νέο παράθυρο</translation>
-<translation id="5002047168347153398">Εστίαση ανενεργού αναδυόμενου παραθύρου για προσβασιμότητα</translation>
 <translation id="5030659775136592441">Εμφάνιση διαχείρισης σελιδοδεικτών</translation>
 <translation id="5034421018520995080">Μετάβαση στο επάνω μέρος της σελίδας</translation>
 <translation id="5042305953558921026">Πλήκτρο λειτουργίας επισκόπησης</translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">Αποκοπή</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> και έπειτα <ph name="SPACE" /> ή <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Άνοιγμα αρχείου στο πρόγραμμα περιήγησης</translation>
-<translation id="7822267121073044318">Εναλλαγή στην επόμενη μέθοδο εισαγωγής γλωσσών</translation>
 <translation id="7917881398263220094">Διακοπή φόρτωσης της τρέχουσας σελίδας</translation>
 <translation id="7952165122793773711">Μετάβαση στις καρτέλες 1 έως 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ή <ph name="MINUS" /></translation>

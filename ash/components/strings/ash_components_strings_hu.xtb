@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> vagy <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Áttekintési mód</translation>
 <translation id="4472417192667361414">Rendszer- és kijelzőbeállítások</translation>
-<translation id="4484292984055789039">Váltás az előzőleg használt nyelv beviteli módszerére</translation>
 <translation id="4556221320735744018">A billentyűparancsokat ismertető súgó megtekintése</translation>
 <translation id="4628718545549558538">Az állapotsor megnyitása (ahol fiókja képe látható)</translation>
 <translation id="4642092649622328492">Részleges képernyőkép készítése</translation>
 <translation id="4698850295812410683">Érintőceruza-eszközök megjelenítése</translation>
 <translation id="4801989101741319327">Ugrás a következő szó végére</translation>
 <translation id="4916163929714267752">Link megnyitása új ablakban</translation>
-<translation id="5002047168347153398">Fókuszálás az inaktív előugró ablakra kisegítő lehetőségként</translation>
 <translation id="5030659775136592441">A könyvjelzőkezelő megjelenítése</translation>
 <translation id="5034421018520995080">Ugrás az oldal tetejére</translation>
 <translation id="5042305953558921026">Áttekintési mód billentyűje</translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">Kivágás</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, majd <ph name="SPACE" /> vagy <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Fájl megnyitása a böngészőben</translation>
-<translation id="7822267121073044318">Váltás a következő nyelv beviteli módszerére</translation>
 <translation id="7917881398263220094">Az aktuális oldal betöltésének leállítása</translation>
 <translation id="7952165122793773711">Ugrás az 1–8. lapokra</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> vagy <ph name="MINUS" /></translation>

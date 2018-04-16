@@ -284,7 +284,7 @@
 <translation id="3661699943263275414">Druga spletna mesta lahko shranjujejo in berejo podatke piškotkov</translation>
 <translation id="3662546969139119822">Tu ni zgodovine</translation>
 <translation id="3672452749423051839">Predlogi za napake pri krmarjenju</translation>
-<translation id="3692944402865947621">Prenos datoteke <ph name="FILE_NAME" /> ni uspel, ker prostor za shranjevanje ni na voljo.</translation>
+<translation id="3692944402865947621">Prenos datoteke <ph name="FILE_NAME" /> ni uspel, ker prostor za shranjevanje ni dosegljiv.</translation>
 <translation id="3712575778697986964">Želite ponastaviti varčevanje s podatki?</translation>
 <translation id="3714981814255182093">Odpiranje vrstice za iskanje</translation>
 <translation id="3716182511346448902">Ta stran uporablja preveč pomnilnika, zato jo je Chrome zaustavil.</translation>
@@ -548,7 +548,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="60923314841986378">Še <ph name="HOURS" /> h</translation>
 <translation id="60924377787140961">Kmalu bo prikazanih več člankov. Prijetno popoldne.</translation>
 <translation id="6108923351542677676">Poteka nastavitev …</translation>
-<translation id="6111020039983847643">uporabljeni podatki</translation>
+<translation id="6111020039983847643">količina prenesenih podatkov</translation>
 <translation id="6112702117600201073">Osveževanje strani</translation>
 <translation id="6127379762771434464">Element odstranjen</translation>
 <translation id="6138140242378429169">Prikaži stran v pogledu, prilagojenem mobilnim napravam</translation>
@@ -701,7 +701,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="748127970106343339">Potrditev izbrisa poverilnice naprave</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Posodobljeno: <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494974237137038751">shranjeni podatki</translation>
+<translation id="7494974237137038751">prihranjen prenos podatkov</translation>
 <translation id="7498271377022651285">Počakajte …</translation>
 <translation id="7514365320538308">Prenos</translation>
 <translation id="751961395872307827">Povezave s spletnim mestom ni mogoče vzpostaviti</translation>

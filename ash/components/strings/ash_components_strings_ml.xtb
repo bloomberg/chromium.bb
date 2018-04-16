@@ -42,6 +42,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, തുടർന്ന് <ph name="TAB" /> അല്ലെങ്കിൽ <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">നിങ്ങളുടെ നിലവിലെ വെബ്‌പേജ് ഒരു ബുക്ക്‌മാർക്കായി സംരക്ഷിക്കുക</translation>
 <translation id="2750942583782703988">നിങ്ങളുടെ നിലവിലെ പേജ് വീണ്ടും ലോഡ് ചെയ്യുക</translation>
+<translation id="2764005613199379871">തിരയൽ വിലാസ ബാറിൽ ഫോക്കസ് വയ്‌ക്കുക</translation>
 <translation id="2789868185375229787">പേജിൽ സൂം ഔട്ട് ചെയ്യുക</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> അമർത്തി ഒരു ലിങ്ക് ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="2830827904629746450">വലത് വശത്ത് ഒരു വിൻഡോ ഡോക്ക് ചെയ്യുക</translation>
@@ -53,6 +54,7 @@
 <translation id="3105917916468784889">സ്ക്രീന്‍ഷോട്ട് എടുക്കുക</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">വിലാസ ബാര്‍ ഫോക്കസ് ചെയ്യുക</translation>
+<translation id="3256109297135787951">നിങ്ങളുടെ ഷെൽഫിലെ ഒരു ഇനത്തിൽ നിന്ന് ഹൈലൈറ്റ് നീക്കം ചെയ്യുക</translation>
 <translation id="3288816184963444640">നിലവിലെ വിൻഡോ അവസാനിപ്പിക്കുക</translation>
 <translation id="3407560819924487926">ടാസ്‌ക് മാനേജർ ഉപയോഗപ്പെടുത്തുക</translation>
 <translation id="3422679037938588196">നിങ്ങളുടെ തിരയലിനായി മുമ്പത്തെ പൊരുത്തത്തിലേക്ക് പോവുക</translation>
@@ -67,6 +69,7 @@
 <translation id="3720939646656082033">ഒരു പുതിയ ടാബിൽ ലിങ്ക് തുറക്കുകയും പുതിയ ടാബിലേക്ക് മാറുകയും ചെയ്യുക</translation>
 <translation id="3725795051337497754">നിലവിലെ ടാബ് അവസാനിപ്പിക്കുക</translation>
 <translation id="3751033133896282964">നിങ്ങളുടെ അവസാന പ്രവർത്തനം പഴയപടിയാക്കുക</translation>
+<translation id="3792178297143798024">നിങ്ങളുടെ ഷെൽഫിലെ ഹൈലൈറ്റ് ചെയ്ത ഇനം തുറക്കുക</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 മുതൽ 8 വരെ</translation>
 <translation id="3837047332182291558">കീബോഡ് കൂടുതൽ തെളിച്ചമുള്ളതാക്കുക (ബാക്ക്‌ലൈറ്റ് കീബോഡുകൾക്കായി മാത്രം)</translation>
 <translation id="3976863468609830880">നിങ്ങളുടെ ഷെൽഫിലെ അവസാനത്തെ ചിഹ്നം ക്ലിക്ക് ചെയ്യുക</translation>
@@ -81,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> അല്ലെങ്കിൽ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">അവലോകന മോഡ്</translation>
 <translation id="4472417192667361414">സിസ്‌റ്റം, ഡിസ്‌പ്ലേ ക്രമീകരണം</translation>
-<translation id="4484292984055789039">മുമ്പത്തെ ഭാഷാ ഇൻപുട്ട് രീതിയിലേക്ക് മാറുക</translation>
 <translation id="4556221320735744018">കീബോഡ് കുറുക്കുവഴി സഹായി കാണുക</translation>
 <translation id="4628718545549558538">സ്‌റ്റാറ്റസ് ഏരിയ തുറക്കുക (നിങ്ങളുടെ അക്കൗണ്ട് ചിത്രം ദൃശ്യമാകുന്ന സ്ഥലം)</translation>
 <translation id="4642092649622328492">ഭാഗിക സ്‌ക്രീൻഷോട്ട് എടുക്കുക</translation>
 <translation id="4698850295812410683">സ്റ്റൈലസ് ടൂളുകൾ കാണിക്കുക</translation>
 <translation id="4801989101741319327">അടുത്ത വാക്കിന്റെ അവസാനത്തിലേക്ക് നീങ്ങുക</translation>
 <translation id="4916163929714267752">ഒരു പുതിയ വിൻഡോയിൽ ലിങ്ക് തുറക്കുക</translation>
-<translation id="5002047168347153398">പ്രവേശനക്ഷമതയ്ക്കായി നിഷ്‌ക്രിയ പോപ്പ്അപ്പ് ഫോക്കസ് ചെയ്യുക</translation>
 <translation id="5030659775136592441">ബുക്ക്മാർക്ക് മാനേജർ കാണിക്കുക</translation>
 <translation id="5034421018520995080">പേജിന്റെ മുകളിലേക്ക് പോവുക</translation>
 <translation id="5042305953558921026">ചുരുക്കവിവരണ മോഡ് കീ</translation>
@@ -126,6 +127,7 @@
 <translation id="6435207348963613811">നിങ്ങളുടെ ഷെൽഫിലെ മുമ്പത്തെ ഇനം ഹൈലൈറ്റ് ചെയ്യുക</translation>
 <translation id="6445033640292336367">ടാബിനെ, അതിന്റെ യഥാർത്ഥ സ്ഥാനത്തേക്ക് തിരികെ കൊണ്ടുവരിക</translation>
 <translation id="649811797655257835">ഫയൽ തിരഞ്ഞെടുക്കുക, തുടർന്ന് <ph name="SPACE" /> അമർത്തുക</translation>
+<translation id="6556040137485212400">ഒരുപാട് സമയം ഉപയോഗിക്കാതിരുന്ന വിൻഡോ തുറക്കുക</translation>
 <translation id="666343722268997814">ഹൈലൈറ്റ് ചെയ്ത ഇനത്തിനായി വലത്-ക്ലിക്ക് മെനു തുറക്കുക</translation>
 <translation id="6671538777808758331">നിങ്ങളുടെ തിരയലിനായി അടുത്ത പൊരുത്തതിലേക്ക് പോവുക</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> അല്ലെങ്കിൽ <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
@@ -150,13 +152,14 @@
 <translation id="7724603315864178912">മുറിക്കുക</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, തുടർന്ന് <ph name="SPACE" /> അല്ലെങ്കിൽ <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">ബ്രൗസറിൽ ഒരു ഫയൽ തുറക്കുക</translation>
-<translation id="7822267121073044318">അടുത്ത ഭാഷാ ഇൻപുട്ട് രീതിയിലേക്ക് മാറുക</translation>
 <translation id="7917881398263220094">നിങ്ങളുടെ നിലവിലെ പേജ് ലോഡ് ചെയ്യുന്നത് നിർത്തുക</translation>
+<translation id="7952165122793773711">ടാബുകൾ 1 മുതൽ 8 വരെ പോവുക</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> അല്ലെങ്കിൽ <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">ബ്രൌസിംഗ് ഡാറ്റ മായ്‌ക്കുക</translation>
 <translation id="8104889575691864804">ആപ്പ് മെനു കാണിക്കുക</translation>
 <translation id="8130528849632411619">ഡോക്യുമെന്റിന്റെ തുടക്കത്തിലേക്ക് പോവുക</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> അല്ലെങ്കിൽ <ph name="E" /></translation>
+<translation id="8232835244134740473">ഇനിപ്പറയുന്നവയുടെ ഇടയിൽ ഫോക്കസ് മാറ്റുക: സ്‌റ്റാറ്റസ് ഏരിയ (നിങ്ങളുടെ അക്കൗണ്ട് ചിത്രം ദൃശ്യമാകുന്ന സ്ഥലം) ലോഞ്ചർ, വിലാസ ബാർ, ബുക്ക്‌മാർക്ക് ബാർ (ദൃശ്യമാണെങ്കിൽ), തുറന്നിരിക്കുന്ന വെബ്‌പേജ്, ഡൗണ്‍ലോഡ് വിവരങ്ങളുടെ ബാർ (ദൃശ്യമാണെങ്കിൽ).</translation>
 <translation id="8234414138295101081">സ്‌ക്രീൻ 90 ഡിഗ്രി തിരിക്കുക</translation>
 <translation id="8264941229485248811">ഡെവലപ്പര്‍ ടൂൾസ് ഇൻസ്‌പെക്‌ടർ കാണിക്കുക അല്ലെങ്കിൽ അദൃശ്യമാക്കുക</translation>
 <translation id="836869401750819675">ഡൗൺലോഡുകളുടെ പേജ് തുറക്കുക</translation>

@@ -53,12 +53,6 @@
 
       Politika yanlış değerine ayarlanmışsa geliştirici anahtarının durumu rapor edilmez.</translation>
 <translation id="1160939557934457296">Güvenli Tarama uyarı sayfasından ilerlemeyi devre dışı bırak</translation>
-<translation id="1166377463685560145">Bir kullanıcının kullanamayacağı yazıcıları belirtir.
-
-      Bu politika yalnızca <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> için <ph name="PRINTERS_BLACKLIST" /> değeri seçilirse kullanılır.
-
-      Bu politika kullanılırsa, bu politikada listelenen kimlikler dışındaki tüm yazıcılar kullanıcıya sağlanır.
-      </translation>
 <translation id="1198465924256827162">Cihaz durumuyla ilgili güncellemelerin ne sıklıkta (mili saniye olarak) gönderileceğini belirleyin.
 
       Bu politika ayarlanmadan bırakılırsa varsayılan sıklık 3 saattir. İzin
@@ -169,19 +163,6 @@
 <translation id="1561424797596341174">Politika, uzaktan erişim ana makinesinin Hata Ayıklama yapılarını geçersiz kılar</translation>
 <translation id="1561967320164410511">Bağımsız doğrulama için U2F plus uzantıları</translation>
 <translation id="1583248206450240930">Varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> ürününü kullan</translation>
-<translation id="1603058613431276040">Cihazlara bağlı kurumsal yazıcılar için yapılandırmalar sağlar.
-
-      Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazlarına yazıcı yapılandırmaları sağlamanıza olanak tanır. Dosya 5 MB'tan büyük olmamalı ve JSON olarak kodlanmalıdır. Biçim, NativePrinters sözlüğü ile aynıdır. Yaklaşık 21.000 yazıcı içeren bir dosyanın 5 MB olacağı tahmin edilmektedir. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır.
-
-      Dosya indirilir ve önbelleğe alınır. URL veya karma değer değiştiğinde yeniden indirilir.
-
-      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME" />, yazıcı yapılandırmalarına ilişkin dosyayı indirir ve yazıcıları <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> ve <ph name="DEVICE_PRINTERS_BLACKLIST" /> ile uyumlu bir şekilde kullanıma sunar.
-
-      Bu politikanın, kullanıcıların bağımsız cihazlardaki yazıcıları yapılandırıp yapılandıramamaları üzerinde herhangi bir etkisi yoktur. Bağımsız kullanıcıların yazıcı yapılandırmalarını tamamlaması amaçlanmıştır.
-
-      Bu politika, <ph name="BULK_PRINTERS_POLICY" /> politikasına ektir.
-
-      Bu politika ayarlanmazsa cihaz yazıcısı olmaz ve diğer <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> politikaları yoksayılır.</translation>
 <translation id="1608755754295374538">Soru sorulmadan ses yakalama cihazlarına erişim verilecek URL'ler</translation>
 <translation id="1617235075406854669">Tarayıcı ve indirme geçmişinin silinmesini etkinleştir</translation>
 <translation id="163200210584085447">Bu listedeki kalıplar, istek yapan URL'nin güvenlik kaynağı ile
@@ -317,7 +298,7 @@
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
-<translation id="2132732175597591362">URL kalıpları beyaz listesini kontrol ederek otomatik oynatmanın her zaman etkin olmasını sağlar.
+<translation id="2132732175597591362">Otomatik oynatmanın her zaman etkin olacağı URL kalıpları beyaz listesini kontrol eder.
 
       Otomatik oynatma etkinleştirilirse videolar <ph name="PRODUCT_NAME" /> üzerinde kullanıcı onayı gerekmeden otomatik olarak ses içeriğiyle oynatılabilir.
 
@@ -327,7 +308,7 @@
 
       AutoplayAllowed politikası Yanlış değerine ayarlanırsa bu politikada ayarlanan herhangi bir URL kalıbının oynatılmasına izin verilmeye devam edilir.
 
-      <ph name="PRODUCT_NAME" /> çalışırken bu politika değişirse, değişikliğin yalnızca yeni açılan sekmeler için geçerli olacağını unutmayın. Dolayısıyla bazı sekmeler hâlâ önceki davranışı yerine getiriyor olabilir.</translation>
+      <ph name="PRODUCT_NAME" /> çalışırken bu politika değişirse, değişikliğin yalnızca yeni açılan sekmeler için geçerli olacağını unutmayın. Dolayısıyla bazı sekmeler hâlâ önceki davranışı sergiliyor olabilir.</translation>
 <translation id="2134437727173969994">Ekranı kilitlemeye izin ver</translation>
 <translation id="2137064848866899664">Bu politika ayarlanırsa her bir ekran, her yeniden
       başlatmada ve politika değeri değiştirildikten sonra ilk kez bağlanıldığında
@@ -597,12 +578,6 @@
 <translation id="2762164719979766599">Oturum açma ekranında gösterilecek cihaz-yerel hesaplar listesini belirtir.
 
       Her liste girişi, farklı cihaz-yerel hesaplarını ayırt etmek için dahili olarak kullanılan bir tanımlayıcıyı belirtir.</translation>
-<translation id="2766302473082018239">Bir kullanıcının kullanabileceği yazıcıları belirtir.
-
-      Bu politika yalnızca <ph name="BULK_PRINTERS_ACCESS_MODE" /> için <ph name="PRINTERS_WHITELIST" /> değeri seçilirse kullanılır.
-
-      Bu politika kullanılırsa, kullanıcı yalnızca kimlikleri bu politikadaki değerlerle eşleşen yazıcıları kullanabilir. Kimliklerin, <ph name="BULK_PRINTERS_POLICY" /> politikasında belirtilen dosyadaki girişlere karşılık gelmesi gerekir.
-      </translation>
 <translation id="2769952903507981510">Uzaktan erişim ana makineleri için gerekli alan adını yapılandır</translation>
 <translation id="2787173078141616821">Android'in durumu hakkında rapor bilgileri</translation>
 <translation id="2793923553868251161">Başlangıç noktaları, güvenli içerik olarak değerlendirilir.</translation>
@@ -788,12 +763,6 @@
 
           Bu politika boş olmayan bir dizeye ayarlanırsa, söz konusu dize <ph name="PRODUCT_NAME" /> hedefinin adı olarak kullanılır. Aksi halde hedef adı cihaz adı olur. Bu politika ayarlanmazsa hedef adı cihaz adı olur ve cihaz sahibi (veya alandan cihazı yöneten bir kullanıcı), adı değiştirme iznine sahip olur. Ad, 24 karakterle sınırlıdır.</translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
-<translation id="3395348522300156660">Bir kullanıcının kullanabileceği yazıcıları belirtir.
-
-      Bu politika yalnızca <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> için <ph name="PRINTERS_WHITELIST" /> değeri seçilirse kullanılır
-
-      Bu politika kullanılırsa, kullanıcı yalnızca kimlikleri bu politikadaki değerlerle eşleşen yazıcıları kullanabilir. Kimliklerin, <ph name="DEVICE_PRINTERS_POLICY" /> politikasında belirtilen dosyadaki girişlere karşılık gelmesi gerekir.
-      </translation>
 <translation id="3414260318408232239">Bu politika yapılandırılmazsa, <ph name="PRODUCT_NAME" /> varsayılan minimum sürüm olarak TLS 1.0'ı kullanır.
 
       Aksi halde, şu değerlerin birine ayarlanabilir: "tls1", "tls1.1" veya "tls1.2". Ayarlandığında, <ph name="PRODUCT_NAME" />, belirtilen sürümden düşük olan SSL/TLS sürümlerini kullanmaz. Tanınmayan bir değer yoksayılır.</translation>
@@ -941,7 +910,7 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
       Her bir liste girişi, 'extension-id' alanında uzantı kimliği ve 'update-url' alanında güncelleme URL'si bulunması gereken bir sözlük içerir.</translation>
 <translation id="3873159954366380945">Bekleyen bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> öğesinin yeniden başlatılmasıyla ilgili bildirimlerin gösterileceği dönemi ayarlamanıza olanak tanır.
 
-      Bu politika ayarı, kullanıcıya bir güncelleme için <ph name="PRODUCT_NAME" /> öğesinin (veya <ph name="PRODUCT_OS_NAME" /> işletim sisteminin) yeniden başlatılması gerektiği bilgisinin kademeli olarak verileceği dönemi milisaniye cinsinden kontrol etmek için kullanılabilir. Bu dönem boyunca, kullanıcıya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikasının ayarına dayalı olarak bir güncelleme gerektiği konusunda, tekrarlanan şekilde bilgi verilir. Herhangi bir değer ayarlanmazsa, varsayılan olarak <ph name="PRODUCT_OS_NAME" /> için 345600000 milisaniye (dört gün), diğer tüm platformlar için de 604800000 milisaniye (bir hafta) değeri kullanılır.</translation>
+      Bu politika ayarı, kullanıcıya bir güncelleme için <ph name="PRODUCT_NAME" /> öğesinin (veya <ph name="PRODUCT_OS_NAME" /> işletim sisteminin) yeniden başlatılması gerektiği bilgisinin kademeli olarak verileceği dönemi milisaniye cinsinden kontrol etmek için kullanılabilir. Bu dönem boyunca, kullanıcıya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikasının ayarına dayalı olarak bir güncelleme gerektiği konusunda, tekrarlanan şekilde bilgi verilir. Herhangi bir değer ayarlanmazsa, varsayılan olarak <ph name="PRODUCT_OS_NAME" /> için 345.600.000 milisaniye (dört gün), diğer tüm platformlar için de 604.800.000 milisaniye (bir hafta) değeri kullanılır.</translation>
 <translation id="3877517141460819966">Entegre iki etmenli kimlik doğrulama modu</translation>
 <translation id="388237772682176890">SPDY/3.1 desteği kaldırıldığı için bu politika M53 sürümünde kullanımdan kaldırılmış ve M54 sürümünde üründen çıkarılmıştır.
  
@@ -1320,7 +1289,7 @@ politikayı geçersiz kılamaz.
       Bu politika Yanlış değerine ayarlanırsa <ph name="PRODUCT_NAME" /> öğesinin medyayı otomatik olarak oynatmasına izin verilmez. AutoplayWhitelist politikası, belirli URL kalıpları için bunu geçersiz kılmak üzere kullanılabilir.
       Varsayılan olarak <ph name="PRODUCT_NAME" /> öğesinin medyayı otomatik olarak oynatmasına izin verilmez. AutoplayWhitelist politikası, belirli URL kalıpları için bunu geçersiz kılmak üzere kullanılabilir.
 
-      <ph name="PRODUCT_NAME" /> çalışırken bu politika değişirse, değişikliğin yalnızca yeni açılan sekmeler için geçerli olacağını unutmayın. Dolayısıyla bazı sekmeler hâlâ önceki davranışı yerine getiriyor olabilir.
+      <ph name="PRODUCT_NAME" /> çalışırken bu politika değişirse, değişikliğin yalnızca yeni açılan sekmeler için geçerli olacağını unutmayın. Dolayısıyla bazı sekmeler hâlâ önceki davranışı sergiliyor olabilir.
       </translation>
 <translation id="4906194810004762807">Aygıt Politikası için yenileme hızı</translation>
 <translation id="4917385247580444890">Güçlü</translation>
@@ -2457,12 +2426,6 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
       Uyarı: Kullanıcıların yazılım güncellemelerini ve kritik güvenlik düzeltmelerini almasını engelleyebileceği için sürüm kısıtlamalarının yapılandırılması önerilmez. Güncellemeleri belirli bir sürüm ön ekiyle sınırlamak, kullanıcıları risk altında bırakabilir.</translation>
 <translation id="8519264904050090490">Yönetilen kullanıcı manuel istisna URL'leri</translation>
-<translation id="8527932539502116028">Bir kullanıcının kullanamayacağı yazıcıları belirtir.
-
-      Bu politika yalnızca <ph name="BULK_PRINTERS_ACCESS_MODE" /> için <ph name="PRINTERS_BLACKLIST" /> değeri seçilirse kullanılır.
-
-      Bu politika kullanılırsa, bu politikada listelenen kimlikler dışında tüm yazıcılar kullanıcıya sağlanır.
-      </translation>
 <translation id="8538235451413605457">İzin verilen minimum <ph name="PRODUCT_NAME" /> sürümü gereksinimini yapılandırır. Aşağıda belirtilen sürümler eski olarak kabul edilir ve cihaz, OS güncellenmeden kullanıcının oturum açmasına izin vermez.
       Geçerli sürüm, kullanıcı oturumu sırasında eski durumuna dönüşürse kullanıcı oturumunu kapatmaya zorlanır.
 
@@ -2577,18 +2540,6 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinden daha az olacak şekilde bir aralığa sıkıştırılır.</translation>
 <translation id="891435090623616439">JSON dizesi olarak kodlanmıştır, ayrıntılar için <ph name="COMPLEX_POLICIES_URL" /> sayfasına bakın</translation>
-<translation id="8927384992072706174">Kurumsal yazıcılar için yapılandırmalar sağlar.
-
-      Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazlarına yazıcı yapılandırmaları sağlamanıza olanak tanır. Dosya 5 MB'tan büyük olmamalı ve JSON olarak kodlanmalıdır. Biçim, NativePrinters sözlüğü ile aynıdır. Yaklaşık 21.000 yazıcı içeren bir dosyanın 5 MB olacağı tahmin edilmektedir. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır.
-
-      Dosya indirilir ve önbelleğe alınır. URL veya karma değer değiştiğinde yeniden indirilir.
-
-      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME" />, yazıcı yapılandırmalarına ilişkin dosyayı indirir ve yazıcıları <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> ve <ph name="BULK_PRINTERS_BLACKLIST" /> ile uyumlu bir şekilde kullanıma sunar.
-
-      Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamaz.
-
-      Bu politikanın, kullanıcıların bağımsız cihazlardaki yazıcıları yapılandırıp yapılandıramamaları üzerinde herhangi bir etkisi yoktur. Bağımsız kullanıcıların yazıcı yapılandırmalarını tamamlaması amaçlanmıştır.
-      </translation>
 <translation id="8934944553121392674">Kullanıcıların <ph name="DEVICE_PRINTERS_POLICY" /> politikasındaki hangi yazıcıları kullanabileceğini kontrol eder.
 
       Toplu yazıcı yapılandırması için hangi erişim politikasının kullanılacağını belirler. <ph name="PRINTERS_ALLOW_ALL" /> seçilirse tüm yazıcılar gösterilir. <ph name="PRINTERS_BLACKLIST" /> seçilirse, belirtilen yazıcılara erişimi kısıtlamak için <ph name="DEVICE_PRINTERS_BLACKLIST" /> kullanılır. <ph name="PRINTERS_WHITELIST" /> seçilirse, <ph name="DEVICE_PRINTERS_WHITELIST" /> yalnızca seçilebilir yazıcıları gösterir.

@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">Supprimer le certificat de serveur "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Connexion automatique</translation>
 <translation id="2101225219012730419">Version :</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Pas encore chargé</translation>
 <translation id="2107494551712864447">Ajouter une empreinte digitale</translation>
 <translation id="2112877397266219826">Activez votre contrôleur tactile pour la configuration</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">Une erreur s'est produite lors de la suppression du logiciel malveillant par Chrome</translation>
 <translation id="2218515861914035131">Coller en texte brut</translation>
 <translation id="221872881068107022">Inverser le défilement</translation>
-<translation id="2218947405056773815">Mince ! <ph name="API_NAME" /> a rencontré un problème.</translation>
 <translation id="2220529011494928058">Signaler un problème</translation>
 <translation id="2220572644011485463">Code ou mot de passe</translation>
 <translation id="2222641695352322289">La seule façon d'annuler cette action consiste à réinstaller <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -892,7 +890,7 @@
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="236141728043665931">Toujours bloquer l'accès au micro</translation>
 <translation id="2365507699358342471">Ce site peut voir le texte et les images copiés dans le presse-papiers.</translation>
-<translation id="2367199180085172140">Ajouter un partage de fichier</translation>
+<translation id="2367199180085172140">Ajouter un partage de fichiers</translation>
 <translation id="2367972762794486313">Afficher les applications</translation>
 <translation id="2371076942591664043">Ouvrir une fois le téléchargement &amp;terminé</translation>
 <translation id="2377319039870049694">Passer en mode Liste</translation>
@@ -1709,6 +1707,7 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3576324189521867626">L'application a bien été installée.</translation>
 <translation id="3578594933904494462">Le contenu de cet onglet est en cours de partage</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; souhaite partager une imprimante &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; avec un groupe que vous gérez : &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si vous acceptez, tous les membres du groupe seront en mesure d'imprimer sur cette imprimante.</translation>
+<translation id="3582972582564653026">Synchroniser et personnaliser Chrome sur vos appareils</translation>
 <translation id="3584169441612580296">Accéder aux photos, à la musique et aux autres fichiers multimédias stockés sur votre ordinateur et les modifier</translation>
 <translation id="3587482841069643663">Tous</translation>
 <translation id="358796204584394954">Saisissez ce code sur "<ph name="DEVICE_NAME" />" pour l'associer :</translation>
@@ -2111,6 +2110,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4206944295053515692">Demander des suggestions de Google</translation>
 <translation id="4208390505124702064">Rechercher sur <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Grande</translation>
+<translation id="4209464433672152343">Les documents sont <ph name="BEGIN_LINK_HELP" />envoyés à Google<ph name="END_LINK_HELP" /> afin d'être préparés pour l'impression. Consultez, modifiez et gérez vos imprimantes et leur historique dans le <ph name="BEGIN_LINK_DASHBOARD" />tableau de bord de Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Pour accéder à ce fichier, vous devez être connecté à Internet.</translation>
 <translation id="421182450098841253">&amp;Afficher la barre de favoris</translation>
 <translation id="42126664696688958">Exporter</translation>
@@ -2532,7 +2532,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4907824805858067479">L'administrateur a désactivé les cartes enregistrées</translation>
 <translation id="4908811072292128752">Ouvrez un nouvel onglet pour naviguer sur deux sites Web en même temps</translation>
 <translation id="4909038193460299775">Étant donné que ce compte est géré par <ph name="DOMAIN" />, vos favoris, votre historique, vos mots de passe et les autres paramètres sont effacés de cet appareil. Cependant, vos données restent stockées dans votre compte Google et peuvent être gérées dans le <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Aucune extension n'est associée à des raccourcis clavier</translation>
 <translation id="4912643508233590958">Sorties de veille</translation>
 <translation id="491691592645955587">Passez à un navigateur sécurisé</translation>
@@ -3283,6 +3282,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6064217302520318294">Verrouillage de l'écran</translation>
 <translation id="6065289257230303064">Attributs du répertoire de l'objet du certificat</translation>
 <translation id="6068338049763724728">Activer l'enregistrement à distance</translation>
+<translation id="6069671174561668781">Sélectionner un fond d'écran</translation>
 <translation id="6071181508177083058">confirmer le mot de passe</translation>
 <translation id="6073903501322152803">Ajouter des fonctionnalités d'accessibilité</translation>
 <translation id="6074825444536523002">Formulaire Google</translation>
@@ -3653,7 +3653,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6628328486509726751">Date et heure d'importation : <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
 <translation id="6629841649550503054">Tous les contenus sont sauvegardés sur <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="6630752851777525409">Une demande d'accès permanent à un certificat pour s'authentifier en votre nom a été initiée pour l'extension "<ph name="EXTENSION_NAME" />".</translation>
-<translation id="6635956300022133031">Sélectionner et personnaliser les voix de synthèse vocale</translation>
+<translation id="6635956300022133031">Sélectionner et personnaliser les voix de la synthèse vocale</translation>
 <translation id="6639554308659482635">Mémoire SQLite</translation>
 <translation id="6641138807883536517">Le mot de passe du module sécurisé généré de façon aléatoire n'est pas disponible, ce qui est normal après un Powerwash.</translation>
 <translation id="6643016212128521049">Effacer</translation>
@@ -4027,7 +4027,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7229570126336867161">Technologie EvDo requise</translation>
 <translation id="7230787553283372882">Personnaliser la taille du texte</translation>
 <translation id="7232750842195536390">Échec du changement de nom</translation>
-<translation id="7233309214676155451">Synchroniser et personnaliser Chrome sur vos appareils</translation>
 <translation id="7238585580608191973">Empreinte SHA-256</translation>
 <translation id="7240120331469437312">Autre nom de l'objet du certificat</translation>
 <translation id="7240339475467890413">Se connecter au nouveau point d'accès ?</translation>
@@ -4430,7 +4429,7 @@ Notez que la taille du téléchargement de l'application <ph name="APP_NAME" /> 
 <translation id="7851457902707056880">La connexion a été limitée au seul compte du propriétaire. Veuillez redémarrer et vous connecter à ce compte. L'appareil redémarrera automatiquement dans 30 secondes.</translation>
 <translation id="7851716364080026749">Toujours bloquer l'accès à la caméra et au micro</translation>
 <translation id="7853747251428735">Plus d'outi&amp;ls</translation>
-<translation id="7856006446339184955">Envoyez les données système. Cet appareil est actuellement configuré pour envoyer automatiquement des diagnostics et des données d'utilisation à Google. Ce <ph name="BEGIN_LINK1" />paramètre<ph name="END_LINK1" /> est appliqué par le propriétaire. Si vous avez activé l'option "Activité sur le Web et les applications", ces informations seront enregistrées dans votre compte. Vous pourrez alors les gérer dans la section "Mon activité". <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
+<translation id="7856006446339184955">Envoyer les données système. Cet appareil est actuellement configuré pour envoyer automatiquement des diagnostics et des données d'utilisation à Google. Ce <ph name="BEGIN_LINK1" />paramètre<ph name="END_LINK1" /> est appliqué par le propriétaire. Si vous avez activé l'option "Activité sur le Web et les applications", ces informations seront enregistrées dans votre compte. Vous pourrez alors les gérer dans la section "Mon activité". <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Ajouter une exception</translation>
 <translation id="7857949311770343000">Est-ce la page Nouvel onglet que vous attendiez ?</translation>
 <translation id="786073089922909430">Service : <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4532,7 +4531,6 @@ Fichier de clé : <ph name="KEY_FILE" />
 Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la création de nouvelles versions de l'extension.</translation>
 <translation id="799923393800005025">Lecteur</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
-<translation id="8001504501378762252">Un site vient peut-être de dérober votre mot de passe</translation>
 <translation id="8004582292198964060">Navigateur</translation>
 <translation id="8005600846065423578">Toujours autoriser <ph name="HOST" /> à voir le contenu du presse-papiers</translation>
 <translation id="8008356846765065031">Connexion Internet interrompue. Veuillez vérifier votre connexion.</translation>
@@ -4794,7 +4792,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8439506636278576865">Proposer de traduire les pages dans cette langue</translation>
 <translation id="8446884382197647889">En savoir plus</translation>
 <translation id="8447409163267621480">Vous devez inclure la touche Ctrl ou la touche Alt</translation>
-<translation id="8448729345478502352">Agrandir ou réduire la taille des éléments sur l'écran</translation>
+<translation id="8448729345478502352">Agrandir ou réduire la taille des éléments à l'écran</translation>
 <translation id="8449008133205184768">Coller en adaptant le style</translation>
 <translation id="8449036207308062757">Gérer l'espace de stockage</translation>
 <translation id="8451512073679317615">assistant</translation>
@@ -4851,7 +4849,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8534656636775144800">Petit problème… Une erreur s'est produite lors de la tentative d'association au domaine. Veuillez réessayer.</translation>
 <translation id="8535005006684281994">URL de renouvellement du certificat Netscape</translation>
 <translation id="8539727552378197395">Non (HttpOnly)</translation>
-<translation id="8541166929715485291">Envoyez les données système. Cet appareil enverra automatiquement des diagnostics et des données d'utilisation à Google. Ce paramètre est appliqué par le propriétaire. Le propriétaire de l'appareil peut choisir d'envoyer à Google des données de diagnostic et d'utilisation. Cette option est visible dans les <ph name="BEGIN_LINK1" />paramètres<ph name="END_LINK1" />. Si vous avez activé l'option "Activité sur le Web et les applications", ces informations seront enregistrées dans votre compte. Vous pourrez alors les gérer dans la section "Mon activité". <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
+<translation id="8541166929715485291">Envoyer les données système. Cet appareil enverra automatiquement des diagnostics et des données d'utilisation à Google. Ce paramètre est appliqué par le propriétaire. Le propriétaire de l'appareil peut choisir d'envoyer à Google des données de diagnostic et d'utilisation. Cette option est visible dans les <ph name="BEGIN_LINK1" />Paramètres<ph name="END_LINK1" />. Si vous avez activé l'option "Activité sur le Web et les applications", ces informations seront enregistrées dans votre compte. Vous pourrez alors les gérer dans la section "Mon activité". <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
 <translation id="8545107379349809705">Masquer les informations…</translation>
 <translation id="8545575359873600875">Impossible de vérifier votre mot de passe. Il est possible que l'administrateur de cet utilisateur supervisé ait récemment modifié le mot de passe. Si c'est le cas, le nouveau mot de passe sera appliqué lors de la prochaine connexion. Essayez de vous connecter à l'aide de votre ancien mot de passe.</translation>
 <translation id="8546186510985480118">Peu d'espace disque disponible sur l'appareil</translation>
@@ -5259,7 +5257,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9157697743260533322">Échec de la configuration des mises à jour automatiques pour tous les utilisateurs (erreur de lancement avant la période de diffusion : <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Petit problème… Une erreur de communication réseau s'est produite lors de l'authentification. Veuillez vérifier votre connexion réseau, puis réessayer.</translation>
 <translation id="9161070040817969420">Sous-cadres pour : <ph name="PARENT_SITE" /></translation>
-<translation id="916501514001398070">Envoyez les données système. Cet appareil est actuellement configuré pour envoyer automatiquement des diagnostics et des données d'utilisation à Google. Ce paramètre est appliqué par le propriétaire. Si vous avez activé l'option "Activité sur le Web et les applications", ces informations seront enregistrées dans votre compte. Vous pourrez alors les gérer dans la section "Mon activité". <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
+<translation id="916501514001398070">Envoyer les données système. Cet appareil est actuellement configuré pour envoyer automatiquement des diagnostics et des données d'utilisation à Google. Ce paramètre est appliqué par le propriétaire. Si vous avez activé l'option "Activité sur le Web et les applications", ces informations seront enregistrées dans votre compte. Vous pourrez alors les gérer dans la section "Mon activité". <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="9169496697824289689">Afficher les raccourcis clavier</translation>
 <translation id="9169931577761441333">Ajouter <ph name="APP_NAME" /> à l'écran d'accueil</translation>
 <translation id="9170397650136757332">À présent, déplacez légèrement votre doigt pour enregistrer toutes les parties de votre empreinte digitale</translation>

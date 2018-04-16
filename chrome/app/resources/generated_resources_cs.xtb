@@ -714,7 +714,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2099686503067610784">Smazat certifikát serveru <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
 <translation id="2101225219012730419">Verze:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Dosud nenačteno</translation>
 <translation id="2107494551712864447">Přidejte otisk prstu</translation>
 <translation id="2112877397266219826">Chcete-li tuto službu nastavit, zapněte dotykové ovládání.</translation>
@@ -794,7 +793,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2218320521449013367">Při odstraňování škodlivého softwaru Chromem došlo k chybě</translation>
 <translation id="2218515861914035131">Vložit jako prostý text</translation>
 <translation id="221872881068107022">Opačné posouvání</translation>
-<translation id="2218947405056773815">Ouha! Rozhraní <ph name="API_NAME" /> zaznamenalo neočekávaný problém.</translation>
 <translation id="2220529011494928058">Nahlásit problém</translation>
 <translation id="2220572644011485463">PIN nebo heslo</translation>
 <translation id="2222641695352322289">Jediný způsob, jak tuto akci vrátit zpět, je přeinstalovat systém <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1708,6 +1706,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3576324189521867626">Úspěšně nainstalováno</translation>
 <translation id="3578594933904494462">Obsah této karty je sdílen.</translation>
 <translation id="357886715122934472">Uživatel &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce sdílet tiskárnu &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; se skupinou, kterou vlastníte: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Pokud tuto akci přijmete, pomocí této tiskárny budou moci tisknout všichni členové skupiny.</translation>
+<translation id="3582972582564653026">Synchronizujte a upravte si Chrome na různých zařízeních</translation>
 <translation id="3584169441612580296">Číst a měnit fotografie, hudbu a další média z počítače</translation>
 <translation id="3587482841069643663">Vše</translation>
 <translation id="358796204584394954">V zařízení „<ph name="DEVICE_NAME" />“ zadejte tento kód:</translation>
@@ -2109,6 +2108,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4206944295053515692">Žádat o návrhy z Googlu</translation>
 <translation id="4208390505124702064">Hledat na webu <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Velké</translation>
+<translation id="4209464433672152343">Dokumenty jsou <ph name="BEGIN_LINK_HELP" />odeslány do Googlu<ph name="END_LINK_HELP" />, kde jsou připraveny k tisku. Tiskárny a historii tiskáren můžete zobrazit, upravit a spravovat na <ph name="BEGIN_LINK_DASHBOARD" />panelu služby Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Pro přístup k souboru musíte být online.</translation>
 <translation id="421182450098841253">&amp;Zobrazit lištu záložek</translation>
 <translation id="42126664696688958">Exportovat</translation>
@@ -2530,7 +2530,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4907824805858067479">Administrátor uložené karty zakázal</translation>
 <translation id="4908811072292128752">Otevřete novou kartu a prohlížejte dvě webové stránky naráz</translation>
 <translation id="4909038193460299775">Protože je tento účet spravován doménou <ph name="DOMAIN" />, budou z tohoto zařízení vymazány vaše záložky, historie, hesla a další nastavení. Data však zůstanou uložená ve vašem účtu Google a lze je spravovat v <ph name="BEGIN_LINK" />Hlavním panelu Google<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">K žádným rozšířením nejsou přiřazeny klávesové zkratky.</translation>
 <translation id="4912643508233590958">Probuzení z nečinnosti</translation>
 <translation id="491691592645955587">Přejděte na bezpečný prohlížeč</translation>
@@ -3279,6 +3278,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6064217302520318294">Zámek obrazovky</translation>
 <translation id="6065289257230303064">Atributy adresáře subjektu certifikátu</translation>
 <translation id="6068338049763724728">Povolit vzdálenou registraci</translation>
+<translation id="6069671174561668781">Nastavení tapety</translation>
 <translation id="6071181508177083058">potvrzení hesla</translation>
 <translation id="6073903501322152803">Přidat funkce přístupnosti</translation>
 <translation id="6074825444536523002">Formulář Google</translation>
@@ -4023,7 +4023,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7229570126336867161">Je zapotřebí technologie EVDO.</translation>
 <translation id="7230787553283372882">Přizpůsobení velikosti textu</translation>
 <translation id="7232750842195536390">Přejmenování se nezdařilo</translation>
-<translation id="7233309214676155451">Synchronizujte a personalizujte si Chrome na různých zařízeních</translation>
 <translation id="7238585580608191973">Digitální otisk SHA-256</translation>
 <translation id="7240120331469437312">Alternativní název subjektu certifikátu</translation>
 <translation id="7240339475467890413">Připojit k novému hotspotu?</translation>
@@ -4524,7 +4523,6 @@ Soubor klíče: <ph name="KEY_FILE" />
 Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat při vytváření nových verzí svého rozšíření.</translation>
 <translation id="799923393800005025">Může zobrazit</translation>
 <translation id="8000066093800657092">Žádná síť</translation>
-<translation id="8001504501378762252">Nějaký web vám možná odcizil heslo</translation>
 <translation id="8004582292198964060">Prohlížeč</translation>
 <translation id="8005600846065423578">Webu <ph name="HOST" /> čtení obsahu schránky vždy povolit</translation>
 <translation id="8008356846765065031">Internet byl odpojen. Zkontrolujte prosím své internetové připojení.</translation>

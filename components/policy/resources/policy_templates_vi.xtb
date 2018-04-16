@@ -52,12 +52,6 @@
 
       Nếu chính sách được đặt thành sai, trạng thái của bộ chuyển đổi dành cho nhà phát triển sẽ không được báo cáo.</translation>
 <translation id="1160939557934457296">Vô hiệu hóa khả năng tiếp tục từ trang cảnh báo Duyệt web an toàn</translation>
-<translation id="1166377463685560145">Chỉ định các máy in mà người dùng không thể sử dụng.
-
-      Chỉ sử dụng chính sách này nếu đã chọn <ph name="PRINTERS_BLACKLIST" /> cho <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Nếu sử dụng chính sách này, thì tất cả máy in sẽ được cung cấp cho người dùng trừ các máy in có id nằm trong chính sách này.
-      </translation>
 <translation id="1198465924256827162">Tần suất tải lên trạng thái thiết bị, bằng mili giây.
 
       Nếu chính sách này không được đặt thì tần suất mặc định là 3 giờ. Tần
@@ -166,19 +160,6 @@
 <translation id="1561424797596341174">Chính sách ghi đè dành cho bản dựng Gỡ lỗi của máy chủ truy cập từ xa</translation>
 <translation id="1561967320164410511">Tiện ích U2F+ để chứng thực cá nhân</translation>
 <translation id="1583248206450240930">Sử dụng <ph name="PRODUCT_FRAME_NAME" /> theo mặc định</translation>
-<translation id="1603058613431276040">Cung cấp cấu hình máy in dành cho doanh nghiệp được kết nối với các thiết bị.
-
-      Chính sách này cho phép bạn cung cấp cấu hình máy in cho các thiết bị <ph name="PRODUCT_OS_NAME" />. Kích thước tệp không được quá 5 MB và phải được mã hóa ở định dạng JSON. Định dạng này giống với định dạng của từ điển NativePrinters. Ước tính một tệp chứa xấp xỉ 21.000 máy in sẽ mã hóa dưới dạng một tệp 5 MB. Hàm băm mật mã dùng để xác minh tính toàn vẹn của nội dung tải xuống.
-
-      Tệp được tải xuống và lưu vào bộ nhớ đệm. Tệp này sẽ tải xuống lại bất cứ khi nào URL hoặc hàm băm đó thay đổi.
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> sẽ tải tệp cấu hình máy in xuống và cung cấp máy in theo đúng các chính sách <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> và <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không. Chính sách này nhằm bổ sung cho cấu hình máy in của từng người dùng.
-
-      Chính sách này bổ sung cho <ph name="BULK_PRINTERS_POLICY" />.
-
-      Nếu bạn không đặt chính sách này, thì sẽ không có máy in nào cho thiết bị và các chính sách <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> khác sẽ bị bỏ qua.</translation>
 <translation id="1608755754295374538">Các URL sẽ được cấp quyền truy cập thiết bị ghi âm mà không cần phải hiển thị lời nhắc</translation>
 <translation id="1617235075406854669">Bật xóa lịch sử trình duyệt và lịch sử tải xuống</translation>
 <translation id="163200210584085447">Các mẫu trong danh sách này sẽ được đối sánh dựa trên nguồn gốc
@@ -594,12 +575,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2762164719979766599">Chỉ định danh sách tài khoản trong thiết bị được hiển thị trên màn hình đăng nhập.
 
       Mỗi mục nhập trong danh sách chỉ định một định danh, được sử dụng nội bộ để cho biết riêng các tài khoản trong thiết bị khác nhau.</translation>
-<translation id="2766302473082018239">Chỉ định các máy in mà người dùng có thể sử dụng.
-
-      Chỉ sử dụng chính sách này nếu đã chọn <ph name="PRINTERS_WHITELIST" /> cho <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Nếu bạn sử dụng chính sách này, thì chỉ những máy in có id phù hợp với các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với các mục nhập trong tệp đã chỉ định trong <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Định cấu hình tên miền bắt buộc cho máy chủ truy cập từ xa</translation>
 <translation id="2787173078141616821">Báo cáo thông tin về trạng thái của Android</translation>
 <translation id="2793923553868251161">Ngữ cảnh gốc được coi là ngữ cảnh an toàn.</translation>
@@ -786,12 +761,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn đặt chính sách này thành một chuỗi không phải là chuỗi trống, thì chuỗi đó sẽ được sử dụng làm tên của đích <ph name="PRODUCT_NAME" />. Nếu không, tên đích sẽ là tên thiết bị. Nếu bạn không đặt chính sách này, thì tên đích sẽ là tên thiết bị và chủ sở hữu thiết bị (hoặc người dùng từ miền quản lý thiết bị) sẽ được phép thay đổi tên đó. Tên có độ dài tối đa là 24 ký tự.</translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
-<translation id="3395348522300156660">Chỉ định các máy in mà người dùng có thể sử dụng.
-
-      Chỉ sử dụng chính sách này nếu đã chọn <ph name="PRINTERS_WHITELIST" /> cho <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
-
-      Nếu bạn sử dụng chính sách này, thì chỉ những máy in có id phù hợp với các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với các mục nhập trong tệp đã chỉ định trong <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Nếu bạn chưa định cấu hình chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối thiểu mặc định là TLS 1.0.
 
       Nếu không, bạn có thể đặt chính sách này thành một trong các giá trị sau: "tls1", "tls1.1" hoặc "tls1.2". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS thấp hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.</translation>
@@ -2428,12 +2397,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Cảnh báo: Không nên định cấu hình các giới hạn phiên bản vì những giới hạn này có thể khiến người dùng không thể nhận được các bản cập nhật phần mềm và các bản vá bảo mật quan trọng. Giới hạn cập nhật ở một tiền tố phiên bản cụ thể có thể khiến người dùng gặp rủi ro.</translation>
 <translation id="8519264904050090490">URL ngoại lệ hướng dẫn người dùng được quản lý</translation>
-<translation id="8527932539502116028">Chỉ định các máy in mà người dùng không thể sử dụng.
-
-      Chỉ sử dụng chính sách này nếu đã chọn <ph name="PRINTERS_BLACKLIST" /> cho <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Nếu sử dụng chính sách này, thì tất cả máy in sẽ được cung cấp cho người dùng trừ các máy in có id nằm trong chính sách này.
-      </translation>
 <translation id="8538235451413605457">Định cấu hình phiên bản <ph name="PRODUCT_NAME" /> tối thiểu được phép. Các phiên bản dưới đây bị coi là lỗi thời và thiết bị sẽ không cho phép người dùng đăng nhập trước khi hệ điều hành được cập nhật.
       Nếu phiên bản hiện tại trở nên lỗi thời trong phiên của người dùng, thì người dùng sẽ buộc phải đăng xuất.
 
@@ -2548,18 +2511,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
           Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn độ trễ khi không sử dụng.</translation>
 <translation id="891435090623616439">được mã hóa dưới dạng chuỗi JSON, để biết chi tiết hãy xem <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Cung cấp cấu hình máy in dành cho doanh nghiệp.
-
-      Chính sách này cho phép bạn cung cấp cấu hình máy in cho các thiết bị <ph name="PRODUCT_OS_NAME" />. Kích thước tệp không được quá 5 MB và phải được mã hóa ở định dạng JSON.  Định dạng này giống với định dạng của từ điển NativePrinters.  Ước tính một tệp chứa xấp xỉ 21.000 máy in sẽ mã hóa dưới dạng một tệp 5 MB.  Hàm băm mật mã dùng để xác minh tính toàn vẹn của nội dung tải xuống.
-
-      Tệp được tải xuống và lưu vào bộ nhớ đệm. Tệp này sẽ tải xuống lại bất cứ khi nào URL hoặc hàm băm đó thay đổi.
-
-      Nếu bạn đặt chính sách này, thì <ph name="PRODUCT_OS_NAME" /> sẽ tải tệp cấu hình máy in xuống và cung cấp máy in theo đúng các chính sách <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> và <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè.
-
-      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không. Chính sách này nhằm bổ sung cho cấu hình máy in của từng người dùng.
-      </translation>
 <translation id="8934944553121392674">Kiểm soát máy in người dùng được phép sử dụng từ <ph name="DEVICE_PRINTERS_POLICY" />.
 
       Chỉ định chính sách truy cập dùng cho cấu hình máy in số lượng lớn. Nếu bạn chọn <ph name="PRINTERS_ALLOW_ALL" />, thì tất cả máy in sẽ hiển thị. Nếu bạn chọn <ph name="PRINTERS_BLACKLIST" />, thì <ph name="DEVICE_PRINTERS_BLACKLIST" /> sẽ dùng để hạn chế truy cập vào các máy in đã chỉ định. Nếu bạn chọn <ph name="PRINTERS_WHITELIST" />, thì <ph name="DEVICE_PRINTERS_WHITELIST" /> sẽ chỉ chỉ định những máy in có thể chọn được.

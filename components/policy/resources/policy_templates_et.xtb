@@ -52,12 +52,6 @@
 
       Kui määrate reegli olekule Väär, siis ei saadeta teavet arendaja lüliti oleku kohta.</translation>
 <translation id="1160939557934457296">Keela turvalise sirvimise hoiatuslehest edasiliikumine</translation>
-<translation id="1166377463685560145">Määrab printerid, mida kasutaja ei saa kasutada.
-
-      Seda reeglit kasutatakse ainult siis, kui režiimis <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> on valitud väärtus <ph name="PRINTERS_BLACKLIST" />.
-
-      Selle reegli kasutamisel on kasutajale saadaval kõik printerid, v.a need, mille ID-d on selles reeglis loetletud.
-      </translation>
 <translation id="1198465924256827162">Seadme oleku üleslaadimiste saatmise sagedus millisekundites.
 
       Kui see reegel on määramata, on vaikesagedus 3 tundi. Minimaalne
@@ -166,19 +160,6 @@
 <translation id="1561424797596341174">Kaugjuurdepääsu hosti silumisjärkude reeglite alistused</translation>
 <translation id="1561967320164410511">U2F koos laiendustega individuaalseks atesteerimiseks</translation>
 <translation id="1583248206450240930">Kasuta vaikimisi rakendust <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="1603058613431276040">Määrab seadistused seadmetega seotud ettevõtte printeritele.
-
-      See reegel võimaldab teil määrata printeri seadistused operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> seadmetele. Faili maht ei tohi ületada 5 MB ja see peab olema kodeeritud JSON-is. Vorming on sama, mis sõnastikul NativePrinters. Prognooside kohaselt kodeeritakse fail, mis sisaldab ligikaudu 21 000 printerit, 5 MB failina. Krüptograafilist räsiväärtust kasutatakse allalaadimise terviklikkuse kinnitamiseks.
-
-      Fail laaditakse alla ja salvestatakse vahemällu. See laaditakse uuesti alla alati, kui URL või räsiväärtus muutub.
-
-      Kui see reegel on määratud, laadib operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> alla faili printeri seadistuste jaoks ja muudab printerid kättesaadavaks kooskõlas reeglitega <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> ja <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      See reegel ei mõjuta seda, kas kasutajad saavad printereid seadistada individuaalsetes seadmetes. See on mõeldud individuaalsete kasutajate printerite seadistuse täienduseks.
-
-      See reegel on reegli <ph name="BULK_PRINTERS_POLICY" /> lisa.
-
-      Kui see reegel on määramata, siis seadme printereid ei ole ja teisi reegleid <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> eiratakse.</translation>
 <translation id="1608755754295374538">URL-id, millele antakse ilma küsimata juurdepääs helijäädvustusseadmetele</translation>
 <translation id="1617235075406854669">Brauseri ja allalaadimiste ajaloo kustutamise lubamine</translation>
 <translation id="163200210584085447">Selles loendis olevaid mustreid võrreldakse taotleva URL-i
@@ -595,12 +576,6 @@
 <translation id="2762164719979766599">Määrab loendi seadmepõhistest kontodest, mis ilmuvad sisselogimiskuval.
 
       Loendi iga kirje määrab identifikaatori, mida kasutatakse seesmiselt seadmepõhiste kontode eristamiseks.</translation>
-<translation id="2766302473082018239">Määrab printerid, mida kasutaja saab kasutada.
-
-      Seda reeglit kasutatakse ainult siis, kui režiimis <ph name="BULK_PRINTERS_ACCESS_MODE" /> on valitud väärtus <ph name="PRINTERS_WHITELIST" />.
-
-      Selle reegli kasutamisel on kasutajale saadaval ainult printerid, mille ID-d ühtivad selles reeglis olevate väärtustega. ID-d peavad ühtima reeglis <ph name="BULK_PRINTERS_POLICY" /> määratud faili kannetega.
-      </translation>
 <translation id="2769952903507981510">Kaugjuurdepääsu hostidele nõutava domeeninime seadistamine</translation>
 <translation id="2787173078141616821">Saada teavet Androidi oleku kohta</translation>
 <translation id="2793923553868251161">Lähtekohti käsitletakse turvalise kontekstina.</translation>
@@ -783,12 +758,6 @@
 
           Kui selle reegli väärtuseks määratakse mõni täidetud string, kasutatakse seda stringi teenuse <ph name="PRODUCT_NAME" /> sihtkohana. Muul juhul on sihtkoha nimeks seadme nimi. Kui see reegel jäetakse määramata, on sihtkoha nimeks seadme nimi ja seadme omanik (või seadet haldava domeeni kasutaja) saab seda muuta. Nimi tohib olla maksimaalselt 24 tähemärki.</translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
-<translation id="3395348522300156660">Määrab printerid, mida kasutaja saab kasutada.
-
-      Seda reeglit kasutatakse ainult siis, kui režiimis <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> on valitud väärtus <ph name="PRINTERS_WHITELIST" />
-
-      Selle reegli kasutamisel on kasutajale saadaval ainult printerid, mille ID-d ühtivad selles reeglis olevate väärtustega. ID-d peavad ühtima reeglis <ph name="DEVICE_PRINTERS_POLICY" /> määratud faili kannetega.
-      </translation>
 <translation id="3414260318408232239">Kui seda reeglit pole seadistatud, siis kasutab teenus <ph name="PRODUCT_NAME" /> vaikimisi miinimumversiooni, milleks on TLS 1.0.
 
       Muul juhul võidakse see määrata ühele järgmistest väärtustest: „tls1”, „tls1.1” või „tls1.2”. Kui see on määratud, ei kasuta teenus <ph name="PRODUCT_NAME" /> SSL-i/TLS-i versioone, mis on määratud versioonist vanemad. Tundmatut väärtust eiratakse.</translation>
@@ -2439,12 +2408,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Hoiatus. Me ei soovita versioonide piiranguid seadistada, kuna need võivad takistada kasutajatel tarkvaravärskendusi ja kriitilisi turvapaikasid vastu võtmast. Kui lubate vaid teatud versiooni eesliite, võib see kasutajad ohtu seada.</translation>
 <translation id="8519264904050090490">Kasutaja käsitsi sisestatavate URL-ide erandite haldamine</translation>
-<translation id="8527932539502116028">Määrab printerid, mida kasutaja ei saa kasutada.
-
-      Seda reeglit kasutatakse ainult siis, kui režiimis <ph name="BULK_PRINTERS_ACCESS_MODE" /> on valitud väärtus <ph name="PRINTERS_BLACKLIST" />.
-
-      Selle reegli kasutamisel on kasutajale saadaval kõik printerid, v.a need, mille ID-d on selles reeglis loetletud.
-      </translation>
 <translation id="8538235451413605457">Seadistab rakenduse <ph name="PRODUCT_NAME" /> minimaalse lubatud versiooni nõude. Sellest vanemad versioonid loetakse aegunuks ja seade ei luba kasutajal sisse logida enne, kui OS-i on värskendatud.
       Kui praegune versioon aegub kasutaja seansi ajal, logitakse kasutaja välja.
 
@@ -2559,18 +2522,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
           Reegli väärtus tuleb määrata millisekundites. Väärtused tuleb kinnitada väiksematena kui jõudeoleku viiteaeg.</translation>
 <translation id="891435090623616439">kodeeritud JSON-stringina. Lisateavet vaadake saidilt <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Määrab seadistused ettevõtte printeritele.
-
-      See reegel võimaldab teil määrata printeri seadistused operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> seadmetele. Faili maht ei tohi ületada 5 MB ja see peab olema kodeeritud JSON-is. Vorming on sama, mis sõnastikul NativePrinters. Prognooside kohaselt kodeeritakse fail, mis sisaldab ligikaudu 21 000 printerit, 5 MB failina. Krüptograafilist räsiväärtust kasutatakse allalaadimise terviklikkuse kinnitamiseks.
-
-      Fail laaditakse alla ja salvestatakse vahemällu. See laaditakse uuesti alla alati, kui URL või räsiväärtus muutub.
-
-      Kui see reegel on määratud, laadib operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> alla faili printeri seadistuste jaoks ja muudab printerid kättesaadavaks kooskõlas reeglitega <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> ja <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Selle reegli määramisel ei saa kasutajad seda muuta ega alistada.
-
-      See reegel ei mõjuta seda, kas kasutajad saavad printereid seadistada individuaalsetes seadmetes. See on mõeldud individuaalsete kasutajate printerite seadistuse täienduseks.
-      </translation>
 <translation id="8934944553121392674">Juhib, millised printerid on reegli <ph name="DEVICE_PRINTERS_POLICY" /> puhul kasutajatele saadaval.
 
       Määrab, millist juurdepääsureeglit kasutatakse printerite hulgiseadistamiseks. Kui valitud on väärtus <ph name="PRINTERS_ALLOW_ALL" />, kuvatakse kõik printerid. Kui valitud on väärtus <ph name="PRINTERS_BLACKLIST" />, kasutatakse määratud printeritele juurdepääsu piiramiseks reeglit <ph name="DEVICE_PRINTERS_BLACKLIST" />. Kui valitud on väärtus <ph name="PRINTERS_WHITELIST" />, määrab reegel <ph name="DEVICE_PRINTERS_WHITELIST" /> ainult need printerid, mida saab valida.

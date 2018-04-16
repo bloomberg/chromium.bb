@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">Izbrisati certifikat poslužitelja "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Automatska prijava</translation>
 <translation id="2101225219012730419">Verzija:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Još nije učitano</translation>
 <translation id="2107494551712864447">Dodajte otisak prsta</translation>
 <translation id="2112877397266219826">Uključite svoj dodirni upravljač kako biste me postavili</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">Došlo je do pogreške dok je Chrome uklanjao štetni softver</translation>
 <translation id="2218515861914035131">Zalijepi kao običan tekst</translation>
 <translation id="221872881068107022">Obrnuto pomicanje</translation>
-<translation id="2218947405056773815">Kvragu! Aplikacija <ph name="API_NAME" /> naišla je na problem.</translation>
 <translation id="2220529011494928058">Prijavite poteškoću</translation>
 <translation id="2220572644011485463">PIN ili zaporka</translation>
 <translation id="2222641695352322289">To možete poništiti jedino tako da ponovo instalirate <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1709,6 +1707,7 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3576324189521867626">Uspješno instalirano</translation>
 <translation id="3578594933904494462">Sadržaj ove kartice dijeli se.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; želi dijeliti pisač &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; s grupom čiji ste vlasnik: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ako prihvatite, svi članovi grupe moći će ispisivati putem pisača.</translation>
+<translation id="3582972582564653026">Uključite sinkronizaciju Chromea kako bi vam bio prilagođen na svim vašim uređajima</translation>
 <translation id="3584169441612580296">čitati i mijenjati fotografije, glazbu i druge medije s vašeg računala</translation>
 <translation id="3587482841069643663">Sve</translation>
 <translation id="358796204584394954">Upišite ovaj kôd na uređaju <ph name="DEVICE_NAME" /> da biste ga uparili:</translation>
@@ -2111,6 +2110,7 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="4206944295053515692">Traži prijedloge od Googlea</translation>
 <translation id="4208390505124702064">Pretraži <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Velik</translation>
+<translation id="4209464433672152343">Dokumenti se <ph name="BEGIN_LINK_HELP" />šalju Googleu<ph name="END_LINK_HELP" /> radi pripreme za ispis. Pisače i povijest pisača možete pregledavati, uređivati i upravljati njima na <ph name="BEGIN_LINK_DASHBOARD" />nadzornoj ploči Google Cloud Printa<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Morate biti na mreži da biste pristupili toj datoteci.</translation>
 <translation id="421182450098841253">&amp;Prikaz trake oznake</translation>
 <translation id="42126664696688958">Izvezi</translation>
@@ -2532,7 +2532,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="4907824805858067479">Spremljene kartice onemogućio je vaš administrator</translation>
 <translation id="4908811072292128752">Otvorite novu karticu za istodobni pregled dvije stranice</translation>
 <translation id="4909038193460299775">Budući da ovim računom upravlja <ph name="DOMAIN" />, vaše oznake, povijest, zaporke i druge postavke izbrisat će se s ovog uređaja. No vaši podaci ostat će pohranjeni na vašem Google računu i možete upravljati njima na <ph name="BEGIN_LINK" />Google nadzornoj ploči<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Nijedno proširenje nema dodijeljene tipkovničke prečace.</translation>
 <translation id="4912643508233590958">Buđenja iz stanja mirovanja</translation>
 <translation id="491691592645955587">Prijeđite na siguran preglednik</translation>
@@ -3282,6 +3281,7 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="6064217302520318294">Zaključavanje zaslona</translation>
 <translation id="6065289257230303064">Atributi direktorija predmeta certifikata</translation>
 <translation id="6068338049763724728">Omogući daljinsko registriranje</translation>
+<translation id="6069671174561668781">Postavljanje pozadinske slike</translation>
 <translation id="6071181508177083058">potvrdite zaporku</translation>
 <translation id="6073903501322152803">Dodajte značajke pristupačnosti</translation>
 <translation id="6074825444536523002">Google obrazac</translation>
@@ -4026,7 +4026,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="7229570126336867161">Potreban je EVDO</translation>
 <translation id="7230787553283372882">Prilagodba veličine teksta</translation>
 <translation id="7232750842195536390">Preimenovanje nije uspjelo</translation>
-<translation id="7233309214676155451">Sinkronizirajte i prilagodite Chrome na svim uređajima</translation>
 <translation id="7238585580608191973">SHA-256 otisak prsta</translation>
 <translation id="7240120331469437312">Zamjenski naziv predmeta certifikata</translation>
 <translation id="7240339475467890413">Želite li se povezati s novom žarišnom točkom?</translation>
@@ -4530,7 +4529,6 @@ Ključna datoteka: <ph name="KEY_FILE" />
 Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih verzija proširenja.</translation>
 <translation id="799923393800005025">Može pregledavati</translation>
 <translation id="8000066093800657092">Nema mreže</translation>
-<translation id="8001504501378762252">Web-lokacija vam je možda ukrala zaporku</translation>
 <translation id="8004582292198964060">Preglednik</translation>
 <translation id="8005600846065423578">Uvijek dopusti web-lokaciji <ph name="HOST" /> uvid u međuspremnik</translation>
 <translation id="8008356846765065031">Prekinuta je veza s internetom. Provjerite internetsku vezu.</translation>

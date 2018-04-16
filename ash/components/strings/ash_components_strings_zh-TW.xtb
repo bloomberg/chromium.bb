@@ -85,14 +85,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> 鍵或 <ph name="ENTER" /> 鍵</translation>
 <translation id="4240486403425279990">總覽模式</translation>
 <translation id="4472417192667361414">系統與顯示設定</translation>
-<translation id="4484292984055789039">切換至上一個語言輸入法</translation>
 <translation id="4556221320735744018">查看鍵盤快速鍵說明</translation>
 <translation id="4628718545549558538">開啟狀態區 (顯示帳戶圖片的位置)</translation>
 <translation id="4642092649622328492">擷取部分螢幕畫面</translation>
 <translation id="4698850295812410683">顯示觸控筆工具</translation>
 <translation id="4801989101741319327">移至下一個字詞的結尾</translation>
 <translation id="4916163929714267752">在新視窗開啟連結</translation>
-<translation id="5002047168347153398">將焦點移至閒置中的協助工具彈出式視窗</translation>
 <translation id="5030659775136592441">顯示書籤管理員</translation>
 <translation id="5034421018520995080">前往頁面頂端</translation>
 <translation id="5042305953558921026">總覽模式按鍵</translation>
@@ -155,7 +153,6 @@
 <translation id="7724603315864178912">剪下</translation>
 <translation id="7730490981846175479">按下 <ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> 鍵，然後按下 <ph name="SPACE" /> 或 <ph name="ENTER" /> 鍵</translation>
 <translation id="7787242579016742662">在瀏覽器中開啟檔案</translation>
-<translation id="7822267121073044318">切換至下一個語言輸入法</translation>
 <translation id="7917881398263220094">停止載入目前網頁</translation>
 <translation id="7952165122793773711">前往第 1 到第 8 個分頁</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> 鍵或 <ph name="MINUS" /> 鍵</translation>

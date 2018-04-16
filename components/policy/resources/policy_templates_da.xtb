@@ -52,12 +52,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       Hvis politikken er angivet til Falsk, rapporteres tilstanden for udviklerkontakten ikke.</translation>
 <translation id="1160939557934457296">Deaktiver fortsættelse fra advarselssiden for Beskyttet browsing</translation>
-<translation id="1166377463685560145">Angiver, hvilke printere en bruger ikke kan anvende.
-
-      Denne politik anvendes kun, hvis <ph name="PRINTERS_BLACKLIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Hvis denne politik anvendes, kan alle printere anvendes af brugeren, medmindre deres id er angivet i denne politik.
-      </translation>
 <translation id="1198465924256827162">Hvor ofte der sendes enhedsstatusuploads (i millisekunder).
 
       Hvis denne politik ikke angives, er standardfrekvensen tre timer. Den laveste
@@ -164,19 +158,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1561424797596341174">Tilsidesættelser af politik for fejlretningsbuilds på hosten til fjernadgang</translation>
 <translation id="1561967320164410511">U2F samt udvidelser til individuel attestering</translation>
 <translation id="1583248206450240930">Brug <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
-<translation id="1603058613431276040">Angiver konfigurationer af virksomhedsprintere, der er knyttet til enheder.
-
-      Denne politik tillader, at du kan konfigurere printere for <ph name="PRODUCT_OS_NAME" />-enheder. Filen må ikke være større end 5 MB, og den skal indkodes i JSON. Formatet er det samme som for NativePrinters-ordbogen. En fil med ca. 21.000 printere forventes at indkode som en fil på 5 MB. Den kryptografiske nøgletransformation bruges til at bekræfte downloadens integritet.
-
-      Filen downloades og gemmes i cachen. Den downloades igen, hver gang webadressen eller nøgletransformationen ændres.
-
-      Hvis denne politik er angivet, vil <ph name="PRODUCT_OS_NAME" /> downloade filen til printerkonfigurationer og gøre printere tilgængelige i overensstemmelse med <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> og <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Denne politik har ingen indflydelse på, om brugere kan konfigurere printere på individuelle enheder. Den har til formål at supplere printerkonfigurationen for individuelle brugere.
-
-      Denne politik er en tilføjelse til <ph name="BULK_PRINTERS_POLICY" />.
-
-      Hvis denne politik ikke er angivet, er der ingen printere for enhederne, og andre politikker af typen <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> ignoreres.</translation>
 <translation id="1608755754295374538">Webadresser, der får adgang til lydoptagelsesenheder, uden at du skal give tilladelse hertil</translation>
 <translation id="1617235075406854669">Aktivér sletning af browser- og downloadhistorik</translation>
 <translation id="163200210584085447">Mønstre på denne liste sammenlignes med sikkerhedskilden
@@ -570,12 +551,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2762164719979766599">Angiver listen over enhedslokale konti, der skal vises på loginskærmen.
 
       Hver post på listen angiver et id, som bruges internt til at skelne mellem de forskellige enhedslokale konti.</translation>
-<translation id="2766302473082018239">Angiver, hvilke printere en bruger kan anvende.
-
-      Denne politik anvendes kun, hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Hvis denne politik anvendes, er det kun printere med id'er, der matcher værdierne i denne politik, som kan anvendes af brugeren. Id'erne skal svare til posterne i den fil, der er angivet i <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Konfigurer det påkrævede domænenavn for værter med fjernadgang</translation>
 <translation id="2787173078141616821">Rapportér oplysninger om status for Android</translation>
 <translation id="2793923553868251161">Kilder skal behandles som sikkert indhold.</translation>
@@ -756,12 +731,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
           Hvis denne politik er angivet som en udfyldt streng, anvendes strengen som navnet på destinationen for <ph name="PRODUCT_NAME" />. Hvis ikke, er navnet på destinationen det samme som navnet på enheden. Hvis denne politik ikke er angivet, er navnet på destinationen det samme som navnet på enheden, og enhedsejeren (eller en bruger fra domænet, som administrerer enheden) kan ændre det. Navnet må højst indeholde 24 tegn.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
-<translation id="3395348522300156660">Angiver, hvilke printere en bruger kan anvende..
-
-      Denne politik anvendes kun, hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
-
-      Hvis denne politik anvendes, er det kun printere med id'er, der matcher værdierne i denne politik, som kan anvendes af brugeren. Id'erne skal svare til posterne i den fil, der er angivet i <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Hvis denne politik ikke konfigureres, anvender <ph name="PRODUCT_NAME" /> en standardminimumversion, som er TLS 1.0.
 
       Den kan også angives til en af følgende værdier: "tls1", "tls1.1" eller "tls1.2". Når der er angivet en værdi, anvender <ph name="PRODUCT_NAME" /> ikke SSL/TLS-versioner, der er mindre end den angivne version. Ukendte værdier ignoreres.</translation>
@@ -2323,12 +2292,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 
       Advarsel! Det frarådes at konfigurere versionsbegrænsninger, da det kan forhindre brugerne i at modtage softwareopdateringer og kritiske sikkerhedsrettelser. Begrænsning af opdateringer til et bestemt præfiks for versionen kan udgøre en risiko for brugerne.</translation>
 <translation id="8519264904050090490">Webadresser for manuel undtagelse af administreret bruger</translation>
-<translation id="8527932539502116028">Angiver, hvilke printere en bruger ikke kan anvende.
-
-      Denne politik anvendes kun, hvis <ph name="PRINTERS_BLACKLIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Hvis denne politik anvendes, kan alle printere anvendes af brugeren, medmindre deres id er angivet i denne politik.
-      </translation>
 <translation id="8538235451413605457">Konfigurerer kravene for den <ph name="PRODUCT_NAME" />-version, der som minimum tillades. De versioner, der ikke opfylder kravene, betragtes som forældede, og enheden tillader ikke, at brugere logger ind, før OS er opdateret.
       Hvis den nuværende version bliver forældet under brugersessionen, logges brugeren ud ved tvang.
 
@@ -2435,18 +2398,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end inaktivitetsforsinkelsen.</translation>
 <translation id="891435090623616439">kodet som en JSON-streng. Få flere oplysninger på <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Angiver konfigurationer af virksomhedsprintere.
-
-      Denne politik tillader, at du kan konfigurere printere for <ph name="PRODUCT_OS_NAME" />-enheder. Filen må ikke være større end 5 MB, og den skal indkodes i JSON. Formatet er det samme som for NativePrinters-ordbogen. En fil med ca. 21.000 printere forventes at indkode som en fil på 5 MB. Den kryptografiske nøgletransformation bruges til at bekræfte downloadens integritet.
-
-      Filen downloades og gemmes i cachen. Den downloades igen, hver gang webadressen eller nøgletransformationen ændres.
-
-      Hvis denne politik er angivet, vil <ph name="PRODUCT_OS_NAME" /> downloade filen til printerkonfigurationer og gøre printere tilgængelige i overensstemmelse med <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> og <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Hvis du har angivet denne politik, kan brugerne ikke ændre eller tilsidesætte den.
-
-      Denne politik har ingen indflydelse på, om brugere kan konfigurere printere på individuelle enheder. Den har til formål at supplere printerkonfigurationen for individuelle brugere.
-      </translation>
 <translation id="8934944553121392674">Bestemmer, hvilke printere fra <ph name="DEVICE_PRINTERS_POLICY" /> der kan anvendes af brugerne.
 
       Angiver, hvilken adgangspolitik der anvendes til konfiguration af flere printere. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle printere. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, anvendes <ph name="DEVICE_PRINTERS_BLACKLIST" /> til at begrænse adgangen til de angivne printere. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, angiver <ph name="DEVICE_PRINTERS_WHITELIST" /> kun de printere, der kan vælges.
@@ -2487,7 +2438,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="9112897538922695510">Giver dig mulighed for at registrere en liste over protokolhandlere. Dette kan kun være en anbefalet politik. Egenskaben |protocol| skal indstilles til ordningen, f.eks. "mailto", og egenskaben |url| bør indstilles til webadressemønsteret for den applikation, der handler ordningen. Dette mønster kan omfatte et "%s", som, hvis det findes, erstattes med den handlede webadresse.
 
           De protokolhandlere, der er registreret via politikker, flettes med dem, der er registreret af brugeren, og begge er tilgængelige og kan anvendes. Brugeren kan tilsidesætte protokolhandlere, der er installeret via en politik, ved at installere en ny standardhandler, men kan ikke fjerne en protokolhandler, der er registreret via en politik.</translation>
-<translation id="9123211093995421438">Angiver, hvor mange gange tidligere versioner af <ph name="PRODUCT_OS_NAME" /> mindst skal kunne gendannes, regnet fra den aktuelle stabile version.
+<translation id="9123211093995421438">Angiver, hvor mange gange tidligere versioner af <ph name="PRODUCT_OS_NAME" /> der mindst skal kunne gendannes, regnet fra den aktuelle stabile version.
 
       Standardværdien er 0 for forbrugerenheder og 4 (ca. et halvt år) for enheder, der er tilmeldt via en virksomhed.
 

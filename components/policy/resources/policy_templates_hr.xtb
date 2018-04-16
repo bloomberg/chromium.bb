@@ -52,12 +52,6 @@
 
       Ako se pravilo ne postavi ili se postavi na neistinito, izvješće o stanju prekidača za razvojne programere neće se generirati.</translation>
 <translation id="1160939557934457296">Onemogući nastavljanje sa stranice upozorenja Sigurno pregledavanje</translation>
-<translation id="1166377463685560145">Određuje pisače koje korisnik ne može upotrebljavati.
-
-      To se pravilo upotrebljava samo ako je pravilo <ph name="PRINTERS_BLACKLIST" /> odabrano za <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Ako se to pravilo upotrebljava, korisniku se pružaju svi pisači osim pisača s ID-ovima navedenima u pravilu.
-      </translation>
 <translation id="1198465924256827162">Učestalost slanja prijenosa statusa uređaja u milisekundama.
 
       Ako se to pravilo ne postavi, zadana učestalost iznosi 3 sata. Minimalna
@@ -164,19 +158,6 @@
 <translation id="1561424797596341174">Nadjačavanja pravila za međuverzije za otklanjanje pogrešaka hosta daljinskog pristupa</translation>
 <translation id="1561967320164410511">U2F i proširenja za pojedinačno atestiranje</translation>
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
-<translation id="1603058613431276040">Pruža konfiguracije za pisače tvrtke povezane s uređajima.
-
-      To vam pravilo omogućuje da pružite konfiguracije pisača za <ph name="PRODUCT_OS_NAME" /> uređaje. Datoteka ne smije biti veća od 5 MB i mora se kodirati u JSON-u. Format je jednak kao za rječnik NativePrinters. Procjenjuje se da će se datoteka koja sadrži približno 21.000 pisača kodirati kao datoteka od 5 MB.  Kriptografsko raspršivanje upotrebljava se za potvrdu integriteta preuzimanja.
-
-      Datoteka se preuzima i predmemorira. Ponovo će se preuzeti svaki put kad se URL ili raspršivanje promijene.
-
-      Ako se to pravilo postavi, <ph name="PRODUCT_OS_NAME" /> preuzet će datoteku za konfiguriranje pisača i učiniti pisače dostupnima u skladu s pravilima <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> i <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      To pravilo ne utječe na to mogu li korisnici konfigurirati pisače na pojedinačnim uređajima. Služi kao dodatno pravilo za konfiguraciju pisača koju vrše pojedinačni korisnici.
-
-      To je pravilo dodatno pravilo za <ph name="BULK_PRINTERS_POLICY" />.
-
-      Ako se to pravilo ne postavi, neće biti pisača za uređaje i ostala će se pravila za <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> zanemariti.</translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
 <translation id="163200210584085447">Uzorci na tom popisu usporedit će se sa sigurnosnim
@@ -570,12 +551,6 @@
 <translation id="2762164719979766599">Navodi popis lokalnih računa na uređaju koji se prikazuje na zaslonu prijave.
 
       Svaki unos na popisu navodi identifikator, koji se upotrebljava interno da bi se razlikovali lokalni računi na uređaju.</translation>
-<translation id="2766302473082018239">Određuje pisače koje korisnik može upotrebljavati.
-
-      To se pravilo upotrebljava samo ako je pravilo <ph name="PRINTERS_WHITELIST" /> odabrano za <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Ako se to pravilo upotrebljava, korisniku su dostupni samo pisači s ID-ovima podudarnim s vrijednostima u tom pravilu. ID-ovi se moraju podudarati s unosima u datoteci navedenoj u pravilu <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Konfiguriraj traženi naziv domene za hostove daljinskog pristupa</translation>
 <translation id="2787173078141616821">Prijavi informacije o statusu Androida</translation>
 <translation id="2793923553868251161">Izvori se tretiraju kao siguran kontekst.</translation>
@@ -752,12 +727,6 @@
 
           Ako se to pravilo postavi na niz koji nije prazan, taj će se niz upotrebljavati kao naziv odredišta za <ph name="PRODUCT_NAME" />. U suprotnom će naziv odredišta biti naziv uređaja. Ako se to pravilo ne postavi, naziv odredišta bit će naziv uređaja i vlasnik uređaja (ili korisnik s domene koja upravlja uređajem) moći će ga promijeniti. Duljina naziva ograničena je na 24 znaka.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
-<translation id="3395348522300156660">Određuje pisače koje korisnik može upotrebljavati.
-
-      To se pravilo upotrebljava samo ako je pravilo <ph name="PRINTERS_WHITELIST" /> odabrano za <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
-
-      Ako se to pravilo upotrebljava, korisniku su dostupni samo pisači s ID-ovima podudarnim s vrijednostima u tom pravilu. ID-ovi se moraju podudarati s unosima u datoteci navedenoj u pravilu <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu minimalnu verziju, a to je TLS 1.0.
 
       U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1", "tls1.1" ili "tls1.2". Kad se to pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a manje od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
@@ -2320,12 +2289,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
       Upozorenje: ne preporučuje se konfigurirati ograničenja verzije jer korisnici tako možda neće primati ažuriranja softvera i važne sigurnosne ispravke. Ograničavanje ažuriranja na određeni prefiks verzije korisnike može izložiti opasnosti.</translation>
 <translation id="8519264904050090490">URL-ovi ručnih iznimaka upravljanih korisnika</translation>
-<translation id="8527932539502116028">Određuje pisače koje korisnik ne može upotrebljavati.
-
-      To se pravilo upotrebljava samo ako je pravilo <ph name="PRINTERS_BLACKLIST" /> odabrano za <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Ako se to pravilo upotrebljava, korisniku se pružaju svi pisači osim pisača s ID-ovima navedenima u pravilu.
-      </translation>
 <translation id="8538235451413605457">Konfigurira zahtjev za minimalnu dopuštenu verziju preglednika <ph name="PRODUCT_NAME" />. Verzije u nastavku smatraju se zastarjelima i uređaj ne bi dopustio korisniku prijavu dok se OS ne ažurira.
       Ako trenutačne verzije postanu zastarjele tijekom sesije, korisnik će se prisilno odjaviti.
 
@@ -2436,18 +2399,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode neaktivnosti.</translation>
 <translation id="891435090623616439">kodirano kao JSON niz, pojedinosti potražite na stranici <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Pruža konfiguracije za pisače tvrtke.
-
-      To vam pravilo omogućuje da pružite konfiguracije pisača za <ph name="PRODUCT_OS_NAME" /> uređaje. Datoteka ne smije biti veća od 5 MB i mora se kodirati u JSON-u.  Format je jednak kao za rječnik NativePrinters. Procjenjuje se da će se datoteka koja sadrži približno 21.000 pisača kodirati kao datoteka od 5 MB.  Kriptografsko raspršivanje upotrebljava se za potvrdu integriteta preuzimanja.
-
-      Datoteka se preuzima i predmemorira. Ponovo će se preuzeti svaki put kad se URL ili raspršivanje promijene.
-
-      Ako se to pravilo postavi, <ph name="PRODUCT_OS_NAME" /> preuzet će datoteku za konfiguraciju pisača i učiniti pisače dostupnima u skladu s pravilima <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> i <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Ako postavite to pravilo, korisnici ga ne mogu promijeniti ili nadjačati.
-
-      To pravilo ne utječe na to mogu li korisnici konfigurirati pisače na pojedinim uređajima.  Služi kao dodatno pravilo za konfiguraciju pisača koju vrše pojedinačni korisnici.
-      </translation>
 <translation id="8934944553121392674">Određuje koji su pisači iz pravila <ph name="DEVICE_PRINTERS_POLICY" /> dostupni korisnicima.
 
       Određuje koje se pravilo za pristup upotrebljava za skupnu konfiguraciju pisača. Ako se odabere <ph name="PRINTERS_ALLOW_ALL" />, prikazuju se svi pisači. Ako se odabere <ph name="PRINTERS_BLACKLIST" />, <ph name="DEVICE_PRINTERS_BLACKLIST" /> upotrebljava se za ograničenje pristupa navedenim pisačima. Ako se odabere <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> određuje samo one pisače koji se mogu odabrati.

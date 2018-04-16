@@ -57,7 +57,7 @@
 <translation id="2943431542152338750">{0,plural, =1{‏إعادة تشغيل Chromium خلال يوم واحد}zero{‏إعادة تشغيل Chromium خلال # يوم}two{‏إعادة تشغيل Chromium خلال يومين (#)}few{‏إعادة تشغيل Chromium خلال # أيام}many{‏إعادة تشغيل Chromium خلال # يومًا}other{‏إعادة تشغيل Chromium خلال # يوم}}</translation>
 <translation id="2977470724722393594">‏Chromium محدّث</translation>
 <translation id="3032787606318309379">‏جارٍ الإضافة إلى Chromium...</translation>
-<translation id="3046695367536568084">‏يجب أن تسجّل الدخول إلى Chromium لاستخدام التطبيقات. ويتيح هذا مزامنة Chromium لتطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك، فضلاً عن الإعدادات الأخرى عبر الأجهزة.</translation>
+<translation id="3046695367536568084">‏يجب أن تسجّل الدخول إلى Chromium لاستخدام التطبيقات. ويتيح هذا مزامنة Chromium لتطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك، فضلاً عن الإعدادات الأخرى على جميع الأجهزة.</translation>
 <translation id="3068515742935458733">‏يمكنك المساعدة في تحسين Chromium عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
 <translation id="3103660991484857065">‏تعذّرت أداة التثبيت في فك ضغط الأرشيف. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="3130323860337406239">‏يستخدم Chromium الميكروفون.</translation>

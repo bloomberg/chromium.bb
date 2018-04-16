@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">Видалити сертифікат сервера "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Автоматичний вхід</translation>
 <translation id="2101225219012730419">Версія:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Ще не завантажено</translation>
 <translation id="2107494551712864447">Додати відбиток пальця</translation>
 <translation id="2112877397266219826">Увімкніть сенсорний контролер, щоб налаштувати Chromebox для відеоконференцій</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">Коли Chrome видаляв шкідливі програми, сталася помилка</translation>
 <translation id="2218515861914035131">Вставити як звичайний текст</translation>
 <translation id="221872881068107022">Зворотне прокручування</translation>
-<translation id="2218947405056773815">На жаль, <ph name="API_NAME" /> заблоковано.</translation>
 <translation id="2220529011494928058">Повідомити про проблему</translation>
 <translation id="2220572644011485463">PIN-код або пароль</translation>
 <translation id="2222641695352322289">Єдиний спосіб відмінити зміни – знову встановити <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1709,6 +1707,7 @@
 <translation id="3576324189521867626">Установлено</translation>
 <translation id="3578594933904494462">До вмісту цієї вкладки надано доступ.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хоче надати групі &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;, якою ви керуєте, доступ до принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;. Якщо ви приймете це запрошення, усі учасники групи зможуть користуватися цим принтером.</translation>
+<translation id="3582972582564653026">Синхронізуйте та персоналізуйте роботу Chrome на всіх своїх пристроях</translation>
 <translation id="3584169441612580296">Читати й змінювати фотографії, музику та інші медіафайли на комп’ютері</translation>
 <translation id="3587482841069643663">Все</translation>
 <translation id="358796204584394954">Введіть цей код на пристрої <ph name="DEVICE_NAME" />, щоб підключити:</translation>
@@ -2111,6 +2110,7 @@
 <translation id="4206944295053515692">Запитувати пропозиції в Google</translation>
 <translation id="4208390505124702064">Пошук на сайті <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Великий</translation>
+<translation id="4209464433672152343">Документи <ph name="BEGIN_LINK_HELP" />надсилаються в Google<ph name="END_LINK_HELP" /> для підготовки до друку. Переглядайте, змінюйте та контролюйте принтери й історію друку на <ph name="BEGIN_LINK_DASHBOARD" />інформаційній панелі Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Щоб отримати доступ до цього файлу, потрібно перебувати в режимі онлайн.</translation>
 <translation id="421182450098841253">&amp;Показати панель закладок</translation>
 <translation id="42126664696688958">Експортувати</translation>
@@ -2532,7 +2532,6 @@
 <translation id="4907824805858067479">Адміністратор вимкнув функцію збережених карток</translation>
 <translation id="4908811072292128752">Щоб одночасно переглядати два сайти, відкрийте нову вкладку</translation>
 <translation id="4909038193460299775">Оскільки цей обліковий запис зареєстровано в домені <ph name="DOMAIN" />, з цього пристрою буде видалено ваші закладки, історію, паролі й інші налаштування. Однак вони й надалі зберігатимуться в обліковому записі Google. Ними можна керувати на <ph name="BEGIN_LINK" />Інформаційній панелі Google<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Комбінації клавіш не присвоєно жодному розширенню.</translation>
 <translation id="4912643508233590958">Вихід зі стану неактивності</translation>
 <translation id="491691592645955587">Виберіть безпечний веб-переглядач</translation>
@@ -3282,6 +3281,7 @@
 <translation id="6064217302520318294">Блокування екрана</translation>
 <translation id="6065289257230303064">Атрибути каталогу суб'єкта сертифіката</translation>
 <translation id="6068338049763724728">Увімкнути віддалену реєстрацію</translation>
+<translation id="6069671174561668781">Установити фоновий малюнок</translation>
 <translation id="6071181508177083058">підтвердьте пароль</translation>
 <translation id="6073903501322152803">Додати функції для спеціальних можливостей</translation>
 <translation id="6074825444536523002">Форма Google</translation>
@@ -4026,7 +4026,6 @@
 <translation id="7229570126336867161">Потрібна мережа EVDO</translation>
 <translation id="7230787553283372882">Налаштувати розмір тексту</translation>
 <translation id="7232750842195536390">Не вдалося перейменувати</translation>
-<translation id="7233309214676155451">Синхронізуйте й персоналізуйте роботу Chrome на всіх пристроях</translation>
 <translation id="7238585580608191973">Відбиток SHA-256</translation>
 <translation id="7240120331469437312">Альтернативне ім'я суб'єкта сертифіката</translation>
 <translation id="7240339475467890413">Під’єднатися до нової точки доступу?</translation>
@@ -4531,7 +4530,6 @@
 Зберігайте свій файл ключа в безпечному місці. Він знадобиться вам для створення нових версій вашого розширення.</translation>
 <translation id="799923393800005025">Може переглядати</translation>
 <translation id="8000066093800657092">Немає мережі</translation>
-<translation id="8001504501378762252">Можливо, хтось на сайті викрав ваш пароль</translation>
 <translation id="8004582292198964060">Переглядач</translation>
 <translation id="8005600846065423578">Завжди дозволяти сайту <ph name="HOST" /> переглядати буфер обміну</translation>
 <translation id="8008356846765065031">Утрачено з’єднання з Інтернетом. Перевірте з’єднання.</translation>

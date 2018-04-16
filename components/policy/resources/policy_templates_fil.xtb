@@ -52,12 +52,6 @@
 
       Kung nakatakda ang patakaran sa false, hindi iuulat ang katayuan ng dev switch.</translation>
 <translation id="1160939557934457296">Huwag paganahin ang pagpapatuloy mula sa pahina ng babala sa Ligtas na Pag-browse</translation>
-<translation id="1166377463685560145">Tumutukoy sa mga printer na hindi magagamit ng user.
-
-      Ginagamit lang ang patakarang ito kung napili ang <ph name="PRINTERS_BLACKLIST" /> para sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Kung ginagamit ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito.
-      </translation>
 <translation id="1198465924256827162">Kung gaano kadalas ipinapadala ang mga pag-upload ng status ng device, sa mga millisecond.
 
       Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum
@@ -166,19 +160,6 @@
 <translation id="1561424797596341174">Mga pag-override ng patakaran para sa Mga build sa pag-debug ng host ng malayuang access</translation>
 <translation id="1561967320164410511">U2F kasama ang mga extension para sa pagpapatunay ng indibidwal</translation>
 <translation id="1583248206450240930">Gamitin ang <ph name="PRODUCT_FRAME_NAME" /> bilang default</translation>
-<translation id="1603058613431276040">Nagbibigay ng mga configuration para sa mga enterprise printer na naka-bind sa mga device.
-
-      Pinapayagan ka ng patakarang ito na magbigay ng mga configuration ng printer sa mga <ph name="PRODUCT_OS_NAME" /> device. Hindi dapat lumampas ang laki ng file sa 5MB at dapat ay naka-encode ito sa JSON. Pareho ang format sa format ng diksyunaryo ng NativePrinters.  Tinatantyang ang isang file na may humigit-kumulang 21,000 printer ay mae-encode bilang 5MB na file.  Ginagamit ang cryptographic hash upang i-verify ang integridad ng download.
-
-      Ida-download at ika-cache ang file. Muli itong ida-download sa tuwing magbabago ang URL o ang hash.
-
-      Kung nakatakda ang patakarang ito, ida-download ng <ph name="PRODUCT_OS_NAME" /> ang file para sa mga pag-configure ng printer at gagawin nitong available ang mga printer alinsunod sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" />, at <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Walang epekto ang patakarang ito sa kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Nakalaan itong maging dagdag sa pag-configure ng mga indibidwal na user sa mga printer.
-
-      Karagdagan ang patakarang ito sa <ph name="BULK_PRINTERS_POLICY" />.
-
-      Kung hindi nakatakda ang patakarang ito, walang magiging device printer at babalewalain ang iba pang patakaran ng <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />.</translation>
 <translation id="1608755754295374538">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng audio nang walang prompt</translation>
 <translation id="1617235075406854669">Paganahin ang pagtatanggal ng browser at kasaysayan ng pag-download</translation>
 <translation id="163200210584085447">Itutugma ang mga pattern na nasa listahang ito sa security
@@ -592,12 +573,6 @@
 <translation id="2762164719979766599">Tinutukoy ang listahan ng mga account na lokal sa device na ipapakita sa screen ng pag-login.
 
       Tumutukoy ng identifier ang bawat entry sa listahan, na panloob na ginagamit upang hiwalay na tukuyin ang iba't ibang mga account na lokal sa device.</translation>
-<translation id="2766302473082018239">Tumutukoy sa mga printer na magagamit ng user.
-
-      Ginagamit lang ang patakarang ito kung pipiliin ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Kung ginagamit ang patakarang ito, ang mga printer lang na may mga id na tumutugma sa mga value sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa mga entry sa file na tinukoy sa <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">I-configure ang kinakailangang domain name para sa mga host ng malayuang pag-access</translation>
 <translation id="2787173078141616821">Ulat ng impormasyon tungkol sa status ng Android</translation>
 <translation id="2793923553868251161">Ituturing bilang secure na konteksto ang mga pinagmulan.</translation>
@@ -783,12 +758,6 @@
 
           Kung nakatakda ang patakarang ito sa isang may lamang string, gagamitin ang string na iyon bilang pangalan ng destinasyon ng <ph name="PRODUCT_NAME" />. Kung hindi, ang pangalan ng device ang magiging pangalan ng destinasyon. Kung hindi nakatakda ang patakarang ito, ang pangalan ng device ang magiging pangalan ng destinasyon, at papayagan ang may-ari ng device (o isang user mula sa domain na namamahala sa device) na palitan ito. Nalilimitahan ang pangalan sa 24 na character.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
-<translation id="3395348522300156660">Tumutukoy sa mga printer na magagamit ng user.
-
-      Ginagamit lang ang patakarang ito kung pipiliin ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
-
-      Kung ginagamit ang patakarang ito, ang mga printer lang na may mga id na tumutugma sa mga value sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa mga entry sa file na tinukoy sa <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Kung hindi na-configure ang patakarang ito, gumagamit ang <ph name="PRODUCT_NAME" /> ng default na minimum na bersyon na TLS 1.0.
 
       Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1", "tls1.1" o "tls1.2". Kapag naitakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas luma kaysa sa tinukoy na bersyon. Babalewalain ang hindi kinikilalang value.</translation>
@@ -2438,12 +2407,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
       Babala: Hindi inirerekomendang mag-configure ng mga limitasyon sa bersyon dahil maaaring pigilan ng mga ito ang pagtanggap ng mga user ng mga update sa software at kritikal na pag-aayos sa seguridad. Maaaring malagay sa panganib ang mga user kapag nilimitahan ang mga update sa isang partikular na prefix ng bersyon.</translation>
 <translation id="8519264904050090490">Mga pinapamahalaang URL ng manu-manong exception ng user</translation>
-<translation id="8527932539502116028">Tumutukoy sa mga printer na hindi magagamit ng user.
-
-      Ginagamit lang ang patakarang ito kung pipiliin ang <ph name="PRINTERS_BLACKLIST" /> para sa <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Kung ginagamit ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito.
-      </translation>
 <translation id="8538235451413605457">Kino-configure ang kinakailangan ng minimum na pinapayagang bersyon ng <ph name="PRODUCT_NAME" />. Itinuturing ang mga bersyong nasa ibaba bilang hindi na ginagamit at hindi papayagan ng device ang user na mag-sign in bago ma-update ang OS.
       Kung hindi na ginagamit ang kasalukuyang bersyon sa session ng user, sapilitang masa-sign out ang user.
 
@@ -2558,18 +2521,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa idle delay ang mga halaga.</translation>
 <translation id="891435090623616439">naka-encode bilang JSON string, para sa mga detalye, tingnan ang <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Nagbibigay ng mga configuration para sa mga enterprise printer.
-
-      Pinapayagan ka ng patakarang ito na magbigay ng mga configuration ng printer sa mga <ph name="PRODUCT_OS_NAME" /> device. Hindi dapat lumampas ang laki ng file sa 5MB at dapat ay naka-encode ito sa JSON.  Pareho ang format sa format ng diksyunaryo ng NativePrinters.  Tinatantyang ang isang file na may humigit-kumulang 21,000 printer ay mae-encode bilang 5MB na file.  Ginagamit ang cryptographic hash upang i-verify ang integridad ng download.
-
-      Ida-download at ika-cach file. Muli itong ida-download sa tuwing magbabago ang URL o ang hash.
-
-      Kung nakatakda ang patakarang ito, ida-download ng <ph name="PRODUCT_OS_NAME" /> ang file para sa mga configuration ng printer at gagawin nitong available ang mga printer alinsunod sa <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" />, at <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
-
-      Walang epekto ang patakarang ito sa kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Nakalaan itong maging dagdag sa pag-configure ng mga indibidwal na user sa mga printer.
-      </translation>
 <translation id="8934944553121392674">Kumokontrol sa kung aling mga printer mula sa <ph name="DEVICE_PRINTERS_POLICY" /> ang available sa mga user.
 
       Nagtatalaga kung aling patakaran sa pag-access ang gagamitin para sa maramihang pag-configure ng printer. Kung pinili ang <ph name="PRINTERS_ALLOW_ALL" />, ipapakita ang lahat ng printer. Kung pinili ang <ph name="PRINTERS_BLACKLIST" />, gagamitin ang <ph name="DEVICE_PRINTERS_BLACKLIST" /> upang paghigpitan ang access sa mga natukoy na printer.  Kung pinili ang <ph name="PRINTERS_WHITELIST" />, itatalaga lang ng <ph name="DEVICE_PRINTERS_WHITELIST" /> ang mga printer na mapipili.

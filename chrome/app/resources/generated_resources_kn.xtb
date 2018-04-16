@@ -701,7 +701,6 @@
 <translation id="2099686503067610784">"<ph name="CERTIFICATE_NAME" />" ಸರ್ವರ್ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಅಳಿಸುವುದೆ?</translation>
 <translation id="2100273922101894616">ಸ್ವಯಂ ಸೈನ್-ಇನ್</translation>
 <translation id="2101225219012730419">ಆವೃತ್ತಿ:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">ಇನ್ನೂ ಲೋಡ್ ಮಾಡಿಲ್ಲ</translation>
 <translation id="2107494551712864447">ಬೆರಳಚ್ಚು ಸೇರಿಸಿ</translation>
 <translation id="2112877397266219826">ನನ್ನನ್ನು ಹೊಂದಿಸಲು ನಿಮ್ಮ ಟಚ್ ನಿಯಂತ್ರಕವನ್ನು ಆನ್ ಮಾಡಿ</translation>
@@ -781,7 +780,6 @@
 <translation id="2218320521449013367">Chrome, ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್ ಅನ್ನು ತೆಗೆದುಹಾಕುವಾಗ ದೋಷ ಸಂಭವಿಸಿದೆ</translation>
 <translation id="2218515861914035131">ಸಾಮಾನ್ಯ ಪಠ್ಯವನ್ನಾಗಿ ಅಂಟಿಸು</translation>
 <translation id="221872881068107022">ಹಿಮ್ಮುಖ ಸ್ಕ್ರಾಲ್ ಮಾಡುವಿಕೆ</translation>
-<translation id="2218947405056773815">ಓಹ್ ದೇವರೇ! <ph name="API_NAME" /> ಸ್ನ್ಯಾಗ್ ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="2220529011494928058">ಸಮಸ್ಯೆ ವರದಿಮಾಡಿ</translation>
 <translation id="2220572644011485463">ಪಿನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="2222641695352322289">ಇದನ್ನು ರದ್ದುಗೊಳಿಸಲು ಇರುವ ಏಕೈಕ ಮಾರ್ಗವೆಂದರೆ <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ಅನ್ನು ಮರುಸ್ಥಾಪಿಸುವುದು.</translation>
@@ -1060,6 +1058,7 @@
 <translation id="2653266418988778031">ಪ್ರಮಾಣೀಕರಣ ಪ್ರಾಧಿಕಾರದ (CA) ಪ್ರಮಾಣಪತ್ರವನ್ನು ನೀವು ಅಳಿಸಿದ್ದೇ ಆದರೆ, ಆ ಬಳಿಕ CA ಬಿಡುಗಡೆ ಮಾಡುವ ಯಾವುದೇ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ನಿಮ್ಮ ಬ್ರೌಸರ್  ನಂಬುವುದಿಲ್ಲ.</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
 <translation id="265390580714150011">ಕ್ಷೇತ್ರ ಮೌಲ್ಯ</translation>
+<translation id="2654166010170466751">ಪಾವತಿ ಹ್ಯಾಂಡ್‌ಲರ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸೈಟ್‌ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಅನುಮತಿಸಿ</translation>
 <translation id="2655386581175833247">ಬಳಕೆದಾರ  ಪ್ರಮಾಣಪತ್ರ:</translation>
 <translation id="2660779039299703961">ಈವೆಂಟ್</translation>
 <translation id="266079277508604648">ಪ್ರಿಂಟರ್ ಅನ್ನು ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಪ್ರಿಂಟರ್ ಆನ್ ಆಗಿದೆಯೇ ಮತ್ತು ಅದು ನಿಮ್ಮ Chromebook ಗೆ ವೈ-ಫೈ ಅಥವಾ USB ಮೂಲಕ ಸಂಪರ್ಕ ಹೊಂದಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಿ.</translation>
@@ -1404,6 +1403,7 @@
 <translation id="3140353188828248647">ವಿಳಾಸ ಪಟ್ಟಿಯನ್ನು ಗಮನಿಸಿ</translation>
 <translation id="3141318088920353606">ಆಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3141917231319778873">ನೀಡಿರುವ ವಿನಂತಿಯನ್ನು ಈ ಸಾಧನಕ್ಕೆ ಬೆಂಬಲಿಸಲಾಗುವುದಿಲ್ಲ: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="3143515551205905069">ಸಿಂಕ್ ಮಾಡುವಿಕೆಯನ್ನು ರದ್ದುಪಡಿಸಿ</translation>
 <translation id="3144126448740580210">ಮುಗಿದಿದೆ</translation>
 <translation id="3144647712221361880">ಲಿಂಕ್ ಅನ್ನು ಹೀಗೆ ತೆರೆಯಿರಿ</translation>
 <translation id="3149510190863420837">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
@@ -1681,6 +1681,7 @@
 <translation id="3576324189521867626">ಯಶಸ್ವಿಯಾಗಿ ಸ್ಥಾಪಿಸಲಾಗಿದೆ</translation>
 <translation id="3578594933904494462">ಈ ಟ್ಯಾಬ್ ವಿಷಯವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ಅವರು ನೀವು ಹೊಂದಿರುವ ಸಮೂಹದ ಜೊತೆ &lt;strong&gt; <ph name="PRINTER_NAME" />&lt;/strong&gt; ಪ್ರಿಂಟರ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುತ್ತಾರೆ: &lt;strong&gt; <ph name="GROUP_NAME" />&lt;/strong&gt;. ನೀವು ಅಂಗೀಕರಿಸಿದಲ್ಲಿ, ಗುಂಪಿನ ಎಲ್ಲಾ ಸದಸ್ಯರಿಗೂ ಪ್ರಿಂಟರ್‌ಗೆ ಮುದ್ರಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ.</translation>
+<translation id="3582972582564653026">ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ Chrome ಅನ್ನು ಸಿಂಕ್ ಮಾಡಿ ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಿ</translation>
 <translation id="3584169441612580296">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಫೋಟೋಗಳು, ಸಂಗೀತ, ಮತ್ತು ಇತರ ಮಾಧ್ಯಮವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಿಸಿ</translation>
 <translation id="3587482841069643663">ಎಲ್ಲ</translation>
 <translation id="358796204584394954">"<ph name="DEVICE_NAME" />" ಗೆ ಜೋಡಿ ಮಾಡಲು ಈ ಕೋಡ್ ಅನ್ನು ಟೈಪ್ ಮಾಡಿ:</translation>
@@ -2075,6 +2076,7 @@
 <translation id="4206944295053515692">ಸಲಹೆಗಳಿಗಾಗಿ Google ಅನ್ನು ಕೇಳಿ</translation>
 <translation id="4208390505124702064"><ph name="SITE_NAME" /> ಹುಡುಕಿ</translation>
 <translation id="4209092469652827314">ದೊಡ್ಡದು</translation>
+<translation id="4209464433672152343">ಪ್ರಿಂಟಿಂಗ್‌ಗಾಗಿ ಸಿದ್ಧಪಡಿಸಲು ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳನ್ನು <ph name="BEGIN_LINK_HELP" />Google ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ<ph name="END_LINK_HELP" /> <ph name="BEGIN_LINK_DASHBOARD" />Google ಕ್ಲೌಡ್ ಪ್ರಿಂಟ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌<ph name="END_LINK_DASHBOARD" />ನಲ್ಲಿ ನಿಮ್ಮ ಪ್ರಿಂಟರ್‌ಗಳನ್ನು ಮತ್ತು ಪ್ರಿಂಟರ್ ಇತಿಹಾಸವನ್ನು ವೀಕ್ಷಿಸಿ, ಎಡಿಟ್ ಮಾಡಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ.</translation>
 <translation id="421017592316736757">ಈ ಫೈಲ್ ಅನ್ನು ಪ್ರವೇಶಿಸಲು ನೀವು ಆನ್‌ಲೈನ್‌ನಲ್ಲಿರಬೇಕು.</translation>
 <translation id="421182450098841253">&amp;ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="42126664696688958">ರಫ್ತು</translation>
@@ -2484,7 +2486,6 @@
 <translation id="4907824805858067479">ಉಳಿಸಿದ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ</translation>
 <translation id="4908811072292128752">ಒಮ್ಮೆಲೆ ಎರಡೂ ಸೈಟ್‌ಗಳನ್ನು ಬ್ರೌಸ್ ಮಾಡಲು ಟ್ಯಾಬ್ ತೆರೆಯಿರಿ</translation>
 <translation id="4909038193460299775">ಈ ಖಾತೆಯನ್ನು <ph name="DOMAIN" /> ನಿರ್ವಹಿಸುತ್ತಿರುವ ಕಾರಣದಿಂದ, ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಈ ಸಾಧನದಿಂದ ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ. ಆದರೆ, ನಿಮ್ಮ ಡೇಟಾವು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿಯೇ ಸಂಗ್ರಹಿತವಾಗಿರುತ್ತದೆ ಮತ್ತು ಅದನ್ನು <ph name="BEGIN_LINK" />Google ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ<ph name="END_LINK" /> ನಿರ್ವಹಿಸಬಹುದಾಗಿದೆ.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">ಯಾವುದೇ ವಿಸ್ತರಣೆಗಳು ನಿಯೋಜಿಸಲಾಗಿರುವ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌‌ಕಟ್‌ಗಳನ್ನು ಹೊಂದಿಲ್ಲ.</translation>
 <translation id="4912643508233590958">ತಟಸ್ಥದ ಎಚ್ಚರಿಸುವಿಕೆಗಳು</translation>
 <translation id="491691592645955587">ಸುರಕ್ಷಿತ ಬ್ರೌಸರ್‌ಗೆ ಬದಲಾಯಿಸಿ</translation>
@@ -2759,6 +2760,7 @@
 <translation id="5337771866151525739">ಮೂರನೇ ವ್ಯಕ್ತಿಯ ಮೂಲಕ ಸ್ಥಾಪಿಸಲಾಗಿದೆ.</translation>
 <translation id="5338503421962489998">ಸ್ಥಳೀಯ ಸಂಗ್ರಹಣೆ</translation>
 <translation id="5340217413897845242">ಶೆಲ್ಫ್ ಐಟಂ 6</translation>
+<translation id="5340638867532133571">ಪಾವತಿ ಹ್ಯಾಂಡ್‌ಲರ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸೈಟ್‌ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಅನುಮತಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="5341793073192892252">ಕೆಳಗಿನ ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ (ಮೂರನೇ-ಪಾರ್ಟಿ ಕುಕೀಗಳನ್ನು ಹೊರತುಪಡಿಸದೇ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ)</translation>
 <translation id="5341980496415249280">ನಿರೀಕ್ಷಿಸಿ, ಪ್ಯಾಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5342091991439452114">ಪಿನ್ ಕನಿಷ್ಠ ಪಕ್ಷ <ph name="MINIMUM" /> ಅಂಕಿಗಳಾಗಿರಬೇಕು</translation>
@@ -3220,6 +3222,7 @@
 <translation id="6064217302520318294">ಸ್ಕ್ರೀನ್ ಲಾಕ್</translation>
 <translation id="6065289257230303064">ಪ್ರಮಾಣಪತ್ರ ವಿಷಯ ಡೈರೆಕ್ಟರಿ ಆಟ್ರಿಬ್ಯೂಟ್‌ಗಳು</translation>
 <translation id="6068338049763724728">ರಿಮೋಟ್ ನೋಂದಣಿಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="6069671174561668781">ವಾಲ್‌ಪೇಪರ್ ಹೊಂದಿಸಿ</translation>
 <translation id="6071181508177083058">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಖಚಿತಪಡಿಸು</translation>
 <translation id="6073903501322152803">ಪ್ರವೇಶಿಸುವಿಕೆ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="6074825444536523002">Google ಫಾರ್ಮ್</translation>
@@ -3559,6 +3562,7 @@
 <translation id="6596745167571172521">Caps Lock ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6596816719288285829">IP ವಿಳಾಸ</translation>
 <translation id="6597017209724497268">ಮಾದರಿಗಳು</translation>
+<translation id="659934686219830168">ನೀವು ಈ ಪುಟವನ್ನು ತೊರೆದ ನಂತರ ಸಿಂಕ್ ಪ್ರಾರಂಭವಾಗುತ್ತದೆ</translation>
 <translation id="6602353599068390226">ಮತ್ತೊಂದು ಡಿಸ್‌ಪ್ಲೇಗೆ ವಿಂಡೋವನ್ನು ಸರಿಸಿ</translation>
 <translation id="6602956230557165253">ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ಎಡ ಮತ್ತು ಬಲ ಬಾಣದ ಕೀಲಿಗಳನ್ನು ಬಳಸಿ.</translation>
 <translation id="660380282187945520">F9</translation>
@@ -3706,6 +3710,7 @@
 <translation id="6829250331733125857">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಮೂಲಕ ಸಹಾಯವನ್ನು ಪಡೆದುಕೊಳ್ಳಿ.</translation>
 <translation id="6829270497922309893">ನಿಮ್ಮ ಸಂಸ್ಥೆಯಲ್ಲಿ ದಾಖಲಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="682971198310367122">Google ಗೌಪ್ಯತೆ ನೀತಿ</translation>
+<translation id="6829772336900667075"><ph name="APP_NAME" /> ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="6831043979455480757">ಅನುವಾದಿಸು</translation>
 <translation id="683373380308365518">ಸ್ಮಾರ್ಟ್ ಮತ್ತು ಸುರಕ್ಷಿತ ಬ್ರೌಸರ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="6835762382653651563">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ದಯವಿಟ್ಟು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಗೊಳಿಸಿ.</translation>
@@ -3764,6 +3769,7 @@
 <translation id="6945221475159498467">ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="694592694773692225">ಈ ಪುಟದಲ್ಲಿ ಮರುನಿರ್ದೇಶಿಸುವಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="6949306908218145636">ತೆರೆದ ಪುಟಗಳನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ...</translation>
+<translation id="6951153907720526401">ಪಾವತಿ ಹ್ಯಾಂಡ್‌ಲರ್‌ಗಳು</translation>
 <translation id="6955446738988643816">ಪಾಪ್‌ಅಪ್ ಪರೀಕ್ಷಿಸಿ</translation>
 <translation id="6957231940976260713">ಸೇವೆಯ ಹೆಸರು</translation>
 <translation id="696203921837389374">ಮೊಬೈಲ್ ಡೇಟಾ ಮೂಲಕ ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -4194,6 +4200,7 @@
 <translation id="7629827748548208700">ಟ್ಯಾಬ್: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;ಯಾವಾಗಲೂ ಈ ಪ್ರಕಾರದ ಫೈಲ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="7632948528260659758">ಕೆಳಗಿನ ಕಿಯೋಸ್ಕ್ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ನವೀಕರಿಸುವುದಕ್ಕೆ ವಿಫಲವಾಗಿದೆ:</translation>
+<translation id="763632859238619983">ಪಾವತಿ ಹ್ಯಾಂಡ್‌ಲರ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಯಾವುದೇ ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸಬೇಡಿ</translation>
 <translation id="7639178625568735185">ಅರ್ಥವಾಯಿತು!</translation>
 <translation id="764017888128728">ನೀವು ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳ ಮೂಲಕ ಅರ್ಹರಾಗಿರುವ ಸೈಟ್‌ಗಳಿಗೆ <ph name="PASSWORD_MANAGER_BRAND" /> ನಿಮ್ಮನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ಮಾಲೀಕರು)</translation>
@@ -4427,7 +4434,6 @@
 ವಿಸ್ತರಣೆ: <ph name="EXTENSION_FILE" />             ಮುಖ್ಯ ಫೈಲ್: <ph name="KEY_FILE" />             ನಿಮ್ಮ ಮುಖ್ಯ ಫೈಲ್ ಅನ್ನು ಸುರಕ್ಷಿತ ಸ್ಥಳದಲ್ಲಿಡಿ. ನಿಮ್ಮ ವಿಸ್ತರಣೆಯ ಹೊಸ ಆವೃತ್ತಿಗಳನ್ನು ರಚಿಸುವ ಅಗತ್ಯತೆ ಇದೆ.</translation>
 <translation id="799923393800005025">ವೀಕ್ಷಿಸಬಹುದು</translation>
 <translation id="8000066093800657092">ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲ</translation>
-<translation id="8001504501378762252">ಸೈಟ್‌ವೊಂದು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಕಳವು ಮಾಡಿರಬಹುದು</translation>
 <translation id="8004582292198964060">ಬ್ರೌಸರ್</translation>
 <translation id="8005600846065423578">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್ ಅನ್ನು ನೋಡಲು <ph name="HOST" /> ಗೆ ಯಾವಾಗಲೂ ಅನುಮತಿ ನೀಡಿ</translation>
 <translation id="8008356846765065031">ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ.</translation>
@@ -5130,6 +5136,7 @@
 <translation id="9137013805542155359">ಮೂಲವನ್ನು ತೋರಿಸಿ</translation>
 <translation id="9137916601698928395">ಲಿಂಕ್ ಅನ್ನು <ph name="USER" /> ರಂತೆ ತೆರೆಯಿರಿ</translation>
 <translation id="9138978632494473300">ಕೆಳಗೆ ಸ್ಥಳಗಳಿಗೆ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಸೇರಿಸಿ:</translation>
+<translation id="9140067245205650184">ನೀವು ಬೆಂಬಲಿತವಲ್ಲದ ವೈಶಿಷ್ಟ್ಯ ಫ್ಲ್ಯಾಗ್ ಅನ್ನು ಬಳಸುತ್ತಿದ್ದೀರಿ: <ph name="BAD_FLAG" />. ಸ್ಥಿರತೆ ಮತ್ತು ಸುರಕ್ಷತೆಯು ಹಾನಿಯಾಗುತ್ತದೆ.</translation>
 <translation id="9147392381910171771">&amp;ಆಯ್ಕೆಗಳು</translation>
 <translation id="9148058034647219655">ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="9148116311817999634">ಸುರಕ್ಷತೆಗಾಗಿ ಪರದೆಯ ಲಾಕ್‌ ಅನ್ನು ಹೊಂದಿಸಿ</translation>
@@ -5146,6 +5153,7 @@
 <translation id="9158715103698450907">ಓಹ್! ದೃಢೀಕರಣ ಸಮಯದಲ್ಲಿ ನೆಟ್‌ವರ್ಕ್ ಸಂಹವನ ಸಮಸ್ಯೆಯು ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಸಂರ್ಪಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="9161070040817969420">ಇದಕ್ಕೆ ಉಪಫ್ರೇಮ್‌ಗಳು: <ph name="PARENT_SITE" /></translation>
 <translation id="9169496697824289689">ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ</translation>
+<translation id="9169931577761441333"><ph name="APP_NAME" /> ಅನ್ನು ಮುಖಪುಟದ ಪರದೆಗೆ ಸೇರಿಸಿ</translation>
 <translation id="9170397650136757332">ನಿಮ್ಮ ಫಿಂಗರ್‌ ಫ್ರಿಂಟ್‌‌ನ ಎಲ್ಲಾ ವಿವಿಧ ಭಾಗಗಳನ್ನು ಸೆರೆಹಿಡಿಯಲು ಇದೀಗ ನಿಮ್ಮ ಬೆರಳನ್ನು ನಿಧಾನವಾಗಿ ಸರಿಸಿ</translation>
 <translation id="9170848237812810038">&amp;ರದ್ದುಮಾಡು</translation>
 <translation id="9170884462774788842">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿನ ಮತ್ತೊಂದು ಪ್ರೋಗ್ರಾಂ Chrome ಕಾರ್ಯನಿರ್ವಹಿಸುವ ವಿಧಾನವನ್ನು ಬದಲಿಸಬಹುದಾದಂತಹ ಥೀಮ್ ಅನ್ನು ಸೇರಿಸಿದೆ.</translation>

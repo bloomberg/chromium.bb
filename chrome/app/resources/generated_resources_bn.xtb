@@ -704,7 +704,6 @@
 <translation id="2099686503067610784">সার্ভার শংসাপত্র "<ph name="CERTIFICATE_NAME" />" মুছবেন?</translation>
 <translation id="2100273922101894616">স্বতঃ সাইন-ইন</translation>
 <translation id="2101225219012730419">সংস্করণ:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">এখনও কোনও লোড হওয়া নেই</translation>
 <translation id="2107494551712864447">একটি আঙ্গুলের ছাপ যোগ করুন</translation>
 <translation id="2112877397266219826">আমাকে সেট করতে আপনার স্পর্শ নিয়ন্ত্রক চালু করুন</translation>
@@ -784,7 +783,6 @@
 <translation id="2218320521449013367">ক্ষতিকর সফ্টওয়্যার সরিয়ে দেওয়ার সময় Chrome এ কোনও সমস্যা হয়েছে</translation>
 <translation id="2218515861914035131">সাধারণ পাঠ্য হিসাবে আটকে দিন  </translation>
 <translation id="221872881068107022">উল্টো দিকে স্ক্রোল</translation>
-<translation id="2218947405056773815">সঙ্কট! <ph name="API_NAME" /> এ একটি সমস্যা হয়েছে৷</translation>
 <translation id="2220529011494928058">কোনো সমস্যার অভিযোগ করুন</translation>
 <translation id="2220572644011485463">PIN বা পাসওয়ার্ড</translation>
 <translation id="2222641695352322289">এটি পূর্বাবস্থায় ফিরিয়ে আনার একমাত্র উপায় হল <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> পুনরায় ইনস্টল করা৷</translation>
@@ -1682,6 +1680,7 @@
 <translation id="3576324189521867626">সফলভাবে ইনস্টল হয়েছে</translation>
 <translation id="3578594933904494462">এই ট্যাবের সামগ্রী শেয়ার করা হচ্ছে৷</translation>
 <translation id="357886715122934472">আপনার মালিকানাধীন একটি গোষ্ঠীর সাথে &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; একটি প্রিন্টার শেয়ার করতে চান &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. যদি আপানি স্বীকার করেন তবে, গোষ্ঠীর সকল সদস্য প্রিন্টারটিকে প্রিন্ট করতে পারবেন৷</translation>
+<translation id="3582972582564653026">আপনার সব ডিভাইস জুড়ে Chrome সিঙ্ক করুন এবং নিজের মতো সাজিয়ে নিন</translation>
 <translation id="3584169441612580296">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্য মিডিয়া পডুন এবং পরিবর্তন করুন</translation>
 <translation id="3587482841069643663">সকল</translation>
 <translation id="358796204584394954">যুক্ত করতে "<ph name="DEVICE_NAME" />" এ এই কোডটি লিখুন:</translation>
@@ -2075,6 +2074,7 @@
 <translation id="4206944295053515692">Google-এর কাছে পরামর্শ চান</translation>
 <translation id="4208390505124702064"><ph name="SITE_NAME" /> খুঁজুন:</translation>
 <translation id="4209092469652827314">বৃহত্</translation>
+<translation id="4209464433672152343">প্রিন্টিংয়ের জন্য ডকুমেন্ট তৈরি করতে <ph name="BEGIN_LINK_HELP" />Google-এ পাঠানো হয়েছে<ph name="END_LINK_HELP" />। <ph name="BEGIN_LINK_DASHBOARD" />Google ক্লাউড প্রিন্ট ড্যাশবোর্ড<ph name="END_LINK_DASHBOARD" /> থেকে আপনার প্রিন্টার এবং প্রিন্টারের ইতিহাস দেখুন, এডিট করুন এবং পরিচালনা করুন।</translation>
 <translation id="421017592316736757">আপনার এই ফাইলটিতে অ্যাক্সেস পেতে অনলাইন হওয়া আবশ্যক৷</translation>
 <translation id="421182450098841253">&amp;বুকমার্ক দণ্ড দেখান</translation>
 <translation id="42126664696688958">রপ্তানি</translation>
@@ -2483,7 +2483,6 @@
 <translation id="4907824805858067479">কার্ড সেভ করার বিকল্পটি প্রশাসক অক্ষম করে রেখেছেন</translation>
 <translation id="4908811072292128752">একইসাথে দুটি সাইট ব্রাউজ করতে নতুন ট্যাব খুলুন</translation>
 <translation id="4909038193460299775">এই অ্যাকাউন্টটি <ph name="DOMAIN" /> দ্বারা পরিচালিত হওয়ার কারণে আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস এই ডিভাইস থেকে সাফ করা হবে। অবশ্য, আপনার ডেটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে এবং <ph name="BEGIN_LINK" />Google ড্যাশবোর্ড<ph name="END_LINK" /> থেকে তা পরিচালনা করা যাবে।</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">কিবোর্ড শর্টকাটে কোনো এক্সটেনশন ধার্য করা হয়নি৷</translation>
 <translation id="4912643508233590958">নিষ্ক্রিয়তা সময়ের সমাপ্তি</translation>
 <translation id="491691592645955587">একটি সুরক্ষিত ব্রাউজারে স্যুইচ করুন</translation>
@@ -3216,6 +3215,7 @@
 <translation id="6064217302520318294">স্ক্রীন লক</translation>
 <translation id="6065289257230303064">শংসাপত্র বিষয় নির্দেশিকা গুণাবলী</translation>
 <translation id="6068338049763724728">দূর থেকে যোগ করা সক্ষম করুন</translation>
+<translation id="6069671174561668781">ওয়ালপেপার সেট করুন</translation>
 <translation id="6071181508177083058">পাসওয়ার্ড নিশ্চিত করুন</translation>
 <translation id="6073903501322152803">অ্যাক্সেসযোগ্যতার বৈশিষ্ট্যগুলি যোগ করুন</translation>
 <translation id="6074825444536523002">Google ফর্ম</translation>
@@ -4432,7 +4432,6 @@
 নিজের কী ফাইল কোন নিরাপদ স্থানে রাখুন৷ আপনাকে নিজের এক্সটেনশানের নতুন সংস্করণ তৈরি করতে হবে৷</translation>
 <translation id="799923393800005025">দেখতে পারবেন</translation>
 <translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>
-<translation id="8001504501378762252">একটি সাইট হয়ত আপনার পাসওয়ার্ড চুরি করেছে</translation>
 <translation id="8004582292198964060">ব্রাউজার</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> কে সবসময় ক্লিপবোর্ড দেখতে দিন</translation>
 <translation id="8008356846765065031">ইন্টারনেট সংযোগ বিচ্ছিন্ন হয়েছে৷ দয়া করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন৷</translation>

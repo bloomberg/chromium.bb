@@ -50,12 +50,6 @@
 <translation id="1151353063931113432">Consenti immagini su questi siti</translation>
 <translation id="1152117524387175066">Consente di indicare lo stato dello switch dev del dispositivo all'avvio. Se la norma viene impostata su False, lo stato dello switch dev non viene indicato.</translation>
 <translation id="1160939557934457296">Disattiva procedendo dalla pagina di avviso Navigazione sicura</translation>
-<translation id="1166377463685560145">Consente di specificare le stampanti non utilizzabili dagli utenti.
-
-      Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" /> per la norma <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Se viene usata questa norma, gli utenti avranno a disposizione tutte le stampanti tranne quelle i cui ID sono elencati in questa norma.
-      </translation>
 <translation id="1198465924256827162">Consente di stabilire la frequenza di invio, in millisecondi, dei caricamenti dello stato del dispositivo.
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
@@ -157,19 +151,6 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
 <translation id="1561424797596341174">La norma sostituisce le build di debug dell'host di accesso remoto</translation>
 <translation id="1561967320164410511">U2F più estensioni per singola attestazione</translation>
 <translation id="1583248206450240930">Utilizza <ph name="PRODUCT_FRAME_NAME" /> per impostazione predefinita</translation>
-<translation id="1603058613431276040">Consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi.
-
-      Questa norma ti consente di specificare le configurazioni delle stampanti per i dispositivi <ph name="PRODUCT_OS_NAME" />. Le dimensioni del file non devono superare 5 MB e il file deve essere codificato in JSON. Il formato corrisponde a quello del dizionario NativePrinters. È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB. L'hash crittografico viene usato per verificare l'integrità del download.
-
-      Il file viene scaricato e memorizzato nella cache. Verrà scaricato di nuovo ogni volta che cambierà l'URL o l'hash.
-
-      Se questa norma viene impostata, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base alle norme <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> e <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Questa norma non influisce sulla capacità degli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
-
-      Si tratta di una norma aggiuntiva alla norma <ph name="BULK_PRINTERS_POLICY" />.
-
-      Se questa norma non viene impostata, non ci saranno stampanti per i dispositivi e le altre norme <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> verranno ignorate.</translation>
 <translation id="1608755754295374538">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione audio senza richieste</translation>
 <translation id="1617235075406854669">Attiva eliminazione cronologia del browser e dei download</translation>
 <translation id="163200210584085447">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi di acquisizione video verrà concesso sulle pagine di accesso SAML. In caso contrario, l'accesso verrà automaticamente negato. Non sono consentite sequenze con caratteri jolly.</translation>
@@ -301,11 +282,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Il formato dei pattern URL deve essere quello indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
 
-      Se la norma AutoplayAllowed viene impostata su True, questa norma non avrà effetto.
+      Se il criterio AutoplayAllowed viene impostato su True, questo criterio non avrà effetto.
 
-      Se la norma AutoplayAllowed viene impostata su False, sarà consentita la riproduzione dei pattern URL definiti in questa norma.
+      Se il criterio AutoplayAllowed viene impostato su False, sarà consentita la riproduzione dei pattern URL definiti in questo criterio.
 
-      Tieni presente che se questa norma viene cambiata mentre <ph name="PRODUCT_NAME" /> è in esecuzione, la norma viene applicata soltanto alle nuove schede aperte. Di conseguenza alcune schede potrebbero mantenere il comportamento precedente.</translation>
+      Tieni presente che se questo criterio viene cambiato mentre <ph name="PRODUCT_NAME" /> è in esecuzione, il criterio viene applicato soltanto alle nuove schede aperte. Di conseguenza alcune schede potrebbero mantenere il comportamento precedente.</translation>
 <translation id="2134437727173969994">Consenti blocco dello schermo</translation>
 <translation id="2137064848866899664">Se la norma viene impostata, ogni schermo viene ruotato secondo l'orientamento specificato, a ogni riavvio e la prima volta che viene collegato in seguito alla modifica della norma. Dopo aver eseguito l'accesso, gli utenti possono modificare la rotazione dello schermo tramite la pagina delle impostazioni ma, al successivo riavvio, la loro impostazione viene sostituita dal valore della norma.
 
@@ -553,12 +534,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2762164719979766599">Specifica l'elenco di account del dispositivo da visualizzare nella schermata di accesso.
 
       Ogni voce in elenco specifica un identificatore che viene utilizzato internamente per distinguere i vari account del dispositivo.</translation>
-<translation id="2766302473082018239">Consente di specificare le stampanti utilizzabili dagli utenti.
-
-      Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" /> per la norma <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Se viene usata questa norma, solo le stampanti con ID corrispondenti ai valori della norma saranno disponibili per gli utenti. Gli ID devono corrispondere alle voci del file specificato nella norma <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Configura il nome di dominio richiesto per gli host di accesso remoto</translation>
 <translation id="2787173078141616821">Segnala informazioni sullo stato di Android</translation>
 <translation id="2793923553868251161">Origini da considerare contesto sicuro.</translation>
@@ -736,12 +711,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
           Se questa norma viene impostata su una stringa non vuota, tale stringa verrà usata come nome della destinazione di <ph name="PRODUCT_NAME" />. In caso contrario, il nome della destinazione sarà quello del dispositivo. Se questa norma non viene impostata, il nome della destinazione sarà il nome del dispositivo, che il proprietario (o un utente del dominio che gestisce il dispositivo) potrà cambiare. Il nome può essere formato da massimo 24 caratteri.</translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
-<translation id="3395348522300156660">Consente di specificare le stampanti utilizzabili dagli utenti.
-
-      Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" /> per la norma <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Se viene usata questa norma, solo le stampanti con ID corrispondenti ai valori della norma saranno disponibili per gli utenti. Gli ID devono corrispondere alle voci del file specificato nella norma <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Se questa norma non viene configurata, <ph name="PRODUCT_NAME" /> utilizza una versione minima predefinita, ossia TLS 1.0.
 
       In caso contrario, la norma potrebbe essere impostata su uno dei seguenti valori: "tls1", "tls1.1" o "tls1.2". Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> non utilizzerà versioni SSL/TLS precedenti alla versione specificata. I valori non riconosciuti verranno ignorati.</translation>
@@ -887,7 +856,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Ogni voce dell'elenco contiene un dizionario che deve includere l'ID dell'estensione nel campo "extension-id" e il relativo URL di aggiornamento nel campo "update-url".</translation>
 <translation id="3873159954366380945">Ti consente di impostare il periodo di tempo durante il quale mostrare le notifiche relative al riavvio di <ph name="PRODUCT_NAME" /> per applicare un aggiornamento in attesa.
 
-      È possibile usare l'impostazione di questa norma per stabilire in millisecondi per quanto tempo un utente viene progressivamente informato della necessità di riavviare <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) per applicare un aggiornamento. Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento in base all'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se non viene definito un periodo, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per tutte le altre piattaforme.</translation>
+      È possibile usare l'impostazione di questo criterio per stabilire per quanto tempo, in millisecondi, un utente viene progressivamente informato della necessità di riavviare <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) per applicare un aggiornamento. Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento in base all'impostazione del criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se non viene definito un periodo, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per tutte le altre piattaforme.</translation>
 <translation id="3877517141460819966">Modalità di autenticazione a due fattori integrata</translation>
 <translation id="388237772682176890">Questa norma è stata ritirata in M53 e rimossa in M54 perché è stato rimosso il supporto di SPDY/3.1.
 
@@ -1221,13 +1190,13 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="489803897780524242">Parametro di controllo sostituzione termini di ricerca per fornitore ricerca predefinito</translation>
 <translation id="4899708173828500852">Consenti Navigazione sicura</translation>
-<translation id="4899802251198446659">Ti consente di stabilire se permettere o meno la riproduzione automatica dei video (senza il consenso dell'utente) con i contenuti audio in <ph name="PRODUCT_NAME" />.
+<translation id="4899802251198446659">Ti consente di stabilire se permettere o meno la riproduzione automatica dei video (senza il consenso dell'utente) con contenuti audio in <ph name="PRODUCT_NAME" />.
 
-      Se la norma viene impostata su True, in <ph name="PRODUCT_NAME" /> è consentita la riproduzione automatica dei contenuti multimediali.
-      Se la norma viene impostata su False, in <ph name="PRODUCT_NAME" /> non è consentita la riproduzione automatica dei contenuti multimediali. È possibile usare la norma AutoplayWhitelist in sostituzione a questa norma per alcuni pattern URL.
-      Per impostazione predefinita, la riproduzione automatica di contenuti multimediali in <ph name="PRODUCT_NAME" /> non è consentita. È possibile usare la norma AutoplayWhitelist in sostituzione a questa norma per alcuni pattern URL.
+      Se il criterio viene impostato su True, in <ph name="PRODUCT_NAME" /> è consentita la riproduzione automatica dei contenuti multimediali.
+      Se il criterio viene impostato su False, in <ph name="PRODUCT_NAME" /> non è consentita la riproduzione automatica dei contenuti multimediali. È possibile usare il criterio AutoplayWhitelist in sostituzione di questo criterio per alcuni pattern URL.
+      Per impostazione predefinita, la riproduzione automatica di contenuti multimediali in <ph name="PRODUCT_NAME" /> non è consentita. È possibile usare il criterio AutoplayWhitelist in sostituzione di questo criterio per alcuni pattern URL.
 
-      Tieni presente che se questa norma viene cambiata mentre <ph name="PRODUCT_NAME" /> è in esecuzione, la norma viene applicata soltanto alle nuove schede aperte. Di conseguenza alcune schede potrebbero mantenere il comportamento precedente.
+      Tieni presente che se questo criterio viene cambiato mentre <ph name="PRODUCT_NAME" /> è in esecuzione, il criterio viene applicato soltanto alle nuove schede aperte. Di conseguenza alcune schede potrebbero mantenere il comportamento precedente.
       </translation>
 <translation id="4906194810004762807">Frequenza di aggiornamento per norma dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
@@ -2267,12 +2236,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
       Avviso: non è consigliabile configurare restrizioni alle versioni, poiché potrebbero impedire agli utenti di ricevere aggiornamenti software e correzioni di sicurezza fondamentali. Limitare gli aggiornamenti a uno specifico prefisso per la versione potrebbe mettere a rischio gli utenti.</translation>
 <translation id="8519264904050090490">URL delle eccezioni manuali per gli utenti gestiti</translation>
-<translation id="8527932539502116028">Consente di specificare le stampanti non utilizzabili dagli utenti.
-
-      Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" /> per la norma <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Se viene usata questa norma, gli utenti avranno a disposizione tutte le stampanti tranne quelle i cui ID sono elencati in questa norma.
-      </translation>
 <translation id="8538235451413605457">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_NAME" />. Le versioni inferiori vengono trattate come obsolete e il dispositivo non consente agli utenti di accedere, se prima non viene aggiornato il sistema operativo.
       Se la versione corrente diventa obsoleta durante una sessione utente, l'utente verrà forzatamente scollegato.
 
@@ -2379,18 +2342,6 @@ Il metodo consigliato per bloccare lo schermo in caso di inattività consiste ne
 
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori al ritardo di inattività.</translation>
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Consente di specificare le configurazioni delle stampanti aziendali.
-
-      Questa norma ti consente di specificare le configurazioni delle stampanti per i dispositivi <ph name="PRODUCT_OS_NAME" />. Le dimensioni del file non devono superare 5 MB e il file deve essere codificato in JSON. Il formato corrisponde a quello del dizionario NativePrinters. È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB. L'hash crittografico viene usato per verificare l'integrità del download.
-
-      Il file viene scaricato e memorizzato nella cache. Verrà scaricato di nuovo ogni volta che cambierà l'URL o l'hash.
-
-      Se questa norma viene impostata, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base alle norme <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> e <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Se la norma viene impostata gli utenti non potranno modificarla o ignorarla.
-
-      Questa norma non influisce sulla capacità degli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
-      </translation>
 <translation id="8934944553121392674">Consente di stabilire quali stampanti della norma <ph name="DEVICE_PRINTERS_POLICY" /> mettere a disposizione degli utenti.
 
       Determina quale norma di accesso usare per la configurazione collettiva delle stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOW_ALL" />, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" />, viene usata la norma <ph name="DEVICE_PRINTERS_BLACKLIST" /> per limitare l'accesso a stampanti specifiche. Se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" />, la norma <ph name="DEVICE_PRINTERS_WHITELIST" /> stabilisce soltanto le stampanti selezionabili.

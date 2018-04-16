@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">"<ph name="CERTIFICATE_NAME" />" sunucusu sertifikası silinsin mi?</translation>
 <translation id="2100273922101894616">Otomatik Oturum Aç</translation>
 <translation id="2101225219012730419">Sürüm:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Henüz yüklenmedi</translation>
 <translation id="2107494551712864447">Parmak izi ekleyin</translation>
 <translation id="2112877397266219826">Beni ayarlamak için dokunmatik denetleyicinizi etkinleştirin</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">Chrome zararlı yazılımları kaldırırken bir hata oluştu</translation>
 <translation id="2218515861914035131">Düz metin olarak yapıştır</translation>
 <translation id="221872881068107022">Ters kaydırma</translation>
-<translation id="2218947405056773815">Hay aksi! <ph name="API_NAME" /> hata verdi.</translation>
 <translation id="2220529011494928058">Sorun bildir</translation>
 <translation id="2220572644011485463">PIN veya şifre</translation>
 <translation id="2222641695352322289">Bunu geri almanın tek yolu <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistemini yeniden yüklemektir.</translation>
@@ -1709,6 +1707,7 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3576324189521867626">Başarıyla yüklendi</translation>
 <translation id="3578594933904494462">Bu sekmenin içeriği paylaşılıyor.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;, bir yazıcıyı (&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) sahibi olduğunuz bir grupla paylaşmak istiyor: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Kabul ederseniz tüm grup üyeleri yazdırma işlemlerini o yazıcıdan yaptırabilecek.</translation>
+<translation id="3582972582564653026">Chrome'u cihazlarınız arasında senkronize edin ve kişiselleştirin</translation>
 <translation id="3584169441612580296">Bilgisayarınızdaki fotoğrafları, müzikleri ve diğer medyaları okuma ve değiştirme</translation>
 <translation id="3587482841069643663">Tümü</translation>
 <translation id="358796204584394954">Eşlemek için "<ph name="DEVICE_NAME" />" cihazında şu kodu yazın:</translation>
@@ -2111,6 +2110,7 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="4206944295053515692">Google'dan Öneri İste</translation>
 <translation id="4208390505124702064">Ara <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Büyük</translation>
+<translation id="4209464433672152343">Dokümanlar yazdırılmaya hazırlanmaları için <ph name="BEGIN_LINK_HELP" />Google'a gönderilir<ph name="END_LINK_HELP" />. Yazıcılarınızı ve yazıcı geçmişinizi <ph name="BEGIN_LINK_DASHBOARD" />Google Cloud Print kontrol panelinde<ph name="END_LINK_DASHBOARD" /> görüntüleyebilir, düzenleyebilir ve yönetebilirsiniz.</translation>
 <translation id="421017592316736757">Bu dosyaya erişebilmek için çevrimiçi olmalısınız.</translation>
 <translation id="421182450098841253">Yer İşaretleri Ç&amp;ubuğunu Göster</translation>
 <translation id="42126664696688958">Dışa Aktar</translation>
@@ -2532,7 +2532,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="4907824805858067479">Kaydedilen kartlar yöneticiniz tarafından devre dışı bırakıldı</translation>
 <translation id="4908811072292128752">İki siteye aynı anda göz atmak için yeni bir sekme açın</translation>
 <translation id="4909038193460299775">Bu hesap <ph name="DOMAIN" /> tarafından yönetildiğinden, yer işaretleri, geçmişi, şifreler ve diğer ayarlarınız bu cihazdan silinir. Ancak verileriniz Google Hesabınızda kalmaya devam eder ve <ph name="BEGIN_LINK" />Google Hesap Özeti<ph name="END_LINK" />'nde yönetilebilir.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Hiçbir uzantıya klavye kısayolu atanmamış.</translation>
 <translation id="4912643508233590958">Boşta Kalma Uyanmaları</translation>
 <translation id="491691592645955587">Güvenli bir tarayıcıya geç</translation>
@@ -3283,6 +3282,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6064217302520318294">Ekran kilidi</translation>
 <translation id="6065289257230303064">Sertifika Konusu Dizin Öznitelikleri</translation>
 <translation id="6068338049763724728">Uzaktan kaydı etkinleştir</translation>
+<translation id="6069671174561668781">Duvar Kağıdını ayarla</translation>
 <translation id="6071181508177083058">şifreyi onaylayın</translation>
 <translation id="6073903501322152803">Erişilebilirlik özellikleri ekle</translation>
 <translation id="6074825444536523002">Google formu</translation>
@@ -4027,7 +4027,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7229570126336867161">EVDO gerekli</translation>
 <translation id="7230787553283372882">Metin boyutunu özelleştir</translation>
 <translation id="7232750842195536390">Yeniden adlandırma başarısız oldu</translation>
-<translation id="7233309214676155451">Chrome'u cihazınız genelinde senkronize edin ve kişiselleştirin</translation>
 <translation id="7238585580608191973">SHA-256 Parmak İzi</translation>
 <translation id="7240120331469437312">Sertifika Konusu Diğer Adı</translation>
 <translation id="7240339475467890413">Yeni hotspot'a bağlanılsın mı?</translation>
@@ -4532,7 +4531,6 @@ Anahtar Dosyası: <ph name="KEY_FILE" />
 Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümlerini oluşturmak için bu dosyaya ihtiyacınız olacak.</translation>
 <translation id="799923393800005025">Görüntüleyebilir</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
-<translation id="8001504501378762252">Bir site, şifrenizi çalmış olabilir</translation>
 <translation id="8004582292198964060">Tarayıcı</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> sitesinin panoyu görmesine her zaman izin ver</translation>
 <translation id="8008356846765065031">İnternet bağlantısı kesildi. Lütfen İnternet bağlantınızı kontrol edin.</translation>

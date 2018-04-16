@@ -52,12 +52,6 @@
 
       Om principen anges som False kommer utvecklarväxelns läge inte att redovisas.</translation>
 <translation id="1160939557934457296">Inaktivera möjligheten att fortsätta från varningssidan Säker webbsökning</translation>
-<translation id="1166377463685560145">Anger skrivare som inte får användas.
-
-      Den här principen används bara när <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> är inställd på <ph name="PRINTERS_BLACKLIST" />.
-
-      Om principen används får användaren tillgång till alla skrivare utom dem vars id anges i den här principen.
-      </translation>
 <translation id="1198465924256827162">Hur ofta information om enhetsstatus laddas upp, uttryckt i millisekunder.
 
       Om inget värde anges för principen är standardfrekvensen 3 timmar. Den kortaste
@@ -167,19 +161,6 @@
 <translation id="1561424797596341174">Åsidosättningar av policyn för felsökningsversioner av fjärråtkomstvärden</translation>
 <translation id="1561967320164410511">U2F plus tillägg för enskild attestering</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
-<translation id="1603058613431276040">Tillhandahåller skrivarkonfigurationer för företagsenheter.
-
-      Med den här principen kan du tillhandahålla skrivarkonfigurationer för <ph name="PRODUCT_OS_NAME" />-enheter. Filen får vara högst 5 MB stor och måste vara i JSON-format. Formatet är samma som för NativePrinters-ordlistan. En fil som är 5 MB stor beräknas rymma cirka 21 000 skrivare. Det kryptografiska hashvärdet används för att verifiera nedladdningens integritet.
-
-      Filen laddas ned och cachelagras. Den laddas ned på nytt varje gång webbadressen eller hashvärdet ändras.
-
-      Om principen har ställts in laddas filen med skrivarkonfigurationer ned i <ph name="PRODUCT_OS_NAME" /> och skrivarna görs tillgängliga i enlighet med principerna <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> och <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Principen påverkar inte om användarna får konfigurera skrivare på enskilda enheter. Den är tänkt som ett komplement till enskilda användares skrivarkonfigurationer.
-
-      Principen gäller som tillägg till <ph name="BULK_PRINTERS_POLICY" />.
-
-      Om principen inte ställs in finns det inga enhetsskrivare och övriga principer med namnet <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> ignoreras.</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
 <translation id="163200210584085447">Mönster på den här listan kommer att matchas mot den begärande
@@ -597,12 +578,6 @@
 <translation id="2762164719979766599">Anger en lista över lokala konton på enheten som ska visas på inloggningsskärmen.
 
       Alla poster i listan anger en identifierare som används internt för att skilja de olika lokala kontona på enheten från varandra.</translation>
-<translation id="2766302473082018239">Anger vilka skrivare som får användas.
-
-      Den här principen används bara när <ph name="BULK_PRINTERS_ACCESS_MODE" /> är inställd på <ph name="PRINTERS_WHITELIST" />.
-
-      Om principen används är bara de skrivare vars id matchar något av principens värden tillgängliga för användaren. Id:na måste svara mot posterna i den fil som angetts i <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Konfigurera det obligatoriska domännamnet för fjärråtkomstvärdar</translation>
 <translation id="2787173078141616821">Rapportera information om Android-status</translation>
 <translation id="2793923553868251161">Källor som behandlas som säker kontext.</translation>
@@ -789,12 +764,6 @@
 
           Om principen är inställd på något annat än en tom sträng används den strängen som namn på målet för <ph name="PRODUCT_NAME" />. I annat fall används enhetens namn som målnamn. Om principen lämnas utan inställning används enhetens namn som målnamn och enhetens ägare (eller en användare på den domän som hanterar enheten) kan ändra det. Namnet får vara högst 24 tecken långt.</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
-<translation id="3395348522300156660">Anger vilka skrivare som får användas.
-
-      Den här principen används bara när <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> är inställd på <ph name="PRINTERS_WHITELIST" />.
-
-      Om principen används är bara de skrivare vars id matchar något av principens värden tillgängliga för användaren. Id:na måste svara mot posterna i den fil som angetts i <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Om denna princip inte konfigureras används den lägsta standardversionen (TLS 1.0.) av <ph name="PRODUCT_NAME" />.
 
       I annat fall kan följande värden anges: tls1, tls1.1 eller tls1.2. Om ett värde har angetts används inte versioner av SSL/TLS som är tidigare än den angivna versionen av <ph name="PRODUCT_NAME" />. Ett värde som inte känns igen ignoreras.</translation>
@@ -2452,12 +2421,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       Obs! Versionsbegränsningar rekommenderas inte eftersom de kan leda till att uppdateringar av programvaran eller viktiga säkerhetskorrigeringar inte görs. Om uppdateringarna begränsas till ett visst versionsprefix kan användarnas säkerhet äventyras.</translation>
 <translation id="8519264904050090490">Webbadresser för hanterade användares manuella undantag</translation>
-<translation id="8527932539502116028">Anger skrivare som inte får användas.
-
-      Den här principen används bara när <ph name="BULK_PRINTERS_ACCESS_MODE" /> är inställd på <ph name="PRINTERS_BLACKLIST" />.
-
-      Om principen används får användaren tillgång till alla skrivare utom dem vars id anges i den här principen.
-      </translation>
 <translation id="8538235451413605457">Konfigurerar kravet på lägsta tillåtna version av <ph name="PRODUCT_NAME" />. Versioner som är äldre än det givna värdet ses som föråldrade. Användaren tillåts då inte logga in förrän operativsystemet har uppdaterats.
       Om den aktuella versionen blir föråldrad under en pågående användarsession loggas användaren ut.
 
@@ -2574,18 +2537,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
           Policyns värde anges i millisekunder. Värdet måste vara mindre än inaktivitetstiden.</translation>
 <translation id="891435090623616439">kodad som en JSON-sträng. Mer information finns i <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Tillhandahåller konfigurationer för företagsskrivare.
-
-      Med den här principen kan du tillhandahålla skrivarkonfigurationer för <ph name="PRODUCT_OS_NAME" />-enheter. Filen får vara högst 5 MB och måste vara i JSON-format. Formatet är samma som för NativePrinters-ordlistan. En fil som är 5 MB stor beräknas rymma cirka 21 000 skrivare. Det kryptografiska hashvärdet används för att verifiera nedladdningens integritet.
-
-      Filen laddas ned och cachelagras. Den laddas ned på nytt varje gång webbadressen eller hashvärdet ändras.
-
-      Om principen har ställts in laddas filen med skrivarkonfigurationer ned i <ph name="PRODUCT_OS_NAME" /> och skrivarna görs tillgängliga i enlighet med principerna <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> och <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Om du anger den här principen kan användarna varken ändra eller åsidosätta den.
-
-      Principen påverkar inte om användarna får konfigurera skrivare på enskilda enheter. Den är tänkt som ett komplement till enskilda användares skrivarkonfigurationer.
-      </translation>
 <translation id="8934944553121392674">Styr vilka skrivare från <ph name="DEVICE_PRINTERS_POLICY" /> som är tillgängliga för användare.
 
       Anger vilken åtkomstprincip som gäller vid gruppkonfigurering av skrivare. Med alternativet <ph name="PRINTERS_ALLOW_ALL" /> visas alla skrivare. Med alternativet <ph name="PRINTERS_BLACKLIST" /> begränsas åtkomsten till de angivna skrivarna med hjälp av <ph name="DEVICE_PRINTERS_BLACKLIST" />. Med alternativet <ph name="PRINTERS_WHITELIST" /> används <ph name="DEVICE_PRINTERS_WHITELIST" /> för att ange enbart de skrivare som finns att välja på.
@@ -2632,7 +2583,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       När den här principen har aktiverats upphävs återställningsskyddet för minst det här antalet milstolpar.
 
-      Om principen ställs in på ett lägre värde gäller det värdet permanent: det KANSKE inte går att återställa tidigare versioner än så på enheten ens om principen ändras till ett högre värde.
+      Om principen ställs in på ett lägre värde gäller det värdet permanent: det KANSKE inte går att återställa tidigare versioner på enheten ävenom principen ändras till ett högre värde.
 
       Vilka möjligheter till återställning som finns kan också bero på moderkortet och kritiska säkerhetskorrigeringar.</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>

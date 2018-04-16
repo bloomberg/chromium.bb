@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">Eliminare il certificato del server "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
 <translation id="2101225219012730419">Versione:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Non ancora caricato</translation>
 <translation id="2107494551712864447">Aggiungi un'impronta digitale</translation>
 <translation id="2112877397266219826">Attiva il tuo touch controller per configurare il dispositivo</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">Si è verificato un errore in Chrome durante la rimozione di software dannoso</translation>
 <translation id="2218515861914035131">Incolla come solo testo</translation>
 <translation id="221872881068107022">Scorrimento invertito</translation>
-<translation id="2218947405056773815">Accidenti! <ph name="API_NAME" /> ha avuto un problemino.</translation>
 <translation id="2220529011494928058">Segnala un problema</translation>
 <translation id="2220572644011485463">PIN o password</translation>
 <translation id="2222641695352322289">L'unico modo per annullare questa operazione è reinstallare <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1706,6 +1704,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3576324189521867626">Installata</translation>
 <translation id="3578594933904494462">I contenuti di questa scheda vengono condivisi.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vuole condividere una stampante &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un gruppo gestito da te: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Se accetti, tutti i membri del gruppo potranno utilizzare la stampante.</translation>
+<translation id="3582972582564653026">Sincronizza e personalizza Chrome sui tuoi dispositivi</translation>
 <translation id="3584169441612580296">Lettura e modifica di foto, musica e altri contenuti multimediali del computer</translation>
 <translation id="3587482841069643663">Tutti</translation>
 <translation id="358796204584394954">Digita questo codice in "<ph name="DEVICE_NAME" />" per accoppiare:</translation>
@@ -2108,6 +2107,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4206944295053515692">Chiedi suggerimenti a Google</translation>
 <translation id="4208390505124702064">Cerca su <ph name="SITE_NAME" />:</translation>
 <translation id="4209092469652827314">Grandi</translation>
+<translation id="4209464433672152343">I documenti vengono <ph name="BEGIN_LINK_HELP" />inviati a Google<ph name="END_LINK_HELP" /> per essere preparati per la stampa. Visualizza, modifica e gestisci le tue stampanti e la cronologia delle stampanti nella <ph name="BEGIN_LINK_DASHBOARD" />dashboard di Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Per poter accedere a questo file devi essere online.</translation>
 <translation id="421182450098841253">&amp;Mostra barra dei Preferiti</translation>
 <translation id="42126664696688958">Esporta</translation>
@@ -2529,7 +2529,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4907824805858067479">Le schede salvate sono state disattivate dall'amministratore</translation>
 <translation id="4908811072292128752">Apri una nuova scheda per visitare due siti contemporaneamente</translation>
 <translation id="4909038193460299775">Questo account è gestito da <ph name="DOMAIN" />, pertanto i preferiti, la cronologia, le password e altre impostazioni verranno cancellati da questo dispositivo. I tuoi dati rimarranno però memorizzati nel tuo account Google e potrai gestirli su <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Non sono state assegnate scorciatoie da tastiera a nessuna estensione.</translation>
 <translation id="4912643508233590958">Riattivazioni</translation>
 <translation id="491691592645955587">Passa a un browser sicuro</translation>
@@ -3278,6 +3277,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6064217302520318294">Blocco schermo</translation>
 <translation id="6065289257230303064">Attributi directory soggetto certificato</translation>
 <translation id="6068338049763724728">Attiva registrazione remota</translation>
+<translation id="6069671174561668781">Imposta sfondo</translation>
 <translation id="6071181508177083058">conferma password</translation>
 <translation id="6073903501322152803">Aggiungi funzioni di accessibilità</translation>
 <translation id="6074825444536523002">Modulo Google</translation>
@@ -4022,7 +4022,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7229570126336867161">Occorre EVDO</translation>
 <translation id="7230787553283372882">Personalizza la dimensione del testo</translation>
 <translation id="7232750842195536390">Ridenominazione non riuscita</translation>
-<translation id="7233309214676155451">Sincronizza e personalizza Chrome sui tuoi dispositivi</translation>
 <translation id="7238585580608191973">Impronta digitale SHA-256</translation>
 <translation id="7240120331469437312">Nome alternativo del soggetto del certificato</translation>
 <translation id="7240339475467890413">Eseguire la connessione al nuovo hotspot?</translation>
@@ -4518,7 +4517,6 @@ File di chiave: <ph name="KEY_FILE" />
 Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove versioni dell'estensione.</translation>
 <translation id="799923393800005025">Può visualizzare</translation>
 <translation id="8000066093800657092">Nessuna rete</translation>
-<translation id="8001504501378762252">Un sito potrebbe avere rubato la tua password</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8005600846065423578">Consenti sempre a <ph name="HOST" /> di leggere gli appunti</translation>
 <translation id="8008356846765065031">Disconnesso da Internet. Controlla la tua connessione Internet.</translation>
@@ -5229,7 +5227,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9137916601698928395">Apri link come <ph name="USER" /></translation>
 <translation id="9138978632494473300">Aggiungi scorciatoie per le seguenti posizioni:</translation>
-<translation id="9140067245205650184">Stai utilizzando un flag funzione non supportato: <ph name="BAD_FLAG" />. Stabilità e sicurezza ne risentiranno.</translation>
+<translation id="9140067245205650184">Stai utilizzando un flag di funzione non supportato: <ph name="BAD_FLAG" />. Stabilità e sicurezza ne risentiranno.</translation>
 <translation id="9147392381910171771">&amp;Opzioni</translation>
 <translation id="9148058034647219655">Esci</translation>
 <translation id="9148116311817999634">Imposta un blocco schermo per motivi di sicurezza</translation>

@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="G" /> ali <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Pregledni način</translation>
 <translation id="4472417192667361414">Nastavitve sistema in zaslona</translation>
-<translation id="4484292984055789039">Preklop na prejšnji način vnosa jezika</translation>
 <translation id="4556221320735744018">Ogled pomočnika za bližnjične tipke</translation>
 <translation id="4628718545549558538">Odpiranje območja stanja, na katerem je prikazana slika za vaš račun</translation>
 <translation id="4642092649622328492">Ustvarjanje delnega posnetka zaslona</translation>
 <translation id="4698850295812410683">Prikaz orodij pisala</translation>
 <translation id="4801989101741319327">Premik na konec naslednje besede</translation>
 <translation id="4916163929714267752">Odpiranje povezave v novem oknu</translation>
-<translation id="5002047168347153398">Izbira nedejavnega pojavnega okna za dostopnost</translation>
 <translation id="5030659775136592441">Prikaz upravitelja zaznamkov</translation>
 <translation id="5034421018520995080">Premik na vrh strani</translation>
 <translation id="5042305953558921026">Tipka za način pregleda</translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">Izreži</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /> <ph name="SEPARATOR1" /> <ph name="ALT" /> <ph name="SEPARATOR2" /> <ph name="L" />, nato <ph name="SPACE" /> ali <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Odpiranje datoteke v brskalniku</translation>
-<translation id="7822267121073044318">Preklop na naslednji način vnosa jezika</translation>
 <translation id="7917881398263220094">Ustavitev nalaganja trenutne strani</translation>
 <translation id="7952165122793773711">Premik na zavihke od 1 do 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /> <ph name="SEPARATOR1" /> <ph name="SHIFT" /> <ph name="SEPARATOR2" /> <ph name="PLUS" /> ali <ph name="MINUS" /></translation>

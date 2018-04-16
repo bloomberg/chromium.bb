@@ -46,7 +46,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="135978014023467274">ChromeVox wurde auf Version 63 aktualisiert.</translation>
 <translation id="136718599399906424">Nächste Tabellenzeile</translation>
-<translation id="1377925789329510816">Hierbei handelt es sich um die letzte Überschrift. Drücken Sie "Suche + H", um zur ersten Überschrift zu gelangen, oder "Suche + Shift + H", um zur zweiten Überschrift auf dieser Seite zu springen.</translation>
+<translation id="1377925789329510816">Hierbei handelt es sich um die letzte Überschrift. Drücken Sie "Suche + H", um zur ersten Überschrift zu gelangen, oder "Suche + Umschalttaste + H", um zur zweiten Überschrift auf dieser Seite zu springen.</translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1385214448885562192">Drücken Sie zum Bestätigen die Eingabetaste, zum Abbrechen die Esc-Taste, zum Aufrufen des nächsten Ergebnisses den Abwärtspfeil und des vorherigen Ergebnisses den Aufwärtspfeil.</translation>
 <translation id="1396114365388024581">tablst</translation>
@@ -54,7 +54,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1452236308086741652"><ph name="VALUE" />, Passwort-Textfeld</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1474557363159888097">Kein vorheriges Ankerelement</translation>
-<translation id="1487494366197411587">Auf dem Chromebook befindet sich die Suchtaste direkt über der linken Shift-Taste.</translation>
+<translation id="1487494366197411587">Auf dem Chromebook befindet sich die Suchtaste direkt über der linken Umschalttaste-Taste.</translation>
 <translation id="1499041187027566160">Lautstärke erhöhen</translation>
 <translation id="1502086903961450562">Vorherige Grafik</translation>
 <translation id="1506187449813838456">Tonhöhe erhöhen</translation>
@@ -185,7 +185,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2849332794118375855">Kein nächstes Kästchen</translation>
 <translation id="2864481629947106776">Vorheriger Link</translation>
 <translation id="2873259058405069099">Zum Anfang der Tabelle gehen</translation>
-<translation id="288178314850623291">Mit bestimmten Befehlen können Sie verschiedene Elementtypen überspringen. Um zwischen Überschriften vorwärts zu springen, drücken Sie Suche + H, und um rückwärts zu springen Suche + Shift + H.</translation>
+<translation id="288178314850623291">Mit bestimmten Befehlen können Sie verschiedene Elementtypen überspringen. Um zwischen Überschriften vorwärts zu springen, drücken Sie Suche + H, und um rückwärts zu springen Suche + Umschalttaste + H.</translation>
 <translation id="2894654529758326923">Informationen</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{geschweifte Klammer links}other{# geschweifte Klammern links}}</translation>
 <translation id="2911433807131383493">ChromeVox-Anleitung öffnen</translation>
@@ -239,7 +239,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3299925995433437805">Kein nächster besuchter Link</translation>
 <translation id="3300348286427369683">Rich-Text-Unterstützung. ChromeVox unterstützt jetzt Rich-Text-Felder, Befehle für den Wechsel zwischen Elementen, Cursor-Routing über eine Braillezeile, das Erstellen von Auswahlen und mehr.</translation>
 <translation id="3307886118343381874">Zum Ende der Tabelle gehen</translation>
-<translation id="3311969765485641742">Drücken Sie Alt + Shift + A, um die Benachrichtigungen aufzurufen.</translation>
+<translation id="3311969765485641742">Drücken Sie Alt + Umschalttaste + A, um die Benachrichtigungen aufzurufen.</translation>
 <translation id="3312997241656799641">Nächster besuchter Link</translation>
 <translation id="3313245066383501820">Die ChromeVox-Modifikatortaste</translation>
 <translation id="3317212938060708859">Ein Schieberegler</translation>
@@ -549,7 +549,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5683155931978483559">Vorheriges Kästchen</translation>
 <translation id="5684277895745049190">Liste</translation>
 <translation id="5695831708991916435">Bei den nächsten Tastenkombinationen handelt es sich zwar nicht um ChromeVox-Befehle, aber sie sind dennoch sehr nützlich, um Chrome optimal zu nutzen.
-Wenn Sie durch ausführbare Elemente, z. B. Schaltflächen und Links, vorwärts navigieren möchten, drücken Sie die Tabulatortaste. Rückwärts gelangen Sie mit Shift + Tab. 
+Wenn Sie durch ausführbare Elemente, z. B. Schaltflächen und Links, vorwärts navigieren möchten, drücken Sie die Tabulatortaste. Rückwärts gelangen Sie mit Umschalttaste + Tab. 
 Wenn Sie auf die Adressleiste des Chrome-Browsers, auch als Omnibox bezeichnet, zugreifen möchten, drücken Sie Strg + L. 
 Um einen neuen Tab zu öffnen und automatisch dorthin zu wechseln, drücken Sie Strg + T. Ihr Cursor befindet sich dann in der Omnibox. 
 Wenn Sie einen Tab schließen möchten, drücken Sie Strg + W. 
@@ -562,7 +562,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="5712338278108304766">Nächste Tabellenspalte</translation>
 <translation id="571866080859340309">Gruppen erkunden</translation>
 <translation id="5728409797179002635">Keine Tabelle gefunden</translation>
-<translation id="5732189279857692565">Hierbei handelt es sich um die zweite Überschrift. Zum Springen drücken Sie entweder auf "Suche + H" oder auf "Suche + Shift + H".</translation>
+<translation id="5732189279857692565">Hierbei handelt es sich um die zweite Überschrift. Zum Springen drücken Sie entweder auf "Suche + H" oder auf "Suche + Umschalttaste + H".</translation>
 <translation id="5748623122140342504">Vorherige Überschrift der Ebene 5</translation>
 <translation id="5750633686117194034">Sie haben keinen Modifikator gedrückt. Drücken und halten Sie mindestens einen Modifikator, heben Sie anschließend die Finger an und hören Sie, welche Tasten gewählt wurden. Beenden Sie mit der Tabulatortaste.</translation>
 <translation id="5788275253279308023">Inkognitofenster, Tab "<ph name="TITLE" />"</translation>

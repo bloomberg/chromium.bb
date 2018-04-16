@@ -52,12 +52,6 @@
 
       Ja šai politikai ir norādīta vērtība “False”, netiks ziņots par izstrādes slēdža stāvokli.</translation>
 <translation id="1160939557934457296">Aizliegums turpināt pārlūkošanu no Drošas pārlūkošanas brīdinājuma lapas</translation>
-<translation id="1166377463685560145">Norāda printerus, ko lietotājs nevar izmantot.
-
-      Šī politika tiek izmantota tikai tad, ja parametram <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_BLACKLIST" />.
-
-      Ja šī politika tiek izmantota, lietotājam ir pieejami visi printeri, izņemot tos, kuru identifikatori atbilst šajā politikā norādītajām vērtībām.
-      </translation>
 <translation id="1198465924256827162">Ierīces statusa augšupielāžu sūtīšanas biežums milisekundēs.
 
       Ja šai politikai nav iestatīta vērtība, tiek lietots noklusējuma biežums:
@@ -166,19 +160,6 @@
 <translation id="1561424797596341174">Politikas ignorēšana attālās piekļuves saimniekdatora atkļūdošanas versijām</translation>
 <translation id="1561967320164410511">Universālā divfaktoru autentificēšana (U2F) un paplašinājumi atsevišķai apstiprināšanai</translation>
 <translation id="1583248206450240930">Pēc noklusējuma lietot <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="1603058613431276040">Nodrošina konfigurāciju uzņēmuma printeriem, kas ir piesaistīti ierīcēm.
-
-      Šī politika ļauj nodrošināt printeru konfigurāciju <ph name="PRODUCT_OS_NAME" /> ierīcēm. Faila lielums nedrīkst pārsniegt 5 MB, un tam ir jābūt JSON kodējumā. Formāts ir tāds pats kā NativePrinters vārdnīcā. Paredzams, ka fails ar aptuveni 21 000 printeriem tiks kodēts kā 5 MB fails. Kriptogrāfiskais jaucējkods tiek izmantots, lai pārbaudītu lejupielādes integritāti.
-
-      Fails ir lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti lejupielādēts, tiklīdz tiks mainīts URL vai jaucējkods.
-
-      Ja šī politika ir iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks lejupielādēts printeru konfigurācijas fails un printeri tiks padarīti pieejami saskaņā ar politikām <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> un <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs. Tā ir paredzēta kā papildu konfigurācija atsevišķu lietotāju veiktajai printeru konfigurācijai.
-
-      Šī politika ir papildinājums politikai <ph name="BULK_PRINTERS_POLICY" />.
-
-      Ja šī politika nav iestatīta, nebūs neviena ierīču printera un <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> politikas tiks ignorētas.</translation>
 <translation id="1608755754295374538">Vietrāži URL, kuriem tiks nodrošināta piekļuve audio tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
 <translation id="1617235075406854669">Iespējot pārlūka un lejupielādes vēstures dzēšanu</translation>
 <translation id="163200210584085447">Šajā sarakstā pieejamajiem šabloniem tiks meklēta atbilstība
@@ -597,12 +578,6 @@
 <translation id="2762164719979766599">Tiek norādīts to ierīces lokālo kontu saraksts, kas tiks rādīti pieteikšanās ekrānā.
 
       Katrs saraksta ieraksts apzīmē identifikatoru, kas tiek izmantots iekšēji, lai atšķirtu dažādus ierīces lokālos kontus.</translation>
-<translation id="2766302473082018239">Norāda printerus, ko lietotājs var izmantot.
-
-      Šī politika tiek izmantota tikai tad, ja parametram <ph name="BULK_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_WHITELIST" />.
-
-      Ja šī politika tiek izmantota, lietotājam ir pieejami tikai tie printeri, kuru identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir jāatbilst ierakstiem failā, kas norādīts politikā <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Attālās piekļuves saimniekdatoru obligātā domēna nosaukuma konfigurēšana</translation>
 <translation id="2787173078141616821">Sniegt informāciju par Android statusu</translation>
 <translation id="2793923553868251161">Avoti, kas jāapstrādā kā drošs konteksts</translation>
@@ -789,12 +764,6 @@
 
           Ja šai politikai tiks iestatīta virkne, kas nav tukša, šī virkne tiks izmantota kā <ph name="PRODUCT_NAME" /> galamērķa nosaukums. Pretējā gadījumā kā galamērķa nosaukums tiks izmantots ierīces nosaukums. Ja šī politika netiks iestatīta, kā galamērķa nosaukums tiks izmantots ierīces nosaukums un to varēs mainīt ierīces īpašnieks vai lietotājs no domēna, kurā ierīce tiek pārvaldīta. Nosaukuma garums nedrīkst pārsniegt 24 rakstzīmes.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
-<translation id="3395348522300156660">Norāda printerus, ko lietotājs var izmantot.
-
-      Šī politika tiek izmantota tikai tad, ja parametram <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_WHITELIST" />.
-
-      Ja šī politika tiek izmantota, lietotājam ir pieejami tikai tie printeri, kuru identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir jāatbilst ierakstiem failā, kas norādīts politikā <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Ja šī politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> tiek izmantota noklusējuma minimālā versija TLS 1.0.
 
       Pretējā gadījumā var būt iestatīta kāda no šīm vērtībām: “tls1”, “tls1.1” vai “tls1.2”. Ja politikai ir iestatīta vērtība, pārlūkā <ph name="PRODUCT_NAME" /> netiek izmantotas standarta SSL/TLS versijas, kas vecākas par norādīto versiju. Neatpazītas versijas tiek ignorētas.</translation>
@@ -948,7 +917,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Katrā saraksta ierakstā ir ietverta vārdnīca, kurai laukā “extension-id” ir jāiekļauj paplašinājuma ID, bet laukā “update-url”  — tā atjaunināšanas URL.</translation>
 <translation id="3873159954366380945">Ļauj iestatīt laika periodu, kurā tiek rādīti <ph name="PRODUCT_NAME" /> atkārtotas palaišanas paziņojumi, lai veiktu neapstrādātu atjauninājumu.
 
-      Šīs politikas iestatījumus var izmantot, lai kontrolētu laika periodu (milisekundēs), kurā lietotājs tiek pakāpeniski informēts, ka pārlūks <ph name="PRODUCT_NAME" /> ir atkārtoti jāpalaiž (vai ka pārlūks <ph name="PRODUCT_OS_NAME" /> ir jārestartē) atjaunināšanas nolūkā. Šajā laika periodā lietotājs tiks atkārtoti informēts par to, ka jāveic atjaunināšana, pamatojoties uz politikas <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> iestatījumu. Ja šī politika nav iestatīta, tiek izmantots noklusējuma periods — 345 600 000 milisekundes (četras dienas) operētājsistēmai <ph name="PRODUCT_OS_NAME" /> un 604 800 000 milisekundes (viena nedēļa) parējām platformām.</translation>
+      Šīs politikas iestatījumus var izmantot, lai kontrolētu laika periodu (milisekundēs), kurā lietotājs tiek pakāpeniski informēts, ka pārlūks <ph name="PRODUCT_NAME" /> ir atkārtoti jāpalaiž (vai ka pārlūks <ph name="PRODUCT_OS_NAME" /> ir jārestartē), lai to atjauninātu. Šajā laika periodā lietotājs tiks atkārtoti informēts par to, ka jāveic atjaunināšana, pamatojoties uz politikas <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> iestatījumu. Ja šī politika nav iestatīta, tiek izmantots noklusējuma periods — 345 600 000 milisekundes (četras dienas) operētājsistēmai <ph name="PRODUCT_OS_NAME" /> un 604 800 000 milisekundes (viena nedēļa) pārējām platformām.</translation>
 <translation id="3877517141460819966">Integrētais divfaktoru autentificēšanas režīms</translation>
 <translation id="388237772682176890">Šī politika ir novecojusi versijā M53 un noņemta no versijas M54, jo ir noņemts protokola SPDY/3.1 atbalsts.
 
@@ -1302,8 +1271,8 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4899802251198446659">Atļauj kontrolēt, vai videoklipus var atskaņot automātiski kopā ar <ph name="PRODUCT_NAME" /> audio saturu (bez lietotāja piekrišanas).
 
       Ja politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> ir atļauts automātiski atskaņot multivides saturu.
-      Ja politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_NAME" /> nav atļauts automātiski atskaņot multivides saturu. Politiku AutoplayWhitelist var izmantot šīs politikas ignorēšanai noteiktiem URL rakstiem.
-      Pēc noklusējuma <ph name="PRODUCT_NAME" /> ir liegta automātiska multivides satura atskaņošana. Politiku AutoplayWhitelist var izmantot šīs politikas ignorēšanai noteiktiem URL rakstiem.
+      Ja politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_NAME" /> nav atļauts automātiski atskaņot multivides saturu. Politiku AutoplayWhitelist var izmantot, lai ignorētu šo politiku noteiktiem URL rakstiem.
+      Pēc noklusējuma <ph name="PRODUCT_NAME" /> ir liegta automātiska multivides satura atskaņošana. Politiku AutoplayWhitelist var izmantot, lai ignorētu šo politiku noteiktiem URL rakstiem.
 
       Ņemiet vērā: ja darbojas <ph name="PRODUCT_NAME" /> un šīs politikas vērtība tiek mainīta, tā tiks piemērota tikai jaunākajām atvērtajām cilnēm. Tādējādi dažās cilnēs joprojām var tikt novērota iepriekšējā rīcība.
       </translation>
@@ -2445,12 +2414,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
       Brīdinājums: nav ieteicams konfigurēt versiju ierobežojumus, jo to dēļ lietotāji var nesaņemt programmatūras atjauninājumus un kritiskus drošības labojumus. Ja atļausiet jaunināšanu tikai uz konkrētas versijas prefiksu, iespējams, lietotāji tiks apdraudēti.</translation>
 <translation id="8519264904050090490">Pārvaldīto lietotāju manuālo izņēmumu vietrāži URL</translation>
-<translation id="8527932539502116028">Norāda printerus, ko lietotājs nevar izmantot.
-
-      Šī politika tiek izmantota tikai tad, ja parametram <ph name="BULK_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_BLACKLIST" />.
-
-      Ja šī politika tiek izmantota, lietotājam ir pieejami visi printeri, izņemot tos, kuru identifikatori atbilst šajā politikā norādītajām vērtībām.
-      </translation>
 <translation id="8538235451413605457">Konfigurē <ph name="PRODUCT_NAME" /> minimālās atļautās versijas prasību. Par norādītajām versijām vecākas versijas tiek uzskatītas par novecojušām, un lietotājs ierīcē nevarēs pierakstīties, ja netiks atjaunināta OS.
       Ja pašreizējā versija novecos lietotāja sesijas laikā, lietotājs tiks izrakstīts piespiedu kārtā.
 
@@ -2566,18 +2529,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
           Politikas vērtību nedrīkst norādīt milisekundēs. Ir jānorāda vērtības, kas ir mazākas par aizkavi līdz dīkstāvei.</translation>
 <translation id="891435090623616439">kodēts kā JSON virkne, detalizētu informāciju skatiet vietnē <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Nodrošina konfigurāciju uzņēmuma printeriem.
-
-      Šī politika ļauj nodrošināt printeru konfigurāciju <ph name="PRODUCT_OS_NAME" /> ierīcēm. Faila lielums nedrīkst pārsniegt 5 MB, un tam ir jābūt JSON kodējumā. Formāts ir tāds pats kā NativePrinters vārdnīcā. Paredzams, ka fails ar aptuveni 21 000 printeriem tiks kodēts kā 5 MB fails. Kriptogrāfiskais jaucējkods tiek izmantots, lai pārbaudītu lejupielādes integritāti.
-
-      Fails ir lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti lejupielādēts, tiklīdz tiks mainīts URL vai jaucējkods.
-
-      Ja šī politika ir iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks lejupielādēts printeru konfigurācijas fails un printeri tiks padarīti pieejami saskaņā ar politikām <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> un <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt vai ignorēt.
-
-      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs. Tā ir paredzēta kā papildu konfigurācija atsevišķu lietotāju veiktajai printeru konfigurācijai.
-      </translation>
 <translation id="8934944553121392674">Kontrolē, kuri printeri no politikas <ph name="DEVICE_PRINTERS_POLICY" /> ir pieejami lietotājiem.
 
       Norāda, kura piekļuves politika tiek izmantota printeru lielapjoma konfigurācijai. Ja ir atlasīta vērtība <ph name="PRINTERS_ALLOW_ALL" />, tiek rādīti visi printeri. Ja ir atlasīta vērtība <ph name="PRINTERS_BLACKLIST" />, tiek izmantota politika <ph name="DEVICE_PRINTERS_BLACKLIST" />, lai ierobežotu piekļuvi norādītajiem printeriem. Ja ir atlasīta vērtība <ph name="PRINTERS_WHITELIST" />, politika <ph name="DEVICE_PRINTERS_WHITELIST" /> nosaka piekļuvi tikai tiem printeriem, kurus var atlasīt.

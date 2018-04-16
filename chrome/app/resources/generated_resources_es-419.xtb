@@ -710,7 +710,6 @@
 <translation id="2099686503067610784">¿Eliminar certificado "<ph name="CERTIFICATE_NAME" />" del servidor?</translation>
 <translation id="2100273922101894616">Acceso automático</translation>
 <translation id="2101225219012730419">Versión:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">No se cargó todavía</translation>
 <translation id="2107494551712864447">Agregar una huella digital</translation>
 <translation id="2112877397266219826">Activa el controlador táctil para realizar la configuración.</translation>
@@ -790,7 +789,6 @@
 <translation id="2218320521449013367">Se produjo un error cuando Chrome intentaba quitar software dañino</translation>
 <translation id="2218515861914035131">Pegar como texto simple</translation>
 <translation id="221872881068107022">Invertir desplazamiento</translation>
-<translation id="2218947405056773815"><ph name="API_NAME" /> encontró un problema.</translation>
 <translation id="2220529011494928058">Informar un problema</translation>
 <translation id="2220572644011485463">PIN o contraseña</translation>
 <translation id="2222641695352322289">La única forma de deshacer esto es volver a instalar <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1706,6 +1704,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3576324189521867626">Se instaló correctamente</translation>
 <translation id="3578594933904494462">Se está compartiendo el contenido de esta pestaña.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un grupo del cual eres propietario: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si aceptas, todos los miembros del grupo podrán usar esa impresora para imprimir.</translation>
+<translation id="3582972582564653026">Sincroniza y personaliza Chrome en todos tus dispositivos</translation>
 <translation id="3584169441612580296">Leer y cambiar fotos, música y otro contenido multimedia desde tu computadora</translation>
 <translation id="3587482841069643663">Todos</translation>
 <translation id="358796204584394954">Escribe este código en el dispositivo "<ph name="DEVICE_NAME" />" para sincronizar:</translation>
@@ -2108,6 +2107,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="4206944295053515692">Pedir sugerencias a Google</translation>
 <translation id="4208390505124702064">Buscar <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Grande</translation>
+<translation id="4209464433672152343">Los documentos <ph name="BEGIN_LINK_HELP" />se envían a Google<ph name="END_LINK_HELP" /> a fin de prepararlos para su impresión. Visualiza, edita y administra las impresoras y tu historial de impresión en el <ph name="BEGIN_LINK_DASHBOARD" />panel de Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Tienes que estar conectado para acceder a este archivo.</translation>
 <translation id="421182450098841253">Mo&amp;strar la barra de favoritos</translation>
 <translation id="42126664696688958">Exportar</translation>
@@ -2529,7 +2529,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="4907824805858067479">Tu administrador inhabilitó las tarjetas guardadas</translation>
 <translation id="4908811072292128752">Abre una pestaña nueva para navegar en dos sitios al mismo tiempo</translation>
 <translation id="4909038193460299775">Debido a que esta cuenta la administra <ph name="DOMAIN" />, tus favoritos, historial, contraseñas y otras opciones de configuración se borrarán de este dispositivo. Sin embargo, tus datos permanecerán almacenados en tu cuenta de Google y se podrán administrar en el <ph name="BEGIN_LINK" />Panel de control de Google<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">No hay extensiones con combinaciones de teclas asignadas.</translation>
 <translation id="4912643508233590958">Reactivaciones</translation>
 <translation id="491691592645955587">Cambiar a un navegador seguro</translation>
@@ -3279,6 +3278,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="6064217302520318294">Bloqueo de pantalla</translation>
 <translation id="6065289257230303064">Atributos de directorio del sujeto del certificado</translation>
 <translation id="6068338049763724728">Habilitar inscripción remota</translation>
+<translation id="6069671174561668781">Establecer fondo de pantalla</translation>
 <translation id="6071181508177083058">confirmar contraseña</translation>
 <translation id="6073903501322152803">Agregar funciones de accesibilidad</translation>
 <translation id="6074825444536523002">Formulario de Google</translation>
@@ -4023,7 +4023,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="7229570126336867161">Se necesita EVDO</translation>
 <translation id="7230787553283372882">Personaliza el tamaño del texto</translation>
 <translation id="7232750842195536390">No se pudo cambiar el nombre</translation>
-<translation id="7233309214676155451">Sincroniza y personaliza Chrome en todos tus dispositivos</translation>
 <translation id="7238585580608191973">Huella digital SHA-256</translation>
 <translation id="7240120331469437312">Nombre alternativo del sujeto del certificado</translation>
 <translation id="7240339475467890413">¿Deseas conectarte a un nuevo hotspot?</translation>
@@ -4528,7 +4527,6 @@ Archivo de clave: <ph name="KEY_FILE" />
 Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones de tu extensión.</translation>
 <translation id="799923393800005025">Se puede ver</translation>
 <translation id="8000066093800657092">Sin red</translation>
-<translation id="8001504501378762252">Es posible que un sitio haya robado tu contraseña</translation>
 <translation id="8004582292198964060">Navegador</translation>
 <translation id="8005600846065423578">Permitir siempre que <ph name="HOST" /> vea el portapapeles</translation>
 <translation id="8008356846765065031">No hay conexión a Internet. Comprueba la conexión.</translation>
