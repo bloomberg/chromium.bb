@@ -15,12 +15,11 @@ var AUDIO_PLAYER_ICON = 'icons/audio-player-64.png';
 var AUDIO_PLAYER_APP_URL = 'audio_player.html';
 
 /**
- * Configuration of the audio player panel.
+ * Configuration of the audio player.
  * @type {Object}
  */
 var audioPlayerCreateOptions = {
   id: 'audio-player',
-  type: 'panel',
   minHeight: 4 + 48 + 96,  // 4px: border-top, 48px: track, 96px: controller
   minWidth: 320,
   height: 4 + 48 + 96,  // collapsed
@@ -113,7 +112,7 @@ function open(urls) {
     if (maybePosition !== -1)
       position = maybePosition;
 
-    // Opens the audio player panel.
+    // Opens the audio player.
     return new Promise(function(fulfill, reject) {
       var urls = util.entriesToURLs(audioEntries);
       audioPlayer.launch({items: urls, position: position},
