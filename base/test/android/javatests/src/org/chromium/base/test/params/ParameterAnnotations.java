@@ -14,44 +14,41 @@ import java.lang.annotation.Target;
  */
 public class ParameterAnnotations {
     /**
-     * Annotation for test methods to indicate associated List<ParameterSet>
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public @interface UseMethodParameter {
-        String value();
-    }
-
-    /**
      * Annotation for test methods to indicate associated {@link ParameterProvider}.
      * Note: the class referred to must be public and have a public default constructor.
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public @interface UseParameterProvider {
+    public @interface UseMethodParameter {
         Class<? extends ParameterProvider> value();
     }
 
     /**
      * Annotation for methods that should be called before running a test with method parameters.
-     * @see MethodParameter
+     *
+     * In order to use this, add a {@link MethodParamAnnotationRule} annotated with
+     * {@code @}{@link org.junit.Rule Rule} to your test class.
+     * @see ParameterProvider
      * @see UseMethodParameterAfter
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     public @interface UseMethodParameterBefore {
-        String value();
+        Class<? extends ParameterProvider> value();
     }
 
     /**
      * Annotation for methods that should be called after running a test with method parameters.
-     * @see MethodParameter
+     *
+     * In order to use this, add a {@link MethodParamAnnotationRule} annotated with
+     * {@code @}{@link org.junit.Rule Rule} to your test class.
+     * @see ParameterProvider
      * @see UseMethodParameterBefore
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     public @interface UseMethodParameterAfter {
-        String value();
+        Class<? extends ParameterProvider> value();
     }
 
     /**
@@ -60,15 +57,6 @@ public class ParameterAnnotations {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface ClassParameter {}
-
-    /**
-     * Annotation for static field of a `List<ParameterSet>` for certain test methods
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
-    public @interface MethodParameter {
-        String value();
-    }
 
     /**
      * Annotation for static field of a `List<ParameterSet>` of TestRule

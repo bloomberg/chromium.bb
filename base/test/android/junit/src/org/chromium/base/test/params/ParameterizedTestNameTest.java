@@ -13,7 +13,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.TestClass;
 
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
-import org.chromium.base.test.params.ParameterAnnotations.MethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 
@@ -30,11 +29,10 @@ public class ParameterizedTestNameTest {
     @UseRunnerDelegate(BlockJUnit4RunnerDelegate.class)
     public static class TestClassWithClassParameterAppendName {
         @ClassParameter
-        static List<ParameterSet> sAllName = new ArrayList<>();
-        static {
-            sAllName.add(new ParameterSet().value("hello").name("Hello"));
-            sAllName.add(new ParameterSet().value("world").name("World"));
-        }
+        static List<ParameterSet> sAllName = Arrays.asList(
+                new ParameterSet().value("hello").name("Hello"),
+                new ParameterSet().value("world").name("World")
+        );
 
         public TestClassWithClassParameterAppendName(String a) {}
 
@@ -45,11 +43,10 @@ public class ParameterizedTestNameTest {
     @UseRunnerDelegate(BlockJUnit4RunnerDelegate.class)
     public static class TestClassWithClassParameterDefaultName {
         @ClassParameter
-        static List<ParameterSet> sAllName = new ArrayList<>();
-        static {
-            sAllName.add(new ParameterSet().value("hello"));
-            sAllName.add(new ParameterSet().value("world"));
-        }
+        static List<ParameterSet> sAllName = Arrays.asList(
+                new ParameterSet().value("hello"),
+                new ParameterSet().value("world")
+        );
 
         public TestClassWithClassParameterDefaultName(String a) {}
 
@@ -59,25 +56,31 @@ public class ParameterizedTestNameTest {
 
     @UseRunnerDelegate(BlockJUnit4RunnerDelegate.class)
     public static class TestClassWithMethodParameter {
-        @MethodParameter("A")
-        static List<ParameterSet> sAppendName = new ArrayList<>();
-        static {
-            sAppendName.add(new ParameterSet().value("hello").name("Hello"));
-            sAppendName.add(new ParameterSet().value("world").name("World"));
+        static class AppendNameParams implements ParameterProvider {
+            @Override
+            public Iterable<ParameterSet> getParameters() {
+                return Arrays.asList(
+                        new ParameterSet().value("hello").name("Hello"),
+                        new ParameterSet().value("world").name("World")
+                );
+            }
         }
 
-        @MethodParameter("B")
-        static List<ParameterSet> sDefaultName = new ArrayList<>();
-        static {
-            sDefaultName.add(new ParameterSet().value("hello"));
-            sDefaultName.add(new ParameterSet().value("world"));
+        static class DefaultNameParams implements ParameterProvider {
+            @Override
+            public Iterable<ParameterSet> getParameters() {
+                return Arrays.asList(
+                        new ParameterSet().value("hello"),
+                        new ParameterSet().value("world")
+                );
+            }
         }
 
-        @UseMethodParameter("A")
+        @UseMethodParameter(AppendNameParams.class)
         @Test
         public void test(String a) {}
 
-        @UseMethodParameter("B")
+        @UseMethodParameter(DefaultNameParams.class)
         @Test
         public void testDefaultName(String b) {}
     }
@@ -85,22 +88,24 @@ public class ParameterizedTestNameTest {
     @UseRunnerDelegate(BlockJUnit4RunnerDelegate.class)
     public static class TestClassWithMixedParameter {
         @ClassParameter
-        static List<ParameterSet> sAllName = new ArrayList<>();
-        static {
-            sAllName.add(new ParameterSet().value("hello").name("Hello"));
-            sAllName.add(new ParameterSet().value("world").name("World"));
-        }
+        static List<ParameterSet> sAllName = Arrays.asList(
+                new ParameterSet().value("hello").name("Hello"),
+                new ParameterSet().value("world").name("World")
+        );
 
-        @MethodParameter("A")
-        static List<ParameterSet> sAppendName = new ArrayList<>();
-        static {
-            sAppendName.add(new ParameterSet().value("1").name("A"));
-            sAppendName.add(new ParameterSet().value("2").name("B"));
+        static class AppendNameParams implements ParameterProvider {
+            @Override
+            public Iterable<ParameterSet> getParameters() {
+                return Arrays.asList(
+                        new ParameterSet().value("1").name("A"),
+                        new ParameterSet().value("2").name("B")
+                );
+            }
         }
 
         public TestClassWithMixedParameter(String a) {}
 
-        @UseMethodParameter("A")
+        @UseMethodParameter(AppendNameParams.class)
         @Test
         public void testA(String a) {}
 
@@ -113,7 +118,7 @@ public class ParameterizedTestNameTest {
         List<Runner> runners = ParameterizedRunner.createRunners(
                 new TestClass(TestClassWithClassParameterAppendName.class));
         List<String> expectedTestNames =
-                new LinkedList<String>(Arrays.asList(new String[] {"test__Hello", "test__World"}));
+                new LinkedList<String>(Arrays.asList("test__Hello", "test__World"));
         List<String> computedMethodNames = new ArrayList<>();
         for (Runner r : runners) {
             BlockJUnit4RunnerDelegate castedRunner = (BlockJUnit4RunnerDelegate) r;
@@ -137,8 +142,7 @@ public class ParameterizedTestNameTest {
     public void testClassParameterDefaultName() throws Throwable {
         List<Runner> runners = ParameterizedRunner.createRunners(
                 new TestClass(TestClassWithClassParameterDefaultName.class));
-        List<String> expectedTestNames =
-                new LinkedList<String>(Arrays.asList(new String[] {"test", "test"}));
+        List<String> expectedTestNames = new LinkedList<String>(Arrays.asList("test", "test"));
         for (Runner r : runners) {
             @SuppressWarnings("unchecked")
             BlockJUnit4RunnerDelegate castedRunner = (BlockJUnit4RunnerDelegate) r;
@@ -158,8 +162,8 @@ public class ParameterizedTestNameTest {
     public void testMethodParameter() throws Throwable {
         List<Runner> runners = ParameterizedRunner.createRunners(
                 new TestClass(TestClassWithMethodParameter.class));
-        List<String> expectedTestNames = new LinkedList<String>(Arrays.asList(
-                new String[] {"test__Hello", "test__World", "testDefaultName", "testDefaultName"}));
+        List<String> expectedTestNames = new LinkedList<String>(
+                Arrays.asList("test__Hello", "test__World", "testDefaultName", "testDefaultName"));
         for (Runner r : runners) {
             BlockJUnit4RunnerDelegate castedRunner = (BlockJUnit4RunnerDelegate) r;
             for (FrameworkMethod method : castedRunner.computeTestMethods()) {
@@ -178,9 +182,9 @@ public class ParameterizedTestNameTest {
     public void testMixedParameterTestA() throws Throwable {
         List<Runner> runners =
                 ParameterizedRunner.createRunners(new TestClass(TestClassWithMixedParameter.class));
-        List<String> expectedTestNames = new LinkedList<String>(
-                Arrays.asList(new String[] {"testA__Hello_A", "testA__World_A", "testA__Hello_B",
-                        "testA__World_B", "test__Hello", "test__World"}));
+        List<String> expectedTestNames =
+                new LinkedList<String>(Arrays.asList("testA__Hello_A", "testA__World_A",
+                        "testA__Hello_B", "testA__World_B", "test__Hello", "test__World"));
         for (Runner r : runners) {
             BlockJUnit4RunnerDelegate castedRunner = (BlockJUnit4RunnerDelegate) r;
             for (FrameworkMethod method : castedRunner.computeTestMethods()) {

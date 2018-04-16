@@ -28,6 +28,10 @@
     public static **[] values();
 }
 
+# Keep classes implementing ParameterProvider -- these will be instantiated
+# via reflection.
+-keep class * implements org.chromium.base.test.params.ParameterProvider
+
 # Allows Proguard freedom in removing these log related calls. We ask for debug
 # and verbose logs to be stripped out in base.Log, so we are just ensuring we
 # get rid of all other debug/verbose logs.

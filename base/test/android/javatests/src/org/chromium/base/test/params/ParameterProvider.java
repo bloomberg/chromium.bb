@@ -4,10 +4,8 @@
 
 package org.chromium.base.test.params;
 
-import java.util.List;
-
 /**
  * Generator to use generate arguments for parameterized test methods.
- * @see ParameterAnnotations.UseParameterProvider
+ * @see ParameterAnnotations.UseMethodParameter
  */
-public interface ParameterProvider { List<ParameterSet> getParameters(); }
+public interface ParameterProvider { Iterable<ParameterSet> getParameters(); }
