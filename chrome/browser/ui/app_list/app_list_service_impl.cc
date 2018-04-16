@@ -17,8 +17,10 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/session_util.h"
@@ -40,6 +42,7 @@ void AppListServiceImpl::SetAppListControllerAndClient(
   app_list_controller_ = app_list_controller;
   controller_delegate_.SetAppListController(app_list_controller);
   app_list_client_ = app_list_client;
+  app_list_client_->set_controller_delegate(&controller_delegate_);
 }
 
 ash::mojom::AppListController* AppListServiceImpl::GetAppListController() {
@@ -53,12 +56,9 @@ app_list::SearchModel* AppListServiceImpl::GetSearchModelFromAsh() {
              : nullptr;
 }
 
-AppListViewDelegate* AppListServiceImpl::GetViewDelegate() {
-  if (!view_delegate_)
-    view_delegate_.reset(new AppListViewDelegate(GetControllerDelegate()));
-  Profile* profile = Profile::FromBrowserContext(GetActiveBrowserContext());
-  view_delegate_->SetProfile(profile);
-  return view_delegate_.get();
+AppListClientImpl* AppListServiceImpl::GetAppListClient() {
+  app_list_client_->UpdateProfile();
+  return app_list_client_;
 }
 
 AppListControllerDelegate* AppListServiceImpl::GetControllerDelegate() {
