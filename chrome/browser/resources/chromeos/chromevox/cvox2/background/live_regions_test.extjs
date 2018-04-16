@@ -114,7 +114,8 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
     });
 });
 
-TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomicText', function() {
+// Flaky test: https://crbug.com/819696
+TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeAtomicText', function() {
   LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
