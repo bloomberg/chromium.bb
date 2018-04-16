@@ -26,44 +26,48 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CONE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CONE_H_
-
-#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/audio/cone_effect.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 
-// Cone gain is defined according to the OpenAL specification
+ConeEffect::ConeEffect()
+    : inner_angle_(360.0), outer_angle_(360.0), outer_gain_(0.0) {}
 
-class PLATFORM_EXPORT ConeEffect {
-  DISALLOW_NEW();
+double ConeEffect::Gain(FloatPoint3D source_position,
+                        FloatPoint3D source_orientation,
+                        FloatPoint3D listener_position) {
+  if (source_orientation.IsZero() ||
+      ((inner_angle_ == 360.0) && (outer_angle_ == 360.0)))
+    return 1.0;  // no cone specified - unity gain
 
- public:
-  ConeEffect();
+  // Source-listener vector
+  FloatPoint3D source_to_listener = listener_position - source_position;
 
-  // Returns scalar gain for the given source/listener positions/orientations
-  double Gain(FloatPoint3D source_position,
-              FloatPoint3D source_orientation,
-              FloatPoint3D listener_position);
+  // Angle between the source orientation vector and the source-listener vector
+  double angle = rad2deg(source_to_listener.AngleBetween(source_orientation));
+  double abs_angle = fabs(angle);
 
-  // Angles in degrees
-  void SetInnerAngle(double inner_angle) { inner_angle_ = inner_angle; }
-  double InnerAngle() const { return inner_angle_; }
+  // Divide by 2.0 here since API is entire angle (not half-angle)
+  double abs_inner_angle = fabs(inner_angle_) / 2.0;
+  double abs_outer_angle = fabs(outer_angle_) / 2.0;
+  double gain = 1.0;
 
-  void SetOuterAngle(double outer_angle) { outer_angle_ = outer_angle; }
-  double OuterAngle() const { return outer_angle_; }
+  if (abs_angle <= abs_inner_angle) {
+    // No attenuation
+    gain = 1.0;
+  } else if (abs_angle >= abs_outer_angle) {
+    // Max attenuation
+    gain = outer_gain_;
+  } else {
+    // Between inner and outer cones
+    // inner -> outer, x goes from 0 -> 1
+    double x =
+        (abs_angle - abs_inner_angle) / (abs_outer_angle - abs_inner_angle);
+    gain = (1.0 - x) + outer_gain_ * x;
+  }
 
-  void SetOuterGain(double outer_gain) { outer_gain_ = outer_gain; }
-  double OuterGain() const { return outer_gain_; }
-
- protected:
-  double inner_angle_;
-  double outer_angle_;
-  double outer_gain_;
-};
+  return gain;
+}
 
 }  // namespace blink
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CONE_H_
