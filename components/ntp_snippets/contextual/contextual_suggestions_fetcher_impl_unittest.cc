@@ -269,8 +269,7 @@ TEST_F(ContextualSuggestionsFetcherTest, SingleSuggestionResponse) {
   ExpectResponsesMatch(std::move(callback), "Peek Text", DefaultClusters());
   EXPECT_EQ(metrics_callback.events,
             std::vector<ContextualSuggestionsEvent>(
-                {contextual_suggestions::FETCH_REQUESTED,
-                 contextual_suggestions::FETCH_COMPLETED}));
+                {contextual_suggestions::FETCH_COMPLETED}));
 }
 
 TEST_F(ContextualSuggestionsFetcherTest,
@@ -403,8 +402,7 @@ TEST_F(ContextualSuggestionsFetcherTest, ProtocolError) {
       ElementsAre(base::Bucket(/*min=*/net::HTTP_NOT_FOUND, /*count=*/1)));
   EXPECT_EQ(metrics_callback.events,
             std::vector<ContextualSuggestionsEvent>(
-                {contextual_suggestions::FETCH_REQUESTED,
-                 contextual_suggestions::FETCH_ERROR}));
+                {contextual_suggestions::FETCH_ERROR}));
 }
 
 TEST_F(ContextualSuggestionsFetcherTest, ServerUnavailable) {
@@ -424,8 +422,7 @@ TEST_F(ContextualSuggestionsFetcherTest, ServerUnavailable) {
                                /*count=*/1)));
   EXPECT_EQ(metrics_callback.events,
             std::vector<ContextualSuggestionsEvent>(
-                {contextual_suggestions::FETCH_REQUESTED,
-                 contextual_suggestions::FETCH_SERVER_BUSY}));
+                {contextual_suggestions::FETCH_SERVER_BUSY}));
 }
 
 TEST_F(ContextualSuggestionsFetcherTest, NetworkError) {
@@ -448,8 +445,7 @@ TEST_F(ContextualSuggestionsFetcherTest, NetworkError) {
 
   EXPECT_EQ(metrics_callback.events,
             std::vector<ContextualSuggestionsEvent>(
-                {contextual_suggestions::FETCH_REQUESTED,
-                 contextual_suggestions::FETCH_ERROR}));
+                {contextual_suggestions::FETCH_ERROR}));
 }
 
 TEST_F(ContextualSuggestionsFetcherTest, EmptyResponse) {
@@ -464,8 +460,7 @@ TEST_F(ContextualSuggestionsFetcherTest, EmptyResponse) {
 
   EXPECT_EQ(metrics_callback.events,
             std::vector<ContextualSuggestionsEvent>(
-                {contextual_suggestions::FETCH_REQUESTED,
-                 contextual_suggestions::FETCH_EMPTY}));
+                {contextual_suggestions::FETCH_EMPTY}));
 }
 
 TEST_F(ContextualSuggestionsFetcherTest, ResponseWithUnsetFields) {
