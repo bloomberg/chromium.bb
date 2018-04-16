@@ -2053,52 +2053,39 @@ const NGOffsetMapping* LayoutText::GetNGOffsetMapping() const {
 Position LayoutText::PositionForCaretOffset(unsigned offset) const {
   // ::first-letter handling should be done by LayoutTextFragment override.
   DCHECK(!IsTextFragment());
+  // BR handling should be done by LayoutBR override.
+  DCHECK(!IsBR());
   // WBR handling should be done by LayoutWordBreak override.
   DCHECK(!IsWordBreak());
   DCHECK_LE(offset, TextLength());
   const Node* node = GetNode();
   if (!node)
     return Position();
-  if (node->IsTextNode()) {
-    // TODO(layout-dev): Support offset change due to text-transform.
-    return Position(node, offset);
-  }
-  // TODO(xiaochengh): This should be done in LayoutBR override.
-  if (IsBR()) {
-    DCHECK(IsHTMLBRElement(node));
-    DCHECK_LE(offset, 1u);
-    return offset ? Position::AfterNode(*node) : Position::BeforeNode(*node);
-  }
-  NOTREACHED();
-  return Position();
+  DCHECK(node->IsTextNode());
+  // TODO(layout-dev): Support offset change due to text-transform.
+  return Position(node, offset);
 }
 
 Optional<unsigned> LayoutText::CaretOffsetForPosition(
     const Position& position) const {
   // ::first-letter handling should be done by LayoutTextFragment override.
   DCHECK(!IsTextFragment());
+  // BR handling should be done by LayoutBR override.
+  DCHECK(!IsBR());
   // WBR handling should be done by LayoutWordBreak override.
   DCHECK(!IsWordBreak());
   if (position.IsNull() || position.AnchorNode() != GetNode())
     return WTF::nullopt;
-  if (GetNode()->IsTextNode()) {
-    if (position.IsBeforeAnchor())
-      return 0;
-    // TODO(layout-dev): Support offset change due to text-transform.
-    if (position.IsAfterAnchor())
-      return TextLength();
-    DCHECK(position.IsOffsetInAnchor()) << position;
-    DCHECK_LE(position.OffsetInContainerNode(), static_cast<int>(TextLength()))
-        << position;
-    return position.OffsetInContainerNode();
-  }
-  // TODO(xiaochengh): This should be done by LayoutBR override.
-  if (IsBR()) {
-    DCHECK(position.IsBeforeAnchor() || position.IsAfterAnchor()) << position;
-    return position.IsBeforeAnchor() ? 0 : 1;
-  }
-  NOTREACHED();
-  return WTF::nullopt;
+  DCHECK(GetNode()->IsTextNode());
+  if (position.IsBeforeAnchor())
+    return 0;
+  // TODO(layout-dev): Support offset change due to text-transform.
+  if (position.IsAfterAnchor())
+    return TextLength();
+  DCHECK(position.IsOffsetInAnchor()) << position;
+  DCHECK_LE(position.OffsetInContainerNode(), static_cast<int>(TextLength()))
+      << position;
+  return position.OffsetInContainerNode();
 }
 
 int LayoutText::CaretMinOffset() const {
