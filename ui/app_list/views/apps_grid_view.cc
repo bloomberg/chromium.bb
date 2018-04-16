@@ -911,11 +911,11 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  // Gesture events should not be passed to ancestor views if it occurs inside
-  // the folder bounds even it is not handled. This prevents user from closing
-  // the folder when scrolling inside it.
+  // Scroll begin events should not be passed to ancestor views if it occurs
+  // inside the folder bounds even it is not handled. This prevents user from
+  // closing the folder when scrolling inside it.
   if (pagination_controller_->OnGestureEvent(*event, GetContentsBounds()) ||
-      folder_delegate_) {
+      (folder_delegate_ && event->type() == ui::ET_GESTURE_SCROLL_BEGIN)) {
     event->SetHandled();
   }
 }
