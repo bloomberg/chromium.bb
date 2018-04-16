@@ -34,6 +34,7 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/arc/arc_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -187,7 +188,10 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   const AccountId& account_id = user->GetAccountId();
   const bool is_stub_user =
       user_manager::UserManager::Get()->IsStubAccountId(account_id);
-  if (user->GetType() != user_manager::USER_TYPE_CHILD &&
+  const bool is_child_user_with_enabled_policy =
+      user->GetType() == user_manager::USER_TYPE_CHILD &&
+      base::FeatureList::IsEnabled(arc::kAvailableForChildAccountFeature);
+  if (!is_child_user_with_enabled_policy &&
       (user->GetType() == user_manager::USER_TYPE_SUPERVISED ||
        BrowserPolicyConnector::IsNonEnterpriseUser(
            account_id.GetUserEmail()))) {
