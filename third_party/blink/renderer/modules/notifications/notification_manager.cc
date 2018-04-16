@@ -137,10 +137,26 @@ void NotificationManager::DisplayPersistentNotification(
   DCHECK_EQ(notification_data.actions.size(),
             notification_resources->action_icons.size());
 
+  // Verify that the author-provided payload size does not exceed our limit.
+  // This is an implementation-defined limit to prevent abuse of notification
+  // data as a storage mechanism. A UMA histogram records the requested sizes,
+  // which enables us to track how much data authors are attempting to store.
+  //
+  // If the size exceeds this limit, reject the showNotification() promise. This
+  // is outside of the boundaries set by the specification, but it gives authors
+  // an indication that something has gone wrong.
+  size_t author_data_size = notification_data.data.size();
+
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, notification_data_size_histogram,
       ("Notifications.AuthorDataSize", 1, 1000, 50));
-  notification_data_size_histogram.Count(notification_data.data.size());
+  notification_data_size_histogram.Count(author_data_size);
+
+  if (author_data_size >
+      mojom::blink::NotificationData::kMaximumDeveloperDataSize) {
+    resolver->Reject();
+    return;
+  }
 
   GetNotificationService()->DisplayPersistentNotification(
       service_worker_registration->RegistrationId(), notification_data,

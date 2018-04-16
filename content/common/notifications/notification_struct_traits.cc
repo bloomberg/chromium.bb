@@ -35,7 +35,7 @@ bool ValidateActions(
 
 bool ValidateData(const std::vector<char>& data) {
   return data.size() <=
-         content::PlatformNotificationData::kMaximumDeveloperDataSize;
+         blink::mojom::NotificationData::kMaximumDeveloperDataSize;
 }
 
 bool ValidateImage(const SkBitmap& image) {

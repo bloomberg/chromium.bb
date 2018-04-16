@@ -16,6 +16,7 @@
 #include "content/renderer/notifications/notification_data_conversions.h"
 #include "content/renderer/notifications/notification_dispatcher.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
+#include "third_party/blink/public/platform/modules/notifications/notification.mojom.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "url/origin.h"
@@ -101,7 +102,8 @@ void NotificationManager::ShowPersistent(
 
   UMA_HISTOGRAM_COUNTS_1000("Notifications.AuthorDataSize", author_data_size);
 
-  if (author_data_size > PlatformNotificationData::kMaximumDeveloperDataSize) {
+  if (author_data_size >
+      blink::mojom::NotificationData::kMaximumDeveloperDataSize) {
     callbacks->OnError();
     return;
   }

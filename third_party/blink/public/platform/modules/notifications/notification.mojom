@@ -41,6 +41,10 @@ struct NotificationAction {
 
 // Structure representing the information associated with a Web Notification.
 struct NotificationData {
+  // The maximum size of developer-provided data to be stored in the |data|
+  // property of this structure, in bytes.
+  const uint64 kMaximumDeveloperDataSize = 1048576; // 1024 * 1024 (= 1 MB)
+
   // Title to be displayed with the Web Notification.
   mojo_base.mojom.String16 title;
 
@@ -94,8 +98,7 @@ struct NotificationData {
 
   // Developer-provided data associated with the notification, in the form of
   // a serialized string. Must not exceed the number of bytes specified by
-  // |kMaximumDeveloperDataBytes| in PlatformNotificationData.
-  // TODO(https://crbug.com/798742): Move |kMaximumDeveloperDataBytes| here.
+  // |kMaximumDeveloperDataSize|.
   array<int8>? data;
 
   // Actions that should be shown as buttons on the notification.
