@@ -18,7 +18,7 @@ class ChromeSessionManager;
 class ChromeUserManager;
 class ProfileHelper;
 class TimeZoneResolver;
-}
+}  // namespace chromeos
 
 namespace chromeos {
 namespace system {
@@ -27,8 +27,9 @@ class DeviceDisablingManager;
 class DeviceDisablingManagerDefaultDelegate;
 class SystemClock;
 class TimeZoneResolverManager;
-}
-}
+}  // namespace system
+class AccountManagerFactory;
+}  // namespace chromeos
 
 namespace policy {
 class BrowserPolicyConnectorChromeOS;
@@ -115,6 +116,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient();
 
+  chromeos::AccountManagerFactory* GetAccountManagerFactory();
+
  private:
   void CreateProfileHelper();
 
@@ -143,6 +146,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<component_updater::CrOSComponentManager>
       cros_component_manager_;
+
+  std::unique_ptr<chromeos::AccountManagerFactory> account_manager_factory_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<ui::InputDeviceControllerClient>

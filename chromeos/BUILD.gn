@@ -65,6 +65,8 @@ component("chromeos") {
     "accelerometer/accelerometer_types.h",
     "account_manager/account_manager.cc",
     "account_manager/account_manager.h",
+    "account_manager/account_manager_factory.cc",
+    "account_manager/account_manager_factory.h",
     "app_mode/kiosk_oem_manifest_parser.cc",
     "app_mode/kiosk_oem_manifest_parser.h",
     "attestation/attestation_constants.cc",
