@@ -12,6 +12,7 @@
 class FakeSigninManagerBase;
 class FakeSigninManager;
 class ProfileOAuth2TokenService;
+class SigninManagerBase;
 
 #if defined(OS_CHROMEOS)
 using SigninManagerForTest = FakeSigninManagerBase;
@@ -36,7 +37,7 @@ class IdentityManager;
 // non-ChromeOS, results in the firing of the IdentityManager and SigninManager
 // callbacks for signin success. Blocks until the primary account is available.
 // NOTE: See disclaimer at top of file re: direct usage.
-void MakePrimaryAccountAvailable(SigninManagerForTest* signin_manager,
+void MakePrimaryAccountAvailable(SigninManagerBase* signin_manager,
                                  ProfileOAuth2TokenService* token_service,
                                  IdentityManager* identity_manager,
                                  const std::string& email);
@@ -44,6 +45,9 @@ void MakePrimaryAccountAvailable(SigninManagerForTest* signin_manager,
 // Clears the primary account. On non-ChromeOS, results in the firing of the
 // IdentityManager and SigninManager callbacks for signout. Blocks until the
 // primary account is cleared.
+// Note that this function requires FakeSigninManager, as it internally invokes
+// functionality of the fake. If a use case emerges for invoking this
+// functionality with a production SigninManager, contact blundell@chromium.org.
 // NOTE: See disclaimer at top of file re: direct usage.
 void ClearPrimaryAccount(SigninManagerForTest* signin_manager,
                          IdentityManager* identity_manager);

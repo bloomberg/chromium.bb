@@ -24,16 +24,6 @@ class ChromeSessionManager;
 // Necessary to declare this class as a friend.
 class ProfileSyncServiceHarness;
 
-// Necessary to declare functions in identity_test_utils.h as friends.
-class FakeSigninManagerBase;
-class FakeSigninManager;
-
-#if defined(OS_CHROMEOS)
-using SigninManagerForTest = FakeSigninManagerBase;
-#else
-using SigninManagerForTest = FakeSigninManager;
-#endif  // OS_CHROMEOS
-
 namespace identity {
 
 // Primary client-side interface to the Identity Service, encapsulating a
@@ -115,7 +105,7 @@ class IdentityManager : public SigninManagerBase::Observer,
  private:
   // These clients need to call SetPrimaryAccountSynchronouslyForTests().
   friend void MakePrimaryAccountAvailable(
-      SigninManagerForTest* signin_manager,
+      SigninManagerBase* signin_manager,
       ProfileOAuth2TokenService* token_service,
       IdentityManager* identity_manager,
       const std::string& email);
