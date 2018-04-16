@@ -32,6 +32,7 @@ import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwServiceWorkerController;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
+import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.BuildConfig;
@@ -102,101 +103,109 @@ public class WebViewChromiumAwInit {
     private static final int DIR_RESOURCE_PAKS_ANDROID = 3003;
 
     protected void startChromiumLocked() {
-        assert Thread.holdsLock(mLock) && ThreadUtils.runningOnUiThread();
+        try (ScopedSysTraceEvent event =
+                        ScopedSysTraceEvent.scoped("WebViewChromiumAwInit.startChromiumLocked")) {
+            assert Thread.holdsLock(mLock) && ThreadUtils.runningOnUiThread();
 
-        // The post-condition of this method is everything is ready, so notify now to cover all
-        // return paths. (Other threads will not wake-up until we release |mLock|, whatever).
-        mLock.notifyAll();
+            // The post-condition of this method is everything is ready, so notify now to cover all
+            // return paths. (Other threads will not wake-up until we release |mLock|, whatever).
+            mLock.notifyAll();
 
-        if (mStarted) {
-            return;
-        }
-
-        final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();
-        final Context context = ContextUtils.getApplicationContext();
-
-        // Make sure that ResourceProvider is initialized before starting the browser process.
-        Thread startUpResourcesThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Run this in parallel as it takes some time.
-                setUpResources(webViewPackageInfo, context);
+            if (mStarted) {
+                return;
             }
-        });
-        startUpResourcesThread.start();
 
-        // We are rewriting Java resources in the background.
-        // NOTE: Any reference to Java resources will cause a crash.
+            final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();
+            final Context context = ContextUtils.getApplicationContext();
 
-        try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized();
-        } catch (ProcessInitException e) {
-            throw new RuntimeException("Error initializing WebView library", e);
+            // Make sure that ResourceProvider is initialized before starting the browser process.
+            Thread startUpResourcesThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    // Run this in parallel as it takes some time.
+                    setUpResources(webViewPackageInfo, context);
+                }
+            });
+            startUpResourcesThread.start();
+
+            // We are rewriting Java resources in the background.
+            // NOTE: Any reference to Java resources will cause a crash.
+
+            try (ScopedSysTraceEvent e =
+                            ScopedSysTraceEvent.scoped("WebViewChromiumAwInit.LibraryLoader")) {
+                LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized();
+            } catch (ProcessInitException e) {
+                throw new RuntimeException("Error initializing WebView library", e);
+            }
+
+            PathService.override(PathService.DIR_MODULE, "/system/lib/");
+            PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
+
+            initPlatSupportLibrary();
+            doNetworkInitializations(context);
+
+            try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                         "WebViewChromiumAwInit.startUpResourcesThread_join")) {
+                startUpResourcesThread.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            // NOTE: Finished writing Java resources. From this point on, it's safe to use them.
+
+            AwBrowserProcess.configureChildProcessLauncher();
+
+            // finishVariationsInitLocked() must precede native initialization so the seed is
+            // available when AwFieldTrialCreator::SetUpFieldTrials() runs.
+            finishVariationsInitLocked();
+
+            AwBrowserProcess.start();
+            AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);
+
+            mSharedStatics = new SharedStatics();
+            if (CommandLineUtil.isBuildDebuggable()) {
+                mSharedStatics.setWebContentsDebuggingEnabledUnconditionally(true);
+            }
+
+            TraceEvent.setATraceEnabled(mFactory.getWebViewDelegate().isTraceTagEnabled());
+            mFactory.getWebViewDelegate().setOnTraceEnabledChangeListener(
+                    new WebViewDelegate.OnTraceEnabledChangeListener() {
+                        @Override
+                        public void onTraceEnabledChange(boolean enabled) {
+                            TraceEvent.setATraceEnabled(enabled);
+                        }
+                    });
+
+            mStarted = true;
+
+            RecordHistogram.recordSparseSlowlyHistogram("Android.WebView.TargetSdkVersion",
+                    context.getApplicationInfo().targetSdkVersion);
+
+            // Initialize thread-unsafe singletons.
+            AwBrowserContext awBrowserContext = getBrowserContextOnUiThread();
+            mGeolocationPermissions = new GeolocationPermissionsAdapter(
+                    mFactory, awBrowserContext.getGeolocationPermissions());
+            mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
+            mAwTracingController = awBrowserContext.getTracingController();
+            mServiceWorkerController = awBrowserContext.getServiceWorkerController();
+
+            mFactory.getRunQueue().drainQueue();
         }
-
-        PathService.override(PathService.DIR_MODULE, "/system/lib/");
-        PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
-
-        initPlatSupportLibrary();
-        doNetworkInitializations(context);
-
-        try {
-            startUpResourcesThread.join();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        // NOTE: Finished writing Java resources. From this point on, it's safe to use them.
-
-        AwBrowserProcess.configureChildProcessLauncher();
-
-        // finishVariationsInitLocked() must precede native initialization so the seed is available
-        // when AwFieldTrialCreator::SetUpFieldTrials() runs.
-        finishVariationsInitLocked();
-
-        AwBrowserProcess.start();
-        AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);
-
-        mSharedStatics = new SharedStatics();
-        if (CommandLineUtil.isBuildDebuggable()) {
-            mSharedStatics.setWebContentsDebuggingEnabledUnconditionally(true);
-        }
-
-        TraceEvent.setATraceEnabled(mFactory.getWebViewDelegate().isTraceTagEnabled());
-        mFactory.getWebViewDelegate().setOnTraceEnabledChangeListener(
-                new WebViewDelegate.OnTraceEnabledChangeListener() {
-                    @Override
-                    public void onTraceEnabledChange(boolean enabled) {
-                        TraceEvent.setATraceEnabled(enabled);
-                    }
-                });
-
-        mStarted = true;
-
-        RecordHistogram.recordSparseSlowlyHistogram(
-                "Android.WebView.TargetSdkVersion", context.getApplicationInfo().targetSdkVersion);
-
-        // Initialize thread-unsafe singletons.
-        AwBrowserContext awBrowserContext = getBrowserContextOnUiThread();
-        mGeolocationPermissions = new GeolocationPermissionsAdapter(
-                mFactory, awBrowserContext.getGeolocationPermissions());
-        mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
-        mAwTracingController = awBrowserContext.getTracingController();
-        mServiceWorkerController = awBrowserContext.getServiceWorkerController();
-
-        mFactory.getRunQueue().drainQueue();
     }
 
     private void setUpResources(PackageInfo webViewPackageInfo, Context context) {
-        String packageName = webViewPackageInfo.packageName;
-        if (webViewPackageInfo.applicationInfo.metaData != null) {
-            packageName = webViewPackageInfo.applicationInfo.metaData.getString(
-                    "com.android.webview.WebViewDonorPackage", packageName);
-        }
-        ResourceRewriter.rewriteRValues(
-                mFactory.getWebViewDelegate().getPackageId(context.getResources(), packageName));
+        try (ScopedSysTraceEvent e =
+                        ScopedSysTraceEvent.scoped("WebViewChromiumAwInit.setUpResources")) {
+            String packageName = webViewPackageInfo.packageName;
+            if (webViewPackageInfo.applicationInfo.metaData != null) {
+                packageName = webViewPackageInfo.applicationInfo.metaData.getString(
+                        "com.android.webview.WebViewDonorPackage", packageName);
+            }
+            ResourceRewriter.rewriteRValues(mFactory.getWebViewDelegate().getPackageId(
+                    context.getResources(), packageName));
 
-        AwResource.setResources(context.getResources());
-        AwResource.setConfigKeySystemUuidMapping(android.R.array.config_keySystemUuidMapping);
+            AwResource.setResources(context.getResources());
+            AwResource.setConfigKeySystemUuidMapping(android.R.array.config_keySystemUuidMapping);
+        }
     }
 
     boolean hasStarted() {
@@ -250,21 +259,29 @@ public class WebViewChromiumAwInit {
     }
 
     private void initPlatSupportLibrary() {
-        DrawGLFunctor.setChromiumAwDrawGLFunction(AwContents.getAwDrawGLFunction());
-        AwContents.setAwDrawSWFunctionTable(GraphicsUtils.getDrawSWFunctionTable());
-        AwContents.setAwDrawGLFunctionTable(GraphicsUtils.getDrawGLFunctionTable());
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "WebViewChromiumAwInit.initPlatSupportLibrary")) {
+            DrawGLFunctor.setChromiumAwDrawGLFunction(AwContents.getAwDrawGLFunction());
+            AwContents.setAwDrawSWFunctionTable(GraphicsUtils.getDrawSWFunctionTable());
+            AwContents.setAwDrawGLFunctionTable(GraphicsUtils.getDrawGLFunctionTable());
+        }
     }
 
     private void doNetworkInitializations(Context applicationContext) {
-        if (applicationContext.checkPermission(Manifest.permission.ACCESS_NETWORK_STATE,
-                Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED) {
-            NetworkChangeNotifier.init();
-            NetworkChangeNotifier.setAutoDetectConnectivityState(
-                    new AwNetworkChangeNotifierRegistrationPolicy());
-        }
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "WebViewChromiumAwInit.doNetworkInitializations")) {
+            if (applicationContext.checkPermission(
+                        Manifest.permission.ACCESS_NETWORK_STATE, Process.myPid(), Process.myUid())
+                    == PackageManager.PERMISSION_GRANTED) {
+                NetworkChangeNotifier.init();
+                NetworkChangeNotifier.setAutoDetectConnectivityState(
+                        new AwNetworkChangeNotifierRegistrationPolicy());
+            }
 
-        AwContentsStatics.setCheckClearTextPermitted(
-                applicationContext.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.O);
+            AwContentsStatics.setCheckClearTextPermitted(
+                    applicationContext.getApplicationInfo().targetSdkVersion
+                    >= Build.VERSION_CODES.O);
+        }
     }
 
     // Only on UI thread.
@@ -381,12 +398,15 @@ public class WebViewChromiumAwInit {
     }
 
     private void finishVariationsInitLocked() {
-        assert Thread.holdsLock(mLock);
-        if (mSeedLoader == null) {
-            Log.e(TAG, "finishVariationsInitLocked() called before startVariationsInit()");
-            startVariationsInit();
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "WebViewChromiumAwInit.finishVariationsInitLocked")) {
+            assert Thread.holdsLock(mLock);
+            if (mSeedLoader == null) {
+                Log.e(TAG, "finishVariationsInitLocked() called before startVariationsInit()");
+                startVariationsInit();
+            }
+            mSeedLoader.finishVariationsInit();
+            mSeedLoader = null; // Allow this to be GC'd after its background thread finishes.
         }
-        mSeedLoader.finishVariationsInit();
-        mSeedLoader = null; // Allow this to be GC'd after its background thread finishes.
     }
 }
