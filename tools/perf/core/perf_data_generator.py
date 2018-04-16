@@ -1091,6 +1091,38 @@ def validate_tests(waterfall, waterfall_file, benchmark_file):
 #     assumed to be true.
 NEW_PERF_RECIPE_FYI_TESTERS = {
   'testers' : {
+    'Mac 10.13 Laptop High End': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+        },
+        {
+          'isolate': 'net_perftests',
+          'shards': [0],
+          'telemetry': False,
+        },
+        {
+          'isolate': 'views_perftests',
+          'shards': [1],
+          'telemetry': False,
+        }
+      ],
+      'platform': 'mac',
+      'dimension': {
+        'pool': 'Chrome-perf-fyi',
+        'os': 'Mac-10.13',
+        'gpu': '1002:6821'
+      },
+      'device_ids': [
+          'build246-a9', 'build247-a9', 'build248-a9', 'build249-29',
+          'build250-a9', 'build251-a9', 'build252-a9', 'build253-a9',
+          'build254-a9', 'build255-a9', 'build256-a9', 'build257-a9',
+          'build258-a9', 'build259-a9', 'build260-a9', 'build261-a9',
+          'build262-a9', 'build263-a9', 'build264-a9', 'build265-a9',
+          'build266-a9', 'build267-a9', 'build268-a9', 'build269-a9',
+          'build270-a9', 'build271-a9'
+      ],
+    },
     'One Buildbot Step Test Builder': {
       'tests': [
         {
