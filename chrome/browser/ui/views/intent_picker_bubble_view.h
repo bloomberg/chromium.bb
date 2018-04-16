@@ -139,6 +139,9 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   // Calculate the next app to select given the current selection and |delta|.
   size_t CalculateNextAppIndex(int delta);
 
+  // Updates whether the persistence checkbox is enabled or not.
+  void UpdateCheckboxState();
+
   gfx::ImageSkia GetAppImageForTesting(size_t index);
   views::InkDropState GetInkDropStateForTesting(size_t);
   void PressButtonForTesting(size_t index, const ui::Event& event);
