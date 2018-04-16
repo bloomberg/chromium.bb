@@ -11,18 +11,22 @@
 #include <string>
 #include <vector>
 
-#include "ash/first_run/first_run_helper.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/first_run_helper.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace views {
+class Widget;
 }
 
 namespace chromeos {
@@ -37,7 +41,7 @@ class Step;
 // Object manages its lifetime and deletes itself after completion of the
 // tutorial.
 class FirstRunController : public FirstRunActor::Delegate,
-                           public ash::FirstRunHelper::Observer {
+                           public ash::mojom::FirstRunHelperClient {
  public:
   ~FirstRunController() override;
 
@@ -52,6 +56,9 @@ class FirstRunController : public FirstRunActor::Delegate,
 
   // Returns the shelf alignment on the primary display.
   ash::ShelfAlignment GetShelfAlignment() const;
+
+  // Stops the tutorial and records early cancellation metrics.
+  void Cancel();
 
   const ash::mojom::FirstRunHelperPtr& first_run_helper_ptr() {
     return first_run_helper_ptr_;
@@ -75,7 +82,7 @@ class FirstRunController : public FirstRunActor::Delegate,
   void OnActorFinalized() override;
   void OnActorDestroyed() override;
 
-  // Overriden from ash::FirstRunHelper::Observer.
+  // ash::mojom::FirstRunHelperClient:
   void OnCancelled() override;
 
   void RegisterSteps();
@@ -87,12 +94,11 @@ class FirstRunController : public FirstRunActor::Delegate,
   // FirstRunController.
   FirstRunActor* actor_;
 
-  // Helper for manipulating and retreiving information from Shell.
-  // TODO(jamescook): Remove once all methods are converted to mojo.
-  ash::FirstRunHelper* shell_helper_ = nullptr;
-
   // Mojo interface for manipulating and retrieving information from ash.
   ash::mojom::FirstRunHelperPtr first_run_helper_ptr_;
+
+  // Binding for callbacks from ash.
+  mojo::Binding<ash::mojom::FirstRunHelperClient> binding_{this};
 
   // List of all tutorial steps.
   std::vector<std::unique_ptr<first_run::Step>> steps_;
@@ -106,6 +112,9 @@ class FirstRunController : public FirstRunActor::Delegate,
   // The work that should be made after actor has been finalized.
   base::Closure on_actor_finalized_;
 
+  // Widget containing the first-run webui.
+  std::unique_ptr<views::Widget> widget_;
+
   // Web contents of WebUI.
   content::WebContents* web_contents_for_tests_;
 
@@ -118,4 +127,3 @@ class FirstRunController : public FirstRunActor::Delegate,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_FIRST_RUN_FIRST_RUN_CONTROLLER_H_
-

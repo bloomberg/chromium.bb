@@ -4,9 +4,11 @@
 
 #include "chrome/browser/chromeos/first_run/first_run_view.h"
 
+#include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -22,7 +24,11 @@ FirstRunView::FirstRunView()
     : web_view_(NULL) {
 }
 
-void FirstRunView::Init(content::BrowserContext* context) {
+void FirstRunView::Init(content::BrowserContext* context,
+                        FirstRunController* controller) {
+  DCHECK(context);
+  DCHECK(controller);
+  controller_ = controller;
   web_view_ = new views::WebView(context);
   AddChildView(web_view_);
   web_view_->LoadInitialURL(GURL(chrome::kChromeUIFirstRunURL));
@@ -57,6 +63,16 @@ bool FirstRunView::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Discards context menu.
   return true;
+}
+
+content::KeyboardEventProcessingResult FirstRunView::PreHandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  if (event.windows_key_code == ui::VKEY_ESCAPE) {
+    controller_->Cancel();
+    return content::KeyboardEventProcessingResult::HANDLED;
+  }
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 bool FirstRunView::PreHandleGestureEvent(

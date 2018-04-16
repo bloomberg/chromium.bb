@@ -4,11 +4,10 @@
 
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 
-#include "ash/first_run/first_run_helper.h"
 #include "ash/public/cpp/shelf_prefs.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/first_run_helper.mojom.h"
-#include "ash/shell.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/chromeos/first_run/steps/help_step.h"
 #include "chrome/browser/chromeos/first_run/steps/tray_step.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
@@ -40,6 +40,20 @@ void RecordCompletion(chromeos::first_run::TutorialCompletion type) {
   UMA_HISTOGRAM_ENUMERATION("CrosFirstRun.TutorialCompletion",
                             type,
                             chromeos::first_run::TUTORIAL_COMPLETION_SIZE);
+}
+
+std::unique_ptr<views::Widget> CreateFirstRunWidget() {
+  auto widget = std::make_unique<views::Widget>();
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  ash_util::SetupWidgetInitParamsForContainer(
+      &params, ash::kShellWindowId_OverlayContainer);
+  widget->Init(params);
+  return widget;
 }
 
 }  // namespace
@@ -71,7 +85,7 @@ void FirstRunController::Stop() {
 }
 
 gfx::Size FirstRunController::GetOverlaySize() const {
-  return shell_helper_->GetOverlayWidget()->GetWindowBoundsInScreen().size();
+  return widget_->GetWindowBoundsInScreen().size();
 }
 
 ash::ShelfAlignment FirstRunController::GetShelfAlignment() const {
@@ -79,6 +93,10 @@ ash::ShelfAlignment FirstRunController::GetShelfAlignment() const {
   return ash::GetShelfAlignmentPref(
       user_profile_->GetPrefs(),
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
+}
+
+void FirstRunController::Cancel() {
+  OnCancelled();
 }
 
 FirstRunController* FirstRunController::GetInstanceForTest() {
@@ -100,16 +118,17 @@ void FirstRunController::Init() {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &first_run_helper_ptr_);
-  shell_helper_ = ash::Shell::Get()->first_run_helper();
-  shell_helper_->AddObserver(this);
-  shell_helper_->CreateOverlayWidget();
+  ash::mojom::FirstRunHelperClientPtr client_ptr;
+  binding_.Bind(mojo::MakeRequest(&client_ptr));
+  first_run_helper_ptr_->Start(std::move(client_ptr));
 
+  widget_ = CreateFirstRunWidget();
   FirstRunView* view = new FirstRunView();
-  view->Init(user_profile_);
-  shell_helper_->GetOverlayWidget()->SetContentsView(view);
+  view->Init(user_profile_, this);
+  widget_->SetContentsView(view);
   actor_ = view->GetActor();
   actor_->set_delegate(this);
-  shell_helper_->GetOverlayWidget()->Show();
+  widget_->Show();
   view->RequestFocus();
   web_contents_for_tests_ = view->GetWebContents();
 
@@ -131,9 +150,9 @@ void FirstRunController::Finalize() {
   if (actor_)
     actor_->set_delegate(NULL);
   actor_ = NULL;
-  shell_helper_->CloseOverlayWidget();
-  shell_helper_->RemoveObserver(this);
-  shell_helper_ = nullptr;
+  first_run_helper_ptr_->Stop();
+  // Close the widget.
+  widget_.reset();
 }
 
 void FirstRunController::OnActorInitialized() {

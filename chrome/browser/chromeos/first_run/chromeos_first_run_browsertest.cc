@@ -12,8 +12,46 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/aura/window.h"
+#include "ui/events/event_handler.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace chromeos {
+namespace {
+
+class TestModalDialogDelegate : public views::DialogDelegateView {
+ public:
+  TestModalDialogDelegate() = default;
+  ~TestModalDialogDelegate() override = default;
+
+  // views::WidgetDelegate:
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestModalDialogDelegate);
+};
+
+class CountingEventHandler : public ui::EventHandler {
+ public:
+  explicit CountingEventHandler(int* mouse_events_registered)
+      : mouse_events_registered_(mouse_events_registered) {}
+
+  ~CountingEventHandler() override = default;
+
+ private:
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    ++*mouse_events_registered_;
+  }
+
+  int* mouse_events_registered_;
+
+  DISALLOW_COPY_AND_ASSIGN(CountingEventHandler);
+};
+
+}  // namespace
 
 class FirstRunUIBrowserTest : public InProcessBrowserTest,
                               public FirstRunActor::Delegate {
@@ -121,6 +159,8 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
     return is_open;
   }
 
+  views::Widget* GetOverlayWidget() { return controller()->widget_.get(); }
+
   void FlushForTesting() {
     controller()->first_run_helper_ptr_.FlushForTesting();
   }
@@ -156,6 +196,58 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, FirstRunFlow) {
   AdvanceStep();
   WaitForFinalization();
   content::RunAllPendingInMessageLoop();
+  EXPECT_EQ(controller(), nullptr);
+  EXPECT_FALSE(IsTrayBubbleOpen());
+}
+
+// Tests that a modal window doesn't block events to the tutorial. A modal
+// window might be open if enterprise policy forces a browser tab to open
+// on first login and the web page opens a JavaScript alert.
+// See https://crrev.com/99673003
+IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, ModalWindowDoesNotBlock) {
+  // Start the tutorial.
+  LaunchTutorial();
+  WaitForInitialization();
+  WaitForStep(first_run::kAppListStep);
+  FlushForTesting();
+
+  // Simulate the browser opening a modal dialog.
+  views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
+      new TestModalDialogDelegate(), /*context=*/nullptr,
+      /*parent=*/nullptr);
+  modal_dialog->Show();
+
+  // A mouse click is still received by the overlay widget.
+  int mouse_events = 0;
+  CountingEventHandler handler(&mouse_events);
+  aura::Window* overlay_window = GetOverlayWidget()->GetNativeView();
+  overlay_window->AddPreTargetHandler(&handler);
+  ui::test::EventGenerator event_generator(overlay_window);
+  event_generator.PressLeftButton();
+  EXPECT_EQ(mouse_events, 1);
+
+  overlay_window->RemovePreTargetHandler(&handler);
+  modal_dialog->Close();
+}
+
+// Tests that the escape key cancels the tutorial.
+IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, EscapeCancelsTutorial) {
+  // Run the tutorial for a couple steps, but don't finish it.
+  LaunchTutorial();
+  WaitForInitialization();
+  WaitForStep(first_run::kAppListStep);
+  AdvanceStep();
+  WaitForStep(first_run::kTrayStep);
+  FlushForTesting();
+  EXPECT_TRUE(IsTrayBubbleOpen());
+
+  // Press the escape key.
+  aura::Window* overlay_window = GetOverlayWidget()->GetNativeView();
+  ui::test::EventGenerator event_generator(overlay_window);
+  event_generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  content::RunAllPendingInMessageLoop();
+
+  // The tutorial stopped.
   EXPECT_EQ(controller(), nullptr);
   EXPECT_FALSE(IsTrayBubbleOpen());
 }

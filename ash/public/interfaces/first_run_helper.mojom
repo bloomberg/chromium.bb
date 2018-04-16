@@ -12,6 +12,12 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // due to small behavior differences (all methods only affect the primary
 // display, opening the system tray bubble is persistent, etc.).
 interface FirstRunHelper {
+  // Cleans up the ash UI on tutorial start.
+  Start(FirstRunHelperClient client);
+
+  // Restores the ash UI on tutorial stop.
+  Stop();
+
   // Returns the bounds of the app list button on the primary display in screen
   // coordinates.
   GetAppListButtonBounds() => (gfx.mojom.Rect screen_bounds);
@@ -30,3 +36,9 @@ interface FirstRunHelper {
   GetHelpButtonBounds() => (gfx.mojom.Rect screen_bounds);
 };
 
+// The client for the FirstRunHelper interface, e.g. chrome.
+interface FirstRunHelperClient {
+  // Informs the client that something happened inside ash that should cancel
+  // the tutorial (e.g. the device is shutting down).
+  OnCancelled();
+};

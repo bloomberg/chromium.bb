@@ -5,7 +5,7 @@
 #include "ash/first_run/first_run_helper.h"
 
 #include "ash/first_run/desktop_cleaner.h"
-#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -14,28 +14,11 @@
 #include "ash/system/tray/system_tray_bubble.h"
 #include "base/logging.h"
 #include "ui/app_list/views/app_list_view.h"
-#include "ui/aura/window.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
-
-views::Widget* CreateFirstRunWindow() {
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                                      ash::kShellWindowId_OverlayContainer);
-  views::Widget* window = new views::Widget;
-  window->Init(params);
-  return window;
-}
 
 }  // namespace
 
@@ -47,30 +30,16 @@ void FirstRunHelper::BindRequest(mojom::FirstRunHelperRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void FirstRunHelper::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void FirstRunHelper::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-views::Widget* FirstRunHelper::GetOverlayWidget() {
-  return widget_;
-}
-
-void FirstRunHelper::CreateOverlayWidget() {
-  widget_ = CreateFirstRunWindow();
+void FirstRunHelper::Start(mojom::FirstRunHelperClientPtr client) {
+  client_ = std::move(client);
   cleaner_ = std::make_unique<DesktopCleaner>();
-  Shell::Get()->overlay_filter()->Activate(this);
+  Shell::Get()->session_controller()->AddObserver(this);
 }
 
-void FirstRunHelper::CloseOverlayWidget() {
-  Shell::Get()->overlay_filter()->Deactivate(this);
+void FirstRunHelper::Stop() {
+  Shell::Get()->session_controller()->RemoveObserver(this);
   // Ensure the tray is closed.
   Shell::Get()->GetPrimarySystemTray()->CloseBubble();
-  widget_->Close();
-  widget_ = nullptr;
   cleaner_.reset();
 }
 
@@ -103,19 +72,21 @@ void FirstRunHelper::GetHelpButtonBounds(GetHelpButtonBoundsCallback cb) {
   std::move(cb).Run(help_button->GetBoundsInScreen());
 }
 
-// OverlayEventFilter::Delegate:
+void FirstRunHelper::OnLockStateChanged(bool locked) {
+  Cancel();
+}
+
+void FirstRunHelper::OnChromeTerminating() {
+  Cancel();
+}
+
+void FirstRunHelper::FlushForTesting() {
+  client_.FlushForTesting();
+}
 
 void FirstRunHelper::Cancel() {
-  for (auto& observer : observers_)
-    observer.OnCancelled();
-}
-
-bool FirstRunHelper::IsCancelingKeyEvent(ui::KeyEvent* event) {
-  return event->key_code() == ui::VKEY_ESCAPE;
-}
-
-aura::Window* FirstRunHelper::GetWindow() {
-  return widget_->GetNativeWindow();
+  if (client_)
+    client_->OnCancelled();
 }
 
 }  // namespace ash

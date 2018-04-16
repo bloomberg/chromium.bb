@@ -6,54 +6,14 @@
 
 #include "ash/first_run/desktop_cleaner.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ui/events/event_handler.h"
-#include "ui/events/test/event_generator.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_delegate.h"
 
 namespace ash {
 
-namespace {
-
-class TestModalDialogDelegate : public views::DialogDelegateView {
- public:
-  TestModalDialogDelegate() = default;
-  ~TestModalDialogDelegate() override = default;
-
-  // Overridden from views::WidgetDelegate:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestModalDialogDelegate);
-};
-
-class CountingEventHandler : public ui::EventHandler {
- public:
-  // Handler resets |*mouse_events_registered_| during construction and updates
-  // it after each registered event.
-  explicit CountingEventHandler(int* mouse_events_registered)
-      : mouse_events_registered_(mouse_events_registered) {
-    *mouse_events_registered = 0;
-  }
-
-  ~CountingEventHandler() override = default;
-
- private:
-  // ui::EventHandler overrides.
-  void OnMouseEvent(ui::MouseEvent* event) override {
-    ++*mouse_events_registered_;
-  }
-
-  int* mouse_events_registered_;
-
-  DISALLOW_COPY_AND_ASSIGN(CountingEventHandler);
-};
-
-}  // namespace
-
-class FirstRunHelperTest : public AshTestBase, public FirstRunHelper::Observer {
+class FirstRunHelperTest : public AshTestBase,
+                           public mojom::FirstRunHelperClient {
  public:
   FirstRunHelperTest() : cancelled_times_(0) {}
 
@@ -62,15 +22,15 @@ class FirstRunHelperTest : public AshTestBase, public FirstRunHelper::Observer {
   void SetUp() override {
     AshTestBase::SetUp();
     CheckContainersAreVisible();
-    helper_ = std::make_unique<FirstRunHelper>();
-    helper_->AddObserver(this);
-    helper_->CreateOverlayWidget();
-    helper_->GetOverlayWidget()->Show();
+    helper_ = Shell::Get()->first_run_helper();
+    mojom::FirstRunHelperClientPtr client_ptr;
+    binding_.Bind(mojo::MakeRequest(&client_ptr));
+    helper_->Start(std::move(client_ptr));
   }
 
   void TearDown() override {
-    helper_->CloseOverlayWidget();
-    helper_.reset();
+    helper_->Stop();
+    helper_ = nullptr;
     CheckContainersAreVisible();
     AshTestBase::TearDown();
   }
@@ -97,15 +57,16 @@ class FirstRunHelperTest : public AshTestBase, public FirstRunHelper::Observer {
     }
   }
 
-  FirstRunHelper* helper() { return helper_.get(); }
+  FirstRunHelper* helper() { return helper_; }
 
   int cancelled_times() const { return cancelled_times_; }
 
  private:
-  // FirstRunHelper::Observer overrides.
+  // mojom::FirstRunHelperClient:
   void OnCancelled() override { ++cancelled_times_; }
 
-  std::unique_ptr<FirstRunHelper> helper_;
+  FirstRunHelper* helper_;
+  mojo::Binding<mojom::FirstRunHelperClient> binding_{this};
   int cancelled_times_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunHelperTest);
@@ -117,28 +78,18 @@ TEST_F(FirstRunHelperTest, ContainersAreHidden) {
   CheckContainersAreHidden();
 }
 
-// Tests that helper correctly handles Escape key press.
-TEST_F(FirstRunHelperTest, Cancel) {
-  GetEventGenerator().PressKey(ui::VKEY_ESCAPE, 0);
+// Tests that screen lock cancels the tutorial.
+TEST_F(FirstRunHelperTest, ScreenLock) {
+  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
+  helper()->FlushForTesting();
   EXPECT_EQ(cancelled_times(), 1);
 }
 
-// Tests that modal window doesn't block events for overlay window.
-TEST_F(FirstRunHelperTest, ModalWindowDoesNotBlock) {
-  views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
-      new TestModalDialogDelegate(), CurrentContext(), NULL);
-  modal_dialog->Show();
-  // TODO(dzhioev): modal window should not steal focus from overlay window.
-  aura::Window* overlay_window = helper()->GetOverlayWidget()->GetNativeView();
-  overlay_window->Focus();
-  EXPECT_TRUE(overlay_window->HasFocus());
-  int mouse_events;
-  CountingEventHandler handler(&mouse_events);
-  overlay_window->AddPreTargetHandler(&handler);
-  GetEventGenerator().PressLeftButton();
-  GetEventGenerator().ReleaseLeftButton();
-  EXPECT_EQ(mouse_events, 2);
-  overlay_window->RemovePreTargetHandler(&handler);
+// Tests that shutdown cancels the tutorial.
+TEST_F(FirstRunHelperTest, ChromeTerminating) {
+  Shell::Get()->session_controller()->NotifyChromeTerminating();
+  helper()->FlushForTesting();
+  EXPECT_EQ(cancelled_times(), 1);
 }
 
 }  // namespace ash

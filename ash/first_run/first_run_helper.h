@@ -7,14 +7,10 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/first_run_helper.mojom.h"
-#include "ash/wm/overlay_event_filter.h"
+#include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-
-namespace views {
-class Widget;
-}
 
 namespace ash {
 
@@ -23,50 +19,36 @@ class DesktopCleaner;
 // Interface used by first-run tutorial to manipulate and retrieve information
 // about shell elements.
 class ASH_EXPORT FirstRunHelper : public mojom::FirstRunHelper,
-                                  public OverlayEventFilter::Delegate {
- public:
-  class Observer {
-   public:
-    // Called when first-run UI was cancelled.
-    virtual void OnCancelled() = 0;
-    virtual ~Observer() {}
-  };
-
+                                  public SessionObserver {
  public:
   FirstRunHelper();
   ~FirstRunHelper() override;
 
   void BindRequest(mojom::FirstRunHelperRequest request);
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
-  // Returns widget to place tutorial UI into it.
-  // TODO(jamescook): Migrate widget into chrome and remove these methods.
-  views::Widget* GetOverlayWidget();
-  void CreateOverlayWidget();
-  void CloseOverlayWidget();
-
   // mojom::FirstRunHelper:
+  void Start(mojom::FirstRunHelperClientPtr client) override;
+  void Stop() override;
   void GetAppListButtonBounds(GetAppListButtonBoundsCallback cb) override;
   void OpenTrayBubble(OpenTrayBubbleCallback cb) override;
   void CloseTrayBubble() override;
   void GetHelpButtonBounds(GetHelpButtonBoundsCallback cb) override;
 
-  // OverlayEventFilter::Delegate:
-  void Cancel() override;
-  bool IsCancelingKeyEvent(ui::KeyEvent* event) override;
-  aura::Window* GetWindow() override;
+  // SessionObserver:
+  void OnLockStateChanged(bool locked) override;
+  void OnChromeTerminating() override;
+
+  void FlushForTesting();
 
  private:
+  // Notifies the client to cancel the tutorial.
+  void Cancel();
+
   // Bindings for clients of the mojo interface.
   mojo::BindingSet<mojom::FirstRunHelper> bindings_;
 
-  // TODO(jamescook): Convert to mojo observer.
-  base::ObserverList<Observer> observers_;
-
-  // The first run dialog window.
-  views::Widget* widget_ = nullptr;
+  // Client interface (e.g. chrome).
+  mojom::FirstRunHelperClientPtr client_;
 
   std::unique_ptr<DesktopCleaner> cleaner_;
 
