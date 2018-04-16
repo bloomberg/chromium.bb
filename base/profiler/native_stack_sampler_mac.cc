@@ -328,8 +328,8 @@ bool WalkStackFromContext(
       unw_word_t rsp, rbp;
       unw_get_reg(&unwind_cursor, UNW_X86_64_RSP, &rsp);
       unw_get_reg(&unwind_cursor, UNW_X86_64_RBP, &rbp);
-      uint32_t offset = GetFrameOffset(proc_info.format);
-      if ((rbp - offset * 8) < rsp || rbp > stack_top) {
+      uint32_t offset = GetFrameOffset(proc_info.format) * sizeof(unw_word_t);
+      if (rbp < offset || (rbp - offset) < rsp || rbp > stack_top) {
         return false;
       }
     }
