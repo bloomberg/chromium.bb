@@ -2836,9 +2836,8 @@ DOMArrayBuffer* Internals::serializeObject(
 
 scoped_refptr<SerializedScriptValue> Internals::deserializeBuffer(
     DOMArrayBuffer* buffer) const {
-  String value(static_cast<const UChar*>(buffer->Data()),
-               buffer->ByteLength() / sizeof(UChar));
-  return SerializedScriptValue::Create(value);
+  return SerializedScriptValue::Create(static_cast<const char*>(buffer->Data()),
+                                       buffer->ByteLength());
 }
 
 DOMArrayBuffer* Internals::serializeWithInlineWasm(ScriptValue value) const {
@@ -2858,14 +2857,11 @@ DOMArrayBuffer* Internals::serializeWithInlineWasm(ScriptValue value) const {
 ScriptValue Internals::deserializeBufferContainingWasm(
     ScriptState* state,
     DOMArrayBuffer* buffer) const {
-  String value(static_cast<const UChar*>(buffer->Data()),
-               buffer->ByteLength() / sizeof(UChar));
   DummyExceptionStateForTesting exception_state;
   SerializedScriptValue::DeserializeOptions options;
   options.read_wasm_from_stream = true;
-  return ScriptValue::From(state,
-                           SerializedScriptValue::Create(value)->Deserialize(
-                               state->GetIsolate(), options));
+  return ScriptValue::From(state, deserializeBuffer(buffer)->Deserialize(
+                                      state->GetIsolate(), options));
 }
 
 void Internals::forceReload(bool bypass_cache) {
