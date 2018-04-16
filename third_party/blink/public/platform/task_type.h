@@ -173,7 +173,12 @@ enum class TaskType : unsigned {
   // Tasks related to animation like blinking caret or CSS animation.
   kInternalAnimation = 34,
 
-  kCount = 35,
+  // Tasks related to accessbility. Tasks with this type are mainly posted by:
+  // * //content/renderer/accessibility
+  // * //third_party/blink/renderer/modules/accessibility
+  kInternalAccessibility = 35,
+
+  kCount = 36,
 };
 
 }  // namespace blink

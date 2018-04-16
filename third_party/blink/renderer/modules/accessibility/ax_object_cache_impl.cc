@@ -107,9 +107,10 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
       document_(document),
       modification_count_(0),
       relation_cache_(new AXRelationCache(this)),
-      notification_post_timer_(document.GetTaskRunner(TaskType::kUnspecedTimer),
-                               this,
-                               &AXObjectCacheImpl::NotificationPostTimerFired),
+      notification_post_timer_(
+          document.GetTaskRunner(TaskType::kInternalAccessibility),
+          this,
+          &AXObjectCacheImpl::NotificationPostTimerFired),
       accessibility_event_permission_(mojom::PermissionStatus::ASK),
       permission_observer_binding_(this) {
   if (document_->LoadEventFinished())
