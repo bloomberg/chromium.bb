@@ -11,6 +11,9 @@ crbug.com/789878 fast/css/readwrite-contenteditable.html [ Failure ]
 crbug.com/707656 fast/inline-block/14498-positionForCoordinates.html [ Failure ]
 crbug.com/789878 fast/inline/inline-focus-ring.html [ Failure ]
 
+# Need support for selection modification by granularity
+crbug.com/708452 editing/selection/skip-over-contenteditable.html [ Failure ]
+
 # Non-interoperable behavior not worth to fix.
 crbug.com/591099 fast/text/apply-start-width-after-skipped-text.html [ Skip ]
 

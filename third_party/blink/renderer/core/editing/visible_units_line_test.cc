@@ -7,10 +7,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -46,6 +48,20 @@ class VisibleUnitsLineTest : public EditingTestBase {
     return CreateVisiblePosition(PositionInFlatTree(&anchor, offset), affinity);
   }
 };
+
+class ParameterizedVisibleUnitsLineTest
+    : public ::testing::WithParamInterface<bool>,
+      private ScopedLayoutNGForTest,
+      public VisibleUnitsLineTest {
+ protected:
+  ParameterizedVisibleUnitsLineTest() : ScopedLayoutNGForTest(GetParam()) {}
+
+  bool LayoutNGEnabled() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_CASE_P(All,
+                        ParameterizedVisibleUnitsLineTest,
+                        ::testing::Bool());
 
 TEST_F(VisibleUnitsLineTest, endOfLine) {
   const char* body_content =
@@ -220,7 +236,7 @@ TEST_F(VisibleUnitsLineTest, isLogicalEndOfLine) {
   EXPECT_TRUE(IsLogicalEndOfLine(CreateVisiblePositionInFlatTree(*seven, 7)));
 }
 
-TEST_F(VisibleUnitsLineTest, inSameLine) {
+TEST_P(ParameterizedVisibleUnitsLineTest, inSameLine) {
   const char* body_content =
       "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
   const char* shadow_content =
@@ -599,7 +615,7 @@ TEST_F(VisibleUnitsLineTest,
                 two->lastChild(), visible_position, kContentIsEditable));
 }
 
-TEST_F(VisibleUnitsLineTest, InSameLineSkippingEmptyEditableDiv) {
+TEST_P(ParameterizedVisibleUnitsLineTest, InSameLineSkippingEmptyEditableDiv) {
   // This test records the InSameLine() results in
   // editing/selection/skip-over-contenteditable.html
   SetBodyContent(
@@ -621,6 +637,18 @@ TEST_F(VisibleUnitsLineTest, InSameLineSkippingEmptyEditableDiv) {
   EXPECT_FALSE(InSameLine(
       PositionWithAffinity(Position(foo, 0), TextAffinity::kDownstream),
       PositionWithAffinity(Position(bar, 0), TextAffinity::kDownstream)));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, InSameLineWithMixedEditability) {
+  SelectionInDOMTree selection =
+      SetSelectionTextToBody("<span contenteditable>f^oo</span>b|ar");
+
+  PositionWithAffinity position1(selection.Base());
+  PositionWithAffinity position2(selection.Extent());
+  // "Same line" is restricted by editability boundaries.
+  // TODO(editing-dev): Make sure this test doesn't fail when we stop wrapping
+  // inline contenteditables with inline blocks.
+  EXPECT_FALSE(InSameLine(position1, position2));
 }
 
 }  // namespace blink

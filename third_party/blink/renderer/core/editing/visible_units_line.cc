@@ -33,11 +33,14 @@
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
+#include "third_party/blink/renderer/core/editing/ng_flat_tree_shorthands.h"
 #include "third_party/blink/renderer/core/editing/rendered_position.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
 
@@ -593,6 +596,23 @@ static bool InSameLineAlgorithm(
     return false;
   DCHECK_EQ(position1.GetDocument(), position2.GetDocument());
   DCHECK(!position1.GetDocument()->NeedsLayoutTreeUpdate());
+
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    const LayoutBlockFlow* block1 =
+        NGInlineFormattingContextOf(position1.GetPosition());
+    const LayoutBlockFlow* block2 =
+        NGInlineFormattingContextOf(position2.GetPosition());
+    if (block1 || block2) {
+      if (block1 != block2)
+        return false;
+      // TODO(editing-dev): We may incorrectly return false if a position is in
+      // an empty NG block with height, in which case there is no line box. We
+      // must handle this case when enabling Layout NG for contenteditable.
+      return InSameNGLineBox(position1, position2);
+    }
+
+    // Neither positions are in LayoutNG. Fall through to legacy handling.
+  }
 
   PositionWithAffinityTemplate<Strategy> start_of_line1 =
       StartOfLine(position1);
