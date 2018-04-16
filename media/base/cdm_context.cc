@@ -30,10 +30,6 @@ MediaCryptoContext* CdmContext::GetMediaCryptoContext() {
 }
 #endif
 
-void* CdmContext::GetClassIdentifier() const {
-  return nullptr;
-}
-
 void IgnoreCdmAttached(bool /* success */) {}
 
 }  // namespace media
