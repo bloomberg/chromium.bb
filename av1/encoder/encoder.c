@@ -316,7 +316,6 @@ static void setup_frame(AV1_COMP *cpi) {
     av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
     set_use_reference_buffer(cm, 0);
-    cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
   } else if (frame_is_sframe(cm)) {
     cpi->refresh_golden_frame = 1;
     cpi->refresh_alt_ref_frame = 1;
@@ -328,11 +327,8 @@ static void setup_frame(AV1_COMP *cpi) {
       av1_setup_past_independence(cm);
       cm->seg.update_map = 1;
       cm->seg.update_data = 1;
-      cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
     } else {
       *cm->fc = cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
-      cm->pre_fc =
-          &cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
     }
     av1_zero(cpi->interp_filter_selected[0]);
   }

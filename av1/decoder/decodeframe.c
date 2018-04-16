@@ -3275,7 +3275,6 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
     if (cm->reset_decoder_state) {
       // Use the default frame context values.
       *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
-      cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
       if (!cm->fc->initialized)
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Uninitialized entropy context.");
@@ -3293,10 +3292,8 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
   if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
     // use the default frame context values
     *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
-    cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
   } else {
     *cm->fc = cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
-    cm->pre_fc = &cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
   }
   if (!cm->fc->initialized)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
