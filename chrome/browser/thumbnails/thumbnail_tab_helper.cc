@@ -15,9 +15,6 @@
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -66,6 +63,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThumbnailTabHelper);
 
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
+      observer_(this),
       did_navigation_finish_(false),
       has_received_document_since_navigation_finished_(false),
       has_painted_since_document_received_(false),
@@ -76,19 +74,16 @@ ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
 
 ThumbnailTabHelper::~ThumbnailTabHelper() = default;
 
-void ThumbnailTabHelper::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED:
-      // |details| is the new visibility state.
-      if (!*content::Details<bool>(details).ptr())
-        TabHidden();
-      break;
+void ThumbnailTabHelper::RenderWidgetHostVisibilityChanged(
+    content::RenderWidgetHost* widget_host,
+    bool became_visible) {
+  if (!became_visible)
+    TabHidden();
+}
 
-    default:
-      NOTREACHED() << "Unexpected notification type: " << type;
-  }
+void ThumbnailTabHelper::RenderWidgetHostDestroyed(
+    content::RenderWidgetHost* widget_host) {
+  observer_.Remove(widget_host);
 }
 
 void ThumbnailTabHelper::RenderViewCreated(
@@ -190,15 +185,9 @@ void ThumbnailTabHelper::StartWatchingRenderViewHost(
   // necessarily come with a new RenderViewHost, and there is no good way to get
   // notifications of new RenderViewHosts only. So just be tolerant of
   // re-registrations.
-  bool registered = registrar_.IsRegistered(
-      this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<content::RenderWidgetHost>(
-          render_view_host->GetWidget()));
-  if (!registered) {
-    registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-                   content::Source<content::RenderWidgetHost>(
-                       render_view_host->GetWidget()));
-  }
+  content::RenderWidgetHost* render_widget_host = render_view_host->GetWidget();
+  if (!observer_.IsObserving(render_widget_host))
+    observer_.Add(render_widget_host);
 }
 
 void ThumbnailTabHelper::StopWatchingRenderViewHost(
@@ -207,16 +196,9 @@ void ThumbnailTabHelper::StopWatchingRenderViewHost(
     return;
   }
 
-  bool registered = registrar_.IsRegistered(
-      this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<content::RenderWidgetHost>(
-          render_view_host->GetWidget()));
-  if (registered) {
-    registrar_.Remove(this,
-                      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-                      content::Source<content::RenderWidgetHost>(
-                          render_view_host->GetWidget()));
-  }
+  content::RenderWidgetHost* render_widget_host = render_view_host->GetWidget();
+  if (observer_.IsObserving(render_widget_host))
+    observer_.Remove(render_widget_host);
 }
 
 void ThumbnailTabHelper::StartThumbnailCaptureIfNecessary(

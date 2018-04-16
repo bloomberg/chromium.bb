@@ -18,15 +18,12 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -74,7 +71,7 @@ HungRendererController* g_hung_renderer_controller_instance = nil;
 
 class HungRendererObserverBridge : public content::WebContentsObserver,
                                    public content::RenderProcessHostObserver,
-                                   public content::NotificationObserver {
+                                   public content::RenderWidgetHostObserver {
  public:
   HungRendererObserverBridge(WebContents* web_contents,
                              content::RenderWidgetHost* hung_widget,
@@ -82,11 +79,10 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
       : content::WebContentsObserver(web_contents),
         hung_process_(hung_widget->GetProcess()),
         process_observer_(this),
+        widget_observer_(this),
         controller_(controller) {
     process_observer_.Add(hung_process_);
-    notification_registrar_.Add(
-        this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-        content::Source<content::RenderWidgetHost>(hung_widget));
+    widget_observer_.Add(hung_widget);
   }
 
   ~HungRendererObserverBridge() override = default;
@@ -107,11 +103,9 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
     [controller_ renderProcessGone];
   }
 
-  // NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, type);
+  // RenderWidgetHostObserver overrides:
+  void RenderWidgetHostDestroyed(
+      content::RenderWidgetHost* widget_host) override {
     [controller_ renderProcessGone];
   }
 
@@ -121,9 +115,10 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
   ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
       process_observer_;
 
-  HungRendererController* controller_;  // weak
+  ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
+      widget_observer_;
 
-  content::NotificationRegistrar notification_registrar_;
+  HungRendererController* controller_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererObserverBridge);
 };

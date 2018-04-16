@@ -119,6 +119,7 @@ enum NotificationType {
 
   // This is sent when a RenderWidgetHost is being destroyed. The source is
   // the RenderWidgetHost, the details are not used.
+  // DEPRECATED: Use RenderWidgetHostObserver::RenderWidgetHostDestroyed()
   NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
 
   // Sent after the backing store has been updated but before the widget has
@@ -128,6 +129,9 @@ enum NotificationType {
   // Indicates a RenderWidgetHost has been hidden or restored. The source is
   // the RWH whose visibility changed, the details is a bool set to true if
   // the new state is "visible."
+  //
+  // DEPRECATED:
+  // Use RenderWidgetHostObserver::RenderWidgetHostVisibilityChanged()
   NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
 
   // The focused element inside a page has changed.  The source is the

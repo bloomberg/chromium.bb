@@ -27,9 +27,6 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -142,7 +139,8 @@ FileSelectHelper::FileSelectHelper(Profile* profile)
       select_file_dialog_(),
       select_file_types_(),
       dialog_type_(ui::SelectFileDialog::SELECT_OPEN_FILE),
-      dialog_mode_(FileChooserParams::Open) {}
+      dialog_mode_(FileChooserParams::Open),
+      observer_(this) {}
 
 FileSelectHelper::~FileSelectHelper() {
   // There may be pending file dialogs, we need to tell them that we've gone
@@ -481,12 +479,9 @@ void FileSelectHelper::RunFileChooser(
 
   render_frame_host_ = render_frame_host;
   web_contents_ = WebContents::FromRenderFrameHost(render_frame_host);
-  notification_registrar_.RemoveAll();
+  observer_.RemoveAll();
   content::WebContentsObserver::Observe(web_contents_);
-  notification_registrar_.Add(
-      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      content::Source<RenderWidgetHost>(
-          render_frame_host_->GetRenderViewHost()->GetWidget()));
+  observer_.Add(render_frame_host_->GetRenderViewHost()->GetWidget());
 
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock()},
@@ -669,11 +664,10 @@ void FileSelectHelper::EnumerateDirectoryEnd() {
   Release();
 }
 
-void FileSelectHelper::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, type);
+void FileSelectHelper::RenderWidgetHostDestroyed(
+    content::RenderWidgetHost* widget_host) {
   render_frame_host_ = nullptr;
+  observer_.Remove(widget_host);
 }
 
 void FileSelectHelper::RenderFrameHostChanged(

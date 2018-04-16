@@ -29,8 +29,6 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -66,7 +64,7 @@ HungRendererDialogView* HungRendererDialogView::g_instance_ = nullptr;
 // HungPagesTableModel, public:
 
 HungPagesTableModel::HungPagesTableModel(Delegate* delegate)
-    : delegate_(delegate), process_observer_(this) {}
+    : delegate_(delegate), process_observer_(this), widget_observer_(this) {}
 
 HungPagesTableModel::~HungPagesTableModel() {}
 
@@ -78,7 +76,7 @@ void HungPagesTableModel::InitForWebContents(
     WebContents* contents,
     content::RenderWidgetHost* render_widget_host) {
   process_observer_.RemoveAll();
-  notification_registrar_.RemoveAll();
+  widget_observer_.RemoveAll();
   render_widget_host_ = render_widget_host;
   tab_observers_.clear();
 
@@ -92,9 +90,7 @@ void HungPagesTableModel::InitForWebContents(
 
   if (render_widget_host_) {
     process_observer_.Add(render_widget_host_->GetProcess());
-    notification_registrar_.Add(
-        this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-        content::Source<content::RenderWidgetHost>(render_widget_host_));
+    widget_observer_.Add(render_widget_host_);
   }
 
   // The world is different.
@@ -139,12 +135,10 @@ void HungPagesTableModel::RenderProcessExited(content::RenderProcessHost* host,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// HungPagesTableModel, NotificationObserver implementation:
+// HungPagesTableModel, RenderWidgetHostObserver implementation:
 
-void HungPagesTableModel::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, type);
+void HungPagesTableModel::RenderWidgetHostDestroyed(
+    content::RenderWidgetHost* widget_host) {
   // Notify the delegate.
   delegate_->TabDestroyed();
   // WARNING: we've likely been deleted.

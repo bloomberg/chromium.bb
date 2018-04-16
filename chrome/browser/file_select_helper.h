@@ -12,10 +12,10 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/file_chooser_params.h"
 #include "net/base/directory_lister.h"
@@ -37,15 +37,15 @@ struct SelectedFileInfo;
 // It implements both the initialisation and listener functions for
 // file-selection dialogs.
 //
-// Since FileSelectHelper has-a NotificationRegistrar, it needs to live on and
-// be destroyed on the UI thread. References to FileSelectHelper may be passed
-// on to other threads.
+// Since FileSelectHelper listens to observations of a widget, it needs to live
+// on and be destroyed on the UI thread. References to FileSelectHelper may be
+// passed on to other threads.
 class FileSelectHelper : public base::RefCountedThreadSafe<
                              FileSelectHelper,
                              content::BrowserThread::DeleteOnUIThread>,
                          public ui::SelectFileDialog::Listener,
                          public content::WebContentsObserver,
-                         public content::NotificationObserver {
+                         public content::RenderWidgetHostObserver {
  public:
   // Show the file chooser dialog.
   static void RunFileChooser(content::RenderFrameHost* render_frame_host,
@@ -127,10 +127,9 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
       void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-  // content::NotificationObserver overrides.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // content::RenderWidgetHostObserver overrides.
+  void RenderWidgetHostDestroyed(
+      content::RenderWidgetHost* widget_host) override;
 
   // content::WebContentsObserver overrides.
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
@@ -251,8 +250,8 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   struct ActiveDirectoryEnumeration;
   std::map<int, ActiveDirectoryEnumeration*> directory_enumerations_;
 
-  // Registrar for notifications regarding our RenderViewHost.
-  content::NotificationRegistrar notification_registrar_;
+  ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
+      observer_;
 
   // Temporary files only used on OSX. This class is responsible for deleting
   // these files when they are no longer needed.

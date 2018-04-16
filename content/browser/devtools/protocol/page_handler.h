@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
@@ -22,8 +23,7 @@
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/public/browser/javascript_dialog_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
 #include "url/gurl.h"
@@ -59,7 +59,7 @@ class EmulationHandler;
 
 class PageHandler : public DevToolsDomainHandler,
                     public Page::Backend,
-                    public NotificationObserver {
+                    public RenderWidgetHostObserver {
  public:
   explicit PageHandler(EmulationHandler* handler);
   ~PageHandler() override;
@@ -182,10 +182,10 @@ class PageHandler : public DevToolsDomainHandler,
                    const GURL& manifest_url,
                    blink::mojom::ManifestDebugInfoPtr debug_info);
 
-  // NotificationObserver overrides.
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override;
+  // RenderWidgetHostObserver overrides.
+  void RenderWidgetHostVisibilityChanged(RenderWidgetHost* widget_host,
+                                         bool became_visible) override;
+  void RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) override;
 
   bool enabled_;
 
@@ -217,7 +217,7 @@ class PageHandler : public DevToolsDomainHandler,
   RenderFrameHostImpl* host_;
   EmulationHandler* emulation_handler_;
   std::unique_ptr<Page::Frontend> frontend_;
-  NotificationRegistrar registrar_;
+  ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> observer_;
   JavaScriptDialogCallback pending_dialog_;
   scoped_refptr<DevToolsDownloadManagerDelegate> download_manager_delegate_;
   base::flat_map<base::UnguessableToken, std::unique_ptr<NavigateCallback>>

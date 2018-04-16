@@ -51,6 +51,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
@@ -183,6 +184,7 @@ InterstitialPageImpl::InterstitialPageImpl(
       create_view_(true),
       pause_throbber_(false),
       delegate_(delegate),
+      widget_observer_(this),
       weak_ptr_factory_(this) {
   InitInterstitialPageMap();
 }
@@ -227,10 +229,8 @@ void InterstitialPageImpl::Show() {
   // cancel the blocked requests.  We cannot do that on
   // NOTIFY_WEB_CONTENTS_DESTROYED as at that point the RenderViewHost has
   // already been destroyed.
-  notification_registrar_.Add(
-      this, NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderWidgetHost>(
-          controller_->delegate()->GetRenderViewHost()->GetWidget()));
+  widget_observer_.Add(
+      controller_->delegate()->GetRenderViewHost()->GetWidget());
 
   // Update the g_web_contents_to_interstitial_page map.
   iter = g_web_contents_to_interstitial_page->find(web_contents_);
@@ -319,6 +319,19 @@ void InterstitialPageImpl::Hide() {
   web_contents_ = nullptr;
 }
 
+void InterstitialPageImpl::RenderWidgetHostDestroyed(
+    content::RenderWidgetHost* widget_host) {
+  widget_observer_.Remove(widget_host);
+  if (action_taken_ == NO_ACTION) {
+    // The RenderViewHost is being destroyed (as part of the tab being
+    // closed); make sure we clear the blocked requests.
+    RenderViewHost* rvh = RenderViewHost::From(widget_host);
+    DCHECK(rvh->GetProcess()->GetID() == original_child_id_ &&
+           rvh->GetRoutingID() == original_rvh_id_);
+    TakeActionOnResourceDispatcher(CANCEL);
+  }
+}
+
 void InterstitialPageImpl::Observe(
     int type,
     const NotificationSource& source,
@@ -336,17 +349,6 @@ void InterstitialPageImpl::Observe(
       // new navigation.
       Disable();
       TakeActionOnResourceDispatcher(CANCEL);
-      break;
-    case NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED:
-      if (action_taken_ == NO_ACTION) {
-        // The RenderViewHost is being destroyed (as part of the tab being
-        // closed); make sure we clear the blocked requests.
-        RenderViewHost* rvh =
-            RenderViewHost::From(Source<RenderWidgetHost>(source).ptr());
-        DCHECK(rvh->GetProcess()->GetID() == original_child_id_ &&
-               rvh->GetRoutingID() == original_rvh_id_);
-        TakeActionOnResourceDispatcher(CANCEL);
-      }
       break;
     default:
       NOTREACHED();
