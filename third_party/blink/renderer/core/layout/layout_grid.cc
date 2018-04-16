@@ -323,11 +323,8 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     // we need to clear any override size set previously, so it doesn't
     // interfere in current layout execution.
     for (auto* child = FirstInFlowChildBox(); child;
-         child = child->NextInFlowSiblingBox()) {
+         child = child->NextInFlowSiblingBox())
       child->ClearOverrideSize();
-      child->SetOverrideContainingBlockContentLogicalWidth(LayoutUnit());
-      child->SetOverrideContainingBlockContentLogicalHeight(LayoutUnit());
-    }
 
     UpdateLogicalWidth();
 
@@ -1185,14 +1182,23 @@ void LayoutGrid::LayoutGridItems() {
 
     // Because the grid area cannot be styled, we don't need to adjust
     // the grid breadth to account for 'box-sizing'.
+    LayoutUnit old_override_containing_block_content_logical_width =
+        child->HasOverrideContainingBlockLogicalWidth()
+            ? child->OverrideContainingBlockContentLogicalWidth()
+            : LayoutUnit();
+    LayoutUnit old_override_containing_block_content_logical_height =
+        child->HasOverrideContainingBlockLogicalHeight()
+            ? child->OverrideContainingBlockContentLogicalHeight()
+            : LayoutUnit();
+
     LayoutUnit override_containing_block_content_logical_width =
         GridAreaBreadthForChildIncludingAlignmentOffsets(*child, kForColumns);
     LayoutUnit override_containing_block_content_logical_height =
         GridAreaBreadthForChildIncludingAlignmentOffsets(*child, kForRows);
 
-    if (child->OverrideContainingBlockContentLogicalWidth() !=
+    if (old_override_containing_block_content_logical_width !=
             override_containing_block_content_logical_width ||
-        (child->OverrideContainingBlockContentLogicalHeight() !=
+        (old_override_containing_block_content_logical_height !=
              override_containing_block_content_logical_height &&
          child->HasRelativeLogicalHeight()))
       child->SetNeedsLayout(LayoutInvalidationReason::kGridChanged);
