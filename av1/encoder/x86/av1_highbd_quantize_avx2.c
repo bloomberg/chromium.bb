@@ -32,7 +32,10 @@ static INLINE void init_qp(const int16_t *round_ptr, const int16_t *quant_ptr,
                            const int16_t *dequant_ptr, int log_scale,
                            __m256i *qp) {
   __m128i round = _mm_loadu_si128((const __m128i *)round_ptr);
-  round = _mm_srai_epi16(round, log_scale);
+  if (log_scale) {
+    const __m128i round_scale = _mm_set1_epi16(1 << (15 - log_scale));
+    round = _mm_mulhrs_epi16(round, round_scale);
+  }
   const __m128i quant = _mm_loadu_si128((const __m128i *)quant_ptr);
   const __m128i dequant = _mm_loadu_si128((const __m128i *)dequant_ptr);
 
