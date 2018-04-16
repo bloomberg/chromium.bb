@@ -640,8 +640,6 @@ static const aom_cdf_prob
 
 static const aom_cdf_prob
     default_palette_y_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {
-      { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
-      { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
       { AOM_CDF7(7952, 13000, 18149, 21478, 25527, 29241) },
       { AOM_CDF7(7139, 11421, 16195, 19544, 23666, 28073) },
       { AOM_CDF7(7788, 12741, 17325, 20500, 24315, 28530) },
@@ -653,8 +651,6 @@ static const aom_cdf_prob
 
 static const aom_cdf_prob
     default_palette_uv_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {
-      { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
-      { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },
       { AOM_CDF7(8713, 19979, 27128, 29609, 31331, 32272) },
       { AOM_CDF7(5839, 15573, 23581, 26947, 29848, 31700) },
       { AOM_CDF7(4426, 11260, 17999, 21483, 25863, 29430) },
@@ -666,8 +662,6 @@ static const aom_cdf_prob
 
 static const aom_cdf_prob default_palette_y_mode_cdf
     [PALATTE_BSIZE_CTXS][PALETTE_Y_MODE_CONTEXTS][CDF_SIZE(2)] = {
-      { { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) } },
-      { { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) } },
       { { AOM_CDF2(31676) }, { AOM_CDF2(3419) }, { AOM_CDF2(1261) } },
       { { AOM_CDF2(31912) }, { AOM_CDF2(2859) }, { AOM_CDF2(980) } },
       { { AOM_CDF2(31823) }, { AOM_CDF2(3400) }, { AOM_CDF2(781) } },

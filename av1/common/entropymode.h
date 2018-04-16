@@ -50,12 +50,11 @@ extern "C" {
 #define PALETTE_UV_MODE_CONTEXTS 2
 
 // Map the number of pixels in a block size to a context
-//   16(BLOCK_4X4)                          -> 0
-//   32(BLOCK_4X8, BLOCK_8X4)               -> 1
-//   64(BLOCK_8X8, BLOCK_4x16, BLOCK_16X4)  -> 2
+//   64(BLOCK_8X8, BLOCK_4x16, BLOCK_16X4)  -> 0
+//  128(BLOCK_8X16, BLOCK_16x8)             -> 1
 //   ...
-// 4096(BLOCK_64X64)                        -> 8
-#define PALATTE_BSIZE_CTXS 9
+// 4096(BLOCK_64X64)                        -> 6
+#define PALATTE_BSIZE_CTXS 7
 
 #define KF_MODE_CONTEXTS 5
 
