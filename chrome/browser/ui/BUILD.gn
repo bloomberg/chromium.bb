@@ -973,6 +973,7 @@ split_static_library("ui") {
     "//components/flags_ui",
     "//components/gcm_driver",
     "//components/google/core/browser",
+    "//components/heap_profiling",
     "//components/history/content/browser",
     "//components/history/core/browser",
     "//components/image_fetcher/core",

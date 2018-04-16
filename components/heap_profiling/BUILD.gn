@@ -6,9 +6,27 @@ static_library("heap_profiling") {
   sources = [
     "client_connection_manager.cc",
     "client_connection_manager.h",
+    "supervisor.cc",
+    "supervisor.h",
   ]
 
   deps = [
+    "//base",
+    "//components/services/heap_profiling/public/cpp",
+    "//content/public/browser",
+    "//content/public/common",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_driver.cc",
+    "test_driver.h",
+  ]
+
+  deps = [
+    ":heap_profiling",
     "//base",
     "//components/services/heap_profiling/public/cpp",
     "//content/public/browser",

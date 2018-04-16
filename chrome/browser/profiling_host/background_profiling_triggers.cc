@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
+#include "components/heap_profiling/supervisor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
@@ -119,7 +120,7 @@ void BackgroundProfilingTriggers::PerformMemoryUsageChecks() {
                            std::move(weak_ptr), std::move(result)));
       },
       weak_ptr_factory_.GetWeakPtr());
-  host_->GetProfiledPids(std::move(callback));
+  Supervisor::GetInstance()->GetProfiledPids(std::move(callback));
 }
 
 void BackgroundProfilingTriggers::OnReceivedMemoryDump(

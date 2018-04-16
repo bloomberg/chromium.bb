@@ -29,8 +29,6 @@ if (!is_android) {
 
     sources = [
       "memlog_browsertest.cc",
-      "profiling_test_driver.cc",
-      "profiling_test_driver.h",
     ]
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -39,6 +37,7 @@ if (!is_android) {
       "//base",
       "//base/allocator:buildflags",
       "//chrome/test:test_support_ui",
+      "//components/heap_profiling:test_support",
       "//components/services/heap_profiling/public/cpp",
       "//testing/gmock",
       "//testing/gtest",

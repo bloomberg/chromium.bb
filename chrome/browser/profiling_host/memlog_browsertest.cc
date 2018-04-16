@@ -10,12 +10,12 @@
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
-#include "chrome/browser/profiling_host/profiling_test_driver.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/heap_profiling/test_driver.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
 #include "content/public/browser/render_frame_host.h"
@@ -84,8 +84,8 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   LOG(INFO) << "Started via command line flag: "
             << static_cast<int>(
                    GetParam().start_profiling_with_command_line_flag);
-  ProfilingTestDriver driver;
-  ProfilingTestDriver::Options options;
+  TestDriver driver;
+  TestDriver::Options options;
   options.mode = GetParam().mode;
   options.stack_mode = GetParam().stack_mode;
   options.profiling_already_started =

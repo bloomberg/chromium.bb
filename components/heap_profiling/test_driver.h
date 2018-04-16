@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROFILING_HOST_PROFILING_TEST_DRIVER_H_
-#define CHROME_BROWSER_PROFILING_HOST_PROFILING_TEST_DRIVER_H_
+#ifndef COMPONENTS_HEAP_PROFILING_TEST_DRIVER_H_
+#define COMPONENTS_HEAP_PROFILING_TEST_DRIVER_H_
 
 #include <vector>
 
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/profiling_host/profiling_process_host.h"
+#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 
 namespace base {
 class Value;
@@ -19,11 +19,15 @@ class Value;
 
 namespace heap_profiling {
 
-// This class runs tests for the profiling service, a cross-platform,
-// multi-process component. Chrome on Android does not support browser_tests. It
-// does support content_browsertests, but those are not multi-process tests. On
-// Android, processes have to be started via the Activity mechanism, and the
-// test infrastructure does not support this.
+enum class Mode;
+
+// This class runs tests for the Heap Profiling Service, a cross-platform,
+// multi-process component.
+//
+// Chrome on Android does not support browser_tests. It does support
+// content_browsertests, but those are not multi-process tests. On Android,
+// processes have to be started via the Activity mechanism, and the test
+// infrastructure does not support this.
 //
 // To avoid test-code duplication, all tests are pulled into this class.
 // browser_tests will directly call this class. The android
@@ -37,7 +41,7 @@ namespace heap_profiling {
 //
 // Note: Outputting to stderr will not have the desired effect, since that is
 // not captured by logcat.
-class ProfilingTestDriver {
+class TestDriver {
  public:
   struct Options {
     // The profiling mode to test.
@@ -60,8 +64,8 @@ class ProfilingTestDriver {
     bool sample_everything;
   };
 
-  ProfilingTestDriver();
-  ~ProfilingTestDriver();
+  TestDriver();
+  ~TestDriver();
 
   // If this is called on the content::BrowserThread::UI thread, then the
   // platform must support nested message loops. [This is currently not
@@ -72,9 +76,16 @@ class ProfilingTestDriver {
   bool RunTest(const Options& options);
 
  private:
+  // Populates |has_started_| and then signals |wait_for_ui_thread_|.
+  void GetHasStartedOnUIThread();
+
   // Populates |initialization_success_| with the result of
   // |RunInitializationOnUIThread|, and then signals |wait_for_ui_thread_|.
   void CheckOrStartProfilingOnUIThreadAndSignal();
+
+  // Calls Supervisor::SetKeepSmallAllocations() and then signals
+  // |wait_for_ui_thread_|.
+  void SetKeepSmallAllocationsOnUIThreadAndSignal();
 
   // If profiling is expected to already be started, confirm it.
   // Otherwise, start profiling with the given mode.
@@ -131,6 +142,9 @@ class ProfilingTestDriver {
   // Whether the test was invoked on the ui thread.
   bool running_on_ui_thread_ = true;
 
+  // Whether the supervisor has started.
+  bool has_started_ = false;
+
   // Whether an error has occurred.
   bool initialization_success_ = false;
 
@@ -140,9 +154,9 @@ class ProfilingTestDriver {
 
   base::WaitableEvent wait_for_ui_thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProfilingTestDriver);
+  DISALLOW_COPY_AND_ASSIGN(TestDriver);
 };
 
 }  // namespace heap_profiling
 
-#endif  // CHROME_BROWSER_PROFILING_HOST_PROFILING_TEST_DRIVER_H_
+#endif  // COMPONENTS_HEAP_PROFILING_TEST_DRIVER_H_
