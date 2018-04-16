@@ -98,14 +98,13 @@ std::queue<mojom::SharedWorkerFactoryRequest>
 namespace {
 
 void ConnectToSharedWorker(mojom::SharedWorkerConnectorPtr connector,
-                           const std::string& url,
+                           const GURL& url,
                            const std::string& name,
                            MockSharedWorkerClient* client,
                            MessagePortChannel* local_port) {
-  mojom::SharedWorkerInfoPtr info(
-      mojom::SharedWorkerInfo::New(GURL(url), name, std::string(),
-                                   blink::kWebContentSecurityPolicyTypeReport,
-                                   blink::mojom::IPAddressSpace::kPublic));
+  mojom::SharedWorkerInfoPtr info(mojom::SharedWorkerInfo::New(
+      url, name, std::string(), blink::kWebContentSecurityPolicyTypeReport,
+      blink::mojom::IPAddressSpace::kPublic));
 
   mojo::MessagePipe message_pipe;
   *local_port = MessagePortChannel(std::move(message_pipe.handle0));
@@ -131,10 +130,10 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
 
   MockSharedWorkerClient client;
   MessagePortChannel local_port;
+  const GURL kUrl("http://example.com/w.js");
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host, render_frame_host->GetRoutingID()),
-                        "http://example.com/w.js", "name", &client,
-                        &local_port);
+                        kUrl, "name", &client, &local_port);
 
   base::RunLoop().RunUntilIdle();
 
@@ -146,8 +145,7 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   mojom::SharedWorkerHostPtr worker_host;
   mojom::SharedWorkerRequest worker_request;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      "http://example.com/w.js", "name",
-      blink::kWebContentSecurityPolicyTypeReport, &worker_host,
+      kUrl, "name", blink::kWebContentSecurityPolicyTypeReport, &worker_host,
       &worker_request));
   MockSharedWorker worker(std::move(worker_request));
   base::RunLoop().RunUntilIdle();
@@ -207,10 +205,10 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
 
   MockSharedWorkerClient client0;
   MessagePortChannel local_port0;
+  const GURL kUrl("http://example.com/w.js");
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host0, render_frame_host0->GetRoutingID()),
-                        "http://example.com/w.js", "name", &client0,
-                        &local_port0);
+                        kUrl, "name", &client0, &local_port0);
 
   base::RunLoop().RunUntilIdle();
 
@@ -222,8 +220,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   mojom::SharedWorkerHostPtr worker_host;
   mojom::SharedWorkerRequest worker_request;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      "http://example.com/w.js", "name",
-      blink::kWebContentSecurityPolicyTypeReport, &worker_host,
+      kUrl, "name", blink::kWebContentSecurityPolicyTypeReport, &worker_host,
       &worker_request));
   MockSharedWorker worker(std::move(worker_request));
   base::RunLoop().RunUntilIdle();
@@ -278,8 +275,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   MessagePortChannel local_port1;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host1, render_frame_host1->GetRoutingID()),
-                        "http://example.com/w.js", "name", &client1,
-                        &local_port1);
+                        kUrl, "name", &client1, &local_port1);
 
   base::RunLoop().RunUntilIdle();
 
@@ -324,7 +320,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
-  const char kURL[] = "http://example.com/w.js";
+  const GURL kUrl("http://example.com/w.js");
   const char kName[] = "name";
 
   // The first renderer host.
@@ -351,7 +347,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
   MessagePortChannel local_port0;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host0, render_frame_host0->GetRoutingID()),
-                        kURL, kName, &client0, &local_port0);
+                        kUrl, kName, &client0, &local_port0);
   base::RunLoop().RunUntilIdle();
 
   mojom::SharedWorkerFactoryRequest factory_request;
@@ -362,7 +358,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
   mojom::SharedWorkerHostPtr worker_host;
   mojom::SharedWorkerRequest worker_request;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kURL, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host,
+      kUrl, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host,
       &worker_request));
   MockSharedWorker worker(std::move(worker_request));
   base::RunLoop().RunUntilIdle();
@@ -376,7 +372,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
   MessagePortChannel local_port1;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host1, render_frame_host1->GetRoutingID()),
-                        kURL, kName, &client1, &local_port1);
+                        kUrl, kName, &client1, &local_port1);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(CheckNotReceivedFactoryRequest());
@@ -394,8 +390,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
-  const char kURL0[] = "http://example.com/w0.js";
-  const char kURL1[] = "http://example.com/w1.js";
+  const GURL kUrl0("http://example.com/w0.js");
+  const GURL kUrl1("http://example.com/w1.js");
   const char kName[] = "name";
 
   // The first renderer host.
@@ -422,7 +418,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
   MessagePortChannel local_port0;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host0, render_frame_host0->GetRoutingID()),
-                        kURL0, kName, &client0, &local_port0);
+                        kUrl0, kName, &client0, &local_port0);
   base::RunLoop().RunUntilIdle();
 
   mojom::SharedWorkerFactoryRequest factory_request0;
@@ -433,7 +429,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
   mojom::SharedWorkerHostPtr worker_host0;
   mojom::SharedWorkerRequest worker_request0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kURL0, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
+      kUrl0, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
       &worker_request0));
   MockSharedWorker worker0(std::move(worker_request0));
   base::RunLoop().RunUntilIdle();
@@ -447,7 +443,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
   MessagePortChannel local_port1;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host1, render_frame_host1->GetRoutingID()),
-                        kURL1, kName, &client1, &local_port1);
+                        kUrl1, kName, &client1, &local_port1);
   base::RunLoop().RunUntilIdle();
 
   mojom::SharedWorkerFactoryRequest factory_request1;
@@ -458,7 +454,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
   mojom::SharedWorkerHostPtr worker_host1;
   mojom::SharedWorkerRequest worker_request1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kURL1, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
+      kUrl1, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
       &worker_request1));
   MockSharedWorker worker1(std::move(worker_request1));
   base::RunLoop().RunUntilIdle();
@@ -477,7 +473,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
-  const char kURL[] = "http://example.com/w.js";
+  const GURL kUrl("http://example.com/w.js");
   const char kName0[] = "name0";
   const char kName1[] = "name1";
 
@@ -505,7 +501,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
   MessagePortChannel local_port0;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host0, render_frame_host0->GetRoutingID()),
-                        kURL, kName0, &client0, &local_port0);
+                        kUrl, kName0, &client0, &local_port0);
   base::RunLoop().RunUntilIdle();
 
   mojom::SharedWorkerFactoryRequest factory_request0;
@@ -516,7 +512,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
   mojom::SharedWorkerHostPtr worker_host0;
   mojom::SharedWorkerRequest worker_request0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kURL, kName0, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
+      kUrl, kName0, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
       &worker_request0));
   MockSharedWorker worker0(std::move(worker_request0));
   base::RunLoop().RunUntilIdle();
@@ -530,7 +526,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
   MessagePortChannel local_port1;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host1, render_frame_host1->GetRoutingID()),
-                        kURL, kName1, &client1, &local_port1);
+                        kUrl, kName1, &client1, &local_port1);
   base::RunLoop().RunUntilIdle();
 
   mojom::SharedWorkerFactoryRequest factory_request1;
@@ -541,7 +537,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
   mojom::SharedWorkerHostPtr worker_host1;
   mojom::SharedWorkerRequest worker_request1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kURL, kName1, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
+      kUrl, kName1, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
       &worker_request1));
   MockSharedWorker worker1(std::move(worker_request1));
   base::RunLoop().RunUntilIdle();
@@ -560,7 +556,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
-  const char kURL[] = "http://example.com/w.js";
+  const GURL kUrl("http://example.com/w.js");
   const char kName[] = "name";
 
   // The first renderer host.
@@ -587,13 +583,13 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
   MessagePortChannel local_port0;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host0, render_frame_host0->GetRoutingID()),
-                        kURL, kName, &client0, &local_port0);
+                        kUrl, kName, &client0, &local_port0);
 
   MockSharedWorkerClient client1;
   MessagePortChannel local_port1;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host1, render_frame_host1->GetRoutingID()),
-                        kURL, kName, &client1, &local_port1);
+                        kUrl, kName, &client1, &local_port1);
 
   base::RunLoop().RunUntilIdle();
 
@@ -608,7 +604,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
   mojom::SharedWorkerHostPtr worker_host;
   mojom::SharedWorkerRequest worker_request;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kURL, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host,
+      kUrl, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host,
       &worker_request));
   MockSharedWorker worker(std::move(worker_request));
 
@@ -632,8 +628,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
-  const char kURL0[] = "http://example.com/w0.js";
-  const char kURL1[] = "http://example.com/w1.js";
+  const GURL kUrl0("http://example.com/w0.js");
+  const GURL kUrl1("http://example.com/w1.js");
   const char kName[] = "name";
 
   // The first renderer host.
@@ -660,13 +656,13 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
   MessagePortChannel local_port0;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host0, render_frame_host0->GetRoutingID()),
-                        kURL0, kName, &client0, &local_port0);
+                        kUrl0, kName, &client0, &local_port0);
 
   MockSharedWorkerClient client1;
   MessagePortChannel local_port1;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host1, render_frame_host1->GetRoutingID()),
-                        kURL1, kName, &client1, &local_port1);
+                        kUrl1, kName, &client1, &local_port1);
 
   base::RunLoop().RunUntilIdle();
 
@@ -685,14 +681,14 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
   mojom::SharedWorkerHostPtr worker_host0;
   mojom::SharedWorkerRequest worker_request0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kURL0, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
+      kUrl0, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
       &worker_request0));
   MockSharedWorker worker0(std::move(worker_request0));
 
   mojom::SharedWorkerHostPtr worker_host1;
   mojom::SharedWorkerRequest worker_request1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kURL1, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
+      kUrl1, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
       &worker_request1));
   MockSharedWorker worker1(std::move(worker_request1));
 
@@ -719,7 +715,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
-  const char kURL[] = "http://example.com/w.js";
+  const GURL kUrl("http://example.com/w.js");
   const char kName0[] = "name0";
   const char kName1[] = "name1";
 
@@ -747,13 +743,13 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
   MessagePortChannel local_port0;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host0, render_frame_host0->GetRoutingID()),
-                        kURL, kName0, &client0, &local_port0);
+                        kUrl, kName0, &client0, &local_port0);
 
   MockSharedWorkerClient client1;
   MessagePortChannel local_port1;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host1, render_frame_host1->GetRoutingID()),
-                        kURL, kName1, &client1, &local_port1);
+                        kUrl, kName1, &client1, &local_port1);
 
   base::RunLoop().RunUntilIdle();
 
@@ -772,14 +768,14 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
   mojom::SharedWorkerHostPtr worker_host0;
   mojom::SharedWorkerRequest worker_request0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kURL, kName0, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
+      kUrl, kName0, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
       &worker_request0));
   MockSharedWorker worker0(std::move(worker_request0));
 
   mojom::SharedWorkerHostPtr worker_host1;
   mojom::SharedWorkerRequest worker_request1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kURL, kName1, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
+      kUrl, kName1, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
       &worker_request1));
   MockSharedWorker worker1(std::move(worker_request1));
 
@@ -806,7 +802,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
-  const char kURL[] = "http://example.com/w.js";
+  const GURL kUrl("http://example.com/w.js");
   const char kName[] = "name";
 
   // Create three renderer hosts.
@@ -839,7 +835,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   MessagePortChannel local_port0;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host0, render_frame_host0->GetRoutingID()),
-                        kURL, kName, &client0, &local_port0);
+                        kUrl, kName, &client0, &local_port0);
 
   base::RunLoop().RunUntilIdle();
 
@@ -854,7 +850,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   mojom::SharedWorkerHostPtr worker_host0;
   mojom::SharedWorkerRequest worker_request0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kURL, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
+      kUrl, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host0,
       &worker_request0));
   MockSharedWorker worker0(std::move(worker_request0));
 
@@ -873,7 +869,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   MessagePortChannel local_port1;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host1, render_frame_host1->GetRoutingID()),
-                        kURL, kName, &client1, &local_port1);
+                        kUrl, kName, &client1, &local_port1);
 
   base::RunLoop().RunUntilIdle();
 
@@ -888,7 +884,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   mojom::SharedWorkerHostPtr worker_host1;
   mojom::SharedWorkerRequest worker_request1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kURL, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
+      kUrl, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
       &worker_request1));
   MockSharedWorker worker1(std::move(worker_request1));
 
@@ -903,7 +899,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   MessagePortChannel local_port2;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host2, render_frame_host2->GetRoutingID()),
-                        kURL, kName, &client2, &local_port2);
+                        kUrl, kName, &client2, &local_port2);
 
   base::RunLoop().RunUntilIdle();
 
@@ -914,7 +910,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
-  const char kURL[] = "http://example.com/w.js";
+  const GURL kUrl("http://example.com/w.js");
   const char kName[] = "name";
 
   // Create three renderer hosts.
@@ -947,7 +943,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
   MessagePortChannel local_port0;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host0, render_frame_host0->GetRoutingID()),
-                        kURL, kName, &client0, &local_port0);
+                        kUrl, kName, &client0, &local_port0);
 
   // Kill this process, which should make worker0 unavailable.
   renderer_host0->FastShutdownIfPossible(0, true);
@@ -957,7 +953,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
   MessagePortChannel local_port1;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host1, render_frame_host1->GetRoutingID()),
-                        kURL, kName, &client1, &local_port1);
+                        kUrl, kName, &client1, &local_port1);
 
   base::RunLoop().RunUntilIdle();
 
@@ -974,7 +970,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
   mojom::SharedWorkerHostPtr worker_host1;
   mojom::SharedWorkerRequest worker_request1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kURL, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
+      kUrl, kName, blink::kWebContentSecurityPolicyTypeReport, &worker_host1,
       &worker_request1));
   MockSharedWorker worker1(std::move(worker_request1));
 
@@ -988,7 +984,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
   MessagePortChannel local_port2;
   ConnectToSharedWorker(MakeSharedWorkerConnector(
                             renderer_host2, render_frame_host2->GetRoutingID()),
-                        kURL, kName, &client2, &local_port2);
+                        kUrl, kName, &client2, &local_port2);
 
   base::RunLoop().RunUntilIdle();
 

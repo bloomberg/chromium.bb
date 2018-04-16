@@ -19,6 +19,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 
+class GURL;
+
 namespace content {
 
 class MockSharedWorker : public mojom::SharedWorker {
@@ -52,7 +54,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
   ~MockSharedWorkerFactory() override;
 
   bool CheckReceivedCreateSharedWorker(
-      const std::string& expected_url,
+      const GURL& expected_url,
       const std::string& expected_name,
       blink::WebContentSecurityPolicyType expected_content_security_policy_type,
       mojom::SharedWorkerHostPtr* host,

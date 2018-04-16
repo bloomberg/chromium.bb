@@ -6,6 +6,7 @@
 
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -70,7 +71,7 @@ MockSharedWorkerFactory::MockSharedWorkerFactory(
 MockSharedWorkerFactory::~MockSharedWorkerFactory() = default;
 
 bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
-    const std::string& expected_url,
+    const GURL& expected_url,
     const std::string& expected_name,
     blink::WebContentSecurityPolicyType expected_content_security_policy_type,
     mojom::SharedWorkerHostPtr* host,
@@ -78,7 +79,7 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
   std::unique_ptr<CreateParams> create_params = std::move(create_params_);
   if (!create_params)
     return false;
-  if (!CheckEquality(GURL(expected_url), create_params->info->url))
+  if (!CheckEquality(expected_url, create_params->info->url))
     return false;
   if (!CheckEquality(expected_name, create_params->info->name))
     return false;
