@@ -10,12 +10,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
-#if defined(OS_CHROMEOS)
-using SigninManagerForTest = FakeSigninManagerBase;
-#else
-using SigninManagerForTest = FakeSigninManager;
-#endif  // OS_CHROMEOS
-
 namespace identity {
 
 namespace {
@@ -65,7 +59,7 @@ void OneShotIdentityManagerObserver::OnPrimaryAccountCleared(
 
 }  // namespace
 
-void MakePrimaryAccountAvailable(SigninManagerForTest* signin_manager,
+void MakePrimaryAccountAvailable(SigninManagerBase* signin_manager,
                                  ProfileOAuth2TokenService* token_service,
                                  IdentityManager* identity_manager,
                                  const std::string& email) {
@@ -85,12 +79,18 @@ void MakePrimaryAccountAvailable(SigninManagerForTest* signin_manager,
   OneShotIdentityManagerObserver signin_observer(identity_manager,
                                                  run_loop.QuitClosure());
 
-  signin_manager->StartSignInWithRefreshToken(
+  SigninManager* real_signin_manager =
+      SigninManager::FromSigninManagerBase(signin_manager);
+  // Note: It's important to pass base::DoNothing() (rather than a null
+  // callback) to make this work with both SigninManager and FakeSigninManager.
+  // If we would pass a null callback, then SigninManager would call
+  // CompletePendingSignin directly, but FakeSigninManager never does that.
+  real_signin_manager->StartSignInWithRefreshToken(
       refresh_token, gaia_id, email, /*password=*/"",
-      SigninManager::OAuthTokenFetchedCallback());
-  signin_manager->CompletePendingSignin();
-  token_service->UpdateCredentials(signin_manager->GetAuthenticatedAccountId(),
-                                   refresh_token);
+      /*oauth_fetched_callback=*/base::DoNothing());
+  real_signin_manager->CompletePendingSignin();
+  token_service->UpdateCredentials(
+      real_signin_manager->GetAuthenticatedAccountId(), refresh_token);
 
   run_loop.Run();
 #endif
