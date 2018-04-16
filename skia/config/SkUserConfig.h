@@ -226,9 +226,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 
 #define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
 
-#ifndef SK_SUPPORT_LEGACY_PATH_DAA_BIT
-#define SK_SUPPORT_LEGACY_PATH_DAA_BIT
-#endif
 
 #ifndef SK_SUPPORT_LEGACY_THREADED_DAA_BUGS
 #define SK_SUPPORT_LEGACY_THREADED_DAA_BUGS
