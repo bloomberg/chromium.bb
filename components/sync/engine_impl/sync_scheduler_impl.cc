@@ -138,10 +138,8 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
                                      bool ignore_auth_credentials)
     : name_(name),
       started_(false),
-      syncer_short_poll_interval_seconds_(
-          TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds)),
-      syncer_long_poll_interval_seconds_(
-          TimeDelta::FromSeconds(kDefaultLongPollIntervalSeconds)),
+      syncer_short_poll_interval_seconds_(context->short_poll_interval()),
+      syncer_long_poll_interval_seconds_(context->long_poll_interval()),
       mode_(CONFIGURATION_MODE),
       delay_provider_(delay_provider),
       syncer_(syncer),

@@ -23,6 +23,7 @@
 #include "components/sync/engine_impl/loopback_server/persistent_bookmark_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_tombstone_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
+#include "components/sync/protocol/client_commands.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace fake_server {
@@ -107,6 +108,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // authentication error.
   void SetUnauthenticated();
 
+  // Sets the provided |client_command| in all subsequent successful requests.
+  void SetClientCommand(const sync_pb::ClientCommand& client_command);
+
   // Force the server to return |error_type| in the error_code field of
   // ClientToServerResponse on all subsequent sync requests. This method should
   // not be called if TriggerActionableError has previously been called. Returns
@@ -164,6 +168,8 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
  private:
   // Returns whether a triggered error should be sent for the request.
   bool ShouldSendTriggeredError() const;
+  int SendToLoopbackServer(const std::string& request, std::string* response);
+  void InjectClientCommand(std::string* response);
 
   // Whether the server should act as if incoming connections are properly
   // authenticated.
@@ -190,6 +196,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // lifetime.
   bool alternate_triggered_errors_;
   int request_counter_;
+
+  // Client command to be included in every response.
+  sync_pb::ClientCommand client_command_;
 
   // FakeServer's observers.
   base::ObserverList<Observer, true> observers_;

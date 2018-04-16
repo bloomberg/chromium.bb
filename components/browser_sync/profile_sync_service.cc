@@ -955,6 +955,11 @@ void ProfileSyncService::OnSyncCycleCompleted(
   UpdateLastSyncedTime();
   if (!snapshot.poll_finish_time().is_null())
     sync_prefs_.SetLastPollTime(snapshot.poll_finish_time());
+  DCHECK(!snapshot.short_poll_interval().is_zero());
+  sync_prefs_.SetShortPollInterval(snapshot.short_poll_interval());
+
+  DCHECK(!snapshot.long_poll_interval().is_zero());
+  sync_prefs_.SetLongPollInterval(snapshot.long_poll_interval());
 
   if (IsDataTypeControllerRunning(syncer::SESSIONS) &&
       snapshot.model_neutral_state().get_updates_request_types.Has(
