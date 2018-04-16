@@ -612,8 +612,7 @@ ProximityAuthWebUIHandler::IneligibleDeviceToDictionary(
 }
 
 void ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle() {
-  PA_LOG(INFO) << "Cleaning up connection to " << selected_remote_device_.name
-               << " [" << selected_remote_device_.bluetooth_address << "]";
+  PA_LOG(INFO) << "Cleaning up connection to " << selected_remote_device_.name;
   life_cycle_.reset();
   selected_remote_device_ = cryptauth::RemoteDevice();
   last_remote_status_update_.reset();

@@ -22,6 +22,7 @@ class FakeConnection : public Connection {
   // Connection:
   void Connect() override;
   void Disconnect() override;
+  std::string GetDeviceAddress() override;
   void AddObserver(ConnectionObserver* observer) override;
   void RemoveObserver(ConnectionObserver* observer) override;
 

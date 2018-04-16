@@ -77,6 +77,7 @@ class FakeConnection : public Connection {
   void Disconnect() override {
     SetStatus(Connection::Status::DISCONNECTED);
   }
+  std::string GetDeviceAddress() override { return std::string(); }
 
   using Connection::OnBytesReceived;
 

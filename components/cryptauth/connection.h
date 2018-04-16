@@ -58,7 +58,7 @@ class Connection {
   virtual void Disconnect() = 0;
 
   // The bluetooth address of the connected device.
-  virtual std::string GetDeviceAddress();
+  virtual std::string GetDeviceAddress() = 0;
 
   Status status() const { return status_; }
 

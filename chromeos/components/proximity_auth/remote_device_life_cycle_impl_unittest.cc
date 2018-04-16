@@ -249,8 +249,6 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, GetRemoteDevice) {
   EXPECT_EQ(expected_remote_device.user_id, remote_device.user_id);
   EXPECT_EQ(expected_remote_device.name, remote_device.name);
   EXPECT_EQ(expected_remote_device.public_key, remote_device.public_key);
-  EXPECT_EQ(expected_remote_device.bluetooth_address,
-            remote_device.bluetooth_address);
   EXPECT_EQ(expected_remote_device.persistent_symmetric_key,
             remote_device.persistent_symmetric_key);
 }

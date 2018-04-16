@@ -37,7 +37,6 @@ namespace {
 const char kRemoteDeviceUserId[] = "example@gmail.com";
 const char kRemoteDevicePublicKey[] = "Remote Public Key";
 const char kRemoteDeviceName[] = "LGE Nexus 5";
-const char kBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
 const char kPersistentSymmetricKey[] = "PSK";
 
 // The proximity threshold corresponds to a RSSI of -70.
@@ -94,7 +93,6 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
         remote_device_(kRemoteDeviceUserId,
                        kRemoteDeviceName,
                        kRemoteDevicePublicKey,
-                       kBluetoothAddress,
                        kPersistentSymmetricKey,
                        true /* unlock_key */,
                        true /* mobile_hotspot_supported */,
@@ -104,7 +102,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
         monitor_(&connection_, pref_manager_.get()),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {
-    ON_CALL(*bluetooth_adapter_, GetDevice(kBluetoothAddress))
+    ON_CALL(*bluetooth_adapter_, GetDevice(std::string()))
         .WillByDefault(Return(&remote_bluetooth_device_));
     ON_CALL(remote_bluetooth_device_, GetConnectionInfo(_))
         .WillByDefault(SaveArg<0>(&connection_info_callback_));
@@ -294,7 +292,7 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate it being forgotten.
-  ON_CALL(*bluetooth_adapter_, GetDevice(kBluetoothAddress))
+  ON_CALL(*bluetooth_adapter_, GetDevice(std::string()))
       .WillByDefault(Return(nullptr));
   EXPECT_CALL(observer_, OnProximityStateChanged());
   RunPendingTasks();
@@ -358,7 +356,7 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   // Note: A device without a recorded name will have "Unknown" as its name.
   cryptauth::RemoteDevice unnamed_remote_device(
       kRemoteDeviceUserId, "" /* name */, kRemoteDevicePublicKey,
-      kBluetoothAddress, kPersistentSymmetricKey, true /* unlock_key */,
+      kPersistentSymmetricKey, true /* unlock_key */,
       true /* supports_mobile_hotspot */, 0 /* last_update_time_millis */);
   cryptauth::FakeConnection connection(unnamed_remote_device);
 
