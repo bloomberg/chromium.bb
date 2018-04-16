@@ -416,8 +416,7 @@ class PDFiumEngine : public PDFEngine,
   // Helper function to convert a device to page coordinates.  If the page is
   // not yet loaded, page_x and page_y will be set to 0.
   void DeviceToPage(int page_index,
-                    float device_x,
-                    float device_y,
+                    const pp::Point& device_point,
                     double* page_x,
                     double* page_y);
 

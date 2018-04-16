@@ -1930,7 +1930,7 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
     last_page_mouse_down_ = page_index;
     double page_x;
     double page_y;
-    DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
+    DeviceToPage(page_index, point, &page_x, &page_y);
 
     bool is_form_text_area = IsFormTextArea(area, form_type);
     FPDF_PAGE page = pages_[page_index]->GetPage();
@@ -2018,7 +2018,7 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
   if (is_form_text_area) {
     DCHECK_NE(page_index, -1);
 
-    DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
+    DeviceToPage(page_index, point, &page_x, &page_y);
     page = pages_[page_index]->GetPage();
     is_editable_form_text_area =
         IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
@@ -2131,7 +2131,7 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
   if (page_index != -1) {
     double page_x;
     double page_y;
-    DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
+    DeviceToPage(page_index, point, &page_x, &page_y);
     FORM_OnLButtonUp(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
   }
 
@@ -2162,7 +2162,7 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
     if (page_index != -1) {
       double page_x;
       double page_y;
-      DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
+      DeviceToPage(page_index, point, &page_x, &page_y);
       FORM_OnMouseMove(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
     }
 
@@ -3835,11 +3835,12 @@ bool PDFiumEngine::MouseDownState::Matches(
 }
 
 void PDFiumEngine::DeviceToPage(int page_index,
-                                float device_x,
-                                float device_y,
+                                const pp::Point& device_point,
                                 double* page_x,
                                 double* page_y) {
   *page_x = *page_y = 0;
+  float device_x = device_point.x();
+  float device_y = device_point.y();
   int temp_x = static_cast<int>((device_x + position_.x()) / current_zoom_ -
                                 pages_[page_index]->rect().x());
   int temp_y = static_cast<int>((device_y + position_.y()) / current_zoom_ -
