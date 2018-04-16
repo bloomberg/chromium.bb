@@ -38,7 +38,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif
@@ -297,6 +297,13 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
 #if defined(OS_WIN)
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER);
+#elif defined(OS_MACOSX)
+  int resource_id = color_utils::IsDark(text_color)
+                        ? IDR_BOOKMARK_BAR_FOLDER
+                        : IDR_BOOKMARK_BAR_FOLDER_WHITE;
+  return *ui::ResourceBundle::GetSharedInstance()
+              .GetNativeImageNamed(resource_id)
+              .CopyImageSkia();
 #else
   return GetFolderIcon(ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
                            ? vector_icons::kFolderTouchIcon
