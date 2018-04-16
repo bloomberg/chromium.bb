@@ -46,7 +46,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
@@ -118,8 +117,6 @@ public class SafeBrowsingTest {
 
     // A gray page with an iframe to MALWARE_HTML_PATH
     private static final String IFRAME_HTML_PATH = RESOURCE_PATH + "/iframe.html";
-
-    private static final String INTERSTITIAL_PAGE_TITLE = "Security error";
 
     // These URLs will be CTS-tested and should not be changed.
     private static final String WEB_UI_MALWARE_URL = "chrome://safe-browsing/match?type=malware";
@@ -193,20 +190,31 @@ public class SafeBrowsingTest {
 
     private static class TestAwWebContentsObserver extends AwWebContentsObserver {
         private CallbackHelper mDidAttachInterstitialPageHelper;
+        private CallbackHelper mDidDetachInterstitialPageHelper;
 
         public TestAwWebContentsObserver(WebContents webContents, AwContents awContents,
                 TestAwContentsClient contentsClient) {
             super(webContents, awContents, contentsClient);
             mDidAttachInterstitialPageHelper = new CallbackHelper();
+            mDidDetachInterstitialPageHelper = new CallbackHelper();
         }
 
         public CallbackHelper getAttachedInterstitialPageHelper() {
             return mDidAttachInterstitialPageHelper;
         }
 
+        public CallbackHelper getDetachedInterstitialPageHelper() {
+            return mDidDetachInterstitialPageHelper;
+        }
+
         @Override
         public void didAttachInterstitialPage() {
             mDidAttachInterstitialPageHelper.notifyCalled();
+        }
+
+        @Override
+        public void didDetachInterstitialPage() {
+            mDidDetachInterstitialPageHelper.notifyCalled();
         }
     }
 
@@ -401,15 +409,6 @@ public class SafeBrowsingTest {
     private void clickLinkById(String id) {
         final String script = "document.getElementById('" + id + "').click();";
         evaluateJavaScriptOnInterstitialOnUiThread(script, null);
-    }
-
-    private void waitForInterstitialToChangeTitle() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return INTERSTITIAL_PAGE_TITLE.equals(mAwContents.getTitle());
-            }
-        });
     }
 
     private void loadPathAndWaitForInterstitial(final String path) throws Exception {
@@ -638,40 +637,35 @@ public class SafeBrowsingTest {
     @Feature({"AndroidWebView"})
     public void testSafeBrowsingDontProceedNavigatesBackForMainFrame() throws Throwable {
         loadGreenPage();
-        final String originalTitle = mActivityTestRule.getTitleOnUiThread(mAwContents);
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
-        waitForInterstitialToChangeTitle();
         waitForInterstitialDomToLoad();
-        clickBackToSafety();
 
-        // Make sure we navigate back to previous page
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return originalTitle.equals(mAwContents.getTitle());
-            }
-        });
+        int interstitialCount =
+                mWebContentsObserver.getDetachedInterstitialPageHelper().getCallCount();
+        clickBackToSafety();
+        mWebContentsObserver.getDetachedInterstitialPageHelper().waitForCallback(interstitialCount);
+
+        mActivityTestRule.waitForVisualStateCallback(mAwContents);
+        assertTargetPageNotShowing(MALWARE_PAGE_BACKGROUND_COLOR);
+        assertGreenPageShowing();
     }
 
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @FlakyTest(message = "crbug/822753")
     public void testSafeBrowsingDontProceedNavigatesBackForSubResource() throws Throwable {
         loadGreenPage();
-        final String originalTitle = mActivityTestRule.getTitleOnUiThread(mAwContents);
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
-        waitForInterstitialToChangeTitle();
         waitForInterstitialDomToLoad();
-        clickBackToSafety();
 
-        // Make sure we navigate back to previous page
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return originalTitle.equals(mAwContents.getTitle());
-            }
-        });
+        int interstitialCount =
+                mWebContentsObserver.getDetachedInterstitialPageHelper().getCallCount();
+        clickBackToSafety();
+        mWebContentsObserver.getDetachedInterstitialPageHelper().waitForCallback(interstitialCount);
+
+        mActivityTestRule.waitForVisualStateCallback(mAwContents);
+        assertTargetPageNotShowing(IFRAME_EMBEDDER_BACKGROUND_COLOR);
+        assertGreenPageShowing();
     }
 
     @Test
