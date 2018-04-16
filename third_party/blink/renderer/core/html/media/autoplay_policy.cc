@@ -90,6 +90,9 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
 
 // static
 bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
+  if (DocumentHasForceAllowFlag(document))
+    return true;
+
   if (!document.GetFrame())
     return false;
 
@@ -121,6 +124,14 @@ bool AutoplayPolicy::DocumentHasHighMediaEngagement(const Document& document) {
     return false;
   return document.GetPage()->AutoplayFlags() &
          mojom::blink::kAutoplayFlagHighMediaEngagement;
+}
+
+// static
+bool AutoplayPolicy::DocumentHasForceAllowFlag(const Document& document) {
+  if (!document.GetPage())
+    return false;
+  return document.GetPage()->AutoplayFlags() &
+         mojom::blink::kAutoplayFlagForceAllow;
 }
 
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)

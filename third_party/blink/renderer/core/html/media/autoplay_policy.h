@@ -46,6 +46,9 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // Returns true if the given |document| has high media engagement.
   static bool DocumentHasHighMediaEngagement(const Document&);
 
+  // Returns true if the given |document| should force allow autoplay.
+  static bool DocumentHasForceAllowFlag(const Document&);
+
   explicit AutoplayPolicy(HTMLMediaElement*);
 
   void VideoWillBeDrawnToCanvas() const;

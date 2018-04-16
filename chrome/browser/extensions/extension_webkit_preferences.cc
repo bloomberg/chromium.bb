@@ -39,11 +39,6 @@ void SetPreferences(const extensions::Extension* extension,
   // Enable WebGL features that regular pages can't access, since they add
   // more risk of fingerprinting.
   webkit_prefs->privileged_webgl_extensions_enabled = true;
-
-  // Autoplay restrictions should not apply to extensions, packaged apps,
-  // hosted apps, etc. However, they should not apply to apps' webviews.
-  webkit_prefs->autoplay_policy =
-      content::AutoplayPolicy::kNoUserGestureRequired;
 }
 
 }  // namespace extension_webkit_preferences
