@@ -80,8 +80,9 @@ bool StorageSchemaManifestHandler::Validate(
   return GetSchema(extension, error).valid();
 }
 
-const std::vector<std::string> StorageSchemaManifestHandler::Keys() const {
-  return SingleKey(kStorageManagedSchema);
+base::span<const char* const> StorageSchemaManifestHandler::Keys() const {
+  static constexpr const char* kKeys[] = {kStorageManagedSchema};
+  return kKeys;
 }
 
 }  // namespace extensions

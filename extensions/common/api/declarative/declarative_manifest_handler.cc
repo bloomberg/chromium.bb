@@ -29,8 +29,9 @@ bool DeclarativeManifestHandler::Parse(Extension* extension,
   return true;
 }
 
-const std::vector<std::string> DeclarativeManifestHandler::Keys() const {
-  return SingleKey(manifest_keys::kEventRules);
+base::span<const char* const> DeclarativeManifestHandler::Keys() const {
+  static constexpr const char* kKeys[] = {manifest_keys::kEventRules};
+  return kKeys;
 }
 
 }  // namespace extensions

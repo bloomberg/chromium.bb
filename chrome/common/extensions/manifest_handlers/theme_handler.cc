@@ -216,8 +216,9 @@ bool ThemeHandler::Validate(const Extension* extension,
   return true;
 }
 
-const std::vector<std::string> ThemeHandler::Keys() const {
-  return SingleKey(keys::kTheme);
+base::span<const char* const> ThemeHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kTheme};
+  return kKeys;
 }
 
 }  // namespace extensions

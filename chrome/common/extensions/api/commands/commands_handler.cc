@@ -147,8 +147,9 @@ void CommandsHandler::MaybeSetBrowserActionDefault(const Extension* extension,
   }
 }
 
-const std::vector<std::string> CommandsHandler::Keys() const {
-  return SingleKey(keys::kCommands);
+base::span<const char* const> CommandsHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kCommands};
+  return kKeys;
 }
 
 }  // namespace extensions

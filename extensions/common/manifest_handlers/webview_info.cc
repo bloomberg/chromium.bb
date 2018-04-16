@@ -187,8 +187,9 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> WebviewHandler::Keys() const {
-  return SingleKey(keys::kWebview);
+base::span<const char* const> WebviewHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kWebview};
+  return kKeys;
 }
 
 }  // namespace extensions

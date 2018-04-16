@@ -63,8 +63,9 @@ bool SpellcheckHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> SpellcheckHandler::Keys() const {
-  return SingleKey(keys::kSpellcheck);
+base::span<const char* const> SpellcheckHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kSpellcheck};
+  return kKeys;
 }
 
 }  // namespace extensions

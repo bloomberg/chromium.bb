@@ -21,7 +21,7 @@ class DNRManifestHandler : public ManifestHandler {
   bool Validate(const Extension* extension,
                 std::string* error,
                 std::vector<InstallWarning>* warnings) const override;
-  const std::vector<std::string> Keys() const override;
+  base::span<const char* const> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(DNRManifestHandler);
 };

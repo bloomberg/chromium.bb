@@ -84,6 +84,9 @@ class ManifestHandlerTest : public testing::Test {
                         const std::vector<std::string>& prereqs,
                         ParsingWatcher* watcher)
         : name_(name), keys_(keys), prereqs_(prereqs), watcher_(watcher) {
+      keys_ptrs_.resize(keys_.size());
+      std::transform(keys_.begin(), keys_.end(), keys_ptrs_.begin(),
+                     [](const std::string& s) { return s.c_str(); });
     }
 
     bool Parse(Extension* extension, base::string16* error) override {
@@ -98,10 +101,11 @@ class ManifestHandlerTest : public testing::Test {
    protected:
     std::string name_;
     std::vector<std::string> keys_;
+    std::vector<const char*> keys_ptrs_;
     std::vector<std::string> prereqs_;
     ParsingWatcher* watcher_;
 
-    const std::vector<std::string> Keys() const override { return keys_; }
+    base::span<const char* const> Keys() const override { return keys_ptrs_; }
   };
 
   class FailingTestManifestHandler : public TestManifestHandler {
@@ -138,6 +142,9 @@ class ManifestHandlerTest : public testing::Test {
         : return_value_(return_value),
           always_validate_(always_validate),
           keys_(keys) {
+      keys_ptrs_.resize(keys_.size());
+      std::transform(keys_.begin(), keys_.end(), keys_ptrs_.begin(),
+                     [](const std::string& s) { return s.c_str(); });
     }
 
     bool Parse(Extension* extension, base::string16* error) override {
@@ -155,12 +162,13 @@ class ManifestHandlerTest : public testing::Test {
     }
 
    private:
-    const std::vector<std::string> Keys() const override { return keys_; }
+    base::span<const char* const> Keys() const override { return keys_ptrs_; }
 
    protected:
     bool return_value_;
     bool always_validate_;
     std::vector<std::string> keys_;
+    std::vector<const char*> keys_ptrs_;
   };
 };
 

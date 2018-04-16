@@ -303,6 +303,7 @@ bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
   return true;
 }
 
-const std::vector<std::string> FileBrowserHandlerParser::Keys() const {
-  return SingleKey(keys::kFileBrowserHandlers);
+base::span<const char* const> FileBrowserHandlerParser::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kFileBrowserHandlers};
+  return kKeys;
 }

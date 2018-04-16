@@ -40,8 +40,9 @@ ManifestPermission* BluetoothManifestHandler::CreateInitialRequiredPermission(
   return NULL;
 }
 
-const std::vector<std::string> BluetoothManifestHandler::Keys() const {
-  return SingleKey(manifest_keys::kBluetooth);
+base::span<const char* const> BluetoothManifestHandler::Keys() const {
+  static constexpr const char* kKeys[] = {manifest_keys::kBluetooth};
+  return kKeys;
 }
 
 }  // namespace extensions

@@ -49,7 +49,7 @@ class CommandsHandler : public ManifestHandler {
   void MaybeSetBrowserActionDefault(const Extension* extension,
                                     CommandsInfo* info);
 
-  const std::vector<std::string> Keys() const override;
+  base::span<const char* const> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(CommandsHandler);
 };

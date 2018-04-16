@@ -313,15 +313,11 @@ bool AppLaunchManifestHandler::AlwaysParseForType(Manifest::Type type) const {
   return type == Manifest::TYPE_LEGACY_PACKAGED_APP;
 }
 
-const std::vector<std::string> AppLaunchManifestHandler::Keys() const {
-  static const char* const keys[] = {
-    keys::kLaunchLocalPath,
-    keys::kLaunchWebURL,
-    keys::kLaunchContainer,
-    keys::kLaunchHeight,
-    keys::kLaunchWidth
-  };
-  return std::vector<std::string>(keys, keys + arraysize(keys));
+base::span<const char* const> AppLaunchManifestHandler::Keys() const {
+  static constexpr const char* kKeys[] = {
+      keys::kLaunchLocalPath, keys::kLaunchWebURL, keys::kLaunchContainer,
+      keys::kLaunchHeight, keys::kLaunchWidth};
+  return kKeys;
 }
 
 }  // namespace extensions

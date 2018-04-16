@@ -154,10 +154,14 @@ bool CSPHandler::AlwaysParseForType(Manifest::Type type) const {
         type == Manifest::TYPE_LEGACY_PACKAGED_APP;
 }
 
-const std::vector<std::string> CSPHandler::Keys() const {
-  const std::string& key = is_platform_app_ ?
-      keys::kPlatformAppContentSecurityPolicy : keys::kContentSecurityPolicy;
-  return SingleKey(key);
+base::span<const char* const> CSPHandler::Keys() const {
+  if (is_platform_app_) {
+    static constexpr const char* kKeys[] = {
+        keys::kPlatformAppContentSecurityPolicy};
+    return kKeys;
+  }
+  static constexpr const char* kKeys[] = {keys::kContentSecurityPolicy};
+  return kKeys;
 }
 
 }  // namespace extensions

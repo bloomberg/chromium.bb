@@ -117,9 +117,11 @@ bool FileSystemProviderCapabilitiesHandler::Parse(Extension* extension,
   return true;
 }
 
-const std::vector<std::string> FileSystemProviderCapabilitiesHandler::Keys()
+base::span<const char* const> FileSystemProviderCapabilitiesHandler::Keys()
     const {
-  return SingleKey(manifest_keys::kFileSystemProviderCapabilities);
+  static constexpr const char* kKeys[] = {
+      manifest_keys::kFileSystemProviderCapabilities};
+  return kKeys;
 }
 
 bool FileSystemProviderCapabilitiesHandler::AlwaysParseForType(

@@ -40,8 +40,9 @@ ManifestPermission* SocketsManifestHandler::CreateInitialRequiredPermission(
   return NULL;
 }
 
-const std::vector<std::string> SocketsManifestHandler::Keys() const {
-  return SingleKey(manifest_keys::kSockets);
+base::span<const char* const> SocketsManifestHandler::Keys() const {
+  static constexpr const char* kKeys[] = {manifest_keys::kSockets};
+  return kKeys;
 }
 
 }  // namespace extensions

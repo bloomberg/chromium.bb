@@ -229,12 +229,9 @@ bool SharedModuleHandler::Validate(
   return true;
 }
 
-const std::vector<std::string> SharedModuleHandler::Keys() const {
-  static const char* keys[] = {
-    keys::kExport,
-    keys::kImport
-  };
-  return std::vector<std::string>(keys, keys + arraysize(keys));
+base::span<const char* const> SharedModuleHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kExport, keys::kImport};
+  return kKeys;
 }
 
 }  // namespace extensions

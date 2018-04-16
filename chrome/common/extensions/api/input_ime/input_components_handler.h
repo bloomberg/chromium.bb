@@ -68,7 +68,7 @@ class InputComponentsHandler : public ManifestHandler {
   const std::vector<std::string> PrerequisiteKeys() const override;
 
  private:
-  const std::vector<std::string> Keys() const override;
+  base::span<const char* const> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(InputComponentsHandler);
 };

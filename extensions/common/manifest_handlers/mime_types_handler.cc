@@ -124,9 +124,8 @@ bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
   return true;
 }
 
-const std::vector<std::string> MimeTypesHandlerParser::Keys() const {
-  std::vector<std::string> keys;
-  keys.push_back(keys::kMIMETypes);
-  keys.push_back(keys::kMimeTypesHandler);
-  return keys;
+base::span<const char* const> MimeTypesHandlerParser::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kMIMETypes,
+                                          keys::kMimeTypesHandler};
+  return kKeys;
 }

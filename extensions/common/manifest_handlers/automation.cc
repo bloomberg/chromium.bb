@@ -176,8 +176,9 @@ bool AutomationHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> AutomationHandler::Keys() const {
-  return SingleKey(keys::kAutomation);
+base::span<const char* const> AutomationHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kAutomation};
+  return kKeys;
 }
 
 ManifestPermission* AutomationHandler::CreatePermission() {

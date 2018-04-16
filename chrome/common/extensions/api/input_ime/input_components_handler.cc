@@ -241,8 +241,9 @@ InputComponentsHandler::PrerequisiteKeys() const {
   return SingleKey(keys::kOptionsPage);
 }
 
-const std::vector<std::string> InputComponentsHandler::Keys() const {
-  return SingleKey(keys::kInputComponents);
+base::span<const char* const> InputComponentsHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kInputComponents};
+  return kKeys;
 }
 
 }  // namespace extensions

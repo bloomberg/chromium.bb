@@ -18,7 +18,7 @@ class UsbPrinterManifestHandler : public ManifestHandler {
  private:
   // ManifestHandler overrides.
   bool Parse(Extension* extension, base::string16* error) override;
-  const std::vector<std::string> Keys() const override;
+  base::span<const char* const> Keys() const override;
 };
 
 }  // namespace extensions

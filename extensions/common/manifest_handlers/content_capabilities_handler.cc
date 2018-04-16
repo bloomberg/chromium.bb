@@ -118,9 +118,9 @@ bool ContentCapabilitiesHandler::Parse(Extension* extension,
   return true;
 }
 
-const std::vector<std::string> ContentCapabilitiesHandler::Keys()
-    const {
-  return SingleKey(keys::kContentCapabilities);
+base::span<const char* const> ContentCapabilitiesHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kContentCapabilities};
+  return kKeys;
 }
 
 }  // namespace extensions

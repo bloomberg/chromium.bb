@@ -83,8 +83,9 @@ bool IconsHandler::Validate(const Extension* extension,
                                              error);
 }
 
-const std::vector<std::string> IconsHandler::Keys() const {
-  return SingleKey(keys::kIcons);
+base::span<const char* const> IconsHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kIcons};
+  return kKeys;
 }
 
 }  // namespace extensions

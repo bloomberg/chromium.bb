@@ -169,8 +169,9 @@ bool UrlHandlersParser::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> UrlHandlersParser::Keys() const {
-  return SingleKey(mkeys::kUrlHandlers);
+base::span<const char* const> UrlHandlersParser::Keys() const {
+  static constexpr const char* kKeys[] = {mkeys::kUrlHandlers};
+  return kKeys;
 }
 
 }  // namespace extensions

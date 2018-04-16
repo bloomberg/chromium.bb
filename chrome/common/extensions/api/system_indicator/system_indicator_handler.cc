@@ -39,8 +39,9 @@ bool SystemIndicatorHandler::Parse(Extension* extension,
   return true;
 }
 
-const std::vector<std::string> SystemIndicatorHandler::Keys() const {
-  return SingleKey(manifest_keys::kSystemIndicator);
+base::span<const char* const> SystemIndicatorHandler::Keys() const {
+  static constexpr const char* kKeys[] = {manifest_keys::kSystemIndicator};
+  return kKeys;
 }
 
 }  // namespace extensions

@@ -210,8 +210,9 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> FileHandlersParser::Keys() const {
-  return SingleKey(keys::kFileHandlers);
+base::span<const char* const> FileHandlersParser::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kFileHandlers};
+  return kKeys;
 }
 
 }  // namespace extensions

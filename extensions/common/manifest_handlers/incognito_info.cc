@@ -79,8 +79,9 @@ bool IncognitoHandler::AlwaysParseForType(Manifest::Type type) const {
   return true;
 }
 
-const std::vector<std::string> IncognitoHandler::Keys() const {
-  return SingleKey(keys::kIncognito);
+base::span<const char* const> IncognitoHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kIncognito};
+  return kKeys;
 }
 
 }  // namespace extensions

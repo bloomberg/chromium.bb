@@ -82,8 +82,9 @@ bool DevToolsPageHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> DevToolsPageHandler::Keys() const {
-  return SingleKey(keys::kDevToolsPage);
+base::span<const char* const> DevToolsPageHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kDevToolsPage};
+  return kKeys;
 }
 
 URLOverridesHandler::URLOverridesHandler() {
@@ -178,8 +179,9 @@ bool URLOverridesHandler::Validate(
   return true;
 }
 
-const std::vector<std::string> URLOverridesHandler::Keys() const {
-  return SingleKey(keys::kChromeURLOverrides);
+base::span<const char* const> URLOverridesHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kChromeURLOverrides};
+  return kKeys;
 }
 
 }  // namespace extensions
