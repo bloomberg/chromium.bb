@@ -213,6 +213,8 @@ public class Preferences extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Fragment activeFragment = getFragmentManager().findFragmentById(android.R.id.content);
+        if (activeFragment != null && activeFragment.onOptionsItemSelected(item)) return true;
         if (item.getItemId() == android.R.id.home) {
             finish();
             return true;

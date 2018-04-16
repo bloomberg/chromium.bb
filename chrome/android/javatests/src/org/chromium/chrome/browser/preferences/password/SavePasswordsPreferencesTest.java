@@ -39,6 +39,9 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
 
+import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
+import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
+import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.app.Activity;
@@ -1594,7 +1597,8 @@ public class SavePasswordsPreferencesTest {
 
         // Trigger the search, close it and wait for UI to be restored.
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
-        Espresso.onView(withId(R.id.search_close_btn)).perform(click());
+        Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
+                .perform(click());
         Espresso.onView(isRoot()).check(
                 (root, e)
                         -> waitForView(
@@ -1735,7 +1739,9 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.section_saved_passwords_exceptions))
                 .check(doesNotExist());
 
-        Espresso.onView(withId(R.id.search_close_btn)).perform(click()); // Close search view.
+        Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
+                .perform(click());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync(); // Close search view.
 
         Espresso.onView(withText(R.string.section_saved_passwords_exceptions)).perform(scrollTo());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -1752,17 +1758,43 @@ public class SavePasswordsPreferencesTest {
     @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchIconClickedHidesGeneralPrefs() throws Exception {
         setPasswordSource(ZEUS_ON_EARTH);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                SavePasswordsPreferences.class.getName());
+        final SavePasswordsPreferences prefs =
+                (SavePasswordsPreferences) PreferencesTest
+                        .startPreferences(InstrumentationRegistry.getInstrumentation(),
+                                SavePasswordsPreferences.class.getName())
+                        .getFragmentForTest();
+        final AtomicReference<Boolean> menuInitiallyVisible = new AtomicReference<>();
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> menuInitiallyVisible.set(
+                                prefs.getToolbarForTesting().isOverflowMenuShowing()));
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title))
                 .check(matches(isDisplayed()));
         Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
+        if (menuInitiallyVisible.get()) { // Check overflow menu only on large screens that have it.
+            Espresso.onView(withContentDescription(R.string.abc_action_menu_overflow_description))
+                    .check(matches(isDisplayed()));
+        }
 
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
         Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
+        Espresso.onView(isRoot()).check(
+                (root, e)
+                        -> waitForView((ViewGroup) root,
+                                withContentDescription(
+                                        R.string.abc_action_menu_overflow_description),
+                                VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
+
+        Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
+                .perform(click());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        if (menuInitiallyVisible.get()) { // If the overflow menu was there, it should be restored.
+            Espresso.onView(withContentDescription(R.string.abc_action_menu_overflow_description))
+                    .check(matches(isDisplayed()));
+        }
     }
 
     /**
@@ -1784,13 +1816,47 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
         Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
 
-        Espresso.pressBack(); // Close keyboard.
+        Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
+                .perform(click());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        Espresso.onView(withId(R.id.search_close_btn)).perform(click());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title))
                 .check(matches(isDisplayed()));
         Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
+        Espresso.onView(withId(R.id.menu_id_search)).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that clearing the search also hides the clear button.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
+    public void testSearchViewCloseIconExistsOnlyToClearQueries() throws Exception {
+        setPasswordSourceWithMultipleEntries(GREEK_GODS);
+        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
+
+        // Trigger search which shouldn't have the button yet.
+        Espresso.onView(withSearchMenuIdOrText()).perform(click());
+        Espresso.onView(isRoot()).check(
+                (root, e)
+                        -> waitForView((ViewGroup) root, withId(R.id.search_close_btn),
+                                VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
+
+        // Type something and see the button appear.
+        Espresso.onView(withId(R.id.search_src_text))
+                // Trigger search which shouldn't have the button yet.
+                .perform(click(), typeText("Zeu"), closeSoftKeyboard());
+        Espresso.onView(withId(R.id.search_close_btn)).check(matches(isDisplayed()));
+
+        // Clear the search which should hide the button again.
+        Espresso.onView(withId(R.id.search_close_btn)).perform(click()); // Clear search.
+        Espresso.onView(isRoot()).check(
+                (root, e)
+                        -> waitForView((ViewGroup) root, withId(R.id.search_close_btn),
+                                VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
     }
 
     /**
