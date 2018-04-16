@@ -128,10 +128,11 @@ class TabAndroid : public CoreTabHelperDelegate,
   bool HasPrerenderedUrl(GURL gurl);
 
   // Overridden from CoreTabHelperDelegate:
-  void SwapTabContents(content::WebContents* old_contents,
-                       content::WebContents* new_contents,
-                       bool did_start_load,
-                       bool did_finish_load) override;
+  std::unique_ptr<content::WebContents> SwapTabContents(
+      content::WebContents* old_contents,
+      content::WebContents* new_contents,
+      bool did_start_load,
+      bool did_finish_load) override;
 
   // Overridden from NotificationObserver:
   void Observe(int type,

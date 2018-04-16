@@ -268,7 +268,8 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   // Replace the discarded tab with the null version.
   const int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
   DCHECK_NE(index, TabStripModel::kNoTab);
-  tab_strip_model_->ReplaceWebContentsAt(index, null_contents);
+  std::unique_ptr<content::WebContents> old_contents_deleter =
+      tab_strip_model_->ReplaceWebContentsAt(index, null_contents);
   DCHECK_EQ(GetWebContents(), null_contents);
 
   // This ensures that on reload after discard, the document has
@@ -279,7 +280,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   // TODO(jamescook): This breaks script connections with other tabs. Find a
   // different approach that doesn't do that, perhaps based on
   // RenderFrameProxyHosts.
-  delete old_contents;
+  old_contents_deleter.reset();
 
   SetState(State::DISCARDED);
   ++discard_count_;

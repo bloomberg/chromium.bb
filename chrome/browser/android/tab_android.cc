@@ -345,14 +345,16 @@ bool TabAndroid::HasPrerenderedUrl(GURL gurl) {
   return false;
 }
 
-void TabAndroid::SwapTabContents(content::WebContents* old_contents,
-                                 content::WebContents* new_contents,
-                                 bool did_start_load,
-                                 bool did_finish_load) {
+std::unique_ptr<content::WebContents> TabAndroid::SwapTabContents(
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Tab_swapWebContents(env, weak_java_tab_.get(env),
                            new_contents->GetJavaWebContents(), did_start_load,
                            did_finish_load);
+  return base::WrapUnique(old_contents);
 }
 
 void TabAndroid::Observe(int type,

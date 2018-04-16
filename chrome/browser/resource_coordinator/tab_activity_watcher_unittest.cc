@@ -550,8 +550,8 @@ TEST_F(TabMetricsTest, ReplaceForegroundTab) {
   WebContentsTester::For(new_contents.get())->TestSetIsLoading(false);
 
   // Replace and delete the old contents.
-  std::unique_ptr<content::WebContents> old_contents(
-      tab_strip_model->ReplaceWebContentsAt(0, new_contents.release()));
+  std::unique_ptr<content::WebContents> old_contents =
+      tab_strip_model->ReplaceWebContentsAt(0, new_contents.release());
   ASSERT_EQ(old_contents.get(), orig_contents);
   old_contents.reset();
   tab_strip_model->GetWebContentsAt(0)->WasShown();

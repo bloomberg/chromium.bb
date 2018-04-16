@@ -183,7 +183,7 @@ class TabStripModel : public WebContentsCloseDelegate {
   // Replaces the WebContents at |index| with |new_contents|. The
   // WebContents that was at |index| is returned and its ownership returns
   // to the caller.
-  content::WebContents* ReplaceWebContentsAt(
+  std::unique_ptr<content::WebContents> ReplaceWebContentsAt(
       int index,
       content::WebContents* new_contents);
 
