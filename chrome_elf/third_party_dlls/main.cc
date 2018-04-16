@@ -10,7 +10,7 @@
 
 #include <assert.h>
 
-#include "chrome_elf/nt_registry/nt_registry.h"
+#include "chrome_elf/third_party_dlls/hook.h"
 #include "chrome_elf/third_party_dlls/imes.h"
 #include "chrome_elf/third_party_dlls/logs.h"
 #include "chrome_elf/third_party_dlls/packed_list_file.h"
@@ -39,12 +39,16 @@ bool Init() {
 
   // TODO(pennymac): As work is added, consider multi-threaded init.
   // TODO(pennymac): Handle return status codes for UMA.
+
+  // Apply the hook only after everything else is set up.
   if (InitIMEs() != IMEStatus::kSuccess ||
       InitFromFile() != FileStatus::kSuccess ||
-      InitLogs() != LogStatus::kSuccess) {
+      InitLogs() != LogStatus::kSuccess ||
+      ApplyHook() != HookStatus::kSuccess) {
     // Do best effort to clean up anything that may have been set up.
     DeinitIMEs();
     DeinitFromFile();
+    DeinitLogs();
     return false;
   }
 

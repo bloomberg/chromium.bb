@@ -71,6 +71,10 @@ class PEImageSafe {
   // have been memory mapped by NTLoader.
   //----------------------------------------------------------------------------
 
+  // Converts a Relative Virtual Address (RVA) to direct pointer.
+  // - If |rva| >= |image_size_|, returns nullptr.
+  void* RVAToAddr(DWORD rva);
+
   // Returns the address of a given directory entry.
   // - |directory| should be a Windows define from winnt.h
   //   E.g.: IMAGE_DIRECTORY_ENTRY_EXPORT
@@ -91,8 +95,6 @@ class PEImageSafe {
   PEImageSafe& operator=(const PEImageSafe&) = delete;
 
  private:
-  void* RVAToAddr(DWORD rva);
-
   HMODULE image_ = nullptr;
   DWORD image_size_ = 0;
   ImageBitness bitness_ = ImageBitness::kUnknown;

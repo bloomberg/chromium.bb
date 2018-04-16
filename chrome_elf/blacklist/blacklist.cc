@@ -89,6 +89,26 @@ namespace {
 // determine if the blacklist is enabled for them.
 bool g_blacklist_initialized = false;
 
+// Utility function for converting UTF-8 to UTF-16.
+bool UTF8ToUTF16(const std::string& utf8, std::wstring* utf16) {
+  assert(utf16);
+
+  if (utf8.empty()) {
+    utf16->clear();
+    return true;
+  }
+
+  int size_needed_chars = ::MultiByteToWideChar(
+      CP_UTF8, 0, utf8.c_str(), static_cast<int>(utf8.size()), nullptr, 0);
+  if (!size_needed_chars)
+    return false;
+
+  utf16->resize(size_needed_chars);
+  return ::MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(),
+                               static_cast<int>(utf8.size()), &(*utf16)[0],
+                               size_needed_chars);
+}
+
 }  // namespace
 
 namespace blacklist {
@@ -283,7 +303,13 @@ bool DllMatch(const std::string& module_name) {
   if (module_name.empty())
     return false;
 
-  return DllMatch(std::wstring(module_name.begin(), module_name.end())) != -1;
+  // Convert UTF-8 to UTF-16 for this comparison.
+  std::wstring wide_string;
+  if (!UTF8ToUTF16(module_name, &wide_string)) {
+    return false;
+  }
+
+  return DllMatch(wide_string) != -1;
 }
 
 bool Initialize(bool force) {

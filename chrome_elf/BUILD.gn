@@ -261,7 +261,7 @@ static_library("third_party_dlls") {
     "third_party_dlls/packed_list_file.cc",
     "third_party_dlls/packed_list_file.h",
   ]
-  deps = [
+  public_deps = [
     ":blacklist",
     ":crash",
     ":hook_util",
@@ -289,6 +289,7 @@ test("chrome_elf_unittests") {
     "sha1/sha1_unittest.cc",
     "third_party_dlls/imes_unittest.cc",
     "third_party_dlls/logs_unittest.cc",
+    "third_party_dlls/main_unittest.cc",
     "third_party_dlls/packed_list_file_unittest.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
@@ -319,6 +320,7 @@ test("chrome_elf_unittests") {
     ":blacklist_test_dll_2",
     ":blacklist_test_dll_3",
     ":chrome_elf",
+    ":third_party_dlls_test_exe",
   ]
 }
 
@@ -357,6 +359,20 @@ test("chrome_elf_import_unittests") {
     "/DELAYLOAD:shlwapi.dll",
     "/DELAYLOAD:user32.dll",
     "/DELAYLOAD:winmm.dll",
+  ]
+}
+
+executable("third_party_dlls_test_exe") {
+  testonly = true
+  sources = [
+    "third_party_dlls/main_unittest_exe.cc",
+  ]
+  deps = [
+    ":third_party_dlls",
+    "//build/config:exe_and_shlib_deps",
+    "//build/win:default_exe_manifest",
+    "//chrome/install_static:install_static_util",
+    "//components/crash/content/app:crash_export_stubs",
   ]
 }
 
