@@ -10,7 +10,7 @@ import org.chromium.base.annotations.CalledByNative;
  * Class which aids in publishing test rulesets for SubresourceFilter instrumentation tests.
  * All methods and members must be called on the UI thread.
  */
-public final class TestRulesetPublisher {
+public final class TestSubresourceFilterPublisher {
     private boolean mPublished = false;
 
     public void createAndPublishRulesetDisallowingSuffixForTesting(String suffix) {
