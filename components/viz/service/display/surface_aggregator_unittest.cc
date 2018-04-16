@@ -533,29 +533,44 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCopied) {
   SubmitCompositorFrame(embedded_support.get(), embedded_passes,
                         arraysize(embedded_passes), embedded_local_surface_id,
                         device_scale_factor);
-
-  Quad quads[] = {Quad::SurfaceQuad(embedded_surface_id, InvalidSurfaceId(),
-                                    SK_ColorWHITE, gfx::Rect(5, 5), .5f,
-                                    gfx::Transform(), false)};
-  Pass passes[] = {Pass(quads, arraysize(quads), SurfaceSize())};
-
-  SubmitCompositorFrame(support_.get(), passes, arraysize(passes),
-                        root_local_surface_id_, device_scale_factor);
-
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  {
+    Quad quads[] = {Quad::SurfaceQuad(embedded_surface_id, InvalidSurfaceId(),
+                                      SK_ColorWHITE, gfx::Rect(5, 5), .5f,
+                                      gfx::Transform(), false)};
+    Pass passes[] = {Pass(quads, arraysize(quads), SurfaceSize())};
 
-  auto& render_pass_list = aggregated_frame.render_pass_list;
-  ASSERT_EQ(2u, render_pass_list.size());
-  auto& shared_quad_state_list = render_pass_list[0]->shared_quad_state_list;
-  ASSERT_EQ(2u, shared_quad_state_list.size());
-  EXPECT_EQ(1.f, shared_quad_state_list.ElementAt(0)->opacity);
-  EXPECT_EQ(1.f, shared_quad_state_list.ElementAt(1)->opacity);
+    SubmitCompositorFrame(support_.get(), passes, arraysize(passes),
+                          root_local_surface_id_, device_scale_factor);
 
-  auto& shared_quad_state_list2 = render_pass_list[1]->shared_quad_state_list;
-  ASSERT_EQ(1u, shared_quad_state_list2.size());
-  EXPECT_EQ(.5f, shared_quad_state_list2.ElementAt(0)->opacity);
+    CompositorFrame aggregated_frame = aggregator_.Aggregate(
+        root_surface_id, GetNextDisplayTimeAndIncrement());
+
+    auto& render_pass_list = aggregated_frame.render_pass_list;
+    EXPECT_EQ(2u, render_pass_list.size());
+
+    auto& shared_quad_state_list2 = render_pass_list[1]->shared_quad_state_list;
+    ASSERT_EQ(1u, shared_quad_state_list2.size());
+    EXPECT_EQ(.5f, shared_quad_state_list2.ElementAt(0)->opacity);
+  }
+
+  // For the case where opacity is close to 1.f, we treat it as opaque, and not
+  // use a render surface.
+  {
+    Quad quads[] = {Quad::SurfaceQuad(embedded_surface_id, InvalidSurfaceId(),
+                                      SK_ColorWHITE, gfx::Rect(5, 5), .9999f,
+                                      gfx::Transform(), false)};
+    Pass passes[] = {Pass(quads, arraysize(quads), SurfaceSize())};
+
+    SubmitCompositorFrame(support_.get(), passes, arraysize(passes),
+                          root_local_surface_id_, device_scale_factor);
+
+    CompositorFrame aggregated_frame = aggregator_.Aggregate(
+        root_surface_id, GetNextDisplayTimeAndIncrement());
+
+    auto& render_pass_list = aggregated_frame.render_pass_list;
+    EXPECT_EQ(1u, render_pass_list.size());
+  }
 }
 
 // Test that when surface is rotated and we need the render surface to apply the

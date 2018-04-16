@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
@@ -33,6 +34,10 @@ namespace {
 
 // Maximum bucket size for the UMA stats.
 constexpr int kUmaStatMaxSurfaces = 30;
+
+// Used for determine when to treat opacity close to 1.f as opaque. The value is
+// chosen to be smaller than 1/255.
+constexpr float kOpacityEpsilon = 0.001f;
 
 const char kUmaValidSurface[] =
     "Compositing.SurfaceAggregator.SurfaceDrawQuad.ValidSurface";
@@ -329,8 +334,9 @@ void SurfaceAggregator::EmitSurfaceContent(
                 : empty_map;
   gfx::Transform combined_transform = scaled_quad_to_target_transform;
   combined_transform.ConcatTransform(target_transform);
-  bool merge_pass = source_sqs->opacity == 1.f && copy_requests.empty() &&
-                    combined_transform.Preserves2dAxisAlignment();
+  bool merge_pass =
+      base::IsApproximatelyEqual(source_sqs->opacity, 1.f, kOpacityEpsilon) &&
+      copy_requests.empty() && combined_transform.Preserves2dAxisAlignment();
 
   const RenderPassList& referenced_passes = render_pass_list;
   // TODO(fsamuel): Move this to a separate helper function.
