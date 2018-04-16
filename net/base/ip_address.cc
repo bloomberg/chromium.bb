@@ -82,8 +82,7 @@ bool IsPubliclyRoutableIPv4(const IPAddressBytes& ip_address) {
 // IPv6 ranges, plus the blacklist of reserved IPv4 ranges mapped to IPv6.
 // Sources for info:
 // www.iana.org/assignments/ipv6-address-space/ipv6-address-space.xhtml
-bool IsPubliclyRoutableIPv6(const IPAddressBytes& ip_address,
-                            bool include_mapped_ipv4) {
+bool IsPubliclyRoutableIPv6(const IPAddressBytes& ip_address) {
   DCHECK_EQ(IPAddress::kIPv6AddressSize, ip_address.size());
   struct {
     const uint8_t address_prefix[2];
@@ -99,9 +98,6 @@ bool IsPubliclyRoutableIPv6(const IPAddressBytes& ip_address,
       return true;
     }
   }
-
-  if (!include_mapped_ipv4)
-    return false;
 
   IPAddress addr(ip_address);
   if (addr.IsIPv4MappedIPv6()) {
@@ -234,21 +230,11 @@ bool IPAddress::IsValid() const {
   return IsIPv4() || IsIPv6();
 }
 
-bool IPAddress::IsReserved() const {
-  if (IsIPv4()) {
-    return !IsPubliclyRoutableIPv4(ip_address_);
-  } else if (IsIPv6()) {
-    return !IsPubliclyRoutableIPv6(ip_address_,
-                                   false /* include_mapped_ipv4 */);
-  }
-  return false;
-}
-
 bool IPAddress::IsPubliclyRoutable() const {
   if (IsIPv4()) {
     return IsPubliclyRoutableIPv4(ip_address_);
   } else if (IsIPv6()) {
-    return IsPubliclyRoutableIPv6(ip_address_, true /* include_mapped_ipv4 */);
+    return IsPubliclyRoutableIPv6(ip_address_);
   }
   return true;
 }

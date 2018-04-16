@@ -32,10 +32,13 @@ TEST(NetworkUtilsTest, IsReservedIPAddress) {
       "[FFC0:ba98:7654:3210:FEDC:BA98:7654:3210]"));
   EXPECT_FALSE(NetworkUtils::IsReservedIPAddress(
       "[2000:ba98:7654:2301:EFCD:BA98:7654:3210]"));
+  // IPv4-mapped to IPv6
+  EXPECT_FALSE(NetworkUtils::IsReservedIPAddress("[::ffff:8.8.8.8]"));
 
   // Reserved IPv6 addresses.
   EXPECT_TRUE(NetworkUtils::IsReservedIPAddress("[::1]"));
   EXPECT_TRUE(NetworkUtils::IsReservedIPAddress("[::192.9.5.5]"));
+  EXPECT_TRUE(NetworkUtils::IsReservedIPAddress("[::ffff:192.168.1.1]"));
   EXPECT_TRUE(NetworkUtils::IsReservedIPAddress("[FEED::BEEF]"));
   EXPECT_TRUE(NetworkUtils::IsReservedIPAddress(
       "[FEC0:ba98:7654:3210:FEDC:BA98:7654:3210]"));

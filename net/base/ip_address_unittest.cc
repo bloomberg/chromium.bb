@@ -108,7 +108,7 @@ enum IPAddressReservedResult : bool { NOT_RESERVED = false, RESERVED = true };
 // The reserved ranges are tested by checking the first and last address of each
 // range. The unreserved blocks are tested similarly. These tests cover the
 // entire IPv4 address range, as well as this range mapped to IPv6.
-TEST(IPAddressTest, IsReservedIPv4) {
+TEST(IPAddressTest, IsPubliclyRoutableIPv4) {
   struct {
     const char* const address;
     IPAddressReservedResult is_reserved;
@@ -217,13 +217,11 @@ TEST(IPAddressTest, IsReservedIPv4) {
   for (const auto& test : tests) {
     EXPECT_TRUE(address.AssignFromIPLiteral(test.address));
     ASSERT_TRUE(address.IsValid());
-    EXPECT_EQ(!!test.is_reserved, address.IsReserved());
     EXPECT_EQ(!test.is_reserved, address.IsPubliclyRoutable());
 
     // Check these IPv4 addresses when mapped to IPv6. This verifies we're
     // properly unpacking mapped addresses.
     IPAddress mapped_address = ConvertIPv4ToIPv4MappedIPv6(address);
-    EXPECT_TRUE(mapped_address.IsReserved());
     EXPECT_EQ(!test.is_reserved, mapped_address.IsPubliclyRoutable());
   }
 }
@@ -232,13 +230,13 @@ TEST(IPAddressTest, IsReservedIPv4) {
 // The reserved ranges are tested by checking the first and last address of each
 // range. The unreserved blocks are tested similarly. These tests cover the
 // entire IPv6 address range.
-TEST(IPAddressTest, IsReservedIPv6) {
+TEST(IPAddressTest, IsPubliclyRoutableIPv6) {
   struct {
     const char* const address;
     IPAddressReservedResult is_reserved;
   } tests[] = {// 0000::/8.
                // Skip testing ::ffff:/96 explicitly since it was tested
-               // in IsReservedIPv4
+               // in IsPubliclyRoutableIPv4
                {"0:0:0:0:0:0:0:0", RESERVED},
                {"ff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
                // 0100::/8
@@ -299,7 +297,6 @@ TEST(IPAddressTest, IsReservedIPv6) {
   IPAddress address;
   for (const auto& test : tests) {
     EXPECT_TRUE(address.AssignFromIPLiteral(test.address));
-    EXPECT_EQ(!!test.is_reserved, address.IsReserved());
     EXPECT_EQ(!test.is_reserved, address.IsPubliclyRoutable());
   }
 }
