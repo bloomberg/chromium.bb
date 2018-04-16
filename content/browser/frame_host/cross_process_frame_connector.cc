@@ -404,10 +404,14 @@ void CrossProcessFrameConnector::EmbedRendererWindowTreeClientInParent(
 }
 #endif
 
-void CrossProcessFrameConnector::ResizeDueToAutoResize(
-    const gfx::Size& new_size,
+void CrossProcessFrameConnector::BeginResizeDueToAutoResize() {
+  frame_proxy_in_parent_renderer_->Send(new FrameMsg_BeginResizeDueToAutoResize(
+      frame_proxy_in_parent_renderer_->GetRoutingID()));
+}
+
+void CrossProcessFrameConnector::EndResizeDueToAutoResize(
     uint64_t sequence_number) {
-  frame_proxy_in_parent_renderer_->Send(new FrameMsg_ResizeDueToAutoResize(
+  frame_proxy_in_parent_renderer_->Send(new FrameMsg_EndResizeDueToAutoResize(
       frame_proxy_in_parent_renderer_->GetRoutingID(), sequence_number));
 }
 

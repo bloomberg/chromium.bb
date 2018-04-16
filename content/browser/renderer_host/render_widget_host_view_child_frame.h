@@ -296,8 +296,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // using CSS.
   bool CanBecomeVisible();
 
-  void OnResizeDueToAutoResizeComplete(const gfx::Size& new_size,
-                                       uint64_t sequence_number);
+  void OnResizeDueToAutoResizeComplete(uint64_t sequence_number);
 
   std::vector<base::OnceClosure> frame_swapped_callbacks_;
 

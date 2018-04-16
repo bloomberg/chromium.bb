@@ -1036,13 +1036,12 @@ RenderWidgetHostViewChildFrame::ResizeDueToAutoResize(
     const gfx::Size& new_size,
     uint64_t sequence_number,
     const viz::LocalSurfaceId& local_surface_id) {
-  // TODO(cblume): This doesn't currently suppress allocation.
-  // It maintains existing behavior while using the suppression style.
-  // This will be addressed in a follow-up patch.
-  // See https://crbug.com/805073
+  if (frame_connector_)
+    frame_connector_->BeginResizeDueToAutoResize();
+
   base::OnceCallback<void()> allocation_task = base::BindOnce(
       &RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete,
-      weak_factory_.GetWeakPtr(), new_size, sequence_number);
+      weak_factory_.GetWeakPtr(), sequence_number);
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
@@ -1126,10 +1125,9 @@ bool RenderWidgetHostViewChildFrame::CanBecomeVisible() {
 }
 
 void RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete(
-    const gfx::Size& new_size,
     uint64_t sequence_number) {
   if (frame_connector_)
-    frame_connector_->ResizeDueToAutoResize(new_size, sequence_number);
+    frame_connector_->EndResizeDueToAutoResize(sequence_number);
 }
 
 void RenderWidgetHostViewChildFrame::DidNavigate() {

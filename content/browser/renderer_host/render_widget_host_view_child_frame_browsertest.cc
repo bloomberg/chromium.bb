@@ -191,4 +191,55 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, ChildFrameSinkId) {
                           base::Unretained(this)));
 }
 
+// Test that auto-resize messages only trigger a single allocation/response
+// from the child.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
+                       ChildFrameAutoResizeMessages) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(b)")));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Create our message filter to intercept messages.
+  scoped_refptr<UpdateResizeParamsMessageFilter> message_filter =
+      new UpdateResizeParamsMessageFilter();
+  root->current_frame_host()->GetProcess()->AddFilter(message_filter.get());
+
+  // Load cross-site page into iframe.
+  GURL cross_site_url(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  // The child frame is created during this blocking call, on the UI thread.
+  // This is racing the IPC we are testing for, which arrives on the IO thread.
+  // Due to this we cannot get the pre-IPC value of the viz::FrameSinkId.
+  NavigateFrameToURL(root->child_at(0), cross_site_url);
+
+  RenderWidgetHostImpl* child_frame_impl =
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
+  child_frame_impl->SetAutoResize(true, gfx::Size(10, 10), gfx::Size(100, 100));
+
+  // Fake an auto-resize update from the parent renderer.
+  int routing_id = root->child_at(0)
+                       ->current_frame_host()
+                       ->GetRenderWidgetHost()
+                       ->GetRoutingID();
+  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
+  params.view_size = gfx::Size(75, 75);
+  params.flags = 0;
+  params.sequence_number = 7;
+  viz::LocalSurfaceId current_id =
+      child_frame_impl->GetView()->GetLocalSurfaceId();
+  params.child_allocated_local_surface_id = viz::LocalSurfaceId(
+      current_id.parent_sequence_number(),
+      current_id.child_sequence_number() + 1, current_id.embed_token());
+  child_frame_impl->OnMessageReceived(
+      ViewHostMsg_ResizeOrRepaint_ACK(routing_id, params));
+
+  // The first UpdateResizeParams message received should have our new sequence
+  // number.
+  EXPECT_EQ(params.sequence_number, message_filter->WaitForSequenceNumber());
+}
+
 }  // namespace content

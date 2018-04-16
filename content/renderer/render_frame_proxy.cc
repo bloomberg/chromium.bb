@@ -417,7 +417,10 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
-    IPC_MESSAGE_HANDLER(FrameMsg_ResizeDueToAutoResize, OnResizeDueToAutoResize)
+    IPC_MESSAGE_HANDLER(FrameMsg_BeginResizeDueToAutoResize,
+                        OnBeginResizeDueToAutoResize)
+    IPC_MESSAGE_HANDLER(FrameMsg_EndResizeDueToAutoResize,
+                        OnEndResizeDueToAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableAutoResize, OnEnableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_DisableAutoResize, OnDisableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
@@ -564,7 +567,14 @@ void RenderFrameProxy::OnScrollRectToVisible(
   web_frame_->ScrollRectToVisible(rect_to_scroll, params);
 }
 
-void RenderFrameProxy::OnResizeDueToAutoResize(uint64_t sequence_number) {
+void RenderFrameProxy::OnBeginResizeDueToAutoResize() {
+  DCHECK(!transaction_pending_);
+  transaction_pending_ = true;
+}
+
+void RenderFrameProxy::OnEndResizeDueToAutoResize(uint64_t sequence_number) {
+  DCHECK(transaction_pending_);
+  transaction_pending_ = false;
   pending_resize_params_.auto_resize_sequence_number = sequence_number;
   WasResized();
 }
@@ -590,7 +600,7 @@ void RenderFrameProxy::SetMusEmbeddedFrame(
 #endif
 
 void RenderFrameProxy::WasResized() {
-  if (!frame_sink_id_.is_valid() || crashed_)
+  if (!frame_sink_id_.is_valid() || crashed_ || transaction_pending_)
     return;
 
   bool synchronized_params_changed =

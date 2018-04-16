@@ -208,6 +208,9 @@ class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
   // will return the new viz::FrameSinkId.
   viz::FrameSinkId GetOrWaitForId();
 
+  // Waits for the next sequence number to be received and returns it.
+  uint64_t WaitForSequenceNumber();
+
  protected:
   ~UpdateResizeParamsMessageFilter() override;
 
@@ -217,6 +220,7 @@ class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
   // |rect| is in DIPs.
   void OnUpdatedFrameRectOnUI(const gfx::Rect& rect);
   void OnUpdatedFrameSinkIdOnUI();
+  void OnUpdatedSequenceNumberOnUI(uint64_t sequence_number);
 
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -226,6 +230,9 @@ class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
   std::unique_ptr<base::RunLoop> screen_space_rect_run_loop_;
   bool screen_space_rect_received_;
   gfx::Rect last_rect_;
+
+  uint64_t last_sequence_number_ = 0;
+  std::unique_ptr<base::RunLoop> sequence_number_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateResizeParamsMessageFilter);
 };
