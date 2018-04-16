@@ -601,11 +601,8 @@ void ArcNotificationContentView::OnMouseExited(const ui::MouseEvent&) {
 }
 
 void ArcNotificationContentView::OnFocus() {
-  CHECK_EQ(message_center::MessageView::kViewClassName,
-           parent()->GetClassName());
-  auto* notification_view = static_cast<ArcNotificationView*>(parent());
-  CHECK_EQ(ArcNotificationView::kMessageViewSubClassName,
-           notification_view->GetMessageViewSubClassName());
+  auto* notification_view = ArcNotificationView::FromView(parent());
+  CHECK(notification_view);
 
   NativeViewHost::OnFocus();
   notification_view->OnContentFocused();
@@ -620,11 +617,8 @@ void ArcNotificationContentView::OnBlur() {
     return;
   }
 
-  CHECK_EQ(message_center::MessageView::kViewClassName,
-           parent()->GetClassName());
-  auto* notification_view = static_cast<ArcNotificationView*>(parent());
-  CHECK_EQ(ArcNotificationView::kMessageViewSubClassName,
-           notification_view->GetMessageViewSubClassName());
+  auto* notification_view = ArcNotificationView::FromView(parent());
+  CHECK(notification_view);
 
   NativeViewHost::OnBlur();
   notification_view->OnContentBlurred();

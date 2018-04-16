@@ -62,7 +62,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   virtual bool IsCloseButtonFocused() const = 0;
   virtual void RequestFocusOnCloseButton() = 0;
   virtual void UpdateControlButtonsVisibility() = 0;
-  virtual const char* GetMessageViewSubClassName() const = 0;
 
   virtual void SetExpanded(bool expanded);
   virtual bool IsExpanded() const;
@@ -92,8 +91,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void OnBlur() override;
   void Layout() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  // Subclasses of MessageView shouldn't use this method to distinguish classes.
-  // Instead, use GetMessageViewSubClassName().
   const char* GetClassName() const final;
 
   // message_center::SlideOutController::Delegate
