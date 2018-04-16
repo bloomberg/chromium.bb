@@ -1448,11 +1448,11 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
 
     var isOnEligibleLocation = CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ ?
         true :
-        !fileManager.directoryModel.isOnDrive();
+        !fileManager.directoryModel.isOnDrive() &&
+            !fileManager.directoryModel.isOnMTP();
 
     event.canExecute = dirEntry && !fileManager.directoryModel.isReadOnly() &&
-        !fileManager.directoryModel.isOnMTP() && isOnEligibleLocation &&
-        selection && selection.totalCount > 0;
+        isOnEligibleLocation && selection && selection.totalCount > 0;
   }
 });
 
