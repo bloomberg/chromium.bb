@@ -118,6 +118,14 @@ ImageBitness PEImageSafe::GetImageBitness() {
 // have been memory mapped by NTLoader.
 //----------------------------------------------------------------------------
 
+void* PEImageSafe::RVAToAddr(DWORD rva) {
+  assert(ldr_image_mapping_);
+  if (rva >= image_size_)
+    return nullptr;
+
+  return reinterpret_cast<char*>(image_) + rva;
+}
+
 void* PEImageSafe::GetImageDirectoryEntryAddr(int directory,
                                               DWORD* directory_size) {
   assert(directory > 0 && directory < IMAGE_NUMBEROF_DIRECTORY_ENTRIES &&
@@ -168,18 +176,13 @@ PIMAGE_EXPORT_DIRECTORY PEImageSafe::GetExportDirectory() {
       GetImageDirectoryEntryAddr(IMAGE_DIRECTORY_ENTRY_EXPORT, &dir_size));
 
   if (export_dir_) {
-    if (sizeof(IMAGE_EXPORT_DIRECTORY) != dir_size)
+    // Basic sanity check.  |dir_size| will often be larger than just the given
+    // base directory structure.
+    if (sizeof(IMAGE_EXPORT_DIRECTORY) > dir_size)
       export_dir_ = nullptr;
   }
 
   return export_dir_;
-}
-
-// Converts a Relative Virtual Address (RVA) to direct pointer.
-// - This function does not validate the resulting address.
-void* PEImageSafe::RVAToAddr(DWORD rva) {
-  assert(ldr_image_mapping_);
-  return reinterpret_cast<char*>(image_) + rva;
 }
 
 }  // namespace pe_image_safe
