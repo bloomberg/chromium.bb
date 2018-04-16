@@ -6,7 +6,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto" >
 
-    <group android:id="@+id/normal_menu_group" >
+    <group android:id="@+id/normal_menu_group"
+        android:visible="false" >
         <item
             android:id="@+id/info_menu_id"
             android:icon="@drawable/btn_info"
@@ -25,6 +26,37 @@
             android:title="@string/close"
             chrome:showAsAction="ifRoom" />
      </group>
+    <group android:id="@+id/with_settings_normal_menu_group"
+        android:visible="false" >
+        <item
+            android:id="@+id/with_settings_search_menu_id"
+            android:icon="@drawable/ic_search"
+            android:title="@string/search"
+            android:visible="false"
+            chrome:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/extra_menu_id"
+            android:icon="@drawable/ic_more_vert_black_24dp"
+            android:title=""
+            chrome:showAsAction="ifRoom" >
+            <menu>
+                <item
+                    android:id="@+id/with_settings_info_menu_id"
+                    android:title="@string/download_manager_ui_show_storage"
+                    android:visible="false"
+                    chrome:showAsAction="never" />
+                <item
+                    android:id="@+id/settings_menu_id"
+                    android:title="@string/preferences"
+                    chrome:showAsAction="never" />
+            </menu>
+        </item>
+        <item
+            android:id="@+id/with_settings_close_menu_id"
+            android:icon="@drawable/btn_close"
+            android:title="@string/close"
+            chrome:showAsAction="ifRoom" />
+    </group>
      <group
         android:id="@+id/selection_mode_menu_group"
         android:visible="false" >
