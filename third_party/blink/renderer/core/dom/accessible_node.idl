@@ -65,5 +65,8 @@
     attribute EventHandler onaccessibleincrement;
     attribute EventHandler onaccessiblescrollintoview;
 
+    readonly attribute AccessibleNodeList childNodes;
+
     [RaisesException] void appendChild(AccessibleNode child);
+    [RaisesException] void removeChild(AccessibleNode child);
 };
