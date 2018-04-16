@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill;
+package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
 
@@ -13,6 +13,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -20,7 +21,7 @@ import org.chromium.ui.base.WindowAndroid;
  * The Accessory sitting above the keyboard and below the content area. It is used for autofill
  * suggestions and manual entry points assisting the user in filling forms.
  */
-public class AutofillKeyboardAccessory
+public class KeyboardAccessoryView
         extends LinearLayout implements WindowAndroid.KeyboardVisibilityListener {
     private final WindowAndroid mWindowAndroid;
 
@@ -33,7 +34,7 @@ public class AutofillKeyboardAccessory
      * Creates an AutofillKeyboardAccessory with specified parameters.
      * @param windowAndroid The owning WindowAndroid.
      */
-    public AutofillKeyboardAccessory(WindowAndroid windowAndroid) {
+    public KeyboardAccessoryView(WindowAndroid windowAndroid) {
         super(windowAndroid.getActivity().get());
         assert windowAndroid.getActivity().get() != null;
         mWindowAndroid = windowAndroid;
