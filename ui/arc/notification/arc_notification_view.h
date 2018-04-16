@@ -32,7 +32,7 @@ class ArcNotificationView : public message_center::MessageView,
   // These method are called by the content view when focus handling is defered
   // to the content.
   void OnContentFocused();
-  void OnContentBlured();
+  void OnContentBlurred();
 
   // Overridden from MessageView:
   void UpdateWithNotification(

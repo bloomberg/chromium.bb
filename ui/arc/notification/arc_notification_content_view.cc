@@ -627,7 +627,7 @@ void ArcNotificationContentView::OnBlur() {
            notification_view->GetMessageViewSubClassName());
 
   NativeViewHost::OnBlur();
-  notification_view->OnContentBlured();
+  notification_view->OnContentBlurred();
 }
 
 void ArcNotificationContentView::Activate() {

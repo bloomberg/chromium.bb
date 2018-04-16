@@ -56,7 +56,7 @@ void ArcNotificationView::OnContentFocused() {
   SchedulePaint();
 }
 
-void ArcNotificationView::OnContentBlured() {
+void ArcNotificationView::OnContentBlurred() {
   SchedulePaint();
 }
 
