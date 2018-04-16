@@ -36,8 +36,7 @@
             },
             {
                 "domain": "Memory",
-                "include": ["getBrowserSamplingProfile", "setPressureNotificationsSuppressed", "simulatePressureNotification", "prepareForLeakDetection"],
-                "async": ["prepareForLeakDetection"]
+                "include": ["getBrowserSamplingProfile", "setPressureNotificationsSuppressed", "simulatePressureNotification"]
             },
             {
                 "domain": "Network",

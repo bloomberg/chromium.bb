@@ -22,7 +22,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/previews_state.h"
@@ -39,8 +38,8 @@
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -257,7 +256,8 @@ void RenderViewTest::SetUp() {
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
   blink_platform_impl_.Initialize();
-  blink::Initialize(blink_platform_impl_.Get(), &binder_registry_);
+  service_manager::BinderRegistry empty_registry;
+  blink::Initialize(blink_platform_impl_.Get(), &empty_registry);
 
   content_client_.reset(CreateContentClient());
   content_browser_client_.reset(CreateContentBrowserClient());
@@ -344,13 +344,15 @@ void RenderViewTest::TearDown() {
   // Run the loop so the release task from the renderwidget executes.
   base::RunLoop().RunUntilIdle();
 
-  blink::mojom::LeakDetectorPtr leak_detector;
-  BindInterface(&binder_registry_, &leak_detector);
-
   // Close the main |view_| as well as any other windows that might have been
   // opened by the test.
   CloseMessageSendingRenderViewVisitor closing_visitor;
   RenderView::ForEach(&closing_visitor);
+
+  std::unique_ptr<blink::WebLeakDetector> leak_detector =
+      base::WrapUnique(blink::WebLeakDetector::Create(this));
+
+  leak_detector->PrepareForLeakDetection();
 
   // |view_| is ref-counted and deletes itself during the RunUntilIdle() call
   // below.
@@ -372,27 +374,7 @@ void RenderViewTest::TearDown() {
   autorelease_pool_.reset();
 #endif
 
-  {
-    base::RunLoop run_loop;
-    leak_detector->PerformLeakDetection(base::BindOnce(
-        [](base::OnceClosure closure,
-           blink::mojom::LeakDetectionResultPtr result) {
-          EXPECT_EQ(0u, result->number_of_live_audio_nodes);
-          EXPECT_EQ(0u, result->number_of_live_documents);
-          EXPECT_EQ(0u, result->number_of_live_nodes);
-          EXPECT_EQ(0u, result->number_of_live_layout_objects);
-          EXPECT_EQ(0u, result->number_of_live_resources);
-          EXPECT_EQ(0u, result->number_of_live_pausable_objects);
-          EXPECT_EQ(0u, result->number_of_live_script_promises);
-          EXPECT_EQ(0u, result->number_of_live_frames);
-          EXPECT_EQ(0u, result->number_of_live_v8_per_context_data);
-          EXPECT_EQ(0u, result->number_of_worker_global_scopes);
-          EXPECT_EQ(0u, result->number_of_live_resource_fetchers);
-          std::move(closure).Run();
-        },
-        run_loop.QuitClosure()));
-    run_loop.Run();
-  }
+  leak_detector->CollectGarbageAndReport();
 
   blink_platform_impl_.Shutdown();
   platform_->PlatformUninitialize();
@@ -402,6 +384,20 @@ void RenderViewTest::TearDown() {
 
   test_io_thread_.reset();
   ipc_support_.reset();
+}
+
+void RenderViewTest::OnLeakDetectionComplete(const Result& result) {
+  EXPECT_EQ(0u, result.number_of_live_audio_nodes);
+  EXPECT_EQ(0u, result.number_of_live_documents);
+  EXPECT_EQ(0u, result.number_of_live_nodes);
+  EXPECT_EQ(0u, result.number_of_live_layout_objects);
+  EXPECT_EQ(0u, result.number_of_live_resources);
+  EXPECT_EQ(0u, result.number_of_live_pausable_objects);
+  EXPECT_EQ(0u, result.number_of_live_script_promises);
+  EXPECT_EQ(0u, result.number_of_live_frames);
+  EXPECT_EQ(0u, result.number_of_live_v8_per_context_data);
+  EXPECT_EQ(0u, result.number_of_worker_global_scopes);
+  EXPECT_EQ(0u, result.number_of_live_resource_fetchers);
 }
 
 void RenderViewTest::SendNativeKeyEvent(

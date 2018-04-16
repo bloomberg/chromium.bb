@@ -35,13 +35,16 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Memory.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector_client.h"
 
 namespace blink {
 
 class InspectedFrames;
 
 class CORE_EXPORT InspectorMemoryAgent final
-    : public InspectorBaseAgent<protocol::Memory::Metainfo> {
+    : public InspectorBaseAgent<protocol::Memory::Metainfo>,
+      public BlinkLeakDetectorClient {
  public:
   static InspectorMemoryAgent* Create(InspectedFrames* frames) {
     return new InspectorMemoryAgent(frames);
@@ -54,6 +57,11 @@ class CORE_EXPORT InspectorMemoryAgent final
   protocol::Response getDOMCounters(int* documents,
                                     int* nodes,
                                     int* js_event_listeners) override;
+  void prepareForLeakDetection(
+      std::unique_ptr<PrepareForLeakDetectionCallback>) override;
+
+  // BlinkLeakDetectorClient:
+  void OnLeakDetectionComplete() override;
 
   // Memory protocol domain:
   protocol::Response startSampling(
@@ -72,6 +80,7 @@ class CORE_EXPORT InspectorMemoryAgent final
   std::unique_ptr<protocol::Memory::SamplingProfile> GetSamplingProfileById(
       uint32_t id);
 
+  std::unique_ptr<PrepareForLeakDetectionCallback> callback_;
   Member<InspectedFrames> frames_;
   uint32_t profile_id_ = 0;
   HashMap<void*, std::string> symbols_cache_;

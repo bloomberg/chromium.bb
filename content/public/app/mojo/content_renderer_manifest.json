@@ -5,7 +5,6 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
-          "blink::mojom::LeakDetector",
           "blink::mojom::OomIntervention",
           "blink::mojom::WebDatabase",
           "content::mojom::AppCacheFrontend",
