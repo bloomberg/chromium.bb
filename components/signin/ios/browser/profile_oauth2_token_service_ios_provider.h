@@ -60,7 +60,6 @@ class ProfileOAuth2TokenServiceIOSProvider {
   // the given |scopes|. Once the token is obtained, |callback| is called.
   virtual void GetAccessToken(const std::string& gaia_id,
                               const std::string& client_id,
-                              const std::string& client_secret,
                               const std::set<std::string>& scopes,
                               const AccessTokenCallback& callback);
 

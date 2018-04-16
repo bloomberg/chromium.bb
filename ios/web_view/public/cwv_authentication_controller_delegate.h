@@ -28,13 +28,11 @@ CWV_EXPORT
 // |gaiaID| The GaiaID of the user whose access token is requested.
 // |clientID| The clientID of ChromeWebView. Used to verify it is the same as
 // the one passed to CWVWebView and SSO.
-// |clientSecret| The clientSecret of ChromeWebView. Used like |clientID|.
 // |scopes| The OAuth scopes requested.
 // |completionHandler| Used to return access tokens, expiration date, and error.
 - (void)authenticationController:(CWVAuthenticationController*)controller
          getAccessTokenForGaiaID:(NSString*)gaiaID
                         clientID:(NSString*)clientID
-                    clientSecret:(NSString*)clientSecret
                           scopes:(NSArray<NSString*>*)scopes
                completionHandler:(TokenCompletionHandler)completionHandler;
 

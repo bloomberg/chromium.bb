@@ -24,7 +24,6 @@ FakeProfileOAuth2TokenServiceIOSProvider::
 void FakeProfileOAuth2TokenServiceIOSProvider::GetAccessToken(
     const std::string& account_id,
     const std::string& client_id,
-    const std::string& client_secret,
     const std::set<std::string>& scopes,
     const AccessTokenCallback& callback) {
   requests_.push_back(AccessTokenRequest(account_id, callback));

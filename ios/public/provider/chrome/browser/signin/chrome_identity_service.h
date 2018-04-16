@@ -160,15 +160,6 @@ class ChromeIdentityService {
                               AccessTokenCallback callback);
 
   // Asynchronously retrieves access tokens for the given identity and scopes.
-  // TODO(crbug.com/516021): Deprecated API, it will be removed after cleanup
-  // in downstream, see crrev.com/i/480972 and crrev.com/c/973229.
-  virtual void GetAccessToken(ChromeIdentity* identity,
-                              const std::string& client_id,
-                              const std::string& client_secret,
-                              const std::set<std::string>& scopes,
-                              AccessTokenCallback callback);
-
-  // Asynchronously retrieves access tokens for the given identity and scopes.
   virtual void GetAccessToken(ChromeIdentity* identity,
                               const std::string& client_id,
                               const std::set<std::string>& scopes,

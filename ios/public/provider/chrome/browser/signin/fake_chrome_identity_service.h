@@ -42,7 +42,6 @@ class FakeChromeIdentityService : public ChromeIdentityService {
 
   virtual void GetAccessToken(ChromeIdentity* identity,
                               const std::string& client_id,
-                              const std::string& client_secret,
                               const std::set<std::string>& scopes,
                               ios::AccessTokenCallback callback) override;
 
