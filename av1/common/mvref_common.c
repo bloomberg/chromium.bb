@@ -50,21 +50,19 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm, MB_MODE_INFO *mi,
   for (h = 0; h < y_mis; h++) {
     MV_REF *mv = frame_mvs;
     for (w = 0; w < x_mis; w++) {
-      mv->ref_frame[0] = NONE_FRAME;
-      mv->ref_frame[1] = NONE_FRAME;
-      mv->mv[0].as_int = 0;
-      mv->mv[1].as_int = 0;
+      mv->ref_frame = NONE_FRAME;
+      mv->mv.as_int = 0;
 
       for (int idx = 0; idx < 2; ++idx) {
         MV_REFERENCE_FRAME ref_frame = mi->ref_frame[idx];
         if (ref_frame > INTRA_FRAME) {
           int8_t ref_idx = cm->ref_frame_side[ref_frame];
-          if (ref_idx < 0) continue;
+          if (ref_idx) continue;
           if ((abs(mi->mv[idx].as_mv.row) > REFMVS_LIMIT) ||
               (abs(mi->mv[idx].as_mv.col) > REFMVS_LIMIT))
             continue;
-          mv->ref_frame[ref_idx] = ref_frame;
-          mv->mv[ref_idx].as_int = mi->mv[idx].as_int;
+          mv->ref_frame = ref_frame;
+          mv->mv.as_int = mi->mv[idx].as_int;
         }
       }
       mv++;
@@ -1093,12 +1091,12 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
   for (int blk_row = 0; blk_row < mvs_rows; ++blk_row) {
     for (int blk_col = 0; blk_col < mvs_cols; ++blk_col) {
       MV_REF *mv_ref = &mv_ref_base[blk_row * mvs_cols + blk_col];
-      MV fwd_mv = mv_ref->mv[dir & 0x01].as_mv;
+      MV fwd_mv = mv_ref->mv.as_mv;
 
-      if (mv_ref->ref_frame[dir & 0x01] > INTRA_FRAME) {
+      if (mv_ref->ref_frame > INTRA_FRAME) {
         int_mv this_mv;
         int mi_r, mi_c;
-        const int ref_frame_offset = ref_offset[mv_ref->ref_frame[dir & 0x01]];
+        const int ref_frame_offset = ref_offset[mv_ref->ref_frame];
 
         int pos_valid = abs(ref_frame_offset) <= MAX_FRAME_DISTANCE &&
                         ref_frame_offset > 0 &&

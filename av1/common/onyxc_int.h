@@ -106,8 +106,8 @@ typedef struct {
 } TPL_MV_REF;
 
 typedef struct {
-  int_mv mv[2];
-  MV_REFERENCE_FRAME ref_frame[2];
+  int_mv mv;
+  MV_REFERENCE_FRAME ref_frame;
 } MV_REF;
 
 typedef struct {

@@ -1563,8 +1563,7 @@ static void intra_copy_frame_mvs(AV1_COMMON *const cm, int mi_row, int mi_col,
   for (int h = 0; h < y_mis; h++) {
     MV_REF *mv = frame_mvs;
     for (int w = 0; w < x_mis; w++) {
-      mv->ref_frame[0] = NONE_FRAME;
-      mv->ref_frame[1] = NONE_FRAME;
+      mv->ref_frame = NONE_FRAME;
       mv++;
     }
     frame_mvs += frame_mvs_stride;
