@@ -4091,5 +4091,5 @@ crbug.com/831993 [ Linux ] virtual/gpu-rasterization/images/cross-fade-overflow-
 crbug.com/832842 [ Win7 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure ]
 crbug.com/775534 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/775534 [ Linux ] virtual/new-remote-playback-pipeline/media/controls/closed-captions-dynamic-update.html [ Skip ]
-crbug.com/775534 [ Win Mac ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
+crbug.com/775534 [ Linux Win Mac ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Failure ]
