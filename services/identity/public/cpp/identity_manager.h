@@ -26,8 +26,7 @@ class ProfileSyncServiceHarness;
 
 namespace identity {
 
-// Primary client-side interface to the Identity Service, encapsulating a
-// connection to a remote implementation of mojom::IdentityManager. See
+// Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
 class IdentityManager : public SigninManagerBase::Observer,
 #if !defined(OS_CHROMEOS)
