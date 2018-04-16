@@ -348,3 +348,4 @@
 -DeclarativeNetRequestResourceTypeBrowserTest.Test2/0
 -DeclarativeNetRequestResourceTypeBrowserTest.Test2/1
 -MediaEngagementSessionRestoreBrowserTest.RestoredSession_Playback_MEI
+-AutoplayExtensionBrowserTest.*
