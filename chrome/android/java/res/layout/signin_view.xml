@@ -26,10 +26,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:adjustViewBounds="true"
+                android:background="@color/signin_header_animation_background"
                 android:contentDescription="@null"
                 android:scaleType="fitCenter"
-                chrome:srcCompat="@drawable/signin_header_animation"/>
+                chrome:srcCompat="@drawable/signin_header_animation"
+                tools:src="@drawable/signin_header_animation"/>
             <TextView
                 android:id="@+id/signin_title"
                 android:layout_width="wrap_content"

@@ -104,6 +104,7 @@
     <!-- As in dimens.xml, signin uses values from the First Run Experience -->
     <color name="signin_head_background">@android:color/white</color>
     <color name="signin_body_background">@color/google_grey_50</color>
+    <color name="signin_header_animation_background">#F8F9FA</color>
 
     <!-- Sad Tab colors -->
     <color name="sad_tab_body_text_color">#646464</color>
