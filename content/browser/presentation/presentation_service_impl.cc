@@ -68,6 +68,9 @@ PresentationServiceImpl::PresentationServiceImpl(
 
   if (auto* delegate = GetPresentationServiceDelegate())
     delegate->AddObserver(render_process_id_, render_frame_id_, this);
+
+  bindings_.set_connection_error_handler(base::BindRepeating(
+      &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
 }
 
 PresentationServiceImpl::~PresentationServiceImpl() {
@@ -118,6 +121,8 @@ void PresentationServiceImpl::SetController(
     return;
   }
   controller_ = std::move(controller);
+  controller_.set_connection_error_handler(base::BindOnce(
+      &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
 }
 
 void PresentationServiceImpl::SetReceiver(
@@ -138,6 +143,8 @@ void PresentationServiceImpl::SetReceiver(
   }
 
   receiver_ = std::move(receiver);
+  receiver_.set_connection_error_handler(base::BindOnce(
+      &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
   receiver_delegate_->RegisterReceiverConnectionAvailableCallback(
       base::Bind(&PresentationServiceImpl::OnReceiverConnectionAvailable,
                  weak_factory_.GetWeakPtr()));
@@ -385,6 +392,10 @@ bool PresentationServiceImpl::FrameMatches(
 
   return render_frame_host->GetProcess()->GetID() == render_process_id_ &&
          render_frame_host->GetRoutingID() == render_frame_id_;
+}
+
+void PresentationServiceImpl::OnConnectionError() {
+  Reset();
 }
 
 PresentationServiceDelegate*

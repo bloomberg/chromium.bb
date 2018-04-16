@@ -79,6 +79,7 @@ class MODULES_EXPORT PresentationReceiver final
   Member<PresentationConnectionList> connection_list_;
 
   mojo::Binding<mojom::blink::PresentationReceiver> receiver_binding_;
+  mojom::blink::PresentationServicePtr presentation_service_;
   WebPresentationClient* client_;
 };
 
