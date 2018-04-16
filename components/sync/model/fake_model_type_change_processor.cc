@@ -4,6 +4,8 @@
 
 #include "components/sync/model/fake_model_type_change_processor.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/model/metadata_batch.h"
@@ -48,9 +50,9 @@ void FakeModelTypeChangeProcessor::ModelReadyToSync(
 
 void FakeModelTypeChangeProcessor::OnSyncStarting(
     const ModelErrorHandler& error_handler,
-    const StartCallback& callback) {
+    StartCallback callback) {
   if (!callback.is_null()) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
   }
 }
 

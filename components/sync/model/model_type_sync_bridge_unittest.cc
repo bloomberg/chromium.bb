@@ -41,7 +41,7 @@ class ModelTypeSyncBridgeTest : public ::testing::Test {
 
 // OnSyncStarting should create a processor and call OnSyncStarting on it.
 TEST_F(ModelTypeSyncBridgeTest, OnSyncStarting) {
-  EXPECT_CALL(*processor(), OnSyncStarting(_, _));
+  EXPECT_CALL(*processor(), DoOnSyncStarting(_, _));
   OnSyncStarting();
 }
 

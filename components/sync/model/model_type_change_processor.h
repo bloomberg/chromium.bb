@@ -25,7 +25,7 @@ class ModelTypeSyncBridge;
 class ModelTypeChangeProcessor {
  public:
   using StartCallback =
-      base::Callback<void(std::unique_ptr<ActivationContext>)>;
+      base::OnceCallback<void(std::unique_ptr<ActivationContext>)>;
 
   ModelTypeChangeProcessor();
   virtual ~ModelTypeChangeProcessor();
@@ -77,7 +77,7 @@ class ModelTypeChangeProcessor {
   // processor. If an error is encountered, |error_handler| should be called
   // and |callback| should not.
   virtual void OnSyncStarting(const ModelErrorHandler& error_handler,
-                              const StartCallback& callback) = 0;
+                              StartCallback callback) = 0;
 
   // Indicates that sync is being disabled permanently for this data type. All
   // metadata should be erased from storage.

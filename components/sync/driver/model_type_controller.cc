@@ -27,10 +27,9 @@ using BridgeTask = ModelTypeController::BridgeTask;
 
 namespace {
 
-void OnSyncStartingHelper(
-    const ModelErrorHandler& error_handler,
-    const ModelTypeChangeProcessor::StartCallback& callback,
-    ModelTypeSyncBridge* bridge) {
+void OnSyncStartingHelper(const ModelErrorHandler& error_handler,
+                          ModelTypeChangeProcessor::StartCallback callback,
+                          ModelTypeSyncBridge* bridge) {
   bridge->OnSyncStarting(std::move(error_handler), std::move(callback));
 }
 
@@ -96,8 +95,8 @@ void ModelTypeController::LoadModels(
 
   // Callback that posts back to the UI thread.
   ModelTypeChangeProcessor::StartCallback callback =
-      BindToCurrentThread(base::Bind(&ModelTypeController::OnProcessorStarted,
-                                     base::AsWeakPtr(this)));
+      BindToCurrentThread(base::BindOnce(
+          &ModelTypeController::OnProcessorStarted, base::AsWeakPtr(this)));
 
   ModelErrorHandler error_handler = base::BindRepeating(
       &ReportError, type(), base::ThreadTaskRunnerHandle::Get(),
@@ -106,8 +105,8 @@ void ModelTypeController::LoadModels(
 
   // Start the type processor on the model thread.
   PostBridgeTask(FROM_HERE,
-                 base::Bind(&OnSyncStartingHelper, std::move(error_handler),
-                            std::move(callback)));
+                 base::BindOnce(&OnSyncStartingHelper, std::move(error_handler),
+                                std::move(callback)));
 }
 
 void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
@@ -208,7 +207,8 @@ void ModelTypeController::Stop() {
       sync_prefs_.GetPreferredDataTypes(ModelTypeSet(type()));
   if ((state() == MODEL_LOADED || state() == RUNNING) &&
       (!sync_prefs_.IsFirstSetupComplete() || !preferred_types.Has(type()))) {
-    PostBridgeTask(FROM_HERE, base::Bind(&ModelTypeSyncBridge::DisableSync));
+    PostBridgeTask(FROM_HERE,
+                   base::BindOnce(&ModelTypeSyncBridge::DisableSync));
   }
 
   state_ = NOT_RUNNING;
@@ -219,19 +219,21 @@ DataTypeController::State ModelTypeController::state() const {
 }
 
 void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
-  PostBridgeTask(FROM_HERE, base::Bind(&ModelTypeDebugInfo::GetAllNodes,
-                                       BindToCurrentThread(callback)));
+  PostBridgeTask(FROM_HERE, base::BindOnce(&ModelTypeDebugInfo::GetAllNodes,
+                                           BindToCurrentThread(callback)));
 }
 
 void ModelTypeController::GetStatusCounters(
     const StatusCountersCallback& callback) {
-  PostBridgeTask(FROM_HERE,
-                 base::Bind(&ModelTypeDebugInfo::GetStatusCounters, callback));
+  PostBridgeTask(
+      FROM_HERE,
+      base::BindOnce(&ModelTypeDebugInfo::GetStatusCounters, callback));
 }
 
 void ModelTypeController::RecordMemoryUsageHistogram() {
-  PostBridgeTask(FROM_HERE,
-                 base::Bind(&ModelTypeDebugInfo::RecordMemoryUsageHistogram));
+  PostBridgeTask(
+      FROM_HERE,
+      base::BindOnce(&ModelTypeDebugInfo::RecordMemoryUsageHistogram));
 }
 
 void ModelTypeController::ReportModelError(const ModelError& error) {

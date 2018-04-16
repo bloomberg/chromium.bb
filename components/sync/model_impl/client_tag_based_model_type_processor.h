@@ -68,7 +68,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void ModelReadyToSync(ModelTypeSyncBridge* bridge,
                         std::unique_ptr<MetadataBatch> batch) override;
   void OnSyncStarting(const ModelErrorHandler& error_handler,
-                      const StartCallback& callback) override;
+                      StartCallback callback) override;
   void DisableSync() override;
   bool IsTrackingMetadata() override;
   void ReportError(const ModelError& error) override;

@@ -35,8 +35,9 @@ ConflictResolution ModelTypeSyncBridge::ResolveConflict(
 
 void ModelTypeSyncBridge::OnSyncStarting(
     const ModelErrorHandler& error_handler,
-    const ModelTypeChangeProcessor::StartCallback& start_callback) {
-  change_processor_->OnSyncStarting(std::move(error_handler), start_callback);
+    ModelTypeChangeProcessor::StartCallback start_callback) {
+  change_processor_->OnSyncStarting(std::move(error_handler),
+                                    std::move(start_callback));
 }
 
 void ModelTypeSyncBridge::DisableSync() {
