@@ -749,8 +749,8 @@ void AutofillManager::FillOrPreviewCreditCardForm(
   }
 
   FillOrPreviewDataModelForm(
-      action, query_id, form, field, credit_card, true /* is_credit_card */,
-      base::string16() /* cvc */, form_structure, autofill_field);
+      action, query_id, form, field, credit_card, /*is_credit_card=*/true,
+      /*cvc=*/base::string16(), form_structure, autofill_field);
 }
 
 void AutofillManager::FillOrPreviewProfileForm(
@@ -780,8 +780,8 @@ void AutofillManager::FillOrPreviewProfileForm(
   }
 
   FillOrPreviewDataModelForm(
-      action, query_id, form, field, profile, false /* is_credit_card */,
-      base::string16() /* cvc */, form_structure, autofill_field);
+      action, query_id, form, field, profile, /*is_credit_card=*/false,
+      /*cvc=*/base::string16(), form_structure, autofill_field);
 }
 
 void AutofillManager::FillOrPreviewForm(
@@ -823,7 +823,7 @@ void AutofillManager::FillCreditCardForm(int query_id,
 
   FillOrPreviewDataModelForm(
       AutofillDriver::FORM_DATA_ACTION_FILL, query_id, form, field, credit_card,
-      true /* is_credit_card */, cvc, form_structure, autofill_field);
+      /*is_credit_card=*/true, cvc, form_structure, autofill_field);
 }
 
 void AutofillManager::OnFocusNoLongerOnForm() {
@@ -1033,7 +1033,7 @@ void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
 
 void AutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
   FormStructure* form_structure = nullptr;
-  if (!ParseForm(form, &form_structure))
+  if (!ParseForm(form, /*cached_form=*/nullptr, &form_structure))
     return;
 
   if (ShouldTriggerRefill(*form_structure))
@@ -1176,7 +1176,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form,
 
   download_manager_->StartUploadRequest(
       submitted_form, was_autofilled, non_empty_types,
-      std::string() /* login_form_signature */, observed_submission);
+      /*login_form_signature=*/std::string(), observed_submission);
 }
 
 void AutofillManager::Reset() {
@@ -1189,9 +1189,9 @@ void AutofillManager::Reset() {
       new AutofillMetrics::FormInteractionsUkmLogger(
           client_->GetUkmRecorder()));
   address_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
-      false /* is_for_credit_card */, form_interactions_ukm_logger_.get()));
+      /*is_for_credit_card=*/false, form_interactions_ukm_logger_.get()));
   credit_card_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
-      true /* is_for_credit_card */, form_interactions_ukm_logger_.get()));
+      /*is_for_credit_card=*/true, form_interactions_ukm_logger_.get()));
 #if defined(OS_ANDROID) || defined(OS_IOS)
   autofill_assistant_.Reset();
 #endif
@@ -1243,11 +1243,11 @@ AutofillManager::AutofillManager(
               client->GetUkmRecorder())),
       address_form_event_logger_(
           std::make_unique<AutofillMetrics::FormEventLogger>(
-              false /* is_for_credit_card */,
+              /*is_for_credit_card=*/false,
               form_interactions_ukm_logger_.get())),
       credit_card_form_event_logger_(
           std::make_unique<AutofillMetrics::FormEventLogger>(
-              true /* is_for_credit_card */,
+              /*is_for_credit_card=*/true,
               form_interactions_ukm_logger_.get())),
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
@@ -1466,8 +1466,8 @@ std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
     return std::unique_ptr<FormStructure>();
 
   submitted_form->RetrieveFromCache(*cached_submitted_form,
-                                    /* apply_is_autofilled */ false,
-                                    /* only_server_and_autofill_state */ false);
+                                    /*apply_is_autofilled=*/false,
+                                    /*only_server_and_autofill_state=*/false);
   return submitted_form;
 }
 
@@ -1566,14 +1566,9 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
   // Note: We _must not_ remove the original version of the cached form from
   // the list of |form_structures_|. Otherwise, we break parsing of the
   // crowdsourcing server's response to our query.
-  if (!ParseForm(live_form, updated_form))
+  if (!ParseForm(live_form, cached_form, updated_form))
     return false;
 
-  // We need to keep the server data.
-  if (cached_form)
-    (*updated_form)
-        ->RetrieveFromCache(*cached_form, /* apply_is_autofilled */ true,
-                            /* only_server_and_autofill_state */ true);
   // Annotate the updated form with its predicted types.
   driver()->SendAutofillTypePredictionsToRenderer({*updated_form});
 
@@ -1659,7 +1654,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     const auto parse_form_start_time = TimeTicks::Now();
 
     FormStructure* form_structure = nullptr;
-    if (!ParseForm(form, &form_structure))
+    if (!ParseForm(form, /*cached_form=*/nullptr, &form_structure))
       continue;
     DCHECK(form_structure);
 
@@ -1737,6 +1732,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 }
 
 bool AutofillManager::ParseForm(const FormData& form,
+                                const FormStructure* cached_form,
                                 FormStructure** parsed_form_structure) {
   DCHECK(parsed_form_structure);
   if (form_structures_.size() >= kMaxFormCacheSize)
@@ -1746,6 +1742,14 @@ bool AutofillManager::ParseForm(const FormData& form,
   form_structure->ParseFieldTypesFromAutocompleteAttributes();
   if (!form_structure->ShouldBeParsed())
     return false;
+
+  if (cached_form) {
+    // We need to keep the server data if available. We need to use them while
+    // determining the heuristics.
+    form_structure->RetrieveFromCache(*cached_form,
+                                      /*apply_is_autofilled=*/true,
+                                      /*only_server_and_autofill_state=*/true);
+  }
 
   // Ownership is transferred to |form_structures_| which maintains it until
   // the manager is Reset() or destroyed. It is safe to use references below

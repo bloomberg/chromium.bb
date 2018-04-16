@@ -430,8 +430,13 @@ class AutofillManager : public AutofillHandler,
   // Parses the forms using heuristic matching and querying the Autofill server.
   void ParseForms(const std::vector<FormData>& forms);
 
-  // Parses the form and adds it to |form_structures_|.
-  bool ParseForm(const FormData& form, FormStructure** parsed_form_structure);
+  // Parses the |form| with the server data retrieved from the |cached_form|
+  // (if any), and writes it to the |parse_form_structure|. Adds the
+  // |parse_form_structure| to the |form_structures_|. Returns true if the form
+  // is parsed.
+  bool ParseForm(const FormData& form,
+                 const FormStructure* cached_form,
+                 FormStructure** parsed_form_structure);
 
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is
@@ -606,6 +611,8 @@ class AutofillManager : public AutofillHandler,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DisambiguateUploadTypes);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DisabledAutofillDispatchesError);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           DetermineHeuristicsWithOverallPrediction);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressFilledFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressWillSubmitFormEvents);
