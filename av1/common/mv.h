@@ -217,6 +217,12 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
                                           int mi_col, int mi_row,
                                           int is_integer) {
   int_mv res;
+
+  if (gm->wmtype == IDENTITY) {
+    res.as_int = 0;
+    return res;
+  }
+
   const int32_t *mat = gm->wmmat;
   int x, y, tx, ty;
 
