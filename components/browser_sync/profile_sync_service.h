@@ -173,34 +173,31 @@ class ProfileSyncService : public syncer::SyncServiceBase,
                            public SigninManagerBase::Observer,
                            public GaiaCookieManagerService::Observer {
  public:
-  using Status = syncer::SyncEngine::Status;
+  using Status = syncer::SyncStatus;
   using PlatformSyncAllowedProvider = base::RepeatingCallback<bool()>;
   using SigninScopedDeviceIdCallback = base::RepeatingCallback<std::string()>;
 
+  // NOTE: Used in a UMA histogram, do not reorder etc.
   enum SyncEventCodes {
-    MIN_SYNC_EVENT_CODE = 0,
-
     // Events starting the sync service.
-    START_FROM_NTP = 1,               // Sync was started from the ad in NTP
-    START_FROM_WRENCH = 2,            // Sync was started from the Wrench menu.
-    START_FROM_OPTIONS = 3,           // Sync was started from Wrench->Options.
-    START_FROM_BOOKMARK_MANAGER = 4,  // Sync was started from Bookmark manager.
-    START_FROM_PROFILE_MENU = 5,  // Sync was started from multiprofile menu.
-    START_FROM_URL = 6,           // Sync was started from a typed URL.
+    // START_FROM_NTP = 1,
+    // START_FROM_WRENCH = 2,
+    // START_FROM_OPTIONS = 3,
+    // START_FROM_BOOKMARK_MANAGER = 4,
+    // START_FROM_PROFILE_MENU = 5,
+    // START_FROM_URL = 6,
 
     // Events regarding cancellation of the signon process of sync.
-    CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,  // Cancelled before submitting
-                                           // username and password.
-    CANCEL_DURING_SIGNON = 11,             // Cancelled after auth.
-    CANCEL_DURING_CONFIGURE = 12,          // Cancelled before choosing data
-                                           // types and clicking OK.
+    // CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,
+    // CANCEL_DURING_SIGNON = 11,
+    CANCEL_DURING_CONFIGURE = 12,  // Cancelled before choosing data types and
+                                   // clicking OK.
+
     // Events resulting in the stoppage of sync service.
-    STOP_FROM_OPTIONS = 20,          // Sync was stopped from Wrench->Options.
-    STOP_FROM_ADVANCED_DIALOG = 21,  // Sync was stopped via advanced settings.
+    STOP_FROM_OPTIONS = 20,  // Sync was stopped from Wrench->Options.
+    // STOP_FROM_ADVANCED_DIALOG = 21,
 
-    // Miscellaneous events caused by sync service.
-
-    MAX_SYNC_EVENT_CODE
+    MAX_SYNC_EVENT_CODE = 22
   };
 
   enum SyncStatusSummary {
@@ -522,9 +519,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // the initialization process) and a pre-existing auth error that just hasn't
   // been cleared yet. Virtual for testing purposes.
   virtual bool waiting_for_auth() const;
-
-  // The set of currently enabled sync experiments.
-  const syncer::Experiments& current_experiments() const;
 
   // OAuth2TokenService::Consumer implementation.
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -853,13 +847,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   base::OneShotTimer request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
 
-  // States related to sync token and connection.
-  base::Time connection_status_update_time_;
-  syncer::ConnectionStatus connection_status_;
-  base::Time token_request_time_;
-  base::Time token_receive_time_;
-  GoogleServiceAuthError last_get_token_error_;
-  base::Time next_token_request_time_;
+  SyncTokenStatus token_status_;
 
   // The gaia cookie manager. Used for monitoring cookie jar changes to detect
   // when the user signs out of the content area.
@@ -873,7 +861,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   std::unique_ptr<syncer::NetworkResources> network_resources_;
 
-  StartBehavior start_behavior_;
+  const StartBehavior start_behavior_;
   std::unique_ptr<syncer::StartupController> startup_controller_;
 
   std::unique_ptr<syncer::SyncStoppedReporter> sync_stopped_reporter_;
