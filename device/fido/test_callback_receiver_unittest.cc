@@ -4,6 +4,10 @@
 
 #include "device/fido/test_callback_receiver.h"
 
+#include <memory>
+#include <tuple>
+#include <utility>
+
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -11,6 +15,31 @@
 
 namespace device {
 namespace test {
+
+namespace {
+
+// Simple class that resets a boolean flag when moved out from.
+class MoveResets {
+ public:
+  MoveResets() = default;
+  MoveResets(bool value) : value_(value) {}  // NOLINT(runtime/explicit)
+  MoveResets(const MoveResets&) = default;
+  MoveResets(MoveResets&& other) : value_(std::exchange(other.value_, false)) {}
+  MoveResets& operator=(const MoveResets&) = default;
+  MoveResets& operator=(MoveResets&& other) {
+    value_ = std::exchange(other.value_, false);
+    return *this;
+  }
+
+  ~MoveResets() = default;
+
+  bool value() const { return value_; }
+
+ private:
+  bool value_ = false;
+};
+
+}  // namespace
 
 TEST(TestCallbackReceiver, BasicClosure) {
   base::test::ScopedTaskEnvironment task_environment;
@@ -64,22 +93,24 @@ TEST(TestCallbackReceiver, MoveOnlyArgumentIsMoved) {
 
 TEST(TestCallbackReceiver, ReferenceArgumentIsCopied) {
   base::test::ScopedTaskEnvironment task_environment;
-  TestCallbackReceiver<int&> callback_receiver;
+  TestCallbackReceiver<MoveResets&> callback_receiver;
 
-  int passed_in_value = 42;
+  MoveResets passed_in_value = true;
   auto callback = callback_receiver.callback();
 
   EXPECT_FALSE(callback_receiver.result().has_value());
 
+  // Make sure |passed_in_value| is not moved from.
   std::move(callback).Run(passed_in_value);
-
+  EXPECT_TRUE(passed_in_value.value());
   EXPECT_TRUE(callback_receiver.result().has_value());
 
-  const int& received_value = std::get<0>(*callback_receiver.result());
-  EXPECT_EQ(passed_in_value, received_value);
+  const MoveResets& received_value = std::get<0>(*callback_receiver.result());
+  EXPECT_EQ(passed_in_value.value(), received_value.value());
 
-  passed_in_value = 43;
-  EXPECT_NE(passed_in_value, received_value);
+  // Make sure |received_value| is not a reference to |passed_in_value|.
+  passed_in_value = false;
+  EXPECT_NE(passed_in_value.value(), received_value.value());
 
   callback_receiver.TakeResult();
   EXPECT_FALSE(callback_receiver.result().has_value());

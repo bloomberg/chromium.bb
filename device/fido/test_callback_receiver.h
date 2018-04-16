@@ -40,8 +40,7 @@ namespace test {
 template <class... CallbackArgs>
 class TestCallbackReceiver {
  public:
-  using TupleOfNonReferenceArgs =
-      std::tuple<typename std::decay_t<CallbackArgs>...>;
+  using TupleOfNonReferenceArgs = std::tuple<std::decay_t<CallbackArgs>...>;
 
   TestCallbackReceiver() = default;
   ~TestCallbackReceiver() = default;
@@ -82,7 +81,7 @@ class TestCallbackReceiver {
 
  private:
   void ReceiverMethod(CallbackArgs... args) {
-    result_.emplace(std::move(args)...);
+    result_.emplace(std::forward<CallbackArgs>(args)...);
     was_called_ = true;
     wait_for_callback_loop_.Quit();
   }
@@ -94,11 +93,11 @@ class TestCallbackReceiver {
   DISALLOW_COPY_AND_ASSIGN(TestCallbackReceiver);
 };
 
-template <class Status>
-class StatusCallbackReceiver : public TestCallbackReceiver<Status> {
+template <class Value>
+class ValueCallbackReceiver : public TestCallbackReceiver<Value> {
  public:
-  const Status& status() const {
-    return std::get<0>(*TestCallbackReceiver<Status>::result());
+  const Value& value() const {
+    return std::get<0>(*TestCallbackReceiver<Value>::result());
   }
 };
 

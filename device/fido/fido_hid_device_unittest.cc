@@ -131,7 +131,7 @@ class FidoDeviceEnumerateCallbackReceiver
 };
 
 using TestDeviceCallbackReceiver =
-    ::device::test::TestCallbackReceiver<base::Optional<std::vector<uint8_t>>>;
+    ::device::test::ValueCallbackReceiver<base::Optional<std::vector<uint8_t>>>;
 
 }  // namespace
 
@@ -181,9 +181,9 @@ TEST_F(FidoHidDeviceTest, TestConnectionFailure) {
 
   EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
 
-  EXPECT_FALSE(std::get<0>(*receiver_1.result()));
-  EXPECT_FALSE(std::get<0>(*receiver_2.result()));
-  EXPECT_FALSE(std::get<0>(*receiver_3.result()));
+  EXPECT_FALSE(receiver_1.value());
+  EXPECT_FALSE(receiver_2.value());
+  EXPECT_FALSE(receiver_3.value());
 }
 
 TEST_F(FidoHidDeviceTest, TestDeviceError) {
@@ -208,7 +208,7 @@ TEST_F(FidoHidDeviceTest, TestDeviceError) {
   TestDeviceCallbackReceiver receiver_0;
   device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_0.callback());
-  EXPECT_FALSE(std::get<0>(*receiver_0.result()));
+  EXPECT_FALSE(receiver_0.value());
   EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
 
   // Add pending transactions manually and ensure they are processed.
@@ -224,9 +224,9 @@ TEST_F(FidoHidDeviceTest, TestDeviceError) {
   FakeHidConnection::mock_connection_error_ = false;
 
   EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
-  EXPECT_FALSE(std::get<0>(*receiver_1.result()));
-  EXPECT_FALSE(std::get<0>(*receiver_2.result()));
-  EXPECT_FALSE(std::get<0>(*receiver_3.result()));
+  EXPECT_FALSE(receiver_1.value());
+  EXPECT_FALSE(receiver_2.value());
+  EXPECT_FALSE(receiver_3.value());
 }
 
 TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
@@ -293,9 +293,9 @@ TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
                          cb.callback());
   cb.WaitForCallback();
 
-  const auto& result = std::get<0>(*cb.result());
-  ASSERT_TRUE(result);
-  EXPECT_THAT(*result, testing::ElementsAreArray(GetValidU2fVersionResponse()));
+  const auto& value = cb.value();
+  ASSERT_TRUE(value);
+  EXPECT_THAT(*value, testing::ElementsAreArray(GetValidU2fVersionResponse()));
 }
 
 TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
@@ -362,9 +362,9 @@ TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
   device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(false),
                          cb.callback());
   cb.WaitForCallback();
-  const auto result = std::get<0>(*cb.result());
-  ASSERT_TRUE(result);
-  EXPECT_THAT(*result, testing::ElementsAreArray(GetValidU2fVersionResponse()));
+  const auto& value = cb.value();
+  ASSERT_TRUE(value);
+  EXPECT_THAT(*value, testing::ElementsAreArray(GetValidU2fVersionResponse()));
 }
 
 TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
@@ -428,8 +428,8 @@ TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
   device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(false),
                          cb.callback());
   cb.WaitForCallback();
-  const auto result = std::get<0>(*cb.result());
-  EXPECT_FALSE(result);
+  const auto& value = cb.value();
+  EXPECT_FALSE(value);
   EXPECT_EQ(FidoDevice::State::kDeviceError, device->state());
 }
 
