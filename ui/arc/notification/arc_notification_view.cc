@@ -20,11 +20,18 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(arc::ArcNotificationView*);
+
 namespace arc {
 
+DEFINE_UI_CLASS_PROPERTY_KEY(ArcNotificationView*,
+                             kArcNotificationViewPropertyKey,
+                             nullptr);
+
 // static
-const char ArcNotificationView::kMessageViewSubClassName[] =
-    "ArcNotificationView";
+ArcNotificationView* ArcNotificationView::FromView(views::View* view) {
+  return view->GetProperty(kArcNotificationViewPropertyKey);
+}
 
 ArcNotificationView::ArcNotificationView(
     ArcNotificationItem* item,
@@ -33,6 +40,8 @@ ArcNotificationView::ArcNotificationView(
       item_(item),
       content_view_(new ArcNotificationContentView(item_, notification, this)) {
   DCHECK_EQ(message_center::NOTIFICATION_TYPE_CUSTOM, notification.type());
+
+  SetProperty(kArcNotificationViewPropertyKey, this);
 
   item_->AddObserver(this);
 
@@ -84,10 +93,6 @@ void ArcNotificationView::RequestFocusOnCloseButton() {
 
 void ArcNotificationView::UpdateControlButtonsVisibility() {
   content_view_->UpdateControlButtonsVisibility();
-}
-
-const char* ArcNotificationView::GetMessageViewSubClassName() const {
-  return kMessageViewSubClassName;
 }
 
 void ArcNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

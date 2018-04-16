@@ -22,7 +22,7 @@ class ArcNotificationContentView;
 class ArcNotificationView : public message_center::MessageView,
                             public ArcNotificationItem::Observer {
  public:
-  static const char kMessageViewSubClassName[];
+  static ArcNotificationView* FromView(views::View* message_view);
 
   // |content_view| is a view to be hosted in this view.
   ArcNotificationView(ArcNotificationItem* item,
@@ -50,7 +50,6 @@ class ArcNotificationView : public message_center::MessageView,
   bool IsManuallyExpandedOrCollapsed() const override;
   void OnContainerAnimationStarted() override;
   void OnContainerAnimationEnded() override;
-  const char* GetMessageViewSubClassName() const final;
 
   // views::SlideOutController::Delegate:
   void OnSlideChanged() override;

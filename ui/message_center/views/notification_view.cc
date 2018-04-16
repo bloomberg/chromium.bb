@@ -145,8 +145,6 @@ void NotificationItemView::SetVisible(bool visible) {
 
 // NotificationView ////////////////////////////////////////////////////////////
 
-const char NotificationView::kMessageViewSubClassName[] = "NotificationView";
-
 void NotificationView::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateTitleView(notification);
   CreateOrUpdateMessageView(notification);
@@ -635,10 +633,6 @@ void NotificationView::UpdateControlButtonsVisibility() {
 NotificationControlButtonsView* NotificationView::GetControlButtonsView()
     const {
   return control_buttons_view_;
-}
-
-const char* NotificationView::GetMessageViewSubClassName() const {
-  return kMessageViewSubClassName;
 }
 
 int NotificationView::GetMessageLineLimit(int title_lines, int width) const {
