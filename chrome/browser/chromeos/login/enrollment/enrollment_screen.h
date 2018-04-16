@@ -109,6 +109,8 @@ class EnrollmentScreen
                            TestActiveDirectoryEnrollment_DistinguishedName);
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestActiveDirectoryEnrollment_UIErrors);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
+                           TestActiveDirectoryEnrollment_ErrorCard);
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, ContinueClickedOnlyOnce);
   FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest, Retry);
