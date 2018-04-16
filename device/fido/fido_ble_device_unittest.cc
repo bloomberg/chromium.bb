@@ -22,7 +22,7 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Test;
 using TestDeviceCallbackReceiver =
-    test::TestCallbackReceiver<base::Optional<std::vector<uint8_t>>>;
+    test::ValueCallbackReceiver<base::Optional<std::vector<uint8_t>>>;
 
 constexpr uint16_t kControlPointLength = 20;
 constexpr uint8_t kTestData[] = {'T', 'E', 'S', 'T'};
@@ -104,7 +104,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest_Failure_WriteFailed) {
   device()->SendPing(std::move(payload), callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
-  EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
+  EXPECT_FALSE(callback_receiver.value());
 }
 
 TEST_F(FidoBleDeviceTest, SendPingTest_Failure_NoResponse) {
@@ -120,7 +120,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest_Failure_NoResponse) {
   device()->SendPing(payload, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
-  EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
+  EXPECT_FALSE(callback_receiver.value().has_value());
 }
 
 TEST_F(FidoBleDeviceTest, SendPingTest_Failure_SlowResponse) {
@@ -135,7 +135,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest_Failure_SlowResponse) {
   auto payload = u2f_parsing_utils::Materialize(kTestData);
   device()->SendPing(payload, callback_receiver.callback());
   callback_receiver.WaitForCallback();
-  EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
+  EXPECT_FALSE(callback_receiver.value());
 
   // Imitate a ping response from the device after the timeout has passed.
   for (auto&& fragment :
@@ -162,9 +162,9 @@ TEST_F(FidoBleDeviceTest, SendPingTest) {
   device()->SendPing(payload, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
-  const auto& result = std::get<0>(*callback_receiver.result());
-  ASSERT_TRUE(result);
-  EXPECT_EQ(payload, *result);
+  const auto& value = callback_receiver.value();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(payload, *value);
 }
 
 TEST_F(FidoBleDeviceTest, SendCancelTest) {

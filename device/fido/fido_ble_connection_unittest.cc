@@ -116,12 +116,12 @@ class TestReadCallback {
 };
 
 using TestReadControlPointLengthCallback =
-    test::TestCallbackReceiver<base::Optional<uint16_t>>;
+    test::ValueCallbackReceiver<base::Optional<uint16_t>>;
 
 using TestReadServiceRevisionsCallback =
-    test::TestCallbackReceiver<std::set<FidoBleConnection::ServiceRevision>>;
+    test::ValueCallbackReceiver<std::set<FidoBleConnection::ServiceRevision>>;
 
-using TestWriteCallback = test::TestCallbackReceiver<bool>;
+using TestWriteCallback = test::ValueCallbackReceiver<bool>;
 }  // namespace
 
 class FidoBleConnectionTest : public ::testing::Test {
@@ -478,25 +478,25 @@ TEST_F(FidoBleConnectionTest, ReadControlPointLength) {
   TestReadControlPointLengthCallback length_callback;
   SetNextReadControlPointLengthReponse(false, {});
   connection.ReadControlPointLength(length_callback.callback());
-  EXPECT_EQ(base::nullopt, std::get<0>(*length_callback.result()));
+  EXPECT_EQ(base::nullopt, length_callback.value());
 
   // The Control Point Length should consist of exactly two bytes, hence we
   // EXPECT_EQ(base::nullopt) for payloads of size 0, 1 and 3.
   SetNextReadControlPointLengthReponse(true, {});
   connection.ReadControlPointLength(length_callback.callback());
-  EXPECT_EQ(base::nullopt, std::get<0>(*length_callback.result()));
+  EXPECT_EQ(base::nullopt, length_callback.value());
 
   SetNextReadControlPointLengthReponse(true, {0xAB});
   connection.ReadControlPointLength(length_callback.callback());
-  EXPECT_EQ(base::nullopt, std::get<0>(*length_callback.result()));
+  EXPECT_EQ(base::nullopt, length_callback.value());
 
   SetNextReadControlPointLengthReponse(true, {0xAB, 0xCD});
   connection.ReadControlPointLength(length_callback.callback());
-  EXPECT_EQ(0xABCD, *std::get<0>(*length_callback.result()));
+  EXPECT_EQ(0xABCD, *length_callback.value());
 
   SetNextReadControlPointLengthReponse(true, {0xAB, 0xCD, 0xEF});
   connection.ReadControlPointLength(length_callback.callback());
-  EXPECT_EQ(base::nullopt, std::get<0>(*length_callback.result()));
+  EXPECT_EQ(base::nullopt, length_callback.value());
 }
 
 TEST_F(FidoBleConnectionTest, ReadServiceRevisions) {
@@ -516,29 +516,29 @@ TEST_F(FidoBleConnectionTest, ReadServiceRevisions) {
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(false, {});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()), IsEmpty());
+  EXPECT_THAT(revisions_callback.value(), IsEmpty());
 
   SetNextReadServiceRevisionResponse(true, ToByteVector("bogus"));
   SetNextReadServiceRevisionBitfieldResponse(false, {});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()), IsEmpty());
+  EXPECT_THAT(revisions_callback.value(), IsEmpty());
 
   SetNextReadServiceRevisionResponse(true, ToByteVector("1.0"));
   SetNextReadServiceRevisionBitfieldResponse(false, {});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()),
+  EXPECT_THAT(revisions_callback.value(),
               ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_0));
 
   SetNextReadServiceRevisionResponse(true, ToByteVector("1.1"));
   SetNextReadServiceRevisionBitfieldResponse(false, {});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()),
+  EXPECT_THAT(revisions_callback.value(),
               ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1));
 
   SetNextReadServiceRevisionResponse(true, ToByteVector("1.2"));
   SetNextReadServiceRevisionBitfieldResponse(false, {});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()),
+  EXPECT_THAT(revisions_callback.value(),
               ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_2));
 
   // Version 1.3 currently does not exist, so this should be treated as an
@@ -546,29 +546,29 @@ TEST_F(FidoBleConnectionTest, ReadServiceRevisions) {
   SetNextReadServiceRevisionResponse(true, ToByteVector("1.3"));
   SetNextReadServiceRevisionBitfieldResponse(false, {});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()), IsEmpty());
+  EXPECT_THAT(revisions_callback.value(), IsEmpty());
 
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0x00});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()), IsEmpty());
+  EXPECT_THAT(revisions_callback.value(), IsEmpty());
 
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0x80});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()),
+  EXPECT_THAT(revisions_callback.value(),
               ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1));
 
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0x40});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()),
+  EXPECT_THAT(revisions_callback.value(),
               ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_2));
 
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0xC0});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()),
+  EXPECT_THAT(revisions_callback.value(),
               ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1,
                           FidoBleConnection::ServiceRevision::VERSION_1_2));
 
@@ -576,7 +576,7 @@ TEST_F(FidoBleConnectionTest, ReadServiceRevisions) {
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0xFF});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()),
+  EXPECT_THAT(revisions_callback.value(),
               ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1,
                           FidoBleConnection::ServiceRevision::VERSION_1_2));
 
@@ -584,7 +584,7 @@ TEST_F(FidoBleConnectionTest, ReadServiceRevisions) {
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0xC0, 0xFF});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()),
+  EXPECT_THAT(revisions_callback.value(),
               ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1,
                           FidoBleConnection::ServiceRevision::VERSION_1_2));
 
@@ -593,7 +593,7 @@ TEST_F(FidoBleConnectionTest, ReadServiceRevisions) {
   SetNextReadServiceRevisionResponse(true, ToByteVector("1.0"));
   SetNextReadServiceRevisionBitfieldResponse(true, {0xC0});
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()),
+  EXPECT_THAT(revisions_callback.value(),
               ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_0,
                           FidoBleConnection::ServiceRevision::VERSION_1_1,
                           FidoBleConnection::ServiceRevision::VERSION_1_2));
@@ -616,12 +616,12 @@ TEST_F(FidoBleConnectionTest, WriteControlPoint) {
   TestWriteCallback write_callback;
   SetNextWriteControlPointResponse(false);
   connection.WriteControlPoint({}, write_callback.callback());
-  result = std::get<0>(*write_callback.result());
+  result = write_callback.value();
   EXPECT_FALSE(result);
 
   SetNextWriteControlPointResponse(true);
   connection.WriteControlPoint({}, write_callback.callback());
-  result = std::get<0>(*write_callback.result());
+  result = write_callback.value();
   EXPECT_TRUE(result);
 }
 
@@ -645,7 +645,7 @@ TEST_F(FidoBleConnectionTest, WriteServiceRevision) {
   connection.WriteServiceRevision(
       FidoBleConnection::ServiceRevision::VERSION_1_1,
       write_callback.callback());
-  result = std::get<0>(*write_callback.result());
+  result = write_callback.value();
   EXPECT_FALSE(result);
 
   // Expect a successful write of version 1.1.
@@ -653,8 +653,7 @@ TEST_F(FidoBleConnectionTest, WriteServiceRevision) {
   connection.WriteServiceRevision(
       FidoBleConnection::ServiceRevision::VERSION_1_1,
       write_callback.callback());
-  result = std::get<0>(*write_callback.result());
-  ;
+  result = write_callback.value();
   EXPECT_TRUE(result);
 
   // Expect a successful write of version 1.2.
@@ -662,15 +661,14 @@ TEST_F(FidoBleConnectionTest, WriteServiceRevision) {
   connection.WriteServiceRevision(
       FidoBleConnection::ServiceRevision::VERSION_1_2,
       write_callback.callback());
-  result = std::get<0>(*write_callback.result());
+  result = write_callback.value();
   EXPECT_TRUE(result);
 
   // Writing version 1.0 to the bitfield is not intended, so this should fail.
   connection.WriteServiceRevision(
       FidoBleConnection::ServiceRevision::VERSION_1_0,
       write_callback.callback());
-  result = std::get<0>(*write_callback.result());
-  ;
+  result = write_callback.value();
   EXPECT_FALSE(result);
 }
 
@@ -695,22 +693,22 @@ TEST_F(FidoBleConnectionTest, ReadsAndWriteFailWhenDisconnected) {
   // Reads should always fail on a disconnected device.
   TestReadControlPointLengthCallback length_callback;
   connection.ReadControlPointLength(length_callback.callback());
-  EXPECT_EQ(base::nullopt, std::get<0>(*length_callback.result()));
+  EXPECT_EQ(base::nullopt, length_callback.value());
 
   TestReadServiceRevisionsCallback revisions_callback;
   connection.ReadServiceRevisions(revisions_callback.callback());
-  EXPECT_THAT(std::get<0>(*revisions_callback.result()), IsEmpty());
+  EXPECT_THAT(revisions_callback.value(), IsEmpty());
 
   // Writes should always fail on a disconnected device.
   TestWriteCallback write_callback;
   connection.WriteServiceRevision(
       FidoBleConnection::ServiceRevision::VERSION_1_1,
       write_callback.callback());
-  result = std::get<0>(*write_callback.result());
+  result = write_callback.value();
   EXPECT_FALSE(result);
 
   connection.WriteControlPoint({}, write_callback.callback());
-  result = std::get<0>(*write_callback.result());
+  result = write_callback.value();
   EXPECT_FALSE(result);
 }
 
