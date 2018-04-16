@@ -187,7 +187,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
   void SetPopupContentsView(OmniboxPopupContentsView* contents) {
     if (BackgroundWith1PxBorder::IsRounded()) {
       SetContentsView(new RoundedOmniboxResultsFrame(
-          contents, contents->location_bar_view_));
+          contents, contents->location_bar_view_->tint()));
     } else {
       SetContentsView(contents);
     }
@@ -470,8 +470,9 @@ gfx::Rect OmniboxPopupContentsView::UpdateMarginsAndGetTargetBounds() {
   if (BackgroundWith1PxBorder::IsRounded()) {
     // The rounded popup is always offset the same amount from the omnibox.
     gfx::Rect content_rect = location_bar_view_->GetBoundsInScreen();
-    content_rect.Inset(
-        -RoundedOmniboxResultsFrame::GetAlignmentInsets(location_bar_view_));
+    gfx::Insets popup_insets =
+        -RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets;
+    content_rect.Inset(popup_insets);
     content_rect.set_height(CalculatePopupHeight());
     return content_rect;
   }
@@ -519,8 +520,7 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
   // interior between each row of text.
   int height = popup_height;
   if (BackgroundWith1PxBorder::IsRounded()) {
-    height += RoundedOmniboxResultsFrame::GetAlignmentInsets(location_bar_view_)
-                  .height();
+    height += RoundedOmniboxResultsFrame::GetNonResultSectionHeight();
   } else {
     height += kPopupVerticalPadding * 2 + g_top_shadow.Get().height() +
               g_bottom_shadow.Get().height();
