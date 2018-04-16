@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/quads/shared_bitmap.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace viz {
 namespace internal {
@@ -80,7 +79,6 @@ void Resource::SetGenerateMipmap() {
   DCHECK(is_gpu_resource_type());
   DCHECK_EQ(target, static_cast<GLenum>(GL_TEXTURE_2D));
   DCHECK(hint & ResourceTextureHint::kMipmap);
-  DCHECK(!gpu_memory_buffer);
   mipmap_state = GENERATE;
 }
 

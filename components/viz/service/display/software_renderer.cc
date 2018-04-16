@@ -168,16 +168,8 @@ void SoftwareRenderer::PrepareSurfaceForPass(
 }
 
 bool SoftwareRenderer::IsSoftwareResource(ResourceId resource_id) const {
-  switch (resource_provider_->GetResourceType(resource_id)) {
-    case ResourceType::kGpuMemoryBuffer:
-    case ResourceType::kTexture:
-      return false;
-    case ResourceType::kBitmap:
-      return true;
-  }
-
-  LOG(FATAL) << "Invalid resource type.";
-  return false;
+  return resource_provider_->GetResourceType(resource_id) ==
+         ResourceType::kBitmap;
 }
 
 void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,

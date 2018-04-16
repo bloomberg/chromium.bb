@@ -64,12 +64,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
                                            viz::ResourceTextureHint hint,
                                            viz::ResourceFormat format,
                                            const gfx::ColorSpace& color_space);
-  viz::ResourceId CreateGpuMemoryBufferResource(
-      const gfx::Size& size,
-      viz::ResourceTextureHint hint,
-      viz::ResourceFormat format,
-      gfx::BufferUsage usage,
-      const gfx::ColorSpace& color_space);
   viz::ResourceId CreateBitmapResource(const gfx::Size& size,
                                        const gfx::ColorSpace& color_space,
                                        viz::ResourceFormat format);
@@ -235,29 +229,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
     void LazyAllocate(gpu::raster::RasterInterface* gl, GLuint texture_id);
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockRaster);
-  };
-
-  class CC_EXPORT ScopedWriteLockGpuMemoryBuffer {
-   public:
-    ScopedWriteLockGpuMemoryBuffer(LayerTreeResourceProvider* resource_provider,
-                                   viz::ResourceId resource_id);
-    ~ScopedWriteLockGpuMemoryBuffer();
-    gfx::GpuMemoryBuffer* GetGpuMemoryBuffer();
-    const gfx::ColorSpace& color_space_for_raster() const {
-      return color_space_;
-    }
-
-   private:
-    LayerTreeResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
-
-    gfx::Size size_;
-    viz::ResourceFormat format_;
-    gfx::BufferUsage usage_;
-    gfx::ColorSpace color_space_;
-    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
   };
 
   class CC_EXPORT ScopedWriteLockSoftware {

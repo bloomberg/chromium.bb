@@ -184,8 +184,6 @@ struct VIZ_COMMON_EXPORT Resource {
   GLenum filter = GL_LINEAR;
   // The current min filter for GpuMemoryBuffer- and texture-backed resources.
   GLenum min_filter = GL_LINEAR;
-  // The GL image id for GpuMemoryBuffer-backed resources.
-  GLuint image_id = 0;
   // A hint for texture-backed resources about how the resource will be used,
   // that dictates how it should be allocated/used.
   ResourceTextureHint hint = ResourceTextureHint::kDefault;
@@ -212,8 +210,6 @@ struct VIZ_COMMON_EXPORT Resource {
   SharedBitmap* shared_bitmap = nullptr;
   // Ownership of |shared_bitmap| for when it is created internally.
   std::unique_ptr<SharedBitmap> owned_shared_bitmap;
-  // The GpuMemoryBuffer ownership for GpuMemoryBuffer-backed resources.
-  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
   // The color space for all resource types, to control how the resource should
   // be drawn to output device.
   gfx::ColorSpace color_space;
