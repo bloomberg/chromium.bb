@@ -33,5 +33,11 @@ const CSSValue* TransitionProperty::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForTransitionProperty(style.Transitions());
 }
 
+const CSSValue* TransitionProperty::InitialValue() const {
+  DEFINE_STATIC_LOCAL(CSSValue, value,
+                      (CSSIdentifierValue::Create(CSSValueAll)));
+  return &value;
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

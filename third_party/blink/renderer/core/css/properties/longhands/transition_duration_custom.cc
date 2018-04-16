@@ -29,5 +29,13 @@ const CSSValue* TransitionDuration::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForAnimationDuration(style.Transitions());
 }
 
+const CSSValue* TransitionDuration::InitialValue() const {
+  DEFINE_STATIC_LOCAL(
+      CSSValue, value,
+      (CSSPrimitiveValue::Create(CSSTimingData::InitialDuration(),
+                                 CSSPrimitiveValue::UnitType::kSeconds)));
+  return &value;
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

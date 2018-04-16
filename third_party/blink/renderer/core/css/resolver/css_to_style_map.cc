@@ -403,6 +403,8 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::MapAnimationProperty(
           custom_ident_value.ValueAsPropertyID());
     return CSSTransitionData::TransitionProperty(custom_ident_value.Value());
   }
+  if (ToCSSIdentifierValue(value).GetValueID() == CSSValueAll)
+    return CSSTransitionData::InitialProperty();
   DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
   return CSSTransitionData::TransitionProperty(
       CSSTransitionData::kTransitionNone);
