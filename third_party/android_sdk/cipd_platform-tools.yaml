@@ -6,5 +6,6 @@
 # cipd create --pkg-def cipd_platform-tools.yaml -tag version:$version
 package: chromium/third_party/android_sdk/public/platform-tools
 description: platform-tools Android SDK Platform-tools library
+root: public/
 data:
-  - dir: public/platform-tools
+  - dir: platform-tools

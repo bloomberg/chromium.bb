@@ -6,5 +6,6 @@
 # cipd create --pkg-def cipd_sources.yaml -tag version:$version
 package: chromium/third_party/android_sdk/sources
 description: sources Android SDK Sources library
+root: sources/
 data:
-  - dir: sources/sources
+  - dir: sources

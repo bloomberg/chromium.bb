@@ -6,5 +6,6 @@
 # cipd create --pkg-def cipd_extras.yaml -tag version:$version
 package: chromium/third_party/android_sdk/public/extras
 description: extras Android SDK Extras library
+root: public/
 data:
-  - dir: public/extras
+  - dir: extras
