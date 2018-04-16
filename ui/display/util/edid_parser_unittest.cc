@@ -152,27 +152,29 @@ constexpr unsigned char kEve[] =
     "\x00\x4c\x51\x31\x32\x33\x50\x31\x4a\x58\x33\x32\x0a\x20\x00\xb6";
 constexpr size_t kEveLength = arraysize(kEve);
 
+// Primaries coordinates ({RX, RY, GX, GY, BX, BY, WX, WY}) calculated by hand
+// and rounded to 4 decimal places.
 constexpr SkColorSpacePrimaries kNormalDisplayPrimaries = {
-    0.6777f, 0.3086f, 0.2080f, 0.6923f, 0.1465f, 0.0546f, 0.3125f, 0.3291f};
+    0.6777f, 0.3086f, 0.2100f, 0.6924f, 0.1465f, 0.0547f, 0.3135f, 0.3291f};
 constexpr SkColorSpacePrimaries kInternalDisplayPrimaries = {
-    0.5849f, 0.3603f, 0.3769f, 0.5654f, 0.1552f, 0.0996f, 0.3125f, 0.3291f};
+    0.5850f, 0.3604f, 0.3750f, 0.5654f, 0.1553f, 0.0996f, 0.3135f, 0.3291f};
 constexpr SkColorSpacePrimaries kOverscanDisplayPrimaries = {
-    0.6396f, 0.3291f, 0.2978f, 0.5996f, 0.1494f, 0.0595f, 0.3144f, 0.3291f};
+    0.6396f, 0.3301f, 0.2998f, 0.5996f, 0.1504f, 0.0596f, 0.3125f, 0.3291f};
 constexpr SkColorSpacePrimaries kMisdetectedDisplayPrimaries = {
-    0.6777f, 0.3086f, 0.2080f, 0.6923f, 0.1465f, 0.0546f, 0.3125f, 0.3291f};
+    0.6777f, 0.3086f, 0.2100f, 0.6924f, 0.1465f, 0.0547f, 0.3135f, 0.3291f};
 constexpr SkColorSpacePrimaries kLP2565APrimaries = {
-    0.6396f, 0.3291f, 0.2978f, 0.6083f, 0.1494f, 0.0595f, 0.3144f, 0.3291f};
+    0.6396f, 0.3301f, 0.2998f, 0.6084f, 0.1504f, 0.0596f, 0.3135f, 0.3291f};
 constexpr SkColorSpacePrimaries kLP2565BPrimaries = {
-    0.6396f, 0.3291f, 0.2978f, 0.6083f, 0.1494f, 0.0595f, 0.3144f, 0.3291f};
+    0.6396f, 0.3301f, 0.2998f, 0.6084f, 0.1504f, 0.0596f, 0.3135f, 0.3291f};
 constexpr SkColorSpacePrimaries kHPz32xPrimaries = {
-    0.6738f, 0.3164f, 0.1962f, 0.7197f, 0.1484f, 0.0439f, 0.3144f, 0.3291f};
+    0.6738f, 0.3164f, 0.1982f, 0.7197f, 0.1484f, 0.0439f, 0.3135f, 0.3291f};
 constexpr SkColorSpacePrimaries kSamusPrimaries = {
-    0.6337f, 0.3476f, 0.3212f, 0.5771f, 0.1513f, 0.0908f, 0.3144f, 0.3291f};
+    0.6338f, 0.3477f, 0.3232f, 0.5771f, 0.1514f, 0.0908f, 0.3135f, 0.3291f};
 constexpr SkColorSpacePrimaries kEvePrimaries = {
-    0.6396f, 0.3291f, 0.2998f, 0.5996f, 0.1494f, 0.0595f, 0.3144f, 0.3281f};
+    0.6396f, 0.3291f, 0.2998f, 0.5996f, 0.1494f, 0.0596f, 0.3125f, 0.3281f};
 
 // Chromaticity primaries in EDID are specified with 10 bits precision.
-constexpr static float kPrimariesPrecision = 0.001f;
+constexpr static float kPrimariesPrecision = 1 / 2048.f;
 
 ::testing::AssertionResult SkColorSpacePrimariesEquals(
     const char* lhs_expr,

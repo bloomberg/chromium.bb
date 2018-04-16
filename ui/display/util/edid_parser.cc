@@ -182,13 +182,13 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
   constexpr size_t kRedGreenLsbOffset = 25;
   constexpr uint8_t kRedxLsbPosition = 6;
   constexpr uint8_t kRedyLsbPosition = 4;
-  constexpr uint8_t kGreenxLsbPosition = 3;
+  constexpr uint8_t kGreenxLsbPosition = 2;
   constexpr uint8_t kGreenyLsbPosition = 0;
 
   constexpr size_t kBlueWhiteLsbOffset = 26;
   constexpr uint8_t kBluexLsbPosition = 6;
   constexpr uint8_t kBlueyLsbPosition = 4;
-  constexpr uint8_t kWhitexLsbPosition = 3;
+  constexpr uint8_t kWhitexLsbPosition = 2;
   constexpr uint8_t kWhiteyLsbPosition = 0;
 
   // All LSBits parts are 2 bits wide.

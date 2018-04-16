@@ -8,8 +8,12 @@
 #include <xf86drmMode.h>
 
 #include <map>
+#include <string>
 
+#include "base/numerics/ranges.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/edid_parser.h"
 #include "ui/gfx/geometry/size.h"
@@ -306,40 +310,66 @@ TEST_F(DrmUtilTest, OverlaySurfaceCandidate) {
 }
 
 TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
+  // Test with HP z32x monitor.
+  constexpr SkColorSpacePrimaries expected_hpz32x_primaries = {
+      .fRX = 0.673828f,
+      .fRY = 0.316406f,
+      .fGX = 0.198242f,
+      .fGY = 0.719727f,
+      .fBX = 0.148438f,
+      .fBY = 0.043945f,
+      .fWX = 0.313477f,
+      .fWY = 0.329102f};
+  SkMatrix44 expected_hpz32x_toXYZ50_matrix;
+  expected_hpz32x_primaries.toXYZD50(&expected_hpz32x_toXYZ50_matrix);
   const std::vector<uint8_t> hpz32x_edid(kHPz32x,
                                          kHPz32x + arraysize(kHPz32x) - 1);
-  const double hpz32x_toXYZ50_coeffs[] = {0.620465,   0.200003,  0.143752,  0.,
-                                          0.290159,   0.667573,  0.0422682, 0.,
-                                          0.00523514, 0.0673996, 0.752575,  0.};
-  SkMatrix44 hpz32x_toXYZ50_matrix;
-  hpz32x_toXYZ50_matrix.setRowMajord(hpz32x_toXYZ50_coeffs);
-  const gfx::ColorSpace hpz32x_color_space = gfx::ColorSpace::CreateCustom(
-      hpz32x_toXYZ50_matrix, SkColorSpaceTransferFn({2.2, 1, 0, 0, 0, 0, 0}));
-  EXPECT_EQ(hpz32x_color_space.ToString(),
+  const gfx::ColorSpace expected_hpz32x_color_space =
+      gfx::ColorSpace::CreateCustom(
+          expected_hpz32x_toXYZ50_matrix,
+          SkColorSpaceTransferFn({2.2, 1, 0, 0, 0, 0, 0}));
+  EXPECT_EQ(expected_hpz32x_color_space.ToString(),
             GetColorSpaceFromEdid(display::EdidParser(hpz32x_edid)).ToString());
 
+  // Test with Chromebook Samus internal display.
+  constexpr SkColorSpacePrimaries expected_samus_primaries = {.fRX = 0.633789f,
+                                                              .fRY = 0.347656f,
+                                                              .fGX = 0.323242f,
+                                                              .fGY = 0.577148f,
+                                                              .fBX = 0.151367f,
+                                                              .fBY = 0.090820f,
+                                                              .fWX = 0.313477f,
+                                                              .fWY = 0.329102f};
+  SkMatrix44 expected_samus_toXYZ50_matrix;
+  expected_samus_primaries.toXYZD50(&expected_samus_toXYZ50_matrix);
   const std::vector<uint8_t> samus_edid(kSamus, kSamus + arraysize(kSamus) - 1);
-  const double samus_toXYZ50_coeffs[] = {0.41211,    0.39743,  0.15468,  0.,
-                                         0.22317,    0.674029, 0.102801, 0.,
-                                         0.00831561, 0.095953, 0.720941, 0.};
-  SkMatrix44 samus_toXYZ50_matrix;
-  samus_toXYZ50_matrix.setRowMajord(samus_toXYZ50_coeffs);
-  const gfx::ColorSpace samus_color_space = gfx::ColorSpace::CreateCustom(
-      samus_toXYZ50_matrix, SkColorSpaceTransferFn({2.5, 1, 0, 0, 0, 0, 0}));
-  EXPECT_EQ(samus_color_space.ToString(),
+  const gfx::ColorSpace expected_samus_color_space =
+      gfx::ColorSpace::CreateCustom(
+          expected_samus_toXYZ50_matrix,
+          SkColorSpaceTransferFn({2.5, 1, 0, 0, 0, 0, 0}));
+  EXPECT_EQ(expected_samus_color_space.ToString(),
             GetColorSpaceFromEdid(display::EdidParser(samus_edid)).ToString());
 
+  // Test with Chromebook Eve internal display.
+  constexpr SkColorSpacePrimaries expected_eve_primaries = {.fRX = 0.639648f,
+                                                            .fRY = 0.329102f,
+                                                            .fGX = 0.299805f,
+                                                            .fGY = 0.599609f,
+                                                            .fBX = 0.149414f,
+                                                            .fBY = 0.059570f,
+                                                            .fWX = 0.312500f,
+                                                            .fWY = 0.328125f};
+  SkMatrix44 expected_eve_toXYZ50_matrix;
+  expected_eve_primaries.toXYZD50(&expected_eve_toXYZ50_matrix);
   const std::vector<uint8_t> eve_edid(kEve, kEve + arraysize(kEve) - 1);
-  const double eve_toXYZ50_coeffs[] = {0.444601,  0.377972,  0.141646,  0.,
-                                       0.226825,  0.713295,  0.0598808, 0.,
-                                       0.0149676, 0.0972496, 0.712993,  0.};
-  SkMatrix44 eve_toXYZ50_matrix;
-  eve_toXYZ50_matrix.setRowMajord(eve_toXYZ50_coeffs);
-  const gfx::ColorSpace eve_color_space = gfx::ColorSpace::CreateCustom(
-      eve_toXYZ50_matrix, SkColorSpaceTransferFn({2.2, 1, 0, 0, 0, 0, 0}));
-  EXPECT_EQ(eve_color_space.ToString(),
+  const gfx::ColorSpace expected_eve_color_space =
+      gfx::ColorSpace::CreateCustom(
+          expected_eve_toXYZ50_matrix,
+          SkColorSpaceTransferFn({2.2, 1, 0, 0, 0, 0, 0}));
+  EXPECT_EQ(expected_eve_color_space.ToString(),
             GetColorSpaceFromEdid(display::EdidParser(eve_edid)).ToString());
 
+  // Test with gamma marked as non-existent.
   const std::vector<uint8_t> no_gamma_edid(
       kEdidWithNoGamma, kEdidWithNoGamma + arraysize(kEdidWithNoGamma) - 1);
   const gfx::ColorSpace no_gamma_color_space =
