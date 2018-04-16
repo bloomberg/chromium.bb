@@ -59,6 +59,10 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
 
   ConfigurationPolicyProvider* GetPlatformProvider();
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  MachineLevelUserCloudPolicyManager* GetMachineLevelUserCloudPolicyManager();
+#endif
+
  protected:
   // BrowserPolicyConnector:
   std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>

@@ -144,6 +144,13 @@ ChromeBrowserPolicyConnector::GetPlatformProvider() {
   return provider ? provider : platform_provider_;
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+MachineLevelUserCloudPolicyManager*
+ChromeBrowserPolicyConnector::GetMachineLevelUserCloudPolicyManager() {
+  return machine_level_user_cloud_policy_manager_;
+}
+#endif
+
 std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>
 ChromeBrowserPolicyConnector::CreatePolicyProviders() {
   auto providers = BrowserPolicyConnector::CreatePolicyProviders();
