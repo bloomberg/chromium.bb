@@ -269,25 +269,54 @@ bool MayTriggerUnwInitLocalCrash(uint64_t leaf_frame_rip) {
                            reinterpret_cast<vm_address_t>(&unused), &size) != 0;
 }
 
+// Check if the cursor contains a valid-looking frame pointer for frame pointer
+// unwinds. If the stack frame has a frame pointer, stepping the cursor will
+// involve indexing memory access off of that pointer. In that case,
+// sanity-check the frame pointer register to ensure it's within bounds.
+//
+// Additionally, the stack frame might be in a prologue or epilogue, which can
+// cause a crash when the unwinder attempts to access non-volatile registers
+// that have not yet been pushed, or have already been popped from the
+// stack. libwunwind will try to restore those registers using an offset from
+// the frame pointer. However, since we copy the stack from RSP up, any
+// locations below the stack pointer are before the beginning of the stack
+// buffer. Account for this by checking that the expected location is above the
+// stack pointer, and rejecting the sample if it isn't.
+bool HasValidRbp(unw_cursor_t* unwind_cursor, uintptr_t stack_top) {
+  unw_proc_info_t proc_info;
+  unw_get_proc_info(unwind_cursor, &proc_info);
+  if ((proc_info.format & UNWIND_X86_64_MODE_MASK) ==
+      UNWIND_X86_64_MODE_RBP_FRAME) {
+    unw_word_t rsp, rbp;
+    unw_get_reg(unwind_cursor, UNW_X86_64_RSP, &rsp);
+    unw_get_reg(unwind_cursor, UNW_X86_64_RBP, &rbp);
+    uint32_t offset = GetFrameOffset(proc_info.format) * sizeof(unw_word_t);
+    if (rbp < offset || (rbp - offset) < rsp || rbp > stack_top) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Walks the stack represented by |unwind_context|, calling back to the provided
 // lambda for each frame. Returns false if an error occurred, otherwise returns
 // true.
-template <typename StackFrameCallback>
+template <typename StackFrameCallback, typename ContinueUnwindPredicate>
 bool WalkStackFromContext(
     unw_context_t* unwind_context,
-    uintptr_t stack_top,
     size_t* frame_count,
     std::vector<StackSamplingProfiler::Module>* current_modules,
     std::vector<ModuleIndex>* profile_module_index,
-    const StackFrameCallback& callback) {
+    const StackFrameCallback& callback,
+    const ContinueUnwindPredicate& continue_unwind) {
   unw_cursor_t unwind_cursor;
   unw_init_local(&unwind_cursor, unwind_context);
 
   int step_result;
-  unw_word_t ip;
+  unw_word_t rip;
   do {
     ++(*frame_count);
-    unw_get_reg(&unwind_cursor, UNW_REG_IP, &ip);
+    unw_get_reg(&unwind_cursor, UNW_REG_IP, &rip);
 
     // Ensure IP is in a module.
     //
@@ -302,37 +331,15 @@ bool WalkStackFromContext(
     // bail before trying to deref a bad IP obtained this way in the previous
     // frame.
     size_t module_index =
-        GetModuleIndex(ip, current_modules, profile_module_index);
+        GetModuleIndex(rip, current_modules, profile_module_index);
     if (module_index == StackSamplingProfiler::Frame::kUnknownModuleIndex) {
       return false;
     }
 
-    callback(static_cast<uintptr_t>(ip), module_index);
+    callback(static_cast<uintptr_t>(rip), module_index);
 
-    // If this stack frame has a frame pointer, stepping the cursor will involve
-    // indexing memory access off of that pointer. In that case, sanity-check
-    // the frame pointer register to ensure it's within bounds.
-    //
-    // Additionally, the stack frame might be in a prologue or epilogue,
-    // which can cause a crash when the unwinder attempts to access non-volatile
-    // registers that have not yet been pushed, or have already been popped from
-    // the stack. libwunwind will try to restore those registers using an offset
-    // from the frame pointer. However, since we copy the stack from RSP up, any
-    // locations below the stack pointer are before the beginning of the stack
-    // buffer. Account for this by checking that the expected location is above
-    // the stack pointer, and rejecting the sample if it isn't.
-    unw_proc_info_t proc_info;
-    unw_get_proc_info(&unwind_cursor, &proc_info);
-    if ((proc_info.format & UNWIND_X86_64_MODE_MASK) ==
-        UNWIND_X86_64_MODE_RBP_FRAME) {
-      unw_word_t rsp, rbp;
-      unw_get_reg(&unwind_cursor, UNW_X86_64_RSP, &rsp);
-      unw_get_reg(&unwind_cursor, UNW_X86_64_RBP, &rbp);
-      uint32_t offset = GetFrameOffset(proc_info.format) * sizeof(unw_word_t);
-      if (rbp < offset || (rbp - offset) < rsp || rbp > stack_top) {
-        return false;
-      }
-    }
+    if (!continue_unwind(&unwind_cursor))
+      return false;
 
     step_result = unw_step(&unwind_cursor);
   } while (step_result > 0);
@@ -384,12 +391,12 @@ void GetSigtrampRange(uintptr_t* start, uintptr_t* end) {
 
 // Walks the stack represented by |thread_state|, calling back to the provided
 // lambda for each frame.
-template <typename StackFrameCallback>
+template <typename StackFrameCallback, typename ContinueUnwindPredicate>
 void WalkStack(const x86_thread_state64_t& thread_state,
-               uintptr_t stack_top,
                std::vector<StackSamplingProfiler::Module>* current_modules,
                std::vector<ModuleIndex>* profile_module_index,
-               const StackFrameCallback& callback) {
+               const StackFrameCallback& callback,
+               const ContinueUnwindPredicate& continue_unwind) {
   size_t frame_count = 0;
   // This uses libunwind to walk the stack. libunwind is designed to be used for
   // a thread to walk its own stack. This creates two problems.
@@ -404,8 +411,8 @@ void WalkStack(const x86_thread_state64_t& thread_state,
   unw_context_t unwind_context;
   memcpy(&unwind_context, &thread_state, sizeof(uintptr_t) * 17);
   bool result =
-      WalkStackFromContext(&unwind_context, stack_top, &frame_count,
-                           current_modules, profile_module_index, callback);
+      WalkStackFromContext(&unwind_context, &frame_count, current_modules,
+                           profile_module_index, callback, continue_unwind);
 
   if (!result)
     return;
@@ -427,8 +434,8 @@ void WalkStack(const x86_thread_state64_t& thread_state,
       strcmp(info.dli_fname, LibSystemKernelName()) == 0) {
       rip = *reinterpret_cast<uint64_t*>(rsp);
       rsp += 8;
-      WalkStackFromContext(&unwind_context, stack_top, &frame_count,
-                           current_modules, profile_module_index, callback);
+      WalkStackFromContext(&unwind_context, &frame_count, current_modules,
+                           profile_module_index, callback, continue_unwind);
     }
   }
 }
@@ -598,30 +605,38 @@ void NativeStackSamplerMac::SuspendThreadAndRecordStack(
   auto* current_modules = current_modules_;
   auto* profile_module_index = &profile_module_index_;
 
-  // Check for two execution cases where we're unable to unwind, and if found,
-  // record the first frame and and bail:
-  //
-  // 1. In sigtramp: Unwinding this from another thread is very fragile. It's a
-  // complex DWARF unwind that needs to restore the entire thread context which
-  // was saved by the kernel when the interrupt occurred.
-  //
-  // 2. In the last mapped module and the memory past the module is
-  // inaccessible: unw_init_local has a bug where it attempts to access the
-  // memory immediately after the module, resulting in crashes. See
-  // MayTriggerUnwInitLocalCrash for details.
-  uintptr_t ip = thread_state.__rip;
-  if ((ip >= sigtramp_start_ && ip < sigtramp_end_) ||
-      MayTriggerUnwInitLocalCrash(ip)) {
+  // Avoid an out-of-bounds read bug in libunwind that can crash us in some
+  // circumstances. If we're subject to that case, just record the first frame
+  // and bail. See MayTriggerUnwInitLocalCrash for details.
+  uintptr_t rip = thread_state.__rip;
+  if (MayTriggerUnwInitLocalCrash(rip)) {
     sample->frames.emplace_back(
-        ip, GetModuleIndex(ip, current_modules, profile_module_index));
+        rip, GetModuleIndex(rip, current_modules, profile_module_index));
     return;
   }
 
-  WalkStack(thread_state, new_stack_top, current_modules, profile_module_index,
+  const auto continue_predicate = [this,
+                                   new_stack_top](unw_cursor_t* unwind_cursor) {
+    // Don't continue if we're in sigtramp. Unwinding this from another thread
+    // is very fragile. It's a complex DWARF unwind that needs to restore the
+    // entire thread context which was saved by the kernel when the interrupt
+    // occurred.
+    unw_word_t rip;
+    unw_get_reg(unwind_cursor, UNW_REG_IP, &rip);
+    if (rip >= sigtramp_start_ && rip < sigtramp_end_)
+      return false;
+
+    // Don't continue if rbp appears to be invalid (due to a previous bad
+    // unwind).
+    return HasValidRbp(unwind_cursor, new_stack_top);
+  };
+
+  WalkStack(thread_state, current_modules, profile_module_index,
             [sample, current_modules, profile_module_index](
                 uintptr_t frame_ip, size_t module_index) {
               sample->frames.emplace_back(frame_ip, module_index);
-            });
+            },
+            continue_predicate);
 }
 
 }  // namespace
