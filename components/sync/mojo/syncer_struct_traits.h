@@ -25,7 +25,8 @@ struct StructTraits<syncer::mojom::StringOrdinalDataView,
                    syncer::StringOrdinal* out) {
     mojo::ArrayDataView<uint8_t> bytes;
     data.GetBytesDataView(&bytes);
-    *out = syncer::StringOrdinal(reinterpret_cast<const char*>(bytes.data()));
+    *out = syncer::StringOrdinal(
+        std::string(reinterpret_cast<const char*>(bytes.data()), bytes.size()));
     return true;
   }
 };
