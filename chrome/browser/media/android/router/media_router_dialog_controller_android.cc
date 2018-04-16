@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "jni/ChromeMediaRouterDialogController_jni.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::MediaRouterDialogControllerAndroid);
@@ -114,8 +115,9 @@ void MediaRouterDialogControllerAndroid::OnMediaSourceNotSupported(
   if (!request)
     return;
 
-  request->InvokeErrorCallback(content::PresentationError(
-      content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS, "No screens found."));
+  request->InvokeErrorCallback(blink::mojom::PresentationError(
+      blink::mojom::PresentationErrorType::NO_AVAILABLE_SCREENS,
+      "No screens found."));
 }
 
 void MediaRouterDialogControllerAndroid::CancelPresentationRequest() {
@@ -123,8 +125,8 @@ void MediaRouterDialogControllerAndroid::CancelPresentationRequest() {
   if (!request)
     return;
 
-  request->InvokeErrorCallback(content::PresentationError(
-      content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
+  request->InvokeErrorCallback(blink::mojom::PresentationError(
+      blink::mojom::PresentationErrorType::PRESENTATION_REQUEST_CANCELLED,
       "Dialog closed."));
 }
 

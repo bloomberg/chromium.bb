@@ -103,18 +103,18 @@ class PresentationRequestCallbacks {
   PresentationRequestCallbacks() {}
 
   explicit PresentationRequestCallbacks(
-      const content::PresentationError& expected_error)
+      const blink::mojom::PresentationError& expected_error)
       : expected_error_(expected_error) {}
 
   void Success(const content::PresentationInfo&, const MediaRoute&) {}
 
-  void Error(const content::PresentationError& error) {
+  void Error(const blink::mojom::PresentationError& error) {
     EXPECT_EQ(expected_error_.error_type, error.error_type);
     EXPECT_EQ(expected_error_.message, error.message);
   }
 
  private:
-  content::PresentationError expected_error_;
+  blink::mojom::PresentationError expected_error_;
 };
 
 class TestMediaRouterUI : public MediaRouterUI {
@@ -591,8 +591,8 @@ TEST_F(MediaRouterUITest, GetExtensionNameEmptyWhenNotExtensionURL) {
 }
 
 TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoSinks) {
-  content::PresentationError expected_error(
-      content::PresentationErrorType::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+  blink::mojom::PresentationError expected_error(
+      blink::mojom::PresentationErrorType::NO_AVAILABLE_SCREENS,
       "No screens found.");
   PresentationRequestCallbacks request_callbacks(expected_error);
   start_presentation_context_ = std::make_unique<StartPresentationContext>(
@@ -608,8 +608,8 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoSinks) {
 }
 
 TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
-  content::PresentationError expected_error(
-      content::PresentationErrorType::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+  blink::mojom::PresentationError expected_error(
+      blink::mojom::PresentationErrorType::NO_AVAILABLE_SCREENS,
       "No screens found.");
   PresentationRequestCallbacks request_callbacks(expected_error);
   start_presentation_context_ = std::make_unique<StartPresentationContext>(
@@ -638,9 +638,8 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
 }
 
 TEST_F(MediaRouterUITest, AbortErrorOnClose) {
-  content::PresentationError expected_error(
-      content::PresentationErrorType::
-          PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
+  blink::mojom::PresentationError expected_error(
+      blink::mojom::PresentationErrorType::PRESENTATION_REQUEST_CANCELLED,
       "Dialog closed.");
   PresentationRequestCallbacks request_callbacks(expected_error);
   start_presentation_context_ = std::make_unique<StartPresentationContext>(
@@ -786,8 +785,8 @@ TEST_F(MediaRouterUITest, SendInitialMediaStatusUpdate) {
 TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
   presentation_request_.presentation_urls.push_back(
       GURL("https://google.com/presentation2"));
-  content::PresentationError expected_error(
-      content::PresentationErrorType::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+  blink::mojom::PresentationError expected_error(
+      blink::mojom::PresentationErrorType::NO_AVAILABLE_SCREENS,
       "No screens found.");
   PresentationRequestCallbacks request_callbacks(expected_error);
   start_presentation_context_ = std::make_unique<StartPresentationContext>(

@@ -12,13 +12,4 @@ PresentationInfo::PresentationInfo(const GURL& presentation_url,
 
 PresentationInfo::~PresentationInfo() {}
 
-PresentationError::PresentationError()
-    : error_type(PRESENTATION_ERROR_UNKNOWN) {}
-
-PresentationError::PresentationError(PresentationErrorType error_type,
-                                     const std::string& message)
-    : error_type(error_type), message(message) {}
-
-PresentationError::~PresentationError() {}
-
 }  // namespace content

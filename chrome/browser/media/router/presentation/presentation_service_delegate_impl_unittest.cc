@@ -77,7 +77,7 @@ class MockCreatePresentationConnnectionCallbacks {
   MOCK_METHOD1(OnCreateConnectionSuccess,
                void(const content::PresentationInfo& connection));
   MOCK_METHOD1(OnCreateConnectionError,
-               void(const content::PresentationError& error));
+               void(const blink::mojom::PresentationError& error));
 };
 
 class MockLocalPresentationManager : public LocalPresentationManager {

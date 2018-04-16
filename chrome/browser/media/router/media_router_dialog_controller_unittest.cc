@@ -48,7 +48,8 @@ class MediaRouterDialogControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   MOCK_METHOD2(RequestSuccess,
                void(const content::PresentationInfo&, const MediaRoute&));
-  MOCK_METHOD1(RequestError, void(const content::PresentationError& error));
+  MOCK_METHOD1(RequestError,
+               void(const blink::mojom::PresentationError& error));
 
  protected:
   MediaRouterDialogControllerTest() {}

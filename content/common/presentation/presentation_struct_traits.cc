@@ -25,23 +25,6 @@ bool StructTraits<blink::mojom::PresentationInfoDataView,
   return true;
 }
 
-bool StructTraits<blink::mojom::PresentationErrorDataView,
-                  content::PresentationError>::
-    Read(blink::mojom::PresentationErrorDataView data,
-         content::PresentationError* out) {
-  if (!data.ReadErrorType(&(out->error_type)) ||
-      !data.ReadMessage(&(out->message))) {
-    return false;
-  }
-
-  if (!base::IsStringUTF8(out->message) ||
-      out->message.length() > content::PresentationError::kMaxMessageLength) {
-    return false;
-  }
-
-  return true;
-}
-
 bool UnionTraits<blink::mojom::PresentationConnectionMessageDataView,
                  content::PresentationConnectionMessage>::
     Read(blink::mojom::PresentationConnectionMessageDataView data,

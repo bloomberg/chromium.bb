@@ -31,7 +31,7 @@ class MediaRouterDialogControllerWebUIImplTest : public MediaRouterWebUITest {
   MOCK_METHOD2(PresentationSuccessCallback,
                void(const content::PresentationInfo&, const MediaRoute&));
   MOCK_METHOD1(PresentationErrorCallback,
-               void(const content::PresentationError& error));
+               void(const blink::mojom::PresentationError& error));
 
  protected:
   WebContents* initiator_ = nullptr;
