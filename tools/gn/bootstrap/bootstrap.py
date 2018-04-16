@@ -530,6 +530,7 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
       'base/memory/weak_ptr.cc',
       'base/message_loop/incoming_task_queue.cc',
       'base/message_loop/message_loop.cc',
+      'base/message_loop/message_loop_current.cc',
       'base/message_loop/message_loop_task_runner.cc',
       'base/message_loop/message_pump.cc',
       'base/message_loop/message_pump_default.cc',
