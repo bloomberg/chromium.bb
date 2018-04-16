@@ -6,14 +6,11 @@
 #define ASH_FIRST_RUN_FIRST_RUN_HELPER_H_
 
 #include "ash/ash_export.h"
-#include "ash/first_run/desktop_cleaner.h"
+#include "ash/public/interfaces/first_run_helper.mojom.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-
-namespace gfx {
-class Rect;
-}
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace views {
 class Widget;
@@ -21,10 +18,12 @@ class Widget;
 
 namespace ash {
 
+class DesktopCleaner;
+
 // Interface used by first-run tutorial to manipulate and retrieve information
 // about shell elements.
-// All returned coordinates are in screen coordinate system.
-class ASH_EXPORT FirstRunHelper : public OverlayEventFilter::Delegate {
+class ASH_EXPORT FirstRunHelper : public mojom::FirstRunHelper,
+                                  public OverlayEventFilter::Delegate {
  public:
   class Observer {
    public:
@@ -35,31 +34,24 @@ class ASH_EXPORT FirstRunHelper : public OverlayEventFilter::Delegate {
 
  public:
   FirstRunHelper();
-  virtual ~FirstRunHelper();
+  ~FirstRunHelper() override;
+
+  void BindRequest(mojom::FirstRunHelperRequest request);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
   // Returns widget to place tutorial UI into it.
+  // TODO(jamescook): Migrate widget into chrome and remove these methods.
   views::Widget* GetOverlayWidget();
+  void CreateOverlayWidget();
+  void CloseOverlayWidget();
 
-  // Returns bounds of application list button.
-  gfx::Rect GetAppListButtonBounds();
-
-  // Opens and closes system tray bubble.
-  void OpenTrayBubble();
-  void CloseTrayBubble();
-
-  // Returns |true| iff system tray bubble is opened now.
-  bool IsTrayBubbleOpened();
-
-  // Returns bounds of system tray bubble. You must open bubble before calling
-  // this method.
-  gfx::Rect GetTrayBubbleBounds();
-
-  // Returns bounds of help app button from system tray buble. You must open
-  // bubble before calling this method.
-  gfx::Rect GetHelpButtonBounds();
+  // mojom::FirstRunHelper:
+  void GetAppListButtonBounds(GetAppListButtonBoundsCallback cb) override;
+  void OpenTrayBubble(OpenTrayBubbleCallback cb) override;
+  void CloseTrayBubble() override;
+  void GetHelpButtonBounds(GetHelpButtonBoundsCallback cb) override;
 
   // OverlayEventFilter::Delegate:
   void Cancel() override;
@@ -67,12 +59,16 @@ class ASH_EXPORT FirstRunHelper : public OverlayEventFilter::Delegate {
   aura::Window* GetWindow() override;
 
  private:
+  // Bindings for clients of the mojo interface.
+  mojo::BindingSet<mojom::FirstRunHelper> bindings_;
+
+  // TODO(jamescook): Convert to mojo observer.
   base::ObserverList<Observer> observers_;
 
   // The first run dialog window.
-  views::Widget* widget_;
+  views::Widget* widget_ = nullptr;
 
-  DesktopCleaner cleaner_;
+  std::unique_ptr<DesktopCleaner> cleaner_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunHelper);
 };

@@ -64,11 +64,12 @@ class FirstRunHelperTest : public AshTestBase, public FirstRunHelper::Observer {
     CheckContainersAreVisible();
     helper_ = std::make_unique<FirstRunHelper>();
     helper_->AddObserver(this);
+    helper_->CreateOverlayWidget();
     helper_->GetOverlayWidget()->Show();
   }
 
   void TearDown() override {
-    EXPECT_TRUE(helper_.get());
+    helper_->CloseOverlayWidget();
     helper_.reset();
     CheckContainersAreVisible();
     AshTestBase::TearDown();

@@ -18,6 +18,9 @@ interface SystemTrayTestApi {
   // Disables animations (e.g. the tray view icon slide-in).
   DisableAnimations() => ();
 
+  // Returns true if the system tray bubble menu is open.
+  IsTrayBubbleOpen() => (bool is_open);
+
   // Returns true if the view exists and is visible in the system tray area
   // at the bottom of the screen. Usually these views are icons, like the Wi-Fi
   // or battery icon.

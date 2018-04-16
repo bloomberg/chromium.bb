@@ -56,6 +56,10 @@ void SystemTrayTestApi::DisableAnimations(DisableAnimationsCallback cb) {
   std::move(cb).Run();
 }
 
+void SystemTrayTestApi::IsTrayBubbleOpen(IsTrayBubbleOpenCallback cb) {
+  std::move(cb).Run(tray_->HasSystemBubble());
+}
+
 void SystemTrayTestApi::IsTrayViewVisible(int view_id,
                                           IsTrayViewVisibleCallback cb) {
   // Search for the view among the tray icons.
