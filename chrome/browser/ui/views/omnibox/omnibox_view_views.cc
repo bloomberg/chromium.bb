@@ -897,7 +897,7 @@ void OmniboxViewViews::OnFocus() {
   GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
 
   // Focus changes can affect the visibility of any keyword hint.
-  if (model()->is_keyword_hint())
+  if (location_bar_view_ && model()->is_keyword_hint())
     location_bar_view_->Layout();
 
 // The user must be starting a session in the same tab as a previous one
@@ -907,7 +907,8 @@ void OmniboxViewViews::OnFocus() {
 // or navigating, because we'd like to show them the promo at the time when
 // it would be immediately useful.
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-  if (controller()->GetToolbarModel()->ShouldDisplayURL()) {
+  if (location_bar_view_ &&
+      controller()->GetToolbarModel()->ShouldDisplayURL()) {
     feature_engagement::NewTabTrackerFactory::GetInstance()
         ->GetForProfile(location_bar_view_->profile())
         ->OnOmniboxFocused();

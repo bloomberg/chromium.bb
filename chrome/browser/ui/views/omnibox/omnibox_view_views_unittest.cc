@@ -77,7 +77,7 @@ class TestingOmniboxView : public OmniboxViewViews {
   // OmniboxViewViews:
   void EmphasizeURLComponents() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {}
-  void OnFocus() override;
+  using OmniboxView::IsSelectAll;
 
  private:
   // OmniboxViewViews:
@@ -130,12 +130,6 @@ void TestingOmniboxView::CheckUpdatePopupCallInfo(
 void TestingOmniboxView::EmphasizeURLComponents() {
   UpdateTextStyle(text(), model()->CurrentTextIsURL(),
                   model()->client()->GetSchemeClassifier());
-}
-
-void TestingOmniboxView::OnFocus() {
-  views::Textfield::OnFocus();
-  model()->OnSetFocus(false);
-  GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
 }
 
 void TestingOmniboxView::UpdatePopup() {
@@ -478,15 +472,10 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
     OmniboxViewViewsTest::TearDown();
   }
 
-  bool IsSelectAll() const { return omnibox_view()->IsSelectAll(); }
-
-  void FocusAndSelectAll() {
-    omnibox_textfield()->OnFocus();
-    EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox_view()->model()->focus_state());
-
-    omnibox_view()->SelectAll(true);
-    EXPECT_TRUE(omnibox_view()->IsSelectAll());
-    ExpectElidedUrlDisplayed();
+  void BlurOmnibox() {
+    ASSERT_TRUE(omnibox_view()->HasFocus());
+    omnibox_view()->GetFocusManager()->ClearFocus();
+    ASSERT_FALSE(omnibox_view()->HasFocus());
   }
 
   void ExpectFullUrlDisplayed() {
@@ -530,16 +519,8 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   base::SimpleTestTickClock clock_;
 };
 
-TEST_F(OmniboxViewViewsSteadyStateElisionsTest, StayElidedOnFocus) {
-  // We should not unelide on focus.
-  omnibox_textfield()->OnFocus();
-
-  EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox_view()->model()->focus_state());
-  ExpectElidedUrlDisplayed();
-}
-
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnArrowKey) {
-  FocusAndSelectAll();
+  SendMouseClick(0);
 
   // Right key should unelide and move the cursor to the end.
   omnibox_textfield_view()->OnKeyPressed(
@@ -550,9 +531,9 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnArrowKey) {
   EXPECT_EQ(19U, start);
   EXPECT_EQ(19U, end);
 
-  // Blur and restore the elided URL.
-  omnibox_textfield()->OnBlur();
-  FocusAndSelectAll();
+  // Blur to restore the elided URL, then click on the Omnibox again to refocus.
+  BlurOmnibox();
+  SendMouseClick(0);
 
   // Left key should unelide and move the cursor to the beginning of the elided
   // part.
@@ -565,7 +546,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnArrowKey) {
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnHomeKey) {
-  FocusAndSelectAll();
+  SendMouseClick(0);
 
   // Home key should unelide and move the cursor to the beginning of the full
   // unelided URL.
@@ -589,7 +570,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
   ui::GestureEvent tap(0, 0, 0, ui::EventTimeForNow(), tap_details);
   omnibox_textfield_view()->OnGestureEvent(&tap);
 
-  EXPECT_TRUE(IsSelectAll());
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
   ExpectElidedUrlDisplayed();
 
   // Unelide on second tap (cursor placement).
@@ -727,7 +708,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, ReelideOnBlur) {
   SendMouseClick(4 * kCharacterWidth);
   ExpectFullUrlDisplayed();
 
-  omnibox_view()->OnBlur();
+  BlurOmnibox();
   ExpectElidedUrlDisplayed();
 }
 
@@ -746,7 +727,20 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, DontReelideOnBlurIfEdited) {
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 
   // Now that we've edited the text, blurring should not re-elide the URL.
-  omnibox_view()->OnBlur();
+  BlurOmnibox();
   EXPECT_EQ(base::ASCIIToUTF16("https://a.com"), omnibox_view()->text());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, SaveSelectAllOnBlurAndRefocus) {
+  SendMouseClick(0);
+  ExpectElidedUrlDisplayed();
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+
+  // Blurring and refocusing should preserve a select-all state.
+  BlurOmnibox();
+  omnibox_view()->RequestFocus();
+  EXPECT_TRUE(omnibox_view()->HasFocus());
+  ExpectElidedUrlDisplayed();
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
 }

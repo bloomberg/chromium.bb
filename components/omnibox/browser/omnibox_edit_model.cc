@@ -965,18 +965,6 @@ void OmniboxEditModel::OnKillFocus() {
 #if defined(OS_WIN)
   ui::OnScreenKeyboardDisplayManager::GetInstance()->DismissVirtualKeyboard();
 #endif
-
-  // TODO(tommycli): This seems redundant with the RevertAll call in the Views
-  // code. Find a way to consolidate these calls.
-  if (!user_input_in_progress_ &&
-      base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)) {
-    // Revert all the user has made a partial selection.
-    size_t start = 0, end = 0;
-    view_->GetSelectionBounds(&start, &end);
-    if (view_->IsSelectAll() || start == end)
-      view_->RevertAll();
-  }
 }
 
 bool OmniboxEditModel::WillHandleEscapeKey() const {
