@@ -82,8 +82,7 @@ TEST(VariableExpanderTest, FailsIfPosIsNegative) {
 }
 
 TEST(VariableExpanderTest, FailsIfCountIsNegative) {
-  VariableExpander expander;
-  expander.SetVariable("machine_name", "chromebook");
+  VariableExpander expander({{"machine_name", "chromebook"}});
   std::string str = "${machine_name,2,-3}";
   EXPECT_FALSE(expander.ExpandString(&str));
   EXPECT_EQ(str, "${machine_name,2,-3}");

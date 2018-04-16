@@ -174,9 +174,8 @@ void ActiveDirectoryPolicyManager::ExpandVariables(PolicyMap* policy_map) {
     return;
   }
 
-  chromeos::VariableExpander expander;
-  expander.SetVariable("machine_name", policy->machine_name());
-
+  chromeos::VariableExpander expander(
+      {{"machine_name", policy->machine_name()}});
   for (const char* policy_name : kPoliciesToExpand) {
     base::Value* value = policy_map->GetMutableValue(policy_name);
     if (value) {
