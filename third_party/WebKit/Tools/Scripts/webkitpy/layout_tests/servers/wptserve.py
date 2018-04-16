@@ -34,7 +34,7 @@ class WPTServe(server_base.ServerBase):
         self._pid_file = fs.join(self._runtime_path, '%s.pid' % self._name)
 
         finder = PathFinder(fs)
-        path_to_thirdparty = finder.path_from_tools_scripts('webkitpy', 'thirdparty')
+        path_to_pywebsocket = finder.path_from_chromium_base('third_party', 'pywebsocket', 'src')
         path_to_wpt_support = finder.path_from_tools_scripts('webkitpy', 'thirdparty', 'wpt')
         path_to_wpt_root = fs.join(path_to_wpt_support, 'wpt')
         path_to_wpt_config = fs.join(path_to_wpt_support, 'wpt.config.json')
@@ -54,7 +54,7 @@ class WPTServe(server_base.ServerBase):
         # TODO(burnik): We should stop setting the CWD once WPT can be run without it.
         self._cwd = path_to_wpt_root
         self._env = port_obj.host.environ.copy()
-        self._env.update({'PYTHONPATH': path_to_thirdparty})
+        self._env.update({'PYTHONPATH': path_to_pywebsocket})
         self._start_cmd = start_cmd
 
         expiration_date = datetime.date(2025, 1, 4)

@@ -9,7 +9,7 @@ import sys
 
 def RemoveAllStalePycFiles(base_dir):
   """Scan directories for old .pyc files without a .py file and delete them."""
-  for dirname, _, filenames in os.walk(base_dir):
+  for dirname, _, filenames in os.walk(base_dir, topdown=False):
     if '.svn' in dirname or '.git' in dirname:
       continue
     for filename in filenames:
