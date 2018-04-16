@@ -81,9 +81,7 @@ bool KeepAliveRegistry::WouldRestartWithout(
 }
 
 void KeepAliveRegistry::SetIsShuttingDown(bool value) {
-#if DCHECK_IS_ON()
   is_shutting_down_ = value;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,15 +91,14 @@ KeepAliveRegistry::KeepAliveRegistry()
     : registered_count_(0), restart_allowed_count_(0) {}
 
 KeepAliveRegistry::~KeepAliveRegistry() {
-  DLOG_IF(ERROR, registered_count_ > 0 || registered_keep_alives_.size() > 0)
-      << "KeepAliveRegistry not empty at destruction time. State:" << *this;
+  DCHECK_LE(registered_count_, 0) << "KeepAliveRegistry state:" << *this;
+  DCHECK_EQ(registered_keep_alives_.size(), 0u)
+      << "KeepAliveRegistry state:" << *this;
 }
 
 void KeepAliveRegistry::Register(KeepAliveOrigin origin,
                                  KeepAliveRestartOption restart) {
-#if DCHECK_IS_ON()
-  DCHECK(!is_shutting_down_);
-#endif
+  CHECK(!is_shutting_down_);
 
   bool old_keeping_alive = IsKeepingAlive();
   bool old_restart_allowed = IsRestartAllowed();
