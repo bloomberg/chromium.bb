@@ -101,6 +101,21 @@ void TextServicesContextMenu::AppendEditableItems(SimpleMenuModel* model) {
                                 &bidi_submenu_model_);
 }
 
+bool TextServicesContextMenu::SupportsCommand(int command_id) const {
+  switch (command_id) {
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL:
+    case IDS_SPEECH_MAC:
+    case IDS_SPEECH_START_SPEAKING_MAC:
+    case IDS_SPEECH_STOP_SPEAKING_MAC:
+      return true;
+  }
+
+  return false;
+}
+
 bool TextServicesContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT:
@@ -119,6 +134,9 @@ bool TextServicesContextMenu::IsCommandIdChecked(int command_id) const {
 
 bool TextServicesContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
+    case IDS_SPEECH_MAC:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU:
+      return true;
     case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT:
     case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR:
     case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL:
