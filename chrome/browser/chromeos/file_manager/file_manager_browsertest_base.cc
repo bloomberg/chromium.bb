@@ -524,25 +524,42 @@ void FileManagerBrowserTestBase::SetUp() {
   ExtensionApiTest::SetUp();
 }
 
+void FileManagerBrowserTestBase::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  if (GetGuestModeParam() == IN_GUEST_MODE) {
+    command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
+    command_line->AppendSwitch(switches::kIncognito);
+  }
+
+  if (GetGuestModeParam() == IN_INCOGNITO) {
+    command_line->AppendSwitch(switches::kIncognito);
+  }
+
+  ExtensionApiTest::SetUpCommandLine(command_line);
+}
+
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
-  ASSERT_TRUE(local_volume_->Mount(profile()));
+  CHECK(profile());
 
   // The file manager component app should have been added for loading into the
   // user profile, but not into the sign-in profile.
-  ASSERT_TRUE(extensions::ExtensionSystem::Get(profile())
-                  ->extension_service()
-                  ->component_loader()
-                  ->Exists(kFileManagerAppId));
-  ASSERT_FALSE(extensions::ExtensionSystem::Get(
-                   chromeos::ProfileHelper::GetSigninProfile())
-                   ->extension_service()
-                   ->component_loader()
-                   ->Exists(kFileManagerAppId));
+  CHECK(extensions::ExtensionSystem::Get(profile())
+            ->extension_service()
+            ->component_loader()
+            ->Exists(kFileManagerAppId));
+  CHECK(!extensions::ExtensionSystem::Get(
+             chromeos::ProfileHelper::GetSigninProfile())
+             ->extension_service()
+             ->component_loader()
+             ->Exists(kFileManagerAppId));
+
+  CHECK(local_volume_->Mount(profile()));
 
   if (GetGuestModeParam() != IN_GUEST_MODE) {
-    // Install the web server to serve the mocked share dialog.
-    ASSERT_TRUE(embedded_test_server()->Start());
+    // Start the embedded test server to serve the mocked share dialog.
+    CHECK(embedded_test_server()->Start());
     const GURL share_url_base(embedded_test_server()->GetURL(
         "/chromeos/file_manager/share_dialog_mock/index.html"));
     drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()];
@@ -554,17 +571,12 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
       std::make_unique<NotificationDisplayServiceTester>(profile());
 }
 
-void FileManagerBrowserTestBase::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  if (GetGuestModeParam() == IN_GUEST_MODE) {
-    command_line->AppendSwitch(chromeos::switches::kGuestSession);
-    command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
-    command_line->AppendSwitch(switches::kIncognito);
-  }
-  if (GetGuestModeParam() == IN_INCOGNITO) {
-    command_line->AppendSwitch(switches::kIncognito);
-  }
-  ExtensionApiTest::SetUpCommandLine(command_line);
+void FileManagerBrowserTestBase::StartTest() {
+  LOG(INFO) << "FileManagerBrowserTest::StartTest " << GetTestManifestName();
+  InstallExtension(
+      base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests")),
+      GetTestManifestName());
+  RunTestMessageLoop();
 }
 
 void FileManagerBrowserTestBase::InstallExtension(const base::FilePath& path,
@@ -577,13 +589,6 @@ void FileManagerBrowserTestBase::InstallExtension(const base::FilePath& path,
   const extensions::Extension* const extension =
       LoadExtensionAsComponentWithManifest(absolute_path, manifest_name);
   ASSERT_TRUE(extension);
-}
-
-void FileManagerBrowserTestBase::StartTest() {
-  InstallExtension(
-      base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests")),
-      GetTestManifestName());
-  RunTestMessageLoop();
 }
 
 void FileManagerBrowserTestBase::RunTestMessageLoop() {
