@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
@@ -161,6 +162,8 @@ void ChromeAppListModelUpdater::UpdateSearchBox(const base::string16& text,
 
 void ChromeAppListModelUpdater::PublishSearchResults(
     std::vector<std::unique_ptr<ChromeSearchResult>> results) {
+  for (auto& result : results)
+    result->set_model_updater(this);
   if (!ash_util::IsRunningInMash())
     search_model_->PublishResults(ConvertToSearchResults(std::move(results)));
 }

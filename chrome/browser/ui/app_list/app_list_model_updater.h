@@ -16,9 +16,9 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 
 class ChromeAppListItem;
+class ChromeSearchResult;
 
 // An interface to wrap AppListModel access in browser.
 class AppListModelUpdater {

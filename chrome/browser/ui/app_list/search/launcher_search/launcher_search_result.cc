@@ -58,6 +58,7 @@ std::unique_ptr<ChromeSearchResult> LauncherSearchResult::Duplicate() const {
                                extension_, icon_image_loader_);
   duplicated_result->set_title(title());
   duplicated_result->set_title_tags(title_tags());
+  duplicated_result->set_model_updater(model_updater());
   return base::WrapUnique(duplicated_result);
 }
 
