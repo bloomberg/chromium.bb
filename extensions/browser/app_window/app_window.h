@@ -311,6 +311,8 @@ class AppWindow : public content::WebContentsDelegate,
   // HTML API request.
   bool IsHtmlApiFullscreen() const;
 
+  bool IsOsFullscreen() const;
+
   // Transitions window into fullscreen, maximized, minimized or restores based
   // on chrome.app.window API.
   void Fullscreen();
