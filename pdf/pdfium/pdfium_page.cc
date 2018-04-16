@@ -36,10 +36,12 @@ pp::FloatRect FloatPageRectToPixelRect(FPDF_PAGE page,
   int min_y;
   int max_x;
   int max_y;
-  FPDF_PageToDevice(page, 0, 0, output_width, output_height, 0, input.x(),
-                    input.y(), &min_x, &min_y);
-  FPDF_PageToDevice(page, 0, 0, output_width, output_height, 0, input.right(),
-                    input.bottom(), &max_x, &max_y);
+  FPDF_BOOL ret = FPDF_PageToDevice(page, 0, 0, output_width, output_height, 0,
+                                    input.x(), input.y(), &min_x, &min_y);
+  DCHECK(ret);
+  ret = FPDF_PageToDevice(page, 0, 0, output_width, output_height, 0,
+                          input.right(), input.bottom(), &max_x, &max_y);
+  DCHECK(ret);
 
   if (max_x < min_x)
     std::swap(min_x, max_x);
@@ -248,8 +250,10 @@ PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
   pp::Point point2 = point - rect_.point();
   double new_x;
   double new_y;
-  FPDF_DeviceToPage(GetPage(), 0, 0, rect_.width(), rect_.height(), rotation,
-                    point2.x(), point2.y(), &new_x, &new_y);
+  FPDF_BOOL ret =
+      FPDF_DeviceToPage(GetPage(), 0, 0, rect_.width(), rect_.height(),
+                        rotation, point2.x(), point2.y(), &new_x, &new_y);
+  DCHECK(ret);
 
   // hit detection tolerance, in points.
   constexpr double kTolerance = 20.0;
@@ -553,14 +557,16 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
   int new_top;
   int new_right;
   int new_bottom;
-  FPDF_PageToDevice(page_, static_cast<int>(start_x), static_cast<int>(start_y),
-                    static_cast<int>(ceil(size_x)),
-                    static_cast<int>(ceil(size_y)), rotation, left, top,
-                    &new_left, &new_top);
-  FPDF_PageToDevice(page_, static_cast<int>(start_x), static_cast<int>(start_y),
-                    static_cast<int>(ceil(size_x)),
-                    static_cast<int>(ceil(size_y)), rotation, right, bottom,
-                    &new_right, &new_bottom);
+  FPDF_BOOL ret = FPDF_PageToDevice(
+      page_, static_cast<int>(start_x), static_cast<int>(start_y),
+      static_cast<int>(ceil(size_x)), static_cast<int>(ceil(size_y)), rotation,
+      left, top, &new_left, &new_top);
+  DCHECK(ret);
+  ret = FPDF_PageToDevice(
+      page_, static_cast<int>(start_x), static_cast<int>(start_y),
+      static_cast<int>(ceil(size_x)), static_cast<int>(ceil(size_y)), rotation,
+      right, bottom, &new_right, &new_bottom);
+  DCHECK(ret);
 
   // If the PDF is rotated, the horizontal/vertical coordinates could be
   // flipped.  See
