@@ -401,9 +401,15 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 }
 
 - (void)navigateToPageForItem:(TableViewItem<PopupMenuItem>*)item {
-  PopupMenuNavigationItem* navigationItem =
-      base::mac::ObjCCastStrict<PopupMenuNavigationItem>(item);
-  [self.dispatcher navigateToHistoryItem:navigationItem.navigationItem];
+  if (!self.webState)
+    return;
+
+  web::NavigationItem* navigationItem =
+      base::mac::ObjCCastStrict<PopupMenuNavigationItem>(item).navigationItem;
+  int index =
+      self.webState->GetNavigationManager()->GetIndexOfItem(navigationItem);
+  DCHECK_NE(index, -1);
+  self.webState->GetNavigationManager()->GoToIndex(index);
 }
 
 #pragma mark - ReadingListMenuNotificationDelegate Implementation
