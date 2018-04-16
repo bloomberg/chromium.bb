@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +39,11 @@ class FetchHelper {
          * Called when the state should be reset e.g. when the user navigates away from a webpage.
          */
         void clearState();
+
+        /**
+         * Called when a document becomes eligible for fetching but the fetch is being delayed.
+         */
+        void reportFetchDelayed(WebContents webContents);
     }
 
     /** State of the tab with respect to fetching readiness */
@@ -71,8 +77,8 @@ class FetchHelper {
         }
 
         /**
-         * Sets the baseline from which the fetch delay is calculated (conceptually starting the
-         * timer).
+         * Sets the baseline from which the fetch delay is calculated if it was not
+         * already set (conceptually starting the timer).
          * @param fetchTimeBaselineMillis The new value to set the baseline fetch time to.
          * @return Whether the fetch time baseline was set.
          */
@@ -142,17 +148,23 @@ class FetchHelper {
 
             @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                assert !tab.isIncognito();
-                if (getTabFetchReadinessState(tab).setFetchTimeBaselineMillis(
-                            SystemClock.uptimeMillis())) {
-                    maybeStartFetch(tab);
-                }
+                setTimeBaselineAndMaybeFetch(tab);
             }
 
             @Override
             public void onPageLoadFinished(Tab tab) {
+                setTimeBaselineAndMaybeFetch(tab);
+            }
+
+            @Override
+            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
+                setTimeBaselineAndMaybeFetch(tab);
+            }
+
+            private void setTimeBaselineAndMaybeFetch(Tab tab) {
                 assert !tab.isIncognito();
-                if (maybeSetFetchReadinessBaseline(tab)) {
+                if (getTabFetchReadinessState(tab).setFetchTimeBaselineMillis(
+                            SystemClock.uptimeMillis())) {
                     maybeStartFetch(tab);
                 }
             }
@@ -254,6 +266,7 @@ class FetchHelper {
     }
 
     private void postDelayedFetch(final String url, final Tab tab, long delayMillis) {
+        mDelegate.reportFetchDelayed(tab.getWebContents());
         ThreadUtils.postOnUiThreadDelayed(new Runnable() {
             @Override
             public void run() {

@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.widget.ViewRectProvider;
 
 import java.util.Collections;
@@ -158,6 +159,7 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
 
     @Override
     public void requestSuggestions(String url) {
+        reportEvent(ContextualSuggestionsEvent.FETCH_REQUESTED);
         mCurrentRequestUrl = url;
         mSuggestionsSource.fetchSuggestions(url, (suggestionsResult) -> {
             if (mSuggestionsSource == null) return;
@@ -180,6 +182,13 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
     @Override
     public void clearState() {
         clearSuggestions();
+    }
+
+    @Override
+    public void reportFetchDelayed(WebContents webContents) {
+        if (mTabModelSelector.getCurrentTab().getWebContents() == webContents) {
+            reportEvent(ContextualSuggestionsEvent.FETCH_DELAYED);
+        }
     }
 
     /**

@@ -132,7 +132,6 @@ void ContextualSuggestionsFetch::Start(
     ReportFetchMetricsCallback metrics_callback,
     const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory) {
   request_completed_callback_ = std::move(callback);
-  metrics_callback.Run(FETCH_REQUESTED);
   url_loader_ = MakeURLLoader();
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory.get(),

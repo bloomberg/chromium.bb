@@ -141,6 +141,15 @@ void ContextualSuggestionsBridge::ReportEvent(
   ukm::SourceId ukm_source_id =
       ukm::GetSourceIdForWebContentsDocument(web_contents);
 
+  // It's possible but unlikely to be in this state; it can happen if we are
+  // triggering a fetch for a WebContents that does not have a committed
+  // navigation. This can happen, e.g., if we switched tabs and a navigation
+  // took a very long time to commit. TODO(pnoland): Check against this
+  // possiblity by deferring event reporting and fetching until we observe a
+  // commit.
+  if (ukm_source_id == ukm::kInvalidSourceId)
+    return;
+
   contextual_suggestions::ContextualSuggestionsEvent event =
       static_cast<contextual_suggestions::ContextualSuggestionsEvent>(
           j_event_id);
