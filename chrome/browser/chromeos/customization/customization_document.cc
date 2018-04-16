@@ -807,7 +807,7 @@ void ServicesCustomizationDocument::StartOEMWallpaperDownload(
   }
 
   wallpaper_downloader_.reset(new CustomizationWallpaperDownloader(
-      g_browser_process->system_request_context(), wallpaper_url, dir, file,
+      wallpaper_url, dir, file,
       base::Bind(&ServicesCustomizationDocument::OnOEMWallpaperDownloaded,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(std::move(applying)))));

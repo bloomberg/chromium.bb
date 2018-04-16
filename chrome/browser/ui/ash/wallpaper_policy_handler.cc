@@ -155,8 +155,8 @@ void WallpaperPolicyHandler::OnDeviceWallpaperFileExists(bool exists) {
     GURL wallpaper_url(url);
     device_wallpaper_downloader_.reset(
         new chromeos::CustomizationWallpaperDownloader(
-            g_browser_process->system_request_context(), wallpaper_url,
-            device_wallpaper_file_path_.DirName(), device_wallpaper_file_path_,
+            wallpaper_url, device_wallpaper_file_path_.DirName(),
+            device_wallpaper_file_path_,
             base::BindRepeating(
                 &WallpaperPolicyHandler::OnDeviceWallpaperDownloaded,
                 weak_factory_.GetWeakPtr(), hash)));
@@ -177,8 +177,8 @@ void WallpaperPolicyHandler::OnCheckExistingDeviceWallpaperMatchHash(
   GURL wallpaper_url(url);
   device_wallpaper_downloader_.reset(
       new chromeos::CustomizationWallpaperDownloader(
-          g_browser_process->system_request_context(), wallpaper_url,
-          device_wallpaper_file_path_.DirName(), device_wallpaper_file_path_,
+          wallpaper_url, device_wallpaper_file_path_.DirName(),
+          device_wallpaper_file_path_,
           base::BindRepeating(
               &WallpaperPolicyHandler::OnDeviceWallpaperDownloaded,
               weak_factory_.GetWeakPtr(), hash)));

@@ -15,19 +15,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
 
 namespace chromeos {
 
 // Download customized wallpaper.
 // Owner of this class must provide callback, which will be called on
 // finished (either successful or failed) wallpaper download.
-class CustomizationWallpaperDownloader : public net::URLFetcherDelegate {
+class CustomizationWallpaperDownloader {
  public:
   // - |url_context_getter| - Context to initialize net::URLFetcher.
   // - |wallpaper_url| - wallpaper URL to download.
@@ -39,20 +35,16 @@ class CustomizationWallpaperDownloader : public net::URLFetcherDelegate {
   // After download is completed, temporary file will be renamed to
   // |wallpaper_downloaded_file|.
   CustomizationWallpaperDownloader(
-      net::URLRequestContextGetter* url_context_getter,
       const GURL& wallpaper_url,
       const base::FilePath& wallpaper_dir,
       const base::FilePath& wallpaper_downloaded_file,
       base::Callback<void(bool success, const GURL&)>
           on_wallpaper_fetch_completed);
 
-  ~CustomizationWallpaperDownloader() override;
+  ~CustomizationWallpaperDownloader();
 
   // Start download.
   void Start();
-
-  // net::URLFetcherDelegate
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // This is called in tests to modify (lower) retry delay.
   void set_retry_delay_for_testing(base::TimeDelta value) {
@@ -70,17 +62,17 @@ class CustomizationWallpaperDownloader : public net::URLFetcherDelegate {
   // Schedules retry.
   void Retry();
 
+  // This is called when the download has finished.
+  void OnSimpleLoaderComplete(const base::FilePath& file_path);
+
   // Called on UI thread.
   void OnWallpaperDirectoryCreated(std::unique_ptr<bool> success);
 
   // Called on UI thread.
   void OnTemporaryFileRenamed(std::unique_ptr<bool> success);
 
-  // This is used to initialize net::URLFetcher object.
-  scoped_refptr<net::URLRequestContextGetter> url_context_getter_;
-
-  // This fetcher is used to download wallpaper file.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  // This loader is used to download wallpaper file.
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
   // The wallpaper URL to fetch.
   const GURL wallpaper_url_;
