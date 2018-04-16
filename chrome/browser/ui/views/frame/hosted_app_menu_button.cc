@@ -16,6 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/menu_button.h"
 
 constexpr int kMenuHighlightFadeDurationMs = 800;
@@ -25,6 +26,9 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
   SetInkDropMode(InkDropMode::ON);
   // Disable focus ring for consistency with sibling buttons and AppMenuButton.
   SetFocusPainter(nullptr);
+  // We have no need for a border, native theme borders can cause our menu icon
+  // to get cropped, see https://crbug.com/831968.
+  SetBorder(nullptr);
   // This name is guaranteed not to change during the lifetime of this button.
   // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
   // because the menu applies to the entire app.
