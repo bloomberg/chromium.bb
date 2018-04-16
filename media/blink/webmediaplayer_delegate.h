@@ -64,6 +64,10 @@ class WebMediaPlayerDelegate {
     // Called to set as the persistent video. A persistent video should hide its
     // controls and go fullscreen.
     virtual void OnBecamePersistentVideo(bool value) = 0;
+
+    // Called when Picture-in-Picture mode is terminated from the
+    // Picture-in-Picture window.
+    virtual void OnPictureInPictureModeEnded() = 0;
   };
 
   // Returns true if the host frame is hidden or closed.

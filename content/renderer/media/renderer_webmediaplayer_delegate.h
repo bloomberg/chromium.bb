@@ -96,6 +96,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void OnMediaDelegateSuspendAllMediaPlayers();
   void OnMediaDelegateVolumeMultiplierUpdate(int player_id, double multiplier);
   void OnMediaDelegateBecamePersistentVideo(int player_id, bool value);
+  void OnPictureInPictureModeEnded(int player_id);
 
   // Schedules UpdateTask() to run soon.
   void ScheduleUpdateTask();

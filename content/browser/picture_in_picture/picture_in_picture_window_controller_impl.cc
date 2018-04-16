@@ -64,6 +64,17 @@ void PictureInPictureWindowControllerImpl::Close() {
     window_->Close();
 
   surface_id_ = viz::SurfaceId();
+
+  content::MediaWebContentsObserver* observer =
+      static_cast<content::WebContentsImpl* const>(initiator_)
+          ->media_web_contents_observer();
+  base::Optional<content::WebContentsObserver::MediaPlayerId> player_id =
+      observer->GetPictureInPictureVideoMediaPlayerId();
+  DCHECK(!player_id.has_value());
+
+  if (observer->IsPlayerActive(*player_id))
+    player_id->first->Send(new MediaPlayerDelegateMsg_EndPictureInPictureMode(
+        player_id->first->GetRoutingID(), player_id->second));
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(

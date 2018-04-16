@@ -2069,6 +2069,12 @@ void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
   client_->OnBecamePersistentVideo(value);
 }
 
+void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {
+  // TODO(apacible): Converge with exiting Picture-in-Picture mode from
+  // wmpi side. https://crbug.com/823172.
+  NOTIMPLEMENTED();
+}
+
 void WebMediaPlayerImpl::ScheduleRestart() {
   // TODO(watk): All restart logic should be moved into PipelineController.
   if (pipeline_controller_.IsPipelineRunning() &&
