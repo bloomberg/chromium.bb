@@ -42,6 +42,7 @@
 #include "ash/display/screen_position_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/first_run/first_run_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -661,6 +662,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
       cast_config_(std::make_unique<CastConfigController>()),
+      first_run_helper_(std::make_unique<FirstRunHelper>()),
       focus_cycler_(std::make_unique<FocusCycler>()),
       ime_controller_(std::make_unique<ImeController>()),
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),

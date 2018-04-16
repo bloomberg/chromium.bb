@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/first_run/step.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace chromeos {
 namespace first_run {
 
@@ -16,8 +20,11 @@ class TrayStep : public Step {
   TrayStep(FirstRunController* controller, FirstRunActor* actor);
 
  private:
-  // Overriden from Step.
+  // Step:
   void DoShow() override;
+
+  // Shows the step when the bubble bounds are available.
+  void ShowWithBubbleBounds(const gfx::Rect& screen_bounds);
 
   DISALLOW_COPY_AND_ASSIGN(TrayStep);
 };

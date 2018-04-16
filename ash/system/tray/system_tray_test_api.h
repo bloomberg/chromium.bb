@@ -43,6 +43,7 @@ class SystemTrayTestApi : public mojom::SystemTrayTestApi {
 
   // mojom::SystemTrayTestApi:
   void DisableAnimations(DisableAnimationsCallback cb) override;
+  void IsTrayBubbleOpen(IsTrayBubbleOpenCallback cb) override;
   void IsTrayViewVisible(int view_id, IsTrayViewVisibleCallback cb) override;
   void ShowBubble(ShowBubbleCallback cb) override;
   void ShowDetailedView(mojom::TrayItem item,

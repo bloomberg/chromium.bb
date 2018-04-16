@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/first_run/steps/tray_step.h"
 
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/interfaces/first_run_helper.mojom.h"
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/step_names.h"
@@ -19,9 +21,12 @@ TrayStep::TrayStep(FirstRunController* controller, FirstRunActor* actor)
     : Step(kTrayStep, controller, actor) {}
 
 void TrayStep::DoShow() {
-  if (!first_run_controller()->IsTrayBubbleOpened())
-    first_run_controller()->OpenTrayBubble();
-  gfx::Rect bounds = first_run_controller()->GetTrayBubbleBounds();
+  // FirstRunController owns this object, so use Unretained.
+  first_run_controller()->first_run_helper_ptr()->OpenTrayBubble(
+      base::BindOnce(&TrayStep::ShowWithBubbleBounds, base::Unretained(this)));
+}
+
+void TrayStep::ShowWithBubbleBounds(const gfx::Rect& bounds) {
   actor()->AddRectangularHole(bounds.x(), bounds.y(), bounds.width(),
       bounds.height());
   FirstRunActor::StepPosition position;

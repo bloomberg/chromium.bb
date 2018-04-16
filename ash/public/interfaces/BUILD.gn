@@ -23,6 +23,7 @@ mojom("interfaces_internal") {
     "constants.mojom",
     "docked_magnifier_controller.mojom",
     "event_properties.mojom",
+    "first_run_helper.mojom",
     "highlighter_controller.mojom",
     "ime_controller.mojom",
     "ime_info.mojom",

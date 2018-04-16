@@ -13,6 +13,7 @@
 #include "ash/assistant/ash_assistant_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/display/ash_display_controller.h"
+#include "ash/first_run/first_run_helper.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
@@ -93,6 +94,11 @@ void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
 void BindDockedMagnifierControllerRequestOnMainThread(
     mojom::DockedMagnifierControllerRequest request) {
   Shell::Get()->docked_magnifier_controller()->BindRequest(std::move(request));
+}
+
+void BindFirstRunHelperRequestOnMainThread(
+    mojom::FirstRunHelperRequest request) {
+  Shell::Get()->first_run_helper()->BindRequest(std::move(request));
 }
 
 void BindHighlighterControllerRequestOnMainThread(
@@ -219,6 +225,9 @@ void RegisterInterfaces(
         base::BindRepeating(&BindDockedMagnifierControllerRequestOnMainThread),
         main_thread_task_runner);
   }
+  registry->AddInterface(
+      base::BindRepeating(&BindFirstRunHelperRequestOnMainThread),
+      main_thread_task_runner);
   registry->AddInterface(
       base::Bind(&BindHighlighterControllerRequestOnMainThread),
       main_thread_task_runner);

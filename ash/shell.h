@@ -108,6 +108,7 @@ class DockedMagnifierController;
 class DragDropController;
 class EventClientImpl;
 class EventTransformationHandler;
+class FirstRunHelper;
 class FocusCycler;
 class HighContrastController;
 class HighlighterController;
@@ -383,6 +384,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
   }
+  FirstRunHelper* first_run_helper() { return first_run_helper_.get(); }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
   HighlighterController* highlighter_controller() {
     return highlighter_controller_.get();
@@ -694,6 +696,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DetachableBaseNotificationController>
       detachable_base_notification_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
+  std::unique_ptr<FirstRunHelper> first_run_helper_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<ImeController> ime_controller_;
   std::unique_ptr<ImmersiveContextAsh> immersive_context_;

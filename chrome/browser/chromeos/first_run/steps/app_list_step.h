@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/first_run/step.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace chromeos {
 namespace first_run {
 
@@ -16,8 +20,10 @@ class AppListStep : public Step {
   AppListStep(FirstRunController* controller, FirstRunActor* actor);
 
  private:
-  // Overriden from Step.
+  // Step:
   void DoShow() override;
+
+  void ShowWithButtonBounds(const gfx::Rect& screen_bounds);
 
   DISALLOW_COPY_AND_ASSIGN(AppListStep);
 };

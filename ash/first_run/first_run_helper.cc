@@ -4,6 +4,7 @@
 
 #include "ash/first_run/first_run_helper.h"
 
+#include "ash/first_run/desktop_cleaner.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
@@ -38,15 +39,12 @@ views::Widget* CreateFirstRunWindow() {
 
 }  // namespace
 
-FirstRunHelper::FirstRunHelper() : widget_(CreateFirstRunWindow()) {
-  Shell::Get()->overlay_filter()->Activate(this);
-}
+FirstRunHelper::FirstRunHelper() = default;
 
-FirstRunHelper::~FirstRunHelper() {
-  Shell::Get()->overlay_filter()->Deactivate(this);
-  if (IsTrayBubbleOpened())
-    CloseTrayBubble();
-  widget_->Close();
+FirstRunHelper::~FirstRunHelper() = default;
+
+void FirstRunHelper::BindRequest(mojom::FirstRunHelperRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void FirstRunHelper::AddObserver(Observer* observer) {
@@ -61,38 +59,48 @@ views::Widget* FirstRunHelper::GetOverlayWidget() {
   return widget_;
 }
 
-gfx::Rect FirstRunHelper::GetAppListButtonBounds() {
-  Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
-  AppListButton* app_button = shelf->shelf_widget()->GetAppListButton();
-  return app_button->GetBoundsInScreen();
+void FirstRunHelper::CreateOverlayWidget() {
+  widget_ = CreateFirstRunWindow();
+  cleaner_ = std::make_unique<DesktopCleaner>();
+  Shell::Get()->overlay_filter()->Activate(this);
 }
 
-void FirstRunHelper::OpenTrayBubble() {
+void FirstRunHelper::CloseOverlayWidget() {
+  Shell::Get()->overlay_filter()->Deactivate(this);
+  // Ensure the tray is closed.
+  Shell::Get()->GetPrimarySystemTray()->CloseBubble();
+  widget_->Close();
+  widget_ = nullptr;
+  cleaner_.reset();
+}
+
+void FirstRunHelper::GetAppListButtonBounds(GetAppListButtonBoundsCallback cb) {
+  Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
+  AppListButton* app_button = shelf->shelf_widget()->GetAppListButton();
+  std::move(cb).Run(app_button->GetBoundsInScreen());
+}
+
+void FirstRunHelper::OpenTrayBubble(OpenTrayBubbleCallback cb) {
   SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
   tray->ShowPersistentDefaultView();
+  views::View* bubble = tray->GetSystemBubble()->bubble_view();
+  std::move(cb).Run(bubble->GetBoundsInScreen());
 }
 
 void FirstRunHelper::CloseTrayBubble() {
   SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
-  DCHECK(tray->HasSystemBubble()) << "Tray bubble is closed already.";
   tray->CloseBubble();
 }
 
-bool FirstRunHelper::IsTrayBubbleOpened() {
-  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
-  return tray->HasSystemBubble();
-}
-
-gfx::Rect FirstRunHelper::GetTrayBubbleBounds() {
-  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
-  views::View* bubble = tray->GetSystemBubble()->bubble_view();
-  return bubble->GetBoundsInScreen();
-}
-
-gfx::Rect FirstRunHelper::GetHelpButtonBounds() {
+void FirstRunHelper::GetHelpButtonBounds(GetHelpButtonBoundsCallback cb) {
   SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
   views::View* help_button = tray->GetHelpButtonView();
-  return help_button->GetBoundsInScreen();
+  // |help_button| could be null if the tray isn't open.
+  if (!help_button) {
+    std::move(cb).Run(gfx::Rect());
+    return;
+  }
+  std::move(cb).Run(help_button->GetBoundsInScreen());
 }
 
 // OverlayEventFilter::Delegate:
