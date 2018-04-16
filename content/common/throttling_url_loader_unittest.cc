@@ -134,7 +134,13 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
 
   size_t on_complete_called() const { return on_complete_called_; }
 
-  void set_on_received_response_callback(const base::Closure& callback) {
+  void set_on_received_redirect_callback(
+      const base::RepeatingClosure& callback) {
+    on_received_redirect_callback_ = callback;
+  }
+
+  void set_on_received_response_callback(
+      const base::RepeatingClosure& callback) {
     on_received_response_callback_ = callback;
   }
 
@@ -156,6 +162,8 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head) override {
     on_received_redirect_called_++;
+    if (on_received_redirect_callback_)
+      on_received_redirect_callback_.Run();
   }
   void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {}
   void OnUploadProgress(int64_t current_position,
@@ -175,7 +183,8 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   size_t on_received_redirect_called_ = 0;
   size_t on_complete_called_ = 0;
 
-  base::Closure on_received_response_callback_;
+  base::RepeatingClosure on_received_redirect_callback_;
+  base::RepeatingClosure on_received_response_callback_;
   OnCompleteCallback on_complete_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderClient);
@@ -904,7 +913,8 @@ TEST_F(ThrottlingURLLoaderTest, PauseResumeReadingBodyFromNet) {
   EXPECT_EQ(1u, factory_.resume_reading_body_from_net_called());
 }
 
-TEST_F(ThrottlingURLLoaderTest, DestroyingThrottlingURLLoaderInDelegateCall) {
+TEST_F(ThrottlingURLLoaderTest,
+       DestroyingThrottlingURLLoaderInDelegateCall_Response) {
   base::RunLoop run_loop1;
   throttle_->set_will_process_response_callback(base::Bind(
       [](const base::Closure& quit_closure,
@@ -940,6 +950,55 @@ TEST_F(ThrottlingURLLoaderTest, DestroyingThrottlingURLLoaderInDelegateCall) {
 
   EXPECT_TRUE(
       throttle_->observed_response_url().EqualsIgnoringRef(request_url));
+
+  throttle_->delegate()->Resume();
+  run_loop2.Run();
+
+  // The ThrottlingURLLoader should be gone.
+  EXPECT_EQ(nullptr, loader_);
+  // The throttle should stay alive and destroyed later.
+  EXPECT_NE(nullptr, throttle_);
+
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(nullptr, throttle_);
+}
+
+// Regression test for crbug.com/833292.
+TEST_F(ThrottlingURLLoaderTest,
+       DestroyingThrottlingURLLoaderInDelegateCall_Redirect) {
+  base::RunLoop run_loop1;
+  throttle_->set_will_redirect_request_callback(base::BindRepeating(
+      [](const base::RepeatingClosure& quit_closure,
+         URLLoaderThrottle::Delegate* delegate, bool* defer) {
+        *defer = true;
+        quit_closure.Run();
+      },
+      run_loop1.QuitClosure()));
+
+  base::RunLoop run_loop2;
+  client_.set_on_received_redirect_callback(base::BindRepeating(
+      [](ThrottlingURLLoaderTest* test,
+         const base::RepeatingClosure& quit_closure) {
+        // Destroy the ThrottlingURLLoader while inside a delegate call from a
+        // throttle.
+        test->loader().reset();
+
+        // The throttle should stay alive.
+        EXPECT_NE(nullptr, test->throttle());
+
+        quit_closure.Run();
+      },
+      base::Unretained(this), run_loop2.QuitClosure()));
+
+  CreateLoaderAndStart();
+
+  factory_.NotifyClientOnReceiveRedirect();
+
+  run_loop1.Run();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(1u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle_->will_process_response_called());
 
   throttle_->delegate()->Resume();
   run_loop2.Run();
