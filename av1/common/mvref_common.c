@@ -78,7 +78,7 @@ static void add_ref_mv_candidate(
     uint8_t refmv_counts[MODE_CTX_REF_FRAMES],
     uint8_t ref_match_counts[MODE_CTX_REF_FRAMES],
     uint8_t newmv_counts[MODE_CTX_REF_FRAMES],
-    CANDIDATE_MV ref_mv_stacks[][MAX_REF_MV_STACK_SIZE], int len,
+    CANDIDATE_MV ref_mv_stacks[][MAX_REF_MV_STACK_SIZE],
 #if USE_CUR_GM_REFMV
     int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params,
 #endif  // USE_CUR_GM_REFMV
@@ -108,12 +108,12 @@ static void add_ref_mv_candidate(
         for (index = 0; index < *refmv_count; ++index)
           if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int) break;
 
-        if (index < *refmv_count) ref_mv_stack[index].weight += weight * len;
+        if (index < *refmv_count) ref_mv_stack[index].weight += weight;
 
         // Add a new item to the list.
         if (index == *refmv_count && *refmv_count < MAX_REF_MV_STACK_SIZE) {
           ref_mv_stack[index].this_mv = this_refmv;
-          ref_mv_stack[index].weight = weight * len;
+          ref_mv_stack[index].weight = weight;
           ++(*refmv_count);
         }
         if (have_newmv_in_inter_mode(candidate->mode)) ++*newmv_count;
@@ -146,13 +146,13 @@ static void add_ref_mv_candidate(
             (ref_mv_stack[index].comp_mv.as_int == this_refmv[1].as_int))
           break;
 
-      if (index < *refmv_count) ref_mv_stack[index].weight += weight * len;
+      if (index < *refmv_count) ref_mv_stack[index].weight += weight;
 
       // Add a new item to the list.
       if (index == *refmv_count && *refmv_count < MAX_REF_MV_STACK_SIZE) {
         ref_mv_stack[index].this_mv = this_refmv[0];
         ref_mv_stack[index].comp_mv = this_refmv[1];
-        ref_mv_stack[index].weight = weight * len;
+        ref_mv_stack[index].weight = weight;
         ++(*refmv_count);
       }
       if (have_newmv_in_inter_mode(candidate->mode)) ++*newmv_count;
@@ -209,11 +209,11 @@ static void scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
 
     add_ref_mv_candidate(candidate, rf, refmv_count, ref_match_count,
-                         newmv_count, ref_mv_stack, len,
+                         newmv_count, ref_mv_stack,
 #if USE_CUR_GM_REFMV
                          gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
-                         col_offset + i, weight);
+                         col_offset + i, len * weight);
 
     i += len;
   }
@@ -266,11 +266,11 @@ static void scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
 
     add_ref_mv_candidate(candidate, rf, refmv_count, ref_match_count,
-                         newmv_count, ref_mv_stack, len,
+                         newmv_count, ref_mv_stack,
 #if USE_CUR_GM_REFMV
                          gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
-                         col_offset, weight);
+                         col_offset, len * weight);
 
     i += len;
   }
@@ -299,11 +299,11 @@ static void scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const int len = mi_size_wide[BLOCK_8X8];
 
     add_ref_mv_candidate(candidate, rf, refmv_count, ref_match_count,
-                         newmv_count, ref_mv_stack, len,
+                         newmv_count, ref_mv_stack,
 #if USE_CUR_GM_REFMV
                          gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
-                         mi_pos.col, 2);
+                         mi_pos.col, 2 * len);
   }  // Analyze a single 8x8 block motion information.
 }
 
