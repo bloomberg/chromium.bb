@@ -36,6 +36,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
       std::unique_ptr<protocol::Array<String>> style_whitelist,
       protocol::Maybe<bool> include_event_listeners,
       protocol::Maybe<bool> include_paint_order,
+      protocol::Maybe<bool> include_user_agent_shadow_tree,
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DOMNode>>*
           dom_nodes,
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::LayoutTreeNode>>*
@@ -47,13 +48,26 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
 
   // Adds a DOMNode for the given Node to |dom_nodes_| and returns its index.
-  int VisitNode(Node*, bool include_event_listeners);
+  int VisitNode(Node*,
+                bool include_event_listeners,
+                bool include_user_agent_shadow_tree);
+
+  // Helpers for VisitContainerChildren.
+  static Node* FirstChild(const Node& node,
+                          bool include_user_agent_shadow_tree);
+  static bool HasChildren(const Node& node,
+                          bool include_user_agent_shadow_tree);
+  static Node* NextSibling(const Node& node,
+                           bool include_user_agent_shadow_tree);
+
   std::unique_ptr<protocol::Array<int>> VisitContainerChildren(
       Node* container,
-      bool include_event_listeners);
+      bool include_event_listeners,
+      bool include_user_agent_shadow_tree);
   std::unique_ptr<protocol::Array<int>> VisitPseudoElements(
       Element* parent,
-      bool include_event_listeners);
+      bool include_event_listeners,
+      bool include_user_agent_shadow_tree);
   std::unique_ptr<protocol::Array<protocol::DOMSnapshot::NameValue>>
   BuildArrayForElementAttributes(Element*);
 

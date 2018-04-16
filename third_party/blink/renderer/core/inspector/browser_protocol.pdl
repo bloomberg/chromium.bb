@@ -2086,6 +2086,8 @@ experimental domain DOMSnapshot
       optional boolean includeEventListeners
       # Whether to determine and include the paint order index of LayoutTreeNodes (default false).
       optional boolean includePaintOrder
+      # Whether to include UA shadow tree in the snapshot (default false).
+      optional boolean includeUserAgentShadowTree
     returns
       # The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
       array of DOMNode domNodes
