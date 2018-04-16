@@ -60,4 +60,19 @@ PositionWithAffinity LayoutBR::PositionForPoint(const LayoutPoint&) const {
   return CreatePositionWithAffinity(0);
 }
 
+Position LayoutBR::PositionForCaretOffset(unsigned offset) const {
+  DCHECK_LE(offset, 1u);
+  DCHECK(GetNode());
+  return offset ? Position::AfterNode(*GetNode())
+                : Position::BeforeNode(*GetNode());
+}
+
+Optional<unsigned> LayoutBR::CaretOffsetForPosition(
+    const Position& position) const {
+  if (position.IsNull() || position.AnchorNode() != GetNode())
+    return WTF::nullopt;
+  DCHECK(position.IsBeforeAnchor() || position.IsAfterAnchor()) << position;
+  return position.IsBeforeAnchor() ? 0 : 1;
+}
+
 }  // namespace blink
