@@ -178,8 +178,12 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
       // Some types of Target.detachedFromTarget events do not have targetId.
       // We are not interested in those types of targets.
       return Status(kOk);
-    WebViewImpl* target =
-        static_cast<WebViewImpl*>(frame_to_target_map_[target_id].get());
+    auto target_iter = frame_to_target_map_.find(target_id);
+    if (target_iter == frame_to_target_map_.end())
+      // There are some target types that we're not keeping track of, thus not
+      // finding the target in frame_to_target_map_ is OK.
+      return Status(kOk);
+    WebViewImpl* target = static_cast<WebViewImpl*>(target_iter->second.get());
     if (target->IsLocked())
       target->SetDetached();
     else
