@@ -1015,6 +1015,7 @@ void FeatureInfo::InitializeFeatures() {
 
   // TODO(kainino): Once we have a way to query whether ANGLE is exposing
   // native support for ETC2 textures, require that here.
+  // http://anglebug.com/1552
   if (gl_version_info_->is_es3 && !gl_version_info_->is_angle) {
     AddExtensionString("GL_CHROMIUM_compressed_texture_etc");
     validators_.UpdateETCCompressedTextureFormats();
@@ -1160,7 +1161,7 @@ void FeatureInfo::InitializeFeatures() {
   bool can_emulate_es2_draw_buffers_on_es3_nv =
       gl_version_info_->is_es3 &&
       gl::HasExtension(extensions, "GL_NV_draw_buffers");
-  bool is_webgl_compatbility_context =
+  bool is_webgl_compatibility_context =
       gl::HasExtension(extensions, "GL_ANGLE_webgl_compatibility");
   bool have_es2_draw_buffers =
       !workarounds_.disable_ext_draw_buffers &&
@@ -1168,7 +1169,7 @@ void FeatureInfo::InitializeFeatures() {
        can_emulate_es2_draw_buffers_on_es3_nv) &&
       (context_type_ == CONTEXT_TYPE_OPENGLES2 ||
        (context_type_ == CONTEXT_TYPE_WEBGL1 &&
-        IsWebGLDrawBuffersSupported(is_webgl_compatbility_context,
+        IsWebGLDrawBuffersSupported(is_webgl_compatibility_context,
                                     depth_texture_format,
                                     depth_stencil_texture_format)));
   if (have_es2_draw_buffers) {
@@ -1447,7 +1448,7 @@ void FeatureInfo::InitializeFeatures() {
 
   feature_flags_.chromium_bind_generates_resource =
       gl::HasExtension(extensions, "GL_CHROMIUM_bind_generates_resource");
-  feature_flags_.angle_webgl_compatibility = is_webgl_compatbility_context;
+  feature_flags_.angle_webgl_compatibility = is_webgl_compatibility_context;
   feature_flags_.chromium_copy_texture =
       gl::HasExtension(extensions, "GL_CHROMIUM_copy_texture");
   feature_flags_.chromium_copy_compressed_texture =
