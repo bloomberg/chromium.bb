@@ -22,7 +22,6 @@ import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -68,12 +67,6 @@ public class AccountManagerFacade {
      */
     @VisibleForTesting
     public static final String FEATURE_IS_USM_ACCOUNT_KEY = "service_usm";
-
-    /**
-     * Command-line switch that enables USM account support.
-     */
-    @VisibleForTesting
-    public static final String ENABLE_USM_ACCOUNTS_SWITCH = "enable-usm-accounts";
 
     @VisibleForTesting
     public static final String ACCOUNT_RESTRICTION_PATTERNS_KEY = "RestrictAccountsToPatterns";
@@ -527,13 +520,8 @@ public class AccountManagerFacade {
 
     @MainThread
     public void checkChildAccount(Account account, Callback<Boolean> callback) {
-        final String[] features;
-        if (CommandLine.getInstance().hasSwitch(ENABLE_USM_ACCOUNTS_SWITCH)) {
-            features = new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY, FEATURE_IS_USM_ACCOUNT_KEY};
-        } else {
-            features = new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY};
-        }
-        hasAnyOfFeatures(account, features, callback);
+        hasAnyOfFeatures(account,
+                new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY, FEATURE_IS_USM_ACCOUNT_KEY}, callback);
     }
 
     private boolean hasFeature(Account account, String feature) {

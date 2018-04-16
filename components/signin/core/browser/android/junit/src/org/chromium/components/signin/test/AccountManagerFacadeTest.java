@@ -23,7 +23,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
-import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -222,7 +221,7 @@ public class AccountManagerFacadeTest {
 
     @Test
     @SmallTest
-    public void testCheckChildAccount_usmSwitchOff() throws AccountManagerDelegateException {
+    public void testCheckChildAccount() throws AccountManagerDelegateException {
         Account testAccount = addTestAccount("test@gmail.com");
         Account ucaAccount =
                 addTestAccount("uca@gmail.com", AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY);
@@ -231,26 +230,6 @@ public class AccountManagerFacadeTest {
         Account bothAccount = addTestAccount("uca_usm@gmail.com",
                 AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY,
                 AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
-
-        assertChildAccountStatus(testAccount, false);
-        assertChildAccountStatus(ucaAccount, true);
-        assertChildAccountStatus(usmAccount, false);
-        assertChildAccountStatus(bothAccount, true);
-    }
-
-    @Test
-    @SmallTest
-    public void testCheckChildAccount_usmSwitchOn() throws AccountManagerDelegateException {
-        Account testAccount = addTestAccount("test@gmail.com");
-        Account ucaAccount =
-                addTestAccount("uca@gmail.com", AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY);
-        Account usmAccount =
-                addTestAccount("usm@gmail.com", AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
-        Account bothAccount = addTestAccount("uca_usm@gmail.com",
-                AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY,
-                AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
-
-        CommandLine.getInstance().appendSwitch(AccountManagerFacade.ENABLE_USM_ACCOUNTS_SWITCH);
 
         assertChildAccountStatus(testAccount, false);
         assertChildAccountStatus(ucaAccount, true);
