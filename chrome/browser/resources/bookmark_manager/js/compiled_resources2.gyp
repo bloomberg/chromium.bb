@@ -45,7 +45,6 @@
           '<(DEPTH)/chrome/browser/resources/bookmark_manager/js/dnd.js',
           '<(DEPTH)/chrome/browser/resources/bookmark_manager/js/main.js',
           '<(DEPTH)/third_party/closure_compiler/externs/bookmark_manager_private.js',
-          '<(DEPTH)/third_party/closure_compiler/externs//chrome.js',
           '<(DEPTH)/third_party/closure_compiler/externs//chrome_send.js',
           '<(DEPTH)/third_party/closure_compiler/externs//chrome_extensions.js',
           '<(DEPTH)/third_party/closure_compiler/externs//metrics_private.js',
