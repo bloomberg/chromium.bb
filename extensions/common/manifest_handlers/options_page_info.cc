@@ -222,9 +222,9 @@ bool OptionsPageManifestHandler::Validate(
   return true;
 }
 
-const std::vector<std::string> OptionsPageManifestHandler::Keys() const {
-  static const char* keys[] = {keys::kOptionsPage, keys::kOptionsUI};
-  return std::vector<std::string>(keys, keys + arraysize(keys));
+base::span<const char* const> OptionsPageManifestHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kOptionsPage, keys::kOptionsUI};
+  return kKeys;
 }
 
 }  // namespace extensions

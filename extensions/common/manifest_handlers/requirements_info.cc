@@ -41,8 +41,9 @@ RequirementsHandler::RequirementsHandler() {
 RequirementsHandler::~RequirementsHandler() {
 }
 
-const std::vector<std::string> RequirementsHandler::Keys() const {
-  return SingleKey(keys::kRequirements);
+base::span<const char* const> RequirementsHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kRequirements};
+  return kKeys;
 }
 
 bool RequirementsHandler::AlwaysParseForType(Manifest::Type type) const {

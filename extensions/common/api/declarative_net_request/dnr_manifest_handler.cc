@@ -83,8 +83,9 @@ bool DNRManifestHandler::Validate(const Extension* extension,
   return false;
 }
 
-const std::vector<std::string> DNRManifestHandler::Keys() const {
-  return SingleKey(keys::kDeclarativeNetRequestKey);
+base::span<const char* const> DNRManifestHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kDeclarativeNetRequestKey};
+  return kKeys;
 }
 
 }  // namespace declarative_net_request

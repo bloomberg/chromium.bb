@@ -57,9 +57,10 @@ const std::vector<std::string> ManifestHandler::PrerequisiteKeys() const {
 
 void ManifestHandler::Register() {
   linked_ptr<ManifestHandler> this_linked(this);
-  const std::vector<std::string> keys = Keys();
-  for (size_t i = 0; i < keys.size(); ++i)
-    GetRegistry()->RegisterManifestHandler(keys[i], this_linked);
+
+  ManifestHandlerRegistry* registry = GetRegistry();
+  for (const char* key : Keys())
+    registry->RegisterManifestHandler(key, this_linked);
 }
 
 ManifestPermission* ManifestHandler::CreatePermission() {
@@ -126,7 +127,8 @@ void ManifestHandlerRegistry::Finalize() {
 }
 
 void ManifestHandlerRegistry::RegisterManifestHandler(
-    const std::string& key, linked_ptr<ManifestHandler> handler) {
+    const char* key,
+    linked_ptr<ManifestHandler> handler) {
   CHECK(!is_finalized_);
   handlers_[key] = handler;
 }

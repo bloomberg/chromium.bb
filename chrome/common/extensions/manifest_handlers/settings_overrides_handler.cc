@@ -175,8 +175,9 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
   return true;
 }
 
-const std::vector<std::string> SettingsOverridesHandler::Keys() const {
-  return SingleKey(manifest_keys::kSettingsOverride);
+base::span<const char* const> SettingsOverridesHandler::Keys() const {
+  static constexpr const char* kKeys[] = {manifest_keys::kSettingsOverride};
+  return kKeys;
 }
 
 }  // namespace extensions

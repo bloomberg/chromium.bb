@@ -90,8 +90,9 @@ bool WebAccessibleResourcesHandler::Parse(Extension* extension,
   return true;
 }
 
-const std::vector<std::string> WebAccessibleResourcesHandler::Keys() const {
-  return SingleKey(keys::kWebAccessibleResources);
+base::span<const char* const> WebAccessibleResourcesHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kWebAccessibleResources};
+  return kKeys;
 }
 
 }  // namespace extensions

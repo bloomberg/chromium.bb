@@ -325,12 +325,12 @@ bool BackgroundManifestHandler::AlwaysParseForType(Manifest::Type type) const {
   return type == Manifest::TYPE_PLATFORM_APP;
 }
 
-const std::vector<std::string> BackgroundManifestHandler::Keys() const {
-  static const char* keys[] = {
+base::span<const char* const> BackgroundManifestHandler::Keys() const {
+  static constexpr const char* kKeys[] = {
       keys::kBackgroundAllowJsAccess,   keys::kBackgroundPage,
       keys::kBackgroundPersistent,      keys::kBackgroundScripts,
       keys::kPlatformAppBackgroundPage, keys::kPlatformAppBackgroundScripts};
-  return std::vector<std::string>(keys, keys + arraysize(keys));
+  return kKeys;
 }
 
 }  // namespace extensions

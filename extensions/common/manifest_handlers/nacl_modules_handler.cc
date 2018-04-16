@@ -85,8 +85,9 @@ bool NaClModulesHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> NaClModulesHandler::Keys() const {
-  return SingleKey(keys::kNaClModules);
+base::span<const char* const> NaClModulesHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kNaClModules};
+  return kKeys;
 }
 
 }  // namespace extensions

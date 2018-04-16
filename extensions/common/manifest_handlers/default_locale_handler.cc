@@ -113,8 +113,9 @@ bool DefaultLocaleHandler::AlwaysValidateForType(Manifest::Type type) const {
   return true;
 }
 
-const std::vector<std::string> DefaultLocaleHandler::Keys() const {
-  return SingleKey(keys::kDefaultLocale);
+base::span<const char* const> DefaultLocaleHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kDefaultLocale};
+  return kKeys;
 }
 
 }  // namespace extensions

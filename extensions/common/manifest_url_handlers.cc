@@ -119,8 +119,9 @@ bool HomepageURLHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> HomepageURLHandler::Keys() const {
-  return SingleKey(keys::kHomepageURL);
+base::span<const char* const> HomepageURLHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kHomepageURL};
+  return kKeys;
 }
 
 UpdateURLHandler::UpdateURLHandler() {
@@ -151,8 +152,9 @@ bool UpdateURLHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> UpdateURLHandler::Keys() const {
-  return SingleKey(keys::kUpdateURL);
+base::span<const char* const> UpdateURLHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kUpdateURL};
+  return kKeys;
 }
 
 AboutPageHandler::AboutPageHandler() {
@@ -202,8 +204,9 @@ bool AboutPageHandler::Validate(const Extension* extension,
   return true;
 }
 
-const std::vector<std::string> AboutPageHandler::Keys() const {
-  return SingleKey(keys::kAboutPage);
+base::span<const char* const> AboutPageHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kAboutPage};
+  return kKeys;
 }
 
 }  // namespace extensions

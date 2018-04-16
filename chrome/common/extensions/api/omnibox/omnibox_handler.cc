@@ -49,8 +49,9 @@ bool OmniboxHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> OmniboxHandler::Keys() const {
-  return SingleKey(manifest_keys::kOmnibox);
+base::span<const char* const> OmniboxHandler::Keys() const {
+  static constexpr const char* kKeys[] = {manifest_keys::kOmnibox};
+  return kKeys;
 }
 
 }  // namespace extensions

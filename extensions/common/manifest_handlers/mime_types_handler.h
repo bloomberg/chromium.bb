@@ -70,7 +70,7 @@ class MimeTypesHandlerParser : public extensions::ManifestHandler {
   bool Parse(extensions::Extension* extension, base::string16* error) override;
 
  private:
-  const std::vector<std::string> Keys() const override;
+  base::span<const char* const> Keys() const override;
 };
 
 #endif  // EXTENSIONS_COMMON_MANIFEST_HANDLERS_MIME_TYPES_HANDLER_H_

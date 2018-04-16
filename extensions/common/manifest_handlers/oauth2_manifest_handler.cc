@@ -94,8 +94,9 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
   return true;
 }
 
-const std::vector<std::string> OAuth2ManifestHandler::Keys() const {
-  return SingleKey(keys::kOAuth2);
+base::span<const char* const> OAuth2ManifestHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kOAuth2};
+  return kKeys;
 }
 
 }  // namespace extensions

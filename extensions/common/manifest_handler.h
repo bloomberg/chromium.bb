@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/strings/string16.h"
@@ -118,7 +119,7 @@ class ManifestHandler {
 
  private:
   // The keys to register us for (in Register).
-  virtual const std::vector<std::string> Keys() const = 0;
+  virtual base::span<const char* const> Keys() const = 0;
 };
 
 // The global registry for manifest handlers.
@@ -134,7 +135,7 @@ class ManifestHandlerRegistry {
 
   void Finalize();
 
-  void RegisterManifestHandler(const std::string& key,
+  void RegisterManifestHandler(const char* key,
                                linked_ptr<ManifestHandler> handler);
   bool ParseExtension(Extension* extension, base::string16* error);
   bool ValidateExtension(const Extension* extension,

@@ -84,8 +84,9 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
   return true;
 }
 
-const std::vector<std::string> ExternallyConnectableHandler::Keys() const {
-  return SingleKey(keys::kExternallyConnectable);
+base::span<const char* const> ExternallyConnectableHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kExternallyConnectable};
+  return kKeys;
 }
 
 // static

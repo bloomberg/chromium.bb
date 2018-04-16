@@ -176,8 +176,9 @@ ManifestPermission* UIOverridesHandler::CreateInitialRequiredPermission(
     return data->manifest_permission->Clone();
   return NULL;
 }
-const std::vector<std::string> UIOverridesHandler::Keys() const {
-  return SingleKey(manifest_keys::kUIOverride);
+base::span<const char* const> UIOverridesHandler::Keys() const {
+  static constexpr const char* kKeys[] = {manifest_keys::kUIOverride};
+  return kKeys;
 }
 
 }  // namespace extensions

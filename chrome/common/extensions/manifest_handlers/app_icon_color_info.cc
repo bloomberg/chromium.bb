@@ -77,8 +77,9 @@ bool AppIconColorHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> AppIconColorHandler::Keys() const {
-  return SingleKey(keys::kAppIconColor);
+base::span<const char* const> AppIconColorHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kAppIconColor};
+  return kKeys;
 }
 
 }  // namespace extensions

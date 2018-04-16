@@ -78,7 +78,7 @@ class OptionsPageManifestHandler : public ManifestHandler {
                 std::vector<InstallWarning>* warnings) const override;
 
  private:
-  const std::vector<std::string> Keys() const override;
+  base::span<const char* const> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsPageManifestHandler);
 };

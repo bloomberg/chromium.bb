@@ -75,7 +75,7 @@ class AppLaunchManifestHandler : public ManifestHandler {
   bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
-  const std::vector<std::string> Keys() const override;
+  base::span<const char* const> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchManifestHandler);
 };

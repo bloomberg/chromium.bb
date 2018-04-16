@@ -126,12 +126,11 @@ bool ExtensionActionHandler::AlwaysParseForType(Manifest::Type type) const {
   return type == Manifest::TYPE_EXTENSION || type == Manifest::TYPE_USER_SCRIPT;
 }
 
-const std::vector<std::string> ExtensionActionHandler::Keys() const {
-  std::vector<std::string> keys;
-  keys.push_back(manifest_keys::kPageAction);
-  keys.push_back(manifest_keys::kBrowserAction);
-  keys.push_back(manifest_keys::kSynthesizeExtensionAction);
-  return keys;
+base::span<const char* const> ExtensionActionHandler::Keys() const {
+  static constexpr const char* kKeys[] = {
+      manifest_keys::kPageAction, manifest_keys::kBrowserAction,
+      manifest_keys::kSynthesizeExtensionAction};
+  return kKeys;
 }
 
 }  // namespace extensions

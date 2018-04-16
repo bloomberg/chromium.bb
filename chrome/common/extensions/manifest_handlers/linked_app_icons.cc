@@ -106,8 +106,9 @@ bool LinkedAppIconsHandler::Parse(Extension* extension, base::string16* error) {
   return true;
 }
 
-const std::vector<std::string> LinkedAppIconsHandler::Keys() const {
-  return SingleKey(keys::kLinkedAppIcons);
+base::span<const char* const> LinkedAppIconsHandler::Keys() const {
+  static constexpr const char* kKeys[] = {keys::kLinkedAppIcons};
+  return kKeys;
 }
 
 }  // namespace extensions
