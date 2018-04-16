@@ -182,3 +182,27 @@ TEST(create_resource_with_same_id)
 	wl_display_destroy(display);
 	close(s[1]);
 }
+
+static void
+display_destroy_notify(struct wl_listener *l, void *data)
+{
+	l->link.prev = l->link.next = NULL;
+}
+
+TEST(free_without_remove)
+{
+	struct wl_display *display;
+	struct wl_listener a, b;
+
+	display = wl_display_create();
+	a.notify = display_destroy_notify;
+	b.notify = display_destroy_notify;
+
+	wl_display_add_destroy_listener(display, &a);
+	wl_display_add_destroy_listener(display, &b);
+
+	wl_display_destroy(display);
+
+	assert(a.link.next == a.link.prev && a.link.next == NULL);
+	assert(b.link.next == b.link.prev && b.link.next == NULL);
+}
