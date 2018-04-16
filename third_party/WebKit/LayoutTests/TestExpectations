@@ -1235,10 +1235,6 @@ crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-onprog
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-progress-events.html [ Crash Timeout Pass ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/upload-onprogress-event.html [ Pass Crash ]
 
-# This test failed to rebaseline correctly on mac with "webkit-patch rebaseline cl".
-# We'll have to rebaseline from the waterfall bots after it lands.
-crbug.com/826878 [ Mac ] virtual/color_space/fast/canvas/color-space/toDataURL-color-managed-round-trip.html [ Failure ]
-
 # Timeout tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight-status.any.html [ Pass Timeout ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.html [ Pass Timeout ]

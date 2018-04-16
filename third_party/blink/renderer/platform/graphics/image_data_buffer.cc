@@ -53,36 +53,18 @@ ImageDataBuffer::ImageDataBuffer(scoped_refptr<StaticBitmapImage> image) {
   retained_image_ = image->PaintImageForCurrentFrame().GetSkImage();
   if (!retained_image_)
     return;
-  if (retained_image_->isTextureBacked() ||
-      retained_image_->isLazyGenerated() ||
-      retained_image_->alphaType() != kUnpremul_SkAlphaType) {
-    // Unpremul is handled upfront, using readPixels, which will correctly clamp
-    // premul color values that would otherwise cause overflows in the skia
-    // encoder unpremul logic.
-    SkColorType colorType = retained_image_->colorType();
-    if (colorType == kRGBA_8888_SkColorType ||
-        colorType == kBGRA_8888_SkColorType)
-      colorType = kN32_SkColorType;  // Work around for bug with JPEG encoder
-    const SkImageInfo info =
-        SkImageInfo::Make(retained_image_->width(), retained_image_->height(),
-                          retained_image_->colorType(), kUnpremul_SkAlphaType,
-                          retained_image_->refColorSpace());
-    const size_t rowBytes = info.minRowBytes();
-    size_t size = info.computeByteSize(rowBytes);
-    if (SkImageInfo::ByteSizeOverflowed(size))
+  if (retained_image_->isTextureBacked()) {
+    retained_image_ = retained_image_->makeNonTextureImage();
+    if (!retained_image_)
       return;
-
-    sk_sp<SkData> data = SkData::MakeUninitialized(size);
-    pixmap_ = {info, data->writable_data(), info.minRowBytes()};
-    if (!retained_image_->readPixels(pixmap_, 0, 0)) {
-      pixmap_.reset();
-      return;
-    }
-    retained_image_ = SkImage::MakeRasterData(info, std::move(data), rowBytes);
-  } else {
-    if (!retained_image_->peekPixels(&pixmap_))
-      return;
+  } else if (retained_image_->isLazyGenerated()) {
+    // Call readPixels() to trigger decoding.
+    SkImageInfo info = SkImageInfo::MakeN32(1, 1, retained_image_->alphaType());
+    std::unique_ptr<uint8_t[]> pixel(new uint8_t[info.bytesPerPixel()]());
+    retained_image_->readPixels(info, pixel.get(), info.minRowBytes(), 1, 1);
   }
+  if (!retained_image_->peekPixels(&pixmap_))
+    return;
   is_valid_ = true;
   size_ = IntSize(image->width(), image->height());
 }
@@ -125,14 +107,7 @@ bool ImageDataBuffer::EncodeImage(const String& mime_type,
     SkJpegEncoder::Options options;
     options.fQuality = ImageEncoder::ComputeJpegQuality(quality);
     options.fAlphaOption = SkJpegEncoder::AlphaOption::kBlendOnBlack;
-    // When the gamma is linear (which is always the case with currently
-    // supported color spaces in F16 format), it does not matter whether we use
-    // kRespect or kIgnore, but the JPEG encoder does not support kIgnore with
-    // F16 for some reason, so we switch to kRespect in that case, with no
-    // consequence on the encoded output.
-    options.fBlendBehavior = pixmap_.colorType() == kRGBA_F16_SkColorType
-                                 ? SkTransferFunctionBehavior::kRespect
-                                 : SkTransferFunctionBehavior::kIgnore;
+    options.fBlendBehavior = SkTransferFunctionBehavior::kIgnore;
     if (options.fQuality == 100) {
       options.fDownsample = SkJpegEncoder::Downsample::k444;
     }
