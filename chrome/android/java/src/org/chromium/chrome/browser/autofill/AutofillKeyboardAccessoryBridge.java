@@ -12,6 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryView;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.DropdownItem;
@@ -26,7 +27,7 @@ import org.chromium.ui.base.WindowAndroid;
 public class AutofillKeyboardAccessoryBridge
         implements AutofillDelegate, DialogInterface.OnClickListener {
     private long mNativeAutofillKeyboardAccessory;
-    private AutofillKeyboardAccessory mAccessoryView;
+    private KeyboardAccessoryView mAccessoryView;
     private Context mContext;
     private AutofillKeyboardSuggestions mAutofillSuggestions;
 
@@ -87,7 +88,7 @@ public class AutofillKeyboardAccessoryBridge
         }
 
         mNativeAutofillKeyboardAccessory = nativeAutofillKeyboardAccessory;
-        mAccessoryView = new AutofillKeyboardAccessory(windowAndroid);
+        mAccessoryView = new KeyboardAccessoryView(windowAndroid);
         mAutofillSuggestions =
                 new AutofillKeyboardSuggestions(windowAndroid, this, shouldLimitLabelWidth);
         mAccessoryView.setSuggestions(mAutofillSuggestions);
