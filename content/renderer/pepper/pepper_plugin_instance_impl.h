@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/layers/content_layer_client.h"
@@ -857,10 +858,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   uint32_t filtered_input_event_mask_;
 
   // Text composition status.
+  struct TextInputCaretInfo {
+    gfx::Rect caret;
+    gfx::Rect caret_bounds;
+  };
+  base::Optional<TextInputCaretInfo> text_input_caret_info_;
   ui::TextInputType text_input_type_;
-  gfx::Rect text_input_caret_;
-  gfx::Rect text_input_caret_bounds_;
-  bool text_input_caret_set_;
 
   // Text selection status.
   std::string surrounding_text_;

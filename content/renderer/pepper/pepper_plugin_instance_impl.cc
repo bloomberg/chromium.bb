@@ -542,9 +542,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       input_event_mask_(0),
       filtered_input_event_mask_(0),
       text_input_type_(kPluginDefaultTextInputType),
-      text_input_caret_(0, 0, 0, 0),
-      text_input_caret_bounds_(0, 0, 0, 0),
-      text_input_caret_set_(false),
       selection_caret_(0),
       selection_anchor_(0),
       pending_user_gesture_(0.0),
@@ -1103,7 +1100,7 @@ bool PepperPluginInstanceImpl::IsPluginAcceptingCompositionEvents() const {
 }
 
 gfx::Rect PepperPluginInstanceImpl::GetCaretBounds() const {
-  if (!text_input_caret_set_) {
+  if (!text_input_caret_info_) {
     // If it is never set by the plugin, use the bottom left corner.
     gfx::Rect rect(view_data_.rect.point.x,
                    view_data_.rect.point.y + view_data_.rect.size.height,
@@ -1113,12 +1110,12 @@ gfx::Rect PepperPluginInstanceImpl::GetCaretBounds() const {
   }
 
   // TODO(kinaba) Take CSS transformation into account.
-  // TODO(kinaba) Take |text_input_caret_bounds_| into account. On
-  // some platforms, an "exclude rectangle" where candidate window
-  // must avoid the region can be passed to IME. Currently, we pass
-  // only the caret rectangle because it is the only information
-  // supported uniformly in Chromium.
-  gfx::Rect caret(text_input_caret_);
+  // TODO(kinaba) Take |text_input_caret_info_->caret_bounds| into account. On
+  // some platforms, an "exclude rectangle" where candidate window must avoid
+  // the region can be passed to IME. Currently, we pass only the caret
+  // rectangle because it is the only information supported uniformly in
+  // Chromium.
+  gfx::Rect caret = text_input_caret_info_->caret;
   caret.Offset(view_data_.rect.point.x, view_data_.rect.point.y);
   ConvertDIPToViewport(&caret);
   return caret;
@@ -2804,9 +2801,8 @@ void PepperPluginInstanceImpl::UpdateCaretPosition(
     const PP_Rect& bounding_box) {
   if (!render_frame_)
     return;
-  text_input_caret_ = PP_ToGfxRect(caret);
-  text_input_caret_bounds_ = PP_ToGfxRect(bounding_box);
-  text_input_caret_set_ = true;
+  TextInputCaretInfo info = {PP_ToGfxRect(caret), PP_ToGfxRect(bounding_box)};
+  text_input_caret_info_ = std::move(info);
   render_frame_->PepperCaretPositionChanged(this);
 }
 
