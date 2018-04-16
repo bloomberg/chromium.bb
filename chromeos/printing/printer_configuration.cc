@@ -151,6 +151,9 @@ Printer::PrinterProtocol Printer::GetProtocol() const {
   if (uri.starts_with("lpd:"))
     return PrinterProtocol::kLpd;
 
+  if (uri.starts_with("ippusb:"))
+    return PrinterProtocol::kIppUsb;
+
   return PrinterProtocol::kUnknown;
 }
 
