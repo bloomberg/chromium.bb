@@ -720,3 +720,33 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClickDrag) {
   EXPECT_EQ(15U, start);
   EXPECT_EQ(0U, end);
 }
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, ReelideOnBlur) {
+  // Double-click should unelide the URL by making a partial selection.
+  SendMouseClick(4 * kCharacterWidth);
+  SendMouseClick(4 * kCharacterWidth);
+  ExpectFullUrlDisplayed();
+
+  omnibox_view()->OnBlur();
+  ExpectElidedUrlDisplayed();
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, DontReelideOnBlurIfEdited) {
+  // Double-click should unelide the URL by making a partial selection.
+  SendMouseClick(4 * kCharacterWidth);
+  SendMouseClick(4 * kCharacterWidth);
+  ExpectFullUrlDisplayed();
+
+  // Since the domain word is selected, pressing 'a' should replace the domain.
+  ui::KeyEvent char_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A, 0,
+                          ui::DomKey::FromCharacter('a'),
+                          ui::EventTimeForNow());
+  omnibox_textfield()->InsertChar(char_event);
+  EXPECT_EQ(base::ASCIIToUTF16("https://a.com"), omnibox_view()->text());
+  EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
+
+  // Now that we've edited the text, blurring should not re-elide the URL.
+  omnibox_view()->OnBlur();
+  EXPECT_EQ(base::ASCIIToUTF16("https://a.com"), omnibox_view()->text());
+  EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
+}
