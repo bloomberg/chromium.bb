@@ -245,7 +245,7 @@ void ContainerFloatingBehavior::HandlePointerEvent(
         const gfx::Point new_keyboard_location =
             drag_descriptor_->original_keyboard_location() +
             cumulative_drag_offset;
-        gfx::Rect new_bounds =
+        gfx::Rect new_bounds_in_local =
             gfx::Rect(new_keyboard_location, keyboard_bounds.size());
 
         DisplayUtil display_util;
@@ -254,17 +254,25 @@ void ContainerFloatingBehavior::HandlePointerEvent(
                 current_display, current_drag_location);
 
         if (current_display.id() == new_display.id()) {
-          controller_->MoveKeyboard(new_bounds);
+          controller_->MoveKeyboard(new_bounds_in_local);
         } else {
-          new_bounds =
-              ContainKeyboardToScreenBounds(new_bounds, new_display.bounds());
           // Since the keyboard has jumped across screens, cancel the current
           // drag descriptor as though the user has lifted their finger.
           drag_descriptor_ = nullptr;
 
+          gfx::Rect new_bounds_in_screen =
+              new_bounds_in_local +
+              current_display.bounds().origin().OffsetFromOrigin();
+          gfx::Rect contained_new_bounds_in_screen =
+              ContainKeyboardToScreenBounds(new_bounds_in_screen,
+                                            new_display.bounds());
+
           // Enqueue a transition to the adjacent display.
-          // TODO(blakeo): pass new_bounds to display transition.
-          controller_->MoveToDisplayWithTransition(new_display);
+          new_bounds_in_local =
+              contained_new_bounds_in_screen -
+              new_display.bounds().origin().OffsetFromOrigin();
+          controller_->MoveToDisplayWithTransition(new_display,
+                                                   new_bounds_in_local);
         }
         SavePosition(container->bounds(), new_display.size());
       }

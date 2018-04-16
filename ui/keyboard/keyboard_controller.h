@@ -185,7 +185,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Sets floating keyboard drggable rect.
   bool SetDraggableArea(const gfx::Rect& rect);
 
-  void MoveToDisplayWithTransition(display::Display display);
+  void MoveToDisplayWithTransition(display::Display display,
+                                   gfx::Rect new_bounds_in_local);
 
  private:
   // For access to Observer methods for simulation.
