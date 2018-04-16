@@ -858,6 +858,7 @@ chrome_shared_library("libchromefortest") {
     "//base/test:test_support",
     "//chrome/browser/profiling_host:jni_headers",
     "//components/heap_profiling:test_support",
+    "//chrome/browser/subresource_filter:subresource_filter_test_support",
   ]
 }
 
@@ -1120,6 +1121,7 @@ chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
   }
   deps = [
     "//chrome/browser/profiling_host:profiling_host_java_test_support",
+    "//chrome/browser/subresource_filter:subresource_filter_java_test_support",
   ]
 }
 
@@ -1244,6 +1246,7 @@ instrumentation_test_apk("chrome_public_test_apk") {
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",
+    "//chrome/browser/subresource_filter:subresource_filter_javatests",
     "//third_party/android_support_test_runner:runner_java",
   ]
 
