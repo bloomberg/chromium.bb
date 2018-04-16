@@ -133,6 +133,7 @@ var StatsTable = (function(ssrcInfoManager) {
     updateStatsTableRow_: function(statsTable, rowName, value) {
       var trId = statsTable.id + '-' + rowName;
       var trElement = $(trId);
+      var activeConnectionClass = 'stats-table-active-connection';
       if (!trElement) {
         trElement = document.createElement('tr');
         trElement.id = trId;
@@ -142,8 +143,13 @@ var StatsTable = (function(ssrcInfoManager) {
       trElement.cells[1].textContent = value;
 
       // Highlights the table for the active connection.
-      if (rowName == 'googActiveConnection' && value == true)
-        statsTable.parentElement.classList.add('stats-table-active-connection');
+      if (rowName == 'googActiveConnection') {
+        if (value === 'true') {
+          statsTable.parentElement.classList.add(activeConnectionClass);
+        } else {
+          statsTable.parentElement.classList.remove(activeConnectionClass);
+        }
+      }
     }
   };
 
