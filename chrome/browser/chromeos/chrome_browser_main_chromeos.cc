@@ -57,7 +57,6 @@
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
-#include "chrome/browser/chromeos/extensions/extension_volume_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -1007,9 +1006,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
     SetGuestLocale(profile());
 
-  // This observer uses the intialized profile to dispatch extension events.
-  extension_volume_observer_ = std::make_unique<ExtensionVolumeObserver>();
-
   renderer_freezer_ = std::make_unique<RendererFreezer>(
       std::make_unique<FreezerCgroupProcessManager>());
 
@@ -1132,7 +1128,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
   network_pref_state_observer_.reset();
-  extension_volume_observer_.reset();
   power_metrics_reporter_.reset();
   renderer_freezer_.reset();
   wake_on_wifi_manager_.reset();

@@ -14,24 +14,6 @@
 var UpdateStatus;
 
 /**
- * Information about the volume.
- * @typedef {{
- *   volume: number,
- *   isVolumeMuted: boolean
- * }}
- */
-var VolumeInfo;
-
-/**
- * Information about a change to the screen brightness.
- * @typedef {{
- *   brightness: number,
- *   userInitiated: boolean
- * }}
- */
-var BrightnessChangeInfo;
-
-/**
  * @const
  */
 chrome.systemPrivate = {};
@@ -53,17 +35,3 @@ chrome.systemPrivate.getUpdateStatus = function(callback) {};
  * @param {Function} callback
  */
 chrome.systemPrivate.getApiKey = function(callback) {};
-
-/** @type {!ChromeEvent} */
-chrome.systemPrivate.onVolumeChanged;
-
-/** @type {!ChromeEvent} */
-chrome.systemPrivate.onBrightnessChanged;
-
-/** @type {!ChromeEvent} */
-chrome.systemPrivate.onScreenUnlocked;
-
-/** @type {!ChromeEvent} */
-chrome.systemPrivate.onWokeUp;
-
-

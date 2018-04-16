@@ -33,30 +33,6 @@
             "description": "Value between 0 and 1 describing the progress of system update download.  This value will be set to 0 when |state| is NotAvailable, 1 when NeedRestart."
           }
         }
-      },
-      {
-        "id": "VolumeInfo",
-        "type": "object",
-        "description": "Information about the volume.",
-        "properties": {
-          "volume": {"type": "number", "description": "The value of the volume percent. This must be between 0.0 and 100.0."},
-          "isVolumeMuted": {"type": "boolean", "description": "True if the volume is muted."}
-        }
-      },
-      {
-        "id": "BrightnessChangeInfo",
-        "type": "object",
-        "description": "Information about a change to the screen brightness.",
-        "properties": {
-          "brightness": {
-            "type": "number",
-            "description": "The value of the current screen brightness in percent, between 0.0 and 100.0."
-          },
-          "userInitiated": {
-            "type": "boolean",
-            "description": "Whether this change was initiated by user."
-          }
-        }
       }
     ],
     "functions": [
@@ -113,44 +89,6 @@
             ]
           }
         ]
-      }
-    ],
-    "events": [
-      {
-        "name": "onVolumeChanged",
-        "type": "function",
-        "description": "Fired when the volume is changed.",
-        "parameters": [
-          {
-            "$ref": "VolumeInfo",
-            "name": "volume",
-            "description": "Information about the current state of the system volume control, including whether it is muted."
-          }
-        ]
-      },
-      {
-        "name": "onBrightnessChanged",
-        "type": "function",
-        "description": "Fired when the screen brightness is changed.",
-        "parameters": [
-          {
-            "$ref": "BrightnessChangeInfo",
-            "name": "brightness",
-            "description": "Information about a change to the screen brightness."
-          }
-        ]
-      },
-      {
-        "name": "onScreenUnlocked",
-        "type": "function",
-        "description": "Fired when the screen is unlocked.",
-        "parameters": []
-      },
-      {
-        "name": "onWokeUp",
-        "type": "function",
-        "description": "Fired when the device wakes up from sleep.",
-        "parameters": []
       }
     ]
   }
