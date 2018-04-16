@@ -360,6 +360,14 @@ void LoginAuthUserView::RequestFocus() {
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   bool authenticated_by_pin = (auth_methods_ & AUTH_PIN) != 0;
 
+  // Pressing enter when the password field is empty and tap-to-unlock is
+  // enabled should attempt unlock.
+  if (HasAuthMethod(AUTH_TAP) && password.empty()) {
+    Shell::Get()->login_screen_controller()->AttemptUnlock(
+        current_user()->basic_user_info->account_id);
+    return;
+  }
+
   password_view_->SetReadOnly(true);
   Shell::Get()->login_screen_controller()->AuthenticateUser(
       current_user()->basic_user_info->account_id, base::UTF16ToUTF8(password),
