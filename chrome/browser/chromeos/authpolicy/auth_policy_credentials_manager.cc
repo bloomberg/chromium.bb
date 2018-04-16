@@ -59,6 +59,12 @@ void WriteFile(const std::string& file_name, const std::string& blob) {
   base::FilePath dir;
   PathService::Get(base::DIR_HOME, &dir);
   dir = dir.Append(kKrb5Directory);
+  base::File::Error error;
+  if (!base::CreateDirectoryAndGetError(dir, &error)) {
+    LOG(ERROR) << "Failed to create '" << dir.value()
+               << "' directory: " << base::File::ErrorToString(error);
+    return;
+  }
   base::FilePath dest_file = dir.Append(file_name);
   if (!base::ImportantFileWriter::WriteFileAtomically(dest_file, blob)) {
     LOG(ERROR) << "Failed to write file " << dest_file.value();
