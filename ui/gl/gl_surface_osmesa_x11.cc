@@ -159,8 +159,6 @@ gfx::SwapResult GLSurfaceOSMesaX11::PostSubBuffer(
     int width,
     int height,
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide useful presentation feedback.
-  // https://crbug.com/776877
   gfx::Size size = GetSize();
 
   // Move (0,0) from lower-left to upper-left
@@ -182,7 +180,18 @@ gfx::SwapResult GLSurfaceOSMesaX11::PostSubBuffer(
   XCopyArea(xdisplay_, pixmap_, window_, window_graphics_context_, x, y, width,
             height, x, y);
 
+  constexpr int64_t kRefreshIntervalInMicroseconds =
+      base::Time::kMicrosecondsPerSecond / 60;
+  callback.Run(gfx::PresentationFeedback(
+      base::TimeTicks::Now(),
+      base::TimeDelta::FromMicroseconds(kRefreshIntervalInMicroseconds),
+      0 /* flags */));
+
   return gfx::SwapResult::SWAP_ACK;
+}
+
+bool GLSurfaceOSMesaX11::SupportsPresentationCallback() {
+  return true;
 }
 
 GLSurfaceOSMesaX11::~GLSurfaceOSMesaX11() {

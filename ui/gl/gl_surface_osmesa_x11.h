@@ -37,6 +37,7 @@ class GL_EXPORT GLSurfaceOSMesaX11 : public GLSurfaceOSMesa {
                                 int width,
                                 int height,
                                 const PresentationCallback& callback) override;
+  bool SupportsPresentationCallback() override;
 
  protected:
   ~GLSurfaceOSMesaX11() override;
