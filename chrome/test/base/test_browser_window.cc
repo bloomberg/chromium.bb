@@ -35,11 +35,6 @@ ui::PageTransition
   return ui::PAGE_TRANSITION_LINK;
 }
 
-bool TestBrowserWindow::TestLocationBar::ShowPageInfoDialog(
-    content::WebContents* contents) {
-  return true;
-}
-
 const OmniboxView* TestBrowserWindow::TestLocationBar::GetOmniboxView() const {
   return NULL;
 }

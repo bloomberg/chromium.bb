@@ -407,19 +407,6 @@ views::View* LocationBarView::GetSecurityBubbleAnchorView() {
   return location_icon_view()->GetImageView();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// LocationBarView, public LocationBar implementation:
-
-void LocationBarView::FocusLocation(bool select_all) {
-  omnibox_view_->SetFocus();
-  if (select_all)
-    omnibox_view_->SelectAll(true);
-}
-
-void LocationBarView::Revert() {
-  omnibox_view_->RevertAll();
-}
-
 bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
   DCHECK(contents);
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
@@ -441,6 +428,19 @@ bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
   location_icon_view()->OnBubbleCreated(bubble->GetWidget());
   bubble->GetWidget()->Show();
   return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, public LocationBar implementation:
+
+void LocationBarView::FocusLocation(bool select_all) {
+  omnibox_view_->SetFocus();
+  if (select_all)
+    omnibox_view_->SelectAll(true);
+}
+
+void LocationBarView::Revert() {
+  omnibox_view_->RevertAll();
 }
 
 OmniboxView* LocationBarView::GetOmniboxView() {

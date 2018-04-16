@@ -237,11 +237,6 @@ void LocationBarViewMac::Revert() {
   omnibox_view_->RevertAll();
 }
 
-bool LocationBarViewMac::ShowPageInfoDialog(WebContents* contents) {
-  // Cocoa doesn't show page info on the location bar.
-  return ::ShowPageInfoDialog(contents);
-}
-
 const OmniboxView* LocationBarViewMac::GetOmniboxView() const {
   return omnibox_view_.get();
 }
