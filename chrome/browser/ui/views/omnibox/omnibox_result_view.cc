@@ -507,11 +507,11 @@ int OmniboxResultView::GetVerticalMargin() const {
   int min_height =
       GetLayoutConstant(LOCATION_BAR_ICON_SIZE) + (kIconVerticalPad * 2);
 
+  // Make sure the minimum height of an omnibox result matches the height of the
+  // location bar view / non-results section of the omnibox popup in touch.
   if (Md::IsTouchOptimizedUiEnabled()) {
-    // The touchable spec specifies a height of 44 DIP. Ensure that's satisfied.
-    // Answer rows can still exceed this size.
-    constexpr int kTouchOptimizedResultHeight = 44;
-    min_height = std::max(min_height, kTouchOptimizedResultHeight);
+    min_height = std::max(
+        min_height, RoundedOmniboxResultsFrame::GetNonResultSectionHeight());
   }
 
   return std::max(kVerticalMargin, (min_height - GetTextHeight()) / 2);

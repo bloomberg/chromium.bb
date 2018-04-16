@@ -35,23 +35,18 @@ class TopBackgroundView : public views::View {
 };
 
 // Insets used to position |contents_| within |contents_host_|.
-gfx::Insets GetContentInsets(views::View* location_bar) {
-  return gfx::Insets(
-             RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets.top(), 0,
-             0, 0) +
-         gfx::Insets(location_bar->height(), 0, 0, 0);
+gfx::Insets GetContentInsets() {
+  return gfx::Insets(RoundedOmniboxResultsFrame::GetNonResultSectionHeight(), 0,
+                     0, 0);
 }
 
 }  // namespace
 
 constexpr gfx::Insets RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets;
 
-RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
-    views::View* contents,
-    LocationBarView* location_bar)
-    : content_insets_(GetContentInsets(location_bar)),
-      location_bar_height_(location_bar->height()),
-      contents_(contents) {
+RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(views::View* contents,
+                                                       OmniboxTint tint)
+    : contents_(contents) {
   // Host the contents in its own View to simplify layout and clipping.
   contents_host_ = new views::View();
   contents_host_->SetPaintToLayer();
@@ -59,7 +54,7 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
 
   // Use a solid background. Note this is clipped to get rounded corners.
   SkColor background_color =
-      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, location_bar->tint());
+      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
   contents_host_->SetBackground(views::CreateSolidBackground(background_color));
 
   // Use a textured mask to clip contents. This doesn't work on Windows
@@ -92,12 +87,9 @@ void RoundedOmniboxResultsFrame::OnBeforeWidgetInit(
 }
 
 // static
-gfx::Insets RoundedOmniboxResultsFrame::GetAlignmentInsets(
-    views::View* location_bar) {
-  // Note this insets the location bar height from the bottom to align correctly
-  // (not the top).
-  return kLocationBarAlignmentInsets +
-         gfx::Insets(0, 0, location_bar->height(), 0);
+int RoundedOmniboxResultsFrame::GetNonResultSectionHeight() {
+  return GetLayoutConstant(LOCATION_BAR_HEIGHT) +
+         kLocationBarAlignmentInsets.height();
 }
 
 const char* RoundedOmniboxResultsFrame::GetClassName() const {
@@ -113,14 +105,14 @@ void RoundedOmniboxResultsFrame::Layout() {
   contents_host_->SetBoundsRect(bounds);
   contents_mask_->layer()->SetBounds(bounds);
 
-  // Manual layout.
-  gfx::Rect top_bounds = bounds;
-  top_bounds.Inset(kLocationBarAlignmentInsets);
-  top_bounds.set_height(location_bar_height_);
+  gfx::Rect top_bounds(bounds);
+  top_bounds.set_height(GetNonResultSectionHeight());
+  // Height is already accounted for in GetNonResultSectionHeight();
+  top_bounds.set_width(bounds.width() - kLocationBarAlignmentInsets.width());
   top_background_->SetBoundsRect(top_bounds);
 
-  gfx::Rect results_bounds = gfx::Rect(bounds.size());
-  results_bounds.Inset(content_insets_);
+  gfx::Rect results_bounds(bounds);
+  results_bounds.Inset(GetContentInsets());
   contents_->SetBoundsRect(results_bounds);
 }
 
@@ -129,7 +121,7 @@ void RoundedOmniboxResultsFrame::AddedToWidget() {
   // Use a ui::EventTargeter that allows mouse and touch events in the top
   // portion of the Widget to pass through to the omnibox beneath it.
   auto results_targeter = std::make_unique<aura::WindowTargeter>();
-  results_targeter->SetInsets(gfx::Insets(content_insets_.top(), 0, 0, 0));
+  results_targeter->SetInsets(GetContentInsets());
   GetWidget()->GetNativeWindow()->SetEventTargeter(std::move(results_targeter));
 #endif
 }
