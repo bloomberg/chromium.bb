@@ -10,7 +10,7 @@
     return value;
   }
 
-  var response = await dp.DOMSnapshot.getSnapshot({'computedStyleWhitelist': []});
+  var response = await dp.DOMSnapshot.getSnapshot({'computedStyleWhitelist': [], 'includeUserAgentShadowTree': true});
   if (response.error)
     testRunner.log(response);
   else

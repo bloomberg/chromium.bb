@@ -118,6 +118,7 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
     std::unique_ptr<protocol::Array<String>> style_whitelist,
     protocol::Maybe<bool> include_event_listeners,
     protocol::Maybe<bool> include_paint_order,
+    protocol::Maybe<bool> include_user_agent_shadow_tree,
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DOMNode>>* dom_nodes,
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::LayoutTreeNode>>*
         layout_tree_nodes,
@@ -154,7 +155,8 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
   }
 
   // Actual traversal.
-  VisitNode(document, include_event_listeners.fromMaybe(false));
+  VisitNode(document, include_event_listeners.fromMaybe(false),
+            include_user_agent_shadow_tree.fromMaybe(false));
 
   // Extract results from state and reset.
   *dom_nodes = std::move(dom_nodes_);
@@ -167,7 +169,8 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
 }
 
 int InspectorDOMSnapshotAgent::VisitNode(Node* node,
-                                         bool include_event_listeners) {
+                                         bool include_event_listeners,
+                                         bool include_user_agent_shadow_tree) {
   // Update layout tree before traversal of document so that we inspect a
   // current and consistent state of all trees. No need to do this if paint
   // order was calculated, since layout trees were already updated during
@@ -240,7 +243,8 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
         value->setFrameId(IdentifiersFactory::FrameId(frame));
       }
       if (Document* doc = frame_owner->contentDocument()) {
-        value->setContentDocumentIndex(VisitNode(doc, include_event_listeners));
+        value->setContentDocumentIndex(VisitNode(
+            doc, include_event_listeners, include_user_agent_shadow_tree));
       }
     }
 
@@ -255,13 +259,15 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
           InspectorDOMAgent::InnerParentNode(link_element->import()) ==
               link_element) {
         value->setImportedDocumentIndex(
-            VisitNode(link_element->import(), include_event_listeners));
+            VisitNode(link_element->import(), include_event_listeners,
+                      include_user_agent_shadow_tree));
       }
     }
 
     if (auto* template_element = ToHTMLTemplateElementOrNull(*element)) {
-      value->setTemplateContentIndex(
-          VisitNode(template_element->content(), include_event_listeners));
+      value->setTemplateContentIndex(VisitNode(template_element->content(),
+                                               include_event_listeners,
+                                               include_user_agent_shadow_tree));
     }
 
     if (auto* textarea_element = ToHTMLTextAreaElementOrNull(*element))
@@ -285,8 +291,8 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
         value->setPseudoType(pseudo_type);
       }
     } else {
-      value->setPseudoElementIndexes(
-          VisitPseudoElements(element, include_event_listeners));
+      value->setPseudoElementIndexes(VisitPseudoElements(
+          element, include_event_listeners, include_user_agent_shadow_tree));
     }
 
     HTMLImageElement* image_element = ToHTMLImageElementOrNull(node);
@@ -312,33 +318,76 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
   }
 
   if (node->IsContainerNode()) {
-    value->setChildNodeIndexes(
-        VisitContainerChildren(node, include_event_listeners));
+    value->setChildNodeIndexes(VisitContainerChildren(
+        node, include_event_listeners, include_user_agent_shadow_tree));
   }
   return index;
+}
+
+Node* InspectorDOMSnapshotAgent::FirstChild(
+    const Node& node,
+    bool include_user_agent_shadow_tree) {
+  DCHECK(include_user_agent_shadow_tree || !node.IsInUserAgentShadowRoot());
+  if (!include_user_agent_shadow_tree) {
+    ShadowRoot* shadow_root = node.GetShadowRoot();
+    if (shadow_root && shadow_root->GetType() == ShadowRootType::kUserAgent) {
+      Node* child = node.firstChild();
+      while (child && !child->CanParticipateInFlatTree())
+        child = child->nextSibling();
+      return child;
+    }
+  }
+  return FlatTreeTraversal::FirstChild(node);
+}
+
+bool InspectorDOMSnapshotAgent::HasChildren(
+    const Node& node,
+    bool include_user_agent_shadow_tree) {
+  return FirstChild(node, include_user_agent_shadow_tree);
+}
+
+Node* InspectorDOMSnapshotAgent::NextSibling(
+    const Node& node,
+    bool include_user_agent_shadow_tree) {
+  DCHECK(include_user_agent_shadow_tree || !node.IsInUserAgentShadowRoot());
+  if (!include_user_agent_shadow_tree) {
+    if (node.ParentElementShadowRoot() &&
+        node.ParentElementShadowRoot()->GetType() ==
+            ShadowRootType::kUserAgent) {
+      Node* sibling = node.nextSibling();
+      while (sibling && !sibling->CanParticipateInFlatTree())
+        sibling = sibling->nextSibling();
+      return sibling;
+    }
+  }
+  return FlatTreeTraversal::NextSibling(node);
 }
 
 std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::VisitContainerChildren(
     Node* container,
-    bool include_event_listeners) {
+    bool include_event_listeners,
+    bool include_user_agent_shadow_tree) {
   auto children = protocol::Array<int>::create();
 
-  if (!FlatTreeTraversal::HasChildren(*container))
+  if (!HasChildren(*container, include_user_agent_shadow_tree))
     return nullptr;
 
-  Node* child = FlatTreeTraversal::FirstChild(*container);
+  Node* child = FirstChild(*container, include_user_agent_shadow_tree);
   while (child) {
-    children->addItem(VisitNode(child, include_event_listeners));
-    child = FlatTreeTraversal::NextSibling(*child);
+    children->addItem(VisitNode(child, include_event_listeners,
+                                include_user_agent_shadow_tree));
+    child = NextSibling(*child, include_user_agent_shadow_tree);
   }
 
   return children;
 }
 
 std::unique_ptr<protocol::Array<int>>
-InspectorDOMSnapshotAgent::VisitPseudoElements(Element* parent,
-                                               bool include_event_listeners) {
+InspectorDOMSnapshotAgent::VisitPseudoElements(
+    Element* parent,
+    bool include_event_listeners,
+    bool include_user_agent_shadow_tree) {
   if (!parent->GetPseudoElement(kPseudoIdBefore) &&
       !parent->GetPseudoElement(kPseudoIdAfter)) {
     return nullptr;
@@ -347,12 +396,14 @@ InspectorDOMSnapshotAgent::VisitPseudoElements(Element* parent,
   auto pseudo_elements = protocol::Array<int>::create();
 
   if (parent->GetPseudoElement(kPseudoIdBefore)) {
-    pseudo_elements->addItem(VisitNode(
-        parent->GetPseudoElement(kPseudoIdBefore), include_event_listeners));
+    pseudo_elements->addItem(
+        VisitNode(parent->GetPseudoElement(kPseudoIdBefore),
+                  include_event_listeners, include_user_agent_shadow_tree));
   }
   if (parent->GetPseudoElement(kPseudoIdAfter)) {
     pseudo_elements->addItem(VisitNode(parent->GetPseudoElement(kPseudoIdAfter),
-                                       include_event_listeners));
+                                       include_event_listeners,
+                                       include_user_agent_shadow_tree));
   }
 
   return pseudo_elements;
