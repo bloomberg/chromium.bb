@@ -465,12 +465,13 @@ void ThrottlingURLLoader::Resume() {
     }
     case DEFERRED_REDIRECT: {
       client_binding_.ResumeIncomingMethodCallProcessing();
-      forwarding_client_->OnReceiveRedirect(redirect_info_->redirect_info,
-                                            redirect_info_->response_head);
       // TODO(dhausknecht) at this point we do not actually know if we commit to
       // the redirect or if it will be cancelled. FollowRedirect would be a more
       // suitable place to set this URL but there we do not have the data.
       response_url_ = redirect_info_->redirect_info.new_url;
+      forwarding_client_->OnReceiveRedirect(redirect_info_->redirect_info,
+                                            redirect_info_->response_head);
+      // Note: |this| may be deleted here.
       break;
     }
     case DEFERRED_RESPONSE: {
@@ -478,6 +479,7 @@ void ThrottlingURLLoader::Resume() {
       forwarding_client_->OnReceiveResponse(
           response_info_->response_head,
           std::move(response_info_->downloaded_file));
+      // Note: |this| may be deleted here.
       break;
     }
     default:
