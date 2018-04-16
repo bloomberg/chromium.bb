@@ -1601,10 +1601,6 @@ test("browser_tests") {
         "../browser/chromeos/login/session_login_browsertest.cc",
         "../browser/chromeos/login/signin/device_id_browsertest.cc",
         "../browser/chromeos/login/signin/oauth2_browsertest.cc",
-        "../browser/chromeos/login/supervised/supervised_user_creation_browsertest.cc",
-        "../browser/chromeos/login/supervised/supervised_user_password_browsertest.cc",
-        "../browser/chromeos/login/supervised/supervised_user_test_base.cc",
-        "../browser/chromeos/login/supervised/supervised_user_test_base.h",
         "../browser/chromeos/login/test/https_forwarder.cc",
         "../browser/chromeos/login/test/https_forwarder.h",
         "../browser/chromeos/login/test/oobe_base_test.cc",
@@ -4329,7 +4325,6 @@ test("unit_tests") {
     sources += [
       "../browser/supervised_user/legacy/supervised_user_pref_mapping_service_unittest.cc",
       "../browser/supervised_user/legacy/supervised_user_refresh_token_fetcher_unittest.cc",
-      "../browser/supervised_user/legacy/supervised_user_registration_utility_unittest.cc",
       "../browser/supervised_user/legacy/supervised_user_shared_settings_service_unittest.cc",
       "../browser/supervised_user/legacy/supervised_user_shared_settings_update_unittest.cc",
       "../browser/supervised_user/legacy/supervised_user_sync_service_unittest.cc",
@@ -5270,7 +5265,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/single_client_printers_sync_test.cc",
       "../browser/sync/test/integration/single_client_search_engines_sync_test.cc",
       "../browser/sync/test/integration/single_client_sessions_sync_test.cc",
-      "../browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc",
       "../browser/sync/test/integration/single_client_themes_sync_test.cc",
       "../browser/sync/test/integration/single_client_typed_urls_sync_test.cc",
       "../browser/sync/test/integration/single_client_user_events_sync_test.cc",
@@ -5394,9 +5388,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/sync/test/integration/single_client_app_list_sync_test.cc",
         "../browser/sync/test/integration/two_client_app_list_sync_test.cc",
       ]
-    }
-    if (!enable_supervised_users) {
-      sources -= [ "../browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc" ]
     }
   }
 

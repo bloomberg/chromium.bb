@@ -221,9 +221,7 @@ std::string SupervisedUserInterstitial::GetHTMLContents(
     supervised_user_error_page::FilteringBehaviorReason reason) {
   bool is_child_account = profile->IsChild();
 
-  bool is_deprecated =
-      !is_child_account &&
-      !base::FeatureList::IsEnabled(features::kSupervisedUserCreation);
+  bool is_deprecated = !is_child_account;
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);

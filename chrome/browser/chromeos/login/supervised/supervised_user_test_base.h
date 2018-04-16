@@ -13,7 +13,8 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility_stub.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "components/sync/model/fake_sync_change_processor.h"
@@ -93,8 +94,6 @@ class SupervisedUserTestBase : public chromeos::LoginManagerTest {
   void PrepareUsers();
   void StartFlowLoginAsManager();
   void FillNewUserData(const std::string& display_name);
-  void StartUserCreation(const std::string& button_id,
-                         const std::string& expected_display_name);
   void SigninAsSupervisedUser(int user_index,
                               const std::string& expected_display_name);
   void SigninAsManager(int user_index);
@@ -105,9 +104,6 @@ class SupervisedUserTestBase : public chromeos::LoginManagerTest {
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
   cryptohome::MockHomedirMethods* mock_homedir_methods_;
   NetworkPortalDetectorTestImpl* network_portal_detector_;
-  SupervisedUserRegistrationUtilityStub* registration_utility_stub_;
-  std::unique_ptr<ScopedTestingSupervisedUserRegistrationUtility>
-      scoped_utility_;
   std::unique_ptr<SupervisedUsersSharedSettingsSyncTestAdapter>
       shared_settings_adapter_;
   std::unique_ptr<SupervisedUsersSyncTestAdapter> supervised_users_adapter_;

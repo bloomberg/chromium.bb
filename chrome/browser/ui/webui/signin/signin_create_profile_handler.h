@@ -24,10 +24,6 @@ class DictionaryValue;
 class ListValue;
 }
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-class SupervisedUserRegistrationUtility;
-#endif
-
 // Handler for the 'create profile' page.
 class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                                    public content::NotificationObserver,
@@ -45,22 +41,8 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                            ReturnSignedInProfiles);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
                            CreateProfile);
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
-                           CreateSupervisedUser);
-  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
-                           ImportSupervisedUser);
-  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
-                           ImportSupervisedUserAlreadyOnDevice);
-  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
-                           CustodianNotAuthenticated);
-  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
-                           CustodianHasAuthError);
-  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
-                           NotAllowedToCreateSupervisedUser);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
                            CreateProfileWithForceSignin);
-#endif
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -84,10 +66,6 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
   // It is used to map the type of the profile creation operation to the
   // correct UMA metric name.
   enum ProfileCreationOperationType {
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    SUPERVISED_PROFILE_CREATION,
-    SUPERVISED_PROFILE_IMPORT,
-#endif
     NON_SUPERVISED_PROFILE_CREATION,
     NO_CREATION_IN_PROGRESS
   };
@@ -180,78 +158,15 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                                Profile* custodian_profile);
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  base::string16 GetProfileCreateErrorMessageRemote() const;
-  base::string16 GetProfileCreateErrorMessageSignin() const;
-
-  // Extracts the supervised user ID and the custodian user profile path from
-  // the args passed into CreateProfile.
-  bool GetSupervisedCreateProfileArgs(const base::ListValue* args,
-                                      std::string* supervised_user_id,
-                                      base::FilePath* custodian_profile_path);
-
-  // Callback that runs once the custodian profile has been loaded. It sets
-  // |profile_creation_type_| if necessary, and calls |DoCreateProfile| if the
-  // supervised user id specified in |args| is valid.
-  void LoadCustodianProfileCallback(const base::string16& name,
-                                     const std::string& icon_url,
-                                     bool create_shortcut,
-                                     const std::string& supervised_user_id,
-                                     Profile* custodian_profile,
-                                     Profile::CreateStatus status);
-
   // Cancels creation of a supervised-user profile currently in progress, as
   // indicated by profile_path_being_created_, removing the object and files
   // and canceling supervised-user registration. This is the handler for the
   // "cancelCreateProfile" message. |args| is not used.
   void HandleCancelProfileCreation(const base::ListValue* args);
 
-  // Internal implementation. This may safely be called whether profile creation
-  // or registration is in progress or not. |user_initiated| should be true if
-  // the cancellation was deliberately requested by the user, and false if it
-  // was caused implicitly, e.g. by shutting down the browser.
-  void CancelProfileRegistration(bool user_initiated);
-
-  // Returns true if profile has signed into chrome.
-  bool IsAccountConnected(Profile* profile) const;
-  // Returns true if profile has authentication error.
-  bool HasAuthError(Profile* profile) const;
-
-  // After a new supervised-user profile has been created, registers the user
-  // with the management server.
-  virtual void RegisterSupervisedUser(bool create_shortcut,
-                                      const std::string& managed_user_id,
-                                      Profile* custodian_profile,
-                                      Profile* new_profile);
-
-  // Called back with the result of the supervised user registration.
-  void OnSupervisedUserRegistered(bool create_shortcut,
-                                  Profile* custodian_profile,
-                                  Profile* profile,
-                                  const GoogleServiceAuthError& error);
-
-  // Updates the UI to show a non-fatal warning when creating a profile.
-  void ShowProfileCreationWarning(const base::string16& warning);
-
-  // Records UMA histograms relevant to supervised user profiles
-  // creation and registration.
-  void RecordSupervisedProfileCreationMetrics(
-      GoogleServiceAuthError::State error_state);
-
-  // Creates the supervised user with the given |supervised_user_id| if the user
-  // doesn't already exist on the machine.
-  void DoCreateProfileIfPossible(const base::string16& name,
-                                 const std::string& icon_url,
-                                 bool create_shortcut,
-                                 const std::string& supervised_user_id,
-                                 Profile* custodian_profile,
-                                 const base::DictionaryValue* dict);
-
   // Callback for the "switchToProfile" message. Opens a new window for the
   // profile. The profile file path is passed as a string argument.
   void SwitchToProfile(const base::ListValue* args);
-
-  std::unique_ptr<SupervisedUserRegistrationUtility>
-      supervised_user_registration_utility_;
 #endif
 
   content::NotificationRegistrar registrar_;

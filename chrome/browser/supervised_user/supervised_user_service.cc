@@ -58,12 +58,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service.h"
-#include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service_factory.h"
-#include "chrome/browser/supervised_user/legacy/permission_request_creator_sync.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_pref_mapping_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_pref_mapping_service_factory.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -357,35 +353,6 @@ void SupervisedUserService::InitSync(const std::string& refresh_token) {
 
   FinishSetupSyncWhenReady();
 }
-
-void SupervisedUserService::RegisterAndInitSync(
-    SupervisedUserRegistrationUtility* registration_utility,
-    Profile* custodian_profile,
-    const std::string& supervised_user_id,
-    AuthErrorCallback callback) {
-  DCHECK(ProfileIsSupervised());
-  DCHECK(!custodian_profile->IsSupervised());
-
-  base::string16 name = base::UTF8ToUTF16(
-      profile_->GetPrefs()->GetString(prefs::kProfileName));
-  int avatar_index = profile_->GetPrefs()->GetInteger(
-      prefs::kProfileAvatarIndex);
-  SupervisedUserRegistrationInfo info(name, avatar_index);
-  registration_utility->Register(
-      supervised_user_id, info,
-      base::BindOnce(&SupervisedUserService::OnSupervisedUserRegistered,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     custodian_profile));
-
-  // Fetch the custodian's profile information, to store the name.
-  // TODO(pamg): Take the name from the ProfileAttributesStorage instead.
-  CustodianProfileDownloaderService* profile_downloader_service =
-      CustodianProfileDownloaderServiceFactory::GetForProfile(
-          custodian_profile);
-  profile_downloader_service->DownloadProfile(
-      base::Bind(&SupervisedUserService::OnCustodianProfileDownloaded,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
 #endif  // !defined(OS_ANDROID)
 
 void SupervisedUserService::AddNavigationBlockedCallback(
@@ -465,17 +432,6 @@ void SupervisedUserService::SetActive(bool active) {
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
       token_service->LoadCredentials(
           supervised_users::kSupervisedUserPseudoEmail);
-
-      if (base::FeatureList::IsEnabled(features::kSupervisedUserCreation)) {
-        permissions_creators_.push_back(std::make_unique<
-                                        PermissionRequestCreatorSync>(
-            GetSettingsService(),
-            SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
-                profile_),
-            ProfileSyncServiceFactory::GetForProfile(profile_),
-            GetSupervisedUserName(),
-            profile_->GetPrefs()->GetString(prefs::kSupervisedUserId)));
-      }
 
       SetupSync();
 #else
@@ -581,38 +537,6 @@ void SupervisedUserService::SetActive(bool active) {
 }
 
 #if !defined(OS_ANDROID)
-void SupervisedUserService::OnCustodianProfileDownloaded(
-    const base::string16& full_name) {
-  profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianName,
-                                  base::UTF16ToUTF8(full_name));
-}
-
-void SupervisedUserService::OnSupervisedUserRegistered(
-    AuthErrorCallback callback,
-    Profile* custodian_profile,
-    const GoogleServiceAuthError& auth_error,
-    const std::string& token) {
-  if (auth_error.state() == GoogleServiceAuthError::NONE) {
-    InitSync(token);
-    SigninManagerBase* signin =
-        SigninManagerFactory::GetForProfile(custodian_profile);
-    profile_->GetPrefs()->SetString(
-        prefs::kSupervisedUserCustodianEmail,
-        signin->GetAuthenticatedAccountInfo().email);
-
-    // The supervised user profile is now ready for use.
-    ProfileAttributesEntry* entry = nullptr;
-    bool has_entry =
-        g_browser_process->profile_manager()->GetProfileAttributesStorage().
-            GetProfileAttributesWithPath(profile_->GetPath(), &entry);
-    DCHECK(has_entry);
-    entry->SetIsOmitted(false);
-  } else {
-    DCHECK_EQ(std::string(), token);
-  }
-
-  std::move(callback).Run(auth_error);
-}
 void SupervisedUserService::SetupSync() {
   StartSetupSync();
   FinishSetupSyncWhenReady();

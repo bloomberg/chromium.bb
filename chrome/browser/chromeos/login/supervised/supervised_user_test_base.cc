@@ -29,8 +29,6 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility_stub.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service_factory.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
@@ -229,8 +227,7 @@ SupervisedUserTestBase::SupervisedUserTestBase()
     : LoginManagerTest(true),
       mock_async_method_caller_(NULL),
       mock_homedir_methods_(NULL),
-      network_portal_detector_(NULL),
-      registration_utility_stub_(NULL) {}
+      network_portal_detector_(NULL) {}
 
 SupervisedUserTestBase::~SupervisedUserTestBase() {}
 
@@ -247,10 +244,6 @@ void SupervisedUserTestBase::SetUpInProcessBrowserTestFixture() {
   mock_homedir_methods_ = new cryptohome::MockHomedirMethods;
   mock_homedir_methods_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
   cryptohome::HomedirMethods::InitializeForTesting(mock_homedir_methods_);
-
-  registration_utility_stub_ = new SupervisedUserRegistrationUtilityStub();
-  scoped_utility_.reset(new ScopedTestingSupervisedUserRegistrationUtility(
-      registration_utility_stub_));
 
   // Setup network portal detector to return online state for both
   // ethernet and wifi networks. Ethernet is an active network by
@@ -383,35 +376,6 @@ void SupervisedUserTestBase::FillNewUserData(const std::string& display_name) {
 
   JSEval("$('supervised-user-creation').updateNextButtonForUser_()");
   JSExpect("!$('supervised-user-creation-next-button').disabled");
-}
-
-void SupervisedUserTestBase::StartUserCreation(
-    const std::string& button_id,
-    const std::string& expected_display_name) {
-  base::RunLoop add_key_wait_loop;
-  mock_homedir_methods_->set_add_key_callback(add_key_wait_loop.QuitClosure());
-  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _)).Times(1);
-
-  JSEval(std::string("$('").append(button_id).append("').click()"));
-
-  add_key_wait_loop.Run();
-  ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
-  mock_homedir_methods_->set_add_key_callback(base::Closure());
-
-  EXPECT_TRUE(registration_utility_stub_->register_was_called());
-  EXPECT_EQ(base::UTF8ToUTF16(expected_display_name),
-            registration_utility_stub_->display_name());
-
-  registration_utility_stub_->RunSuccessCallback("token");
-
-  // Token writing moves control to BlockingPool and back.
-  content::RunAllTasksUntilIdle();
-
-  JSExpect(StringPrintf("%s == 'created'", kCurrentPage));
-  JSEvalOrExitBrowser("$('supervised-user-creation-gotit-button').click()");
-
-  // TODO(achuith): There should probably be a wait for a specific event.
-  content::RunAllPendingInMessageLoop();
 }
 
 void SupervisedUserTestBase::SigninAsSupervisedUser(

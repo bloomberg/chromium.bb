@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 
 class Profile;
 
@@ -55,35 +54,6 @@ class SupervisedUserCreationController {
   static SupervisedUserCreationController* current_controller() {
     return current_controller_;
   }
-
-  // Set up controller for creating new supervised user with |display_name|,
-  // |password| and avatar indexed by |avatar_index|. StartCreation() have to
-  // be called to actually start creating user.
-  virtual void StartCreation(const base::string16& display_name,
-                             const std::string& password,
-                             int avatar_index) = 0;
-
-  // Configures and initiates importing existing supervised user to this device.
-  // Existing user is identified by |sync_id|, has |display_name|, |password|,
-  // |avatar_index|. The master key for cryptohome is a |master_key|.
-  virtual void StartImport(const base::string16& display_name,
-                           const std::string& password,
-                           int avatar_index,
-                           const std::string& sync_id,
-                           const std::string& master_key) = 0;
-
-  // Configures and initiates importing existing supervised user to this device.
-  // Existing user is identified by |sync_id|, has |display_name|,
-  // |avatar_index|. The master key for cryptohome is a |master_key|. The user
-  // has password specified in |password_data| and
-  // |encryption_key|/|signature_key| for cryptohome.
-  virtual void StartImport(const base::string16& display_name,
-                           int avatar_index,
-                           const std::string& sync_id,
-                           const std::string& master_key,
-                           const base::DictionaryValue* password_data,
-                           const std::string& encryption_key,
-                           const std::string& signature_key) = 0;
 
   virtual void SetManagerProfile(Profile* manager_profile) = 0;
   virtual Profile* GetManagerProfile() = 0;

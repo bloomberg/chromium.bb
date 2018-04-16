@@ -41,7 +41,6 @@ class Browser;
 class GoogleServiceAuthError;
 class PermissionRequestCreator;
 class Profile;
-class SupervisedUserRegistrationUtility;
 class SupervisedUserServiceObserver;
 class SupervisedUserSettingsService;
 class SupervisedUserSiteList;
@@ -176,17 +175,6 @@ class SupervisedUserService : public KeyedService,
   // Initializes this profile for syncing, using the provided |refresh_token| to
   // mint access tokens for Sync.
   void InitSync(const std::string& refresh_token);
-
-  // Convenience method that registers this supervised user using
-  // |registration_utility| and initializes sync with the returned token.
-  // The |callback| will be called when registration is complete,
-  // whether it succeeded or not -- unless registration was cancelled manually,
-  // in which case the callback will be ignored.
-  void RegisterAndInitSync(
-      SupervisedUserRegistrationUtility* registration_utility,
-      Profile* custodian_profile,
-      const std::string& supervised_user_id,
-      AuthErrorCallback callback);
 #endif
 
   void AddNavigationBlockedCallback(const NavigationBlockedCallback& callback);
@@ -244,13 +232,6 @@ class SupervisedUserService : public KeyedService,
   void SetActive(bool active);
 
 #if !defined(OS_ANDROID)
-  void OnCustodianProfileDownloaded(const base::string16& full_name);
-
-  void OnSupervisedUserRegistered(AuthErrorCallback callback,
-                                  Profile* custodian_profile,
-                                  const GoogleServiceAuthError& auth_error,
-                                  const std::string& token);
-
   void SetupSync();
   void StartSetupSync();
   void FinishSetupSyncWhenReady();
