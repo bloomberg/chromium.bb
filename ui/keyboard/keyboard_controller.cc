@@ -337,8 +337,11 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void KeyboardController::MoveToDisplayWithTransition(display::Display display) {
-  queued_display_change_ = std::make_unique<QueuedDisplayChange>(display);
+void KeyboardController::MoveToDisplayWithTransition(
+    display::Display display,
+    gfx::Rect new_bounds_in_local) {
+  queued_display_change_ =
+      std::make_unique<QueuedDisplayChange>(display, new_bounds_in_local);
   HideKeyboard(HIDE_REASON_AUTOMATIC);
 }
 
@@ -410,6 +413,7 @@ void KeyboardController::HideAnimationFinished() {
 
     if (queued_display_change_) {
       ShowKeyboardInDisplay(queued_display_change_->new_display().id());
+      container_->SetBounds(queued_display_change_->new_bounds_in_local());
       queued_display_change_ = nullptr;
     }
   }

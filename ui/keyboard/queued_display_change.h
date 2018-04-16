@@ -17,13 +17,16 @@ namespace keyboard {
 // something like QueuedVisualChange or similar.
 class QueuedDisplayChange {
  public:
-  QueuedDisplayChange(const display::Display& display_info);
+  QueuedDisplayChange(const display::Display& display,
+                      const gfx::Rect& new_bounds_in_local);
   ~QueuedDisplayChange();
 
   display::Display new_display() { return new_display_; }
+  gfx::Rect new_bounds_in_local() { return new_bounds_in_local_; }
 
  private:
   display::Display new_display_;
+  gfx::Rect new_bounds_in_local_;
 };
 
 }  // namespace keyboard
