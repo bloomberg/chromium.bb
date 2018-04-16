@@ -479,7 +479,7 @@ class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
 // should be able to be fetched by another request using this class, by
 // setting the next_page_token from previous call, to page_token.
 // This request is mapped to
-// https://developers.google.com/drive/v2/teamdrives/
+// https://developers.google.com/drive/v2/reference/teamdrives/list
 class TeamDriveListRequest : public DriveApiDataRequest<TeamDriveList> {
  public:
   TeamDriveListRequest(RequestSender* sender,
