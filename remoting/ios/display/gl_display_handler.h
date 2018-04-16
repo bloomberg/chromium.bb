@@ -42,13 +42,16 @@ class CursorShapeStub;
 @interface GlDisplayHandler : NSObject {
 }
 
-- (void)stop;
+// Called once the renderer can start drawing on the view. Do nothing if the
+// surface is already created.
+- (void)createRendererContext:(EAGLView*)view;
 
-// Called once the GLKView created.
-- (void)onSurfaceCreated:(EAGLView*)view;
+// Called when the renderer should stop drawing on the view. Do nothing if the
+// surface is not created.
+- (void)destroyRendererContext;
 
-// Called every time the GLKView dimension is initialized or changed.
-- (void)onSurfaceChanged:(const CGRect&)frame;
+// Called every time the view dimension is initialized or changed.
+- (void)setSurfaceSize:(const CGRect&)frame;
 
 // Must be called immediately after the object is constructed.
 - (std::unique_ptr<remoting::RendererProxy>)CreateRendererProxy;
