@@ -105,10 +105,23 @@ std::wstring ExpandPathVariables(
   for (size_t i = 0; i < _countof(kWinFolderMapping); ++i) {
     size_t position = result.find(kWinFolderMapping[i].name);
     if (position != std::wstring::npos) {
+      size_t variable_length = wcslen(kWinFolderMapping[i].name);
       WCHAR path[MAX_PATH];
-      sh_get_special_folder_path(nullptr, path, kWinFolderMapping[i].id, false);
+      if (!sh_get_special_folder_path(nullptr, path, kWinFolderMapping[i].id,
+                                      false)) {
+        path[0] = 0;
+      }
       std::wstring path_string(path);
-      result.replace(position, wcslen(kWinFolderMapping[i].name), path_string);
+      // Remove a trailing slash if there is any but also only if the rest of
+      // the string contains one right after to avoid ending in a drive only
+      // value situation. This usually won't happen but if the value of this
+      // special folder is the root of a drive it will be presented as D:\.
+      if (!path_string.empty() && path_string.back() == L'\\' &&
+          result.length() > position + variable_length &&
+          result[position + variable_length] == L'\\') {
+        path_string.pop_back();
+      }
+      result.replace(position, variable_length, path_string);
     }
   }
   // Next translate other windows specific variables.
