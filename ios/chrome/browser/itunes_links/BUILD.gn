@@ -27,6 +27,7 @@ source_set("unit_tests") {
   deps = [
     ":itunes_links",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/test/fakes",
     "//ios/web/public",
