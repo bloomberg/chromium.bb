@@ -33,6 +33,7 @@ class CastWindowManager {
     SOFT_KEYBOARD,
     VOLUME,
     MEDIA_INFO,
+    SETTINGS,
     TOP = MEDIA_INFO
   };
 
