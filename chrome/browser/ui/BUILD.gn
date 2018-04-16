@@ -991,6 +991,7 @@ split_static_library("ui") {
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
     "//components/password_manager/sync/browser",
+    "//components/payments/content:utils",
     "//components/pdf/browser",
     "//components/physical_web/data_source",
     "//components/physical_web/webui",
