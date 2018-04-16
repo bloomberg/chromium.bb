@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview_new');
+
+// <if expr="chromeos">
+/** @enum {number} */
+print_preview_new.DestinationConfigStatus = {
+  IDLE: 0,
+  IN_PROGRESS: 1,
+  FAILED: 2,
+};
+// </if>
+
 Polymer({
   is: 'print-preview-destination-list-item',
 
@@ -20,6 +31,23 @@ Polymer({
 
     /** @private {string} */
     searchHint_: String,
+
+    // <if expr="chromeos">
+    /** @private {!print_preview_new.DestinationConfigStatus} */
+    configurationStatus_: {
+      type: Number,
+      value: print_preview_new.DestinationConfigStatus.IDLE,
+    },
+
+    /**
+     * Mirroring the enum so that it can be used from HTML bindings.
+     * @private
+     */
+    statusEnum_: {
+      type: Object,
+      value: print_preview_new.DestinationConfigStatus,
+    },
+    // </if>
   },
 
   observers: [
@@ -50,6 +78,40 @@ Polymer({
     print_preview.NativeLayer.getInstance().forceOpenNewTab(
         loadTimeData.getString('gcpCertificateErrorLearnMoreURL'));
   },
+
+  // <if expr="chromeos">
+  /**
+   * Called if the printer configuration request is accepted. Show the waiting
+   * message to the user as the configuration might take longer than expected.
+   */
+  onConfigureRequestAccepted: function() {
+    // It must be a Chrome OS CUPS printer which hasn't been set up before.
+    assert(
+        this.destination.origin == print_preview.DestinationOrigin.CROS &&
+        !this.destination.capabilities);
+    this.configurationStatus_ =
+        print_preview_new.DestinationConfigStatus.IN_PROGRESS;
+  },
+
+  /**
+   * Called when the printer configuration request completes.
+   * @param {boolean} success Whether configuration was successful.
+   */
+  onConfigureComplete: function(success) {
+    this.configurationStatus_ = success ?
+        print_preview_new.DestinationConfigStatus.IDLE :
+        print_preview_new.DestinationConfigStatus.FAILED;
+  },
+
+  /**
+   * @param {!print_preview_new.DestinationConfigStatus} status
+   * @return {boolean} Whether the current configuration status is |status|.
+   * @private
+   */
+  checkConfigurationStatus_: function(status) {
+    return this.configurationStatus_ == status;
+  },
+  // </if>
 
   update: function() {
     this.updateSearchHint_();

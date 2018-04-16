@@ -73,6 +73,11 @@ Polymer({
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
+  // <if expr="chromeos">
+  /** @private {?print_preview.Destination} */
+  destinationInConfiguring_: null,
+  // </if>
+
   /** @override */
   ready: function() {
     this.$$('.promo-text').innerHTML =
@@ -178,31 +183,65 @@ Polymer({
    * @private
    */
   onDestinationSelected_: function(e) {
-    const lastFocusedElement =
+    const listItem =
         /** @type {!PrintPreviewDestinationListItemElement} */ (e.detail);
-    const destination = lastFocusedElement.destination;
+    const destination = listItem.destination;
 
-    if (!destination.isProvisional) {
-      this.destinationStore.selectDestination(destination);
-      this.$.dialog.close();
+    // ChromeOS local destinations that don't have capabilities need to be
+    // configured before selecting, and provisional destinations need to be
+    // resolved. Other destinations can be selected.
+    if (destination.readyForSelection) {
+      this.selectDestination_(destination);
       return;
     }
 
-    this.$.provisionalResolver.resolveDestination(destination)
-        .then((resolvedDestination) => {
-          this.destinationStore.selectDestination(resolvedDestination);
-          this.$.dialog.close();
-        })
-        .catch(function() {
-          console.error(
-              'Failed to resolve provisional destination: ' + destination.id);
-        })
-        .then(() => {
-          if (this.$.dialog.open && !!lastFocusedElement &&
-              !lastFocusedElement.hidden) {
-            lastFocusedElement.focus();
-          }
-        });
+    // Provisional destinations
+    if (destination.isProvisional) {
+      this.$.provisionalResolver.resolveDestination(destination)
+          .then(this.selectDestination_.bind(this))
+          .catch(function() {
+            console.error(
+                'Failed to resolve provisional destination: ' + destination.id);
+          })
+          .then(() => {
+            if (this.$.dialog.open && !!listItem && !listItem.hidden) {
+              listItem.focus();
+            }
+          });
+      return;
+    }
+
+    // <if expr="chromeos">
+    // Destination must be a CrOS local destination that needs to be set up.
+    // The user is only allowed to set up printer at one time.
+    if (this.destinationInConfiguring_)
+      return;
+
+    // Show the configuring status to the user and resolve the destination.
+    listItem.onConfigureRequestAccepted();
+    this.destinationInConfiguring_ = destination;
+    this.destinationStore.resolveCrosDestination(destination)
+        .then(
+            response => {
+              this.destinationInConfiguring_ = null;
+              destination.capabilities = response.capabilities;
+              listItem.onConfigureComplete(true);
+              this.selectDestination_(destination);
+            },
+            () => {
+              this.destinationInConfiguring_ = null;
+              listItem.onConfigureComplete(false);
+            });
+    // </if>
+  },
+
+  /**
+   * @param {!print_preview.Destination} destination The destination to select.
+   * @private
+   */
+  selectDestination_: function(destination) {
+    this.destinationStore.selectDestination(destination);
+    this.$.dialog.close();
   },
 
   show: function() {
