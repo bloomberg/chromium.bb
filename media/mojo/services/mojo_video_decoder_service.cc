@@ -198,7 +198,7 @@ void MojoVideoDecoderService::Reset(ResetCallback callback) {
     return;
   }
 
-  // Flush the reader so that pending decodes will be dispatches first.
+  // Flush the reader so that pending decodes will be dispatched first.
   mojo_decoder_buffer_reader_->Flush(
       base::Bind(&MojoVideoDecoderService::OnReaderFlushed, weak_this_,
                  base::Passed(&callback)));
@@ -253,6 +253,11 @@ void MojoVideoDecoderService::OnDecoderOutput(
   DVLOG(2) << __func__;
   DCHECK(client_);
   DCHECK(decoder_);
+
+  // All MojoVideoDecoder-based decoders are hardware decoders. If you're the
+  // first to implement an out-of-process decoder that is not power efficent,
+  // you can remove this DCHECK.
+  DCHECK(frame->metadata()->IsTrue(VideoFrameMetadata::POWER_EFFICIENT));
 
   base::Optional<base::UnguessableToken> release_token;
   if (frame->HasReleaseMailboxCB() && video_frame_handle_releaser_) {
