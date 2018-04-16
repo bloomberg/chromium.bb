@@ -11,7 +11,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
 
@@ -20,6 +20,7 @@ namespace resource_coordinator {
 struct RenderProcessInfo {
   RenderProcessInfo();
   ~RenderProcessInfo();
+  base::Process process;
   double cpu_usage = -1.0;
   // This structure bounces from the UI thread to blocking threads and back.
   // It's therefore not safe to store RenderProcessHost pointers, so the ID is

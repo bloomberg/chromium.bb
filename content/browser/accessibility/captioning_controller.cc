@@ -24,7 +24,7 @@ int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
   RenderProcessHost* render_process = host->GetProcess();
   DCHECK(render_process);
   if (render_process->HasConnection())
-    return render_process->GetHandle();
+    return render_process->GetProcess().Handle();
   return 0;
 }
 

@@ -115,22 +115,26 @@ void ResourceCoordinatorRenderProcessProbe::
            content::RenderProcessHost::AllHostsIterator();
        !rph_iter.IsAtEnd(); rph_iter.Advance()) {
     content::RenderProcessHost* host = rph_iter.GetCurrentValue();
-    base::ProcessHandle handle = host->GetHandle();
     // Process may not be valid yet.
-    if (handle == base::kNullProcessHandle) {
+    if (!host->GetProcess().IsValid()) {
       continue;
     }
 
-    auto& render_process_info = render_process_info_map_[handle];
+    // Duplicate the process to retain ownership of it through the thread
+    // bouncing.
+    base::Process process(host->GetProcess().Duplicate());
+    auto& render_process_info = render_process_info_map_[process.Handle()];
     render_process_info.last_gather_cycle_active = current_gather_cycle_;
+    render_process_info.process = std::move(process);
 
     if (render_process_info.metrics.get() == nullptr) {
 #if defined(OS_MACOSX)
       render_process_info.metrics = base::ProcessMetrics::CreateProcessMetrics(
-          handle, content::BrowserChildProcessHost::GetPortProvider());
+          render_process_info.process.Handle(),
+          content::BrowserChildProcessHost::GetPortProvider());
 #else
-      render_process_info.metrics =
-          base::ProcessMetrics::CreateProcessMetrics(handle);
+      render_process_info.metrics = base::ProcessMetrics::CreateProcessMetrics(
+          render_process_info.process.Handle());
 #endif
       render_process_info.render_process_host_id = host->GetID();
     }

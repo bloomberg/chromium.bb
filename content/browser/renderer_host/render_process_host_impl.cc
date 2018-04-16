@@ -2913,20 +2913,27 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   CopyFeatureSwitch(browser_cmd, renderer_cmd, switches::kDisableBlinkFeatures);
 }
 
-base::ProcessHandle RenderProcessHostImpl::GetHandle() const {
-  if (run_renderer_in_process())
-    return base::GetCurrentProcessHandle();
+const base::Process& RenderProcessHostImpl::GetProcess() const {
+  if (run_renderer_in_process()) {
+    // This is a sentinel object used for this process in single process mode.
+    static const base::NoDestructor<base::Process> self(
+        base::Process::Current());
+    return *self;
+  }
 
-  if (!child_process_launcher_.get() || child_process_launcher_->IsStarting())
-    return base::kNullProcessHandle;
+  if (!child_process_launcher_.get() || child_process_launcher_->IsStarting()) {
+    // This is a sentinel for "no process".
+    static const base::NoDestructor<base::Process> null_process;
+    return *null_process;
+  }
 
-  return child_process_launcher_->GetProcess().Handle();
+  return child_process_launcher_->GetProcess();
 }
 
 bool RenderProcessHostImpl::IsReady() const {
   // The process launch result (that sets GetHandle()) and the channel
   // connection (that sets channel_connected_) can happen in either order.
-  return GetHandle() && channel_connected_;
+  return GetProcess().Handle() && channel_connected_;
 }
 
 bool RenderProcessHostImpl::Shutdown(int exit_code) {
@@ -3775,7 +3782,7 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
   }
 
   // Get handle to the renderer process. Stop if there is none.
-  base::ProcessHandle destination = GetHandle();
+  base::ProcessHandle destination = GetProcess().Handle();
   if (destination == base::kNullProcessHandle)
     return;
 
@@ -4162,7 +4169,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   }
 
   GetProcessResourceCoordinator()->SetLaunchTime(base::Time::Now());
-  GetProcessResourceCoordinator()->SetPID(base::GetProcId(GetHandle()));
+  GetProcessResourceCoordinator()->SetPID(GetProcess().Pid());
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
@@ -4338,7 +4345,7 @@ void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
 
 base::FilePath RenderProcessHostImpl::GetAecDumpFilePathWithExtensions(
     const base::FilePath& file) {
-  return file.AddExtension(IntToStringType(base::GetProcId(GetHandle())))
+  return file.AddExtension(IntToStringType(GetProcess().Pid()))
       .AddExtension(kAecDumpFileNameAddition);
 }
 

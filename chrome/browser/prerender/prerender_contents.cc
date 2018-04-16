@@ -643,11 +643,11 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
     if (!rph)
       return;
 
-    base::ProcessHandle handle = rph->GetHandle();
+    base::ProcessHandle handle = rph->GetProcess().Handle();
     if (handle == base::kNullProcessHandle)
       return;
 
-    process_pid_ = base::GetProcId(handle);
+    process_pid_ = rph->GetProcess().Pid();
   }
 
   if (process_pid_ == base::kNullProcessId)

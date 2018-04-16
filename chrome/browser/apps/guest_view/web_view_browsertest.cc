@@ -3423,7 +3423,10 @@ IN_PROC_BROWSER_TEST_P(
 
   // Kill the embedder's render process, so the webview will go as well.
   base::Process process = base::Process::DeprecatedGetProcessFromHandle(
-      embedder_web_contents->GetMainFrame()->GetProcess()->GetHandle());
+      embedder_web_contents->GetMainFrame()
+          ->GetProcess()
+          ->GetProcess()
+          .Handle());
   process.Terminate(0, false);
   observer->WaitForEmbedderRenderProcessTerminate();
 

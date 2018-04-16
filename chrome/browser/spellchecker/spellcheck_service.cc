@@ -337,7 +337,7 @@ void SpellcheckService::InitForAllRenderers() {
           content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     content::RenderProcessHost* process = i.GetCurrentValue();
-    if (process && process->GetHandle())
+    if (process && process->GetProcess().Handle())
       InitForRenderer(process->GetChildIdentity());
   }
 }

@@ -417,7 +417,7 @@ void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
 
   // If the process is being started asynchronously, early return.  We'll end up
   // calling InitUserScripts when it's created which will call this again.
-  base::ProcessHandle handle = process->GetHandle();
+  base::ProcessHandle handle = process->GetProcess().Handle();
   if (!handle)
     return;
 

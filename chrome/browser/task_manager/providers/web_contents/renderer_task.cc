@@ -80,7 +80,7 @@ RendererTask::RendererTask(const base::string16& title,
     : Task(title,
            GetRapporSampleName(web_contents),
            icon,
-           render_process_host->GetHandle()),
+           render_process_host->GetProcess().Handle()),
       web_contents_(web_contents),
       render_process_host_(render_process_host),
       renderer_resources_sampler_(

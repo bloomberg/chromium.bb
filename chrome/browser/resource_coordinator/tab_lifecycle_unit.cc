@@ -103,7 +103,7 @@ base::ProcessHandle TabLifecycleUnitSource::TabLifecycleUnit::GetProcessHandle()
   content::RenderProcessHost* process = main_frame->GetProcess();
   if (!process)
     return base::ProcessHandle();
-  return process->GetHandle();
+  return process->GetProcess().Handle();
 }
 
 LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()

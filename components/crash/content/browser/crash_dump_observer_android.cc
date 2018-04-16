@@ -147,14 +147,14 @@ void CrashDumpObserver::Observe(int type,
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       // The child process pid isn't available when process is gone, keep a
       // mapping between process_host_id and pid, so we can find it later.
-      process_host_id_to_pid_[rph->GetID()] = rph->GetHandle();
+      process_host_id_to_pid_[rph->GetID()] = rph->GetProcess().Handle();
       return;
     }
     default:
       NOTREACHED();
       return;
   }
-  base::ProcessHandle pid = rph->GetHandle();
+  base::ProcessHandle pid = rph->GetProcess().Handle();
   const auto& iter = process_host_id_to_pid_.find(rph->GetID());
   if (iter != process_host_id_to_pid_.end()) {
     if (pid == base::kNullProcessHandle) {

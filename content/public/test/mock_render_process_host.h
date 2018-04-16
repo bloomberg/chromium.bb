@@ -87,7 +87,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool FastShutdownIfPossible(size_t page_count,
                               bool skip_unload_handlers) override;
   bool FastShutdownStarted() const override;
-  base::ProcessHandle GetHandle() const override;
+  const base::Process& GetProcess() const override;
   bool IsReady() const override;
   int GetID() const override;
   bool HasConnection() const override;
@@ -170,8 +170,8 @@ class MockRenderProcessHost : public RenderProcessHost {
     is_process_backgrounded_ = is_process_backgrounded;
   }
 
-  void SetProcessHandle(std::unique_ptr<base::ProcessHandle> new_handle) {
-    process_handle = std::move(new_handle);
+  void SetProcess(base::Process&& new_process) {
+    process = std::move(new_process);
   }
 
   void OverrideBinderForTesting(const std::string& interface_name,
@@ -207,7 +207,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_never_suitable_for_reuse_;
   bool is_process_backgrounded_;
   bool is_unused_;
-  std::unique_ptr<base::ProcessHandle> process_handle;
+  base::Process process;
   int keep_alive_ref_count_;
   std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
       renderer_interface_;

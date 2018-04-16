@@ -232,7 +232,7 @@ void ClientConnectionManager::StartProfilingProcess(base::ProcessId pid) {
   // The RenderProcessHost iterator must be used on the UI thread.
   for (auto iter = content::RenderProcessHost::AllHostsIterator();
        !iter.IsAtEnd(); iter.Advance()) {
-    if (pid == base::GetProcId(iter.GetCurrentValue()->GetHandle())) {
+    if (pid == iter.GetCurrentValue()->GetProcess().Pid()) {
       StartProfilingRenderer(iter.GetCurrentValue());
       return;
     }
@@ -270,7 +270,8 @@ void ClientConnectionManager::StartProfilingExistingProcessesIfNecessary() {
   for (auto iter = content::RenderProcessHost::AllHostsIterator();
        !iter.IsAtEnd(); iter.Advance()) {
     if (ShouldProfileNewRenderer(iter.GetCurrentValue()) &&
-        iter.GetCurrentValue()->GetHandle() != base::kNullProcessHandle) {
+        iter.GetCurrentValue()->GetProcess().Handle() !=
+            base::kNullProcessHandle) {
       StartProfilingRenderer(iter.GetCurrentValue());
     }
   }
@@ -359,10 +360,10 @@ void ClientConnectionManager::StartProfilingRenderer(
   ProfilingClientBinder client(host);
 
   content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
-      ->PostTask(FROM_HERE, base::BindOnce(&StartProfilingClientOnIOThread,
-                                           controller_, std::move(client),
-                                           base::GetProcId(host->GetHandle()),
-                                           mojom::ProcessType::RENDERER));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&StartProfilingClientOnIOThread, controller_,
+                                std::move(client), host->GetProcess().Pid(),
+                                mojom::ProcessType::RENDERER));
 }
 
 }  // namespace heap_profiling

@@ -298,8 +298,7 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
   // Append renderer processes.
   auto iter = content::RenderProcessHost::AllHostsIterator();
   while (!iter.IsAtEnd()) {
-    base::ProcessHandle renderer_handle = iter.GetCurrentValue()->GetHandle();
-    base::ProcessId renderer_pid = base::GetProcId(renderer_handle);
+    base::ProcessId renderer_pid = iter.GetCurrentValue()->GetProcess().Pid();
     if (renderer_pid != 0) {
       // TODO(brettw) make a better description of the process, maybe see
       // what TaskManager does to get the page title.

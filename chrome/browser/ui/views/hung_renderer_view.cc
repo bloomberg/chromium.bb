@@ -377,7 +377,7 @@ bool HungRendererDialogView::Cancel() {
   if (rph) {
 #if defined(OS_WIN)
     // Try to generate a crash report for the hung process.
-    CrashDumpAndTerminateHungChildProcess(rph->GetHandle());
+    CrashDumpAndTerminateHungChildProcess(rph->GetProcess().Handle());
 #else
     rph->Shutdown(content::RESULT_CODE_HUNG);
 #endif

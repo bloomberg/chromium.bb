@@ -230,7 +230,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     // or processes that are still launching.
     if (!widget->GetProcess()->IsReady())
       continue;
-    base::ProcessId pid = base::GetProcId(widget->GetProcess()->GetHandle());
+    base::ProcessId pid = widget->GetProcess()->GetProcess().Pid();
     widgets_by_pid[pid].push_back(widget);
   }
 

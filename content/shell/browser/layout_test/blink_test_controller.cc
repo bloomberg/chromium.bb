@@ -563,11 +563,11 @@ void BlinkTestController::OnInitiateCaptureDump(
     RenderFrameHost* main_rfh = main_window_->web_contents()->GetMainFrame();
     for (auto* window : Shell::windows()) {
       WebContents* web_contents = window->web_contents();
-      // Only capture the history from windows in the same process as the main
-      // window. During layout tests, we only use two processes when a devtools
-      // window is open.
+      // Only capture the history from windows in the same process_host as the
+      // main window. During layout tests, we only use two processes when a
+      // devtools window is open.
       // TODO(https://crbug.com/771003): Dump history for all WebContentses, not
-      // just ones that happen to be in the same process as the main test
+      // just ones that happen to be in the same process_host as the main test
       // window's main frame.
       if (main_rfh->GetProcess() != web_contents->GetMainFrame()->GetProcess())
         continue;
@@ -697,11 +697,10 @@ void BlinkTestController::RenderProcessExited(
     case base::TerminationStatus::TERMINATION_STATUS_PROCESS_CRASHED:
     case base::TerminationStatus::TERMINATION_STATUS_PROCESS_WAS_KILLED:
     default: {
-      base::ProcessHandle handle = render_process_host->GetHandle();
-      if (handle != base::kNullProcessHandle) {
+      const base::Process& process = render_process_host->GetProcess();
+      if (process.IsValid()) {
         printer_->AddErrorMessage(std::string("#CRASHED - renderer (pid ") +
-                                  base::IntToString(base::GetProcId(handle)) +
-                                  ")");
+                                  base::IntToString(process.Pid()) + ")");
       } else {
         printer_->AddErrorMessage("#CRASHED - renderer");
       }
@@ -728,7 +727,7 @@ void BlinkTestController::Observe(int type,
           Source<RenderProcessHost>(source).ptr();
       if (render_process_host != render_view_host->GetProcess())
         return;
-      current_pid_ = base::GetProcId(render_process_host->GetHandle());
+      current_pid_ = render_process_host->GetProcess().Pid();
       break;
     }
     default:
@@ -763,24 +762,24 @@ void BlinkTestController::DiscardMainWindow() {
 }
 
 void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
-  RenderProcessHost* process = frame->GetProcess();
+  RenderProcessHost* process_host = frame->GetProcess();
   bool main_window =
       WebContents::FromRenderFrameHost(frame) == main_window_->web_contents();
 
   // Track pid of the renderer handling the main frame.
   if (main_window && frame->GetParent() == nullptr) {
-    base::ProcessHandle process_handle = process->GetHandle();
-    if (process_handle != base::kNullProcessHandle)
-      current_pid_ = base::GetProcId(process_handle);
+    const base::Process& process = process_host->GetProcess();
+    if (process.IsValid())
+      current_pid_ = process.Pid();
   }
 
   // Is this the 1st time this renderer contains parts of the main test window?
   if (main_window &&
-      !base::ContainsKey(main_window_render_process_hosts_, process)) {
-    main_window_render_process_hosts_.insert(process);
+      !base::ContainsKey(main_window_render_process_hosts_, process_host)) {
+    main_window_render_process_hosts_.insert(process_host);
 
-    // Make sure the new renderer process has a test configuration shared with
-    // other renderers.
+    // Make sure the new renderer process_host has a test configuration shared
+    // with other renderers.
     mojom::ShellTestConfigurationPtr params =
         mojom::ShellTestConfiguration::New();
     params->allow_external_pages = false;
@@ -804,16 +803,16 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     }
   }
 
-  // Is this a previously unknown renderer process?
-  if (!render_process_host_observer_.IsObserving(process)) {
-    render_process_host_observer_.Add(process);
-    all_observed_render_process_hosts_.insert(process);
+  // Is this a previously unknown renderer process_host?
+  if (!render_process_host_observer_.IsObserving(process_host)) {
+    render_process_host_observer_.Add(process_host);
+    all_observed_render_process_hosts_.insert(process_host);
 
     if (!main_window) {
       GetLayoutTestControlPtr(frame)->SetupSecondaryRenderer();
     }
 
-    process->Send(new LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges(
+    process_host->Send(new LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges(
         accumulated_layout_test_runtime_flags_changes_));
   }
 }
@@ -963,8 +962,8 @@ void BlinkTestController::OnLayoutTestRuntimeFlagsChanged(
 
   // Propagate the changes to all the tracked renderer processes.
   for (RenderProcessHost* process : all_observed_render_process_hosts_) {
-    // Do not propagate the changes back to the process that originated them.
-    // (propagating them back could also clobber subsequent changes in the
+    // Do not propagate the changes back to the process that originated
+    // them. (propagating them back could also clobber subsequent changes in the
     // originator).
     if (process->GetID() == sender_process_host_id)
       continue;

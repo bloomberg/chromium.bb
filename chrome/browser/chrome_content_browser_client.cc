@@ -3245,14 +3245,18 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     // callback will be invoked in the context of ModuleDatabase::GetInstance,
     // which is invoked by Mojo initialization, which occurs while the
     // |render_process_host| is alive.
-    auto get_process = base::Bind(&content::RenderProcessHost::GetHandle,
-                                  base::Unretained(render_process_host));
+    auto get_process = base::BindRepeating(
+        [](content::RenderProcessHost* host) -> base::ProcessHandle {
+          return host->GetProcess().Handle();
+        },
+        base::Unretained(render_process_host));
     // The ModuleDatabase is a global singleton so passing an unretained pointer
     // is safe.
     registry->AddInterface(
-        base::Bind(&ModuleEventSinkImpl::Create, std::move(get_process),
-                   content::PROCESS_TYPE_RENDERER,
-                   base::Unretained(ModuleDatabase::GetInstance())),
+        base::BindRepeating(&ModuleEventSinkImpl::Create,
+                            std::move(get_process),
+                            content::PROCESS_TYPE_RENDERER,
+                            base::Unretained(ModuleDatabase::GetInstance())),
         ui_task_runner);
   }
 #endif

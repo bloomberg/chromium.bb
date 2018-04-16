@@ -447,23 +447,24 @@ TEST_F(MemoryCoordinatorImplTest, MAYBE_GetStateForProcess) {
   coordinator_->CreateChildMemoryCoordinator(1);
   coordinator_->CreateChildMemoryCoordinator(2);
   base::Process process1 = SpawnChild("process1");
+  base::ProcessHandle process1_handle = process1.Handle();
   base::Process process2 = SpawnChild("process2");
-  coordinator_->GetMockRenderProcessHost(1)->SetProcessHandle(
-      std::make_unique<base::ProcessHandle>(process1.Handle()));
-  coordinator_->GetMockRenderProcessHost(2)->SetProcessHandle(
-      std::make_unique<base::ProcessHandle>(process2.Handle()));
+  base::ProcessHandle process2_handle = process2.Handle();
+
+  coordinator_->GetMockRenderProcessHost(1)->SetProcess(std::move(process1));
+  coordinator_->GetMockRenderProcessHost(2)->SetProcess(std::move(process2));
 
   EXPECT_EQ(base::MemoryState::NORMAL,
-            coordinator_->GetStateForProcess(process1.Handle()));
+            coordinator_->GetStateForProcess(process1_handle));
   EXPECT_EQ(base::MemoryState::NORMAL,
-            coordinator_->GetStateForProcess(process2.Handle()));
+            coordinator_->GetStateForProcess(process2_handle));
 
   EXPECT_TRUE(
       coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
   EXPECT_EQ(base::MemoryState::THROTTLED,
-            coordinator_->GetStateForProcess(process1.Handle()));
+            coordinator_->GetStateForProcess(process1_handle));
   EXPECT_EQ(base::MemoryState::NORMAL,
-            coordinator_->GetStateForProcess(process2.Handle()));
+            coordinator_->GetStateForProcess(process2_handle));
 }
 
 }  // namespace content
