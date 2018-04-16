@@ -1,5 +1,18 @@
 include_rules = [
-    # To whitelist base/ stuff Blink is allowed to include, we list up all
-    # directories and files instead of writing 'base/'.
+    # Don't depend on platform/.
+    "-third_party/blink/renderer/platform",
+
+    # Module.
+    "+third_party/blink/renderer/platform/geometry",
+
+    # Dependencies.
+    "+third_party/blink/renderer/platform/graphics",
+    "+third_party/blink/renderer/platform/json",
+    "+third_party/blink/renderer/platform/layout_unit.h",
+    "+third_party/blink/renderer/platform/platform_export.h",
+    "+third_party/blink/renderer/platform/pod_interval_tree.h",
+    "+third_party/blink/renderer/platform/text",
+    "+third_party/blink/renderer/platform/transforms",
+    "+third_party/blink/renderer/platform/wtf",
     "+ui/gfx/geometry",
 ]
