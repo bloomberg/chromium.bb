@@ -54,7 +54,7 @@ class StartPresentationContext {
   void InvokeSuccessCallback(const std::string& presentation_id,
                              const GURL& presentation_url,
                              const MediaRoute& route);
-  void InvokeErrorCallback(const content::PresentationError& error);
+  void InvokeErrorCallback(const blink::mojom::PresentationError& error);
 
  private:
   content::PresentationRequest presentation_request_;

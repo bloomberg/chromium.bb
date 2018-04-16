@@ -25,7 +25,7 @@ class PresentationScreenAvailabilityListener;
 using PresentationConnectionCallback =
     base::OnceCallback<void(const PresentationInfo&)>;
 using PresentationConnectionErrorCallback =
-    base::OnceCallback<void(const PresentationError&)>;
+    base::OnceCallback<void(const blink::mojom::PresentationError&)>;
 using DefaultPresentationConnectionCallback =
     base::RepeatingCallback<void(const PresentationInfo&)>;
 

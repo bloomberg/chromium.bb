@@ -15,7 +15,5 @@ deps = [
 type_mappings = [
   "blink.mojom.PresentationConnectionMessage=content::PresentationConnectionMessage[move_only]",
   "blink.mojom.PresentationConnectionState=content::PresentationConnectionState",
-  "blink.mojom.PresentationError=content::PresentationError",
-  "blink.mojom.PresentationErrorType=content::PresentationErrorType",
   "blink.mojom.PresentationInfo=content::PresentationInfo",
 ]

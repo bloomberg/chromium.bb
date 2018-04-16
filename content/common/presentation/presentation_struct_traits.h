@@ -19,52 +19,6 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<blink::mojom::PresentationErrorType,
-                  content::PresentationErrorType> {
-  static blink::mojom::PresentationErrorType ToMojom(
-      content::PresentationErrorType input) {
-    switch (input) {
-      case content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS:
-        return blink::mojom::PresentationErrorType::NO_AVAILABLE_SCREENS;
-      case content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED:
-        return blink::mojom::PresentationErrorType::
-            PRESENTATION_REQUEST_CANCELLED;
-      case content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND:
-        return blink::mojom::PresentationErrorType::NO_PRESENTATION_FOUND;
-      case content::PRESENTATION_ERROR_PREVIOUS_START_IN_PROGRESS:
-        return blink::mojom::PresentationErrorType::PREVIOUS_START_IN_PROGRESS;
-      case content::PRESENTATION_ERROR_UNKNOWN:
-        return blink::mojom::PresentationErrorType::UNKNOWN;
-    }
-    NOTREACHED() << "Unknown content::PresentationErrorType "
-                 << static_cast<int>(input);
-    return blink::mojom::PresentationErrorType::UNKNOWN;
-  }
-
-  static bool FromMojom(blink::mojom::PresentationErrorType input,
-                        content::PresentationErrorType* output) {
-    switch (input) {
-      case blink::mojom::PresentationErrorType::NO_AVAILABLE_SCREENS:
-        *output = content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS;
-        return true;
-      case blink::mojom::PresentationErrorType::PRESENTATION_REQUEST_CANCELLED:
-        *output = content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED;
-        return true;
-      case blink::mojom::PresentationErrorType::NO_PRESENTATION_FOUND:
-        *output = content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND;
-        return true;
-      case blink::mojom::PresentationErrorType::PREVIOUS_START_IN_PROGRESS:
-        *output = content::PRESENTATION_ERROR_PREVIOUS_START_IN_PROGRESS;
-        return true;
-      case blink::mojom::PresentationErrorType::UNKNOWN:
-        *output = content::PRESENTATION_ERROR_UNKNOWN;
-        return true;
-    }
-    return false;
-  }
-};
-
-template <>
 struct EnumTraits<blink::mojom::PresentationConnectionState,
                   content::PresentationConnectionState> {
   static blink::mojom::PresentationConnectionState ToMojom(
@@ -118,22 +72,6 @@ struct StructTraits<blink::mojom::PresentationInfoDataView,
 
   static bool Read(blink::mojom::PresentationInfoDataView data,
                    content::PresentationInfo* out);
-};
-
-template <>
-struct StructTraits<blink::mojom::PresentationErrorDataView,
-                    content::PresentationError> {
-  static content::PresentationErrorType error_type(
-      const content::PresentationError& error) {
-    return error.error_type;
-  }
-
-  static const std::string& message(const content::PresentationError& error) {
-    return error.message;
-  }
-
-  static bool Read(blink::mojom::PresentationErrorDataView data,
-                   content::PresentationError* out);
 };
 
 template <>

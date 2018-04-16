@@ -368,13 +368,13 @@ MediaRouterUI::~MediaRouterUI() {
         });
     if (presentation_sinks_available) {
       start_presentation_context_->InvokeErrorCallback(
-          content::PresentationError(
-              content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
-              "Dialog closed."));
+          blink::mojom::PresentationError(blink::mojom::PresentationErrorType::
+                                              PRESENTATION_REQUEST_CANCELLED,
+                                          "Dialog closed."));
     } else {
       start_presentation_context_->InvokeErrorCallback(
-          content::PresentationError(
-              content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+          blink::mojom::PresentationError(
+              blink::mojom::PresentationErrorType::NO_AVAILABLE_SCREENS,
               "No screens found."));
     }
   }

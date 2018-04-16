@@ -43,6 +43,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::PresentationServiceDelegateImpl);
 
 using content::RenderFrameHost;
+using blink::mojom::PresentationError;
+using blink::mojom::PresentationErrorType;
+using blink::mojom::ScreenAvailability;
 
 namespace media_router {
 
@@ -153,7 +156,7 @@ bool PresentationFrame::SetScreenAvailabilityListener(
   GURL url = listener->GetAvailabilityUrl();
   if (!IsValidPresentationUrl(url)) {
     listener->OnScreenAvailabilityChanged(
-        blink::mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED);
+        ScreenAvailability::SOURCE_NOT_SUPPORTED);
     return false;
   }
 
@@ -170,8 +173,7 @@ bool PresentationFrame::SetScreenAvailabilityListener(
 
   if (!sinks_observer->Init()) {
     url_to_sinks_observer_.erase(source.id());
-    listener->OnScreenAvailabilityChanged(
-        blink::mojom::ScreenAvailability::DISABLED);
+    listener->OnScreenAvailabilityChanged(ScreenAvailability::DISABLED);
     return false;
   }
 
@@ -400,8 +402,8 @@ void PresentationServiceDelegateImpl::OnJoinRouteResponse(
     content::PresentationConnectionErrorCallback error_cb,
     const RouteRequestResult& result) {
   if (!result.route()) {
-    std::move(error_cb).Run(content::PresentationError(
-        content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND, result.error()));
+    std::move(error_cb).Run(PresentationError(
+        PresentationErrorType::NO_PRESENTATION_FOUND, result.error()));
   } else {
     DVLOG(1) << "OnJoinRouteResponse: "
              << "route_id: " << result.route()->media_route_id()
@@ -451,9 +453,8 @@ void PresentationServiceDelegateImpl::StartPresentation(
   const auto& render_frame_host_id = request.render_frame_host_id;
   const auto& presentation_urls = request.presentation_urls;
   if (presentation_urls.empty()) {
-    std::move(error_cb).Run(
-        content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
-                                   "Invalid presentation arguments."));
+    std::move(error_cb).Run(PresentationError(
+        PresentationErrorType::UNKNOWN, "Invalid presentation arguments."));
     return;
   }
 
@@ -461,9 +462,9 @@ void PresentationServiceDelegateImpl::StartPresentation(
   // PresentationService::start().
   if (std::find_if_not(presentation_urls.begin(), presentation_urls.end(),
                        IsValidPresentationUrl) != presentation_urls.end()) {
-    std::move(error_cb).Run(content::PresentationError(
-        content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
-        "Invalid presentation URL."));
+    std::move(error_cb).Run(
+        PresentationError(PresentationErrorType::NO_PRESENTATION_FOUND,
+                          "Invalid presentation URL."));
     return;
   }
 
@@ -489,18 +490,18 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
   const auto& presentation_urls = request.presentation_urls;
   const auto& render_frame_host_id = request.render_frame_host_id;
   if (presentation_urls.empty()) {
-    std::move(error_cb).Run(content::PresentationError(
-        content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
-        "Invalid presentation arguments."));
+    std::move(error_cb).Run(
+        PresentationError(PresentationErrorType::NO_PRESENTATION_FOUND,
+                          "Invalid presentation arguments."));
     return;
   }
 
 #if !defined(OS_ANDROID)
   if (IsAutoJoinPresentationId(presentation_id) &&
       ShouldCancelAutoJoinForOrigin(request.frame_origin)) {
-    std::move(error_cb).Run(content::PresentationError(
-        content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
-        "Auto-join request cancelled by user preferences."));
+    std::move(error_cb).Run(
+        PresentationError(PresentationErrorType::PRESENTATION_REQUEST_CANCELLED,
+                          "Auto-join request cancelled by user preferences."));
     return;
   }
 #endif  // !defined(OS_ANDROID)
