@@ -274,15 +274,15 @@ int av1_neg_deinterleave(int diff, int ref, int max) {
 
 static int read_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                            int mi_row, int mi_col, aom_reader *r, int skip) {
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  struct segmentation *const seg = &cm->seg;
-  struct segmentation_probs *const segp = &ec_ctx->seg;
   int cdf_num;
   const int pred = av1_get_spatial_seg_pred(cm, xd, mi_row, mi_col, &cdf_num);
   if (skip) return pred;
 
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  struct segmentation *const seg = &cm->seg;
+  struct segmentation_probs *const segp = &ec_ctx->seg;
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
-  int coded_id = aom_read_symbol(r, pred_cdf, 8, ACCT_STR);
+  const int coded_id = aom_read_symbol(r, pred_cdf, 8, ACCT_STR);
   const int segment_id =
       av1_neg_deinterleave(coded_id, pred, seg->last_active_segid + 1);
 
@@ -319,16 +319,15 @@ static int read_intra_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  int mi_row, int mi_col, int bsize,
                                  aom_reader *r, int skip) {
   struct segmentation *const seg = &cm->seg;
+  if (!seg->enabled) return 0;  // Default for disabled segmentation
+
+  assert(seg->update_map && !seg->temporal_update);
+
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
   const int x_mis = AOMMIN(cm->mi_cols - mi_col, bw);
   const int y_mis = AOMMIN(cm->mi_rows - mi_row, bh);
-
-  if (!seg->enabled) return 0;  // Default for disabled segmentation
-
-  assert(seg->update_map && !seg->temporal_update);
-
   const int segment_id = read_segment_id(cm, xd, mi_row, mi_col, r, skip);
   set_segment_id(cm, mi_offset, x_mis, y_mis, segment_id);
   return segment_id;
@@ -356,11 +355,7 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  int mi_row, int mi_col, int preskip,
                                  aom_reader *r) {
   struct segmentation *const seg = &cm->seg;
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  struct segmentation_probs *const segp = &ec_ctx->seg;
-
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  int segment_id;
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
   const int bw = mi_size_wide[mbmi->sb_type];
   const int bh = mi_size_high[mbmi->sb_type];
@@ -377,6 +372,7 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     return get_predicted_segment_id(cm, mi_offset, x_mis, y_mis);
   }
 
+  int segment_id;
   if (preskip) {
     if (!seg->preskip_segid) return 0;
   } else {
@@ -390,9 +386,11 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       return segment_id;
     }
   }
-  (void)preskip;
+
   if (seg->temporal_update) {
     const int ctx = av1_get_pred_context_seg_id(xd);
+    FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+    struct segmentation_probs *const segp = &ec_ctx->seg;
     aom_cdf_prob *pred_cdf = segp->pred_cdf[ctx];
     mbmi->seg_id_predicted = aom_read_symbol(r, pred_cdf, 2, ACCT_STR);
     if (mbmi->seg_id_predicted) {
