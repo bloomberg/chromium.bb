@@ -229,6 +229,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_PATH_DAA_BIT
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_THREADED_DAA_BUGS
+#define SK_SUPPORT_LEGACY_THREADED_DAA_BUGS
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
