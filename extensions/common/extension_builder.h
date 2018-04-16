@@ -48,6 +48,11 @@ class ExtensionBuilder {
     BROWSER_ACTION,
   };
 
+  enum class BackgroundPage {
+    PERSISTENT,
+    EVENT,
+  };
+
   // Initializes an ExtensionBuilder that can be used with SetManifest() for
   // complete customization.
   ExtensionBuilder();
@@ -77,6 +82,10 @@ class ExtensionBuilder {
   // Sets an action type for the extension to have. By default, no action will
   // be set (though note that we synthesize a page action for most extensions).
   ExtensionBuilder& SetAction(ActionType action);
+
+  // Sets a background page for the extension to have. By default, no background
+  // page will be set.
+  ExtensionBuilder& SetBackgroundPage(BackgroundPage background_page);
 
   //////////////////////////////////////////////////////////////////////////////
   // Utility methods for use with custom manifest construction.

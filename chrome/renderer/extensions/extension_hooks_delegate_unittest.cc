@@ -113,15 +113,9 @@ TEST_F(ExtensionHooksDelegateTest, MessagingSanityChecks) {
 TEST_F(ExtensionHooksDelegateTest, SendRequestDisabled) {
   // Construct an extension for which sendRequest is disabled (unpacked
   // extension with an event page).
-  // TODO(devlin): Add a SetBackgroundPage() to ExtensionBuilder?
   scoped_refptr<Extension> extension =
       ExtensionBuilder("foo")
-          .MergeManifest(DictionaryBuilder()
-                             .Set("background", DictionaryBuilder()
-                                                    .Set("persistent", false)
-                                                    .Set("page", "page.html")
-                                                    .Build())
-                             .Build())
+          .SetBackgroundPage(ExtensionBuilder::BackgroundPage::EVENT)
           .SetLocation(Manifest::UNPACKED)
           .Build();
   RegisterExtension(extension);
