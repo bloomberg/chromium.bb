@@ -226,10 +226,14 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       ui::mojom::WindowTreeClientPtr window_tree_client) {}
 #endif
 
-  // Called by RenderWidgetHostViewChildFrame when the child frame has resized
-  // to |new_size| because auto-resize is enabled.
-  virtual void ResizeDueToAutoResize(const gfx::Size& new_size,
-                                     uint64_t sequence_number) {}
+  // Called by RenderWidgetHostViewChildFrame when an auto-resize transaction
+  // starts.
+  virtual void BeginResizeDueToAutoResize() {}
+
+  // Called by RenderWidgetHostViewChildFrame when the child frame has finished
+  // an auto-resize transaction. Causes allocation of a new LocalSurfaceID
+  // associated with the new size.
+  virtual void EndResizeDueToAutoResize(uint64_t sequence_number) {}
 
   bool has_size() const { return has_size_; }
 

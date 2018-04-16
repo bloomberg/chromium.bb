@@ -29,6 +29,7 @@
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/frame_host_test_interface.mojom.h"
@@ -1122,6 +1123,33 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReusedOnSameDocumentNavigation) {
   ExpectPendingInterfaceRequestsFromSources(
       std::move(interface_provider_request),
       {{GURL(kTestFirstURL), kFrameEventDidCommitSameDocumentLoad}});
+}
+
+// Verify that a RenderFrameProxy correctly handles autoresize.
+TEST_F(RenderFrameImplTest, ProxyAutoresize) {
+  auto* proxy = RenderFrameProxy::FromRoutingID(kFrameProxyRouteId);
+
+  // Send a ViewChanged message to initialize our proxy with a frame sink.
+  FrameMsg_ViewChanged_Params view_changed_params;
+  view_changed_params.frame_sink_id = viz::FrameSinkId(20, 21);
+  FrameMsg_ViewChanged view_changed(kFrameProxyRouteId, view_changed_params);
+  proxy->OnMessageReceived(view_changed);
+  render_thread_->sink().ClearMessages();
+
+  // Send a simulated sequence of messages representing an auto-resize
+  // transaction.
+  FrameMsg_BeginResizeDueToAutoResize begin_msg(kFrameProxyRouteId);
+  proxy->OnMessageReceived(begin_msg);
+  proxy->FrameRectsChanged(blink::WebRect(0, 0, 300, 300),
+                           blink::WebRect(0, 0, 300, 300));
+  FrameMsg_EndResizeDueToAutoResize end_msg(kFrameProxyRouteId, 7);
+  proxy->OnMessageReceived(end_msg);
+
+  // We should have exactly one UpdateResizeParams message.
+  const IPC::Message* msg1 = render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_UpdateResizeParams::ID);
+  EXPECT_TRUE(msg1);
+  render_thread_->sink().ClearMessages();
 }
 
 }  // namespace content

@@ -123,6 +123,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
 
+  // IPC::Listener
+  bool OnMessageReceived(const IPC::Message& msg) override;
+
   // Out-of-process child frames receive a signal from RenderWidgetCompositor
   // when a compositor frame will begin.
   void WillBeginCompositorFrame();
@@ -213,9 +216,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   void SetChildFrameSurface(const viz::SurfaceInfo& surface_info);
 
-  // IPC::Listener
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
   // IPC handlers
   void OnDeleteProxy();
   void OnChildFrameProcessGone();
@@ -250,7 +250,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetHasReceivedUserGesture();
   void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                              const blink::WebScrollIntoViewParams& params);
-  void OnResizeDueToAutoResize(uint64_t sequence_number);
+  void OnBeginResizeDueToAutoResize();
+  void OnEndResizeDueToAutoResize(uint64_t sequence_number);
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize();
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
@@ -299,6 +300,11 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // The current set of ResizeParams. This may or may not match
   // |sent_resize_params_|.
   FrameResizeParams pending_resize_params_;
+
+  // Whether we are in the middle of a transaction which modifies
+  // |pending_resize_params_|. If so, we delay allocating a new LocalSurfaceId
+  // until the transaction completes.
+  bool transaction_pending_ = false;
 
   bool crashed_ = false;
 

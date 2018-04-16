@@ -995,9 +995,14 @@ IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
 // Tells the RenderFrame to clear the focused element (if any).
 IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedElement)
 
-// Informs the parent renderer that the child would like a new
-// viz::LocalSurfaceId in response to an auto-resize.
-IPC_MESSAGE_ROUTED1(FrameMsg_ResizeDueToAutoResize,
+// Informs the parent renderer that the child is beginning an autoresize
+// transaction.
+IPC_MESSAGE_ROUTED(FrameMsg_BeginResizeDueToAutoResize)
+
+// Informs the parent renderer that the child has completed an autoresize
+// transaction and that the child can now allocate a new viz::LocalSurfaceId
+// for its new size.
+IPC_MESSAGE_ROUTED1(FrameMsg_EndResizeDueToAutoResize,
                     uint64_t /* sequence_number */)
 
 // Requests a viz::LocalSurfaceId to enable auto-resize mode from the parent

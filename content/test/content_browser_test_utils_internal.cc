@@ -381,9 +381,15 @@ void UpdateResizeParamsMessageFilter::ResetRectRunLoop() {
 }
 
 viz::FrameSinkId UpdateResizeParamsMessageFilter::GetOrWaitForId() {
-  // No-opt if already quit.
+  // No-op if already quit.
   frame_sink_id_run_loop_.Run();
   return frame_sink_id_;
+}
+
+uint64_t UpdateResizeParamsMessageFilter::WaitForSequenceNumber() {
+  sequence_number_run_loop_.reset(new base::RunLoop);
+  sequence_number_run_loop_->Run();
+  return last_sequence_number_;
 }
 
 UpdateResizeParamsMessageFilter::~UpdateResizeParamsMessageFilter() {}
@@ -406,6 +412,13 @@ void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI,
                      this, screen_space_rect_in_dip));
+
+  // Track each sequence number update.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &UpdateResizeParamsMessageFilter::OnUpdatedSequenceNumberOnUI, this,
+          resize_params.auto_resize_sequence_number));
 
   // Record the received value. We cannot check the current state of the child
   // frame, as it can only be processed on the UI thread, and we cannot block
@@ -439,6 +452,14 @@ void UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI(
 
 void UpdateResizeParamsMessageFilter::OnUpdatedFrameSinkIdOnUI() {
   frame_sink_id_run_loop_.Quit();
+}
+
+void UpdateResizeParamsMessageFilter::OnUpdatedSequenceNumberOnUI(
+    uint64_t sequence_number) {
+  last_sequence_number_ = sequence_number;
+  if (sequence_number_run_loop_) {
+    sequence_number_run_loop_->QuitWhenIdle();
+  }
 }
 
 bool UpdateResizeParamsMessageFilter::OnMessageReceived(
