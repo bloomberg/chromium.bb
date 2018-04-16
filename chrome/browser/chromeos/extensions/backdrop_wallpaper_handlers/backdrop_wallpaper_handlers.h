@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace extensions {
 namespace api {
@@ -24,7 +25,7 @@ namespace backdrop_wallpaper_handlers {
 
 // Downloads and deserializes the proto for the wallpaper collections info from
 // the Backdrop service.
-class CollectionInfoFetcher : public net::URLFetcherDelegate {
+class CollectionInfoFetcher {
  public:
   using OnCollectionsInfoFetched = base::OnceCallback<void(
       bool success,
@@ -32,17 +33,16 @@ class CollectionInfoFetcher : public net::URLFetcherDelegate {
           collections_info_list)>;
 
   CollectionInfoFetcher();
-  ~CollectionInfoFetcher() override;
+  ~CollectionInfoFetcher();
 
   // Triggers the start of the downloading and deserializing of the proto.
   void Start(OnCollectionsInfoFetched callback);
 
-  // net::URLFetcherDelegate
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const std::unique_ptr<std::string> response_body);
 
  private:
   // Used to download the proto from the Backdrop service.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
   // The callback upon completion of fetching the collections info.
   OnCollectionsInfoFetched callback_;

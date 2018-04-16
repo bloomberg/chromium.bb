@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -40,7 +41,7 @@ CollectionInfoFetcher::CollectionInfoFetcher() {
 CollectionInfoFetcher::~CollectionInfoFetcher() = default;
 
 void CollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
-  DCHECK(!url_fetcher_ && callback_.is_null());
+  DCHECK(!simple_loader_ && callback_.is_null());
   callback_ = std::move(callback);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -68,46 +69,62 @@ void CollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
             "Not implemented, considered not necessary."
         })");
 
-  url_fetcher_ =
-      net::URLFetcher::Create(GURL(kBackdropCollectionsUrl),
-                              net::URLFetcher::POST, this, traffic_annotation);
-  url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
-  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  SystemNetworkContextManager* system_network_context_manager =
+      g_browser_process->system_network_context_manager();
+  // In unit tests, the browser process can return a null context manager
+  if (!system_network_context_manager)
+    return;
+
+  network::mojom::URLLoaderFactory* loader_factory =
+      system_network_context_manager->GetURLLoaderFactory();
 
   backdrop::GetCollectionsRequest request;
   // The language field may include the country code (e.g. "en-US").
   request.set_language(g_browser_process->GetApplicationLocale());
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
-  url_fetcher_->SetUploadData(kProtoMimeType, serialized_proto);
-  url_fetcher_->Start();
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(kBackdropCollectionsUrl);
+  resource_request->method = "POST";
+  resource_request->load_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                    traffic_annotation);
+  simple_loader_->AttachStringForUpload(serialized_proto, kProtoMimeType);
+  simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory, base::BindOnce(&CollectionInfoFetcher::OnURLFetchComplete,
+                                     base::Unretained(this)));
 }
 
-void CollectionInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
+void CollectionInfoFetcher::OnURLFetchComplete(
+    const std::unique_ptr<std::string> response_body) {
   std::vector<extensions::api::wallpaper_private::CollectionInfo>
       collections_info_list;
 
-  if (!source->GetStatus().is_success() ||
-      source->GetResponseCode() != net::HTTP_OK) {
+  if (!response_body) {
+    int response_code = -1;
+    if (simple_loader_->ResponseInfo() &&
+        simple_loader_->ResponseInfo()->headers)
+      response_code = simple_loader_->ResponseInfo()->headers->response_code();
+
     // TODO(crbug.com/800945): Adds retry mechanism and error handling.
     LOG(ERROR) << "Downloading Backdrop wallpaper proto for collection info "
                   "failed with error code: "
-               << source->GetResponseCode();
-    url_fetcher_.reset();
+               << response_code;
+    simple_loader_.reset();
     std::move(callback_).Run(false /*success=*/, collections_info_list);
     return;
   }
 
-  std::string response_string;
-  source->GetResponseAsString(&response_string);
   backdrop::GetCollectionsResponse collections_response;
-  if (!collections_response.ParseFromString(response_string)) {
+  if (!collections_response.ParseFromString(*response_body)) {
     LOG(ERROR) << "Deserializing Backdrop wallpaper proto for collection info "
                   "failed.";
-    url_fetcher_.reset();
+    simple_loader_.reset();
     std::move(callback_).Run(false /*success=*/, collections_info_list);
     return;
   }
@@ -120,7 +137,7 @@ void CollectionInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     collections_info_list.push_back(std::move(collection_info));
   }
 
-  url_fetcher_.reset();
+  simple_loader_.reset();
   std::move(callback_).Run(true /*success=*/, collections_info_list);
 }
 
