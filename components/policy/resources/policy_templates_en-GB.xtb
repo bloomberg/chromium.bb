@@ -52,12 +52,6 @@
 
       If the policy is set to false, the state of the dev switch will not be reported.</translation>
 <translation id="1160939557934457296">Disable proceeding from the Safe Browsing warning page</translation>
-<translation id="1166377463685560145">Specifies the printers which a user cannot use.
-
-      This policy is only used if <ph name="PRINTERS_BLACKLIST" /> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      If this policy is used, all printers are provided to the user except for the IDs listed in this policy.
-      </translation>
 <translation id="1198465924256827162">How frequently device status uploads are sent, in milliseconds.
 
       If this policy is unset, the default frequency is 3 hours. The minimum
@@ -166,19 +160,6 @@
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
-<translation id="1603058613431276040">Provides configurations for enterprise printers bound to devices.
-
-      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME" /> devices. The size of the file must not exceed 5 MB and must be encoded in JSON. The format is the same as the NativePrinters dictionary. It is estimated that a file containing approximately 21,000 printers will encode as a 5 MB file. The cryptographic hash is used to verify the integrity of the download.
-
-      The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
-
-      If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download the file for printer configurations and make printers available in accordance with <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> and <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
-
-      This policy is additive to the <ph name="BULK_PRINTERS_POLICY" />.
-
-      If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> policies will be ignored.</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
 <translation id="163200210584085447">Patterns in this list will be matched against the security
@@ -596,12 +577,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2762164719979766599">Specifies the list of device-local accounts to be shown on the login screen.
 
       Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.</translation>
-<translation id="2766302473082018239">Specifies the printers which a user can use.
-
-      This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      If this policy is used, only the printers with IDs matching the values in this policy are available to the user. The IDs must correspond to the entries in the file specified in <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
 <translation id="2787173078141616821">Report information about status of Android</translation>
 <translation id="2793923553868251161">Origins to be treated as secure context.</translation>
@@ -788,12 +763,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is set to a non-empty string, that string will be used as the name of the <ph name="PRODUCT_NAME" /> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name, and the owner of the device (or a user from the domain managing the device) will be allowed to change it. The name is limited to 24 characters.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
-<translation id="3395348522300156660">Specifies the printers which a user can use.
-
-      This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
-
-      If this policy is used, only the printers with IDs matching the values in this policy are available to the user. The IDs must correspond to the entries in the file specified in <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">If this policy is not configured then <ph name="PRODUCT_NAME" /> uses a default minimum version which is TLS 1.0.
 
       Otherwise it may be set to one of the following values: 'tls1', 'tls1.1' or 'tls1.2'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions less than the specified version. An unrecognised value will be ignored.</translation>
@@ -2448,12 +2417,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       Warning: It is not recommended to configure version restrictions as they may prevent users from receiving software updates and critical security fixes. Restricting updates to a specific version prefix might leave users at risk.</translation>
 <translation id="8519264904050090490">Managed user manual exception URLs</translation>
-<translation id="8527932539502116028">Specifies the printers which a user cannot use.
-
-      This policy is only used if <ph name="PRINTERS_BLACKLIST" /> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      If this policy is used, all printers are provided to the user except for the IDs listed in this policy.
-      </translation>
 <translation id="8538235451413605457">Configures the requirement of the minimum allowed version of <ph name="PRODUCT_NAME" />. Versions below given are treated as obsolete and device would not allow user to sign in before OS is updated.
       If current version becomes obsolete during user session, user will be forcefully signed out.
 
@@ -2570,18 +2533,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
 <translation id="891435090623616439">encoded as a JSON string, for details see <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Provides configurations for enterprise printers.
-
-      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME" /> devices. The size of the file must not exceed 5 MB and must be encoded in JSON. The format is the same as the NativePrinters dictionary. It is estimated that a file containing approximately 21,000 printers will encode as a 5 MB file. The cryptographic hash is used to verify the integrity of the download.
-
-      The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
-
-      If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download the file for printer configurations and make printers available in accordance with <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> and <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      If you set this policy, users cannot change or override it.
-
-      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
-      </translation>
 <translation id="8934944553121392674">Controls which printers from the <ph name="DEVICE_PRINTERS_POLICY" /> are available to users.
 
       Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL" /> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST" /> is selected, <ph name="DEVICE_PRINTERS_BLACKLIST" /> is used to restrict access to the specified printers. If <ph name="PRINTERS_WHITELIST" /> is selected, <ph name="DEVICE_PRINTERS_WHITELIST" /> designates only those printers which are selectable.

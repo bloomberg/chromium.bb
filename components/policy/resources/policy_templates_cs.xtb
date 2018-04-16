@@ -42,9 +42,9 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
       Seznam proměnných, které lze použít, naleznete na stránce https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Pokud tuto zásadu nenastavíte, bude použit výchozí adresář mezipaměti a uživatel jej bude moci přepsat pomocí příznaku příkazového řádku „--disk-cache-dir“.</translation>
-<translation id="1138294736309071213">Tato zásada je aktivní pouze v režimu prodeje.
+<translation id="1138294736309071213">Tato zásada je aktivní pouze v režimu pro obchody.
 
-      Určuje dobu nečinnosti před zobrazením spořiče obrazovky na přihlašovací obrazovce v režimu prodeje.
+      Určuje dobu nečinnosti před zobrazením spořiče obrazovky na přihlašovací obrazovce v režimu pro obchody.
 
       Hodnota zásady se určuje v milisekundách.</translation>
 <translation id="1151353063931113432">Povolit obrázky na těchto stránkách</translation>
@@ -52,12 +52,6 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
 
       Pokud je tato zásada nastavena na hodnotu false, stav přepínače režimu pro vývojáře se hlásit nebude.</translation>
 <translation id="1160939557934457296">Zakázat pokračování ze stránky s upozorněním Bezpečného prohlížení</translation>
-<translation id="1166377463685560145">Určuje, které tiskárny uživatel nesmí používat.
-
-      Tato zásada se použije, jen pokud je v zásadě <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> vybrána možnost <ph name="PRINTERS_BLACKLIST" />.
-
-      Je-li tato zásada použita, bude mít uživatel k dispozici všechny tiskárny kromě těch, jejichž ID jsou v ní uvedena.
-      </translation>
 <translation id="1198465924256827162">Frekvence odesílání informací o stavu zařízení (v milisekundách).
 
 Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální povolená frekvence je 60 sekund.</translation>
@@ -156,19 +150,6 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 <translation id="1561424797596341174">Přepsání zásad pro ladicí sestavení hostitele vzdáleného přístupu</translation>
 <translation id="1561967320164410511">U2F plus rozšíření pro individuální atestaci</translation>
 <translation id="1583248206450240930">Ve výchozím nastavení používat plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="1603058613431276040">Poskytuje konfigurace pro podnikové tiskárny svázané se zařízeními.
-
-      Tato zásada umožňuje poskytnout zařízením <ph name="PRODUCT_OS_NAME" /> konfigurace tiskáren. Soubor nesmí být větší než 5 MB a musí být zakódován ve formátu JSON. Formát je stejný jako ve slovníku NativePrinters. Podle odhadů by se do souboru o velikosti 5 MB mělo vejít přibližně 21 000 tiskáren. Kryptografický hash se používá k ověření integrity staženého souboru.
-
-      Soubor se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se stáhne znovu.
-
-      Je-li tato zásada nastavena, stáhne <ph name="PRODUCT_OS_NAME" /> soubor s konfiguracemi tiskáren a zpřístupní tiskárny v souladu se zásadami <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> a <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních. Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.
-
-      Tato zásada doplňuje zásadu <ph name="BULK_PRINTERS_POLICY" />.
-
-      Pokud tato zásada není nastavena, nebude mít zařízení žádné tiskárny a ostatní zásady <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> budou ignorovány.</translation>
 <translation id="1608755754295374538">Adresy URL, kterým bude udělen přístup pro záznam zvuku bez zobrazení výzvy</translation>
 <translation id="1617235075406854669">Aktivovat smazání historie prohlížeče a stahování</translation>
 <translation id="163200210584085447">Vzory v tomto seznamu budou porovnány s žádající adresou URL. Pokud bude nalezena shoda, bude na přihlašovacích stránkách SAML udělen přístup k zařízením pro záznam videa. Pokud shoda nalezena nebude, přístup bude automaticky odepřen. Vzory se zástupnými znaky nejsou povoleny.</translation>
@@ -528,7 +509,7 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 
       Pokud zásadu nenastavíte, bude na uživatelích, aby zvolili, zda funkci datové komprese proxy serveru chtějí nebo nechtějí použít.</translation>
 <translation id="2587719089023392205">Nastavit <ph name="PRODUCT_NAME" /> jako výchozí prohlížeč</translation>
-<translation id="2592091433672667839">Doba nečinnosti před zobrazením spořiče obrazovky na přihlašovací obrazovce v režimu prodeje</translation>
+<translation id="2592091433672667839">Doba nečinnosti před zobrazením spořiče obrazovky na přihlašovací obrazovce v režimu pro obchody</translation>
 <translation id="2596260130957832043">Udává, zda je povolen protokol NTLMv2.
 
           Všechny verze serverů Samba a Windows z poslední doby protokol NTLMv2 podporují. Jeho zakázání snižuje bezpečnost ověřování a měli byste k němu přistupovat jen v případě, že potřebujete zajistit zpětnou kompatibilitu.
@@ -575,12 +556,6 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
 <translation id="2762164719979766599">Určuje seznam místních účtů v zařízení, které se zobrazují na přihlašovací obrazovce.
 
       Každá položka v seznamu uvádí identifikátor, který se používá k internímu rozlišení různých místních účtů v zařízení.</translation>
-<translation id="2766302473082018239">Určuje, které tiskárny uživatel může používat.
-
-      Tato zásada se použije, jen pokud je v zásadě <ph name="BULK_PRINTERS_ACCESS_MODE" /> vybrána možnost <ph name="PRINTERS_WHITELIST" />.
-
-      Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, jejichž ID se shodují s hodnotami v této zásadě. ID musejí odpovídat položkám v souboru, který je uveden v zásadě <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Konfigurovat povinný název domény pro hostitele vzdáleného přístupu</translation>
 <translation id="2787173078141616821">Hlásit informace o stavu systému Android</translation>
 <translation id="2793923553868251161">Zdroje, které mají být považovány za bezpečný kontext.</translation>
@@ -682,7 +657,7 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
       Je-li tato zásada nastavena na hodnotu false, je optimalizace WPAD zakázána, a <ph name="PRODUCT_NAME" /> proto bude na servery WPAD založené na DNS čekat déle. Pokud tato zásada není nastavena, je optimalizace WPAD povolena.
 
       Nezávisle na tom, zda je tato zásada nastavena nebo jak je nastavena, uživatelé nastavení optimalizace WPAD nemohou změnit.</translation>
-<translation id="3072045631333522102">Spořič obrazovky, který bude použit na přihlašovací obrazovce v režimu prodeje</translation>
+<translation id="3072045631333522102">Spořič obrazovky, který bude použit na přihlašovací obrazovce v režimu pro obchody</translation>
 <translation id="3072847235228302527">Nastavit smluvní podmínky pro účet v zařízení</translation>
 <translation id="3086995894968271156">Nakonfigurujte přijímač Cast ve službě <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Seznam aktivovaných pluginů</translation>
@@ -764,12 +739,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 
           Je-li tato zásada nastavena na neprázdný řetězec, bude jako název cíle služby <ph name="PRODUCT_NAME" /> použit příslušný řetězec. V opačném případě bude jako název cíle použit název zařízení. Pokud tato zásada není nastavena, bude jako název cíle použit název zařízení a vlastník zařízení (nebo uživatel z domény, která zařízení spravuje) jej bude moci změnit. Název smí mít maximálně 24 znaků.</translation>
 <translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
-<translation id="3395348522300156660">Určuje, které tiskárny uživatel může používat.
-
-      Tato zásada se použije, jen pokud je v zásadě <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> vybrána možnost <ph name="PRINTERS_WHITELIST" />.
-
-      Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, jejichž ID se shodují s hodnotami v této zásadě. ID musejí odpovídat položkám v souboru, který je uveden v zásadě <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Pokud tato zásada není nakonfigurovaná, používá <ph name="PRODUCT_NAME" /> výchozí minimální verzi, což je TLS 1.0.
 
       Jinak lze zásadu nastavit na jednu z těchto hodnot: tls1, tls1.1 nebo tls1.2. Je-li nastavena, nebude <ph name="PRODUCT_NAME" /> používat verze protokolů SSL a TLS nižší, než je uvedená verze. Nerozpoznané hodnoty budou ignorovány.</translation>
@@ -916,9 +885,9 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="3866249974567520381">Popis</translation>
-<translation id="3868347814555911633">Tato zásada je aktivní pouze v režimu prodeje.
+<translation id="3868347814555911633">Tato zásada je aktivní pouze v režimu pro obchody.
 
-      Seznam rozšíření, která se automaticky nainstalují pro uživatele ukázky v zařízeních v režimu prodeje. Tato rozšíření se uloží v zařízení a po instalaci mohou být nainstalována v režimu offline.
+      Seznam rozšíření, která se automaticky nainstalují pro uživatele ukázky v zařízeních v režimu pro obchody. Tato rozšíření se uloží v zařízení a po instalaci mohou být nainstalována v režimu offline.
 
       Každý záznam v seznamu obsahuje adresář, který musí zahrnovat ID rozšíření v poli „extension-id“ a jeho webovou adresu pro aktualizace v poli „update-url“.</translation>
 <translation id="3873159954366380945">Umožňuje nastavit dobu, po kterou se budou zobrazovat oznámení o restartu prohlížeče <ph name="PRODUCT_NAME" /> za účelem použití aktualizace čekající na vyřízení.
@@ -1438,7 +1407,7 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
 <translation id="5469825884154817306">Blokovat obrázky na těchto stránkách</translation>
 <translation id="5475361623548884387">Povolit tisk</translation>
 <translation id="547601067149622666">Nepovolovat reklamy na webech s rušivými reklamami</translation>
-<translation id="5499375345075963939">Tato zásada je aktivní pouze v režimu prodeje.
+<translation id="5499375345075963939">Tato zásada je aktivní pouze v režimu pro obchody.
 
       Je-li hodnota zásady nastavena a nerovná se 0, aktuálně přihlášený uživatel ukázky bude automaticky odhlášen po uplynutí zadané délky nečinnosti.
 
@@ -1850,7 +1819,7 @@ Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sít
       Informace o paměti jsou stránce hlášeny bez ohledu na nastavení této možnosti. Velikosti jsou však hlášeny jen po určitých přírůstcích a frekvence aktualizací je z bezpečnostních důvodů omezena. Chcete-li získat přesná data v reálném čase, použijte prosím nástroje, jako je Telemetry.</translation>
 <translation id="6894178810167845842">Adresa URL stránky Nová karta</translation>
 <translation id="6899705656741990703">Zjistit nastavení proxy serveru automaticky</translation>
-<translation id="6903814433019432303">Tato zásada je aktivní pouze v režimu prodeje.
+<translation id="6903814433019432303">Tato zásada je aktivní pouze v režimu pro obchody.
 
       Určuje soubor adres URL, které se načtou po zahájení ukázkové relace. Tato zásada přepíše ostatní mechanismy pro nastavení úvodní adresy URL a může být tedy uplatněna pouze u relace, která není přiřazena konkrétnímu uživateli.</translation>
 <translation id="6908347296939885026">Aktivuje ve službě G Suite funkci omezeného přihlašování prohlížeče <ph name="PRODUCT_NAME" /> a znemožní uživatelům toto nastavení změnit.
@@ -2202,7 +2171,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="787125417158068494">Pokud je tato zásada nastavena na hodnotu SyncDisabled nebo není nakonfigurována, certifikáty systému <ph name="PRODUCT_OS_NAME" /> nejsou k dispozici aplikacím ARC.
 
       Pokud je nastavena na hodnotu CopyCaCerts, všechny certifikáty CA nainstalované prostřednictvím ONC s atributem <ph name="WEB_TRUSTED_BIT" /> jsou k dispozici aplikacím ARC.</translation>
-<translation id="7882585827992171421">Tato zásada je aktivní pouze v režimu prodeje.
+<translation id="7882585827992171421">Tato zásada je aktivní pouze v režimu pro obchody.
 
       Určuje ID rozšíření, které se použije jako spořič obrazovky na přihlašovací obrazovce. Rozšíření musí být součásti balíčku AppPack, který je pro tuto doménu nakonfigurován v rámci zásady DeviceAppPack.</translation>
 <translation id="7882857838942884046">Deaktivace služby Google Sync způsobí, že zálohování a obnovení systému Android nebude fungovat správně.</translation>
@@ -2334,7 +2303,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, uživatel
 <translation id="8312129124898414409">Umožňuje nastavit, zda weby mohou generovat klíče. Generování klíčů je možné všem webům buď povolit, nebo zakázat.
 
 Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji bude moci změnit.</translation>
-<translation id="8329984337216493753">Tato zásada je aktivní pouze v režimu prodeje.
+<translation id="8329984337216493753">Tato zásada je aktivní pouze v režimu pro obchody.
 
       Pokud je určena zásada DeviceIdleLogoutTimeout, určuje tato zásada, jak dlouho před odhlášením se bude uživateli zobrazovat okno s upozorněním a časovačem.
 
@@ -2383,12 +2352,6 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 
       Upozornění: Konfigurovat omezení verzí se nedoporučuje, protože to uživatelům může zabránit v přijímání aktualizací softwaru a kritických oprav zabezpečení. Omezení aktualizací na konkrétní předponu verze uživatele může vystavit riziku.</translation>
 <translation id="8519264904050090490">Adresy URL ručních výjimek spravovaného uživatele</translation>
-<translation id="8527932539502116028">Určuje, které tiskárny uživatel nesmí používat.
-
-      Tato zásada se použije, jen pokud je v zásadě <ph name="BULK_PRINTERS_ACCESS_MODE" /> vybrána možnost <ph name="PRINTERS_BLACKLIST" />.
-
-      Je-li tato zásada použita, bude mít uživatel k dispozici všechny tiskárny kromě těch, jejichž ID jsou v ní uvedena.
-      </translation>
 <translation id="8538235451413605457">Konfiguruje požadavek na minimální povolenou verzi prohlížeče <ph name="PRODUCT_NAME" />. Nižší verze jsou považovány za zastaralé. Na zařízeních s nižšími verzemi se uživatelé nebudou moci přihlásit, dokud operační systém zařízení nebude aktualizován.
 Pokud aktuální verze začne být považována za zastaralou během relace uživatele, bude uživatel nuceně odhlášen.
 
@@ -2505,18 +2468,6 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
 
           Hodnotu zásady zadávejte v milisekundách. Maximální hodnota je nižší než prodleva režimu spánku.</translation>
 <translation id="891435090623616439">Zakódováno jako řetězec JSON, podrobnosti naleznete zde: <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Poskytuje konfigurace pro podnikové tiskárny.
-
-      Tato zásada umožňuje poskytnout zařízením <ph name="PRODUCT_OS_NAME" /> konfigurace tiskáren. Soubor nesmí být větší než 5 MB a musí být zakódován ve formátu JSON. Formát je stejný jako ve slovníku NativePrinters. Podle odhadů by se do souboru o velikosti 5 MB mělo vejít přibližně 21 000 tiskáren. Kryptografický hašovací klíč slouží k ověření integrity stahování.
-
-      Soubor se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se stáhne znovu.
-
-      Je-li tato zásada nastavena, stáhne <ph name="PRODUCT_OS_NAME" /> soubor s konfiguracemi tiskáren a zpřístupní tiskárny v souladu se zásadami <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> a <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
-
-      Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních. Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.
-      </translation>
 <translation id="8934944553121392674">Určuje, které tiskárny ze zásady <ph name="DEVICE_PRINTERS_POLICY" /> budou uživatelům dostupné.
 
       Stanovuje, která zásada přístupu se použije pro hromadnou konfiguraci tiskáren. Je-li vybrána možnost <ph name="PRINTERS_ALLOW_ALL" />, budou zobrazeny všechny tiskárny. Je-li vybrána možnost <ph name="PRINTERS_BLACKLIST" />, bude zakázán přístup k tiskárnám uvedeným v zásadě <ph name="DEVICE_PRINTERS_BLACKLIST" />. Je-li vybrána možnost <ph name="PRINTERS_WHITELIST" />, bude možné vybrat pouze tiskárny uvedené v zásadě <ph name="DEVICE_PRINTERS_WHITELIST" />.

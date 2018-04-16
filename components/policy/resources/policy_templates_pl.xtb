@@ -50,12 +50,6 @@
 
       Jeśli ta zasada ma wartość Fałsz, stan przełącznika trybu programisty nie jest zgłaszany.</translation>
 <translation id="1160939557934457296">Wyłącz możliwość kontynuacji na stronie ostrzeżenia Bezpiecznego przeglądania</translation>
-<translation id="1166377463685560145">Określa drukarki, z których użytkownik nie może korzystać.
-
-      Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_BLACKLIST" />.
-
-      Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich drukarek z wyjątkiem tych, których identyfikatory zostały w niej określone.
-      </translation>
 <translation id="1198465924256827162">Częstotliwość wysyłania raportów o stanie urządzenia (w milisekundach).
 
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
@@ -162,19 +156,6 @@
 <translation id="1561424797596341174">Zasada zastępuje kompilacje hosta dostępu zdalnego w trybie debugowania</translation>
 <translation id="1561967320164410511">U2F i rozszerzenia do indywidualnego poświadczania</translation>
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="1603058613431276040">Udostępnia konfiguracje drukarek firmowych powiązanych z urządzeniami.
-
-      Ta zasada umożliwia udostępnianie konfiguracji drukarek urządzeniom z systemem <ph name="PRODUCT_OS_NAME" />. Plik nie może być większy niż 5 MB i musi być zapisany w formacie JSON. Format jest taki sam jak w słowniku NativePrinters. Szacuje się, że w pliku o tym rozmiarze można zakodować około 21 000 drukarek. Do weryfikacji integralności pobranego pliku służy skrót kryptograficzny.
-
-      Pobrany plik zostaje zapisany w pamięci podręcznej. Po każdej zmianie adresu URL lub skrótu jest pobierany ponownie.
-
-      Jeśli ta zasada jest ustawiona, <ph name="PRODUCT_OS_NAME" /> pobierze plik do konfiguracji drukarek i udostępni drukarki zgodnie z zasadami <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> i <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki na pojedynczych urządzeniach. Jest ona uzupełnieniem konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.
-
-      Ta zasada jest modyfikatorem zasady <ph name="BULK_PRINTERS_POLICY" />.
-
-      Jeśli ta zasada nie jest ustawiona, drukarki nie zostaną powiązane z urządzeniami, a inne zasady <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> będą ignorowane.</translation>
 <translation id="1608755754295374538">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania dźwięku</translation>
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
 <translation id="163200210584085447">Wzorce na tej liście są dopasowywane do źródła zabezpieczeń adresu URL,
@@ -305,7 +286,7 @@
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>
 <translation id="2132732175597591362">Określa białą listę wzorców adresów URL, w przypadku których zawsze będzie działać autoodtwarzanie.
 
-      Jeśli autoodtwarzanie jest włączone, filmy mogą odtwarzać się automatycznie (bez zgody użytkownika) z dźwiękiem w <ph name="PRODUCT_NAME" />.
+      Jeśli autoodtwarzanie jest włączone, w <ph name="PRODUCT_NAME" /> filmy mogą odtwarzać się z dźwiękiem automatycznie (bez zgody użytkownika).
 
       Wzorzec adresu URL musi być sformatowany zgodnie z zasadami określonymi na https://www.chromium.org/administrators/url-blacklist-filter-format
 
@@ -569,12 +550,6 @@ Oznaczanie kont jako zagrożonych w zakresie ochrony hasłem oznacza informowani
 <translation id="2762164719979766599">Określa listę kont na urządzeniu, które będą pokazywane na ekranie logowania.
 
       Każdy wpis określa identyfikator używany wewnętrznie do rozróżniania lokalnych kont na urządzeniu.</translation>
-<translation id="2766302473082018239">Określa drukarki, z których może korzystać użytkownik.
-
-      Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="BULK_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_WHITELIST" />.
-
-      Jeśli ta zasada jest używana, użytkownik ma dostęp tylko do drukarek, których identyfikatory pasują do wartości w niej ustawionych. Identyfikatory muszą być zgodne z pozycjami w pliku określonym w zasadzie <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Konfiguracja wymaganej nazwy domeny dla hostów zdalnego dostępu</translation>
 <translation id="2787173078141616821">Przesyłaj informacje o stanie Androida</translation>
 <translation id="2793923553868251161">Źródła uznawane za kontekst bezpieczny.</translation>
@@ -753,12 +728,6 @@ Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą oni stos
 
           Jeśli ta zasada jest ustawiona na niepusty ciąg znaków, to jest on nazwą miejsca docelowego <ph name="PRODUCT_NAME" />. W przeciwnym razie nazwą miejsca docelowego jest nazwa urządzenia. Jeśli ta zasada nie jest ustawiona, nazwą miejsca docelowego jest nazwa urządzenia, a właściciel urządzenia (lub użytkownik z domeny zarządzającej urządzeniem) może ją zmienić. Nazwa może mieć maksymalnie 24 znaki.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
-<translation id="3395348522300156660">Określa drukarki, z których może korzystać użytkownik.
-
-      Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_WHITELIST" />
-
-      Jeśli ta zasada jest używana, użytkownik ma dostęp tylko do drukarek, których identyfikatory pasują do wartości w niej ustawionych. Identyfikatory muszą być zgodne z pozycjami w pliku określonym w zasadzie <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> korzysta z domyślnej najniższej wersji TLS, czyli 1.0.
 
       W przeciwnym razie zasada może mieć jedną z tych wartości: „tls1”, „tls1.1” lub „tls1.2”. Po jej ustawieniu <ph name="PRODUCT_NAME" /> nie używa wersji SSL/TLS niższych niż określona. Nierozpoznana wartość jest ignorowana.</translation>
@@ -2309,12 +2278,6 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 
       Ostrzeżenie: nie zaleca się konfigurowania ograniczeń wersji, ponieważ w rezultacie użytkownicy mogą nie otrzymywać aktualizacji oprogramowania ani bardzo ważnych poprawek zabezpieczeń. Ograniczenie aktualizacji do konkretnej wersji może narazić użytkowników na niebezpieczeństwo.</translation>
 <translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
-<translation id="8527932539502116028">Określa drukarki, z których użytkownik nie może korzystać.
-
-      Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="BULK_PRINTERS_ACCESS_MODE" /> wybrano opcję <ph name="PRINTERS_BLACKLIST" />.
-
-      Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich drukarek oprócz tych, których identyfikatory w niej określono.
-      </translation>
 <translation id="8538235451413605457">Konfiguruje wymóg minimalnej dozwolonej wersji <ph name="PRODUCT_NAME" />. Starsze wersje są traktowane jako przestarzałe. W takim przypadku urządzenie zezwala na zalogowanie się użytkownika dopiero wtedy, gdy zaktualizuje on system operacyjny.
       
 Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, jego wylogowanie się zostanie wymuszone.
@@ -2422,18 +2385,6 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 
           Wartość zasady powinna być określona w milisekundach. Wartości muszą być mniejsze niż opóźnienie bezczynności.</translation>
 <translation id="891435090623616439">zakodowane jako ciąg JSON – więcej szczegółów znajdziesz na <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Udostępnia konfiguracje drukarek firmowych.
-
-      Ta zasada umożliwia udostępnianie konfiguracji drukarek urządzeniom z systemem <ph name="PRODUCT_OS_NAME" />. Plik nie może być większy niż 5 MB i musi być zapisany w formacie JSON. Format jest taki sam jak w słowniku NativePrinters. Szacuje się, że w pliku o tym rozmiarze można zakodować około 21 000 drukarek. Do weryfikacji integralności pobranego pliku służy skrót kryptograficzny.
-
-      Pobrany plik zostaje zapisany w pamięci podręcznej. Po każdej zmianie adresu URL lub skrótu jest pobierany ponownie.
-
-      Jeśli ta zasada jest ustawiona, <ph name="PRODUCT_OS_NAME" /> pobierze plik do konfiguracji drukarek i udostępni drukarki zgodnie z zasadami <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> i <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      W przypadku ustawienia tej zasady użytkownicy nie będą mogli jej zmienić ani zastąpić.
-
-      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki na pojedynczych urządzeniach. Jest ona uzupełnieniem konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.
-      </translation>
 <translation id="8934944553121392674">Steruje tym, które drukarki określone w zasadzie <ph name="DEVICE_PRINTERS_POLICY" /> są dostępne dla użytkowników.
 
       Wskazuje zasadę dostępu, która jest używana do zbiorczego skonfigurowania drukarek. Jeśli wybrano opcję <ph name="PRINTERS_ALLOW_ALL" />, pokazywane są wszystkie drukarki. Jeśli wybrano opcję <ph name="PRINTERS_BLACKLIST" />, zasada <ph name="DEVICE_PRINTERS_BLACKLIST" /> jest używana do ograniczania dostępu do określonych drukarek. Jeśli wybrano opcję <ph name="PRINTERS_WHITELIST" />, zasada <ph name="DEVICE_PRINTERS_WHITELIST" /> wskazuje tylko te drukarki, które można wybrać.

@@ -52,12 +52,6 @@
 
       Jos käytännön arvo on epätosi, kehittäjätilaa (käytössä / ei käytössä) ei ilmoiteta.</translation>
 <translation id="1160939557934457296">Estä eteneminen Selaussuojan varoitussivulta</translation>
-<translation id="1166377463685560145">Määrittää tulostimet, joita käyttäjä ei voi käyttää.
-
-      Tätä käytäntöä käytetään vain, jos <ph name="DEVICE_PRINTERS_ACCESS_MODE" />-tilaksi on valittu <ph name="PRINTERS_BLACKLIST" />.
-
-      Jos tämä käytäntö on käytössä, käyttäjä voi käyttää kaikkia tulostimia, paitsi niitä, joiden tunnukset on lueteltu tässä.
-      </translation>
 <translation id="1198465924256827162">Laitteen tilatietojen lähetystiheys millisekunteina.
 
       Jos tätä käytäntöä ei aseteta, käytetään oletustiheyttä 3 tuntia.
@@ -163,19 +157,6 @@
 <translation id="1561424797596341174">Käytäntöjen ohitus etäkäytön isännän vianetsintäversioissa</translation>
 <translation id="1561967320164410511">U2F ja laajennukset, yksilöllinen todennus mahdollista</translation>
 <translation id="1583248206450240930">Käytä tuotetta <ph name="PRODUCT_FRAME_NAME" /> oletuksena</translation>
-<translation id="1603058613431276040">Tarjoaa määritystietoja laitteisiin sidotuille yritystulostimille.
-
-      Tämän käytännön avulla voit tarjota tulostinmäärityksiä laitteille, joiden käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" />. Tiedoston koko saa olla korkeintaan 5 Mt ja se on oltava koodattuna JSON:ssä. Muoto on sama kuin NativePrinters-sanakirjan muoto. Noin 21 000 tulostinta sisältävä tiedosto koodautuu arviolta 5 Mt:n tiedostona. Lataus todennetaan hajautusarvon avulla.
-
-      Tiedosto on ladattu ja tallennettu välimuistiin. Se ladataan uudelleen aina kun URL-osoite tai hajautusarvo muuttuu.
-
-      Jos tämä käytäntö on määritetty, <ph name="PRODUCT_OS_NAME" /> lataa tiedoston tulostinmäärityksiä varten ja ottaa tulostimet käyttöön seuraavien mukaisesti: <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> ja <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Tällä käytännöllä ei ole vaikutusta siihen, voivatko käyttäjät määrittää tulostimia yksittäisillä laitteilla. Se on tarkoitettu käytettäväksi yksittäisten käyttäjien tulostinmääritysten lisäksi.
-
-      Tämä käytäntö on voimassa <ph name="BULK_PRINTERS_POLICY" />-arvon lisäksi.
-
-      Jos tätä käytäntöä ei ole määritetty, laitetulostimia ei ole ja muut <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />-käytännöt ohitetaan.</translation>
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
 <translation id="163200210584085447">Tämän luettelon osoitemalleja verrataan pyytävän URL-osoitteen
@@ -569,12 +550,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2762164719979766599">Määrittää kirjautumisruudussa näytettävät laitteeseen lisätyt tilit.
 
 Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteeseen lisätyt tilit toisistaan.</translation>
-<translation id="2766302473082018239">Määrittää tulostimet, joita käyttäjä voi käyttää.
-
-      Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_WHITELIST" />-tilaksi on valittu <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Jos tämä käytäntö on käytössä, vain sellaiset tulostimet ovat käyttäjän käytettävissä, joiden tunnukset vastaavat käytännössä mainittuja arvoja. Tunnusten on vastattava <ph name="BULK_PRINTERS_POLICY" />-kohdassa määritetyn tiedoston merkintöjä.
-      </translation>
 <translation id="2769952903507981510">Määritä vaadittu verkkotunnuksen nimi etäisännille</translation>
 <translation id="2787173078141616821">Raportoi tietoja Androidin tilasta</translation>
 <translation id="2793923553868251161">Turvallisena kontekstina kohdeltavat alkuperät</translation>
@@ -755,12 +730,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos tämän käytännön arvo on ei-tyhjä merkkijono, <ph name="PRODUCT_NAME" /> näyttää kyseisen merkkijonon kohdenimenä. Muussa tapauksessa kohdenimenä käytetään laitteen nimeä. Jos tätä käytäntöä ei ole määritetty, kohdenimenä käytetään laitteen nimeä ja laitteen omistaja (tai laitetta hallinnoivan verkkotunnuksen käyttäjä) voi vaihtaa nimen. Nimen enimmäispituus on 24 merkkiä.</translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
-<translation id="3395348522300156660">Määrittää tulostimet, joita käyttäjä voi käyttää.
-
-      Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_WHITELIST" />-tilaksi on valittu <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Jos tämä käytäntö on käytössä, vain sellaiset tulostimet ovat käyttäjän käytettävissä, joiden tunnukset vastaavat käytännössä mainittuja arvoja. Tunnusten on vastattava <ph name="DEVICE_PRINTERS_POLICY" />-kohdassa määritetyn tiedoston merkintöjä.
-      </translation>
 <translation id="3414260318408232239">Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena vanhinta versiota, joka on TLS 1.0.
 
       Muussa tapauksessa käytännön arvoksi voidaan määrittää tls1, tls1.1 tai tls1.2. Jos arvo on jokin näistä, <ph name="PRODUCT_NAME" /> ei käytä kyseistä arvoa vanhempaa SSL/TLS-versiota. Tunnistamattomat arvot ohitetaan.</translation>
@@ -2322,12 +2291,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 
       Varoitus: Emme suosittele määrittämään versiorajoituksia, sillä tämä voi estää laitetta saamasta ohjelmistopäivityksiä ja kriittisiä tietoturvapäivityksiä. Päivitysten rajoittaminen tiettyyn etuliiteversioon voi vaarantaa käyttäjiä.</translation>
 <translation id="8519264904050090490">Hallinnoidun käyttäjän manuaalisten poikkeuksien URL-osoitteet</translation>
-<translation id="8527932539502116028">Määrittää tulostimet, joita käyttäjä ei voi käyttää.
-
-      Tätä käytäntöä käytetään vain, jos <ph name="BULK_PRINTERS_ACCESS_MODE" />-tilaksi on valittu <ph name="PRINTERS_BLACKLIST" />.
-
-      Jos tämä käytäntö on käytössä, käyttäjä voi käyttää kaikkia tulostimia, paitsi niitä, joiden tunnukset on lueteltu tässä.
-      </translation>
 <translation id="8538235451413605457">Määrittää kohteen <ph name="PRODUCT_NAME" /> vanhimman sallitun version. Tätä vanhempia versioita kohdellaan vanhentuneina ja laite ei salli käyttäjän kirjautua sisään, ennen kuin hän on päivittänyt käyttöjärjestelmän.
       Jos nykyinen versio vanhenee käyttökerran aikana, käyttäjä kirjataan ulos automaattisesti.
 
@@ -2434,18 +2397,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan käyttämättömyysajan arvoa pienemmäksi.</translation>
 <translation id="891435090623616439">koodattu JSON-merkkijonoksi; lisätietoja on osoitteessa <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Tarjoaa määritystietoja laitteisiin sidotuille yritystulostimille.
-
-      Tämän käytännön avulla voit tarjota tulostinmäärityksiä laitteille, joiden käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" />. Tiedoston koko saa olla korkeintaan 5 Mt ja se on oltava koodattuna JSON:ssä. Muoto on sama kuin NativePrinters-sanakirjan muoto. Noin 21 000 tulostinta sisältävä tiedosto koodautuu arviolta 5 Mt:n tiedostona. Lataus todennetaan hajautusarvon avulla.
-
-      Tiedosto on ladattu ja tallennettu välimuistiin. Se ladataan uudelleen aina kun URL-osoite tai hajautusarvo muuttuu.
-
-      Jos tämä käytäntö on määritetty, <ph name="PRODUCT_OS_NAME" /> lataa tiedoston tulostinmäärityksiä varten ja ottaa tulostimet käyttöön seuraavien mukaisesti: <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> ja <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
-
-      Tällä käytännöllä ei ole vaikutusta siihen, voivatko käyttäjät määrittää tulostimia yksittäisillä laitteilla. Se on tarkoitettu käytettäväksi yksittäisten käyttäjien tulostinmääritysten lisäksi.
-      </translation>
 <translation id="8934944553121392674">Hallinnoi, mitkä tulostimet <ph name="DEVICE_PRINTERS_POLICY" />-määrityksestä ovat käyttäjien käytettävissä
 
       Määrittää, mitä käyttöoikeuskäytäntöä käytetään tulostinjoukon määrittämiseen. Jos <ph name="PRINTERS_ALLOW_ALL" /> on valittu, kaikki tulostimet näytetään. Jos <ph name="PRINTERS_BLACKLIST" /> on valittu, arvoa <ph name="DEVICE_PRINTERS_BLACKLIST" /> käytetään määritettyjen tulostimien käytön rajoittamiseen. Jos <ph name="PRINTERS_WHITELIST" /> on valittu, <ph name="DEVICE_PRINTERS_WHITELIST" /> määrittää vain valittavissa olevat tulostimet.

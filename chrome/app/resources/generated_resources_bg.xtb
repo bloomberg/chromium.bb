@@ -710,7 +710,6 @@
 <translation id="2099686503067610784">Да се изтрие ли сертификатът на сървър „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
 <translation id="2101225219012730419">Версия:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Още не е заредено</translation>
 <translation id="2107494551712864447">Добавяне на отпечатък</translation>
 <translation id="2112877397266219826">Включете контролера за докосване, за да извършите настройването</translation>
@@ -790,7 +789,6 @@
 <translation id="2218320521449013367">Възникна грешка, докато Chrome премахваше опасния софтуер</translation>
 <translation id="2218515861914035131">Поставяне като неформатиран текст</translation>
 <translation id="221872881068107022">Обръщане на посоката на превъртане</translation>
-<translation id="2218947405056773815">Ами сега! <ph name="API_NAME" /> блокира.</translation>
 <translation id="2220529011494928058">Подаване на сигнал за проблем</translation>
 <translation id="2220572644011485463">ПИН код или парола</translation>
 <translation id="2222641695352322289">Единственият начин да отмените това е да преинсталирате <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1706,6 +1704,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3576324189521867626">Инсталирането бе успешно</translation>
 <translation id="3578594933904494462">Съдържанието на този раздел се споделя.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; иска да сподели принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; с притежавана от вас група: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ако приемете, всичките й членове ще могат да отпечатват с него.</translation>
+<translation id="3582972582564653026">Синхронизирайте и персонализирайте Chrome на всичките си устройства</translation>
 <translation id="3584169441612580296">Четене и промяна на снимки, музика и друга мултимедия от компютъра ви</translation>
 <translation id="3587482841069643663">Всички</translation>
 <translation id="358796204584394954">За сдвояване въведете този код на <ph name="DEVICE_NAME" />:</translation>
@@ -2109,6 +2108,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4206944295053515692">Искане на предложения от Google</translation>
 <translation id="4208390505124702064">Търсене в/ъв <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Голям</translation>
+<translation id="4209464433672152343">Документите <ph name="BEGIN_LINK_HELP" />се изпращат до Google<ph name="END_LINK_HELP" /> с цел подготовката им за отпечатване. Преглеждайте, редактирайте и управлявайте принтерите си и историята им от <ph name="BEGIN_LINK_DASHBOARD" />таблото за управление на Google Отпечатване в облак<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Трябва да сте онлайн, за да осъществите достъп до този файл.</translation>
 <translation id="421182450098841253">&amp;Показване на лентата на отметките</translation>
 <translation id="42126664696688958">Експортиране</translation>
@@ -2530,7 +2530,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4907824805858067479">Запазените карти са деактивирани от администратора ви</translation>
 <translation id="4908811072292128752">Отворете нов раздел, за да сърфирате в два сайта едновременно</translation>
 <translation id="4909038193460299775">Тъй като този профил се управлява от <ph name="DOMAIN" />, вашите отметки, история, пароли и други настройки ще бъдат изчистени от устройството. Данните ви обаче ще продължат да се съхраняват в профила ви в Google. Можете да ги управлявате от <ph name="BEGIN_LINK" />Google Табло за управление<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Няма разширения със зададени клавишни комбинации.</translation>
 <translation id="4912643508233590958">Събуждания при неактивност</translation>
 <translation id="491691592645955587">Преминете към сигурен браузър</translation>
@@ -3281,6 +3280,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6064217302520318294">Заключване на екрана</translation>
 <translation id="6065289257230303064">Атрибути за директорията на субекта на сертификата</translation>
 <translation id="6068338049763724728">Активиране на отдалечената регистрация</translation>
+<translation id="6069671174561668781">Задаване на тапет</translation>
 <translation id="6071181508177083058">потвърждаване на паролата</translation>
 <translation id="6073903501322152803">Добавяне на функции за достъпност</translation>
 <translation id="6074825444536523002">Формуляр на Google</translation>
@@ -4025,7 +4025,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7229570126336867161">Необходим е EVDO</translation>
 <translation id="7230787553283372882">Персонализирайте размера на текста</translation>
 <translation id="7232750842195536390">Преименуването не бе успешно</translation>
-<translation id="7233309214676155451">Синхронизирайте и персонализирайте Chrome на устройството си</translation>
 <translation id="7238585580608191973">Пръстов отпечатък SHA-256</translation>
 <translation id="7240120331469437312">Алтернативно име на субекта на сертификата</translation>
 <translation id="7240339475467890413">Да се установи ли връзка с новата точка за достъп?</translation>
@@ -4530,7 +4529,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 Пазете файла си с ключ на сигурно място. Той ви е необходим за създаване на нови версии на разширението.</translation>
 <translation id="799923393800005025">Може да преглежда</translation>
 <translation id="8000066093800657092">Няма мрежа</translation>
-<translation id="8001504501378762252">Възможно е паролата ви да е открадната от сайт</translation>
 <translation id="8004582292198964060">Браузър</translation>
 <translation id="8005600846065423578">Разрешаване винаги на <ph name="HOST" /> да преглежда буферната памет</translation>
 <translation id="8008356846765065031">Няма връзка с интернет. Моля, проверете връзката си.</translation>

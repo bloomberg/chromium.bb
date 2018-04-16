@@ -85,14 +85,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> eller <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Oversigt</translation>
 <translation id="4472417192667361414">System- og visningsindstillinger</translation>
-<translation id="4484292984055789039">Skift til den tidligere indtastningsmetode</translation>
 <translation id="4556221320735744018">Se Hjælp til tastaturgenveje</translation>
 <translation id="4628718545549558538">Åbn statusområdet (hvor dit kontobillede vises)</translation>
 <translation id="4642092649622328492">Tag et delvist screenshot</translation>
 <translation id="4698850295812410683">Vis penneværktøjer</translation>
 <translation id="4801989101741319327">Flyt til slutningen af det næste ord</translation>
 <translation id="4916163929714267752">Åbn linket i et nyt vindue</translation>
-<translation id="5002047168347153398">Fokuser på inaktivt pop op-vindue for at få hjælpefunktioner</translation>
 <translation id="5030659775136592441">Vis bogmærkeadministrator</translation>
 <translation id="5034421018520995080">Gå til toppen af siden</translation>
 <translation id="5042305953558921026">Tast til oversigtstilstand</translation>
@@ -155,7 +153,6 @@
 <translation id="7724603315864178912">Klip</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og derefter <ph name="SPACE" /> eller <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Åbn en fil i browseren</translation>
-<translation id="7822267121073044318">Skift til den næste indtastningsmetode</translation>
 <translation id="7917881398263220094">Stop indlæsningen af den aktuelle side</translation>
 <translation id="7952165122793773711">Gå til fane 1 til 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> eller <ph name="MINUS" /></translation>

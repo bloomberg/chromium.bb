@@ -105,7 +105,7 @@
 <translation id="3000461861112256445">Mono-Audio</translation>
 <translation id="3009178788565917040">Ausgang</translation>
 <translation id="3019353588588144572">Verbleibende Zeit, bis der Akku vollständig geladen ist: <ph name="TIME_REMAINING" /></translation>
-<translation id="3077734595579995578">Shift</translation>
+<translation id="3077734595579995578">Umschalttaste</translation>
 <translation id="3087734570205094154">Unten</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3112378005171663295">Minimieren</translation>
@@ -124,7 +124,7 @@
 <translation id="3413817803639110246">Noch nichts zu sehen</translation>
 <translation id="3445925074670675829">USB-C-Gerät</translation>
 <translation id="3465566417615315331">Klicken Sie auf Ihr Foto.</translation>
-<translation id="3477079411857374384">Strg + Shift + Leertaste</translation>
+<translation id="3477079411857374384">Strg + Umschalttaste + Leertaste</translation>
 <translation id="3510164367642747937">Mauszeiger hervorheben</translation>
 <translation id="3513798432020909783">Konto verwaltet von <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
@@ -143,7 +143,7 @@
 <translation id="3798670284305777884">Lautsprecher (intern)</translation>
 <translation id="3846575436967432996">Keine Netzwerkinformationen verfügbar</translation>
 <translation id="385051799172605136">Zurück</translation>
-<translation id="3891340733213178823">Drücken Sie zum Abmelden zweimal Strg + Shift + Q.</translation>
+<translation id="3891340733213178823">Drücken Sie zum Abmelden zweimal Strg + Umschalttaste + Q.</translation>
 <translation id="3893630138897523026">ChromeVox (gesprochenes Feedback)</translation>
 <translation id="3899995891769452915">Spracheingabe</translation>
 <translation id="3900355044994618856">Ihre Sitzung wird in <ph name="SESSION_TIME_REMAINING" /> beendet</translation>
@@ -173,7 +173,7 @@
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4849058404725798627">Objekt mit Tastaturfokus hervorheben</translation>
-<translation id="4872237917498892622">Alt+Suchen oder Shift</translation>
+<translation id="4872237917498892622">Alt+Suchen oder Umschalttaste</translation>
 <translation id="4890187583552566966">Google Assistant wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
 <translation id="4905614135390995787">Die Tastenkombination zum Deaktivieren des Modus mit hohem Kontrast hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
@@ -206,7 +206,7 @@
 <translation id="5832805196449965646">Person hinzufügen</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5895138241574237353">Neu starten</translation>
-<translation id="5901316534475909376">Shift + Esc</translation>
+<translation id="5901316534475909376">Umschalttaste + Esc</translation>
 <translation id="5916664084637901428">An</translation>
 <translation id="5927132638760172455">Übertragung an unbekannten Empfänger</translation>
 <translation id="5947494881799873997">Rückgängig machen</translation>
@@ -249,10 +249,10 @@
 
 Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
-<translation id="6627638273713273709">Suchtaste + Shift + K</translation>
+<translation id="6627638273713273709">Suchtaste + Umschalttaste + K</translation>
 <translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Passwort</translation>
-<translation id="6691659475504239918">Suche + Shift + H</translation>
+<translation id="6691659475504239918">Suche + Umschalttaste + H</translation>
 <translation id="6696025732084565524">Wichtiges Update für Ihre abnehmbare Tastatur</translation>
 <translation id="6700713906295497288">IME-Menüschaltfläche</translation>
 <translation id="6713285437468012787">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde gekoppelt und ist nun für alle Nutzer verfügbar. Sie können es unter "Einstellungen" wieder entkoppeln.</translation>
@@ -272,8 +272,8 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7067196344162293536">Automatisch drehen</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
 <translation id="7131634465328662194">Sie werden automatisch abgemeldet.</translation>
-<translation id="7165278925115064263">Alt + Shift + K</translation>
-<translation id="7165511658052620796">(TEMP) WebUI-Login anzeigen; bei Verwendung von Dateifehler (crbug.com) oder Feedback (Alt + Umschalt + i)</translation>
+<translation id="7165278925115064263">Alt + Umschalttaste + K</translation>
+<translation id="7165511658052620796">(TEMP) Show webui login; if used file bug (crbug.com) or feedback (alt+shift+i)</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
 <translation id="726276584504105859">Hierher ziehen, um den Bildschirm zu teilen</translation>
@@ -282,13 +282,13 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7377169924702866686">Feststelltaste An</translation>
 <translation id="742594950370306541">Kamera wird verwendet.</translation>
 <translation id="743058460480092004">Kamera und Mikrofon werden verwendet.</translation>
-<translation id="7510334386202674593">Strg + Shift + L</translation>
+<translation id="7510334386202674593">Strg + Umschalttaste + L</translation>
 <translation id="7526573455193969409">Das Netzwerk wird möglicherweise überwacht</translation>
 <translation id="7536035074519304529">IP-Adresse: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> unterstützt <ph name="SPECIFIED_RESOLUTION" /> nicht. Die Auflösung wurde auf <ph name="FALLBACK_RESOLUTION" /> zurückgesetzt.</translation>
 <translation id="7562368315689366235">Emoji-Palette</translation>
 <translation id="7569509451529460200">Braille und ChromeVox sind aktiviert</translation>
-<translation id="7593891976182323525">Suchen oder Shift</translation>
+<translation id="7593891976182323525">Suchen oder Umschalttaste</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (Eigentümer)</translation>
 <translation id="7647488630410863958">Gerät entsperren, um Benachrichtigungen zu sehen</translation>
 <translation id="7649070708921625228">Hilfe</translation>
@@ -296,7 +296,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7692480393933218409">Verbundene USB-C-Geräte werden geladen</translation>
 <translation id="776344839111254542">Zum Aufrufen von Aktualisierungsdetails klicken</translation>
 <translation id="7796353162336583443">Tippen Sie auf die Eingabestift-Schaltfläche in der Ablage, um Notizen oder Screenshots zu erstellen, Google Assistant zu aktivieren oder den Laserpointer oder die Lupe zu verwenden.</translation>
-<translation id="7798302898096527229">Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translation>
+<translation id="7798302898096527229">Drücken Sie die Such-Taste oder Umschalttaste, um die Aktivierung aufzuheben.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> und <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Starkes Signal</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
@@ -325,7 +325,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="8452135315243592079">Keine SIM-Karte vorhanden</translation>
 <translation id="8454013096329229812">WLAN ist aktiviert.</translation>
 <translation id="847056008324733326">Einstellungen für Displaymaßstab</translation>
-<translation id="8477270416194247200">Drücken Sie Alt + Such-Taste oder Shift, um die Aktivierung aufzuheben.</translation>
+<translation id="8477270416194247200">Drücken Sie Alt + Such-Taste oder Umschalttaste, um die Aktivierung aufzuheben.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Verbindung wird wiederhergestellt...</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> verbleibend</translation>
@@ -359,7 +359,7 @@ Nachfolgende Benachrichtigungen, Fenster und Dialogfenster werden unter Umständ
 <translation id="9194617393863864469">Anderen Nutzer anmelden...</translation>
 <translation id="9201131092683066720">Akku ist zu <ph name="PERCENTAGE" /> % geladen.</translation>
 <translation id="9210037371811586452">Unified Desktop-Modus wird beendet</translation>
-<translation id="923686485342484400">Drücken Sie zum Abmelden zweimal Steuerung - Shift - Q.</translation>
+<translation id="923686485342484400">Drücken Sie zum Abmelden zweimal Steuerung - Umschalttaste - Q.</translation>
 <translation id="945522503751344254">Feedback geben</translation>
 <translation id="98515147261107953">Querformat</translation>
 </translationbundle>

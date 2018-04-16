@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
-<translation id="1005145902654145231">De naam van de sessie is niet gewijzigd.</translation>
+<translation id="1005145902654145231">De naam van de sessie wijzigen is mislukt.</translation>
 <translation id="1008557486741366299">Niet nu</translation>
 <translation id="1015730422737071372">Aanvullende gegevens verzenden</translation>
 <translation id="1021110881106174305">Geaccepteerde kaarten</translation>
@@ -80,8 +80,8 @@
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1484290072879560759">Verzendadres kiezen</translation>
 <translation id="1506687042165942984">Een opgeslagen (verouderde) kopie van deze pagina weergeven.</translation>
-<translation id="1507202001669085618">&lt;p&gt;Je ziet deze fout als je een wifi-portal gebruikt waarop je moet inloggen voordat je online kunt gaan.&lt;/p&gt;
-    &lt;p&gt;Klik op &lt;strong&gt;Verbinding maken&lt;/strong&gt; op de pagina die je probeert te openen om deze fout op te lossen.&lt;/p&gt;</translation>
+<translation id="1507202001669085618">&lt;p&gt;J​e ​zi​et​ d​ez​e ​fo​ut​ a​ls​ j​e ​ee​n ​wi​fi​-p​or​ta​l ​ge​br​ui​kt​ w​aa​ro​p ​je​ m​oe​t ​in​lo​gg​en​ v​oo​rd​at​ j​e ​on​li​ne​ k​un​t ​ga​an​.&lt;/p&gt;
+   &lt;p&gt;​K​li​k ​op​ &lt;​st​ro​ng​&gt;V​er​bi​nd​in​g ​ma​ke​n&lt;​/s​tr​on​g&gt;​ o​p ​de​ p​ag​in​a ​di​e ​je​ p​ro​be​er​t ​te​ o​pe​ne​n ​om​ d​ez​e ​fo​ut​ o​p ​te​ l​os​se​n.​&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Telefoonnummer vereist</translation>
 <translation id="1517500485252541695">Geaccepteerde creditcards en betaalpassen</translation>
 <translation id="1519264250979466059">Datum van build</translation>
@@ -477,7 +477,7 @@
     &lt;p&gt;Deze foutmelding wordt weergegeven wanneer je antivirussoftware gebruikt met HTTPS-bescherming of HTTPS-scannen. Deze software verhindert dat Chrome beveiliging biedt.&lt;/p&gt;
     &lt;p&gt;Schakel je antivirussoftware uit om het probleem op te lossen. Als de pagina werkt nadat je de software hebt uitgeschakeld, kun je de software uitschakelen wanneer je beveiligde sites bezoekt.&lt;/p&gt;
     &lt;p&gt;Vergeet niet je antivirussoftware weer in te schakelen zodra je klaar bent.&lt;/p&gt;
-    &lt;h4&gt;Stap 5: Krijg extra ondersteuning&lt;/h4&gt;
+    &lt;h4&gt;Stap 5: Vraag extra ondersteuning&lt;/h4&gt;
     &lt;p&gt;Als de fout nog steeds wordt weergegeven, neem je contact op met de eigenaar van de website.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Voer Netwerkcontrole uit<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">Geldig</translation>
@@ -594,7 +594,6 @@
 <translation id="5201306358585911203">Een ingesloten pagina op deze pagina meldt het volgende</translation>
 <translation id="5205222826937269299">Naam vereist</translation>
 <translation id="5222812217790122047">E-mailadres vereist</translation>
-<translation id="522700295135997067">Deze site heeft mogelijk zojuist je wachtwoord gestolen</translation>
 <translation id="5230733896359313003">Verzendadres</translation>
 <translation id="5250209940322997802">'Verbinding maken met netwerk'</translation>
 <translation id="5251803541071282808">Cloud</translation>

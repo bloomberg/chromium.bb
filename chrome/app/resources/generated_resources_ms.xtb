@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">Padamkan sijil pelayan "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Auto Log masuk</translation>
 <translation id="2101225219012730419">Versi:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Masih tidak dimuatkan</translation>
 <translation id="2107494551712864447">Tambahkan cap jari</translation>
 <translation id="2112877397266219826">Hidupkan pengawal sentuhan anda untuk menyediakan saya</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">Ralat berlaku semasa Chrome mengalih keluar perisian yang berbahaya</translation>
 <translation id="2218515861914035131">Tampalkan sebagai teks kosong</translation>
 <translation id="221872881068107022">Penatalan songsang</translation>
-<translation id="2218947405056773815">Aduh! <ph name="API_NAME" /> dilanda masalah.</translation>
 <translation id="2220529011494928058">Laporkan isu</translation>
 <translation id="2220572644011485463">PIN atau kata laluan</translation>
 <translation id="2222641695352322289">Satu-satunya cara hendak membuat asal ialah dengan memasang semula <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1710,6 +1708,7 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3576324189521867626">Berjaya dipasang</translation>
 <translation id="3578594933904494462">Kandungan tab ini sedang dikongsi.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin berkongsi pencetak &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan kumpulan yang anda miliki: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jika anda terima, semua ahli kumpulan boleh menggunakan pencetak tersebut.</translation>
+<translation id="3582972582564653026">Segerakkan dan peribadikan Chrome pada semua peranti anda</translation>
 <translation id="3584169441612580296">Baca dan ubah foto, muzik dan media lain daripada komputer anda</translation>
 <translation id="3587482841069643663">Semua</translation>
 <translation id="358796204584394954">Taip kod ini pada "<ph name="DEVICE_NAME" />" untuk digandingkan:</translation>
@@ -2112,6 +2111,7 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4206944295053515692">Minta Cadangan daripada Google</translation>
 <translation id="4208390505124702064">Cari <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Besar</translation>
+<translation id="4209464433672152343">Dokumen <ph name="BEGIN_LINK_HELP" />dihantar kepada Google<ph name="END_LINK_HELP" /> bagi persediaan untuk dicetak. Lihat, edit dan urus pencetak serta sejarah pencetak anda di <ph name="BEGIN_LINK_DASHBOARD" />papan pemuka Cetakan Awan Google<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Anda mesti berada dalam talian untuk mengakses fail ini.</translation>
 <translation id="421182450098841253">&amp;Tunjukkan Bar Penanda Halaman</translation>
 <translation id="42126664696688958">Eksport</translation>
@@ -2533,7 +2533,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4907824805858067479">Kad yang disimpan dilumpuhkan oleh pentadbir anda</translation>
 <translation id="4908811072292128752">Buka tab baharu untuk menyemak imbas dua tapak pada masa yang sama</translation>
 <translation id="4909038193460299775">Oleh sebab akaun ini diurus oleh <ph name="DOMAIN" />, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan dikosongkan daripada peranti ini. Namun begitu, data anda akan terus disimpan dalam Akaun Google anda dan boleh diurus di <ph name="BEGIN_LINK" />Papan Pemuka Google<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Tiada sambungan yang telah diberikan pintasan papan kekunci.</translation>
 <translation id="4912643508233590958">Bangkit Daripada Melahu</translation>
 <translation id="491691592645955587">Tukar kepada penyemak imbas selamat</translation>
@@ -2856,7 +2855,7 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="5414566801737831689">Baca ikon tapak web yang anda lawati</translation>
 <translation id="5417312524372586921">Tema penyemak imbas</translation>
 <translation id="5419294236999569767">Masa sistem</translation>
-<translation id="5420438158931847627">Menentukan ketajaman teks dan imej</translation>
+<translation id="5420438158931847627">Menentukan kejelasan teks dan imej</translation>
 <translation id="5422221874247253874">Titik Akses</translation>
 <translation id="5422781158178868512">Maaf, peranti storan luaran anda tidak dapat dikenali.</translation>
 <translation id="5423849171846380976">Diaktifkan</translation>
@@ -3283,6 +3282,7 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="6064217302520318294">Kunci skrin</translation>
 <translation id="6065289257230303064">Atribut Direktori Subjek Sijil</translation>
 <translation id="6068338049763724728">Dayakan pendaftaran jauh</translation>
+<translation id="6069671174561668781">Tetapkan Kertas Dinding</translation>
 <translation id="6071181508177083058">sahkan kata laluan</translation>
 <translation id="6073903501322152803">Tambahkan ciri kebolehaksesan</translation>
 <translation id="6074825444536523002">Borang Google</translation>
@@ -4027,7 +4027,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="7229570126336867161">Perlukan EVDO</translation>
 <translation id="7230787553283372882">Sesuaikan saiz teks anda</translation>
 <translation id="7232750842195536390">Penamaan semula gagal</translation>
-<translation id="7233309214676155451">Segerakkan dan peribadikan Chrome pada semua peranti anda</translation>
 <translation id="7238585580608191973">Cap jari SHA-256</translation>
 <translation id="7240120331469437312">Nama Alternatif Subjek Sijil</translation>
 <translation id="7240339475467890413">Sambungkan ke tempat liputan baharu?</translation>
@@ -4531,7 +4530,6 @@ Fail Kunci: <ph name="KEY_FILE" />
 Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta versi baharu sambungan anda.</translation>
 <translation id="799923393800005025">Boleh lihat</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
-<translation id="8001504501378762252">Tapak mungkin telah mencuri kata laluan anda</translation>
 <translation id="8004582292198964060">Penyemak Imbas</translation>
 <translation id="8005600846065423578">Sentiasa benarkan <ph name="HOST" /> untuk melihat papan keratan</translation>
 <translation id="8008356846765065031">Internet terputus sambungan. Sila periksa sambungan internet anda.</translation>

@@ -80,7 +80,7 @@
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1484290072879560759">Pilih Alamat Pengiriman</translation>
 <translation id="1506687042165942984">Tampilkan salinan tersimpan (yang diketahui telah habis masa berlakunya) dari halaman ini.</translation>
-<translation id="1507202001669085618">&lt;p&gt;Anda akan melihat error ini jika menggunakan portal Wi-Fi tempat Anda harus login sebelum terhubung online.&lt;/p&gt;
+<translation id="1507202001669085618">&lt;p&gt;Anda akan melihat error ini jika menggunakan portal Wi-Fi yang mengharuskan Anda login sebelum terhubung online.&lt;/p&gt;
     &lt;p&gt;Untuk memperbaiki error, klik &lt;strong&gt;Sambungkan&lt;/strong&gt; di halaman yang ingin Anda buka.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Perlu nomor telepon</translation>
 <translation id="1517500485252541695">Kartu kredit dan debit yang diterima</translation>
@@ -598,7 +598,6 @@
 <translation id="5201306358585911203">Halaman tersemat di halaman ini menyatakan</translation>
 <translation id="5205222826937269299">Nama wajib diisi</translation>
 <translation id="5222812217790122047">Email wajib diisi</translation>
-<translation id="522700295135997067">Situs ini mungkin telah mencuri sandi Anda</translation>
 <translation id="5230733896359313003">Alamat Pengiriman</translation>
 <translation id="5250209940322997802">"Sambungkan ke jaringan"</translation>
 <translation id="5251803541071282808">Awan</translation>

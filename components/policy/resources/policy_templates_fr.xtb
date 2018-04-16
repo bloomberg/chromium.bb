@@ -52,12 +52,6 @@
 
       Si la règle est définie sur "False", l'état de l'interrupteur du mode développeur n'est pas communiqué.</translation>
 <translation id="1160939557934457296">Désactiver l'accès au site lors de l'affichage de la page d'avertissement par le service de navigation sécurisée</translation>
-<translation id="1166377463685560145">Indique les imprimantes auxquelles un utilisateur n'a pas accès.
-
-      Cette règle est utilisée uniquement si <ph name="PRINTERS_BLACKLIST" /> est sélectionné pour <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Lorsqu'elle est appliquée, toutes les imprimantes sont mises à la disposition de l'utilisateur excepté pour les ID répertoriés dans cette règle.
-      </translation>
 <translation id="1198465924256827162">Fréquence d'envoi des informations sur l'état de l'appareil, en millisecondes.
 
       Si cette règle n'est pas définie, le délai par défaut entre deux transmissions
@@ -167,19 +161,6 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1561424797596341174">Remplacements de règle pour les versions de débogage de l'hôte distant</translation>
 <translation id="1561967320164410511">U2F plus extensions pour chaque attestation</translation>
 <translation id="1583248206450240930">Utiliser <ph name="PRODUCT_FRAME_NAME" /> par défaut</translation>
-<translation id="1603058613431276040">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
-
-      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />. La taille du fichier ne doit pas dépasser 5 Mo, et celui-ci doit être au format JSON. Le format est le même que celui du dictionnaire NativePrinters. Un fichier contenant environ 21 000 imprimantes est habituellement encodé dans un fichier de 5 Mo. Le hachage chiffré est utilisé pour vérifier l'intégrité du téléchargement.
-
-      Le fichier est téléchargé et mis en cache. Il sera de nouveau téléchargé à chaque modification de l'URL ou du hachage.
-
-      Si cette règle est définie, <ph name="PRODUCT_OS_NAME" /> téléchargera le fichier des configurations d'imprimante, et mettra les imprimantes à disposition conformément à <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> et <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Cette règle n'a aucune incidence sur la capacité ou non des utilisateurs à configurer des imprimantes sur différents appareils. Elle est destinée à compléter la configuration des imprimantes effectuée par les utilisateurs.
-
-       Cette règle s'ajoute à <ph name="BULK_PRINTERS_POLICY" />.
-
-      Si cette règle n'est pas définie, aucune imprimante d'appareil n'est disponible et les autres règles <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> sont ignorées.</translation>
 <translation id="1608755754295374538">URL autorisées à accéder aux appareils de capture audio sans avis préalable</translation>
 <translation id="1617235075406854669">Activer la suppression de l'historique du navigateur et de l'historique des téléchargements</translation>
 <translation id="163200210584085447">Les formats de cette liste seront mis en correspondance avec la source
@@ -604,12 +585,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2762164719979766599">Indique la liste des comptes locaux de l'appareil devant être affichés sur l'écran de connexion.
 
       Chaque entrée de la liste indique un identifiant, qui est utilisé de façon interne pour différencier les comptes locaux de l'appareil.</translation>
-<translation id="2766302473082018239">Indique les imprimantes auxquelles un utilisateur a accès.
-
-      Cette règle est utilisée uniquement si <ph name="PRINTERS_WHITELIST" /> est sélectionné pour <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Si cette règle est appliquée, seules les imprimantes dont l'ID correspond aux valeurs de la règle sont à la disposition de l'utilisateur. Les ID doivent correspondre aux entrées du fichier spécifié dans <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Configurer le nom de domaine requis pour les hôtes d'accès à distance</translation>
 <translation id="2787173078141616821">Transmettre des informations sur l'état d'Android</translation>
 <translation id="2793923553868251161">Origines à considérer comme contexte sécurisé.</translation>
@@ -796,12 +771,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Si cette règle est définie sur une chaîne non vide, cette chaîne devient le nom de la destination <ph name="PRODUCT_NAME" />. Sinon, le nom de la destination est le nom de l'appareil. Si cette règle n'est pas définie, le nom de la destination est celui de l'appareil, et le propriétaire de l'appareil (ou un utilisateur du domaine gérant l'appareil) peut le modifier. Le nom est limité à 24 caractères.</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
-<translation id="3395348522300156660">Indique les imprimantes qu'un utilisateur peut employer.
-
-      Cette règle est utilisée uniquement si <ph name="PRINTERS_WHITELIST" /> est sélectionné pour <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Si cette règle est appliquée, seules les imprimantes dont l'ID correspond aux valeurs de la règle sont à la disposition de l'utilisateur. Les ID doivent correspondre aux entrées du fichier spécifié dans <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise une version minimale par défaut qui est TLS 1.0.
 
       Sinon, l'une des valeurs suivantes peut être définie : "tls1", "tls1.1" ou "tls1.2". Si elle est configurée, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions SSL/TLS antérieures à la version précisée. Toute valeur non reconnue sera ignorée.</translation>
@@ -958,7 +927,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
        Elle répertorie les extensions qui sont automatiquement installées pour l'utilisateur de la démonstration sur les appareils en mode "point de vente". Celles-ci sont enregistrées dans l'appareil. Elles peuvent être installées hors connexion, une fois l'installation terminée.
 
        Chaque entrée de la liste contient un dictionnaire qui doit inclure l'identifiant d'extension dans le champ "extension-id", ainsi que son adresse URL dans le champ "update-url".</translation>
-<translation id="3873159954366380945">Permet de définir la période de notifications de relancement de <ph name="PRODUCT_NAME" /> pour l'application d'une mise à jour en attente.
+<translation id="3873159954366380945">Permet de définir la période de notifications de redémarrage de <ph name="PRODUCT_NAME" /> pour l'application d'une mise à jour en attente.
 
       Cette règle permet de contrôler la durée, en millisecondes, de la période durant laquelle un utilisateur est tenu informé que <ph name="PRODUCT_NAME" /> doit être relancé (ou que <ph name="PRODUCT_OS_NAME" /> doit être redémarré) en raison d'une mise à jour. Durant cette période, l'utilisateur recevra des notifications répétées l'informant de la nécessité d'une mise à jour, suivant la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Par défaut, la période définie est de 345 600 000 millisecondes (quatre jours) pour <ph name="PRODUCT_OS_NAME" /> et de 604 800 000 millisecondes (une semaine) pour toutes les autres plates-formes.</translation>
 <translation id="3877517141460819966">Mode d'authentification à deux facteurs intégré</translation>
@@ -2465,12 +2434,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
       Avertissement : Il est déconseillé de configurer des restrictions de version, car cela pourrait empêcher les utilisateurs de recevoir des mises à jour logicielles et des correctifs de sécurité essentiels. Limiter les mises à jour à un préfixe de version spécifique pourrait constituer un risque pour les utilisateurs.</translation>
 <translation id="8519264904050090490">URL d'exception manuelle des utilisateurs gérés</translation>
-<translation id="8527932539502116028">Indique les imprimantes auxquelles un utilisateur n'a pas accès.
-
-      Cette règle est utilisée uniquement si <ph name="PRINTERS_BLACKLIST" /> est sélectionné pour <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Lorsqu'elle est appliquée, toutes les imprimantes sont mises à la disposition de l'utilisateur excepté pour les ID répertoriés dans cette règle.
-      </translation>
 <translation id="8538235451413605457">Définit la configuration requise de la version minimale autorisée pour <ph name="PRODUCT_NAME" />. Les versions antérieures sont traitées comme obsolètes et ne permettent pas à l'utilisateur de se connecter à l'appareil sans effectuer une mise à jour préalable du système d'exploitation.
       Si la version actuelle devient obsolète lors de la session utilisateur, une déconnexion forcée a lieu.
 
@@ -2587,18 +2550,6 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 
                       La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures au délai d'inactivité.</translation>
 <translation id="891435090623616439">codée comme une chaîne JSON, pour plus de détails voir <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Fournit les configurations des imprimantes d'entreprise.
-
-      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />. La taille du fichier ne doit pas dépasser 5 Mo, et celui-ci doit être au format JSON. Le format est le même que celui du dictionnaire NativePrinters. Un fichier contenant environ 21 000 imprimantes est habituellement encodé dans un fichier de 5 Mo. Le hachage chiffré est utilisé pour vérifier l'intégrité du téléchargement.
-
-      Le fichier est téléchargé et mis en cache. Il sera de nouveau téléchargé à chaque modification de l'URL ou du hachage.
-
-      Si cette règle est définie, <ph name="PRODUCT_OS_NAME" /> téléchargera le fichier des configurations d'imprimante, et mettra les imprimantes à disposition conformément à <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> et <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Si cette règle est configurée, l'utilisateur ne peut ni la modifier, ni la remplacer.
-
-      Cette règle n'a aucune incidence sur la capacité ou non des utilisateurs à configurer des imprimantes sur différents appareils. Elle est destinée à compléter la configuration des imprimantes effectuée par les utilisateurs.
-      </translation>
 <translation id="8934944553121392674">Détermine les imprimantes de <ph name="DEVICE_PRINTERS_POLICY" /> qui sont à la disposition des utilisateurs.
 
       Indique quelle règle d'accès est utilisée pour la configuration groupée des imprimantes. Si <ph name="PRINTERS_ALLOW_ALL" /> est sélectionné, toutes les imprimantes sont affichées. Si <ph name="PRINTERS_BLACKLIST" /> est sélectionné, <ph name="DEVICE_PRINTERS_BLACKLIST" /> est utilisé pour limiter l'accès aux imprimantes spécifiées. Si <ph name="PRINTERS_WHITELIST" /> est sélectionné, <ph name="DEVICE_PRINTERS_WHITELIST" /> 
@@ -2644,7 +2595,7 @@ indique uniquement les imprimantes qui peuvent être choisies.
 
       La valeur par défaut s'élève à 0 pour les particuliers et à 4 (environ la moitié d'un an) pour les appareils enregistrés par les entreprises.
 
-      La définition de cette règle empêche la protection contre le rollback de s'appliquer pour le nombre de versions intermédiaires spécifiées.
+      La définition de cette règle empêche la protection contre le rollback de s'appliquer, au minimum, pour le nombre de versions intermédiaires spécifiées.
 
       La sélection d'une valeur inférieure pour cette règle a un effet permanent : il n'est pas toujours possible de rétablir une version précédente, même en définissant une valeur supérieure.
 

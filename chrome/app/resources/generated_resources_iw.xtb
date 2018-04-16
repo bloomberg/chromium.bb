@@ -154,7 +154,7 @@
     <ph name="BR" />
     במסך הבא, שלח אלינו משוב כדי לעזור לנו לתקן את הבעיה.</translation>
 <translation id="121783623783282548">הסיסמאות אינן תואמות.</translation>
-<translation id="1218860753635451122">‏לחיצה על הלחצן "אני מסכים/ה" משמעו הסכמה לעיבוד שתואר קודם לכן לגבי השירותים האלה של Google.</translation>
+<translation id="1218860753635451122">‏לחיצה על הלחצן "אני מסכים/ה" משמעותה הסכמה לעיבוד שתואר קודם לכן לגבי השירותים האלה של Google.</translation>
 <translation id="122082903575839559">אלגוריתם חתימה של אישור </translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 עם הצפנת RSA</translation>
 <translation id="1221825588892235038">בחירה בלבד</translation>
@@ -710,7 +710,6 @@
 <translation id="2099686503067610784">למחוק את אישור השרת "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
 <translation id="2101225219012730419">גרסה:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">לא נטען עדיין</translation>
 <translation id="2107494551712864447">הוספה של טביעת אצבע</translation>
 <translation id="2112877397266219826">הפעל את בקר המגע שלך כדי להגדיר אותי</translation>
@@ -790,7 +789,6 @@
 <translation id="2218320521449013367">‏אירעה שגיאה בזמן ש-Chrome הסיר תוכנות מזיקות</translation>
 <translation id="2218515861914035131">הדבק כטקסט רגיל</translation>
 <translation id="221872881068107022">גלילה לאחור</translation>
-<translation id="2218947405056773815">אוף! <ph name="API_NAME" /> נתקל בבעיה לא צפויה.</translation>
 <translation id="2220529011494928058">דיווח על בעיה</translation>
 <translation id="2220572644011485463">‏PIN או סיסמה</translation>
 <translation id="2222641695352322289">הדרך היחידה לבטל פעולה זו היא להתקין מחדש את <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1706,6 +1704,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3576324189521867626">הותקן בהצלחה</translation>
 <translation id="3578594933904494462">התוכן בכרטיסייה הזו משותף.</translation>
 <translation id="357886715122934472">‏&lt;strong&gt;‏<ph name="SENDER" />&lt;/strong&gt; רוצה לשתף את המדפסת &lt;strong&gt;‏<ph name="PRINTER_NAME" />&lt;/strong&gt; עם קבוצה בבעלותך: &lt;strong&gt;‏<ph name="GROUP_NAME" />&lt;/strong&gt;. אם תסכים, כל חברי הקבוצה יוכלו להדפיס במדפסת זו.</translation>
+<translation id="3582972582564653026">‏סינכרון והתאמה אישית של Chrome בכל המכשירים שברשותך</translation>
 <translation id="3584169441612580296">לקרוא ולשנות קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
 <translation id="3587482841069643663">הכל</translation>
 <translation id="358796204584394954">הקלד את הקוד הזה ב-"<ph name="DEVICE_NAME" />" כדי לבצע התאמה:</translation>
@@ -1984,7 +1983,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3979748722126423326">הפעל את <ph name="NETWORKDEVICE" /></translation>
 <translation id="3981760180856053153">הוזן סוג שמירה לא חוקי.</translation>
 <translation id="3983586614702900908">מכשירים מספק לא ידוע</translation>
-<translation id="3985261842049607969">‏גיבוי ב-Google Drive. מאפשר לך בכל עת לשחזר נתונים או להחליף מכשיר בקלות. הגיבוי כולל נתוני אפליקציות. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
+<translation id="3985261842049607969">‏גיבוי ב-Google Drive. אפשר תמיד לשחזר נתונים או להחליף מכשיר בקלות. הגיבוי כולל נתוני אפליקציות. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">נתונים נחסכו</translation>
 <translation id="3987938432087324095">זה לא היה ברור.</translation>
 <translation id="3988996860813292272">בחר אזור זמן</translation>
@@ -2108,6 +2107,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4206944295053515692">‏בקש הצעות מ-Google</translation>
 <translation id="4208390505124702064">חפש ב-<ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">גדול</translation>
+<translation id="4209464433672152343">‏מסמכים <ph name="BEGIN_LINK_HELP" />נשלחים אל Google<ph name="END_LINK_HELP" /> כדי להכין אותם להדפסה. ב<ph name="BEGIN_LINK_DASHBOARD" />מרכז השליטה של Google Cloud Print<ph name="END_LINK_DASHBOARD" /> אפשר להציג, לערוך ולנהל את המדפסות ואת היסטוריית ההדפסות.</translation>
 <translation id="421017592316736757">עליך להיות במצב מקוון כדי לגשת לקובץ זה.</translation>
 <translation id="421182450098841253">&amp;הצג את סרגל הסימניות</translation>
 <translation id="42126664696688958">יצא</translation>
@@ -2123,7 +2123,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4244238649050961491">חפש עוד אפליקציות לשימוש בסטיילוס</translation>
 <translation id="424546999567421758">אותר שימוש בכמות גדולה מנפח הדיסק</translation>
 <translation id="424726838611654458">‏פתח תמיד ב-Adobe Reader</translation>
-<translation id="4247901771970415646">לא ניתן לסנכרן אל <ph name="USERNAME" /></translation>
+<translation id="4247901771970415646">לא ניתן לסנכרן עם <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">ממתין לחיבור רשת...</translation>
 <translation id="4249373718504745892">הגישה של הדף הזה למצלמה ולמיקרופון נחסמה.</translation>
 <translation id="424963718355121712">הפעלת אפליקציות חייבת להתבצע מהמארח שעליו הן משפיעות</translation>
@@ -2506,7 +2506,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4883436287898674711">כל אתרי <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;מנהל המשימות</translation>
 <translation id="4883898390143004266">‏שיפור של זיהוי המיקום על-ידי אפליקציות. שירות המיקום של Google משפר את דיוק המיקום בשביל אפליקציות. Google עשויה לאסוף מדי פעם נתוני מיקום ולהשתמש בהם באופן אנונימי כדי לשפר את דיוק המיקום ושירותים מבוססי-מיקום. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473">‏<ph name="BEGIN_PARAGRAPH1" />גיבוי ב-Google Drive. מאפשר לך בכל עת לשחזר נתונים או להחליף מכשיר בקלות. הגיבוי כולל נתוני אפליקציות.<ph name="END_PARAGRAPH1" />
+<translation id="4884740091792292473">‏<ph name="BEGIN_PARAGRAPH1" />גיבוי ב-Google Drive. אפשר תמיד לשחזר נתונים או להחליף מכשיר בקלות. הגיבוי כולל נתוני אפליקציות.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />נתוני אפליקציות יכולים לכלול את כל הנתונים שאפליקציה כלשהי שמרה (בהתבסס על הגדרות המפתח), כולל מידע אישי שעשוי להיות רגיש, כמו אנשי קשר, הודעות ותמונות.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />נתוני הגיבוי לא ייכללו במכסת האחסון שלך ב-Drive.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />אפשר לכבות את השירות הזה ב'הגדרות'.<ph name="END_PARAGRAPH4" /></translation>
@@ -2529,7 +2529,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4907824805858067479">כרטיסים שמורים הושבתו על-ידי מנהל המערכת</translation>
 <translation id="4908811072292128752">פתח כרטיסייה חדשה כדי לגלוש בשני אתרים בו-זמנית</translation>
 <translation id="4909038193460299775">‏החשבון הזה מנוהל על-ידי <ph name="DOMAIN" />, ולכן הסימניות, ההיסטוריה, הסיסמאות והגדרות אחרות יימחקו מהמכשיר הזה. עם זאת, הנתונים עדיין יישארו בחשבון Google שלך ותוכל לנהל אותם ב<ph name="BEGIN_LINK" />מרכז השליטה של Google<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">לאף תוסף לא הוקצו מקשי קיצור.</translation>
 <translation id="4912643508233590958">הוצאות לא פעילות ממצב שינה</translation>
 <translation id="491691592645955587">החלף לדפדפן בטוח</translation>
@@ -3280,6 +3279,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6064217302520318294">נעילת מסך</translation>
 <translation id="6065289257230303064">תכונות ספרייה של נושא אישור</translation>
 <translation id="6068338049763724728">הפעלה של רישום מרחוק</translation>
+<translation id="6069671174561668781">הגדר טפט</translation>
 <translation id="6071181508177083058">אשר סיסמה</translation>
 <translation id="6073903501322152803">הוסף תכונות נגישות</translation>
 <translation id="6074825444536523002">Google Forms</translation>
@@ -3634,7 +3634,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6607831829715835317">כלים &amp;נוספים</translation>
 <translation id="6612358246767739896">תוכן מוגן</translation>
 <translation id="6613452264606394692">הוספת הדף לסימניות תאפשר גישה מהירה אליו</translation>
-<translation id="6614893213975402384">‏התקנת עדכונים ואפליקציות. הבחירה להמשיך תהווה הסכמה מצידך לכך שהמכשיר גם יוריד ויתקין באופן אוטומטי עדכונים ואפליקציות מ-Google, מספק השירות ומיצרן המכשיר. ייתכן שייעשה לשם כך שימוש בחבילת הגלישה. חלק מהאפליקציות האלה עשויות לכלול אפשרות לרכישות מהאפליקציה. אפשר להסיר את האפליקציות האלה בכל עת. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
+<translation id="6614893213975402384">‏התקנת עדכונים ואפליקציות. הבחירה להמשיך תבטא הסכמה מצידך לכך שהמכשיר גם יוריד ויתקין באופן אוטומטי עדכונים ואפליקציות מ-Google, מספק השירות ומיצרן המכשיר. ייתכן שההורדה תיעשה באמצעות חבילת הגלישה. חלק מהאפליקציות האלה עשויות לכלול אפשרות לרכישות מהאפליקציה. תמיד אפשר להסיר את האפליקציות האלה. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">הראה לי</translation>
 <translation id="661719348160586794">הסיסמאות השמורות שלך יופיעו כאן.</translation>
 <translation id="6618097958368085618">השארה בכל מקרה</translation>
@@ -3999,7 +3999,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7191454237977785534">שמירה בשם</translation>
 <translation id="7193374945610105795">לא נשמרו סיסמאות בשביל <ph name="ORIGIN" /></translation>
 <translation id="7196835305346730603">‏מחפש מכשירי Chromebox בסביבה...</translation>
-<translation id="7197160646667308890">‏<ph name="BEGIN_PARAGRAPH1" />זהו מידע כללי לגבי המכשיר שלך ואופן השימוש בו (כמו רמת טעינת הסוללה, שימוש באפליקציות ואיכות החיבור לרשת). בנתונים ייעשה שימוש כדי לשפר את המוצרים והשירותים של Google בשביל כולם. חלק מהמידע הנצבר יעזור גם לשותפים, כגון מפתחי Android, לשפר את האפליקציות והמוצרים שלהם.<ph name="END_PARAGRAPH1" />
+<translation id="7197160646667308890">‏<ph name="BEGIN_PARAGRAPH1" />זהו מידע כללי לגבי המכשיר שלך ואופן השימוש בו (כמו רמת טעינת הסוללה, שימוש באפליקציות ואיכות החיבור לרשת). הנתונים ישמשו כדי לשפר את המוצרים והשירותים של Google בשביל כולם. חלק מהמידע הנצבר יעזור גם לשותפים, כגון מפתחי Android, לשפר את האפליקציות והמוצרים שלהם.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />כיבוי התכונה הזו לא משפיע על היכולת של המכשיר לשלוח מידע הנחוץ לשירותים חיוניים, כמו עדכוני המערכת ואבטחה.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />אפשר לשלוט בתכונה הזו דרך 'הגדרות' &gt; Google. בתפריט יש לבחור באפשרות 'שימוש ואבחון'.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">קבל עזרה</translation>
@@ -4024,7 +4024,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7229570126336867161">‏יש צורך ב-EVDO</translation>
 <translation id="7230787553283372882">התאם אישית את גודל הטקסט</translation>
 <translation id="7232750842195536390">המערכת לא הצליחה לשנות את השם</translation>
-<translation id="7233309214676155451">‏סינכרון והתאמה אישית של Chrome בכל המכשירים שברשותך</translation>
 <translation id="7238585580608191973">‏טביעת אצבע SHA-256</translation>
 <translation id="7240120331469437312">שם חלופי של נושא האישור</translation>
 <translation id="7240339475467890413">להתחבר לנקודה חדשה לשיתוף אינטרנט?</translation>
@@ -4220,7 +4219,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7543104066686362383">הפעל תכונות ניפוי באגים במכשיר <ph name="IDS_SHORT_PRODUCT_NAME" /> זה</translation>
 <translation id="7544853251252956727">ערבוב</translation>
 <translation id="7545415673537747415">‏שלוט באופן שבו חברת Google משתמשת בהיסטוריית הגלישה שלך לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים, באמצעות <ph name="BEGIN_LINK" />בחירת הפעילויות ב-Google<ph name="END_LINK" />.</translation>
-<translation id="7545809182698428577">מפעיל את התכונות הרשומות כאן. משתמש בפעילות הדפדפן, בתוכן של חלק מהאתרים שאליהם נכנסת ובאינטראקציות אחרות בדפדפן כדי לבצע התאמה אישית.</translation>
+<translation id="7545809182698428577">כשנכנסים מופעלות התכונות הרשומות כאן. פעילות הדפדפן, התוכן של חלק מהאתרים שאליהם נכנסת ואינטראקציות נוספות בדפדפן ישמשו להתאמה אישית.</translation>
 <translation id="7547317915858803630">אזהרה: הגדרות <ph name="PRODUCT_NAME" /> שלך מאוחסנות בכונן רשת. דבר זה עשוי לגרום להאטות, לקריסות ואפילו לאובדן נתונים.</translation>
 <translation id="7547483330017600937">האפליקציה מאפשרת לך לפתח ב-<ph name="DEVICE_TYPE" /> שלך. ניתן להריץ את האפליקציות המקוריות ואת כלי שורת הפקודה המועדפים עליך בצורה חלקה ומאובטחת.
 
@@ -4520,7 +4519,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 שמור על קובץ המפתח שלך במקום בטוח. תצטרך אותו כדי ליצור גרסאות חדשות של התוסף שלך.</translation>
 <translation id="799923393800005025">יכול להציג</translation>
 <translation id="8000066093800657092">אין רשת</translation>
-<translation id="8001504501378762252">ייתכן שאתר גנב את הסיסמה שלך</translation>
 <translation id="8004582292198964060">דפדפן</translation>
 <translation id="8005600846065423578">אפשר תמיד ל-<ph name="HOST" /> לגשת ללוח</translation>
 <translation id="8008356846765065031">האינטרנט מנותק. בדוק את חיבור האינטרנט.</translation>

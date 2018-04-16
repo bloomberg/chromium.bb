@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">सर्वर प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" हटाएं?</translation>
 <translation id="2100273922101894616">स्वतः प्रवेश करें</translation>
 <translation id="2101225219012730419">वर्शन:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">अब तक लोड नहीं किया गया</translation>
 <translation id="2107494551712864447">फ़िंगरप्रिंट जोड़ें</translation>
 <translation id="2112877397266219826">मुझे सेट करने के लिए अपना स्पर्श नियंत्रक चालू करें</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">जिस समय Chrome नुकसान पहुंचाने वाला सॉफ़्टवेयर हटा रहा था, तब कोई गड़बड़ी हुई</translation>
 <translation id="2218515861914035131">सादे टेक्स्ट के रूप में चिपकाएं</translation>
 <translation id="221872881068107022">उलट स्क्रोलिंग</translation>
-<translation id="2218947405056773815">सत्यानाश! <ph name="API_NAME" /> में कोई समस्या हुई.</translation>
 <translation id="2220529011494928058">किसी समस्या की रिपोर्ट करें</translation>
 <translation id="2220572644011485463">पिन या पासवर्ड</translation>
 <translation id="2222641695352322289">इसे पूर्ववत करने का एकमात्र तरीका <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> को पुन: इंस्टॉल करना है.</translation>
@@ -1709,6 +1707,7 @@
 <translation id="3576324189521867626">सफलतापूर्वक इंस्टॉल हो गया है</translation>
 <translation id="3578594933904494462">इस टैब की सामग्री को साझा किया जा रहा है.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; आपके स्‍वामित्‍व वाले समूह: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; से &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; प्रिंटर साझा करना चाहता है. यदि आप स्‍वीकार करते हैं, तो समूह के सभी सदस्‍य प्रिंटर से प्रिंट कर पाएंगे.</translation>
+<translation id="3582972582564653026">Chrome को अपने सभी डिवाइस पर सिंक करें और मनमुताबिक बनाएं</translation>
 <translation id="3584169441612580296">अपने कंप्यूटर से फ़ोटो, संगीत और अन्य मीडिया एक्सेस करें और उन्हें बदलें</translation>
 <translation id="3587482841069643663">सभी</translation>
 <translation id="358796204584394954">इन्हें युग्मित करने के लिए इस कोड को "<ph name="DEVICE_NAME" />" पर लिखें:</translation>
@@ -2110,6 +2109,7 @@
 <translation id="4206944295053515692">Google से सुझाव मांगें</translation>
 <translation id="4208390505124702064"><ph name="SITE_NAME" /> खोजें</translation>
 <translation id="4209092469652827314">बड़ा</translation>
+<translation id="4209464433672152343">दस्तावेज़ <ph name="BEGIN_LINK_HELP" />Google को भेजे जाते हैं<ph name="END_LINK_HELP" /> ताकि उन्हें प्रिंट करने के लिए तैयार किया जा सके. <ph name="BEGIN_LINK_DASHBOARD" />Google क्लाउड प्रिंट डैशबोर्ड<ph name="END_LINK_DASHBOARD" /> पर जाकर अपना प्रिंटर और प्रिंटर इतिहास देखें, उसमें बदलाव करें और उसे प्रबंधित करें.</translation>
 <translation id="421017592316736757">इस फ़ाइल तक पहुंचने के लिए आपका ऑनलाइन होना आवश्‍यक है.</translation>
 <translation id="421182450098841253">बुकमार्क बार &amp;दिखाएं</translation>
 <translation id="42126664696688958">निर्यात करें</translation>
@@ -2531,7 +2531,6 @@
 <translation id="4907824805858067479">सेव किए गए कार्ड आपके एडमिन ने बंद कर दिए हैं</translation>
 <translation id="4908811072292128752">एक बार में दो साइटें ब्राउज़ करने के लिए नया टैब खोलें</translation>
 <translation id="4909038193460299775">चूंकि यह खाता <ph name="DOMAIN" /> द्वारा प्रबंधित किया जाता है, इसलिए इस डिवाइस से आपके बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग हटा दी जाएंगी. हालांकि, आपका डेटा आपके Google खाते में संग्रहित रहेगा और उसे <ph name="BEGIN_LINK" />Google डैशबोर्ड<ph name="END_LINK" /> से प्रबंधित किया जा सकता है.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">किसी भी एक्सटेंशन को कीबोर्ड शॉर्टकट असाइन नहीं किए गए हैं.</translation>
 <translation id="4912643508233590958">निष्क्रिय प्रोसेसर का सक्रियण</translation>
 <translation id="491691592645955587">किसी सुरक्षित ब्राउज़र पर जाएं</translation>
@@ -3281,6 +3280,7 @@
 <translation id="6064217302520318294">स्क्रीन लॉक</translation>
 <translation id="6065289257230303064">प्रमाणपत्र विषय निर्देशिका विशेषताएं</translation>
 <translation id="6068338049763724728">दूरस्थ नामांकन सक्षम करें</translation>
+<translation id="6069671174561668781">वॉलपेपर सेट करें</translation>
 <translation id="6071181508177083058">पासवर्ड की पुष्‍टि करें</translation>
 <translation id="6073903501322152803">एक्सेस-योग्यता सुविधाएं जोड़ें</translation>
 <translation id="6074825444536523002">Google फ़ॉर्म</translation>
@@ -4025,7 +4025,6 @@
 <translation id="7229570126336867161">EVDO की आवश्यकता है</translation>
 <translation id="7230787553283372882">अपने लेख का आकार कस्टमाइज़ करें</translation>
 <translation id="7232750842195536390">नाम नहीं बदला जा सका</translation>
-<translation id="7233309214676155451">Chrome को अपने पूरे डिवाइस पर सिंक करें और मनमुताबिक बनाएं</translation>
 <translation id="7238585580608191973">SHA-256 फ़िंगरप्रिंट</translation>
 <translation id="7240120331469437312">प्रमाणपत्र विषय वैकल्पिक नाम</translation>
 <translation id="7240339475467890413">नए हॉटस्पॉट से कनेक्ट करें?</translation>
@@ -4530,7 +4529,6 @@
 अपनी मुख्य फ़ाइल को किसी सुरक्षित स्थान पर रखें. आपको अपने एक्सटेंशन के नए वर्शन बनाने के लिए इसकी आवश्यकता होगी.</translation>
 <translation id="799923393800005025">देख सकते हैं</translation>
 <translation id="8000066093800657092">नेटवर्क नहीं है</translation>
-<translation id="8001504501378762252">शायद किसी साइट ने आपका पासवर्ड चुरा लिया है</translation>
 <translation id="8004582292198964060">ब्राउज़र</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> को हमेशा क्‍लिपबोर्ड देखने दें</translation>
 <translation id="8008356846765065031">इंटरनेट डिस्‍कनेक्‍ट हो गया है. कृपया अपना इंटरनेट कनेक्‍शन जाँचें.</translation>

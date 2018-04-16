@@ -52,12 +52,6 @@
 
       Als het beleid is ingesteld op 'onwaar' (false), wordt de status van de schakelaar voor de ontwikkelaarsmodus niet gemeld.</translation>
 <translation id="1160939557934457296">Doorgaan vanaf de waarschuwingspagina van Safe Browsing uitschakelen</translation>
-<translation id="1166377463685560145">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_BLACKLIST" /> is gekozen voor <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de ID's die in dit beleid worden vermeld.
-      </translation>
 <translation id="1198465924256827162">De frequentie, in milliseconden, waarmee uploads van de apparaatstatus worden verzonden.
 
       Als dit beleid niet is ingesteld, is de standaardfrequentie 3 uur. De minimaal toegestane frequentie is 60 seconden.</translation>
@@ -161,19 +155,6 @@
 <translation id="1561424797596341174">Beleid overschrijft Debug-builds van de host voor externe toegang</translation>
 <translation id="1561967320164410511">U2F plus extensies voor individuele bevestiging</translation>
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME" /> standaard gebruiken</translation>
-<translation id="1603058613431276040">Hiermee worden configuraties geleverd voor zakelijke printers die zijn gekoppeld aan apparaten.
-
-      Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten. Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON-indeling. De indeling is gelijk aan het NativePrinters-woordenboek. Naar schatting wordt een bestand dat ongeveer 21.000 printers bevat, gecodeerd als een bestand van 5 MB. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
-
-      Het bestand wordt gedownload en gecachet. Het bestand wordt opnieuw gedownload wanneer de URL of de hash verandert.
-
-      Als dit beleid is ingesteld, wordt in <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties gedownload en worden printers beschikbaar gesteld in overeenstemming met <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> en <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten te configureren. Het is bedoeld als aanvulling op de configuratie van printers door individuele gebruikers.
-
-      Dit beleid vormt een aanvulling op <ph name="BULK_PRINTERS_POLICY" />.
-
-      Als dit beleid niet is ingesteld, zijn er geen apparaatprinters en worden de overige beleidsregels van <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> genegeerd.</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
 <translation id="1617235075406854669">Verwijderen van browser- en downloadgeschiedenis inschakelen</translation>
 <translation id="163200210584085447">Patronen in deze lijst worden vergeleken met de
@@ -592,12 +573,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 <translation id="2762164719979766599">Hiermee wordt de lijst met lokale accounts op het apparaat weergegeven op het aanmeldscherm.
 
       Elke lijstvermelding specificeert een ID die intern wordt gebruikt om de verschillende lokale accounts van het apparaat te onderscheiden.</translation>
-<translation id="2766302473082018239">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_WHITELIST" /> is gekozen voor <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Als dit beleid wordt gebruikt, zijn alleen de printers met ID's die overeenkomen met de waarden in dit beleid, beschikbaar voor de gebruiker. De ID's moeten overeenkomen met de vermeldingen in het bestand dat is opgegeven in <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
 <translation id="2787173078141616821">Informatie over de status van Android rapporteren</translation>
 <translation id="2793923553868251161">Beginpunten moeten worden behandeld als beveiligde context.</translation>
@@ -784,12 +759,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 
           Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt die tekenreeks gebruikt als de naam van de <ph name="PRODUCT_NAME" />-bestemming. Anders wordt de apparaatnaam gebruikt voor de bestemmingsnaam. Als dit beleid niet is ingesteld, is de naam van de bestemming de apparaatnaam en kan de eigenaar van het apparaat (of een gebruiker in het domein dat het apparaat beheert) deze naam wijzigen. De naam mag maximaal 24 tekens lang zijn.</translation>
 <translation id="3381968327636295719"> gebruiken</translation>
-<translation id="3395348522300156660">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_WHITELIST" /> is gekozen voor <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Als dit beleid wordt gebruikt, zijn alleen de printers met ID's die overeenkomen met de waarden in dit beleid, beschikbaar voor de gebruiker. De ID's moeten overeenkomen met de vermeldingen in het bestand dat is opgegeven in <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Als dit beleid niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME" /> een standaard minimum versie, oftewel TLS 1.0.
 
       In andere gevallen kan een van de volgende waarden worden ingesteld: 'tls1', 'tls1.1' of 'tls1.2'. Wanneer dit beleid is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> geen lagere SSL-/TLS-versies dan de gespecificeerde versie. Als er een waarde wordt ingesteld die niet wordt herkend, wordt deze genegeerd.</translation>
@@ -948,7 +917,7 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
       Elke lijstvermelding bevat een woordenboek dat de extensie-ID moet bevatten in het veld 'Extensie-ID' en de update-URL in het veld 'Update-URL'.</translation>
 <translation id="3873159954366380945">Hiermee kun je de periode instellen waarin meldingen om <ph name="PRODUCT_NAME" /> opnieuw op te starten, worden weergegeven om een update toe te passen.
 
-      Met deze beleidsinstellingen kun je de periode tot op de milliseconde nauwkeurig bepalen waarin een gebruiker op progressieve wijze wordt geïnformeerd dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart (of dat <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden gestart) om een update toe te passen. De gebruiker wordt gedurende deze periode herhaaldelijk geïnformeerd over de update op basis van de instelling van het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid. Als dit niet is ingesteld, wordt de standaardperiode van 345.600.000 milliseconden (vier dagen) gehanteerd voor <ph name="PRODUCT_OS_NAME" /> en 604.800.000 milliseconden (één week) voor alle andere platforms.</translation>
+      Met deze beleidsinstelling kun je de periode bepalen (in milliseconden) waarin een gebruiker op progressieve wijze wordt geïnformeerd dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart (of dat <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden gestart) om een update toe te passen. De gebruiker wordt gedurende deze periode herhaaldelijk geïnformeerd over de update op basis van de instelling van het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid. Als dit niet is ingesteld, wordt de standaardperiode van 345.600.000 milliseconden (vier dagen) gehanteerd voor <ph name="PRODUCT_OS_NAME" /> en 604.800.000 milliseconden (één week) voor alle andere platforms.</translation>
 <translation id="3877517141460819966">Geïntegreerde modus voor authenticatie met twee factoren</translation>
 <translation id="388237772682176890">Dit beleid is beëindigd in M53 en is verwijderd in M54, omdat de ondersteuning voor SPDY/3.1 is verwijderd.
 
@@ -2424,12 +2393,6 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 
       Waarschuwing: Het wordt niet aanbevolen versiebeperkingen te configureren, omdat gebruikers hierdoor mogelijk geen software-updates en essentiële beveiligingsoplossingen ontvangen. Als je updates beperkt tot een specifiek versievoorvoegsel, kunnen gebruikers gevaar lopen.</translation>
 <translation id="8519264904050090490">URL's van handmatige uitzonderingen voor beheerde gebruikers</translation>
-<translation id="8527932539502116028">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_BLACKLIST" /> is gekozen voor <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de ID's die in dit beleid worden vermeld.
-      </translation>
 <translation id="8538235451413605457">Hiermee wordt de vereiste van de minimaal toegestane versie van <ph name="PRODUCT_NAME" /> geconfigureerd. Eerdere versies worden behandeld als verouderd en gebruikers kunnen pas op het apparaat inloggen nadat het besturingssysteem is geüpdatet.
 
 Als de huidige versie tijdens een gebruikerssessie verouderd raakt, wordt de gebruiker gedwongen uitgelogd.
@@ -2547,18 +2510,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moeten lager zijn dan de inactieve vertraging.</translation>
 <translation id="891435090623616439">gecodeerd als een JSON-tekenreeks. Ga voor meer informatie naar <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Hiermee worden configuraties geleverd voor zakelijke printers.
-
-      Met dit beleid kun  je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten. Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON-indeling. De indeling is gelijk aan het NativePrinters-woordenboek. Naar schatting wordt een bestand dat ongeveer 21.000 printers bevat, gecodeerd als een bestand van 5 MB. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
-
-      Het bestand wordt gedownload en gecachet. Het bestand wordt opnieuw gedownload wanneer de URL of hash verandert.
-
-      Als dit beleid is ingesteld, wordt in <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties gedownload en worden printers beschikbaar gesteld in overeenstemming met <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> en <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten te configureren. Het is bedoeld als aanvulling op de configuratie van printers door individuele gebruikers.
-      </translation>
 <translation id="8934944553121392674">Hiermee wordt beheerd welke printers uit <ph name="DEVICE_PRINTERS_POLICY" /> beschikbaar zijn voor gebruikers.
 
       Hiermee wordt aangegeven welk toegangsbeleid wordt gebruikt voor bulksgewijze printerconfiguratie. Als <ph name="PRINTERS_ALLOW_ALL" /> is geselecteerd, worden alle printers weergegeven. Als <ph name="PRINTERS_BLACKLIST" /> is geselecteerd, wordt <ph name="DEVICE_PRINTERS_BLACKLIST" /> gebruikt om de toegang tot de opgegeven printers te beperken. Als <ph name="PRINTERS_WHITELIST" /> is geselecteerd, geeft <ph name="DEVICE_PRINTERS_WHITELIST" /> alleen die printers aan die kunnen worden geselecteerd.

@@ -52,12 +52,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       Wird die Richtlinie auf "False" gesetzt, wird der Status des Entwicklerschalters nicht gemeldet.</translation>
 <translation id="1160939557934457296">Fortfahren von der Safe Browsing-Hinweisseite deaktivieren</translation>
-<translation id="1166377463685560145">Gibt die Drucker an, die ein Nutzer nicht verwenden kann.
-
-      Diese Richtlinie wird nur verwendet, wenn <ph name="PRINTERS_BLACKLIST" /> für <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ausgewählt wurde.
-
-      Wenn diese Richtlinie verwendet wird, stehen dem Nutzer alle Drucker mit Ausnahme der Geräte zur Verfügung, deren IDs in dieser Richtlinie angegeben sind.
-      </translation>
 <translation id="1198465924256827162">Mithilfe dieser Richtlinie wird in Millisekunden angegeben, wie oft Uploads mit dem Gerätestatus vorgenommen werden.
 
       Wenn die Richtlinie nicht konfiguriert ist, beträgt der Standardwert 3 Stunden.
@@ -158,19 +152,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1561424797596341174">Überschreiben von Richtlinien für Fehlerbehebungs-Builds des Hosts für den Remotezugriff</translation>
 <translation id="1561967320164410511">U2F plus Erweiterungen zur individuellen Bestätigung</translation>
 <translation id="1583248206450240930">Standardmäßig <ph name="PRODUCT_FRAME_NAME" /> verwenden</translation>
-<translation id="1603058613431276040">Stellt Konfigurationen für gerätegebundene Unternehmensdrucker bereit.
-
-      Mit dieser Richtlinie können Druckerkonfigurationen für <ph name="PRODUCT_OS_NAME" />-Geräte bereitgestellt werden. Die Datei darf nicht größer als 5 MB sein und muss in JSON codiert sein. Das Format entspricht dem des NativePrinters-Wörterbuchs. Eine Datei mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei mit schätzungsweise 5 MB. Der kryptografische Hash wird dazu verwendet, die Integrität des Downloads zu prüfen.
-
-      Die Datei wird heruntergeladen und im Cache gespeichert. Sobald sich URL oder Hash ändern, wird sie wieder neu heruntergeladen.
-
-      Wenn diese Richtlinie konfiguriert ist, wird die Datei für Druckerkonfigurationen von <ph name="PRODUCT_OS_NAME" /> heruntergeladen und die Drucker werden gemäß <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> und <ph name="DEVICE_PRINTERS_BLACKLIST" /> bereitgestellt.
-
-      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten Drucker konfigurieren können. Sie ist als Ergänzung zur Konfiguration von Druckern durch einzelne Nutzer gedacht.
-
-      Diese Richtlinie ist ein Zusatz zu <ph name="BULK_PRINTERS_POLICY" />.
-
-      Wenn die Richtlinie nicht konfiguriert ist, gibt es keine gerätegebundenen Drucker und die anderen <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />-Richtlinien werden ignoriert.</translation>
 <translation id="1608755754295374538">URLs, denen ohne Nachfrage Zugriff auf Audioaufnahmegeräte gestattet wird</translation>
 <translation id="1617235075406854669">Löschen des Browserverlaufs und des Downloadverlaufs aktivieren</translation>
 <translation id="163200210584085447">Muster in dieser Liste werden mit der Sicherheitsherkunft
@@ -302,7 +283,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
 <translation id="2132732175597591362">Steuert die weiße Liste der URL-Muster, für die Autoplay immer aktiviert ist.
 
-      Wenn Autoplay aktiviert ist, können Videos mit Audioinhalten in <ph name="PRODUCT_NAME" /> ohne die Zustimmung des Nutzers automatisch abgespielt werden.
+      Wenn Autoplay aktiviert ist, können Videos mit Ton in <ph name="PRODUCT_NAME" /> ohne Zustimmung des Nutzers automatisch abgespielt werden.
 
       Ein URL-Muster muss den unter https://www.chromium.org/administrators/url-blacklist-filter-format beschriebenen Formaten entsprechen.
 
@@ -310,7 +291,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       Wird die Richtlinie "AutoplayAllowed" auf "false" gesetzt, dürfen die in dieser Richtlinie festgelegten URL-Muster dennoch abgespielt werden.
 
-      Hinweis: Wenn <ph name="PRODUCT_NAME" /> gerade läuft und diese Richtlinie geändert wird, wird sie nur auf Tabs angewendet, die neu geöffnet werden. Aus diesem Grund kann es passieren, dass einige Tabs das zuvor eingestellte Verhalten zeigen.</translation>
+      Hinweis: Wenn <ph name="PRODUCT_NAME" /> ausgeführt wird, während Sie diese Richtlinie ändern, wird sie nur für neue Tabs angewendet. Deshalb folgen einige Tabs möglicherweise der vorherigen Einstellung.</translation>
 <translation id="2134437727173969994">Sperren des Bildschirms erlauben</translation>
 <translation id="2137064848866899664">Bei Festlegen dieser Richtlinie wird jeder Bildschirm bei
       jedem Neustart und beim erstmaligen Herstellen der Verbindung nach
@@ -565,12 +546,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2762164719979766599">Gibt die Liste der lokalen Gerätekonten an, die auf der Anmeldeseite angezeigt werden sollen.
 
       Jeder Listeneintrag besteht aus einer Kennung, die intern dazu verwendet wird, die verschiedenen lokalen Gerätekonten auseinanderzuhalten.</translation>
-<translation id="2766302473082018239">Gibt die Drucker an, die ein Nutzer verwenden kann.
-
-      Diese Richtlinie wird nur verwendet, wenn <ph name="PRINTERS_WHITELIST" /> für <ph name="BULK_PRINTERS_ACCESS_MODE" /> ausgewählt wurde.
-
-      Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verfügung, deren IDs mit den Werten in dieser Richtlinie übereinstimmen. Die IDs müssen den Einträgen in der Datei entsprechen, die in <ph name="BULK_PRINTERS_POLICY" /> angegeben ist.
-      </translation>
 <translation id="2769952903507981510">Erforderlichen Domain-Namen für Remotezugriff-Hosts konfigurieren</translation>
 <translation id="2787173078141616821">Informationen zum Status von Android senden</translation>
 <translation id="2793923553868251161">Quellen als sicheren Kontext einstufen.</translation>
@@ -749,12 +724,6 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 
           Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser als Name für das <ph name="PRODUCT_NAME" />-Ziel verwendet. Andernfalls wird der Gerätename als Zielname verwendet. Ist diese Richtlinie nicht definiert, wird der Gerätename als Zielname verwendet und der Geräteeigentümer oder ein Nutzer der Domain, von der das Gerät verwaltet wird, hat die Möglichkeit, den Namen zu ändern. Der Name darf maximal 24 Zeichen enthalten.</translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
-<translation id="3395348522300156660">Gibt die Drucker an, die ein Nutzer verwenden kann.
-
-      Diese Richtlinie wird nur verwendet, wenn <ph name="PRINTERS_WHITELIST" /> für <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ausgewählt wurde.
-
-      Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verfügung, deren IDs mit den Werten in dieser Richtlinie übereinstimmen. Die IDs müssen den Einträgen in der Datei entsprechen, die in <ph name="DEVICE_PRINTERS_POLICY" /> angegeben ist.
-      </translation>
 <translation id="3414260318408232239">Wenn diese Richtlinie nicht konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> standardmäßig eine Mindestversion: die Version TLS 1.0.
 
       Ansonsten kann sie auf einen der folgenden Werte festgelegt werden: "tls1", "tls1.1" oder "tls1.2". Wenn die Richtlinie konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> keine SSL- oder TLS-Versionen, die niedriger als die vorgegebene Version sind. Ein unbekannter Wert wird ignoriert.</translation>
@@ -899,7 +868,7 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
        Jeder Eintrag enthält ein Verzeichnis, in dem im Feld "extension-id" die Erweiterungs-ID und im Feld "update-url" die Aktualisierungs-URL angegeben werden müssen.</translation>
 <translation id="3873159954366380945">Mit dieser Einstellung können Sie festlegen, wie lange Benachrichtigungen zum Neustart von <ph name="PRODUCT_NAME" /> angezeigt werden, um ein ausstehendes Update durchzuführen.
 
-      Mit dieser Richtlinieneinstellung kann der Zeitraum in Millisekunden festgelegt werden, in dem ein Nutzer fortschreitend darüber informiert wird, dass <ph name="PRODUCT_NAME" /> oder <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss. Während dieses Zeitraums wird der Nutzer basierend auf der Einstellung der Richtlinie <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> wiederholt über die Notwendigkeit eines Updates informiert. Wenn die Richtlinie nicht festgelegt ist, wird der Standardzeitraum von 345.600.000 Millisekunden (vier Tage) für <ph name="PRODUCT_OS_NAME" /> und 604.800.000 Millisekunden (eine Woche) für alle anderen Plattformen verwendet.</translation>
+      Mit dieser Richtlinieneinstellung kann der Zeitraum in Millisekunden festgelegt werden, in dem ein Nutzer fortschreitend darüber informiert wird, dass <ph name="PRODUCT_NAME" /> oder <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss. Während dieses Zeitraums wird der Nutzer entsprechend der Einstellung der Richtlinie <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> wiederholt über die Notwendigkeit eines Updates informiert. Wenn die Richtlinie nicht festgelegt ist, wird der Standardzeitraum von 345.600.000 Millisekunden (vier Tage) für <ph name="PRODUCT_OS_NAME" /> und 604.800.000 Millisekunden (eine Woche) für alle anderen Plattformen verwendet.</translation>
 <translation id="3877517141460819966">Integrierter Zwei-Faktor-Authentifizierungsmodus</translation>
 <translation id="388237772682176890">Da SPDY/3.1 nicht mehr unterstützt wird, wurde diese Richtlinie in M53 eingestellt und in M54 entfernt.
 
@@ -1243,13 +1212,13 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="489803897780524242">Parameter zur Steuerung der Suchbegriffersetzung für den Standardsuchanbieter</translation>
 <translation id="4899708173828500852">Safe Browsing aktivieren</translation>
-<translation id="4899802251198446659">Mit dieser Richtlinie können Sie festlegen, ob Videos mit Ton automatisch und ohne Zustimmung durch den Nutzer in <ph name="PRODUCT_NAME" /> abgespielt werden dürfen.
+<translation id="4899802251198446659">Mit dieser Richtlinie können Sie festlegen, ob Videos mit Ton in <ph name="PRODUCT_NAME" /> ohne Zustimmung des Nutzers automatisch abgespielt werden dürfen.
 
       Wenn die Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> Medien automatisch abspielen.
-      Wird die Richtlinie auf "false" festgelegt, darf <ph name="PRODUCT_NAME" /> Medien nicht automatisch abspielen. Die Richtlinie "AutoplayWhitelist" kann verwendet werden, um diese Einstellung für bestimmte URL-Muster zu überschreiben.
-      Standardmäßig darf <ph name="PRODUCT_NAME" /> Medien nicht automatisch abspielen. Die Richtlinie "AutoplayWhitelist" kann verwendet werden, um diese Einstellung für bestimmte URL-Muster zu überschreiben.
+      Wird die Richtlinie auf "false" festgelegt, darf <ph name="PRODUCT_NAME" /> Medien nicht automatisch abspielen. Mit der Richtlinie "AutoplayWhitelist" können Sie diese Einstellung für bestimmte URL-Muster überschreiben.
+      Standardmäßig darf <ph name="PRODUCT_NAME" /> Medien nicht automatisch abspielen. Mit der Richtlinie "AutoplayWhitelist" können Sie diese Einstellung für bestimmte URL-Muster überschreiben.
 
-      Hinweis: Wenn <ph name="PRODUCT_NAME" /> gerade läuft und diese Richtlinie geändert wird, wird sie nur auf Tabs angewendet, die neu geöffnet werden. Aus diesem Grund kann es passieren, dass einige Tabs das zuvor eingestellte Verhalten zeigen.
+      Hinweis: Wenn <ph name="PRODUCT_NAME" /> ausgeführt wird, während Sie diese Richtlinie ändern, wird sie nur für neue Tabs angewendet. Deshalb folgen einige Tabs möglicherweise der vorherigen Einstellung.
       </translation>
 <translation id="4906194810004762807">Aktualisierungsrate für Geräterichtlinien</translation>
 <translation id="4917385247580444890">Stark</translation>
@@ -2310,12 +2279,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 
       Achtung: Die Konfiguration von Versionsbeschränkungen wird nicht empfohlen, da Nutzer dann unter Umständen Softwareupdates und wichtige Sicherheitspatches nicht erhalten. Bei Beschränkung von Updates auf ein bestimmtes Versionspräfix besteht eventuell ein Risiko für die Nutzer.</translation>
 <translation id="8519264904050090490">Manuell festgelegte Ausnahme-URLs für verwalteten Nutzer</translation>
-<translation id="8527932539502116028">Gibt die Drucker an, die ein Nutzer nicht verwenden kann.
-
-      Diese Richtlinie wird nur verwendet, wenn <ph name="PRINTERS_BLACKLIST" /> für <ph name="BULK_PRINTERS_ACCESS_MODE" /> ausgewählt wurde.
-
-      Wenn diese Richtlinie verwendet wird, stehen dem Nutzer alle Drucker mit Ausnahme der Geräte zur Verfügung, deren IDs in dieser Richtlinie angegeben sind.
-      </translation>
 <translation id="8538235451413605457">Konfiguriert die Anforderung an die zulässige Mindestversion von <ph name="PRODUCT_NAME" />. Versionen unter dem angegebenen Wert werden als veraltet angesehen und der Nutzer kann sich erst anmelden, nachdem das Betriebssystem aktualisiert wurde.
       Wenn die aktuelle Version sich während einer Nutzersitzung als veraltet herausstellt, wird die Abmeldung des Nutzers erzwungen.
 
@@ -2422,18 +2385,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner als der Wert für die Inaktivitätsverzögerung sein.</translation>
 <translation id="891435090623616439">Als JSON-String codiert, weitere Informationen unter <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Stellt Konfigurationen für Unternehmensdrucker bereit.
-
-      Mit dieser Richtlinie können Druckerkonfigurationen für <ph name="PRODUCT_OS_NAME" />-Geräte bereitgestellt werden. Die Datei darf nicht größer als 5 MB sein und muss in JSON codiert sein. Das Format entspricht dem des NativePrinters-Wörterbuchs. Eine Datei mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei mit schätzungsweise 5 MB. Der kryptografische Hash wird dazu verwendet, die Integrität des Downloads zu prüfen.
-
-      Die Datei wird heruntergeladen und im Cache gespeichert. Sobald sich URL oder Hash ändern, wird sie wieder neu heruntergeladen.
-
-      Wenn diese Richtlinie konfiguriert ist, wird die Datei für Druckerkonfigurationen von <ph name="PRODUCT_OS_NAME" /> heruntergeladen und die Drucker werden gemäß <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> und <ph name="BULK_PRINTERS_BLACKLIST" /> bereitgestellt.
-
-      Wenn Sie diese Richtlinie verwenden, können die Nutzer sie nicht ändern oder überschreiben.
-
-      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten Drucker konfigurieren können. Sie ist als Ergänzung zur Konfiguration von Druckern durch einzelne Nutzer gedacht.
-      </translation>
 <translation id="8934944553121392674">Legt fest, welche Drucker aus <ph name="DEVICE_PRINTERS_POLICY" /> Nutzern zur Verfügung stehen.
 
       Gibt an, welche Zugriffsrichtlinie für die Massenkonfiguration von Druckern verwendet wird. Wenn <ph name="PRINTERS_ALLOW_ALL" /> ausgewählt ist, werden alle Drucker angezeigt. Wenn <ph name="PRINTERS_BLACKLIST" /> ausgewählt ist, wird der Zugriff auf die angegebenen Drucker anhand von <ph name="DEVICE_PRINTERS_BLACKLIST" /> eingeschränkt. Wenn <ph name="PRINTERS_WHITELIST" /> ausgewählt ist, gibt <ph name="DEVICE_PRINTERS_WHITELIST" /> nur die Drucker an, die ausgewählt werden können.

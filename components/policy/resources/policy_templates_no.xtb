@@ -52,12 +52,6 @@
 
       Hvis innstillingen angis som «true», rapporteres ikke tilstanden til utviklerbryteren.</translation>
 <translation id="1160939557934457296">Deaktiver muligheten til å overse Safe Browsing-advarsler og fortsette til potensielt farlig nettsted</translation>
-<translation id="1166377463685560145">Angir skriverne som en bruker ikke kan bruke.
-
-      Denne regelen brukes bare hvis <ph name="PRINTERS_BLACKLIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Hvis denne regelen brukes, får brukeren tilgang til alle skrivere – unntatt eventuelle ID-er som er oppført i denne regelen.
-      </translation>
 <translation id="1198465924256827162">Hvor ofte opplastinger av enhetsstatusen sendes, i millisekunder.
 
       Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 timer. 
@@ -166,19 +160,6 @@
 <translation id="1561424797596341174">Overstyring av regler for delversjoner for feilsøking på fjerntilgangsverten</translation>
 <translation id="1561967320164410511">U2F samt utvidelser for individuell attestering</translation>
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
-<translation id="1603058613431276040">Gir konfigurasjoner for bedriftsskrivere som er bundet til enheter.
-
-      Med denne regelen kan du gi skriverkonfigurasjoner til enheter med <ph name="PRODUCT_OS_NAME" />. Størrelsen på filen må ikke overskride 5 MB, og den må være i JSON-format. Formatet er det samme som for NativePrinters-ordlisten. Det anslås at en fil som inneholder omtrent 21 000 skrivere, opptar 5 MB. Den kryptografiske hashen brukes for å bekrefte integriteten for nedlastingen.
-
-      Filen lastes ned og bufres. Den blir lastet ned på nytt hver gang nettadressen eller hashen endres.
-
-      Hvis denne regelen er angitt, laster <ph name="PRODUCT_OS_NAME" /> ned filen for skriverkonfigurasjoner og gjør skrivere tilgjengelig i henhold til <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> og <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Denne regelen påvirker ikke hvorvidt brukere kan konfigurere skrivere på enkeltenheter. Den er ment å supplere konfigurering av skrivere utført av enkeltbrukere.
-
-      Denne regelen kommer i tillegg til <ph name="BULK_PRINTERS_POLICY" />.
-
-      Hvis denne regelen ikke er angitt (er deaktivert), blir ingen skrivere bundet til enheter, og de andre <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />-reglene blir ignorert.</translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
 <translation id="163200210584085447">Mønstrene på denne listen stilles opp mot sikkerhetskilden
@@ -584,12 +565,6 @@
 <translation id="2762164719979766599">Spesifiserer listen over lokale kontoer på enheten til å vises på påloggingsskjermen.
 
       Hvert bidrag på listen spesifiserer en identifikator, som brukes internt for å skille de ulike lokale kontoene på enheten fra hverandre.</translation>
-<translation id="2766302473082018239">Angir skriverne som en bruker kan bruke.
-
-      Denne regelen brukes bare hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Hvis denne regelen brukes, blir bare skriverne med ID-er som samsvarer med verdiene i denne regelen, tilgjengelige for brukeren. ID-ene må samsvare med oppføringene i filen spesifisert i <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Konfigurer det ønskede domenenavnet for verter med ekstern adgang</translation>
 <translation id="2787173078141616821">Rapportér informasjon om Android-status</translation>
 <translation id="2793923553868251161">Opprinnelser som skal behandles som sikker kontekst.</translation>
@@ -598,9 +573,9 @@
       Hvis denne regelen er satt til false (usann), kan ikke brukerne spille dinosaurspillet når enheten ikke er koblet til. Hvis regelen er satt til true (sann), kan brukerne spille dinosaurspillet. Hvis denne regelen ikke er angitt, kan ikke brukerne spille dinosaurspillet på registrerte Chrome OS-installasjoner, men de kan spille det i andre situasjoner.</translation>
 <translation id="2802085784857530815">Lar deg styre om brukere har tilgang til ikke-bedriftsskrivere
 
-      Hvis regelen er satt til «True» (sann), eller ikke er angitt i det hele tatt, kan brukere legge til, konfigurere og skrive ut med egne integrerte skrivere.
+      Hvis regelen er satt til «True» (sann) eller ikke er angitt, kan brukerne legge til, konfigurere og skrive ut med sine egne skrivere.
 
-      Hvis regelen er satt til «False» (usann), kan ikke brukere legge til eller konfigurere egne integrerte skrivere. De kan heller ikke skrive ut på integrerte skrivere som er konfigurert tidligere.
+      Hvis regelen er satt til «False» (usann), kan ikke brukerne legge til eller konfigurere sine egne skrivere. De kan heller ikke skrive ut på egne skrivere som er konfigurert tidligere.
       </translation>
 <translation id="2805707493867224476">Tillat alle nettsteder å vise forgrunnsvinduer</translation>
 <translation id="2808013382476173118">Aktiverer bruk av STUN-servere når eksterne klienter prøver å opprette forbindelse til denne maskinen.
@@ -765,12 +740,6 @@
 
           Hvis denne innstillingen er satt til en streng som ikke er tom, brukes denne strengen som navnet på destinasjonen for <ph name="PRODUCT_NAME" />. Ellers blir enhetsnavnet angitt som destinasjonsnavnet. Hvis denne innstillingen ikke er satt til noen verdi, blir enhetsnavnet angitt som destinasjonsnavnet, og eieren av enheten (eller en bruker fra domenet som administrerer enheten) kan endre det. Navnet er begrenset til 24 tegn.</translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
-<translation id="3395348522300156660">Angir skriverne som en bruker kan bruke.
-
-      Denne regelen brukes bare hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Hvis denne regelen brukes, blir bare skriverne med ID-er som samsvarer med verdiene i denne regelen, tilgjengelige for brukeren. ID-ene må samsvare med oppføringene i filen spesifisert i <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Hvis denne regelen ikke er konfigurert, bruker <ph name="PRODUCT_NAME" /> en standard minimumsversjon, som er TLS 1.0.
 
       Ellers kan den angis som en av de følgende verdiene: «tls1», «tls1.1» eller «tls1.2». Når den er angitt, bruker ikke <ph name="PRODUCT_NAME" /> lavere SSL/TLS-versjoner enn den angitte versjonen. Ukjente verdier blir ignorert.</translation>
@@ -2396,12 +2365,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
       Advarsel: Det er ikke anbefalt å konfigurere versjonsbegrensninger, siden de kan hindre brukere i å motta programvareoppdateringer og kritiske sikkerhetsrettinger. Hvis oppdateringer begrenses til prefikset for en spesifikk versjon, kan brukerne bli utsatt for risiko.</translation>
 <translation id="8519264904050090490">Nettadresser med manuelle unntak for administrerte brukere</translation>
-<translation id="8527932539502116028">Angir skriverne som en bruker ikke kan bruke.
-
-      Denne regelen brukes bare hvis <ph name="PRINTERS_BLACKLIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Hvis denne regelen brukes, får brukeren tilgang til alle skrivere – unntatt eventuelle ID-er som er oppført i denne regelen.
-      </translation>
 <translation id="8538235451413605457">Konfigurerer kravet for laveste tillatte versjon av <ph name="PRODUCT_NAME" />. Versjoner under denne behandles som foreldede, og enheten tillater ikke brukerpålogging før operativsystemet er oppdatert.
       Hvis gjeldende versjon blir foreldet i løpet av brukerøkten, blir brukeren logget av automatisk.
 
@@ -2512,18 +2475,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
           Innstillingsverdien må angis i millisekunder. Verdiene er låst til å være lavere enn inaktivitetsforsinkelsen.</translation>
 <translation id="891435090623616439">kodet som en JSON-streng – se <ph name="COMPLEX_POLICIES_URL" /> for nærmere informasjon</translation>
-<translation id="8927384992072706174">Gir konfigurasjoner for bedriftsskrivere.
-
-      Med denne regelen kan du gi skriverkonfigurasjoner til <ph name="PRODUCT_OS_NAME" />-enheter. Størrelsen på filen må ikke overskride 5 MB, og den må være i JSON-format. Formatet er det samme som for NativePrinters-ordlisten. Det anslås at en fil som inneholder omtrent 21 000 skrivere, opptar 5 MB. Den kryptografiske hashen brukes for å bekrefte integriteten for nedlastingen.
-
-      Filen lastes ned og bufres. Den blir lastet ned på nytt hver gang nettadressen eller hashen endres.
-
-      Hvis denne regelen er angitt, laster <ph name="PRODUCT_OS_NAME" /> ned filen for skriverkonfigurasjoner og gjør skrivere tilgjengelig i henhold til <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> og <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Hvis du angir denne regelen, kan ikke brukere endre eller overstyre den.
-
-      Denne regelen har ingen effekt på hvorvidt brukere kan konfigurere skrivere på enkeltenheter. Den er ment å supplere konfigurering av skrivere utført av enkeltbrukere.
-      </translation>
 <translation id="8934944553121392674">Styrer hvilke skrivere fra <ph name="DEVICE_PRINTERS_POLICY" /> som er tilgjengelige for brukere.
 
       Bestemmer hvilken tilgangsregel som brukes for konfigurering av flere skrivere om gangen. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle skrivere. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, brukes <ph name="DEVICE_PRINTERS_BLACKLIST" /> til å begrense tilgangen til de angitte skriverne. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, angir <ph name="DEVICE_PRINTERS_WHITELIST" /> bare hvilke skrivere som kan velges.

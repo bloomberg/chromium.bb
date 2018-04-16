@@ -704,7 +704,6 @@
 <translation id="2099686503067610784">సర్వర్ ప్రమాణపత్రం "<ph name="CERTIFICATE_NAME" />"ని తొలగించాలా?</translation>
 <translation id="2100273922101894616">స్వీయ సైన్-ఇన్</translation>
 <translation id="2101225219012730419">సంస్కరణ:</translation>
-<translation id="2101797668776986011">పెప్పర్ 3డి</translation>
 <translation id="2105006017282194539">ఇంకా లోడ్ చెయ్యబడలేదు</translation>
 <translation id="2107494551712864447">వేలిముద్రను జోడించండి</translation>
 <translation id="2112877397266219826">నన్ను సెటప్ చేయడానికి మీ టచ్ కంట్రోలర్‌ను ఆన్ చేయండి</translation>
@@ -784,7 +783,6 @@
 <translation id="2218320521449013367">Chrome హానికరమైన సాఫ్ట్‌వేర్‌ని తీసివేస్తున్నప్పుడు ఎర్రర్ సంభవించింది</translation>
 <translation id="2218515861914035131">సాధారణ వచనం వలె అతికించండి</translation>
 <translation id="221872881068107022">రివర్స్ స్క్రోలింగ్</translation>
-<translation id="2218947405056773815">అయ్యో! <ph name="API_NAME" /> సమస్యను ఎదుర్కొంది</translation>
 <translation id="2220529011494928058">సమస్యను నివేదించు</translation>
 <translation id="2220572644011485463">PIN లేదా పాస్‌వర్డ్</translation>
 <translation id="2222641695352322289"><ph name="IDS_SHORT_PRODUCT_OS_NAME" />ను మళ్లీ ఇన్‌స్టాల్ చేయడం ద్వారా మాత్రమే దీన్ని చర్య రద్దు చేయగలరు.</translation>
@@ -1684,6 +1682,7 @@
 <translation id="3576324189521867626">విజయవంతంగా ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="3578594933904494462">ఈ ట్యాబ్ యొక్క కంటెంట్ భాగస్వామ్యం చేయబడుతోంది.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; మీరు యజమానిగా ఉన్న సమూహంతో &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; ప్రింటర్‌ను భాగస్వామ్యం చేయాలనుకుంటున్నారు: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. మీరు ఆమోదిస్తే, సమూహ సభ్యులందరూ ప్రింటర్‌కు ముద్రించగలరు.</translation>
+<translation id="3582972582564653026">మీ పరికరాల అంతటా Chromeని సమకాలీకరించండి మరియు వ్యక్తిగతీకరించండి</translation>
 <translation id="3584169441612580296">మీ కంప్యూటర్‌లోని ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను చదవడం మరియు మార్చడం</translation>
 <translation id="3587482841069643663">మొత్తం</translation>
 <translation id="358796204584394954">జత చేయడానికి "<ph name="DEVICE_NAME" />"లో ఈ కోడ్‌ను టైప్ చేయండి:</translation>
@@ -2078,6 +2077,7 @@
 <translation id="4206944295053515692">సూచనల కోసం Googleను అడగండి</translation>
 <translation id="4208390505124702064"><ph name="SITE_NAME" />లో శోధించు</translation>
 <translation id="4209092469652827314">పెద్దది</translation>
+<translation id="4209464433672152343">ముద్రించడం కోసం పత్రాలను సిద్ధం చేయడానికి అవి <ph name="BEGIN_LINK_HELP" />Googleకు పంపబడతాయి<ph name="END_LINK_HELP" />. <ph name="BEGIN_LINK_DASHBOARD" />Google మేఘ ముద్రణ డాష్‌బోర్డ్<ph name="END_LINK_DASHBOARD" />లో మీ ప్రింటర్‌లు మరియు ప్రింటర్ చరిత్రను చూడండి, సవరించండి మరియు నిర్వహించండి.</translation>
 <translation id="421017592316736757">ఈ ఫైల్‌ను ప్రాప్యత చేయడానికి మీరు తప్పనిసరిగా ఆన్‌లైన్‌లో ఉండాలి.</translation>
 <translation id="421182450098841253"> &amp;బుక్‌మార్క్‌ల బార్‌ను చూపు</translation>
 <translation id="42126664696688958">ఎగుమతి చేయి</translation>
@@ -2486,7 +2486,6 @@
 <translation id="4907824805858067479">సేవ్ చేయబడిన కార్డ్‌లు మీ నిర్వాహకుడు ద్వారా నిలిపివేయబడ్డాయి</translation>
 <translation id="4908811072292128752">ఒకేసారి రెండు సైట్‌లను బ్రౌజ్ చేయడానికి కొత్త ట్యాబ్‌ను తెరవండి</translation>
 <translation id="4909038193460299775">ఈ ఖాతా <ph name="DOMAIN" /> నిర్వహణలో ఉన్నందున, మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు మరియు ఇతర సెట్టింగ్‌లు ఈ పరికరం నుండి తీసివేయబడతాయి. అయితే, మీ డేటా మీ Google ఖాతాలో అలాగే నిల్వ చేయబడి ఉంటుంది మరియు <ph name="BEGIN_LINK" />Google డాష్‌బోర్డ్<ph name="END_LINK" />లో నిర్వహించవచ్చు.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">ఏ పొడిగింపులకు కీబోర్డ్ సత్వరమార్గాలు కేటాయించబడలేదు.</translation>
 <translation id="4912643508233590958">నిష్క్రియ మేల్కొలుపులు</translation>
 <translation id="491691592645955587">సురక్షితమైన బ్రౌజర్‌కు మారండి</translation>
@@ -3220,6 +3219,7 @@
 <translation id="6064217302520318294">స్క్రీన్ లాక్</translation>
 <translation id="6065289257230303064">సర్టిఫికెట్ విషయ డైరెక్టరీ లక్షణాలు</translation>
 <translation id="6068338049763724728">రిమోట్ నమోదును ఆరంభించండి</translation>
+<translation id="6069671174561668781">వాల్‌పేపర్‌ని సెట్ చేయండి</translation>
 <translation id="6071181508177083058">పాస్‌వర్డ్‌ను నిర్ధారించండి</translation>
 <translation id="6073903501322152803">ప్రాప్యత లక్షణాలను జోడించండి</translation>
 <translation id="6074825444536523002">Google ఫారమ్</translation>
@@ -4434,7 +4434,6 @@
 పొడిగింపు: <ph name="EXTENSION_FILE" />కీ ఫైల్: <ph name="KEY_FILE" />మీ కీ ఫైల్‌ను ఒక సురక్షితమైన స్థలంలో ఉంచండి. మీ పొడిగింపు యొక్క క్రొత్త సంస్కరణను సృష్టించడానికి మీకు ఇది అవసరం అవుతుంది.</translation>
 <translation id="799923393800005025">వీక్షించవచ్చు</translation>
 <translation id="8000066093800657092">ఏ నెట్‌వర్క్ లేదు</translation>
-<translation id="8001504501378762252">ఒక సైట్ మీ పాస్‌వర్డ్‌ను దొంగిలించి ఉండవచ్చు</translation>
 <translation id="8004582292198964060">బ్రౌజర్</translation>
 <translation id="8005600846065423578">క్లిప్‌బోర్డ్‌ను చూడటానికి ఎల్లప్పుడూ <ph name="HOST" />ని అనుమతించు</translation>
 <translation id="8008356846765065031">ఇంటర్నెట్ డిస్‌కనెక్ట్ చేయబడింది. దయచేసి మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేయండి.</translation>

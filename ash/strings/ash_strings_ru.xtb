@@ -273,7 +273,7 @@
 <translation id="7098389117866926363">Устройство USB-C (порт слева на задней панели)</translation>
 <translation id="7131634465328662194">После этого вы выйдете из системы.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
-<translation id="7165511658052620796">(ВРЕМЕННО) Показать логин WebUI; если используется, сообщить об ошибке (crbug.com) или отправить отзыв (Alt + Shift + I)</translation>
+<translation id="7165511658052620796">(TEMP) Show webui login; if used file bug (crbug.com) or feedback (alt+shift+i)</translation>
 <translation id="7168224885072002358">Возврат к предыдущему разрешению через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Основной микрофон</translation>
 <translation id="726276584504105859">Перетащите сюда, чтобы разделить экран</translation>

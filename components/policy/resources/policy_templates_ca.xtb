@@ -52,12 +52,6 @@
 
       Si la política s'estableix com a falsa, no s'informarà de l'estat del botó per a desenvolupadors.</translation>
 <translation id="1160939557934457296">Desactivació de l'accés des de la pàgina d'advertiment de Navegació segura</translation>
-<translation id="1166377463685560145">Especifica les impressores que un usuari no pot fer servir.
-
-      Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_BLACKLIST" /> per a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Si s'utilitza, l'usuari té accés a totes les impressores tret de les identificades en aquesta política.
-      </translation>
 <translation id="1198465924256827162">La freqüència, en mil·lisegons, amb què s'envien càrregues per informar sobre l'estat del dispositiu.
 
       Si aquesta política no s'estableix, s'envien cada 3 hores de manera
@@ -164,19 +158,6 @@
 <translation id="1561424797596341174">La política substitueix les compilacions de depuració de l'amfitrió d'accés remot</translation>
 <translation id="1561967320164410511">U2F més extensions per al testimoni individual</translation>
 <translation id="1583248206450240930">Fes servir <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
-<translation id="1603058613431276040">Proporciona configuracions per a les impressores d'empresa vinculades a dispositius.
-
-      Aquesta política et permet proporcionar configuracions d'impressores als dispositius <ph name="PRODUCT_OS_NAME" />. El fitxer ha d'estar codificat en JSON i no pot superar els 5 MB. El format és el mateix que el del diccionari NativePrinters. Es calcula que 5 MB corresponen a un fitxer amb unes 21.000 impressores. El resum criptogràfic serveix per verificar la integritat de la baixada.
-
-      El fitxer es baixa i es desa a la memòria cau. Es torna a baixar cada cop que es modifica l'URL o el resum.
-
-      Si es defineix aquesta política, <ph name="PRODUCT_OS_NAME" /> baixarà el fitxer per a les configuracions d'impressores i les impressores estaran disponibles de conformitat amb <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> i <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Aquesta política no influeix en la possibilitat que tenen els usuaris de configurar les impressores en dispositius concrets. La seva finalitat és complementar la configuració de les impressores per part dels usuaris.
-
-      Aquesta política complementa <ph name="BULK_PRINTERS_POLICY" />.
-
-      Si aquesta política no es defineix, no hi haurà impressores per als dispositius i les altres polítiques <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> s'ignoraran.</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
 <translation id="1617235075406854669">Activa la supressió de l'historial de baixades i del navegador</translation>
 <translation id="163200210584085447">Els patrons d'aquesta llista es compararan amb l'origen de la seguretat de l'URL sol·licitant. Si es troba alguna coincidència, l'URL obtindrà permís per accedir a dispositius de captura de vídeo en pàgines d'inici de sessió amb SAML. Si no es troba cap coincidència, l'accés es denegarà automàticament. Els patrons comodí no es permeten.</translation>
@@ -567,12 +548,6 @@
 <translation id="2762164719979766599">Especifica la llista de comptes locals del dispositiu que es mostraran a la pantalla d'inici de sessió.
 
 Cada entrada de la llista especifica un identificador, que s'utilitza internament per diferenciar els diversos comptes locals del dispositiu.</translation>
-<translation id="2766302473082018239">Especifica les impressores que un usuari pot fer servir.
-
-      Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_WHITELIST" /> per a <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Si s'utilitza, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb les entrades del fitxer especificat a <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Configuració del nom de domini necessari per als amfitrions d'accés remot</translation>
 <translation id="2787173078141616821">Ofereix informació sobre l'estat d'Android</translation>
 <translation id="2793923553868251161">Els orígens es tracten com a context segur.</translation>
@@ -753,12 +728,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si aquesta política es defineix en una cadena que no sigui buida, aquesta cadena s'utilitzarà com a nom de la destinació de <ph name="PRODUCT_NAME" />. En cas contrari, el nom de la destinació serà el nom del dispositiu. Si aquesta política no es defineix, el nom de la destinació serà el nom del dispositiu i el propietari del dispositiu (o un usuari del domini que gestioni el dispositiu) podrà canviar-lo. El nom pot tenir 24 caràcters com a màxim.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
-<translation id="3395348522300156660">Especifica les impressores que un usuari pot fer servir.
-
-      Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_WHITELIST" /> per a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Si s'utilitza, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb les entrades del fitxer especificat a <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà TLS 1.0 com a versió mínima predeterminada.
 
       També es pot definir en un dels valors següents: "tls1", "tls1.1" o "tls1.2". Quan s'hagi definit, <ph name="PRODUCT_NAME" /> no utilitzarà versions SSL/TLS inferiors a la versió especificada. Els valors que no es reconeguin s'ignoraran.</translation>
@@ -2299,12 +2268,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       "1412.24.34": s'actualitza el dispositiu només a aquesta versió concreta.
       Advertiment: no és recomanable configurar restriccions de versions, ja que poden impedir que els usuaris rebin actualitzacions de programari i correccions crítiques de seguretat. En definitiva, si es restringeixen les actualitzacions al prefix d'una versió específica, es pot posar els usuaris en perill.</translation>
 <translation id="8519264904050090490">URL d'excepcions manuals d'usuari gestionat</translation>
-<translation id="8527932539502116028">Especifica les impressores que un usuari no pot fer servir.
-
-      Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_BLACKLIST" /> per a <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Si s'utilitza, l'usuari té accés a totes les impressores tret de les identificades en aquesta política.
-      </translation>
 <translation id="8538235451413605457">Configura el requisit de versió mínima permesa de <ph name="PRODUCT_NAME" />. Les versions anteriors es tractaran com a obsoletes i el dispositiu no permetrà a l'usuari iniciar la sessió després que s'actualitzi el sistema operatiu.
       Si la versió actual passa a ser obsoleta duran una sessió de l'usuari, es tancarà a la força.
 
@@ -2411,18 +2374,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior al retard d'inactivitat.</translation>
 <translation id="891435090623616439">codificat com a cadena JSON; per obtenir informació detallada, consulteu <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Proporciona configuracions per a les impressores d'empresa.
-
-      Aquesta política et permet proporcionar configuracions d'impressores als dispositius <ph name="PRODUCT_OS_NAME" />. El fitxer ha d'estar codificat en JSON i no pot superar els 5 MB. El format és el mateix que el del diccionari NativePrinters. Es calcula que 5 MB corresponen a un fitxer amb unes 21.000 impressores. El resum criptogràfic serveix per verificar la integritat de la baixada.
-
-      El fitxer es baixa i es desa a la memòria cau. Es torna a baixar cada cop que es modifica l'URL o el resum.
-
-      Si es defineix aquesta política, <ph name="PRODUCT_OS_NAME" /> baixarà el fitxer per a les configuracions d'impressores i les impressores estaran disponibles de conformitat amb <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> i <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Si defineixes aquesta política, els usuaris no la poden canviar ni substituir.
-
-      Aquesta política no influeix en la possibilitat que tenen els usuaris de configurar les impressores en dispositius concrets. La seva finalitat és complementar la configuració de les impressores per part dels usuaris.
-      </translation>
 <translation id="8934944553121392674">Controla quines impressores de la política <ph name="DEVICE_PRINTERS_POLICY" /> tenen disponibles els usuaris.
 
       Determina quina política d'accés s'utilitza per a la configuració massiva d'impressores. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, es mostren totes les impressores. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, s'utilitza <ph name="DEVICE_PRINTERS_BLACKLIST" /> per restringir l'accés a les impressores especificades. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> només mostra les impressores disponibles.

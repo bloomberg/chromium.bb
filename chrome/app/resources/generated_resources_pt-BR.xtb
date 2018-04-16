@@ -713,7 +713,6 @@
 <translation id="2099686503067610784">Tem certeza que quer excluir o certificado do servidor "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Login automático</translation>
 <translation id="2101225219012730419">Versão:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Ainda não foi carregado</translation>
 <translation id="2107494551712864447">Adicionar uma impressão digital</translation>
 <translation id="2112877397266219826">Ativar controle por toque para configurar</translation>
@@ -793,7 +792,6 @@
 <translation id="2218320521449013367">Ocorreu um erro enquanto o Chrome estava removendo softwares nocivos</translation>
 <translation id="2218515861914035131">Colar como texto sem formatação</translation>
 <translation id="221872881068107022">Rolagem reversa</translation>
-<translation id="2218947405056773815">Puxa! <ph name="API_NAME" /> encontrou um problema.</translation>
 <translation id="2220529011494928058">Informar um problema</translation>
 <translation id="2220572644011485463">PIN ou senha</translation>
 <translation id="2222641695352322289">A única maneira de desfazer esta ação é reinstalar o <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1709,6 +1707,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3576324189521867626">Instalação concluída</translation>
 <translation id="3578594933904494462">O conteúdo desta guia está sendo compartilhado.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; deseja compartilhar uma impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; com um grupo de sua propriedade: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Se você aceitar, todos os membros do grupo poderão imprimir pela impressora.</translation>
+<translation id="3582972582564653026">Sincronize e personalize o Chrome em todos os seus dispositivos</translation>
 <translation id="3584169441612580296">Ler e alterar fotos, músicas e outras mídias do seu computador</translation>
 <translation id="3587482841069643663">Tudo</translation>
 <translation id="358796204584394954">Digite este código no "<ph name="DEVICE_NAME" />" para o pareamento:</translation>
@@ -2111,6 +2110,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4206944295053515692">Pedir sugestões ao Google</translation>
 <translation id="4208390505124702064">Pesquisar em <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Grande</translation>
+<translation id="4209464433672152343">Os documentos são <ph name="BEGIN_LINK_HELP" />enviados ao Google<ph name="END_LINK_HELP" /> para serem preparados para impressão. Visualize, edite e gerencie suas impressoras e o histórico da impressora no <ph name="BEGIN_LINK_DASHBOARD" />painel do Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">É necessário estar conectado para acessar este arquivo.</translation>
 <translation id="421182450098841253">&amp;Exibir barra de favoritos</translation>
 <translation id="42126664696688958">Exportar</translation>
@@ -2532,7 +2532,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4907824805858067479">Os cartões salvos foram desativados pelo seu administrador</translation>
 <translation id="4908811072292128752">Abra uma nova guia para navegar em dois sites de uma vez</translation>
 <translation id="4909038193460299775">Como essa conta é gerenciada por <ph name="DOMAIN" />, seus favoritos, histórico, senhas e outras configurações serão excluídos desse dispositivo. No entanto, seus dados permanecerão armazenados na sua Conta do Google e poderão ser gerenciados no <ph name="BEGIN_LINK" />Painel do Google<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Não foi atribuído atalho de teclado a nenhuma extensão.</translation>
 <translation id="4912643508233590958">Ativações do estado ocioso</translation>
 <translation id="491691592645955587">Mudar para um navegador seguro</translation>
@@ -3283,6 +3282,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6064217302520318294">Bloqueio de tela</translation>
 <translation id="6065289257230303064">Atributos do diretório do requerente do certificado</translation>
 <translation id="6068338049763724728">Ativar registro remoto</translation>
+<translation id="6069671174561668781">Defina o plano de fundo</translation>
 <translation id="6071181508177083058">confirmar senha</translation>
 <translation id="6073903501322152803">Adicionar recursos de acessibilidade</translation>
 <translation id="6074825444536523002">Formulário do Google</translation>
@@ -4028,7 +4028,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7229570126336867161">EVDO ausente</translation>
 <translation id="7230787553283372882">Personalizar o tamanho do texto</translation>
 <translation id="7232750842195536390">Falha na renomeação</translation>
-<translation id="7233309214676155451">Sincronize e personalize o Chrome em todos os seus dispositivos</translation>
 <translation id="7238585580608191973">Assinatura digital SHA-256</translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
 <translation id="7240339475467890413">Conectar-se a um novo ponto de acesso?</translation>
@@ -4534,7 +4533,6 @@ Chave de arquivo: <ph name="KEY_FILE" />
 Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para criar novas versões da sua extensão.</translation>
 <translation id="799923393800005025">Pode ver</translation>
 <translation id="8000066093800657092">Sem rede</translation>
-<translation id="8001504501378762252">Um site pode ter roubado sua senha</translation>
 <translation id="8004582292198964060">Navegador</translation>
 <translation id="8005600846065423578">Sempre permitir que <ph name="HOST" /> veja a área de transferência</translation>
 <translation id="8008356846765065031">Internet desconectada. Verifique sua conexão com a Internet.</translation>

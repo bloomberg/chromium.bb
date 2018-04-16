@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> arba <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Apžvalgos režimas</translation>
 <translation id="4472417192667361414">Sistemos ir pateikties nustatymai</translation>
-<translation id="4484292984055789039">Perjungti į ankstesnį kalbos įvesties metodą</translation>
 <translation id="4556221320735744018">Žr. sparčiųjų klavišų pagalbos priemonę</translation>
 <translation id="4628718545549558538">Atidaryti būsenos sritį (kur rodoma paskyros nuotrauka)</translation>
 <translation id="4642092649622328492">Padaryti dalinę ekrano kopiją</translation>
 <translation id="4698850295812410683">Rodyti rašiklio įrankius</translation>
 <translation id="4801989101741319327">Pereiti prie kito žodžio pabaigos</translation>
 <translation id="4916163929714267752">Atidaryti nuorodą naujame lange</translation>
-<translation id="5002047168347153398">Suaktyvinti neaktyvų iššokantįjį langą, kad būtų pritaikytas neįgaliesiems</translation>
 <translation id="5030659775136592441">Rodyti žymių tvarkytuvę</translation>
 <translation id="5034421018520995080">Eiti į puslapio viršų</translation>
 <translation id="5042305953558921026">Apžvalgos režimo klavišas</translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">Iškirpti</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, tada <ph name="SPACE" /> arba <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Atidaryti failą naršyklėje</translation>
-<translation id="7822267121073044318">Perjungti į kitą kalbos įvesties metodą</translation>
 <translation id="7917881398263220094">Sustabdyti dabartinio puslapio įkėlimą</translation>
 <translation id="7952165122793773711">Eiti į 1–8 skirtukus</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> arba <ph name="MINUS" /></translation>

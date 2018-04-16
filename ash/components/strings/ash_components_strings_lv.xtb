@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> vai <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Pārskata režīms</translation>
 <translation id="4472417192667361414">Sistēmas un attēlojuma iestatījumi</translation>
-<translation id="4484292984055789039">Pārslēgties uz iepriekšējo valodas ievades metodi</translation>
 <translation id="4556221320735744018">Skatīt īsinājumtaustiņu palīgu</translation>
 <translation id="4628718545549558538">Atvērt statusa apgabalu (kur ir redzams jūsu konta attēls)</translation>
 <translation id="4642092649622328492">Iegūt daļēju ekrānuzņēmumu</translation>
 <translation id="4698850295812410683">Rādīt skārienekrāna pildspalvas rīkus</translation>
 <translation id="4801989101741319327">Pāriet uz nākamā vārda beigām</translation>
 <translation id="4916163929714267752">Atvērt saiti jaunā logā</translation>
-<translation id="5002047168347153398">Iezīmēt neaktīvo uznirstošo logu, lai tas kļūtu pieejams</translation>
 <translation id="5030659775136592441">Rādīt grāmatzīmju pārvaldnieku</translation>
 <translation id="5034421018520995080">Pāriet uz lapas sākumu</translation>
 <translation id="5042305953558921026">Kopsavilkuma režīma taustiņš</translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">Izgriezt</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, pēc tam <ph name="SPACE" /> vai <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Atvērt failu pārlūkprogrammā</translation>
-<translation id="7822267121073044318">Pārslēgties uz nākamo valodas ievades metodi</translation>
 <translation id="7917881398263220094">Pārtraukt pašreizējās lapas ielādi</translation>
 <translation id="7952165122793773711">Pāriet uz 1.–8. cilni</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> vai <ph name="MINUS" /></translation>

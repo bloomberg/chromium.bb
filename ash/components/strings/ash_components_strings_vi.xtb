@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> hoặc <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Chế độ tổng quan</translation>
 <translation id="4472417192667361414">Cài đặt hiển thị và hệ thống</translation>
-<translation id="4484292984055789039">Chuyển sang phương thức nhập ngôn ngữ trước đó</translation>
 <translation id="4556221320735744018">Xem Trình trợ giúp về phím tắt</translation>
 <translation id="4628718545549558538">Mở khu vực trạng thái (nơi ảnh tài khoản của bạn xuất hiện)</translation>
 <translation id="4642092649622328492">Chụp ảnh một phần màn hình</translation>
 <translation id="4698850295812410683">Hiển thị công cụ bút cảm ứng</translation>
 <translation id="4801989101741319327">Di chuyển đến cuối từ tiếp theo</translation>
 <translation id="4916163929714267752">Mở liên kết trong cửa sổ mới</translation>
-<translation id="5002047168347153398">Lấy tiêu điểm cửa sổ bật lên không hoạt động cho trợ năng</translation>
 <translation id="5030659775136592441">Hiển thị trình quản lý dấu trang</translation>
 <translation id="5034421018520995080">Chuyển tới đầu trang</translation>
 <translation id="5042305953558921026">Phím chế độ tổng quan</translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">Cắt</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="SPACE" /> hoặc <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Mở một tệp trong trình duyệt</translation>
-<translation id="7822267121073044318">Chuyển sang phương thức nhập ngôn ngữ tiếp theo</translation>
 <translation id="7917881398263220094">Dừng tải trang hiện tại</translation>
 <translation id="7952165122793773711">Chuyển đến các tab từ 1 đến 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> hoặc <ph name="MINUS" /></translation>

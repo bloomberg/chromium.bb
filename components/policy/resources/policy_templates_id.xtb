@@ -52,12 +52,6 @@
 
       Jika kebijakan ini disetel ke false, status pengalih dev tidak akan dilaporkan.</translation>
 <translation id="1160939557934457296">Menonaktifkan untuk melanjutkan dari halaman peringatan Safe Browsing</translation>
-<translation id="1166377463685560145">Menentukan printer yang tidak dapat digunakan pengguna.
-
-      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Jika kebijakan ini digunakan, semua printer akan tersedia bagi pengguna, kecuali ID yang dicantumkan di kebijakan ini.
-      </translation>
 <translation id="1198465924256827162">Frekuensi upload status perangkat dikirimkan, dalam milidetik.
 
       Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 jam. Frekuensi minimum
@@ -164,19 +158,6 @@
 <translation id="1561424797596341174">Penggantian kebijakan untuk versi Debug host akses jarak jauh</translation>
 <translation id="1561967320164410511">U2F ditambah beberapa ekstensi untuk masing-masing pengesahan</translation>
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> jika tidak diubah</translation>
-<translation id="1603058613431276040">Memberikan konfigurasi untuk printer perusahaan yang terkait dengan perangkat.
-
-      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />. Ukuran file tidak boleh melebihi 5 MB dan harus dienkode dalam format JSON. Format ini sama dengan yang ada di kamus NativePrinters. Diperkirakan file yang berisi kira-kira 21.000 printer akan dienkode menjadi file 5 MB. Hash kriptografi digunakan untuk memverifikasi integritas download.
-
-      File tersebut didownload dan disimpan dalam cache. File akan didownload ulang setiap kali URL atau hash berubah.
-
-      Jika kebijakan ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan mendownload file untuk konfigurasi printer dan menyediakan printer sesuai dengan kebijakan <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" />, dan <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat. Kebijakan ini ditujukan sebagai tambahan terhadap konfigurasi printer yang diberikan oleh tiap pengguna.
-
-      Kebijakan ini merupakan tambahan untuk kebijakan <ph name="BULK_PRINTERS_POLICY" />.
-
-      Jika kebijakan ini tidak disetel, tidak akan ada printer perangkat dan kebijakan <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> lainnya yang akan diabaikan.</translation>
 <translation id="1608755754295374538">URL yang akan diberi akses ke perangkat perekam audio tanpa peringatan</translation>
 <translation id="1617235075406854669">Aktifkan penghapusan histori download atau browser</translation>
 <translation id="163200210584085447">Pola dalam daftar ini akan dicocokkan dengan
@@ -572,12 +553,6 @@
 <translation id="2762164719979766599">Menentukan daftar akun lokal perangkat untuk ditampilkan di layar masuk.
 
       Setiap entri daftar menentukan pengenal, yang digunakan secara internal untuk menunjukkan akun lokal perangkat yang berbeda secara terpisah.</translation>
-<translation id="2766302473082018239">Menentukan printer yang dapat digunakan pengguna.
-
-      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Jika kebijakan ini digunakan, hanya printer dengan ID yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. ID harus sesuai dengan entri dalam file yang ditentukan di <ph name="BULK_PRINTERS_POLICY" />.
-      </translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
 <translation id="2787173078141616821">Informasi laporan tentang status Android</translation>
 <translation id="2793923553868251161">Asal yang akan diperlakukan sebagai konteks yang aman.</translation>
@@ -758,12 +733,6 @@
 
           Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat. Jika kebijakan ini tidak disetel, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) akan diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
-<translation id="3395348522300156660">Menentukan printer yang dapat digunakan pengguna.
-
-      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
-
-      Jika kebijakan ini digunakan, hanya printer dengan ID yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. ID harus sesuai dengan entri dalam file yang ditentukan di <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="3414260318408232239">Jika kebijakan ini tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan menggunakan versi minimum default yaitu TLS 1.0.
 
       Jika kebijakan dikonfigurasi, kebijakan dapat disetel ke salah satu nilai berikut: "tls1", "tls1.1", atau "tls1.2". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih rendah daripada versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
@@ -915,7 +884,7 @@
       Setiap entri cantuman berisi kamus yang harus menyertakan ID ekstensi dalam bidang 'extension-id', dan URL pembaruannya dalam bidang 'update-url'.</translation>
 <translation id="3873159954366380945">Mengizinkan Anda menyetel periode waktu notifikasi peluncuran ulang <ph name="PRODUCT_NAME" /> ditampilkan untuk menerapkan update yang tertunda.
 
-      Setelan kebijakan ini dapat digunakan untuk mengontrol periode waktu, dalam milidetik, dan selama periode waktu ini pengguna diberi tahu secara progresif bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang (atau <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang) untuk melakukan update. Selama periode waktu ini, pengguna akan diberi tahu beberapa kali tentang perlunya update berdasarkan setelan kebijakan <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Jika tidak disetel, periode default 345600000 milidetik (empat hari) digunakan untuk <ph name="PRODUCT_OS_NAME" /> dan 604800000 milidetik (satu minggu) untuk semua platform lainnya.</translation>
+      Setelan kebijakan ini dapat digunakan untuk mengontrol periode waktu, dalam milidetik, dan selama periode waktu ini pengguna diberi tahu secara progresif bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang (atau <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang) untuk melakukan update. Selama periode waktu ini, pengguna akan diberi tahu beberapa kali tentang perlunya update berdasarkan setelan kebijakan <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Jika tidak disetel, periode default 345600000 milidetik (4 hari) digunakan untuk <ph name="PRODUCT_OS_NAME" /> dan 604800000 milidetik (1 minggu) untuk semua platform lainnya.</translation>
 <translation id="3877517141460819966">Mode autentikasi faktor kedua yang terintegrasi</translation>
 <translation id="388237772682176890">Kebijakan ini sudah tidak digunakan di M53 dan dihapus di M54, karena dukungan SPDY/3.1 telah dihapus.
 
@@ -1258,10 +1227,10 @@
 <translation id="4899802251198446659">Mengizinkan Anda mengontrol apakah video dapat diputar otomatis (tanpa persetujuan pengguna) dengan konten audio di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan disetel ke True, <ph name="PRODUCT_NAME" /> diizinkan memutar otomatis media.
-      Jika kebijakan disetel ke False, <ph name="PRODUCT_NAME" /> tidak diizinkan memutar otomatis media. Kebijakan AutoplayWhitelist dapat digunakan mengganti ini untuk pola URL tertentu.
-      Secara default, <ph name="PRODUCT_NAME" /> tidak diizinkan memutar otomatis media. Kebijakan AutoplayWhitelist dapat digunakan mengganti ini untuk pola URL tertentu.
+      Jika kebijakan disetel ke False, <ph name="PRODUCT_NAME" /> tidak diizinkan memutar otomatis media. Kebijakan AutoplayWhitelist dapat digunakan untuk mengganti kebijakan ini untuk pola URL tertentu.
+      Secara default, <ph name="PRODUCT_NAME" /> tidak diizinkan memutar otomatis media. Kebijakan AutoplayWhitelist dapat digunakan untuk mengganti kebijakan ini untuk pola URL tertentu.
 
-      Perlu diperhatikan bahwa jika <ph name="PRODUCT_NAME" /> berjalan dan kebijakan ini berubah, kebijakan ini hanya akan diterapkan ke tab baru yang terbuka. Oleh karena itu, beberapa tab mungkin masih mengalami perilaku sebelumnya.
+      Perlu diperhatikan bahwa jika <ph name="PRODUCT_NAME" /> berjalan dan kebijakan ini berubah, kebijakan ini hanya akan diterapkan ke tab baru yang terbuka. Oleh karena itu, beberapa tab mungkin masih menunjukkan perilaku sebelumnya.
       </translation>
 <translation id="4906194810004762807">Segarkan peringkat untuk Kebijakan Perangkat</translation>
 <translation id="4917385247580444890">Kuat</translation>
@@ -2329,12 +2298,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 
       Peringatan: Sebaiknya Anda tidak mengonfigurasi batasan versi karena dapat mencegah pengguna dari menerima update software dan perbaikan keamanan kritis. Membatasi update ke prefiks versi spesifik dapat menimbulkan risiko bagi pengguna.</translation>
 <translation id="8519264904050090490">URL pengecualian manual pengguna yang dikelola</translation>
-<translation id="8527932539502116028">Menentukan printer yang tidak dapat digunakan pengguna.
-
-      Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
-
-      Jika kebijakan ini digunakan, semua printer akan tersedia bagi pengguna, kecuali ID yang dicantumkan di kebijakan ini.
-      </translation>
 <translation id="8538235451413605457">Mengonfigurasi persyaratan versi minimum <ph name="PRODUCT_NAME" /> yang diizinkan. Penggunaan versi yang lebih rendah dari versi yang ditentukan dianggap sebagai sudah usang dan perangkat tidak akan mengizinkan pengguna login sebelum OS diupdate.
       Jika versi saat ini menjadi usang selama sesi pengguna, pengguna akan dipaksa logout.
 
@@ -2441,18 +2404,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 
           Nilai kebijakan ini harus ditentukan dalam milidetik. Nilai dijepit menjadi lebih sedikit dari penundaan waktu menganggur.</translation>
 <translation id="891435090623616439">dienkode sebagai string JSON, untuk detailnya lihat <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Memberikan konfigurasi untuk printer perusahan.
-
-      Kebijakan ini memungkinkan Anda memberikan kebijakan printer ke perangkat <ph name="PRODUCT_OS_NAME" />. Ukuran file tidak boleh melebihi 5 MB dan harus dienkode dalam format JSON. Format ini sama dengan yang ada di kamus NativePrinters. Diperkirakan file yang berisi kira-kira 21.000 printer akan dienkode menjadi file 5 MB. Hash kriptografi digunakan untuk memverifikasi integritas download.
-
-      File tersebut didownload dan disimpan dalam cache. File akan didownload ulang setiap kali URL atau hash berubah.
-
-      Jika kebijakan ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan mendownload file untuk konfigurasi printer dan menyediakan printer sesuai dengan <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" />, dan <ph name="BULK_PRINTERS_BLACKLIST" />.
-
-      Jika Anda menetapkan kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
-
-      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat. Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang diberikan oleh tiap pengguna.
-      </translation>
 <translation id="8934944553121392674">Mengontrol printer mana dari <ph name="DEVICE_PRINTERS_POLICY" /> yang tersedia bagi pengguna.
 
       Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="DEVICE_PRINTERS_BLACKLIST" /> digunakan untuk membatasi akses ke printer yang ditentukan.  Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="DEVICE_PRINTERS_WHITELIST" /> hanya menetapkan printer yang dapat dipilih.
@@ -2501,7 +2452,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 
       Menyetel kebijakan ini ke nilai yang lebih rendah akan memiliki dampak permanen: perangkat MUNGKIN tidak dapat dikembalikan ke versi sebelumnya setelah kebijakan disetel ulang ke nilai yang lebih tinggi.
 
-      Kemungkinan rollback aktual mungkin juga bergantung pada patch kerentanan yang luas dan kritis.</translation>
+      Kemungkinan rollback aktual juga dapat bergantung pada model perangkat dan patch kerentanan kritis.</translation>
 <translation id="913195841488580904">Cekal akses ke daftar URL</translation>
 <translation id="9135033364005346124">Mengaktifkan proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136253551939494882">Daftar yang diizinkan mengontrol mode buka kunci cepat mana yang dapat dikonfigurasi dan digunakan oleh pengguna untuk membuka layar kunci.

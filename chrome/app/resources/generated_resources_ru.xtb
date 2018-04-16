@@ -712,7 +712,6 @@
 <translation id="2099686503067610784">Удалить сертификат сервера <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="2100273922101894616">Автоматический вход</translation>
 <translation id="2101225219012730419">Версия:</translation>
-<translation id="2101797668776986011">Pepper 3D</translation>
 <translation id="2105006017282194539">Еще не загружен</translation>
 <translation id="2107494551712864447">Добавление отпечатка пальца</translation>
 <translation id="2112877397266219826">Для установки включите сенсорный контроллер</translation>
@@ -792,7 +791,6 @@
 <translation id="2218320521449013367">При удалении вредоносного ПО произошла ошибка.</translation>
 <translation id="2218515861914035131">Вставить как обычный текст</translation>
 <translation id="221872881068107022">Прокрутка в обратную сторону</translation>
-<translation id="2218947405056773815">Надо же! API <ph name="API_NAME" /> заблокирован.</translation>
 <translation id="2220529011494928058">Сообщить о проблеме</translation>
 <translation id="2220572644011485463">PIN-код или пароль</translation>
 <translation id="2222641695352322289">Чтобы отменить это действие, необходимо переустановить <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -1710,6 +1708,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3576324189521867626">Установлено</translation>
 <translation id="3578594933904494462">К контенту на этой вкладке открыт общий доступ</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хочет открыть доступ к принтеру &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; для вашей группы &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Если вы примете приглашение, то все участники группы смогут пользоваться этим принтером.</translation>
+<translation id="3582972582564653026">Синхронизируйте данные Chrome на всех устройствах</translation>
 <translation id="3584169441612580296">Доступ к фотографиям, музыке и другим медиафайлам на вашем компьютере, а также их изменение</translation>
 <translation id="3587482841069643663">Все</translation>
 <translation id="358796204584394954">Для подключения введите следующий код на устройстве <ph name="DEVICE_NAME" />:</translation>
@@ -1988,7 +1987,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3979748722126423326">Включить <ph name="NETWORKDEVICE" /></translation>
 <translation id="3981760180856053153">Введен недействительный тип сохранения.</translation>
 <translation id="3983586614702900908">устройства от неизвестного поставщика</translation>
-<translation id="3985261842049607969">Резервное копирование на Google Диск. Позволяет в любой момент восстановить данные с устройства (в том числе данные приложений) или загрузить их на новый телефон. <ph name="BEGIN_LINK1" />Подробнее…<ph name="END_LINK1" /></translation>
+<translation id="3985261842049607969">Резервное копирование на Google Диск. Позволяет в любой момент восстановить данные (в том числе данные приложений) или загрузить их на новое устройство. <ph name="BEGIN_LINK1" />Подробнее…<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">Показана версия для предпросмотра</translation>
 <translation id="3987938432087324095">Извините, не слышно.</translation>
 <translation id="3988996860813292272">Выбор часового пояса</translation>
@@ -2112,6 +2111,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4206944295053515692">Проверка правописания Google</translation>
 <translation id="4208390505124702064">Искать на сайте <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Крупный</translation>
+<translation id="4209464433672152343">Документы <ph name="BEGIN_LINK_HELP" />отправляются в Google<ph name="END_LINK_HELP" /> для подготовки к печати. Список принтеров и история печати доступны на <ph name="BEGIN_LINK_DASHBOARD" />панели управления<ph name="END_LINK_DASHBOARD" /> сервиса "Google Виртуальный принтер".</translation>
 <translation id="421017592316736757">Для доступа к файлу необходимо подключение к Интернету.</translation>
 <translation id="421182450098841253">Показывать панель &amp;закладок</translation>
 <translation id="42126664696688958">Экспортировать</translation>
@@ -2510,7 +2510,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4883436287898674711">Все сайты <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">Диспетчер задач</translation>
 <translation id="4883898390143004266">Определение местоположения. Благодаря службам геолокации Google приложения могут определять, где вы находитесь. Чтобы эта функция работала ещё точнее, Google время от времени собирает анонимную информацию о вашем местоположении. Эти сведения также помогают улучшить работу служб, использующих данные о местоположении пользователей. <ph name="BEGIN_LINK1" />Подробнее…<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Резервное копирование на Google Диск. Позволяет в любой момент восстановить данные с устройства (в том числе данные приложений) или загрузить их на новый телефон.<ph name="END_PARAGRAPH1" />
+<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Резервное копирование на Google Диск. Позволяет в любой момент восстановить данные (в том числе данные приложений) или загрузить их на новое устройство.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Данные приложений – это любая информация, которую приложения сохраняют в соответствии с настройками разработчика. Она может включать конфиденциальные данные, например контакты, сообщения и фотографии.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Данные резервных копий не занимают место в хранилище Google Диска.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Вы можете отключить эту функцию в настройках.<ph name="END_PARAGRAPH4" /></translation>
@@ -2533,7 +2533,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4907824805858067479">Администратор отключил автозаполнение для карт</translation>
 <translation id="4908811072292128752">Откройте новую вкладку, чтобы перейти на другой сайт, не закрывая предыдущий</translation>
 <translation id="4909038193460299775">Ваш аккаунт управляется доменом <ph name="DOMAIN" />. Все закладки, история, пароли и настройки будут удалены с устройства, однако данные в аккаунте Google сохранятся. Вы можете просмотреть и изменить их в <ph name="BEGIN_LINK" />Личном кабинете Google<ph name="END_LINK" />.</translation>
-<translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Расширениям не назначены быстрые клавиши.</translation>
 <translation id="4912643508233590958">Переходы в активный режим</translation>
 <translation id="491691592645955587">Перейдите на безопасный браузер</translation>
@@ -3283,6 +3282,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6064217302520318294">Блокировка экрана</translation>
 <translation id="6065289257230303064">Атрибуты каталога субъекта сертификата</translation>
 <translation id="6068338049763724728">Разрешить удаленную регистрацию</translation>
+<translation id="6069671174561668781">Выбор обоев</translation>
 <translation id="6071181508177083058">подтвердите пароль</translation>
 <translation id="6073903501322152803">Добавить специальные возможности</translation>
 <translation id="6074825444536523002">Форма Google</translation>
@@ -3934,7 +3934,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7077829361966535409">При загрузке текущих настроек прокси-сервера на главной странице произошла ошибка. <ph name="GAIA_RELOAD_LINK_START" />Выполните вход повторно<ph name="GAIA_RELOAD_LINK_END" /> или измените <ph name="PROXY_SETTINGS_LINK_START" />параметры прокси-сервера<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="7078120482318506217">Все сети</translation>
 <translation id="708060913198414444">&amp;Копировать URL аудио</translation>
-<translation id="7081952801286122383">Вы находитесь в режиме инкогнито</translation>
+<translation id="7081952801286122383">Режим инкогнито</translation>
 <translation id="708278670402572152">Чтобы запустить сканирование, отключитесь от сети.</translation>
 <translation id="7084192839369222683">Запускать только важный контент</translation>
 <translation id="7085389578340536476">Разрешить Chrome записывать аудио?</translation>
@@ -4027,7 +4027,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7229570126336867161">Необходимо наличие EV-DO</translation>
 <translation id="7230787553283372882">Позволяет настроить размер текста</translation>
 <translation id="7232750842195536390">Название не изменено</translation>
-<translation id="7233309214676155451">Синхронизируйте данные Chrome на всех устройствах.</translation>
 <translation id="7238585580608191973">Отпечаток SHA-256</translation>
 <translation id="7240120331469437312">Альтернативное имя субъекта сертификата</translation>
 <translation id="7240339475467890413">Подключиться к новой точке доступа?</translation>
@@ -4532,7 +4531,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 Храните файл ключей в надежном месте. Он потребуется для создания новых версий расширения.</translation>
 <translation id="799923393800005025">Чтение</translation>
 <translation id="8000066093800657092">Нет сети</translation>
-<translation id="8001504501378762252">Злоумышленники могли похитить ваш пароль</translation>
 <translation id="8004582292198964060">Браузер</translation>
 <translation id="8005600846065423578">Всегда открывать сайту <ph name="HOST" /> доступ к буферу обмена</translation>
 <translation id="8008356846765065031">Не удалось установить соединение. Проверьте подключение к Интернету.</translation>

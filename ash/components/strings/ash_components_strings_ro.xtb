@@ -84,14 +84,12 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> sau <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Modul de prezentare generală</translation>
 <translation id="4472417192667361414">Setări de sistem și pentru afișaj</translation>
-<translation id="4484292984055789039">Comută la metoda anterioară de introducere text pentru limbă</translation>
 <translation id="4556221320735744018">Accesează Ajutorul pentru comenzile rapide de la tastatură</translation>
 <translation id="4628718545549558538">Deschide zona de stare (unde apare imaginea contului)</translation>
 <translation id="4642092649622328492">Realizează o captură de ecran parțială</translation>
 <translation id="4698850295812410683">Afișează instrumentele pentru creion</translation>
 <translation id="4801989101741319327">Mută cursorul la finalul următorului cuvânt</translation>
 <translation id="4916163929714267752">Deschide linkul într-o fereastră nouă</translation>
-<translation id="5002047168347153398">Focalizează pe o fereastră pop-up inactivă pentru accesibilitate</translation>
 <translation id="5030659775136592441">Afișează managerul de marcaje</translation>
 <translation id="5034421018520995080">Navighează la începutul paginii</translation>
 <translation id="5042305953558921026">Tasta pentru modul de prezentare generală</translation>
@@ -154,7 +152,6 @@
 <translation id="7724603315864178912">Decupează</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, apoi <ph name="SPACE" /> sau <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Deschide un fișier în browser</translation>
-<translation id="7822267121073044318">Comută la următoarea metodă de introducere text pentru limbă</translation>
 <translation id="7917881398263220094">Oprește încărcarea paginii curente</translation>
 <translation id="7952165122793773711">Accesează filele 1 – 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> sau <ph name="MINUS" /></translation>

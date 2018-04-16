@@ -52,12 +52,6 @@
 
       Jei ši politika nustatyta kaip „False“, „Dev“ perjungimo būsena nebus pateikta.</translation>
 <translation id="1160939557934457296">Neleisti tęsti veiksmų iš Saugaus naršymo įspėjimo puslapio</translation>
-<translation id="1166377463685560145">Nurodomi spausdintuvai, kurių naudotojas negali naudoti.
-
-      Ši politika naudojama, tik jei pasirinktas politikos „<ph name="DEVICE_PRINTERS_ACCESS_MODE" />“ nustatymas „<ph name="PRINTERS_BLACKLIST" />“.
-
-      Jei ši politika naudojama, naudotojui teikiami visi spausdintuvai, išskyrus šioje politikoje nurodytus ID.
-      </translation>
 <translation id="1198465924256827162">Įrenginio būsenos įkėlimo nustatymo dažnis milisekundėmis.
 
       Jei ši politika nenustatyta, numatytasis dažnis yra 3 val. Minimalus
@@ -166,19 +160,6 @@
 <translation id="1561424797596341174">Nuotolinės prieigos prieglobos derinimo versijų politikos pakeitimai</translation>
 <translation id="1561967320164410511">Papildomi U2F asmeninės atestacijos plėtiniai</translation>
 <translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus</translation>
-<translation id="1603058613431276040">Nurodoma su įrenginiais susietų įmonės spausdintuvų konfigūracija.
-
-      Pagal šią politiką leidžiama nurodyti „<ph name="PRODUCT_OS_NAME" />“ įrenginių spausdintuvų konfigūraciją. Failo dydis neturi viršyti 5 MB ir failas turi būti koduotas naudojant JSON. Toks pats formatas nurodytas „NativePrinters“ žodyne. Numatyta, kad failas, kuriame yra maždaug 21 tūkst. spausdintuvų, bus koduojamas kaip 5 MB failas. Atsisiųsto failo vientisumas patikrinamas naudojant kriptografinę maišą.
-
-      Failas atsisiunčiamas ir išsaugomas talpykloje. Jis bus iš naujo atsisiųstas, kai pasikeis URL arba maiša.
-
-      Jei ši politika nustatyta, „<ph name="PRODUCT_OS_NAME" />“ atsisiųs spausdintuvo konfigūracijų failą ir suteiks galimybę naudoti spausdintuvus pagal „<ph name="DEVICE_PRINTERS_ACCESS_MODE" />“, „<ph name="DEVICE_PRINTERS_WHITELIST" />“ ir „<ph name="DEVICE_PRINTERS_BLACKLIST" />“.
-
-      Ši politika nepaveiks naudotojams suteiktos galimybės konfigūruoti spausdintuvus atskiruose įrenginiuose. Politika papildo atskirų naudotojų spausdintuvų konfigūraciją.
-
-      Ši politika yra politikos „<ph name="BULK_PRINTERS_POLICY" />“ priedas.
-
-      Nenustačius šios politikos, nebus įrenginių spausdintuvų ir nebus paisoma kitų „<ph name="DEVICE_PRINTERS_POLICY_PATTERN" />“ politikos nuostatų.</translation>
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
 <translation id="1617235075406854669">Įgalinti naršyklės ištrynimą ir atsisiuntimo istoriją</translation>
 <translation id="163200210584085447">Šiame sąraše pateikti šablonai bus atitaikomi
@@ -596,12 +577,6 @@
 <translation id="2762164719979766599">Nurodomas vietinių įrenginio paskyrų sąrašas, kuris bus rodomas prisijungimo ekrane.
 
       Kiekvienas sąrašo įrašas nurodo identifikatorių, naudojamą vidiniais tikslais siekiant atskirti skirtingas vietines įrenginio paskyras.</translation>
-<translation id="2766302473082018239">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
-
-      Ši politika naudojama, tik jei pasirinktas politikos „<ph name="BULK_PRINTERS_ACCESS_MODE" />“ nustatymas „<ph name="PRINTERS_WHITELIST" />“.
-
-      Jei ši politika naudojama, naudotojui pasiekiami tik spausdintuvai, kurių ID atitinka šioje politikoje nurodytas vertes. ID turi atitikti įrašus faile, kuris nurodytas „<ph name="BULK_PRINTERS_POLICY" />“.
-      </translation>
 <translation id="2769952903507981510">Konfigūruoti reikiamą nuotolinės prieigos prieglobų domeno pavadinimą</translation>
 <translation id="2787173078141616821">Informacijos apie „Android“ būseną ataskaita</translation>
 <translation id="2793923553868251161">Šaltiniai, kurie turi būti laikomi saugiu kontekstu.</translation>
@@ -788,12 +763,6 @@
 
           Jei ši politika nustatyta kaip ne tuščia eilutė, ta eilutė bus naudojama kaip „<ph name="PRODUCT_NAME" />“ paskirties vietos pavadinimas. Kitu atveju paskirties vietos pavadinimas bus įrenginio pavadinimas. Jei ši politika nenustatyta, paskirties vietos pavadinimas bus įrenginio pavadinimas, o įrenginio savininkas (arba naudotojas iš domeno, kuriame tvarkomas įrenginys) galės jį pakeisti. Pavadinimas ribojamas iki 24 simbolių.</translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
-<translation id="3395348522300156660">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
-
-      Ši politika naudojama, tik jei pasirinktas politikos „<ph name="DEVICE_PRINTERS_ACCESS_MODE" />“ nustatymas „<ph name="PRINTERS_WHITELIST" />“.
-
-      Jei ši politika naudojama, naudotojui pasiekiami tik spausdintuvai, kurių ID atitinka šioje politikoje nurodytas vertes. ID turi atitikti įrašus faile, kuris nurodytas „<ph name="DEVICE_PRINTERS_POLICY" />“.
-      </translation>
 <translation id="3414260318408232239">Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudos numatytosios minimalios 1.0 versijos TLS.
 
       Kitaip gali būti nustatyta viena iš šių verčių: „tls1“, „tls1.1“ arba „tls1.2“. Nustačius šią politiką „<ph name="PRODUCT_NAME" />“ nenaudos senesnės nei nurodytos versijos SSL / TLS. Neatpažįstamos vertės bus nepaisoma.</translation>
@@ -2450,12 +2419,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 
       Įspėjimas: nerekomenduojama konfigūruoti versijos apribojimų, nes dėl jų naudotojai gali negauti programinės įrangos naujinių ir svarbių saugos pataisų. Apribojus, kad būtų įdiegti tik konkrečios versijos priešdėlio naujiniai, gali kilti grėsmė naudotojų saugai.</translation>
 <translation id="8519264904050090490">Tvarkomi naudotojo neautomatinių išimčių URL</translation>
-<translation id="8527932539502116028">Nurodomi spausdintuvai, kurių naudotojas negali naudoti.
-
-      Ši politika naudojama, tik jei pasirinktas politikos „<ph name="BULK_PRINTERS_ACCESS_MODE" />“ nustatymas „<ph name="PRINTERS_BLACKLIST" />“.
-
-      Jei ši politika naudojama, naudotojui teikiami visi spausdintuvai, išskyrus šioje politikoje nurodytus ID.
-      </translation>
 <translation id="8538235451413605457">Konfigūruoja seniausios leistinos „<ph name="PRODUCT_NAME" />“ versijos reikalavimą. Senesnės nei nurodyta versijos laikomos pasenusiomis ir įrenginys neleistų naudotojui prisijungti neatnaujinus OS.
       Jei dabartinė versija tampa pasenusi per naudotojo sesiją, naudotas priverstinai atjungiamas.
 
@@ -2572,18 +2535,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 
           Politikos vertė turėtų būti nurodoma milisekundėmis. Vertės sumažinamos, kad neviršytų neveikos delsos laiko.</translation>
 <translation id="891435090623616439">koduojama JSON eilute, daugiau informacijos pateikiama apsilankius adresu <ph name="COMPLEX_POLICIES_URL" /></translation>
-<translation id="8927384992072706174">Nurodoma įmonės spausdintuvų konfigūracija.
-
-      Pagal šią politiką leidžiama nurodyti „<ph name="PRODUCT_OS_NAME" />“ įrenginių spausdintuvų konfigūraciją. Failo dydis neturi viršyti 5 MB ir failas turi būti koduotas naudojant JSON. Toks pats formatas nurodytas „NativePrinters“ žodyne. Numatyta, kad failas, kuriame yra maždaug 21 tūkst. spausdintuvų, bus koduojamas kaip 5 MB failas. Atsisiųsto failo vientisumas patikrinamas naudojant kriptografinę maišą.
-
-      Failas atsisiunčiamas ir išsaugomas talpykloje. Jis bus iš naujo atsisiųstas, kai pasikeis URL arba maiša.
-
-      Jei ši politika nustatyta, „<ph name="PRODUCT_OS_NAME" />“ atsisiųs spausdintuvo konfigūracijų failą ir suteiks galimybę naudoti spausdintuvus pagal „<ph name="BULK_PRINTERS_ACCESS_MODE" />“, „<ph name="BULK_PRINTERS_WHITELIST" />“ ir „<ph name="BULK_PRINTERS_BLACKLIST" />“.
-
-      Jei nustatysite šią politiką, naudotojai negalės jos pakeisti arba nepaisyti.
-
-      Ši politika nepaveiks naudotojams suteiktos galimybės konfigūruoti spausdintuvus atskiruose įrenginiuose. Politika papildo atskirų naudotojų spausdintuvų konfigūraciją.
-      </translation>
 <translation id="8934944553121392674">Valdoma, kurie spausdintuvai iš „<ph name="DEVICE_PRINTERS_POLICY" />“ pasiekiami naudotojams.
 
       Nustatoma, kuri pasiekiamumo politika naudojama masinei spausdintuvų konfigūracijai. Jei pasirinkta „<ph name="PRINTERS_ALLOW_ALL" />“, rodomi visi spausdintuvai. Jei pasirinkta „<ph name="PRINTERS_BLACKLIST" />“, „<ph name="DEVICE_PRINTERS_BLACKLIST" />“ naudojama pasiekiamumui prie nurodytų spausdintuvų apriboti. Jei pasirinkta „<ph name="PRINTERS_WHITELIST" />“, „<ph name="DEVICE_PRINTERS_WHITELIST" />“ nustato tik tuos spausdintuvus, kuriuos galima pasirinkti.
