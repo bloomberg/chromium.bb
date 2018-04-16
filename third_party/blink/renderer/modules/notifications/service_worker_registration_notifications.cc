@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/notifications/service_worker_registration_notifications.h"
 
-#include <memory>
 #include <utility>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
@@ -12,7 +11,6 @@
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/notifications/get_notification_options.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
@@ -104,10 +102,8 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  std::unique_ptr<WebNotificationShowCallbacks> callbacks =
-      std::make_unique<CallbackPromiseAdapter<void, void>>(resolver);
   ServiceWorkerRegistrationNotifications::From(execution_context, registration)
-      .PrepareShow(data, std::move(callbacks));
+      .PrepareShow(data, resolver);
 
   return promise;
 }
@@ -119,16 +115,16 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  auto callbacks =
-      std::make_unique<CallbackPromiseAdapter<NotificationArray, void>>(
-          resolver);
-
   if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
     ExecutionContext* execution_context = ExecutionContext::From(script_state);
     NotificationManager::From(execution_context)
         ->GetNotifications(registration.WebRegistration(), options.tag(),
-                           std::move(callbacks));
+                           WrapPersistent(resolver));
   } else {
+    auto callbacks =
+        std::make_unique<CallbackPromiseAdapter<NotificationArray, void>>(
+            resolver);
+
     WebNotificationManager* notification_manager =
         Platform::Current()->GetWebNotificationManager();
     DCHECK(notification_manager);
@@ -172,13 +168,13 @@ ServiceWorkerRegistrationNotifications::From(
 
 void ServiceWorkerRegistrationNotifications::PrepareShow(
     const WebNotificationData& data,
-    std::unique_ptr<WebNotificationShowCallbacks> callbacks) {
+    ScriptPromiseResolver* resolver) {
   scoped_refptr<const SecurityOrigin> origin =
       GetExecutionContext()->GetSecurityOrigin();
   NotificationResourcesLoader* loader = new NotificationResourcesLoader(
       WTF::Bind(&ServiceWorkerRegistrationNotifications::DidLoadResources,
                 WrapWeakPersistent(this), std::move(origin), data,
-                WTF::Passed(std::move(callbacks))));
+                WrapPersistent(resolver)));
   loaders_.insert(loader);
   loader->Start(GetExecutionContext(), data);
 }
@@ -186,7 +182,7 @@ void ServiceWorkerRegistrationNotifications::PrepareShow(
 void ServiceWorkerRegistrationNotifications::DidLoadResources(
     scoped_refptr<const SecurityOrigin> origin,
     const WebNotificationData& data,
-    std::unique_ptr<WebNotificationShowCallbacks> callbacks,
+    ScriptPromiseResolver* resolver,
     NotificationResourcesLoader* loader) {
   DCHECK(loaders_.Contains(loader));
 
@@ -194,11 +190,14 @@ void ServiceWorkerRegistrationNotifications::DidLoadResources(
     NotificationManager::From(GetExecutionContext())
         ->DisplayPersistentNotification(registration_->WebRegistration(), data,
                                         loader->GetResources(),
-                                        std::move(callbacks));
+                                        WrapPersistent(resolver));
   } else {
     WebNotificationManager* notification_manager =
         Platform::Current()->GetWebNotificationManager();
     DCHECK(notification_manager);
+
+    std::unique_ptr<WebNotificationShowCallbacks> callbacks =
+        std::make_unique<CallbackPromiseAdapter<void, void>>(resolver);
 
     notification_manager->ShowPersistent(
         WebSecurityOrigin(origin.get()), data, loader->GetResources(),

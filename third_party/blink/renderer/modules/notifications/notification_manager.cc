@@ -18,6 +18,8 @@
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -130,7 +132,7 @@ void NotificationManager::DisplayPersistentNotification(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebNotificationData& notification_data,
     std::unique_ptr<blink::WebNotificationResources> notification_resources,
-    std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks) {
+    ScriptPromiseResolver* resolver) {
   DCHECK(notification_resources);
   DCHECK_EQ(notification_data.actions.size(),
             notification_resources->action_icons.size());
@@ -144,19 +146,20 @@ void NotificationManager::DisplayPersistentNotification(
       service_worker_registration->RegistrationId(), notification_data,
       *notification_resources,
       WTF::Bind(&NotificationManager::DidDisplayPersistentNotification,
-                WrapPersistent(this), std::move(callbacks)));
+                WrapPersistent(this), WrapPersistent(resolver)));
 }
 
 void NotificationManager::DidDisplayPersistentNotification(
-    std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks,
+    ScriptPromiseResolver* resolver,
     mojom::blink::PersistentNotificationError error) {
   switch (error) {
     case mojom::blink::PersistentNotificationError::NONE:
-      callbacks->OnSuccess();
+      resolver->Resolve();
       return;
     case mojom::blink::PersistentNotificationError::INTERNAL_ERROR:
     case mojom::blink::PersistentNotificationError::PERMISSION_DENIED:
-      callbacks->OnError();
+      // TODO(https://crbug.com/832944): Throw a TypeError if permission denied.
+      resolver->Reject();
       return;
   }
   NOTREACHED();
@@ -165,30 +168,29 @@ void NotificationManager::DidDisplayPersistentNotification(
 void NotificationManager::GetNotifications(
     WebServiceWorkerRegistration* service_worker_registration,
     const WebString& filter_tag,
-    std::unique_ptr<WebNotificationGetCallbacks> callbacks) {
+    ScriptPromiseResolver* resolver) {
   GetNotificationService()->GetNotifications(
       service_worker_registration->RegistrationId(), filter_tag,
       WTF::Bind(&NotificationManager::DidGetNotifications, WrapPersistent(this),
-                std::move(callbacks)));
+                WrapPersistent(resolver)));
 }
 
 void NotificationManager::DidGetNotifications(
-    std::unique_ptr<WebNotificationGetCallbacks> callbacks,
+    ScriptPromiseResolver* resolver,
     const Vector<String>& notification_ids,
     const Vector<WebNotificationData>& notification_datas) {
   DCHECK_EQ(notification_ids.size(), notification_datas.size());
 
-  WebVector<WebPersistentNotificationInfo> notifications(
-      notification_ids.size());
+  HeapVector<Member<Notification>> notifications;
+  notifications.ReserveInitialCapacity(notification_ids.size());
 
   for (size_t i = 0; i < notification_ids.size(); ++i) {
-    WebPersistentNotificationInfo notification_info;
-    notification_info.notification_id = notification_ids[i];
-    notification_info.data = notification_datas[i];
-    notifications[i] = notification_info;
+    notifications.push_back(Notification::Create(
+        resolver->GetExecutionContext(), notification_ids[i],
+        notification_datas[i], true /* showing */));
   }
 
-  callbacks->OnSuccess(notifications);
+  resolver->Resolve(notifications);
 }
 
 const mojom::blink::NotificationServicePtr&

@@ -64,7 +64,7 @@ class NotificationManager final
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebNotificationData& notification_data,
       std::unique_ptr<blink::WebNotificationResources> notification_resources,
-      std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks);
+      ScriptPromiseResolver* resolver);
 
   // Asynchronously gets the persistent notifications belonging to the Service
   // Worker Registration. If |filter_tag| is not an empty string, only the
@@ -73,7 +73,7 @@ class NotificationManager final
   void GetNotifications(
       WebServiceWorkerRegistration* service_worker_registration,
       const WebString& filter_tag,
-      std::unique_ptr<WebNotificationGetCallbacks> callbacks);
+      ScriptPromiseResolver* resolver);
 
   virtual void Trace(blink::Visitor* visitor);
 
@@ -81,11 +81,11 @@ class NotificationManager final
   explicit NotificationManager(ExecutionContext& context);
 
   void DidDisplayPersistentNotification(
-      std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks,
+      ScriptPromiseResolver* resolver,
       mojom::blink::PersistentNotificationError error);
 
   void DidGetNotifications(
-      std::unique_ptr<WebNotificationGetCallbacks> callbacks,
+      ScriptPromiseResolver* resolver,
       const Vector<String>& notification_ids,
       const Vector<WebNotificationData>& notification_datas);
 
