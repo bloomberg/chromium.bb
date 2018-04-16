@@ -607,6 +607,7 @@ void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
   base::RepeatingClosure closure =
       AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure());
   ProceduralBlock completion_block = ^{
+    dummy_web_view_ = nil;
     closure.Run();
   };
 
@@ -631,31 +632,21 @@ void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
     };
   }
 
-  ProceduralBlock remove_from_wk_website_data_store = ^{
-    NSDate* delete_begin_date =
-        [NSDate dateWithTimeIntervalSince1970:delete_begin.ToDoubleT()];
-    [[WKWebsiteDataStore defaultDataStore]
-        removeDataOfTypes:data_types_to_remove
-            modifiedSince:delete_begin_date
-        completionHandler:completion_block];
-  };
-
-  // TODO(crbug.com/661630): creating a WKWebView and executing javascript
-  // enables the WKWebView to connect to the Networking process. This allow
-  // the -[WKWebsiteDataStore removeDataOfTypes:] API to send an IPC message
-  // to the Networking process to clear cookies. This is a workaround for
-  // https://bugs.webkit.org/show_bug.cgi?id=149078 and has been reverse-
-  // engineered by code inspection on the WebKit2 source code. Remove this
-  // workaround when bug is fixed.
+  // TODO(crbug.com/661630): |dummy_web_view_| is created to allow
+  // the -[WKWebsiteDataStore removeDataOfTypes:] API to access the cookiestore
+  // and clear cookies. This is a workaround for
+  // https://bugs.webkit.org/show_bug.cgi?id=149078. Remove this
+  // workaround when it's not needed anymore.
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
-    [web::BuildWKWebView(CGRectZero, browser_state_)
-        evaluateJavaScript:@""
-         completionHandler:^(id, NSError*) {
-           remove_from_wk_website_data_store();
-         }];
-  } else {
-    remove_from_wk_website_data_store();
+    if (!dummy_web_view_)
+      dummy_web_view_ = [[WKWebView alloc] initWithFrame:CGRectZero];
   }
+
+  NSDate* delete_begin_date =
+      [NSDate dateWithTimeIntervalSince1970:delete_begin.ToDoubleT()];
+  [[WKWebsiteDataStore defaultDataStore] removeDataOfTypes:data_types_to_remove
+                                             modifiedSince:delete_begin_date
+                                         completionHandler:completion_block];
 }
 
 void BrowsingDataRemoverImpl::OnKeywordsLoaded(base::Time delete_begin,
