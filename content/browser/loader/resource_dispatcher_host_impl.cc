@@ -2360,6 +2360,7 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
   // their render frame routing IDs yet (which is what we have for subresource
   // requests), we must go to the UI thread and compare the requests using their
   // WebContents.
+  DCHECK(!waiting_on_load_state_ack_);
   waiting_on_load_state_ack_ = true;
   main_thread_task_runner_->PostTaskAndReply(
       FROM_HERE,
