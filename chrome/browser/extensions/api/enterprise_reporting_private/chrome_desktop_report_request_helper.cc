@@ -10,11 +10,15 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
+#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
@@ -56,6 +60,17 @@ std::string GetProfileId(const Profile* profile) {
   return profile->GetOriginalProfile()->GetPath().AsUTF8Unsafe();
 }
 
+// Returns last policy fetch timestamp of machine level user cloud policy if
+// it exists. Otherwise, returns zero.
+int64_t GetMachineLevelUserCloudPolicyFetchTimestamp() {
+  policy::MachineLevelUserCloudPolicyManager* manager =
+      g_browser_process->browser_policy_connector()
+          ->GetMachineLevelUserCloudPolicyManager();
+  if (!manager || !manager->IsClientRegistered())
+    return 0;
+  return manager->core()->client()->last_policy_timestamp().ToJavaTime();
+}
+
 void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
                                         Profile* profile) {
   // Set Chrome version number
@@ -76,11 +91,19 @@ void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
   request->mutable_browser_report()
       ->mutable_chrome_user_profile_reports(0)
       ->set_id(GetProfileId(profile));
+
   // Set policy data of the first profile. Extension will report this data in
   // the future.
   request->mutable_browser_report()
       ->mutable_chrome_user_profile_reports(0)
       ->set_policy_data(policy::GetAllPolicyValuesAsJSON(profile, true));
+
+  int64_t timestamp = GetMachineLevelUserCloudPolicyFetchTimestamp();
+  if (timestamp > 0) {
+    request->mutable_browser_report()
+        ->mutable_chrome_user_profile_reports(0)
+        ->set_policy_fetched_timestamp(timestamp);
+  }
 }
 
 bool UpdateJSONEncodedStringEntry(const base::Value& dict_value,
