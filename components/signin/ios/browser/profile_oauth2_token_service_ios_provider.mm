@@ -16,7 +16,6 @@ ProfileOAuth2TokenServiceIOSProvider::GetAllAccounts() const {
 void ProfileOAuth2TokenServiceIOSProvider::GetAccessToken(
     const std::string& gaia_id,
     const std::string& client_id,
-    const std::string& client_secret,
     const std::set<std::string>& scopes,
     const AccessTokenCallback& callback) {}
 

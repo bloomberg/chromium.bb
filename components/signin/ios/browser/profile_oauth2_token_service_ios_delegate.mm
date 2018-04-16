@@ -114,11 +114,11 @@ SSOAccessTokenFetcher::~SSOAccessTokenFetcher() {
 }
 
 void SSOAccessTokenFetcher::Start(const std::string& client_id,
-                                  const std::string& client_secret,
+                                  const std::string& client_secret_unused,
                                   const std::vector<std::string>& scopes) {
   std::set<std::string> scopes_set(scopes.begin(), scopes.end());
   provider_->GetAccessToken(
-      account_.gaia, client_id, client_secret, scopes_set,
+      account_.gaia, client_id, scopes_set,
       base::Bind(&SSOAccessTokenFetcher::OnAccessTokenResponse,
                  weak_factory_.GetWeakPtr()));
 }

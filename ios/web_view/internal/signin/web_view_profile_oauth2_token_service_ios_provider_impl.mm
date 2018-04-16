@@ -26,7 +26,6 @@ WebViewProfileOAuth2TokenServiceIOSProviderImpl::
 void WebViewProfileOAuth2TokenServiceIOSProviderImpl::GetAccessToken(
     const std::string& gaia_id,
     const std::string& client_id,
-    const std::string& client_secret,
     const std::set<std::string>& scopes,
     const AccessTokenCallback& callback) {
   CWVAuthenticationController* authentication_controller =
@@ -41,7 +40,6 @@ void WebViewProfileOAuth2TokenServiceIOSProviderImpl::GetAccessToken(
 
   NSString* ns_gaia_id = base::SysUTF8ToNSString(gaia_id);
   NSString* ns_client_id = base::SysUTF8ToNSString(client_id);
-  NSString* ns_client_secret = base::SysUTF8ToNSString(client_secret);
   NSMutableArray* scopes_array = [[NSMutableArray alloc] init];
   for (const auto& scope : scopes) {
     [scopes_array addObject:base::SysUTF8ToNSString(scope)];
@@ -56,7 +54,6 @@ void WebViewProfileOAuth2TokenServiceIOSProviderImpl::GetAccessToken(
   [delegate authenticationController:authentication_controller
              getAccessTokenForGaiaID:ns_gaia_id
                             clientID:ns_client_id
-                        clientSecret:ns_client_secret
                               scopes:scopes_array
                    completionHandler:token_callback];
 }

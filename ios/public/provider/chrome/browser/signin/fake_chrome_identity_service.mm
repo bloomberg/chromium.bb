@@ -192,7 +192,6 @@ void FakeChromeIdentityService::ForgetIdentity(
 void FakeChromeIdentityService::GetAccessToken(
     ChromeIdentity* identity,
     const std::string& client_id,
-    const std::string& client_secret,
     const std::set<std::string>& scopes,
     ios::AccessTokenCallback callback) {
   ios::AccessTokenCallback safe_callback = [callback copy];

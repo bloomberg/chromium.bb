@@ -23,7 +23,6 @@ class FakeProfileOAuth2TokenServiceIOSProvider
   // ProfileOAuth2TokenServiceIOSProvider
   void GetAccessToken(const std::string& account_id,
                       const std::string& client_id,
-                      const std::string& client_secret,
                       const std::set<std::string>& scopes,
                       const AccessTokenCallback& callback) override;
   std::vector<AccountInfo> GetAllAccounts() const override;

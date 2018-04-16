@@ -40,15 +40,13 @@ ProfileOAuth2TokenServiceIOSProviderImpl::
 void ProfileOAuth2TokenServiceIOSProviderImpl::GetAccessToken(
     const std::string& gaia_id,
     const std::string& client_id,
-    const std::string& client_secret,
     const std::set<std::string>& scopes,
     const AccessTokenCallback& callback) {
   AccessTokenCallback scoped_callback = callback;
   ios::ChromeIdentityService* identity_service =
       ios::GetChromeBrowserProvider()->GetChromeIdentityService();
   identity_service->GetAccessToken(
-      identity_service->GetIdentityWithGaiaID(gaia_id), client_id,
-      client_secret, scopes,
+      identity_service->GetIdentityWithGaiaID(gaia_id), client_id, scopes,
       ^(NSString* token, NSDate* expiration, NSError* error) {
         if (!scoped_callback.is_null())
           scoped_callback.Run(token, expiration, error);
