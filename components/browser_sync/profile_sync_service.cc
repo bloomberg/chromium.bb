@@ -162,10 +162,9 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       configure_status_(DataTypeManager::UNKNOWN),
       oauth2_token_service_(init_params.oauth2_token_service),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
-      connection_status_(syncer::CONNECTION_NOT_ATTEMPTED),
-      last_get_token_error_(GoogleServiceAuthError::AuthErrorNone()),
       gaia_cookie_manager_service_(init_params.gaia_cookie_manager_service),
-      network_resources_(new syncer::HttpBridgeNetworkResources),
+      network_resources_(
+          std::make_unique<syncer::HttpBridgeNetworkResources>()),
       start_behavior_(init_params.start_behavior),
       passphrase_prompt_triggered_by_version_(false),
       sync_enabled_weak_factory_(this),
@@ -214,9 +213,10 @@ void ProfileSyncService::Initialize() {
   // against the controller impl changing to post tasks.
   startup_controller_ = std::make_unique<syncer::StartupController>(
       &sync_prefs_,
-      base::Bind(&ProfileSyncService::CanEngineStart, base::Unretained(this)),
-      base::Bind(&ProfileSyncService::StartUpSlowEngineComponents,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&ProfileSyncService::CanEngineStart,
+                          base::Unretained(this)),
+      base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
+                          weak_factory_.GetWeakPtr()));
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
   sync_stopped_reporter_ = std::make_unique<syncer::SyncStoppedReporter>(
@@ -224,8 +224,8 @@ void ProfileSyncService::Initialize() {
       url_request_context_, syncer::SyncStoppedReporter::ResultCallback());
   sessions_sync_manager_ = std::make_unique<SessionsSyncManager>(
       sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
-      base::Bind(&ProfileSyncService::NotifyForeignSessionUpdated,
-                 sync_enabled_weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&ProfileSyncService::NotifyForeignSessionUpdated,
+                          sync_enabled_weak_factory_.GetWeakPtr()));
 
   device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(
       local_device_.get(), model_type_store_factory_,
@@ -303,8 +303,8 @@ void ProfileSyncService::Initialize() {
 #endif
 
   memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
-      base::Bind(&ProfileSyncService::OnMemoryPressure,
-                 sync_enabled_weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&ProfileSyncService::OnMemoryPressure,
+                          sync_enabled_weak_factory_.GetWeakPtr()));
   startup_controller_->Reset(GetRegisteredDataTypes());
 
   // Auto-start means the first time the profile starts up, sync should start up
@@ -399,10 +399,11 @@ ProfileSyncService::GetLocalDeviceInfoProvider() const {
 void ProfileSyncService::GetDataTypeControllerStates(
     DataTypeController::StateMap* state_map) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (DataTypeController::TypeMap::const_iterator iter =
-           data_type_controllers_.begin();
-       iter != data_type_controllers_.end(); ++iter)
-    (*state_map)[iter->first] = iter->second.get()->state();
+  for (const auto& item : data_type_controllers_) {
+    const syncer::ModelType type = item.first;
+    const std::unique_ptr<DataTypeController>& controller = item.second;
+    state_map->emplace(type, controller->state());
+  }
 }
 
 void ProfileSyncService::OnSessionRestoreComplete() {
@@ -445,9 +446,10 @@ ProfileSyncService::GetJsEventHandler() {
 
 syncer::SyncEngine::HttpPostProviderFactoryGetter
 ProfileSyncService::MakeHttpPostProviderFactoryGetter() {
-  return base::Bind(&syncer::NetworkResources::GetHttpPostProviderFactory,
-                    base::Unretained(network_resources_.get()),
-                    url_request_context_, network_time_update_callback_);
+  return base::BindRepeating(
+      &syncer::NetworkResources::GetHttpPostProviderFactory,
+      base::Unretained(network_resources_.get()), url_request_context_,
+      network_time_update_callback_);
 }
 
 syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
@@ -552,8 +554,8 @@ void ProfileSyncService::OnGetTokenSuccess(
   DCHECK_EQ(access_token_request_.get(), request);
   access_token_request_.reset();
   access_token_ = access_token;
-  token_receive_time_ = base::Time::Now();
-  last_get_token_error_ = GoogleServiceAuthError::AuthErrorNone();
+  token_status_.token_receive_time = base::Time::Now();
+  token_status_.last_get_token_error = GoogleServiceAuthError::AuthErrorNone();
 
   if (sync_prefs_.SyncHasAuthError()) {
     sync_prefs_.SetSyncAuthError(false);
@@ -574,7 +576,7 @@ void ProfileSyncService::OnGetTokenFailure(
   DCHECK_EQ(access_token_request_.get(), request);
   DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
   access_token_request_.reset();
-  last_get_token_error_ = error;
+  token_status_.last_get_token_error = error;
   switch (error.state()) {
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::REQUEST_CANCELED:
@@ -582,13 +584,13 @@ void ProfileSyncService::OnGetTokenFailure(
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE: {
       // Transient error. Retry after some time.
       request_access_token_backoff_.InformOfRequest(false);
-      next_token_request_time_ =
+      token_status_.next_token_request_time =
           base::Time::Now() +
           request_access_token_backoff_.GetTimeUntilRelease();
       request_access_token_retry_timer_.Start(
           FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
-          base::Bind(&ProfileSyncService::RequestAccessToken,
-                     sync_enabled_weak_factory_.GetWeakPtr()));
+          base::BindRepeating(&ProfileSyncService::RequestAccessToken,
+                              sync_enabled_weak_factory_.GetWeakPtr()));
       NotifyObservers();
       break;
     }
@@ -664,8 +666,8 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
       // the data directory needs to be cleaned up here.
       sync_thread_->task_runner()->PostTask(
           FROM_HERE,
-          base::Bind(&syncer::syncable::Directory::DeleteDirectoryFiles,
-                     FormatSyncDataPath(base_directory_)));
+          base::BindOnce(&syncer::syncable::Directory::DeleteDirectoryFiles,
+                         FormatSyncDataPath(base_directory_)));
     }
     return;
   }
@@ -827,10 +829,10 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 
   // Shut all data types down.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ProfileSyncService::ShutdownImpl,
-                            sync_enabled_weak_factory_.GetWeakPtr(),
-                            delete_sync_database ? syncer::DISABLE_SYNC
-                                                 : syncer::STOP_SYNC));
+      FROM_HERE, base::BindOnce(&ProfileSyncService::ShutdownImpl,
+                                sync_enabled_weak_factory_.GetWeakPtr(),
+                                delete_sync_database ? syncer::DISABLE_SYNC
+                                                     : syncer::STOP_SYNC));
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
@@ -961,8 +963,9 @@ void ProfileSyncService::OnSyncCycleCompleted(
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SessionsSyncManager::DoGarbageCollection,
-                              base::AsWeakPtr(sessions_sync_manager_.get())));
+        FROM_HERE,
+        base::BindOnce(&SessionsSyncManager::DoGarbageCollection,
+                       base::AsWeakPtr(sessions_sync_manager_.get())));
   }
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();
@@ -1016,8 +1019,8 @@ GoogleServiceAuthError ConnectionStatusToAuthError(
 void ProfileSyncService::OnConnectionStatusChange(
     syncer::ConnectionStatus status) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  connection_status_update_time_ = base::Time::Now();
-  connection_status_ = status;
+  token_status_.connection_status_update_time = base::Time::Now();
+  token_status_.connection_status = status;
   if (status == syncer::CONNECTION_AUTH_ERROR) {
     // Sync server returned error indicating that access token is invalid. It
     // could be either expired or access is revoked. Let's request another
@@ -1050,8 +1053,8 @@ void ProfileSyncService::OnConnectionStatusChange(
       request_access_token_backoff_.InformOfRequest(false);
       request_access_token_retry_timer_.Start(
           FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
-          base::Bind(&ProfileSyncService::RequestAccessToken,
-                     sync_enabled_weak_factory_.GetWeakPtr()));
+          base::BindRepeating(&ProfileSyncService::RequestAccessToken,
+                              sync_enabled_weak_factory_.GetWeakPtr()));
     }
     // Make observers aware of the change. This call is unnecessary in the
     // block below because UpdateAuthErrorState() will notify observers.
@@ -1145,8 +1148,8 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 void ProfileSyncService::ClearAndRestartSyncForPassphraseEncryption() {
   DCHECK(thread_checker_.CalledOnValidThread());
   engine_->ClearServerData(
-      base::Bind(&ProfileSyncService::OnClearServerDataDone,
-                 sync_enabled_weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&ProfileSyncService::OnClearServerDataDone,
+                          sync_enabled_weak_factory_.GetWeakPtr()));
 }
 
 void ProfileSyncService::OnClearServerDataDone() {
@@ -1366,10 +1369,9 @@ ProfileSyncService::GetSetupInProgressHandle() {
     NotifyObservers();
   }
 
-  return std::unique_ptr<syncer::SyncSetupInProgressHandle>(
-      new syncer::SyncSetupInProgressHandle(
-          base::Bind(&ProfileSyncService::OnSetupInProgressHandleDestroyed,
-                     weak_factory_.GetWeakPtr())));
+  return std::make_unique<syncer::SyncSetupInProgressHandle>(
+      base::BindRepeating(&ProfileSyncService::OnSetupInProgressHandleDestroyed,
+                          weak_factory_.GetWeakPtr()));
 }
 
 bool ProfileSyncService::IsSyncAllowed() const {
@@ -1421,11 +1423,6 @@ bool ProfileSyncService::ConfigurationDone() const {
 bool ProfileSyncService::waiting_for_auth() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return is_auth_in_progress_;
-}
-
-const syncer::Experiments& ProfileSyncService::current_experiments() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return current_experiments_;
 }
 
 bool ProfileSyncService::HasUnrecoverableError() const {
@@ -1586,10 +1583,10 @@ syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
   syncer::ModelTypeSet registered_types;
   // The data_type_controllers_ are determined by command-line flags;
   // that's effectively what controls the values returned here.
-  for (DataTypeController::TypeMap::const_iterator it =
-           data_type_controllers_.begin();
-       it != data_type_controllers_.end(); ++it) {
-    registered_types.Put(it->first);
+  for (const std::pair<const syncer::ModelType,
+                       std::unique_ptr<DataTypeController>>&
+           type_and_controller : data_type_controllers_) {
+    registered_types.Put(type_and_controller.first);
   }
   return registered_types;
 }
@@ -1659,8 +1656,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     // We create the migrator at the same time.
     migrator_ = std::make_unique<BackendMigrator>(
         debug_identifier_, GetUserShare(), this, data_type_manager_.get(),
-        base::Bind(&ProfileSyncService::StartSyncingWithServer,
-                   base::Unretained(this)));
+        base::BindRepeating(&ProfileSyncService::StartSyncingWithServer,
+                            base::Unretained(this)));
   }
 
   syncer::ModelTypeSet types;
@@ -1789,9 +1786,10 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
       // OnDatatypeStatusCounterUpdated that posts back to the UI thread so that
       // real results can't get overwritten by the empty counters set at the end
       // of this method.
-      dtc_iter->second->GetStatusCounters(BindToCurrentThread(
-          base::Bind(&ProfileSyncService::OnDatatypeStatusCounterUpdated,
-                     base::Unretained(this))));
+      dtc_iter->second->GetStatusCounters(
+          BindToCurrentThread(base::BindRepeating(
+              &ProfileSyncService::OnDatatypeStatusCounterUpdated,
+              base::Unretained(this))));
       type_status->SetString("state", DataTypeController::StateToString(
                                           dtc_iter->second->state()));
     }
@@ -1819,9 +1817,9 @@ void ProfileSyncService::RequestAccessToken() {
 
   access_token_.clear();
 
-  token_request_time_ = base::Time::Now();
-  token_receive_time_ = base::Time();
-  next_token_request_time_ = base::Time();
+  token_status_.token_request_time = base::Time::Now();
+  token_status_.token_receive_time = base::Time();
+  token_status_.next_token_request_time = base::Time();
   access_token_request_ =
       oauth2_token_service_->StartRequest(account_id, oauth2_scopes, this);
 }
@@ -2087,7 +2085,7 @@ void ProfileSyncService::GetAllNodes(
   for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
     const auto& dtc_iter = data_type_controllers_.find(it.Get());
     if (dtc_iter != data_type_controllers_.end()) {
-      dtc_iter->second->GetAllNodes(base::Bind(
+      dtc_iter->second->GetAllNodes(base::BindRepeating(
           &GetAllNodesRequestHelper::OnReceivedNodesForType, helper));
     } else {
       // Control Types
@@ -2179,10 +2177,9 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
 syncer::ModelTypeSet ProfileSyncService::GetDataTypesFromPreferenceProviders()
     const {
   syncer::ModelTypeSet types;
-  for (std::set<syncer::SyncTypePreferenceProvider*>::const_iterator it =
-           preference_providers_.begin();
-       it != preference_providers_.end(); ++it) {
-    types.PutAll((*it)->GetPreferredDataTypes());
+  for (const syncer::SyncTypePreferenceProvider* provider :
+       preference_providers_) {
+    types.PutAll(provider->GetPreferredDataTypes());
   }
   return types;
 }
@@ -2225,14 +2222,9 @@ syncer::ModelTypeSyncBridge* ProfileSyncService::GetDeviceInfoSyncBridge() {
 syncer::SyncService::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus()
     const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SyncTokenStatus status;
-  status.connection_status_update_time = connection_status_update_time_;
-  status.connection_status = connection_status_;
-  status.token_request_time = token_request_time_;
-  status.token_receive_time = token_receive_time_;
-  status.last_get_token_error = last_get_token_error_;
-  if (request_access_token_retry_timer_.IsRunning())
-    status.next_token_request_time = next_token_request_time_;
+  SyncTokenStatus status = token_status_;
+  if (!request_access_token_retry_timer_.IsRunning())
+    status.next_token_request_time = base::Time();
   return status;
 }
 
