@@ -105,13 +105,6 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   if (!lost_resource && resource->origin == viz::internal::Resource::INTERNAL)
     WaitSyncTokenInternal(resource);
 
-  if (resource->image_id) {
-    DCHECK_EQ(resource->origin, viz::internal::Resource::INTERNAL);
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->DestroyImageCHROMIUM(resource->image_id);
-  }
-
   if (resource->gl_id) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
@@ -124,11 +117,6 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     resource->shared_bitmap = nullptr;
     resource->pixels = nullptr;
     resource->owned_shared_bitmap = nullptr;
-  }
-
-  if (resource->gpu_memory_buffer) {
-    DCHECK_EQ(viz::ResourceType::kGpuMemoryBuffer, resource->type);
-    resource->gpu_memory_buffer = nullptr;
   }
 
   resources_.erase(it);
@@ -201,18 +189,11 @@ bool ResourceProvider::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const uint64_t tracing_process_id =
-      base::trace_event::MemoryDumpManager::GetInstance()
-          ->GetTracingProcessId();
-
   for (const auto& resource_entry : resources_) {
     const auto& resource = resource_entry.second;
 
     bool backing_memory_allocated = false;
     switch (resource.type) {
-      case viz::ResourceType::kGpuMemoryBuffer:
-        backing_memory_allocated = !!resource.gpu_memory_buffer;
-        break;
       case viz::ResourceType::kTexture:
         backing_memory_allocated = !!resource.gl_id;
         break;
@@ -250,18 +231,6 @@ bool ResourceProvider::OnMemoryDump(
     base::trace_event::MemoryAllocatorDumpGuid guid;
     base::UnguessableToken shared_memory_guid;
     switch (resource.type) {
-      case viz::ResourceType::kGpuMemoryBuffer:
-        // GpuMemoryBuffers may be backed by shared memory, and in that case we
-        // use the guid from there to attribute for the global shared memory
-        // dumps. Otherwise, they may be backed by native structures, and we
-        // fall back to that with GetGUIDForTracing.
-        shared_memory_guid =
-            resource.gpu_memory_buffer->GetHandle().handle.GetGUID();
-        if (shared_memory_guid.is_empty()) {
-          guid =
-              resource.gpu_memory_buffer->GetGUIDForTracing(tracing_process_id);
-        }
-        break;
       case viz::ResourceType::kTexture:
         DCHECK(resource.gl_id);
         guid = gl::GetGLTextureClientGUIDForTracing(

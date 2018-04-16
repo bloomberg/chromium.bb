@@ -371,36 +371,6 @@ viz::ResourceId LayerTreeResourceProvider::CreateGpuTextureResource(
   return id;
 }
 
-viz::ResourceId LayerTreeResourceProvider::CreateGpuMemoryBufferResource(
-    const gfx::Size& size,
-    viz::ResourceTextureHint hint,
-    viz::ResourceFormat format,
-    gfx::BufferUsage usage,
-    const gfx::ColorSpace& color_space) {
-  DCHECK(compositor_context_provider_);
-  DCHECK(!size.IsEmpty());
-  DCHECK(compositor_context_provider_);
-  DCHECK_LE(size.width(), settings_.max_texture_size);
-  DCHECK_LE(size.height(), settings_.max_texture_size);
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  viz::ResourceId id = next_id_++;
-  viz::internal::Resource* resource = InsertResource(
-      id, viz::internal::Resource(size, viz::internal::Resource::INTERNAL, hint,
-                                  viz::ResourceType::kGpuMemoryBuffer, format,
-                                  color_space));
-  resource->target = GetImageTextureTarget(
-      compositor_context_provider_->ContextCapabilities(), usage, format);
-  resource->buffer_format = BufferFormat(format);
-  resource->usage = usage;
-  resource->is_overlay_candidate = true;
-  // GpuMemoryBuffer provides direct access to the memory used by the GPU. Read
-  // lock fences are required to ensure that we're not trying to map a buffer
-  // that is currently in-use by the GPU.
-  resource->read_lock_fences_enabled = true;
-  return id;
-}
-
 viz::ResourceId LayerTreeResourceProvider::CreateBitmapResource(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -571,38 +541,6 @@ void LayerTreeResourceProvider::CreateMailbox(
   gl->GenMailboxCHROMIUM(resource->mailbox.name);
   gl->ProduceTextureDirectCHROMIUM(resource->gl_id, resource->mailbox.name);
   resource->SetLocallyUsed();
-}
-
-void LayerTreeResourceProvider::CreateAndBindImage(
-    viz::internal::Resource* resource) {
-  DCHECK(resource->gpu_memory_buffer);
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-  // TODO(reveman): This avoids a performance problem on ARM ChromeOS
-  // devices. This only works with shared memory backed buffers.
-  // https://crbug.com/580166
-  DCHECK_EQ(resource->gpu_memory_buffer->GetHandle().type,
-            gfx::SHARED_MEMORY_BUFFER);
-#endif
-  CreateTexture(resource);
-
-  gpu::gles2::GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-
-  gl->BindTexture(resource->target, resource->gl_id);
-
-  if (!resource->image_id) {
-    resource->image_id = gl->CreateImageCHROMIUM(
-        resource->gpu_memory_buffer->AsClientBuffer(), resource->size.width(),
-        resource->size.height(), GLInternalFormat(resource->format));
-
-    DCHECK(resource->image_id ||
-           gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
-
-    gl->BindTexImage2DCHROMIUM(resource->target, resource->image_id);
-  } else {
-    gl->ReleaseTexImage2DCHROMIUM(resource->target, resource->image_id);
-    gl->BindTexImage2DCHROMIUM(resource->target, resource->image_id);
-  }
 }
 
 void LayerTreeResourceProvider::AllocateForTesting(viz::ResourceId id) {
@@ -920,48 +858,6 @@ void LayerTreeResourceProvider::ScopedWriteLockRaster::LazyAllocate(
     ri->SetColorSpaceMetadata(texture_id,
                               reinterpret_cast<GLColorSpace>(&color_space_));
   }
-}
-
-LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer ::
-    ScopedWriteLockGpuMemoryBuffer(LayerTreeResourceProvider* resource_provider,
-                                   viz::ResourceId resource_id)
-    : resource_provider_(resource_provider), resource_id_(resource_id) {
-  viz::internal::Resource* resource =
-      resource_provider->LockForWrite(resource_id);
-  DCHECK_EQ(resource->type, viz::ResourceType::kGpuMemoryBuffer);
-  size_ = resource->size;
-  format_ = resource->format;
-  usage_ = resource->usage;
-  color_space_ = resource_provider->GetResourceColorSpaceForRaster(resource);
-  gpu_memory_buffer_ = std::move(resource->gpu_memory_buffer);
-}
-
-LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer::
-    ~ScopedWriteLockGpuMemoryBuffer() {
-  viz::internal::Resource* resource =
-      resource_provider_->GetResource(resource_id_);
-  // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
-  // http://crbug.com/554541
-  if (gpu_memory_buffer_) {
-    resource->gpu_memory_buffer = std::move(gpu_memory_buffer_);
-    resource->allocated = true;
-    resource_provider_->CreateAndBindImage(resource);
-  }
-  resource_provider_->UnlockForWrite(resource);
-}
-
-gfx::GpuMemoryBuffer* LayerTreeResourceProvider::
-    ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
-  if (!gpu_memory_buffer_) {
-    gpu_memory_buffer_ =
-        resource_provider_->gpu_memory_buffer_manager()->CreateGpuMemoryBuffer(
-            size_, BufferFormat(format_), usage_, gpu::kNullSurfaceHandle);
-    // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
-    // http://crbug.com/554541
-    if (gpu_memory_buffer_ && color_space_.IsValid())
-      gpu_memory_buffer_->SetColorSpace(color_space_);
-  }
-  return gpu_memory_buffer_.get();
 }
 
 LayerTreeResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(

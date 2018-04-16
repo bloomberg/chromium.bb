@@ -9,7 +9,6 @@ namespace viz {
 
 // Types of resources that can be sent to the viz compositing service.
 enum class ResourceType {
-  kGpuMemoryBuffer,
   kTexture,
   kBitmap,
 };
