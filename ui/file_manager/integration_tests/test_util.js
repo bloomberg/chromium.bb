@@ -5,15 +5,31 @@
 'use strict';
 
 /**
- * Sends a test message.
- * @param {Object} message Message to be sent. It is converted into JSON string
- *     before sending.
- * @return {Promise} Promise to be fulfilled with a returned value.
+ * Sends a message to the controlling test harness, namely and usually, the
+ * chrome FileManagerBrowserTest harness: it expects the message to contain
+ * the 'name' of the command, and any required or optional arguments of the
+ * command, e.g.,
+ *
+ *   sendTestMessage({
+ *     name: 'addEntries', // command with volume and entries arguments
+ *     volume: volume,
+ *     entries: entries
+ *   }).then(...);
+ *
+ * @param {Object} message Message object to be sent. The object is converted
+ *     to a JSON string prior to sending.
+ * @return {Promise} Promise to be fulfilled with the value returned by the
+ *     chrome.test.sendMessage callback.
  */
 function sendTestMessage(message) {
-  return new Promise(function(fulfill) {
-    chrome.test.sendMessage(JSON.stringify(message), fulfill);
-  });
+  if (typeof message.name === 'string') {
+    return new Promise(function(fulfill) {
+      chrome.test.sendMessage(JSON.stringify(message), fulfill);
+    });
+  } else {
+    let error = 'sendTestMessage requires a message.name <string>';
+    throw new Error(error);
+  }
 }
 
 /**
