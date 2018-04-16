@@ -166,6 +166,14 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
     ExecutePendingJavaScript();
   }
 
+  void ClickRetry() {
+    js_checker().ExecuteAsync(
+        "document.querySelector('"
+        "#oauth-enroll-active-directory-join-error-card /deep/ #submitButton'"
+        ").fire('tap')");
+    ExecutePendingJavaScript();
+  }
+
   void SetExpectedJoinRequest(
       const std::string& machine_name,
       const std::string& machine_domain,
@@ -246,13 +254,18 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
 
   void SetupActiveDirectoryJSNotifications() {
     js_checker().ExecuteAsync(
-        "var testShowStep = login.OAuthEnrollmentScreen.showStep;"
-        "login.OAuthEnrollmentScreen.showStep = function(step) {"
-        "  testShowStep(step);"
-        "  if (step == 'working') {"
-        "    window.domAutomationController.send('ShowSpinnerScreen');"
+        "var testShowStep = login.OAuthEnrollmentScreen.showStep;\n"
+        "login.OAuthEnrollmentScreen.showStep = function(step) {\n"
+        "  testShowStep(step);\n"
+        "  if (step == 'working') {\n"
+        "    window.domAutomationController.send('ShowSpinnerScreen');\n"
         "  }"
-        "}");
+        "}\n"
+        "var testShowError = login.OAuthEnrollmentScreen.showError;\n"
+        "login.OAuthEnrollmentScreen.showError = function(message, retry) {\n"
+        "  testShowError(message, retry);\n"
+        "  window.domAutomationController.send('ShowADJoinError');\n"
+        "}\n");
     js_checker().ExecuteAsync(
         "var testInvalidateAd = login.OAuthEnrollmentScreen.invalidateAd;"
         "login.OAuthEnrollmentScreen.invalidateAd = function(machineName, "
@@ -516,6 +529,35 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".isInvalid");
   js_checker().ExpectTrue(std::string(kAdUsernameInput) + ".isInvalid");
   js_checker().ExpectFalse(std::string(kAdPasswordInput) + ".isInvalid");
+
+  // We have to remove the enrollment_helper before the dtor gets called.
+  enrollment_screen()->enrollment_helper_.reset();
+}
+
+// Check that correct error card is shown (Active Directory one). Also checks
+// that hitting retry shows Active Directory screen again.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
+                       TestActiveDirectoryEnrollment_ErrorCard) {
+  ShowEnrollmentScreen();
+  SetupActiveDirectoryJoin(kAdUserDomain);
+  SubmitEnrollmentCredentials();
+
+  chromeos::DBusThreadManager::Get()
+      ->GetUpstartClient()
+      ->StartAuthPolicyService();
+
+  content::DOMMessageQueue message_queue;
+  SetupActiveDirectoryJSNotifications();
+  // Legacy type triggers error card.
+  authpolicy::KerberosEncryptionTypes enc_types =
+      authpolicy::KerberosEncryptionTypes::ENC_TYPES_LEGACY;
+  SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
+                                   std::to_string(enc_types), "test_user",
+                                   "password");
+  WaitForMessage(&message_queue, "\"ShowADJoinError\"");
+  EXPECT_TRUE(IsStepDisplayed("active-directory-join-error"));
+  ClickRetry();
+  EXPECT_TRUE(IsStepDisplayed("ad-join"));
 
   // We have to remove the enrollment_helper before the dtor gets called.
   enrollment_screen()->enrollment_helper_.reset();
