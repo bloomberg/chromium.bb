@@ -23,6 +23,7 @@ source_set("in_progress") {
     "//components/download/downloader/in_progress/proto",
     "//net",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//services/network/public/mojom",
   ]
 }
 
