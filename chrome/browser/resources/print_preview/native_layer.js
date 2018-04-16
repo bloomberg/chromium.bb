@@ -71,7 +71,7 @@ print_preview.CapabilitiesResponse;
  * @typedef {{
  *   printerId: string,
  *   success: boolean,
- *   capabilities: Object,
+ *   capabilities: !print_preview.Cdd,
  * }}
  */
 print_preview.PrinterSetupResponse;

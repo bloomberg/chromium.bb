@@ -574,6 +574,14 @@ cr.define('print_preview', function() {
       return this.isOffline || this.shouldShowInvalidCertificateError;
     }
 
+    /** @return {boolean} Whether the destination is ready to be selected. */
+    get readyForSelection() {
+      return (!cr.isChromeOS ||
+              this.origin_ != print_preview.DestinationOrigin.CROS ||
+              this.capabilities_ != null) &&
+          !this.isProvisional;
+    }
+
     /**
      * @return {string} Human readable status for a destination that is offline
      *     or has a bad certificate. */
