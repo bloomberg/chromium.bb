@@ -1230,7 +1230,7 @@ bool CanCreateBookmarkApp(const Browser* browser) {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_CHROMEOS)
-void QueryAndDisplayArcApps(const Browser* browser,
+void ShowIntentPickerBubble(const Browser* browser,
                             std::vector<chromeos::IntentPickerAppInfo> app_info,
                             IntentPickerResponse callback) {
   browser->window()->ShowIntentPickerBubble(std::move(app_info),

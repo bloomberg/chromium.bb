@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
@@ -397,8 +398,8 @@ void OnIntentPickerClosed(int render_process_host_id,
       break;
   }
 
-  ArcNavigationThrottle::RecordUma(selected_app_package, app_type, reason,
-                                   should_persist);
+  chromeos::AppsNavigationThrottle::RecordUma(selected_app_package, app_type,
+                                              reason, should_persist);
 }
 
 // Called when ARC returned activity icons for the |handlers|.
@@ -465,7 +466,7 @@ void OnUrlHandlerList(int render_process_host_id,
   if (HandleUrl(render_process_host_id, routing_id, url, handlers,
                 handlers.size(), &result)) {
     if (result == GetActionResult::HANDLE_URL_IN_ARC) {
-      ArcNavigationThrottle::RecordUma(
+      chromeos::AppsNavigationThrottle::RecordUma(
           std::string(), chromeos::AppType::ARC,
           chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND,
           false /* should_persist */);

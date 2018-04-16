@@ -1416,6 +1416,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Chrome preferred and pressed"/>
   <int value="7" label="ARC app pressed"/>
   <int value="8" label="ARC app preferred and pressed"/>
+  <int value="9" label="Progressive web app pressed"/>
 </enum>
 
 <enum name="ArcIntentHandlerDestinationPlatform">
@@ -1424,6 +1425,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   </summary>
   <int value="0" label="ARC"/>
   <int value="1" label="Chrome"/>
+  <int value="2" label="Progressive web app"/>
 </enum>
 
 <enum name="ArcNativeBridgeType">

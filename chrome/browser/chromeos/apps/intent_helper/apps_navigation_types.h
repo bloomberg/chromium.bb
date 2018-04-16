@@ -20,6 +20,9 @@ enum class AppType {
 
   // An Android app.
   ARC,
+
+  // A Progressive Web App.
+  PWA,
 };
 
 // Describes the possible ways for the intent picker to be closed.
