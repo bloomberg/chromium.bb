@@ -13,6 +13,8 @@ from util import proguard_util
 
 
 _DANGEROUS_OPTIMIZATIONS = [
+    # See crbug.com/825995 (can cause VerifyErrors)
+    "class/merging/vertical",
     "class/unboxing/enum",
     # See crbug.com/625992
     "code/allocation/variable",
