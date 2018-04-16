@@ -28,24 +28,6 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//services/tracing/public/cpp",
   ]
-
-  if (is_mac || is_linux || is_android) {
-    sources += [
-      "perfetto/perfetto_service.cc",
-      "perfetto/perfetto_service.h",
-      "perfetto/producer_host.cc",
-      "perfetto/producer_host.h",
-    ]
-
-    deps = [
-      "//third_party/perfetto/protos/perfetto/trace:lite",
-      "//third_party/perfetto/protos/perfetto/trace:zero",
-      "//third_party/perfetto/protos/perfetto/trace/chrome:lite",
-      "//third_party/perfetto/protos/perfetto/trace/chrome:zero",
-    ]
-
-    public_deps += [ "//third_party/perfetto:libperfetto" ]
-  }
 }
 
 service_manifest("manifest") {
@@ -92,18 +74,6 @@ source_set("tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  if (is_mac || is_linux || is_android) {
-    sources += [ "perfetto/perfetto_integration_unittest.cc" ]
-
-    deps += [
-      "//third_party/perfetto/protos/perfetto/common",
-      "//third_party/perfetto/protos/perfetto/trace:lite",
-      "//third_party/perfetto/protos/perfetto/trace:zero",
-      "//third_party/perfetto/protos/perfetto/trace/chrome:lite",
-      "//third_party/perfetto/protos/perfetto/trace/chrome:zero",
-    ]
-  }
 
   data_deps = [
     ":tracing",

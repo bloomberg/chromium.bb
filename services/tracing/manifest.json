@@ -5,8 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "app": [
-          "tracing::mojom::AgentRegistry",
-          "tracing::mojom::PerfettoService"
+          "tracing::mojom::AgentRegistry"
         ],
         "tracing": [ "tracing::mojom::Coordinator" ],
         "tests": [ "*" ]
