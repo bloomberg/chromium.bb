@@ -22,7 +22,6 @@
 #include "ash/assistant/ash_assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
-#include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
 #include "ash/display/ash_display_controller.h"
@@ -154,6 +153,7 @@
 #include "base/trace_event/trace_event.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/system/devicemode.h"
 #include "components/exo/file_helper.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -1234,8 +1234,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
 
   user_metrics_recorder_->OnShellInitialized();
 
-  // Initialize the D-Bus thread and services for ash.
-  ash_dbus_services_ = std::make_unique<AshDBusServices>();
   // By this point ash shell should have initialized its D-Bus signal
   // listeners, so emit ash-initialized upstart signal to start Chrome OS tasks
   // that expect that ash is listening to D-Bus signals they emit. For example,
@@ -1243,8 +1241,9 @@ void Shell::Init(ui::ContextFactory* context_factory,
   // purely by emitting D-Bus signals, and thus has to be run whenever ash is
   // started so ash (DetachableBaseHandler in particular) gets the proper view
   // of the current detachable base state.
-  // TODO(stevenjb): Move this and other D-Bus dependencies to AshDBusServices.
-  ash_dbus_services_->EmitAshInitialized();
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->EmitAshInitialized();
 }
 
 void Shell::InitializeDisplayManager() {
