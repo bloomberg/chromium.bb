@@ -84,7 +84,7 @@ int GetIconAlignmentOffset() {
   // (i.e. the views::Background). The traditional popup is designed with its
   // selection shape mimicking the internal shape of the omnibox border. Inset
   // to be consistent with the border drawn in BackgroundWith1PxBorder.
-  int offset = BackgroundWith1PxBorder::kLocationBarBorderThicknessDip;
+  int offset = LocationBarView::GetBorderThicknessDip();
 
   // The touch-optimized popup selection always fills the results frame. So to
   // align icons, inset additionally by the frame alignment inset on the left.
@@ -581,8 +581,7 @@ void OmniboxResultView::Layout() {
   // improve readability/maintainability.
 
   if (keyword_match) {
-    int kw_x =
-        start_x + BackgroundWith1PxBorder::kLocationBarBorderThicknessDip;
+    int kw_x = start_x + LocationBarView::GetBorderThicknessDip();
     keyword_view_->icon()->SetPosition(gfx::Point(
         kw_x, (keyword_view_->height() - keyword_view_->icon()->height()) / 2));
     kw_x += keyword_view_->icon()->width() + horizontal_padding;

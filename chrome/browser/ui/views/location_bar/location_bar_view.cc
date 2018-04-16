@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_platform_style.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
@@ -125,8 +126,7 @@ using views::View;
 namespace {
 
 bool InTouchableMode() {
-  return ui::MaterialDesignController::GetMode() ==
-         ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
 }
 
 OmniboxTint GetTintForProfile(Profile* profile) {
@@ -146,6 +146,36 @@ OmniboxTint GetTintForProfile(Profile* profile) {
   return OmniboxTint::LIGHT;
 }
 
+// Returns true when a views::FocusRing should be used.
+bool ShouldUseFocusRingView(bool show_focus_ring) {
+  return (show_focus_ring && LocationBarView::IsRounded()) ||
+         ChromePlatformStyle::ShouldOmniboxUseFocusRing();
+}
+
+// Installs a focus ring on the LocationBarView if it's focused and returns it.
+views::View* InstallFocusRing(LocationBarView* view) {
+  if (!view->HasFocus())
+    return nullptr;
+  return views::FocusRing::Install(
+      view, view->GetColor(OmniboxPart::LOCATION_BAR_FOCUS_RING),
+      view->GetBorderRadius());
+}
+
+views::View* UninstallFocusRing(LocationBarView* view) {
+  // This should be a no-op if the focus ring doesn't exist.
+  views::FocusRing::Uninstall(view);
+  return nullptr;
+}
+
+// Helper function to create a rounded rect background (no stroke).
+std::unique_ptr<views::Background> CreateRoundRectBackground(SkColor bg_color,
+                                                             float radius) {
+  std::unique_ptr<views::Background> background = CreateBackgroundFromPainter(
+      views::Painter::CreateSolidRoundRectPainter(bg_color, radius));
+  background->SetNativeControlColor(bg_color);
+  return background;
+}
+
 }  // namespace
 
 // LocationBarView -----------------------------------------------------------
@@ -163,7 +193,8 @@ LocationBarView::LocationBarView(Browser* browser,
       browser_(browser),
       delegate_(delegate),
       is_popup_mode_(is_popup_mode),
-      tint_(GetTintForProfile(profile)) {
+      tint_(GetTintForProfile(profile)),
+      focus_ring_(nullptr) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -294,6 +325,22 @@ SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) const {
                             ThemeProperties::COLOR_TOOLBAR, incognito));
 }
 
+// static
+int LocationBarView::GetBorderThicknessDip() {
+  return IsRounded() ? 0 : BackgroundWith1PxBorder::kBorderThicknessDip;
+}
+
+// static
+bool LocationBarView::IsRounded() {
+  return ui::MaterialDesignController::IsNewerMaterialUi();
+}
+
+float LocationBarView::GetBorderRadius() {
+  return IsRounded() ? ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+                           EMPHASIS_HIGH, GetLocalBounds())
+                     : GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS);
+}
+
 SkColor LocationBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
   // Only used in ChromeOS.
@@ -345,6 +392,8 @@ void LocationBarView::SetImeInlineAutocompletion(const base::string16& text) {
 
 void LocationBarView::SetShowFocusRect(bool show) {
   show_focus_rect_ = show;
+  focus_ring_ = ShouldUseFocusRingView(show) ? InstallFocusRing(this)
+                                             : UninstallFocusRing(this);
   SchedulePaint();
 }
 
@@ -718,13 +767,12 @@ int LocationBarView::GetAvailableTextHeight() {
 }
 
 void LocationBarView::OnOmniboxFocused() {
-  if (ChromePlatformStyle::ShouldOmniboxUseFocusRing())
-    views::FocusRing::Install(this);
+  if (ShouldUseFocusRingView(show_focus_rect_))
+    focus_ring_ = InstallFocusRing(this);
 }
 
 void LocationBarView::OnOmniboxBlurred() {
-  if (ChromePlatformStyle::ShouldOmniboxUseFocusRing())
-    views::FocusRing::Uninstall(this);
+  focus_ring_ = UninstallFocusRing(this);
 }
 
 // static
@@ -753,7 +801,7 @@ SkColor LocationBarView::GetBorderColor() const {
 gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
   const float device_scale_factor = layer()->device_scale_factor();
   const int border_radius =
-      BackgroundWith1PxBorder::IsRounded()
+      IsRounded()
           ? height() / 2
           : gfx::ToCeiledInt(BackgroundWith1PxBorder::kLegacyBorderRadiusPx /
                              device_scale_factor);
@@ -763,22 +811,29 @@ gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
 }
 
 int LocationBarView::GetHorizontalEdgeThickness() const {
-  return is_popup_mode_
-             ? 0
-             : BackgroundWith1PxBorder::kLocationBarBorderThicknessDip;
+  return is_popup_mode_ ? 0 : GetBorderThicknessDip();
 }
 
 void LocationBarView::RefreshBackground() {
   SkColor background_color = GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND);
   SkColor border_color = GetBorderColor();
 
-  // When the omnibox dropdown is open, match its color.
-  if (InTouchableMode() && GetOmniboxPopupView()->IsOpen()) {
-    background_color = border_color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
+  if (InTouchableMode()) {
+    // When the omnibox dropdown is open, match its color and remove the focus
+    // ring.
+    if (GetOmniboxPopupView()->IsOpen()) {
+      background_color = border_color =
+          GetColor(OmniboxPart::RESULTS_BACKGROUND);
+    }
+    if (focus_ring_)
+      focus_ring_->SetVisible(!GetOmniboxPopupView()->IsOpen());
   }
 
   if (is_popup_mode_) {
     SetBackground(views::CreateSolidBackground(background_color));
+  } else if (GetBorderThicknessDip() == 0) {
+    SetBackground(
+        CreateRoundRectBackground(background_color, GetBorderRadius()));
   } else {
     SetBackground(std::make_unique<BackgroundWith1PxBorder>(background_color,
                                                             border_color));
@@ -1068,6 +1123,7 @@ void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   OmniboxPopupView* popup = GetOmniboxPopupView();
   if (popup->IsOpen())
     popup->UpdatePopupAppearance();
+  RefreshBackground();
 }
 
 void LocationBarView::OnFocus() {
@@ -1077,8 +1133,7 @@ void LocationBarView::OnFocus() {
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
-  if (show_focus_rect_ && omnibox_view_->HasFocus() &&
-      !ChromePlatformStyle::ShouldOmniboxUseFocusRing()) {
+  if (show_focus_rect_ && omnibox_view_->HasFocus() && !focus_ring_) {
     static_cast<BackgroundWith1PxBorder*>(background())
         ->PaintFocusRing(canvas, GetNativeTheme(), GetLocalBounds());
   }
@@ -1174,6 +1229,6 @@ void LocationBarView::SetFocusAndSelection(bool select_all) {
 
 // static
 int LocationBarView::GetTotalVerticalPadding() {
-  return BackgroundWith1PxBorder::kLocationBarBorderThicknessDip +
+  return GetBorderThicknessDip() +
          GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
 }

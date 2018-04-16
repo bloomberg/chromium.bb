@@ -122,8 +122,10 @@ bool ChromeLayoutProvider::IsHarmonyMode() const {
 int ChromeLayoutProvider::GetCornerRadiusMetric(
     ChromeEmphasisMetric emphasis_metric,
     const gfx::Rect& bounds) const {
-  // Outside of MD (refresh) mode, just stick to the current fixed value.
-  return emphasis_metric == EMPHASIS_HIGH ? 0 : 4;
+  // Use the current fixed value for non-EMPHASIS_HIGH.
+  return emphasis_metric == EMPHASIS_HIGH
+             ? std::min(bounds.width(), bounds.height()) / 2
+             : 4;
 }
 
 int ChromeLayoutProvider::GetShadowElevationMetric(

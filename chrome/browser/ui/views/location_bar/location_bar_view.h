@@ -105,6 +105,15 @@ class LocationBarView : public LocationBar,
 
   ~LocationBarView() override;
 
+  // Returns the location bar border thickness in DIPs.
+  static int GetBorderThicknessDip();
+
+  // Whether the location bar is a pill shape.
+  static bool IsRounded();
+
+  // Returns the location bar border radius in DIPs.
+  float GetBorderRadius();
+
   // Initializes the LocationBarView.
   void Init();
 
@@ -449,6 +458,9 @@ class LocationBarView : public LocationBar,
   // True if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   bool show_focus_rect_ = false;
+
+  // The focus ring view.
+  views::View* focus_ring_;
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;

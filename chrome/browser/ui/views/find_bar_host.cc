@@ -265,9 +265,8 @@ gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   if (widget_bounds.IsEmpty())
     return gfx::Rect();
 
-  gfx::Insets insets =
-      view()->border()->GetInsets() -
-      gfx::Insets(0, BackgroundWith1PxBorder::kLocationBarBorderThicknessDip);
+  gfx::Insets insets = view()->border()->GetInsets() -
+                       gfx::Insets(0, LocationBarView::GetBorderThicknessDip());
 
   // Ask the view how large an area it needs to draw on.
   gfx::Size prefsize = view()->GetPreferredSize();

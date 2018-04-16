@@ -205,7 +205,7 @@ SkColor BubbleIconView::GetInkDropBaseColor() const {
 }
 
 std::unique_ptr<views::InkDropMask> BubbleIconView::CreateInkDropMask() const {
-  if (!BackgroundWith1PxBorder::IsRounded())
+  if (!LocationBarView::IsRounded())
     return nullptr;
   return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
                                                        height() / 2.f);

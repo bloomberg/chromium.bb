@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 
 #include "cc/paint/paint_flags.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -17,11 +18,6 @@ BackgroundWith1PxBorder::BackgroundWith1PxBorder(SkColor background,
                                                  SkColor border)
     : border_color_(border) {
   SetNativeControlColor(background);
-}
-
-// static
-bool BackgroundWith1PxBorder::IsRounded() {
-  return ui::MaterialDesignController::IsNewerMaterialUi();
 }
 
 void BackgroundWith1PxBorder::PaintFocusRing(gfx::Canvas* canvas,
@@ -42,7 +38,7 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
 }
 
 float BackgroundWith1PxBorder::GetBorderRadius(int height_in_px) const {
-  if (IsRounded()) {
+  if (LocationBarView::IsRounded()) {
     // This method returns the inner radius of the border, so subtract 1 pixel
     // off the final border radius since the border thickness is always 1px.
     return height_in_px / 2.f - 1;
@@ -60,13 +56,12 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
   gfx::RectF border_rect_f(bounds);
   border_rect_f.Scale(scale);
 
-  // Inset by |kLocationBarBorderThicknessDip|, then draw the border along the
-  // outside edge of the result. Make sure the inset amount is a whole number so
-  // the border will still be aligned to the pixel grid. std::floor is chosen
-  // here to ensure the border will be fully contained within the
-  // |kLocationBarBorderThicknessDip| region.
-  border_rect_f.Inset(
-      gfx::InsetsF(std::floor(kLocationBarBorderThicknessDip * scale)));
+  // Inset by |kBorderThicknessDip|, then draw the border along the outside edge
+  // of the result. Make sure the inset amount is a whole number so the border
+  // will still be aligned to the pixel grid. std::floor is chosen here to
+  // ensure the border will be fully contained within the |kBorderThicknessDip|
+  // region.
+  border_rect_f.Inset(gfx::InsetsF(std::floor(kBorderThicknessDip * scale)));
 
   SkRRect inner_rect(SkRRect::MakeRectXY(gfx::RectFToSkRect(border_rect_f),
                                          inner_border_radius,

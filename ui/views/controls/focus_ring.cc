@@ -5,20 +5,13 @@
 #include "ui/views/controls/focus_ring.h"
 
 #include "ui/gfx/canvas.h"
-#include "ui/views/controls/focusable_border.h"
 
 namespace views {
 
 namespace {
 
-// The stroke width of the focus border in dp.
+// The default stroke width of the focus border in dp.
 constexpr float kFocusHaloThicknessDp = 2.f;
-
-// The focus indicator should hug the normal border, when present (as in the
-// case of text buttons). Since it's drawn outside the parent view, we have to
-// increase the rounding slightly.
-constexpr float kFocusHaloCornerRadiusDp =
-    FocusableBorder::kCornerRadiusDp + kFocusHaloThicknessDp / 2.f;
 
 FocusRing* GetFocusRing(View* parent) {
   for (int i = 0; i < parent->child_count(); ++i) {
@@ -33,16 +26,31 @@ FocusRing* GetFocusRing(View* parent) {
 const char FocusRing::kViewClassName[] = "FocusRing";
 
 // static
-views::View* FocusRing::Install(View* parent,
-                                ui::NativeTheme::ColorId override_color_id) {
+FocusRing* FocusRing::Install(View* parent,
+                              SkColor color,
+                              float corner_radius) {
   FocusRing* ring = GetFocusRing(parent);
   if (!ring) {
-    ring = new FocusRing();
+    ring = new FocusRing(color, corner_radius);
     parent->AddChildView(ring);
   }
-  ring->override_color_id_ = override_color_id;
   ring->Layout();
   ring->SchedulePaint();
+  return ring;
+}
+
+// static
+FocusRing* FocusRing::Install(View* parent,
+                              ui::NativeTheme::ColorId override_color_id) {
+  SkColor ring_color = parent->GetNativeTheme()->GetSystemColor(
+      override_color_id == ui::NativeTheme::kColorId_NumColors
+          ? ui::NativeTheme::kColorId_FocusedBorderColor
+          : override_color_id);
+  FocusRing* ring = Install(parent, ring_color);
+  DCHECK(ring);
+  ring->override_color_id_ = override_color_id;
+  if (!ring->view_observer_.IsObserving(parent))
+    ring->view_observer_.Add(parent);
   return ring;
 }
 
@@ -75,21 +83,27 @@ void FocusRing::Layout() {
 void FocusRing::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(
-      SkColorSetA(GetNativeTheme()->GetSystemColor(
-                      override_color_id_ != ui::NativeTheme::kColorId_NumColors
-                          ? override_color_id_
-                          : ui::NativeTheme::kColorId_FocusedBorderColor),
-                  0x66));
+  flags.setColor(SkColorSetA(color_, 0x66));
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(kFocusHaloThicknessDp);
   gfx::RectF rect(GetLocalBounds());
   rect.Inset(gfx::InsetsF(kFocusHaloThicknessDp / 2.f));
-  canvas->DrawRoundRect(rect, kFocusHaloCornerRadiusDp, flags);
+  // The focus indicator should hug the normal border, when present (as in the
+  // case of text buttons). Since it's drawn outside the parent view, increase
+  // the rounding slightly by adding half the ring thickness.
+  canvas->DrawRoundRect(rect, corner_radius_ + kFocusHaloThicknessDp / 2.f,
+                        flags);
 }
 
-FocusRing::FocusRing()
-    : override_color_id_(ui::NativeTheme::kColorId_NumColors) {
+void FocusRing::OnViewNativeThemeChanged(View* observed_view) {
+  if (override_color_id_) {
+    color_ = observed_view->GetNativeTheme()->GetSystemColor(
+        override_color_id_.value());
+  }
+}
+
+FocusRing::FocusRing(SkColor color, float corner_radius)
+    : color_(color), corner_radius_(corner_radius), view_observer_(this) {
   InitFocusRing(this);
 }
 
