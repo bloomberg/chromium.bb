@@ -414,7 +414,7 @@ class PDFiumEngine : public PDFEngine,
                  std::vector<pp::Rect>* highlighted_rects);
 
   // Helper function to convert a device to page coordinates.  If the page is
-  // not yet loaded, page_x and page_y will be set to 0.
+  // not yet loaded, |page_x| and |page_y| will be set to 0.
   void DeviceToPage(int page_index,
                     const pp::Point& device_point,
                     double* page_x,
