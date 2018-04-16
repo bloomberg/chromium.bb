@@ -106,6 +106,7 @@
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/supervised/supervised_notification_controller.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -831,6 +832,7 @@ Shell::~Shell() {
   resolution_notification_controller_.reset();
   screen_security_notification_controller_.reset();
   screenshot_controller_.reset();
+  supervised_notification_controller_.reset();
   mouse_cursor_filter_.reset();
   modality_filter_.reset();
 
@@ -944,6 +946,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
           detachable_base_handler_.get());
   screen_security_notification_controller_ =
       std::make_unique<ScreenSecurityNotificationController>();
+  supervised_notification_controller_ =
+      std::make_unique<SupervisedNotificationController>();
 
   // Connector can be null in tests.
   if (shell_delegate_->GetShellConnector()) {
