@@ -88,6 +88,7 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
   bool IsAvailable() const;
 
  private:
+  class ScopedDevToolsHandle;
   struct ClientInfo {
     ClientInfo(mojom::SharedWorkerClientPtr client,
                int connection_request_id,
@@ -135,6 +136,7 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
   bool termination_message_sent_ = false;
   bool closed_ = false;
   const base::TimeTicks creation_time_;
+  std::unique_ptr<ScopedDevToolsHandle> devtools_handle_;
 
   // This is the set of features that this worker has used.
   std::set<blink::mojom::WebFeature> used_features_;
