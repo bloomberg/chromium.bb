@@ -1,7 +1,9 @@
-IdentityManager serves as the primary client-side interface to the Identity
-Service, encapsulating a connection to a remote implementation of
-identity::mojom::IdentityManager. It provides conveniences over the bare Mojo
-interfaces such as:
+IdentityManager is the next-generation C++ API for interacting with Google
+identity. It is currently backed by //components/signin (see IMPLEMENTATION
+NOTES below); in the long-term it will serve as the primary client-side
+interface to the Identity Service, encapsulating a connection to a remote
+implementation of identity::mojom::IdentityManager. It provides conveniences
+over the bare Identity Service Mojo interfaces such as:
 
 - Synchronous access to the information of the primary account (via caching)
 
