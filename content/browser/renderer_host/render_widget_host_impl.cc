@@ -3140,10 +3140,11 @@ void RenderWidgetHostImpl::DidReceiveFirstFrameAfterNavigation() {
 }
 
 void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {
-  if (did_receive_first_frame_after_navigation_)
+  if (did_receive_first_frame_after_navigation_ ||
+      !new_content_rendering_timeout_) {
     return;
-  if (new_content_rendering_timeout_)
-    new_content_rendering_timeout_->Stop();
+  }
+  new_content_rendering_timeout_->Stop();
   ClearDisplayedGraphics();
 }
 
