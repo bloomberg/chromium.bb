@@ -199,6 +199,10 @@ class LocationBarView : public LocationBar,
   // the leading edge of the Omnibox, under the padlock.
   views::View* GetSecurityBubbleAnchorView();
 
+  // Show a page info dialog for |web_contents|.
+  // Returns true if a dialog was shown, false otherwise.
+  bool ShowPageInfoDialog(content::WebContents* web_contents);
+
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
   const OmniboxViewViews* omnibox_view() const { return omnibox_view_; }
 
@@ -216,7 +220,6 @@ class LocationBarView : public LocationBar,
   // LocationBar:
   void FocusLocation(bool select_all) override;
   void Revert() override;
-  bool ShowPageInfoDialog(content::WebContents* contents) override;
   OmniboxView* GetOmniboxView() override;
 
   // views::View:
