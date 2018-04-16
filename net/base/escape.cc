@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/third_party/icu/icu_utf.h"
 
 namespace net {
 
@@ -101,7 +103,7 @@ const char kUrlUnescape[128] = {
 // Attempts to unescape the sequence at |index| within |escaped_text|.  If
 // successful, sets |value| to the unescaped value.  Returns whether
 // unescaping succeeded.
-bool UnescapeUnsignedCharAtIndex(base::StringPiece escaped_text,
+bool UnescapeUnsignedByteAtIndex(base::StringPiece escaped_text,
                                  size_t index,
                                  unsigned char* value) {
   if ((index + 2) >= escaped_text.size())
@@ -118,71 +120,115 @@ bool UnescapeUnsignedCharAtIndex(base::StringPiece escaped_text,
   return false;
 }
 
-// Returns true if there is an Arabic Language Mark at |index|. |first_byte|
-// is the byte at |index|.
-bool HasArabicLanguageMarkAtIndex(base::StringPiece escaped_text,
-                                  unsigned char first_byte,
-                                  size_t index) {
-  if (first_byte != 0xD8)
+// Attempts to unescape and decode a UTF-8-encoded percent-escaped character at
+// the specified index. On success, returns true, sets |code_point_out| to be
+// the character's code point and |unescaped_out| to be the unescaped UTF-8
+// string. |unescaped_out| will always be 1/3rd the length of the substring of
+// |escaped_text| that corresponds to the unescaped character.
+bool UnescapeUTF8CharacterAtIndex(base::StringPiece escaped_text,
+                                  size_t index,
+                                  uint32_t* code_point_out,
+                                  std::string* unescaped_out) {
+  DCHECK(unescaped_out->empty());
+
+  unsigned char bytes[CBU8_MAX_LENGTH];
+  if (!UnescapeUnsignedByteAtIndex(escaped_text, index, &bytes[0]))
     return false;
-  unsigned char second_byte;
-  if (!UnescapeUnsignedCharAtIndex(escaped_text, index + 3, &second_byte))
+
+  size_t num_bytes = 1;
+
+  // If this is a lead byte, need to collect trail bytes as well.
+  if (CBU8_IS_LEAD(bytes[0])) {
+    // Look for the last trail byte of the UTF-8 character.  Give up once
+    // reach max character length number of bytes, or hit an unescaped
+    // character. No need to check length of escaped_text, as
+    // UnescapeUnsignedByteAtIndex checks lengths.
+    while (num_bytes < arraysize(bytes) &&
+           UnescapeUnsignedByteAtIndex(escaped_text, index + num_bytes * 3,
+                                       &bytes[num_bytes]) &&
+           CBU8_IS_TRAIL(bytes[num_bytes])) {
+      ++num_bytes;
+    }
+  }
+
+  int32_t char_index = 0;
+  // Check if the unicode "character" that was just unescaped is valid.
+  if (!base::ReadUnicodeCharacter(reinterpret_cast<char*>(bytes), num_bytes,
+                                  &char_index, code_point_out)) {
     return false;
-  return second_byte == 0x9c;
+  }
+
+  // It's possible that a prefix of |bytes| forms a valid UTF-8 character,
+  // and the rest are not valid UTF-8, so need to update |num_bytes| based
+  // on the result of ReadUnicodeCharacter().
+  num_bytes = char_index + 1;
+  *unescaped_out = std::string(reinterpret_cast<char*>(bytes), num_bytes);
+  return true;
 }
 
-// Returns true if there is a BiDi control char at |index|. |first_byte| is the
-// byte at |index|.
-bool HasThreeByteBidiControlCharAtIndex(base::StringPiece escaped_text,
-                                        unsigned char first_byte,
-                                        size_t index) {
-  if (first_byte != 0xE2)
-    return false;
-  unsigned char second_byte;
-  if (!UnescapeUnsignedCharAtIndex(escaped_text, index + 3, &second_byte))
-    return false;
-  if (second_byte != 0x80 && second_byte != 0x81)
-    return false;
-  unsigned char third_byte;
-  if (!UnescapeUnsignedCharAtIndex(escaped_text, index + 6, &third_byte))
-    return false;
-  if (second_byte == 0x80) {
-    return third_byte == 0x8E ||
-           third_byte == 0x8F ||
-           (third_byte >= 0xAA && third_byte <= 0xAE);
-  }
-  return third_byte >= 0xA6 && third_byte <= 0xA9;
-}
-
-// Returns true if there is a four-byte banned char at |index|. |first_byte| is
-// the byte at |index|.
-bool HasFourByteBannedCharAtIndex(base::StringPiece escaped_text,
-                                  unsigned char first_byte,
-                                  size_t index) {
-  // The following characters are blacklisted for spoofability concerns.
-  // U+1F50F LOCK WITH INK PEN         (%F0%9F%94%8F)
-  // U+1F510 CLOSED LOCK WITH KEY      (%F0%9F%94%90)
-  // U+1F512 LOCK                      (%F0%9F%94%92)
-  // U+1F513 OPEN LOCK                 (%F0%9F%94%93)
-  if (first_byte != 0xF0)
-    return false;
-
-  unsigned char second_byte;
-  if (!UnescapeUnsignedCharAtIndex(escaped_text, index + 3, &second_byte) ||
-      second_byte != 0x9F) {
-    return false;
+// This method takes a Unicode code point and returns true if it should be
+// unescaped, based on |rules|.
+bool ShouldUnescapeCodePoint(UnescapeRule::Type rules, uint32_t code_point) {
+  // If this is an ASCII character, use the lookup table.
+  if (code_point < 0x80) {
+    return kUrlUnescape[code_point] ||
+           // Allow some additional unescaping when flags are set.
+           (code_point == ' ' && (rules & UnescapeRule::SPACES)) ||
+           // Allow any of the prohibited but non-control characters when doing
+           // "special" chars.
+           ((code_point == '/' || code_point == '\\') &&
+            (rules & UnescapeRule::PATH_SEPARATORS)) ||
+           (code_point > ' ' && code_point != '/' && code_point != '\\' &&
+            (rules & UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS)) ||
+           // Additionally allow non-display characters if requested.
+           (code_point < ' ' &&
+            (rules & UnescapeRule::SPOOFING_AND_CONTROL_CHARS));
   }
 
-  unsigned char third_byte;
-  if (!UnescapeUnsignedCharAtIndex(escaped_text, index + 6, &third_byte) ||
-      third_byte != 0x94) {
-    return false;
-  }
+  // Some schemes such as data: and file: need to parse the exact binary data
+  // when loading the URL. For that reason, SPOOFING_AND_CONTROL_CHARS allows
+  // unescaping UTF-8 byte sequences that are not safe to display. DO NOT use
+  // SPOOFING_AND_CONTROL_CHARS if the parsed URL is going to be displayed in
+  // the UI.
+  if (rules & UnescapeRule::SPOOFING_AND_CONTROL_CHARS)
+    return true;
 
-  unsigned char fourth_byte;
-  return UnescapeUnsignedCharAtIndex(escaped_text, index + 9, &fourth_byte) &&
-         (fourth_byte == 0x8F || fourth_byte == 0x90 || fourth_byte == 0x92 ||
-          fourth_byte == 0x93);
+  // Compare the codepoint against a list of characters that can be used
+  // to spoof other URLs.
+  //
+  // Can't use icu to make this cleaner, because Cronet cannot depend on
+  // icu, and currently uses this file.
+  // TODO(https://crbug.com/829873): Try to make this use icu, both to
+  // protect against regressions as the Unicode stndard is updated and to
+  // reduce the number of long lists of characters.
+  // TODO(https://crbug.com/824715): Add default ignoreable and formatting
+  // codepoints.
+  return !(
+      // Per http://tools.ietf.org/html/rfc3987#section-4.1, certain BiDi
+      // control characters are not allowed to appear unescaped in URLs.
+      code_point == 0x200E ||  // LEFT-TO-RIGHT MARK         (%E2%80%8E)
+      code_point == 0x200F ||  // RIGHT-TO-LEFT MARK         (%E2%80%8F)
+      code_point == 0x202A ||  // LEFT-TO-RIGHT EMBEDDING    (%E2%80%AA)
+      code_point == 0x202B ||  // RIGHT-TO-LEFT EMBEDDING    (%E2%80%AB)
+      code_point == 0x202C ||  // POP DIRECTIONAL FORMATTING (%E2%80%AC)
+      code_point == 0x202D ||  // LEFT-TO-RIGHT OVERRIDE     (%E2%80%AD)
+      code_point == 0x202E ||  // RIGHT-TO-LEFT OVERRIDE     (%E2%80%AE)
+
+      // The Unicode Technical Report (TR9) as referenced by RFC 3987 above has
+      // since added some new BiDi control characters that are not safe to
+      // unescape. http://www.unicode.org/reports/tr9
+      code_point == 0x061C ||  // ARABIC LETTER MARK         (%D8%9C)
+      code_point == 0x2066 ||  // LEFT-TO-RIGHT ISOLATE      (%E2%81%A6)
+      code_point == 0x2067 ||  // RIGHT-TO-LEFT ISOLATE      (%E2%81%A7)
+      code_point == 0x2068 ||  // FIRST STRONG ISOLATE       (%E2%81%A8)
+      code_point == 0x2069 ||  // POP DIRECTIONAL ISOLATE    (%E2%81%A9)
+
+      // The following spoofable characters are also banned in unescaped URLs,
+      // because they could be used to imitate parts of a web browser's UI.
+      code_point == 0x1F50F ||  // LOCK WITH INK PEN    (%F0%9F%94%8F)
+      code_point == 0x1F510 ||  // CLOSED LOCK WITH KEY (%F0%9F%94%90)
+      code_point == 0x1F512 ||  // LOCK                 (%F0%9F%94%92)
+      code_point == 0x1F513);   // OPEN LOCK            (%F0%9F%94%93)
 }
 
 // Unescapes |escaped_text| according to |rules|, returning the resulting
@@ -207,101 +253,60 @@ std::string UnescapeURLWithAdjustmentsImpl(
   result.reserve(escaped_text.length());
 
   // Locations of adjusted text.
-  for (size_t i = 0, max = escaped_text.size(); i < max; ++i) {
-    if (static_cast<unsigned char>(escaped_text[i]) >= 128) {
-      // Non ASCII character, append as is.
-      result.push_back(escaped_text[i]);
+  for (size_t i = 0, max = escaped_text.size(); i < max;) {
+    // Try to unescape the character.
+    uint32_t code_point;
+    std::string unescaped;
+    if (!UnescapeUTF8CharacterAtIndex(escaped_text, i, &code_point,
+                                      &unescaped)) {
+      // Check if the next character can be unescaped, but not as a valid UTF-8
+      // character. In that case, just unescaped and write the non-sense
+      // character.
+      //
+      // TODO(https://crbug.com/829868): Do not unescape illegal UTF-8 sequences
+      // unless SPOOFING_AND_CONTROL_CHARS is given. Should also split that
+      // behaviour off into a separate function.
+      unsigned char non_utf8_byte;
+      if (UnescapeUnsignedByteAtIndex(escaped_text, i, &non_utf8_byte)) {
+        result.push_back(non_utf8_byte);
+        if (adjustments)
+          adjustments->push_back(base::OffsetAdjuster::Adjustment(i, 3, 1));
+        i += 3;
+        continue;
+      }
+
+      // Character is not escaped, so append as is, unless it's a '+' and
+      // REPLACE_PLUS_WITH_SPACE is being applied.
+      if (escaped_text[i] == '+' &&
+          (rules & UnescapeRule::REPLACE_PLUS_WITH_SPACE)) {
+        result.push_back(' ');
+      } else {
+        result.push_back(escaped_text[i]);
+      }
+      ++i;
       continue;
     }
 
-    unsigned char first_byte;
-    if (UnescapeUnsignedCharAtIndex(escaped_text, i, &first_byte)) {
-      // Per http://tools.ietf.org/html/rfc3987#section-4.1, the following BiDi
-      // control characters are not allowed to appear unescaped in URLs:
-      //
-      // U+200E LEFT-TO-RIGHT MARK         (%E2%80%8E)
-      // U+200F RIGHT-TO-LEFT MARK         (%E2%80%8F)
-      // U+202A LEFT-TO-RIGHT EMBEDDING    (%E2%80%AA)
-      // U+202B RIGHT-TO-LEFT EMBEDDING    (%E2%80%AB)
-      // U+202C POP DIRECTIONAL FORMATTING (%E2%80%AC)
-      // U+202D LEFT-TO-RIGHT OVERRIDE     (%E2%80%AD)
-      // U+202E RIGHT-TO-LEFT OVERRIDE     (%E2%80%AE)
-      //
-      // Additionally, the Unicode Technical Report (TR9) as referenced by RFC
-      // 3987 above has since added some new BiDi control characters.
-      // http://www.unicode.org/reports/tr9
-      //
-      // U+061C ARABIC LETTER MARK         (%D8%9C)
-      // U+2066 LEFT-TO-RIGHT ISOLATE      (%E2%81%A6)
-      // U+2067 RIGHT-TO-LEFT ISOLATE      (%E2%81%A7)
-      // U+2068 FIRST STRONG ISOLATE       (%E2%81%A8)
-      // U+2069 POP DIRECTIONAL ISOLATE    (%E2%81%A9)
-      //
-      // The following spoofable characters are also banned, because they could
-      // be used to imitate parts of a web browser's UI.
-      //
-      // U+1F50F LOCK WITH INK PEN         (%F0%9F%94%8F)
-      // U+1F510 CLOSED LOCK WITH KEY      (%F0%9F%94%90)
-      // U+1F512 LOCK                      (%F0%9F%94%92)
-      // U+1F513 OPEN LOCK                 (%F0%9F%94%93)
-      //
-      // However, some schemes such as data: and file: need to parse the exact
-      // binary data when loading the URL. For that reason,
-      // SPOOFING_AND_CONTROL_CHARS allows unescaping BiDi control characters.
-      // DO NOT use SPOOFING_AND_CONTROL_CHARS if the parsed URL is going to be
-      // displayed in the UI.
-      if (!(rules & UnescapeRule::SPOOFING_AND_CONTROL_CHARS)) {
-        if (HasArabicLanguageMarkAtIndex(escaped_text, first_byte, i)) {
-          // Keep Arabic Language Mark escaped.
-          escaped_text.substr(i, 6).AppendToString(&result);
-          i += 5;
-          continue;
-        }
-        if (HasThreeByteBidiControlCharAtIndex(escaped_text, first_byte, i)) {
-          // Keep BiDi control char escaped.
-          escaped_text.substr(i, 9).AppendToString(&result);
-          i += 8;
-          continue;
-        }
-        if (HasFourByteBannedCharAtIndex(escaped_text, first_byte, i)) {
-          // Keep banned char escaped.
-          escaped_text.substr(i, 12).AppendToString(&result);
-          i += 11;
-          continue;
-        }
-      }
+    DCHECK(!unescaped.empty());
 
-      if (first_byte >= 0x80 ||  // Unescape all high-bit characters.
-          // For 7-bit characters, the lookup table tells us all valid chars.
-          (kUrlUnescape[first_byte] ||
-           // ...and we allow some additional unescaping when flags are set.
-           (first_byte == ' ' && (rules & UnescapeRule::SPACES)) ||
-           // Allow any of the prohibited but non-control characters when
-           // we're doing "special" chars.
-           ((first_byte == '/' || first_byte == '\\') &&
-            (rules & UnescapeRule::PATH_SEPARATORS)) ||
-           (first_byte > ' ' && first_byte != '/' && first_byte != '\\' &&
-            (rules & UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS)) ||
-           // Additionally allow non-display characters if requested.
-           (first_byte < ' ' &&
-            (rules & UnescapeRule::SPOOFING_AND_CONTROL_CHARS)))) {
-        // Use the unescaped version of the character.
-        if (adjustments)
-          adjustments->push_back(base::OffsetAdjuster::Adjustment(i, 3, 1));
-        result.push_back(first_byte);
-        i += 2;
-      } else {
-        // Keep escaped. Append a percent and we'll get the following two
-        // digits on the next loops through.
-        result.push_back('%');
-      }
-    } else if ((rules & UnescapeRule::REPLACE_PLUS_WITH_SPACE) &&
-               escaped_text[i] == '+') {
-      result.push_back(' ');
-    } else {
-      // Normal case for unescaped characters.
-      result.push_back(escaped_text[i]);
+    if (!ShouldUnescapeCodePoint(rules, code_point)) {
+      // If it's a valid UTF-8 character, but not safe to unescape, copy all
+      // bytes directly.
+      result.append(escaped_text.begin() + i,
+                    escaped_text.begin() + i + 3 * unescaped.length());
+      i += unescaped.length() * 3;
+      continue;
     }
+
+    // If the code point is allowed, and append the entire unescaped character.
+    result.append(unescaped);
+    if (adjustments) {
+      for (size_t j = 0; j < unescaped.length(); ++j) {
+        adjustments->push_back(
+            base::OffsetAdjuster::Adjustment(i + j * 3, 3, 1));
+      }
+    }
+    i += 3 * unescaped.length();
   }
 
   return result;
