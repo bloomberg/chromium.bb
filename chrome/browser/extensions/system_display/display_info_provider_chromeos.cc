@@ -335,7 +335,7 @@ std::string SetDisplayMode(display::DisplayManager* display_manager,
   if (!ash::Shell::Get()
            ->resolution_notification_controller()
            ->PrepareNotificationAndSetDisplayMode(
-               id, current_mode, new_mode, base::BindRepeating([]() {
+               id, current_mode, new_mode, base::BindOnce([]() {
                  ash::Shell::Get()->display_prefs()->StoreDisplayPrefs();
                }))) {
     return "Failed to set display mode.";
