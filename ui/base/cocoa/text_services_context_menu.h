@@ -50,6 +50,9 @@ class UI_BASE_EXPORT TextServicesContextMenu
   // submenu is added for bidirection, which |this| serves as a delegate for.
   void AppendEditableItems(SimpleMenuModel* model);
 
+  // Returns true if |command_id| is handled by this class.
+  bool SupportsCommand(int command_id) const;
+
   // SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;

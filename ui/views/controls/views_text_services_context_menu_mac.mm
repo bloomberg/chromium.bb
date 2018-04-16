@@ -59,7 +59,8 @@ class ViewsTextServicesContextMenuMac
 
   // ViewsTextServicesContextMenu:
   bool SupportsCommand(int command_id) const override {
-    return command_id == IDS_CONTENT_CONTEXT_EMOJI ||
+    return text_services_menu_.SupportsCommand(command_id) ||
+           command_id == IDS_CONTENT_CONTEXT_EMOJI ||
            command_id == IDS_CONTENT_CONTEXT_LOOK_UP;
   }
 
@@ -69,6 +70,9 @@ class ViewsTextServicesContextMenuMac
   }
 
   bool IsCommandIdEnabled(int command_id) const override {
+    if (text_services_menu_.SupportsCommand(command_id))
+      return text_services_menu_.IsCommandIdEnabled(command_id);
+
     switch (command_id) {
       case IDS_CONTENT_CONTEXT_EMOJI:
         return true;
