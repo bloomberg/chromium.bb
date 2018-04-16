@@ -18,11 +18,11 @@ class NGPaintFragment;
 class LayoutBlockFlow;
 struct LocalCaretRect;
 
-// Given an inline formatting context and a position in the context, returns the
-// caret rect if a caret should be placed at the position, with the given
-// affinity. The caret rect location is local to the given formatting context.
-CORE_EXPORT LocalCaretRect ComputeNGLocalCaretRect(const LayoutBlockFlow&,
-                                                   const PositionWithAffinity&);
+// Given a position with affinity, returns the caret rect if the position is
+// laid out with LayoutNG, and a caret can be placed at the position with the
+// given affinity. The caret rect location is local to the containing inline
+// formatting context.
+CORE_EXPORT LocalCaretRect ComputeNGLocalCaretRect(const PositionWithAffinity&);
 
 // An NGCaretPosition indicates a caret position relative to an inline
 // NGPaintFragment:
@@ -52,6 +52,10 @@ struct NGCaretPosition {
 CORE_EXPORT NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow&,
                                                    unsigned,
                                                    TextAffinity);
+
+// Shorthand of the above when the input is a position instead of a
+// (context, offset) pair.
+NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity&);
 
 }  // namespace blink
 

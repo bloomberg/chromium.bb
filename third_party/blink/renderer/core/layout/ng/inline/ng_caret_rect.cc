@@ -185,7 +185,6 @@ CaretPositionResolution TryResolveCaretPositionWithFragment(
 // Helpers for converting NGCaretPositions to caret rects.
 
 NGPhysicalOffsetRect ComputeLocalCaretRectByBoxSide(
-    const LayoutBlockFlow& context,
     const NGPaintFragment& fragment,
     NGCaretPositionType position_type) {
   const bool is_horizontal = fragment.Style().IsHorizontalWritingMode();
@@ -223,7 +222,6 @@ NGPhysicalOffsetRect ComputeLocalCaretRectByBoxSide(
 }
 
 NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
-    const LayoutBlockFlow& context,
     const NGPaintFragment& paint_fragment,
     unsigned offset) {
   const NGPhysicalTextFragment& fragment =
@@ -255,7 +253,8 @@ NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
                                     paint_fragment.InlineOffsetToContainerBox();
   NGPhysicalSize caret_size(caret_width, caret_height);
 
-  const NGPhysicalBoxFragment& context_fragment = *context.CurrentFragment();
+  const NGPaintFragment& context_fragment =
+      *NGPaintFragment::GetForInlineContainer(fragment.GetLayoutObject());
   const NGPaintFragment* line_box = paint_fragment.ContainerLineBox();
   const NGPhysicalOffset line_box_offset =
       line_box->InlineOffsetToContainerBox();
@@ -284,8 +283,7 @@ NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
   return NGPhysicalOffsetRect(caret_location, caret_size);
 }
 
-LocalCaretRect ComputeLocalCaretRect(const LayoutBlockFlow& context,
-                                     const NGCaretPosition& caret_position) {
+LocalCaretRect ComputeLocalCaretRect(const NGCaretPosition& caret_position) {
   if (caret_position.IsNull())
     return LocalCaretRect();
 
@@ -294,7 +292,7 @@ LocalCaretRect ComputeLocalCaretRect(const LayoutBlockFlow& context,
     case NGCaretPositionType::kAfterBox: {
       DCHECK(caret_position.fragment->PhysicalFragment().IsBox());
       const NGPhysicalOffsetRect fragment_local_rect =
-          ComputeLocalCaretRectByBoxSide(context, *caret_position.fragment,
+          ComputeLocalCaretRectByBoxSide(*caret_position.fragment,
                                          caret_position.position_type);
       return {caret_position.fragment->GetLayoutObject(),
               fragment_local_rect.ToLayoutRect()};
@@ -303,7 +301,7 @@ LocalCaretRect ComputeLocalCaretRect(const LayoutBlockFlow& context,
       DCHECK(caret_position.fragment->PhysicalFragment().IsText());
       DCHECK(caret_position.text_offset.has_value());
       const NGPhysicalOffsetRect caret_rect = ComputeLocalCaretRectAtTextOffset(
-          context, *caret_position.fragment, *caret_position.text_offset);
+          *caret_position.fragment, *caret_position.text_offset);
 
       return {caret_position.fragment->GetLayoutObject(),
               caret_rect.ToLayoutRect()};
@@ -361,24 +359,30 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
   return candidate;
 }
 
-LocalCaretRect ComputeNGLocalCaretRect(const LayoutBlockFlow& context,
-                                       const PositionWithAffinity& position) {
+NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity& position) {
   AssertValidPositionForCaretRectComputation(position);
-  DCHECK_EQ(&context, NGInlineFormattingContextOf(position.GetPosition()));
-  const NGOffsetMapping* mapping = NGOffsetMapping::GetFor(&context);
+  const LayoutBlockFlow* context =
+      NGInlineFormattingContextOf(position.GetPosition());
+  if (!context)
+    return NGCaretPosition();
+
+  const NGOffsetMapping* mapping = NGOffsetMapping::GetFor(context);
   DCHECK(mapping);
   const Optional<unsigned> maybe_offset =
       mapping->GetTextContentOffset(position.GetPosition());
   if (!maybe_offset.has_value()) {
     // TODO(xiaochengh): Investigate if we reach here.
     NOTREACHED();
-    return LocalCaretRect();
+    return NGCaretPosition();
   }
 
   const unsigned offset = maybe_offset.value();
   const TextAffinity affinity = position.Affinity();
-  return ComputeLocalCaretRect(
-      context, ComputeNGCaretPosition(context, offset, affinity));
+  return ComputeNGCaretPosition(*context, offset, affinity);
+}
+
+LocalCaretRect ComputeNGLocalCaretRect(const PositionWithAffinity& position) {
+  return ComputeLocalCaretRect(ComputeNGCaretPosition(position));
 }
 
 }  // namespace blink
