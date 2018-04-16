@@ -18,8 +18,7 @@ class SystemTray;
 // System tray item that shows a message if the user is supervised or a child.
 // Also shows a notification on login if the user is supervised. Shows a new
 // notification if the user manager/custodian changes.
-class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
-                                      public SessionObserver {
+class ASH_EXPORT TraySupervisedUser : public SystemTrayItem {
  public:
   explicit TraySupervisedUser(SystemTray* system_tray);
   ~TraySupervisedUser() override;
@@ -27,25 +26,7 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
   // SystemTrayItem:
   views::View* CreateDefaultView(LoginStatus status) override;
 
-  // SessionObserver:
-  void OnActiveUserSessionChanged(const AccountId& account_id) override;
-  void OnUserSessionAdded(const AccountId& account_id) override;
-  void OnUserSessionUpdated(const AccountId& account_id) override;
-
  private:
-  friend class TraySupervisedUserTest;
-
-  static const char kNotificationId[];
-
-  void CreateOrUpdateNotification();
-
-  base::string16 GetSupervisedUserMessage() const;
-
-  std::string custodian_email_;
-  std::string second_custodian_email_;
-
-  ScopedSessionObserver scoped_session_observer_;
-
   DISALLOW_COPY_AND_ASSIGN(TraySupervisedUser);
 };
 

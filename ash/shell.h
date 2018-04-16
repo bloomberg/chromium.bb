@@ -160,6 +160,7 @@ class ShutdownController;
 class SmsObserver;
 class SplitViewController;
 class StickyKeysController;
+class SupervisedNotificationController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
@@ -716,6 +717,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<NoteTakingController> note_taking_controller_;
   std::unique_ptr<ScreenSecurityNotificationController>
       screen_security_notification_controller_;
+  std::unique_ptr<SupervisedNotificationController>
+      supervised_notification_controller_;
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
