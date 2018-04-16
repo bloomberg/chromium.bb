@@ -18,8 +18,7 @@ struct LocalCaretRect;
 
 const LayoutBlockFlow* NGInlineFormattingContextOf(const PositionInFlatTree&);
 
-LocalCaretRect ComputeNGLocalCaretRect(const LayoutBlockFlow&,
-                                       const PositionInFlatTreeWithAffinity&);
+LocalCaretRect ComputeNGLocalCaretRect(const PositionInFlatTreeWithAffinity&);
 
 }  // namespace blink
 

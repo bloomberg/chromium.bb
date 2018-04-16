@@ -18,10 +18,8 @@ const LayoutBlockFlow* NGInlineFormattingContextOf(
 }
 
 LocalCaretRect ComputeNGLocalCaretRect(
-    const LayoutBlockFlow& context,
     const PositionInFlatTreeWithAffinity& position) {
-  return ComputeNGLocalCaretRect(context,
-                                 ToPositionInDOMTreeWithAffinity(position));
+  return ComputeNGLocalCaretRect(ToPositionInDOMTreeWithAffinity(position));
 }
 
 }  // namespace blink
