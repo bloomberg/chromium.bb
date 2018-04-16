@@ -92,7 +92,14 @@ class ASH_EXPORT PowerButtonController
       BacklightsForcedOffSetter* backlights_forced_off_setter);
   ~PowerButtonController() override;
 
-  // Handles power button behavior.
+  // Handles events from "legacy" ACPI power buttons. On devices with these
+  // buttons (typically Chromeboxes), button releases are misreported
+  // immediately after button presses, regardless of how long the button
+  // is actually held.
+  void OnLegacyPowerButtonEvent(bool down);
+
+  // Handles events from "normal" power buttons where button presses and
+  // releases are both reported accurately.
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
 
   // Handles lock button behavior.
