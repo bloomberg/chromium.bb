@@ -175,41 +175,32 @@ void PowerButtonController::OnPreShutdownTimeout() {
       ->FocusPowerOffButton();
 }
 
+void PowerButtonController::OnLegacyPowerButtonEvent(bool down) {
+  // Avoid starting the lock/shutdown sequence if the power button is pressed
+  // while the screen is off (http://crbug.com/128451), unless an external
+  // display is still on (http://crosbug.com/p/24912).
+  if (brightness_is_zero_ && !internal_display_off_and_external_display_on_)
+    return;
+
+  if (!down)
+    return;
+  // If power button releases won't get reported correctly because we're not
+  // running on official hardware, just lock the screen or shut down
+  // immediately.
+  const SessionController* const session_controller =
+      Shell::Get()->session_controller();
+  if (session_controller->CanLockScreen() &&
+      !session_controller->IsUserSessionBlocked() &&
+      !lock_state_controller_->LockRequested()) {
+    lock_state_controller_->StartLockAnimationAndLockImmediately();
+  } else {
+    lock_state_controller_->RequestShutdown(ShutdownReason::POWER_BUTTON);
+  }
+}
+
 void PowerButtonController::OnPowerButtonEvent(
     bool down,
     const base::TimeTicks& timestamp) {
-  power_button_down_ = down;
-
-  // Ignore power button if lock button is being pressed.
-  if (lock_button_down_)
-    return;
-
-  // TODO(minch): move the LEGACY logic out as a separate function
-  // OnLegacyPowerButtonEvent.
-  if (button_type_ == ButtonType::LEGACY) {
-    // Avoid starting the lock/shutdown sequence if the power button is pressed
-    // while the screen is off (http://crbug.com/128451), unless an external
-    // display is still on (http://crosbug.com/p/24912).
-    if (brightness_is_zero_ && !internal_display_off_and_external_display_on_)
-      return;
-
-    // If power button releases won't get reported correctly because we're not
-    // running on official hardware, just lock the screen or shut down
-    // immediately.
-    if (down) {
-      const SessionController* const session_controller =
-          Shell::Get()->session_controller();
-      if (session_controller->CanLockScreen() &&
-          !session_controller->IsUserSessionBlocked() &&
-          !lock_state_controller_->LockRequested()) {
-        lock_state_controller_->StartLockAnimationAndLockImmediately();
-      } else {
-        lock_state_controller_->RequestShutdown(ShutdownReason::POWER_BUTTON);
-      }
-    }
-    return;
-  }
-
   if (down) {
     force_off_on_button_up_ = false;
     if (ShouldTurnScreenOffForTap()) {
@@ -364,7 +355,13 @@ void PowerButtonController::PowerButtonEventReceived(
     return;
   }
 
-  OnPowerButtonEvent(down, timestamp);
+  power_button_down_ = down;
+  // Ignore power button if lock button is being pressed.
+  if (lock_button_down_)
+    return;
+
+  button_type_ == ButtonType::LEGACY ? OnLegacyPowerButtonEvent(down)
+                                     : OnPowerButtonEvent(down, timestamp);
 }
 
 void PowerButtonController::SuspendImminent(
