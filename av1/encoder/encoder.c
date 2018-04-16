@@ -4895,9 +4895,9 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   if (cm->seq_params.frame_id_numbers_present_flag) {
     int i;
-    /* Update reference frame id values based on the value of refresh_mask */
+    // Update reference frame id values based on the value of refresh_frame_mask
     for (i = 0; i < REF_FRAMES; i++) {
-      if ((cm->refresh_mask >> i) & 1) {
+      if ((cpi->refresh_frame_mask >> i) & 1) {
         cm->ref_frame_id[i] = cm->current_frame_id;
       }
     }

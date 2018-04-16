@@ -3186,8 +3186,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       }
     }
   }
-  if (cm->seq_params.frame_id_numbers_present_flag)
-    cm->refresh_mask = get_refresh_mask(cpi);
 
   const int might_bwd_adapt = !(cm->seq_params.reduced_still_picture_hdr) &&
                               !(cm->large_scale_tile) &&

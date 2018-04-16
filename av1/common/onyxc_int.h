@@ -531,7 +531,6 @@ typedef struct AV1Common {
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
   int valid_for_referencing[REF_FRAMES];
-  int refresh_mask;
   int invalid_delta_frame_id_minus1;
   LV_MAP_CTX_TABLE coeff_ctx_table;
   TPL_MV_REF *tpl_mvs;
