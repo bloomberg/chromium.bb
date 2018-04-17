@@ -451,10 +451,6 @@ class UiElement : public cc::AnimationTarget {
   virtual void DumpGeometry(std::ostringstream* os) const;
 #endif
 
-  // This is to be used only during the texture / size updated phase (i.e., to
-  // change your size based on your old size).
-  gfx::SizeF stale_size() const;
-
   // Set the sounds that play when an applicable handler is executed.  Elements
   // that override element hover and click methods must manage their own sounds.
   void SetSounds(Sounds sounds, AudioDelegate* delegate);
