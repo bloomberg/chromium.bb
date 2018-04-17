@@ -40,8 +40,8 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->csp = yv12->chroma_sample_position;
   img->range = yv12->color_range;
   img->bit_depth = 8;
-  img->w = yv12->y_stride;
-  img->h = ALIGN_POWER_OF_TWO(yv12->y_height + 2 * AOM_BORDER_IN_PIXELS, 3);
+  img->w = yv12->y_width;
+  img->h = yv12->y_height;
   img->d_w = yv12->y_crop_width;
   img->d_h = yv12->y_crop_height;
   img->r_w = yv12->render_width;
@@ -87,8 +87,8 @@ static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
   yv12->y_crop_height = img->d_h;
   yv12->render_width = img->r_w;
   yv12->render_height = img->r_h;
-  yv12->y_width = img->d_w;
-  yv12->y_height = img->d_h;
+  yv12->y_width = img->w;
+  yv12->y_height = img->h;
 
   yv12->uv_width =
       img->x_chroma_shift == 1 ? (1 + yv12->y_width) / 2 : yv12->y_width;
