@@ -11,15 +11,10 @@ namespace ash {
 
 class ASH_EXPORT AccessibilityObserver {
  public:
-  virtual ~AccessibilityObserver() {}
+  virtual ~AccessibilityObserver() = default;
 
   // Called when any accessibility status changes.
-  virtual void OnAccessibilityStatusChanged() {}
-
-  // Called when notification should be shown for accessibility status changes,
-  // used for spoken feedback or braille is enabled.
-  // TODO(warx): move this to AccessibilityController.
-  virtual void ShowAccessibilityNotification() {}
+  virtual void OnAccessibilityStatusChanged() = 0;
 };
 
 }  // namespace ash

@@ -30,17 +30,12 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
-
-const char kNotificationId[] = "chrome://settings/accessibility";
-const char kNotifierAccessibility[] = "ash.accessibility";
 
 enum AccessibilityState {
   A11Y_NONE = 0,
@@ -100,17 +95,6 @@ uint32_t GetAccessibilityState() {
 
 LoginStatus GetCurrentLoginStatus() {
   return Shell::Get()->session_controller()->login_status();
-}
-
-// Returns notification icon based on the enabled accessibility state.
-const gfx::VectorIcon& GetNotificationIcon(uint32_t enabled_accessibility) {
-  if ((enabled_accessibility & A11Y_BRAILLE_DISPLAY_CONNECTED) &&
-      (enabled_accessibility & A11Y_SPOKEN_FEEDBACK)) {
-    return kNotificationAccessibilityIcon;
-  }
-  if (enabled_accessibility & A11Y_BRAILLE_DISPLAY_CONNECTED)
-    return kNotificationAccessibilityBrailleIcon;
-  return kNotificationChromevoxIcon;
 }
 
 }  // namespace
@@ -457,7 +441,6 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
       detailed_menu_(nullptr),
       tray_icon_visible_(false),
       login_(GetCurrentLoginStatus()),
-      previous_accessibility_state_(GetAccessibilityState()),
       show_a11y_menu_on_lock_screen_(true) {
   DCHECK(system_tray);
   Shell::Get()->accessibility_controller()->AddObserver(this);
@@ -535,63 +518,6 @@ void TrayAccessibility::OnAccessibilityStatusChanged() {
 
   if (detailed_menu_)
     detailed_menu_->OnAccessibilityStatusChanged();
-}
-
-// TODO(warx): Move ShowAccessibilityNotification() to AccessibilityController.
-void TrayAccessibility::ShowAccessibilityNotification() {
-  uint32_t accessibility_state = GetAccessibilityState();
-  // We'll get an extra notification if a braille display is connected when
-  // spoken feedback wasn't already enabled.  This is because the braille
-  // connection state is already updated when spoken feedback is enabled so
-  // that the notifications can be consolidated into one.  Therefore, we
-  // return early if there's no change in the state that we keep track of.
-  if (accessibility_state == previous_accessibility_state_)
-    return;
-
-  message_center::MessageCenter* message_center =
-      message_center::MessageCenter::Get();
-  message_center->RemoveNotification(kNotificationId, false /* by_user */);
-
-  // Contains bits for spoken feedback and braille display connected currently
-  // being enabled.
-  uint32_t being_enabled =
-      (accessibility_state & ~previous_accessibility_state_) &
-      (A11Y_SPOKEN_FEEDBACK | A11Y_BRAILLE_DISPLAY_CONNECTED);
-  previous_accessibility_state_ = accessibility_state;
-
-  if (being_enabled == A11Y_NONE)
-    return;
-
-  base::string16 text;
-  base::string16 title;
-  if (being_enabled & A11Y_BRAILLE_DISPLAY_CONNECTED &&
-      being_enabled & A11Y_SPOKEN_FEEDBACK) {
-    text =
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
-    title = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_BRAILLE_ENABLED_TITLE);
-  } else if (being_enabled & A11Y_BRAILLE_DISPLAY_CONNECTED) {
-    text = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED);
-  } else {
-    title = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_TITLE);
-    text =
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
-  }
-  message_center::RichNotificationData options;
-  options.should_make_spoken_feedback_for_popup_updates = false;
-  std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
-          text, gfx::Image(), base::string16(), GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              kNotifierAccessibility),
-          options, nullptr, GetNotificationIcon(being_enabled),
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
-  message_center->AddNotification(std::move(notification));
 }
 
 }  // namespace ash

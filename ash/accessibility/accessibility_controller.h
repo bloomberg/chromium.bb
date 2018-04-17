@@ -167,8 +167,6 @@ class ASH_EXPORT AccessibilityController
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
 
-  void NotifyShowAccessibilityNotification();
-
   service_manager::Connector* connector_ = nullptr;
 
   // The pref service of the currently active user or the signin profile before
@@ -197,11 +195,6 @@ class ASH_EXPORT AccessibilityController
   bool sticky_keys_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;
   bool braille_display_connected_ = false;
-
-  // TODO(warx): consider removing this and replacing it with a more reliable
-  // way (https://crbug.com/800270).
-  AccessibilityNotificationVisibility spoken_feedback_notification_ =
-      A11Y_NOTIFICATION_NONE;
 
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>

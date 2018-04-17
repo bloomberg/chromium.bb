@@ -16,13 +16,16 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
+#include "base/strings/string16.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -34,12 +37,18 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_type.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 using session_manager::SessionState;
 
 namespace ash {
 namespace {
+
+constexpr char kNotificationId[] = "chrome://settings/accessibility";
+constexpr char kNotifierAccessibility[] = "ash.accessibility";
 
 // List of accessibility prefs that are to be copied (if changed by the user) on
 // signin screen profile to a newly created user profile or a guest session.
@@ -129,6 +138,68 @@ void CopySigninPrefsIfNeeded(PrefService* previous_pref_service,
     const base::Value* value_on_login = pref->GetValue();
     current_pref_service->Set(pref_path, *value_on_login);
   }
+}
+
+// Used to indicate which accessibility notification should be shown.
+enum class A11yNotificationType {
+  // No accessibility notification.
+  kNone,
+  // Shown when spoken feedback is set enabled with A11Y_NOTIFICATION_SHOW.
+  kSpokenFeedbackEnabled,
+  // Shown when braille display is connected while spoken feedback is enabled.
+  kBrailleDisplayConnected,
+  // Shown when braille display is connected while spoken feedback is not
+  // enabled yet. Note: in this case braille display connected would enable
+  // spoken feeback.
+  kSpokenFeedbackBrailleEnabled,
+};
+
+// Returns notification icon based on the A11yNotificationType.
+const gfx::VectorIcon& GetNotificationIcon(A11yNotificationType type) {
+  if (type == A11yNotificationType::kSpokenFeedbackBrailleEnabled)
+    return kNotificationAccessibilityIcon;
+  if (type == A11yNotificationType::kBrailleDisplayConnected)
+    return kNotificationAccessibilityBrailleIcon;
+  return kNotificationChromevoxIcon;
+}
+
+void ShowAccessibilityNotification(A11yNotificationType type) {
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  message_center->RemoveNotification(kNotificationId, false /* by_user */);
+
+  if (type == A11yNotificationType::kNone)
+    return;
+
+  base::string16 text;
+  base::string16 title;
+  if (type == A11yNotificationType::kSpokenFeedbackBrailleEnabled) {
+    text =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
+    title = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_BRAILLE_ENABLED_TITLE);
+  } else if (type == A11yNotificationType::kBrailleDisplayConnected) {
+    text = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED);
+  } else {
+    title = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_TITLE);
+    text =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
+  }
+  message_center::RichNotificationData options;
+  options.should_make_spoken_feedback_for_popup_updates = false;
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
+          text, gfx::Image(), base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              kNotifierAccessibility),
+          options, nullptr, GetNotificationIcon(type),
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
+  message_center->AddNotification(std::move(notification));
 }
 
 }  // namespace
@@ -303,10 +374,14 @@ void AccessibilityController::SetSpokenFeedbackEnabled(
     AccessibilityNotificationVisibility notify) {
   if (!active_user_prefs_)
     return;
-  spoken_feedback_notification_ = notify;
   active_user_prefs_->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
+
+  A11yNotificationType type = A11yNotificationType::kNone;
+  if (enabled && notify == A11Y_NOTIFICATION_SHOW)
+    type = A11yNotificationType::kSpokenFeedbackEnabled;
+  ShowAccessibilityNotification(type);
 }
 
 bool AccessibilityController::IsSpokenFeedbackEnabled() const {
@@ -424,11 +499,18 @@ void AccessibilityController::SetDarkenScreen(bool darken) {
 }
 
 void AccessibilityController::BrailleDisplayStateChanged(bool connected) {
+  A11yNotificationType type = A11yNotificationType::kNone;
+  if (connected && spoken_feedback_enabled_)
+    type = A11yNotificationType::kBrailleDisplayConnected;
+  else if (connected && !spoken_feedback_enabled_)
+    type = A11yNotificationType::kSpokenFeedbackBrailleEnabled;
+
   braille_display_connected_ = connected;
   if (braille_display_connected_)
-    SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
+    SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged();
-  NotifyShowAccessibilityNotification();
+
+  ShowAccessibilityNotification(type);
 }
 
 void AccessibilityController::SetFocusHighlightRect(
@@ -720,9 +802,6 @@ void AccessibilityController::UpdateSpokenFeedbackFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  if (spoken_feedback_notification_ != A11Y_NOTIFICATION_NONE)
-    NotifyShowAccessibilityNotification();
-
   // TODO(warx): ChromeVox loading/unloading requires browser process started,
   // thus it is still handled on Chrome side.
 
@@ -806,11 +885,6 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
     Shell::Get()->CreateKeyboard();
   else
     Shell::Get()->DestroyKeyboard();
-}
-
-void AccessibilityController::NotifyShowAccessibilityNotification() {
-  for (auto& observer : observers_)
-    observer.ShowAccessibilityNotification();
 }
 
 }  // namespace ash
