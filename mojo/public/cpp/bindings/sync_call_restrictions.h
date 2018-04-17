@@ -21,6 +21,10 @@ namespace sync_preferences {
 class PrefServiceSyncable;
 }
 
+namespace content {
+class BlinkTestController;
+}
+
 namespace display {
 class ForwardingDisplayDelegate;
 }
@@ -84,6 +88,8 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // For destroying the GL context/surface that draw to a platform window before
   // the platform window is destroyed.
   friend class viz::HostFrameSinkManager;
+  // Allow for layout test pixel dumps.
+  friend class content::BlinkTestController;
   // END ALLOWED USAGE.
 
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

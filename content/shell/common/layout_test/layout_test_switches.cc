@@ -4,9 +4,6 @@
 
 #include "content/shell/common/layout_test/layout_test_switches.h"
 
-#include "base/command_line.h"
-#include "base/strings/string_split.h"
-
 namespace switches {
 
 // Allow access to external pages during layout tests.
@@ -61,5 +58,10 @@ const char kRunLayoutTest[] = "run-layout-test";
 // kRunLayoutTest is set. For the features' level, see
 // http://dev.chromium.org/blink/runtime-enabled-features.
 const char kStableReleaseMode[] = "stable-release-mode";
+
+// Enable pixel dumps via "real" surface readbacks, instead of synchronously
+// compositing and reading back pixels.
+const char kEnableDisplayCompositorPixelDump[] =
+    "enable-display-compositor-pixel-dump";
 
 }  // namespace switches

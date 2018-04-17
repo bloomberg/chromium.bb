@@ -140,7 +140,8 @@ class BlinkTestController : public WebContentsObserver,
       int sender_process_host_id,
       const base::DictionaryValue& changed_layout_test_runtime_flags);
   void OnTestFinishedInSecondaryRenderer();
-  void OnInitiateCaptureDump(bool capture_navigation_history);
+  void OnInitiateCaptureDump(bool capture_navigation_history,
+                             bool capture_pixels);
   void OnInspectSecondaryWindow();
 
   // Makes sure that the potentially new renderer associated with |frame| is 1)
@@ -196,6 +197,19 @@ class BlinkTestController : public WebContentsObserver,
     CLEAN_UP
   };
 
+  // Node structure to construct a RenderFrameHost tree.
+  struct Node {
+    Node();
+    explicit Node(RenderFrameHost* host);
+    Node(Node&& other);
+    ~Node();
+
+    RenderFrameHost* render_frame_host = nullptr;
+    std::vector<Node*> children;
+
+    DISALLOW_COPY_AND_ASSIGN(Node);
+  };
+
   static BlinkTestController* instance_;
 
   Shell* SecondaryWindow();
@@ -231,6 +245,13 @@ class BlinkTestController : public WebContentsObserver,
 
   void OnCleanupFinished();
   void OnCaptureDumpCompleted(mojom::LayoutTestDumpPtr dump);
+  void OnPixelDumpCaptured(const SkBitmap& snapshot);
+  void ReportResults();
+
+  void CompositeAllFrames();
+  Node* BuildFrameTree(const std::vector<RenderFrameHost*>& frames,
+                       std::vector<Node>* storage) const;
+  void CompositeDepthFirst(Node* node);
 
   std::unique_ptr<BlinkTestResultPrinter> printer_;
 
@@ -299,6 +320,11 @@ class BlinkTestController : public WebContentsObserver,
   base::DictionaryValue accumulated_layout_test_runtime_flags_changes_;
 
   std::string navigation_history_dump_;
+  base::Optional<SkBitmap> pixel_dump_;
+  std::string actual_pixel_hash_;
+  mojom::LayoutTestDumpPtr main_frame_dump_;
+  bool waiting_for_pixel_results_ = false;
+  bool waiting_for_main_frame_dump_ = false;
 
   // Map from one frame to one mojo pipe.
   std::map<RenderFrameHost*, mojom::LayoutTestControlAssociatedPtr>

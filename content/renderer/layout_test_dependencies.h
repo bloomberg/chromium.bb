@@ -37,6 +37,10 @@ class CONTENT_EXPORT LayoutTestDependencies {
  public:
   virtual ~LayoutTestDependencies();
 
+  // Returns true if the layout tests should use the display compositor pixel
+  // dumps.
+  virtual bool UseDisplayCompositorPixelDump() const = 0;
+
   virtual std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink(
       int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,

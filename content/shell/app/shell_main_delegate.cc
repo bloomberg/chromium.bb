@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/viz/common/switches.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
@@ -216,6 +217,15 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     if (!command_line.HasSwitch(switches::kEnableThreadedCompositing)) {
       command_line.AppendSwitch(switches::kDisableThreadedCompositing);
       command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
+    }
+
+    // If we're doing a display compositor pixel dump we ensure that
+    // we complete all stages of compositing before draw. We also can't have
+    // checker imaging, since it's imcompatible with single threaded compositor
+    // and display compositor pixel dumps.
+    if (command_line.HasSwitch(switches::kEnableDisplayCompositorPixelDump)) {
+      command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
+      command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
     }
 
     command_line.AppendSwitch(switches::kEnableInbandTextTracks);

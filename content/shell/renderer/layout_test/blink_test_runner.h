@@ -201,7 +201,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void CaptureDumpComplete();
   void CaptureLocalAudioDump();
   void CaptureLocalLayoutDump();
-  void CaptureLocalPixelsDump();
+  // Returns true if the browser should capture pixels instead.
+  bool CaptureLocalPixelsDump();
 
   mojom::LayoutTestBluetoothFakeAdapterSetter&
   GetBluetoothFakeAdapterSetter();

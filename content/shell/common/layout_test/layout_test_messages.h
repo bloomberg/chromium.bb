@@ -44,8 +44,9 @@ IPC_MESSAGE_ROUTED4(LayoutTestHostMsg_SetPermission,
                     GURL /* embedding_origin */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ResetPermissions)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_InspectSecondaryWindow)
-IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_InitiateCaptureDump,
-                    bool /* should dump navigation history */)
+IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_InitiateCaptureDump,
+                    bool /* should dump navigation history */,
+                    bool /* should dump pixels */)
 
 // Notifies the browser that one of renderers has changed layout test runtime
 // flags (i.e. has set dump_as_text).

@@ -97,6 +97,7 @@ class CORE_EXPORT WebFrameWidgetBase
                          const WebFloatPoint& screen_point,
                          WebDragOperation) override;
   void DragSourceSystemDragEnded() override;
+  void CompositeWithRasterForTesting() override;
 
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
 

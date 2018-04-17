@@ -1063,6 +1063,10 @@ void RenderWidgetCompositor::SynchronouslyCompositeNoRasterForTesting() {
   SynchronouslyComposite(false /* raster */, nullptr /* swap_promise */);
 }
 
+void RenderWidgetCompositor::CompositeWithRasterForTesting() {
+  SynchronouslyComposite(true /* raster */, nullptr /* swap_promise */);
+}
+
 void RenderWidgetCompositor::SynchronouslyComposite(
     bool raster,
     std::unique_ptr<cc::SwapPromise> swap_promise) {

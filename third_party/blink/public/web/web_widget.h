@@ -102,6 +102,9 @@ class WebWidget {
   // to the compositor state except rasterization.
   virtual void UpdateAllLifecyclePhasesAndCompositeForTesting() {}
 
+  // Synchronously rasterizes and composites a frame.
+  virtual void CompositeWithRasterForTesting() {}
+
   // Called to paint the rectangular region within the WebWidget
   // onto the specified canvas at (viewPort.x,viewPort.y).
   //
