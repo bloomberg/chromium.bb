@@ -1140,8 +1140,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                           ^ChromeIdentity* {
                             // TODO:(crbug.com/810904) Replace with currently
                             // signed-in user.
-                            return identityService->GetAllIdentities()
-                                .firstObject;
+                            return nil;
                           },
                           ^NSArray<ChromeIdentity*>* {
                             return identityService->GetAllIdentities();
