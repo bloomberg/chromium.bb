@@ -53,6 +53,7 @@ public class ResourceExtractor {
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
     private static final String FALLBACK_LOCALE = "en-US";
     private static final String LIBRARY_DIR = "native_libraries";
+    private static final String COMPRESSED_LOCALES_DIR = "locales";
     private static final int BUFFER_SIZE = 16 * 1024;
 
     private class ExtractTask extends AsyncTask<Void, Void, Void> {
@@ -85,10 +86,11 @@ public class ResourceExtractor {
 
             AssetManager assetManager = ContextUtils.getApplicationAssets();
             byte[] buffer = new byte[BUFFER_SIZE];
-            for (String assetName : mAssetsToExtract) {
+            for (String assetPath : mAssetsToExtract) {
+                String assetName = assetPath.substring(assetPath.lastIndexOf('/') + 1);
                 File output = new File(outputDir, assetName + extractSuffix);
                 TraceEvent.begin("ExtractResource");
-                try (InputStream inputStream = assetManager.open(assetName)) {
+                try (InputStream inputStream = assetManager.open(assetPath)) {
                     extractResourceHelper(inputStream, output, buffer);
                 } catch (IOException e) {
                     // The app would just crash later if files are missing.
@@ -205,21 +207,26 @@ public class ResourceExtractor {
     private static String[] detectFilesToExtract() {
         Locale defaultLocale = Locale.getDefault();
         String language = LocaleUtils.getUpdatedLanguageForChromium(defaultLocale.getLanguage());
-        // Currenty (Oct 2016), this array can be as big as 4 entries, so using a capacity
+        // Currenty (Apr 2018), this array can be as big as 6 entries, so using a capacity
         // that allows a bit of growth, but is still in the right ballpark..
-        ArrayList<String> activeLocalePakFiles = new ArrayList<String>(6);
+        ArrayList<String> activeLocales = new ArrayList<String>(6);
         for (String locale : BuildConfig.COMPRESSED_LOCALES) {
             if (locale.startsWith(language)) {
-                activeLocalePakFiles.add(locale + ".pak");
+                activeLocales.add(locale);
             }
         }
-        if (activeLocalePakFiles.isEmpty() && BuildConfig.COMPRESSED_LOCALES.length > 0) {
+        if (activeLocales.isEmpty() && BuildConfig.COMPRESSED_LOCALES.length > 0) {
             assert Arrays.asList(BuildConfig.COMPRESSED_LOCALES).contains(FALLBACK_LOCALE);
-            activeLocalePakFiles.add(FALLBACK_LOCALE + ".pak");
+            activeLocales.add(FALLBACK_LOCALE);
+        }
+        String[] localePakFiles = new String[activeLocales.size()];
+        for (int n = 0; n < activeLocales.size(); ++n) {
+            localePakFiles[n] = COMPRESSED_LOCALES_DIR + '/' + activeLocales.get(n) + ".pak";
         }
         Log.i(TAG, "Android Locale: %s requires .pak files: %s", defaultLocale,
-                activeLocalePakFiles);
-        return activeLocalePakFiles.toArray(new String[activeLocalePakFiles.size()]);
+                Arrays.toString(activeLocales.toArray()));
+
+        return localePakFiles;
     }
 
     /**
