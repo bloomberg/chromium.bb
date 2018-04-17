@@ -303,6 +303,31 @@
           '--gtest_filter=-SaveType/SavePageMultiFrameBrowserTest.ObjectElements/0',
         ],
       },
+      # chromium.mac
+      'Mac10.10 Tests': {
+        # TODO(crbug.com/828031): Remove once diagnosed and fixed.
+        'args': [
+          '--test-launcher-jobs=1',
+        ],
+      },
+      'Mac10.11 Tests': {
+        # TODO(crbug.com/828031): Remove once diagnosed and fixed.
+        'args': [
+          '--test-launcher-jobs=1',
+        ],
+      },
+      'Mac10.12 Tests': {
+        # TODO(crbug.com/828031): Remove once diagnosed and fixed.
+        'args': [
+          '--test-launcher-jobs=1',
+        ],
+      },
+      'Mac10.13 Tests': {
+        # TODO(crbug.com/828031): Remove once diagnosed and fixed.
+        'args': [
+          '--test-launcher-jobs=1',
+        ],
+      },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
@@ -3473,7 +3498,7 @@
         },
       },
       'Mac10.13 Tests': {
-        # TODO(jbudorick,dpranke): Switch this to 10.13.
+        # TODO (crbug.com/833020)(jbudorick,dpranke): Switch this to 10.13.
 
         # TODO(kbr): if the Swarming dimensions were explicitly specified for
         # all jobs then this wouldn't be needed. However, note that this bot
