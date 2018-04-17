@@ -204,6 +204,15 @@ bool BoxReader::ScanChildren() {
   return true;
 }
 
+bool BoxReader::ReadDisplayMatrix(DisplayMatrix matrix) {
+  for (int i = 0; i < kDisplayMatrixDimension; i++) {
+    if (!Read4s(&matrix[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool BoxReader::HasChild(Box* child) {
   DCHECK(scanned_);
   DCHECK(child);
