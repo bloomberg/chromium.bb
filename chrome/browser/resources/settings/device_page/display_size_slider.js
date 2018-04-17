@@ -116,8 +116,12 @@ Polymer({
    */
   clampAndSetIndex_: function(newIndex) {
     newIndex = this.clampToRange_(newIndex, this.min, this.max);
-    if (newIndex != this.index)
+    if (newIndex != this.index) {
       this._setIndex(newIndex);
+      this.setAttribute('aria-valuenow', this.ticks[this.index].value);
+      this.setAttribute(
+          'aria-valuetext', this.getLabelForIndex_(this.ticks, this.index));
+    }
   },
 
   /**
@@ -426,6 +430,9 @@ Polymer({
     for (let i = 0; i < this.ticks.length; i++)
       if (this.ticks[i].value == this.pref.value)
         this._setIndex(i);
+    this.setAttribute('aria-valuenow', this.ticks[this.index].value);
+    this.setAttribute(
+        'aria-valuetext', this.getLabelForIndex_(this.ticks, this.index));
   },
 
   /**
@@ -466,6 +473,10 @@ Polymer({
       return;
     }
     this.max = this.ticks.length - 1;
+    this.setAttribute(
+        'aria-valuemin', this.getLabelForIndex_(this.ticks, this.min));
+    this.setAttribute(
+        'aria-valuemax', this.getLabelForIndex_(this.ticks, this.max));
     this.updateIndex_();
   },
 });
