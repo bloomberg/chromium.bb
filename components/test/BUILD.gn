@@ -52,7 +52,7 @@ source_set("run_all_unittests") {
     ":test_support",
   ]
 
-  if (enable_basic_printing || enable_print_preview) {
+  if (enable_basic_printing) {
     defines = [ "HAS_SERVICE_IN_UNIT_TEST" ]
     deps += [
       ":components_unittests_catalog_source",
@@ -61,7 +61,7 @@ source_set("run_all_unittests") {
   }
 }
 
-if (enable_basic_printing || enable_print_preview) {
+if (enable_basic_printing) {
   # There is only one service in catalog, which depends on printing feature.
   # When more services are added, the condition can be moved inside of catalog.
   catalog("components_unittests_catalog") {

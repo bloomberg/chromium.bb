@@ -324,7 +324,7 @@ test("components_unittests") {
     deps += [ "//components/browser_watcher:unit_tests" ]
   }
 
-  if (enable_basic_printing || enable_print_preview) {
+  if (enable_basic_printing) {
     deps += [ "//components/printing/service:unit_tests" ]
   }
   if (enable_print_preview) {
@@ -531,7 +531,7 @@ if (!is_ios) {
       ]
     }
 
-    if (enable_basic_printing || enable_print_preview) {
+    if (enable_basic_printing) {
       sources += [ "printing/test/print_render_frame_helper_browsertest.cc" ]
       deps += [ "//components/printing/test:test_support" ]
     }

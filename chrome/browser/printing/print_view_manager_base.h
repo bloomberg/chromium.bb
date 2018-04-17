@@ -44,12 +44,10 @@ class PrintViewManagerBase : public content::NotificationObserver,
  public:
   ~PrintViewManagerBase() override;
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   // Prints the current document immediately. Since the rendering is
   // asynchronous, the actual printing will not be completed on the return of
   // this function. Returns false if printing is impossible at the moment.
   virtual bool PrintNow(content::RenderFrameHost* rfh);
-#endif  // ENABLE_BASIC_PRINTING
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Prints the document in |print_data| with settings specified in

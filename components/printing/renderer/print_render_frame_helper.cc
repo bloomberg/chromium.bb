@@ -395,7 +395,6 @@ bool PDFShouldDisableScaling(blink::WebLocalFrame* frame,
 }
 #endif
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 MarginType GetMarginsForPdf(blink::WebLocalFrame* frame,
                             const blink::WebNode& node,
                             const PrintMsg_Print_Params& params) {
@@ -403,7 +402,6 @@ MarginType GetMarginsForPdf(blink::WebLocalFrame* frame,
              ? NO_MARGINS
              : PRINTABLE_AREA_MARGINS;
 }
-#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool FitToPageEnabled(const base::DictionaryValue& job_settings) {
@@ -1017,7 +1015,6 @@ void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
     RequestPrintPreview(PRINT_PREVIEW_SCRIPTED);
 #endif
   } else {
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     auto weak_this = weak_ptr_factory_.GetWeakPtr();
     web_frame->DispatchBeforePrintEvent();
     if (!weak_this)
@@ -1025,7 +1022,6 @@ void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
     Print(web_frame, blink::WebNode(), true /* is_scripted? */);
     if (weak_this)
       web_frame->DispatchAfterPrintEvent();
-#endif
   }
   // WARNING: |this| may be gone at this point. Do not do any more work here and
   // just return.
@@ -1043,10 +1039,8 @@ bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintRenderFrameHelper, message)
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintForSystemDialog, OnPrintForSystemDialog)
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview, OnInitiatePrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
@@ -1073,7 +1067,6 @@ void PrintRenderFrameHelper::OnDestruct() {
   delete this;
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void PrintRenderFrameHelper::OnPrintPages() {
   if (ipc_nesting_level_ > 1)
     return;
@@ -1109,7 +1102,6 @@ void PrintRenderFrameHelper::OnPrintForSystemDialog() {
   // WARNING: |this| may be gone at this point. Do not do any more work here and
   // just return.
 }
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 void PrintRenderFrameHelper::GetPageSizeAndContentAreaFromPageLayout(
     const PageSizeMargins& page_layout_in_points,
@@ -1503,7 +1495,6 @@ void PrintRenderFrameHelper::PrintNode(const blink::WebNode& node) {
     RequestPrintPreview(PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE);
 #endif
   } else {
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     // Make a copy of the node, in case RenderView::OnContextMenuClosed() resets
     // its |context_menu_node_|.
     blink::WebNode duplicate_node(node);
@@ -1514,13 +1505,11 @@ void PrintRenderFrameHelper::PrintNode(const blink::WebNode& node) {
     // Check if |this| is still valid.
     if (!self)
       return;
-#endif
   }
 
   print_node_in_progress_ = false;
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
                                    const blink::WebNode& node,
                                    bool is_scripted) {
@@ -1576,7 +1565,6 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
   }
   scripting_throttler_.Reset();
 }
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 void PrintRenderFrameHelper::DidFinishPrinting(PrintingResult result) {
   int cookie =
@@ -1619,7 +1607,6 @@ void PrintRenderFrameHelper::DidFinishPrinting(PrintingResult result) {
   notify_browser_of_print_failure_ = true;
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void PrintRenderFrameHelper::OnFramePreparedForPrintPages() {
   PrintPages();
   FinishFramePrinting();
@@ -1703,7 +1690,6 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 void PrintRenderFrameHelper::FinishFramePrinting() {
   prep_frame_view_.reset();
 }
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 // static - Not anonymous so that platform implementations can use it.
 void PrintRenderFrameHelper::ComputePageLayoutInPointsForCss(
@@ -1878,7 +1864,6 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void PrintRenderFrameHelper::GetPrintSettingsFromUser(
     blink::WebLocalFrame* frame,
     const blink::WebNode& node,
@@ -1925,7 +1910,6 @@ bool PrintRenderFrameHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
                  weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 #if !defined(OS_MACOSX)
 void PrintRenderFrameHelper::PrintPageInternal(

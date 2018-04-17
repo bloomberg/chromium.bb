@@ -3782,10 +3782,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPdfIsolationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPdfIsolation)},
 
+#if defined(ENABLE_PRINTING)
     {"use-pdf-compositor-service-for-print",
      flag_descriptions::kUsePdfCompositorServiceName,
      flag_descriptions::kUsePdfCompositorServiceDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(printing::features::kUsePdfCompositorServiceForPrint)},
+#endif
 
 #if defined(OS_MACOSX)
     {"mac-views-autofill-popup", flag_descriptions::kMacViewsAutofillPopupName,

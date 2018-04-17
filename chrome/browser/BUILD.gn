@@ -3289,7 +3289,7 @@ jumbo_split_static_library("browser") {
     ]
   }
 
-  if (enable_basic_printing || enable_print_preview) {
+  if (enable_basic_printing) {
     # Some form of printing support.
     sources += [
       "printing/print_job.cc",

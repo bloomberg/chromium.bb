@@ -49,7 +49,7 @@ source_set("chrome_dll_resources") {
       # The resource compiler can only handle macro functions up to 31 chars
       # which the buildflag system produces for this. Make a define so we can
       # toggle off of the enable-basic-printing flag in the .rc file.
-      defines = [ "ENABLE_BASIC_PRINTING_FOR_RC" ]
+      defines = [ "ENABLE_PRINTING_FOR_RC" ]
     }
     deps += [ "//printing/buildflags" ]
   }
@@ -393,13 +393,13 @@ chrome_packaged_services = [
   "//services/preferences:local_state_manifest",
 ]
 
-if (enable_print_preview) {
-  chrome_packaged_services += [ "//chrome/services/printing:manifest" ]
-}
-
-if (enable_basic_printing || enable_print_preview) {
+if (enable_basic_printing) {
   chrome_packaged_services +=
       [ "//components/printing/service:pdf_compositor_manifest" ]
+}
+
+if (enable_print_preview) {
+  chrome_packaged_services += [ "//chrome/services/printing:manifest" ]
 }
 
 if (enable_extensions) {

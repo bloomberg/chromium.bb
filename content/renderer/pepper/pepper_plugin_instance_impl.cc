@@ -134,7 +134,7 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 // nogncheck because dependency on //printing is conditional upon
-// enable_basic_printing or enable_print_preview flags.
+// enable_basic_printing flags.
 #include "printing/metafile_skia_wrapper.h"  // nogncheck
 #include "printing/pdf_metafile_skia.h"  // nogncheck
 #endif

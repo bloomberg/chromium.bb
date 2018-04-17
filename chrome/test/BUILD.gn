@@ -674,7 +674,6 @@ test("browser_tests") {
       "../browser/prerender/prerender_test_utils.h",
       "../browser/previews/previews_browsertest.cc",
       "../browser/previews/previews_service_browser_test.cc",
-      "../browser/printing/pwg_raster_converter_browsertest.cc",
       "../browser/process_singleton_browsertest.cc",
       "../browser/profile_resetter/profile_resetter_browsertest.cc",
       "../browser/profiles/host_zoom_map_browsertest.cc",
@@ -2002,6 +2001,7 @@ test("browser_tests") {
         "../browser/printing/print_browsertest.cc",
         "../browser/printing/print_preview_dialog_controller_browsertest.cc",
         "../browser/printing/print_preview_pdf_generated_browsertest.cc",
+        "../browser/printing/pwg_raster_converter_browsertest.cc",
         "../browser/ui/webui/print_preview/print_preview_ui_browsertest.cc",
       ]
       if (enable_extensions && !is_chromeos) {
@@ -5385,7 +5385,7 @@ if (!is_android && !is_fuchsia) {
     if (toolkit_views) {
       deps += [ "//ui/views" ]
     }
-    if (enable_basic_printing || enable_print_preview) {
+    if (enable_basic_printing) {
       deps += [ "//printing" ]
     }
     if (!enable_app_list) {

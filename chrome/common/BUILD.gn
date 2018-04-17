@@ -403,7 +403,7 @@ static_library("common") {
   }
 
   # Printing.
-  if (enable_basic_printing || enable_print_preview) {
+  if (enable_basic_printing) {
     public_deps += [
       "//chrome/common/cloud_print",
       "//components/printing/common",

@@ -169,6 +169,13 @@ static_library("utility") {
     ]
   }
 
+  if (enable_basic_printing) {
+    deps += [
+      "//components/printing/service/public/cpp:factory",
+      "//components/printing/service/public/interfaces",
+    ]
+  }
+
   if (enable_print_preview) {
     deps += [ "//chrome/services/printing:lib" ]
 
@@ -178,13 +185,6 @@ static_library("utility") {
         "printing_handler.h",
       ]
     }
-  }
-
-  if (enable_basic_printing || enable_print_preview) {
-    deps += [
-      "//components/printing/service/public/cpp:factory",
-      "//components/printing/service/public/interfaces",
-    ]
   }
 
   if (safe_browsing_mode == 1) {

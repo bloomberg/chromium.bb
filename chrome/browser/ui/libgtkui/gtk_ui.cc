@@ -76,7 +76,7 @@
 #include "chrome/browser/ui/libgtkui/settings_provider_gsettings.h"
 #endif
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "printing/printing_context_linux.h"
 #endif
 
@@ -485,7 +485,7 @@ void GtkUi::Initialize() {
 
   LoadGtkValues();
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   printing::PrintingContextLinux::SetCreatePrintDialogFunction(
       &PrintDialogGtk2::CreatePrintDialog);
   printing::PrintingContextLinux::SetPdfPaperSizeFunction(

@@ -1057,7 +1057,7 @@ target(link_target_type, "renderer") {
     ]
   }
 
-  if (enable_basic_printing || enable_print_preview) {
+  if (enable_basic_printing) {
     deps += [ "//printing" ]
   }
 

@@ -93,12 +93,9 @@ void StartPrint(content::WebContents* contents,
   }
 #endif  // ENABLE_PRINT_PREVIEW
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   print_view_manager->PrintNow(rfh_to_use);
-#endif  // ENABLE_BASIC_PRINTING
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void StartBasicPrint(content::WebContents* contents) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   content::WebContents* contents_to_use = GetWebContentsToUse(contents);
@@ -115,7 +112,6 @@ void StartBasicPrint(content::WebContents* contents) {
   print_view_manager->BasicPrint(rfh_to_use);
 #endif  // ENABLE_PRINT_PREVIEW
 }
-#endif  // ENABLE_BASIC_PRINTING
 
 content::RenderFrameHost* GetFrameToPrint(content::WebContents* contents) {
   auto* focused_frame = contents->GetFocusedFrame();
