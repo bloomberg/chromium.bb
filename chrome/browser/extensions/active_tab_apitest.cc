@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
@@ -152,6 +153,36 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
     return result == "true";
   };
 
+  auto can_load_file_iframe = [this, &extension_id]() {
+    const Extension* extension =
+        extension_service()->GetExtensionById(extension_id, false);
+
+    // Load an extension page with a file iframe.
+    GURL page = extension->GetResourceURL("file_iframe.html");
+    ExtensionTestMessageListener listener(false /*will_reply*/);
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), page, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+    EXPECT_TRUE(listener.message() == "allowed" ||
+                listener.message() == "denied")
+        << "Unexpected message " << listener.message();
+    bool allowed = listener.message() == "allowed";
+
+    // Sanity check the last committed url on the |file_iframe|.
+    content::RenderFrameHost* file_iframe = content::FrameMatchingPredicate(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::Bind(&content::FrameMatchesName, "file_iframe"));
+    bool is_file_url = file_iframe->GetLastCommittedURL() == GURL("file:///");
+    EXPECT_EQ(allowed, is_file_url)
+        << "Unexpected committed url: "
+        << file_iframe->GetLastCommittedURL().spec();
+
+    browser()->tab_strip_model()->CloseSelectedTabs();
+    return allowed;
+  };
+
   auto can_script_tab = [this, &extension_id](int tab_id) {
     constexpr char script[] = R"(
       var tabID = %d;
@@ -212,14 +243,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   // By default the extension should have file access enabled. However, since it
   // does not have host permissions to the localhost on the file scheme, it
   // should not be able to xhr file urls. For the same reason, it should not be
-  // able to execute script in the two tabs.
+  // able to execute script in the two tabs or embed file iframes.
   EXPECT_TRUE(util::AllowFileAccess(extension_id, profile()));
   EXPECT_FALSE(can_xhr_file_urls());
   EXPECT_FALSE(can_script_tab(active_tab_id));
   EXPECT_FALSE(can_script_tab(inactive_tab_id));
+  EXPECT_FALSE(can_load_file_iframe());
 
   // First don't grant the tab permission. Verify that the extension can't xhr
-  // file urls and can't script the two tabs.
+  // file urls, can't script the two tabs and can't embed file iframes.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ExtensionActionRunner::GetForWebContents(web_contents)
@@ -227,14 +259,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   EXPECT_FALSE(can_xhr_file_urls());
   EXPECT_FALSE(can_script_tab(active_tab_id));
   EXPECT_FALSE(can_script_tab(inactive_tab_id));
+  EXPECT_FALSE(can_load_file_iframe());
 
-  // Now grant the tab permission. Ensure the extension can now xhr file urls
-  // and script the active tab. It should still not be able to script the
-  // background tab.
+  // Now grant the tab permission. Ensure the extension can now xhr file urls ,
+  // script the active tab and embed file iframes. It should still not be able
+  // to script the background tab.
   ExtensionActionRunner::GetForWebContents(web_contents)
       ->RunAction(extension, true /*grant_tab_permissions*/);
   EXPECT_TRUE(can_xhr_file_urls());
   EXPECT_TRUE(can_script_tab(active_tab_id));
+  EXPECT_TRUE(can_load_file_iframe());
   EXPECT_FALSE(can_script_tab(inactive_tab_id));
 
   // Revoke extension's access to file urls. This will cause the extension to
@@ -251,13 +285,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   EXPECT_TRUE(background_page_ready.WaitUntilSatisfied());
 
   // Grant the tab permission for the active url to the extension. Ensure it
-  // still can't xhr file urls and script the active tab (since it does not
-  // have file access).
+  // still can't xhr file urls, script the active tab or embed file iframes
+  // (since it does not have file access).
   ExtensionActionRunner::GetForWebContents(web_contents)
       ->RunAction(extension, true /*grant_tab_permissions*/);
   EXPECT_FALSE(can_xhr_file_urls());
   EXPECT_FALSE(can_script_tab(active_tab_id));
   EXPECT_FALSE(can_script_tab(inactive_tab_id));
+  EXPECT_FALSE(can_load_file_iframe());
 }
 
 }  // namespace
