@@ -2068,7 +2068,7 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
     pars->scaling_points_y[i][0] = aom_rb_read_literal(rb, 8);
     if (i && pars->scaling_points_y[i - 1][0] >= pars->scaling_points_y[i][0])
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                         "First coordinateg of the scaling function points "
+                         "First coordinate of the scaling function points "
                          "shall be increasing.");
     pars->scaling_points_y[i][1] = aom_rb_read_literal(rb, 8);
   }
