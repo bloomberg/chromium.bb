@@ -476,7 +476,6 @@ class IdleHelperWithMessageLoopTest : public BaseIdleHelperTest {
   void PostFromNestedRunloop(
       std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>*
           tasks) {
-    base::MessageLoop::ScopedNestableTaskAllower allow(message_loop_.get());
     for (std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>& pair : *tasks) {
       if (pair.second) {
         idle_task_runner_->PostIdleTask(FROM_HERE, std::move(pair.first));
@@ -488,7 +487,7 @@ class IdleHelperWithMessageLoopTest : public BaseIdleHelperTest {
     idle_helper_->StartIdlePeriod(
         IdleHelper::IdlePeriodState::kInShortIdlePeriod, clock_.NowTicks(),
         clock_.NowTicks() + base::TimeDelta::FromMilliseconds(10));
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
   }
 
   void SetUp() override {
