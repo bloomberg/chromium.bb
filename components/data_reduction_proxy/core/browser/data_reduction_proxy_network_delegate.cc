@@ -614,7 +614,7 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
 
   if (data_reduction_proxy_io_data_ && data_reduction_proxy_bypass_stats_) {
     // Record BypassedBytes histograms for the request.
-    data_reduction_proxy_bypass_stats_->RecordBytesHistograms(
+    data_reduction_proxy_bypass_stats_->RecordBypassedBytesHistograms(
         request, data_reduction_proxy_io_data_->IsEnabled(),
         configurator_->GetProxyConfig());
   }

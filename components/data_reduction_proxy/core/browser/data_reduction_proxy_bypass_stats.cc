@@ -169,16 +169,6 @@ DataReductionProxyBypassStats::GetBypassType() const {
   return last_bypass_type_;
 }
 
-void DataReductionProxyBypassStats::RecordBytesHistograms(
-    const net::URLRequest& request,
-    bool data_reduction_proxy_enabled,
-    const net::ProxyConfig& data_reduction_proxy_config) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  RecordBypassedBytesHistograms(request, data_reduction_proxy_enabled,
-                                data_reduction_proxy_config);
-  RecordMissingViaHeaderBytes(request);
-}
-
 void DataReductionProxyBypassStats::OnProxyFallback(
     const net::ProxyServer& bypassed_proxy,
     int net_error) {
@@ -334,32 +324,6 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyBypassStats::NETWORK_ERROR,
                         content_length);
-  }
-}
-
-void DataReductionProxyBypassStats::RecordMissingViaHeaderBytes(
-    const net::URLRequest& request) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Responses that were served from cache should have been filtered out
-  // already.
-  DCHECK(!request.was_cached());
-
-  if (!data_reduction_proxy_config_->WasDataReductionProxyUsed(&request,
-                                                               nullptr) ||
-      HasDataReductionProxyViaHeader(*request.response_headers(), nullptr)) {
-    // Only track requests that used the data reduction proxy and had responses
-    // that were missing the data reduction proxy via header.
-    return;
-  }
-
-  if (request.GetResponseCode() >= net::HTTP_BAD_REQUEST &&
-      request.GetResponseCode() < net::HTTP_INTERNAL_SERVER_ERROR) {
-    // Track 4xx responses that are missing via headers separately.
-    UMA_HISTOGRAM_COUNTS("DataReductionProxy.MissingViaHeader.Bytes.4xx",
-                         request.received_response_content_length());
-  } else {
-    UMA_HISTOGRAM_COUNTS("DataReductionProxy.MissingViaHeader.Bytes.Other",
-                         request.received_response_content_length());
   }
 }
 

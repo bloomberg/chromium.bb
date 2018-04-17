@@ -52,7 +52,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
  public:
   // Provides an additional proxy configuration that can be consulted after
   // proxy resolution. Used to get the Data Reduction Proxy config and give it
-  // to the OnResolveProxyHandler and RecordBytesHistograms.
+  // to the OnResolveProxyHandler and RecordBypassedBytesHistograms.
   typedef base::Callback<const net::ProxyConfig&()> ProxyConfigGetter;
 
   // Constructs a DataReductionProxyNetworkDelegate object with the given
