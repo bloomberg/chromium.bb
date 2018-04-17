@@ -4399,6 +4399,7 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
 
     zcr_gaming_seat_v2_send_gamepad_added(gaming_seat_resource_,
                                           gamepad_resource);
+    wl_client_flush(wl_resource_get_client(gaming_seat_resource_));
 
     return gamepad_delegate;
   }
