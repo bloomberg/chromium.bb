@@ -186,20 +186,11 @@ cr.define('extensions', function() {
           {page: Page.DETAILS, extensionId: this.data.id});
     },
 
-    /**
-     * @param {Event} e
-     * @private
-     */
-    onReloadTap_: function(e) {
-      this.delegate.reloadItem(this.data.id)
-          .then(
-              () => {
-                Polymer.IronA11yAnnouncer.requestAvailability();
-                this.fire('iron-announce', {text: this.i18n('itemReloadDone')});
-              },
-              loadError => {
-                this.fire('load-error', loadError);
-              });
+    /** @private */
+    onReloadTap_: function() {
+      this.delegate.reloadItem(this.data.id).catch(loadError => {
+        this.fire('load-error', loadError);
+      });
     },
 
     /** @private */

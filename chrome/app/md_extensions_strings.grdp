@@ -78,9 +78,6 @@
   <message name="IDS_MD_EXTENSIONS_ITEM_DETAILS" desc="The text on the button to show more details for a given extension.">
     Details
   </message>
-  <message name="IDS_MD_EXTENSIONS_ITEM_RELOAD_DONE" desc="Text used to announce when a single extension has been updated. This is for accessibility.">
-    Extension reloaded
-  </message>
   <message name="IDS_MD_EXTENSIONS_EXTENSION_A11Y_ASSOCIATION" desc="Label used to associate an app or extension with actions a user can take. This label is for screen readers and will only be read out lout. Ex: a button labeled 'Delete' would have the description 'Related to AdBlock'. Without the added description a user on a screen reader would not have context of the extension they want to delete. Note that the action can be 'view details', 'enable', 'delete', 'errors', or something else.">
     Related to <ph name="NAME_PH">$1<ex>AdBlock</ex></ph>
   </message>
