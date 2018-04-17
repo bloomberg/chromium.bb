@@ -63,7 +63,7 @@
   switch (self.type) {
     case PRIMARY:
       return ToolbarComponentVisibilityAlways &
-             ~ToolbarComponentVisibilityCompactWidthRegularHeight;
+             ~ToolbarComponentVisibilitySplit;
     case SECONDARY:
       return ToolbarComponentVisibilitySplit;
     case LEGACY:
@@ -86,7 +86,8 @@
 - (ToolbarComponentVisibility)reloadButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityRegularWidthRegularHeight;
+      return ToolbarComponentVisibilityAlways &
+             ~ToolbarComponentVisibilitySplit;
     case SECONDARY:
       return ToolbarComponentVisibilityNone;
     case LEGACY:
@@ -97,7 +98,8 @@
 - (ToolbarComponentVisibility)stopButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityRegularWidthRegularHeight;
+      return ToolbarComponentVisibilityAlways &
+             ~ToolbarComponentVisibilitySplit;
     case SECONDARY:
       return ToolbarComponentVisibilityNone;
     case LEGACY:
@@ -108,8 +110,7 @@
 - (ToolbarComponentVisibility)bookmarkButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityAlways &
-             ~ToolbarComponentVisibilityCompactWidthRegularHeight;
+      return ToolbarComponentVisibilityRegularWidthRegularHeight;
     case SECONDARY:
       return ToolbarComponentVisibilityNone;
     case LEGACY:

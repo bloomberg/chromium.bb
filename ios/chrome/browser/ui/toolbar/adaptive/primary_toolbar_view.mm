@@ -201,14 +201,12 @@
 - (void)setUpLeadingStackView {
   self.backButton = [self.buttonFactory backButton];
   self.forwardButton = [self.buttonFactory forwardButton];
-  self.tabGridButton = [self.buttonFactory tabGridButton];
   self.stopButton = [self.buttonFactory stopButton];
   self.stopButton.hiddenInCurrentState = YES;
   self.reloadButton = [self.buttonFactory reloadButton];
 
   self.leadingStackViewButtons = @[
-    self.backButton, self.forwardButton, self.tabGridButton, self.stopButton,
-    self.reloadButton
+    self.backButton, self.forwardButton, self.stopButton, self.reloadButton
   ];
   self.leadingStackView = [[UIStackView alloc]
       initWithArrangedSubviews:self.leadingStackViewButtons];
@@ -225,10 +223,13 @@
 - (void)setUpTrailingStackView {
   self.shareButton = [self.buttonFactory shareButton];
   self.bookmarkButton = [self.buttonFactory bookmarkButton];
+  self.tabGridButton = [self.buttonFactory tabGridButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
-  self.trailingStackViewButtons =
-      @[ self.shareButton, self.bookmarkButton, self.toolsMenuButton ];
+  self.trailingStackViewButtons = @[
+    self.shareButton, self.bookmarkButton, self.tabGridButton,
+    self.toolsMenuButton
+  ];
   self.trailingStackView = [[UIStackView alloc]
       initWithArrangedSubviews:self.trailingStackViewButtons];
   self.trailingStackView.translatesAutoresizingMaskIntoConstraints = NO;
