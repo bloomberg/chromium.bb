@@ -17,7 +17,6 @@ class SharedBitmapManager;
 }  // namespace viz
 
 namespace gpu {
-struct Capabilities;
 class GpuMemoryBufferManager;
 namespace raster {
 class RasterInterface;
@@ -105,10 +104,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   // be called after texture deletions that may happen during an idle state.
   void FlushPendingDeletions() const;
 
-  GLenum GetImageTextureTarget(const gpu::Capabilities& caps,
-                               gfx::BufferUsage usage,
-                               viz::ResourceFormat format) const;
-
   bool IsTextureFormatSupported(viz::ResourceFormat format) const;
 
   // Returns true if the provided |format| can be used as a render buffer.
@@ -180,7 +175,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
 
     // The following are copied from the resource.
     gfx::Size size_;
-    gfx::BufferUsage usage_;
     viz::ResourceFormat format_;
     gfx::ColorSpace color_space_;
     GLuint texture_id_;
@@ -213,22 +207,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
     void LazyAllocate(gpu::gles2::GLES2Interface* gl, GLuint texture_id);
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
-  };
-
-  class CC_EXPORT ScopedWriteLockRaster : public ScopedWriteLockGpu {
-   public:
-    ScopedWriteLockRaster(LayerTreeResourceProvider* resource_provider,
-                          viz::ResourceId resource_id);
-    ~ScopedWriteLockRaster();
-
-    // Creates a texture id, allocating if necessary, on the given context. The
-    // texture id must be deleted by the caller.
-    GLuint ConsumeTexture(gpu::raster::RasterInterface* ri);
-
-   private:
-    void LazyAllocate(gpu::raster::RasterInterface* gl, GLuint texture_id);
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockRaster);
   };
 
   class CC_EXPORT ScopedWriteLockSoftware {

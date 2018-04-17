@@ -361,10 +361,9 @@ viz::ResourceId LayerTreeResourceProvider::CreateGpuTextureResource(
                              viz::ResourceType::kTexture, format, color_space));
   if (use_overlay && settings_.use_texture_storage_image &&
       viz::IsGpuMemoryBufferFormatSupported(format)) {
-    resource->usage = gfx::BufferUsage::SCANOUT;
-    resource->target = GetImageTextureTarget(
-        compositor_context_provider_->ContextCapabilities(), resource->usage,
-        format);
+    resource->target = gpu::GetBufferTextureTarget(
+        gfx::BufferUsage::SCANOUT, BufferFormat(format),
+        compositor_context_provider_->ContextCapabilities());
     resource->buffer_format = BufferFormat(format);
     resource->is_overlay_candidate = true;
   }
@@ -616,13 +615,6 @@ void LayerTreeResourceProvider::FlushPendingDeletions() const {
     gl->ShallowFlushCHROMIUM();
 }
 
-GLenum LayerTreeResourceProvider::GetImageTextureTarget(
-    const gpu::Capabilities& caps,
-    gfx::BufferUsage usage,
-    viz::ResourceFormat format) const {
-  return gpu::GetBufferTextureTarget(usage, BufferFormat(format), caps);
-}
-
 bool LayerTreeResourceProvider::IsTextureFormatSupported(
     viz::ResourceFormat format) const {
   gpu::Capabilities caps;
@@ -730,7 +722,6 @@ LayerTreeResourceProvider::ScopedWriteLockGpu::ScopedWriteLockGpu(
   DCHECK_EQ(resource->type, viz::ResourceType::kTexture);
   resource_provider->CreateTexture(resource);
   size_ = resource->size;
-  usage_ = resource->usage;
   format_ = resource->format;
   color_space_ = resource_provider_->GetResourceColorSpaceForRaster(resource);
   texture_id_ = resource->gl_id;
@@ -818,45 +809,6 @@ void LayerTreeResourceProvider::ScopedWriteLockGL::LazyAllocate(
     gl->TexImage2D(target_, 0, GLInternalFormat(format_), size_.width(),
                    size_.height(), 0, GLDataFormat(format_),
                    GLDataType(format_), nullptr);
-  }
-}
-
-LayerTreeResourceProvider::ScopedWriteLockRaster::ScopedWriteLockRaster(
-    LayerTreeResourceProvider* resource_provider,
-    viz::ResourceId resource_id)
-    : ScopedWriteLockGpu(resource_provider, resource_id) {}
-
-LayerTreeResourceProvider::ScopedWriteLockRaster::~ScopedWriteLockRaster() {}
-
-GLuint LayerTreeResourceProvider::ScopedWriteLockRaster::ConsumeTexture(
-    gpu::raster::RasterInterface* ri) {
-  DCHECK(ri);
-  DCHECK(!mailbox_.IsZero());
-
-  GLuint texture_id =
-      ri->CreateAndConsumeTexture(is_overlay_, usage_, format_, mailbox_.name);
-  DCHECK(texture_id);
-
-  LazyAllocate(ri, texture_id);
-
-  return texture_id;
-}
-
-void LayerTreeResourceProvider::ScopedWriteLockRaster::LazyAllocate(
-    gpu::raster::RasterInterface* ri,
-    GLuint texture_id) {
-  // ETC1 resources cannot be preallocated.
-  if (format_ == viz::ETC1)
-    return;
-
-  if (allocated_)
-    return;
-  allocated_ = true;
-
-  ri->TexStorage2D(texture_id, 1, size_.width(), size_.height());
-  if (is_overlay_ && color_space_.IsValid()) {
-    ri->SetColorSpaceMetadata(texture_id,
-                              reinterpret_cast<GLColorSpace>(&color_space_));
   }
 }
 
