@@ -579,6 +579,10 @@ bool MediaSessionImpl::RequestSystemAudioFocus(
   bool result = delegate_->RequestAudioFocus(audio_focus_type);
   uma_helper_.RecordRequestAudioFocusResult(result);
 
+  // Make sure we are unducked.
+  if (result)
+    StopDucking();
+
   // MediaSessionImpl must change its state & audio focus type AFTER requesting
   // audio focus.
   SetAudioFocusState(result ? State::ACTIVE : State::INACTIVE);
