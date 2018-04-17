@@ -21,6 +21,7 @@
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "chrome/browser/media/router/test/noop_dual_media_sink_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,14 +31,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browser_test.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/pref_names.h"
@@ -284,7 +283,6 @@ const char kURLRegisterComplete[] =
     "http://1.2.3.4:8888/privet/register?action=complete&"
     "user=user%40consumer.example.com";
 
-const char kSampleGaiaId[] = "12345";
 const char kSampleUser[] = "user@consumer.example.com";
 
 class TestMessageLoopCondition {
@@ -380,12 +378,6 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
                                     &TestMessageLoopCondition::Signal))
         .WillRepeatedly(Return());
 
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(browser()->profile());
-
-    DCHECK(signin_manager);
-    signin_manager->SetAuthenticatedAccountInfo(kSampleGaiaId, kSampleUser);
-
     fake_fetcher_factory().SetFakeResponse(
         GURL(kURLInfo),
         kResponseInfo,
@@ -435,12 +427,11 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
         GaiaUrls::GetInstance()->oauth_user_info_url().spec()))
         .Times(AnyNumber());
-
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
-
-    token_service->UpdateCredentials(
-        signin_manager->GetAuthenticatedAccountId(), "MyFakeToken");
+    identity::MakePrimaryAccountAvailable(
+        SigninManagerFactory::GetForProfile(browser()->profile()),
+        ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
+        IdentityManagerFactory::GetForProfile(browser()->profile()),
+        kSampleUser);
 
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("local_discovery_ui_test.js")));
   }
