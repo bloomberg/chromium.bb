@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 
 import com.google.android.gms.vision.Frame;
 
+import org.chromium.mojo_base.BigBufferUtil;
 import org.chromium.skia.mojom.ColorType;
 
 import java.nio.ByteBuffer;
@@ -32,7 +33,8 @@ public class BitmapUtils {
             return null;
         }
 
-        ByteBuffer imageBuffer = ByteBuffer.wrap(bitmapData.pixelData);
+        ByteBuffer imageBuffer =
+                ByteBuffer.wrap(BigBufferUtil.getBytesFromBigBuffer(bitmapData.pixelData));
         if (imageBuffer.capacity() <= 0) {
             return null;
         }

@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/notifications/notification.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
@@ -144,9 +145,9 @@ TEST(NotificationStructTraitsTest, NotificationResourcesRoundtrip) {
 
   WebNotificationResources roundtrip_resources;
 
-  ASSERT_TRUE(mojom::blink::NotificationResources::Deserialize(
-      mojom::blink::NotificationResources::Serialize(&resources),
-      &roundtrip_resources));
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::blink::NotificationResources>(
+          &resources, &roundtrip_resources));
 
   ASSERT_FALSE(roundtrip_resources.image.empty());
   EXPECT_TRUE(ImagesShareDimensionsAndColor(resources.image,

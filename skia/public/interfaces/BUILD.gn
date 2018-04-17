@@ -10,6 +10,10 @@ mojom("interfaces") {
     "blur_image_filter_tile_mode.mojom",
     "image_info.mojom",
   ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
 }
 
 mojom("test_interfaces") {

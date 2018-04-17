@@ -154,14 +154,15 @@ std::string TypeConverter<std::string, std::vector<uint8_t>>::Convert(
 // static
 std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, SkBitmap>::Convert(
     const SkBitmap& input) {
-  return skia::mojom::Bitmap::Serialize(&input);
+  return skia::mojom::InlineBitmap::Serialize(&input);
 }
 
 // static
 SkBitmap TypeConverter<SkBitmap, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
   SkBitmap output;
-  return skia::mojom::Bitmap::Deserialize(input, &output) ? output : SkBitmap();
+  return skia::mojom::InlineBitmap::Deserialize(input, &output) ? output
+                                                                : SkBitmap();
 }
 
 // static

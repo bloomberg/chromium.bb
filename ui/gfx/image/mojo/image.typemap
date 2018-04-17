@@ -15,5 +15,4 @@ public_deps = [
 type_mappings = [
   "gfx.mojom.ImageSkia=gfx::ImageSkia[nullable_is_same_type]",
   "gfx.mojom.ImageSkiaRep=gfx::ImageSkiaRep[nullable_is_same_type]",
-  "gfx.mojom.SharedBufferSkBitmap=SkBitmap[nullable_is_same_type]",
 ]
