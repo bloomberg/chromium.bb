@@ -134,7 +134,8 @@ void XRFrameTransport::FrameSubmit(
       gfx::GpuMemoryBufferHandle gpu_handle =
           CloneHandleForIPC(gpu_memory_buffer->GetHandle());
       vr_presentation_provider->SubmitFrameWithTextureHandle(
-          vr_frame_id, mojo::WrapPlatformFile(gpu_handle.handle.GetHandle()));
+          vr_frame_id,
+          mojo::WrapPlatformFile(gpu_handle.dxgi_handle.GetHandle()));
     }
 #else
     NOTIMPLEMENTED();

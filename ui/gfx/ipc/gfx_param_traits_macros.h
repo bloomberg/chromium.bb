@@ -55,6 +55,8 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
   IPC_STRUCT_TRAITS_MEMBER(native_pixmap_handle)
 #elif defined(OS_MACOSX)
   IPC_STRUCT_TRAITS_MEMBER(mach_port)
+#elif defined(OS_WIN)
+  IPC_STRUCT_TRAITS_MEMBER(dxgi_handle)
 #endif
 IPC_STRUCT_TRAITS_END()
 
