@@ -25,6 +25,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
+#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -238,7 +239,9 @@ void CheckToolbarButtonVisibility(UITraitCollection* traitCollection,
         assertWithMatcher:VisibleInPrimaryToolbar()];
     [[EarlGrey selectElementWithMatcher:ShareButton()]
         assertWithMatcher:VisibleInPrimaryToolbar()];
-    [[EarlGrey selectElementWithMatcher:BookmarkButton()]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                            ButtonWithAccessibilityLabelId(
+                                                IDS_IOS_ACCNAME_RELOAD)]
         assertWithMatcher:VisibleInPrimaryToolbar()];
     [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                             ButtonWithAccessibilityLabelId(
@@ -257,10 +260,15 @@ void CheckToolbarButtonVisibility(UITraitCollection* traitCollection,
                                                   IDS_IOS_TOOLBAR_SHOW_TABS)]
           assertWithMatcher:VisibleInPrimaryToolbar()];
     } else {
-      // Unsplit in Regular x Regular, the reload/stop button is visible.
-      [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                              ButtonWithAccessibilityLabelId(
-                                                  IDS_IOS_ACCNAME_RELOAD)]
+      // Unsplit in Regular x Regular, the bookmark button is visible, the stack
+      // view button is hidden.
+      [[EarlGrey
+          selectElementWithMatcher:
+              grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                             IDS_IOS_TOOLBAR_SHOW_TABS),
+                         VisibleInPrimaryToolbar(), nil)]
+          assertWithMatcher:grey_nil()];
+      [[EarlGrey selectElementWithMatcher:BookmarkButton()]
           assertWithMatcher:VisibleInPrimaryToolbar()];
     }
   }
@@ -321,10 +329,10 @@ void FocusOmnibox() {
 
 // Tests that bookmarks button is spotlighted for the bookmarked pages.
 - (void)testBookmarkButton {
-  if (!IsIPadIdiom()) {
-    // If this test is run on an iPhone, rotate it to have the unsplit toolbar.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                             errorOrNil:nil];
+  if (!IsRegularXRegularSizeClass()) {
+    EARL_GREY_TEST_SKIPPED(
+        @"The bookmark button is only visible on Regular x Regular size "
+        @"classes.");
   }
 
   // Setup the bookmarks.
@@ -363,12 +371,6 @@ void FocusOmnibox() {
   // Clean the bookmarks
   GREYAssert(chrome_test_util::ClearBookmarks(),
              @"Not all bookmarks were removed.");
-
-  if (!IsIPadIdiom()) {
-    // Cancel rotation.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                             errorOrNil:nil];
-  }
 }
 
 // Tests that tapping a button cancels the focus on the omnibox.
