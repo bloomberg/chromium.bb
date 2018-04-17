@@ -174,7 +174,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
   DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
             net::EFFECTIVE_CONNECTION_TYPE_4G + 1u);
   DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
-            net::EFFECTIVE_CONNECTION_TYPE_LAST);
+            static_cast<size_t>(net::EFFECTIVE_CONNECTION_TYPE_LAST));
 
   // Get the client hint headers.
   if (!url.is_valid())
@@ -284,7 +284,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
               net::EFFECTIVE_CONNECTION_TYPE_4G + 1u);
     DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
-              net::EFFECTIVE_CONNECTION_TYPE_LAST);
+              static_cast<size_t>(net::EFFECTIVE_CONNECTION_TYPE_LAST));
 
     int effective_connection_type =
         static_cast<int>(estimator->GetEffectiveConnectionType());
