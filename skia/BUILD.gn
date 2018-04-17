@@ -68,6 +68,9 @@ config("skia_config") {
     ]
   }
 
+  workaround_header = "gpu/config/gpu_driver_bug_workaround_autogen.h"
+  defines += [ "SK_GPU_WORKAROUNDS_HEADER=\"$workaround_header\"" ]
+
   if (is_component_build) {
     defines += [
       "SKIA_DLL",
