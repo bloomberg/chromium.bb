@@ -181,9 +181,16 @@ void HostFrameSinkManager::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
     data.client->OnFrameTokenChanged(frame_token);
 }
 
-void HostFrameSinkManager::RegisterFrameSinkHierarchy(
+bool HostFrameSinkManager::RegisterFrameSinkHierarchy(
     const FrameSinkId& parent_frame_sink_id,
     const FrameSinkId& child_frame_sink_id) {
+  auto iter = frame_sink_data_map_.find(parent_frame_sink_id);
+  // |parent_frame_sink_id| isn't registered so it can't embed anything.
+  if (iter == frame_sink_data_map_.end() ||
+      !iter->second.IsFrameSinkRegistered()) {
+    return false;
+  }
+
   // Register and store the parent.
   frame_sink_manager_->RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                                   child_frame_sink_id);
@@ -193,10 +200,11 @@ void HostFrameSinkManager::RegisterFrameSinkHierarchy(
   DCHECK(!base::ContainsValue(child_data.parents, parent_frame_sink_id));
   child_data.parents.push_back(parent_frame_sink_id);
 
-  FrameSinkData& parent_data = frame_sink_data_map_[parent_frame_sink_id];
-  DCHECK(parent_data.IsFrameSinkRegistered());
+  FrameSinkData& parent_data = iter->second;
   DCHECK(!base::ContainsValue(parent_data.children, child_frame_sink_id));
   parent_data.children.push_back(child_frame_sink_id);
+
+  return true;
 }
 
 void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
