@@ -242,6 +242,33 @@ aom_image_t *aom_img_wrap(aom_image_t *img, aom_img_fmt_t fmt, unsigned int d_w,
                           unsigned int d_h, unsigned int align,
                           unsigned char *img_data);
 
+/*!\brief Open a descriptor, allocating storage for the underlying image with a
+ * border
+ *
+ * Returns a descriptor for storing an image of the given format and its
+ * borders. The storage for the descriptor is allocated on the heap.
+ *
+ * \param[in]    img        Pointer to storage for descriptor. If this parameter
+ *                          is NULL, the storage for the descriptor will be
+ *                          allocated on the heap.
+ * \param[in]    fmt        Format for the image
+ * \param[in]    d_w        Width of the image
+ * \param[in]    d_h        Height of the image
+ * \param[in]    align      Alignment, in bytes, of the image buffer and
+ *                          each row in the image(stride).
+ * \param[in]    size_align Alignment, in bytes, of the image width and height.
+ * \param[in]    border     A border that is padded on four sides of the image.
+ *
+ * \return Returns a pointer to the initialized image descriptor. If the img
+ *         parameter is non-null, the value of the img parameter will be
+ *         returned.
+ */
+aom_image_t *aom_img_alloc_with_border(aom_image_t *img, aom_img_fmt_t fmt,
+                                       unsigned int d_w, unsigned int d_h,
+                                       unsigned int align,
+                                       unsigned int size_align,
+                                       unsigned int border);
+
 /*!\brief Set the rectangle identifying the displayed portion of the image
  *
  * Updates the displayed rectangle (aka viewport) on the image surface to
@@ -252,11 +279,12 @@ aom_image_t *aom_img_wrap(aom_image_t *img, aom_img_fmt_t fmt, unsigned int d_w,
  * \param[in]    y         topmost row
  * \param[in]    w         width
  * \param[in]    h         height
+ * \param[in]    border    A border that is padded on four sides of the image.
  *
  * \return 0 if the requested rectangle is valid, nonzero otherwise.
  */
 int aom_img_set_rect(aom_image_t *img, unsigned int x, unsigned int y,
-                     unsigned int w, unsigned int h);
+                     unsigned int w, unsigned int h, unsigned int border);
 
 /*!\brief Flip the image vertically (top for bottom)
  *

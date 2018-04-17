@@ -58,6 +58,8 @@
 #include "./tools_common.h"
 #include "./video_writer.h"
 
+#define AOM_BORDER_IN_PIXELS 288
+
 static const char *exec_name;
 
 void usage_exit() {
@@ -224,13 +226,14 @@ int main(int argc, char **argv) {
   info.time_base.numerator = 1;
   info.time_base.denominator = fps;
 
-  if (info.frame_width <= 0 || info.frame_height <= 0 ||
-      (info.frame_width % 2) != 0 || (info.frame_height % 2) != 0) {
+  if (info.frame_width <= 0 || info.frame_height <= 0) {
     die("Invalid frame size: %dx%d", info.frame_width, info.frame_height);
   }
 
-  if (!aom_img_alloc(&raw, AOM_IMG_FMT_I420, info.frame_width,
-                     info.frame_height, 1)) {
+  // Allocate memory with the border so that it can be used as a reference.
+  if (!aom_img_alloc_with_border(&raw, AOM_IMG_FMT_I420, info.frame_width,
+                                 info.frame_height, 32, 8,
+                                 AOM_BORDER_IN_PIXELS)) {
     die("Failed to allocate image.");
   }
 
