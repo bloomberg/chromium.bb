@@ -10,7 +10,7 @@
 #include <windows.h>
 
 // https://msdn.microsoft.com/library/windows/desktop/ms684179.aspx
-#define LDR_IS_IMAGEMAPPING(handle) (((ULONG_PTR)(handle)) & (ULONG_PTR)2)
+#define LDR_IS_DATAFILE(handle) (((ULONG_PTR)(handle)) & (ULONG_PTR)1)
 
 namespace pe_image_safe {
 
@@ -40,7 +40,14 @@ class PEImageSafe {
 
   PEImageSafe(void* buffer, DWORD buffer_size) : image_size_(buffer_size) {
     image_ = reinterpret_cast<HMODULE>(buffer);
-    ldr_image_mapping_ = LDR_IS_IMAGEMAPPING(image_);
+  }
+
+  // Some functions can only be used on images that have been memory mapped by
+  // the NT Loader (e.g. LoadLibrary).  This constructor must be used to enable
+  // that functionality.
+  PEImageSafe(HMODULE buffer, DWORD buffer_size)
+      : image_(buffer), image_size_(buffer_size) {
+    ldr_image_mapping_ = !LDR_IS_DATAFILE(buffer);
   }
 
   // Return a pointer to the PE Dos Header.
