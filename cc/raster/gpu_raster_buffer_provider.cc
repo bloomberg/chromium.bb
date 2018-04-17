@@ -27,7 +27,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
-#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkMultiPictureDraw.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -85,12 +84,17 @@ class ScopedSkSurfaceForUnpremultiplyAndDither {
     if (!surface_)
       return;
 
-    GrBackendObject handle =
-        surface_->getTextureHandle(SkSurface::kFlushRead_BackendHandleAccess);
-    const GrGLTextureInfo* info =
-        skia::GrBackendObjectToGrGLTextureInfo(handle);
+    GrBackendTexture backend_texture =
+        surface_->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
+    if (!backend_texture.isValid()) {
+      return;
+    }
+    GrGLTextureInfo info;
+    if (!backend_texture.getGLTextureInfo(&info)) {
+      return;
+    }
     context_provider_->ContextGL()->UnpremultiplyAndDitherCopyCHROMIUM(
-        info->fID, texture_id_, offset_.x(), offset_.y(), size_.width(),
+        info.fID, texture_id_, offset_.x(), offset_.y(), size_.width(),
         size_.height());
   }
 

@@ -48,10 +48,16 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
   bool IsAccelerated() const final { return true; }
 
   GLuint GetBackingTextureHandleForOverwrite() override {
-    return skia::GrBackendObjectToGrGLTextureInfo(
-               GetSkSurface()->getTextureHandle(
-                   SkSurface::kDiscardWrite_TextureHandleAccess))
-        ->fID;
+    GrBackendTexture backend_texture = GetSkSurface()->getBackendTexture(
+        SkSurface::kDiscardWrite_TextureHandleAccess);
+    if (!backend_texture.isValid()) {
+      return 0;
+    }
+    GrGLTextureInfo info;
+    if (!backend_texture.getGLTextureInfo(&info)) {
+      return 0;
+    }
+    return info.fID;
   }
 
  protected:
