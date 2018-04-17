@@ -654,38 +654,26 @@ NSTextField* MakeLabel(
   draggingItem.draggingFrame = dragRect;
 
   draggingItem.imageComponentsProvider = ^{
-    // If either component is zero sized (which shouldn't generally happen, but
-    // apparently can… maybe a missing icon or empty string title?), omit it,
-    // else the dragging session will create layers with NaN components and
-    // crash.
-    auto* components = [NSMutableArray<NSDraggingImageComponent*> array];
-    if (imageRect.size.width != 0 && imageRect.size.height != 0) {
-      NSDraggingImageComponent* imageComponent =
-          [[[NSDraggingImageComponent alloc]
-              initWithKey:NSDraggingImageComponentIconKey] autorelease];
-      NSImage* image = imageView_.image;
-      imageComponent.contents = image;
-      imageComponent.frame =
-          NSOffsetRect(imageRect, -dragRect.origin.x, -dragRect.origin.y);
-      [components addObject:imageComponent];
-    }
-    if (labelRect.size.width != 0 && labelRect.size.height != 0) {
-      NSDraggingImageComponent* labelComponent =
-          [[[NSDraggingImageComponent alloc]
-              initWithKey:NSDraggingImageComponentLabelKey] autorelease];
+    NSDraggingImageComponent* imageComponent =
+        [[[NSDraggingImageComponent alloc]
+            initWithKey:NSDraggingImageComponentIconKey] autorelease];
+    NSImage* image = imageView_.image;
+    imageComponent.contents = image;
+    imageComponent.frame =
+        NSOffsetRect(imageRect, -dragRect.origin.x, -dragRect.origin.y);
+    NSDraggingImageComponent* labelComponent =
+        [[[NSDraggingImageComponent alloc]
+            initWithKey:NSDraggingImageComponentLabelKey] autorelease];
 
-      labelComponent.contents = [NSImage imageWithSize:labelRect.size
-                                               flipped:NO
-                                        drawingHandler:^(NSRect rect) {
-                                          [filename drawAtPoint:NSZeroPoint];
-                                          return YES;
-                                        }];
-      labelComponent.frame =
-          NSOffsetRect(labelRect, -dragRect.origin.x, -dragRect.origin.y);
-      [components addObject:labelComponent];
-    }
-
-    return components;
+    labelComponent.contents = [NSImage imageWithSize:labelRect.size
+                                             flipped:NO
+                                      drawingHandler:^(NSRect rect) {
+                                        [filename drawAtPoint:NSZeroPoint];
+                                        return YES;
+                                      }];
+    labelComponent.frame =
+        NSOffsetRect(labelRect, -dragRect.origin.x, -dragRect.origin.y);
+    return @[ imageComponent, labelComponent ];
   };
   [self beginDraggingSessionWithItems:@[ draggingItem ]
                                 event:event
