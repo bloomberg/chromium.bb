@@ -4,6 +4,7 @@
 
 #include "gpu/ipc/service/gles2_command_buffer_stub.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -334,7 +335,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   }
 
   if (manager->gpu_preferences().enable_gpu_service_logging) {
-    gles2_decoder_->set_log_commands(true);
+    gles2_decoder_->SetLogCommands(true);
   }
 
   const size_t kSharedStateSize = sizeof(CommandBufferSharedState);

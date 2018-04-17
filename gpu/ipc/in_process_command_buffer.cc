@@ -34,6 +34,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
@@ -42,6 +43,7 @@
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
+#include "gpu/command_buffer/service/raster_decoder.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -341,9 +343,18 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, transfer_buffer_manager_.get());
-  decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
-                                             service_->outputter(),
-                                             context_group_.get()));
+
+  if (params.attribs.enable_raster_decoder &&
+      params.attribs.enable_raster_interface &&
+      !params.attribs.enable_gles2_interface) {
+    decoder_.reset(raster::RasterDecoder::Create(this, command_buffer_.get(),
+                                                 service_->outputter(),
+                                                 context_group_.get()));
+  } else {
+    decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
+                                               service_->outputter(),
+                                               context_group_.get()));
+  }
 
   if (!surface_) {
     if (params.is_offscreen) {
@@ -490,7 +501,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   }
 
   if (service_->gpu_preferences().enable_gpu_service_logging)
-    decoder_->set_log_commands(true);
+    decoder_->SetLogCommands(true);
 
   if (use_virtualized_gl_context_) {
     // If virtualized GL contexts are in use, then real GL context state

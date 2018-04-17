@@ -5,22 +5,17 @@
 #ifndef GPU_IPC_GL_IN_PROCESS_CONTEXT_H_
 #define GPU_IPC_GL_IN_PROCESS_CONTEXT_H_
 
-#include <stddef.h>
-#include <stdint.h>
+#include <memory>
 
-#include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gpu_preference.h"
 
 namespace gpu {
 struct GpuFeatureInfo;
-class InProcessCommandBuffer;
 class ServiceTransferCache;
 struct SharedMemoryLimits;
 
@@ -45,21 +40,21 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // not thread safe. If |surface| is null, then the other parameters are used
   // to correctly create a surface.
   // |gpu_channel_manager| should be non-null when used in the GPU process.
-  virtual gpu::ContextResult Initialize(
-      scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
+  virtual ContextResult Initialize(
+      scoped_refptr<InProcessCommandBuffer::Service> service,
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
       SurfaceHandle window,
       GLInProcessContext* share_context,
-      const gpu::ContextCreationAttribs& attribs,
+      const ContextCreationAttribs& attribs,
       const SharedMemoryLimits& memory_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
       GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) = 0;
 
-  virtual const gpu::Capabilities& GetCapabilities() const = 0;
-  virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
+  virtual const Capabilities& GetCapabilities() const = 0;
+  virtual const GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
 
   // Allows direct access to the GLES2 implementation so a GLInProcessContext
   // can be used without making it current.
@@ -68,18 +63,18 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   virtual void SetLock(base::Lock* lock) = 0;
 
   virtual void SetSwapBuffersCompletionCallback(
-      const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
+      const InProcessCommandBuffer::SwapBuffersCompletionCallback&
           callback) = 0;
 
   virtual void SetUpdateVSyncParametersCallback(
-      const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
+      const InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback) = 0;
 
   virtual void SetPresentationCallback(
-      const gpu::InProcessCommandBuffer::PresentationCallback& callback) = 0;
+      const InProcessCommandBuffer::PresentationCallback& callback) = 0;
 
   // Test only functions.
-  virtual gpu::ServiceTransferCache* GetTransferCacheForTest() const = 0;
+  virtual ServiceTransferCache* GetTransferCacheForTest() const = 0;
 };
 
 }  // namespace gpu

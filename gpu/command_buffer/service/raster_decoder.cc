@@ -6,13 +6,20 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+#include <memory>
 #include <string>
+#include <unordered_map>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/paint/color_space_transfer_cache_entry.h"
+#include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/transfer_cache_entry.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
@@ -41,11 +48,14 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_cmd_validation.h"
+#include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/init/create_gr_gl_interface.h"
 
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
@@ -92,7 +102,7 @@ class TextureMetadata {
   static GLenum CalcTarget(bool use_buffer,
                            gfx::BufferUsage buffer_usage,
                            viz::ResourceFormat format,
-                           const gpu::Capabilities& caps) {
+                           const Capabilities& caps) {
     if (use_buffer) {
       gfx::BufferFormat buffer_format = viz::BufferFormat(format);
       return GetBufferTextureTarget(buffer_usage, buffer_format, caps);
@@ -231,7 +241,7 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   // DecoderContext implementation.
   base::WeakPtr<DecoderContext> AsWeakPtr() override;
-  gpu::ContextResult Initialize(
+  ContextResult Initialize(
       const scoped_refptr<gl::GLSurface>& surface,
       const scoped_refptr<gl::GLContext>& context,
       bool offscreen,
@@ -325,6 +335,7 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
     NOTIMPLEMENTED();
     return false;
   }
+  ServiceTransferCache* GetTransferCacheForTest() override;
 
   // ErrorClientState implementation.
   void OnContextLostError() override;
@@ -334,6 +345,7 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   void SetIgnoreCachedStateForTest(bool ignore) override;
   ImageManager* GetImageManagerForTest() override;
+
   void SetCopyTextureResourceManagerForTest(
       CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager)
       override;
@@ -526,15 +538,9 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                                           GLuint handle_shm_offset,
                                           GLuint data_shm_id,
                                           GLuint data_shm_offset,
-                                          GLuint data_size) {
-    NOTIMPLEMENTED();
-  }
-  void DoUnlockTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id) {
-    NOTIMPLEMENTED();
-  }
-  void DoDeleteTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id) {
-    NOTIMPLEMENTED();
-  }
+                                          GLuint data_size);
+  void DoUnlockTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id);
+  void DoDeleteTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id);
   void DoUnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                             GLuint dest_id,
                                             GLint x,
@@ -601,15 +607,17 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   // Most recent generation of the TextureManager.  If this no longer matches
   // the current generation when our context becomes current, then we'll rebind
   // all the textures to stay up to date with Texture::service_id() changes.
-  uint32_t texture_manager_service_id_generation_;
+  uint32_t texture_manager_service_id_generation_ = 0;
 
   // Number of commands remaining to be processed in DoCommands().
-  int commands_to_process_;
+  int commands_to_process_ = 0;
+
+  bool supports_oop_raster_ = false;
 
   // The current decoder error communicates the decoder error through command
   // processing functions that do not return the error value. Should be set
   // only if not returning an error.
-  error::Error current_decoder_error_;
+  error::Error current_decoder_error_ = error::kNoError;
 
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
@@ -628,6 +636,14 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   std::unique_ptr<VertexArrayManager> vertex_array_manager_;
 
+  // ServiceTransferCache uses Ids based on transfer buffer shm_id+offset, which
+  // are guaranteed to be unique within the scope of the TransferBufferManager
+  // which generates them. Because of this, |transfer_cache_| must have a
+  // narrower scope than |transfer_buffer_manager_|.
+  // In the future, we could add necessary scoping Id(s) to allow a single
+  // ServiceTransferCache to be shared among multiple contexts / channels.
+  std::unique_ptr<ServiceTransferCache> transfer_cache_;
+
   // All the state for this context.
   gles2::ContextState state_;
 
@@ -644,6 +660,9 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   std::unique_ptr<CopyTexImageResourceManager> copy_tex_image_blit_;
   std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_chromium_;
+
+  // Raster helpers.
+  sk_sp<GrContext> gr_context_;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
 
@@ -701,6 +720,10 @@ void RasterDecoder::BeginDecoding() {}
 
 void RasterDecoder::EndDecoding() {}
 
+void RasterDecoder::SetLogCommands(bool log_commands) {
+  log_commands_ = log_commands;
+}
+
 base::StringPiece RasterDecoder::GetLogPrefix() {
   return GetLogger()->GetLogPrefix();
 }
@@ -711,9 +734,6 @@ RasterDecoderImpl::RasterDecoderImpl(
     Outputter* outputter,
     ContextGroup* group)
     : RasterDecoder(command_buffer_service),
-      texture_manager_service_id_generation_(0),
-      commands_to_process_(0),
-      current_decoder_error_(error::kNoError),
       client_(client),
       logger_(&debug_marker_manager_, client),
       group_(group),
@@ -731,7 +751,7 @@ base::WeakPtr<DecoderContext> RasterDecoderImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-gpu::ContextResult RasterDecoderImpl::Initialize(
+ContextResult RasterDecoderImpl::Initialize(
     const scoped_refptr<gl::GLSurface>& surface,
     const scoped_refptr<gl::GLContext>& context,
     bool offscreen,
@@ -746,21 +766,21 @@ gpu::ContextResult RasterDecoderImpl::Initialize(
   set_initialized();
 
   if (!offscreen) {
-    return gpu::ContextResult::kFatalFailure;
+    return ContextResult::kFatalFailure;
   }
 
   if (group_->gpu_preferences().enable_gpu_debugging)
     set_debug(true);
 
   if (group_->gpu_preferences().enable_gpu_command_logging)
-    set_log_commands(true);
+    SetLogCommands(true);
 
   surface_ = surface;
   context_ = context;
 
   auto result =
       group_->Initialize(this, attrib_helper.context_type, disallowed_features);
-  if (result != gpu::ContextResult::kSuccess) {
+  if (result != ContextResult::kSuccess) {
     group_ =
         nullptr;  // Must not destroy ContextGroup if it is not initialized.
     Destroy(true);
@@ -815,7 +835,52 @@ gpu::ContextResult RasterDecoderImpl::Initialize(
   state_.InitCapabilities(nullptr);
   state_.InitState(nullptr);
 
-  return gpu::ContextResult::kSuccess;
+  if (attrib_helper.enable_oop_rasterization) {
+    if (!features().chromium_raster_transport) {
+      LOG(ERROR) << "ContextResult::kFatalFailure: "
+                    "chromium_raster_transport not present";
+      return ContextResult::kFatalFailure;
+    }
+
+    // Assume that we can create a GrContext. This will be set to false if
+    // there's a failure.
+    supports_oop_raster_ = true;
+    sk_sp<const GrGLInterface> interface(
+        gl::init::CreateGrGLInterface(gl_version_info()));
+    if (!interface) {
+      DLOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
+                     "failed.";
+      supports_oop_raster_ = false;
+    }
+
+    if (supports_oop_raster_) {
+      gr_context_ = GrContext::MakeGL(std::move(interface));
+      if (gr_context_) {
+        // TODO(enne): This cache is for this decoder only and each decoder has
+        // its own cache.  This is pretty unfortunate.  This really needs to be
+        // rethought before shipping.  Most likely a different command buffer
+        // context for raster-in-gpu, with a shared gl context / gr context
+        // that different decoders can use.
+        static constexpr int kMaxGaneshResourceCacheCount = 8196;
+        static constexpr size_t kMaxGaneshResourceCacheBytes = 96 * 1024 * 1024;
+        gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
+                                            kMaxGaneshResourceCacheBytes);
+        transfer_cache_ = std::make_unique<ServiceTransferCache>();
+      } else {
+        bool was_lost = CheckResetStatus();
+        if (was_lost) {
+          DLOG(ERROR)
+              << "ContextResult::kTransientFailure: Could not create GrContext";
+          return ContextResult::kTransientFailure;
+        }
+        DLOG(ERROR) << "OOP raster support disabled: GrContext creation "
+                       "failed.";
+        supports_oop_raster_ = false;
+      }
+    }
+  }
+
+  return ContextResult::kSuccess;
 }
 
 void RasterDecoderImpl::Destroy(bool have_context) {
@@ -906,7 +971,7 @@ gl::GLContext* RasterDecoderImpl::GetGLContext() {
 }
 
 Capabilities RasterDecoderImpl::GetCapabilities() {
-  gpu::Capabilities caps;
+  Capabilities caps;
   caps.gpu_rasterization = true;
   caps.supports_oop_raster = true;
   caps.texture_target_exception_list =
@@ -1316,7 +1381,7 @@ bool RasterDecoderImpl::ClearLevel(gles2::Texture* texture,
     return false;
   }
 
-  const uint32_t kMaxZeroSize = 1024 * 1024 * 4;
+  static constexpr uint32_t kMaxZeroSize = 1024 * 1024 * 4;
 
   uint32_t size;
   uint32_t padded_row_size;
@@ -1421,6 +1486,10 @@ bool RasterDecoderImpl::ClearCompressedTextureLevel(gles2::Texture* texture,
   return true;
 }
 
+ServiceTransferCache* RasterDecoderImpl::GetTransferCacheForTest() {
+  return transfer_cache_.get();
+}
+
 void RasterDecoderImpl::OnContextLostError() {
   NOTIMPLEMENTED();
 }
@@ -1436,22 +1505,22 @@ error::Error RasterDecoderImpl::HandleWaitSyncTokenCHROMIUM(
       *static_cast<const volatile gles2::cmds::WaitSyncTokenCHROMIUM*>(
           cmd_data);
 
-  const gpu::CommandBufferNamespace kMinNamespaceId =
-      gpu::CommandBufferNamespace::INVALID;
-  const gpu::CommandBufferNamespace kMaxNamespaceId =
-      gpu::CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES;
+  static constexpr CommandBufferNamespace kMinNamespaceId =
+      CommandBufferNamespace::INVALID;
+  static constexpr CommandBufferNamespace kMaxNamespaceId =
+      CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES;
 
-  gpu::CommandBufferNamespace namespace_id =
-      static_cast<gpu::CommandBufferNamespace>(c.namespace_id);
+  CommandBufferNamespace namespace_id =
+      static_cast<CommandBufferNamespace>(c.namespace_id);
   if ((namespace_id < static_cast<int32_t>(kMinNamespaceId)) ||
       (namespace_id >= static_cast<int32_t>(kMaxNamespaceId))) {
-    namespace_id = gpu::CommandBufferNamespace::INVALID;
+    namespace_id = CommandBufferNamespace::INVALID;
   }
   const CommandBufferId command_buffer_id =
       CommandBufferId::FromUnsafeValue(c.command_buffer_id());
   const uint64_t release = c.release_count();
 
-  gpu::SyncToken sync_token;
+  SyncToken sync_token;
   sync_token.Set(namespace_id, command_buffer_id, release);
   return client_->OnWaitSyncToken(sync_token) ? error::kDeferCommandUntilLater
                                               : error::kNoError;
@@ -1495,7 +1564,7 @@ error::Error RasterDecoderImpl::HandleBeginQueryEXT(
     return error::kNoError;
   }
 
-  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(sync_shm_id);
+  scoped_refptr<Buffer> buffer = GetSharedMemoryBuffer(sync_shm_id);
   if (!buffer)
     return error::kInvalidArguments;
   QuerySync* sync = static_cast<QuerySync*>(
@@ -2083,13 +2152,13 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2DImage", "use_buffer");
       return;
     }
-    DCHECK(levels == 1);
+    DCHECK_EQ(levels, 1);
     TexStorage2DImage(texture_ref, *texture_metadata, width, height);
   } else if (GetCapabilities().texture_storage) {
     TexStorage2D(texture_ref, *texture_metadata, levels, width, height);
   } else {
     // TODO(backer): Support more than one texture level.
-    DCHECK(levels == 1);
+    DCHECK_EQ(levels, 1);
     TexImage2D(texture_ref, *texture_metadata, width, height);
   }
 
@@ -2388,6 +2457,110 @@ bool RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded(Texture* texture,
     }
   }
   return false;
+}
+
+void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
+    GLuint raw_entry_type,
+    GLuint entry_id,
+    GLuint handle_shm_id,
+    GLuint handle_shm_offset,
+    GLuint data_shm_id,
+    GLuint data_shm_offset,
+    GLuint data_size) {
+  if (!supports_oop_raster_) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache on a context without OOP raster.");
+    return;
+  }
+  DCHECK(gr_context_);
+  DCHECK(transfer_cache_);
+
+  // Validate the type we are about to create.
+  cc::TransferCacheEntryType entry_type;
+  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
+                                                        &entry_type)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache with an invalid cache entry type.");
+    return;
+  }
+
+  uint8_t* data_memory =
+      GetSharedMemoryAs<uint8_t*>(data_shm_id, data_shm_offset, data_size);
+  if (!data_memory) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+                       "Can not read transfer cache entry data.");
+    return;
+  }
+
+  scoped_refptr<Buffer> handle_buffer = GetSharedMemoryBuffer(handle_shm_id);
+  if (!DiscardableHandleBase::ValidateParameters(handle_buffer.get(),
+                                                 handle_shm_offset)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+                       "Invalid shm for discardable handle.");
+    return;
+  }
+  ServiceDiscardableHandle handle(std::move(handle_buffer), handle_shm_offset,
+                                  handle_shm_id);
+
+  if (!transfer_cache_->CreateLockedEntry(
+          entry_type, entry_id, handle, gr_context_.get(),
+          base::make_span(data_memory, data_size))) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+                       "Failure to deserialize transfer cache entry.");
+    return;
+  }
+}
+
+void RasterDecoderImpl::DoUnlockTransferCacheEntryINTERNAL(
+    GLuint raw_entry_type,
+    GLuint entry_id) {
+  if (!supports_oop_raster_) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache on a context without OOP raster.");
+    return;
+  }
+  DCHECK(transfer_cache_);
+  cc::TransferCacheEntryType entry_type;
+  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
+                                                        &entry_type)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache with an invalid cache entry type.");
+    return;
+  }
+
+  if (!transfer_cache_->UnlockEntry(entry_type, entry_id)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
+                       "Attempt to unlock an invalid ID");
+  }
+}
+
+void RasterDecoderImpl::DoDeleteTransferCacheEntryINTERNAL(
+    GLuint raw_entry_type,
+    GLuint entry_id) {
+  if (!supports_oop_raster_) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache on a context without OOP raster.");
+    return;
+  }
+  DCHECK(transfer_cache_);
+  cc::TransferCacheEntryType entry_type;
+  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
+                                                        &entry_type)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
+        "Attempt to use OOP transfer cache with an invalid cache entry type.");
+    return;
+  }
+
+  if (!transfer_cache_->DeleteEntry(entry_type, entry_id)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
+                       "Attempt to delete an invalid ID");
+  }
 }
 
 void RasterDecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
