@@ -128,7 +128,7 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandlingNpShareUrl) {
 
   ASSERT_TRUE(actual_data);
   EXPECT_EQ(kExpectedShareUrl, actual_data.shareURL);
-  EXPECT_EQ(kExpectedUrl, actual_data.passwordManagerURL);
+  EXPECT_EQ(kExpectedUrl, actual_data.visibleURL);
   EXPECT_NSEQ(base::SysUTF8ToNSString(kExpectedTitle), actual_data.title);
   EXPECT_TRUE(actual_data.isOriginalTitle);
   EXPECT_FALSE(actual_data.isPagePrintable);
@@ -147,7 +147,7 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandlingNoShareUrl) {
 
   ASSERT_TRUE(actual_data);
   EXPECT_EQ(kExpectedUrl, actual_data.shareURL);
-  EXPECT_EQ(kExpectedUrl, actual_data.passwordManagerURL);
+  EXPECT_EQ(kExpectedUrl, actual_data.visibleURL);
   EXPECT_NSEQ(base::SysUTF8ToNSString(kExpectedTitle), actual_data.title);
   EXPECT_TRUE(actual_data.isOriginalTitle);
   EXPECT_FALSE(actual_data.isPagePrintable);
