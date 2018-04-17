@@ -18,443 +18,443 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutHTMLCanvas CANVAS id='copyvideo'",
-          "rect": [571, 513, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='copyvideo'",
-          "rect": [571, 513, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-atopvideo'",
-          "rect": [571, 413, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-atopvideo'",
-          "rect": [571, 413, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-invideo'",
-          "rect": [571, 313, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-invideo'",
-          "rect": [571, 313, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-outvideo'",
-          "rect": [571, 163, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-outvideo'",
-          "rect": [571, 163, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-invideo'",
-          "rect": [571, 113, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-invideo'",
-          "rect": [571, 113, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='copycanvas'",
-          "rect": [429, 513, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='copycanvas'",
-          "rect": [429, 513, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-atopcanvas'",
-          "rect": [429, 413, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-atopcanvas'",
-          "rect": [429, 413, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-incanvas'",
-          "rect": [429, 313, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-incanvas'",
-          "rect": [429, 313, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-outcanvas'",
-          "rect": [429, 163, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-outcanvas'",
-          "rect": [429, 163, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-incanvas'",
-          "rect": [429, 113, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-incanvas'",
-          "rect": [429, 113, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='copyimage'",
-          "rect": [287, 513, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='copyimage'",
-          "rect": [287, 513, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-atopimage'",
-          "rect": [287, 413, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-atopimage'",
-          "rect": [287, 413, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-inimage'",
-          "rect": [287, 313, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-inimage'",
-          "rect": [287, 313, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-outimage'",
-          "rect": [287, 163, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-outimage'",
-          "rect": [287, 163, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-inimage'",
-          "rect": [287, 113, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-inimage'",
-          "rect": [287, 113, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='copysolid color'",
-          "rect": [145, 513, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='copysolid color'",
-          "rect": [145, 513, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-atopsolid color'",
-          "rect": [145, 413, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-atopsolid color'",
-          "rect": [145, 413, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-insolid color'",
-          "rect": [145, 313, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='destination-insolid color'",
-          "rect": [145, 313, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-outsolid color'",
-          "rect": [145, 163, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-outsolid color'",
-          "rect": [145, 163, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-insolid color'",
-          "rect": [145, 113, 80, 40],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutHTMLCanvas CANVAS id='source-insolid color'",
-          "rect": [145, 113, 80, 40],
+          "object": "LayoutHTMLCanvas CANVAS id='xorvideo'",
+          "rect": [570, 562, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='xorvideo'",
-          "rect": [601, 563, 50, 40],
+          "rect": [570, 562, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutHTMLCanvas CANVAS id='xorvideo'",
-          "rect": [601, 563, 50, 40],
+          "object": "LayoutHTMLCanvas CANVAS id='copyvideo'",
+          "rect": [570, 512, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='copyvideo'",
+          "rect": [570, 512, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='lightervideo'",
-          "rect": [601, 463, 50, 40],
+          "rect": [570, 462, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='lightervideo'",
-          "rect": [601, 463, 50, 40],
+          "rect": [570, 462, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-atopvideo'",
+          "rect": [570, 412, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-atopvideo'",
+          "rect": [570, 412, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-outvideo'",
-          "rect": [601, 363, 50, 40],
+          "rect": [570, 362, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-outvideo'",
-          "rect": [601, 363, 50, 40],
+          "rect": [570, 362, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-invideo'",
+          "rect": [570, 312, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-invideo'",
+          "rect": [570, 312, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-overvideo'",
-          "rect": [601, 263, 50, 40],
+          "rect": [570, 262, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-overvideo'",
-          "rect": [601, 263, 50, 40],
+          "rect": [570, 262, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-atopvideo'",
-          "rect": [601, 213, 50, 40],
+          "rect": [570, 212, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-atopvideo'",
-          "rect": [601, 213, 50, 40],
+          "rect": [570, 212, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-outvideo'",
+          "rect": [570, 162, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-outvideo'",
+          "rect": [570, 162, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-invideo'",
+          "rect": [570, 112, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-invideo'",
+          "rect": [570, 112, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-overvideo'",
-          "rect": [601, 63, 50, 40],
+          "rect": [570, 62, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-overvideo'",
-          "rect": [601, 63, 50, 40],
+          "rect": [570, 62, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='xorcanvas'",
-          "rect": [459, 563, 50, 40],
+          "rect": [428, 562, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='xorcanvas'",
-          "rect": [459, 563, 50, 40],
+          "rect": [428, 562, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='copycanvas'",
+          "rect": [428, 512, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='copycanvas'",
+          "rect": [428, 512, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='lightercanvas'",
-          "rect": [459, 463, 50, 40],
+          "rect": [428, 462, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='lightercanvas'",
-          "rect": [459, 463, 50, 40],
+          "rect": [428, 462, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-atopcanvas'",
+          "rect": [428, 412, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-atopcanvas'",
+          "rect": [428, 412, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-outcanvas'",
-          "rect": [459, 363, 50, 40],
+          "rect": [428, 362, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-outcanvas'",
-          "rect": [459, 363, 50, 40],
+          "rect": [428, 362, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-incanvas'",
+          "rect": [428, 312, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-incanvas'",
+          "rect": [428, 312, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-overcanvas'",
-          "rect": [459, 263, 50, 40],
+          "rect": [428, 262, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-overcanvas'",
-          "rect": [459, 263, 50, 40],
+          "rect": [428, 262, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-atopcanvas'",
-          "rect": [459, 213, 50, 40],
+          "rect": [428, 212, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-atopcanvas'",
-          "rect": [459, 213, 50, 40],
+          "rect": [428, 212, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-outcanvas'",
+          "rect": [428, 162, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-outcanvas'",
+          "rect": [428, 162, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-incanvas'",
+          "rect": [428, 112, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-incanvas'",
+          "rect": [428, 112, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-overcanvas'",
-          "rect": [459, 63, 50, 40],
+          "rect": [428, 62, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-overcanvas'",
-          "rect": [459, 63, 50, 40],
+          "rect": [428, 62, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='xorimage'",
-          "rect": [317, 563, 50, 40],
+          "rect": [286, 562, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='xorimage'",
-          "rect": [317, 563, 50, 40],
+          "rect": [286, 562, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='copyimage'",
+          "rect": [286, 512, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='copyimage'",
+          "rect": [286, 512, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='lighterimage'",
-          "rect": [317, 463, 50, 40],
+          "rect": [286, 462, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='lighterimage'",
-          "rect": [317, 463, 50, 40],
+          "rect": [286, 462, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-atopimage'",
+          "rect": [286, 412, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-atopimage'",
+          "rect": [286, 412, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-outimage'",
-          "rect": [317, 363, 50, 40],
+          "rect": [286, 362, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-outimage'",
-          "rect": [317, 363, 50, 40],
+          "rect": [286, 362, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-inimage'",
+          "rect": [286, 312, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-inimage'",
+          "rect": [286, 312, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-overimage'",
-          "rect": [317, 263, 50, 40],
+          "rect": [286, 262, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-overimage'",
-          "rect": [317, 263, 50, 40],
+          "rect": [286, 262, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-atopimage'",
-          "rect": [317, 213, 50, 40],
+          "rect": [286, 212, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-atopimage'",
-          "rect": [317, 213, 50, 40],
+          "rect": [286, 212, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-outimage'",
+          "rect": [286, 162, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-outimage'",
+          "rect": [286, 162, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-inimage'",
+          "rect": [286, 112, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-inimage'",
+          "rect": [286, 112, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-overimage'",
-          "rect": [317, 63, 50, 40],
+          "rect": [286, 62, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-overimage'",
-          "rect": [317, 63, 50, 40],
+          "rect": [286, 62, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='xorsolid color'",
-          "rect": [175, 563, 50, 40],
+          "rect": [144, 562, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='xorsolid color'",
-          "rect": [175, 563, 50, 40],
+          "rect": [144, 562, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='copysolid color'",
+          "rect": [144, 512, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='copysolid color'",
+          "rect": [144, 512, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='lightersolid color'",
-          "rect": [175, 463, 50, 40],
+          "rect": [144, 462, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='lightersolid color'",
-          "rect": [175, 463, 50, 40],
+          "rect": [144, 462, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-atopsolid color'",
+          "rect": [144, 412, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-atopsolid color'",
+          "rect": [144, 412, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-outsolid color'",
-          "rect": [175, 363, 50, 40],
+          "rect": [144, 362, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-outsolid color'",
-          "rect": [175, 363, 50, 40],
+          "rect": [144, 362, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-insolid color'",
+          "rect": [144, 312, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='destination-insolid color'",
+          "rect": [144, 312, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-oversolid color'",
-          "rect": [175, 263, 50, 40],
+          "rect": [144, 262, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='destination-oversolid color'",
-          "rect": [175, 263, 50, 40],
+          "rect": [144, 262, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-atopsolid color'",
-          "rect": [175, 213, 50, 40],
+          "rect": [144, 212, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-atopsolid color'",
-          "rect": [175, 213, 50, 40],
+          "rect": [144, 212, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-outsolid color'",
+          "rect": [144, 162, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-outsolid color'",
+          "rect": [144, 162, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-insolid color'",
+          "rect": [144, 112, 132, 42],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutHTMLCanvas CANVAS id='source-insolid color'",
+          "rect": [144, 112, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-oversolid color'",
-          "rect": [175, 63, 50, 40],
+          "rect": [144, 62, 132, 42],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutHTMLCanvas CANVAS id='source-oversolid color'",
-          "rect": [175, 63, 50, 40],
+          "rect": [144, 62, 132, 42],
           "reason": "invalidate paint rectangle"
         }
       ]

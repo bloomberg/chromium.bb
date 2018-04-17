@@ -1963,7 +1963,10 @@ TEST_P(PaintControllerTest, PartialInvalidation) {
   ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
   EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
               // Partial invalidation.
-              UnorderedElementsAre(FloatRect(150, 160, 170, 180)));
+              UnorderedElementsAre(
+                  RuntimeEnabledFeatures::PartialRasterInvalidationEnabled()
+                      ? FloatRect(150, 160, 170, 180)
+                      : FloatRect(100, 100, 300, 300)));
   EXPECT_EQ(LayoutRect(), client.PartialInvalidationRect());
 
   // Test partial rect invalidation with full invalidation.
@@ -1985,10 +1988,15 @@ TEST_P(PaintControllerTest, PartialInvalidation) {
   DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 400));
   GetPaintController().CommitNewDisplayItems();
   ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
-              // Both partial invalidation and incremental invalidation.
-              UnorderedElementsAre(FloatRect(100, 400, 300, 100),
-                                   FloatRect(150, 160, 170, 180)));
+  if (RuntimeEnabledFeatures::PartialRasterInvalidationEnabled()) {
+    EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
+                // Both partial invalidation and incremental invalidation.
+                UnorderedElementsAre(FloatRect(100, 400, 300, 100),
+                                     FloatRect(150, 160, 170, 180)));
+  } else {
+    EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
+                UnorderedElementsAre(FloatRect(100, 100, 300, 400)));
+  }
   EXPECT_EQ(LayoutRect(), client.PartialInvalidationRect());
 }
 

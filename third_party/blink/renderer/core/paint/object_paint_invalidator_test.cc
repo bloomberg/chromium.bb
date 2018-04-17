@@ -302,7 +302,10 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
                                          ->GetRasterInvalidationTracking()
                                          ->Invalidations();
   ASSERT_EQ(1u, raster_invalidations.size());
-  EXPECT_EQ(IntRect(18, 18, 80, 80), raster_invalidations[0].rect);
+  if (RuntimeEnabledFeatures::PartialRasterInvalidationEnabled())
+    EXPECT_EQ(IntRect(18, 18, 80, 80), raster_invalidations[0].rect);
+  else
+    EXPECT_EQ(IntRect(8, 8, 200, 200), raster_invalidations[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kRectangle,
             raster_invalidations[0].reason);
 

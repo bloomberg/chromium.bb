@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Testing both hit testing'",
-          "rect": [773, 43, 19, 77],
+          "rect": [773, 8, 19, 133],
           "reason": "selection"
         }
       ]

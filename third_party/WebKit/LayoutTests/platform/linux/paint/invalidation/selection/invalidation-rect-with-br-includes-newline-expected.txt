@@ -23,14 +23,14 @@
           "reason": "geometry"
         },
         {
+          "object": "InlineTextBox 'a'",
+          "rect": [8, 8, 16, 17],
+          "reason": "selection"
+        },
+        {
           "object": "InlineTextBox '\n'",
           "rect": [24, 8, 16, 16],
           "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'a'",
-          "rect": [8, 8, 16, 16],
-          "reason": "selection"
         }
       ]
     }
