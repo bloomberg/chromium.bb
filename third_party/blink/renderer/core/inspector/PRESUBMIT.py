@@ -11,7 +11,7 @@ def _CompileDevtoolsFrontend(input_api, output_api):
 
     # If a devtools file is changed, the PRESUBMIT hook in Source/devtools
     # will run closure compiler
-    if (any("browser_protocol.json" in path for path in local_paths) and
+    if (any("browser_protocol.pdl" in path for path in local_paths) and
             all(devtools not in path for path in local_paths)):
         compile_path = input_api.os_path.join(
             input_api.PresubmitLocalPath(), "..", "..", "devtools", "scripts", "compile_frontend.py")

@@ -191,6 +191,7 @@ _PNG_FILE_EXTENSION = 'png'
 # with FileType.NONE are automatically skipped without warning.
 _SKIPPED_FILES_WITHOUT_WARNING = [
     'LayoutTests' + os.path.sep,
+    'third_party' + os.path.sep + 'blink' + os.path.sep + 'renderer' + os.path.sep + 'devtools' + os.path.sep + 'protocol.json',
 ]
 
 # Extensions of files which are allowed to contain carriage returns.
