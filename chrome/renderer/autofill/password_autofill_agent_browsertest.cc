@@ -793,6 +793,29 @@ TEST_F(PasswordAutofillAgentTest,
                                               UTF16ToUTF8(password3_), true);
 }
 
+// Fill username and password fields when username field contains a prefilled
+// value that matches the list of known possible prefilled values usually used
+// as placeholders.
+TEST_F(PasswordAutofillAgentTest, AutocompleteForPrefilledUsernameValue) {
+  // Set the username element to a value from the prefilled values list.
+  // Comparison should be insensitive to leading and trailing whitespaces.
+  username_element_.SetValue(
+      WebString::FromUTF16(base::UTF8ToUTF16(" User Name ")));
+
+  // Simulate the browser sending back the login info, it triggers the
+  // autocomplete.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // The username and password should both have suggested values.
+  CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
+
+  // Simulate a user click so that the password field's real value is filled.
+  SimulateElementClick(kUsernameName);
+
+  // The username and password should have been autocompleted.
+  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+}
+
 // Fill a password field if the stored username is a prefix of username in
 // read-only field.
 TEST_F(PasswordAutofillAgentTest,
@@ -864,8 +887,9 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForFilledFieldUnmatched) {
                                               false);
 }
 
-// Don't try to complete a prefilled value even if it's a partial match
-// to a username.
+// Don't try to complete a prefilled value that is a partial match
+// to a username if the prefilled value isn't on the list of known values
+// used as placeholders.
 TEST_F(PasswordAutofillAgentTest, NoPartialMatchForPrefilledUsername) {
   username_element_.SetValue(WebString::FromUTF8("ali"));
 

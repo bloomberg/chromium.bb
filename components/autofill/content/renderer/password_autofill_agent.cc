@@ -13,10 +13,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -77,6 +79,61 @@ bool FillDataContainsFillableUsername(const PasswordFormFillData& fill_data) {
   return !fill_data.username_field.name.empty() &&
          (!fill_data.additional_logins.empty() ||
           !fill_data.username_field.value.empty());
+}
+
+// Checks if the prefilled value of the username element is one of the known
+// values possibly used as placeholders. The list of possible placeholder
+// values comes from popular sites exhibiting this issue.
+// TODO(crbug.com/832622): Remove this once a stable solution is in place.
+bool PossiblePrefilledUsernameValue(const std::string& username_value) {
+  static base::NoDestructor<base::flat_set<std::string, std::less<>>>
+      kPrefilledUsernameValues({"3~15个字符,中文字符7个以内",
+                                "Benutzername",
+                                "Digite seu CPF ou e-mail",
+                                "DS Logon Username",
+                                "Email Address",
+                                "email address",
+                                "Email masih kosong",
+                                "Email/手機號碼",
+                                "Enter User Name",
+                                "Identifiant",
+                                "Kullanıcı Adı",
+                                "Kunden-ID",
+                                "Nick",
+                                "Nom Utilisateur",
+                                "Rut",
+                                "Siret",
+                                "this is usually your email address",
+                                "UID/用戶名/Email",
+                                "User Id",
+                                "User Name",
+                                "Username",
+                                "username",
+                                "username or email",
+                                "Username or email:",
+                                "Username/Email",
+                                "Usuario",
+                                "Your email address",
+                                "Имя",
+                                "Логин",
+                                "Логин...",
+                                "כתובת דוא''ל",
+                                "اسم العضو",
+                                "اسم المستخدم",
+                                "الاسم",
+                                "نام کاربری",
+                                "メールアドレス",
+                                "用户名",
+                                "用户名/Email",
+                                "請輸入身份證字號",
+                                "请用微博帐号登录",
+                                "请输入手机号或邮箱",
+                                "请输入邮箱或手机号",
+                                "邮箱/手机/展位号"});
+
+  return kPrefilledUsernameValues->find(
+             base::TrimWhitespaceASCII(username_value, base::TRIM_ALL)) !=
+         kPrefilledUsernameValues->end();
 }
 
 // Returns true if password form has username and password fields with either
@@ -1751,7 +1808,8 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
 
   // |current_username| is the username for credentials that are going to be
   // autofilled. It is selected according to the algorithm:
-  // 1. If the page already contain a non-empty value in |username_element|,
+  // 1. If the page already contains a non-empty value in |username_element|
+  // that is not found in the list of values known to be used as placeholders,
   // this is adopted and not overridden.
   // 2. Default username from |fill_data| if the username field is
   // autocompletable.
@@ -1759,7 +1817,8 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // not autocompletable (no username case).
   base::string16 current_username;
   if (!username_element->IsNull()) {
-    if (!username_element->Value().IsEmpty())
+    if (!username_element->Value().IsEmpty() &&
+        !PossiblePrefilledUsernameValue(username_element->Value().Utf8()))
       current_username = username_element->Value().Utf16();
     else if (IsElementAutocompletable(*username_element))
       current_username = fill_data.username_field.value;
@@ -1783,8 +1842,12 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // Input matches the username, fill in required values.
   if (!username_element->IsNull() &&
       IsElementAutocompletable(*username_element)) {
-    // Fill username only when it's not empty and not set by the page.
-    if (!username.empty() && username_element->Value().IsEmpty()) {
+    // Fill a non-empty username if it is safe to override the value of the
+    // username element. It is safe to override if the value is empty or a known
+    // placeholder value.
+    if (!username.empty() &&
+        (username_element->Value().IsEmpty() ||
+         PossiblePrefilledUsernameValue(username_element->Value().Utf8()))) {
       username_element->SetSuggestedValue(
           blink::WebString::FromUTF16(username));
       registration_callback.Run(username_element);
