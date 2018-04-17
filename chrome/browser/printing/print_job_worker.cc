@@ -103,8 +103,8 @@ void NotificationCallback(PrintJob* print_job,
 }
 
 // Helper function to ensure |query| is valid until at least |callback| returns.
-void HoldRefCallback(scoped_refptr<PrinterQuery> query,
-                     base::OnceClosure callback) {
+void WorkerHoldRefCallback(scoped_refptr<PrinterQuery> query,
+                           base::OnceClosure callback) {
   std::move(callback).Run();
 }
 
@@ -112,7 +112,7 @@ void PostOnQueryThread(scoped_refptr<PrinterQuery> query,
                        PrintingContext::PrintSettingsCallback callback,
                        PrintingContext::Result result) {
   query->PostTask(FROM_HERE,
-                  base::BindOnce(&HoldRefCallback, query,
+                  base::BindOnce(&WorkerHoldRefCallback, query,
                                  base::BindOnce(std::move(callback), result)));
 }
 
@@ -197,14 +197,14 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
-            &HoldRefCallback, base::WrapRefCounted(query_),
+            &WorkerHoldRefCallback, base::WrapRefCounted(query_),
             base::BindOnce(&PrintJobWorker::GetSettingsWithUI,
                            base::Unretained(this), document_page_count,
                            has_selection, is_scripted)));
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&HoldRefCallback, base::WrapRefCounted(query_),
+        base::BindOnce(&WorkerHoldRefCallback, base::WrapRefCounted(query_),
                        base::BindOnce(&PrintJobWorker::UseDefaultSettings,
                                       base::Unretained(this))));
   }
@@ -218,7 +218,7 @@ void PrintJobWorker::SetSettings(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
-          &HoldRefCallback, base::WrapRefCounted(query_),
+          &WorkerHoldRefCallback, base::WrapRefCounted(query_),
           base::BindOnce(&PrintJobWorker::UpdatePrintSettings,
                          base::Unretained(this), std::move(new_settings))));
 }
@@ -232,7 +232,7 @@ void PrintJobWorker::SetSettingsFromPOD(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
-          &HoldRefCallback, base::WrapRefCounted(query_),
+          &WorkerHoldRefCallback, base::WrapRefCounted(query_),
           base::BindOnce(&PrintJobWorker::UpdatePrintSettingsFromPOD,
                          base::Unretained(this), std::move(new_settings))));
 }
