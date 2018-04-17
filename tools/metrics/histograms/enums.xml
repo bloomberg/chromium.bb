@@ -12910,6 +12910,7 @@ Called by update_net_error_codes.py.-->
   <int value="436"
       label="CertificateTransparencyEnforcementDisabledForLegacyCas"/>
   <int value="437" label="MediaRouterCastAllowAllIPs"/>
+  <int value="438" label="DeviceSamlLoginAuthenticationType"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

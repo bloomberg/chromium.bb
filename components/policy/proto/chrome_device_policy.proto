@@ -1020,6 +1020,18 @@ message DeviceMachinePasswordChangeRateProto {
   optional int32 rate_days = 1;
 }
 
+// Setting to control the authentication type for newly added users which log in
+// via SAML.
+message SamlLoginAuthenticationTypeProto {
+  enum Type {
+    TYPE_DEFAULT = 0;             // Implementation-defined default config.
+    TYPE_CLIENT_CERTIFICATE = 1;  // Client certificate authentication.
+    // Next ID to use: 2
+  }
+
+  optional Type saml_login_authentication_type = 1 [default = TYPE_DEFAULT];
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1109,4 +1121,5 @@ message ChromeDeviceSettingsProto {
   optional VirtualMachinesAllowedProto virtual_machines_allowed = 69;
   optional DeviceMachinePasswordChangeRateProto
       device_machine_password_change_rate = 70;
+  optional SamlLoginAuthenticationTypeProto saml_login_authentication_type = 71;
 }

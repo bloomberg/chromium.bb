@@ -115,6 +115,7 @@ const char* const kKnownSettings[] = {
     kUpdateDisabled,
     kVariationsRestrictParameter,
     kVirtualMachinesAllowed,
+    kSamlLoginAuthenticationType,
 };
 
 void DecodeLoginPolicies(
@@ -350,6 +351,14 @@ void DecodeLoginPolicies(
       input_methods->AppendString(input_method);
     new_values_cache->SetValue(kDeviceLoginScreenInputMethods,
                                std::move(input_methods));
+  }
+
+  if (policy.has_saml_login_authentication_type() &&
+      policy.saml_login_authentication_type()
+          .has_saml_login_authentication_type()) {
+    new_values_cache->SetInteger(kSamlLoginAuthenticationType,
+                                 policy.saml_login_authentication_type()
+                                     .saml_login_authentication_type());
   }
 }
 

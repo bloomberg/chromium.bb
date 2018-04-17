@@ -310,4 +310,10 @@ const char kDeviceHostnameTemplate[] = "cros.network.hostname_template";
 // is allowed.
 const char kVirtualMachinesAllowed[] = "cros.device.virtual_machines_allowed";
 
+// An enum specifying the authentication type for newly added users which log in
+// via SAML. See the SamlLoginAuthenticationTypeProto proto message for the list
+// of possible values.
+const char kSamlLoginAuthenticationType[] =
+    "cros.device.saml_login_authentication_type";
+
 }  // namespace chromeos

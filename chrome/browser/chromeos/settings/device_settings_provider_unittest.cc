@@ -259,6 +259,19 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     Mock::VerifyAndClearExpectations(this);
   }
 
+  // Helper routine to set the DeviceSamlLoginAuthenticationType policy.
+  void SetSamlLoginAuthenticationType(
+      em::SamlLoginAuthenticationTypeProto::Type value) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    em::SamlLoginAuthenticationTypeProto* proto =
+        device_policy_.payload().mutable_saml_login_authentication_type();
+    proto->set_saml_login_authentication_type(value);
+    device_policy_.Build();
+    session_manager_client_.set_device_policy(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -629,6 +642,24 @@ TEST_F(DeviceSettingsProviderTest, SetWallpaperSettings) {
   std::unique_ptr<base::DictionaryValue> expected_value =
       base::DictionaryValue::From(base::JSONReader::Read(valid_format));
   EXPECT_EQ(*expected_value, *provider_->Get(kDeviceWallpaperImage));
+}
+
+TEST_F(DeviceSettingsProviderTest, SamlLoginAuthenticationType) {
+  using PolicyProto = em::SamlLoginAuthenticationTypeProto;
+
+  VerifyPolicyValue(kSamlLoginAuthenticationType, nullptr);
+
+  {
+    SetSamlLoginAuthenticationType(PolicyProto::TYPE_DEFAULT);
+    base::Value expected_value(PolicyProto::TYPE_DEFAULT);
+    VerifyPolicyValue(kSamlLoginAuthenticationType, &expected_value);
+  }
+
+  {
+    SetSamlLoginAuthenticationType(PolicyProto::TYPE_CLIENT_CERTIFICATE);
+    base::Value expected_value(PolicyProto::TYPE_CLIENT_CERTIFICATE);
+    VerifyPolicyValue(kSamlLoginAuthenticationType, &expected_value);
+  }
 }
 
 }  // namespace chromeos
