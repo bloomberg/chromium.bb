@@ -20,12 +20,44 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "net/url_request/url_fetcher.h"
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace remoting {
+
+namespace {
+
+bool IsValidErrorCode(int error_code) {
+#define HTTP_STATUS(label, code, reason) \
+  if (error_code == code)                \
+    return true;
+#include "net/http/http_status_code_list.h"
+#undef HTTP_STATUS
+  return false;
+}
+
+std::string GetRequestErrorMessage(int error_code) {
+  if (IsValidErrorCode(error_code)) {
+    std::string error_phrase =
+        net::GetHttpReasonPhrase(static_cast<net::HttpStatusCode>(error_code));
+    return l10n_util::GetStringFUTF8(IDS_SERVER_COMMUNICATION_ERROR,
+                                     base::UTF8ToUTF16(error_phrase));
+  }
+
+  switch (error_code) {
+    case net::URLFetcher::RESPONSE_CODE_INVALID:
+      return l10n_util::GetStringUTF8(IDS_ERROR_NETWORK_ERROR);
+    default:
+      return l10n_util::GetStringFUTF8(IDS_SERVER_COMMUNICATION_ERROR,
+                                       base::IntToString16(error_code));
+  }
+}
+
+}  // namespace
 
 HostListService* HostListService::GetInstance() {
   static base::NoDestructor<HostListService> instance;
@@ -164,16 +196,16 @@ void HostListService::HandleFetchFailure(FetchFailureReason reason,
           l10n_util::GetStringUTF8(IDS_ERROR_OAUTH_TOKEN_INVALID);
       break;
     case FetchFailureReason::REQUEST_ERROR:
-      last_fetch_failure_->localized_description = l10n_util::GetStringFUTF8(
-          IDS_SERVER_COMMUNICATION_ERROR,
-          base::UTF8ToUTF16(net::GetHttpReasonPhrase(
-              static_cast<net::HttpStatusCode>(error_code))));
+      last_fetch_failure_->localized_description =
+          GetRequestErrorMessage(error_code);
       break;
     default:
       NOTREACHED();
   }
   LOG(WARNING) << "Failed to fetch host list: "
-               << last_fetch_failure_->localized_description;
+               << last_fetch_failure_->localized_description
+               << " reason: " << static_cast<int>(reason)
+               << ", error_code: " << error_code;
   fetch_failure_callbacks_.Notify();
 }
 

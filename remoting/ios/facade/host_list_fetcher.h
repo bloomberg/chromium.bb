@@ -27,9 +27,9 @@ class HostListFetcher : public net::URLFetcherDelegate {
  public:
   // Imposible http response code. Used to signal that the request has been
   // cancelled.
+  // TODO(yuweih): Add all response code values here and make the callback
+  // return this enum instead of int.
   enum ResponseCode {
-    // URLFetcher::RESPONSE_CODE_INVALID = -1. Use -257 to (hopefully) prevent
-    // collisions.
     RESPONSE_CODE_CANCELLED = -257,
   };
 

@@ -19,6 +19,11 @@
 
 namespace remoting {
 
+static_assert(static_cast<int>(net::URLFetcher::RESPONSE_CODE_INVALID) !=
+                  static_cast<int>(
+                      HostListFetcher::ResponseCode::RESPONSE_CODE_CANCELLED),
+              "RESPONSE_CODE_INVALID collided with RESPONSE_CODE_CANCELLED.");
+
 namespace {
 
 // Used by the HostlistFetcher to make HTTP requests and also by the
