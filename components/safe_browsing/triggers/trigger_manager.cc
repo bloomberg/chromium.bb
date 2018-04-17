@@ -123,6 +123,16 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
 bool TriggerManager::CanStartDataCollection(
     const SBErrorOptions& error_display_options,
     const TriggerType trigger_type) {
+  TriggerManagerReason unused_reason;
+  return CanStartDataCollectionWithReason(error_display_options, trigger_type,
+                                          &unused_reason);
+}
+
+bool TriggerManager::CanStartDataCollectionWithReason(
+    const SBErrorOptions& error_display_options,
+    const TriggerType trigger_type,
+    TriggerManagerReason* out_reason) {
+  *out_reason = TriggerManagerReason::NO_REASON;
   // If the |kAdSamplerCollectButDontSendFeature| feature is enabled then we
   // will overlook other checks to force the report to be created (which is safe
   // because we ensure it will be discarded downstream).
@@ -148,12 +158,18 @@ bool TriggerManager::CanStartDataCollection(
   // change the Extended Reporting opt-in, and the |trigger_type| has available
   // quota. For some triggers we also require Scout or extended reporting opt-in
   // in order to start data collection.
-  return !error_display_options.is_off_the_record &&
-         error_display_options.is_extended_reporting_opt_in_allowed &&
-         optin_required_check_ok && scout_check_ok &&
-         trigger_throttler_->TriggerCanFire(trigger_type);
+  if (!error_display_options.is_off_the_record &&
+      error_display_options.is_extended_reporting_opt_in_allowed &&
+      optin_required_check_ok && scout_check_ok) {
+    bool quota_ok = trigger_throttler_->TriggerCanFire(trigger_type);
+    if (!quota_ok)
+      *out_reason = TriggerManagerReason::DAILY_QUOTA_EXCEEDED;
+    return quota_ok;
+  } else {
+    *out_reason = TriggerManagerReason::USER_PREFERENCES;
+    return false;
+  }
 }
-
 bool TriggerManager::StartCollectingThreatDetails(
     const TriggerType trigger_type,
     content::WebContents* web_contents,
@@ -161,6 +177,20 @@ bool TriggerManager::StartCollectingThreatDetails(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     history::HistoryService* history_service,
     const SBErrorOptions& error_display_options) {
+  TriggerManagerReason unused_reason;
+  return StartCollectingThreatDetailsWithReason(
+      trigger_type, web_contents, resource, url_loader_factory, history_service,
+      error_display_options, &unused_reason);
+}
+
+bool TriggerManager::StartCollectingThreatDetailsWithReason(
+    const TriggerType trigger_type,
+    content::WebContents* web_contents,
+    const security_interstitials::UnsafeResource& resource,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    history::HistoryService* history_service,
+    const SBErrorOptions& error_display_options,
+    TriggerManagerReason* reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!CanStartDataCollection(error_display_options, trigger_type))
     return false;
