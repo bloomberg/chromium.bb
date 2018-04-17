@@ -398,6 +398,20 @@ void KeyboardController::HideKeyboard(HideReason reason) {
   }
 }
 
+void KeyboardController::RequestHideKeyboard() {
+  if (state_ != KeyboardControllerState::SHOWN)
+    return;
+
+  ChangeState(KeyboardControllerState::WILL_HIDE);
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&KeyboardController::HideKeyboard,
+                     weak_factory_will_hide_.GetWeakPtr(),
+                     HIDE_REASON_AUTOMATIC),
+      base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
+}
+
 void KeyboardController::HideAnimationFinished() {
   if (state_ == KeyboardControllerState::HIDDEN) {
     if (queued_container_type_) {
@@ -515,14 +529,7 @@ void KeyboardController::OnTextInputStateChanged(
         show_on_content_update_ = false;
         return;
       case KeyboardControllerState::SHOWN:
-        ChangeState(KeyboardControllerState::WILL_HIDE);
-
-        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-            FROM_HERE,
-            base::BindOnce(&KeyboardController::HideKeyboard,
-                           weak_factory_will_hide_.GetWeakPtr(),
-                           HIDE_REASON_AUTOMATIC),
-            base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
+        RequestHideKeyboard();
         return;
       default:
         return;

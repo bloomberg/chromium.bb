@@ -96,6 +96,7 @@ class ArcImeService : public KeyedService,
       const base::string16& text_in_range,
       const gfx::Range& selection_range,
       bool is_screen_coordinates) override;
+  void RequestHideIme() override;
 
   // Overridden from keyboard::KeyboardControllerObserver.
   void OnKeyboardAppearanceChanged(

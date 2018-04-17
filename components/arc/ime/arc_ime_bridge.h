@@ -40,6 +40,7 @@ class ArcImeBridge {
         const base::string16& text_in_range,
         const gfx::Range& selection_range,
         bool is_screen_coordinates) = 0;
+    virtual void RequestHideIme() = 0;
   };
 
   // Serializes and sends IME related requests through IPCs.
