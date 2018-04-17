@@ -66,6 +66,11 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   NativeThemeMac();
   ~NativeThemeMac() override;
 
+  // Paint the selected menu item background, and a border for emphasis when in
+  // high contrast.
+  void PaintSelectedMenuItem(cc::PaintCanvas* canvas,
+                             const gfx::Rect& rect) const;
+
   DISALLOW_COPY_AND_ASSIGN(NativeThemeMac);
 };
 
