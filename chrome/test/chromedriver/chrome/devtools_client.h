@@ -17,6 +17,7 @@ class DictionaryValue;
 class DevToolsEventListener;
 class Timeout;
 class Status;
+class WebViewImpl;
 
 // A DevTools client of a single DevTools debugger.
 class DevToolsClient {
@@ -76,6 +77,9 @@ class DevToolsClient {
 
   // Indicate that we've been detached from the DevTools target.
   virtual void SetDetached() = 0;
+
+  // Set the owning WebViewImpl, if any.
+  virtual void SetOwner(WebViewImpl* owner) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_CLIENT_H_

@@ -16,6 +16,7 @@
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/util.h"
+#include "chrome/test/chromedriver/chrome/web_view_impl.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 
@@ -89,6 +90,7 @@ DevToolsClientImpl::DevToolsClientImpl(const SyncWebSocketFactory& factory,
     : socket_(factory.Run()),
       url_(url),
       parent_(nullptr),
+      owner_(nullptr),
       crashed_(false),
       detached_(false),
       id_(id),
@@ -106,6 +108,7 @@ DevToolsClientImpl::DevToolsClientImpl(
     : socket_(factory.Run()),
       url_(url),
       parent_(nullptr),
+      owner_(nullptr),
       crashed_(false),
       detached_(false),
       id_(id),
@@ -118,6 +121,7 @@ DevToolsClientImpl::DevToolsClientImpl(
 DevToolsClientImpl::DevToolsClientImpl(DevToolsClientImpl* parent,
                                        const std::string& session_id)
     : parent_(parent),
+      owner_(nullptr),
       session_id_(session_id),
       crashed_(false),
       detached_(false),
@@ -139,6 +143,7 @@ DevToolsClientImpl::DevToolsClientImpl(
     : socket_(factory.Run()),
       url_(url),
       parent_(nullptr),
+      owner_(nullptr),
       crashed_(false),
       detached_(false),
       id_(id),
@@ -277,6 +282,10 @@ Status DevToolsClientImpl::HandleEventsUntil(
 
 void DevToolsClientImpl::SetDetached() {
   detached_ = true;
+}
+
+void DevToolsClientImpl::SetOwner(WebViewImpl* owner) {
+  owner_ = owner;
 }
 
 DevToolsClientImpl::ResponseInfo::ResponseInfo(const std::string& method)
@@ -481,6 +490,7 @@ Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
           kUnknownError,
           "missing message in Target.receivedMessageFromTarget event");
 
+    WebViewImplHolder childHolder(child->owner_);
     return child->HandleMessage(-1, message);
   }
   return Status(kOk);

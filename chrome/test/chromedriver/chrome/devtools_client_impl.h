@@ -114,6 +114,7 @@ class DevToolsClientImpl : public DevToolsClient {
                            const Timeout& timeout) override;
   Status HandleReceivedEvents() override;
   void SetDetached() override;
+  void SetOwner(WebViewImpl* owner) override;
 
  private:
   enum ResponseState {
@@ -157,6 +158,8 @@ class DevToolsClientImpl : public DevToolsClient {
   std::unique_ptr<SyncWebSocket> socket_;
   GURL url_;
   DevToolsClientImpl* parent_;
+  // WebViewImpl that owns this instance; nullptr for browser-wide DevTools.
+  WebViewImpl* owner_;
   const std::string session_id_;
   std::map<std::string, DevToolsClientImpl*> children_;
   bool crashed_;
