@@ -856,8 +856,10 @@ void NavigationRequest::OnResponseStarted(
 
   // Response that will not commit should be marked as aborted in the
   // NavigationHandle.
-  if (!response_should_be_rendered_)
+  if (!response_should_be_rendered_) {
     navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+    net_error_ = net::ERR_ABORTED;
+  }
 
   // Update the service worker and AppCache params of the request params.
   request_params_.service_worker_provider_id =
