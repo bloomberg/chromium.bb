@@ -1346,8 +1346,9 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
       *alternate_nav_url = result().alternate_nav_url();
   } else {
     client_->GetAutocompleteClassifier()->Classify(
-        MaybePrependKeyword(view_->GetText()), is_keyword_selected(), true,
-        ClassifyPage(), match, alternate_nav_url);
+        MaybePrependKeyword(user_input_in_progress_ ? view_->GetText()
+                                                    : url_for_editing_),
+        is_keyword_selected(), true, ClassifyPage(), match, alternate_nav_url);
   }
 }
 
