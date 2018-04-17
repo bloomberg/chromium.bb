@@ -68,7 +68,6 @@ struct SyntheticForm {
   SyntheticForm(SyntheticForm&& other);
   ~SyntheticForm();
 
-  std::vector<blink::WebElement> fieldsets;
   // Contains control elements of the represented form, including not fillable
   // ones.
   std::vector<blink::WebFormControlElement> control_elements;
@@ -918,8 +917,9 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache) {
   SyntheticForm synthetic_form;
+  std::vector<blink::WebElement> fieldsets;
   synthetic_form.control_elements = form_util::GetUnownedFormFieldElements(
-      frame.GetDocument().All(), &synthetic_form.fieldsets);
+      frame.GetDocument().All(), &fieldsets);
   synthetic_form.origin =
       form_util::GetCanonicalOriginForDocument(frame.GetDocument());
 
@@ -928,7 +928,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
 
   std::unique_ptr<PasswordForm> password_form(new PasswordForm());
   if (!UnownedPasswordFormElementsAndFieldSetsToFormData(
-          synthetic_form.fieldsets, synthetic_form.control_elements, nullptr,
+          fieldsets, synthetic_form.control_elements, nullptr,
           frame.GetDocument(), field_value_and_properties_map,
           form_util::EXTRACT_NONE, &password_form->form_data,
           nullptr /* FormFieldData */)) {
