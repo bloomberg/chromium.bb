@@ -55,7 +55,6 @@ StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
              gfx::GpuMemoryBufferHandle>::
     shared_memory_handle(const gfx::GpuMemoryBufferHandle& handle) {
   if (handle.type != gfx::SHARED_MEMORY_BUFFER &&
-      handle.type != gfx::DXGI_SHARED_HANDLE &&
       handle.type != gfx::ANDROID_HARDWARE_BUFFER)
     return mojo::ScopedSharedBufferHandle();
   return mojo::WrapSharedMemoryHandle(
@@ -87,6 +86,18 @@ mojo::ScopedHandle StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 #endif
 }
 
+#if defined(OS_WIN)
+// static
+mojo::ScopedHandle StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
+                                gfx::GpuMemoryBufferHandle>::
+    dxgi_handle(const gfx::GpuMemoryBufferHandle& handle) {
+  if (handle.type != gfx::DXGI_SHARED_HANDLE)
+    return mojo::ScopedHandle();
+  DCHECK(handle.dxgi_handle.IsValid());
+  return mojo::WrapPlatformFile(handle.dxgi_handle.GetHandle());
+}
+#endif
+
 bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
                   gfx::GpuMemoryBufferHandle>::
     Read(gfx::mojom::GpuMemoryBufferHandleDataView data,
@@ -95,7 +106,6 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     return false;
 
   if (out->type == gfx::SHARED_MEMORY_BUFFER ||
-      out->type == gfx::DXGI_SHARED_HANDLE ||
       out->type == gfx::ANDROID_HARDWARE_BUFFER) {
     mojo::ScopedSharedBufferHandle handle = data.TakeSharedMemoryHandle();
     if (handle.is_valid()) {
@@ -121,6 +131,18 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     if (unwrap_result != MOJO_RESULT_OK)
       return false;
     out->mach_port.reset(mach_port);
+  }
+#endif
+#if defined(OS_WIN)
+  if (out->type == gfx::DXGI_SHARED_HANDLE) {
+    HANDLE handle;
+    MojoResult unwrap_result =
+        mojo::UnwrapPlatformFile(data.TakeDxgiHandle(), &handle);
+    if (unwrap_result != MOJO_RESULT_OK)
+      return false;
+    out->dxgi_handle = IPC::PlatformFileForTransit(handle);
+    out->offset = data.offset();
+    out->stride = data.stride();
   }
 #endif
   return true;

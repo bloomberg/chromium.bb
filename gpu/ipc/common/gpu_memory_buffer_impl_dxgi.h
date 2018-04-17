@@ -48,9 +48,9 @@ class GPU_EXPORT GpuMemoryBufferImplDXGI : public GpuMemoryBufferImpl {
                           const gfx::Size& size,
                           gfx::BufferFormat format,
                           const DestructionCallback& callback,
-                          const base::SharedMemoryHandle& dxgi_handle);
+                          base::win::ScopedHandle dxgi_handle);
 
-  base::SharedMemory shared_memory_;
+  base::win::ScopedHandle dxgi_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplDXGI);
 };

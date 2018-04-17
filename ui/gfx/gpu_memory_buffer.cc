@@ -4,7 +4,12 @@
 
 #include "ui/gfx/gpu_memory_buffer.h"
 
+#include "base/process/process_handle.h"
 #include "ui/gfx/generic_shared_memory_id.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace gfx {
 
@@ -13,7 +18,7 @@ GpuMemoryBufferHandle::GpuMemoryBufferHandle() : type(EMPTY_BUFFER), id(0) {}
 GpuMemoryBufferHandle::GpuMemoryBufferHandle(
     const GpuMemoryBufferHandle& other) = default;
 
-GpuMemoryBufferHandle::~GpuMemoryBufferHandle() {}
+GpuMemoryBufferHandle::~GpuMemoryBufferHandle() = default;
 
 void GpuMemoryBuffer::SetColorSpace(const gfx::ColorSpace& color_space) {}
 
@@ -55,7 +60,16 @@ GpuMemoryBufferHandle CloneHandleForIPC(
       gfx::GpuMemoryBufferHandle handle;
       handle.type = gfx::DXGI_SHARED_HANDLE;
       handle.id = source_handle.id;
-      handle.handle = base::SharedMemory::DuplicateHandle(source_handle.handle);
+#if defined(OS_WIN)
+      base::ProcessHandle process = ::GetCurrentProcess();
+      HANDLE duplicated_handle;
+      BOOL result = ::DuplicateHandle(
+          process, source_handle.dxgi_handle.GetHandle(), process,
+          &duplicated_handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
+      if (!result)
+        DPLOG(ERROR) << "Failed to duplicate DXGI resource handle.";
+      handle.dxgi_handle = IPC::PlatformFileForTransit(duplicated_handle);
+#endif
       return handle;
   }
   return gfx::GpuMemoryBufferHandle();

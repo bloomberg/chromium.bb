@@ -90,4 +90,7 @@ struct GpuMemoryBufferHandle {
   uint32 stride;
   NativePixmapHandle? native_pixmap_handle;
   handle? mach_port;
+
+  [EnableIf=is_win]
+  handle? dxgi_handle;
 };

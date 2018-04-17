@@ -5,6 +5,7 @@
 #ifndef UI_GFX_MOJO_BUFFER_TYPES_STRUCT_TRAITS_H_
 #define UI_GFX_MOJO_BUFFER_TYPES_STRUCT_TRAITS_H_
 
+#include "build/build_config.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/mojo/buffer_types.mojom.h"
 
@@ -325,6 +326,12 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
   static const gfx::NativePixmapHandle& native_pixmap_handle(
       const gfx::GpuMemoryBufferHandle& handle);
   static mojo::ScopedHandle mach_port(const gfx::GpuMemoryBufferHandle& handle);
+
+#if defined(OS_WIN)
+  static mojo::ScopedHandle dxgi_handle(
+      const gfx::GpuMemoryBufferHandle& handle);
+#endif
+
   static bool Read(gfx::mojom::GpuMemoryBufferHandleDataView data,
                    gfx::GpuMemoryBufferHandle* handle);
 };
