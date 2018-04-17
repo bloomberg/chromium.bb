@@ -10,6 +10,7 @@
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "url/gurl.h"
 
 class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
  public:
@@ -20,6 +21,7 @@ class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
 
   // Overridden from ash::mojom::NewWindowClient:
   void NewTab() override;
+  void NewTabWithUrl(const GURL& url) override;
   void NewWindow(bool incognito) override;
   void OpenFileManager() override;
   void OpenCrosh() override;

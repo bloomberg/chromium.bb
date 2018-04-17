@@ -104,6 +104,10 @@ component("ash") {
     "cancel_mode.h",
     "cast_config_controller.cc",
     "cast_config_controller.h",
+    "dbus/ash_dbus_services.cc",
+    "dbus/ash_dbus_services.h",
+    "dbus/url_handler_service_provider.cc",
+    "dbus/url_handler_service_provider.h",
     "debug.cc",
     "debug.h",
     "detachable_base/detachable_base_handler.cc",
@@ -1256,6 +1260,7 @@ component("ash") {
   data_deps = [
     "//ash/components/autoclick:autoclick_app",
     "//ash/components/touch_hud:touch_hud_app",
+    ":dbus_service_files",
   ]
 
   # Usage of content should be in ash_content_unittests.
@@ -1404,6 +1409,15 @@ static_library("ash_shell_lib_with_content") {
     "//ui/views:test_support",
     "//ui/views/examples:views_examples_with_content_lib",
     "//ui/wm",
+  ]
+}
+
+copy("dbus_service_files") {
+  sources = [
+    "dbus/org.chromium.UrlHandlerService.conf",
+  ]
+  outputs = [
+    "$root_out_dir/dbus/{{source_file_part}}",
   ]
 }
 
