@@ -228,16 +228,6 @@ bool ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
          !unhandled_sync_password_reuses->empty();
 }
 
-// static
-bool ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-    Profile* profile) {
-  ChromePasswordProtectionService* service =
-      ChromePasswordProtectionService::GetPasswordProtectionService(profile);
-  return service &&
-         service->GetPasswordProtectionTriggerPref(
-             prefs::kPasswordProtectionWarningTrigger) == PASSWORD_REUSE;
-}
-
 void ChromePasswordProtectionService::FillReferrerChain(
     const GURL& event_url,
     SessionID event_tab_id,
@@ -939,18 +929,12 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText() {
 
   std::string enterprise_name =
       profile_->GetPrefs()->GetString(prefs::kPasswordProtectionEnterpriseName);
-  if (!enterprise_name.empty()) {
-    return l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE_WITH_ORG_NAME,
-        base::UTF8ToUTF16(enterprise_name));
-  }
-  return l10n_util::GetStringUTF16(
-      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
-}
-
-std::string ChromePasswordProtectionService::GetOrganizationName() {
-  // TODO(jialiul): Implement this function.
-  return std::string();
+  return enterprise_name.empty()
+             ? l10n_util::GetStringUTF16(
+                   IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE)
+             : l10n_util::GetStringFUTF16(
+                   IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE_WITH_ORG_NAME,
+                   base::UTF8ToUTF16(enterprise_name));
 }
 
 }  // namespace safe_browsing

@@ -116,7 +116,6 @@ const char kChromeUIPrintURL[] = "chrome://print/";
 const char kChromeUIQuitHost[] = "quit";
 const char kChromeUIQuitURL[] = "chrome://quit/";
 const char kChromeUIQuotaInternalsHost[] = "quota-internals";
-const char kChromeUIResetPasswordHost[] = "reset-password";
 const char kChromeUIRestartHost[] = "restart";
 const char kChromeUIRestartURL[] = "chrome://restart/";
 const char kChromeUISettingsHost[] = "settings";
