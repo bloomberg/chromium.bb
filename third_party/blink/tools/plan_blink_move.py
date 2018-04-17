@@ -7,9 +7,9 @@ import os
 import re
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                             'third_party', 'WebKit', 'Tools', 'Scripts'))
-from blinkpy.common.name_style_converter import NameStyleConverter
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             '..', 'renderer', 'build', 'scripts'))
+from blinkbuild.name_style_converter import NameStyleConverter
 from webkitpy.common.system.filesystem import FileSystem
 
 

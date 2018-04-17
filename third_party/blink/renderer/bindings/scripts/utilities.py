@@ -15,9 +15,9 @@ import string
 import subprocess
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..',
-                             'third_party', 'blink', 'tools'))
-from blinkpy.common.name_style_converter import NameStyleConverter
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             '..', '..', 'build', 'scripts'))
+from blinkbuild.name_style_converter import NameStyleConverter
 
 
 KNOWN_COMPONENTS = frozenset(['core', 'modules'])
