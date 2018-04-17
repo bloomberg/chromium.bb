@@ -47,14 +47,15 @@ bool IsMicrosoftIme(const wchar_t* ime_guid) {
       L"{fa445657-9379-11d6-b41a-00065b83ee53}",
   };
 
-  DCHECK(std::is_sorted(std::begin(kMicrosoftImeGuids),
-                        std::end(kMicrosoftImeGuids)));
+  constexpr auto comp = [](const wchar_t* lhs, const wchar_t* rhs) -> bool {
+    return base::CompareCaseInsensitiveASCII(lhs, rhs) == -1;
+  };
 
-  return std::binary_search(
-      std::begin(kMicrosoftImeGuids), std::end(kMicrosoftImeGuids), ime_guid,
-      [](const wchar_t* lhs, const wchar_t* rhs) {
-        return base::CompareCaseInsensitiveASCII(lhs, rhs) == -1;
-      });
+  DCHECK(std::is_sorted(std::begin(kMicrosoftImeGuids),
+                        std::end(kMicrosoftImeGuids), comp));
+
+  return std::binary_search(std::begin(kMicrosoftImeGuids),
+                            std::end(kMicrosoftImeGuids), ime_guid, comp);
 }
 
 // Returns the path to the in-proc server DLL for |guid|, or an empty path if
