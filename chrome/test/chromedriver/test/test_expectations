@@ -265,10 +265,7 @@ _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
 _OS_NEGATIVE_FILTER['android:chromium'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2286
-        'CorrectEventFiringTest.testClearingAnElementShouldCauseTheOnChangeHandlerToFire',
-        'CorrectEventFiringTest.testClickEventsShouldBubble',
-        'CorrectEventFiringTest.testSendingKeysToAFocusedElementShouldNotBlurThatElement',
-        'CorrectEventFiringTest.testSubmittingFormFromFormElementShouldFireOnSubmitForThatForm',
+        'CorrectEventFiringTest.*',
         'FormHandlingTest.testShouldSubmitAFormUsingTheEnterKey',
         'FormHandlingTest.testShouldSubmitAFormUsingTheNewlineLiteral',
         'JavascriptEnabledDriverTest.testShouldBeAbleToFindElementAfterJavascriptCausesANewPageToLoad',
