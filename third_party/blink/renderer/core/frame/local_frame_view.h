@@ -371,8 +371,8 @@ class CORE_EXPORT LocalFrameView final
   enum UrlFragmentBehavior { kUrlFragmentScroll, kUrlFragmentDontScroll };
   // Updates the fragment anchor element based on URL's fragment identifier.
   // Updates corresponding ':target' CSS pseudo class on the anchor element.
-  // If |UrlFragmentScroll| is passed in then makes the anchor element
-  // focused and also visible by scrolling to it. The scroll offset is
+  // If |UrlFragmentScroll| is passed it sets the anchor element so that it
+  // will be focused and scrolled into view during layout. The scroll offset is
   // maintained during the frame loading process.
   void ProcessUrlFragment(const KURL&,
                           UrlFragmentBehavior = kUrlFragmentScroll);
@@ -962,6 +962,8 @@ class CORE_EXPORT LocalFrameView final
 
   ScrollingCoordinatorContext* GetScrollingContext() const;
 
+  void ScrollAndFocusFragmentAnchor();
+
  protected:
   // Scroll the content via the compositor.
   bool ScrollContentsFastPath(const IntSize& scroll_delta);
@@ -1096,8 +1098,6 @@ class CORE_EXPORT LocalFrameView final
   bool UpdatePlugins();
 
   bool ProcessUrlFragmentHelper(const String&, UrlFragmentBehavior);
-  void SetFragmentAnchor(Node*);
-  void ScrollToFragmentAnchor();
   void DidScrollTimerFired(TimerBase*);
 
   void UpdateLayersAndCompositingAfterScrollIfNeeded();
@@ -1317,6 +1317,8 @@ class CORE_EXPORT LocalFrameView final
   bool allows_layout_invalidation_after_layout_clean_;
   bool needs_intersection_observation_;
   bool needs_forced_compositing_update_;
+
+  bool needs_focus_on_fragment_;
 
   Member<ElementVisibilityObserver> visibility_observer_;
 
