@@ -614,7 +614,7 @@ class DiskMountManagerImpl : public DiskMountManager,
     if (disk_info.is_virtual())
       return;
 
-    LOG(WARNING) << "Found disk " << disk_info.device_path();
+    DVLOG(1) << "Found disk " << disk_info.device_path();
     // Delete previous disk info for this path:
     bool is_new = true;
     std::string base_mount_path = std::string();
