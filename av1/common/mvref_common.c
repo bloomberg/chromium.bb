@@ -502,7 +502,7 @@ static void setup_ref_mv_list(
     ref_mv_stack[ref_frame][idx].weight += REF_CAT_LEVEL;
 
   if (cm->allow_ref_frame_mvs) {
-    int coll_blk_count[MODE_CTX_REF_FRAMES] = { 0 };
+    int is_available = 0;
     const int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
     const int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
     const int blk_row_end = AOMMIN(xd->n8_h, mi_size_high[BLOCK_64X64]);
@@ -527,25 +527,22 @@ static void setup_ref_mv_list(
 
     for (int blk_row = 0; blk_row < blk_row_end; blk_row += step_h) {
       for (int blk_col = 0; blk_col < blk_col_end; blk_col += step_w) {
-        int is_available = add_tpl_ref_mv(
-            cm, xd, mi_row, mi_col, ref_frame, blk_row, blk_col,
-            gm_mv_candidates, refmv_count, ref_mv_stack, mode_context);
-        if (blk_row == 0 && blk_col == 0)
-          coll_blk_count[ref_frame] = is_available;
+        int ret = add_tpl_ref_mv(cm, xd, mi_row, mi_col, ref_frame, blk_row,
+                                 blk_col, gm_mv_candidates, refmv_count,
+                                 ref_mv_stack, mode_context);
+        if (blk_row == 0 && blk_col == 0) is_available = ret;
       }
     }
 
-    if (coll_blk_count[ref_frame] == 0)
-      mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
+    if (is_available == 0) mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
 
     for (int i = 0; i < 3 && allow_extension; ++i) {
       const int blk_row = tpl_sample_pos[i][0];
       const int blk_col = tpl_sample_pos[i][1];
 
       if (!check_sb_border(mi_row, mi_col, blk_row, blk_col)) continue;
-      coll_blk_count[ref_frame] += add_tpl_ref_mv(
-          cm, xd, mi_row, mi_col, ref_frame, blk_row, blk_col, gm_mv_candidates,
-          refmv_count, ref_mv_stack, mode_context);
+      add_tpl_ref_mv(cm, xd, mi_row, mi_col, ref_frame, blk_row, blk_col,
+                     gm_mv_candidates, refmv_count, ref_mv_stack, mode_context);
     }
   }
 
