@@ -106,7 +106,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name) override;
   void SetPublicSessionLocales(const AccountId& account_id,
-                               std::unique_ptr<base::ListValue> locales,
+                               base::Value locales,
                                const std::string& default_locale,
                                bool show_advanced_view) override;
 

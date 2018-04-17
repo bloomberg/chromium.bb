@@ -531,8 +531,9 @@ void UserSelectionScreen::FillUserMojoStruct(
     std::unique_ptr<base::ListValue> available_locales =
         GetPublicSessionLocales(public_session_recommended_locales,
                                 &selected_locale, &has_multiple_locales);
+    DCHECK(available_locales);
     user_info->public_account_info->available_locales =
-        std::move(available_locales);
+        std::move(*available_locales);
     user_info->public_account_info->default_locale = selected_locale;
     user_info->public_account_info->show_advanced_view = has_multiple_locales;
   }

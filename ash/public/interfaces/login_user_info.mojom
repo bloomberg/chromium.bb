@@ -6,8 +6,8 @@ module ash.mojom;
 
 import "ash/public/interfaces/user_info.mojom";
 import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
-import "mojo/common/values.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/values.mojom";
 
 // Supported multi-profile user behavior values.
 // Keep in sync with the enum in md_user_pod_row.js and user_pod_row.js
@@ -73,7 +73,7 @@ struct PublicAccountInfo {
   string? enterprise_domain;
 
   // A list of available user locales.
-  mojo.common.mojom.ListValue available_locales;
+  mojo_base.mojom.ListValue available_locales;
 
   // Default locale for this user.
   string default_locale;
