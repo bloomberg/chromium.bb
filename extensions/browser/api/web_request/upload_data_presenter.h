@@ -124,9 +124,16 @@ class ParsedDataPresenter : public UploadDataPresenter {
   // Clears resources and the success flag.
   void Abort();
 
+  // Flushes any pending data to the parser.
+  void CommitPendingBytes();
+
   std::unique_ptr<FormDataParser> parser_;
   bool success_;
   std::unique_ptr<base::DictionaryValue> dictionary_;
+
+  // Buffered data (not yet commited to the parser).
+  base::StringPiece pending_bytes_;
+  std::string buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ParsedDataPresenter);
 };

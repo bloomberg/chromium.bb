@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/checked_math.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "extensions/browser/api/web_request/form_data_parser.h"
@@ -106,7 +107,39 @@ void ParsedDataPresenter::FeedBytes(base::StringPiece bytes) {
   if (!success_)
     return;
 
-  if (!parser_->SetSource(bytes)) {
+  if (pending_bytes_.empty()) {
+    // First data chunk: track externally.
+    DCHECK(buffer_.empty());
+
+    pending_bytes_ = bytes;
+    return;
+  }
+
+  // Pending data is either tracked externally or is located in our buffer.
+  DCHECK(buffer_.empty() || pending_bytes_.data() == buffer_.data());
+  DCHECK(buffer_.empty() || pending_bytes_.size() == buffer_.size());
+
+  const auto safe_size = base::CheckAdd(pending_bytes_.size(), bytes.size());
+  if (!safe_size.IsValid()) {
+    Abort();
+    return;
+  }
+
+  buffer_.reserve(safe_size.ValueOrDie());
+  if (buffer_.empty()) {
+    // Second data chunk: copy pending external data to our internal buffer.
+    buffer_.append(pending_bytes_.data(), pending_bytes_.size());
+  }
+
+  buffer_.append(bytes.data(), bytes.size());
+  pending_bytes_.set(buffer_.data(), buffer_.size());
+}
+
+void ParsedDataPresenter::CommitPendingBytes() {
+  if (!success_ || pending_bytes_.empty())
+    return;
+
+  if (!parser_->SetSource(pending_bytes_)) {
     Abort();
     return;
   }
@@ -116,11 +149,17 @@ void ParsedDataPresenter::FeedBytes(base::StringPiece bytes) {
     base::Value* list = GetOrCreateList(dictionary_.get(), result.name());
     list->GetList().emplace_back(result.take_value());
   }
+
+  buffer_.clear();
+  pending_bytes_.clear();
 }
 
-void ParsedDataPresenter::FeedFile(const base::FilePath& path) {}
+void ParsedDataPresenter::FeedFile(const base::FilePath&) {
+  CommitPendingBytes();
+}
 
 bool ParsedDataPresenter::Succeeded() {
+  CommitPendingBytes();
   if (success_ && !parser_->AllDataReadOK())
     Abort();
   return success_;
