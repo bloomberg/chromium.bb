@@ -223,7 +223,6 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     ASSERT_EQ(expect_printed, did_print);
   }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   void OnPrintPages() {
     GetPrintRenderFrameHelper()->OnPrintPages();
     base::RunLoop().RunUntilIdle();
@@ -236,7 +235,6 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     helper->OnPrintPages();
     base::RunLoop().RunUntilIdle();
   }
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void VerifyPreviewRequest(bool expect_request) {
@@ -376,7 +374,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithJavascript) {
 }
 #endif  // !BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 // Tests that printing pages work and sending and receiving messages through
 // that channel all works.
 TEST_F(MAYBE_PrintRenderFrameHelperTest, OnPrintPages) {
@@ -437,9 +434,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, BasicBeforePrintAfterPrintSubFrame) {
   VerifyPagesPrinted(true);
 }
 
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
-
-#if defined(OS_MACOSX) && BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if defined(OS_MACOSX)
 // TODO(estade): I don't think this test is worth porting to Linux. We will have
 // to rip out and replace most of the IPC code if we ever plan to improve
 // printing, and the comment below by sverrir suggests that it doesn't do much
@@ -482,7 +477,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithIframe) {
   EXPECT_NE(0, image1.size().width());
   EXPECT_NE(0, image1.size().height());
 }
-#endif  // OS_MACOSX && ENABLE_BASIC_PRINTING
+#endif  // defined(OS_MACOSX)
 
 // Tests if we can print a page and verify its results.
 // This test prints HTML pages into a pseudo printer and check their outputs,
@@ -498,7 +493,7 @@ struct TestPageData {
   const wchar_t* file;
 };
 
-#if defined(OS_MACOSX) && BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if defined(OS_MACOSX)
 const TestPageData kTestPages[] = {
     {
         "<html>"
@@ -518,14 +513,14 @@ const TestPageData kTestPages[] = {
         600, 780, nullptr, nullptr,
     },
 };
-#endif  // defined(OS_MACOSX) && BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif  // defined(OS_MACOSX)
 }  // namespace
 
 // TODO(estade): need to port MockPrinter to get this on Linux. This involves
 // hooking up Cairo to read a pdf stream, or accessing the cairo surface in the
 // metafile directly.
 // Same for printing via PDF on Windows.
-#if defined(OS_MACOSX) && BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if defined(OS_MACOSX)
 TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest) {
   bool baseline = false;
 
@@ -578,7 +573,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest) {
     }
   }
 }
-#endif  // OS_MACOSX && ENABLE_BASIC_PRINTING
+#endif  // defined(OS_MACOSX)
 
 // These print preview tests do not work on Chrome OS yet.
 #if !defined(OS_CHROMEOS)

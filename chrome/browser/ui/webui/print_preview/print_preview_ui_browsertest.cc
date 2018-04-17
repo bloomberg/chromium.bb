@@ -57,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewBrowserTest, PrintCommands) {
 
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_PRINT));
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_PRINTING) && !defined(OS_CHROMEOS)
   // This is analagous to ENABLE_BASIC_PRINT_DIALOG but helps to verify
   // that it is defined as expected.
   bool is_basic_print_expected = true;

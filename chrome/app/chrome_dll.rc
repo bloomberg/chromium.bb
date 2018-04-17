@@ -38,9 +38,9 @@ BEGIN
 // This really should be using the buildflag but the resource compiler fails on
 // macro functions longer than 31 chars which this command produces. The BUILD
 // sets this regular define for this target only for this line to consume.
-#ifdef ENABLE_BASIC_PRINTING_FOR_RC  // #if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#ifdef ENABLE_PRINTING_FOR_RC  // #if BUILDFLAG(ENABLE_PRINTING)
     "P",            IDC_BASIC_PRINT,            VIRTKEY, CONTROL, SHIFT
-#endif  // ENABLE_BASIC_PRINTING_FOR_RC
+#endif  // ENABLE_PRINTING_FOR_RC
     "D",            IDC_BOOKMARK_ALL_TABS,      VIRTKEY, CONTROL, SHIFT
     "D",            IDC_BOOKMARK_PAGE,          VIRTKEY, CONTROL
     VK_DELETE,      IDC_CLEAR_BROWSING_DATA,    VIRTKEY, CONTROL, SHIFT

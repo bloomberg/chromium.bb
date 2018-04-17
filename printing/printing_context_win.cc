@@ -37,10 +37,10 @@ void AssignResult(PrintingContext::Result* out, PrintingContext::Result in) {
 
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-  return base::WrapUnique(new PrintingContextSystemDialogWin(delegate));
-#else
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   return base::WrapUnique(new PrintingContextWin(delegate));
+#else
+  return base::WrapUnique(new PrintingContextSystemDialogWin(delegate));
 #endif
 }
 

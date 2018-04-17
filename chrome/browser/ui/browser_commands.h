@@ -112,10 +112,10 @@ bool CanSavePage(const Browser* browser);
 void ShowFindBar(Browser* browser);
 void Print(Browser* browser);
 bool CanPrint(Browser* browser);
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 void BasicPrint(Browser* browser);
 bool CanBasicPrint(Browser* browser);
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // ENABLE_PRINTING
 bool CanRouteMedia(Browser* browser);
 void RouteMedia(Browser* browser);
 void EmailPageLocation(Browser* browser);

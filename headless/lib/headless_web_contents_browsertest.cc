@@ -42,7 +42,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "base/strings/string_number_conversions.h"
 #include "pdf/pdf.h"
 #include "printing/pdf_render_settings.h"
@@ -442,7 +442,7 @@ INSTANTIATE_TEST_CASE_P(HeadlessWebContentsScreenshotTests,
                         HeadlessWebContentsScreenshotTest,
                         ::testing::Bool());
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
  public:
   const double kPaperWidth = 10;

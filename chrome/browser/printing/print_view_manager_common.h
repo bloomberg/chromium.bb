@@ -19,10 +19,8 @@ void StartPrint(content::WebContents* web_contents,
                 bool print_preview_disabled,
                 bool has_selection);
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 // Start printing using the system print dialog.
 void StartBasicPrint(content::WebContents* contents);
-#endif
 
 // If the user has selected text in the currently focused frame, print only that
 // frame (this makes print selection work for multiple frames).

@@ -40,7 +40,7 @@ service_manifest("pdf_compositor_manifest") {
   source = "pdf_compositor_manifest.json"
 }
 
-if (enable_basic_printing || enable_print_preview) {
+if (enable_basic_printing) {
   source_set("unit_tests") {
     testonly = true
     sources = [

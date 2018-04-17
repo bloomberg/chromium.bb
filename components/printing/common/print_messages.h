@@ -354,7 +354,7 @@ IPC_MESSAGE_ROUTED1(PrintMsg_InitiatePrintPreview, bool /* has_selection */)
 // node, depending on which mode the RenderFrame is in.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 // Tells the RenderFrame to switch the CSS to print media type, renders every
 // requested pages and switch back the CSS to display media type.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintPages)

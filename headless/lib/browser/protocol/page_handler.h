@@ -9,7 +9,7 @@
 #include "headless/lib/browser/protocol/dp_page.h"
 #include "printing/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "headless/lib/browser/headless_print_manager.h"
 #include "headless/public/headless_export.h"
 #endif

@@ -84,7 +84,6 @@ PrintViewManager::~PrintViewManager() {
   DCHECK_EQ(NOT_PREVIEWING, print_preview_state_);
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintViewManager::PrintForSystemDialogNow(
     const base::Closure& dialog_shown_callback) {
   DCHECK(!dialog_shown_callback.is_null());
@@ -111,7 +110,6 @@ bool PrintViewManager::BasicPrint(content::RenderFrameHost* rfh) {
 
   return !!print_preview_dialog->GetWebUI();
 }
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 bool PrintViewManager::PrintPreviewNow(content::RenderFrameHost* rfh,
                                        bool has_selection) {

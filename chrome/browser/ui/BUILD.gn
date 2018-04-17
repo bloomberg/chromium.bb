@@ -3792,7 +3792,7 @@ split_static_library("ui") {
     deps += [ "//ppapi/proxy:ipc" ]
   }
 
-  if (enable_basic_printing || enable_print_preview) {
+  if (enable_basic_printing) {
     deps += [
       "//components/printing/browser",
       "//printing",

@@ -9,7 +9,7 @@
 #include "headless/lib/renderer/headless_render_frame_controller_impl.h"
 #include "printing/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "components/printing/renderer/print_render_frame_helper.h"
 #include "headless/lib/renderer/headless_print_render_frame_helper_delegate.h"
 #endif
@@ -22,7 +22,7 @@ HeadlessContentRendererClient::~HeadlessContentRendererClient() = default;
 
 void HeadlessContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   new printing::PrintRenderFrameHelper(
       render_frame, std::make_unique<HeadlessPrintRenderFrameHelperDelegate>());
 #endif

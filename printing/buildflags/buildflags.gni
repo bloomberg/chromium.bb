@@ -9,8 +9,10 @@ declare_args() {
   # Enable basic printing support and UI.
   enable_basic_printing = !is_chromecast && !is_ios && !is_fuchsia
 
-  # Enable printing with print preview. It does not imply
-  # enable_basic_printing. It's possible to build Chrome with preview only.
+  # Enable printing with print preview. It implies enable_basic_printing.
+  # Note: It would be convenient to not repeat many of the same conditions in
+  # enable_basic_printing below. However, GN does not allow the use of
+  # enable_basic_printing within the same declare_args() block.
   enable_print_preview = !is_android && !is_chromecast && !is_ios && !is_fuchsia
 
   use_cups = (is_desktop_linux || is_mac) && !is_chromecast && !is_fuchsia

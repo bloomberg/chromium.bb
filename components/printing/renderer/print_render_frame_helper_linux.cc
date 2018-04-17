@@ -43,7 +43,6 @@ bool SaveToFD(const printing::Metafile& metafile,
 
 namespace printing {
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
                                               int page_count) {
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
@@ -92,6 +91,5 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   return true;
 #endif  // defined(OS_ANDROID)
 }
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 }  // namespace printing

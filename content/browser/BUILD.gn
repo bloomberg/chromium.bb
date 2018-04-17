@@ -1759,7 +1759,7 @@ jumbo_source_set("browser") {
     ]
   }
 
-  if (enable_basic_printing || enable_print_preview) {
+  if (enable_basic_printing) {
     deps += [ "//printing" ]
   }
 

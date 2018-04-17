@@ -41,7 +41,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/switches.h"
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "headless/lib/browser/headless_print_manager.h"
 #endif
 
@@ -339,7 +339,7 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
       browser_context_(browser_context),
       render_process_host_(web_contents->GetMainFrame()->GetProcess()),
       weak_ptr_factory_(this) {
-#if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+#if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   HeadlessPrintManager::CreateForWebContents(web_contents);
 // TODO(weili): Add support for printing OOPIFs.
 #endif

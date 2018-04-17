@@ -167,9 +167,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
   // VKEY_OEM_4 is Left Brace '[{' key.
   { ui::VKEY_OEM_4, ui::EF_COMMAND_DOWN, IDC_BACK },
   { ui::VKEY_LEFT, ui::EF_COMMAND_DOWN, IDC_BACK },
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   { ui::VKEY_P, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, IDC_BASIC_PRINT },
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // ENABLE_PRINTING
   { ui::VKEY_BACK, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
     IDC_CLEAR_BROWSING_DATA },
   { ui::VKEY_V, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
@@ -212,9 +212,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
     // bindings as well. Mapping with just Alt appear here, and should have an
     // alternative mapping in the block above.
     {ui::VKEY_LEFT, ui::EF_ALT_DOWN, IDC_BACK},
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
     {ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_BASIC_PRINT},
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // ENABLE_PRINTING
 #if !defined(OS_CHROMEOS)
     {ui::VKEY_DELETE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
      IDC_CLEAR_BROWSING_DATA},

@@ -19,7 +19,7 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
 }
 
 skia_support_gpu = !is_ios
-skia_support_pdf = !is_ios && (enable_basic_printing || enable_print_preview)
+skia_support_pdf = !is_ios && enable_basic_printing
 
 declare_args() {
   skia_whitelist_serialized_typefaces = false

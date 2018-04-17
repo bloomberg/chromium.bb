@@ -12,12 +12,8 @@ import("//printing/buildflags/buildflags.gni")
 buildflag_header("buildflags") {
   header = "buildflags.h"
 
-  # Convenience define for ENABLE_BASIC_PRINTING || ENABLE_PRINT_PREVIEW.
-  enable_printing = enable_basic_printing || enable_print_preview
-
   flags = [
-    "ENABLE_PRINTING=$enable_printing",
-    "ENABLE_BASIC_PRINTING=$enable_basic_printing",
+    "ENABLE_PRINTING=$enable_basic_printing",
     "ENABLE_PRINT_PREVIEW=$enable_print_preview",
   ]
 }

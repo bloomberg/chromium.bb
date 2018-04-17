@@ -45,7 +45,7 @@
 #include "content/public/common/content_descriptors.h"
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+#if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
 #include "base/strings/utf_string_conversions.h"
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
 #endif
@@ -163,7 +163,7 @@ HeadlessContentBrowserClient::GetServiceManifestOverlay(
 
 void HeadlessContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
-#if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+#if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   (*services)[printing::mojom::kServiceName] =
       base::ASCIIToUTF16("PDF Compositor Service");
 #endif

@@ -125,7 +125,6 @@ PrintViewManagerBase::~PrintViewManagerBase() {
   DisconnectFromCurrentPrintJob();
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
   DisconnectFromCurrentPrintJob();
 
@@ -133,7 +132,6 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
   int32_t id = rfh->GetRoutingID();
   return PrintNowInternal(rfh, std::make_unique<PrintMsg_PrintPages>(id));
 }
-#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintViewManagerBase::PrintForPrintPreview(
