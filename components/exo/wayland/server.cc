@@ -1343,6 +1343,8 @@ class WaylandDisplayObserver : public display::DisplayObserver {
         WL_OUTPUT_DONE_SINCE_VERSION) {
       wl_output_send_done(output_resource_);
     }
+
+    wl_client_flush(wl_resource_get_client(output_resource_));
   }
 
   // The ID of the display being observed.
