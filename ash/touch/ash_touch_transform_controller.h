@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
-#include "ui/display/manager/chromeos/touch_transform_controller.h"
+#include "ui/display/manager/touch_transform_controller.h"
 
 namespace display {
 class DisplayConfigurator;

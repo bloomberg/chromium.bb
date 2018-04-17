@@ -34,8 +34,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/optional.h"
-#include "ui/display/manager/chromeos/display_configurator.h"
-#include "ui/display/manager/chromeos/touch_device_manager.h"
+#include "ui/display/manager/display_configurator.h"
+#include "ui/display/manager/touch_device_manager.h"
 #endif
 
 namespace gfx {

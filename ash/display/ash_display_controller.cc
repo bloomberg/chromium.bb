@@ -5,7 +5,7 @@
 #include "ash/display/ash_display_controller.h"
 
 #include "ash/shell.h"
-#include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/display_configurator.h"
 
 namespace ash {
 

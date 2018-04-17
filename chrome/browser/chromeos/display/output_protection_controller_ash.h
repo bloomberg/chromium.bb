@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/display/output_protection_delegate.h"
-#include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/display_configurator.h"
 
 namespace chromeos {
 

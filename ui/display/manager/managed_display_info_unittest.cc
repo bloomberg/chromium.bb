@@ -7,11 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/display/manager/chromeos/touch_device_manager.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "ui/display/manager/chromeos/touch_device_manager.h"
+#include "ui/display/manager/touch_device_manager.h"
 #endif
 
 namespace display {

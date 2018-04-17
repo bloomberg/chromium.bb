@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "ui/display/manager/chromeos/default_touch_transform_setter.h"
+#include "ui/display/manager/default_touch_transform_setter.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 

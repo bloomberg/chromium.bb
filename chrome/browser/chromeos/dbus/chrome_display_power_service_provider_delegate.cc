@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/screen_dimmer.h"
 #include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/display_configurator.h"
 
 namespace chromeos {
 
