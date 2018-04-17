@@ -19,6 +19,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/crash/core/common/crash_key.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/channel_layout.h"
@@ -682,6 +683,12 @@ void CdmAdapter::RemoveSession(const std::string& session_id,
 CdmContext* CdmAdapter::GetCdmContext() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return this;
+}
+
+std::unique_ptr<CallbackRegistration> CdmAdapter::RegisterNewKeyCB(
+    base::RepeatingClosure new_key_cb) {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 Decryptor* CdmAdapter::GetDecryptor() {

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_proxy_context.h"
 
@@ -105,10 +106,17 @@ class D3D11CdmContext : public CdmContext {
   }
 
   // CdmContext implementation.
+  std::unique_ptr<CallbackRegistration> RegisterNewKeyCB(
+      base::RepeatingClosure new_key_cb) override {
+    return new_key_callbacks_.Register(std::move(new_key_cb));
+  }
   CdmProxyContext* GetCdmProxyContext() override { return &cdm_proxy_context_; }
 
  private:
   D3D11CdmProxyContext cdm_proxy_context_;
+
+  // TODO(rkuroiwa): Call Notify() when new usable key is available.
+  ClosureRegistry new_key_callbacks_;
 
   base::WeakPtrFactory<D3D11CdmContext> weak_factory_;
 
