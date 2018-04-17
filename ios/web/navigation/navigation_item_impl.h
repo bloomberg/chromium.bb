@@ -25,10 +25,11 @@ enum class NavigationInitiationType;
 // CRWWebController to coordinate the display of native error views such that
 // back/forward navigation to a native error view automatically triggers a
 // reload of the original URL. This is achieved in four steps:
-// 1) A NavigationItem is put into kDisplayingErrorForFailedNavigationState when
-//    it first failed to load and a native error view displayed. If the failure
-//    occurred during provisional navigation, a placeholder entry is inserted
-//    into WKBackForwardList for this item.
+// 1) A NavigationItem is put into
+//    kDisplayingNativeErrorForFailedNavigationState when it first failed to
+//    load and a native error view displayed. If the failure occurred during
+//    provisional navigation, a placeholder entry is inserted into
+//    WKBackForwardList for this item.
 // 2) Upon navigation to this item, use |loadHTMLString:| to modify the URL of
 //    the placeholder entry to the original URL and change the item state to
 //    kNavigatingToFailedNavigationItem.
@@ -44,7 +45,7 @@ enum class ErrorRetryState {
   // error in native view.
   kReadyToDisplayErrorForFailedNavigation,
   // This navigation item failed to load and a native error is displayed.
-  kDisplayingErrorForFailedNavigation,
+  kDisplayingNativeErrorForFailedNavigation,
   // This navigation item is reactivated due to back/forward navigation and
   // needs to try reloading.
   kNavigatingToFailedNavigationItem,
