@@ -117,3 +117,7 @@ IOSChromeMetricsServicesManagerClient::GetMetricsStateManager() {
 bool IOSChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
   return TabModelList::IsOffTheRecordSessionActive();
 }
+
+bool IOSChromeMetricsServicesManagerClient::IsMetricsReportingForceEnabled() {
+  return IOSChromeMetricsServiceClient::IsMetricsReportingForceEnabled();
+}

@@ -13,6 +13,7 @@ namespace switches {
 
 extern const char kMetricsRecordingOnly[];
 extern const char kResetVariationState[];
+extern const char kForceEnableMetricsReporting[];
 
 }  // namespace switches
 }  // namespace metrics
