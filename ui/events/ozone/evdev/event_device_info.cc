@@ -88,10 +88,8 @@ bool GetDeviceIdentifiers(int fd,
 }
 
 void GetDevicePhysInfo(int fd, const base::FilePath& path, std::string* phys) {
-  std::string device_phys;
-  device_phys.reserve(kMaximumDeviceNameLength);
-  if (ioctl(fd, EVIOCGPHYS(kMaximumDeviceNameLength - 1),
-            &device_phys.front()) < 0) {
+  char device_phys[kMaximumDeviceNameLength];
+  if (ioctl(fd, EVIOCGPHYS(kMaximumDeviceNameLength - 1), &device_phys) < 0) {
     PLOG(INFO) << "Failed EVIOCGPHYS (path=" << path.value() << ")";
     return;
   }
