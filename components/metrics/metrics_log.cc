@@ -173,10 +173,6 @@ void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
 #if defined(OS_ANDROID)
   os->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
-  std::string package_name =
-      base::android::BuildInfo::GetInstance()->package_name();
-  if (package_name != "com.android.chrome")
-    system_profile->set_app_package_name(package_name);
 #endif
 }
 
