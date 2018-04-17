@@ -444,6 +444,9 @@ component("headless") {
     "//net",
   ]
 
+  data_deps = []
+  data = []
+
   if (enable_basic_printing) {
     public_deps += [ "//skia" ]
   }
@@ -520,10 +523,10 @@ component("headless") {
       sources += [ "$root_out_dir/natives_blob.bin" ]
       public_deps += [ "//v8" ]
       if (use_v8_context_snapshot) {
-        sources += [ "$root_out_dir/v8_context_snapshot.bin" ]
-        public_deps += [ "//tools/v8_context_snapshot" ]
+        data += [ "$root_out_dir/v8_context_snapshot.bin" ]
+        data_deps += [ "//tools/v8_context_snapshot" ]
       } else {
-        sources += [ "$root_out_dir/snapshot_blob.bin" ]
+        data += [ "$root_out_dir/snapshot_blob.bin" ]
       }
     }
   }
