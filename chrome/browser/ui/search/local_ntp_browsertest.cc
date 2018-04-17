@@ -52,9 +52,9 @@
 
 namespace {
 
-// In a non-signed-in, fresh profile with no history, there should be two
-// default TopSites tiles (see history::PrepopulatedPage).
-const int kDefaultMostVisitedItemCount = 2;
+// In a non-signed-in, fresh profile with no history, there should be one
+// default TopSites tile (see history::PrepopulatedPage).
+const int kDefaultMostVisitedItemCount = 1;
 
 class TestMostVisitedObserver : public InstantServiceObserver {
  public:
@@ -408,19 +408,18 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
   histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.LocalNTP", 1);
   histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.MostVisited", 1);
 
-  // Make sure impression metrics were recorded. There should be 2 tiles, the
+  // Make sure impression metrics were recorded. There should be 1 tile, the
   // default prepopulated TopSites (see history::PrepopulatedPage).
   histograms.ExpectTotalCount("NewTabPage.NumberOfTiles", 1);
-  histograms.ExpectBucketCount("NewTabPage.NumberOfTiles", 2, 1);
-  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression", 2);
+  histograms.ExpectBucketCount("NewTabPage.NumberOfTiles", 1, 1);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression", 1);
   histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 0, 1);
-  histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 1, 1);
-  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.client", 2);
-  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail", 2);
-  histograms.ExpectTotalCount("NewTabPage.TileTitle", 2);
-  histograms.ExpectTotalCount("NewTabPage.TileTitle.client", 2);
-  histograms.ExpectTotalCount("NewTabPage.TileType", 2);
-  histograms.ExpectTotalCount("NewTabPage.TileType.client", 2);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.client", 1);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail", 1);
+  histograms.ExpectTotalCount("NewTabPage.TileTitle", 1);
+  histograms.ExpectTotalCount("NewTabPage.TileTitle.client", 1);
+  histograms.ExpectTotalCount("NewTabPage.TileType", 1);
+  histograms.ExpectTotalCount("NewTabPage.TileType.client", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
@@ -460,19 +459,18 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.LocalNTP", 1);
   histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.MostVisited", 1);
 
-  // Make sure impression metrics were recorded. There should be 2 tiles, the
+  // Make sure impression metrics were recorded. There should be 1 tile, the
   // default prepopulated TopSites (see history::PrepopulatedPage).
   histograms.ExpectTotalCount("NewTabPage.NumberOfTiles", 1);
-  histograms.ExpectBucketCount("NewTabPage.NumberOfTiles", 2, 1);
-  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression", 2);
+  histograms.ExpectBucketCount("NewTabPage.NumberOfTiles", 1, 1);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression", 1);
   histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 0, 1);
-  histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 1, 1);
-  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.client", 2);
-  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail", 2);
-  histograms.ExpectTotalCount("NewTabPage.TileTitle", 2);
-  histograms.ExpectTotalCount("NewTabPage.TileTitle.client", 2);
-  histograms.ExpectTotalCount("NewTabPage.TileType", 2);
-  histograms.ExpectTotalCount("NewTabPage.TileType.client", 2);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.client", 1);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail", 1);
+  histograms.ExpectTotalCount("NewTabPage.TileTitle", 1);
+  histograms.ExpectTotalCount("NewTabPage.TileTitle.client", 1);
+  histograms.ExpectTotalCount("NewTabPage.TileType", 1);
+  histograms.ExpectTotalCount("NewTabPage.TileType.client", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, FrenchGoogleNTPLoadsWithoutError) {

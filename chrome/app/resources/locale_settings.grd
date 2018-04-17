@@ -184,17 +184,6 @@
         https://chrome.google.com/webstore?hl=[GRITLANGCODE]
       </message>
 
-      <!-- The URL for Google Chrome welcome page. This is used for the pre -->
-      <!-- populated thumbnails. -->
-      <message name="IDS_CHROME_WELCOME_URL" translateable="false">
-        http://www.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
-      </message>
-      <if expr="is_android">
-        <message name="IDS_MOBILE_WELCOME_URL" translateable="false">
-          chrome://welcome
-        </message>
-      </if>
-
       <!-- The URLs for Adobe Flash settings. We cannot rely on -->
       <!-- the automatic expansion of GRITLANGCODE here because Adobe does -->
       <!-- not use the language/locale code. -->
