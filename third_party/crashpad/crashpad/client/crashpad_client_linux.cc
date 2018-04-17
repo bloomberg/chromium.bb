@@ -24,6 +24,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "client/client_argv_handling.h"
 #include "util/file/file_io.h"
 #include "util/linux/exception_handler_client.h"
 #include "util/linux/exception_information.h"
@@ -36,61 +37,12 @@ namespace crashpad {
 
 namespace {
 
-std::string FormatArgumentString(const std::string& name,
-                                 const std::string& value) {
-  return base::StringPrintf("--%s=%s", name.c_str(), value.c_str());
-}
-
 std::string FormatArgumentInt(const std::string& name, int value) {
   return base::StringPrintf("--%s=%d", name.c_str(), value);
 }
 
 std::string FormatArgumentAddress(const std::string& name, void* addr) {
   return base::StringPrintf("--%s=%p", name.c_str(), addr);
-}
-
-void BuildHandlerArgvStrings(
-    const base::FilePath& handler,
-    const base::FilePath& database,
-    const base::FilePath& metrics_dir,
-    const std::string& url,
-    const std::map<std::string, std::string>& annotations,
-    const std::vector<std::string>& arguments,
-    std::vector<std::string>* argv_strings) {
-  argv_strings->clear();
-
-  argv_strings->push_back(handler.value());
-  for (const auto& argument : arguments) {
-    argv_strings->push_back(argument);
-  }
-
-  if (!database.empty()) {
-    argv_strings->push_back(FormatArgumentString("database", database.value()));
-  }
-
-  if (!metrics_dir.empty()) {
-    argv_strings->push_back(
-        FormatArgumentString("metrics-dir", metrics_dir.value()));
-  }
-
-  if (!url.empty()) {
-    argv_strings->push_back(FormatArgumentString("url", url));
-  }
-
-  for (const auto& kv : annotations) {
-    argv_strings->push_back(
-        FormatArgumentString("annotation", kv.first + '=' + kv.second));
-  }
-}
-
-void ConvertArgvStrings(const std::vector<std::string>& argv_strings,
-                        std::vector<const char*>* argv) {
-  argv->clear();
-  argv->reserve(argv_strings.size() + 1);
-  for (const auto& arg : argv_strings) {
-    argv->push_back(arg.c_str());
-  }
-  argv->push_back(nullptr);
 }
 
 class SignalHandler {
@@ -258,19 +210,12 @@ bool CrashpadClient::StartHandlerForClient(
 void CrashpadClient::DumpWithoutCrash(NativeCPUContext* context) {
   DCHECK(g_crash_handler);
 
-#if defined(ARCH_CPU_X86)
-  memset(&context->__fpregs_mem, 0, sizeof(context->__fpregs_mem));
-  context->__fpregs_mem.status = 0xffff0000;
-#elif defined(ARCH_CPU_X86_64)
-  memset(&context->__fpregs_mem, 0, sizeof(context->__fpregs_mem));
-#elif defined(ARCH_CPU_ARMEL)
+#if defined(ARCH_CPU_ARMEL)
   memset(context->uc_regspace, 0, sizeof(context->uc_regspace));
 #elif defined(ARCH_CPU_ARM64)
   memset(context->uc_mcontext.__reserved,
          0,
          sizeof(context->uc_mcontext.__reserved));
-#else
-#error Port.
 #endif
 
   siginfo_t siginfo;

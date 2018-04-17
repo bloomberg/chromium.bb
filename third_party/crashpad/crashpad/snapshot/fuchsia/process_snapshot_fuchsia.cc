@@ -14,20 +14,30 @@
 
 #include "snapshot/fuchsia/process_snapshot_fuchsia.h"
 
+#include <zircon/process.h>
+
 #include "base/logging.h"
+#include "util/fuchsia/koid_utilities.h"
 
 namespace crashpad {
 
-ProcessSnapshotFuchsia::ProcessSnapshotFuchsia() {}
+ProcessSnapshotFuchsia::ProcessSnapshotFuchsia() = default;
 
-ProcessSnapshotFuchsia::~ProcessSnapshotFuchsia() {}
+ProcessSnapshotFuchsia::~ProcessSnapshotFuchsia() = default;
 
 bool ProcessSnapshotFuchsia::Initialize(zx_handle_t process) {
   INITIALIZATION_STATE_SET_INITIALIZING(initialized_);
 
+  if (gettimeofday(&snapshot_time_, nullptr) != 0) {
+    PLOG(ERROR) << "gettimeofday";
+    return false;
+  }
+
   if (!process_reader_.Initialize(process)) {
     return false;
   }
+
+  system_.Initialize(&snapshot_time_);
 
   InitializeThreads();
   InitializeModules();
@@ -75,8 +85,7 @@ void ProcessSnapshotFuchsia::GetCrashpadOptions(
 
 pid_t ProcessSnapshotFuchsia::ProcessID() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
-  return 0;
+  return GetKoidForHandle(zx_process_self());
 }
 
 pid_t ProcessSnapshotFuchsia::ParentProcessID() const {
@@ -87,47 +96,51 @@ pid_t ProcessSnapshotFuchsia::ParentProcessID() const {
 
 void ProcessSnapshotFuchsia::SnapshotTime(timeval* snapshot_time) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
+  *snapshot_time = snapshot_time_;
 }
 
 void ProcessSnapshotFuchsia::ProcessStartTime(timeval* start_time) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
+  // TODO(scottmg): https://crashpad.chromium.org/bug/196. Nothing available.
+  *start_time = timeval{};
 }
 
 void ProcessSnapshotFuchsia::ProcessCPUTimes(timeval* user_time,
                                              timeval* system_time) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
+  // TODO(scottmg): https://crashpad.chromium.org/bug/196. Nothing available.
+  *user_time = timeval{};
+  *system_time = timeval{};
 }
 
 void ProcessSnapshotFuchsia::ReportID(UUID* report_id) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
+  *report_id = report_id_;
 }
 
 void ProcessSnapshotFuchsia::ClientID(UUID* client_id) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
+  *client_id = client_id_;
 }
 
 const std::map<std::string, std::string>&
 ProcessSnapshotFuchsia::AnnotationsSimpleMap() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
   return annotations_simple_map_;
 }
 
 const SystemSnapshot* ProcessSnapshotFuchsia::System() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
-  return nullptr;
+  return &system_;
 }
 
 std::vector<const ThreadSnapshot*> ProcessSnapshotFuchsia::Threads() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
-  return std::vector<const ThreadSnapshot*>();
+  std::vector<const ThreadSnapshot*> threads;
+  for (const auto& thread : threads_) {
+    threads.push_back(thread.get());
+  }
+  return threads;
 }
 
 std::vector<const ModuleSnapshot*> ProcessSnapshotFuchsia::Modules() const {
@@ -148,26 +161,23 @@ std::vector<UnloadedModuleSnapshot> ProcessSnapshotFuchsia::UnloadedModules()
 
 const ExceptionSnapshot* ProcessSnapshotFuchsia::Exception() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
+  // TODO(scottmg): https://crashpad.chromium.org/bug/196
   return nullptr;
 }
 
 std::vector<const MemoryMapRegionSnapshot*> ProcessSnapshotFuchsia::MemoryMap()
     const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
   return std::vector<const MemoryMapRegionSnapshot*>();
 }
 
 std::vector<HandleSnapshot> ProcessSnapshotFuchsia::Handles() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
   return std::vector<HandleSnapshot>();
 }
 
 std::vector<const MemorySnapshot*> ProcessSnapshotFuchsia::ExtraMemory() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
   return std::vector<const MemorySnapshot*>();
 }
 

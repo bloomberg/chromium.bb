@@ -15,6 +15,7 @@
 #ifndef CRASHPAD_SNAPSHOT_FUCHSIA_PROCESS_SNAPSHOT_FUCHSIA_H_
 #define CRASHPAD_SNAPSHOT_FUCHSIA_PROCESS_SNAPSHOT_FUCHSIA_H_
 
+#include <sys/time.h>
 #include <zircon/types.h>
 
 #include <memory>
@@ -25,6 +26,7 @@
 #include "snapshot/elf/elf_image_reader.h"
 #include "snapshot/elf/module_snapshot_elf.h"
 #include "snapshot/fuchsia/process_reader_fuchsia.h"
+#include "snapshot/fuchsia/system_snapshot_fuchsia.h"
 #include "snapshot/fuchsia/thread_snapshot_fuchsia.h"
 #include "snapshot/process_snapshot.h"
 #include "snapshot/unloaded_module_snapshot.h"
@@ -54,6 +56,31 @@ class ProcessSnapshotFuchsia : public ProcessSnapshot {
   //!     the process.
   void GetCrashpadOptions(CrashpadInfoClientOptions* options);
 
+  //! \brief Sets the value to be returned by ReportID().
+  //!
+  //! On Fuchsia, the crash report ID is under the control of the snapshot
+  //! producer, which may call this method to set the report ID. If this is not
+  //! done, ReportID() will return an identifier consisting entirely of zeroes.
+  void SetReportID(const UUID& report_id) { report_id_ = report_id; }
+
+  //! \brief Sets the value to be returned by ClientID().
+  //!
+  //! On Fuchsia, the client ID is under the control of the snapshot producer,
+  //! which may call this method to set the client ID. If this is not done,
+  //! ClientID() will return an identifier consisting entirely of zeroes.
+  void SetClientID(const UUID& client_id) { client_id_ = client_id; }
+
+  //! \brief Sets the value to be returned by AnnotationsSimpleMap().
+  //!
+  //! On Fuchsia, all process annotations are under the control of the snapshot
+  //! producer, which may call this method to establish these annotations.
+  //! Contrast this with module annotations, which are under the control of the
+  //! process being snapshotted.
+  void SetAnnotationsSimpleMap(
+      const std::map<std::string, std::string>& annotations_simple_map) {
+    annotations_simple_map_ = annotations_simple_map;
+  }
+
   // ProcessSnapshot:
   pid_t ProcessID() const override;
   pid_t ParentProcessID() const override;
@@ -80,10 +107,14 @@ class ProcessSnapshotFuchsia : public ProcessSnapshot {
   // Initializes modules_ on behalf of Initialize().
   void InitializeModules();
 
+  internal::SystemSnapshotFuchsia system_;
   std::vector<std::unique_ptr<internal::ThreadSnapshotFuchsia>> threads_;
   std::vector<std::unique_ptr<internal::ModuleSnapshotElf>> modules_;
   ProcessReaderFuchsia process_reader_;
   std::map<std::string, std::string> annotations_simple_map_;
+  UUID report_id_;
+  UUID client_id_;
+  timeval snapshot_time_;
   InitializationStateDcheck initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSnapshotFuchsia);
