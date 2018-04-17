@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/files/file_path.h"
 #include "base/values.h"
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
@@ -79,6 +80,48 @@ TEST(WebRequestUploadDataPresenterTest, RawData) {
   ASSERT_TRUE(result.get() != NULL);
 
   EXPECT_TRUE(result->Equals(&expected_list));
+}
+
+TEST(WebRequestUploadDataPresenterTest, ParsedDataSegmented) {
+  // Input.
+  static constexpr char block1[] = "v1=FOO";
+  static constexpr char block2[] = "BAR&v2=BAZ";
+  static constexpr size_t block1_size = sizeof(block1) - 1;
+  static constexpr size_t block2_size = sizeof(block2) - 1;
+
+  // Expected output.
+  auto v1 = std::make_unique<base::ListValue>();
+  v1->AppendString("FOOBAR");
+  auto v2 = std::make_unique<base::ListValue>();
+  v2->AppendString("BAZ");
+
+  base::DictionaryValue expected_form;
+  expected_form.SetWithoutPathExpansion("v1", std::move(v1));
+  expected_form.SetWithoutPathExpansion("v2", std::move(v2));
+
+  {
+    // Consecutive data segments should be consolidated and parsed successfuly.
+    auto parsed_data_presenter = ParsedDataPresenter::CreateForTests();
+    ASSERT_TRUE(parsed_data_presenter.get());
+    parsed_data_presenter->FeedBytes(base::StringPiece(block1, block1_size));
+    parsed_data_presenter->FeedBytes(base::StringPiece(block2, block2_size));
+
+    EXPECT_TRUE(parsed_data_presenter->Succeeded());
+    auto result = parsed_data_presenter->Result();
+    ASSERT_TRUE(result);
+    EXPECT_EQ(*result, expected_form);
+  }
+
+  {
+    // Data segments separate by file inputs should not be consolidated.
+    auto parsed_data_presenter = ParsedDataPresenter::CreateForTests();
+    ASSERT_TRUE(parsed_data_presenter.get());
+    parsed_data_presenter->FeedBytes(base::StringPiece(block1, block1_size));
+    parsed_data_presenter->FeedFile(base::FilePath());
+    parsed_data_presenter->FeedBytes(base::StringPiece(block2, block2_size));
+
+    EXPECT_FALSE(parsed_data_presenter->Succeeded());
+  }
 }
 
 }  // namespace extensions
