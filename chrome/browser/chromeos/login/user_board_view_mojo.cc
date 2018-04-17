@@ -79,8 +79,9 @@ void UserBoardViewMojo::SetPublicSessionLocales(
     std::unique_ptr<base::ListValue> locales,
     const std::string& default_locale,
     bool multiple_recommended_locales) {
+  DCHECK(locales);
   LoginScreenClient::Get()->login_screen()->SetPublicSessionLocales(
-      account_id, std::move(locales), default_locale,
+      account_id, std::move(*locales), default_locale,
       multiple_recommended_locales);
 }
 

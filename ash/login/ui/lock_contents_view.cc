@@ -546,8 +546,7 @@ void LockContentsView::OnPublicSessionLocalesChanged(
     return;
 
   mojom::LoginUserInfoPtr user_info = user_view->current_user()->Clone();
-  user_info->public_account_info->available_locales =
-      std::make_unique<base::ListValue>(locales.Clone().GetList());
+  user_info->public_account_info->available_locales = locales.Clone();
   user_info->public_account_info->default_locale = default_locale;
   user_info->public_account_info->show_advanced_view = show_advanced_view;
   user_view->UpdateForUser(user_info, false /*animate*/);
