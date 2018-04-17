@@ -2135,10 +2135,18 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
           ui::command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
   if (layout_test_deps_) {
-    callback.Run(layout_test_deps_->CreateLayerTreeFrameSink(
-        routing_id, std::move(gpu_channel_host), std::move(context_provider),
-        std::move(worker_context_provider), GetGpuMemoryBufferManager(), this));
-    return;
+    if (!layout_test_deps_->UseDisplayCompositorPixelDump()) {
+      callback.Run(layout_test_deps_->CreateLayerTreeFrameSink(
+          routing_id, std::move(gpu_channel_host), std::move(context_provider),
+          std::move(worker_context_provider), GetGpuMemoryBufferManager(),
+          this));
+      return;
+    } else if (!params.compositor_task_runner) {
+      // The frame sink provider expects a compositor task runner, but we might
+      // not have that if we're running layout tests in single threaded mode.
+      // Set it to be our thread's task runner instead.
+      params.compositor_task_runner = GetCompositorMainThreadTaskRunner();
+    }
   }
 
 #if defined(OS_ANDROID)
@@ -2179,7 +2187,8 @@ std::unique_ptr<cc::SwapPromise>
 RenderThreadImpl::RequestCopyOfOutputForLayoutTest(
     int32_t routing_id,
     std::unique_ptr<viz::CopyOutputRequest> request) {
-  DCHECK(layout_test_deps_);
+  DCHECK(layout_test_deps_ &&
+         !layout_test_deps_->UseDisplayCompositorPixelDump());
   return layout_test_deps_->RequestCopyOfOutput(routing_id, std::move(request));
 }
 

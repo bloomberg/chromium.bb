@@ -37,6 +37,7 @@ include_rules = [
   "+components/url_formatter",
   "+components/network_session_configurator/browser",
   "+components/viz/common/resources",
+  "+components/viz/common/switches.h",
   "+services/test/echo",
 ]
 

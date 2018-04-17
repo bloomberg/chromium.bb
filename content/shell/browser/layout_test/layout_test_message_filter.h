@@ -92,7 +92,8 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
   void OnLayoutTestRuntimeFlagsChanged(
       const base::DictionaryValue& changed_layout_test_runtime_flags);
   void OnTestFinishedInSecondaryRenderer();
-  void OnInitiateCaptureDump(bool capture_navigation_history);
+  void OnInitiateCaptureDump(bool capture_navigation_history,
+                             bool capture_pixels);
   void OnInspectSecondaryWindow();
 
   int render_process_id_;

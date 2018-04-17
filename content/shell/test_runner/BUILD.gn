@@ -102,6 +102,7 @@ component("test_runner") {
     "//components/viz/common",
     "//content/public/common",
     "//content/public/renderer",
+    "//content/shell:layout_test_switches",
     "//content/test:test_runner_support",
     "//device/gamepad/public/cpp:shared_with_blink",
     "//gin",

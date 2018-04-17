@@ -572,14 +572,17 @@ void BlinkTestRunner::TestFinished() {
   // now, just capture a local layout first.
   CaptureLocalLayoutDump();
   // TODO(vmpstr): This code should move to the browser, but since again some
-  // tests seem to be timing dependent, capture a local pixels dump first. Ask
-  // the browser to initiate a dump.
-  CaptureLocalPixelsDump();
+  // tests seem to be timing dependent, capture a local pixels dump first. Note
+  // that this returns a value indicating if we should defer the pixel dump to
+  // the browser instead. We want to switch all tests to use this for pixel
+  // dumps.
+  bool browser_should_capture_pixels = CaptureLocalPixelsDump();
 
   // Request the browser to send us a callback through which we will return the
   // results.
   Send(new LayoutTestHostMsg_InitiateCaptureDump(
-      routing_id(), interfaces->TestRunner()->ShouldDumpBackForwardList()));
+      routing_id(), interfaces->TestRunner()->ShouldDumpBackForwardList(),
+      browser_should_capture_pixels));
 }
 
 void BlinkTestRunner::CaptureLocalAudioDump() {
@@ -615,14 +618,14 @@ void BlinkTestRunner::CaptureLocalLayoutDump() {
   }
 }
 
-void BlinkTestRunner::CaptureLocalPixelsDump() {
+bool BlinkTestRunner::CaptureLocalPixelsDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalPixelsDump");
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   if (!test_config_->enable_pixel_dumping ||
       !interfaces->TestRunner()->ShouldGeneratePixelResults() ||
       interfaces->TestRunner()->ShouldDumpAsAudio()) {
-    return;
+    return false;
   }
 
   CHECK(render_view()->GetWebView()->IsAcceleratedCompositingActive());
@@ -631,13 +634,16 @@ void BlinkTestRunner::CaptureLocalPixelsDump() {
   // with the current, non-swapped-out RenderView.
   DCHECK(render_view()->GetWebView()->MainFrame()->IsWebLocalFrame());
 
-  // TODO(vmpstr): We should move pixel capturing to the browser in order to
-  // start implementing OOPIF pixel dump support.
   waiting_for_pixels_dump_result_ = true;
-  interfaces->TestRunner()->DumpPixelsAsync(
-      render_view()->GetWebView()->MainFrame()->ToWebLocalFrame(),
-      base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
-                     base::Unretained(this)));
+  bool browser_should_capture_pixels =
+      interfaces->TestRunner()->DumpPixelsAsync(
+          render_view()->GetWebView()->MainFrame()->ToWebLocalFrame(),
+          base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
+                         base::Unretained(this)));
+  // If the browser should capture pixels, then we shouldn't be waiting for dump
+  // results.
+  DCHECK(!browser_should_capture_pixels || !waiting_for_layout_dump_results_);
+  return browser_should_capture_pixels;
 }
 
 void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
@@ -670,11 +676,6 @@ void BlinkTestRunner::CaptureDumpComplete() {
   // Abort if we're still waiting for some results.
   if (waiting_for_layout_dump_results_ || waiting_for_pixels_dump_result_)
     return;
-
-  // Once we captured everything, we can stop loading. Note that we can't stop
-  // earlier, since partial load tests will have a different pixel output than
-  // expected.
-  render_view()->GetWebView()->MainFrame()->StopLoading();
 
   // Abort if the browser didn't ask us for the dump yet.
   if (!dump_callback_)

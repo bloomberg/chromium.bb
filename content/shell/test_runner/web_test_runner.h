@@ -55,7 +55,9 @@ class WebTestRunner {
   // Snapshots image of |web_view| using the mode requested by the current test
   // and calls |callback| with the result.  Caller needs to ensure that
   // |web_view| stays alive until |callback| is called.
-  virtual void DumpPixelsAsync(
+  // Returns false if the request to capture pixels was processed locally, and
+  // true if the pixels need to be captured in the browser process instead..
+  virtual bool DumpPixelsAsync(
       blink::WebLocalFrame* frame,
       base::OnceCallback<void(const SkBitmap&)> callback) = 0;
 

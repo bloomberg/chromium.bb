@@ -191,6 +191,11 @@ void WebFrameWidgetBase::DragSourceSystemDragEnded() {
   CancelDrag();
 }
 
+void WebFrameWidgetBase::CompositeWithRasterForTesting() {
+  if (auto* layer_tree_view = GetLayerTreeView())
+    layer_tree_view->CompositeWithRasterForTesting();
+}
+
 void WebFrameWidgetBase::CancelDrag() {
   // It's possible for us this to be callback while we're not doing a drag if
   // it's from a previous page that got unloaded.

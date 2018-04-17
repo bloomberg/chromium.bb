@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/test_runner/layout_and_paint_async_then.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
@@ -1732,7 +1733,7 @@ std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
   return ::test_runner::DumpLayout(frame, layout_test_runtime_flags_);
 }
 
-void TestRunner::DumpPixelsAsync(
+bool TestRunner::DumpPixelsAsync(
     blink::WebLocalFrame* frame,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   if (layout_test_runtime_flags_.dump_drag_image()) {
@@ -1743,11 +1744,25 @@ void TestRunner::DumpPixelsAsync(
       bitmap.allocN32Pixels(1, 1);
       bitmap.eraseColor(0);
       std::move(callback).Run(bitmap);
-      return;
+      return false;
     }
 
     std::move(callback).Run(drag_image_.GetSkBitmap());
-    return;
+    return false;
+  }
+
+  // If we need to do a display compositor pixel dump, then delegate that to the
+  // browser by returning true. Note that printing case can be handled here.
+  if (!layout_test_runtime_flags_.is_printing() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDisplayCompositorPixelDump)) {
+    // Because of the plumbing, we should still call the callback with an empty
+    // bitmap, but return true so that the browser also captures the pixels.
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(1, 1);
+    bitmap.eraseColor(0);
+    std::move(callback).Run(bitmap);
+    return true;
   }
 
   // See if we need to draw the selection bounds rect on top of the snapshot.
@@ -1773,6 +1788,7 @@ void TestRunner::DumpPixelsAsync(
     test_runner::DumpPixelsAsync(frame, delegate_->GetDeviceScaleFactor(),
                                  std::move(callback));
   }
+  return false;
 }
 
 void TestRunner::ReplicateLayoutTestRuntimeFlagsChanges(

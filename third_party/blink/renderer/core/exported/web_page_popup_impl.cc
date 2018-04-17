@@ -423,6 +423,11 @@ void WebPagePopupImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
     layer_tree_view_->SynchronouslyCompositeNoRasterForTesting();
 }
 
+void WebPagePopupImpl::CompositeWithRasterForTesting() {
+  if (layer_tree_view_)
+    layer_tree_view_->CompositeWithRasterForTesting();
+}
+
 void WebPagePopupImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
   if (!closing_) {
     PageWidgetDelegate::Paint(*page_, canvas, rect,

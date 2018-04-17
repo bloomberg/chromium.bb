@@ -88,7 +88,8 @@ class TestRunner : public WebTestRunner {
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
   bool IsRecursiveLayoutDumpRequested() override;
   std::string DumpLayout(blink::WebLocalFrame* frame) override;
-  void DumpPixelsAsync(
+  // Returns true if the browser should capture the pixels instead.
+  bool DumpPixelsAsync(
       blink::WebLocalFrame* frame,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   void ReplicateLayoutTestRuntimeFlagsChanges(

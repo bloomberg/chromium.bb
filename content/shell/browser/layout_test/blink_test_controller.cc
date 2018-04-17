@@ -69,6 +69,7 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "content/shell/test_runner/test_common.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -505,6 +506,12 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   should_override_prefs_ = false;
   LayoutTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
   navigation_history_dump_ = "";
+  pixel_dump_.reset();
+  actual_pixel_hash_ = "";
+  main_frame_dump_ = nullptr;
+  waiting_for_pixel_results_ = false;
+  waiting_for_main_frame_dump_ = false;
+  weak_factory_.InvalidateWeakPtrs();
 
 #if defined(OS_ANDROID)
   // Re-using the shell's main window on Android causes issues with networking
@@ -554,8 +561,8 @@ void BlinkTestController::OnTestFinishedInSecondaryRenderer() {
       main_render_view_host->GetRoutingID()));
 }
 
-void BlinkTestController::OnInitiateCaptureDump(
-    bool capture_navigation_history) {
+void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
+                                                bool capture_pixels) {
   if (test_phase_ != DURING_TEST)
     return;
 
@@ -580,11 +587,87 @@ void BlinkTestController::OnInitiateCaptureDump(
     }
   }
 
+  // Ensure to say that we need to wait for main frame dump here, since
+  // CopyFromSurface call below may synchronously issue the callback, meaning
+  // that we would report results too early.
+  waiting_for_main_frame_dump_ = true;
+
+  if (capture_pixels) {
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableDisplayCompositorPixelDump));
+    waiting_for_pixel_results_ = true;
+
+    // Trigger compositing on all frames.
+    CompositeAllFrames();
+
+    // Enqueue a copy output request.
+    auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
+    rwhv->CopyFromSurface(
+        gfx::Rect(), gfx::Size(),
+        base::BindOnce(&BlinkTestController::OnPixelDumpCaptured,
+                       weak_factory_.GetWeakPtr()));
+  }
+
   RenderFrameHost* rfh = main_window_->web_contents()->GetMainFrame();
   printer_->StartStateDump();
   GetLayoutTestControlPtr(rfh)->CaptureDump(
       base::BindOnce(&BlinkTestController::OnCaptureDumpCompleted,
                      weak_factory_.GetWeakPtr()));
+}
+
+void BlinkTestController::CompositeAllFrames() {
+  std::vector<Node> node_storage;
+  Node* root = BuildFrameTree(main_window_->web_contents()->GetAllFrames(),
+                              &node_storage);
+
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_calls;
+  CompositeDepthFirst(root);
+}
+
+BlinkTestController::Node* BlinkTestController::BuildFrameTree(
+    const std::vector<RenderFrameHost*>& frames,
+    std::vector<Node>* storage) const {
+  // Ensure we don't reallocate during tree construction.
+  storage->reserve(frames.size());
+
+  // Returns a Node for a given RenderFrameHost, or nullptr if doesn't exist.
+  auto node_for_frame = [storage](RenderFrameHost* rfh) {
+    auto it = std::find_if(
+        storage->begin(), storage->end(),
+        [rfh](const Node& node) { return node.render_frame_host == rfh; });
+    return it == storage->end() ? nullptr : &*it;
+  };
+
+  // Add all of the frames to storage.
+  for (auto* frame : frames) {
+    DCHECK(!node_for_frame(frame)) << "Frame seen multiple times.";
+    storage->emplace_back(frame);
+  }
+
+  // Construct a tree rooted at |root|.
+  Node* root = nullptr;
+  for (auto* frame : frames) {
+    Node* node = node_for_frame(frame);
+    DCHECK(node);
+    if (!frame->GetParent()) {
+      DCHECK(!root) << "Multiple roots found.";
+      root = node;
+    } else {
+      Node* parent = node_for_frame(frame->GetParent());
+      DCHECK(parent);
+      parent->children.push_back(node);
+    }
+  }
+  DCHECK(root) << "No root found.";
+  return root;
+}
+
+void BlinkTestController::CompositeDepthFirst(Node* node) {
+  if (!node->render_frame_host->IsRenderFrameLive())
+    return;
+  for (auto* child : node->children)
+    CompositeDepthFirst(child);
+  GetLayoutTestControlPtr(node->render_frame_host)->CompositeWithRaster();
 }
 
 bool BlinkTestController::IsMainWindow(WebContents* web_contents) const {
@@ -871,12 +954,43 @@ void BlinkTestController::OnCleanupFinished() {
 
 void BlinkTestController::OnCaptureDumpCompleted(
     mojom::LayoutTestDumpPtr dump) {
-  if (dump->audio)
-    OnAudioDump(*dump->audio);
-  if (dump->layout)
-    OnTextDump(*dump->layout);
-  if (!dump->actual_pixel_hash.empty())
-    OnImageDump(dump->actual_pixel_hash, dump->pixels);
+  main_frame_dump_ = std::move(dump);
+
+  waiting_for_main_frame_dump_ = false;
+  ReportResults();
+}
+
+void BlinkTestController::OnPixelDumpCaptured(const SkBitmap& snapshot) {
+  DCHECK(!snapshot.drawsNothing());
+
+  // The snapshot arrives from the GPU process via shared memory. Because MSan
+  // can't track initializedness across processes, we must assure it that the
+  // pixels are in fact initialized.
+  MSAN_UNPOISON(snapshot.getPixels(), snapshot.computeByteSize());
+  base::MD5Digest digest;
+  base::MD5Sum(snapshot.getPixels(), snapshot.computeByteSize(), &digest);
+  actual_pixel_hash_ = base::MD5DigestToBase16(digest);
+  pixel_dump_ = snapshot;
+
+  waiting_for_pixel_results_ = false;
+  ReportResults();
+}
+
+void BlinkTestController::ReportResults() {
+  if (waiting_for_pixel_results_ || waiting_for_main_frame_dump_)
+    return;
+
+  if (main_frame_dump_->audio)
+    OnAudioDump(*main_frame_dump_->audio);
+  if (main_frame_dump_->layout)
+    OnTextDump(*main_frame_dump_->layout);
+  // If we have local pixels, report that. Otherwise report whatever the pixel
+  // dump received from the renderer contains.
+  if (pixel_dump_) {
+    OnImageDump(actual_pixel_hash_, *pixel_dump_);
+  } else if (!main_frame_dump_->actual_pixel_hash.empty()) {
+    OnImageDump(main_frame_dump_->actual_pixel_hash, main_frame_dump_->pixels);
+  }
   OnTestFinished();
 }
 
@@ -1160,5 +1274,11 @@ mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(
 void BlinkTestController::HandleLayoutTestControlError(RenderFrameHost* frame) {
   layout_test_control_map_.erase(frame);
 }
+
+BlinkTestController::Node::Node() = default;
+BlinkTestController::Node::Node(RenderFrameHost* host)
+    : render_frame_host(host) {}
+BlinkTestController::Node::Node(Node&& other) = default;
+BlinkTestController::Node::~Node() = default;
 
 }  // namespace content

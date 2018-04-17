@@ -255,11 +255,12 @@ void LayoutTestMessageFilter::OnTestFinishedInSecondaryRenderer() {
 }
 
 void LayoutTestMessageFilter::OnInitiateCaptureDump(
-    bool capture_navigation_history) {
+    bool capture_navigation_history,
+    bool capture_pixels) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (BlinkTestController::Get()) {
     BlinkTestController::Get()->OnInitiateCaptureDump(
-        capture_navigation_history);
+        capture_navigation_history, capture_pixels);
   }
 }
 

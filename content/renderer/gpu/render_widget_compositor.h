@@ -152,6 +152,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   void SynchronouslyCompositeNoRasterForTesting() override;
+  void CompositeWithRasterForTesting() override;
   void SetDeferCommits(bool defer_commits) override;
   void RegisterViewportLayers(
       const blink::WebLayerTreeView::ViewportLayers& viewport_layers) override;

@@ -39,6 +39,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
@@ -310,6 +311,11 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
 class LayoutTestDependenciesImpl : public LayoutTestDependencies,
                                    public viz::TestLayerTreeFrameSinkClient {
  public:
+  bool UseDisplayCompositorPixelDump() const override {
+    base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+    return cmd->HasSwitch(switches::kEnableDisplayCompositorPixelDump);
+  }
+
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink(
       int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,

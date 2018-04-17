@@ -45,6 +45,14 @@ source_set("android_shell_descriptors") {
   ]
 }
 
+source_set("layout_test_switches") {
+  testonly = true
+  sources = [
+    "common/layout_test/layout_test_switches.cc",
+    "common/layout_test/layout_test_switches.h",
+  ]
+}
+
 static_library("content_shell_lib") {
   testonly = true
   sources = [
@@ -164,8 +172,6 @@ static_library("content_shell_lib") {
     "common/layout_test/layout_test_content_client.h",
     "common/layout_test/layout_test_messages.cc",
     "common/layout_test/layout_test_messages.h",
-    "common/layout_test/layout_test_switches.cc",
-    "common/layout_test/layout_test_switches.h",
     "common/leak_detection_result.h",
     "common/power_monitor_test_impl.cc",
     "common/power_monitor_test_impl.h",
@@ -231,6 +237,7 @@ static_library("content_shell_lib") {
   ]
   deps = [
     ":content_shell_packaged_services_manifest_overlay",
+    ":layout_test_switches",
     ":mojo_bindings",
     ":resources",
     "//base",

@@ -83,6 +83,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void BeginFrame(double last_frame_time_monotonic) override;
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
+  void CompositeWithRasterForTesting() override;
   void WillCloseLayerTreeView() override;
   void Paint(WebCanvas*, const WebRect&) override;
   void Resize(const WebSize&) override;

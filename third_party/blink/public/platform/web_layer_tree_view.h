@@ -157,6 +157,9 @@ class WebLayerTreeView {
   // single-threaded mode.
   virtual void SynchronouslyCompositeNoRasterForTesting() {}
 
+  // Synchronously rasterizes and composites a frame.
+  virtual void CompositeWithRasterForTesting() {}
+
   // Prevents updates to layer tree from becoming visible.
   virtual void SetDeferCommits(bool defer_commits) {}
 
