@@ -72,7 +72,6 @@ struct SyntheticForm {
   // ones.
   std::vector<blink::WebFormControlElement> control_elements;
   blink::WebDocument document;
-  blink::WebString action;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyntheticForm);
@@ -160,7 +159,6 @@ void PopulateSyntheticFormFromWebForm(const WebFormElement& web_form,
   web_form.GetFormControlElements(web_control_elements);
   synthetic_form->control_elements.assign(web_control_elements.begin(),
                                           web_control_elements.end());
-  synthetic_form->action = web_form.Action();
   synthetic_form->document = web_form.GetDocument();
 }
 
