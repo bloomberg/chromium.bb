@@ -105,7 +105,7 @@ class PathFinder(object):
         return self._path_from_webkit_base('LayoutTests')
 
     def perf_tests_dir(self):
-        return self._path_from_webkit_base('PerformanceTests')
+        return self.path_from_chromium_base('third_party', 'blink', 'perf_tests')
 
     @memoized
     def _webkit_base(self):

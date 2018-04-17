@@ -136,7 +136,11 @@ _PATH_RULES_SPECIFIER = [
         # Blink style.
         'renderer/platform/scheduler',
         'public/platform/scheduler'],
-     ['-readability/control_flow'])
+     ['-readability/control_flow']),
+
+    # perf_tests contains a lot of third-party files.
+    (['perf_tests/'],
+     ['-whitespace/tab'])
 ]
 
 

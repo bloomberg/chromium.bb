@@ -20,7 +20,7 @@ group("perf") {
     "//tools/json_to_struct/",
 
     # For blink_perf benchmarks.
-    "//third_party/WebKit/PerformanceTests/",
+    "//third_party/blink/perf_tests/",
 
     # For smoothness.tough_canvas_cases
     "//chrome/test/data/perf/",
@@ -62,7 +62,7 @@ group("perf_experimental") {
     "//tools/json_to_struct/",
 
     # For blink_perf benchmarks.
-    "//third_party/WebKit/PerformanceTests/",
+    "//third_party/blink/perf_tests/",
 
     # For smoothness.tough_canvas_cases
     "//chrome/test/data/perf/",

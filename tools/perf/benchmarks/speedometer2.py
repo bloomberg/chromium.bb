@@ -19,7 +19,7 @@ from telemetry.value import list_of_scalar_values
 
 
 _SPEEDOMETER_DIR = os.path.join(path_util.GetChromiumSrcDir(),
-    'third_party', 'WebKit', 'PerformanceTests', 'Speedometer')
+    'third_party', 'blink', 'perf_tests', 'speedometer')
 _SPEEDOMETER_SUITE_NAME_BASE = '{0}-TodoMVC'
 _SPEEDOMETER_SUITES = [
   'VanillaJS',
