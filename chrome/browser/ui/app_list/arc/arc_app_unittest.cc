@@ -1945,6 +1945,23 @@ TEST_P(ArcDefaulAppTest, DefaultApps) {
   }
 }
 
+TEST_P(ArcAppLauncherForDefaulAppTest, AppIconUpdated) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  ASSERT_FALSE(fake_default_apps().empty());
+  const arc::mojom::AppInfo& app = fake_default_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  FakeAppIconLoaderDelegate icon_delegate;
+  ArcAppIconLoader icon_loader(profile(), app_list::kListIconSize,
+                               &icon_delegate);
+  icon_loader.FetchImage(app_id);
+
+  arc_test()->WaitForDefaultApps();
+  icon_delegate.WaitForIconUpdates(1);
+}
+
 TEST_P(ArcAppLauncherForDefaulAppTest, AppLauncherForDefaultApps) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
