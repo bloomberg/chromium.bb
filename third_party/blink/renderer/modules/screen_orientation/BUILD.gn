@@ -16,6 +16,8 @@ blink_modules_sources("screen_orientation") {
     "screen_orientation_dispatcher.h",
     "screen_screen_orientation.cc",
     "screen_screen_orientation.h",
+    "web_lock_orientation_callback.h",
+    "web_lock_orientation_error.h",
   ]
   deps = [
     "//services/service_manager/public/cpp",

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DEVICE_EMULATION_PARAMS_H_
 
 #include "base/optional.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"

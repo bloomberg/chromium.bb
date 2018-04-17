@@ -7,6 +7,6 @@ typemaps = [
   "//third_party/blink/public/platform/content_security_policy.typemap",
   "//third_party/blink/public/platform/display_mode.typemap",
   "//third_party/blink/public/platform/referrer_policy.typemap",
-  "//third_party/blink/public/platform/modules/screen_orientation/screen_orientation_lock_types.typemap",
+  "//third_party/blink/public/common/screen_orientation/screen_orientation_lock_types.typemap",
   "//third_party/blink/public/web/console_message.typemap",
 ]

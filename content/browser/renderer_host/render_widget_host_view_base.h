@@ -29,7 +29,7 @@
 #include "ipc/ipc_listener.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/skia/include/core/SkImageInfo.h"

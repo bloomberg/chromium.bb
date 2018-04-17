@@ -27,7 +27,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"

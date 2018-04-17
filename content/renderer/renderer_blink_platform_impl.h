@@ -27,9 +27,9 @@
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
 
 namespace IPC {

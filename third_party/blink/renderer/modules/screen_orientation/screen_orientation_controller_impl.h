@@ -7,13 +7,13 @@
 
 #include <memory>
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_lock_orientation_callback.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 
 namespace blink {
 

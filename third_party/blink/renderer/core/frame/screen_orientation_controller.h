@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SCREEN_ORIENTATION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SCREEN_ORIENTATION_CONTROLLER_H_
 
-#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
