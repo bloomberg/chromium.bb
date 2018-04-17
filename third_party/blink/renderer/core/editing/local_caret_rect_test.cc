@@ -201,8 +201,7 @@ TEST_P(ParameterizedLocalCaretRectTest, UnderflowTextRtl) {
                 Position(text, 2), TextAffinity::kDownstream)));
 }
 
-// TODO(xiaochengh): Fix NG LocalCaretText computation for vertical text.
-TEST_F(LocalCaretRectTest, VerticalRLText) {
+TEST_P(ParameterizedLocalCaretRectTest, VerticalRLText) {
   // This test only records the current behavior. Future changes are allowed.
 
   LoadAhem();
@@ -210,11 +209,6 @@ TEST_F(LocalCaretRectTest, VerticalRLText) {
       "<div id=div style='writing-mode: vertical-rl; word-break: break-all; "
       "font: 10px/10px Ahem; width: 30px; height: 30px'>XXXYYYZZZ</div>");
   const Node* foo = GetElementById("div")->firstChild();
-
-  // TODO(xiaochengh): In vertical-rl writing mode, the |X| property of
-  // LocalCaretRect's LayoutRect seems to refer to the distance to the right
-  // edge of the inline formatting context instead. Figure out if this is
-  // correct.
 
   EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 0, 10, 1)),
             LocalCaretRectOfPosition(PositionWithAffinity(
