@@ -171,7 +171,7 @@ constexpr char kExpectedPrimaryLightManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoLight.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoLight.png'\r\n"
     "      ForegroundText='dark'\r\n"
-    "      BackgroundColor='#212121'/>\r\n"
+    "      BackgroundColor='#FFFFFF'/>\r\n"
     "</Application>\r\n";
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -196,7 +196,7 @@ constexpr char kExpectedBetaLightManifest[] =
     "      "
     "Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoBetaLight.png'\r\n"
     "      ForegroundText='dark'\r\n"
-    "      BackgroundColor='#212121'/>\r\n"
+    "      BackgroundColor='#FFFFFF'/>\r\n"
     "</Application>\r\n";
 
 constexpr char kExpectedDevManifest[] =
@@ -218,7 +218,7 @@ constexpr char kExpectedDevLightManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoDevLight.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoDevLight.png'\r\n"
     "      ForegroundText='dark'\r\n"
-    "      BackgroundColor='#212121'/>\r\n"
+    "      BackgroundColor='#FFFFFF'/>\r\n"
     "</Application>\r\n";
 
 constexpr char kExpectedCanaryManifest[] =

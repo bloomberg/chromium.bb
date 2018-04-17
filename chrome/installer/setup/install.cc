@@ -273,6 +273,7 @@ std::string GenerateVisualElementsManifest(const base::Version& version,
   //   - "Light" or "", according to |use_light_assets|.
   // followed by:
   //   - Foreground text value (light or dark).
+  //   - Background color.
   static constexpr char kManifestTemplate[] =
       "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
       "  <VisualElements\r\n"
@@ -281,7 +282,7 @@ std::string GenerateVisualElementsManifest(const base::Version& version,
       "      Square70x70Logo='%ls\\SmallLogo%ls%ls.png'\r\n"
       "      Square44x44Logo='%ls\\SmallLogo%ls%ls.png'\r\n"
       "      ForegroundText='%ls'\r\n"
-      "      BackgroundColor='#212121'/>\r\n"
+      "      BackgroundColor='%ls'/>\r\n"
       "</Application>\r\n";
   static constexpr wchar_t kLight[] = L"Light";
 
@@ -300,7 +301,8 @@ std::string GenerateVisualElementsManifest(const base::Version& version,
       manifest_template.c_str(), elements_dir.c_str(), logo_suffix,
       light_suffix, elements_dir.c_str(), logo_suffix, light_suffix,
       elements_dir.c_str(), logo_suffix, light_suffix,
-      use_light_assets ? L"dark" : L"light"));
+      use_light_assets ? L"dark" : L"light",
+      use_light_assets ? L"#FFFFFF" : L"#212121"));
 
   return base::UTF16ToUTF8(manifest16);
 }
