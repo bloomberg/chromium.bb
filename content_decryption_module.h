@@ -46,6 +46,7 @@ typedef __int64 int64_t;
                 #type " size mismatch")
 
 extern "C" {
+
 CDM_API void INITIALIZE_CDM_MODULE();
 
 CDM_API void DeinitializeCdmModule();
@@ -70,16 +71,10 @@ CDM_API void* CreateCdmInstance(int cdm_interface_version,
                                 void* user_data);
 
 CDM_API const char* GetCdmVersion();
-}
+
+}  // extern "C"
 
 namespace cdm {
-
-class CDM_CLASS_API AudioFrames;
-class CDM_CLASS_API DecryptedBlock;
-class CDM_CLASS_API VideoFrame;
-
-class CDM_CLASS_API Host_9;
-class CDM_CLASS_API Host_10;
 
 enum Status : uint32_t {
   kSuccess = 0,
@@ -460,6 +455,101 @@ struct Policy {
 };
 CHECK_TYPE(Policy, 4, 4);
 
+// Represents a buffer created by Allocator implementations.
+class CDM_CLASS_API Buffer {
+ public:
+  // Destroys the buffer in the same context as it was created.
+  virtual void Destroy() = 0;
+
+  virtual uint32_t Capacity() const = 0;
+  virtual uint8_t* Data() = 0;
+  virtual void SetSize(uint32_t size) = 0;
+  virtual uint32_t Size() const = 0;
+
+ protected:
+  Buffer() {}
+  virtual ~Buffer() {}
+
+ private:
+  Buffer(const Buffer&);
+  void operator=(const Buffer&);
+};
+
+// Represents a decrypted block that has not been decoded.
+class CDM_CLASS_API DecryptedBlock {
+ public:
+  virtual void SetDecryptedBuffer(Buffer* buffer) = 0;
+  virtual Buffer* DecryptedBuffer() = 0;
+
+  // TODO(tomfinegan): Figure out if timestamp is really needed. If it is not,
+  // we can just pass Buffer pointers around.
+  virtual void SetTimestamp(int64_t timestamp) = 0;
+  virtual int64_t Timestamp() const = 0;
+
+ protected:
+  DecryptedBlock() {}
+  virtual ~DecryptedBlock() {}
+};
+
+class CDM_CLASS_API VideoFrame {
+ public:
+  enum VideoPlane : uint32_t {
+    kYPlane = 0,
+    kUPlane = 1,
+    kVPlane = 2,
+    kMaxPlanes = 3,
+  };
+
+  virtual void SetFormat(VideoFormat format) = 0;
+  virtual VideoFormat Format() const = 0;
+
+  virtual void SetSize(cdm::Size size) = 0;
+  virtual cdm::Size Size() const = 0;
+
+  virtual void SetFrameBuffer(Buffer* frame_buffer) = 0;
+  virtual Buffer* FrameBuffer() = 0;
+
+  virtual void SetPlaneOffset(VideoPlane plane, uint32_t offset) = 0;
+  virtual uint32_t PlaneOffset(VideoPlane plane) = 0;
+
+  virtual void SetStride(VideoPlane plane, uint32_t stride) = 0;
+  virtual uint32_t Stride(VideoPlane plane) = 0;
+
+  virtual void SetTimestamp(int64_t timestamp) = 0;
+  virtual int64_t Timestamp() const = 0;
+
+ protected:
+  VideoFrame() {}
+  virtual ~VideoFrame() {}
+};
+
+// Represents decrypted and decoded audio frames. AudioFrames can contain
+// multiple audio output buffers, which are serialized into this format:
+//
+// |<------------------- serialized audio buffer ------------------->|
+// | int64_t timestamp | int64_t length | length bytes of audio data |
+//
+// For example, with three audio output buffers, the AudioFrames will look
+// like this:
+//
+// |<----------------- AudioFrames ------------------>|
+// | audio buffer 0 | audio buffer 1 | audio buffer 2 |
+class CDM_CLASS_API AudioFrames {
+ public:
+  virtual void SetFrameBuffer(Buffer* buffer) = 0;
+  virtual Buffer* FrameBuffer() = 0;
+
+  // The CDM must call this method, providing a valid format, when providing
+  // frame buffers. Planar data should be stored end to end; e.g.,
+  // |ch1 sample1||ch1 sample2|....|ch1 sample_last||ch2 sample1|...
+  virtual void SetFormat(AudioFormat format) = 0;
+  virtual AudioFormat Format() const = 0;
+
+ protected:
+  AudioFrames() {}
+  virtual ~AudioFrames() {}
+};
+
 // FileIO interface provides a way for the CDM to store data in a file in
 // persistent storage. This interface aims only at providing basic read/write
 // capabilities and should not be used as a full fledged file IO API.
@@ -541,6 +631,9 @@ class CDM_CLASS_API FileIOClient {
   FileIOClient() {}
   virtual ~FileIOClient() {}
 };
+
+class CDM_CLASS_API Host_9;
+class CDM_CLASS_API Host_10;
 
 // ContentDecryptionModule interface that all CDMs need to implement.
 // The interface is versioned for backward compatibility.
@@ -973,26 +1066,6 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
 // The latest stable ContentDecryptionModule interface.
 typedef ContentDecryptionModule_9 ContentDecryptionModule;
 
-// Represents a buffer created by Allocator implementations.
-class CDM_CLASS_API Buffer {
- public:
-  // Destroys the buffer in the same context as it was created.
-  virtual void Destroy() = 0;
-
-  virtual uint32_t Capacity() const = 0;
-  virtual uint8_t* Data() = 0;
-  virtual void SetSize(uint32_t size) = 0;
-  virtual uint32_t Size() const = 0;
-
- protected:
-  Buffer() {}
-  virtual ~Buffer() {}
-
- private:
-  Buffer(const Buffer&);
-  void operator=(const Buffer&);
-};
-
 class CDM_CLASS_API Host_9 {
  public:
   static const int kVersion = 9;
@@ -1272,81 +1345,6 @@ class CDM_CLASS_API Host_10 {
  protected:
   Host_10() {}
   virtual ~Host_10() {}
-};
-
-// Represents a decrypted block that has not been decoded.
-class CDM_CLASS_API DecryptedBlock {
- public:
-  virtual void SetDecryptedBuffer(Buffer* buffer) = 0;
-  virtual Buffer* DecryptedBuffer() = 0;
-
-  // TODO(tomfinegan): Figure out if timestamp is really needed. If it is not,
-  // we can just pass Buffer pointers around.
-  virtual void SetTimestamp(int64_t timestamp) = 0;
-  virtual int64_t Timestamp() const = 0;
-
- protected:
-  DecryptedBlock() {}
-  virtual ~DecryptedBlock() {}
-};
-
-class CDM_CLASS_API VideoFrame {
- public:
-  enum VideoPlane : uint32_t {
-    kYPlane = 0,
-    kUPlane = 1,
-    kVPlane = 2,
-    kMaxPlanes = 3,
-  };
-
-  virtual void SetFormat(VideoFormat format) = 0;
-  virtual VideoFormat Format() const = 0;
-
-  virtual void SetSize(cdm::Size size) = 0;
-  virtual cdm::Size Size() const = 0;
-
-  virtual void SetFrameBuffer(Buffer* frame_buffer) = 0;
-  virtual Buffer* FrameBuffer() = 0;
-
-  virtual void SetPlaneOffset(VideoPlane plane, uint32_t offset) = 0;
-  virtual uint32_t PlaneOffset(VideoPlane plane) = 0;
-
-  virtual void SetStride(VideoPlane plane, uint32_t stride) = 0;
-  virtual uint32_t Stride(VideoPlane plane) = 0;
-
-  virtual void SetTimestamp(int64_t timestamp) = 0;
-  virtual int64_t Timestamp() const = 0;
-
- protected:
-  VideoFrame() {}
-  virtual ~VideoFrame() {}
-};
-
-// Represents decrypted and decoded audio frames. AudioFrames can contain
-// multiple audio output buffers, which are serialized into this format:
-//
-// |<------------------- serialized audio buffer ------------------->|
-// | int64_t timestamp | int64_t length | length bytes of audio data |
-//
-// For example, with three audio output buffers, the AudioFrames will look
-// like this:
-//
-// |<----------------- AudioFrames ------------------>|
-// | audio buffer 0 | audio buffer 1 | audio buffer 2 |
-class CDM_CLASS_API AudioFrames {
- public:
-  virtual void SetFrameBuffer(Buffer* buffer) = 0;
-  virtual Buffer* FrameBuffer() = 0;
-
-  // The CDM must call this method, providing a valid format, when providing
-  // frame buffers. Planar data should be stored end to end; e.g.,
-  // |ch1 sample1||ch1 sample2|....|ch1 sample_last||ch2 sample1|...
-  virtual void SetFormat(AudioFormat format) = 0;
-  virtual AudioFormat Format() const = 0;
-
- protected:
-  AudioFrames() {}
-  virtual ~AudioFrames() {}
 };
 
 }  // namespace cdm
