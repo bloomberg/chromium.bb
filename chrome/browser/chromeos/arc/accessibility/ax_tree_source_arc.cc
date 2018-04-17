@@ -102,100 +102,6 @@ bool HasCoveringSpan(AXNodeInfoData* data,
   return false;
 }
 
-void PopulateAXRole(AXNodeInfoData* node, ui::AXNodeData* out_data) {
-  std::string class_name;
-  if (GetProperty(node, AXStringProperty::CLASS_NAME, &class_name)) {
-    out_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
-                                 class_name);
-  }
-
-  if (GetProperty(node, AXBooleanProperty::EDITABLE)) {
-    out_data->role = ax::mojom::Role::kTextField;
-    return;
-  }
-
-  if (HasCoveringSpan(node, AXStringProperty::TEXT, mojom::SpanType::URL) ||
-      HasCoveringSpan(node, AXStringProperty::CONTENT_DESCRIPTION,
-                      mojom::SpanType::URL)) {
-    out_data->role = ax::mojom::Role::kLink;
-    return;
-  }
-
-  AXCollectionItemInfoData* collection_item_info =
-      node->collection_item_info.get();
-  if (collection_item_info) {
-    if (collection_item_info->is_heading) {
-      out_data->role = ax::mojom::Role::kHeading;
-    } else {
-      out_data->role = ax::mojom::Role::kListItem;
-      out_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
-                                collection_item_info->row_index);
-    }
-    return;
-  }
-
-  std::string chrome_role;
-  if (GetProperty(node, AXStringProperty::CHROME_ROLE, &chrome_role)) {
-    ax::mojom::Role role_value = ui::ParseRole(chrome_role.c_str());
-    if (role_value != ax::mojom::Role::kNone) {
-      // The webView and rootWebArea roles differ between Android and Chrome. In
-      // particular, Android includes far fewer attributes which leads to
-      // undesirable behavior. Exclude their direct mapping.
-      out_data->role = (role_value != ax::mojom::Role::kWebView &&
-                        role_value != ax::mojom::Role::kRootWebArea)
-                           ? role_value
-                           : ax::mojom::Role::kGenericContainer;
-      return;
-    }
-  }
-
-#define MAP_ROLE(android_class_name, chrome_role) \
-  if (class_name == android_class_name) {         \
-    out_data->role = chrome_role;                 \
-    return;                                       \
-  }
-
-  // These mappings were taken from accessibility utils (Android -> Chrome) and
-  // BrowserAccessibilityAndroid. They do not completely match the above two
-  // sources.
-  MAP_ROLE(ui::kAXAbsListViewClassname, ax::mojom::Role::kList);
-  MAP_ROLE(ui::kAXButtonClassname, ax::mojom::Role::kButton);
-  MAP_ROLE(ui::kAXCheckBoxClassname, ax::mojom::Role::kCheckBox);
-  MAP_ROLE(ui::kAXCheckedTextViewClassname, ax::mojom::Role::kStaticText);
-  MAP_ROLE(ui::kAXCompoundButtonClassname, ax::mojom::Role::kCheckBox);
-  MAP_ROLE(ui::kAXDialogClassname, ax::mojom::Role::kDialog);
-  MAP_ROLE(ui::kAXEditTextClassname, ax::mojom::Role::kTextField);
-  MAP_ROLE(ui::kAXGridViewClassname, ax::mojom::Role::kTable);
-  MAP_ROLE(ui::kAXImageClassname, ax::mojom::Role::kImage);
-  MAP_ROLE(ui::kAXImageButtonClassname, ax::mojom::Role::kButton);
-  if (GetProperty(node, AXBooleanProperty::CLICKABLE)) {
-    MAP_ROLE(ui::kAXImageViewClassname, ax::mojom::Role::kButton);
-  } else {
-    MAP_ROLE(ui::kAXImageViewClassname, ax::mojom::Role::kImage);
-  }
-  MAP_ROLE(ui::kAXListViewClassname, ax::mojom::Role::kList);
-  MAP_ROLE(ui::kAXMenuItemClassname, ax::mojom::Role::kMenuItem);
-  MAP_ROLE(ui::kAXPagerClassname, ax::mojom::Role::kGroup);
-  MAP_ROLE(ui::kAXProgressBarClassname, ax::mojom::Role::kProgressIndicator);
-  MAP_ROLE(ui::kAXRadioButtonClassname, ax::mojom::Role::kRadioButton);
-  MAP_ROLE(ui::kAXSeekBarClassname, ax::mojom::Role::kSlider);
-  MAP_ROLE(ui::kAXSpinnerClassname, ax::mojom::Role::kPopUpButton);
-  MAP_ROLE(ui::kAXSwitchClassname, ax::mojom::Role::kSwitch);
-  MAP_ROLE(ui::kAXTabWidgetClassname, ax::mojom::Role::kTabList);
-  MAP_ROLE(ui::kAXToggleButtonClassname, ax::mojom::Role::kToggleButton);
-  MAP_ROLE(ui::kAXViewClassname, ax::mojom::Role::kGenericContainer);
-  MAP_ROLE(ui::kAXViewGroupClassname, ax::mojom::Role::kGroup);
-
-#undef MAP_ROLE
-
-  std::string text;
-  GetProperty(node, AXStringProperty::TEXT, &text);
-  if (!text.empty())
-    out_data->role = ax::mojom::Role::kStaticText;
-  else
-    out_data->role = ax::mojom::Role::kGenericContainer;
-}
-
 void PopulateAXState(AXNodeInfoData* node, ui::AXNodeData* out_data) {
 #define MAP_STATE(android_boolean_property, chrome_state) \
   if (GetProperty(node, android_boolean_property))        \
@@ -723,6 +629,154 @@ void AXTreeSourceArc::Reset() {
     return;
 
   router->DispatchTreeDestroyedEvent(tree_id(), nullptr);
+}
+
+void AXTreeSourceArc::PopulateAXRole(AXNodeInfoData* node,
+                                     ui::AXNodeData* out_data) const {
+  std::string class_name;
+  if (GetProperty(node, AXStringProperty::CLASS_NAME, &class_name)) {
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
+                                 class_name);
+  }
+
+  if (GetProperty(node, AXBooleanProperty::EDITABLE)) {
+    out_data->role = ax::mojom::Role::kTextField;
+    return;
+  }
+
+  if (HasCoveringSpan(node, AXStringProperty::TEXT, mojom::SpanType::URL) ||
+      HasCoveringSpan(node, AXStringProperty::CONTENT_DESCRIPTION,
+                      mojom::SpanType::URL)) {
+    out_data->role = ax::mojom::Role::kLink;
+    return;
+  }
+
+  AXCollectionInfoData* collection_info = node->collection_info.get();
+  if (collection_info) {
+    if (collection_info->row_count > 1 && collection_info->column_count > 1) {
+      out_data->role = ax::mojom::Role::kGrid;
+      out_data->AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount,
+                                collection_info->row_count);
+      out_data->AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount,
+                                collection_info->column_count);
+      return;
+    }
+
+    if (collection_info->row_count == 1 || collection_info->column_count == 1) {
+      out_data->role = ax::mojom::Role::kList;
+      out_data->AddIntAttribute(
+          ax::mojom::IntAttribute::kSetSize,
+          std::max(collection_info->row_count, collection_info->column_count));
+      return;
+    }
+  }
+
+  AXCollectionItemInfoData* collection_item_info =
+      node->collection_item_info.get();
+  if (collection_item_info) {
+    if (collection_item_info->is_heading) {
+      out_data->role = ax::mojom::Role::kHeading;
+      return;
+    }
+
+    // In order to properly resolve the role of this node, a collection item, we
+    // need additional information contained only in the CollectionInfo. The
+    // CollectionInfo should be an ancestor of this node.
+    AXCollectionInfoData* collection_info = nullptr;
+    for (AXNodeInfoData* container = node; container;) {
+      if (container->collection_info.get()) {
+        collection_info = container->collection_info.get();
+        break;
+      }
+      const auto parent_it = parent_map_.find(container->id);
+
+      // Not within a container.
+      if (parent_it == parent_map_.end())
+        break;
+
+      container = GetFromId(parent_it->second);
+    }
+
+    if (collection_info) {
+      if (collection_info->row_count > 1 && collection_info->column_count > 1) {
+        out_data->role = ax::mojom::Role::kCell;
+        out_data->AddIntAttribute(ax::mojom::IntAttribute::kTableRowIndex,
+                                  collection_item_info->row_index);
+        out_data->AddIntAttribute(ax::mojom::IntAttribute::kTableColumnIndex,
+                                  collection_item_info->column_index);
+        return;
+      }
+
+      out_data->role = ax::mojom::Role::kListItem;
+      out_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
+                                std::max(collection_item_info->row_index,
+                                         collection_item_info->column_index));
+      return;
+    }
+  }
+
+  std::string chrome_role;
+  if (GetProperty(node, AXStringProperty::CHROME_ROLE, &chrome_role)) {
+    ax::mojom::Role role_value = ui::ParseRole(chrome_role.c_str());
+    if (role_value != ax::mojom::Role::kNone) {
+      // The webView and rootWebArea roles differ between Android and Chrome. In
+      // particular, Android includes far fewer attributes which leads to
+      // undesirable behavior. Exclude their direct mapping.
+      out_data->role = (role_value != ax::mojom::Role::kWebView &&
+                        role_value != ax::mojom::Role::kRootWebArea)
+                           ? role_value
+                           : ax::mojom::Role::kGenericContainer;
+      return;
+    }
+  }
+
+#define MAP_ROLE(android_class_name, chrome_role) \
+  if (class_name == android_class_name) {         \
+    out_data->role = chrome_role;                 \
+    return;                                       \
+  }
+
+  // These mappings were taken from accessibility utils (Android -> Chrome) and
+  // BrowserAccessibilityAndroid. They do not completely match the above two
+  // sources.
+  MAP_ROLE(ui::kAXAbsListViewClassname, ax::mojom::Role::kList);
+  MAP_ROLE(ui::kAXButtonClassname, ax::mojom::Role::kButton);
+  MAP_ROLE(ui::kAXCheckBoxClassname, ax::mojom::Role::kCheckBox);
+  MAP_ROLE(ui::kAXCheckedTextViewClassname, ax::mojom::Role::kStaticText);
+  MAP_ROLE(ui::kAXCompoundButtonClassname, ax::mojom::Role::kCheckBox);
+  MAP_ROLE(ui::kAXDialogClassname, ax::mojom::Role::kDialog);
+  MAP_ROLE(ui::kAXEditTextClassname, ax::mojom::Role::kTextField);
+  MAP_ROLE(ui::kAXGridViewClassname, ax::mojom::Role::kTable);
+  MAP_ROLE(ui::kAXHorizontalScrollViewClassname, ax::mojom::Role::kScrollView);
+  MAP_ROLE(ui::kAXImageClassname, ax::mojom::Role::kImage);
+  MAP_ROLE(ui::kAXImageButtonClassname, ax::mojom::Role::kButton);
+  if (GetProperty(node, AXBooleanProperty::CLICKABLE)) {
+    MAP_ROLE(ui::kAXImageViewClassname, ax::mojom::Role::kButton);
+  } else {
+    MAP_ROLE(ui::kAXImageViewClassname, ax::mojom::Role::kImage);
+  }
+  MAP_ROLE(ui::kAXListViewClassname, ax::mojom::Role::kList);
+  MAP_ROLE(ui::kAXMenuItemClassname, ax::mojom::Role::kMenuItem);
+  MAP_ROLE(ui::kAXPagerClassname, ax::mojom::Role::kGroup);
+  MAP_ROLE(ui::kAXProgressBarClassname, ax::mojom::Role::kProgressIndicator);
+  MAP_ROLE(ui::kAXRadioButtonClassname, ax::mojom::Role::kRadioButton);
+  MAP_ROLE(ui::kAXScrollViewClassname, ax::mojom::Role::kScrollView);
+  MAP_ROLE(ui::kAXSeekBarClassname, ax::mojom::Role::kSlider);
+  MAP_ROLE(ui::kAXSpinnerClassname, ax::mojom::Role::kPopUpButton);
+  MAP_ROLE(ui::kAXSwitchClassname, ax::mojom::Role::kSwitch);
+  MAP_ROLE(ui::kAXTabWidgetClassname, ax::mojom::Role::kTabList);
+  MAP_ROLE(ui::kAXToggleButtonClassname, ax::mojom::Role::kToggleButton);
+  MAP_ROLE(ui::kAXViewClassname, ax::mojom::Role::kGenericContainer);
+  MAP_ROLE(ui::kAXViewGroupClassname, ax::mojom::Role::kGroup);
+
+#undef MAP_ROLE
+
+  std::string text;
+  GetProperty(node, AXStringProperty::TEXT, &text);
+  if (!text.empty())
+    out_data->role = ax::mojom::Role::kStaticText;
+  else
+    out_data->role = ax::mojom::Role::kGenericContainer;
 }
 
 }  // namespace arc

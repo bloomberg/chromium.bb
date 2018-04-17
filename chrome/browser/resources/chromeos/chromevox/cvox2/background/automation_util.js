@@ -181,7 +181,7 @@ AutomationUtil.getDivergence = function(ancestorsA, ancestorsB) {
  * Returns ancestors of |node| that are not also ancestors of |prevNode|.
  * @param {!AutomationNode} prevNode
  * @param {!AutomationNode} node
- * @return {!Array<AutomationNode>}
+ * @return {!Array<!AutomationNode>}
  */
 AutomationUtil.getUniqueAncestors = function(prevNode, node) {
   var prevAncestors = AutomationUtil.getAncestors(prevNode);

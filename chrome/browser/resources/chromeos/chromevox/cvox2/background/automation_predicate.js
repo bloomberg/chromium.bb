@@ -580,4 +580,15 @@ AutomationPredicate.multiline = function(node) {
   return node.state[State.MULTILINE] || node.state[State.RICHLY_EDITABLE];
 };
 
+/**
+ * Matches against a node that should be auto-scrolled during navigation.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.autoScrollable = function(node) {
+  return node.scrollable &&
+      (node.role == Role.GRID || node.role == Role.LIST ||
+       node.role == Role.POP_UP_BUTTON || node.role == Role.SCROLL_VIEW);
+};
+
 });  // goog.scope

@@ -14,6 +14,8 @@ const char kAXCompoundButtonClassname[] = "android.widget.CompoundButton";
 const char kAXDialogClassname[] = "android.app.Dialog";
 const char kAXEditTextClassname[] = "android.widget.EditText";
 const char kAXGridViewClassname[] = "android.widget.GridView";
+const char kAXHorizontalScrollViewClassname[] =
+    "android.widget.HorizontalScrollView";
 const char kAXImageClassname[] = "android.widget.Image";
 const char kAXImageButtonClassname[] = "android.widget.ImageButton";
 const char kAXImageViewClassname[] = "android.widget.ImageView";
@@ -22,6 +24,7 @@ const char kAXMenuItemClassname[] = "android.view.MenuItem";
 const char kAXPagerClassname[] = "android.support.v4.view.ViewPager";
 const char kAXProgressBarClassname[] = "android.widget.ProgressBar";
 const char kAXRadioButtonClassname[] = "android.widget.RadioButton";
+const char kAXScrollViewClassname[] = "android.widget.ScrollView";
 const char kAXSeekBarClassname[] = "android.widget.SeekBar";
 const char kAXSpinnerClassname[] = "android.widget.Spinner";
 const char kAXSwitchClassname[] = "android.widget.Switch";
