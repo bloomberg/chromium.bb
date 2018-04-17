@@ -21,12 +21,17 @@ class AwURLLoaderThrottleProvider : public content::URLLoaderThrottleProvider {
   ~AwURLLoaderThrottleProvider() override;
 
   // content::URLLoaderThrottleProvider implementation.
+  std::unique_ptr<content::URLLoaderThrottleProvider> Clone() override;
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> CreateThrottles(
       int render_frame_id,
       const blink::WebURLRequest& request,
       content::ResourceType resource_type) override;
 
  private:
+  // This copy constructor works in conjunction with Clone(), not intended for
+  // general use.
+  AwURLLoaderThrottleProvider(const AwURLLoaderThrottleProvider& other);
+
   content::URLLoaderThrottleProviderType type_;
 
   safe_browsing::mojom::SafeBrowsingPtrInfo safe_browsing_info_;
@@ -34,7 +39,7 @@ class AwURLLoaderThrottleProvider : public content::URLLoaderThrottleProvider {
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(AwURLLoaderThrottleProvider);
+  DISALLOW_ASSIGN(AwURLLoaderThrottleProvider);
 };
 
 }  // namespace android_webview

@@ -105,7 +105,8 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
         direct_network_factory_info,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
-        websocket_handshake_throttle_provider)
+        websocket_handshake_throttle_provider,
+    ThreadSafeSender* thread_safe_sender)
     : binding_(this),
       service_worker_client_request_(std::move(service_worker_client_request)),
       service_worker_container_host_info_(
@@ -113,7 +114,7 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
       url_loader_factory_info_(std::move(url_loader_factory_info)),
       direct_network_loader_factory_info_(
           std::move(direct_network_factory_info)),
-      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()),
+      thread_safe_sender_(thread_safe_sender),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)) {
@@ -130,6 +131,27 @@ void WorkerFetchContextImpl::SetTerminateSyncLoadEvent(
     base::WaitableEvent* terminate_sync_load_event) {
   DCHECK(!terminate_sync_load_event_);
   terminate_sync_load_event_ = terminate_sync_load_event;
+}
+
+std::unique_ptr<blink::WebWorkerFetchContext>
+WorkerFetchContextImpl::CloneForNestedWorker() {
+  // TODO(japhet?): This doens't plumb service worker state to nested workers,
+  // because dedicated workers in service worker-controlled documents are
+  // currently not spec compliant and we don't want to propagate the wrong
+  // behavior. See https://crbug.com/731604
+  auto new_context = std::make_unique<WorkerFetchContextImpl>(
+      mojom::ServiceWorkerWorkerClientRequest(),
+      mojom::ServiceWorkerContainerHostPtrInfo(),
+      shared_url_loader_factory_->Clone(),
+      direct_network_loader_factory_->Clone(),
+      throttle_provider_ ? throttle_provider_->Clone() : nullptr,
+      websocket_handshake_throttle_provider_
+          ? websocket_handshake_throttle_provider_->Clone()
+          : nullptr,
+      thread_safe_sender_.get());
+  new_context->is_on_sub_frame_ = is_on_sub_frame_;
+  new_context->appcache_host_id_ = appcache_host_id_;
+  return new_context;
 }
 
 void WorkerFetchContextImpl::InitializeOnWorkerThread() {

@@ -26,12 +26,17 @@ class URLLoaderThrottleProviderImpl
   ~URLLoaderThrottleProviderImpl() override;
 
   // content::URLLoaderThrottleProvider implementation.
+  std::unique_ptr<content::URLLoaderThrottleProvider> Clone() override;
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> CreateThrottles(
       int render_frame_id,
       const blink::WebURLRequest& request,
       content::ResourceType resource_type) override;
 
  private:
+  // This copy constructor works in conjunction with Clone(), not intended for
+  // general use.
+  URLLoaderThrottleProviderImpl(const URLLoaderThrottleProviderImpl& other);
+
   std::unique_ptr<subresource_filter::AdDelayThrottle::Factory>
       ad_delay_factory_;
 
@@ -43,7 +48,7 @@ class URLLoaderThrottleProviderImpl
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderThrottleProviderImpl);
+  DISALLOW_ASSIGN(URLLoaderThrottleProviderImpl);
 };
 
 #endif  // CHROME_RENDERER_URL_LOADER_THROTTLE_PROVIDER_IMPL_H_

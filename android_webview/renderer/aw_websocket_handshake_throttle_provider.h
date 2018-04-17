@@ -23,16 +23,22 @@ class AwWebSocketHandshakeThrottleProvider final
   ~AwWebSocketHandshakeThrottleProvider() override;
 
   // Implements content::WebSocketHandshakeThrottleProvider.
+  std::unique_ptr<content::WebSocketHandshakeThrottleProvider> Clone() override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle> CreateThrottle(
       int render_frame_id) override;
 
  private:
+  // This copy constructor works in conjunction with Clone(), not intended for
+  // general use.
+  AwWebSocketHandshakeThrottleProvider(
+      const AwWebSocketHandshakeThrottleProvider& other);
+
   safe_browsing::mojom::SafeBrowsingPtrInfo safe_browsing_info_;
   safe_browsing::mojom::SafeBrowsingPtr safe_browsing_;
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(AwWebSocketHandshakeThrottleProvider);
+  DISALLOW_ASSIGN(AwWebSocketHandshakeThrottleProvider);
 };
 
 }  // namespace android_webview

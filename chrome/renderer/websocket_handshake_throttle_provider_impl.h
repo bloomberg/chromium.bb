@@ -21,16 +21,22 @@ class WebSocketHandshakeThrottleProviderImpl final
   ~WebSocketHandshakeThrottleProviderImpl() override;
 
   // Implements content::WebSocketHandshakeThrottleProvider.
+  std::unique_ptr<content::WebSocketHandshakeThrottleProvider> Clone() override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle> CreateThrottle(
       int render_frame_id) override;
 
  private:
+  // This copy constructor works in conjunction with Clone(), not intended for
+  // general use.
+  WebSocketHandshakeThrottleProviderImpl(
+      const WebSocketHandshakeThrottleProviderImpl& other);
+
   safe_browsing::mojom::SafeBrowsingPtrInfo safe_browsing_info_;
   safe_browsing::mojom::SafeBrowsingPtr safe_browsing_;
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeThrottleProviderImpl);
+  DISALLOW_ASSIGN(WebSocketHandshakeThrottleProviderImpl);
 };
 
 #endif  // CHROME_RENDERER_WEBSOCKET_HANDSHAKE_THROTTLE_PROVIDER_IMPL_H_

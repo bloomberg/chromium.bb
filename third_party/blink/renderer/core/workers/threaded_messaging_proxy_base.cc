@@ -76,9 +76,13 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
           GetExecutionContext()->Fetcher()->Context().ApplicationCacheHostID());
       web_worker_fetch_context->SetIsOnSubframe(web_frame != web_frame->Top());
     }
+  } else if (execution_context_->IsWorkerGlobalScope()) {
+    web_worker_fetch_context =
+        static_cast<WorkerFetchContext&>(
+            ToWorkerGlobalScope(execution_context_)->Fetcher()->Context())
+            .GetWebWorkerFetchContext()
+            ->CloneForNestedWorker();
   }
-  // TODO(japhet): Add a way to clone a WebWorkerFetchContext between worker
-  // threads for nested workers.
 
   if (web_worker_fetch_context) {
     web_worker_fetch_context->SetTerminateSyncLoadEvent(

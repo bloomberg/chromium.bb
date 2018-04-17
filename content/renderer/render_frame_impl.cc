@@ -3594,7 +3594,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
               URLLoaderThrottleProviderType::kWorker),
           GetContentClient()
               ->renderer()
-              ->CreateWebSocketHandshakeThrottleProvider());
+              ->CreateWebSocketHandshakeThrottleProvider(),
+          ChildThreadImpl::current()->thread_safe_sender());
 
   worker_fetch_context->set_parent_frame_id(routing_id_);
   worker_fetch_context->set_site_for_cookies(

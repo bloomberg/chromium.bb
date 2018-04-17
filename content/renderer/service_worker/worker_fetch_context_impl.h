@@ -53,10 +53,12 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
           direct_network_factory_info,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
-          websocket_handshake_throttle_provider);
+          websocket_handshake_throttle_provider,
+      ThreadSafeSender* thread_safe_sender);
   ~WorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
+  std::unique_ptr<blink::WebWorkerFetchContext> CloneForNestedWorker() override;
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
   void InitializeOnWorkerThread() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;

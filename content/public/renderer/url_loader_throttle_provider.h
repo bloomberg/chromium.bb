@@ -28,6 +28,9 @@ class CONTENT_EXPORT URLLoaderThrottleProvider {
  public:
   virtual ~URLLoaderThrottleProvider() {}
 
+  // Used to copy a URLLoaderThrottleProvider between worker threads.
+  virtual std::unique_ptr<URLLoaderThrottleProvider> Clone() = 0;
+
   // For requests from frames and dedicated workers, |render_frame_id| should be
   // set to the corresponding frame. For requests from shared or
   // service workers, |render_frame_id| should be set to MSG_ROUTING_NONE.
