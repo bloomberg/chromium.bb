@@ -65,6 +65,7 @@ enum class FieldFilteringLevel {
 // view of the underlying data, regardless of its origin.
 struct SyntheticForm {
   SyntheticForm();
+  SyntheticForm(SyntheticForm&& other);
   ~SyntheticForm();
 
   std::vector<blink::WebElement> fieldsets;
@@ -78,8 +79,9 @@ struct SyntheticForm {
   DISALLOW_COPY_AND_ASSIGN(SyntheticForm);
 };
 
-SyntheticForm::SyntheticForm() {}
-SyntheticForm::~SyntheticForm() {}
+SyntheticForm::SyntheticForm() = default;
+SyntheticForm::SyntheticForm(SyntheticForm&& other) = default;
+SyntheticForm::~SyntheticForm() = default;
 
 // Layout classification of password forms
 // A layout sequence of a form is the sequence of it's non-password and password
@@ -460,7 +462,7 @@ bool ScriptModifiedUsernameAcceptable(
 // associated string is used instead of the element's value to create
 // the PasswordForm.
 bool GetPasswordForm(
-    const SyntheticForm& form,
+    SyntheticForm form,
     PasswordForm* password_form,
     const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     const FormsPredictionsMap* form_predictions,
@@ -752,7 +754,7 @@ bool GetPasswordForm(
     password_form->username_value = username_value;
   }
 
-  password_form->origin = form.origin;
+  password_form->origin = std::move(form.origin);
   password_form->signon_realm = GetSignOnRealm(password_form->origin);
 
   // Convert |possible_usernames| to ValueElementVector.
@@ -902,7 +904,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     return std::unique_ptr<PasswordForm>();
   }
 
-  if (!GetPasswordForm(synthetic_form, password_form.get(),
+  if (!GetPasswordForm(std::move(synthetic_form), password_form.get(),
                        field_value_and_properties_map, form_predictions,
                        username_detector_cache)) {
     return std::unique_ptr<PasswordForm>();
@@ -932,7 +934,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
           nullptr /* FormFieldData */)) {
     return std::unique_ptr<PasswordForm>();
   }
-  if (!GetPasswordForm(synthetic_form, password_form.get(),
+  if (!GetPasswordForm(std::move(synthetic_form), password_form.get(),
                        field_value_and_properties_map, form_predictions,
                        username_detector_cache)) {
     return std::unique_ptr<PasswordForm>();
