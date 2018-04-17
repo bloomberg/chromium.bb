@@ -17,6 +17,10 @@ namespace ukm {
 int64_t METRICS_EXPORT GetExponentialBucketMin(int64_t sample,
                                                double bucket_spacing);
 
+// Like GetExponentialBucketMin but uses a standard bucket_spacing of 2.0 for
+// timing user actions.
+int64_t METRICS_EXPORT GetExponentialBucketMinForUserTiming(int64_t sample);
+
 // Calculates the linear bucket |sample| falls in and returns the lower
 // threshold of that bucket (i.e., rounding down to the nearest multiple of
 // |bucket_size|). Negative sample values will be rounded down as well (away

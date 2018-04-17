@@ -22,6 +22,10 @@ int64_t GetExponentialBucketMin(int64_t sample, double bucket_spacing) {
       bucket_spacing, std::floor(std::log(sample) / std::log(bucket_spacing))));
 }
 
+int64_t GetExponentialBucketMinForUserTiming(int64_t sample) {
+  return GetExponentialBucketMin(sample, 2.0);
+}
+
 int64_t GetLinearBucketMin(int64_t sample, int32_t bucket_size) {
   DCHECK(bucket_size > 0);
   // Round down to the nearest multiple of |bucket_size| (for negative samples,
