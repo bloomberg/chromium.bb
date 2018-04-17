@@ -14,7 +14,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {SelectionState} selectionState
-   * @param {Action} action
+   * @param {Object} action
    * @return {SelectionState}
    */
   SelectionState.selectItems = function(selectionState, action) {
@@ -66,7 +66,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {SelectionState} selectionState
-   * @param {Action} action
+   * @param {Object} action
    * @return {SelectionState}
    */
   SelectionState.updateAnchor = function(selectionState, action) {
@@ -77,7 +77,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {SelectionState} selection
-   * @param {Action} action
+   * @param {Object} action
    * @return {SelectionState}
    */
   SelectionState.updateSelection = function(selection, action) {
@@ -111,7 +111,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {SearchState} search
-   * @param {Action} action
+   * @param {Object} action
    * @return {SearchState}
    */
   SearchState.startSearch = function(search, action) {
@@ -124,7 +124,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {SearchState} search
-   * @param {Action} action
+   * @param {Object} action
    * @return {SearchState}
    */
   SearchState.finishSearch = function(search, action) {
@@ -164,7 +164,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {SearchState} search
-   * @param {Action} action
+   * @param {Object} action
    * @return {SearchState}
    */
   SearchState.updateSearch = function(search, action) {
@@ -199,7 +199,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {NodeMap} nodes
-   * @param {Action} action
+   * @param {Object} action
    * @return {NodeMap}
    */
   NodeState.createBookmark = function(nodes, action) {
@@ -218,7 +218,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {NodeMap} nodes
-   * @param {Action} action
+   * @param {Object} action
    * @return {NodeMap}
    */
   NodeState.editBookmark = function(nodes, action) {
@@ -234,7 +234,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {NodeMap} nodes
-   * @param {Action} action
+   * @param {Object} action
    * @return {NodeMap}
    */
   NodeState.moveBookmark = function(nodes, action) {
@@ -266,7 +266,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {NodeMap} nodes
-   * @param {Action} action
+   * @param {Object} action
    * @return {NodeMap}
    */
   NodeState.removeBookmark = function(nodes, action) {
@@ -283,7 +283,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {NodeMap} nodes
-   * @param {Action} action
+   * @param {Object} action
    * @return {NodeMap}
    */
   NodeState.reorderChildren = function(nodes, action) {
@@ -295,7 +295,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {NodeMap} nodes
-   * @param {Action} action
+   * @param {Object} action
    * @return {NodeMap}
    */
   NodeState.updateNodes = function(nodes, action) {
@@ -338,7 +338,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {string} selectedFolder
-   * @param {Action} action
+   * @param {Object} action
    * @param {NodeMap} nodes
    * @return {string}
    */
@@ -388,7 +388,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {FolderOpenState} folderOpenState
-   * @param {Action} action
+   * @param {Object} action
    * @return {FolderOpenState}
    */
   FolderOpenState.changeFolderOpen = function(folderOpenState, action) {
@@ -401,7 +401,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {FolderOpenState} folderOpenState
-   * @param {Action} action
+   * @param {Object} action
    * @param {NodeMap} nodes
    * @return {FolderOpenState}
    */
@@ -431,7 +431,7 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {PreferencesState} prefs
-   * @param {Action} action
+   * @param {Object} action
    * @return {PreferencesState}
    */
   PreferencesState.updatePrefs = function(prefs, action) {
@@ -453,7 +453,7 @@ cr.define('bookmarks', function() {
    * Root reducer for the Bookmarks page. This is called by the store in
    * response to an action, and the return value is used to update the UI.
    * @param {!BookmarksPageState} state
-   * @param {Action} action
+   * @param {Object} action
    * @return {!BookmarksPageState}
    */
   function reduceAction(state, action) {
