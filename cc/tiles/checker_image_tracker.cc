@@ -286,8 +286,9 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
   // specify "async" then we don't checker the images. To put it different, we
   // currently only not respect |enable_checker_imaging_| if the value was
   // specified as "async" by the developer.
-  if (decoding_mode_hint != PaintImage::DecodingMode::kAsync &&
-      !enable_checker_imaging_) {
+  // TODO(khushalsagar): Enable this for async decode hint images. Temporarily
+  // disabling for debugging crbug.com/833666.
+  if (!enable_checker_imaging_) {
     return false;
   }
 
