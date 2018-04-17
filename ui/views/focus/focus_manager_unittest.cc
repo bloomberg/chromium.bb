@@ -913,4 +913,19 @@ TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
   EXPECT_EQ(widget_view, GetFocusManager()->GetFocusedView());
 }
 
+// Verifies if a key event is a tab traversal key event or not.
+TEST_F(FocusManagerTest, IsTabTraversalKeyEvent) {
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
+  EXPECT_TRUE(FocusManager::IsTabTraversalKeyEvent(event));
+
+  event = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(FocusManager::IsTabTraversalKeyEvent(event));
+
+  event = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_CONTROL_DOWN);
+  EXPECT_FALSE(FocusManager::IsTabTraversalKeyEvent(event));
+
+  event = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  EXPECT_FALSE(FocusManager::IsTabTraversalKeyEvent(event));
+}
+
 }  // namespace views

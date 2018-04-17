@@ -485,7 +485,8 @@ bool FocusManager::HasPriorityHandler(
 
 // static
 bool FocusManager::IsTabTraversalKeyEvent(const ui::KeyEvent& key_event) {
-  return key_event.key_code() == ui::VKEY_TAB && !key_event.IsControlDown();
+  return key_event.key_code() == ui::VKEY_TAB &&
+         (!key_event.IsControlDown() && !key_event.IsAltDown());
 }
 
 void FocusManager::ViewRemoved(View* removed) {
