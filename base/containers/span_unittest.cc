@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -27,14 +28,41 @@ TEST(SpanTest, DefaultConstructor) {
 }
 
 TEST(SpanTest, ConstructFromDataAndSize) {
-  std::vector<int> vector = {1, 1, 2, 3, 5, 8};
+  {
+    span<int> empty_span(nullptr, 0);
+    EXPECT_TRUE(empty_span.empty());
+    EXPECT_EQ(nullptr, empty_span.data());
+  }
 
-  span<int> span(vector.data(), vector.size());
-  EXPECT_EQ(vector.data(), span.data());
-  EXPECT_EQ(vector.size(), span.size());
+  {
+    std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  for (size_t i = 0; i < span.size(); ++i)
-    EXPECT_EQ(vector[i], span[i]);
+    span<int> span(vector.data(), vector.size());
+    EXPECT_EQ(vector.data(), span.data());
+    EXPECT_EQ(vector.size(), span.size());
+
+    for (size_t i = 0; i < span.size(); ++i)
+      EXPECT_EQ(vector[i], span[i]);
+  }
+}
+
+TEST(SpanTest, ConstructFromPointerPair) {
+  {
+    span<int> empty_span(nullptr, nullptr);
+    EXPECT_TRUE(empty_span.empty());
+    EXPECT_EQ(nullptr, empty_span.data());
+  }
+
+  {
+    std::vector<int> vector = {1, 1, 2, 3, 5, 8};
+
+    span<int> span(vector.data(), vector.data() + vector.size() / 2);
+    EXPECT_EQ(vector.data(), span.data());
+    EXPECT_EQ(vector.size() / 2, span.size());
+
+    for (size_t i = 0; i < span.size(); ++i)
+      EXPECT_EQ(vector[i], span[i]);
+  }
 }
 
 TEST(SpanTest, ConstructFromConstexprArray) {
@@ -62,6 +90,53 @@ TEST(SpanTest, ConstructFromArray) {
   EXPECT_EQ(arraysize(array), span.size());
   for (size_t i = 0; i < span.size(); ++i)
     EXPECT_EQ(array[i], span[i]);
+}
+
+TEST(SpanTest, ConstructFromStdArray) {
+  // Note: Constructing a constexpr span from a constexpr std::array does not
+  // work prior to C++17 due to non-constexpr std::array::data.
+  std::array<int, 5> array = {5, 4, 3, 2, 1};
+
+  span<const int> const_span(array);
+  EXPECT_EQ(array.data(), const_span.data());
+  EXPECT_EQ(array.size(), const_span.size());
+  for (size_t i = 0; i < const_span.size(); ++i)
+    EXPECT_EQ(array[i], const_span[i]);
+
+  span<int> span(array);
+  EXPECT_EQ(array.data(), span.data());
+  EXPECT_EQ(array.size(), span.size());
+  for (size_t i = 0; i < span.size(); ++i)
+    EXPECT_EQ(array[i], span[i]);
+}
+
+TEST(SpanTest, ConstructFromInitializerList) {
+  std::initializer_list<int> il = {1, 1, 2, 3, 5, 8};
+
+  span<const int> const_span(il);
+  EXPECT_EQ(il.begin(), const_span.data());
+  EXPECT_EQ(il.size(), const_span.size());
+
+  for (size_t i = 0; i < const_span.size(); ++i)
+    EXPECT_EQ(il.begin()[i], const_span[i]);
+}
+
+TEST(SpanTest, ConstructFromStdString) {
+  std::string str = "foobar";
+
+  span<const char> const_span(str);
+  EXPECT_EQ(str.data(), const_span.data());
+  EXPECT_EQ(str.size(), const_span.size());
+
+  for (size_t i = 0; i < const_span.size(); ++i)
+    EXPECT_EQ(str[i], const_span[i]);
+
+  span<char> span(str);
+  EXPECT_EQ(str.data(), span.data());
+  EXPECT_EQ(str.size(), span.size());
+
+  for (size_t i = 0; i < span.size(); ++i)
+    EXPECT_EQ(str[i], span[i]);
 }
 
 TEST(SpanTest, ConstructFromConstContainer) {
@@ -113,10 +188,10 @@ TEST(SpanTest, ConvertNonConstPointerToConst) {
   EXPECT_THAT(const_pointer_span, Pointwise(Eq(), non_const_pointer_span));
   // Note: no test for conversion from span<int> to span<const int*>, since that
   // would imply a conversion from int** to const int**, which is unsafe.
-  span<const int* const> const_pointer_to_const_data_span(
-      non_const_pointer_span);
-  EXPECT_THAT(const_pointer_to_const_data_span,
-              Pointwise(Eq(), non_const_pointer_span));
+  //
+  // Note: no test for conversion from span<int*> to span<const int* const>,
+  // due to CWG Defect 330:
+  // http://open-std.org/JTC1/SC22/WG21/docs/cwg_defects.html#330
 }
 
 TEST(SpanTest, ConvertBetweenEquivalentTypes) {
@@ -335,6 +410,23 @@ TEST(SpanTest, Empty) {
   }
 }
 
+TEST(SpanTest, OperatorAt) {
+  static constexpr int kArray[] = {1, 6, 1, 8, 0};
+  constexpr span<const int> span(kArray);
+
+  static_assert(kArray[0] == span[0], "span[0] does not equal kArray[0]");
+  static_assert(kArray[1] == span[1], "span[1] does not equal kArray[1]");
+  static_assert(kArray[2] == span[2], "span[2] does not equal kArray[2]");
+  static_assert(kArray[3] == span[3], "span[3] does not equal kArray[3]");
+  static_assert(kArray[4] == span[4], "span[4] does not equal kArray[4]");
+
+  static_assert(kArray[0] == span(0), "span(0) does not equal kArray[0]");
+  static_assert(kArray[1] == span(1), "span(1) does not equal kArray[1]");
+  static_assert(kArray[2] == span(2), "span(2) does not equal kArray[2]");
+  static_assert(kArray[3] == span(3), "span(3) does not equal kArray[3]");
+  static_assert(kArray[4] == span(4), "span(4) does not equal kArray[4]");
+}
+
 TEST(SpanTest, Iterator) {
   static constexpr int kArray[] = {1, 6, 1, 8, 0};
   constexpr span<const int> span(kArray);
@@ -505,14 +597,36 @@ TEST(SpanTest, AsWritableBytes) {
 }
 
 TEST(SpanTest, MakeSpanFromDataAndSize) {
+  int* nullint = nullptr;
+  auto empty_span = make_span(nullint, 0);
+  EXPECT_TRUE(empty_span.empty());
+  EXPECT_EQ(nullptr, empty_span.data());
+
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
   span<int> span(vector.data(), vector.size());
   EXPECT_EQ(span, make_span(vector.data(), vector.size()));
 }
 
+TEST(SpanTest, MakeSpanFromPointerPair) {
+  int* nullint = nullptr;
+  auto empty_span = make_span(nullint, nullint);
+  EXPECT_TRUE(empty_span.empty());
+  EXPECT_EQ(nullptr, empty_span.data());
+
+  std::vector<int> vector = {1, 1, 2, 3, 5, 8};
+  span<int> span(vector.data(), vector.size());
+  EXPECT_EQ(span, make_span(vector.data(), vector.data() + vector.size()));
+}
+
 TEST(SpanTest, MakeSpanFromConstexprArray) {
   static constexpr int kArray[] = {1, 2, 3, 4, 5};
   constexpr span<const int> span(kArray);
+  EXPECT_EQ(span, make_span(kArray));
+}
+
+TEST(SpanTest, MakeSpanFromStdArray) {
+  const std::array<int, 5> kArray = {1, 2, 3, 4, 5};
+  span<const int> span(kArray);
   EXPECT_EQ(span, make_span(kArray));
 }
 
