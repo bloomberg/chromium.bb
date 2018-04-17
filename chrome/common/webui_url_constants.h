@@ -120,6 +120,7 @@ extern const char kChromeUIPrintURL[];
 extern const char kChromeUIQuitHost[];
 extern const char kChromeUIQuitURL[];
 extern const char kChromeUIQuotaInternalsHost[];
+extern const char kChromeUIResetPasswordHost[];
 extern const char kChromeUIRestartHost[];
 extern const char kChromeUIRestartURL[];
 extern const char kChromeUISettingsHost[];
