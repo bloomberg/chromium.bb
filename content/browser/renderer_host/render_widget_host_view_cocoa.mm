@@ -31,10 +31,7 @@ using content::BrowserAccessibility;
 using content::BrowserAccessibilityManager;
 using content::EditCommand;
 using content::NativeWebKeyboardEvent;
-using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostNSViewClient;
-using content::RenderWidgetHostView;
-using content::RenderWidgetHostViewMac;
 using content::RenderWidgetHostViewMacEditCommandHelper;
 using content::WebGestureEventBuilder;
 using content::WebMouseEventBuilder;
@@ -45,6 +42,86 @@ using blink::WebMouseWheelEvent;
 using blink::WebGestureEvent;
 
 namespace {
+
+// No-op client used to avoid scattering of nullptr checks (see comments in
+// the client_ member of RenderWidgetHostViewCocoa).
+class NoopClient : public RenderWidgetHostNSViewClient {
+ public:
+  NoopClient() {}
+  ~NoopClient() override{};
+
+  // RenderWidgetHostNSViewClient implementation:
+  BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override {
+    return nullptr;
+  }
+  void OnNSViewSyncIsRenderViewHost(bool* is_render_view) override {}
+  void OnNSViewRequestShutdown() override {}
+  void OnNSViewIsFirstResponderChanged(bool is_first_responder) override {}
+  void OnNSViewWindowIsKeyChanged(bool is_key) override {}
+  void OnNSViewBoundsInWindowChanged(const gfx::Rect& view_bounds_in_window_dip,
+                                     bool attached_to_window) override {}
+  void OnNSViewWindowFrameInScreenChanged(
+      const gfx::Rect& window_frame_in_screen_dip) override {}
+  void OnNSViewDisplayChanged(const display::Display& display) override {}
+  void OnNSViewBeginKeyboardEvent() override {}
+  void OnNSViewEndKeyboardEvent() override {}
+  void OnNSViewForwardKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info) override {}
+  void OnNSViewForwardKeyboardEventWithCommands(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info,
+      const std::vector<EditCommand>& commands) override {}
+  void OnNSViewRouteOrProcessMouseEvent(
+      const blink::WebMouseEvent& web_event) override {}
+  void OnNSViewRouteOrProcessWheelEvent(
+      const blink::WebMouseWheelEvent& web_event) override {}
+  void OnNSViewForwardMouseEvent(
+      const blink::WebMouseEvent& web_event) override {}
+  void OnNSViewForwardWheelEvent(
+      const blink::WebMouseWheelEvent& web_event) override {}
+  void OnNSViewGestureBegin(blink::WebGestureEvent begin_event) override {}
+  void OnNSViewGestureUpdate(blink::WebGestureEvent update_event) override {}
+  void OnNSViewGestureEnd(blink::WebGestureEvent end_event) override {}
+  void OnNSViewSmartMagnify(
+      const blink::WebGestureEvent& smart_magnify_event) override {}
+  void OnNSViewImeSetComposition(
+      const base::string16& text,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
+      const gfx::Range& replacement_range,
+      int selection_start,
+      int selection_end) override {}
+  void OnNSViewImeCommitText(const base::string16& text,
+                             const gfx::Range& replacement_range) override {}
+  void OnNSViewImeFinishComposingText() override {}
+  void OnNSViewImeCancelComposition() override {}
+  void OnNSViewLookUpDictionaryOverlayAtPoint(
+      const gfx::PointF& root_point) override {}
+  void OnNSViewLookUpDictionaryOverlayFromRange(
+      const gfx::Range& range) override {}
+  void OnNSViewSyncGetTextInputType(
+      ui::TextInputType* text_input_type) override {}
+  void OnNSViewSyncGetCharacterIndexAtPoint(const gfx::PointF& root_point,
+                                            uint32_t* index) override {}
+  void OnNSViewSyncGetFirstRectForRange(const gfx::Range& requested_range,
+                                        gfx::Rect* rect,
+                                        gfx::Range* actual_range) override {}
+  void OnNSViewExecuteEditCommand(const std::string& command) override {}
+  void OnNSViewUndo() override {}
+  void OnNSViewRedo() override {}
+  void OnNSViewCut() override {}
+  void OnNSViewCopy() override {}
+  void OnNSViewCopyToFindPboard() override {}
+  void OnNSViewPaste() override {}
+  void OnNSViewPasteAndMatchStyle() override {}
+  void OnNSViewSelectAll() override {}
+  void OnNSViewSpeakSelection() override {}
+  void OnNSViewStopSpeaking() override {}
+  void OnNSViewSyncIsSpeaking(bool* is_speaking) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoopClient);
+};
 
 // Whether a keyboard event has been reserved by OSX.
 BOOL EventIsReservedBySystem(NSEvent* event) {
@@ -120,20 +197,21 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)windowDidResignKey:(NSNotification*)notification;
 - (void)sendViewBoundsInWindowToClient;
 - (void)sendWindowFrameInScreenToClient;
+- (bool)clientIsDisconnected;
 @end
 
 @implementation RenderWidgetHostViewCocoa
 @synthesize markedRange = markedRange_;
 
-- (id)initWithClient:(std::unique_ptr<RenderWidgetHostNSViewClient>)client {
+- (id)initWithClient:(RenderWidgetHostNSViewClient*)client {
   self = [super initWithFrame:NSZeroRect];
   if (self) {
     self.acceptsTouchEvents = YES;
     editCommandHelper_.reset(new RenderWidgetHostViewMacEditCommandHelper);
     editCommandHelper_->AddEditingSelectorsToClass([self class]);
 
-    client_ = std::move(client);
-    renderWidgetHostView_ = client_->GetRenderWidgetHostViewMac();
+    noopClient_ = std::make_unique<NoopClient>();
+    client_ = client;
     canBeKeyView_ = YES;
     isStylusEnteringProximity_ = false;
   }
@@ -287,8 +365,12 @@ void ExtractUnderlines(NSAttributedString* string,
   closeOnDeactivate_ = b;
 }
 
-- (void)setClientWasDestroyed {
-  clientWasDestroyed_ = YES;
+- (void)setClientDisconnected {
+  client_ = noopClient_.get();
+}
+
+- (bool)clientIsDisconnected {
+  return client_ == noopClient_.get();
 }
 
 - (void)setShowingContextMenu:(BOOL)showing {
@@ -391,7 +473,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
   if ([self shouldIgnoreMouseEvent:theEvent]) {
     // If this is the first such event, send a mouse exit to the host view.
-    if (!mouseEventWasIgnored_ && !clientWasDestroyed_) {
+    if (!mouseEventWasIgnored_) {
       WebMouseEvent exitEvent =
           WebMouseEventBuilder::Build(theEvent, self, pointerType_);
       exitEvent.SetType(WebInputEvent::kMouseLeave);
@@ -405,13 +487,11 @@ void ExtractUnderlines(NSAttributedString* string,
   if (mouseEventWasIgnored_) {
     // If this is the first mouse event after a previous event that was ignored
     // due to the hitTest, send a mouse enter event to the host view.
-    if (!clientWasDestroyed_) {
-      WebMouseEvent enterEvent =
-          WebMouseEventBuilder::Build(theEvent, self, pointerType_);
-      enterEvent.SetType(WebInputEvent::kMouseMove);
-      enterEvent.button = WebMouseEvent::Button::kNoButton;
-      client_->OnNSViewRouteOrProcessMouseEvent(enterEvent);
-    }
+    WebMouseEvent enterEvent =
+        WebMouseEventBuilder::Build(theEvent, self, pointerType_);
+    enterEvent.SetType(WebInputEvent::kMouseMove);
+    enterEvent.button = WebMouseEvent::Button::kNoButton;
+    client_->OnNSViewRouteOrProcessMouseEvent(enterEvent);
   }
   mouseEventWasIgnored_ = NO;
 
@@ -653,11 +733,6 @@ void ExtractUnderlines(NSAttributedString* string,
                                                       editCommands_);
   }
 
-  // Calling ForwardKeyboardEventWithCommands() could have destroyed the
-  // widget.
-  if (clientWasDestroyed_)
-    return;
-
   // Then send keypress and/or composition related events.
   // If there was a marked text or the text to be inserted is longer than 1
   // character, then we send the text by calling FinishComposingText().
@@ -715,17 +790,8 @@ void ExtractUnderlines(NSAttributedString* string,
     ui::LatencyInfo fake_event_latency_info = latency_info;
     fake_event_latency_info.set_source_event_type(ui::SourceEventType::OTHER);
     client_->OnNSViewForwardKeyboardEvent(fakeEvent, fake_event_latency_info);
-    // Not checking |renderWidgetHostView_->host()| here because
-    // a key event with |skip_in_browser| == true won't be handled by browser,
-    // thus it won't destroy the widget.
-
     client_->OnNSViewForwardKeyboardEventWithCommands(
         event, fake_event_latency_info, editCommands_);
-
-    // Calling ForwardKeyboardEventWithCommands() could have destroyed the
-    // widget.
-    if (clientWasDestroyed_)
-      return;
   }
 
   const NSUInteger kCtrlCmdKeyMask = NSControlKeyMask | NSCommandKeyMask;
@@ -776,12 +842,10 @@ void ExtractUnderlines(NSAttributedString* string,
     return;
   }
 
-  if (!clientWasDestroyed_) {
-    // History-swiping is not possible if the logic reaches this point.
-    WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(event, self);
-    webEvent.rails_mode = mouseWheelFilter_.UpdateRailsMode(webEvent);
-    client_->OnNSViewForwardWheelEvent(webEvent);
-  }
+  // History-swiping is not possible if the logic reaches this point.
+  WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(event, self);
+  webEvent.rails_mode = mouseWheelFilter_.UpdateRailsMode(webEvent);
+  client_->OnNSViewForwardWheelEvent(webEvent);
 
   if (endWheelMonitor_) {
     [NSEvent removeMonitor:endWheelMonitor_];
@@ -799,9 +863,6 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (void)handleEndGestureWithEvent:(NSEvent*)event {
   [responderDelegate_ endGestureWithEvent:event];
-
-  if (clientWasDestroyed_)
-    return;
 
   // On macOS 10.11+, the end event has type = NSEventTypeMagnify and phase =
   // NSEventPhaseEnded. On macOS 10.10 and older, the event has type =
@@ -947,18 +1008,13 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 
   // This is responsible for content scrolling!
-  if (!clientWasDestroyed_) {
-    WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(event, self);
-    webEvent.rails_mode = mouseWheelFilter_.UpdateRailsMode(webEvent);
-    client_->OnNSViewRouteOrProcessWheelEvent(webEvent);
-  }
+  WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(event, self);
+  webEvent.rails_mode = mouseWheelFilter_.UpdateRailsMode(webEvent);
+  client_->OnNSViewRouteOrProcessWheelEvent(webEvent);
 }
 
 // Called repeatedly during a pinch gesture, with incremental change values.
 - (void)magnifyWithEvent:(NSEvent*)event {
-  if (clientWasDestroyed_)
-    return;
-
 #if defined(MAC_OS_X_VERSION_10_11) && \
     MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
   // When linking against the 10.11 (or later) SDK and running on 10.11 or
@@ -1094,14 +1150,14 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (BOOL)canBecomeKeyView {
-  if (clientWasDestroyed_)
+  if ([self clientIsDisconnected])
     return NO;
 
   return canBeKeyView_;
 }
 
 - (BOOL)acceptsFirstResponder {
-  if (clientWasDestroyed_)
+  if ([self clientIsDisconnected])
     return NO;
 
   return canBeKeyView_;
@@ -1132,7 +1188,7 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (BOOL)becomeFirstResponder {
-  if (clientWasDestroyed_)
+  if ([self clientIsDisconnected])
     return NO;
   if ([responderDelegate_ respondsToSelector:@selector(becomeFirstResponder)])
     [responderDelegate_ becomeFirstResponder];
@@ -1160,9 +1216,6 @@ void ExtractUnderlines(NSAttributedString* string,
 - (BOOL)resignFirstResponder {
   if ([responderDelegate_ respondsToSelector:@selector(resignFirstResponder)])
     [responderDelegate_ resignFirstResponder];
-
-  if (clientWasDestroyed_)
-    return YES;
 
   client_->OnNSViewIsFirstResponderChanged(false);
   if (closeOnDeactivate_) {
@@ -1217,7 +1270,7 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient {
-  return client_.get();
+  return client_;
 }
 
 - (NSArray*)accessibilityArrayAttributeValues:(NSString*)attribute
@@ -1423,9 +1476,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 
 - (NSRect)firstRectForCharacterRange:(NSRange)theRange
                          actualRange:(NSRangePointer)actualRange {
-  // During tab closure, events can arrive after RenderWidgetHostViewMac::
-  // Destroy() is called, which will have set |host()| to null.
-  if (clientWasDestroyed_) {
+  if ([self clientIsDisconnected]) {
     [self cancelComposition];
     return NSZeroRect;
   }
@@ -1654,21 +1705,13 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)viewDidMoveToWindow {
-  // This can be called very late during shutdown, so it needs to be guarded by
-  // a check that DestroyCompositorForShutdown has not yet been called.
-  // https://crbug.com/805726
-  if (!renderWidgetHostView_->browser_compositor_)
-    return;
-
   // Update the window's frame, the view's bounds, focus, and the display info,
   // as they have not been updated while unattached to a window.
   [self sendWindowFrameInScreenToClient];
   [self sendViewBoundsInWindowToClient];
   [self updateScreenProperties];
-  if (!clientWasDestroyed_) {
-    client_->OnNSViewIsFirstResponderChanged([[self window] firstResponder] ==
-                                             self);
-  }
+  client_->OnNSViewIsFirstResponderChanged([[self window] firstResponder] ==
+                                           self);
 
   // If we switch windows (or are removed from the view hierarchy), cancel any
   // open mouse-downs.

@@ -161,10 +161,6 @@
 #include "content/browser/host_zoom_map_observer.h"
 #endif  // OS_ANDROID
 
-#if defined(OS_MACOSX)
-#include "base/mac/foundation_util.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/media/session/pepper_playback_observer.h"
 #endif
@@ -2537,12 +2533,6 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
   // Save the created widget associated with the route so we can show it later.
   pending_widget_views_[std::make_pair(render_process_id, route_id)] =
       widget_view;
-
-#if defined(OS_MACOSX)
-  // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
-  // to allow it to survive the trip without being hosted.
-  base::mac::NSObjectRetain(widget_view->GetNativeView());
-#endif
 }
 
 void WebContentsImpl::ShowCreatedWindow(int process_id,
@@ -2626,13 +2616,6 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
   // Only allow privileged mouse lock for fullscreen render widget, which is
   // used to implement Pepper Flash fullscreen.
   render_widget_host_impl->set_allow_privileged_mouse_lock(is_fullscreen);
-
-#if defined(OS_MACOSX)
-  // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's
-  // properly embedded (or purposefully ignored) we can release the retain we
-  // took in CreateNewWidget().
-  base::mac::NSObjectRelease(widget_host_view->GetNativeView());
-#endif
 }
 
 WebContentsImpl* WebContentsImpl::GetCreatedWindow(

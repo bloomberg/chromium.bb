@@ -6,11 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "content/browser/renderer_host/popup_window_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
-#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/common/cursors/webcursor.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/animation_utils.h"
@@ -30,13 +30,12 @@ class RenderWidgetHostViewNSViewBridgeLocal
       public display::DisplayObserver {
  public:
   explicit RenderWidgetHostViewNSViewBridgeLocal(
-      std::unique_ptr<RenderWidgetHostNSViewClient> client);
+      RenderWidgetHostNSViewClient* client);
   ~RenderWidgetHostViewNSViewBridgeLocal() override;
   RenderWidgetHostViewCocoa* GetRenderWidgetHostViewCocoa() override;
 
   void InitAsPopup(const gfx::Rect& content_rect,
                    blink::WebPopupType popup_type) override;
-  void Destroy() override;
   void MakeFirstResponder() override;
   void SetBounds(const gfx::Rect& rect) override;
   void SetBackgroundColor(SkColor color) override;
@@ -49,6 +48,7 @@ class RenderWidgetHostViewNSViewBridgeLocal
   void CancelComposition() override;
   void SetShowingContextMenu(bool showing) override;
   void DisplayCursor(const WebCursor& cursor) override;
+  void SetCursorLocked(bool locked) override;
   void ShowDictionaryOverlayForSelection() override;
   void ShowDictionaryOverlay(
       const mac::AttributedStringCoder::EncodedString& encoded_string,
@@ -65,9 +65,8 @@ class RenderWidgetHostViewNSViewBridgeLocal
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-  // Weak, this is owned by |cocoa_view_|'s |client_|, and |cocoa_view_| owns
-  // its |client_|.
-  RenderWidgetHostViewCocoa* cocoa_view_ = nil;
+  // The NSView used for input and display.
+  base::scoped_nsobject<RenderWidgetHostViewCocoa> cocoa_view_;
 
   // The window used for popup widgets, and its helper.
   std::unique_ptr<PopupWindowMac> popup_window_;
@@ -83,13 +82,10 @@ class RenderWidgetHostViewNSViewBridgeLocal
 };
 
 RenderWidgetHostViewNSViewBridgeLocal::RenderWidgetHostViewNSViewBridgeLocal(
-    std::unique_ptr<RenderWidgetHostNSViewClient> client) {
+    RenderWidgetHostNSViewClient* client) {
   display::Screen::GetScreen()->AddObserver(this);
 
-  // Since we autorelease |cocoa_view|, our caller must put |GetNativeView()|
-  // into the view hierarchy right after calling us.
-  cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
-      initWithClient:std::move(client)] autorelease];
+  cocoa_view_.reset([[RenderWidgetHostViewCocoa alloc] initWithClient:client]);
 
   background_layer_.reset([[CALayer alloc] init]);
   [cocoa_view_ setLayer:background_layer_];
@@ -98,6 +94,9 @@ RenderWidgetHostViewNSViewBridgeLocal::RenderWidgetHostViewNSViewBridgeLocal(
 
 RenderWidgetHostViewNSViewBridgeLocal::
     ~RenderWidgetHostViewNSViewBridgeLocal() {
+  [cocoa_view_ setClientDisconnected];
+  [cocoa_view_ removeFromSuperview];
+  cocoa_view_.autorelease();
   display::Screen::GetScreen()->RemoveObserver(this);
   popup_window_.reset();
 }
@@ -113,14 +112,6 @@ void RenderWidgetHostViewNSViewBridgeLocal::InitAsPopup(
   popup_type_ = popup_type;
   popup_window_ =
       std::make_unique<PopupWindowMac>(content_rect, popup_type_, cocoa_view_);
-}
-
-void RenderWidgetHostViewNSViewBridgeLocal::Destroy() {
-  [cocoa_view_ setClientWasDestroyed];
-  [cocoa_view_ retain];
-  [cocoa_view_ removeFromSuperview];
-  [cocoa_view_ autorelease];
-  cocoa_view_ = nil;
 }
 
 void RenderWidgetHostViewNSViewBridgeLocal::MakeFirstResponder() {
@@ -247,6 +238,17 @@ void RenderWidgetHostViewNSViewBridgeLocal::DisplayCursor(
   [cocoa_view_ updateCursor:non_const_cursor.GetNativeCursor()];
 }
 
+void RenderWidgetHostViewNSViewBridgeLocal::SetCursorLocked(bool locked) {
+  if (locked) {
+    CGAssociateMouseAndMouseCursorPosition(NO);
+    [NSCursor hide];
+  } else {
+    // Unlock position of mouse cursor and unhide it.
+    CGAssociateMouseAndMouseCursorPosition(YES);
+    [NSCursor unhide];
+  }
+}
+
 void RenderWidgetHostViewNSViewBridgeLocal::
     ShowDictionaryOverlayForSelection() {
   NSRange selection_range = [cocoa_view_ selectedRange];
@@ -271,10 +273,8 @@ void RenderWidgetHostViewNSViewBridgeLocal::ShowDictionaryOverlay(
 
 // static
 std::unique_ptr<RenderWidgetHostNSViewBridge>
-RenderWidgetHostNSViewBridge::Create(
-    std::unique_ptr<RenderWidgetHostNSViewClient> client) {
-  return std::make_unique<RenderWidgetHostViewNSViewBridgeLocal>(
-      std::move(client));
+RenderWidgetHostNSViewBridge::Create(RenderWidgetHostNSViewClient* client) {
+  return std::make_unique<RenderWidgetHostViewNSViewBridgeLocal>(client);
 }
 
 }  // namespace content

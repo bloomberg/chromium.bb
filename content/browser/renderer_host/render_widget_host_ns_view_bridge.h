@@ -34,7 +34,7 @@ class RenderWidgetHostNSViewBridge {
   virtual ~RenderWidgetHostNSViewBridge() {}
 
   static std::unique_ptr<RenderWidgetHostNSViewBridge> Create(
-      std::unique_ptr<RenderWidgetHostNSViewClient> client);
+      RenderWidgetHostNSViewClient* client);
 
   // TODO(ccameron): RenderWidgetHostViewMac and other functions currently use
   // this method to communicate directly with RenderWidgetHostViewCocoa. The
@@ -45,10 +45,6 @@ class RenderWidgetHostNSViewBridge {
   // Initialize the window as a popup (e.g, date/time picker).
   virtual void InitAsPopup(const gfx::Rect& content_rect,
                            blink::WebPopupType popup_type) = 0;
-
-  // Remove the NSView from the view heirarchy and destroy it. After this is
-  // called, no calls back into the RenderWidgetHostNSViewClient may be made.
-  virtual void Destroy() = 0;
 
   // Make the NSView be the first responder of its NSWindow.
   virtual void MakeFirstResponder() = 0;
@@ -82,6 +78,9 @@ class RenderWidgetHostNSViewBridge {
 
   // Set the cursor type to display.
   virtual void DisplayCursor(const WebCursor& cursor) = 0;
+
+  // Lock or unlock the cursor.
+  virtual void SetCursorLocked(bool locked) = 0;
 
   // Open the dictionary overlay for the currently selected string. This
   // will roundtrip to the NSView to determine the selected range.
