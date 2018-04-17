@@ -1092,7 +1092,6 @@ void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
     }
     return;
   }
-
   const float device_scale_factor = window->GetDeviceScaleFactor();
   ScheduleInFlightBoundsChange(
       window, gfx::ConvertRectToPixel(device_scale_factor, old_bounds),

@@ -487,7 +487,8 @@ void WindowPortMus::OnPreInit(Window* window) {
 
 void WindowPortMus::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                                float new_device_scale_factor) {
-  if (local_surface_id_.is_valid() && local_layer_tree_frame_sink_) {
+  if (!window_->IsRootWindow() && local_surface_id_.is_valid() &&
+      local_layer_tree_frame_sink_) {
     local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
     local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
   }

@@ -68,7 +68,8 @@ void WindowPortLocal::OnPreInit(Window* window) {}
 void WindowPortLocal::OnDeviceScaleFactorChanged(
     float old_device_scale_factor,
     float new_device_scale_factor) {
-  if (last_device_scale_factor_ != new_device_scale_factor &&
+  if (!window_->IsRootWindow() &&
+      last_device_scale_factor_ != new_device_scale_factor &&
       local_surface_id_.is_valid()) {
     last_device_scale_factor_ = new_device_scale_factor;
     local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
@@ -94,7 +95,8 @@ void WindowPortLocal::OnVisibilityChanged(bool visible) {}
 
 void WindowPortLocal::OnDidChangeBounds(const gfx::Rect& old_bounds,
                                         const gfx::Rect& new_bounds) {
-  if (last_size_ != new_bounds.size() && local_surface_id_.is_valid()) {
+  if (!window_->IsRootWindow() && last_size_ != new_bounds.size() &&
+      local_surface_id_.is_valid()) {
     last_size_ = new_bounds.size();
     local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
     if (frame_sink_)
