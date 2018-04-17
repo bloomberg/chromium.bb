@@ -107,10 +107,10 @@ const CGFloat kDimmedAlpha = 0.5;
     newHiddenValue = !self.enabled;
   }
 
-  if (newHiddenValue != self.hiddenInCurrentSizeClass) {
-    self.hiddenInCurrentSizeClass = newHiddenValue;
-    [self setHiddenForCurrentStateAndSizeClass];
-  }
+  // Update the hidden property of the buttons even if it is the same to
+  // prevent: https://crbug.com/828767.
+  self.hiddenInCurrentSizeClass = newHiddenValue;
+  [self setHiddenForCurrentStateAndSizeClass];
 }
 
 - (void)setHiddenInCurrentState:(BOOL)hiddenInCurrentState {
