@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/devtools/devtools_io_context.h"
+#include "content/browser/devtools/devtools_stream_blob.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -56,15 +57,15 @@ void IOHandler::Read(
   static const size_t kDefaultChunkSize = 10 * 1024 * 1024;
   static const char kBlobPrefix[] = "blob:";
 
-  scoped_refptr<DevToolsIOContext::ROStream> stream =
+  scoped_refptr<DevToolsIOContext::Stream> stream =
       io_context_->GetByHandle(handle);
   if (!stream && browser_context_ &&
       StartsWith(handle, kBlobPrefix, base::CompareCase::SENSITIVE)) {
     ChromeBlobStorageContext* blob_context =
         ChromeBlobStorageContext::GetFor(browser_context_);
     std::string uuid = handle.substr(strlen(kBlobPrefix));
-    stream =
-        io_context_->OpenBlob(blob_context, storage_partition_, handle, uuid);
+    stream = DevToolsStreamBlob::Create(io_context_, blob_context,
+                                        storage_partition_, handle, uuid);
   }
 
   if (!stream) {
@@ -80,11 +81,11 @@ void IOHandler::ReadComplete(std::unique_ptr<ReadCallback> callback,
                              std::unique_ptr<std::string> data,
                              bool base64_encoded,
                              int status) {
-  if (status == DevToolsIOContext::ROStream::StatusFailure) {
+  if (status == DevToolsIOContext::Stream::StatusFailure) {
     callback->sendFailure(Response::Error("Read failed"));
     return;
   }
-  bool eof = status == DevToolsIOContext::ROStream::StatusEOF;
+  bool eof = status == DevToolsIOContext::Stream::StatusEOF;
   callback->sendSuccess(base64_encoded, std::move(*data), eof);
 }
 

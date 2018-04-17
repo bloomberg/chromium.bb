@@ -13,30 +13,30 @@
 
 namespace content {
 
-class DevToolsStreamFile : public DevToolsIOContext::RWStream {
+class DevToolsStreamFile : public DevToolsIOContext::Stream {
  public:
-  explicit DevToolsStreamFile(bool binary);
-
-  void Read(off_t position, size_t max_size, ReadCallback callback) override;
-  void Close(bool invoke_pending_callbacks) override {}
-  void Append(std::unique_ptr<std::string> data) override;
-  const std::string& handle() override;
+  static scoped_refptr<DevToolsStreamFile> Create(DevToolsIOContext* context,
+                                                  bool binary);
+  const std::string& handle() const { return handle_; }
+  void Append(std::unique_ptr<std::string> data);
 
  private:
+  DevToolsStreamFile(DevToolsIOContext* context, bool binary);
   ~DevToolsStreamFile() override;
+
+  void Read(off_t position, size_t max_size, ReadCallback callback) override;
 
   void ReadOnFileSequence(off_t pos, size_t max_size, ReadCallback callback);
   void AppendOnFileSequence(std::unique_ptr<std::string> data);
   bool InitOnFileSequenceIfNeeded();
 
   const std::string handle_;
+  const bool binary_;
+
   base::File file_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   bool had_errors_;
   off_t last_read_pos_;
-  bool binary_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsStreamFile);
 };
 
 }  // namespace content

@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/lazy_task_runner.h"
 #include "base/task_scheduler/post_task.h"
@@ -18,32 +17,30 @@
 
 namespace content {
 
-namespace {
-unsigned s_last_stream_handle = 0;
-};
-
-base::SequencedTaskRunner* impl_task_runner() {
+scoped_refptr<base::SequencedTaskRunner> impl_task_runner() {
   constexpr base::TaskTraits kBlockingTraits = {base::MayBlock(),
                                                 base::TaskPriority::BACKGROUND};
   static base::LazySequencedTaskRunner s_sequenced_task_unner =
       LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(kBlockingTraits);
-  return s_sequenced_task_unner.Get().get();
+  return s_sequenced_task_unner.Get();
 }
 
-DevToolsStreamFile::DevToolsStreamFile(bool binary)
-    : DevToolsIOContext::RWStream(impl_task_runner()),
-      handle_(base::UintToString(++s_last_stream_handle)),
+scoped_refptr<DevToolsStreamFile> DevToolsStreamFile::Create(
+    DevToolsIOContext* context,
+    bool binary) {
+  return new DevToolsStreamFile(context, binary);
+}
+
+DevToolsStreamFile::DevToolsStreamFile(DevToolsIOContext* context, bool binary)
+    : DevToolsIOContext::Stream(impl_task_runner()),
+      handle_(Register(context)),
+      binary_(binary),
       task_runner_(impl_task_runner()),
       had_errors_(false),
-      last_read_pos_(0),
-      binary_(binary) {}
+      last_read_pos_(0) {}
 
 DevToolsStreamFile::~DevToolsStreamFile() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-}
-
-const std::string& DevToolsStreamFile::handle() {
-  return handle_;
 }
 
 bool DevToolsStreamFile::InitOnFileSequenceIfNeeded() {

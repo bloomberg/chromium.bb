@@ -28,6 +28,7 @@
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/devtools_stream_file.h"
 #include "content/browser/devtools/devtools_traceable_screenshot.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -125,7 +126,7 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
  public:
   explicit DevToolsStreamEndpoint(
       base::WeakPtr<TracingHandler> handler,
-      const scoped_refptr<DevToolsIOContext::RWStream>& stream)
+      const scoped_refptr<DevToolsStreamFile>& stream)
       : stream_(stream), tracing_handler_(handler) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
@@ -156,7 +157,7 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
  private:
   ~DevToolsStreamEndpoint() override {}
 
-  scoped_refptr<DevToolsIOContext::RWStream> stream_;
+  scoped_refptr<DevToolsStreamFile> stream_;
   base::WeakPtr<TracingHandler> tracing_handler_;
 };
 
@@ -422,8 +423,9 @@ void TracingHandler::End(std::unique_ptr<EndCallback> callback) {
   scoped_refptr<TracingController::TraceDataEndpoint> endpoint;
   if (return_as_stream_) {
     endpoint = new DevToolsStreamEndpoint(
-        weak_factory_.GetWeakPtr(), io_context_->CreateTempFileBackedStream(
-                                        gzip_compression_ /* binary */));
+        weak_factory_.GetWeakPtr(),
+        DevToolsStreamFile::Create(io_context_,
+                                   gzip_compression_ /* binary */));
     if (gzip_compression_) {
       endpoint = TracingControllerImpl::CreateCompressedStringEndpoint(
           endpoint, true /* compress_with_background_priority */);
