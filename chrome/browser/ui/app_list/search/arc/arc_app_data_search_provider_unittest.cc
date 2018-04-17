@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "chrome/browser/ui/app_list/search/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 
@@ -54,7 +54,7 @@ TEST_F(ArcAppDataSearchProviderTest, Basic) {
   std::unique_ptr<ArcAppDataSearchProvider> provider =
       CreateSearch(kMaxResults);
   EXPECT_TRUE(provider->results().empty());
-  IconDecodeRequest::DisableSafeDecodingForTesting();
+  arc::IconDecodeRequest::DisableSafeDecodingForTesting();
 
   provider->Start(base::UTF8ToUTF16(kQuery));
   const auto& results = provider->results();

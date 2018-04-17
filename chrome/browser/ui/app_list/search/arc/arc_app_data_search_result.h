@@ -17,9 +17,11 @@
 class AppListControllerDelegate;
 class Profile;
 
-namespace app_list {
-
+namespace arc {
 class IconDecodeRequest;
+}  // namespace arc
+
+namespace app_list {
 
 class ArcAppDataSearchResult : public ChromeSearchResult {
  public:
@@ -46,7 +48,7 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
   void SetIconToAvatarIcon(const gfx::ImageSkia& icon);
 
   arc::mojom::AppDataResultPtr data_;
-  std::unique_ptr<IconDecodeRequest> icon_decode_request_;
+  std::unique_ptr<arc::IconDecodeRequest> icon_decode_request_;
 
   // |profile_| is owned by ProfileInfo.
   Profile* const profile_;
