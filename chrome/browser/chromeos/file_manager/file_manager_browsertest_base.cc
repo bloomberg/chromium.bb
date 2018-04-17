@@ -526,7 +526,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
 void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 
   local_volume_.reset(new DownloadsTestVolume);
   if (GetGuestModeParam() != IN_GUEST_MODE) {
@@ -543,18 +542,6 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
   CHECK(profile());
 
-  // The file manager component app should have been added for loading into the
-  // user profile, but not into the sign-in profile.
-  CHECK(extensions::ExtensionSystem::Get(profile())
-            ->extension_service()
-            ->component_loader()
-            ->Exists(kFileManagerAppId));
-  CHECK(!extensions::ExtensionSystem::Get(
-             chromeos::ProfileHelper::GetSigninProfile())
-             ->extension_service()
-             ->component_loader()
-             ->Exists(kFileManagerAppId));
-
   CHECK(local_volume_->Mount(profile()));
 
   if (GetGuestModeParam() != IN_GUEST_MODE) {
@@ -569,6 +556,25 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   display_service_ =
       std::make_unique<NotificationDisplayServiceTester>(profile());
+
+  // The test resources are setup: enable and add default ChromeOS component
+  // extensions now and not before: crbug.com/831074, crbug.com/804413
+  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
+  service->component_loader()->AddDefaultComponentExtensions(false);
+
+  // The File Manager component extension should have been added for loading
+  // into the user profile, but not into the sign-in profile.
+  CHECK(extensions::ExtensionSystem::Get(profile())
+            ->extension_service()
+            ->component_loader()
+            ->Exists(kFileManagerAppId));
+  CHECK(!extensions::ExtensionSystem::Get(
+             chromeos::ProfileHelper::GetSigninProfile())
+             ->extension_service()
+             ->component_loader()
+             ->Exists(kFileManagerAppId));
 }
 
 void FileManagerBrowserTestBase::StartTest() {
