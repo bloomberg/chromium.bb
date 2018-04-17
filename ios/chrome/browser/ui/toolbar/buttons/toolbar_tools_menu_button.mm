@@ -121,7 +121,11 @@ const CGFloat kStrokeEndAtApogee = 1;
 }
 
 - (void)triggerAnimation {
-  [self animateToColor:toolbar::HighlighButtonTint(style_)];
+  if (IsUIRefreshPhase1Enabled()) {
+    [self animateToColor:self.tintColor];
+  } else {
+    [self animateToColor:toolbar::HighlighButtonTint(style_)];
+  }
 }
 
 #pragma mark - Private
