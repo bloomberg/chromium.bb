@@ -117,18 +117,26 @@
   }
 }
 
-- (UIColor*)buttonsTintColorDimmed {
+- (UIColor*)buttonsSpotlightColor {
   DCHECK(IsUIRefreshPhase1Enabled());
   switch (self.style) {
     case NORMAL:
-      return [UIColor colorWithWhite:0
-                               alpha:kToolbarButtonTintColorAlpha -
-                                     kToolbarButtonDimmedTintColorAlphaDelta];
+      return [UIColor colorWithWhite:0 alpha:kToolbarSpotlightAlpha];
       break;
     case INCOGNITO:
-      return
-          [UIColor colorWithWhite:1
-                            alpha:1 - kToolbarButtonDimmedTintColorAlphaDelta];
+      return [UIColor colorWithWhite:1 alpha:kToolbarSpotlightAlpha];
+      break;
+  }
+}
+
+- (UIColor*)dimmedButtonsSpotlightColor {
+  DCHECK(IsUIRefreshPhase1Enabled());
+  switch (self.style) {
+    case NORMAL:
+      return [UIColor colorWithWhite:0 alpha:kDimmedToolbarSpotlightAlpha];
+      break;
+    case INCOGNITO:
+      return [UIColor colorWithWhite:1 alpha:kDimmedToolbarSpotlightAlpha];
       break;
   }
 }

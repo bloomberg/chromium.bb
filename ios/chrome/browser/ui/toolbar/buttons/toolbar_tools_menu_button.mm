@@ -164,21 +164,17 @@ const CGFloat kStrokeEndAtApogee = 1;
 - (void)updateTint {
   UIColor* newTint = nil;
   if (IsUIRefreshPhase1Enabled()) {
-    if (self.dimmed) {
-      newTint = self.configuration.buttonsTintColorDimmed;
-    } else {
-      switch (self.state) {
-        case UIControlStateNormal:
-          newTint = self.configuration.buttonsTintColor;
-          break;
-        case UIControlStateHighlighted:
-          newTint = self.configuration.buttonsTintColorHighlighted;
-          break;
-        default:
-          newTint = self.configuration.buttonsTintColor;
-          break;
+    switch (self.state) {
+      case UIControlStateNormal:
+        newTint = self.configuration.buttonsTintColor;
+        break;
+      case UIControlStateHighlighted:
+        newTint = self.configuration.buttonsTintColorHighlighted;
+        break;
+      default:
+        newTint = self.configuration.buttonsTintColor;
+        break;
       }
-    }
   } else {
     switch (self.state) {
       case UIControlStateNormal:
