@@ -243,24 +243,6 @@ static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
   return 0;
 }
 
-static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
-  assert(!frame_is_intra_only(cm));
-
-  int one_sided_refs = 1;
-  for (int ref = 0; ref < INTER_REFS_PER_FRAME; ++ref) {
-    const int buf_idx = cm->frame_refs[ref].idx;
-    if (buf_idx == INVALID_IDX) continue;
-
-    const int ref_offset =
-        cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
-    if (get_relative_dist(cm, ref_offset, (int)cm->frame_offset) > 0) {
-      one_sided_refs = 0;  // bwd reference
-      break;
-    }
-  }
-  return one_sided_refs;
-}
-
 void av1_setup_frame_buf_refs(AV1_COMMON *cm);
 void av1_setup_frame_sign_bias(AV1_COMMON *cm);
 void av1_setup_skip_mode_allowed(AV1_COMMON *cm);
