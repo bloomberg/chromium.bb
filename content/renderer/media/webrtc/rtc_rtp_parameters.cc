@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
+
 namespace {
 
 // Relative weights for each priority as defined in RTCWEB-DATA
@@ -20,6 +22,14 @@ base::Optional<T> ToBaseOptional(const rtc::Optional<F>& from) {
   if (from)
     return from.value();
   return base::nullopt;
+}
+
+template <typename T, typename F>
+rtc::Optional<T> ToRtcOptional(const base::Optional<F>& from) {
+  // TODO(orphis): Remove saturated_cast. https://crbug.com/webrtc/9143
+  if (from)
+    return base::saturated_cast<T>(from.value());
+  return rtc::nullopt;
 }
 
 blink::WebRTCPriorityType PriorityFromDouble(double priority) {
@@ -44,6 +54,28 @@ blink::WebRTCPriorityType PriorityFromDouble(double priority) {
   return blink::WebRTCPriorityType::High;
 }
 
+double PriorityToDouble(blink::WebRTCPriorityType priority) {
+  double result = 1;
+
+  switch (priority) {
+    case blink::WebRTCPriorityType::VeryLow:
+      result = webrtc::kDefaultBitratePriority * kPriorityWeightVeryLow;
+      break;
+    case blink::WebRTCPriorityType::Low:
+      result = webrtc::kDefaultBitratePriority * kPriorityWeightLow;
+      break;
+    case blink::WebRTCPriorityType::Medium:
+      result = webrtc::kDefaultBitratePriority * kPriorityWeightMedium;
+      break;
+    case blink::WebRTCPriorityType::High:
+      result = webrtc::kDefaultBitratePriority * kPriorityWeightHigh;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return result;
+}
+
 base::Optional<blink::WebRTCDtxStatus> FromRTCDtxStatus(
     rtc::Optional<webrtc::DtxStatus> status) {
   if (!status)
@@ -56,6 +88,25 @@ base::Optional<blink::WebRTCDtxStatus> FromRTCDtxStatus(
       break;
     case webrtc::DtxStatus::ENABLED:
       result = blink::WebRTCDtxStatus::Enabled;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return result;
+}
+
+rtc::Optional<webrtc::DtxStatus> ToRTCDtxStatus(
+    base::Optional<blink::WebRTCDtxStatus> status) {
+  if (!status)
+    return rtc::nullopt;
+
+  webrtc::DtxStatus result;
+  switch (status.value()) {
+    case blink::WebRTCDtxStatus::Disabled:
+      result = webrtc::DtxStatus::DISABLED;
+      break;
+    case blink::WebRTCDtxStatus::Enabled:
+      result = webrtc::DtxStatus::ENABLED;
       break;
     default:
       NOTREACHED();
@@ -88,6 +139,26 @@ base::Optional<blink::WebRTCDegradationPreference> FromRTCDegradationPreference(
 }  // namespace
 
 namespace content {
+
+webrtc::DegradationPreference ToDegradationPreference(
+    blink::WebRTCDegradationPreference degradation_preference) {
+  webrtc::DegradationPreference result =
+      webrtc::DegradationPreference::BALANCED;
+  switch (degradation_preference) {
+    case blink::WebRTCDegradationPreference::MaintainFramerate:
+      result = webrtc::DegradationPreference::MAINTAIN_FRAMERATE;
+      break;
+    case blink::WebRTCDegradationPreference::MaintainResolution:
+      result = webrtc::DegradationPreference::MAINTAIN_RESOLUTION;
+      break;
+    case blink::WebRTCDegradationPreference::Balanced:
+      result = webrtc::DegradationPreference::BALANCED;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return result;
+}
 
 blink::WebRTCRtpParameters GetWebRTCRtpParameters(
     const webrtc::RtpParameters& parameters) {
@@ -130,11 +201,33 @@ blink::WebRTCRtpEncodingParameters GetWebRTCRtpEncodingParameters(
       blink::WebString::FromASCII(encoding_parameters.rid));
 }
 
+webrtc::RtpEncodingParameters FromWebRTCRtpEncodingParameters(
+    const blink::WebRTCRtpEncodingParameters& web_encoding_parameter) {
+  webrtc::RtpEncodingParameters encoding_parameter;
+  encoding_parameter.codec_payload_type =
+      ToRtcOptional<int>(web_encoding_parameter.CodecPayloadType());
+  encoding_parameter.dtx = ToRTCDtxStatus(web_encoding_parameter.Dtx());
+  encoding_parameter.active = web_encoding_parameter.Active();
+  encoding_parameter.bitrate_priority =
+      PriorityToDouble(web_encoding_parameter.Priority());
+  encoding_parameter.ptime = ToRtcOptional<int>(web_encoding_parameter.Ptime());
+  encoding_parameter.max_bitrate_bps =
+      ToRtcOptional<int>(web_encoding_parameter.MaxBitrate());
+  encoding_parameter.max_framerate =
+      ToRtcOptional<int>(web_encoding_parameter.MaxFramerate());
+  if (web_encoding_parameter.ScaleResolutionDownBy())
+    encoding_parameter.scale_resolution_down_by =
+        web_encoding_parameter.ScaleResolutionDownBy().value();
+  if (web_encoding_parameter.Rid())
+    encoding_parameter.rid = web_encoding_parameter.Rid().value().Ascii();
+  return encoding_parameter;
+}
+
 blink::WebRTCRtpHeaderExtensionParameters GetWebRTCRtpHeaderExtensionParameters(
-    const webrtc::RtpHeaderExtensionParameters& extension_parameters) {
+    const webrtc::RtpHeaderExtensionParameters& header_extension_parameters) {
   return blink::WebRTCRtpHeaderExtensionParameters(
-      blink::WebString::FromASCII(extension_parameters.uri),
-      extension_parameters.id, extension_parameters.encrypt);
+      blink::WebString::FromASCII(header_extension_parameters.uri),
+      header_extension_parameters.id, header_extension_parameters.encrypt);
 }
 
 // TODO(orphis): Copy the RTCP information

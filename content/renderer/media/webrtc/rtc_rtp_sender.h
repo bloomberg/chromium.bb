@@ -63,6 +63,9 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
   std::unique_ptr<blink::WebRTCDTMFSenderHandler> GetDtmfSender()
       const override;
   std::unique_ptr<blink::WebRTCRtpParameters> GetParameters() const override;
+  void SetParameters(blink::WebVector<blink::WebRTCRtpEncodingParameters>,
+                     blink::WebRTCDegradationPreference,
+                     blink::WebRTCVoidRequest) override;
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override;
 
   webrtc::RtpSenderInterface* webrtc_sender() const;

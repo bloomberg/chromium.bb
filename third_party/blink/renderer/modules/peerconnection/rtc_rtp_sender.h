@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_parameters.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -57,6 +58,7 @@ class RTCRtpSender final : public ScriptWrappable {
   String kind_;
   Member<RTCDTMFSender> dtmf_;
   MediaStreamVector streams_;
+  base::Optional<RTCRtpParameters> last_returned_parameters_;
 };
 
 }  // namespace blink

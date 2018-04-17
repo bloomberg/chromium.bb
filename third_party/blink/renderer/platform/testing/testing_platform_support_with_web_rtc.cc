@@ -34,6 +34,9 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   std::unique_ptr<WebRTCRtpParameters> GetParameters() const override {
     return std::unique_ptr<WebRTCRtpParameters>();
   }
+  void SetParameters(WebVector<WebRTCRtpEncodingParameters>,
+                     WebRTCDegradationPreference,
+                     WebRTCVoidRequest) override {}
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override {}
 
  private:

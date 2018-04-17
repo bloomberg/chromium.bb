@@ -16,9 +16,12 @@ CONTENT_EXPORT blink::WebRTCRtpEncodingParameters
 GetWebRTCRtpEncodingParameters(
     const webrtc::RtpEncodingParameters& encoding_parameters);
 
+CONTENT_EXPORT webrtc::RtpEncodingParameters FromWebRTCRtpEncodingParameters(
+    const blink::WebRTCRtpEncodingParameters& encoding_parameters);
+
 CONTENT_EXPORT blink::WebRTCRtpHeaderExtensionParameters
 GetWebRTCRtpHeaderExtensionParameters(
-    const webrtc::RtpHeaderExtensionParameters& extension_parameters);
+    const webrtc::RtpHeaderExtensionParameters& header_extension_parameters);
 
 CONTENT_EXPORT blink::WebRTCRtcpParameters GetWebRTCRtcpParameters();
 
@@ -27,6 +30,9 @@ CONTENT_EXPORT blink::WebRTCRtpCodecParameters GetWebRTCRtpCodecParameters(
 
 CONTENT_EXPORT blink::WebRTCRtpParameters GetWebRTCRtpParameters(
     const webrtc::RtpParameters& parameters);
+
+CONTENT_EXPORT webrtc::DegradationPreference ToDegradationPreference(
+    blink::WebRTCDegradationPreference degradation_preference);
 
 }  // namespace content
 

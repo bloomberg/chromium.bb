@@ -75,6 +75,24 @@ TEST(RTCRtpParametersTest, Read) {
   }
 }
 
+TEST(RTCRtpParametersTest, WriteEncodingParameters) {
+  blink::WebRTCRtpEncodingParameters web_encoding_parameters(
+      42, blink::WebRTCDtxStatus::Enabled, true,
+      blink::WebRTCPriorityType::High, 1337, 50000, 60, 0.5, "rid");
+  webrtc::RtpEncodingParameters encoding_parameters =
+      content::FromWebRTCRtpEncodingParameters(web_encoding_parameters);
+
+  EXPECT_EQ(encoding_parameters.codec_payload_type, 42);
+  EXPECT_EQ(encoding_parameters.dtx, webrtc::DtxStatus::ENABLED);
+  EXPECT_EQ(encoding_parameters.active, true);
+  EXPECT_EQ(encoding_parameters.bitrate_priority, 4.0);
+  EXPECT_EQ(encoding_parameters.ptime, 1337);
+  EXPECT_EQ(encoding_parameters.max_bitrate_bps, 50000);
+  EXPECT_EQ(encoding_parameters.max_framerate, 60);
+  EXPECT_EQ(encoding_parameters.scale_resolution_down_by, 0.5);
+  EXPECT_EQ(encoding_parameters.rid, "rid");
+}
+
 TEST(RTCRtpParametersTest, CheckDtxStatusEnum) {
   webrtc::RtpEncodingParameters webrtc_encoding_parameters;
 

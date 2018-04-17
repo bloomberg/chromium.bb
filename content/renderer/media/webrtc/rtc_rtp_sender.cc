@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
+#include "content/renderer/media/webrtc/rtc_error.h"
 #include "content/renderer/media/webrtc/rtc_rtp_parameters.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
 
@@ -24,6 +25,14 @@ void OnReplaceTrackCompleted(blink::WebRTCVoidRequest request, bool result) {
   else
     request.RequestFailed(blink::WebRTCError(
         blink::WebRTCErrorType::kInvalidModification, blink::WebString()));
+}
+
+void OnSetParametersCompleted(blink::WebRTCVoidRequest request,
+                              webrtc::RTCError result) {
+  if (result.ok())
+    request.RequestSucceeded();
+  else
+    request.RequestFailed(ConvertToWebKitRTCError(result));
 }
 
 }  // namespace
@@ -128,10 +137,47 @@ class RTCRtpSender::RTCRtpSenderInternal
     return std::make_unique<RtcDtmfSenderHandler>(dtmf_sender);
   }
 
-  std::unique_ptr<blink::WebRTCRtpParameters> GetParameters() const {
-    webrtc::RtpParameters parameters = webrtc_sender_->GetParameters();
+  std::unique_ptr<blink::WebRTCRtpParameters> GetParameters() {
+    parameters_ = webrtc_sender_->GetParameters();
     return std::make_unique<blink::WebRTCRtpParameters>(
-        GetWebRTCRtpParameters(parameters));
+        GetWebRTCRtpParameters(parameters_));
+  }
+
+  void SetParameters(
+      blink::WebVector<blink::WebRTCRtpEncodingParameters> encodings,
+      blink::WebRTCDegradationPreference degradation_preference,
+      base::OnceCallback<void(webrtc::RTCError)> callback) {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+
+    webrtc::RtpParameters new_parameters = parameters_;
+
+    new_parameters.degradation_preference =
+        ToDegradationPreference(degradation_preference);
+
+    for (std::size_t i = 0; i < new_parameters.encodings.size(); ++i) {
+      // Encodings have other parameters in the native layer that aren't exposed
+      // to the blink layer. So instead of copying the new struct over the old
+      // one, we copy the members one by one over the old struct, effectively
+      // patching the changes done by the user.
+      auto encoding = FromWebRTCRtpEncodingParameters(encodings[i]);
+      new_parameters.encodings[i].codec_payload_type =
+          encoding.codec_payload_type;
+      new_parameters.encodings[i].dtx = encoding.dtx;
+      new_parameters.encodings[i].active = encoding.active;
+      new_parameters.encodings[i].bitrate_priority = encoding.bitrate_priority;
+      new_parameters.encodings[i].ptime = encoding.ptime;
+      new_parameters.encodings[i].max_bitrate_bps = encoding.max_bitrate_bps;
+      new_parameters.encodings[i].max_framerate = encoding.max_framerate;
+      new_parameters.encodings[i].rid = encoding.rid;
+      new_parameters.encodings[i].scale_resolution_down_by =
+          encoding.scale_resolution_down_by;
+    }
+
+    signaling_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RTCRtpSender::RTCRtpSenderInternal::SetParametersOnSignalingThread,
+            this, std::move(new_parameters), std::move(callback)));
   }
 
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
@@ -189,6 +235,25 @@ class RTCRtpSender::RTCRtpSenderInternal
                                           main_thread_, std::move(callback)));
   }
 
+  void SetParametersOnSignalingThread(
+      webrtc::RtpParameters parameters,
+      base::OnceCallback<void(webrtc::RTCError)> callback) {
+    DCHECK(signaling_thread_->BelongsToCurrentThread());
+    webrtc::RTCError result = webrtc_sender_->SetParameters(parameters);
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RTCRtpSender::RTCRtpSenderInternal::SetParametersCallback, this,
+            std::move(result), std::move(callback)));
+  }
+
+  void SetParametersCallback(
+      webrtc::RTCError result,
+      base::OnceCallback<void(webrtc::RTCError)> callback) {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    std::move(callback).Run(std::move(result));
+  }
+
   const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
@@ -202,6 +267,7 @@ class RTCRtpSender::RTCRtpSenderInternal
   // sender's associated set of streams.
   std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
       stream_refs_;
+  webrtc::RtpParameters parameters_;
 };
 
 uintptr_t RTCRtpSender::getId(const webrtc::RtpSenderInterface* webrtc_sender) {
@@ -279,6 +345,15 @@ std::unique_ptr<blink::WebRTCDTMFSenderHandler> RTCRtpSender::GetDtmfSender()
 std::unique_ptr<blink::WebRTCRtpParameters> RTCRtpSender::GetParameters()
     const {
   return internal_->GetParameters();
+}
+
+void RTCRtpSender::SetParameters(
+    blink::WebVector<blink::WebRTCRtpEncodingParameters> encodings,
+    blink::WebRTCDegradationPreference degradation_preference,
+    blink::WebRTCVoidRequest request) {
+  internal_->SetParameters(
+      std::move(encodings), degradation_preference,
+      base::BindOnce(&OnSetParametersCompleted, std::move(request)));
 }
 
 void RTCRtpSender::GetStats(
