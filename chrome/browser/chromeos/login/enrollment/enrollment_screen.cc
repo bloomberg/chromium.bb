@@ -270,6 +270,10 @@ void EnrollmentScreen::OnCancel() {
     return;
   }
 
+  on_joined_callback_.Reset();
+  if (authpolicy_login_helper_)
+    authpolicy_login_helper_->CancelRequestsAndRestart();
+
   UMA(policy::kMetricEnrollmentCancelled);
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeCancel, elapsed_timer_);
@@ -294,10 +298,6 @@ void EnrollmentScreen::OnConfirmationClosed() {
     // thus the correct one can be picked without restarting the browser.
     chrome::AttemptRestart();
   }
-}
-
-void EnrollmentScreen::OnAdJoined(const std::string& realm) {
-  std::move(on_joined_callback_).Run(realm);
 }
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
@@ -341,6 +341,19 @@ void EnrollmentScreen::OnDeviceEnrolled(const std::string& additional_token) {
     SendEnrollmentAuthToken(additional_token);
 
   enrollment_helper_->GetDeviceAttributeUpdatePermission();
+}
+
+void EnrollmentScreen::OnActiveDirectoryCredsProvided(
+    const std::string& machine_name,
+    const std::string& distinguished_name,
+    int encryption_types,
+    const std::string& username,
+    const std::string& password) {
+  DCHECK(authpolicy_login_helper_);
+  authpolicy_login_helper_->JoinAdDomain(
+      machine_name, distinguished_name, encryption_types, username, password,
+      base::BindOnce(&EnrollmentScreen::OnActiveDirectoryJoined,
+                     weak_ptr_factory_.GetWeakPtr(), machine_name, username));
 }
 
 void EnrollmentScreen::OnDeviceAttributeProvided(const std::string& asset_id,
@@ -426,8 +439,24 @@ void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
 }
 
 void EnrollmentScreen::JoinDomain(OnDomainJoinedCallback on_joined_callback) {
+  if (!authpolicy_login_helper_)
+    authpolicy_login_helper_ = std::make_unique<AuthPolicyLoginHelper>();
   on_joined_callback_ = std::move(on_joined_callback);
-  view_->ShowAdJoin();
+  view_->ShowActiveDirectoryScreen(std::string(), std::string(),
+                                   authpolicy::ERROR_NONE);
+}
+
+void EnrollmentScreen::OnActiveDirectoryJoined(
+    const std::string& machine_name,
+    const std::string& username,
+    authpolicy::ErrorType error,
+    const std::string& machine_domain) {
+  if (error == authpolicy::ERROR_NONE) {
+    view_->ShowEnrollmentSpinnerScreen();
+    std::move(on_joined_callback_).Run(machine_domain);
+    return;
+  }
+  view_->ShowActiveDirectoryScreen(machine_name, username, error);
 }
 
 }  // namespace chromeos

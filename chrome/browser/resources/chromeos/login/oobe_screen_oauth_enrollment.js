@@ -78,18 +78,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * @private
      */
     offlineAdUi_: undefined,
-    /**
-     * Typed machine name on the Active Directory join screen.
-     * @type {string}
-     * @private
-     */
-    activeDirectoryMachine_: null,
-    /**
-     * Typed username on the Active Directory join screen.
-     * @type {string}
-     * @private
-     */
-    activeDirectoryUsername_: null,
 
     /**
      * Value contained in the last received 'backButton' event.
@@ -146,8 +134,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       this.offlineAdUi_.addEventListener('authCompleted', function(e) {
         this.offlineAdUi_.disabled = true;
-        this.activeDirectoryMachine_ = e.detail.machinename;
-        this.activeDirectoryUsername_ = e.detail.username;
         chrome.send('oauthEnrollAdCompleteLogin', [
           e.detail.machinename, e.detail.distinguished_name,
           e.detail.encryption_types, e.detail.username, e.detail.password
@@ -305,8 +291,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     onBeforeHide: function() {
-      this.activeDirectoryMachine_ = null;
-      this.activeDirectoryUsername_ = null;
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
     },
 
@@ -406,9 +390,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         $('oauth-enroll-active-directory-join-error-card').submitButton.focus();
       } else if (step == STEP_AD_JOIN) {
         this.offlineAdUi_.disabled = false;
-        this.offlineAdUi_.setUser(
-            this.activeDirectoryUsername_, this.activeDirectoryMachine_);
-        this.offlineAdUi_.setInvalid(ACTIVE_DIRECTORY_ERROR_STATE.NONE);
+        this.offlineAdUi_.focus();
       }
 
       this.currentStep_ = step;

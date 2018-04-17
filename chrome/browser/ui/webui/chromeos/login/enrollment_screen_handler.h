@@ -15,12 +15,10 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
-#include "chromeos/dbus/auth_policy_client.h"
 #include "net/base/net_errors.h"
 
 namespace chromeos {
 
-class AuthPolicyLoginHelper;
 class ErrorScreensHistogramHelper;
 class HelpAppLauncher;
 
@@ -57,7 +55,9 @@ class EnrollmentScreenHandler
   void ShowSigninScreen() override;
   void ShowLicenseTypeSelectionScreen(
       const base::DictionaryValue& license_types) override;
-  void ShowAdJoin() override;
+  void ShowActiveDirectoryScreen(const std::string& machine_name,
+                                 const std::string& username,
+                                 authpolicy::ErrorType error) override;
   void ShowAttributePromptScreen(const std::string& asset_id,
                                  const std::string& location) override;
   void ShowAttestationBasedEnrollmentSuccessScreen(
@@ -130,12 +130,6 @@ class EnrollmentScreenHandler
   // enrollment sign-in page.
   bool IsEnrollmentScreenHiddenByError() const;
 
-  // Handler callback from AuthPolicyClient.
-  void HandleAdDomainJoin(const std::string& machine_name,
-                          const std::string& user_name,
-                          authpolicy::ErrorType code,
-                          const std::string& machine_domain);
-
   // Keeps the controller for this view.
   Controller* controller_ = nullptr;
 
@@ -161,9 +155,6 @@ class EnrollmentScreenHandler
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
 
-  // Helper to call AuthPolicyClient and cancel calls if needed. Used to join
-  // Active Directory domain.
-  std::unique_ptr<AuthPolicyLoginHelper> authpolicy_login_helper_;
 
   base::WeakPtrFactory<EnrollmentScreenHandler> weak_ptr_factory_;
 
