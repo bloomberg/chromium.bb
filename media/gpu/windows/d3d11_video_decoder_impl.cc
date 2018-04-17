@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -159,6 +160,13 @@ void D3D11VideoDecoderImpl::Initialize(
   accelerated_video_decoder_ =
       std::make_unique<H264Decoder>(std::make_unique<D3D11H264Accelerator>(
           this, video_decoder, video_device_, video_context_));
+
+  // |cdm_context| could be null for clear playback.
+  if (cdm_context) {
+    new_key_callback_registration_ =
+        cdm_context->RegisterNewKeyCB(base::BindRepeating(
+            &D3D11VideoDecoderImpl::NotifyNewKey, weak_factory_.GetWeakPtr()));
+  }
 
   state_ = State::kRunning;
   std::move(init_cb_).Run(true);
@@ -368,6 +376,11 @@ void D3D11VideoDecoderImpl::OnMailboxReleased(
 
 base::WeakPtr<D3D11VideoDecoderImpl> D3D11VideoDecoderImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void D3D11VideoDecoderImpl::NotifyNewKey() {
+  // TODO(rkuroiwa): Implement this method.
+  NOTIMPLEMENTED();
 }
 
 void D3D11VideoDecoderImpl::NotifyError(const char* reason) {

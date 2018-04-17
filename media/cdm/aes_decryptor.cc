@@ -18,6 +18,7 @@
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -147,10 +148,7 @@ void AesDecryptor::SessionIdDecryptionKeyMap::Erase(
   key_list_.erase(position);
 }
 
-enum ClearBytesBufferSel {
-  kSrcContainsClearBytes,
-  kDstContainsClearBytes
-};
+enum ClearBytesBufferSel { kSrcContainsClearBytes, kDstContainsClearBytes };
 
 static void CopySubsamples(const std::vector<SubsampleEntry>& subsamples,
                            const ClearBytesBufferSel sel,
@@ -554,6 +552,12 @@ CdmContext* AesDecryptor::GetCdmContext() {
   return this;
 }
 
+std::unique_ptr<CallbackRegistration> AesDecryptor::RegisterNewKeyCB(
+    base::RepeatingClosure new_key_cb) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 Decryptor* AesDecryptor::GetDecryptor() {
   return this;
 }
@@ -585,8 +589,8 @@ void AesDecryptor::Decrypt(StreamType stream_type,
 
   scoped_refptr<DecoderBuffer> decrypted;
   if (!encrypted->decrypt_config()->is_encrypted()) {
-    decrypted = DecoderBuffer::CopyFrom(encrypted->data(),
-                                        encrypted->data_size());
+    decrypted =
+        DecoderBuffer::CopyFrom(encrypted->data(), encrypted->data_size());
   } else {
     const std::string& key_id = encrypted->decrypt_config()->key_id();
     base::AutoLock auto_lock(key_map_lock_);
@@ -757,8 +761,7 @@ CdmKeysInfo AesDecryptor::GenerateKeysInfoList(
 }
 
 AesDecryptor::DecryptionKey::DecryptionKey(const std::string& secret)
-    : secret_(secret) {
-}
+    : secret_(secret) {}
 
 AesDecryptor::DecryptionKey::~DecryptionKey() = default;
 

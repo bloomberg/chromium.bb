@@ -13,6 +13,7 @@
 
 namespace media {
 
+class CallbackRegistration;
 class CdmProxyContext;
 class Decryptor;
 class MediaCryptoContext;
@@ -34,6 +35,20 @@ class MEDIA_EXPORT CdmContext {
   enum { kInvalidCdmId = 0 };
 
   virtual ~CdmContext();
+
+  // Registers a callback which will be called when an additional usable key is
+  // available in the CDM. Can be called multiple times to register multiple
+  // callbacks, all of which will be called when a new usable key is available.
+  // Lifetime: The caller should keep the returned CallbackRegistration object
+  // to keep the callback registered. The callback will be unregistered upon the
+  // destruction of the returned CallbackRegistration object. The returned
+  // CallbackRegistration object can be destructed on any thread.
+  // Thread Model: Can be called on any thread. The registered callback will
+  // always be called on the thread where RegisterNewKeyCB() is called.
+  // TODO(xhwang): We are not using base::CallbackList because it is not thread-
+  // safe. Consider refactoring base::CallbackList to avoid code duplication.
+  virtual std::unique_ptr<CallbackRegistration> RegisterNewKeyCB(
+      base::RepeatingClosure new_key_cb);
 
   // Gets the Decryptor object associated with the CDM. Returns nullptr if the
   // CDM does not support a Decryptor (i.e. platform-based CDMs where decryption
