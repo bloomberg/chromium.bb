@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -120,29 +120,38 @@ LocalCaretRect ComputeLocalCaretRect(const NGCaretPosition& caret_position) {
   if (caret_position.IsNull())
     return LocalCaretRect();
 
+  const NGPaintFragment& fragment = *caret_position.fragment;
+  const LayoutObject* layout_object = fragment.GetLayoutObject();
   switch (caret_position.position_type) {
     case NGCaretPositionType::kBeforeBox:
     case NGCaretPositionType::kAfterBox: {
-      DCHECK(caret_position.fragment->PhysicalFragment().IsBox());
+      DCHECK(fragment.PhysicalFragment().IsBox());
       const NGPhysicalOffsetRect fragment_local_rect =
-          ComputeLocalCaretRectByBoxSide(*caret_position.fragment,
+          ComputeLocalCaretRectByBoxSide(fragment,
                                          caret_position.position_type);
-      return {caret_position.fragment->GetLayoutObject(),
-              fragment_local_rect.ToLayoutRect()};
+      return {layout_object, fragment_local_rect.ToLayoutRect()};
     }
     case NGCaretPositionType::kAtTextOffset: {
-      DCHECK(caret_position.fragment->PhysicalFragment().IsText());
+      DCHECK(fragment.PhysicalFragment().IsText());
       DCHECK(caret_position.text_offset.has_value());
       const NGPhysicalOffsetRect caret_rect = ComputeLocalCaretRectAtTextOffset(
-          *caret_position.fragment, *caret_position.text_offset);
+          fragment, *caret_position.text_offset);
+      LayoutRect layout_rect = caret_rect.ToLayoutRect();
 
-      return {caret_position.fragment->GetLayoutObject(),
-              caret_rect.ToLayoutRect()};
+      // For vertical-rl, convert to "flipped block-flow" coordinates space.
+      // See core/layout/README.md#coordinate-spaces for details.
+      if (fragment.Style().IsFlippedBlocksWritingMode()) {
+        const LayoutBlockFlow* container =
+            layout_object->EnclosingNGBlockFlow();
+        container->FlipForWritingMode(layout_rect);
+      }
+
+      return {layout_object, layout_rect};
     }
   }
 
   NOTREACHED();
-  return {caret_position.fragment->GetLayoutObject(), LayoutRect()};
+  return {layout_object, LayoutRect()};
 }
 
 }  // namespace
