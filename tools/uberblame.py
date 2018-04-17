@@ -243,29 +243,46 @@ def parse_chunks_from_diff(diff):
       in unified diff format.
 
   Returns:
-    A generator of tuples (added_lines_start, added_lines_end,
-                           removed_lines, removed_lines_start)
+    A generator of tuples (added_lines_start, added_lines_end, removed_lines)
   """
-  in_chunk = False
-  chunk_previous = []
-  previous_start = None
-  current_start = None
-  current_end = None
-  for line in diff:
-    if line.startswith('@@'):
-      if in_chunk:
-        yield (current_start, current_end, chunk_previous, previous_start)
-      parts = line.split(' ')
-      previous = parts[1].lstrip('-')
-      previous_start, _ = parse_chunk_header_file_range(previous)
-      current = parts[2].lstrip('+')
-      current_start, current_end = parse_chunk_header_file_range(current)
-      in_chunk = True
-      chunk_previous = []
-    elif in_chunk and line.startswith('-'):
-      chunk_previous.append(line[1:])
-  if current_start != None:
-    yield (current_start, current_end, chunk_previous, previous_start)
+  it = iter(diff)
+  for line in it:
+    while not line.startswith('@@'):
+      line = it.next()
+    parts = line.split(' ')
+    previous_start, previous_end = parse_chunk_header_file_range(
+        parts[1].lstrip('-'))
+    current_start, current_end = parse_chunk_header_file_range(
+        parts[2].lstrip('+'))
+
+    in_delta = False
+    added_lines_start = None
+    added_lines_end = None
+    removed_lines = []
+    while previous_start < previous_end or current_start < current_end:
+      line = it.next()
+      firstchar = line[0]
+      line = line[1:]
+      if not in_delta and (firstchar == '-' or firstchar == '+'):
+        in_delta = True
+        added_lines_start = current_start
+        added_lines_end = current_start
+        removed_lines = []
+
+      if firstchar == '-':
+        removed_lines.append(line)
+        previous_start += 1
+      elif firstchar == '+':
+        current_start += 1
+        added_lines_end = current_start
+      elif firstchar == ' ':
+        if in_delta:
+          in_delta = False
+          yield (added_lines_start, added_lines_end, removed_lines)
+        previous_start += 1
+        current_start += 1
+    if in_delta:
+      yield (added_lines_start, added_lines_end, removed_lines)
 
 
 def should_skip_commit(commit):
@@ -374,8 +391,8 @@ def uberblame_aux(file_name, git_log_stdout, data, tokenization_method):
       continue
 
     offset = 0
-    for (added_lines_start, added_lines_end, removed_lines,
-         removed_lines_start) in parse_chunks_from_diff(commit.diff):
+    for (added_lines_start, added_lines_end,
+         removed_lines) in parse_chunks_from_diff(commit.diff):
       added_lines_start += offset
       added_lines_end += offset
       previous_contexts = [
@@ -420,10 +437,12 @@ def uberblame(file_name, revision, tokenization_method):
       data: File contents.
       blame: A list of TokenContexts.
   """
+  DIFF_CONTEXT = 3
   cmd_git_log = [
       'git', 'log', '--minimal', '--no-prefix', '--follow', '-m',
-      '--first-parent', '-p', '-U0', '-z',
-      '--format=%x00%H%x00%an%x00%ae%x00%ad%x00%B', revision, '--', file_name
+      '--first-parent', '-p',
+      '-U%d' % DIFF_CONTEXT, '-z', '--format=%x00%H%x00%an%x00%ae%x00%ad%x00%B',
+      revision, '--', file_name
   ]
   git_log = subprocess.Popen(
       cmd_git_log, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
