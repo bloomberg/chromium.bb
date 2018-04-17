@@ -149,7 +149,7 @@ void av1_reset_cdf_symbol_counters(FRAME_CONTEXT *fc) {
     if (i < 4) {
       RESET_CDF_COUNTER_STRIDE(fc->partition_cdf[i], 4, CDF_SIZE(10));
     } else if (i < 16) {
-      RESET_CDF_COUNTER(fc->partition_cdf[i], CDF_SIZE(10));
+      RESET_CDF_COUNTER(fc->partition_cdf[i], 10);
     } else {
       RESET_CDF_COUNTER_STRIDE(fc->partition_cdf[i], 8, CDF_SIZE(10));
     }
