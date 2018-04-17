@@ -414,6 +414,7 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   // and the updated data for the image from the main frame.
     PaintImageIdFlatSet images_to_invalidate =
         tile_manager_.TakeImagesToInvalidateOnSyncTree();
+    CHECK(images_to_invalidate.empty() || settings_.enable_checker_imaging);
     if (ukm_manager_)
       ukm_manager_->AddCheckerboardedImages(images_to_invalidate.size());
 
