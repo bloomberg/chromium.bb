@@ -886,12 +886,12 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache) {
   if (web_form.IsNull())
-    return std::unique_ptr<PasswordForm>();
+    return nullptr;
 
-  std::unique_ptr<PasswordForm> password_form(new PasswordForm());
+  auto password_form = std::make_unique<PasswordForm>();
   password_form->action = form_util::GetCanonicalActionForForm(web_form);
   if (!password_form->action.is_valid())
-    return std::unique_ptr<PasswordForm>();
+    return nullptr;
 
   SyntheticForm synthetic_form;
   PopulateSyntheticFormFromWebForm(web_form, &synthetic_form);
@@ -900,13 +900,13 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
           web_form, blink::WebFormControlElement(),
           field_value_and_properties_map, form_util::EXTRACT_NONE,
           &password_form->form_data, nullptr /* FormFieldData */)) {
-    return std::unique_ptr<PasswordForm>();
+    return nullptr;
   }
 
   if (!GetPasswordForm(std::move(synthetic_form), password_form.get(),
                        field_value_and_properties_map, form_predictions,
                        username_detector_cache)) {
-    return std::unique_ptr<PasswordForm>();
+    return nullptr;
   }
   return password_form;
 }
@@ -924,20 +924,20 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
       form_util::GetCanonicalOriginForDocument(frame.GetDocument());
 
   if (synthetic_form.control_elements.empty())
-    return std::unique_ptr<PasswordForm>();
+    return nullptr;
 
-  std::unique_ptr<PasswordForm> password_form(new PasswordForm());
+  auto password_form = std::make_unique<PasswordForm>();
   if (!UnownedPasswordFormElementsAndFieldSetsToFormData(
           fieldsets, synthetic_form.control_elements, nullptr,
           frame.GetDocument(), field_value_and_properties_map,
           form_util::EXTRACT_NONE, &password_form->form_data,
           nullptr /* FormFieldData */)) {
-    return std::unique_ptr<PasswordForm>();
+    return nullptr;
   }
   if (!GetPasswordForm(std::move(synthetic_form), password_form.get(),
                        field_value_and_properties_map, form_predictions,
                        username_detector_cache)) {
-    return std::unique_ptr<PasswordForm>();
+    return nullptr;
   }
 
   // No actual action on the form, so use the the origin as the action.
