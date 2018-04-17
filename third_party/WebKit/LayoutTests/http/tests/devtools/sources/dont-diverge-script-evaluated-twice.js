@@ -38,7 +38,10 @@
       return;
     }
 
-    TestRunner.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, '_didDivergeFromVM').then(dumpDivergeFromVM);
+    TestRunner
+        .addSnifferPromise(
+            Sources.DebuggerPlugin.prototype, '_didDivergeFromVM')
+        .then(dumpDivergeFromVM);
     TestRunner.addSnifferPromise(Bindings.ResourceScriptFile.prototype, '_mappingCheckedForTest')
         .then(() => SourcesTestRunner.completeDebuggerTest());
     TestRunner.evaluateInPage(changedScriptSource);

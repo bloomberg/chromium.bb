@@ -24,7 +24,9 @@
       var uiSourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
       var sourceFrame = await SourcesTestRunner.showUISourceCodePromise(uiSourceCode);
       SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
-      await TestRunner.addSnifferPromise(sourceFrame, '_breakpointDecorationsUpdatedForTest');
+      const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
+      await TestRunner.addSnifferPromise(
+          debuggerPlugin, '_breakpointDecorationsUpdatedForTest');
       await SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
       next();
     },
@@ -39,7 +41,9 @@ var w = 'some content';
 var x = 'new content'; var inline = 'something else';
 var y = 'more new content';`);
       await promise;
-      await TestRunner.addSnifferPromise(sourceFrame, '_breakpointDecorationsUpdatedForTest');
+      const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
+      await TestRunner.addSnifferPromise(
+          debuggerPlugin, '_breakpointDecorationsUpdatedForTest');
       await SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
       next();
     }

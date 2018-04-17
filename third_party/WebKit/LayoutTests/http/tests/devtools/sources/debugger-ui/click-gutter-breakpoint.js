@@ -22,7 +22,9 @@
     eventSender.mouseUp();
     if (!isRemove)
       return new Promise(
-          resolve => TestRunner.addSniffer(sourceFrame.__proto__, '_breakpointWasSetForTest', resolve, false));
+          resolve => TestRunner.addSniffer(
+              Sources.DebuggerPlugin.prototype, '_breakpointWasSetForTest',
+              resolve, false));
     return Promise.resolve();
   }
 

@@ -70,7 +70,8 @@
       SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
 
       TestRunner.addResult('Change a condition');
-      const lineDecorations = sourceFrame._lineBreakpointDecorations(9);
+      const lineDecorations = SourcesTestRunner.debuggerPlugin(sourceFrame)
+                                  ._lineBreakpointDecorations(9);
       lineDecorations[0].breakpoint.setCondition('');
 
       TestRunner.addResult('Dump breakpoints');

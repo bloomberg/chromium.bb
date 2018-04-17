@@ -30,11 +30,11 @@
 
   function waitForPausedUISourceCode() {
     return new Promise(resolve => {
-      TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, 'setExecutionLocation', function() {
-        SourcesTestRunner.showUISourceCodePromise(this.uiSourceCode()).then(() => {
-          resolve(this);
-        });
-      });
+      TestRunner.addSniffer(
+          Sources.DebuggerPlugin.prototype, '_executionLineChanged',
+          function() {
+            resolve(UI.panels.sources.visibleView);
+          });
     });
   }
 })();

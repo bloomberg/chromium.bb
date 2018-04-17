@@ -96,8 +96,9 @@
       var testSourceFrame;
       SourcesTestRunner.showScriptSource('edit-me.js', didShowScriptSource);
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         testSourceFrame = sourceFrame;
+        await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrame);
         SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame)
             .then(breakpointAdded);
         SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
@@ -126,8 +127,9 @@
 
       var testSourceFrame;
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         testSourceFrame = sourceFrame;
+        await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrame);
         SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(testSourceFrame)
             .then(breakpointAdded);
         SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
