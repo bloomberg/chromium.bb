@@ -23,9 +23,10 @@ Version: 1.5.7
 License: MIT
 License File: NOT_SHIPPED
 Security Critical: no
-Description: Used during presubmit checks and via lint-webkitpy and format-webkitpy. There is
-    overlap between pep8 and pylint, but pep8 catches a bunch of stylistic
-	issues that pylint doesn't (e.g., warning about blank lines, various whitespace issues, etc.).
+Description: Used during presubmit checks and via lint_blinkpy.py and
+    format-webkitpy. There is overlap between pep8 and pylint, but pep8 catches
+    a bunch of stylistic issues that pylint doesn't (e.g., warning about blank
+    lines, various whitespace issues, etc.).
 Local Modifications: None
 
 Name: web-platform-tests - Test Suites for Web Platform specifications

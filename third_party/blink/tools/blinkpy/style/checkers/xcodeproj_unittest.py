@@ -25,7 +25,7 @@
 
 import unittest
 
-from webkitpy.style.checkers import xcodeproj
+from blinkpy.style.checkers import xcodeproj
 
 
 class TestErrorHandler(object):

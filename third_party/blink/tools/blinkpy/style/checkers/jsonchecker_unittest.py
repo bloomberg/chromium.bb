@@ -24,7 +24,7 @@
 
 import unittest
 
-from webkitpy.style.checkers import jsonchecker
+from blinkpy.style.checkers import jsonchecker
 
 
 class MockErrorHandler(object):

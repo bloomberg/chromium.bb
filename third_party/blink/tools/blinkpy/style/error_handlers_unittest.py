@@ -24,9 +24,9 @@
 
 import unittest
 
-from webkitpy.style.checker import StyleProcessorConfiguration
-from webkitpy.style.error_handlers import DefaultStyleErrorHandler
-from webkitpy.style.filter import FilterConfiguration
+from blinkpy.style.checker import StyleProcessorConfiguration
+from blinkpy.style.error_handlers import DefaultStyleErrorHandler
+from blinkpy.style.filter import FilterConfiguration
 
 
 class DefaultStyleErrorHandlerTest(unittest.TestCase):

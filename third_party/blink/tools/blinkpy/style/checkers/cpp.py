@@ -34,7 +34,7 @@
 # This is the modified version of Google's cpplint. The original code is
 # https://github.com/google/styleguide/tree/gh-pages/cpplint
 
-"""Support for check-webkit-style."""
+"""Support for check_blink_style.py."""
 
 import math  # for log
 import os

@@ -28,7 +28,7 @@
 
 import unittest
 
-from webkitpy.style.checkers.test_expectations import TestExpectationsChecker
+from blinkpy.style.checkers.test_expectations import TestExpectationsChecker
 from webkitpy.common.host_mock import MockHost
 
 
@@ -85,7 +85,7 @@ class TestExpectationsTestCase(unittest.TestCase):
 
         # Note that a patch might change a line that introduces errors elsewhere, but we
         # don't want to lint the whole file (it can unfairly punish patches for pre-existing errors).
-        # We rely on a separate lint-webkitpy step on the bots to keep the whole file okay.
+        # We rely on a separate webkit_lint step on the bots to keep the whole file okay.
         # FIXME: See https://bugs.webkit.org/show_bug.cgi?id=104712 .
         self.assertFalse(self._error_collector.turned_off_filtering)
 

@@ -24,8 +24,8 @@
 
 import unittest
 
-from webkitpy.style.checkers.common import CarriageReturnChecker
-from webkitpy.style.checkers.common import TabChecker
+from blinkpy.style.checkers.common import CarriageReturnChecker
+from blinkpy.style.checkers.common import TabChecker
 
 # FIXME: The unit tests for the cpp, text, and common checkers should
 #        share supporting test code. This can include, for example, the

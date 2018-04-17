@@ -28,7 +28,7 @@
 
 import unittest
 
-from webkitpy.style.checkers.text import process_file_data, TextChecker
+from blinkpy.style.checkers.text import process_file_data, TextChecker
 
 
 class TextStyleTestCase(unittest.TestCase):

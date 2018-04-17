@@ -24,7 +24,7 @@
 
 import unittest
 
-from webkitpy.style.checkers import xml
+from blinkpy.style.checkers import xml
 
 
 class MockErrorHandler(object):
