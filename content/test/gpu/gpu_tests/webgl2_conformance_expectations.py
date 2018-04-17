@@ -426,7 +426,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # These Transform Feedback tests seem flaky on ANGLE/GL with passthrough.
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
         ['passthrough', 'opengl'], bug=832238)
-    self.Flaky('conformance2/transform_feedback/too-small-buffers.html',
+    self.Fail('conformance2/transform_feedback/too-small-buffers.html',
         ['passthrough', 'opengl'], bug=832238)
 
     # Passthrough command decoder / OpenGL / Intel
