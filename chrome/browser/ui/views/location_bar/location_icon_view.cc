@@ -72,7 +72,10 @@ SkColor LocationIconView::GetTextColor() const {
 }
 
 bool LocationIconView::ShowBubble(const ui::Event& event) {
-  return location_bar_->ShowPageInfoDialog(location_bar_->GetWebContents());
+  auto* contents = location_bar_->GetWebContents();
+  if (!contents)
+    return false;
+  return location_bar_->ShowPageInfoDialog(contents);
 }
 
 void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
