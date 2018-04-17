@@ -22,7 +22,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
 import android.view.ActionMode;
-import android.view.View;
+import android.view.ViewGroup;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +43,7 @@ import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMetricsLogger;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.ui.base.MenuSourceType;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
@@ -56,7 +57,8 @@ public class SelectionPopupControllerTest {
     private Context mContext;
     private WindowAndroid mWindowAndroid;
     private WebContentsImpl mWebContents;
-    private View mView;
+    private ViewGroup mView;
+    private ViewAndroidDelegate mViewAndroidDelegate;
     private ActionMode mActionMode;
     private PackageManager mPackageManager;
     private SmartSelectionMetricsLogger mLogger;
@@ -125,7 +127,8 @@ public class SelectionPopupControllerTest {
         mContext = Mockito.mock(Context.class);
         mWindowAndroid = Mockito.mock(WindowAndroid.class);
         mWebContents = Mockito.mock(WebContentsImpl.class);
-        mView = Mockito.mock(View.class);
+        mView = Mockito.mock(ViewGroup.class);
+        mViewAndroidDelegate = ViewAndroidDelegate.createBasicDelegate(mView);
         mActionMode = Mockito.mock(ActionMode.class);
         mPackageManager = Mockito.mock(PackageManager.class);
         mRenderCoordinates = Mockito.mock(RenderCoordinates.class);
@@ -140,9 +143,9 @@ public class SelectionPopupControllerTest {
         when(mContext.getContentResolver()).thenReturn(mContentResolver);
         when(mWebContents.getRenderCoordinates()).thenReturn(mRenderCoordinates);
         when(mRenderCoordinates.getDeviceScaleFactor()).thenReturn(1.f);
-
+        when(mWebContents.getViewAndroidDelegate()).thenReturn(mViewAndroidDelegate);
         mController = SelectionPopupControllerImpl.createForTesting(
-                mContext, mWindowAndroid, mWebContents, mView, mPopupController);
+                mContext, mWindowAndroid, mWebContents, mPopupController);
     }
 
     @Test

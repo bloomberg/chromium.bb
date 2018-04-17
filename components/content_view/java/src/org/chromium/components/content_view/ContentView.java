@@ -29,8 +29,8 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.ui.base.EventForwarder;
 
 /**
- * The containing view for {@link ContentViewCore} that exists in the Android UI hierarchy and
- * exposes the various {@link View} functionality to it.
+ * The containing view for {@link WebContents} that exists in the Android UI hierarchy and exposes
+ * the various {@link View} functionality to it.
  */
 public class ContentView
         extends FrameLayout implements ContentViewCore.InternalAccessDelegate, SmartClipProvider {
@@ -54,7 +54,7 @@ public class ContentView
      * Constructs a new ContentView for the appropriate Android version.
      * @param context The Context the view is running in, through which it can
      *                access the current theme, resources, etc.
-     * @param cvc A pointer to the content view core managing this content view.
+     * @param webContents The WebContents managing this content view.
      * @return an instance of a ContentView.
      */
     public static ContentView createContentView(Context context, WebContents webContents) {

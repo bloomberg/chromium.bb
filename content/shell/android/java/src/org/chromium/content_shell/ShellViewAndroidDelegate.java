@@ -27,16 +27,10 @@ public class ShellViewAndroidDelegate extends ViewAndroidDelegate {
         void notifyCalled(int type);
     }
 
-    private final ViewGroup mContainerView;
     private OnCursorUpdateHelper mOnCursorUpdateHelper;
 
     public ShellViewAndroidDelegate(ViewGroup containerView) {
-        mContainerView = containerView;
-    }
-
-    @Override
-    public ViewGroup getContainerView() {
-        return mContainerView;
+        super(containerView);
     }
 
     public void setOnCursorUpdateHelper(OnCursorUpdateHelper helper) {

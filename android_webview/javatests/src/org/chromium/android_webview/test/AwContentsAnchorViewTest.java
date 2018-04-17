@@ -219,8 +219,7 @@ public class AwContentsAnchorViewTest {
     private FrameLayout updateContainerView() {
         FrameLayout containerView = new FrameLayout(mActivityTestRule.getActivity());
         mActivityTestRule.getActivity().addView(containerView);
-        mViewDelegate.updateCurrentContainerView(containerView,
-                DisplayAndroid.getNonMultiDisplay(mContainerView.getContext()));
+        mViewDelegate.setContainerView(containerView);
         return containerView;
     }
 

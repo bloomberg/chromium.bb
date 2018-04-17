@@ -30,6 +30,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.textclassifier.TextClassifier;
 
@@ -55,6 +56,8 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.MenuSourceType;
+import org.chromium.ui.base.ViewAndroidDelegate;
+import org.chromium.ui.base.ViewAndroidDelegate.ContainerViewObserver;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
@@ -67,7 +70,7 @@ import java.util.List;
 @TargetApi(Build.VERSION_CODES.M)
 public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         implements ImeEventObserver, SelectionPopupController, WindowEventObserver,
-                   WindowAndroidChangedObserver, HideablePopup {
+                   WindowAndroidChangedObserver, HideablePopup, ContainerViewObserver {
     private static final String TAG = "SelectionPopupCtlr"; // 20 char limit
 
     /**
@@ -192,14 +195,13 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      * @param context Context for action mode.
      * @param window WindowAndroid instance.
      * @param webContents WebContents instance.
-     * @param view Container view.
      */
     public static SelectionPopupControllerImpl create(
-            Context context, WindowAndroid window, WebContents webContents, View view) {
+            Context context, WindowAndroid window, WebContents webContents) {
         SelectionPopupControllerImpl controller = webContents.getOrSetUserData(
                 SelectionPopupControllerImpl.class, UserDataFactoryLazyHolder.INSTANCE);
         assert controller != null && !controller.initialized();
-        controller.init(context, window, view, true);
+        controller.init(context, window, true);
         return controller;
     }
 
@@ -220,15 +222,13 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      * @param context Context for action mode.
      * @param window WindowAndroid instance.
      * @param webContents WebContents instance.
-     * @param view Container view.
      * @param popupController {@link PopupController} mocked for testing.
      */
     public static SelectionPopupControllerImpl createForTesting(Context context,
-            WindowAndroid window, WebContents webContents, View view,
-            PopupController popupController) {
+            WindowAndroid window, WebContents webContents, PopupController popupController) {
         SelectionPopupControllerImpl controller = new SelectionPopupControllerImpl(webContents);
         controller.setPopupControllerForTesting(popupController);
-        controller.init(context, window, view, false);
+        controller.init(context, window, false);
         return controller;
     }
 
@@ -247,12 +247,15 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     /**
      * @param context Context for action mode.
      * @param window WindowAndroid instance.
-     * @param view Container view.
+     * @param viewDelegate {@link ViewAndroidDelegate} to get the current container view from.
+     * @param iniatializeNative Used for tests. Set to {@code false} to skip native initialization.
      */
-    private void init(Context context, WindowAndroid window, View view, boolean initializeNative) {
+    private void init(Context context, WindowAndroid window, boolean initializeNative) {
         mContext = context;
         mWindowAndroid = window;
-        mView = view;
+        ViewAndroidDelegate viewDelegate = mWebContents.getViewAndroidDelegate();
+        mView = viewDelegate != null ? viewDelegate.getContainerView() : null;
+        if (viewDelegate != null) viewDelegate.addObserver(this);
 
         // The menu items are allowed by default.
         mAllowedMenuItems = MENU_ITEM_SHARE | MENU_ITEM_WEB_SEARCH | MENU_ITEM_PROCESS_TEXT;
@@ -286,10 +289,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return query.substring(0, maxLength) + "…";
     }
 
-    /**
-     * Update the container view.
-     */
-    public void setContainerView(View view) {
+    // ViewAndroidDelegate.ContainerViewObserver
+
+    @Override
+    public void onUpdateContainerView(ViewGroup view) {
         assert view != null;
 
         // Cleans up action mode before switching to a new container view.
@@ -297,6 +300,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         mUnselectAllOnDismiss = true;
         destroyPastePopup();
 
+        view.setClickable(true);
         mView = view;
         initHandleObserver();
     }

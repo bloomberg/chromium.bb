@@ -10,7 +10,6 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.base.ViewAndroidDelegate;
-import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,12 +21,6 @@ import java.util.Map.Entry;
 public class AwViewAndroidDelegate extends ViewAndroidDelegate {
     /** Used for logging. */
     private static final String TAG = "AwVAD";
-
-    /**
-     * The current container view. This view can be updated with
-     * {@link #updateCurrentContainerView()}.
-     */
-    private ViewGroup mContainerView;
 
     /**
      * List of anchor views stored in the order in which they were acquired mapped
@@ -64,7 +57,7 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
     @VisibleForTesting
     public AwViewAndroidDelegate(ViewGroup containerView, AwContentsClient contentsClient,
             AwScrollOffsetManager scrollManager) {
-        mContainerView = containerView;
+        super(containerView);
         mContentsClient = contentsClient;
         mScrollManager = scrollManager;
     }
@@ -89,20 +82,16 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
         }
     }
 
-    /**
-    * Updates the current container view to which this class delegates. Existing anchor views
-    * are transferred from the old to the new container view.
-    */
-    public void updateCurrentContainerView(ViewGroup containerView, DisplayAndroid display) {
-        ViewGroup oldContainerView = getContainerView();
-        mContainerView = containerView;
+    @Override
+    public void updateAnchorViews(ViewGroup oldContainerView) {
+        // Transfer existing anchor views from the old to the new container view.
         for (Entry<View, Position> entry : mAnchorViews.entrySet()) {
             View anchorView = entry.getKey();
             Position position = entry.getValue();
             if (oldContainerView != null) {
                 oldContainerView.removeView(anchorView);
             }
-            containerView.addView(anchorView);
+            mContainerView.addView(anchorView);
             if (position != null) {
                 setViewPosition(anchorView, position.mX, position.mY, position.mWidth,
                         position.mHeight, position.mLeftMargin, position.mTopMargin);
@@ -136,10 +125,5 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
     @Override
     public void onBackgroundColorChanged(int color) {
         mContentsClient.onBackgroundColorChanged(color);
-    }
-
-    @Override
-    public ViewGroup getContainerView() {
-        return mContainerView;
     }
 }

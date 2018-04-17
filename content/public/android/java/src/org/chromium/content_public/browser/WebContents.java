@@ -13,6 +13,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -96,6 +97,12 @@ public interface WebContents extends Parcelable {
      * @return The top level WindowAndroid associated with this WebContents.  This can be null.
      */
     WindowAndroid getTopLevelNativeWindow();
+
+    /**
+     * @return The {@link ViewAndroidDelegate} from which to get the container view.
+     *         This can be null.
+     */
+    ViewAndroidDelegate getViewAndroidDelegate();
 
     /**
      * Deletes the Web Contents object.

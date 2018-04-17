@@ -235,8 +235,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // Returns the Java delegate for this view. This is used to delegate work
   // up to the embedding view (or the embedder that can deal with the
   // implementation details).
-  const base::android::ScopedJavaLocalRef<jobject>
-      GetViewAndroidDelegate() const;
+  const base::android::ScopedJavaLocalRef<jobject> GetViewAndroidDelegate()
+      const;
 
   std::list<ViewAndroid*> children_;
   base::ObserverList<ViewAndroidObserver> observer_list_;

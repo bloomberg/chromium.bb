@@ -21,6 +21,7 @@ import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -43,6 +44,11 @@ public class MockWebContents implements WebContents {
 
     @Override
     public WindowAndroid getTopLevelNativeWindow() {
+        return null;
+    }
+
+    @Override
+    public ViewAndroidDelegate getViewAndroidDelegate() {
         return null;
     }
 

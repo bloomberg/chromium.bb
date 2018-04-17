@@ -122,7 +122,7 @@ public class VideoFullscreenOrientationLockTest {
     }
 
     private boolean clickFullscreenButton() throws InterruptedException, TimeoutException {
-        return DOMUtils.clickRect(mActivityTestRule.getContentViewCore(),
+        return DOMUtils.clickRect(mActivityTestRule.getWebContents(),
                 fullscreenButtonBounds(
                         DOMUtils.getNodeBounds(mActivityTestRule.getWebContents(), VIDEO_ID)));
     }

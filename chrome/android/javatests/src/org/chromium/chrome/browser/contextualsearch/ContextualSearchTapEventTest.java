@@ -81,7 +81,7 @@ public class ContextualSearchTapEventTest {
             setSelectionController(new MockCSSelectionController(activity, this));
             WebContents webContents = WebContentsFactory.createWebContents(false, false);
             SelectionPopupController selectionPopupController =
-                    SelectionPopupController.createForTesting(activity, null, webContents, null);
+                    SelectionPopupController.createForTesting(activity, null, webContents);
             selectionPopupController.setSelectionClient(this.getContextualSearchSelectionClient());
             MockContextualSearchPolicy policy = new MockContextualSearchPolicy();
             setContextualSearchPolicy(policy);
