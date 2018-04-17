@@ -45,6 +45,84 @@ namespace blink {
 
 namespace {
 
+class LeftEdge {
+  STATIC_ONLY(LeftEdge);
+
+ public:
+  static InlineBoxPosition UnadjustedInlineBoxPosition(
+      const InlineBox& inline_box) {
+    return InlineBoxPosition(&inline_box, inline_box.CaretLeftmostOffset());
+  }
+
+  static InlineBox* BackwardLeafChild(const InlineBox& inline_box) {
+    return inline_box.PrevLeafChild();
+  }
+
+  // Returns true if |inlineBox| starts different direction of embedded text ru.
+  // See [1] for details.
+  // [1] UNICODE BIDIRECTIONAL ALGORITHM, http://unicode.org/reports/tr9/
+  static bool IsStartOfDifferentDirection(const InlineBox& inline_box) {
+    InlineBox* prev_box = inline_box.PrevLeafChild();
+    if (!prev_box)
+      return true;
+    if (prev_box->Direction() == inline_box.Direction())
+      return true;
+    DCHECK_NE(prev_box->BidiLevel(), inline_box.BidiLevel());
+    return prev_box->BidiLevel() > inline_box.BidiLevel();
+  }
+
+  static InlineBox* FindForwardBidiRun(const InlineBox& inline_box,
+                                       unsigned bidi_level) {
+    return InlineBoxTraversal::FindRightBidiRun(inline_box, bidi_level);
+  }
+
+  static InlineBoxPosition FindBackwardBoundaryOfEntireBidiRun(
+      const InlineBox& inline_box,
+      unsigned bidi_level) {
+    const InlineBox* result_box =
+        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(inline_box,
+                                                            bidi_level);
+    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
+  }
+};
+
+class RightEdge {
+  STATIC_ONLY(RightEdge);
+
+ public:
+  static InlineBoxPosition UnadjustedInlineBoxPosition(
+      const InlineBox& inline_box) {
+    return InlineBoxPosition(&inline_box, inline_box.CaretRightmostOffset());
+  }
+
+  static InlineBox* BackwardLeafChild(const InlineBox& inline_box) {
+    return inline_box.NextLeafChild();
+  }
+
+  // TODO(editing-dev): This function is almost identical to
+  // LeftEdge::IsStartOfDifferentDirection(). Try to unify them.
+  static bool IsStartOfDifferentDirection(const InlineBox& inline_box) {
+    const InlineBox* const next_box = inline_box.NextLeafChild();
+    if (!next_box)
+      return true;
+    return next_box->BidiLevel() >= inline_box.BidiLevel();
+  }
+
+  static InlineBox* FindForwardBidiRun(const InlineBox& inline_box,
+                                       unsigned bidi_level) {
+    return InlineBoxTraversal::FindLeftBidiRun(inline_box, bidi_level);
+  }
+
+  static InlineBoxPosition FindBackwardBoundaryOfEntireBidiRun(
+      const InlineBox& inline_box,
+      unsigned bidi_level) {
+    const InlineBox* result_box =
+        InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(inline_box,
+                                                             bidi_level);
+    return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
+  }
+};
+
 bool IsNonTextLeafChild(LayoutObject* object) {
   if (object->SlowFirstChild())
     return false;
@@ -80,28 +158,6 @@ InlineTextBox* SearchAheadForBetterMatch(const LayoutText* layout_object) {
   return nullptr;
 }
 
-// Returns true if |inlineBox| starts different direction of embedded text ru.
-// See [1] for details.
-// [1] UNICODE BIDIRECTIONAL ALGORITHM, http://unicode.org/reports/tr9/
-bool IsStartOfDifferentDirection(const InlineBox* inline_box) {
-  InlineBox* prev_box = inline_box->PrevLeafChild();
-  if (!prev_box)
-    return true;
-  if (prev_box->Direction() == inline_box->Direction())
-    return true;
-  DCHECK_NE(prev_box->BidiLevel(), inline_box->BidiLevel());
-  return prev_box->BidiLevel() > inline_box->BidiLevel();
-}
-
-// TODO(editing-dev): This function is almost identical to
-// |IsStartOfDifferentDirection|. Try to unify them.
-bool IsEndOfDifferentDirection(const InlineBox* inline_box) {
-  const InlineBox* const next_box = inline_box->NextLeafChild();
-  if (!next_box)
-    return true;
-  return next_box->BidiLevel() >= inline_box->BidiLevel();
-}
-
 template <typename Strategy>
 PositionTemplate<Strategy> DownstreamIgnoringEditingBoundaries(
     PositionTemplate<Strategy> position) {
@@ -124,43 +180,30 @@ PositionTemplate<Strategy> UpstreamIgnoringEditingBoundaries(
   return position;
 }
 
+// |EdgeSide| defines which edge of |inline_box| to adjust. When
+// traversing leaf InlineBoxes, "forward" means the direction from the adjusted
+// edge to the other edge of |inline_box|, namely:
+// - |LeftEdge|: "forward" means left-to-right
+// - |RightEdge|: "forward" means right-to-left
+template <typename EdgeSide>
 InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
-    InlineBox* inline_box,
-    int caret_offset) {
-  if (caret_offset == inline_box->CaretRightmostOffset()) {
-    if (IsEndOfDifferentDirection(inline_box))
-      return InlineBoxPosition(inline_box, caret_offset);
+    const InlineBox& inline_box) {
+  if (EdgeSide::IsStartOfDifferentDirection(inline_box))
+    return EdgeSide::UnadjustedInlineBoxPosition(inline_box);
 
-    const unsigned level = inline_box->NextLeafChild()->BidiLevel();
-    InlineBox* const prev_box =
-        InlineBoxTraversal::FindLeftBidiRun(*inline_box, level);
+  const unsigned level = EdgeSide::BackwardLeafChild(inline_box)->BidiLevel();
+  InlineBox* const forward_box =
+      EdgeSide::FindForwardBidiRun(inline_box, level);
 
-    // For example, abc FED 123 ^ CBA
-    if (prev_box && prev_box->BidiLevel() == level)
-      return InlineBoxPosition(inline_box, caret_offset);
+  // For example, abc FED 123 ^ CBA when adjusting right edge of 123
+  if (forward_box && forward_box->BidiLevel() == level)
+    return EdgeSide::UnadjustedInlineBoxPosition(inline_box);
 
-    // For example, abc 123 ^ CBA
-    InlineBox* const result_box =
-        InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(*inline_box,
-                                                             level);
-    return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
-  }
-
-  if (IsStartOfDifferentDirection(inline_box))
-    return InlineBoxPosition(inline_box, caret_offset);
-
-  const unsigned level = inline_box->PrevLeafChild()->BidiLevel();
-  InlineBox* const next_box =
-      InlineBoxTraversal::FindRightBidiRun(*inline_box, level);
-
-  if (next_box && next_box->BidiLevel() == level)
-    return InlineBoxPosition(inline_box, caret_offset);
-
-  InlineBox* const result_box =
-      InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(*inline_box, level);
-  return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
+  // For example, abc 123 ^ CBA when adjusting right edge of 123
+  return EdgeSide::FindBackwardBoundaryOfEntireBidiRun(inline_box, level);
 }
 
+// TODO(xiaochengh): Unify left and right edge handling with template.
 InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
     InlineBox* inline_box,
     int caret_offset,
@@ -170,8 +213,13 @@ InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
 
   const TextDirection primary_direction =
       inline_box->Root().Block().Style()->Direction();
-  if (inline_box->Direction() == primary_direction)
-    return AdjustInlineBoxPositionForPrimaryDirection(inline_box, caret_offset);
+  if (inline_box->Direction() == primary_direction) {
+    return caret_offset == inline_box->CaretLeftmostOffset()
+               ? AdjustInlineBoxPositionForPrimaryDirection<LeftEdge>(
+                     *inline_box)
+               : AdjustInlineBoxPositionForPrimaryDirection<RightEdge>(
+                     *inline_box);
+  }
 
   if (unicode_bidi == UnicodeBidi::kPlaintext)
     return InlineBoxPosition(inline_box, caret_offset);
