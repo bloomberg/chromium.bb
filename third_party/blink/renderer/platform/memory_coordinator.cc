@@ -57,18 +57,19 @@ void MemoryCoordinator::SetIsLowEndDeviceForTesting(bool is_low_end_device) {
 
 // static
 MemoryCoordinator& MemoryCoordinator::Instance() {
-  DEFINE_STATIC_LOCAL(Persistent<MemoryCoordinator>, external,
-                      (new MemoryCoordinator));
-  DCHECK(IsMainThread());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistent<MemoryCoordinator>,
+                                  external, (new MemoryCoordinator));
   return *external.Get();
 }
 
 void MemoryCoordinator::RegisterThread(WebThread* thread) {
-  MemoryCoordinator::Instance().web_threads_.insert(thread);
+  MutexLocker lock(web_threads_mutex_);
+  web_threads_.insert(thread);
 }
 
 void MemoryCoordinator::UnregisterThread(WebThread* thread) {
-  MemoryCoordinator::Instance().web_threads_.erase(thread);
+  MutexLocker lock(web_threads_mutex_);
+  web_threads_.erase(thread);
 }
 
 MemoryCoordinator::MemoryCoordinator() = default;
@@ -110,6 +111,7 @@ void MemoryCoordinator::OnPurgeMemory() {
   WTF::Partitions::DecommitFreeableMemory();
 
   // Thread-specific data never issues a layout, so we are safe here.
+  MutexLocker lock(web_threads_mutex_);
   for (auto thread : web_threads_) {
     if (!thread->GetTaskRunner())
       continue;
