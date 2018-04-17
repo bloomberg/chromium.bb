@@ -88,7 +88,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'chromium_builder_perf',
   'chromiumos_preflight',
   'mini_installer',
-  'next_version_mini_installer',
+  'previous_version_mini_installer',
 
   # iOS tests are listed in //ios/build/bots.
   'cronet_test',

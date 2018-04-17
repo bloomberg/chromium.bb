@@ -2,17 +2,17 @@
   "Files": {
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.exe": {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.VisualElementsManifest.xml": {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome.dll":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome.dll":
         {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
         {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z":
         {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe":
         {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\$MINI_INSTALLER_FILE_VERSION.manifest":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION.manifest":
         {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION":
         {"exists": false}
   },
   "RegistryEntries": {
@@ -21,7 +21,7 @@
       "values": {
         "pv": {
           "type": "SZ",
-          "data": "$MINI_INSTALLER_FILE_VERSION"
+          "data": "$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION"
         }
       },
       "wow_key": "KEY_WOW64_32KEY"
@@ -31,7 +31,7 @@
       "values": {
         "pv": {
           "type": "SZ",
-          "data": "$MINI_INSTALLER_FILE_VERSION"
+          "data": "$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION"
         }
       },
       "wow_key": "KEY_WOW64_32KEY"
@@ -46,11 +46,11 @@
       "values": {
         "UninstallString": {
           "type": "SZ",
-          "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --multi-install --chrome --system-level --verbose-logging"
+          "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --multi-install --chrome --system-level --verbose-logging"
         },
         "Version": {
           "type": "SZ",
-          "data": "$MINI_INSTALLER_FILE_VERSION"
+          "data": "$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION"
         }
       },
       "wow_key": "KEY_WOW64_32KEY"
@@ -59,7 +59,7 @@
       "exists": "required",
       "values": {
         "type": "SZ",
-        "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\notification_helper.exe"
+        "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\notification_helper.exe"
       }
     },
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\$CHROME_SHORT_NAME": {

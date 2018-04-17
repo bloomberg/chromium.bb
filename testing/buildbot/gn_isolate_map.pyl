@@ -896,8 +896,8 @@
     "label": "//net:net_unittests",
     "type": "console_test_launcher",
   },
-  "next_version_mini_installer": {
-    "label": "//chrome/installer/mini_installer:next_version_mini_installer",
+  "previous_version_mini_installer": {
+    "label": "//chrome/installer/mini_installer:previous_version_mini_installer",
     "type": "additional_compile_target",
   },
   "notification_helper_unittests": {

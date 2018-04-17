@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generates a mini_installer with a higher version than an existing one."""
+"""Generates a mini_installer with a lower version than an existing one."""
 
 import argparse
 import subprocess
@@ -18,6 +18,7 @@ def main():
   return subprocess.call([
       'alternate_version_generator.exe',
       '--force',
+      '--previous',
       '--out=' + args.out,
       ])
 

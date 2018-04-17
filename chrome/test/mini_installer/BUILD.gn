@@ -9,7 +9,7 @@ if (is_win) {
     data_deps = [
       "//chrome/test/chromedriver:chromedriver",
       "//chrome/installer/mini_installer:mini_installer",
-      "//chrome/installer/mini_installer:next_version_mini_installer",
+      "//chrome/installer/mini_installer:previous_version_mini_installer",
     ]
     data = [
              "//third_party/webdriver/pylib/",
@@ -29,7 +29,6 @@ if (is_win) {
                            "config/chrome_canary_no_pv.prop",
                            "config/chrome_canary_not_installed.prop",
                            "config/chrome_canary_not_inuse.prop",
-                           "config/chrome_canary_updated.prop",
                            "config/chrome_dev_installed.prop",
                            "config/chrome_dev_no_pv.prop",
                            "config/chrome_dev_not_installed.prop",
@@ -41,7 +40,6 @@ if (is_win) {
                            "config/chrome_system_no_pv.prop",
                            "config/chrome_system_not_installed.prop",
                            "config/chrome_system_not_inuse.prop",
-                           "config/chrome_system_updated.prop",
                            "config/chrome_user_binaries_killed.prop",
                            "config/chrome_user_installed.prop",
                            "config/chrome_user_inuse.prop",
@@ -49,8 +47,10 @@ if (is_win) {
                            "config/chrome_user_no_pv.prop",
                            "config/chrome_user_not_installed.prop",
                            "config/chrome_user_not_inuse.prop",
-                           "config/chrome_user_updated.prop",
                            "config/config.config",
+                           "config/previous_chrome_canary_installed.prop",
+                           "config/previous_chrome_system_installed.prop",
+                           "config/previous_chrome_user_installed.prop",
                            "file_verifier.py",
                            "launch_chrome.py",
                            "make_chrome_multi.py",
