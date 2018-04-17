@@ -24,7 +24,7 @@ namespace content {
 // thread.
 class CONTENT_EXPORT MojoAudioOutputIPC
     : public media::AudioOutputIPC,
-      public media::mojom::AudioOutputStreamClient {
+      public media::mojom::AudioOutputStreamProviderClient {
  public:
   using FactoryAccessorCB =
       base::RepeatingCallback<mojom::RendererAudioOutputStreamFactory*()>;
@@ -48,15 +48,20 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   void CloseStream() override;
   void SetVolume(double volume) override;
 
-  // media::mojom::AudioOutputStreamClient implementation.
-  void OnError() override;
+  // media::mojom::AudioOutputStreamProviderClient implementation.
+  void Created(media::mojom::AudioOutputStreamPtr stream,
+               media::mojom::AudioDataPipePtr data_pipe) override;
 
  private:
   using AuthorizationCB = mojom::RendererAudioOutputStreamFactory::
       RequestDeviceAuthorizationCallback;
 
-  bool AuthorizationRequested();
-  bool StreamCreationRequested();
+  bool AuthorizationRequested() const;
+  bool StreamCreationRequested() const;
+
+  void ProviderClientBindingDisconnected(uint32_t disconnect_reason,
+                                         const std::string& description);
+
   media::mojom::AudioOutputStreamProviderRequest MakeProviderRequest();
 
   // Tries to acquire a RendererAudioOutputStreamFactory and requests device
@@ -71,11 +76,11 @@ class CONTENT_EXPORT MojoAudioOutputIPC
                                    const media::AudioParameters& params,
                                    const std::string& device_id) const;
 
-  void StreamCreated(media::mojom::AudioDataPipePtr data_pipe);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   const FactoryAccessorCB factory_accessor_;
 
-  mojo::Binding<media::mojom::AudioOutputStreamClient> binding_;
+  mojo::Binding<media::mojom::AudioOutputStreamProviderClient> binding_;
   media::mojom::AudioOutputStreamProviderPtr stream_provider_;
   media::mojom::AudioOutputStreamPtr stream_;
   media::AudioOutputIPCDelegate* delegate_ = nullptr;
