@@ -284,7 +284,7 @@ const CGFloat kFaviconSize = 16.0;
     @"tabStripLineHeight" : @(kTabStripLineHeight)
   };
   ApplyVisualConstraintsWithMetrics(commonConstraints, commonViewsDictionary,
-                                    commonMetrics, self);
+                                    commonMetrics);
 }
 
 - (void)createButtonsAndLabel {
@@ -362,8 +362,7 @@ const CGFloat kFaviconSize = 16.0;
     @"faviconVerticalOffset" : @(kFaviconVerticalOffset),
     @"faviconSize" : @(kFaviconSize),
   };
-  ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics,
-                                    self);
+  ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
   AddSameCenterXConstraint(self, _faviconView, _activityIndicator);
   AddSameCenterYConstraint(self, _faviconView, _activityIndicator);
   AddSameCenterYConstraint(self, _faviconView, _titleLabel);

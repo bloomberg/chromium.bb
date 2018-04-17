@@ -70,7 +70,7 @@
     @"H:|-0-[table]-0-|", @"H:|-0-[shadow]-0-|"
   ];
 
-  ApplyVisualConstraints(constraints, viewsDictionary, self.view);
+  ApplyVisualConstraints(constraints, viewsDictionary);
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size

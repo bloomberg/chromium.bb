@@ -37,8 +37,7 @@ const CGFloat kDesiredHeight = 130;
     NSDictionary* viewsDictionary = @{ @"label" : noSessionLabel };
     NSArray* constraints =
         @[ @"V:|-16-[label]-(>=16)-|", @"H:|-16-[label]-16-|" ];
-    ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
-                                      LayoutOptionForRTLSupport(), self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
   }
   return self;
 }

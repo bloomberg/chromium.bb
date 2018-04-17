@@ -90,8 +90,7 @@ const int kRelativeTimeMaxHours = 4;
       @"V:|-16-[nameLabel]-5-[timeLabel]-16-|",
       @"H:[deviceIcon]-16-[timeLabel]",
     ];
-    ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
-                                      LayoutOptionForRTLSupport(), self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
     [self addConstraint:[NSLayoutConstraint
                             constraintWithItem:_disclosureView
                                      attribute:NSLayoutAttributeCenterY

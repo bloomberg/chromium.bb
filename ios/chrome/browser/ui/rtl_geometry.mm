@@ -272,12 +272,3 @@ CGFloat UIEdgeInsetsGetLeading(UIEdgeInsets insets) {
 CGFloat UIEdgeInsetsGetTrailing(UIEdgeInsets insets) {
   return UseRTLLayout() ? insets.left : insets.right;
 }
-
-#pragma mark - autolayout utilities
-
-NSLayoutFormatOptions LayoutOptionForRTLSupport() {
-  if (UseRTLLayout()) {
-    return NSLayoutFormatDirectionLeadingToTrailing;
-  }
-  return NSLayoutFormatDirectionLeftToRight;
-}

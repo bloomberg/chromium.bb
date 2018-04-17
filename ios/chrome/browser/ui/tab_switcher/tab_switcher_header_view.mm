@@ -283,8 +283,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
     @"buttonHeight" : @(kDismissButtonHeight),
     @"buttonWidth" : @(kDismissButtonWidth),
   };
-  ApplyVisualConstraintsWithMetricsAndOptions(
-      constraints, viewsDictionary, metrics, LayoutOptionForRTLSupport(), self);
+  ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
 
   UIView* activeSpaceIndicatorView = [[UIView alloc] initWithFrame:CGRectZero];
   [activeSpaceIndicatorView

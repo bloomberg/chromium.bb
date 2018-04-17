@@ -81,8 +81,7 @@ const CGFloat kSpacing = 16;
       @"V:|-0-[statusBar]-14-[closeButton]-13-|",
       @"H:[title]-(>=0)-[closeButton]",
     ];
-    ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
-                                      LayoutOptionForRTLSupport(), self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
     id<LayoutGuideProvider> safeAreaLayoutGuide =
         SafeAreaLayoutGuideForView(self);
     [NSLayoutConstraint activateConstraints:@[

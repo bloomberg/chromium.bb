@@ -70,7 +70,7 @@ const CGFloat kSeparatorAlpha = 0.1;
                                      attribute:NSLayoutAttributeCenterX
                                     multiplier:1
                                       constant:0]];
-    ApplyVisualConstraints(constraints, viewsDictionary, self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
   }
   return self;
 }

@@ -74,40 +74,14 @@ inline ChromeDirectionalEdgeInsets ChromeDirectionalEdgeInsetsMake(
 
 #pragma mark - Visual constraints.
 
-// General note on the following constraint utility functions:
-// Directly adding constraints to views has been deprecated in favor of just
-// activating constrainst since iOS8. All of these methods now use
-// [NSLayoutConstraint activateConstraints:] for efficiency. The superview
-// arguments are thus superfluous, but the methods that use them are retained
-// here for backwards compatibility until all downstream code can be updated.
-
 // Applies all |constraints| to views in |subviewsDictionary|.
 void ApplyVisualConstraints(NSArray* constraints,
                             NSDictionary* subviewsDictionary);
-// Deprecated version:
-void ApplyVisualConstraints(NSArray* constraints,
-                            NSDictionary* subviewsDictionary,
-                            UIView* unused_parentView);
-
-// Applies all |constraints| with |options| to views in |subviewsDictionary|.
-void ApplyVisualConstraintsWithOptions(NSArray* constraints,
-                                       NSDictionary* subviewsDictionary,
-                                       NSLayoutFormatOptions options);
-// Deprecated version:
-void ApplyVisualConstraintsWithOptions(NSArray* constraints,
-                                       NSDictionary* subviewsDictionary,
-                                       NSLayoutFormatOptions options,
-                                       UIView* unused_parentView);
 
 // Applies all |constraints| with |metrics| to views in |subviewsDictionary|.
 void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
                                        NSDictionary* subviewsDictionary,
                                        NSDictionary* metrics);
-// Deprecated version:
-void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
-                                       NSDictionary* subviewsDictionary,
-                                       NSDictionary* metrics,
-                                       UIView* unused_parentView);
 
 // Applies all |constraints| with |metrics| and |options| to views in
 // |subviewsDictionary|.
@@ -116,13 +90,6 @@ void ApplyVisualConstraintsWithMetricsAndOptions(
     NSDictionary* subviewsDictionary,
     NSDictionary* metrics,
     NSLayoutFormatOptions options);
-// Deprecated version:
-void ApplyVisualConstraintsWithMetricsAndOptions(
-    NSArray* constraints,
-    NSDictionary* subviewsDictionary,
-    NSDictionary* metrics,
-    NSLayoutFormatOptions options,
-    UIView* unused_parentView);
 
 // Returns constraints based on the visual constraints described with
 // |constraints| and |metrics| to views in |subviewsDictionary|.

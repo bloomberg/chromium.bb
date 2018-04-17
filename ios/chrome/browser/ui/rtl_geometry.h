@@ -193,14 +193,4 @@ UIEdgeInsets UIEdgeInsetsMakeDirected(CGFloat top,
 CGFloat UIEdgeInsetsGetLeading(UIEdgeInsets insets);
 CGFloat UIEdgeInsetsGetTrailing(UIEdgeInsets insets);
 
-// Autolayout utilities
-
-// Returns the correct NSLayoutFormatOption for the current OS and build. This
-// will return NSLayoutFormatDirectionLeadingToTrailing when a full RTL flip
-// is correct, and NSLayoutFormatDirectionLeftToRight when layout should not
-// change with text direction.
-// Generally speaking this option should be applied to any whole-page layouts;
-// smaller sections of views should be determined case by case.
-NSLayoutFormatOptions LayoutOptionForRTLSupport();
-
 #endif  // IOS_CHROME_BROWSER_UI_RTL_GEOMETRY_H_

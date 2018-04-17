@@ -184,8 +184,7 @@ const int kLinkColor = 0x03A9F4;
       @"V:|-0-[containerView]-0-|",
       @"H:|-0-[containerView]-0-|",
     ];
-    ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
-                                      LayoutOptionForRTLSupport(), self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
   }
   return self;
 }

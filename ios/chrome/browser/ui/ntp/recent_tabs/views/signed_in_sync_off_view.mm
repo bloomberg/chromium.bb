@@ -71,8 +71,7 @@ const CGFloat kDesiredHeight = 180;
       @"H:|-(>=16)-[button]-16-|"
     ];
     // clang-format on
-    ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
-                                      LayoutOptionForRTLSupport(), self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
   }
   return self;
 }

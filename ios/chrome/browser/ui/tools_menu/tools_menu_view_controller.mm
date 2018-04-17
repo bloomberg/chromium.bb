@@ -404,11 +404,10 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
 - (void)updateViewConstraints {
   if (!_addedConstraints) {
-    UIView* rootView = [self view];
     NSDictionary* view = @{@"menu" : _menuView};
     NSArray* constraints =
         @[ @"V:|-(0)-[menu]-(0)-|", @"H:|-(0)-[menu]-(0)-|" ];
-    ApplyVisualConstraints(constraints, view, rootView);
+    ApplyVisualConstraints(constraints, view);
     _addedConstraints = YES;
   }
   [super updateViewConstraints];
