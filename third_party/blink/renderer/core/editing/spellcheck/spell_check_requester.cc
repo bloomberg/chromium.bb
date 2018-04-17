@@ -179,15 +179,15 @@ void SpellCheckRequester::TimerFiredToProcessQueuedRequest(TimerBase*) {
   InvokeRequest(request_queue_.TakeFirst());
 }
 
-void SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range) {
-  RequestCheckingFor(range, 0);
+bool SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range) {
+  return RequestCheckingFor(range, 0);
 }
 
-void SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range,
+bool SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range,
                                              int request_num) {
   SpellCheckRequest* request = SpellCheckRequest::Create(range, request_num);
   if (!request)
-    return;
+    return false;
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram,
                       spell_checker_request_interval_histogram,
@@ -208,12 +208,12 @@ void SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range,
 
   request->SetCheckerAndSequence(this, sequence);
 
-  if (timer_to_process_queued_request_.IsActive() || processing_request_) {
+  if (timer_to_process_queued_request_.IsActive() || processing_request_)
     EnqueueRequest(request);
-    return;
-  }
+  else
+    InvokeRequest(request);
 
-  InvokeRequest(request);
+  return true;
 }
 
 void SpellCheckRequester::CancelCheck() {
