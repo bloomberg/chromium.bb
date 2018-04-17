@@ -71,10 +71,6 @@ const CGFloat kTableViewMaxWidth = 414.0;
   CGFloat maxAvailableWidth = containerWidth - 2 * kTableViewEdgeMargin;
   CGFloat tableWidth = std::min(maxAvailableWidth, kTableViewMaxWidth);
 
-  if (@available(iOS 11, *)) {
-    NSLog(@"%@", NSStringFromUIEdgeInsets(self.containerView.safeAreaInsets));
-  }
-
   LayoutRect tableLayoutRect = LayoutRectMake(
       containerWidth - tableWidth - kTableViewEdgeMargin, containerWidth,
       kTableViewTopMargin, tableWidth,
@@ -189,7 +185,7 @@ const CGFloat kTableViewMaxWidth = 414.0;
 
 #pragma mark - Adaptivity
 
-- (UIModalPresentationStyle)XXadaptivePresentationStyleForTraitCollection:
+- (UIModalPresentationStyle)adaptivePresentationStyleForTraitCollection:
     (UITraitCollection*)traitCollection {
   if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
       traitCollection.verticalSizeClass != UIUserInterfaceSizeClassCompact) {
