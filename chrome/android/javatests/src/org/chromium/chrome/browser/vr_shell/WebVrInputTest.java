@@ -14,6 +14,7 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import android.app.Activity;
 import android.os.Build;
 import android.os.SystemClock;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.view.MotionEvent;
 import android.view.View;
@@ -157,7 +158,7 @@ public class WebVrInputTest {
      * Tests that Daydream controller clicks are registered as gamepad button pressed.
      */
     @Test
-    @MediumTest
+    @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testControllerClicksRegisteredOnDaydream() throws InterruptedException {
@@ -165,18 +166,12 @@ public class WebVrInputTest {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_gamepad_button"), PAGE_LOAD_TIMEOUT_S);
         // Wait to enter VR
-        VrTransitionUtils.enterPresentationAndWait(
-                mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
+        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
         // The Gamepad API can flakily fail to detect the gamepad from a single button press, so
         // spam it with button presses
         boolean controllerConnected = false;
         for (int i = 0; i < 10; i++) {
-            // The Gamepad API doesn't like detecting pressReleaseTouchpadButton() as it's too fast,
-            // so manually send the up and down events with a delay
-            controller.sendClickButtonToggleEvent();
-            SystemClock.sleep(100);
-            controller.sendClickButtonToggleEvent();
-            SystemClock.sleep(100);
+            controller.performControllerClick();
             if (VrTestFramework
                             .runJavaScriptOrFail("index != -1", POLL_TIMEOUT_SHORT_MS,
                                     mVrTestFramework.getFirstTabWebContents())
@@ -186,6 +181,11 @@ public class WebVrInputTest {
             }
         }
         Assert.assertTrue("Gamepad API detected controller", controllerConnected);
+        // It's possible for input to get backed up if the emulated controller is being slow, so
+        // ensure that any outstanding output has been received before starting by waiting for
+        // 60 frames (1 second) of not receiving input.
+        VrTestFramework.pollJavaScriptBoolean("isInputDrained()", POLL_TIMEOUT_LONG_MS,
+                mVrTestFramework.getFirstTabWebContents());
         // Have a separate start condition so that the above presses/releases don't get
         // accidentally detected during the actual test
         VrTestFramework.runJavaScriptOrFail("canStartTest = true;", POLL_TIMEOUT_SHORT_MS,
@@ -269,8 +269,7 @@ public class WebVrInputTest {
         VrTestFramework.runJavaScriptOrFail("canStartTest = true;", POLL_TIMEOUT_SHORT_MS,
                 mVrTestFramework.getFirstTabWebContents());
         // Wait to enter VR
-        VrTransitionUtils.enterPresentationAndWait(
-                mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
+        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
         int x = mVrTestFramework.getFirstTabContentView().getWidth() / 2;
         int y = mVrTestFramework.getFirstTabContentView().getHeight() / 2;
         // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
