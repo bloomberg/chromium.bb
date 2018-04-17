@@ -319,6 +319,9 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
     case CSSPropertyBorderRight:
     case CSSPropertyBorderBottom:
     case CSSPropertyBorderLeft:
+    // TODO(rob.buis): temporary, makes invalid output until crbug.com/772772 is
+    // fixed
+    case CSSPropertyBorderImage:
     case CSSPropertyOutline:
     case CSSPropertyColumnRule:
     case CSSPropertyColumns:
@@ -427,6 +430,8 @@ String StylePropertySerializer::GetPropertyValue(
       return GetLayeredShorthandValue(backgroundShorthand());
     case CSSPropertyBorder:
       return BorderPropertyValue();
+    case CSSPropertyBorderImage:
+      return BorderImagePropertyValue();
     case CSSPropertyBorderTop:
       return GetShorthandValue(borderTopShorthand());
     case CSSPropertyBorderRight:
@@ -986,6 +991,27 @@ String StylePropertySerializer::BorderPropertyValue() const {
     result.Append(value);
   }
   return result.IsEmpty() ? String() : result.ToString();
+}
+
+String StylePropertySerializer::BorderImagePropertyValue() const {
+  StringBuilder result;
+  const CSSProperty* properties[] = {
+      &GetCSSPropertyBorderImageSource(), &GetCSSPropertyBorderImageSlice(),
+      &GetCSSPropertyBorderImageWidth(), &GetCSSPropertyBorderImageOutset(),
+      &GetCSSPropertyBorderImageRepeat()};
+  size_t length = arraysize(properties);
+  for (size_t i = 0; i < length; ++i) {
+    const CSSValue& value = *property_set_.GetPropertyCSSValue(*properties[i]);
+    String value_text = value.CssText();
+    if (value.IsInitialValue())
+      continue;
+    if (!result.IsEmpty())
+      result.Append(" ");
+    if (i == 2 | i == 3)
+      result.Append("/ ");
+    result.Append(value_text);
+  }
+  return result.ToString();
 }
 
 static void AppendBackgroundRepeatValue(StringBuilder& builder,

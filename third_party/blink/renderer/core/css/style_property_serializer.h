@@ -46,6 +46,7 @@ class StylePropertySerializer {
   String GetCommonValue(const StylePropertyShorthand&) const;
   String GetAlignmentShorthandValue(const StylePropertyShorthand&) const;
   String BorderPropertyValue() const;
+  String BorderImagePropertyValue() const;
   String GetLayeredShorthandValue(const StylePropertyShorthand&) const;
   String Get2Values(const StylePropertyShorthand&) const;
   String Get4Values(const StylePropertyShorthand&) const;
