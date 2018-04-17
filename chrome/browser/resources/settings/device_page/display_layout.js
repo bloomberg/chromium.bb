@@ -191,6 +191,17 @@ Polymer({
   },
 
   /**
+   * @param {boolean} mirroring
+   * @param {string} displayName
+   * @param {string} mirroringName
+   * @return {string}
+   * @private
+   */
+  getDisplayName_: function(mirroring, displayName, mirroringName) {
+    return mirroring ? mirroringName : displayName;
+  },
+
+  /**
    * @param {!chrome.system.display.DisplayUnitInfo} display
    * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
    * @return {boolean}
