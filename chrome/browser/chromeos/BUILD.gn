@@ -395,6 +395,8 @@ source_set("chromeos") {
     "arc/fileapi/chrome_content_provider_url_util.h",
     "arc/fileapi/file_stream_forwarder.cc",
     "arc/fileapi/file_stream_forwarder.h",
+    "arc/icon_decode_request.cc",
+    "arc/icon_decode_request.h",
     "arc/intent_helper/arc_external_protocol_dialog.cc",
     "arc/intent_helper/arc_external_protocol_dialog.h",
     "arc/intent_helper/arc_navigation_throttle.cc",

@@ -8,10 +8,10 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_playstore_app_context_menu.h"
-#include "chrome/browser/ui/app_list/search/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -75,8 +75,10 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
   set_result_type(is_instant_app() ? ash::SearchResultType::kInstantApp
                                    : ash::SearchResultType::kPlayStoreApp);
 
-  icon_decode_request_ = std::make_unique<IconDecodeRequest>(base::BindOnce(
-      &ArcPlayStoreSearchResult::SetIcon, weak_ptr_factory_.GetWeakPtr()));
+  icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
+      base::BindOnce(&ArcPlayStoreSearchResult::SetIcon,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kGridIconDimension);
   icon_decode_request_->StartWithOptions(icon_png_data());
 }
 

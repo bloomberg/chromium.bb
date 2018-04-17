@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/arc/icon_decode_request.h"
+#include "chrome/browser/chromeos/arc/icon_decode_request.h"
 
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/app_list/app_list_constants.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/scale_factor.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -20,7 +20,7 @@
 
 using content::BrowserThread;
 
-namespace app_list {
+namespace arc {
 
 namespace {
 
@@ -80,8 +80,10 @@ void IconDecodeRequest::DisableSafeDecodingForTesting() {
   disable_safe_decoding_for_testing = true;
 }
 
-IconDecodeRequest::IconDecodeRequest(SetIconCallback set_icon_callback)
-    : set_icon_callback_(std::move(set_icon_callback)) {}
+IconDecodeRequest::IconDecodeRequest(SetIconCallback set_icon_callback,
+                                     int requested_size)
+    : set_icon_callback_(std::move(set_icon_callback)),
+      requested_size_(requested_size) {}
 
 IconDecodeRequest::~IconDecodeRequest() = default;
 
@@ -109,8 +111,8 @@ void IconDecodeRequest::StartWithOptions(
 void IconDecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const gfx::Size resource_size(kGridIconDimension, kGridIconDimension);
-  auto icon_source = std::make_unique<IconSource>(kGridIconDimension);
+  const gfx::Size resource_size(requested_size_, requested_size_);
+  auto icon_source = std::make_unique<IconSource>(requested_size_);
   icon_source->SetDecodedImage(bitmap);
   const gfx::ImageSkia icon =
       gfx::ImageSkia(std::move(icon_source), resource_size);
@@ -123,8 +125,8 @@ void IconDecodeRequest::OnDecodeImageFailed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DLOG(ERROR) << "Failed to decode an icon image.";
 
-  const gfx::Size resource_size(kGridIconDimension, kGridIconDimension);
-  auto icon_source = std::make_unique<IconSource>(kGridIconDimension);
+  const gfx::Size resource_size(requested_size_, requested_size_);
+  auto icon_source = std::make_unique<IconSource>(requested_size_);
   const gfx::ImageSkia icon =
       gfx::ImageSkia(std::move(icon_source), resource_size);
   icon.EnsureRepsForSupportedScales();
@@ -132,4 +134,4 @@ void IconDecodeRequest::OnDecodeImageFailed() {
   std::move(set_icon_callback_).Run(icon);
 }
 
-}  // namespace app_list
+}  // namespace arc

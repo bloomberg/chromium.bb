@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ICON_DECODE_REQUEST_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ICON_DECODE_REQUEST_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_ICON_DECODE_REQUEST_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_ICON_DECODE_REQUEST_H_
 
 #include <vector>
 
@@ -15,13 +15,13 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
-namespace app_list {
+namespace arc {
 
 class IconDecodeRequest : public ImageDecoder::ImageRequest {
  public:
   using SetIconCallback = base::OnceCallback<void(const gfx::ImageSkia& icon)>;
 
-  explicit IconDecodeRequest(SetIconCallback set_icon_callback);
+  IconDecodeRequest(SetIconCallback set_icon_callback, int requested_size);
   ~IconDecodeRequest() override;
 
   // Disables async safe decoding requests when unit tests are executed.
@@ -41,10 +41,11 @@ class IconDecodeRequest : public ImageDecoder::ImageRequest {
 
  private:
   SetIconCallback set_icon_callback_;
+  int requested_size_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(IconDecodeRequest);
 };
 
-}  // namespace app_list
+}  // namespace arc
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ICON_DECODE_REQUEST_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_ICON_DECODE_REQUEST_H_
