@@ -454,6 +454,8 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
         Profile::FromBrowserContext(context));
   }
 
+  bool ShouldAllowLegacyExtensionManifests() override { return true; }
+
   void SetUpOnMainThread() override {
     AsyncExtensionBrowserTest::SetUpOnMainThread();
 

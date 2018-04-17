@@ -76,6 +76,11 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Get the profile to use.
   virtual Profile* profile();
 
+  // Returns true if extensions with antiquated manifest versions (i.e., version
+  // 1) should be allowed to load in the test. This is only used for migration
+  // while the remainder of these tests are updated; do not add more usages.
+  virtual bool ShouldAllowLegacyExtensionManifests();
+
   // Extensions used in tests are typically not from the web store and will have
   // missing content verification hashes. The default implementation disables
   // content verification; this should be overridden by derived tests which care
