@@ -10,14 +10,17 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/printing/print_job_worker_owner.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "printing/print_settings.h"
 
 namespace base {
+class Location;
 class RefCountedMemory;
+class SequencedTaskRunner;
 }
 
 namespace printing {
@@ -25,15 +28,12 @@ namespace printing {
 class JobEventDetails;
 class MetafilePlayer;
 class PrintJobWorker;
-class PrintJobWorkerOwner;
 class PrintedDocument;
 #if defined(OS_WIN)
 class PrintedPage;
 #endif
 class PrinterQuery;
-
-void HoldRefCallback(scoped_refptr<PrintJobWorkerOwner> owner,
-                     base::OnceClosure callback);
+class PrintSettings;
 
 // Manages the print work for a specific document. Talks to the printer through
 // PrintingContext through PrintJobWorker. Hides access to PrintingContext in a
@@ -42,7 +42,7 @@ void HoldRefCallback(scoped_refptr<PrintJobWorkerOwner> owner,
 // reference to the job to be sure it is kept alive. All the code in this class
 // runs in the UI thread. All virtual functions are virtual only so that
 // TestPrintJob can override them in tests.
-class PrintJob : public PrintJobWorkerOwner,
+class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
                  public content::NotificationObserver {
  public:
   // Create a empty PrintJob. When initializing with this constructor,
@@ -76,13 +76,6 @@ class PrintJob : public PrintJobWorkerOwner,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // PrintJobWorkerOwner implementation.
-  void GetSettingsDone(const PrintSettings& new_settings,
-                       PrintingContext::Result result) override;
-  std::unique_ptr<PrintJobWorker> DetachWorker(
-      PrintJobWorkerOwner* new_owner) override;
-  const PrintSettings& settings() const override;
-
   // Starts the actual printing. Signals the worker that it should begin to
   // spool as soon as data is available.
   virtual void StartPrinting();
@@ -111,7 +104,17 @@ class PrintJob : public PrintJobWorkerOwner,
   // Access the current printed document. Warning: may be NULL.
   PrintedDocument* document() const;
 
+  // Returns true if tasks posted to this TaskRunner are sequenced
+  // with this call.
+  bool RunsTasksInCurrentSequence() const;
+
+  // Posts the given task to be run.
+  bool PostTask(const base::Location& from_here, base::OnceClosure task);
+
  protected:
+  // Refcounted class.
+  friend class base::RefCountedThreadSafe<PrintJob>;
+
   ~PrintJob() override;
 
   // The functions below are used for tests only.
@@ -201,6 +204,10 @@ class PrintJob : public PrintJobWorkerOwner,
   std::unique_ptr<PdfConversionState> pdf_conversion_state_;
   std::vector<int> pdf_page_mapping_;
 #endif  // defined(OS_WIN)
+
+  // Task runner reference. Used to send notifications in the right
+  // thread.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used at shutdown so that we can quit a nested run loop.
   base::WeakPtrFactory<PrintJob> quit_factory_;

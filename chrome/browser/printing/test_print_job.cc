@@ -21,11 +21,13 @@ void TestPrintJob::Initialize(PrinterQuery* query,
                               int page_count) {
   // Since we do not actually print in these tests, just let this get destroyed
   // when this function exits.
-  std::unique_ptr<PrintJobWorker> worker = query->DetachWorker(this);
+  std::unique_ptr<PrintJobWorker> worker = query->DetachWorker();
+
   set_settings(query->settings());
 
   scoped_refptr<PrintedDocument> new_doc =
-      base::MakeRefCounted<PrintedDocument>(settings(), name, query->cookie());
+      base::MakeRefCounted<PrintedDocument>(query->settings(), name,
+                                            query->cookie());
 
   new_doc->set_page_count(page_count);
   UpdatePrintedDocument(new_doc.get());

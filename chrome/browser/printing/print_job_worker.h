@@ -25,9 +25,9 @@ class DictionaryValue;
 namespace printing {
 
 class PrintJob;
-class PrintJobWorkerOwner;
 class PrintedDocument;
 class PrintedPage;
+class PrinterQuery;
 
 // Worker thread code. It manages the PrintingContext, which can be blocking
 // and/or run a message loop. This is the object that generates most
@@ -38,10 +38,12 @@ class PrintJobWorker {
  public:
   PrintJobWorker(int render_process_id,
                  int render_frame_id,
-                 PrintJobWorkerOwner* owner);
+                 PrinterQuery* query);
   virtual ~PrintJobWorker();
 
-  void SetNewOwner(PrintJobWorkerOwner* new_owner);
+  void SetPrintJob(PrintJob* print_job);
+
+  /* The following functions may only be called before calling SetPrintJob(). */
 
   // Initializes the print settings. If |ask_user_for_settings| is true, a
   // Print... dialog box will be shown to ask the user their preference.
@@ -63,6 +65,8 @@ class PrintJobWorker {
       std::unique_ptr<printing::PrintSettings> new_settings);
 #endif
 
+  /* The following functions may only be called after calling SetPrintJob(). */
+
   // Starts the printing loop. Every pages are printed as soon as the data is
   // available. Makes sure the new_document is the right one.
   void StartPrinting(PrintedDocument* new_document);
@@ -75,7 +79,9 @@ class PrintJobWorker {
   // the next page can be printed.
   void OnNewPage();
 
-  // This is the only function that can be called in a thread.
+  /* The following functions may be called before or after SetPrintJob(). */
+
+  // Cancels the job.
   void Cancel();
 
   // Returns true if the thread has been started, and not yet stopped.
@@ -141,7 +147,7 @@ class PrintJobWorker {
       std::unique_ptr<printing::PrintSettings> new_settings);
 #endif
 
-  // Reports settings back to owner_.
+  // Reports settings back to |query_|.
   void GetSettingsDone(PrintingContext::Result result);
 
   // Use the default settings. When using GTK+ or Mac, this can still end up
@@ -158,9 +164,13 @@ class PrintJobWorker {
   // The printed document. Only has read-only access.
   scoped_refptr<PrintedDocument> document_;
 
+  // The printer query that owns this worker thread at creation. It will own
+  // the object until DetachWorker() is called.
+  PrinterQuery* query_ = nullptr;
+
   // The print job owning this worker thread. It is guaranteed to outlive this
-  // object.
-  PrintJobWorkerOwner* owner_;
+  // object and should be set with SetPrintJob().
+  PrintJob* print_job_ = nullptr;
 
   // Current page number to print.
   PageNumber page_number_;

@@ -34,14 +34,16 @@ using base::TimeDelta;
 
 namespace printing {
 
-// Helper function to ensure |owner| is valid until at least |callback| returns.
-void HoldRefCallback(scoped_refptr<PrintJobWorkerOwner> owner,
-                     base::OnceClosure callback) {
+// Helper function to ensure |job| is valid until at least |callback| returns.
+void HoldRefCallback(scoped_refptr<PrintJob> job, base::OnceClosure callback) {
   std::move(callback).Run();
 }
 
 PrintJob::PrintJob()
-    : is_job_pending_(false), is_canceling_(false), quit_factory_(this) {
+    : is_job_pending_(false),
+      is_canceling_(false),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      quit_factory_(this) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
 }
 
@@ -60,7 +62,8 @@ void PrintJob::Initialize(PrinterQuery* query,
   DCHECK(!is_job_pending_);
   DCHECK(!is_canceling_);
   DCHECK(!document_);
-  worker_ = query->DetachWorker(this);
+  worker_ = query->DetachWorker();
+  worker_->SetPrintJob(this);
   settings_ = query->settings();
 
   auto new_doc =
@@ -133,21 +136,6 @@ void PrintJob::Observe(int type,
   DCHECK_EQ(chrome::NOTIFICATION_PRINT_JOB_EVENT, type);
 
   OnNotifyPrintJobEvent(*content::Details<JobEventDetails>(details).ptr());
-}
-
-void PrintJob::GetSettingsDone(const PrintSettings& new_settings,
-                               PrintingContext::Result result) {
-  NOTREACHED();
-}
-
-std::unique_ptr<PrintJobWorker> PrintJob::DetachWorker(
-    PrintJobWorkerOwner* new_owner) {
-  NOTREACHED();
-  return nullptr;
-}
-
-const PrintSettings& PrintJob::settings() const {
-  return settings_;
 }
 
 void PrintJob::StartPrinting() {
@@ -305,7 +293,7 @@ void PrintJob::StartPdfToEmfConversion(
       settings_.print_text_with_gdi() && !settings_.printer_is_xps() &&
       base::FeatureList::IsEnabled(features::kGdiTextPrinting);
   PdfRenderSettings render_settings(
-      content_area, gfx::Point(0, 0), settings().dpi_size(),
+      content_area, gfx::Point(0, 0), settings_.dpi_size(),
       /*autorotate=*/true, settings_.color() == COLOR,
       print_text_with_gdi ? PdfRenderSettings::Mode::GDI_TEXT
                           : PdfRenderSettings::Mode::NORMAL);
@@ -361,7 +349,7 @@ void PrintJob::StartPdfToTextConversion(
       std::make_unique<PdfConversionState>(gfx::Size(), gfx::Rect());
   gfx::Rect page_area = gfx::Rect(0, 0, page_size.width(), page_size.height());
   PdfRenderSettings render_settings(
-      page_area, gfx::Point(0, 0), settings().dpi_size(),
+      page_area, gfx::Point(0, 0), settings_.dpi_size(),
       /*autorotate=*/true,
       /*use_color=*/true, PdfRenderSettings::Mode::TEXTONLY);
   pdf_conversion_state_->Start(
@@ -378,7 +366,7 @@ void PrintJob::StartPdfToPostScriptConversion(
   pdf_conversion_state_ = std::make_unique<PdfConversionState>(
       gfx::Size(), gfx::Rect());
   PdfRenderSettings render_settings(
-      content_area, physical_offsets, settings().dpi_size(),
+      content_area, physical_offsets, settings_.dpi_size(),
       /*autorotate=*/true, settings_.color() == COLOR,
       ps_level2 ? PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2
                 : PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3);
@@ -514,6 +502,15 @@ void PrintJob::ControlledWorkerShutdown() {
   is_job_pending_ = false;
   registrar_.RemoveAll();
   ClearPrintedDocument();
+}
+
+bool PrintJob::RunsTasksInCurrentSequence() const {
+  return task_runner_->RunsTasksInCurrentSequence();
+}
+
+bool PrintJob::PostTask(const base::Location& from_here,
+                        base::OnceClosure task) {
+  return task_runner_->PostTask(from_here, std::move(task));
 }
 
 void PrintJob::HoldUntilStopIsCalled() {

@@ -3298,8 +3298,6 @@ jumbo_split_static_library("browser") {
       "printing/print_job_manager.h",
       "printing/print_job_worker.cc",
       "printing/print_job_worker.h",
-      "printing/print_job_worker_owner.cc",
-      "printing/print_job_worker_owner.h",
       "printing/print_view_manager_base.cc",
       "printing/print_view_manager_base.h",
       "printing/print_view_manager_common.cc",
