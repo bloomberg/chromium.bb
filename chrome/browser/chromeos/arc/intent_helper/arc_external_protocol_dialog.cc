@@ -86,7 +86,8 @@ mojom::IntentInfoPtr CreateIntentInfo(const GURL& url, bool ui_bypassed) {
   // Create an intent with action VIEW, the |url| we are redirecting the user to
   // and a flag that tells whether or not the user interacted with the picker UI
   arc::mojom::IntentInfoPtr intent = arc::mojom::IntentInfo::New();
-  intent->action = "org.chromium.arc.intent.action.VIEW";
+  constexpr char kArcIntentActionView[] = "org.chromium.arc.intent.action.VIEW";
+  intent->action = kArcIntentActionView;
   intent->data = url.spec();
   intent->ui_bypassed = ui_bypassed;
 
@@ -96,8 +97,7 @@ mojom::IntentInfoPtr CreateIntentInfo(const GURL& url, bool ui_bypassed) {
 // Sends |url| to ARC.
 void HandleUrlInArc(int render_process_host_id,
                     int routing_id,
-                    const std::pair<GURL, ArcIntentHelperBridge::ActivityName>&
-                        url_and_activity,
+                    const GurlAndActivityInfo& url_and_activity,
                     bool ui_bypassed) {
   auto* arc_service_manager = ArcServiceManager::Get();
   if (!arc_service_manager)
@@ -124,13 +124,12 @@ void HandleUrlInArc(int render_process_host_id,
 GetActionResult GetActionInternal(
     const GURL& original_url,
     const mojom::IntentHandlerInfoPtr& handler,
-    std::pair<GURL, ArcIntentHelperBridge::ActivityName>*
-        out_url_and_activity_name) {
+    GurlAndActivityInfo* out_url_and_activity_name) {
   if (handler->fallback_url.has_value()) {
     *out_url_and_activity_name =
-        std::make_pair(GURL(*handler->fallback_url),
-                       ArcIntentHelperBridge::ActivityName(
-                           handler->package_name, handler->activity_name));
+        GurlAndActivityInfo(GURL(*handler->fallback_url),
+                            ArcIntentHelperBridge::ActivityName(
+                                handler->package_name, handler->activity_name));
     if (ArcIntentHelperBridge::IsIntentHelperPackage(handler->package_name)) {
       // Since |package_name| is "Chrome", and |fallback_url| is not null, the
       // URL must be either http or https. Check it just in case, and if not,
@@ -147,7 +146,7 @@ GetActionResult GetActionInternal(
 
   // Unlike |handler->fallback_url|, the |original_url| should always be handled
   // in ARC since it's external to Chrome.
-  *out_url_and_activity_name = std::make_pair(
+  *out_url_and_activity_name = GurlAndActivityInfo(
       original_url, ArcIntentHelperBridge::ActivityName(
                         handler->package_name, handler->activity_name));
   return GetActionResult::HANDLE_URL_IN_ARC;
@@ -169,8 +168,7 @@ GetActionResult GetAction(
     const GURL& original_url,
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
     size_t selected_app_index,
-    std::pair<GURL, ArcIntentHelperBridge::ActivityName>*
-        out_url_and_activity_name,
+    GurlAndActivityInfo* out_url_and_activity_name,
     bool* in_out_safe_to_bypass_ui) {
   DCHECK(out_url_and_activity_name);
   if (!handlers.size()) {
@@ -254,7 +252,7 @@ bool HandleUrl(int render_process_host_id,
                const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
                size_t selected_app_index,
                GetActionResult* out_result) {
-  auto url_and_activity_name = std::make_pair(
+  GurlAndActivityInfo url_and_activity_name(
       GURL(),
       ArcIntentHelperBridge::ActivityName{"" /* package */, "" /* activity */});
 
@@ -297,9 +295,10 @@ GURL GetUrlToNavigateOnDeactivate(
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers) {
   const GURL empty_url;
   for (size_t i = 0; i < handlers.size(); ++i) {
-    auto url_and_package =
-        std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                   "" /* package */, "" /* activity */});
+    GurlAndActivityInfo url_and_package(
+        GURL(),
+        ArcIntentHelperBridge::ActivityName{/*package=*/std::string(),
+                                            /*activity=*/std::string()});
     if (GetActionInternal(empty_url, handlers[i], &url_and_package) ==
         GetActionResult::OPEN_URL_IN_CHROME) {
       DCHECK(url_and_package.first.SchemeIsHTTPOrHTTPS());
@@ -537,8 +536,7 @@ GetActionResult GetActionForTesting(
     const GURL& original_url,
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
     size_t selected_app_index,
-    std::pair<GURL, ArcIntentHelperBridge::ActivityName>*
-        out_url_and_activity_name,
+    GurlAndActivityInfo* out_url_and_activity_name,
     bool* safe_to_bypass_ui) {
   return GetAction(original_url, handlers, selected_app_index,
                    out_url_and_activity_name, safe_to_bypass_ui);

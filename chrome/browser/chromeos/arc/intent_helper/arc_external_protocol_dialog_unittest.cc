@@ -46,6 +46,13 @@ class ArcExternalProtocolDialogTestUtils : public BrowserWithTestWindowTest {
 const char* kChromePackageName =
     ArcIntentHelperBridge::kArcIntentHelperPackageName;
 
+// Creates a dummy GurlAndActivityInfo object.
+GurlAndActivityInfo CreateEmptyGurlAndActivityInfo() {
+  return std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName(
+                                    /*package_name=*/std::string(),
+                                    /*activity_name=*/std::string()));
+}
+
 // Creates and returns a new IntentHandlerInfo object.
 mojom::IntentHandlerInfoPtr Create(const std::string& name,
                                    const std::string& package_name,
@@ -62,26 +69,13 @@ mojom::IntentHandlerInfoPtr Create(const std::string& name,
   return ptr;
 }
 
-// Some tests don't need to specify an activity.
-mojom::IntentHandlerInfoPtr Create(const std::string& name,
-                                   const std::string& package_name,
-                                   bool is_preferred,
-                                   const GURL& fallback_url) {
-  return Create(name, package_name, "" /* activity_name */, is_preferred,
-                fallback_url);
-}
-
 }  // namespace
 
 // Tests that when no apps are returned from ARC, GetAction returns
 // SHOW_CHROME_OS_DIALOG.
 TEST(ArcExternalProtocolDialogTest, TestGetActionWithNoApp) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  // TODO(djacobo): Rewrite this using the specific type and simplify the
-  // initialization.
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
 
   // Marking this as safe to bypass or not makes no difference since there are
   // no handlers.
@@ -106,14 +100,12 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithNoApp) {
 TEST(ArcExternalProtocolDialogTest,
      TestGetActionWithOneAppBypassesIntentPicker) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  // TODO(djacobo): Specify the name of the third parameter in all cases.
-  handlers.push_back(
-      Create("package", "com.google.package.name", false, GURL()));
+  handlers.push_back(Create("package", "com.google.package.name",
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, /*fallback_url=*/GURL()));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = true;
   EXPECT_EQ(
       GetActionResult::HANDLE_URL_IN_ARC,
@@ -128,13 +120,12 @@ TEST(ArcExternalProtocolDialogTest,
 TEST(ArcExternalProtocolDialogTest,
      TestGetActionWithOneAppDoesntBypassIntentPicker) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(
-      Create("package", "com.google.package.name", false, GURL()));
+  handlers.push_back(Create("package", "com.google.package.name",
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, /*fallback_url=*/GURL()));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = false;
   EXPECT_EQ(
       GetActionResult::ASK_USER,
@@ -149,15 +140,15 @@ TEST(ArcExternalProtocolDialogTest,
 TEST(ArcExternalProtocolDialogTest,
      TestGetActionWithTwoAppWontBypassIntentPicker) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(
-      Create("package", "com.google.package.name", false, GURL()));
-  handlers.push_back(
-      Create("package2", "com.google.package.name2", false, GURL()));
+  handlers.push_back(Create("package", "com.google.package.name",
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, /*fallback_url=*/GURL()));
+  handlers.push_back(Create("package2", "com.google.package.name2",
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, /*fallback_url=*/GURL()));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = true;
   EXPECT_EQ(
       GetActionResult::ASK_USER,
@@ -182,13 +173,12 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOnePreferredApp) {
   const std::string activity_name("com.google.activity");
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(
-      Create("package", package_name, activity_name, true, GURL()));
+  handlers.push_back(Create("package", package_name, activity_name,
+                            /*is_preferred=*/true,
+                            /*fallback_url=*/GURL()));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
 
   bool in_out_safe_to_bypass_ui = true;
   EXPECT_EQ(
@@ -221,13 +211,12 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOneAppSelected) {
   const std::string activity_name("fake_activity_name");
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(
-      Create("package", package_name, activity_name, false, GURL()));
+  handlers.push_back(Create("package", package_name, activity_name,
+                            /*is_preferred=*/false,
+                            /*fallback_url=*/GURL()));
 
   constexpr size_t kSelection = 0;
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = true;
   EXPECT_EQ(
       GetActionResult::HANDLE_URL_IN_ARC,
@@ -254,18 +243,18 @@ TEST(ArcExternalProtocolDialogTest,
      TestGetActionWithOnePreferredAppAndOneOther) {
   const GURL external_url("external-protocol:foo");
   const std::string package_name("com.google.package2.name");
-  const std::string activity_name("fake_package_name2");
+  const std::string activity_name("fake_activity_name2");
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("package", "com.google.package.name",
-                            "fake_package_name_1", false, GURL()));
-  handlers.push_back(
-      Create("package2", package_name, activity_name, true, GURL()));
+                            "fake_activity_name",
+                            /*is_preferred=*/false, /*fallback_url=*/GURL()));
+  handlers.push_back(Create("package2", package_name, activity_name,
+                            /*is_preferred=*/true,
+                            /*fallback_url=*/GURL()));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   // For cases with 2+ apps it doesn't matter whether it was marked as safe to
   // bypass or not, it will only check for user's preferrences.
   bool in_out_safe_to_bypass_ui = false;
@@ -303,13 +292,12 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithGeoUrl) {
   const std::string activity_name("chrome_activity_name");
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(
-      Create("Chrome", kChromePackageName, activity_name, true, GURL()));
+  handlers.push_back(Create("Chrome", kChromePackageName, activity_name,
+                            /*is_preferred=*/true,
+                            /*fallback_url=*/GURL()));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = false;
   EXPECT_EQ(
       GetActionResult::HANDLE_URL_IN_ARC,
@@ -333,13 +321,11 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOneFallbackUrl) {
   const std::string activity_name("fake_activity_name");
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(
-      Create("Chrome", kChromePackageName, activity_name, false, fallback_url));
+  handlers.push_back(Create("Chrome", kChromePackageName, activity_name,
+                            /*is_preferred=*/false, fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
 
   // Since the navigation is intended to stay in Chrome the UI is bypassed.
   bool in_out_safe_to_bypass_ui = false;
@@ -372,13 +358,11 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOnePreferredFallbackUrl) {
   const std::string activity_name("fake_activity_name");
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(
-      Create("Chrome", kChromePackageName, activity_name, true, fallback_url));
+  handlers.push_back(Create("Chrome", kChromePackageName, activity_name,
+                            /*is_preferred=*/true, fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
 
   // Safe to bypass should be marked as true in the end, since the
   // OPEN_URL_IN_CHROME actually bypasses the UI, regardless of the flag.
@@ -414,17 +398,15 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithTwoFallbackUrls) {
   const GURL fallback_url("http://zxing.org");
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(Create("Other browser", "com.other.browser", "activity_1",
-                            false, fallback_url));
-  handlers.push_back(
-      Create("Chrome", kChromePackageName, "activity_2", false, fallback_url));
+  handlers.push_back(Create("Other browser", "com.other.browser",
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, fallback_url));
+  handlers.push_back(Create("Chrome", kChromePackageName,
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
-  // TODO(djacobo): 2+ apps outcome is not modified by safe_to_bypass_ui flag,
-  // reconsider to add some basic testing anyways.
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = false;
   EXPECT_EQ(
       GetActionResult::ASK_USER,
@@ -445,14 +427,13 @@ TEST(ArcExternalProtocolDialogTest,
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Other browser", "com.other.browser",
-                            "fake_activity_1", false, fallback_url));
-  handlers.push_back(Create("Chrome", kChromePackageName, chrome_activity, true,
-                            fallback_url));
+                            "fake_activity",
+                            /*is_preferred=*/false, fallback_url));
+  handlers.push_back(Create("Chrome", kChromePackageName, chrome_activity,
+                            /*is_preferred=*/true, fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = false;
   EXPECT_EQ(
       GetActionResult::OPEN_URL_IN_CHROME,
@@ -479,14 +460,12 @@ TEST(ArcExternalProtocolDialogTest,
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Other browser", package_name, other_activity_name,
-                            true, fallback_url));
+                            /*is_preferred=*/true, fallback_url));
   handlers.push_back(Create("Chrome", kChromePackageName, chrome_activity_name,
-                            false, fallback_url));
+                            /*is_preferred=*/false, fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = false;
   EXPECT_EQ(
       GetActionResult::HANDLE_URL_IN_ARC,
@@ -509,14 +488,13 @@ TEST(ArcExternalProtocolDialogTest,
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Other browser", "com.other.browser",
-                            "fake_activity", false, fallback_url));
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, fallback_url));
   handlers.push_back(Create("Chrome", kChromePackageName, chrome_activity_name,
-                            false, fallback_url));
+                            /*is_preferred=*/false, fallback_url));
 
   constexpr size_t kSelection = 1;  // Chrome
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = true;
   EXPECT_EQ(
       GetActionResult::OPEN_URL_IN_CHROME,
@@ -540,14 +518,12 @@ TEST(ArcExternalProtocolDialogTest,
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Other browser", package_name, other_activity_name,
-                            false, fallback_url));
-  handlers.push_back(Create("Chrome", kChromePackageName,
-                            "chrome_activity_name", false, fallback_url));
+                            /*is_preferred=*/false, fallback_url));
+  handlers.push_back(Create("Chrome", kChromePackageName, "chrome_activity",
+                            /*is_preferred=*/false, fallback_url));
 
   constexpr size_t kSelection = 0;  // the other browser
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   // Already selected app index, output should be corrected to false.
   bool in_out_safe_to_bypass_ui = true;
   EXPECT_EQ(
@@ -570,12 +546,11 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOneMarketFallbackUrl) {
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Play Store", "com.google.play.store",
-                            "play_store_activty", false, fallback_url));
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name = std::make_pair(
-      GURL(), ArcIntentHelperBridge::ActivityName{"" /* package_name */,
-                                                  "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = true;
   EXPECT_EQ(
       GetActionResult::HANDLE_URL_IN_ARC,
@@ -602,12 +577,11 @@ TEST(ArcExternalProtocolDialogTest,
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Play Store", play_store_package_name,
-                            play_store_activity, true, fallback_url));
+                            play_store_activity,
+                            /*is_preferred=*/true, fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name = std::make_pair(
-      GURL(), ArcIntentHelperBridge::ActivityName{"" /* package_name */,
-                                                  "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = true;
   EXPECT_EQ(
       GetActionResult::HANDLE_URL_IN_ARC,
@@ -640,12 +614,11 @@ TEST(ArcExternalProtocolDialogTest,
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Play Store", play_store_package_name,
-                            play_store_activity, false, fallback_url));
+                            play_store_activity,
+                            /*is_preferred=*/false, fallback_url));
 
   constexpr size_t kSelection = 0;
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   // App already selected, it doesn't really makes sense to call GetAction with
   // |in_out_safe_to_bypass_ui| set to true here.
   bool in_out_safe_to_bypass_ui = false;
@@ -669,12 +642,11 @@ TEST(ArcExternalProtocolDialogTest,
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Play Store", "com.google.play.store",
-                            "play_store_activity", false, fallback_url));
+                            "play_store_activity", /*is_preferred=*/false,
+                            fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = true;
   EXPECT_EQ(
       GetActionResult::HANDLE_URL_IN_ARC,
@@ -693,14 +665,14 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithTwoMarketFallbackUrls) {
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Play Store", "com.google.play.store",
-                            "play.store.act1", false, fallback_url));
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, fallback_url));
   handlers.push_back(Create("Other Store app", "com.other.play.store",
-                            "otherplay.store.act2", false, fallback_url));
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = false;
   EXPECT_EQ(
       GetActionResult::ASK_USER,
@@ -720,14 +692,14 @@ TEST(ArcExternalProtocolDialogTest,
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Other Store app", "com.other.play.store",
-                            "fake.play.store.act", false, fallback_url));
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, fallback_url));
   handlers.push_back(Create("Play Store", play_store_package_name,
-                            play_store_activity, true, fallback_url));
+                            play_store_activity,
+                            /*is_preferred=*/true, fallback_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = false;
   EXPECT_EQ(
       GetActionResult::HANDLE_URL_IN_ARC,
@@ -750,14 +722,14 @@ TEST(ArcExternalProtocolDialogTest,
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("Other Store app", "com.other.play.store",
-                            "other.play.store.act", false, fallback_url));
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, fallback_url));
   handlers.push_back(Create("Play Store", play_store_package_name,
-                            play_store_activity, false, fallback_url));
+                            play_store_activity,
+                            /*is_preferred=*/false, fallback_url));
 
   const size_t kSelection = 1;  // Play Store
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   // After selection doesn't really makes sense to check this value.
   bool in_out_safe_to_bypass_ui = false;
   EXPECT_EQ(
@@ -781,13 +753,11 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithGeoUrlAsFallback) {
   const std::string chrome_activity("chrome.activity");
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(
-      Create("Chrome", kChromePackageName, chrome_activity, true, geo_url));
+  handlers.push_back(Create("Chrome", kChromePackageName, chrome_activity,
+                            /*is_preferred=*/true, geo_url));
 
   const size_t no_selection = handlers.size();
-  auto url_and_activity_name =
-      std::make_pair(GURL(), ArcIntentHelperBridge::ActivityName{
-                                 "" /* package_name*/, "" /* activity_name */});
+  GurlAndActivityInfo url_and_activity_name = CreateEmptyGurlAndActivityInfo();
   bool in_out_safe_to_bypass_ui = false;
   // GetAction shouldn't return OPEN_URL_IN_CHROME because Chrome doesn't
   // directly support geo:.
@@ -814,8 +784,9 @@ TEST(ArcExternalProtocolDialogTest, TestGetUrlToNavigateOnDeactivateAppOnly) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   // On production, when |handlers| only contains app(s), the fallback field is
   // empty, but to make the test more reliable, use non-empty fallback URL.
-  handlers.push_back(
-      Create("App", "app.package", "app.activity", false, GURL("http://www")));
+  handlers.push_back(Create("App", "app.package",
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("http://www")));
   EXPECT_EQ(GURL(), GetUrlToNavigateOnDeactivateForTesting(handlers));
 }
 
@@ -825,10 +796,12 @@ TEST(ArcExternalProtocolDialogTest, TestGetUrlToNavigateOnDeactivateAppsOnly) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   // On production, when |handlers| only contains app(s), the fallback field is
   // empty, but to make the test more reliable, use non-empty fallback URL.
-  handlers.push_back(Create("App1", "app1.package", "app1.activity", false,
-                            GURL("http://www")));
-  handlers.push_back(Create("App2", "app2.package", "app2.activity", false,
-                            GURL("http://www")));
+  handlers.push_back(Create("App1", "app1.package",
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("http://www")));
+  handlers.push_back(Create("App2", "app2.package",
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("http://www")));
   EXPECT_EQ(GURL(), GetUrlToNavigateOnDeactivateForTesting(handlers));
 }
 
@@ -836,8 +809,9 @@ TEST(ArcExternalProtocolDialogTest, TestGetUrlToNavigateOnDeactivateAppsOnly) {
 // contains Chrome, but it's not for http(s).
 TEST(ArcExternalProtocolDialogTest, TestGetUrlToNavigateOnDeactivateGeoUrl) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(Create("Chrome", kChromePackageName, "chrome.act1", false,
-                            GURL("geo:37.4220,-122.0840")));
+  handlers.push_back(
+      Create("Chrome", kChromePackageName, /*activity_name=*/std::string(),
+             /*is_preferred=*/false, GURL("geo:37.4220,-122.0840")));
   EXPECT_EQ(GURL(), GetUrlToNavigateOnDeactivateForTesting(handlers));
 }
 
@@ -849,12 +823,15 @@ TEST(ArcExternalProtocolDialogTest,
   // On production, all handlers have the same fallback URL, but to make sure
   // that "Chrome" is actually selected by the function, use different URLs.
   handlers.push_back(Create("A browser app", "browser.app.package",
-                            "browser.app.act", false, GURL("http://www1/")));
-  handlers.push_back(
-      Create("Chrome", kChromePackageName, false, GURL("http://www2/")));
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("http://www1/")));
+  handlers.push_back(Create("Chrome", kChromePackageName,
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("http://www2/")));
   handlers.push_back(Create("Yet another browser app",
                             "yet.another.browser.app.package",
-                            "other.browser.act", false, GURL("http://www3/")));
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("http://www3/")));
 
   EXPECT_EQ(GURL("http://www2/"),
             GetUrlToNavigateOnDeactivateForTesting(handlers));
@@ -865,12 +842,15 @@ TEST(ArcExternalProtocolDialogTest,
      TestGetUrlToNavigateOnDeactivateChromeAndAppHttps) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   handlers.push_back(Create("A browser app", "browser.app.package",
-                            "browser.act", false, GURL("https://www1/")));
-  handlers.push_back(
-      Create("Chrome", kChromePackageName, false, GURL("https://www2/")));
-  handlers.push_back(
-      Create("Yet another browser app", "yet.another.browser.app.package",
-             "another.browser.act", false, GURL("https://www3/")));
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("https://www1/")));
+  handlers.push_back(Create("Chrome", kChromePackageName,
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("https://www2/")));
+  handlers.push_back(Create("Yet another browser app",
+                            "yet.another.browser.app.package",
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("https://www3/")));
 
   EXPECT_EQ(GURL("https://www2/"),
             GetUrlToNavigateOnDeactivateForTesting(handlers));
@@ -895,40 +875,52 @@ TEST_F(ArcExternalProtocolDialogTestUtils, TestTabIsNotStartedFromArc) {
 TEST(ArcExternalProtocolDialogTest, TestIsChromeAnAppCandidate) {
   // First 3 cases are valid, just switching the position of Chrome.
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
-  handlers.push_back(Create("fake app 1", "fake.app.package1", false,
-                            GURL("https://www.fo.com")));
-  handlers.push_back(Create("fake app 2", "fake_app_pkg_2", false,
-                            GURL("https://www.bar.com")));
   handlers.push_back(
-      Create("Chrome", kChromePackageName, false, GURL("https://www/")));
+      Create("fake app 1", "fake.app.package", /*activity_name=*/std::string(),
+             /*is_preferred=*/false, GURL("https://www.fo.com")));
+  handlers.push_back(
+      Create("fake app 2", "fake.app.package2", /*activity_name=*/std::string(),
+             /*is_preferred=*/false, GURL("https://www.bar.com")));
+  handlers.push_back(Create("Chrome", kChromePackageName,
+                            /*activity_name=*/std::string(),
+                            /*is_preferred=*/false, GURL("https://www/")));
   EXPECT_TRUE(IsChromeAnAppCandidateForTesting(handlers));
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers2;
-  handlers2.push_back(Create("fake app 1", "fake.app.package", false,
-                             GURL("https://www.fo.com")));
   handlers2.push_back(
-      Create("Chrome", kChromePackageName, false, GURL("https://www/")));
-  handlers2.push_back(Create("fake app 2", "fake.app.package2", false,
-                             GURL("https://www.bar.com")));
+      Create("fake app 1", "fake.app.package", /*activity_name=*/std::string(),
+             /*is_preferred=*/false, GURL("https://www.fo.com")));
+  handlers2.push_back(Create("Chrome", kChromePackageName,
+                             /*activity_name=*/std::string(),
+                             /*is_preferred=*/false, GURL("https://www/")));
+  handlers2.push_back(
+      Create("fake app 2", "fake.app.package2", /*activity_name=*/std::string(),
+             /*is_preferred=*/false, GURL("https://www.bar.com")));
   EXPECT_TRUE(IsChromeAnAppCandidateForTesting(handlers2));
 
   std::vector<mojom::IntentHandlerInfoPtr> handlers3;
+  handlers3.push_back(Create("Chrome", kChromePackageName,
+                             /*activity_name=*/std::string(),
+                             /*is_preferred=*/false, GURL("https://www/")));
   handlers3.push_back(
-      Create("Chrome", kChromePackageName, false, GURL("https://www/")));
-  handlers3.push_back(Create("fake app 1", "fake.app.package", false,
-                             GURL("https://www.fo.com")));
-  handlers3.push_back(Create("fake app 2", "fake.app.package2", false,
-                             GURL("https://www.bar.com")));
+      Create("fake app 1", "fake.app.package", /*activity_name=*/std::string(),
+             /*is_preferred=*/false, GURL("https://www.fo.com")));
+  handlers3.push_back(
+      Create("fake app 2", "fake.app.package2", /*activity_name=*/std::string(),
+             /*is_preferred=*/false, GURL("https://www.bar.com")));
   EXPECT_TRUE(IsChromeAnAppCandidateForTesting(handlers3));
 
   // Only non-Chrome apps.
   std::vector<mojom::IntentHandlerInfoPtr> handlers4;
-  handlers4.push_back(Create("fake app 1", "fake.app.package", false,
-                             GURL("https://www.fo.com")));
-  handlers4.push_back(Create("fake app 2", "fake.app.package2", false,
-                             GURL("https://www.bar.com")));
   handlers4.push_back(
-      Create("fake app 3", "fake.app.package3", false, GURL("https://www/")));
+      Create("fake app 1", "fake.app.package", /*activity_name=*/std::string(),
+             /*is_preferred=*/false, GURL("https://www.fo.com")));
+  handlers4.push_back(
+      Create("fake app 2", "fake.app.package2", /*activity_name=*/std::string(),
+             /*is_preferred=*/false, GURL("https://www.bar.com")));
+  handlers4.push_back(Create("fake app 3", "fake.app.package3",
+                             /*activity_name=*/std::string(),
+                             /*is_preferred=*/false, GURL("https://www/")));
   EXPECT_FALSE(IsChromeAnAppCandidateForTesting(handlers4));
 
   // Empty vector case.

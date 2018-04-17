@@ -36,6 +36,9 @@ class ArcWebContentsData
   DISALLOW_COPY_AND_ASSIGN(ArcWebContentsData);
 };
 
+using GurlAndActivityInfo =
+    std::pair<GURL, ArcIntentHelperBridge::ActivityName>;
+
 // An enum returned from GetAction function. This is visible for testing.
 enum class GetActionResult {
   // ARC cannot handle the |original_url|, and the URL does not have a fallback
@@ -67,8 +70,7 @@ GetActionResult GetActionForTesting(
     const GURL& original_url,
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
     size_t selected_app_index,
-    std::pair<GURL, ArcIntentHelperBridge::ActivityName>*
-        out_url_and_activity_name,
+    GurlAndActivityInfo* out_url_and_activity_name,
     bool* safe_to_bypass_ui);
 
 GURL GetUrlToNavigateOnDeactivateForTesting(
