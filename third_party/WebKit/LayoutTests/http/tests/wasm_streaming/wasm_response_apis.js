@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 const incrementer_url = '../wasm/resources/load-wasm.php';
-const invalid_wasm_url = '../wasm/resources/load-wasm.php?name=invalid-wasm.wasm'
+const not_available_url = '../wasm/resources/not-available.php';
+const invalid_wasm_url = '../wasm/resources/load-wasm.php?name=invalid-wasm.wasm';
 
 function AssertType(obj, type) {
   assert_equals(obj.constructor, type);
@@ -22,6 +23,20 @@ function TestStreamedCompile() {
     .then(WebAssembly.compileStreaming)
     .then(m => new WebAssembly.Instance(m))
     .then(i => assert_equals(5, i.exports.increment(4)));
+}
+
+function TestCompileOkStatusIsChecked() {
+  return fetch(not_available_url)
+    .then(WebAssembly.compileStreaming)
+    .then(assert_unreached,
+          AssertTypeError);
+}
+
+function TestInstantiateOkStatusIsChecked() {
+  return fetch(not_available_url)
+    .then(WebAssembly.instantiateStreaming)
+    .then(assert_unreached,
+          AssertTypeError);
 }
 
 function TestCompileMimeTypeIsChecked() {

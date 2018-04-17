@@ -160,6 +160,11 @@ void CompileFromResponseCallback(
     return;
   }
 
+  if (!response->ok()) {
+    exception_state.ThrowTypeError("HTTP status code is not ok");
+    return;
+  }
+
   if (response->MimeType() != "application/wasm") {
     exception_state.ThrowTypeError(
         "Incorrect response MIME type. Expected 'application/wasm'.");
