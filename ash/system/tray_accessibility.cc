@@ -45,14 +45,13 @@ enum AccessibilityState {
   A11Y_LARGE_CURSOR = 1 << 3,
   A11Y_AUTOCLICK = 1 << 4,
   A11Y_VIRTUAL_KEYBOARD = 1 << 5,
-  A11Y_BRAILLE_DISPLAY_CONNECTED = 1 << 6,
-  A11Y_MONO_AUDIO = 1 << 7,
-  A11Y_CARET_HIGHLIGHT = 1 << 8,
-  A11Y_HIGHLIGHT_MOUSE_CURSOR = 1 << 9,
-  A11Y_HIGHLIGHT_KEYBOARD_FOCUS = 1 << 10,
-  A11Y_STICKY_KEYS = 1 << 11,
-  A11Y_SELECT_TO_SPEAK = 1 << 12,
-  A11Y_DOCKED_MAGNIFIER = 1 << 13,
+  A11Y_MONO_AUDIO = 1 << 6,
+  A11Y_CARET_HIGHLIGHT = 1 << 7,
+  A11Y_HIGHLIGHT_MOUSE_CURSOR = 1 << 8,
+  A11Y_HIGHLIGHT_KEYBOARD_FOCUS = 1 << 9,
+  A11Y_STICKY_KEYS = 1 << 10,
+  A11Y_SELECT_TO_SPEAK = 1 << 11,
+  A11Y_DOCKED_MAGNIFIER = 1 << 12,
 };
 
 uint32_t GetAccessibilityState() {
@@ -72,8 +71,6 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_AUTOCLICK;
   if (controller->IsVirtualKeyboardEnabled())
     state |= A11Y_VIRTUAL_KEYBOARD;
-  if (controller->braille_display_connected())
-    state |= A11Y_BRAILLE_DISPLAY_CONNECTED;
   if (controller->IsMonoAudioEnabled())
     state |= A11Y_MONO_AUDIO;
   if (controller->IsCaretHighlightEnabled())
