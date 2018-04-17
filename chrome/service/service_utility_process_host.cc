@@ -57,6 +57,7 @@
 #include "services/service_manager/runner/host/service_process_launcher.h"
 #include "services/service_manager/runner/host/service_process_launcher_factory.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "services/service_manager/service_manager.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -464,7 +465,7 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
     parent_handle = named_pair.PassServerHandle();
     named_pair.PrepareToPassClientHandleToChildProcess(cmd_line);
 
-    cmd_line->AppendSwitch(switches::kNoSandbox);
+    cmd_line->AppendSwitch(service_manager::switches::kNoSandbox);
     process_ = base::LaunchProcess(*cmd_line, base::LaunchOptions());
     success = process_.IsValid();
   }

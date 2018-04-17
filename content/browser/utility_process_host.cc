@@ -33,6 +33,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -267,13 +268,13 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kIgnoreCertificateErrorsSPKIList,
       network::switches::kLogNetLog,
       network::switches::kNoReferrers,
+      service_manager::switches::kNoSandbox,
+#if defined(OS_MACOSX)
+      service_manager::switches::kEnableSandboxLogging,
+#endif
       switches::kIgnoreCertificateErrors,
-      switches::kNoSandbox,
       switches::kOverrideUseSoftwareGLForTests,
       switches::kProxyServer,
-#if defined(OS_MACOSX)
-      switches::kEnableSandboxLogging,
-#endif
       switches::kUseFakeDeviceForMediaStream,
       switches::kUseFileForFakeVideoCapture,
       switches::kUseMockCertVerifierForTesting,

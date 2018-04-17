@@ -20,6 +20,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ChildProcessLauncherHelper_jni.h"
+#include "services/service_manager/sandbox/switches.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -55,7 +56,7 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
 
   // Non-sandboxed utility or renderer process are currently not supported.
   DCHECK(process_type == switches::kGpuProcess ||
-         !command_line()->HasSwitch(switches::kNoSandbox));
+         !command_line()->HasSwitch(service_manager::switches::kNoSandbox));
 }
 
 mojo::edk::ScopedPlatformHandle

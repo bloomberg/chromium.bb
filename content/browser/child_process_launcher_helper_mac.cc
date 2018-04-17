@@ -31,6 +31,7 @@
 #include "services/service_manager/sandbox/mac/utility.sb.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace content {
 namespace internal {
@@ -66,8 +67,9 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   auto sandbox_type =
       service_manager::SandboxTypeFromCommandLine(*command_line_);
 
-  bool no_sandbox = command_line_->HasSwitch(switches::kNoSandbox) ||
-                    service_manager::IsUnsandboxedSandboxType(sandbox_type);
+  bool no_sandbox =
+      command_line_->HasSwitch(service_manager::switches::kNoSandbox) ||
+      service_manager::IsUnsandboxedSandboxType(sandbox_type);
 
   // TODO(kerrnel): Delete this switch once the V2 sandbox is always enabled.
   bool v2_process = false;

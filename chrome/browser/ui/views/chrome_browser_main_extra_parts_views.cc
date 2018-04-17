@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "services/service_manager/sandbox/switches.h"
 
 #if defined(USE_AURA)
 #include "base/run_loop.h"
@@ -147,7 +148,7 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kNoSandbox))
+  if (command_line.HasSwitch(service_manager::switches::kNoSandbox))
     return;
 
   base::string16 title = l10n_util::GetStringFUTF16(

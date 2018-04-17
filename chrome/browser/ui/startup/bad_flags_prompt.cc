@@ -56,6 +56,7 @@ static const char* kBadFlags[] = {
     service_manager::switches::kDisableGpuSandbox,
     service_manager::switches::kDisableSeccompFilterSandbox,
     service_manager::switches::kDisableSetuidSandbox,
+    service_manager::switches::kNoSandbox,
 #if defined(OS_WIN)
     service_manager::switches::kAllowThirdPartyModules,
 #endif
@@ -63,7 +64,7 @@ static const char* kBadFlags[] = {
 #if BUILDFLAG(ENABLE_NACL)
     switches::kNaClDangerousNoSandboxNonSfi,
 #endif
-    switches::kNoSandbox, switches::kSingleProcess,
+    switches::kSingleProcess,
 
     // These flags disable or undermine the Same Origin Policy.
     translate::switches::kTranslateSecurityOrigin,

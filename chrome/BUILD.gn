@@ -209,6 +209,7 @@ if (!is_android && !is_mac) {
           "//content/public/common:static_switches",
           "//crypto",
           "//sandbox",
+          "//services/service_manager/sandbox",
           "//third_party/breakpad:breakpad_handler",
           "//third_party/breakpad:breakpad_sender",
         ]

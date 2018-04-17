@@ -33,6 +33,7 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ui_base_switches.h"
@@ -185,7 +186,8 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrRendererMain");
 
-  bool no_sandbox = command_line.HasSwitch(switches::kNoSandbox);
+  bool no_sandbox =
+      command_line.HasSwitch(service_manager::switches::kNoSandbox);
 
 #if defined(OS_ANDROID)
   // If we have any pending LibraryLoader histograms, record them.

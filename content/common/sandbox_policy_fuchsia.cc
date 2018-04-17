@@ -13,12 +13,14 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "content/public/common/content_switches.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace content {
 
 void UpdateLaunchOptionsForSandbox(service_manager::SandboxType type,
                                    base::LaunchOptions* options) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          service_manager::switches::kNoSandbox)) {
     type = service_manager::SANDBOX_TYPE_NO_SANDBOX;
   }
 

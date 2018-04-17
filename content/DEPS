@@ -46,6 +46,7 @@ include_rules = [
   "+sandbox",
   "+services/proxy_resolver/public/mojom",
   "+services/service_manager/embedder",
+  "+services/service_manager/sandbox",
   "+skia",
 
   # In general, content/ should not rely on google_apis, since URLs

@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace nacl {
 
@@ -19,7 +20,7 @@ void CopyNaClCommandLineArguments(base::CommandLine* cmd_line) {
   // with any associated values) if present in the browser command line.
   // TODO(gregoryd): check which flags of those below can be supported.
   static const char* const kSwitchNames[] = {
-    switches::kNoSandbox,
+    service_manager::switches::kNoSandbox,
     switches::kDisableBreakpad,
     switches::kFullMemoryCrashReport,
     switches::kEnableLogging,
@@ -27,7 +28,7 @@ void CopyNaClCommandLineArguments(base::CommandLine* cmd_line) {
     switches::kLoggingLevel,
     switches::kNoErrorDialogs,
 #if defined(OS_MACOSX)
-    switches::kEnableSandboxLogging,
+    service_manager::switches::kEnableSandboxLogging,
 #endif
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
