@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
@@ -14,9 +14,9 @@
 
 namespace blink {
 
-class NGCaretRectTest : public NGLayoutTest {
+class NGCaretPositionTest : public NGLayoutTest {
  public:
-  NGCaretRectTest() : NGLayoutTest() {}
+  NGCaretPositionTest() : NGLayoutTest() {}
 
   void SetUp() override {
     NGLayoutTest::SetUp();
@@ -69,7 +69,7 @@ class NGCaretRectTest : public NGLayoutTest {
     EXPECT_EQ(caret.text_offset, offset_) << caret.text_offset.value_or(-1); \
   }
 
-TEST_F(NGCaretRectTest, CaretPositionInOneLineOfText) {
+TEST_F(NGCaretPositionTest, CaretPositionInOneLineOfText) {
   SetInlineFormattingContext("t", "foo", 3);
   const Node* text = container_->firstChild();
   const NGPhysicalFragment* text_fragment = FragmentOf(text);
@@ -93,7 +93,7 @@ TEST_F(NGCaretRectTest, CaretPositionInOneLineOfText) {
              kAtTextOffset, Optional<unsigned>(3));
 }
 
-TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrap) {
+TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrap) {
   SetInlineFormattingContext("t", "foobar", 3);
   const Node* text = container_->firstChild();
   const auto text_fragments = NGInlineFragmentTraversal::SelfFragmentsOf(
@@ -107,7 +107,7 @@ TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrap) {
              kAtTextOffset, Optional<unsigned>(3));
 }
 
-TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapWithSpace) {
+TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapWithSpace) {
   SetInlineFormattingContext("t", "foo bar", 3);
   const Node* text = container_->firstChild();
   const auto text_fragments = NGInlineFragmentTraversal::SelfFragmentsOf(
@@ -128,7 +128,7 @@ TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapWithSpace) {
              kAtTextOffset, Optional<unsigned>(4));
 }
 
-TEST_F(NGCaretRectTest, CaretPositionAtForcedLineBreak) {
+TEST_F(NGCaretPositionTest, CaretPositionAtForcedLineBreak) {
   SetInlineFormattingContext("t", "foo<br>bar", 3);
   const Node* foo = container_->firstChild();
   const Node* br = foo->nextSibling();
@@ -149,7 +149,7 @@ TEST_F(NGCaretRectTest, CaretPositionAtForcedLineBreak) {
              kAtTextOffset, Optional<unsigned>(4));
 }
 
-TEST_F(NGCaretRectTest, CaretPositionAtEmptyLine) {
+TEST_F(NGCaretPositionTest, CaretPositionAtEmptyLine) {
   SetInlineFormattingContext("f", "foo<br><br>bar", 3);
   const Node* foo = container_->firstChild();
   const Node* br1 = foo->nextSibling();
@@ -162,7 +162,7 @@ TEST_F(NGCaretRectTest, CaretPositionAtEmptyLine) {
              kAtTextOffset, Optional<unsigned>(4));
 }
 
-TEST_F(NGCaretRectTest, CaretPositionInOneLineOfImage) {
+TEST_F(NGCaretPositionTest, CaretPositionInOneLineOfImage) {
   SetInlineFormattingContext("t", "<img>", 3);
   const Node* img = container_->firstChild();
   const NGPhysicalFragment* img_fragment = FragmentOf(img);
@@ -180,7 +180,7 @@ TEST_F(NGCaretRectTest, CaretPositionInOneLineOfImage) {
              kAfterBox, WTF::nullopt);
 }
 
-TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapBetweenImages) {
+TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapBetweenImages) {
   SetInlineFormattingContext("t",
                              "<img id=img1><img id=img2>"
                              "<style>img{width: 1em; height: 1em}</style>",
@@ -196,7 +196,8 @@ TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapBetweenImages) {
              kAfterBox, WTF::nullopt);
 }
 
-TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapBetweenMultipleTextNodes) {
+TEST_F(NGCaretPositionTest,
+       CaretPositionAtSoftLineWrapBetweenMultipleTextNodes) {
   SetInlineFormattingContext("t",
                              "<span>A</span>"
                              "<span>B</span>"
@@ -221,7 +222,7 @@ TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapBetweenMultipleTextNodes) {
              fragment_d, kAtTextOffset, Optional<unsigned>(wrap_offset));
 }
 
-TEST_F(NGCaretRectTest,
+TEST_F(NGCaretPositionTest,
        CaretPositionAtSoftLineWrapBetweenMultipleTextNodesRtl) {
   SetInlineFormattingContext("t",
                              "<span>A</span>"
@@ -247,7 +248,7 @@ TEST_F(NGCaretRectTest,
              fragment_d, kAtTextOffset, Optional<unsigned>(wrap_offset));
 }
 
-TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapBetweenDeepTextNodes) {
+TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapBetweenDeepTextNodes) {
   SetInlineFormattingContext(
       "t",
       "<style>span {border: 1px solid black}</style>"
