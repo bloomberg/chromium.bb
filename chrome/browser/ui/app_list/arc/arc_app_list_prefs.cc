@@ -793,7 +793,6 @@ void ArcAppListPrefs::SetDefaultAppsFilterLevel() {
 
 void ArcAppListPrefs::OnDefaultAppsReady() {
   // Apply uninstalled packages now.
-
   const std::vector<std::string> uninstalled_package_names =
       GetPackagesFromPrefs(false /* check_arc_alive */, false /* installed */);
   for (const auto& uninstalled_package_name : uninstalled_package_names)
@@ -816,8 +815,19 @@ void ArcAppListPrefs::RegisterDefaultApps() {
     if (!default_apps_.HasApp(app_id))
       continue;
     // Skip already tracked app.
-    if (tracked_apps_.count(app_id))
+    if (tracked_apps_.count(app_id)) {
+      // Icon should be already taken from the cache. Play Store icon is loaded
+      // from internal resources.
+      if (ready_apps_.count(app_id) || app_id == arc::kPlayStoreAppId)
+        continue;
+      // Notify that icon is ready for default app.
+      for (auto& observer : observer_list_) {
+        for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors())
+          observer.OnAppIconUpdated(app_id, scale_factor);
+      }
       continue;
+    }
+
     const ArcDefaultAppList::AppInfo& app_info = *default_app.second.get();
     AddAppAndShortcut(
         false /* app_ready */, app_info.name, app_info.package_name,

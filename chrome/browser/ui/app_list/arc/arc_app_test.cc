@@ -111,7 +111,10 @@ void ArcAppTest::SetUp(Profile* profile) {
   app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
   arc_service_manager_->arc_bridge_service()->app()->SetInstance(
       app_instance_.get());
-  WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
+  // TODO(khmel): Resolve this gracefully. Set of default app tests does not
+  // expect waiting in ArcAppTest setup.
+  if (wait_default_apps_)
+    WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
 }
 
 void ArcAppTest::WaitForDefaultApps() {
