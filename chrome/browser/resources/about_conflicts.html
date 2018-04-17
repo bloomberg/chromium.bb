@@ -1,5 +1,5 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
@@ -139,14 +139,14 @@ html[dir=rtl] .clearing {
 </style>
 </head>
 <body>
-<div id="loading-message" i18n-content="loadingMessage"></div>
+<div id="loading-message">$i18n{loadingMessage}</div>
 
 <div id="body-container" style="visibility:hidden">
 
-  <div id="header"><h1 i18n-content="modulesLongTitle">TITLE</h1></div>
+  <div id="header"><h1>$i18n{modulesLongTitle}</h1></div>
 
   <div id="blurb-container">
-    <span i18n-content="modulesBlurb">MODULES BLURB</span>
+    <span>$i18n{modulesBlurb}</span>
   </div>
 
   <div id="modulesTemplate">
@@ -169,7 +169,7 @@ html[dir=rtl] .clearing {
     <div class="content">
       <div class="module-name no-modules"
            jsdisplay="moduleList.length === 0">
-        <div i18n-content="modulesNoneLoaded">NO_MODULES_ARE_AVAILABLE</div>
+        <div>$i18n{modulesNoneLoaded}</div>
       </div>
 
       <div jsdisplay="moduleList.length &gt; 0">
@@ -178,14 +178,18 @@ html[dir=rtl] .clearing {
       <td valign="top">
         <table cellpadding="2" cellspacing="0" border="0">
           <tr>
-            <td class="datacell"><span dir="ltr" i18n-content="headerSoftware"
-                    >SOFTWARE</span></td>
-            <td class="datacell"><span dir="ltr" i18n-content="headerSignedBy"
-                    >SIGNER</span></td>
-            <td class="datacell"><span dir="ltr" i18n-content="headerVersion"
-                    >VERSION</span></td>
-            <td class="datacell"><span dir="ltr" i18n-content="headerLocation"
-                    >LOCATION</span></td>
+            <td class="datacell">
+              <span dir="ltr">$i18n{headerSoftware}</span>
+            </td>
+            <td class="datacell">
+              <span dir="ltr">$i18n{headerSignedBy}</span>
+            </td>
+            <td class="datacell">
+              <span dir="ltr">$i18n{headerVersion}</span>
+            </td>
+            <td class="datacell">
+              <span dir="ltr">$i18n{headerLocation}</span>
+            </td>
           </tr>
           <tr jsselect="moduleList">
             <td valign="top" class="datacell">
@@ -196,11 +200,9 @@ html[dir=rtl] .clearing {
                    class="extra-info-text">
                 <span class="clearing">
                   <span jsdisplay="status == 2"
-                        i18n-content="moduleSuspectedBad"
-                        class="suspected-bad">SUSPECTED_BAD</span>
+                        class="suspected-bad">$i18n{moduleSuspectedBad}</span>
                   <span jsdisplay="status == 3"
-                        i18n-content="moduleConfirmedBad"
-                        class="confirmed-bad">CONFIRMED_BAD</span>
+                        class="confirmed-bad">$i18n{moduleConfirmedBad}</span>
                 </span>
                 <span class="clearing">
                   <span jsdisplay="possibleResolution.length &gt; 0">
@@ -208,8 +210,7 @@ html[dir=rtl] .clearing {
                         >POSSIBLE_RESOLUTION</span>
                   </span>
                   <a jsdisplay="help_url.length &gt; 0"
-                     jsvalues=".href:help_url"
-                     i18n-content="helpCenterLink">HELP_CENTER</a>
+                     jsvalues=".href:help_url">$i18n{helpCenterLink}</a>
                 </span>
               </div>
             </td>
