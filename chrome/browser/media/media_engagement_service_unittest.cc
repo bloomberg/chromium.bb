@@ -151,8 +151,8 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
 
   void TearDown() override {
     service_->Shutdown();
-    service_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
+    service_.reset();
   }
 
   void AdvanceClock() {
