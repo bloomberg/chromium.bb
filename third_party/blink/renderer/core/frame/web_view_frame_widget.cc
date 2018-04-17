@@ -12,15 +12,10 @@
 namespace blink {
 
 WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
-                                       WebViewImpl& web_view,
-                                       WebLocalFrameImpl& main_frame)
-    : client_(&client),
+                                       WebViewImpl& web_view)
+    : WebFrameWidgetBase(client),
       web_view_(&web_view),
-      main_frame_(&main_frame),
-      self_keep_alive_(this) {
-  main_frame_->SetFrameWidget(this);
-  web_view_->SetCompositorVisibility(true);
-}
+      self_keep_alive_(this) {}
 
 WebViewFrameWidget::~WebViewFrameWidget() = default;
 
@@ -30,10 +25,9 @@ void WebViewFrameWidget::Close() {
   // updated. If the main frame is being swapped, then
   // m_webView()->mainFrameImpl() will no longer point to the original frame.
   web_view_->SetCompositorVisibility(false);
-  main_frame_->SetFrameWidget(nullptr);
-  main_frame_ = nullptr;
   web_view_ = nullptr;
-  client_ = nullptr;
+
+  WebFrameWidgetBase::Close();
 
   // Note: this intentionally does not forward to WebView::close(), to make it
   // easier to untangle the cleanup logic later.
@@ -186,10 +180,6 @@ void WebViewFrameWidget::SetBaseBackgroundColor(WebColor color) {
   web_view_->SetBaseBackgroundColor(color);
 }
 
-WebLocalFrameImpl* WebViewFrameWidget::LocalRoot() const {
-  return web_view_->MainFrameImpl();
-}
-
 WebInputMethodController*
 WebViewFrameWidget::GetActiveWebInputMethodController() const {
   return web_view_->GetActiveWebInputMethodController();
@@ -197,6 +187,10 @@ WebViewFrameWidget::GetActiveWebInputMethodController() const {
 
 bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {
   return web_view_->ScrollFocusedEditableElementIntoView();
+}
+
+void WebViewFrameWidget::Initialize() {
+  web_view_->SetCompositorVisibility(true);
 }
 
 void WebViewFrameWidget::ScheduleAnimation() {
@@ -238,7 +232,6 @@ HitTestResult WebViewFrameWidget::CoreHitTestResultAt(const WebPoint& point) {
 }
 
 void WebViewFrameWidget::Trace(blink::Visitor* visitor) {
-  visitor->Trace(main_frame_);
   WebFrameWidgetBase::Trace(visitor);
 }
 

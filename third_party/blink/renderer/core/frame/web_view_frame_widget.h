@@ -35,9 +35,7 @@ class WebWidgetClient;
 // https://goo.gl/7yVrnb.
 class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
  public:
-  explicit WebViewFrameWidget(WebWidgetClient&,
-                              WebViewImpl&,
-                              WebLocalFrameImpl&);
+  explicit WebViewFrameWidget(WebWidgetClient&, WebViewImpl&);
   virtual ~WebViewFrameWidget();
 
   // WebFrameWidget overrides:
@@ -84,11 +82,11 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetBaseBackgroundColorOverride(WebColor) override;
   void ClearBaseBackgroundColorOverride() override;
   void SetBaseBackgroundColor(WebColor) override;
-  WebLocalFrameImpl* LocalRoot() const override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
 
   // WebFrameWidgetBase overrides:
+  void Initialize() override;
   bool ForSubframe() const override { return false; }
   void ScheduleAnimation() override;
   base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
@@ -98,7 +96,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetRootLayer(WebLayer*) override;
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;
-  WebWidgetClient* Client() const override { return client_; }
   WebHitTestResult HitTestResultAt(const WebPoint&) override;
   HitTestResult CoreHitTestResultAt(const WebPoint&) override;
 
@@ -107,9 +104,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
  private:
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;
 
-  WebWidgetClient* client_;
   scoped_refptr<WebViewImpl> web_view_;
-  Member<WebLocalFrameImpl> main_frame_;
 
   SelfKeepAlive<WebViewFrameWidget> self_keep_alive_;
 
