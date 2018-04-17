@@ -20,7 +20,6 @@
 #include "net/base/net_errors.h"
 #include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/reporting/reporting_service.h"
-#include "net/socket/next_proto.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -474,10 +473,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     body->SetString(kReferrerKey, details.referrer.spec());
     body->SetDouble(kSamplingFractionKey, sampling_fraction);
     body->SetString(kServerIpKey, details.server_ip.ToString());
-    std::string protocol = NextProtoToString(details.protocol);
-    if (protocol == "unknown")
-      protocol = "";
-    body->SetString(kProtocolKey, protocol);
+    body->SetString(kProtocolKey, details.protocol);
     body->SetInteger(kStatusCodeKey, details.status_code);
     body->SetInteger(kElapsedTimeKey, details.elapsed_time.InMilliseconds());
     body->SetString(kTypeKey, type);

@@ -18,7 +18,6 @@
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
-#include "net/socket/next_proto.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -134,7 +133,6 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
     details.uri = url;
     details.referrer = kReferrer_;
     details.server_ip = IPAddress::IPv4AllZeros();
-    details.protocol = kProtoUnknown;
     details.status_code = status_code;
     details.elapsed_time = base::TimeDelta::FromSeconds(1);
     details.type = error_type;
