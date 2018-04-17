@@ -74,6 +74,11 @@ class ASH_EXPORT TrayBluetoothHelper
   // Returns whether bluetooth is enabled.
   bool GetBluetoothEnabled();
 
+  // Changes bluetooth state to |enabled|. If the current state and |enabled|
+  // are same, it does nothing. If they're different, it toggles the state and
+  // records UMA.
+  void SetBluetoothEnabled(bool enabled);
+
   // Returns whether the delegate has initiated a bluetooth discovery session.
   bool HasBluetoothDiscoverySession();
 

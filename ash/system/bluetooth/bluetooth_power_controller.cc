@@ -37,17 +37,13 @@ BluetoothPowerController::~BluetoothPowerController() {
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
-void BluetoothPowerController::ToggleBluetoothEnabled() {
+void BluetoothPowerController::SetBluetoothEnabled(bool enabled) {
   if (active_user_pref_service_) {
-    active_user_pref_service_->SetBoolean(
-        prefs::kUserBluetoothAdapterEnabled,
-        !active_user_pref_service_->GetBoolean(
-            prefs::kUserBluetoothAdapterEnabled));
+    active_user_pref_service_->SetBoolean(prefs::kUserBluetoothAdapterEnabled,
+                                          enabled);
   } else if (local_state_pref_service_) {
-    local_state_pref_service_->SetBoolean(
-        prefs::kSystemBluetoothAdapterEnabled,
-        !local_state_pref_service_->GetBoolean(
-            prefs::kSystemBluetoothAdapterEnabled));
+    local_state_pref_service_->SetBoolean(prefs::kSystemBluetoothAdapterEnabled,
+                                          enabled);
   } else {
     DLOG(ERROR)
         << "active user and local state pref service cannot both be null";

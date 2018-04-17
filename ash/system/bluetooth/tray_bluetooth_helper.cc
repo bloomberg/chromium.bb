@@ -5,6 +5,7 @@
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 
 #include "ash/shell.h"
+#include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
@@ -137,6 +138,15 @@ bool TrayBluetoothHelper::GetBluetoothAvailable() {
 
 bool TrayBluetoothHelper::GetBluetoothEnabled() {
   return adapter_ && adapter_->IsPowered();
+}
+
+void TrayBluetoothHelper::SetBluetoothEnabled(bool enabled) {
+  if (GetBluetoothEnabled() != enabled) {
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        enabled ? UMA_STATUS_AREA_BLUETOOTH_ENABLED
+                : UMA_STATUS_AREA_BLUETOOTH_DISABLED);
+  }
+  Shell::Get()->bluetooth_power_controller()->SetBluetoothEnabled(enabled);
 }
 
 bool TrayBluetoothHelper::HasBluetoothDiscoverySession() {

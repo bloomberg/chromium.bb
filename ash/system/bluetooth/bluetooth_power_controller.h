@@ -35,8 +35,8 @@ class ASH_EXPORT BluetoothPowerController
   BluetoothPowerController();
   ~BluetoothPowerController() override;
 
-  // Toggles the bluetooth power setting on or off.
-  void ToggleBluetoothEnabled();
+  // Changes the bluetooth power setting to |enabled|.
+  void SetBluetoothEnabled(bool enabled);
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);

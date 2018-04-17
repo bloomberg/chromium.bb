@@ -7,7 +7,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -35,6 +34,12 @@ FeaturePodButton* BluetoothFeaturePodController::CreateButton() {
 }
 
 void BluetoothFeaturePodController::OnIconPressed() {
+  Shell::Get()->tray_bluetooth_helper()->SetBluetoothEnabled(
+      !button_->IsToggled());
+}
+
+void BluetoothFeaturePodController::OnLabelPressed() {
+  Shell::Get()->tray_bluetooth_helper()->SetBluetoothEnabled(true);
   tray_controller_->ShowBluetoothDetailedView();
 }
 

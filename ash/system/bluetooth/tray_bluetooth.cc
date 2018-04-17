@@ -15,7 +15,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -402,13 +401,8 @@ class BluetoothDetailedView : public TrayDetailsView {
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override {
     if (sender == toggle_) {
-      TrayBluetoothHelper* helper = Shell::Get()->tray_bluetooth_helper();
-      BluetoothPowerController* power_controller =
-          Shell::Get()->bluetooth_power_controller();
-      Shell::Get()->metrics()->RecordUserMetricsAction(
-          helper->GetBluetoothEnabled() ? UMA_STATUS_AREA_BLUETOOTH_DISABLED
-                                        : UMA_STATUS_AREA_BLUETOOTH_ENABLED);
-      power_controller->ToggleBluetoothEnabled();
+      Shell::Get()->tray_bluetooth_helper()->SetBluetoothEnabled(
+          toggle_->is_on());
     } else if (sender == settings_) {
       ShowSettings();
     } else {
