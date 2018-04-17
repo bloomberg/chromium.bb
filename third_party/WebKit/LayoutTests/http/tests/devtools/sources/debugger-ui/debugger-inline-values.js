@@ -26,12 +26,15 @@
   var stepCount = 0;
 
   function runTestFunction() {
-    TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, 'setExecutionLocation', onSetExecutionLocation);
+    TestRunner.addSniffer(
+        Sources.DebuggerPlugin.prototype, '_executionLineChanged',
+        onSetExecutionLocation);
     TestRunner.evaluateInPage('setTimeout(testFunction, 0)');
   }
 
-  function onSetExecutionLocation(uiLocation) {
-    TestRunner.deprecatedRunAfterPendingDispatches(dumpAndContinue.bind(null, this.textEditor, uiLocation.lineNumber));
+  function onSetExecutionLocation(liveLocation) {
+    TestRunner.deprecatedRunAfterPendingDispatches(dumpAndContinue.bind(
+        null, this._textEditor, liveLocation.uiLocation().lineNumber));
   }
 
   function dumpAndContinue(textEditor, lineNumber) {
@@ -45,7 +48,9 @@
       TestRunner.addResult(output.join(' '));
     }
 
-    TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, 'setExecutionLocation', onSetExecutionLocation);
+    TestRunner.addSniffer(
+        Sources.DebuggerPlugin.prototype, '_executionLineChanged',
+        onSetExecutionLocation);
     if (++stepCount < 10)
       SourcesTestRunner.stepOver();
     else

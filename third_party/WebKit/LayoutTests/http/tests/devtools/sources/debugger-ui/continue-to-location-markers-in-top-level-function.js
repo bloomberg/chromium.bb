@@ -22,19 +22,25 @@
   SourcesTestRunner.startDebuggerTest(step1, true);
 
   function step1() {
-    TestRunner.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, '_continueToLocationRenderedForTest')
+    TestRunner
+        .addSnifferPromise(
+            Sources.DebuggerPlugin.prototype,
+            '_continueToLocationRenderedForTest')
         .then(step2);
-    TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, 'setExecutionLocation', function() {
-      SourcesTestRunner.showUISourceCodePromise(this.uiSourceCode()).then(() => {
-        this._showContinueToLocations();
-      });
-    });
+    TestRunner.addSniffer(
+        Sources.DebuggerPlugin.prototype, '_executionLineChanged', function() {
+          SourcesTestRunner.showUISourceCodePromise(this._uiSourceCode)
+              .then(() => {
+                this._showContinueToLocations();
+              });
+        });
     SourcesTestRunner.runTestFunctionAndWaitUntilPaused();
   }
 
   function step2() {
     var currentFrame = UI.panels.sources.visibleView;
-    var decorations = currentFrame._continueToLocationDecorations;
+    var debuggerPlugin = SourcesTestRunner.debuggerPlugin(currentFrame);
+    var decorations = debuggerPlugin._continueToLocationDecorations;
     var lines = [];
     for (var decoration of decorations.keysArray()) {
       var find = decoration.find();

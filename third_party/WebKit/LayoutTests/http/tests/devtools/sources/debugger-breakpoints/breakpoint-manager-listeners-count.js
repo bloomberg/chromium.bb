@@ -35,7 +35,7 @@
           'Number of breakpoint-added event listeners is ' + listeners.length);
 
       function dumpListener(listener) {
-        if (!(listener.thisObject instanceof SourceFrame.SourceFrame))
+        if (!(listener.thisObject instanceof Sources.DebuggerPlugin))
           return;
         var sourceFrame = listener.thisObject;
         TestRunner.addResult('    ' + sourceFrame._uiSourceCode.name());

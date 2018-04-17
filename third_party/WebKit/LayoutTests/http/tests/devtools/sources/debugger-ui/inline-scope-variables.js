@@ -23,7 +23,10 @@
   SourcesTestRunner.startDebuggerTest(step1, true);
 
   function step1() {
-    TestRunner.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, '_renderDecorations').then(step2);
+    TestRunner
+        .addSnifferPromise(
+            Sources.DebuggerPlugin.prototype, '_renderDecorations')
+        .then(step2);
     SourcesTestRunner.runTestFunctionAndWaitUntilPaused();
   }
 

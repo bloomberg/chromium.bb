@@ -30,7 +30,8 @@
   SourcesTestRunner.startDebuggerTestPromise().then(
       () => SourcesTestRunner.showScriptSource('foo.js', didShowScriptSource));
 
-  function didShowScriptSource(sourceFrame) {
+  async function didShowScriptSource(sourceFrame) {
+    await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrame);
     var uiSourceCode = sourceFrame._uiSourceCode;
     var breakpointManager = Bindings.breakpointManager;
     setBreakpoint(breakpointManager, sourceFrame, 3, false)
@@ -48,8 +49,9 @@
     var resolveCallback;
     var promise = new Promise(resolve => resolveCallback = resolve);
     TestRunner.addSniffer(
-        sourceFrame.__proto__, '_breakpointWasSetForTest', dumpLocation, false);
-    sourceFrame._handleGutterClick({
+        Sources.DebuggerPlugin.prototype, '_breakpointWasSetForTest',
+        dumpLocation, false);
+    SourcesTestRunner.debuggerPlugin(sourceFrame)._handleGutterClick({
       data: {
         lineNumber: lineNumberClicked,
         event: {button: 0, shiftKey: shiftKey, consume: () => true}

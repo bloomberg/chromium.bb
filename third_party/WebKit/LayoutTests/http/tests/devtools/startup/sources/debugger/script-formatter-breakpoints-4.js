@@ -26,7 +26,8 @@
       function didShowScriptSource(sourceFrame) {
         TestRunner.addResult('Adding breakpoint.');
         TestRunner.addSniffer(
-            Bindings.BreakpointManager.ModelBreakpoint.prototype, '_addResolvedLocation', breakpointResolved);
+            Bindings.BreakpointManager.ModelBreakpoint.prototype,
+            '_addResolvedLocation', breakpointResolved);
         SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
       }
 
@@ -37,9 +38,11 @@
         scriptFormatter._toggleFormatScriptSource();
       }
 
-      function uiSourceCodeScriptFormatted() {
+      async function uiSourceCodeScriptFormatted() {
         TestRunner.addResult('Removing breakpoint.');
         var formattedSourceFrame = panel.visibleView;
+        await SourcesTestRunner.waitUntilDebuggerPluginLoaded(
+            formattedSourceFrame);
         SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 11);
         TestRunner.addResult('Unformatting.');
         Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
