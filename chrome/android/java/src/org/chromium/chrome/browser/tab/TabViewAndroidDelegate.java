@@ -16,11 +16,10 @@ class TabViewAndroidDelegate extends ViewAndroidDelegate {
     private static final String TAG = "TabVAD";
 
     private final Tab mTab;
-    private final ViewGroup mContainerView;
 
     TabViewAndroidDelegate(Tab tab, ViewGroup containerView) {
+        super(containerView);
         mTab = tab;
-        mContainerView = containerView;
     }
 
     @Override
@@ -43,10 +42,5 @@ class TabViewAndroidDelegate extends ViewAndroidDelegate {
     @Override
     public int getSystemWindowInsetBottom() {
         return mTab.getSystemWindowInsetBottom();
-    }
-
-    @Override
-    public ViewGroup getContainerView() {
-        return mContainerView;
     }
 }

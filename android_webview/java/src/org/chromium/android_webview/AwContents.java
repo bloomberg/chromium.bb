@@ -998,9 +998,7 @@ public class AwContents implements SmartClipProvider {
         updateNativeAwGLFunctor();
         mContainerView.setWillNotDraw(false);
 
-        mViewAndroidDelegate.updateCurrentContainerView(mContainerView,
-                mWindowAndroid.getWindowAndroid().getDisplay());
-        mContentViewCore.setContainerView(mContainerView);
+        mViewAndroidDelegate.setContainerView(mContainerView);
         if (mAwPdfExporter != null) {
             mAwPdfExporter.setContainerView(mContainerView);
         }
@@ -1389,6 +1387,10 @@ public class AwContents implements SmartClipProvider {
     // Can be called from any thread.
     public AwSettings getSettings() {
         return mSettings;
+    }
+
+    ViewGroup getContainerView() {
+        return mContainerView;
     }
 
     public AwPdfExporter getPdfExporter() {
@@ -2865,8 +2867,8 @@ public class AwContents implements SmartClipProvider {
 
     @CalledByNative
     private long onCreateTouchHandle() {
-        PopupTouchHandleDrawable drawable =
-                PopupTouchHandleDrawable.create(mTouchHandleDrawables, mContentViewCore);
+        PopupTouchHandleDrawable drawable = PopupTouchHandleDrawable.create(
+                mTouchHandleDrawables, mWebContents, mContainerView);
         return drawable.getNativeDrawable();
     }
 

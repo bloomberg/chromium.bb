@@ -48,7 +48,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private Context mContext;
     private final ObserverList<WindowEventObserver> mWindowEventObservers = new ObserverList<>();
 
-    private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
     private WebContentsImpl mWebContents;
     private WindowAndroid mWindowAndroid;
@@ -67,9 +66,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     // Keep in sync with the value returned from ContentViewCore::GetCurrentRendererProcessId()
     // if there is no render process.
     public static final int INVALID_RENDER_PROCESS_PID = 0;
-
-    // A ViewAndroidDelegate that delegates to the current container view.
-    private ViewAndroidDelegate mViewAndroidDelegate;
 
     // Whether the container view has view-level focus.
     private Boolean mHasViewFocus;
@@ -120,7 +116,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     @Override
     public ViewGroup getContainerView() {
-        return mContainerView;
+        ViewAndroidDelegate viewDelegate = mWebContents.getViewAndroidDelegate();
+        return viewDelegate != null ? viewDelegate.getContainerView() : null;
     }
 
     @Override
@@ -164,35 +161,34 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             WindowAndroid windowAndroid) {
         mContext = context;
 
-        mViewAndroidDelegate = viewDelegate;
         mWindowAndroid = windowAndroid;
+        mWebContents.setViewAndroidDelegate(viewDelegate);
         final float dipScale = windowAndroid.getDisplay().getDipScale();
 
-        mNativeContentViewCore =
-                nativeInit(mWebContents, mViewAndroidDelegate, windowAndroid, dipScale);
-        ViewGroup containerView = viewDelegate.getContainerView();
-        SelectionPopupControllerImpl controller = SelectionPopupControllerImpl.create(
-                mContext, windowAndroid, mWebContents, containerView);
+        mNativeContentViewCore = nativeInit(mWebContents, viewDelegate, windowAndroid, dipScale);
+        SelectionPopupControllerImpl controller =
+                SelectionPopupControllerImpl.create(mContext, windowAndroid, mWebContents);
         controller.setActionModeCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
         addWindowAndroidChangedObserver(controller);
 
-        setContainerView(containerView);
         mRenderCoordinates = mWebContents.getRenderCoordinates();
         mRenderCoordinates.setDeviceScaleFactor(dipScale);
+
+        ViewGroup containerView = viewDelegate.getContainerView();
         WebContentsAccessibilityImpl wcax = WebContentsAccessibilityImpl.create(
                 mContext, containerView, mWebContents, productVersion);
         setContainerViewInternals(internalDispatcher);
 
-        ImeAdapterImpl imeAdapter = ImeAdapterImpl.create(mWebContents, mContainerView,
-                ImeAdapterImpl.createDefaultInputMethodManagerWrapper(mContext));
+        ImeAdapterImpl imeAdapter = ImeAdapterImpl.create(
+                mWebContents, ImeAdapterImpl.createDefaultInputMethodManagerWrapper(mContext));
         imeAdapter.addEventObserver(controller);
         imeAdapter.addEventObserver(getJoystick());
         imeAdapter.addEventObserver(TapDisambiguator.create(mContext, mWebContents, containerView));
         TextSuggestionHost textSuggestionHost =
-                TextSuggestionHost.create(mContext, mWebContents, windowAndroid, containerView);
+                TextSuggestionHost.create(mContext, mWebContents, windowAndroid);
         addWindowAndroidChangedObserver(textSuggestionHost);
 
-        SelectPopup.create(mContext, mWebContents, containerView);
+        SelectPopup.create(mContext, mWebContents);
 
         mWindowEventObservers.addObserver(controller);
         mWindowEventObservers.addObserver(getGestureListenerManager());
@@ -243,26 +239,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         WindowAndroid windowAndroid = getWindowAndroid();
         if (windowAndroid != null) {
             windowAndroid.getDisplay().removeObserver(this);
-        }
-    }
-
-    @Override
-    public void setContainerView(ViewGroup containerView) {
-        try {
-            TraceEvent.begin("ContentViewCore.setContainerView");
-            if (mContainerView != null) {
-                getSelectPopup().hide();
-                getImeAdapter().setContainerView(containerView);
-                getTextSuggestionHost().setContainerView(containerView);
-                getSelectPopup().setContainerView(containerView);
-            }
-
-            mContainerView = containerView;
-            mContainerView.setClickable(true);
-            getSelectionPopupController().setContainerView(containerView);
-            getGestureListenerManager().setContainerView(containerView);
-        } finally {
-            TraceEvent.end("ContentViewCore.setContainerView");
         }
     }
 
@@ -384,7 +360,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             mContainerViewInternals.super_onConfigurationChanged(newConfig);
             // To request layout has side effect, but it seems OK as it only happen in
             // onConfigurationChange and layout has to be changed in most case.
-            mContainerView.requestLayout();
+            getContainerView().requestLayout();
         } finally {
             TraceEvent.end("ContentViewCore.onConfigurationChanged");
         }

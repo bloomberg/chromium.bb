@@ -46,6 +46,7 @@ import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.InputMethodManagerWrapper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContents.UserDataFactory;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.ime.TextInputType;
 
@@ -100,7 +101,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     private ShowKeyboardResultReceiver mShowKeyboardResultReceiver;
 
     private final WebContentsImpl mWebContents;
-    private View mContainerView;
+    private ViewAndroidDelegate mViewDelegate;
 
     // This holds the information necessary for constructing CursorAnchorInfo, and notifies to
     // InputMethodManager on appropriate timing, depending on how IME requested the information
@@ -166,16 +167,15 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     /**
      * Create {@link ImeAdapterImpl} instance.
      * @param webContents WebContents instance with which this ImeAdapter is associated.
-     * @param containerView {@link View} instance which input events are posted on.
      * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
      *                InputMethodManager.
      */
     public static ImeAdapterImpl create(
-            WebContents webContents, View containerView, InputMethodManagerWrapper wrapper) {
+            WebContents webContents, InputMethodManagerWrapper wrapper) {
         ImeAdapterImpl imeAdapter = webContents.getOrSetUserData(
                 ImeAdapterImpl.class, UserDataFactoryLazyHolder.INSTANCE);
         assert imeAdapter != null && !imeAdapter.initialized();
-        imeAdapter.init(containerView, wrapper);
+        imeAdapter.init(wrapper);
         return imeAdapter;
     }
 
@@ -208,19 +208,19 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
      */
     public ImeAdapterImpl(WebContents webContents) {
         mWebContents = (WebContentsImpl) webContents;
+        mViewDelegate = mWebContents.getViewAndroidDelegate();
+        assert mViewDelegate != null;
     }
 
     /**
-     * @param view {@link View} instance which input events are posted on.
      * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
      *                InputMethodManager.
      */
-    private void init(View view, InputMethodManagerWrapper wrapper) {
-        mContainerView = view;
+    private void init(InputMethodManagerWrapper wrapper) {
         mInputMethodManagerWrapper = wrapper;
 
         // Deep copy newConfig so that we can notice the difference.
-        mCurrentConfig = new Configuration(mContainerView.getResources().getConfiguration());
+        mCurrentConfig = new Configuration(getContainerView().getResources().getConfiguration());
 
         // CursorAnchroInfo is supported only after L.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -273,14 +273,6 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         return mCurrentConfig.keyboard != Configuration.KEYBOARD_NOKEYS;
     }
 
-    /**
-     * Set the container view.
-     * @param containerView {@link View} which this ImeAdapter works on.
-     */
-    public void setContainerView(View containerView) {
-        mContainerView = containerView;
-    }
-
     @Override
     public void addEventObserver(ImeEventObserver eventObserver) {
         mEventObservers.add(eventObserver);
@@ -314,6 +306,10 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         return mTextInputType != TextInputType.NONE;
     }
 
+    private View getContainerView() {
+        return mViewDelegate.getContainerView();
+    }
+
     /**
      * @see View#onCreateInputConnection(EditorInfo)
      * @param allowKeyboardLearning Whether to allow keyboard (IME) app to do personalized learning.
@@ -337,14 +333,15 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
             return null;
         }
         if (mInputConnectionFactory == null) return null;
-        setInputConnection(mInputConnectionFactory.initializeAndGet(mContainerView, this,
+        View containerView = getContainerView();
+        setInputConnection(mInputConnectionFactory.initializeAndGet(containerView, this,
                 mTextInputType, mTextInputFlags, mTextInputMode, mLastSelectionStart,
                 mLastSelectionEnd, outAttrs));
         if (DEBUG_LOGS) Log.i(TAG, "onCreateInputConnection: " + mInputConnection);
 
         if (mCursorAnchorInfoController != null) {
             mCursorAnchorInfoController.onRequestCursorUpdates(false /* not an immediate request */,
-                    false /* disable monitoring */, mContainerView);
+                    false /* disable monitoring */, containerView);
         }
         if (isValid()) {
             nativeRequestCursorUpdate(mNativeImeAdapterAndroid,
@@ -509,8 +506,9 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     private void showSoftKeyboard() {
         if (!isValid()) return;
         if (DEBUG_LOGS) Log.i(TAG, "showSoftKeyboard");
-        mInputMethodManagerWrapper.showSoftInput(mContainerView, 0, getNewShowKeyboardReceiver());
-        if (mContainerView.getResources().getConfiguration().keyboard
+        View containerView = getContainerView();
+        mInputMethodManagerWrapper.showSoftInput(containerView, 0, getNewShowKeyboardReceiver());
+        if (containerView.getResources().getConfiguration().keyboard
                 != Configuration.KEYBOARD_NOKEYS) {
             mWebContents.scrollFocusedEditableNodeIntoView();
         }
@@ -521,14 +519,15 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
      * @param resultCode The result of showSoftInput() as defined in InputMethodManager.
      */
     public void onShowKeyboardReceiveResult(int resultCode) {
+        View containerView = getContainerView();
         if (resultCode == InputMethodManager.RESULT_SHOWN) {
             // If OSK is newly shown, delay the form focus until
             // the onSizeChanged (in order to adjust relative to the
             // new size).
             // TODO(jdduke): We should not assume that onSizeChanged will
             // always be called, crbug.com/294908.
-            mContainerView.getWindowVisibleDisplayFrame(mFocusPreOSKViewportRect);
-        } else if (ViewUtils.hasFocus(mContainerView)
+            containerView.getWindowVisibleDisplayFrame(mFocusPreOSKViewportRect);
+        } else if (ViewUtils.hasFocus(containerView)
                 && resultCode == InputMethodManager.RESULT_UNCHANGED_SHOWN) {
             // If the OSK was already there, focus the form immediately.
             mWebContents.scrollFocusedEditableNodeIntoView();
@@ -540,7 +539,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         // Execute a delayed form focus operation because the OSK was brought up earlier.
         if (!mFocusPreOSKViewportRect.isEmpty()) {
             Rect rect = new Rect();
-            mContainerView.getWindowVisibleDisplayFrame(rect);
+            getContainerView().getWindowVisibleDisplayFrame(rect);
             if (!rect.equals(mFocusPreOSKViewportRect)) {
                 // Only assume the OSK triggered the onSizeChanged if width was preserved.
                 if (rect.width() == mFocusPreOSKViewportRect.width()) {
@@ -578,7 +577,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     private void hideKeyboard() {
         if (!isValid()) return;
         if (DEBUG_LOGS) Log.i(TAG, "hideKeyboard");
-        View view = mContainerView;
+        View view = mViewDelegate.getContainerView();
         if (mInputMethodManagerWrapper.isActive(view)) {
             // NOTE: we should not set ResultReceiver here. Otherwise, IMM will own ContentViewCore
             // and ImeAdapter even after input method goes away and result gets received.
@@ -717,14 +716,14 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     void updateSelection(
             int selectionStart, int selectionEnd, int compositionStart, int compositionEnd) {
         mInputMethodManagerWrapper.updateSelection(
-                mContainerView, selectionStart, selectionEnd, compositionStart, compositionEnd);
+                getContainerView(), selectionStart, selectionEnd, compositionStart, compositionEnd);
     }
 
     /**
      * Update extracted text to input method manager.
      */
     void updateExtractedText(int token, ExtractedText extractedText) {
-        mInputMethodManagerWrapper.updateExtractedText(mContainerView, token, extractedText);
+        mInputMethodManagerWrapper.updateExtractedText(getContainerView(), token, extractedText);
     }
 
     /**
@@ -733,7 +732,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     void restartInput() {
         if (!isValid()) return;
         // This will eventually cause input method manager to call View#onCreateInputConnection().
-        mInputMethodManagerWrapper.restartInput(mContainerView);
+        mInputMethodManagerWrapper.restartInput(getContainerView());
         if (mInputConnection != null) mInputConnection.onRestartInputOnUiThread();
     }
 
@@ -963,7 +962,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         }
         if (mCursorAnchorInfoController == null) return false;
         return mCursorAnchorInfoController.onRequestCursorUpdates(
-                immediateRequest, monitorRequest, mContainerView);
+                immediateRequest, monitorRequest, getContainerView());
     }
 
     /**
@@ -986,7 +985,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         if (mCursorAnchorInfoController == null) return;
         mCursorAnchorInfoController.onUpdateFrameInfo(scaleFactor, contentOffsetYPix,
                 hasInsertionMarker, isInsertionMarkerVisible, insertionMarkerHorizontal,
-                insertionMarkerTop, insertionMarkerBottom, mContainerView);
+                insertionMarkerTop, insertionMarkerBottom, getContainerView());
     }
 
     private int getUnderlineColorForSuggestionSpan(SuggestionSpan suggestionSpan) {
@@ -1066,7 +1065,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     @CalledByNative
     private void setCharacterBounds(float[] characterBounds) {
         if (mCursorAnchorInfoController == null) return;
-        mCursorAnchorInfoController.setCompositionCharacterBounds(characterBounds, mContainerView);
+        mCursorAnchorInfoController.setCompositionCharacterBounds(
+                characterBounds, getContainerView());
     }
 
     @CalledByNative

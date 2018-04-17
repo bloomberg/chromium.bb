@@ -42,6 +42,7 @@ import org.chromium.content_public.browser.WebContentsInternals;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
@@ -168,6 +169,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
 
     private static class WebContentsInternalsImpl implements WebContentsInternals {
         public HashMap<Class, WebContentsUserData> userDataMap;
+        public ViewAndroidDelegate viewAndroidDelegate;
     }
 
     private WebContentsImpl(
@@ -251,6 +253,21 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     @Override
     public WindowAndroid getTopLevelNativeWindow() {
         return nativeGetTopLevelNativeWindow(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public ViewAndroidDelegate getViewAndroidDelegate() {
+        WebContentsInternals internals = mInternalsHolder.get();
+        if (internals == null) return null;
+        return ((WebContentsInternalsImpl) internals).viewAndroidDelegate;
+    }
+
+    public void setViewAndroidDelegate(ViewAndroidDelegate viewDelegate) {
+        WebContentsInternals internals = mInternalsHolder.get();
+        assert internals != null;
+        WebContentsInternalsImpl impl = (WebContentsInternalsImpl) internals;
+        assert impl.viewAndroidDelegate == null;
+        impl.viewAndroidDelegate = viewDelegate;
     }
 
     @Override

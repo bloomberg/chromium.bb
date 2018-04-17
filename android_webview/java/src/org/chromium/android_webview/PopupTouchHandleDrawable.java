@@ -26,7 +26,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.PositionObserver;
 import org.chromium.content.browser.ViewPositionObserver;
 import org.chromium.content.browser.selection.HandleViewResources;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
@@ -49,8 +48,8 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
 
     private final PopupWindow mContainer;
     private final PositionObserver.Listener mParentPositionListener;
-    private ContentViewCore mContentViewCore;
     private WebContents mWebContents;
+    private ViewGroup mContainerView;
     private PositionObserver mParentPositionObserver;
     private Drawable mDrawable;
 
@@ -114,13 +113,13 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     private final ObserverList<PopupTouchHandleDrawable> mDrawableObserverList;
 
     private PopupTouchHandleDrawable(ObserverList<PopupTouchHandleDrawable> drawableObserverList,
-            ContentViewCore contentViewCore) {
-        super(contentViewCore.getContainerView().getContext());
+            WebContents webContents, ViewGroup containerView) {
+        super(containerView.getContext());
         mDrawableObserverList = drawableObserverList;
         mDrawableObserverList.addObserver(this);
 
-        mContentViewCore = contentViewCore;
-        mWebContents = mContentViewCore.getWebContents();
+        mWebContents = webContents;
+        mContainerView = containerView;
 
         WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
         mDeviceScale = windowAndroid.getDisplay().getDipScale();
@@ -143,9 +142,9 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
         mAlpha = 0.f;
         mVisible = false;
         setVisibility(INVISIBLE);
-        mFocused = mContentViewCore.getContainerView().hasWindowFocus();
+        mFocused = containerView.hasWindowFocus();
 
-        mParentPositionObserver = new ViewPositionObserver(mContentViewCore.getContainerView());
+        mParentPositionObserver = new ViewPositionObserver(containerView);
         mParentPositionListener = (x, y) -> updateParentPosition(x, y);
         mGestureStateListener = new GestureStateListener() {
             @Override
@@ -182,9 +181,9 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     }
 
     public static PopupTouchHandleDrawable create(
-            ObserverList<PopupTouchHandleDrawable> drawableObserverList,
-            ContentViewCore contentViewCore) {
-        return new PopupTouchHandleDrawable(drawableObserverList, contentViewCore);
+            ObserverList<PopupTouchHandleDrawable> drawableObserverList, WebContents webContents,
+            ViewGroup containerView) {
+        return new PopupTouchHandleDrawable(drawableObserverList, webContents, containerView);
     }
 
     public long getNativeDrawable() {
@@ -250,17 +249,15 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (mContentViewCore == null) return false;
+        if (mWebContents == null) return false;
         // Convert from PopupWindow local coordinates to
         // parent view local coordinates prior to forwarding.
-        mContentViewCore.getContainerView().getLocationOnScreen(mTempScreenCoords);
+        mContainerView.getLocationOnScreen(mTempScreenCoords);
         final float offsetX = event.getRawX() - event.getX() - mTempScreenCoords[0];
         final float offsetY = event.getRawY() - event.getY() - mTempScreenCoords[1];
         final MotionEvent offsetEvent = MotionEvent.obtainNoHistory(event);
         offsetEvent.offsetLocation(offsetX, offsetY);
-        final boolean handled =
-                mContentViewCore.getWebContents().getEventForwarder().onTouchHandleEvent(
-                        offsetEvent);
+        final boolean handled = mWebContents.getEventForwarder().onTouchHandleEvent(offsetEvent);
         offsetEvent.recycle();
         return handled;
     }
@@ -331,10 +328,10 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
         final float[] position = new float[2];
         position[0] = positionX;
         position[1] = positionY;
-        View view = mContentViewCore.getContainerView();
+        View view = mContainerView;
 
         while (view != null) {
-            if (view != mContentViewCore.getContainerView()) {
+            if (view != mContainerView) {
                 // Local scroll is already taken into account in positionX/Y
                 position[0] -= view.getScrollX();
                 position[1] -= view.getScrollY();
@@ -547,13 +544,12 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
                 GestureListenerManager.fromWebContents(mWebContents);
         if (gestureManager != null) gestureManager.removeListener(mGestureStateListener);
 
-        mContentViewCore = null;
         mWebContents = null;
     }
 
     @CalledByNative
     private void show() {
-        if (mContentViewCore == null) return;
+        if (mWebContents == null) return;
         if (mContainer.isShowing()) return;
 
         // While hidden, the parent position may have become stale. It must be updated before
@@ -563,8 +559,8 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
         mParentPositionObserver.addListener(mParentPositionListener);
         mContainer.setContentView(this);
         try {
-            mContainer.showAtLocation(mContentViewCore.getContainerView(), Gravity.NO_GRAVITY,
-                    getContainerPositionX(), getContainerPositionY());
+            mContainer.showAtLocation(mContainerView, Gravity.NO_GRAVITY, getContainerPositionX(),
+                    getContainerPositionY());
         } catch (WindowManager.BadTokenException e) {
             hide();
         }
@@ -635,6 +631,7 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
         if (mContainer.isShowing()) {
             mParentPositionObserver.addListener(mParentPositionListener);
         }
+        mContainerView = newContainerView;
     }
 
     private native long nativeInit(float horizontalPaddingRatio);

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.compositor.bottombar;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -283,14 +282,7 @@ public class OverlayPanelContent {
         // Dummny ViewAndroidDelegate since the container view for overlay panel is
         // never added to the view hierarchy.
         ViewAndroidDelegate delegate =
-                new ViewAndroidDelegate() {
-                    private ViewGroup mContainerView;
-
-                    private ViewAndroidDelegate init(ViewGroup containerView) {
-                        mContainerView = containerView;
-                        return this;
-                    }
-
+                new ViewAndroidDelegate(cv) {
                     @Override
                     public View acquireView() {
                         return null;
@@ -303,11 +295,7 @@ public class OverlayPanelContent {
                     @Override
                     public void removeView(View anchorView) { }
 
-                    @Override
-                    public ViewGroup getContainerView() {
-                        return mContainerView;
-                    }
-                }.init(cv);
+                };
         mContentViewCore = ContentViewCore.create(mActivity, ChromeVersionInfo.getProductVersion(),
                 mWebContents, delegate, cv, mActivity.getWindowAndroid());
 

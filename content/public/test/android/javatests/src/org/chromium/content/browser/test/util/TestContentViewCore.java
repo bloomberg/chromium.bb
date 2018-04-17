@@ -36,9 +36,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void updateWindowAndroid(WindowAndroid windowAndroid) {}
 
     @Override
-    public void setContainerView(ViewGroup containerView) {}
-
-    @Override
     public void setContainerViewInternals(InternalAccessDelegate internalDispatcher) {}
 
     @Override

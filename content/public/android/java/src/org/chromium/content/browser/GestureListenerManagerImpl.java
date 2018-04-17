@@ -22,6 +22,7 @@ import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.GestureEventType;
+import org.chromium.ui.base.ViewAndroidDelegate;
 
 /**
  * Implementation of the interface {@link GestureListenerManager}. Manages
@@ -40,7 +41,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private final WebContentsImpl mWebContents;
     private final ObserverList<GestureStateListener> mListeners;
     private final RewindableIterator<GestureStateListener> mIterator;
-    private View mContainerView;
+    private ViewAndroidDelegate mViewDelegate;
     private InternalAccessDelegate mScrollDelegate;
 
     // The outstanding fling start events that hasn't got fling end yet. It may be > 1 because
@@ -70,6 +71,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         mWebContents = (WebContentsImpl) webContents;
         mListeners = new ObserverList<GestureStateListener>();
         mIterator = mListeners.rewindableIterator();
+        mViewDelegate = mWebContents.getViewAndroidDelegate();
         mNativeGestureListenerManager = nativeInit(mWebContents);
     }
 
@@ -78,10 +80,6 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
      */
     public void reset() {
         if (mNativeGestureListenerManager != 0) nativeReset(mNativeGestureListenerManager);
-    }
-
-    public void setContainerView(View containerView) {
-        mContainerView = containerView;
     }
 
     public void setScrollDelegate(InternalAccessDelegate scrollDelegate) {
@@ -217,7 +215,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     @CalledByNative
     private void onLongPressAck() {
-        mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+        mViewDelegate.getContainerView().performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onLongPress();
     }
 
@@ -266,10 +264,11 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         // Adjust contentWidth/Height to be always at least as big as
         // the actual viewport (as set by onSizeChanged).
         final float deviceScale = rc.getDeviceScaleFactor();
+        View containerView = mViewDelegate.getContainerView();
         contentWidth =
-                Math.max(contentWidth, mContainerView.getWidth() / (deviceScale * pageScaleFactor));
+                Math.max(contentWidth, containerView.getWidth() / (deviceScale * pageScaleFactor));
         contentHeight = Math.max(
-                contentHeight, mContainerView.getHeight() / (deviceScale * pageScaleFactor));
+                contentHeight, containerView.getHeight() / (deviceScale * pageScaleFactor));
 
         final boolean contentSizeChanged = contentWidth != rc.getContentWidthCss()
                 || contentHeight != rc.getContentHeightCss();
@@ -336,7 +335,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
      * @return true if the embedder handled the event.
      */
     private boolean offerLongPressToEmbedder() {
-        return mContainerView.performLongClick();
+        return mViewDelegate.getContainerView().performLongClick();
     }
 
     private int verticalScrollOffset() {

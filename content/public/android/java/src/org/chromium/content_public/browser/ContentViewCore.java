@@ -100,26 +100,6 @@ public interface ContentViewCore {
     void updateWindowAndroid(WindowAndroid windowAndroid);
 
     /**
-     * Sets a new container view for this {@link ContentViewCore}.
-     *
-     * <p>WARNING: This method can also be used to replace the existing container view,
-     * but you should only do it if you have a very good reason to. Replacing the
-     * container view has been designed to support fullscreen in the Webview so it
-     * might not be appropriate for other use cases.
-     *
-     * <p>This method only performs a small part of replacing the container view and
-     * embedders are responsible for:
-     * <ul>
-     *     <li>Disconnecting the old container view from this ContentViewCore</li>
-     *     <li>Updating the InternalAccessDelegate</li>
-     *     <li>Reconciling the state of this ContentViewCore with the new container view</li>
-     *     <li>Tearing down and recreating the native GL rendering where appropriate</li>
-     *     <li>etc.</li>
-     * </ul>
-     */
-    void setContainerView(ViewGroup containerView);
-
-    /**
      * Set the Container view Internals.
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
      *                           containerView.

@@ -176,6 +176,10 @@ public class DOMUtils {
         JavaScriptUtils.executeJavaScript(webContents, sb.toString());
     }
 
+    private static View getContainerView(final WebContents webContents) {
+        return ((WebContentsImpl) webContents).getViewAndroidDelegate().getContainerView();
+    }
+
     /**
      * Returns the rect boundaries for a node by its id.
      * @param webContents The WebContents in which the node lives.
@@ -276,13 +280,13 @@ public class DOMUtils {
 
     /**
      * Click a given rect in the page. Does not move the rect into view.
-     * @param viewCore The ContentViewCore in which the node lives.
+     * @param webContents The WebContents in which the node lives.
      * @param rect The rect to click.
      */
-    public static boolean clickRect(final ContentViewCore viewCore, Rect rect) {
-        int[] clickTarget = getClickTargetForBounds(viewCore, rect);
+    public static boolean clickRect(final WebContents webContents, Rect rect) {
+        int[] clickTarget = getClickTargetForBounds(webContents, rect);
         return TouchCommon.singleClickView(
-                viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+                getContainerView(webContents), clickTarget[0], clickTarget[1]);
     }
 
     /**
@@ -479,7 +483,7 @@ public class DOMUtils {
         Assert.assertNotNull(
                 "Failed to get DOM element bounds of element='" + jsCode + "'.", bounds);
 
-        return getClickTargetForBounds(viewCore, bounds);
+        return getClickTargetForBounds(viewCore.getWebContents(), bounds);
     }
 
     /**
@@ -488,12 +492,11 @@ public class DOMUtils {
      * @param bounds The rect boundaries of a DOM node.
      * @return the click target of the node in the form of a [ x, y ] array.
      */
-    private static int[] getClickTargetForBounds(ContentViewCore viewCore, Rect bounds) {
-        WebContentsImpl webContents = (WebContentsImpl) viewCore.getWebContents();
-        RenderCoordinates coord = webContents.getRenderCoordinates();
+    private static int[] getClickTargetForBounds(WebContents webContents, Rect bounds) {
+        RenderCoordinates coord = ((WebContentsImpl) webContents).getRenderCoordinates();
         int clickX = (int) coord.fromLocalCssToPix(bounds.exactCenterX());
         int clickY = (int) coord.fromLocalCssToPix(bounds.exactCenterY())
-                + getMaybeTopControlsHeight(viewCore);
+                + getMaybeTopControlsHeight(webContents);
 
         // This scale will almost always be 1. See the comments on
         // DisplayAndroid#getAndroidUIScaling().
@@ -502,7 +505,8 @@ public class DOMUtils {
         return new int[] {(int) (clickX * scale), (int) (clickY * scale)};
     }
 
-    private static int getMaybeTopControlsHeight(ContentViewCore viewCore) {
+    private static int getMaybeTopControlsHeight(WebContents webContents) {
+        final ContentViewCore viewCore = ContentViewCore.fromWebContents(webContents);
         try {
             return ThreadUtils.runOnUiThreadBlocking(
                     () -> { return viewCore.getTopControlsShrinkBlinkHeightForTesting(); });
