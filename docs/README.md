@@ -280,6 +280,10 @@ used when committed.
     feedback (ChromeVox) on Chrome OS.
 *   [ChromeVox on Desktop Linux](accessibility/chromevox_on_desktop_linux.md) -
     Enabling spoken feedback (ChromeVox) on desktop Linux.
+*   [Offscreen, Invisible and Size](accessibility/offscreen.md) - How Chrome
+    defines offscreen, invisible and size in the accessibility tree.
+*   [Text to Speech](accessibility/tts.md) - Overview of text to speech in 
+    Chrome and Chrome OS.
 *   [BRLTTY in Chrome OS](accessibility/brltty.md) - Chrome OS integration with
     BRLTTY to support refreshable braille displays
 *   [PATTS on Chrome OS](accessibility/patts.md) - Notes on the PATTS speech
