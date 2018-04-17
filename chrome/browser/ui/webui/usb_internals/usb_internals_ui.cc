@@ -11,7 +11,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController<mojom::UsbInternalsPageHandler>(web_ui) {
+    : ui::MojoWebUIController(web_ui) {
   // Set up the chrome://usb-internals source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIUsbInternalsHost);
@@ -26,11 +26,13 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
   source->UseGzip();
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+  AddHandlerToRegistry(base::BindRepeating(
+      &UsbInternalsUI::BindUsbInternalsPageHandler, base::Unretained(this)));
 }
 
 UsbInternalsUI::~UsbInternalsUI() {}
 
-void UsbInternalsUI::BindUIHandler(
+void UsbInternalsUI::BindUsbInternalsPageHandler(
     mojom::UsbInternalsPageHandlerRequest request) {
   page_handler_.reset(new UsbInternalsPageHandler(std::move(request)));
 }

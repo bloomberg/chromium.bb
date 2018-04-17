@@ -77,7 +77,7 @@ class SiteEngagementDetailsProviderImpl
 }  // namespace
 
 SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController<mojom::SiteEngagementDetailsProvider>(web_ui) {
+    : ui::MojoWebUIController(web_ui) {
   // Set up the chrome://site-engagement/ source.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUISiteEngagementHost));
@@ -89,11 +89,15 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_SITE_ENGAGEMENT_HTML);
   source->UseGzip();
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());
+
+  AddHandlerToRegistry(
+      base::BindRepeating(&SiteEngagementUI::BindSiteEngagementDetailsProvider,
+                          base::Unretained(this)));
 }
 
 SiteEngagementUI::~SiteEngagementUI() {}
 
-void SiteEngagementUI::BindUIHandler(
+void SiteEngagementUI::BindSiteEngagementDetailsProvider(
     mojom::SiteEngagementDetailsProviderRequest request) {
   ui_handler_.reset(new SiteEngagementDetailsProviderImpl(
       Profile::FromWebUI(web_ui()), std::move(request)));

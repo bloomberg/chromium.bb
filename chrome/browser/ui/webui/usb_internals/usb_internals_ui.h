@@ -12,15 +12,14 @@
 class UsbInternalsPageHandler;
 
 // The WebUI for chrome://usb-internals.
-class UsbInternalsUI
-    : public ui::MojoWebUIController<mojom::UsbInternalsPageHandler> {
+class UsbInternalsUI : public ui::MojoWebUIController {
  public:
   explicit UsbInternalsUI(content::WebUI* web_ui);
   ~UsbInternalsUI() override;
 
  private:
-  // ui::MojoWebUIController overrides:
-  void BindUIHandler(mojom::UsbInternalsPageHandlerRequest request) override;
+  void BindUsbInternalsPageHandler(
+      mojom::UsbInternalsPageHandlerRequest request);
 
   std::unique_ptr<UsbInternalsPageHandler> page_handler_;
 

@@ -64,8 +64,7 @@ class MediaEngagementScoreDetailsProviderImpl
 }  // namespace
 
 MediaEngagementUI::MediaEngagementUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController<
-          media::mojom::MediaEngagementScoreDetailsProvider>(web_ui) {
+    : ui::MojoWebUIController(web_ui) {
   // Setup the data source behind chrome://media-engagement.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIMediaEngagementHost));
@@ -77,11 +76,14 @@ MediaEngagementUI::MediaEngagementUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_MEDIA_ENGAGEMENT_HTML);
   source->UseGzip();
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());
+  AddHandlerToRegistry(base::BindRepeating(
+      &MediaEngagementUI::BindMediaEngagementScoreDetailsProvider,
+      base::Unretained(this)));
 }
 
 MediaEngagementUI::~MediaEngagementUI() = default;
 
-void MediaEngagementUI::BindUIHandler(
+void MediaEngagementUI::BindMediaEngagementScoreDetailsProvider(
     media::mojom::MediaEngagementScoreDetailsProviderRequest request) {
   ui_handler_ = std::make_unique<MediaEngagementScoreDetailsProviderImpl>(
       Profile::FromWebUI(web_ui()), std::move(request));

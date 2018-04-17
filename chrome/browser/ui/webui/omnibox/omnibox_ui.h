@@ -12,14 +12,13 @@
 class OmniboxPageHandler;
 
 // The UI for chrome://omnibox/
-class OmniboxUI : public ui::MojoWebUIController<mojom::OmniboxPageHandler> {
+class OmniboxUI : public ui::MojoWebUIController {
  public:
   explicit OmniboxUI(content::WebUI* contents);
   ~OmniboxUI() override;
 
  private:
-  // ui::MojoWebUIController overrides:
-  void BindUIHandler(mojom::OmniboxPageHandlerRequest request) override;
+  void BindOmniboxPageHandler(mojom::OmniboxPageHandlerRequest request);
 
   std::unique_ptr<OmniboxPageHandler> omnibox_handler_;
 

@@ -13,15 +13,14 @@
 
 // Controller for chrome://discards. Corresponding resources are in
 // file://chrome/browser/resources/discards.
-class DiscardsUI
-    : public ui::MojoWebUIController<mojom::DiscardsDetailsProvider> {
+class DiscardsUI : public ui::MojoWebUIController {
  public:
   explicit DiscardsUI(content::WebUI* web_ui);
   ~DiscardsUI() override;
 
  private:
-  // ui::MojoWebUIController overrides:
-  void BindUIHandler(mojom::DiscardsDetailsProviderRequest request) override;
+  void BindDiscardsDetailsProvider(
+      mojom::DiscardsDetailsProviderRequest request);
 
   std::unique_ptr<mojom::DiscardsDetailsProvider> ui_handler_;
 
