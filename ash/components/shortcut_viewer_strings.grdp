@@ -511,7 +511,7 @@
     Zoom in
   </message>
   <message name="IDS_KSV_DESCRIPTION_VOLUME_MUTE" desc="Description of the command in keyboard shortcut viewer.">
-    Mute volume
+    Mute sound
   </message>
   <message name="IDS_KSV_DESCRIPTION_VOLUME_DOWN" desc="Description of the command in keyboard shortcut viewer.">
     Volume down
@@ -598,7 +598,7 @@
     Move focus to popups and dialogs
   </message>
   <message name="IDS_KSV_DESCRIPTION_IDC_SHOW_APP_MENU" desc="Description of the command in keyboard shortcut viewer.">
-    Show app menu
+    Show Chrome menu
   </message>
   <message name="IDS_KSV_SHORTCUT_IDC_SHOW_APP_MENU" desc="Description of the command in keyboard shortcut viewer.">
     <ph name="alt">$1<ex>Alt</ex></ph><ph name="separator">$2<ex>+</ex></ph><ph name="e">$3<ex>e</ex></ph> or <ph name="f">$4<ex>f</ex></ph>
