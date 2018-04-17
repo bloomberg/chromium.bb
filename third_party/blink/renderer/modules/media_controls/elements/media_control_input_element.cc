@@ -68,6 +68,10 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // are passed down to the button, performing the action we'd expect.
   element->ParserAppendChild(button);
 
+  // Allows to focus the list entry instead of the button.
+  element->setTabIndex(0);
+  button->setTabIndex(-1);
+
   if (MediaControlsImpl::IsModern()) {
     overflow_menu_container_ = HTMLDivElement::Create(GetDocument());
     overflow_menu_container_->ParserAppendChild(overflow_menu_text_);

@@ -59,10 +59,10 @@ bool MediaControlTextTrackListElement::WillRespondToMouseClickEvents() {
 }
 
 void MediaControlTextTrackListElement::SetIsWanted(bool wanted) {
-  MediaControlPopupMenuElement::SetIsWanted(wanted);
-
   if (wanted)
     RefreshTextTrackListMenu();
+
+  MediaControlPopupMenuElement::SetIsWanted(wanted);
 }
 
 Element* MediaControlTextTrackListElement::PopupAnchor() const {
@@ -92,7 +92,7 @@ void MediaControlTextTrackListElement::DefaultEventHandler(Event* event) {
 
     event->SetDefaultHandled();
   }
-  MediaControlDivElement::DefaultEventHandler(event);
+  MediaControlPopupMenuElement::DefaultEventHandler(event);
 }
 
 // TextTrack parameter when passed in as a nullptr, creates the "Off" list item
@@ -118,6 +118,10 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
     if (track && track->mode() == TextTrack::ShowingKeyword())
       track_item_input->setChecked(true);
   }
+
+  // Allows to focus the list entry instead of the button.
+  track_item->setTabIndex(0);
+  track_item_input->setTabIndex(-1);
 
   // Modern media controls should have the checkbox after the text instead of
   // the other way around.
@@ -153,6 +157,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackHeaderItem() {
       Text::Create(GetDocument(),
                    GetLocale().QueryString(
                        WebLocalizedString::kOverflowMenuCaptionsSubmenuTitle)));
+  header_item->setTabIndex(0);
   return header_item;
 }
 

@@ -62,7 +62,7 @@ function overflowButton(videoElement)
     var controlID = '-internal-media-controls-overflow-button';
     var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
     if (!button)
-        throw 'Failed to find cast button';
+        throw 'Failed to find overflow button';
     return button;
 }
 
@@ -270,8 +270,7 @@ function scrubbingMessageElement(videoElement) {
     return button;
 }
 
-function clickAtCoordinates(x, y)
-{
+function clickAtCoordinates(x, y) {
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
