@@ -268,8 +268,7 @@ void SystemTray::CreateItems() {
   AddTrayItem(base::WrapUnique(tray_accessibility_));
   tray_tracing_ = new TrayTracing(this);
   AddTrayItem(base::WrapUnique(tray_tracing_));
-  AddTrayItem(
-      std::make_unique<TrayPower>(this, message_center::MessageCenter::Get()));
+  AddTrayItem(std::make_unique<TrayPower>(this));
   tray_network_ = new TrayNetwork(this);
   AddTrayItem(base::WrapUnique(tray_network_));
   tray_vpn_ = new TrayVPN(this);

@@ -99,6 +99,7 @@
 #include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_event_observer.h"
+#include "ash/system/power/power_notification_controller.h"
 #include "ash/system/power/power_prefs.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
@@ -195,6 +196,7 @@
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/focus/focus_manager_factory.h"
@@ -829,6 +831,7 @@ Shell::~Shell() {
   screen_pinning_controller_.reset();
 
   caps_lock_notification_controller_.reset();
+  power_notification_controller_.reset();
   resolution_notification_controller_.reset();
   screen_security_notification_controller_.reset();
   screenshot_controller_.reset();
@@ -944,6 +947,9 @@ void Shell::Init(ui::ContextFactory* context_factory,
   detachable_base_notification_controller_ =
       std::make_unique<DetachableBaseNotificationController>(
           detachable_base_handler_.get());
+  power_notification_controller_ =
+      std::make_unique<PowerNotificationController>(
+          message_center::MessageCenter::Get());
   screen_security_notification_controller_ =
       std::make_unique<ScreenSecurityNotificationController>();
   supervised_notification_controller_ =

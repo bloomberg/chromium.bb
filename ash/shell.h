@@ -138,6 +138,7 @@ class PeripheralBatteryNotifier;
 class PersistentWindowController;
 class PowerButtonController;
 class PowerEventObserver;
+class PowerNotificationController;
 class PowerPrefs;
 class ProjectingObserver;
 class ResizeShadowController;
@@ -717,6 +718,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;
   std::unique_ptr<NoteTakingController> note_taking_controller_;
+  std::unique_ptr<PowerNotificationController> power_notification_controller_;
   std::unique_ptr<ScreenSecurityNotificationController>
       screen_security_notification_controller_;
   std::unique_ptr<SupervisedNotificationController>

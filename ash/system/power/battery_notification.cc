@@ -29,12 +29,14 @@ const char kBatteryNotificationId[] = "battery";
 const char kNotifierBattery[] = "ash.battery";
 
 const gfx::VectorIcon& GetBatteryImageMD(
-    TrayPower::NotificationState notification_state) {
+    PowerNotificationController::NotificationState notification_state) {
   if (PowerStatus::Get()->IsUsbChargerConnected()) {
     return kNotificationBatteryFluctuatingIcon;
-  } else if (notification_state == TrayPower::NOTIFICATION_LOW_POWER) {
+  } else if (notification_state ==
+             PowerNotificationController::NOTIFICATION_LOW_POWER) {
     return kNotificationBatteryLowIcon;
-  } else if (notification_state == TrayPower::NOTIFICATION_CRITICAL) {
+  } else if (notification_state ==
+             PowerNotificationController::NOTIFICATION_CRITICAL) {
     return kNotificationBatteryCriticalIcon;
   } else {
     NOTREACHED();
@@ -43,12 +45,14 @@ const gfx::VectorIcon& GetBatteryImageMD(
 }
 
 message_center::SystemNotificationWarningLevel GetWarningLevelMD(
-    TrayPower::NotificationState notification_state) {
+    PowerNotificationController::NotificationState notification_state) {
   if (PowerStatus::Get()->IsUsbChargerConnected()) {
     return message_center::SystemNotificationWarningLevel::WARNING;
-  } else if (notification_state == TrayPower::NOTIFICATION_LOW_POWER) {
+  } else if (notification_state ==
+             PowerNotificationController::NOTIFICATION_LOW_POWER) {
     return message_center::SystemNotificationWarningLevel::WARNING;
-  } else if (notification_state == TrayPower::NOTIFICATION_CRITICAL) {
+  } else if (notification_state ==
+             PowerNotificationController::NOTIFICATION_CRITICAL) {
     return message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
   } else {
     NOTREACHED();
@@ -57,7 +61,7 @@ message_center::SystemNotificationWarningLevel GetWarningLevelMD(
 }
 
 std::unique_ptr<Notification> CreateNotification(
-    TrayPower::NotificationState notification_state) {
+    PowerNotificationController::NotificationState notification_state) {
   const PowerStatus& status = *PowerStatus::Get();
 
   base::string16 message = base::i18n::MessageFormatter::FormatWithNumberedArgs(
@@ -106,7 +110,7 @@ std::unique_ptr<Notification> CreateNotification(
 
 BatteryNotification::BatteryNotification(
     MessageCenter* message_center,
-    TrayPower::NotificationState notification_state)
+    PowerNotificationController::NotificationState notification_state)
     : message_center_(message_center) {
   message_center_->AddNotification(CreateNotification(notification_state));
 }
@@ -117,7 +121,7 @@ BatteryNotification::~BatteryNotification() {
 }
 
 void BatteryNotification::Update(
-    TrayPower::NotificationState notification_state) {
+    PowerNotificationController::NotificationState notification_state) {
   if (message_center_->FindVisibleNotificationById(kBatteryNotificationId)) {
     message_center_->UpdateNotification(kBatteryNotificationId,
                                         CreateNotification(notification_state));
