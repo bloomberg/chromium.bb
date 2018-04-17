@@ -1105,9 +1105,9 @@ TEST_F(GestureEventQueueTest, DebounceEndsWithFlingStartEvent) {
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
 
   // Verify that the coalescing queue contains the correct events.
-  WebInputEvent::Type expected[] = {WebInputEvent::kGestureScrollUpdate,
-                                    WebInputEvent::kGestureScrollEnd,
-                                    WebInputEvent::kGestureScrollBegin};
+  WebInputEvent::Type expected[] = {
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kGestureScrollEnd,
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kGestureScrollUpdate};
 
   for (unsigned i = 0; i < sizeof(expected) / sizeof(WebInputEvent::Type);
       i++) {
