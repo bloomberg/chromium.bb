@@ -498,8 +498,7 @@ void V8ScriptRunner::ProduceCache(
                          source.Url().GetString().Utf8());
 
       std::unique_ptr<v8::ScriptCompiler::CachedData> cached_data(
-          v8::ScriptCompiler::CreateCodeCache(
-              script->GetUnboundScript(), V8String(isolate, source.Source())));
+          v8::ScriptCompiler::CreateCodeCache(script->GetUnboundScript()));
       if (cached_data) {
         const char* data = reinterpret_cast<const char*>(cached_data->data);
         int length = cached_data->length;
