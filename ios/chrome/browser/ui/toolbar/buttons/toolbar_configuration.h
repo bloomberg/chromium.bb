@@ -44,8 +44,11 @@
 // if the button has a custom style.
 @property(nonatomic, readonly) UIColor* buttonsTintColorHighlighted;
 
-// Tint color of the buttons in the dimmed state.
-@property(nonatomic, readonly) UIColor* buttonsTintColorDimmed;
+// Color for the spotlight view's background.
+@property(nonatomic, readonly) UIColor* buttonsSpotlightColor;
+
+// Color for the spotlight view's background when the toolbar is dimmed.
+@property(nonatomic, readonly) UIColor* dimmedButtonsSpotlightColor;
 
 // Color of the title of the buttons for the normal state.
 // TODO(crbug.com/800266): Remove this property.

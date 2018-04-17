@@ -16,7 +16,7 @@
 namespace {
 const CGFloat kSpotlightSize = 38;
 const CGFloat kSpotlightCornerRadius = 7;
-const CGFloat kSpotlightAlpha = 0.07;
+const CGFloat kDimmedAlpha = 0.5;
 }  // namespace
 
 @interface ToolbarButton ()
@@ -136,9 +136,17 @@ const CGFloat kSpotlightAlpha = 0.07;
     return;
 
   if (dimmed) {
-    self.tintColor = self.configuration.buttonsTintColorDimmed;
+    self.alpha = kDimmedAlpha;
+    if (_spotlightView) {
+      self.spotlightView.backgroundColor =
+          self.configuration.dimmedButtonsSpotlightColor;
+    }
   } else {
-    self.tintColor = self.configuration.buttonsTintColor;
+    self.alpha = 1;
+    if (_spotlightView) {
+      self.spotlightView.backgroundColor =
+          self.configuration.buttonsSpotlightColor;
+    }
   }
 }
 
@@ -156,6 +164,7 @@ const CGFloat kSpotlightAlpha = 0.07;
     return;
 
   self.tintColor = configuration.buttonsTintColor;
+  _spotlightView.backgroundColor = self.configuration.buttonsSpotlightColor;
 }
 
 - (UIView*)spotlightView {
@@ -165,8 +174,7 @@ const CGFloat kSpotlightAlpha = 0.07;
     _spotlightView.hidden = YES;
     _spotlightView.userInteractionEnabled = NO;
     _spotlightView.layer.cornerRadius = kSpotlightCornerRadius;
-    _spotlightView.backgroundColor =
-        [UIColor colorWithWhite:0 alpha:kSpotlightAlpha];
+    _spotlightView.backgroundColor = self.configuration.buttonsSpotlightColor;
     [self addSubview:_spotlightView];
     AddSameCenterConstraints(self, _spotlightView);
     [_spotlightView.widthAnchor constraintEqualToConstant:kSpotlightSize]
