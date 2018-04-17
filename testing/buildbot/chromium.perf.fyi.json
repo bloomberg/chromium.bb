@@ -529,7 +529,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"id\": \"build246-a9\"}, {\"id\": \"build247-a9\"}, {\"id\": \"build248-a9\"}, {\"id\": \"build249-29\"}, {\"id\": \"build250-a9\"}, {\"id\": \"build251-a9\"}, {\"id\": \"build252-a9\"}, {\"id\": \"build253-a9\"}, {\"id\": \"build254-a9\"}, {\"id\": \"build255-a9\"}, {\"id\": \"build256-a9\"}, {\"id\": \"build257-a9\"}, {\"id\": \"build258-a9\"}, {\"id\": \"build259-a9\"}, {\"id\": \"build260-a9\"}, {\"id\": \"build261-a9\"}, {\"id\": \"build262-a9\"}, {\"id\": \"build263-a9\"}, {\"id\": \"build264-a9\"}, {\"id\": \"build265-a9\"}, {\"id\": \"build266-a9\"}, {\"id\": \"build267-a9\"}, {\"id\": \"build268-a9\"}, {\"id\": \"build269-a9\"}, {\"id\": \"build270-a9\"}, {\"id\": \"build271-a9\"}]",
+            "[{\"id\": \"build246-a9\"}, {\"id\": \"build247-a9\"}, {\"id\": \"build248-a9\"}, {\"id\": \"build249-a9\"}, {\"id\": \"build250-a9\"}, {\"id\": \"build251-a9\"}, {\"id\": \"build252-a9\"}, {\"id\": \"build253-a9\"}, {\"id\": \"build254-a9\"}, {\"id\": \"build255-a9\"}, {\"id\": \"build256-a9\"}, {\"id\": \"build257-a9\"}, {\"id\": \"build258-a9\"}, {\"id\": \"build259-a9\"}, {\"id\": \"build260-a9\"}, {\"id\": \"build261-a9\"}, {\"id\": \"build262-a9\"}, {\"id\": \"build263-a9\"}, {\"id\": \"build264-a9\"}, {\"id\": \"build265-a9\"}, {\"id\": \"build266-a9\"}, {\"id\": \"build267-a9\"}, {\"id\": \"build268-a9\"}, {\"id\": \"build269-a9\"}, {\"id\": \"build270-a9\"}, {\"id\": \"build271-a9\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
