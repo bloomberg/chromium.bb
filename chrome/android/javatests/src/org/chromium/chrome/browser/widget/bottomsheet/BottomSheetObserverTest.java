@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.test.BottomSheetTestRule;
@@ -24,7 +23,6 @@ import org.chromium.ui.test.util.UiRestriction;
 import java.util.concurrent.TimeoutException;
 
 /** This class tests the functionality of the {@link BottomSheetObserver}. */
-@DisabledTest(message = "https://crbug.com/805160")
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class BottomSheetObserverTest {
@@ -123,15 +121,15 @@ public class BottomSheetObserverTest {
         CallbackHelper callbackHelper = mObserver.mOffsetChangedCallbackHelper;
 
         BottomSheet bottomSheet = mBottomSheetTestRule.getBottomSheet();
-        float peekHeight = bottomSheet.getPeekRatio() * bottomSheet.getSheetContainerHeight();
+        float hiddenHeight = bottomSheet.getHiddenRatio() * bottomSheet.getSheetContainerHeight();
         float fullHeight = bottomSheet.getFullRatio() * bottomSheet.getSheetContainerHeight();
 
         // The sheet's half state is not necessarily 50% of the way to the top.
-        float midPeekFull = (peekHeight + fullHeight) / 2f;
+        float midPeekFull = (hiddenHeight + fullHeight) / 2f;
 
-        // When in the peeking state, the transition value should be 0.
+        // When in the hidden state, the transition value should be 0.
         int callbackCount = callbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetOffsetFromBottom(peekHeight);
+        mBottomSheetTestRule.setSheetOffsetFromBottom(hiddenHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
         assertEquals(0f, mObserver.getLastOffsetChangedValue(), MathUtils.EPSILON);
 
