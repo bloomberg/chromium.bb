@@ -2293,15 +2293,14 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   ])
   _pi_no_hwtest_boards = frozenset([
       'betty-arcnext',
-      'caroline-arcnext',
   ])
   _pi_no_hwtest_experimental_boards = frozenset([
       'eve-arcnext',
   ])
-  _pi_hwtest_experimental_boards = frozenset([])
+  _pi_hwtest_experimental_boards = frozenset([
+      'caroline-arcnext',
+  ])
   _pi_vmtest_boards = frozenset([])
-
-
 
   # Android NYC master.
   nyc_master_config = site_config.Add(
@@ -2311,7 +2310,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _nyc_hwtest_boards = frozenset([
-      'caroline',
       'cyan',
       'samus',
       'veyron_jaq',
@@ -2319,6 +2317,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   ])
   _nyc_no_hwtest_boards = frozenset([
       'bob',
+      'caroline',
       'coral',
       'hana',
       'reef',
@@ -2496,7 +2495,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty-arc64',
       'bob',
       'caroline',
-      'caroline-arcnext',
       'cave',
       'chell',
       'coral',
@@ -2566,6 +2564,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_paine',
       'betty-arcnext',
+      'caroline-arcnext',
       'eve-campfire', # contact:yueherngl@
       'nami',
       'octopus',
@@ -2787,23 +2786,24 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # pylint: disable=bad-continuation
   # pylint: disable=bad-whitespace
   _paladin_hwtest_assignments = frozenset([
-    # bvt-inline        bvt-cq           bvt-arc           family
-    ('link',           None,             None),            # ivybridge
-    (None,             None,             None),            # daisy (Exynos5250)
-    ('wolf',           'peppy',          None),            # slippy (HSW)
-    ('peach_pit',      None,             None),            # peach (Exynos5420)
-    ('winky',          'kip',            'quawks'),        # rambi (BYT)
-    ('nyan_big',       'nyan_kitty',     None),            # nyan (K1)
-    ('auron_paine',    'tidus',          'auron_yuna'),    # auron (BDW)
-    ('veyron_mighty',  'veyron_speedy',  'veyron_minnie'), # pinky (RK3288)
-    ('wizpig',         'edgar',          'cyan'),          # strago (BSW)
-    ('cave',           'sentry',         'caroline'),      # glados (SKL)
-    ('elm',            None,             'hana'),          # oak (MTK8173)
-    ('bob',            None,             'kevin'),         # gru (RK3399)
-    ('reef',           None,             None),            # reef (APL)
-    ('coral',          None,             None),            # coral (APL)
-    (None,             'eve',            'soraka'),        # poppy (KBL)
-    (None,             None,             'kevin-arcnext'), # gru + arcnext
+    # bvt-inline      bvt-cq           bvt-arc           family
+    ('link',          None,            None),            # ivybridge
+    (None,            None,            None),            # daisy (Exynos5250)
+    ('wolf',          'peppy',         None),            # slippy (HSW)
+    ('peach_pit',     None,            None),            # peach (Exynos5420)
+    ('winky',         'kip',           'quawks'),        # rambi (BYT)
+    ('nyan_big',      'nyan_kitty',    None),            # nyan (K1)
+    ('auron_paine',   'tidus',         'auron_yuna'),    # auron (BDW)
+    ('veyron_mighty', 'veyron_speedy', 'veyron_minnie'), # pinky (RK3288)
+    ('wizpig',        'edgar',         'cyan'),          # strago (BSW)
+    ('cave',          'sentry',        None),            # glados (SKL)
+    ('elm',           None,            'hana'),          # oak (MTK8173)
+    ('bob',           None,            'kevin'),         # gru (RK3399)
+    ('reef',          None,            None),            # reef (APL)
+    ('coral',         None,            None),            # coral (APL)
+    (None,            'eve',           'soraka'),        # poppy (KBL)
+    (None,            None,            'kevin-arcnext'), # gru + arcnext
+    (None,            None,            'caroline-arcnext'), # arcnext
   ])
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
@@ -3839,6 +3839,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'cyan-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'caroline-arcnext-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+          'important': False,
       },
 
       'kevin-arcnext-chrome-pfq': {
