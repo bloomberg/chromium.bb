@@ -131,7 +131,8 @@ OmniboxTextView::OmniboxTextView(OmniboxResultView* result_view,
     : result_view_(result_view),
       font_height_(std::max(
           font_list.GetHeight(),
-          font_list.DeriveWithWeight(gfx::Font::Weight::BOLD).GetHeight())) {}
+          font_list.DeriveWithWeight(gfx::Font::Weight::BOLD).GetHeight())),
+      wrap_text_lines_(false) {}
 
 OmniboxTextView::~OmniboxTextView() {}
 
@@ -152,6 +153,10 @@ const char* OmniboxTextView::GetClassName() const {
 int OmniboxTextView::GetHeightForWidth(int width) const {
   if (!render_text_)
     return 0;
+  // If text wrapping is not called for we can simply return the font height.
+  if (!wrap_text_lines_) {
+    return font_height_;
+  }
   render_text_->SetDisplayRect(gfx::Rect(width, 0));
   gfx::Size string_size = render_text_->GetStringSize();
   return string_size.height();
@@ -229,6 +234,7 @@ void OmniboxTextView::SetText(const base::string16& text) {
 }
 
 void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line) {
+  wrap_text_lines_ = line.num_text_lines() > 1;
   // This assumes that the first text type in the line can be used to specify
   // the font for all the text fields in the line.  For now this works but
   // eventually it may be necessary to get RenderText to support multiple font
