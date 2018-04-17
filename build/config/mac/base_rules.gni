@@ -291,7 +291,8 @@ template("compile_ib_files") {
       "{{source}}",
       "--output",
       rebase_path(
-          "$target_gen_dir/$target_name/{{source_name_part}}.$_output_extension"),
+          "$target_gen_dir/$target_name/{{source_name_part}}.$_output_extension",
+          root_build_dir),
     ]
     if (!use_system_xcode) {
       args += [
