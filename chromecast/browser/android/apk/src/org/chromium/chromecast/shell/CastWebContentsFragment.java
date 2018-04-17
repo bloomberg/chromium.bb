@@ -7,6 +7,8 @@ package org.chromium.chromecast.shell;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +18,9 @@ import android.widget.Toast;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.chromecast.base.CastSwitches;
+import org.chromium.chromecast.base.Controller;
+import org.chromium.chromecast.base.Unit;
 
 /**
  * Fragment for displaying a WebContents in CastShell.
@@ -31,14 +36,12 @@ import org.chromium.base.Log;
 public class CastWebContentsFragment extends Fragment {
     private static final String TAG = "cr_CastWebContentFrg";
 
+    private final Controller<Unit> mResumedState = new Controller<>();
+
     private Context mPackageContext;
-
     private CastWebContentsSurfaceHelper mSurfaceHelper;
-
     private View mFragmentRootView;
-
     private String mAppId;
-
     private int mInitialVisiblityPriority;
 
     @Override
@@ -61,11 +64,10 @@ public class CastWebContentsFragment extends Fragment {
         }
         if (mFragmentRootView == null) {
             mFragmentRootView = inflater.cloneInContext(getContext())
-                .inflate(R.layout.cast_web_contents_activity, null);
+                                        .inflate(R.layout.cast_web_contents_activity, null);
         }
         return mFragmentRootView;
     }
-
 
     @Override
     public Context getContext() {
@@ -88,8 +90,13 @@ public class CastWebContentsFragment extends Fragment {
         }
 
         mSurfaceHelper = new CastWebContentsSurfaceHelper(getActivity(), /* hostActivity */
-                    (FrameLayout) getView().findViewById(R.id.web_contents_container),
-                    true /* showInFragment */);
+                CastWebContentsView.onLayout(getContext(),
+                        (FrameLayout) getView().findViewById(R.id.web_contents_container),
+                        CastSwitches.getSwitchValueColor(
+                                CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK),
+                        mResumedState),
+                (Uri uri) -> sendIntentSync(CastWebContentsIntentUtils.onWebContentStopped(uri)));
+
         Bundle bundle = getArguments();
         CastWebContentsSurfaceHelper.StartParams params =
                 CastWebContentsSurfaceHelper.StartParams.fromBundle(bundle);
@@ -106,18 +113,14 @@ public class CastWebContentsFragment extends Fragment {
     public void onPause() {
         Log.d(TAG, "onPause");
         super.onPause();
-        if (mSurfaceHelper != null) {
-            mSurfaceHelper.onPause();
-        }
+        mResumedState.reset();
     }
 
     @Override
     public void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
-        if (mSurfaceHelper != null) {
-            mSurfaceHelper.onResume();
-        }
+        mResumedState.set(Unit.unit());
     }
 
     @Override
