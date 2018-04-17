@@ -2316,7 +2316,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
                                     X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(3U, certs.size());
 
-  ASSERT_TRUE(certs[0]->Equals(unverified_certs[0].get()));
+  ASSERT_TRUE(certs[0]->EqualsExcludingChain(unverified_certs[0].get()));
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> temp_intermediates;
   temp_intermediates.push_back(

@@ -27,8 +27,8 @@ int MockClientCertVerifier::Verify(X509Certificate* cert,
                                    const CompletionCallback& callback,
                                    std::unique_ptr<Request>* out_req) {
   for (const Rule& rule : rules_) {
-    // Check just the server cert. Intermediates will be ignored.
-    if (rule.cert->Equals(cert))
+    // Check just the client cert. Intermediates will be ignored.
+    if (rule.cert->EqualsExcludingChain(cert))
       return rule.rv;
   }
   return default_result_;

@@ -2059,7 +2059,8 @@ TEST_P(CertVerifyProcInternalTest, CRLSetDuringPathBuilding) {
             x509_util::DupCryptoBuffer(verified_intermediates[1].get()), {});
     ASSERT_TRUE(intermediate);
 
-    EXPECT_TRUE(testcase.expected_intermediate->Equals(intermediate.get()))
+    EXPECT_TRUE(testcase.expected_intermediate->EqualsExcludingChain(
+        intermediate.get()))
         << "Expected: " << testcase.expected_intermediate->subject().common_name
         << " issued by " << testcase.expected_intermediate->issuer().common_name
         << "; Got: " << intermediate->subject().common_name << " issued by "

@@ -49,7 +49,7 @@ int MockCertVerifier::Verify(const RequestParams& params,
   RuleList::const_iterator it;
   for (it = rules_.begin(); it != rules_.end(); ++it) {
     // Check just the server cert. Intermediates will be ignored.
-    if (!it->cert->Equals(params.certificate().get()))
+    if (!it->cert->EqualsExcludingChain(params.certificate().get()))
       continue;
     if (!base::MatchPattern(params.hostname(), it->hostname))
       continue;

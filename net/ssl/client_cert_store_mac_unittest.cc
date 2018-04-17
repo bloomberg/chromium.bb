@@ -92,8 +92,10 @@ TEST_F(ClientCertStoreMacTest, PreferredCertGoesFirst) {
       cert_1, certs, *request.get(), &selected_certs);
   EXPECT_TRUE(rv);
   ASSERT_EQ(2u, selected_certs.size());
-  EXPECT_TRUE(selected_certs[0]->certificate()->Equals(cert_1.get()));
-  EXPECT_TRUE(selected_certs[1]->certificate()->Equals(cert_2.get()));
+  EXPECT_TRUE(
+      selected_certs[0]->certificate()->EqualsExcludingChain(cert_1.get()));
+  EXPECT_TRUE(
+      selected_certs[1]->certificate()->EqualsExcludingChain(cert_2.get()));
 }
 
 }  // namespace net

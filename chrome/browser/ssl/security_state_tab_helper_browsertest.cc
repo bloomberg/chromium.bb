@@ -251,7 +251,7 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
                                    .GetActiveEntry()
                                    ->GetSSL()
                                    .certificate.get();
-  EXPECT_TRUE(cert->Equals(expected_cert));
+  EXPECT_TRUE(cert->EqualsExcludingChain(expected_cert));
   EXPECT_TRUE(!!expired_explanation.insecure_explanations[0].certificate);
 }
 
@@ -275,7 +275,7 @@ void CheckSecureCertificateExplanation(
                                    .GetActiveEntry()
                                    ->GetSSL()
                                    .certificate.get();
-  EXPECT_TRUE(cert->Equals(expected_cert));
+  EXPECT_TRUE(cert->EqualsExcludingChain(expected_cert));
   EXPECT_TRUE(!!explanation.certificate);
 }
 
