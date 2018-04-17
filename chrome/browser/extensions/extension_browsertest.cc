@@ -146,6 +146,10 @@ Profile* ExtensionBrowserTest::profile() {
   return profile_;
 }
 
+bool ExtensionBrowserTest::ShouldAllowLegacyExtensionManifests() {
+  return false;
+}
+
 bool ExtensionBrowserTest::ShouldEnableContentVerification() {
   return false;
 }
@@ -183,8 +187,10 @@ void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
       ExtensionMessageBubbleFactory::OVERRIDE_DISABLED);
 
   // TODO(devlin): Remove this. See https://crbug.com/816679.
-  command_line->AppendSwitch(
-      extensions::switches::kAllowLegacyExtensionManifests);
+  if (ShouldAllowLegacyExtensionManifests()) {
+    command_line->AppendSwitch(
+        extensions::switches::kAllowLegacyExtensionManifests);
+  }
 
   if (!ShouldEnableContentVerification()) {
     ignore_content_verification_.reset(

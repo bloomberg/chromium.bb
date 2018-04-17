@@ -54,6 +54,10 @@ WebstoreInstallerTest::WebstoreInstallerTest(
 
 WebstoreInstallerTest::~WebstoreInstallerTest() {}
 
+bool WebstoreInstallerTest::ShouldAllowLegacyExtensionManifests() {
+  return true;
+}
+
 void WebstoreInstallerTest::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
 

@@ -80,6 +80,8 @@ class ExtensionTabsTest : public PlatformAppBrowserTest {
  public:
   ExtensionTabsTest() {}
 
+  bool ShouldAllowLegacyExtensionManifests() override { return true; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionTabsTest);
 };
