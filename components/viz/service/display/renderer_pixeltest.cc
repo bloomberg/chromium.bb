@@ -3847,7 +3847,7 @@ TEST_F(GLRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
       cc::ExactPixelComparator(true)));
 }
 
-using ColorSpacePair = std::tuple<gfx::ColorSpace, gfx::ColorSpace>;
+using ColorSpacePair = std::tuple<gfx::ColorSpace, gfx::ColorSpace, bool>;
 
 class ColorTransformPixelTest
     : public GLRendererPixelTest,
@@ -3857,7 +3857,7 @@ class ColorTransformPixelTest
     // Note that this size of 17 is not random -- it is chosen to match the
     // size of LUTs that are created. If we did not match the LUT size exactly,
     // then the error for LUT based transforms is much larger.
-    device_viewport_size_ = gfx::Size(17, 4);
+    device_viewport_size_ = gfx::Size(17, 5);
     src_color_space_ = std::get<0>(GetParam());
     dst_color_space_ = std::get<1>(GetParam());
     if (!src_color_space_.IsValid()) {
@@ -3868,9 +3868,11 @@ class ColorTransformPixelTest
       dst_color_space_ =
           gfx::ICCProfileForTestingNoAnalyticTrFn().GetColorSpace();
     }
+    premultiplied_alpha_ = std::get<2>(GetParam());
   }
   gfx::ColorSpace src_color_space_;
   gfx::ColorSpace dst_color_space_;
+  bool premultiplied_alpha_ = false;
 };
 
 TEST_P(ColorTransformPixelTest, Basic) {
@@ -3883,15 +3885,25 @@ TEST_P(ColorTransformPixelTest, Basic) {
   //   Row 1: Gradient of green from 0 to 255
   //   Row 2: Gradient of blue from 0 to 255
   //   Row 3: Gradient of grey from 0 to 255
+  //   Row 4: Gradient of alpha from 0 to 255 with mixed colors.
   for (int x = 0; x < rect.width(); ++x) {
-    int v = (x * 255) / (rect.width() - 1);
+    int gradient_value = (x * 255) / (rect.width() - 1);
     for (int y = 0; y < rect.height(); ++y) {
-      for (int c = 0; c < 3; ++c) {
-        if (y == c || y == rect.height() - 1) {
-          input_colors[c + 4 * (x + rect.width() * y)] = v;
+      uint8_t* pixel = &input_colors[4 * (x + rect.width() * y)];
+      pixel[3] = 255;
+      if (y < 3) {
+        pixel[y] = gradient_value;
+      } else if (y == 3) {
+        pixel[0] = pixel[1] = pixel[2] = gradient_value;
+      } else {
+        if (premultiplied_alpha_) {
+          pixel[x % 3] = gradient_value;
+          pixel[3] = gradient_value;
+        } else {
+          pixel[x % 3] = 0xFF;
+          pixel[3] = gradient_value;
         }
       }
-      input_colors[3 + 4 * (x + rect.width() * y)] = 255;
     }
   }
 
@@ -3905,6 +3917,10 @@ TEST_P(ColorTransformPixelTest, Basic) {
     color.set_x(input_colors[4 * i + 0] / 255.f);
     color.set_y(input_colors[4 * i + 1] / 255.f);
     color.set_z(input_colors[4 * i + 2] / 255.f);
+    float alpha = input_colors[4 * i + 3] / 255.f;
+    if (!premultiplied_alpha_) {
+      color.Scale(alpha);
+    }
     transform->Transform(&color, 1);
     color.set_x(std::min(std::max(0.f, color.x()), 1.f));
     color.set_y(std::min(std::max(0.f, color.y()), 1.f));
@@ -3919,6 +3935,7 @@ TEST_P(ColorTransformPixelTest, Basic) {
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
   pass->color_space = dst_color_space_;
 
+  // Append a quad to execute the transform.
   {
     SharedQuadState* shared_state =
         CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -3941,17 +3958,16 @@ TEST_P(ColorTransformPixelTest, Basic) {
     const gfx::PointF uv_bottom_right(1.0f, 1.0f);
     const bool flipped = false;
     const bool nearest_neighbor = false;
-    const bool premultiplied_alpha = false;
     auto* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
 
     float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     quad->SetNew(shared_state, rect, rect, needs_blending, mapped_resource,
-                 premultiplied_alpha, uv_top_left, uv_bottom_right,
+                 premultiplied_alpha_, uv_top_left, uv_bottom_right,
                  SK_ColorBLACK, vertex_opacity, flipped, nearest_neighbor,
                  false);
 
     auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-    color_quad->SetNew(shared_state, rect, rect, SK_ColorWHITE, false);
+    color_quad->SetNew(shared_state, rect, rect, SK_ColorBLACK, false);
   }
 
   RenderPassList pass_list;
@@ -4028,17 +4044,23 @@ gfx::ColorSpace intermediate_color_spaces[] = {
     gfx::ColorSpace(PrimaryID::XYZ_D50, TransferID::IEC61966_2_1_HDR),
 };
 
+bool color_space_premul_values[] = {
+    true, false,
+};
+
 INSTANTIATE_TEST_CASE_P(
     FromColorSpace,
     ColorTransformPixelTest,
     testing::Combine(testing::ValuesIn(src_color_spaces),
-                     testing::ValuesIn(intermediate_color_spaces)));
+                     testing::ValuesIn(intermediate_color_spaces),
+                     testing::ValuesIn(color_space_premul_values)));
 
 INSTANTIATE_TEST_CASE_P(
     ToColorSpace,
     ColorTransformPixelTest,
     testing::Combine(testing::ValuesIn(intermediate_color_spaces),
-                     testing::ValuesIn(dst_color_spaces)));
+                     testing::ValuesIn(dst_color_spaces),
+                     testing::ValuesIn(color_space_premul_values)));
 
 #endif  // !defined(OS_ANDROID)
 

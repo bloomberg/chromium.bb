@@ -938,7 +938,13 @@ std::string FragmentShader::GetShaderSource() const {
       break;
   }
 
-  // Apply LUT based color conversion.
+  // Premultiply by alpha.
+  if (premultiply_alpha_mode_ == NON_PREMULTIPLIED_ALPHA) {
+    SRC("// Premultiply alpha");
+    SRC("texColor.rgb *= texColor.a;");
+  }
+
+  // Apply color conversion.
   switch (color_conversion_mode_) {
     case COLOR_CONVERSION_MODE_LUT:
       HDR("uniform sampler2D lut_texture;");
@@ -996,12 +1002,6 @@ std::string FragmentShader::GetShaderSource() const {
     SRC("vec4 d4 = min(edge_dist[0], edge_dist[1]);");
     SRC("vec2 d2 = min(d4.xz, d4.yw);");
     SRC("float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);");
-  }
-
-  // Premultiply by alpha.
-  if (premultiply_alpha_mode_ == NON_PREMULTIPLIED_ALPHA) {
-    SRC("// Premultiply alpha");
-    SRC("texColor.rgb *= texColor.a;");
   }
 
   // Apply background texture.
