@@ -147,10 +147,6 @@
       'CrWinAsan(dll)',
       'CrWinAsanCov',
       'ToTLinuxMSan',
-      # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/831674
     ],
@@ -186,10 +182,6 @@
       'CrWinAsan(dll)',
       'CrWinAsanCov',
       'ToTLinuxMSan',
-      # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
     ],
   },
   'boringssl_crypto_tests': {
@@ -268,8 +260,6 @@
       'linux-win_cross-rel',
       'ToTLinuxUBSanVptr',
       'UBSanVptr Linux',
-      # chromium.fyi
-      'CrWinAsanCov tester',
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
     ],
@@ -1245,9 +1235,6 @@
       'ToTMacASan',
       # chromium.fyi
       'Chromium Win 10 GCE Tests',
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
     ],
   },
   'cronet_test_instrumentation_apk': {
@@ -2231,7 +2218,6 @@
       # chromium.clang
       'CrWinAsanCov',
       # chromium.fyi
-      'CrWinAsanCov tester',
       'Fuchsia (dbg)',
       'Fuchsia ARM64',
       # chromium.linux
@@ -2346,9 +2332,6 @@
       'ToTWinLibcxx64',
       'ToTWinThinLTO64',
       # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       'Out of Process Profiling Windows',
     ],
   },
@@ -2645,9 +2628,6 @@
       'Chromium Mac 10.11',
       'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       'ThinLTO Linux ToT',
       'Win 10 Fast Ring',
       # On chromium.linux, unclear why these aren't run on Cast.
@@ -3120,8 +3100,6 @@
     'remove_from': [
       # chromium.clang
       'CrWinAsanCov',
-      # chromium.fyi
-      'CrWinAsanCov tester',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -3677,10 +3655,6 @@
       'CrWinAsanCov',
       'ToTLinuxMSan',
       'ToTLinuxThinLTO',
-      # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
       # chromium.chromiumos
       'linux-chromeos-rel',  # crbug.com/795440
     ],
@@ -3812,10 +3786,6 @@
       'CrWinAsan(dll)',
       'CrWinAsanCov',
       'ToTLinuxMSan',
-      # chromium.fyi
-      'CrWinAsan tester',
-      'CrWinAsan(dll) tester',
-      'CrWinAsanCov tester',
     ],
   },
   'zucchini_unittests': {
