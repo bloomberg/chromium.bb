@@ -20,6 +20,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/autofill/autofill_uitest.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -163,68 +164,6 @@ static const char kTestEventFormString[] =
     " <input type=\"text\" id=\"phone\"><br>"
     "</form>";
 
-// AutofillManagerTestDelegateImpl --------------------------------------------
-
-class AutofillManagerTestDelegateImpl
-    : public autofill::AutofillManagerTestDelegate {
- public:
-  AutofillManagerTestDelegateImpl() {}
-  ~AutofillManagerTestDelegateImpl() override {}
-
-  // autofill::AutofillManagerTestDelegate:
-  void DidPreviewFormData() override {
-    ASSERT_TRUE(loop_runner_ != nullptr);
-    ASSERT_TRUE(loop_runner_->loop_running());
-    loop_runner_->Quit();
-  }
-
-  void DidFillFormData() override {
-    ASSERT_TRUE(loop_runner_ != nullptr);
-    if (!is_expecting_dynamic_refill_)
-      ASSERT_TRUE(loop_runner_->loop_running());
-    loop_runner_->Quit();
-  }
-
-  void DidShowSuggestions() override {
-    ASSERT_TRUE(loop_runner_ != nullptr);
-    ASSERT_TRUE(loop_runner_->loop_running());
-    loop_runner_->Quit();
-  }
-
-  void OnTextFieldChanged() override {
-    if (!waiting_for_text_change_)
-      return;
-    waiting_for_text_change_ = false;
-    ASSERT_TRUE(loop_runner_ != nullptr);
-    ASSERT_TRUE(loop_runner_->loop_running());
-    loop_runner_->Quit();
-  }
-
-  void Reset() {
-    loop_runner_ = new content::MessageLoopRunner();
-  }
-
-  void Wait() {
-    loop_runner_->Run();
-  }
-
-  void WaitForTextChange() {
-    waiting_for_text_change_ = true;
-    loop_runner_->Run();
-  }
-
-  void SetIsExpectingDynamicRefill(bool expect_refill) {
-    is_expecting_dynamic_refill_ = expect_refill;
-  }
-
- private:
-  scoped_refptr<content::MessageLoopRunner> loop_runner_;
-  bool waiting_for_text_change_ = false;
-  bool is_expecting_dynamic_refill_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateImpl);
-};
-
 // Searches all frames of |web_contents| and returns one called |name|. If
 // there are none, returns null, if there are more, returns an arbitrary one.
 content::RenderFrameHost* RenderFrameHostForName(
@@ -236,35 +175,15 @@ content::RenderFrameHost* RenderFrameHostForName(
 
 }  // namespace
 
-// AutofillInteractiveTest ----------------------------------------------------
 
-class AutofillInteractiveTest : public InProcessBrowserTest {
+class AutofillInteractiveTest : public AutofillUiTest {
  protected:
-  AutofillInteractiveTest() :
-      key_press_event_sink_(
-          base::Bind(&AutofillInteractiveTest::HandleKeyPressEvent,
-                     base::Unretained(this))) {}
-  ~AutofillInteractiveTest() override {}
+  AutofillInteractiveTest() {}
+  ~AutofillInteractiveTest() override = default;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
-    // Don't want Keychain coming up on Mac.
-    test::DisableSystemServices(browser()->profile()->GetPrefs());
-
-    // Inject the test delegate into the AutofillManager.
-    content::WebContents* web_contents = GetWebContents();
-    ContentAutofillDriver* autofill_driver =
-        ContentAutofillDriverFactory::FromWebContents(web_contents)
-            ->DriverForFrame(web_contents->GetMainFrame());
-    AutofillManager* autofill_manager = autofill_driver->autofill_manager();
-    autofill_manager->SetTestDelegate(&test_delegate_);
-
-    // If the mouse happened to be over where the suggestions are shown, then
-    // the preview will show up and will fail the tests. We need to give it a
-    // point that's within the browser frame, or else the method hangs.
-    gfx::Point reset_mouse(GetWebContents()->GetContainerBounds().origin());
-    reset_mouse = gfx::Point(reset_mouse.x() + 5, reset_mouse.y() + 5);
-    ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(reset_mouse));
+    AutofillUiTest::SetUpOnMainThread();
 
     // Ensure that |embedded_test_server()| serves both domains used below.
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -272,14 +191,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    // Make sure to close any showing popups prior to tearing down the UI.
-    content::WebContents* web_contents = GetWebContents();
-    AutofillManager* autofill_manager =
-        ContentAutofillDriverFactory::FromWebContents(web_contents)
-            ->DriverForFrame(web_contents->GetMainFrame())
-            ->autofill_manager();
-    autofill_manager->client()->HideAutofillPopup();
-    test::ReenableSystemServices();
+    AutofillUiTest::TearDownOnMainThread();
   }
 
   content::WebContents* GetWebContents() {
@@ -444,79 +356,6 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     ExpectFieldValue("phone", "15125551234");
   }
 
-  void SendKeyToPageAndWait(ui::DomKey key) {
-    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
-    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-    SendKeyToPageAndWait(key, code, key_code);
-  }
-
-  void SendKeyToPageAndWait(ui::DomKey key,
-                            ui::DomCode code,
-                            ui::KeyboardCode key_code) {
-    test_delegate_.Reset();
-    content::SimulateKeyPress(GetWebContents(), key, code, key_code, false,
-                              false, false, false);
-    test_delegate_.Wait();
-  }
-
-  bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event) {
-    return true;
-  }
-
-  void SendKeyToPopupAndWait(ui::DomKey key) {
-    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
-    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-    SendKeyToPopupAndWait(key, code, key_code,
-                          GetRenderViewHost()->GetWidget());
-  }
-
-  void SendKeyToPopupAndWait(ui::DomKey key,
-                             ui::DomCode code,
-                             ui::KeyboardCode key_code,
-                             content::RenderWidgetHost* widget) {
-    // Route popup-targeted key presses via the render view host.
-    content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                                          blink::WebInputEvent::kNoModifiers,
-                                          ui::EventTimeForNow());
-    event.windows_key_code = key_code;
-    event.dom_code = static_cast<int>(code);
-    event.dom_key = key;
-    test_delegate_.Reset();
-    // Install the key press event sink to ensure that any events that are not
-    // handled by the installed callbacks do not end up crashing the test.
-    widget->AddKeyPressEventCallback(key_press_event_sink_);
-    widget->ForwardKeyboardEvent(event);
-    test_delegate_.Wait();
-    widget->RemoveKeyPressEventCallback(key_press_event_sink_);
-  }
-
-  void SendKeyToDataListPopup(ui::DomKey key) {
-    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
-    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-    SendKeyToDataListPopup(key, code, key_code);
-  }
-
-  // Datalist does not support autofill preview. There is no need to start
-  // message loop for Datalist.
-  void SendKeyToDataListPopup(ui::DomKey key,
-                              ui::DomCode code,
-                              ui::KeyboardCode key_code) {
-    // Route popup-targeted key presses via the render view host.
-    content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                                          blink::WebInputEvent::kNoModifiers,
-                                          ui::EventTimeForNow());
-    event.windows_key_code = key_code;
-    event.dom_code = static_cast<int>(code);
-    event.dom_key = key;
-    // Install the key press event sink to ensure that any events that are not
-    // handled by the installed callbacks do not end up crashing the test.
-    GetRenderViewHost()->GetWidget()->AddKeyPressEventCallback(
-        key_press_event_sink_);
-    GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
-    GetRenderViewHost()->GetWidget()->RemoveKeyPressEventCallback(
-        key_press_event_sink_);
-  }
-
   void TryBasicFormFill() {
     FocusFirstNameField();
 
@@ -565,11 +404,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     SendKeyToPopupAndWait(ui::DomKey::ENTER);
   }
 
-  AutofillManagerTestDelegateImpl* test_delegate() { return &test_delegate_; }
-
  private:
-  AutofillManagerTestDelegateImpl test_delegate_;
-
   net::TestURLFetcherFactory url_fetcher_factory_;
 
   // KeyPressEventCallback that serves as a sink to ensure that every key press

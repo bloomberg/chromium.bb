@@ -4555,6 +4555,8 @@ if (!is_android) {
       "../browser/apps/app_window_interactive_uitest.h",
       "../browser/apps/guest_view/web_view_interactive_browsertest.cc",
       "../browser/autofill/autofill_interactive_uitest.cc",
+      "../browser/autofill/autofill_uitest.cc",
+      "../browser/autofill/autofill_uitest.h",
       "../browser/autofill/autofill_uitest_util.cc",
       "../browser/autofill/autofill_uitest_util.h",
       "../browser/browser_keyevents_browsertest.cc",
@@ -5486,6 +5488,79 @@ if (!is_android && !is_fuchsia) {
 
     # This target should not require the Chrome executable to run.
     assert_no_deps = [ "//chrome" ]
+  }
+
+  # Tests autofill on captured websites
+  test("autofill_captured_sites_interactive_tests") {
+    sources = [
+      "../browser/autofill/autofill_captured_sites_interactive_uitest.cc",
+      "../browser/autofill/autofill_uitest.cc",
+      "../browser/autofill/autofill_uitest.h",
+      "../browser/autofill/autofill_uitest_util.cc",
+      "../browser/autofill/autofill_uitest_util.h",
+      "base/interactive_test_utils.cc",
+      "base/interactive_test_utils.h",
+      "base/interactive_test_utils_aura.cc",
+      "base/interactive_test_utils_aura.h",
+      "base/interactive_test_utils_common_views.cc",
+      "base/interactive_test_utils_mac.mm",
+      "base/interactive_test_utils_win.cc",
+      "base/interactive_ui_tests_main.cc",
+    ]
+
+    configs += [ "//build/config:precompiled_headers" ]
+
+    data = [
+      "//chrome/test/data/autofill/captured_sites/",
+    ]
+
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+    ldflags = []
+
+    deps = [
+      ":test_support",
+      ":test_support_ui",
+      "//chrome:packed_resources",
+      "//chrome:resources",
+      "//chrome:strings",
+      "//chrome/browser",
+      "//chrome/browser/devtools",
+      "//chrome/renderer",
+      "//components/resources",
+      "//components/sync",
+      "//components/sync:test_support_model",
+      "//content/app/resources",
+      "//content/test:test_support",
+      "//crypto:platform",
+      "//crypto:test_support",
+      "//google_apis:test_support",
+      "//net",
+      "//net:net_resources",
+      "//net:test_support",
+      "//skia",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/hunspell",
+      "//third_party/icu",
+      "//third_party/libpng",
+      "//third_party/zlib",
+      "//ui/base:test_support",
+      "//ui/resources:ui_test_pak",
+      "//ui/web_dialogs:test_support",
+    ]
+
+    if (is_win) {
+      deps += [
+        "//chrome:other_version",
+        "//third_party/wtl",
+        "//ui/resources",
+      ]
+
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs +=
+          [ "//build/config/win:default_large_module_incremental_linking" ]
+    }
   }
 
   group("telemetry_unittests") {
