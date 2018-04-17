@@ -14,6 +14,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/window_properties.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -108,7 +109,7 @@ void ScreenPositionController::ConvertHostPointToScreen(
 void ScreenPositionController::SetBounds(aura::Window* window,
                                          const gfx::Rect& bounds,
                                          const display::Display& display) {
-  if (!window->parent()->GetProperty(kUsesScreenCoordinatesKey)) {
+  if (!window->parent()->GetProperty(::wm::kUsesScreenCoordinatesKey)) {
     window->SetBounds(bounds);
     return;
   }

@@ -29,6 +29,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -108,7 +110,9 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     constexpr gfx::Size kKSVWindowSize(800, 512);
     gfx::Rect window_bounds(kKSVWindowSize);
     if (context) {
-      window_bounds = context->GetRootWindow()->GetBoundsInScreen();
+      window_bounds = display::Screen::GetScreen()
+                          ->GetDisplayNearestWindow(context->GetRootWindow())
+                          .work_area();
       window_bounds.ClampToCenteredSize(kKSVWindowSize);
     }
     views::Widget::CreateWindowWithContextAndBounds(new KeyboardShortcutView(),

@@ -47,9 +47,11 @@
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/window_reorderer.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/window_properties.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/window_move_client.h"
@@ -187,7 +189,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
       wm::AddTransientChild(parent, window_);
       if (!context)
         context = parent;
-      parent = NULL;
+      parent = nullptr;
 
       // Generally transient bubbles are showing state associated to the parent
       // window. Make sure the transient bubble is only visible if the parent is
@@ -481,6 +483,22 @@ void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
     }
   }
   window_->SetBounds(bounds);
+}
+
+void NativeWidgetAura::SetBoundsConstrained(const gfx::Rect& bounds) {
+  if (!window_)
+    return;
+
+  gfx::Rect new_bounds(bounds);
+  if (window_->parent()) {
+    if (window_->parent()->GetProperty(wm::kUsesScreenCoordinatesKey)) {
+      new_bounds =
+          NativeWidgetPrivate::ConstrainBoundsToDisplayWorkArea(new_bounds);
+    } else {
+      new_bounds.AdjustToFit(gfx::Rect(window_->parent()->bounds().size()));
+    }
+  }
+  SetBounds(new_bounds);
 }
 
 void NativeWidgetAura::SetSize(const gfx::Size& size) {

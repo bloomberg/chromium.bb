@@ -207,6 +207,8 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
                             kWindowWidth, kWindowHeight);
   // Widget is now owned by the parent window.
   widget->Init(params);
+  // Explicitly set the bounds which will allow the widget to overlap the shelf.
+  widget->SetBounds(params.bounds);
   widget->Show();
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   EXPECT_TRUE(widget_bounds.Intersects(shelf_bounds));

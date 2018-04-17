@@ -18,6 +18,8 @@
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -195,7 +197,7 @@ gfx::NativeWindow NativeWidgetMac::GetNativeWindow() const {
 
 Widget* NativeWidgetMac::GetTopLevelWidget() {
   NativeWidgetPrivate* native_widget = GetTopLevelNativeWidget(GetNativeView());
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget ? native_widget->GetWidget() : nullptr;
 }
 
 const ui::Compositor* NativeWidgetMac::GetCompositor() const {
@@ -252,7 +254,7 @@ bool NativeWidgetMac::HasCapture() const {
 }
 
 ui::InputMethod* NativeWidgetMac::GetInputMethod() {
-  return bridge_ ? bridge_->GetInputMethod() : NULL;
+  return bridge_ ? bridge_->GetInputMethod() : nullptr;
 }
 
 void NativeWidgetMac::CenterWindow(const gfx::Size& size) {
@@ -332,6 +334,24 @@ void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
     bridge_->SetBounds(bounds);
 }
 
+void NativeWidgetMac::SetBoundsConstrained(const gfx::Rect& bounds) {
+  if (!bridge_)
+    return;
+
+  gfx::Rect new_bounds(bounds);
+  NativeWidgetPrivate* ancestor =
+      bridge_ && bridge_->parent()
+          ? GetNativeWidgetForNativeWindow(bridge_->parent()->GetNSWindow())
+          : nullptr;
+  if (!ancestor) {
+    new_bounds = ConstrainBoundsToDisplayWorkArea(new_bounds);
+  } else {
+    new_bounds.AdjustToFit(
+        gfx::Rect(ancestor->GetWindowBoundsInScreen().size()));
+  }
+  SetBounds(new_bounds);
+}
+
 void NativeWidgetMac::SetSize(const gfx::Size& size) {
   // Ensure the top-left corner stays in-place (rather than the bottom-left,
   // which -[NSWindow setContentSize:] would do).
@@ -376,7 +396,7 @@ void NativeWidgetMac::Close() {
   }
 
   // Clear the view early to suppress repaints.
-  bridge_->SetRootView(NULL);
+  bridge_->SetRootView(nullptr);
 
   // Widget::Close() ensures [Non]ClientView::CanClose() returns true, so there
   // is no need to call the NSWindow or its delegate's -windowShouldClose:
@@ -702,7 +722,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
         base::mac::ObjCCastStrict<ViewsNSWindowDelegate>(window_delegate);
     return [delegate nativeWidgetMac];
   }
-  return NULL;  // Not created by NativeWidgetMac.
+  return nullptr;  // Not created by NativeWidgetMac.
 }
 
 // static

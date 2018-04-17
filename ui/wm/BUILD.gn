@@ -49,6 +49,8 @@ jumbo_component("wm") {
     "core/window_animations.h",
     "core/window_modality_controller.cc",
     "core/window_modality_controller.h",
+    "core/window_properties.cc",
+    "core/window_properties.h",
     "core/window_util.cc",
     "core/window_util.h",
     "core/wm_core_export.h",
