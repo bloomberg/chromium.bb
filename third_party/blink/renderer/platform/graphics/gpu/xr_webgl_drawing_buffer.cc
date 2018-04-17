@@ -250,6 +250,8 @@ void XRWebGLDrawingBuffer::UseSharedBuffer(
   }
 
   DrawingBuffer::Client* client = drawing_buffer_->client();
+  if (!client)
+    return;
   client->DrawingBufferClientRestoreFramebufferBinding();
 }
 
@@ -284,6 +286,8 @@ void XRWebGLDrawingBuffer::DoneWithSharedBuffer() {
   shared_buffer_texture_id_ = 0;
 
   DrawingBuffer::Client* client = drawing_buffer_->client();
+  if (!client)
+    return;
   client->DrawingBufferClientRestoreFramebufferBinding();
 }
 
