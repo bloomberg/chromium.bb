@@ -2,16 +2,18 @@
   "Files": {
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.exe": {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.VisualElementsManifest.xml": {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome.dll":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome.dll":
         {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
         {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z":
         {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe":
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe":
         {"exists": true},
-    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION.manifest":
-        {"exists": true}
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION.manifest":
+        {"exists": true},
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION":
+        {"exists": false}
   },
   "RegistryEntries": {
     "HKEY_LOCAL_MACHINE\\$CHROME_UPDATE_REGISTRY_SUBKEY": {
@@ -19,10 +21,8 @@
       "values": {
         "pv": {
           "type": "SZ",
-          "data": "$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION"
-        },
-        "opv": { },
-        "cmd": { }
+          "data": "$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION"
+        }
       },
       "wow_key": "KEY_WOW64_32KEY"
     },
@@ -32,7 +32,7 @@
       "values": {
         "CommandLine": {
           "type": "SZ",
-          "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --store-dmtoken=%1 --system-level --verbose-logging"
+          "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --store-dmtoken=%1 --system-level --verbose-logging"
         },
         "WebAccessible": {
           "type": "DWORD",
@@ -55,11 +55,11 @@
       "values": {
         "UninstallString": {
           "type": "SZ",
-          "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --system-level --verbose-logging"
+          "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --system-level --verbose-logging"
         },
         "Version": {
           "type": "SZ",
-          "data": "$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION"
+          "data": "$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION"
         }
       },
       "wow_key": "KEY_WOW64_32KEY"
@@ -68,7 +68,7 @@
       "exists": "required",
       "values": {
         "type": "SZ",
-        "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\notification_helper.exe"
+        "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\notification_helper.exe"
       }
     },
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\$CHROME_SHORT_NAME": {
@@ -87,15 +87,15 @@
         },
         "CategoryMessageFile": {
           "type": "SZ",
-          "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\eventlog_provider.dll"
+          "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\eventlog_provider.dll"
         },
         "EventMessageFile": {
           "type": "SZ",
-          "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\eventlog_provider.dll"
+          "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\eventlog_provider.dll"
         },
         "ParameterMessageFile": {
           "type": "SZ",
-          "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\eventlog_provider.dll"
+          "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\eventlog_provider.dll"
         }
       }
     }

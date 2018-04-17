@@ -475,10 +475,10 @@ def DoMain():
                       default='mini_installer.exe',
                       metavar='FILENAME',
                       help='The path of the installer.')
-  parser.add_argument('--next-version-installer-path',
-                      default='next_version_mini_installer.exe',
+  parser.add_argument('--previous-version-installer-path',
+                      default='previous_version_mini_installer.exe',
                       metavar='FILENAME',
-                      help='The path of the next version installer.')
+                      help='The path of the previous version installer.')
   parser.add_argument('--chromedriver-path',
                       default='chromedriver.exe',
                       help='The path to chromedriver.')
@@ -498,8 +498,8 @@ def DoMain():
   # Use absolute paths.
   installer_path = GetAbsoluteExecutablePath(
     args.build_dir, args.target, args.installer_path)
-  next_version_installer_path = GetAbsoluteExecutablePath(
-    args.build_dir, args.target, args.next_version_installer_path)
+  previous_version_installer_path = GetAbsoluteExecutablePath(
+    args.build_dir, args.target, args.previous_version_installer_path)
   chromedriver_path = GetAbsoluteExecutablePath(
     args.build_dir, args.target, args.chromedriver_path)
   config_path = GetAbsoluteConfigPath(args.config)
@@ -512,7 +512,7 @@ def DoMain():
   suite = unittest.TestSuite()
 
   variable_expander = VariableExpander(installer_path,
-                                       next_version_installer_path,
+                                       previous_version_installer_path,
                                        chromedriver_path,
                                        args.quiet)
   config = ParseConfigFile(config_path, variable_expander)

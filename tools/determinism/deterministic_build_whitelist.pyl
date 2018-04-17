@@ -279,7 +279,7 @@
     'navigation.exe',
     'net_perftests.exe',
     'net_unittests.exe',
-    'next_version_mini_installer.exe',
+    'previous_version_mini_installer.exe',
     'pdfium_embeddertests.exe',
     'pdfium_test.exe',
     'performance_browser_tests.exe',

@@ -32,7 +32,7 @@ MACHINE_TYPE_AMD64 = 0x8664
 EXCLUDED_FILES = [
                   'crashpad_util_test_process_info_test_child.exe',
                   'mini_installer.exe',
-                  'next_version_mini_installer.exe',
+                  'previous_version_mini_installer.exe',
                   ]
 
 def IsPEFile(path):

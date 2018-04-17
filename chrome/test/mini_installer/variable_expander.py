@@ -64,7 +64,7 @@ def _GetUserSpecificRegistrySuffix():
 class VariableExpander:
   """Expands variables in strings."""
 
-  def __init__(self, mini_installer_path, next_version_mini_installer_path,
+  def __init__(self, mini_installer_path, previous_version_mini_installer_path,
                chromedriver_path, quiet):
     """Constructor.
 
@@ -103,10 +103,10 @@ class VariableExpander:
         * $MINI_INSTALLER: the unquoted path to the mini_installer.
         * $MINI_INSTALLER_BITNESS: the bitness of the mini_installer.
         * $MINI_INSTALLER_FILE_VERSION: the file version of $MINI_INSTALLER.
-        * $NEXT_VERSION_MINI_INSTALLER: the unquoted path to a mini_installer
-            whose version is higher than $MINI_INSTALLER.
-        * $NEXT_VERSION_MINI_INSTALLER_FILE_VERSION: the file version of
-            $NEXT_VERSION_MINI_INSTALLER.
+        * $PREVIOUS_VERSION_MINI_INSTALLER: the unquoted path to a
+             mini_installer whose version is lower than $MINI_INSTALLER.
+        * $PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION: the file version of
+            $PREVIOUS_VERSION_MINI_INSTALLER.
         * $PROGRAM_FILES: the unquoted path to the Program Files folder.
         * $USER_SPECIFIC_REGISTRY_SUFFIX: the output from the function
             _GetUserSpecificRegistrySuffix().
@@ -124,12 +124,12 @@ class VariableExpander:
 
     Args:
       mini_installer_path: The path to a mini_installer.
-      next_version_mini_installer_path: The path to a mini_installer whose
-          version is higher than |mini_installer_path|.
+      previous_version_mini_installer_path: The path to a mini_installer whose
+          version is lower than |mini_installer_path|.
     """
     mini_installer_abspath = os.path.abspath(mini_installer_path)
-    next_version_mini_installer_abspath = os.path.abspath(
-        next_version_mini_installer_path)
+    previous_version_mini_installer_abspath = os.path.abspath(
+        previous_version_mini_installer_path)
     windows_major_ver, windows_minor_ver, _, _, _ = win32api.GetVersionEx()
     self._variable_mapping = {
         'CHROMEDRIVER_PATH': chromedriver_path,
@@ -139,9 +139,10 @@ class VariableExpander:
         'MINI_INSTALLER': mini_installer_abspath,
         'MINI_INSTALLER_FILE_VERSION': _GetFileVersion(mini_installer_abspath),
         'MINI_INSTALLER_BITNESS': _GetFileBitness(mini_installer_abspath),
-        'NEXT_VERSION_MINI_INSTALLER': next_version_mini_installer_abspath,
-        'NEXT_VERSION_MINI_INSTALLER_FILE_VERSION': _GetFileVersion(
-            next_version_mini_installer_abspath),
+        'PREVIOUS_VERSION_MINI_INSTALLER':
+            previous_version_mini_installer_abspath,
+        'PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION': _GetFileVersion(
+            previous_version_mini_installer_abspath),
         'PROGRAM_FILES': shell.SHGetFolderPath(0,
                                                shellcon.CSIDL_PROGRAM_FILESX86,
                                                None, 0),

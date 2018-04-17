@@ -13,7 +13,7 @@
         {"exists": true},
     "$LOCAL_APPDATA\\$CHROME_DIR_DEV\\Application\\$MINI_INSTALLER_FILE_VERSION\\$MINI_INSTALLER_FILE_VERSION.manifest":
         {"exists": true},
-    "$LOCAL_APPDATA\\$CHROME_DIR_DEV\\Application\\$MINI_INSTALLER_FILE_VERSION\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION":
+    "$LOCAL_APPDATA\\$CHROME_DIR_DEV\\Application\\$MINI_INSTALLER_FILE_VERSION\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION":
         {"exists": false}
   },
   "RegistryEntries": {
@@ -23,7 +23,9 @@
         "pv": {
           "type": "SZ",
           "data": "$MINI_INSTALLER_FILE_VERSION"
-        }
+        },
+        "opv": { },
+        "cmd": { }
       },
       "wow_key": "KEY_WOW64_32KEY"
     },
