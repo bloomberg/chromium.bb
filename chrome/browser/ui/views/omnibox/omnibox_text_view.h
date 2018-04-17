@@ -88,6 +88,10 @@ class OmniboxTextView : public views::View {
   // Font settings for this view.
   int font_height_;
 
+  // Whether to wrap lines if the width is too narrow for the whole string.
+  bool wrap_text_lines_;
+
+  // The primary data for this class.
   mutable std::unique_ptr<gfx::RenderText> render_text_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTextView);
