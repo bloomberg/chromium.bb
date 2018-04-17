@@ -229,6 +229,18 @@ if (NOT CONFIG_AV1_DECODER AND NOT CONFIG_AV1_ENCODER)
   message(FATAL_ERROR "Decoder and encoder disabled, nothing to build.")
 endif ()
 
+if (DECODE_HEIGHT_LIMIT OR DECODE_WIDTH_LIMIT)
+  change_config_and_warn(CONFIG_SIZE_LIMIT 1
+                         "DECODE_HEIGHT_LIMIT and DECODE_WIDTH_LIMIT")
+endif()
+
+if (CONFIG_SIZE_LIMIT)
+  if (NOT DECODE_HEIGHT_LIMIT OR NOT DECODE_WIDTH_LIMIT)
+    message(FATAL_ERROR "When setting CONFIG_SIZE_LIMIT, DECODE_HEIGHT_LIMIT "
+            "and DECODE_WIDTH_LIMIT must be set.")
+  endif()
+endif()
+
 # Test compiler flags.
 if (MSVC)
   add_compiler_flag_if_supported("/W3")

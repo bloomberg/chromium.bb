@@ -89,6 +89,8 @@ set(CONFIG_INTERNAL_STATS 0 CACHE NUMBER "Codec stats.")
 set(CONFIG_LOWBITDEPTH 0 CACHE NUMBER "Enables 8-bit optimized pipeline.")
 set(CONFIG_SIZE_LIMIT 0 CACHE NUMBER "Limit max decode width/height.")
 set(CONFIG_SPATIAL_RESAMPLING 1 CACHE NUMBER "Spatial resampling.")
+set(DECODE_HEIGHT_LIMIT 0 CACHE NUMBER "Set limit for decode height.")
+set(DECODE_WIDTH_LIMIT 0 CACHE NUMBER "Set limit for decode width.")
 
 # AV1 experiment flags.
 set(CONFIG_BUFFER_MODEL 1 CACHE NUMBER "AV1 experiment flag.")
