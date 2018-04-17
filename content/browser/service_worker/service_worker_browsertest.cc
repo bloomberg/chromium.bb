@@ -2624,10 +2624,6 @@ class ServiceWorkerVersionBrowserV8CacheTest
       public ServiceWorkerVersion::Listener {
  public:
   using self = ServiceWorkerVersionBrowserV8CacheTest;
-  ServiceWorkerVersionBrowserV8CacheTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kServiceWorkerScriptFullCodeCache);
-  }
   ~ServiceWorkerVersionBrowserV8CacheTest() override {
     if (version_)
       version_->RemoveListener(this);
@@ -2651,9 +2647,6 @@ class ServiceWorkerVersionBrowserV8CacheTest
 
   base::Closure cache_updated_closure_;
   size_t metadata_size_ = 0;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8CacheTest, Restart) {
