@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview 'user-manager-tutorial' is the element that controls the
- * tutorial steps for the user manager page.
- */
-(function() {
-
 /** @enum {string} */
 const TutorialSteps = {
   YOUR_CHROME: 'yourChrome',
@@ -17,6 +11,11 @@ const TutorialSteps = {
   NOT_YOU: 'notYou'
 };
 
+/**
+ * @fileoverview 'user-manager-tutorial' is the element that controls the
+ * tutorial steps for the user manager page.
+ */
+(function() {
 Polymer({
   is: 'user-manager-tutorial',
 
