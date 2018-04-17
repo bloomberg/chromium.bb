@@ -55,6 +55,7 @@ class StubDevToolsClient : public DevToolsClient {
                            const Timeout& timeout) override;
   Status HandleReceivedEvents() override;
   void SetDetached() override;
+  void SetOwner(WebViewImpl* owner) override;
 
  protected:
   const std::string id_;

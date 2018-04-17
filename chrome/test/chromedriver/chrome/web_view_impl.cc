@@ -147,7 +147,9 @@ WebViewImpl::WebViewImpl(const std::string& id,
       network_conditions_override_manager_(
           new NetworkConditionsOverrideManager(client_.get())),
       heap_snapshot_taker_(new HeapSnapshotTaker(client_.get())),
-      debugger_(new DebuggerTracker(client_.get())) {}
+      debugger_(new DebuggerTracker(client_.get())) {
+  client_->SetOwner(this);
+}
 
 WebViewImpl::~WebViewImpl() {}
 

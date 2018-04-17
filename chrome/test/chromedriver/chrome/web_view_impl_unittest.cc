@@ -77,6 +77,7 @@ class FakeDevToolsClient : public DevToolsClient {
   }
   Status HandleReceivedEvents() override { return Status(kOk); }
   void SetDetached() override {}
+  void SetOwner(WebViewImpl* owner) override {}
 
  private:
   const std::string id_;
