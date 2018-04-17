@@ -93,12 +93,11 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
       Inject(content::MOTION_EVENT_ACTION_HOVER_ENTER, event_time_ms);
       break;
     case blink::WebMouseEvent::kMouseMove:
+    case blink::WebMouseEvent::kMouseLeave:
+      // We don't need to inject MOTION_EVENT_ACTION_HOVER_EXIT as the platform
+      // will generate it for us if the pointer is out of bounds.
       SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
       Inject(content::MOTION_EVENT_ACTION_HOVER_MOVE, event_time_ms);
-      break;
-    case blink::WebMouseEvent::kMouseLeave:
-      SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
-      Inject(content::MOTION_EVENT_ACTION_HOVER_EXIT, event_time_ms);
       break;
     case blink::WebMouseEvent::kMouseDown:
       // Mouse down events are translated into touch events on Android anyways,
