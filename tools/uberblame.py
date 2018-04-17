@@ -78,7 +78,7 @@ def tokenize_data(data, tokenize_by_char, tokenize_whitespace):
   column = 0
   line_contexts = []
 
-  for c in data + '\n':
+  for c in data:
     if not tokenize_by_char and (c.isalnum() or c == '_'):
       if in_identifier:
         identifier += c
@@ -101,6 +101,7 @@ def tokenize_data(data, tokenize_by_char, tokenize_whitespace):
       line_contexts = []
     else:
       column += 1
+  contexts.append(line_contexts)
   return contexts
 
 
@@ -360,8 +361,8 @@ def generate_commits(git_log_stdout):
     author_name = substring_generator.next()
     author_email = substring_generator.next()
     author_date = substring_generator.next()
-    message = substring_generator.next()
-    diff = substring_generator.next().split('\n')
+    message = substring_generator.next().rstrip('\n')
+    diff = substring_generator.next().split('\n')[1:-1]
     yield Commit(hash, author_name, author_email, author_date, message, diff)
 
 
@@ -469,6 +470,37 @@ def generate_pastel_color():
   return "#%0.2X%0.2X%0.2X" % (int(r * 255), int(g * 255), int(b * 255))
 
 
+def colorize_diff(diff):
+  """Colorizes a diff for use in an HTML page.
+
+  Args:
+    diff: The diff, in unified diff format, as a list of line strings.
+
+  Returns:
+    The HTML-formatted diff, as a string.  The diff will already be escaped.
+  """
+
+  colorized = []
+  for line in diff:
+    escaped = cgi.escape(line.replace('\r', ''), quote=True)
+    if line.startswith('+'):
+      colorized.append('<span class=\\"addition\\">%s</span>' % escaped)
+    elif line.startswith('-'):
+      colorized.append('<span class=\\"deletion\\">%s</span>' % escaped)
+    elif line.startswith('@@'):
+      context_begin = escaped.find('@@', 2)
+      assert context_begin != -1
+      colorized.append(
+          '<span class=\\"chunk_meta\\">%s</span>'
+          '<span class=\\"chunk_context\\">%s</span'
+          % (escaped[0:context_begin + 2], escaped[context_begin + 2:]))
+    elif line.startswith('diff') or line.startswith('index'):
+      colorized.append('<span class=\\"file_header\\">%s</span>' % escaped)
+    else:
+      colorized.append('<span class=\\"context_line\\">%s</span>' % escaped)
+  return '\n'.join(colorized)
+
+
 def create_visualization(data, blame):
   """Creates a web page to visualize |blame|.
 
@@ -476,8 +508,8 @@ def create_visualization(data, blame):
     data: The data file as returned by uberblame().
     blame: A list of TokenContexts as returned by uberblame().
 
-  Returns;
-    The html for the generated page, as a string.
+  Returns:
+    The HTML for the generated page, as a string.
   """
   # Use the same seed for the color generator on each run so that
   # loading the same blame of the same file twice will result in the
@@ -488,15 +520,30 @@ def create_visualization(data, blame):
     <head>
       <style>
         body {
-          font-family: "Courier New";
+          font-family: monospace;
         }
         pre {
           display: inline;
         }
-        span {
+        .token {
           outline: 1pt solid #00000030;
           outline-offset: -1pt;
           cursor: pointer;
+        }
+        .addition {
+          color: #080;
+        }
+        .deletion {
+          color: #c00;
+        }
+        .chunk_meta {
+          color: #099;
+        }
+        .context_line .chunk_context {
+          // Just normal text.
+        }
+        .file_header {
+          font-weight: bold;
         }
         #linenums {
           text-align: right;
@@ -577,19 +624,20 @@ def create_visualization(data, blame):
             if hash not in commit_colors:
               commit_colors[hash] = generate_pastel_color()
             color = commit_colors[hash]
-            lines.append(('<span style="background-color: %s" ' +
+            lines.append(('<span class="token" style="background-color: %s" ' +
                           'onclick="display_commit(&quot;%s&quot;)">') % (color,
                                                                           hash))
       lines.append(cgi.escape(c))
       column += 1
     row += 1
-  commit_data = ['{']
+  commit_data = ['{\n']
   commit_display_format = """\
     commit: {hash}
     Author: {author_name} <{author_email}>
     Date: {author_date}
 
     {message}
+
     """
   commit_display_format = textwrap.dedent(commit_display_format)
   links = re.compile(r'(https?:\/\/\S+)')
@@ -602,9 +650,10 @@ def create_visualization(data, blame):
         author_date=commit.author_date,
         message=commit.message)
     commit_display = cgi.escape(commit_display, quote=True)
+    commit_display += colorize_diff(commit.diff)
     commit_display = re.sub(links, '<a href=\\"\\1\\">\\1</a>', commit_display)
     commit_display = commit_display.replace('\n', '\\n')
-    commit_data.append('"%s": "%s",' % (hash, commit_display))
+    commit_data.append('"%s": "%s",\n' % (hash, commit_display))
   commit_data.append('}')
   commit_data = ''.join(commit_data)
   line_nums = range(1, row if lastline.strip() == '' else row + 1)
