@@ -2541,6 +2541,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'sentry',
       'stout',
       'tatl',
+      'terra',
       'tidus',
       'tricky',
       'veyron_jaq',
@@ -2591,7 +2592,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'macchiato-ground', # contact:jemele@
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
-      'terra', # contact:yunlian@ (Testing thinlto)
       'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'wooten', # contact:icoolidge@
   ])
