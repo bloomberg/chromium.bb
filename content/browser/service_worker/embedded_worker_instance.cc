@@ -17,7 +17,6 @@
 #include "content/browser/service_worker/service_worker_content_settings_proxy_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/renderer.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -82,14 +81,13 @@ using SetupProcessCallback = base::OnceCallback<void(
 // registering with DevTools. Called on the UI thread. Calls |callback| on the
 // IO thread. |context| and |weak_context| are only for passing to DevTools and
 // must not be dereferenced here on the UI thread.
-void SetupOnUIThread(
-    base::WeakPtr<ServiceWorkerProcessManager> process_manager,
-    bool can_use_existing_process,
-    mojom::EmbeddedWorkerStartParamsPtr params,
-    mojom::EmbeddedWorkerInstanceClientAssociatedRequest request,
-    ServiceWorkerContextCore* context,
-    base::WeakPtr<ServiceWorkerContextCore> weak_context,
-    SetupProcessCallback callback) {
+void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
+                     bool can_use_existing_process,
+                     mojom::EmbeddedWorkerStartParamsPtr params,
+                     mojom::EmbeddedWorkerInstanceClientRequest request,
+                     ServiceWorkerContextCore* context,
+                     base::WeakPtr<ServiceWorkerContextCore> weak_context,
+                     SetupProcessCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto process_info =
       std::make_unique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
@@ -124,8 +122,7 @@ void SetupOnUIThread(
   // the process. If the process dies, |client_|'s connection error callback
   // will be called on the IO thread.
   if (request.is_pending()) {
-    rph->GetRendererInterface()->SetUpEmbeddedWorkerChannelForServiceWorker(
-        std::move(request));
+    BindInterface(rph, std::move(request));
   }
 
   // Register to DevTools and update params accordingly.
@@ -282,7 +279,7 @@ class EmbeddedWorkerInstance::StartTask {
 
   StartTask(EmbeddedWorkerInstance* instance,
             const GURL& script_url,
-            mojom::EmbeddedWorkerInstanceClientAssociatedRequest request)
+            mojom::EmbeddedWorkerInstanceClientRequest request)
       : instance_(instance),
         request_(std::move(request)),
         state_(ProcessAllocationState::NOT_ALLOCATED),
@@ -443,7 +440,7 @@ class EmbeddedWorkerInstance::StartTask {
   EmbeddedWorkerInstance* instance_;
 
   // Ownership is transferred by a PostTask() call after process allocation.
-  mojom::EmbeddedWorkerInstanceClientAssociatedRequest request_;
+  mojom::EmbeddedWorkerInstanceClientRequest request_;
 
   StatusCallback start_callback_;
   ProcessAllocationState state_;
@@ -498,7 +495,7 @@ void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
   params->wait_for_debugger = false;
   params->v8_cache_options = GetV8CacheOptions();
 
-  mojom::EmbeddedWorkerInstanceClientAssociatedRequest request =
+  mojom::EmbeddedWorkerInstanceClientRequest request =
       mojo::MakeRequest(&client_);
   client_.set_connection_error_handler(
       base::BindOnce(&EmbeddedWorkerInstance::Detach, base::Unretained(this)));

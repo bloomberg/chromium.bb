@@ -110,6 +110,8 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   // |this|.
   ServiceWorkerProviderHost* provider_host_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
+  scoped_refptr<ServiceWorkerRegistration> registration_;
+
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
       bindings_;
   // Mojo connection to the content::WebServiceWorkerRegistrationImpl in the
@@ -117,8 +119,6 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   // object.
   blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr
       remote_registration_;
-
-  scoped_refptr<ServiceWorkerRegistration> registration_;
 
   base::WeakPtrFactory<ServiceWorkerRegistrationObjectHost> weak_ptr_factory_;
 

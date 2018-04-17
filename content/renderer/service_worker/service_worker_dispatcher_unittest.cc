@@ -31,6 +31,7 @@ class MockServiceWorkerObjectHost
     info->handle_id = handle_id_;
     info->version_id = version_id_;
     bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
+    info->request = mojo::MakeRequest(&remote_object_);
     return info;
   }
 
@@ -49,6 +50,7 @@ class MockServiceWorkerObjectHost
   int32_t handle_id_;
   int64_t version_id_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
+  blink::mojom::ServiceWorkerObjectAssociatedPtr remote_object_;
 };
 
 }  // namespace

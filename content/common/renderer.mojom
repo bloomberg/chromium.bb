@@ -5,7 +5,6 @@
 module content.mojom;
 
 import "content/common/native_types.mojom";
-import "content/common/service_worker/embedded_worker.mojom";
 import "ipc/constants.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -189,13 +188,6 @@ interface Renderer {
 
   // Tells the renderer to create a new RenderFrame.
   CreateFrame(CreateFrameParams params);
-
-  // Tells the renderer to create an EmbeddedWorkerInstanceClient, which is what
-  // manages service worker startup and shutdown.
-  // TODO(shimazu): Create a service worker's execution context by this method
-  // instead of just creating an instance of EmbeddedWorkerInstanceClient.
-  SetUpEmbeddedWorkerChannelForServiceWorker(
-      associated EmbeddedWorkerInstanceClient& client_request);
 
   // Tells the renderer to create a new RenderFrameProxy object with
   // |routing_id|.  |render_view_routing_id| identifies the

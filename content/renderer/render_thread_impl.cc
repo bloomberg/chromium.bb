@@ -836,7 +836,6 @@ void RenderThreadImpl::Init(
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   InitializeWebKit(resource_task_queue, registry.get());
-  blink_initialized_time_ = base::TimeTicks::Now();
 
   // In single process the single process is all there is.
   webkit_shared_timer_suspended_ = false;
@@ -894,6 +893,10 @@ void RenderThreadImpl::Init(
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(
+      base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::Create,
+                          base::TimeTicks::Now(), GetIOTaskRunner()),
+      GetWebMainThreadScheduler()->IPCTaskRunner());
 
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
@@ -2299,12 +2302,6 @@ void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
       params->devtools_frame_token, params->replication_state, compositor_deps,
       *params->widget_params, params->frame_owner_properties,
       params->has_committed_real_load);
-}
-
-void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
-    mojom::EmbeddedWorkerInstanceClientAssociatedRequest client_request) {
-  EmbeddedWorkerInstanceClientImpl::Create(
-      blink_initialized_time_, GetIOTaskRunner(), std::move(client_request));
 }
 
 void RenderThreadImpl::CreateFrameProxy(

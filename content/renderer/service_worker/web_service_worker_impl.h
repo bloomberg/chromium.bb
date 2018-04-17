@@ -13,13 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
 #include "third_party/blink/public/web/web_frame.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace blink {
 class WebServiceWorkerProxy;
@@ -27,28 +24,49 @@ class WebServiceWorkerProxy;
 
 namespace content {
 
-// Each instance corresponds to one ServiceWorker object in JS context, and
-// is held by ServiceWorker object in Blink's C++ layer via
-// WebServiceWorker::Handle.
+// WebServiceWorkerImpl represents a ServiceWorker object in JavaScript.
+// https://w3c.github.io/ServiceWorker/#serviceworker-interface
 //
-// Each instance holds one Mojo connection (|host_for_global_scope_| or
-// |host_for_client_|) for interface blink::mojom::ServiceWorkerObjectHost, so
-// the corresponding ServiceWorkerHandle doesn't go away in the browser process
-// while the ServiceWorker object is alive.
+// Only one WebServiceWorkerImpl can exist at a time to represent a given
+// service worker in a given execution context. This is because the standard
+// requires JavaScript equality between ServiceWorker objects in the same
+// execution context that represent the same service worker.
+//
+// This class is ref counted and owned by WebServiceWorker::Handle, which is
+// passed to Blink. Generally, Blink keeps only one Handle to an instance of
+// this class. However, since //content can't know if Blink already has a
+// Handle, it passes a new Handle whenever passing this class to Blink. Blink
+// discards the new Handle if it already has one.
+//
+// When a blink::mojom::ServiceWorkerObjectInfo arrives at the renderer, there
+// are two ways to handle it.
+// 1) If there is no WebServiceWorkerImpl which represents the ServiceWorker, a
+// new WebServiceWorkerImpl is created using the
+// blink::mojom::ServiceWorkerObjectInfo.
+// 2) If there is a WebServiceWorkerImpl which represents the ServiceWorker, the
+// WebServiceWorkerImpl starts to use the new browser->renderer connection
+// (blink::mojom::ServiceWorkerObject interface) and the information about the
+// service worker.
+//
+// WebServiceWorkerImpl holds a Mojo connection (|host_|). The connection keeps
+// the ServiceWorkerHandle in the browser process alive, which in turn keeps the
+// relevant ServiceWorkerVersion alive.
 class CONTENT_EXPORT WebServiceWorkerImpl
-    : public blink::WebServiceWorker,
+    : public blink::mojom::ServiceWorkerObject,
+      public blink::WebServiceWorker,
       public base::RefCounted<WebServiceWorkerImpl> {
  public:
-  // |io_task_runner| is used to bind |host_for_global_scope_| for service
-  // worker execution context, as ServiceWorkerObjectHost is Channel-associated
-  // interface and needs to be bound on either the main or IO thread.
-  static scoped_refptr<WebServiceWorkerImpl> CreateForServiceWorkerGlobalScope(
-      blink::mojom::ServiceWorkerObjectInfoPtr info,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-  static scoped_refptr<WebServiceWorkerImpl> CreateForServiceWorkerClient(
-      blink::mojom::ServiceWorkerObjectInfoPtr info);
+  explicit WebServiceWorkerImpl(blink::mojom::ServiceWorkerObjectInfoPtr info);
 
-  void OnStateChanged(blink::mojom::ServiceWorkerState new_state);
+  // Closes the existing binding and binds to |request| instead. Called when the
+  // browser process sends a new blink::mojom::ServiceWorkerObjectInfo and
+  // |this| already exists for the described ServiceWorker (see the class
+  // comment).
+  void RefreshConnection(
+      blink::mojom::ServiceWorkerObjectAssociatedRequest request);
+
+  // Implements blink::mojom::ServiceWorkerObject.
+  void StateChanged(blink::mojom::ServiceWorkerState new_state) override;
 
   // blink::WebServiceWorker overrides.
   void SetProxy(blink::WebServiceWorkerProxy* proxy) override;
@@ -66,26 +84,20 @@ class CONTENT_EXPORT WebServiceWorkerImpl
 
  private:
   friend class base::RefCounted<WebServiceWorkerImpl>;
-  explicit WebServiceWorkerImpl(blink::mojom::ServiceWorkerObjectInfoPtr info);
   ~WebServiceWorkerImpl() override;
 
-  blink::mojom::ServiceWorkerObjectHost* GetObjectHost();
-
-  // Either |host_for_global_scope_| or |host_for_client_| is non-null.
+  // Both |host_| and |binding_| are bound on the main
+  // thread for service worker clients (document), and are bound on the service
+  // worker thread for service worker execution contexts.
   //
-  // |host_for_global_scope_| is for service worker execution contexts. It is
-  // used on the worker thread but bound on the IO thread, because it's a
-  // channel-associated interface which can be bound only on the main or IO
-  // thread.
-  // TODO(leonhsl): Once we can detach this interface out from the legacy IPC
-  // channel-associated interfaces world, we should bind it always on the worker
-  // thread on which |this| lives.
-  // Although it is a scoped_refptr, the only one owner is |this|.
-  scoped_refptr<blink::mojom::ThreadSafeServiceWorkerObjectHostAssociatedPtr>
-      host_for_global_scope_;
-  // |host_for_client_| is for service worker clients (document).
-  // It is bound and used on the main thread.
-  blink::mojom::ServiceWorkerObjectHostAssociatedPtr host_for_client_;
+  // |host_| keeps the Mojo connection to the
+  // browser-side ServiceWorkerHandle, whose lifetime is bound
+  // to |host_| via the Mojo connection.
+  blink::mojom::ServiceWorkerObjectHostAssociatedPtr host_;
+  // |binding_| keeps the Mojo binding to serve its other Mojo endpoint (i.e.
+  // the caller end) held by the content::ServiceWorkerHandle in the browser
+  // process.
+  mojo::AssociatedBinding<blink::mojom::ServiceWorkerObject> binding_;
 
   blink::mojom::ServiceWorkerObjectInfoPtr info_;
   blink::mojom::ServiceWorkerState state_;

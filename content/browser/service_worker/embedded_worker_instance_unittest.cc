@@ -62,6 +62,8 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
         blink::mojom::ServiceWorkerRegistrationOptions::New();
     registration_object_host_request_ =
         mojo::MakeRequest(&(provider_info->registration->host_ptr_info));
+    provider_info->registration->request =
+        mojo::MakeRequest(&registration_object_ptr_);
     binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
     provider_info->client_request = mojo::MakeRequest(&client_);
     mojo::MakeRequest(&provider_info->interface_provider);
@@ -99,6 +101,8 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
 
   mojom::ServiceWorkerContainerAssociatedPtr client_;
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
+  blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr
+      registration_object_ptr_;
   blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedRequest
       registration_object_host_request_;
 
@@ -850,11 +854,9 @@ TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   base::RunLoop().RunUntilIdle();
 
   // Worker should handle the failure of binding on the remote side as detach.
-  ASSERT_EQ(3u, events_.size());
-  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
-  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
-  EXPECT_EQ(DETACHED, events_[2].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[2].status);
+  ASSERT_EQ(1u, events_.size());
+  EXPECT_EQ(DETACHED, events_[0].type);
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status);
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 

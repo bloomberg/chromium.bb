@@ -935,9 +935,6 @@ ServiceWorkerVersion::InflightRequest::~InflightRequest() {}
 
 void ServiceWorkerVersion::OnThreadStarted() {
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, running_status());
-  DCHECK(provider_host_);
-  provider_host_->SetReadyToSendMessagesToWorker(
-      embedded_worker()->thread_id());
   // Activate ping/pong now that JavaScript execution will start.
   ping_controller_->Activate();
 }

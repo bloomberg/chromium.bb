@@ -85,6 +85,9 @@ class CONTENT_EXPORT ServiceWorkerHandle
   const int handle_id_;
   scoped_refptr<ServiceWorkerVersion> version_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
+  // Mojo connection to the content::WebServiceWorkerImpl in the renderer, which
+  // corresponds to the ServiceWorker JavaScript object.
+  blink::mojom::ServiceWorkerObjectAssociatedPtr remote_object_;
 
   base::WeakPtrFactory<ServiceWorkerHandle> weak_ptr_factory_;
 

@@ -884,10 +884,11 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Unregister_Success) {
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =
       GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), kScope);
   registration_host_ptr.Bind(std::move(info->host_ptr_info));
-  // Ignore the messages to the registration object, otherwise the callbacks
-  // issued from |registration_host_ptr| may wait for receiving the messages to
-  // |info->request|.
+  // Ignore the messages to the registration object and corresponding service
+  // worker objects, otherwise the callbacks issued from |registration_host_ptr|
+  // may wait for receiving the messages to them.
   info->request = nullptr;
+  info->waiting->request = nullptr;
 
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationInStorage(registration_id, kScope));

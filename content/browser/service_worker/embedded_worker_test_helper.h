@@ -24,7 +24,7 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/http/http_response_info.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
@@ -71,9 +71,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
         base::WeakPtr<EmbeddedWorkerTestHelper> helper);
     ~MockEmbeddedWorkerInstanceClient() override;
 
-    static void Bind(
-        const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-        mojom::EmbeddedWorkerInstanceClientAssociatedRequest request);
+    static void Bind(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
+                     mojo::ScopedMessagePipeHandle request_handle);
 
    protected:
     // mojom::EmbeddedWorkerInstanceClient implementation.
@@ -86,7 +85,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
         blink::mojom::DevToolsAgentAssociatedRequest request) override {}
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
-    mojo::AssociatedBinding<mojom::EmbeddedWorkerInstanceClient> binding_;
+    mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
 
     base::Optional<int> embedded_worker_id_;
 
@@ -279,7 +278,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
  private:
   class MockServiceWorkerEventDispatcher;
-  class MockRendererInterface;
 
   void DidSimulateWorkerScriptCached(int embedded_worker_id,
                                      bool pause_after_download);
@@ -362,7 +360,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   IPC::TestSink sink_;
 
-  std::unique_ptr<MockRendererInterface> mock_renderer_interface_;
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>
       mock_instance_clients_;
   size_t mock_instance_clients_next_index_;

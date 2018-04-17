@@ -385,15 +385,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // After this is called, is_execution_ready() returns true.
   void CompleteSharedWorkerPreparation();
 
-  // Sends event messages to the renderer. Events for the worker are queued up
-  // until the worker thread id is known via SetReadyToSendMessagesToWorker().
-  void SendServiceWorkerStateChangedMessage(
-      int worker_handle_id,
-      blink::mojom::ServiceWorkerState state);
-
-  // Sets the worker thread id and flushes queued events.
-  void SetReadyToSendMessagesToWorker(int render_thread_id);
-
   void AddMatchingRegistration(ServiceWorkerRegistration* registration);
   void RemoveMatchingRegistration(ServiceWorkerRegistration* registration);
 
@@ -481,9 +472,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void RemoveAllMatchingRegistrations();
 
   void ReturnRegistrationForReadyIfNeeded();
-
-  bool IsReadyToSendMessages() const;
-  void Send(IPC::Message* message) const;
 
   // Sends information about the controller to the providers of the service
   // worker clients in the renderer. If |notify_controllerchange| is true,
@@ -662,8 +650,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // for the host pointers which are used from the dedicated worker threads.
   mojo::BindingSet<mojom::ServiceWorkerContainerHost>
       bindings_for_worker_threads_;
-
-  std::vector<base::Closure> queued_events_;
 
   // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
