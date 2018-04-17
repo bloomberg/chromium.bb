@@ -355,10 +355,12 @@ public class TrustedCdnPublisherUrlTest {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { NetworkChangeNotifier.forceConnectivityState(false); });
 
-        // With no connectivity, loading the offline page should succeed,
-        // but not show a publisher URL.
-        runTrustedCdnPublisherUrlTest(
-                publisherUrl, "com.example.test", null, getDefaultSecurityIcon());
+        // Load the URL in the same tab. With no connectivity, loading the offline page should
+        // succeed, but not show a publisher URL.
+        String testUrl = mWebServer.getResponseUrl("/test.html");
+        mCustomTabActivityTestRule.loadUrl(testUrl);
+        verifyUrl(UrlFormatter.formatUrlForSecurityDisplay(testUrl, false));
+        verifySecurityIcon(R.drawable.offline_pin_round);
     }
 
     private void runTrustedCdnPublisherUrlTest(@Nullable String publisherUrl, String clientPackage,
