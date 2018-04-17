@@ -1184,15 +1184,18 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
   IPEndPoint endpoint;
   if (GetRemoteEndpoint(&endpoint))
     details.server_ip = endpoint.address();
-  // TODO(juliatuttle): Plumb this.
-  details.protocol = kProtoUnknown;
   if (response_headers()) {
     // HttpResponseHeaders::response_code() returns 0 if response code couldn't
     // be parsed, which is also how NEL represents the same.
     details.status_code = response_headers()->response_code();
+    // If we got response headers, assume that the connection used HTTP/1.1
+    // unless ALPN negotation tells us otherwise (handled below).
+    details.protocol = "http/1.1";
   } else {
     details.status_code = 0;
   }
+  if (response_info().was_alpn_negotiated)
+    details.protocol = response_info().alpn_negotiated_protocol;
   details.elapsed_time =
       base::TimeTicks::Now() - load_timing_info_.request_start;
   details.type = status().ToNetError();

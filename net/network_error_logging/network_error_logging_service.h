@@ -17,7 +17,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
-#include "net/socket/next_proto.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -51,7 +50,7 @@ class NET_EXPORT NetworkErrorLoggingService {
     GURL uri;
     GURL referrer;
     IPAddress server_ip;
-    NextProto protocol;
+    std::string protocol;
     int status_code;
     base::TimeDelta elapsed_time;
     Error type;
