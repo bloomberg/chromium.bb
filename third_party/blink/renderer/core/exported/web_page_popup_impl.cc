@@ -31,7 +31,6 @@
 
 #include <memory>
 
-#include "third_party/blink/public/platform/web_composite_and_readback_async_callback.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_frame_client.h"
@@ -579,9 +578,9 @@ void WebPagePopupImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
 }
 
 void WebPagePopupImpl::CompositeAndReadbackAsync(
-    WebCompositeAndReadbackAsyncCallback* callback) {
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   DCHECK(IsAcceleratedCompositingActive());
-  layer_tree_view_->CompositeAndReadbackAsync(callback);
+  layer_tree_view_->CompositeAndReadbackAsync(std::move(callback));
 }
 
 WebPoint WebPagePopupImpl::PositionRelativeToOwner() {

@@ -232,7 +232,6 @@ source_set("blink_headers") {
     "platform/web_coalesced_input_event.h",
     "platform/web_color.h",
     "platform/web_common.h",
-    "platform/web_composite_and_readback_async_callback.h",
     "platform/web_compositor_support.h",
     "platform/web_computed_ax_tree.h",
     "platform/web_connection_type.h",

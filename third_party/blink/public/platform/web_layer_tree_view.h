@@ -41,13 +41,14 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
+class SkBitmap;
+
 namespace cc {
 class AnimationHost;
 }
 
 namespace blink {
 
-class WebCompositeAndReadbackAsyncCallback;
 class WebLayer;
 struct WebPoint;
 class WebSelection;
@@ -148,10 +149,8 @@ class WebLayerTreeView {
   // Run layout and paint of all pending document changes asynchronously.
   virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}
 
-  // The caller is responsible for keeping the
-  // WebCompositeAndReadbackAsyncCallback object alive until it is called.
   virtual void CompositeAndReadbackAsync(
-      WebCompositeAndReadbackAsyncCallback*) {}
+      base::OnceCallback<void(const SkBitmap&)> callback) {}
 
   // Synchronously run all lifecycle phases and compositor update with no
   // raster. Should only be called by layout tests running in synchronous
