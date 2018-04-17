@@ -40,7 +40,7 @@ void MediaControlOverflowMenuListElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click)
     event->SetDefaultHandled();
 
-  MediaControlDivElement::DefaultEventHandler(event);
+  MediaControlPopupMenuElement::DefaultEventHandler(event);
 }
 
 void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {

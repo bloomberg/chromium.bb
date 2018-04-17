@@ -503,6 +503,7 @@ video::-internal-media-controls-overflow-menu-list-item {
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
   margin-left: -9px;
   margin-right: 6px;
+  pointer-events: none;
 }
 
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] div {
@@ -522,12 +523,12 @@ label[pseudo="-internal-media-controls-overflow-menu-list-item"] div span.subtit
   color: rgba(0,0,0,0.54);
 }
 
-audio::-internal-media-controls-text-track-list-header:hover,
-video::-internal-media-controls-text-track-list-header:hover,
-audio::-internal-media-controls-overflow-menu-list-item:hover,
-video::-internal-media-controls-overflow-menu-list-item:hover,
-audio::-internal-media-controls-text-track-list-item:hover,
-video::-internal-media-controls-text-track-list-item:hover {
+audio::-internal-media-controls-text-track-list-header:focus,
+video::-internal-media-controls-text-track-list-header:focus,
+audio::-internal-media-controls-overflow-menu-list-item:focus,
+video::-internal-media-controls-overflow-menu-list-item:focus,
+audio::-internal-media-controls-text-track-list-item:focus,
+video::-internal-media-controls-text-track-list-item:focus {
   background-color: #e0e0e0;
 }
 
@@ -553,6 +554,7 @@ label[pseudo="-internal-media-controls-text-track-list-item"] input {
   height: 18px;
   margin: 15px;
   float: right;
+  pointer-events: none;
 }
 
 label[pseudo="-internal-media-controls-text-track-list-item"] input:checked {
