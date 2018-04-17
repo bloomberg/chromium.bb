@@ -89,7 +89,15 @@ class TestDriver {
 
   // If profiling is expected to already be started, confirm it.
   // Otherwise, start profiling with the given mode.
-  bool CheckOrStartProfiling();
+  // This method must only be called on platforms that supported nested run
+  // loops on the UI thread.
+  bool CheckOrStartProfilingOnUIThreadWithNestedRunLoops();
+
+  // If profiling is expected to already be started, confirm it.
+  // Otherwise, start profiling with the given mode.
+  // This method must only be called on platforms that are running the
+  // TestDriver from a non-UI thread, which allows for async signalling.
+  bool CheckOrStartProfilingOnUIThreadWithAsyncSignalling();
 
   // Performs allocations. These are expected to be profiled.
   void MakeTestAllocations();
