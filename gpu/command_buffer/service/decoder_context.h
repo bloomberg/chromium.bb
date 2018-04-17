@@ -26,8 +26,9 @@ class GLSurface;
 }  // namespace gl
 
 namespace gpu {
-class TextureBase;
 class QueryManager;
+class ServiceTransferCache;
+class TextureBase;
 struct ContextCreationAttribs;
 
 namespace gles2 {
@@ -213,6 +214,14 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface {
                             int width,
                             int height,
                             int depth) = 0;
+  //
+  // Methods required by InProcessCommandBuffer
+  //
+  // Gets the ServiceTransferCache for this context.
+  virtual ServiceTransferCache* GetTransferCacheForTest() = 0;
+
+  // Set to true to LOG every command.
+  virtual void SetLogCommands(bool log_commands) = 0;
 };
 
 }  // namespace gpu

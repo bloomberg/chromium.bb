@@ -11,9 +11,11 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <list>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -562,6 +564,10 @@ void GLES2Decoder::EndDecoding() {}
 
 base::StringPiece GLES2Decoder::GetLogPrefix() {
   return GetLogger()->GetLogPrefix();
+}
+
+void GLES2Decoder::SetLogCommands(bool log_commands) {
+  log_commands_ = log_commands;
 }
 
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
@@ -3322,7 +3328,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     set_debug(true);
 
   if (group_->gpu_preferences().enable_gpu_command_logging)
-    set_log_commands(true);
+    SetLogCommands(true);
 
   compile_shader_always_succeeds_ =
       group_->gpu_preferences().compile_shader_always_succeeds;
@@ -4154,7 +4160,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxCallStackDepth = 256;
   resources.MaxDualSourceDrawBuffers = group_->max_dual_source_draw_buffers();
 
-  if(!feature_info_->IsWebGL1OrES2Context()) {
+  if (!feature_info_->IsWebGL1OrES2Context()) {
     resources.MaxVertexOutputVectors =
         group_->max_vertex_output_components() / 4;
     resources.MaxFragmentInputVectors =
@@ -10274,7 +10280,7 @@ bool GLES2DecoderImpl::ValidateStencilStateForDraw(const char* function_name) {
   uint8_t stencil_bits = GLES2Util::StencilBitsPerPixel(stencil_format);
 
   if (state_.enable_flags.stencil_test && stencil_bits > 0) {
-    DCHECK(stencil_bits <= 8);
+    DCHECK_LE(stencil_bits, 8U);
 
     GLuint max_stencil_value = (1 << stencil_bits) - 1;
     GLint max_stencil_ref = static_cast<GLint>(max_stencil_value);
@@ -10397,9 +10403,8 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   }
 
   const Vec4& value = state_.attrib_values[0];
-  if (new_buffer ||
-      (attrib_0_used &&
-       (!attrib_0_buffer_matches_value_ || !value.Equal(attrib_0_value_)))){
+  if (new_buffer || (attrib_0_used && (!attrib_0_buffer_matches_value_ ||
+                                       !value.Equal(attrib_0_value_)))) {
     // TODO(zmo): This is not 100% correct because we might lose data when
     // casting to float type, but it is a corner case and once we migrate to
     // core profiles on desktop GL, it is no longer relevant.
@@ -19058,7 +19063,7 @@ class PathCommandValidatorContext {
     uint32_t transforms_component_count =
         GLES2Util::GetComponentCountForGLTransformType(transform_type);
     // Below multiplication will not overflow.
-    DCHECK(transforms_component_count <= 12);
+    DCHECK_LE(transforms_component_count, 12U);
     uint32_t one_transform_size = sizeof(GLfloat) * transforms_component_count;
     uint32_t transforms_size = 0;
     if (!SafeMultiplyUint32(one_transform_size, num_paths, &transforms_size)) {

@@ -4,14 +4,6 @@
 
 #include "gpu/ipc/gl_in_process_context.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include <memory>
-#include <set>
-#include <utility>
-#include <vector>
-
 #include <GLES2/gl2.h>
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
@@ -19,13 +11,12 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/lazy_instance.h"
+#include <memory>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -53,36 +44,33 @@ class GLInProcessContextImpl
   ~GLInProcessContextImpl() override;
 
   // GLInProcessContext implementation:
-  gpu::ContextResult Initialize(
-      scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
+  ContextResult Initialize(
+      scoped_refptr<InProcessCommandBuffer::Service> service,
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
       SurfaceHandle window,
       GLInProcessContext* share_context,
-      const gpu::ContextCreationAttribs& attribs,
+      const ContextCreationAttribs& attribs,
       const SharedMemoryLimits& mem_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
       GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  const gpu::Capabilities& GetCapabilities() const override;
-  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
+  const Capabilities& GetCapabilities() const override;
+  const GpuFeatureInfo& GetGpuFeatureInfo() const override;
   gles2::GLES2Implementation* GetImplementation() override;
   void SetSwapBuffersCompletionCallback(
-      const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
-          callback) override;
-  void SetUpdateVSyncParametersCallback(
-      const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
-          callback) override;
-  void SetPresentationCallback(
-      const gpu::InProcessCommandBuffer::PresentationCallback& callback)
+      const InProcessCommandBuffer::SwapBuffersCompletionCallback& callback)
       override;
+  void SetUpdateVSyncParametersCallback(
+      const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback)
+      override;
+  void SetPresentationCallback(
+      const InProcessCommandBuffer::PresentationCallback& callback) override;
   void SetLock(base::Lock* lock) override;
-  gpu::ServiceTransferCache* GetTransferCacheForTest() const override;
+  ServiceTransferCache* GetTransferCacheForTest() const override;
 
  private:
-  void OnSignalSyncPoint(const base::Closure& callback);
-
   std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<TransferBuffer> transfer_buffer_;
   std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
@@ -123,19 +111,17 @@ gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {
 }
 
 void GLInProcessContextImpl::SetSwapBuffersCompletionCallback(
-    const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
-        callback) {
+    const InProcessCommandBuffer::SwapBuffersCompletionCallback& callback) {
   command_buffer_->SetSwapBuffersCompletionCallback(callback);
 }
 
 void GLInProcessContextImpl::SetUpdateVSyncParametersCallback(
-    const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
-        callback) {
+    const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback) {
   command_buffer_->SetUpdateVSyncParametersCallback(callback);
 }
 
 void GLInProcessContextImpl::SetPresentationCallback(
-    const gpu::InProcessCommandBuffer::PresentationCallback& callback) {
+    const InProcessCommandBuffer::PresentationCallback& callback) {
   command_buffer_->SetPresentationCallback(callback);
 }
 
@@ -143,13 +129,12 @@ void GLInProcessContextImpl::SetLock(base::Lock* lock) {
   NOTREACHED();
 }
 
-gpu::ServiceTransferCache* GLInProcessContextImpl::GetTransferCacheForTest()
-    const {
+ServiceTransferCache* GLInProcessContextImpl::GetTransferCacheForTest() const {
   return command_buffer_->GetTransferCacheForTest();
 }
 
-gpu::ContextResult GLInProcessContextImpl::Initialize(
-    scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
+ContextResult GLInProcessContextImpl::Initialize(
+    scoped_refptr<InProcessCommandBuffer::Service> service,
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
     SurfaceHandle window,
@@ -187,7 +172,7 @@ gpu::ContextResult GLInProcessContextImpl::Initialize(
       surface, is_offscreen, window, attribs, share_command_buffer,
       gpu_memory_buffer_manager, image_factory, gpu_channel_manager_delegate,
       std::move(task_runner));
-  if (result != gpu::ContextResult::kSuccess) {
+  if (result != ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return result;
   }
@@ -196,7 +181,7 @@ gpu::ContextResult GLInProcessContextImpl::Initialize(
   gles2_helper_ =
       std::make_unique<gles2::GLES2CmdHelper>(command_buffer_.get());
   result = gles2_helper_->Initialize(mem_limits.command_buffer_size);
-  if (result != gpu::ContextResult::kSuccess) {
+  if (result != ContextResult::kSuccess) {
     LOG(ERROR) << "Failed to initialize GLES2CmdHelper";
     return result;
   }

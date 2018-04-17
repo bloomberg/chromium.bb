@@ -66,7 +66,7 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
   bool debug() const { return debug_; }
 
   // Set to true to LOG every command.
-  void set_log_commands(bool log_commands) { log_commands_ = log_commands; }
+  void SetLogCommands(bool log_commands) override;
   bool log_commands() const { return log_commands_; }
 
   virtual void SetCopyTextureResourceManagerForTest(
