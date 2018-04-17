@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/workers/execution_context_worker_registry.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -117,8 +118,14 @@ void InspectorTracingAgent::EmitMetadataEvents() {
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorTracingStartedInFrame::Data(
                            session_id_, inspected_frames_->Root()));
-  for (WorkerInspectorProxy* proxy : WorkerInspectorProxy::AllProxies())
-    DidStartWorker(proxy, false);
+
+  for (LocalFrame* frame : *inspected_frames_) {
+    for (WorkerInspectorProxy* proxy :
+         ExecutionContextWorkerRegistry::From(*frame->GetDocument())
+             ->GetWorkerInspectorProxies()) {
+      DidStartWorker(proxy, false);
+    }
+  }
 }
 
 void InspectorTracingAgent::RootLayerCleared() {

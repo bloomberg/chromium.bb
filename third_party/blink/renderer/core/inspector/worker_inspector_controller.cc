@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/inspector/InspectorLogAgent.h"
 #include "third_party/blink/renderer/core/inspector/InspectorNetworkAgent.h"
 #include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/inspector/InspectorWorkerAgent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
@@ -76,10 +77,14 @@ void WorkerInspectorController::ConnectFrontend(int session_id) {
   session->Append(new InspectorLogAgent(thread_->GetConsoleMessageStorage(),
                                         nullptr, session->V8Session()));
   if (thread_->GlobalScope()->IsWorkerGlobalScope()) {
-    DCHECK(ToWorkerGlobalScope(thread_->GlobalScope())->EnsureFetcher());
+    InspectedFrames* inspected_frames = new InspectedFrames(nullptr);
+    WorkerGlobalScope* worker_global_scope =
+        ToWorkerGlobalScope(thread_->GlobalScope());
+    DCHECK(worker_global_scope->EnsureFetcher());
     session->Append(new InspectorNetworkAgent(
-        new InspectedFrames(nullptr),
-        ToWorkerGlobalScope(thread_->GlobalScope()), session->V8Session()));
+        inspected_frames, worker_global_scope, session->V8Session()));
+    session->Append(
+        new InspectorWorkerAgent(inspected_frames, worker_global_scope));
   }
   if (sessions_.IsEmpty())
     thread_->GetWorkerBackingThread().BackingThread().AddTaskObserver(this);

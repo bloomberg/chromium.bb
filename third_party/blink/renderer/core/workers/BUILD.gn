@@ -18,6 +18,8 @@ blink_core_sources("workers") {
     "dedicated_worker_object_proxy.h",
     "dedicated_worker_thread.cc",
     "dedicated_worker_thread.h",
+    "execution_context_worker_registry.cc",
+    "execution_context_worker_registry.h",
     "global_scope_creation_params.cc",
     "global_scope_creation_params.h",
     "installed_scripts_manager.cc",

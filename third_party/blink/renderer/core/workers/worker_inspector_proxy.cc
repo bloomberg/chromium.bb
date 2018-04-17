@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/execution_context_worker_registry.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -18,21 +19,6 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
-
-namespace {
-
-static WorkerInspectorProxy::WorkerInspectorProxySet& InspectorProxies() {
-  DEFINE_STATIC_LOCAL(WorkerInspectorProxy::WorkerInspectorProxySet, proxies,
-                      ());
-  return proxies;
-}
-
-}  // namespace
-
-const WorkerInspectorProxy::WorkerInspectorProxySet&
-WorkerInspectorProxy::AllProxies() {
-  return InspectorProxies();
-}
 
 WorkerInspectorProxy::WorkerInspectorProxy()
     : worker_thread_(nullptr), execution_context_(nullptr) {}
@@ -66,7 +52,9 @@ void WorkerInspectorProxy::WorkerThreadCreated(
   worker_thread_ = worker_thread;
   execution_context_ = execution_context;
   url_ = url.GetString();
-  InspectorProxies().insert(this);
+  DCHECK(execution_context_);
+  ExecutionContextWorkerRegistry::From(*execution_context_)
+      ->AddWorkerInspectorProxy(this);
   // We expect everyone starting worker thread to synchronously ask for
   // ShouldPauseOnWorkerStart() right before.
   bool waiting_for_debugger = false;
@@ -77,8 +65,8 @@ void WorkerInspectorProxy::WorkerThreadCreated(
 
 void WorkerInspectorProxy::WorkerThreadTerminated() {
   if (worker_thread_) {
-    DCHECK(InspectorProxies().Contains(this));
-    InspectorProxies().erase(this);
+    ExecutionContextWorkerRegistry::From(*execution_context_)
+        ->RemoveWorkerInspectorProxy(this);
     probe::workerTerminated(execution_context_, this);
   }
 
