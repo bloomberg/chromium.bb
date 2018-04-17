@@ -186,6 +186,12 @@ bool ServiceWorkerUtils::ExtractSinglePartHttpRange(
   const net::HttpByteRange& byte_range = ranges[0];
   if (byte_range.first_byte_position() < 0)
     return false;
+  // Allow the range [0, -1] to be valid and specify the entire range.
+  if (byte_range.first_byte_position() == 0 &&
+      byte_range.last_byte_position() == -1) {
+    *has_range_out = false;
+    return true;
+  }
   if (byte_range.last_byte_position() < 0)
     return false;
 
