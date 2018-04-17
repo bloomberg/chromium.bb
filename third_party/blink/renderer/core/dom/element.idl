@@ -30,10 +30,10 @@ interface Element : Node {
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? prefix;
     readonly attribute DOMString localName;
-    readonly attribute DOMString tagName;
+    [Affects=Nothing] readonly attribute DOMString tagName;
 
-    [CEReactions, Reflect] attribute DOMString id;
-    [CEReactions, Reflect=class] attribute DOMString className;
+    [Affects=Nothing, CEReactions, Reflect] attribute DOMString id;
+    [Affects=Nothing, CEReactions, Reflect=class] attribute DOMString className;
     [SameObject, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList classList;
     [Unscopable, CEReactions, Reflect] attribute DOMString slot;
 
@@ -45,14 +45,14 @@ interface Element : Node {
 
     boolean hasAttributes();
     [SameObject, PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap attributes;
-    sequence<DOMString> getAttributeNames();
-    DOMString? getAttribute(DOMString name);
+    [Affects=Nothing] sequence<DOMString> getAttributeNames();
+    [Affects=Nothing] DOMString? getAttribute(DOMString name);
     DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
     [RaisesException, CEReactions, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
     [RaisesException, CEReactions, CustomElementCallbacks] void setAttributeNS(DOMString? namespaceURI, DOMString name, DOMString value);
     [CEReactions, CustomElementCallbacks] void removeAttribute(DOMString name);
     [CEReactions, CustomElementCallbacks] void removeAttributeNS(DOMString? namespaceURI, DOMString localName);
-    boolean hasAttribute(DOMString name);
+    [Affects=Nothing] boolean hasAttribute(DOMString name);
     boolean hasAttributeNS(DOMString? namespaceURI, DOMString localName);
 
     Attr? getAttributeNode(DOMString name);

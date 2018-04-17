@@ -93,9 +93,9 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // resource metadata management
 
     [PutForwards=href, Unforgeable] readonly attribute Location? location;
-    [RaisesException=Setter] attribute USVString domain;
-    readonly attribute USVString referrer;
-    [RaisesException, RuntimeCallStatsCounter=DocumentCookie] attribute DOMString cookie;
+    [Affects=Nothing, RaisesException=Setter] attribute USVString domain;
+    [Affects=Nothing] readonly attribute USVString referrer;
+    [Affects=Nothing, RaisesException, RuntimeCallStatsCounter=DocumentCookie] attribute DOMString cookie;
     readonly attribute DOMString lastModified;
     readonly attribute DocumentReadyState readyState;
 
@@ -103,7 +103,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // Named getter is implemented without IDL code generation for better
     // performance. See LocalWindowProxy.cpp.
     // getter object (DOMString name);
-    [CEReactions, CustomElementCallbacks] attribute DOMString title;
+    [Affects=Nothing, CEReactions, CustomElementCallbacks] attribute DOMString title;
     [CEReactions, CustomElementCallbacks] attribute DOMString dir;
     [CEReactions, RaisesException=Setter, CustomElementCallbacks, PerWorldBindings] attribute HTMLElement? body;
     readonly attribute HTMLHeadElement? head;
