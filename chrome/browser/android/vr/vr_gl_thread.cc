@@ -56,7 +56,6 @@ void VrGLThread::SetInputConnection(VrInputConnection* input_connection) {
 
 void VrGLThread::Init() {
   bool keyboard_enabled =
-      base::FeatureList::IsEnabled(features::kVrBrowserKeyboard) &&
       !ui_initial_state_.web_vr_autopresentation_expected;
   if (keyboard_enabled) {
     keyboard_delegate_ = GvrKeyboardDelegate::Create();
