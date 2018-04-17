@@ -24,7 +24,8 @@ namespace resource_coordinator {
 
 namespace {
 
-const int kDefaultMeasurementIntervalInSeconds = 1;
+constexpr base::TimeDelta kDefaultMeasurementInterval =
+    base::TimeDelta::FromMinutes(10);
 
 base::LazyInstance<ResourceCoordinatorRenderProcessProbe>::DestructorAtExit
     g_probe = LAZY_INSTANCE_INITIALIZER;
@@ -71,8 +72,7 @@ class ResourceCoordinatorRenderProcessMetricsHandler
 ResourceCoordinatorRenderProcessProbe::ResourceCoordinatorRenderProcessProbe()
     : metrics_handler_(
           std::make_unique<ResourceCoordinatorRenderProcessMetricsHandler>()),
-      interval_ms_(
-          base::TimeDelta::FromSeconds(kDefaultMeasurementIntervalInSeconds)) {
+      interval_(kDefaultMeasurementInterval) {
   UpdateWithFieldTrialParams();
 }
 
@@ -178,7 +178,7 @@ void ResourceCoordinatorRenderProcessProbe::
     HandleRenderProcessMetricsOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (metrics_handler_->HandleMetrics(render_process_info_map_)) {
-    timer_.Start(FROM_HERE, interval_ms_, this,
+    timer_.Start(FROM_HERE, interval_, this,
                  &ResourceCoordinatorRenderProcessProbe::
                      RegisterAliveRenderProcessesOnUIThread);
   }
@@ -200,7 +200,7 @@ void ResourceCoordinatorRenderProcessProbe::UpdateWithFieldTrialParams() {
   int64_t interval_ms = GetGRCRenderProcessCPUProfilingIntervalInMs();
 
   if (interval_ms > 0) {
-    interval_ms_ = base::TimeDelta::FromMilliseconds(interval_ms);
+    interval_ = base::TimeDelta::FromMilliseconds(interval_ms);
   }
 }
 

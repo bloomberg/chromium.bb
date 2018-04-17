@@ -85,8 +85,8 @@ class ResourceCoordinatorRenderProcessProbe {
   // A map of currently running ProcessHandles to Process.
   RenderProcessInfoMap render_process_info_map_;
 
-  // Time duration between measurements in milliseconds.
-  base::TimeDelta interval_ms_;
+  // Time duration between measurements.
+  base::TimeDelta interval_;
 
   // Timer to signal the |ResourceCoordinatorRenderProcessProbe| instance
   // to conduct its measurements as a regular interval;
