@@ -5,17 +5,18 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_FUCHSIA_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_FUCHSIA_H_
 
+#include <fdio/io.h>
+#include <lib/async/wait.h>
+
 #include "base/base_export.h"
-#include "base/fuchsia/scoped_zx_handle.h"
+#include "base/fuchsia/async_dispatcher.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/watchable_io_message_pump_posix.h"
 
-#include <fdio/io.h>
-#include <fdio/private.h>
-#include <zircon/syscalls/port.h>
+typedef struct fdio fdio_t;
 
 namespace base {
 
@@ -33,7 +34,7 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump,
   };
 
   // Manages an active watch on an zx_handle_t.
-  class ZxHandleWatchController {
+  class ZxHandleWatchController : public async_wait_t {
    public:
     explicit ZxHandleWatchController(const Location& from_here);
     // Deleting the Controller implicitly calls StopWatchingZxHandle.
@@ -46,6 +47,17 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump,
     const Location& created_from_location() { return created_from_location_; }
 
    protected:
+    friend class MessagePumpFuchsia;
+
+    virtual bool WaitBegin();
+
+    static void HandleSignal(async_t* async,
+                             async_wait_t* wait,
+                             zx_status_t status,
+                             const zx_packet_signal_t* signal);
+
+    const Location created_from_location_;
+
     // This bool is used by the pump when invoking the ZxHandleWatcher callback,
     // and by the FdHandleWatchController when invoking read & write callbacks,
     // to cope with the possibility of the caller deleting the *Watcher within
@@ -54,28 +66,8 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump,
     // to check the value on the stack to short-cut any post-callback work.
     bool* was_stopped_ = nullptr;
 
-   protected:
-    friend class MessagePumpFuchsia;
-
-    // Start watching the handle.
-    virtual bool WaitBegin();
-
-    // Called by MessagePumpFuchsia when the handle is signalled. Accepts the
-    // set of signals that fired, and returns the intersection with those the
-    // caller is interested in.
-    zx_signals_t WaitEnd(zx_signals_t observed);
-
-    // Returns the key to use to uniquely identify this object's wait operation.
-    uint64_t wait_key() const {
-      return static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this));
-    }
-
-    const Location created_from_location_;
-
     // Set directly from the inputs to WatchFileDescriptor.
     ZxHandleWatcher* watcher_ = nullptr;
-    zx_handle_t handle_ = ZX_HANDLE_INVALID;
-    zx_signals_t desired_signals_ = 0;
 
     // Used to safely access resources owned by the associated message pump.
     WeakPtr<MessagePumpFuchsia> weak_pump_;
@@ -83,10 +75,6 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump,
     // A watch may be marked as persistent, which means it remains active even
     // after triggering.
     bool persistent_ = false;
-
-    // Used to determine whether an asynchronous wait operation is active on
-    // this controller.
-    bool has_begun_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ZxHandleWatchController);
   };
@@ -148,14 +136,14 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump,
   void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
  private:
-  // Handles IO events from the |port_|. Returns true if any events were
-  // received.
+  // Handles IO events by running |async_dispatcher_|. Returns true if any
+  // events were received or if ScheduleWork() was called.
   bool HandleEvents(zx_time_t deadline);
 
   // This flag is set to false when Run should return.
   bool keep_running_ = true;
 
-  ScopedZxHandle port_;
+  AsyncDispatcher async_dispatcher_;
 
   // The time at which we should call DoDelayedWork.
   TimeTicks delayed_work_time_;
