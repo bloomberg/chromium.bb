@@ -37,11 +37,7 @@ class EVENTS_EXPORT PlatformKeyMap {
   // If the supplied event has both Control and Alt modifiers set, then they
   // are replaced by AltGraph. This should only ever be applied to the flags
   // for printable-character events.
-  // TODO(crbug.com/25503): Has no effect if FixAltGraph is not enabled.
   static int ReplaceControlAndAltWithAltGraph(int flags);
-
-  // TODO(crbug.com/25503): Returns true if we disambiguate AltGraph.
-  static bool IsFixAltGraphEnabled();
 
  private:
   friend class PlatformKeyMapTest;

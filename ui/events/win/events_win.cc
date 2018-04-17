@@ -365,9 +365,6 @@ int GetModifiersFromKeyState() {
   int modifiers = EF_NONE;
   if (ui::win::IsShiftPressed())
     modifiers |= EF_SHIFT_DOWN;
-  // TODO(crbug.com/25503): Handle Control+Alt vs AltGraph disambiguation, if
-  // enabled.
-  if (PlatformKeyMap::IsFixAltGraphEnabled()) {
     if (ui::win::IsAltRightPressed() && PlatformKeyMap::UsesAltGraph()) {
       modifiers |= EF_ALTGR_DOWN;
     } else {
@@ -379,14 +376,6 @@ int GetModifiersFromKeyState() {
       if (ui::win::IsAltPressed())
         modifiers |= EF_ALT_DOWN;
     }
-  } else {
-    if (ui::win::IsCtrlPressed())
-      modifiers |= EF_CONTROL_DOWN;
-    if (ui::win::IsAltPressed())
-      modifiers |= EF_ALT_DOWN;
-    if (ui::win::IsCtrlPressed() && ui::win::IsAltPressed())
-      modifiers |= EF_ALTGR_DOWN;
-  }
   if (ui::win::IsWindowsKeyPressed())
     modifiers |= EF_COMMAND_DOWN;
   if (ui::win::IsNumLockOn())

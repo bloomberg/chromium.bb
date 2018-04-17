@@ -277,10 +277,6 @@ base::LazyInstance<base::ThreadLocalStorage::Slot,
                    PlatformKeyMapInstanceTlsTraits>
     g_platform_key_map_tls_lazy = LAZY_INSTANCE_INITIALIZER;
 
-// TODO(crbug.com/25503): Controls Control+Alt vs AltGraph disambiguation.
-const base::Feature kFixAltGraphModifier{"FixAltGraph",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // anonymous namespace
 
 PlatformKeyMap::PlatformKeyMap() {}
@@ -359,8 +355,6 @@ DomKey PlatformKeyMap::DomKeyFromKeyboardCode(KeyboardCode key_code,
 int PlatformKeyMap::ReplaceControlAndAltWithAltGraph(int flags) {
   if (!HasControlAndAlt(flags))
     return flags;
-  if (!IsFixAltGraphEnabled())
-    return flags;
   return (flags & ~kControlAndAltFlags) | EF_ALTGR_DOWN;
 }
 
@@ -378,11 +372,6 @@ bool PlatformKeyMap::UsesAltGraph() {
   HKL current_layout = ::GetKeyboardLayout(0);
   platform_key_map->UpdateLayout(current_layout);
   return platform_key_map->has_alt_graph_;
-}
-
-// static
-bool PlatformKeyMap::IsFixAltGraphEnabled() {
-  return base::FeatureList::IsEnabled(kFixAltGraphModifier);
 }
 
 void PlatformKeyMap::UpdateLayout(HKL layout) {
