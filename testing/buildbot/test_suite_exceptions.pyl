@@ -3644,6 +3644,11 @@
           ],
         },
       },
+      'Win10 Tests x64 (dbg)': {
+        'args': [
+          '--debug',
+        ],
+      },
     },
   },
   'webkit_unit_tests': {
