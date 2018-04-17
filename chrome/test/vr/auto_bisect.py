@@ -109,6 +109,13 @@ def ParseArgsAndAssertValid():
                       help='The data format the JSON results from the test are '
                            'expected to be in. Supported values are: ' +
                            (', '.join(SUPPORTED_JSON_RESULT_FORMATS.keys())))
+  parser.add_argument('--manual-mode', action='store_true', default=False,
+                      help='Does not automatically run gclient sync and waits '
+                           'for user input before starting the build/run '
+                           'process. Useful if a bisect needs to be run within '
+                           'a range where some change breaks gclient sync and '
+                           'a patch needs to be applied at each step before '
+                           'syncing.')
 
   parser.add_argument_group('swarming arguments')
   parser.add_argument('--swarming-server', required=True,
@@ -172,6 +179,9 @@ def VerifyInput(args, unknown_args):
     unknown_args: The unknown args parsed by the argument parser
   """
   print '======'
+  if args.manual_mode:
+    print ('Script is running in manual mode - you must manually run gclient '
+          'sync on each revision')
   print 'This will start a bisect for a for:'
   print 'Metric: %s' % args.metric
   print 'Story: %s' % args.story
@@ -395,10 +405,10 @@ def RunBisectStep(args, unknown_args, revision, output_dir):
   output = ""
   if revision_good:
     print '=== Current revision is GOOD ==='
-    output = subprocess.check_output(['git', 'bisect', 'good'])
+    output = subprocess.check_output(['git', 'bisect', 'good', revision])
   else:
     print '=== Current revision is BAD ==='
-    output = subprocess.check_output(['git', 'bisect', 'bad'])
+    output = subprocess.check_output(['git', 'bisect', 'bad', revision])
 
   print output
   if output.startswith('Bisecting:'):
@@ -414,20 +424,26 @@ def SyncAndBuild(args, unknown_args, revision):
     unknown_args: The unknown args parsed by the argument parser
     revision: The revision to sync to and build
   """
-  print '=== Syncing to revision %s and building ===' % revision
-  # Sometimes random files show up as unstaged changes (???), so make sure that
-  # isn't the case before we try to run gclient sync
-  if args.reset_before_sync:
-    subprocess.check_output(['git', 'reset', '--hard', 'HEAD'])
-  print 'Syncing'
-  output = subprocess.check_output(['gclient', 'sync', '-r',
-      'src@%s' % revision])
-  if ('error: Your local changes to the following files would be overwritten '
-      'by checkout:' in output):
-    raise RuntimeError('Could not run gclient sync due to uncommitted changes. '
-        'If these changes are actually yours, please commit or stash them. If '
-        'they are not, remove them and try again. If the issue persists, try '
-        'running with --reset-before-sync')
+  if args.manual_mode:
+    print ('=== Waiting on user input to start build/run process for %s ===' %
+        revision)
+    raw_input('Press any key to continue')
+    print '=== Building ==='
+  else:
+    print '=== Syncing to revision %s and building ===' % revision
+    # Sometimes random files show up as unstaged changes (???), so make sure
+    # that isn't the case before we try to run gclient sync
+    if args.reset_before_sync:
+      subprocess.check_output(['git', 'reset', '--hard', 'HEAD'])
+    print 'Syncing'
+    output = subprocess.check_output(['gclient', 'sync', '-r',
+        'src@%s' % revision])
+    if ('error: Your local changes to the following files would be overwritten '
+        'by checkout:' in output):
+      raise RuntimeError('Could not run gclient sync due to uncommitted '
+          'changes. If these changes are actually yours, please commit or '
+          'stash them. If they are not, remove them and try again. If the '
+          'issue persists, try running with --reset-before-sync')
 
   # Ensure that the VR assets are synced to the current revision since it isn't
   # guaranteed that gclient will handle it properly
