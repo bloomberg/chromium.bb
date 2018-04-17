@@ -228,7 +228,7 @@ class DepGraphGenerator(object):
   """
 
   __slots__ = ["board", "emerge", "package_db", "show_output", "sysroot",
-               "unpack_only", "max_retries"]
+               "unpack_only", "max_retries", "install_plan_filename"]
 
   def __init__(self):
     self.board = None
@@ -238,6 +238,7 @@ class DepGraphGenerator(object):
     self.sysroot = None
     self.unpack_only = False
     self.max_retries = 1
+    self.install_plan_filename = None
 
   def ParseParallelEmergeArgs(self, argv):
     """Read the parallel emerge arguments from the command-line.
@@ -281,6 +282,10 @@ class DepGraphGenerator(object):
         event_logger = cros_event.getEventFileLogger(log_file_name)
         event_logger.setKind('ParallelEmerge')
         cros_event.setEventLogger(event_logger)
+      elif arg.startswith("--install-plan-filename"):
+        # No emerge equivalent, used to calculate the list of packages
+        # that changed and we will need to calculate reverse dependencies.
+        self.install_plan_filename = arg.replace("--install-plan-filename=", "")
       else:
         # Not one of our options, so pass through to emerge.
         emerge_args.append(arg)
@@ -539,6 +544,16 @@ class DepGraphGenerator(object):
     seconds = time.time() - start
     if "--quiet" not in emerge.opts:
       print("Deps calculated in %dm%.1fs" % (seconds / 60, seconds % 60))
+
+    # Calculate the install plan packages and append to temp file. They will be
+    # used to calculate all the reverse dependencies on these change packages.
+    if self.install_plan_filename:
+      install_plan_pkgs = []
+      for d in deps_info:
+        install_plan_pkgs.append(d)
+      # always write the file even if nothing to do, scripts expect existence.
+      with open(self.install_plan_filename, "a") as f:
+        f.write("%s " % " ".join(install_plan_pkgs))
 
     return deps_tree, deps_info
 
