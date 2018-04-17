@@ -37,60 +37,6 @@ using message_center::Notification;
 
 namespace ash {
 
-const char kNotifierPower[] = "ash.power";
-
-// Informs the TrayPower instance when a USB notification is closed.
-class UsbNotificationDelegate : public message_center::NotificationDelegate {
- public:
-  explicit UsbNotificationDelegate(TrayPower* tray_power)
-      : tray_power_(tray_power) {}
-
-  // Overridden from message_center::NotificationDelegate.
-  void Close(bool by_user) override {
-    if (by_user)
-      tray_power_->NotifyUsbNotificationClosedByUser();
-  }
-
- private:
-  ~UsbNotificationDelegate() override = default;
-
-  TrayPower* tray_power_;
-
-  DISALLOW_COPY_AND_ASSIGN(UsbNotificationDelegate);
-};
-
-namespace {
-
-std::string GetNotificationStateString(
-    TrayPower::NotificationState notification_state) {
-  switch (notification_state) {
-    case TrayPower::NOTIFICATION_NONE:
-      return "none";
-    case TrayPower::NOTIFICATION_LOW_POWER:
-      return "low power";
-    case TrayPower::NOTIFICATION_CRITICAL:
-      return "critical power";
-  }
-  NOTREACHED() << "Unknown state " << notification_state;
-  return "Unknown state";
-}
-
-void LogBatteryForUsbCharger(TrayPower::NotificationState state,
-                             int battery_percent) {
-  LOG(WARNING) << "Showing " << GetNotificationStateString(state)
-               << " notification. USB charger is connected. "
-               << "Battery percentage: " << battery_percent << "%.";
-}
-
-void LogBatteryForNoCharger(TrayPower::NotificationState state,
-                            int remaining_minutes) {
-  LOG(WARNING) << "Showing " << GetNotificationStateString(state)
-               << " notification. No charger connected."
-               << " Remaining time: " << remaining_minutes << " minutes.";
-}
-
-}  // namespace
-
 namespace tray {
 
 // This view is used only for the tray.
@@ -109,14 +55,9 @@ class PowerTrayView : public TrayItemView {
     node_data->role = ax::mojom::Role::kButton;
   }
 
-  void UpdateStatus(bool battery_alert) {
+  void UpdateStatus() {
     UpdateImage();
     SetVisible(PowerStatus::Get()->IsBatteryPresent());
-
-    if (battery_alert) {
-      accessible_name_ = PowerStatus::Get()->GetAccessibleNameString(true);
-      NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-    }
   }
 
  private:
@@ -139,23 +80,13 @@ class PowerTrayView : public TrayItemView {
 
 }  // namespace tray
 
-const int TrayPower::kCriticalMinutes = 5;
-const int TrayPower::kLowPowerMinutes = 15;
-const int TrayPower::kNoWarningMinutes = 30;
-const int TrayPower::kCriticalPercentage = 5;
-const int TrayPower::kLowPowerPercentage = 10;
-const int TrayPower::kNoWarningPercentage = 15;
-
-const char TrayPower::kUsbNotificationId[] = "usb-charger";
-
-TrayPower::TrayPower(SystemTray* system_tray, MessageCenter* message_center)
-    : SystemTrayItem(system_tray, UMA_POWER), message_center_(message_center) {
+TrayPower::TrayPower(SystemTray* system_tray)
+    : SystemTrayItem(system_tray, UMA_POWER) {
   PowerStatus::Get()->AddObserver(this);
 }
 
 TrayPower::~TrayPower() {
   PowerStatus::Get()->RemoveObserver(this);
-  message_center_->RemoveNotification(kUsbNotificationId, false);
 }
 
 views::View* TrayPower::CreateTrayView(LoginStatus status) {
@@ -164,7 +95,7 @@ views::View* TrayPower::CreateTrayView(LoginStatus status) {
   // necessary.
   CHECK(power_tray_ == nullptr);
   power_tray_ = new tray::PowerTrayView(this);
-  power_tray_->UpdateStatus(false);
+  power_tray_->UpdateStatus();
   return power_tray_;
 }
 
@@ -179,178 +110,8 @@ void TrayPower::OnTrayViewDestroyed() {
 }
 
 void TrayPower::OnPowerStatusChanged() {
-  bool battery_alert = UpdateNotificationState();
   if (power_tray_)
-    power_tray_->UpdateStatus(battery_alert);
-
-  // Factory testing may place the battery into unusual states.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshHideNotificationsForFactory))
-    return;
-
-  MaybeShowUsbChargerNotification();
-  MaybeShowDualRoleNotification();
-
-  if (battery_alert) {
-    // Remove any existing notification so it's dismissed before adding a new
-    // one. Otherwise we might update a "low battery" notification to "critical"
-    // without it being shown again.
-    battery_notification_.reset();
-    battery_notification_.reset(
-        new BatteryNotification(message_center_, notification_state_));
-  } else if (notification_state_ == NOTIFICATION_NONE) {
-    battery_notification_.reset();
-  } else if (battery_notification_.get()) {
-    battery_notification_->Update(notification_state_);
-  }
-
-  battery_was_full_ = PowerStatus::Get()->IsBatteryFull();
-  usb_charger_was_connected_ = PowerStatus::Get()->IsUsbChargerConnected();
-  line_power_was_connected_ = PowerStatus::Get()->IsLinePowerConnected();
-}
-
-bool TrayPower::MaybeShowUsbChargerNotification() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const PowerStatus& status = *PowerStatus::Get();
-
-  // We show the notification if a USB charger is connected but the battery
-  // isn't full (since some ECs may choose to use a lower power rail when the
-  // battery is full even when a high-power charger is connected).
-  const bool show = status.IsUsbChargerConnected() && !status.IsBatteryFull();
-
-  // Check if the notification needs to be created.
-  if (show && !usb_charger_was_connected_ && !usb_notification_dismissed_) {
-    std::unique_ptr<Notification> notification =
-        Notification::CreateSystemNotification(
-            message_center::NOTIFICATION_TYPE_SIMPLE, kUsbNotificationId,
-            rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
-            ui::SubstituteChromeOSDeviceType(
-                IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
-            gfx::Image(), base::string16(), GURL(),
-            message_center::NotifierId(
-                message_center::NotifierId::SYSTEM_COMPONENT, kNotifierPower),
-            message_center::RichNotificationData(),
-            new UsbNotificationDelegate(this), kNotificationLowPowerChargerIcon,
-            message_center::SystemNotificationWarningLevel::WARNING);
-    notification->set_priority(message_center::SYSTEM_PRIORITY);
-    message_center_->AddNotification(std::move(notification));
-    return true;
-  } else if (!show && usb_charger_was_connected_ && !battery_was_full_) {
-    // USB charger was unplugged or identified as a different type or battery
-    // reached the full state while the notification was showing.
-    message_center_->RemoveNotification(kUsbNotificationId, false);
-    if (!status.IsLinePowerConnected())
-      usb_notification_dismissed_ = false;
-    return true;
-  }
-  return false;
-}
-
-void TrayPower::MaybeShowDualRoleNotification() {
-  const PowerStatus& status = *PowerStatus::Get();
-  if (!status.HasDualRoleDevices()) {
-    dual_role_notification_.reset();
-    return;
-  }
-
-  if (!dual_role_notification_)
-    dual_role_notification_.reset(new DualRoleNotification(message_center_));
-  dual_role_notification_->Update();
-}
-
-bool TrayPower::UpdateNotificationState() {
-  const PowerStatus& status = *PowerStatus::Get();
-  if (!status.IsBatteryPresent() || status.IsBatteryTimeBeingCalculated() ||
-      status.IsMainsChargerConnected()) {
-    notification_state_ = NOTIFICATION_NONE;
-    return false;
-  }
-
-  return status.IsUsbChargerConnected()
-             ? UpdateNotificationStateForRemainingPercentage()
-             : UpdateNotificationStateForRemainingTime();
-}
-
-bool TrayPower::UpdateNotificationStateForRemainingTime() {
-  // The notification includes a rounded minutes value, so round the estimate
-  // received from the power manager to match.
-  const int remaining_minutes = static_cast<int>(
-      PowerStatus::Get()->GetBatteryTimeToEmpty().InSecondsF() / 60.0 + 0.5);
-
-  if (remaining_minutes >= kNoWarningMinutes ||
-      PowerStatus::Get()->IsBatteryFull()) {
-    notification_state_ = NOTIFICATION_NONE;
-    return false;
-  }
-
-  switch (notification_state_) {
-    case NOTIFICATION_NONE:
-      if (remaining_minutes <= kCriticalMinutes) {
-        notification_state_ = NOTIFICATION_CRITICAL;
-        LogBatteryForNoCharger(notification_state_, remaining_minutes);
-        return true;
-      }
-      if (remaining_minutes <= kLowPowerMinutes) {
-        notification_state_ = NOTIFICATION_LOW_POWER;
-        LogBatteryForNoCharger(notification_state_, remaining_minutes);
-        return true;
-      }
-      return false;
-    case NOTIFICATION_LOW_POWER:
-      if (remaining_minutes <= kCriticalMinutes) {
-        notification_state_ = NOTIFICATION_CRITICAL;
-        LogBatteryForNoCharger(notification_state_, remaining_minutes);
-        return true;
-      }
-      return false;
-    case NOTIFICATION_CRITICAL:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool TrayPower::UpdateNotificationStateForRemainingPercentage() {
-  // The notification includes a rounded percentage, so round the value received
-  // from the power manager to match.
-  const int remaining_percentage =
-      PowerStatus::Get()->GetRoundedBatteryPercent();
-
-  if (remaining_percentage >= kNoWarningPercentage ||
-      PowerStatus::Get()->IsBatteryFull()) {
-    notification_state_ = NOTIFICATION_NONE;
-    return false;
-  }
-
-  switch (notification_state_) {
-    case NOTIFICATION_NONE:
-      if (remaining_percentage <= kCriticalPercentage) {
-        notification_state_ = NOTIFICATION_CRITICAL;
-        LogBatteryForUsbCharger(notification_state_, remaining_percentage);
-        return true;
-      }
-      if (remaining_percentage <= kLowPowerPercentage) {
-        notification_state_ = NOTIFICATION_LOW_POWER;
-        LogBatteryForUsbCharger(notification_state_, remaining_percentage);
-        return true;
-      }
-      return false;
-    case NOTIFICATION_LOW_POWER:
-      if (remaining_percentage <= kCriticalPercentage) {
-        notification_state_ = NOTIFICATION_CRITICAL;
-        LogBatteryForUsbCharger(notification_state_, remaining_percentage);
-        return true;
-      }
-      return false;
-    case NOTIFICATION_CRITICAL:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
-void TrayPower::NotifyUsbNotificationClosedByUser() {
-  usb_notification_dismissed_ = true;
+    power_tray_->UpdateStatus();
 }
 
 }  // namespace ash
