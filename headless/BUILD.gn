@@ -981,6 +981,10 @@ static_library("headless_shell_lib") {
     "//content/public/common",
   ]
 
+  public_deps = [
+    "//base",
+  ]
+
   if (!is_fuchsia) {
     deps += [ "//components/crash/content/browser" ]
   }
