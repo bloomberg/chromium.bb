@@ -2,31 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiling_host/test_android_shim.h"
+#include "components/heap_profiling/heap_profiling_test_shim.h"
 
 #include "base/android/jni_string.h"
 #include "components/heap_profiling/test_driver.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
-#include "jni/TestAndroidShim_jni.h"
+#include "jni/HeapProfilingTestShim_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-static jlong JNI_TestAndroidShim_Init(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {
-  TestAndroidShim* profiler = new TestAndroidShim(env, obj);
+static jlong JNI_HeapProfilingTestShim_Init(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
+  HeapProfilingTestShim* profiler = new HeapProfilingTestShim(env, obj);
   return reinterpret_cast<intptr_t>(profiler);
 }
 
-TestAndroidShim::TestAndroidShim(JNIEnv* env, jobject obj) {}
+HeapProfilingTestShim::HeapProfilingTestShim(JNIEnv* env, jobject obj) {}
 
-TestAndroidShim::~TestAndroidShim() {}
+HeapProfilingTestShim::~HeapProfilingTestShim() {}
 
-void TestAndroidShim::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void HeapProfilingTestShim::Destroy(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-jboolean TestAndroidShim::RunTestForMode(
+jboolean HeapProfilingTestShim::RunTestForMode(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& mode,

@@ -55,9 +55,11 @@ using SetGCFreeHookFunction = void (*)(void (*)(uint8_t*));
 void SetGCHeapAllocationHookFunctions(SetGCAllocHookFunction hook_alloc,
                                       SetGCFreeHookFunction hook_free);
 
-// Exists for testing only. |callback| is called on |task_runner| after the
-// allocator shim is initialized.
-void SetOnInitAllocatorShimCallbackForTesting(
+// Exists for testing only.
+// A return value of |true| means that the allocator shim was already
+// initialized and |callback| will never be called. Otherwise, |callback| will
+// be called on |task_runner| after the allocator shim is initialized.
+bool SetOnInitAllocatorShimCallbackForTesting(
     base::OnceClosure callback,
     scoped_refptr<base::TaskRunner> task_runner);
 
