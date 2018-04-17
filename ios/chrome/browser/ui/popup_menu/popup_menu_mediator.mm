@@ -423,8 +423,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 }
 
 - (void)unseenStateChanged:(BOOL)unseenItemsExist {
-  // TODO(crbug.com/828367): Implement this once the "unseen items effect" is
-  // defined.
+  // TODO(crbug.com/800266): Remove this method.
 }
 
 #pragma mark - Popup updates (Private)
