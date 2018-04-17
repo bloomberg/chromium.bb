@@ -196,6 +196,7 @@ class LockScreenNoteDisplayStateHandlerTest : public AshTestBase {
         chromeos::PowerManagerClient::SwitchStates{
             chromeos::PowerManagerClient::LidState::OPEN,
             chromeos::PowerManagerClient::TabletMode::ON});
+    Shell::Get()->power_button_controller()->OnTabletModeStarted();
   }
 
   base::SimpleTestTickClock tick_clock_;

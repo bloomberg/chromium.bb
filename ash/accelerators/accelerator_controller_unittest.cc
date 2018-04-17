@@ -1012,6 +1012,7 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Power key (reserved) should always be handled.
+  Shell::Get()->power_button_controller()->OnTabletModeStarted();
   PowerButtonControllerTestApi test_api(
       Shell::Get()->power_button_controller());
   EXPECT_FALSE(test_api.PowerButtonMenuTimerIsRunning());
@@ -1061,6 +1062,7 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Power key (reserved) should always be handled.
+  Shell::Get()->power_button_controller()->OnTabletModeStarted();
   PowerButtonControllerTestApi test_api(
       Shell::Get()->power_button_controller());
   EXPECT_FALSE(test_api.PowerButtonMenuTimerIsRunning());
