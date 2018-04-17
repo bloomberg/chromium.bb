@@ -51,9 +51,6 @@ ASH_EXPORT extern const aura::WindowProperty<bool>* const
 // boundary.
 extern const aura::WindowProperty<bool>* const kSnapChildrenToPixelBoundary;
 
-// Property to tell if the container uses the screen coordinates.
-extern const aura::WindowProperty<bool>* const kUsesScreenCoordinatesKey;
-
 ASH_EXPORT extern const aura::WindowProperty<WidgetCreationType>* const
     kWidgetCreationTypeKey;
 

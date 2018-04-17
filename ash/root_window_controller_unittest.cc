@@ -103,6 +103,11 @@ class RootWindowControllerTest : public AshTestBase {
   views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
     views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
         NULL, CurrentContext(), bounds);
+    // The initial bounds will be constrained to the screen work area or the
+    // parent. See Widget::InitialBounds() & Widget::SetBoundsConstrained().
+    // Explicitly setting the bounds here will allow the view to be positioned
+    // such that it can extend outside the screen work area.
+    widget->SetBounds(bounds);
     widget->Show();
     return widget;
   }
@@ -110,6 +115,8 @@ class RootWindowControllerTest : public AshTestBase {
   views::Widget* CreateModalWidget(const gfx::Rect& bounds) {
     views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
         new TestDelegate(true), CurrentContext(), bounds);
+    // See the above comment.
+    widget->SetBounds(bounds);
     widget->Show();
     return widget;
   }
@@ -118,6 +125,8 @@ class RootWindowControllerTest : public AshTestBase {
                                              aura::Window* parent) {
     views::Widget* widget = views::Widget::CreateWindowWithParentAndBounds(
         new TestDelegate(true), parent, bounds);
+    // See the above comment.
+    widget->SetBounds(bounds);
     widget->Show();
     return widget;
   }

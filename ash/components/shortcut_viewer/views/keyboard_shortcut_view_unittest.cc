@@ -12,6 +12,8 @@
 #include "ash/test/ash_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
@@ -79,7 +81,9 @@ TEST_F(KeyboardShortcutViewTest, CenterWindowInScreen) {
   EXPECT_TRUE(widget);
 
   gfx::Rect root_window_bounds =
-      widget->GetNativeWindow()->GetRootWindow()->GetBoundsInScreen();
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(widget->GetNativeWindow()->GetRootWindow())
+          .work_area();
   gfx::Rect shortcuts_window_bounds =
       widget->GetNativeWindow()->GetBoundsInScreen();
   EXPECT_EQ(root_window_bounds.CenterPoint().x(),
