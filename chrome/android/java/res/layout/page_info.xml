@@ -22,7 +22,7 @@
         android:paddingEnd="@dimen/page_info_popup_padding_sides"
         android:paddingStart="@dimen/page_info_popup_padding_sides" >
 
-        <view class="org.chromium.chrome.browser.page_info.PageInfoPopup$ElidedUrlTextView"
+        <view class="org.chromium.chrome.browser.page_info.PageInfoView$ElidedUrlTextView"
             android:id="@+id/page_info_url"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
