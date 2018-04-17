@@ -234,6 +234,15 @@ struct TraversalRight {
   }
 };
 
+template <typename Traversal>
+bool IsAfterAtomicInlineOrLineBreak(const InlineBox& box, int offset) {
+  if (offset != Traversal::CaretEndOffsetOf(box))
+    return false;
+  if (box.IsText() && ToInlineTextBox(box).IsLineBreak())
+    return true;
+  return box.GetLineLayoutItem().IsAtomicInlineLevel();
+}
+
 // TODO(yosin): We should rename local variables and comments in
 // |TraverseInternalAlgorithm()| to generic name based on |Traversal| instead of
 // assuming right-to-left traversal.
@@ -265,8 +274,7 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
     LineLayoutItem line_layout_item = box->GetLineLayoutItem();
 
     while (true) {
-      if ((line_layout_item.IsAtomicInlineLevel() || line_layout_item.IsBR()) &&
-          offset == Traversal::CaretEndOffsetOf(*box)) {
+      if (IsAfterAtomicInlineOrLineBreak<Traversal>(*box, offset)) {
         return Traversal::ForwardVisuallyDistinctCandidateOf(box->Direction(),
                                                              deep_position);
       }
