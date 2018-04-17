@@ -82,6 +82,7 @@ class CacheStorage::WithCacheCallbacks final
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
+    DCHECK(cache_storage_) << "CacheStorage should outlive WithCacheCallbacks.";
     Cache* cache = Cache::Create(cache_storage_->scoped_fetcher_,
                                  base::WrapUnique(web_cache.release()));
     resolver_->Resolve(cache);
@@ -103,7 +104,16 @@ class CacheStorage::WithCacheCallbacks final
 
  private:
   String cache_name_;
-  Persistent<CacheStorage> cache_storage_;
+
+  // TODO(crbug.com/831117): Switch to Persistent<CacheStorage> once Oilpan can
+  // handle it on thread shutdown.
+  // |cache_storage_| is guaranteed to be alive during OnSuccess/OnError because
+  // CacheStorage is actually owned by GlobalCacheStorage, which is terminated
+  // when LocalDOMWindow/WorkerGlobalScope is terminated.
+  // Ownership chain:
+  // GlobalCacheStorage => CacheStorage => WebServiceWorkerCacheStorage(Impl) =>
+  // WithCacheCallbacks.
+  WeakPersistent<CacheStorage> cache_storage_;
   Persistent<ScriptPromiseResolver> resolver_;
 };
 
@@ -154,7 +164,6 @@ class CacheStorage::DeleteCallbacks final
                   CacheStorage* cache_storage,
                   ScriptPromiseResolver* resolver)
       : cache_name_(cache_name),
-        cache_storage_(cache_storage),
         resolver_(resolver) {}
   ~DeleteCallbacks() override = default;
 
@@ -181,7 +190,6 @@ class CacheStorage::DeleteCallbacks final
 
  private:
   String cache_name_;
-  Persistent<CacheStorage> cache_storage_;
   Persistent<ScriptPromiseResolver> resolver_;
 };
 

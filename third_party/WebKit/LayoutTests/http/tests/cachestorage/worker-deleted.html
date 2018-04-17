@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Cache Storage: Verify Worker calling close doesnt crash render process </title>
+<link rel="help" href="https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#cache-storage">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>
+var worker_script = 'serviceworker/worker-closer.js';
+var worker_script2 = 'serviceworker/worker-closer2.js';
+test(function(t) {
+  var p = new Promise(function(resolve, reject) {
+      var worker1 = new Worker(worker_script);
+      var worker2 = new Worker(worker_script2);
+      return;
+    }).then(() => {
+      var worker1 = new Worker(worker_script);
+      var worker2 = new Worker(worker_script2);
+      return 'success';
+    }).then(result => {
+      assert_equals(result, 'success');
+    });
+  Promise.resolve(p);
+});
+</script>
+<body> Something
+</body>
+
+</html>
