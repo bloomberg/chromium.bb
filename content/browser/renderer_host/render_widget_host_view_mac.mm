@@ -951,6 +951,25 @@ void RenderWidgetHostViewMac::UnlockMouse() {
     host()->LostMouseLock();
 }
 
+bool RenderWidgetHostViewMac::LockKeyboard(
+    base::Optional<base::flat_set<int>> keys) {
+  is_keyboard_locked_ = true;
+  ns_view_bridge_->LockKeyboard(std::move(keys));
+  return true;
+}
+
+void RenderWidgetHostViewMac::UnlockKeyboard() {
+  if (!is_keyboard_locked_)
+    return;
+
+  is_keyboard_locked_ = false;
+  ns_view_bridge_->UnlockKeyboard();
+}
+
+bool RenderWidgetHostViewMac::IsKeyboardLocked() {
+  return is_keyboard_locked_;
+}
+
 void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
                                               InputEventAckState ack_result) {
   bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;

@@ -10,7 +10,9 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/optional.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
 #include "content/common/edit_command.h"
 #import "ui/base/cocoa/command_dispatcher.h"
@@ -215,6 +217,11 @@ struct DidOverscrollParams;
 - (base::string16)selectedText;
 // Set the current TextInputManager::CompositionRangeInfo from the renderer.
 - (void)setCompositionRange:(gfx::Range)range;
+
+// KeyboardLock methods.
+- (void)lockKeyboard:(base::Optional<base::flat_set<int>>)keysToLock;
+- (void)unlockKeyboard;
+
 // Methods previously marked as private.
 - (id)initWithClient:(content::RenderWidgetHostNSViewClient*)client;
 - (void)setResponderDelegate:
