@@ -272,18 +272,6 @@ chromium_strings.grd. -->
         Make Google Chrome the default browser
       </message>
       <if expr="chromeos">
-        <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
-                 desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
-          Get Started with Chrome OS
-        </message>
-      </if>
-      <if expr="not chromeos">
-        <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
-                 desc="Title for the hard-coded thumbnail that represents the Google Chrome OS Welcome page. This is used on the NTP when there aren't enough thumbnails to show.">
-          Welcome to Google Chrome
-        </message>
-      </if>
-      <if expr="chromeos">
         <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">
           Google Chrome OS can't open this page.
         </message>
