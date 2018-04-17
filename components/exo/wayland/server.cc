@@ -3117,24 +3117,29 @@ class WaylandDataSourceDelegate : public DataSourceDelegate {
   void OnDataSourceDestroying(DataSource* device) override { delete this; }
   void OnTarget(const std::string& mime_type) override {
     wl_data_source_send_target(data_source_resource_, mime_type.c_str());
+    wl_client_flush(wl_resource_get_client(data_source_resource_));
   }
   void OnSend(const std::string& mime_type, base::ScopedFD fd) override {
     wl_data_source_send_send(data_source_resource_, mime_type.c_str(),
                              fd.get());
+    wl_client_flush(wl_resource_get_client(data_source_resource_));
   }
   void OnCancelled() override {
     wl_data_source_send_cancelled(data_source_resource_);
+    wl_client_flush(wl_resource_get_client(data_source_resource_));
   }
   void OnDndDropPerformed() override {
     if (wl_resource_get_version(data_source_resource_) >=
         WL_DATA_SOURCE_DND_DROP_PERFORMED_SINCE_VERSION) {
       wl_data_source_send_dnd_drop_performed(data_source_resource_);
+      wl_client_flush(wl_resource_get_client(data_source_resource_));
     }
   }
   void OnDndFinished() override {
     if (wl_resource_get_version(data_source_resource_) >=
         WL_DATA_SOURCE_DND_FINISHED_SINCE_VERSION) {
       wl_data_source_send_dnd_finished(data_source_resource_);
+      wl_client_flush(wl_resource_get_client(data_source_resource_));
     }
   }
   void OnAction(DndAction dnd_action) override {
@@ -3142,6 +3147,7 @@ class WaylandDataSourceDelegate : public DataSourceDelegate {
         WL_DATA_SOURCE_ACTION_SINCE_VERSION) {
       wl_data_source_send_action(data_source_resource_,
                                  WaylandDataDeviceManagerDndAction(dnd_action));
+      wl_client_flush(wl_resource_get_client(data_source_resource_));
     }
   }
 
@@ -3183,6 +3189,7 @@ class WaylandDataOfferDelegate : public DataOfferDelegate {
   void OnDataOfferDestroying(DataOffer* device) override { delete this; }
   void OnOffer(const std::string& mime_type) override {
     wl_data_offer_send_offer(data_offer_resource_, mime_type.c_str());
+    wl_client_flush(wl_resource_get_client(data_offer_resource_));
   }
   void OnSourceActions(
       const base::flat_set<DndAction>& source_actions) override {
@@ -3191,6 +3198,7 @@ class WaylandDataOfferDelegate : public DataOfferDelegate {
       wl_data_offer_send_source_actions(
           data_offer_resource_,
           WaylandDataDeviceManagerDndActions(source_actions));
+      wl_client_flush(wl_resource_get_client(data_offer_resource_));
     }
   }
   void OnAction(DndAction action) override {
@@ -3198,6 +3206,7 @@ class WaylandDataOfferDelegate : public DataOfferDelegate {
         WL_DATA_OFFER_ACTION_SINCE_VERSION) {
       wl_data_offer_send_action(data_offer_resource_,
                                 WaylandDataDeviceManagerDndAction(action));
+      wl_client_flush(wl_resource_get_client(data_offer_resource_));
     }
   }
 
@@ -3267,6 +3276,7 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
                       std::move(data_offer));
 
     wl_data_device_send_data_offer(data_device_resource_, data_offer_resource);
+    wl_client_flush(client_);
 
     return GetUserDataAs<DataOffer>(data_offer_resource);
   }
@@ -3278,17 +3288,26 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
         wl_display_next_serial(wl_client_get_display(client_)),
         GetSurfaceResource(surface), wl_fixed_from_double(point.x()),
         wl_fixed_from_double(point.y()), GetDataOfferResource(&data_offer));
+    wl_client_flush(client_);
   }
-  void OnLeave() override { wl_data_device_send_leave(data_device_resource_); }
+  void OnLeave() override {
+    wl_data_device_send_leave(data_device_resource_);
+    wl_client_flush(client_);
+  }
   void OnMotion(base::TimeTicks time_stamp, const gfx::PointF& point) override {
     wl_data_device_send_motion(
         data_device_resource_, TimeTicksToMilliseconds(time_stamp),
         wl_fixed_from_double(point.x()), wl_fixed_from_double(point.y()));
+    wl_client_flush(client_);
   }
-  void OnDrop() override { wl_data_device_send_drop(data_device_resource_); }
+  void OnDrop() override {
+    wl_data_device_send_drop(data_device_resource_);
+    wl_client_flush(client_);
+  }
   void OnSelection(const DataOffer& data_offer) override {
     wl_data_device_send_selection(data_device_resource_,
                                   GetDataOfferResource(&data_offer));
+    wl_client_flush(client_);
   }
 
  private:
