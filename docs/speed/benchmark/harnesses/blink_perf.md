@@ -10,9 +10,9 @@ but for performance coverage.
 
 ## Writing Tests
 Each test entry point is a HTML file written using
-[runner.js](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/resources/runner.js)
+[runner.js](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/perf_tests/resources/runner.js)
 testing framework. The test file is placed inside a sub folder of
-[Blink/PerformanceTests/](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/)
+[blink/perf_tests/](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/perf_tests/)
 and is started by importing `runner.js` script into the document:
 ```
   <script src="../resources/runner.js"></script>
@@ -83,9 +83,9 @@ also compute the total CPU times for trace events  'A' & 'B' per `foo()` run:
 
 Example tracing synchronous tests:
 
-*   [append-child-measure-time.html](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/TestData/append-child-measure-time.html)
+*   [append-child-measure-time.html](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/perf_tests/test_data/append-child-measure-time.html)
 
-*   [simple-html-measure-page-load-time.html](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/TestData/simple-html-measure-page-load-time.html)
+*   [simple-html-measure-page-load-time.html](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/perf_tests/test_ata/simple-html-measure-page-load-time.html)
 
 
 ### Asynchronous Perf Tests
@@ -143,9 +143,9 @@ example of synchronous tracing test above.
 
 Example of tracing asynchronous tests:
 
-[color-changes-measure-frame-time.html](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/TestData/color-changes-measure-frame-time.html)
+[color-changes-measure-frame-time.html](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/perf_tests/test_data/color-changes-measure-frame-time.html)
 
-[simple-blob-measure-async.html](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/PerformanceTests/TestData/simple-blob-measure-async.html)
+[simple-blob-measure-async.html](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/perf_tests/test_data/simple-blob-measure-async.html)
 
 
 ## Running Tests

@@ -17,11 +17,11 @@ from benchmarks import blink_perf
 
 class BlinkPerfTest(page_test_test_case.PageTestTestCase):
   _BLINK_PERF_TEST_DATA_DIR = os.path.join(os.path.dirname(__file__),
-      '..', '..', '..', 'third_party', 'WebKit', 'PerformanceTests',
-      'TestData')
+      '..', '..', '..', 'third_party', 'blink', 'perf_tests',
+      'test_data')
 
   _BLINK_PERF_RESOURCES_DIR = os.path.join(os.path.dirname(__file__),
-      '..', '..', '..', 'third_party', 'WebKit', 'PerformanceTests',
+      '..', '..', '..', 'third_party', 'blink', 'perf_tests',
       'resources')
   def setUp(self):
     self._options = options_for_unittests.GetCopy()

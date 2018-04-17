@@ -24,7 +24,7 @@ from telemetry.value import trace
 
 
 BLINK_PERF_BASE_DIR = os.path.join(path_util.GetChromiumSrcDir(),
-                                   'third_party', 'WebKit', 'PerformanceTests')
+                                   'third_party', 'blink', 'perf_tests')
 SKIPPED_FILE = os.path.join(BLINK_PERF_BASE_DIR, 'Skipped')
 
 EventBoundary = collections.namedtuple('EventBoundary',
@@ -358,18 +358,18 @@ class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
                          'haraken@chromium.org'])
 class BlinkPerfBindings(_BlinkPerfBenchmark):
   tag = 'bindings'
-  subdir = 'Bindings'
+  subdir = 'bindings'
 
 @benchmark.Owner(emails=['futhark@chromium.org'])
 class BlinkPerfCSS(_BlinkPerfBenchmark):
   tag = 'css'
-  subdir = 'CSS'
+  subdir = 'css'
 
 
 @benchmark.Owner(emails=['junov@chromium.org'])
 class BlinkPerfCanvas(_BlinkPerfBenchmark):
   tag = 'canvas'
-  subdir = 'Canvas'
+  subdir = 'canvas'
 
   def CreateStorySet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, self.subdir)
@@ -389,19 +389,19 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
                          'haraken@chromium.org'])
 class BlinkPerfDOM(_BlinkPerfBenchmark):
   tag = 'dom'
-  subdir = 'DOM'
+  subdir = 'dom'
 
 
 @benchmark.Owner(emails=['hayato@chromium.org'])
 class BlinkPerfEvents(_BlinkPerfBenchmark):
   tag = 'events'
-  subdir = 'Events'
+  subdir = 'events'
 
 
 @benchmark.Owner(emails=['cblume@chromium.org'])
 class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
   tag = 'image_decoder'
-  subdir = 'ImageDecoder'
+  subdir = 'image_decoder'
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -412,13 +412,13 @@ class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
 @benchmark.Owner(emails=['eae@chromium.org'])
 class BlinkPerfLayout(_BlinkPerfBenchmark):
   tag = 'layout'
-  subdir = 'Layout'
+  subdir = 'layout'
 
 
 @benchmark.Owner(emails=['dmurph@chromium.org'])
 class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
   tag = 'owp_storage'
-  subdir = 'OWPStorage'
+  subdir = 'owp_storage'
 
   # This ensures that all blobs >= 20MB will be transported by files.
   def SetExtraBrowserOptions(self, options):
@@ -433,7 +433,7 @@ class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
 @benchmark.Owner(emails=['wangxianzhu@chromium.org'])
 class BlinkPerfPaint(_BlinkPerfBenchmark):
   tag = 'paint'
-  subdir = 'Paint'
+  subdir = 'paint'
 
 
 @benchmark.Owner(emails=['jbroman@chromium.org',
@@ -441,16 +441,16 @@ class BlinkPerfPaint(_BlinkPerfBenchmark):
                          'haraken@chromium.org'])
 class BlinkPerfParser(_BlinkPerfBenchmark):
   tag = 'parser'
-  subdir = 'Parser'
+  subdir = 'parser'
 
 
 @benchmark.Owner(emails=['kouhei@chromium.org', 'fs@opera.com'])
 class BlinkPerfSVG(_BlinkPerfBenchmark):
   tag = 'svg'
-  subdir = 'SVG'
+  subdir = 'svg'
 
 
 @benchmark.Owner(emails=['hayato@chromium.org'])
 class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
   tag = 'shadow_dom'
-  subdir = 'ShadowDOM'
+  subdir = 'shadow_dom'

@@ -40,7 +40,7 @@ class TestPathFinder(unittest.TestCase):
         finder = PathFinder(MockFileSystem())
         self.assertEqual(
             finder.perf_tests_dir(),
-            '/mock-checkout/third_party/WebKit/PerformanceTests')
+            '/mock-checkout/third_party/blink/perf_tests')
 
     def test_path_from_layout_tests(self):
         finder = PathFinder(MockFileSystem())

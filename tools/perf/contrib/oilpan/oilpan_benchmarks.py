@@ -26,7 +26,7 @@ class OilpanGCTimesBlinkPerfStress(perf_benchmark.PerfBenchmark):
     return 'oilpan_gc_times.blink_perf_stress'
 
   def CreateStorySet(self, options):
-    path = os.path.join(blink_perf.BLINK_PERF_BASE_DIR, 'BlinkGC')
+    path = os.path.join(blink_perf.BLINK_PERF_BASE_DIR, 'blink_gc')
     return blink_perf.CreateStorySetFromPath(path, blink_perf.SKIPPED_FILE)
 
 
