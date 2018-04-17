@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build_overrides/build.gni")
+
 config("gtest_config") {
   visibility = [ ":*" ]  # gmock also shares this config.
 
@@ -88,7 +90,7 @@ source_set("gtest") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  if (is_nacl) {
+  if (is_nacl || !build_with_chromium) {
     sources -= [
       "custom/gtest/internal/custom/stack_trace_getter.cc",
       "custom/gtest/internal/custom/stack_trace_getter.h",
