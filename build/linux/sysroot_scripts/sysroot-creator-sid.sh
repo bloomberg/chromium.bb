@@ -100,6 +100,7 @@ DEBIAN_PACKAGES="\
   libfontconfig1-dev
   libfreetype6
   libfreetype6-dev
+  libfribidi0
   libgbm-dev
   libgbm1
   libgcc-6-dev
@@ -168,6 +169,8 @@ DEBIAN_PACKAGES="\
   liblz4-1
   liblzma5
   liblzo2-2
+  libminizip-dev
+  libminizip1
   libmount1
   libnettle6
   libnspr4
@@ -175,6 +178,7 @@ DEBIAN_PACKAGES="\
   libnss-db
   libnss3
   libnss3-dev
+  libogg-dev
   libogg0
   libopengl0
   libopus-dev
@@ -206,7 +210,7 @@ DEBIAN_PACKAGES="\
   libpulse-dev
   libpulse-mainloop-glib0
   libpulse0
-  libre2-3
+  libre2-4
   libre2-dev
   librest-0.7-0
   libselinux1
@@ -291,6 +295,7 @@ DEBIAN_PACKAGES="\
   libxkbcommon-dev
   libxkbcommon0
   libxml2
+  libxml2-dev
   libxrandr-dev
   libxrandr2
   libxrender-dev
@@ -311,8 +316,8 @@ DEBIAN_PACKAGES="\
   uuid-dev
   wayland-protocols
   x11proto-composite-dev
-  x11proto-core-dev
   x11proto-damage-dev
+  x11proto-dev
   x11proto-fixes-dev
   x11proto-input-dev
   x11proto-kb-dev
