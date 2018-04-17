@@ -68,9 +68,6 @@ const base::Feature kInspectDownloadedRarFiles{
 const base::Feature kEnterprisePasswordProtectionV1{
     "EnterprisePasswordProtectionV1", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kForceEnableResetPasswordWebUI{
-    "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
-
 namespace {
 // List of experimental features. Boolean value for each list member should be
 // set to true if the experiment is currently running at a probability other
@@ -86,7 +83,6 @@ constexpr struct {
     {&kCheckByURLLoaderThrottle, true},
     {&kDispatchSafetyNetCheckOffThread, false},
     {&kEnterprisePasswordProtectionV1, true},
-    {&kForceEnableResetPasswordWebUI, false},
     {&kGaiaPasswordReuseReporting, true},
     {&kGoogleBrandedPhishingWarning, false},
     {&kInspectDownloadedRarFiles, true},

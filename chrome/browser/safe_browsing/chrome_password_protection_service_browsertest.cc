@@ -26,17 +26,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
-#endif
-
 namespace {
 
 const char kGaiaPasswordChangeHistogramName[] =
@@ -102,27 +91,6 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
         SecurityStateTabHelper::FromWebContents(web_contents);
     helper->GetSecurityInfo(out_security_info);
   }
-
-#if !defined(OS_CHROMEOS)
-  // Makes user signed-in as |email| with |gaia_id| and |hosted_domain|.
-  void PrepareSyncAccount(const std::string& hosted_domain,
-                          const std::string& email,
-                          const std::string& gaia_id) {
-    Profile* profile = browser()->profile();
-    std::string account_id =
-        AccountTrackerServiceFactory::GetForProfile(profile)->SeedAccountInfo(
-            gaia_id, email);
-    SigninManagerFactory::GetForProfile(profile)->SetAuthenticatedAccountInfo(
-        gaia_id, email);
-    FakeAccountFetcherService* account_fetcher_service =
-        static_cast<FakeAccountFetcherService*>(
-            AccountFetcherServiceFactory::GetForProfile(profile));
-
-    account_fetcher_service->FakeUserInfoFetchSuccess(
-        account_id, email, gaia_id, hosted_domain, "full_name", "given_name",
-        "locale", "http://picture.example.com/picture.jpg");
-  }
-#endif
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -423,39 +391,6 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           ->empty());
 }
 
-// TODO(jialiul): Enable this test for Chrome OS after figuring out how to
-// properly prepare sync account for Chrome OS.
-#if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
-                       VerifyIsPasswordReuseProtectionConfigured) {
-  Profile* profile = browser()->profile();
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  // When kEnterprisePasswordProtectionV1 feature is off.
-  // |IsPasswordReuseProtectionConfigured(..)| returns false.
-  EXPECT_FALSE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
-  // If prefs::kPasswordProtectionWarningTrigger isn't set to PASSWORD_REUSE,
-  // |IsPasswordReuseProtectionConfigured(..)| returns false.
-  EXPECT_EQ(PASSWORD_PROTECTION_OFF,
-            service->GetPasswordProtectionTriggerPref(
-                prefs::kPasswordProtectionWarningTrigger));
-  EXPECT_FALSE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-
-  PrepareSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                     "stub-user@example.com", "gaia_id");
-  profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
-                                  1 /*PASSWORD_REUSE*/);
-  // Otherwise, |IsPasswordReuseProtectionConfigured(..)| returns true.
-  EXPECT_TRUE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-}
-#endif
+// TODO(jialiul): Add more tests where multiple browser windows are involved.
 
 }  // namespace safe_browsing
