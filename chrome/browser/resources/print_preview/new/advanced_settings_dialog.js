@@ -25,6 +25,9 @@ Polymer({
     },
   },
 
+  /** @private {!print_preview.PrintSettingsUiMetricsContext} */
+  metrics_: new print_preview.PrintSettingsUiMetricsContext(),
+
   /**
    * @return {boolean} Whether there is more than one vendor item to display.
    * @private
@@ -62,6 +65,10 @@ Polymer({
   onCloseOrCancel_: function() {
     if (this.searchQuery_)
       this.$.searchBox.setValue('');
+    if (this.$.dialog.getNative().returnValue == 'success') {
+      this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket
+                               .ADVANCED_SETTINGS_DIALOG_CANCELED);
+    }
   },
 
   /** @private */
@@ -81,6 +88,8 @@ Polymer({
   },
 
   show: function() {
+    this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket
+                             .ADVANCED_SETTINGS_DIALOG_SHOWN);
     this.$.dialog.showModal();
   },
 

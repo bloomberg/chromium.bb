@@ -36,6 +36,7 @@ Polymer({
     showCloudPrintPromo: {
       type: Boolean,
       notify: true,
+      observer: 'onShowCloudPrintPromoChanged_',
     },
 
     /** @private {!Array<!print_preview.Destination>} */
@@ -72,6 +73,9 @@ Polymer({
 
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
+
+  /** @private {!print_preview.DestinationSearchMetricsContext} */
+  metrics_: new print_preview.DestinationSearchMetricsContext(),
 
   // <if expr="chromeos">
   /** @private {?print_preview.Destination} */
@@ -170,6 +174,13 @@ Polymer({
   onCloseOrCancel_: function() {
     if (this.searchQuery_)
       this.$.searchBox.setValue('');
+    if (this.$.dialog.getNative().returnValue == 'success') {
+      this.metrics_.record(print_preview.Metrics.DestinationSearchBucket
+                               .DESTINATION_CLOSED_CHANGED);
+    } else {
+      this.metrics_.record(print_preview.Metrics.DestinationSearchBucket
+                               .DESTINATION_CLOSED_UNCHANGED);
+    }
   },
 
   /** @private */
@@ -248,6 +259,8 @@ Polymer({
     this.loadingDestinations_ =
         this.destinationStore.isPrintDestinationSearchInProgress;
     this.$.dialog.showModal();
+    this.metrics_.record(
+        print_preview.Metrics.DestinationSearchBucket.DESTINATION_SHOWN);
   },
 
   /** @return {boolean} Whether the dialog is open. */
@@ -262,6 +275,8 @@ Polymer({
 
   /** @private */
   onSignInClick_: function() {
+    this.metrics_.record(
+        print_preview.Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
     print_preview.NativeLayer.getInstance().signIn(false).then(() => {
       this.destinationStore.onDestinationsReload();
     });
@@ -280,6 +295,10 @@ Polymer({
     const invitations = this.userInfo.activeUser ?
         this.invitationStore.invitations(this.userInfo.activeUser) :
         [];
+    if (this.invitation_ != invitations[0]) {
+      this.metrics_.record(
+          print_preview.Metrics.DestinationSearchBucket.INVITATION_AVAILABLE);
+    }
     this.invitation_ = invitations.length > 0 ? invitations[0] : null;
   },
 
@@ -322,12 +341,16 @@ Polymer({
 
   /** @private */
   onInvitationAcceptClick_: function() {
+    this.metrics_.record(
+        print_preview.Metrics.DestinationSearchBucket.INVITATION_ACCEPTED);
     this.invitationStore.processInvitation(assert(this.invitation_), true);
     this.updateInvitations_();
   },
 
   /** @private */
   onInvitationRejectClick_: function() {
+    this.metrics_.record(
+        print_preview.Metrics.DestinationSearchBucket.INVITATION_REJECTED);
     this.invitationStore.processInvitation(assert(this.invitation_), false);
     this.updateInvitations_();
   },
@@ -343,6 +366,8 @@ Polymer({
       this.notifyPath('userInfo.loggedIn');
       this.destinationStore.reloadUserCookieBasedDestinations();
       this.invitationStore.startLoadingInvitations();
+      this.metrics_.record(
+          print_preview.Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
     } else {
       print_preview.NativeLayer.getInstance().signIn(true).then(
           this.destinationStore.onDestinationsReload.bind(
@@ -354,6 +379,16 @@ Polymer({
           break;
         }
       }
+      this.metrics_.record(
+          print_preview.Metrics.DestinationSearchBucket.ADD_ACCOUNT_SELECTED);
+    }
+  },
+
+  /** @private */
+  onShowCloudPrintPromoChanged_: function() {
+    if (this.showCloudPrintPromo) {
+      this.metrics_.record(
+          print_preview.Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
     }
   },
 });

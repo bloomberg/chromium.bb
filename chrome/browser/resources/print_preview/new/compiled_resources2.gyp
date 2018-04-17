@@ -237,6 +237,7 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:event_tracker',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '../compiled_resources2.gyp:metrics',
         '../data/compiled_resources2.gyp:destination',
         '../data/compiled_resources2.gyp:destination_store',
         '../data/compiled_resources2.gyp:invitation',
@@ -273,6 +274,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '../compiled_resources2.gyp:metrics',
         '../data/compiled_resources2.gyp:destination',
         'advanced_settings_item',
         'print_preview_search_box',
