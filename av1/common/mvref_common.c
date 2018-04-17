@@ -501,14 +501,11 @@ static void setup_ref_mv_list(
                   ref_mv_stack[ref_frame], &row_match_count, &newmv_count,
                   gm_mv_candidates, &refmv_count[ref_frame]);
 
-  uint8_t nearest_match[MODE_CTX_REF_FRAMES];
-  uint8_t nearest_refmv_count[MODE_CTX_REF_FRAMES];
-
-  nearest_match[ref_frame] = (row_match_count > 0) + (col_match_count > 0);
-  nearest_refmv_count[ref_frame] = refmv_count[ref_frame];
+  uint8_t nearest_match = (row_match_count > 0) + (col_match_count > 0);
+  uint8_t nearest_refmv_count = refmv_count[ref_frame];
 
   // TODO(yunqing): for comp_search, do it for all 3 cases.
-  for (int idx = 0; idx < nearest_refmv_count[ref_frame]; ++idx)
+  for (int idx = 0; idx < nearest_refmv_count; ++idx)
     ref_mv_stack[ref_frame][idx].weight += REF_CAT_LEVEL;
 
   if (cm->allow_ref_frame_mvs) {
@@ -587,7 +584,7 @@ static void setup_ref_mv_list(
 
   uint8_t ref_match_count = (row_match_count > 0) + (col_match_count > 0);
 
-  switch (nearest_match[ref_frame]) {
+  switch (nearest_match) {
     case 0:
       mode_context[ref_frame] |= 0;
       if (ref_match_count >= 1) mode_context[ref_frame] |= 1;
@@ -615,7 +612,7 @@ static void setup_ref_mv_list(
   }
 
   // Rank the likelihood and assign nearest and near mvs.
-  int len = nearest_refmv_count[ref_frame];
+  int len = nearest_refmv_count;
   while (len > 0) {
     int nr_len = 0;
     for (int idx = 1; idx < len; ++idx) {
@@ -631,9 +628,9 @@ static void setup_ref_mv_list(
   }
 
   len = refmv_count[ref_frame];
-  while (len > nearest_refmv_count[ref_frame]) {
-    int nr_len = nearest_refmv_count[ref_frame];
-    for (int idx = nearest_refmv_count[ref_frame] + 1; idx < len; ++idx) {
+  while (len > nearest_refmv_count) {
+    int nr_len = nearest_refmv_count;
+    for (int idx = nearest_refmv_count + 1; idx < len; ++idx) {
       if (ref_mv_stack[ref_frame][idx - 1].weight <
           ref_mv_stack[ref_frame][idx].weight) {
         CANDIDATE_MV tmp_mv = ref_mv_stack[ref_frame][idx - 1];
@@ -851,7 +848,6 @@ static void setup_ref_mv_list(
           ref_mv_stack[ref_frame][idx].this_mv.as_int;
     }
   }
-  (void)nearest_match;
 }
 
 void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
