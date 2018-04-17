@@ -35,7 +35,7 @@ const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kModeSpecificPowerButton{"ModeSpecificPowerButton",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsDisplayMoveWindowAccelsEnabled() {
   return base::FeatureList::IsEnabled(kDisplayMoveWindowAccels);

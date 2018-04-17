@@ -9,7 +9,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/media_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
@@ -27,7 +26,6 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -127,8 +125,12 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
   // Press the power button to show the menu.
   void OpenPowerButtonMenu() {
     PressPowerButton();
-    EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
-    ASSERT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
+    if (Shell::Get()
+            ->tablet_mode_controller()
+            ->IsTabletModeWindowManagerEnabled()) {
+      EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+      ASSERT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
+    }
     ReleasePowerButton();
     ASSERT_TRUE(power_button_test_api_->IsMenuOpened());
     // "Power off" item has focus after menu is opened.
@@ -158,6 +160,7 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
 
 TEST_F(PowerButtonControllerTest, LockScreenIfRequired) {
   Initialize(ButtonType::NORMAL, LoginStatus::USER);
+  EnableTabletMode(true);
   SetShouldLockScreenAutomatically(true);
   ASSERT_FALSE(GetLockedState());
 
@@ -229,6 +232,7 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfClamshell) {
 
 // Tests that tapping power button of a device that has tablet mode switch.
 TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
+  EnableTabletMode(true);
   // Should turn screen off if screen is on and power button menu will not be
   // shown.
   PressPowerButton();
@@ -291,15 +295,12 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
-// Tests that the mode-specific power button feature causes power button taps to
-// turn the screen off while in tablet mode but not in laptop mode.
+// Tests that power button taps turn the screen off while in tablet mode but not
+// in laptop mode.
 TEST_F(PowerButtonControllerTest, ModeSpecificPowerButton) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kModeSpecificPowerButton);
-
   // While the device is in tablet mode, tapping the power button should turn
   // the display off (and then back on if pressed a second time).
-  power_button_controller_->OnTabletModeStarted();
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
@@ -309,7 +310,7 @@ TEST_F(PowerButtonControllerTest, ModeSpecificPowerButton) {
 
   // In laptop mode, tapping the power button shouldn't turn the screen off.
   // Instead, we should start showing the power menu animation.
-  power_button_controller_->OnTabletModeEnded();
+  EnableTabletMode(false);
   AdvanceClockToAvoidIgnoring();
   PressPowerButton();
   EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
@@ -331,6 +332,7 @@ TEST_F(PowerButtonControllerTest, ModeSpecificPowerButton) {
 // Tests that release power button after menu is opened but before trigger
 // shutdown will not turn screen off.
 TEST_F(PowerButtonControllerTest, ReleasePowerButtonBeforeTriggerShutdown) {
+  EnableTabletMode(true);
   PressPowerButton();
   EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -348,6 +350,7 @@ TEST_F(PowerButtonControllerTest, ReleasePowerButtonBeforeTriggerShutdown) {
 TEST_F(PowerButtonControllerTest, PressAfterAnotherReleased) {
   // Tap power button after press lock button should still turn screen off.
   Initialize(ButtonType::NORMAL, LoginStatus::USER);
+  EnableTabletMode(true);
   PressLockButton();
   ReleaseLockButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -369,6 +372,7 @@ TEST_F(PowerButtonControllerTest, PressBeforeAnotherReleased) {
   // Press lock button when power button is still being pressed will be ignored
   // and continue to turn screen off.
   Initialize(ButtonType::NORMAL, LoginStatus::USER);
+  EnableTabletMode(true);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   PressPowerButton();
   PressLockButton();
@@ -396,6 +400,7 @@ TEST_F(PowerButtonControllerTest, PressBeforeAnotherReleased) {
 // off.
 TEST_F(PowerButtonControllerTest,
        TappingPowerButtonWhenSuspendedWithoutBacklightsForcedOff) {
+  EnableTabletMode(true);
   power_manager_client_->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
   SendBrightnessChange(0, kUserCause);
@@ -427,6 +432,7 @@ TEST_F(PowerButtonControllerTest,
 // off.
 TEST_F(PowerButtonControllerTest,
        TappingPowerButtonWhenSuspendedWithBacklightsForcedOff) {
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   SendBrightnessChange(0, kUserCause);
@@ -459,42 +465,6 @@ TEST_F(PowerButtonControllerTest,
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 }
 
-// For convertible device working on laptop mode, tests keyboard/mouse event
-// when screen is off.
-TEST_F(PowerButtonControllerTest, ConvertibleOnLaptopMode) {
-  EnableTabletMode(false);
-
-  // KeyEvent should SetBacklightsForcedOff(false).
-  PressPowerButton();
-  ReleasePowerButton();
-  SendBrightnessChange(0, kUserCause);
-  ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  PressKey(ui::VKEY_L);
-  SendBrightnessChange(kNonZeroBrightness, kUserCause);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-
-  // Regular mouse event should SetBacklightsForcedOff(false).
-  AdvanceClockToAvoidIgnoring();
-  PressPowerButton();
-  ReleasePowerButton();
-  SendBrightnessChange(0, kUserCause);
-  ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  GenerateMouseMoveEvent();
-  SendBrightnessChange(kNonZeroBrightness, kUserCause);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-
-  // Synthesized mouse event should not SetBacklightsForcedOff(false).
-  AdvanceClockToAvoidIgnoring();
-  PressPowerButton();
-  ReleasePowerButton();
-  SendBrightnessChange(0, kUserCause);
-  ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  GetEventGenerator().set_flags(ui::EF_IS_SYNTHESIZED);
-  GenerateMouseMoveEvent();
-  GetEventGenerator().set_flags(ui::EF_NONE);
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
-}
-
 // For convertible device working on tablet mode, keyboard/mouse event should
 // not SetBacklightsForcedOff(false) when screen is off.
 TEST_F(PowerButtonControllerTest, ConvertibleOnTabletMode) {
@@ -523,6 +493,7 @@ TEST_F(PowerButtonControllerTest, IgnorePowerOnKeyEvent) {
   // generated for each pressing and releasing, and multiple repeating pressed
   // events depending on holding.
   ASSERT_EQ(0, power_manager_client_->num_set_backlights_forced_off_calls());
+  EnableTabletMode(true);
   power_button_test_api_->SendKeyEvent(&power_key_pressed);
   power_button_test_api_->SendKeyEvent(&power_key_pressed);
   PressPowerButton();
@@ -535,11 +506,12 @@ TEST_F(PowerButtonControllerTest, IgnorePowerOnKeyEvent) {
   EXPECT_EQ(1, power_manager_client_->num_set_backlights_forced_off_calls());
 }
 
-// Tests that under (1) tablet power button pressed/released, (2) keyboard/mouse
-// events on laptop mode when screen is off, requesting/stopping backlights
-// forced off should update the global touchscreen enabled status.
+// Tests that when the power button is pressed/released in tablet mode,
+// requesting/stopping backlights forced off should update the global
+// touchscreen enabled status.
 TEST_F(PowerButtonControllerTest, DisableTouchscreenWhileForcedOff) {
   // Tests tablet power button.
+  EnableTabletMode(true);
   ASSERT_TRUE(GetGlobalTouchscreenEnabled());
   PressPowerButton();
   ReleasePowerButton();
@@ -549,29 +521,6 @@ TEST_F(PowerButtonControllerTest, DisableTouchscreenWhileForcedOff) {
   PressPowerButton();
   SendBrightnessChange(kNonZeroBrightness, kUserCause);
   ReleasePowerButton();
-  EXPECT_TRUE(GetGlobalTouchscreenEnabled());
-
-  EnableTabletMode(false);
-  // KeyEvent on laptop mode when screen is off.
-  AdvanceClockToAvoidIgnoring();
-  PressPowerButton();
-  ReleasePowerButton();
-  SendBrightnessChange(0, kUserCause);
-  ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  ASSERT_FALSE(GetGlobalTouchscreenEnabled());
-  PressKey(ui::VKEY_L);
-  SendBrightnessChange(kNonZeroBrightness, kUserCause);
-  EXPECT_TRUE(GetGlobalTouchscreenEnabled());
-
-  // MouseEvent on laptop mode when screen is off.
-  AdvanceClockToAvoidIgnoring();
-  PressPowerButton();
-  ReleasePowerButton();
-  SendBrightnessChange(0, kUserCause);
-  ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  ASSERT_FALSE(GetGlobalTouchscreenEnabled());
-  GenerateMouseMoveEvent();
-  SendBrightnessChange(kNonZeroBrightness, kUserCause);
   EXPECT_TRUE(GetGlobalTouchscreenEnabled());
 }
 
@@ -592,25 +541,16 @@ TEST_F(PowerButtonControllerTest, DisableTouchscreenForInactivity) {
   EXPECT_TRUE(GetGlobalTouchscreenEnabled());
 }
 
-// When user switches convertible device between laptop mode and tablet mode,
+// When user switches convertible device between tablet mode and laptop mode,
 // power button may be pressed and held, which may cause unwanted unclean
 // shutdown.
-TEST_F(PowerButtonControllerTest,
-       EnterOrLeaveTabletModeWhilePressingPowerButton) {
+TEST_F(PowerButtonControllerTest, LeaveTabletModeWhilePressingPowerButton) {
+  EnableTabletMode(true);
   PressPowerButton();
   EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
-  power_button_controller_->OnTabletModeStarted();
+  EnableTabletMode(false);
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1500));
-  ReleasePowerButton();
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
-
-  PressPowerButton();
-  EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
-  power_button_controller_->OnTabletModeEnded();
-  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
-  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(2500));
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
@@ -619,6 +559,7 @@ TEST_F(PowerButtonControllerTest,
 // Tests that repeated power button releases are ignored (crbug.com/675291).
 TEST_F(PowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
   // Set backlights forced off for starting point.
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   SendBrightnessChange(0, kUserCause);
@@ -652,6 +593,7 @@ TEST_F(PowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
 TEST_F(PowerButtonControllerTest,
        ClamshellRepeatedPowerButtonReleasesCancelledAnimation) {
   InitPowerButtonControllerMembers(PowerManagerClient::TabletMode::UNSUPPORTED);
+  EnableTabletMode(false);
 
   // Enable animations so that we can make sure that they occur.
   ui::ScopedAnimationDurationScaleMode regular_animations(
@@ -669,9 +611,10 @@ TEST_F(PowerButtonControllerTest,
   EXPECT_FALSE(power_button_test_api_->PreShutdownTimerIsRunning());
 }
 
-// Tests that lid closed/open events stop forcing off backlights.
+// Tests that lid closed events stop forcing off backlights.
 TEST_F(PowerButtonControllerTest, LidEventsStopForcingOff) {
   // Pressing/releasing power button to set backlights forced off.
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
@@ -680,27 +623,15 @@ TEST_F(PowerButtonControllerTest, LidEventsStopForcingOff) {
   power_manager_client_->SetLidState(PowerManagerClient::LidState::CLOSED,
                                      tick_clock_.NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-
-  // Pressing/releasing power button again to set backlights forced off. This is
-  // for testing purpose. In real life, powerd would not repond to this event
-  // with lid closed state.
-  AdvanceClockToAvoidIgnoring();
-  PressPowerButton();
-  ReleasePowerButton();
-  ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-
-  // A lid open event is received, we should stop forcing off backlights.
-  power_manager_client_->SetLidState(PowerManagerClient::LidState::OPEN,
-                                     tick_clock_.NowTicks());
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
 // Tests that tablet mode events from powerd stop forcing off backlights.
 TEST_F(PowerButtonControllerTest, TabletModeEventsStopForcingOff) {
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  power_manager_client_->SetTabletMode(PowerManagerClient::TabletMode::ON,
+  power_manager_client_->SetTabletMode(PowerManagerClient::TabletMode::OFF,
                                        tick_clock_.NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
@@ -708,7 +639,7 @@ TEST_F(PowerButtonControllerTest, TabletModeEventsStopForcingOff) {
   PressPowerButton();
   ReleasePowerButton();
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  power_manager_client_->SetTabletMode(PowerManagerClient::TabletMode::OFF,
+  power_manager_client_->SetTabletMode(PowerManagerClient::TabletMode::ON,
                                        tick_clock_.NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
@@ -740,6 +671,7 @@ TEST_F(PowerButtonControllerTest, SuspendMediaSessions) {
   Shell::Get()->media_controller()->SetClient(client.CreateAssociatedPtrInfo());
   ASSERT_FALSE(client.media_sessions_suspended());
 
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   // Run the event loop for PowerButtonDisplayController to get backlight state.
@@ -752,6 +684,7 @@ TEST_F(PowerButtonControllerTest, SuspendMediaSessions) {
 // system resumes due to power button pressed without power button event fired
 // (crbug.com/735291), that we stop forcing off backlights.
 TEST_F(PowerButtonControllerTest, SuspendDoneStopsForcingOff) {
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   SendBrightnessChange(0, kUserCause);
@@ -764,49 +697,32 @@ TEST_F(PowerButtonControllerTest, SuspendDoneStopsForcingOff) {
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
-// Tests that updating power button behavior from tablet behavior to clamshell
-// behavior will initially enable touchscreen on global touchscreen enabled
-// status (b/64972736).
-TEST_F(PowerButtonControllerTest, TouchscreenEnabledClamshell) {
-  PressPowerButton();
-  ReleasePowerButton();
-  ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  ASSERT_FALSE(GetGlobalTouchscreenEnabled());
-
-  // Simulates a system reboot with |kForceClamshellPowerButton| requested by
-  // flag, resetting backlights forced off state in powerd and
-  // PowerButtonController.
-  power_manager_client_->SetBacklightsForcedOff(false);
-  ForceClamshellPowerButton();
-  // Run the event loop for PowerButtonDisplayController to get backlight state.
-  base::RunLoop().RunUntilIdle();
-  SetTabletModeSwitchState(PowerManagerClient::TabletMode::ON);
-  EXPECT_TRUE(GetGlobalTouchscreenEnabled());
-}
-
 // Tests that during the interval that the display is turning on, tablet power
 // button should not set display off (crbug.com/735225).
 TEST_F(PowerButtonControllerTest, IgnoreForcingOffWhenDisplayIsTurningOn) {
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   SendBrightnessChange(0, kUserCause);
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
 
-  // Trigger a key event to stop backlights forcing off. Chrome will receive
-  // brightness changed signal. But we may still have display off state.
+  // Simiulate the backlight no longer being forced off due to a key event
+  // (which we need to briefly leave tablet mode to receive). Chrome will
+  // receive a brightness changed signal, but the display may still be off.
+  EnableTabletMode(false);
   PressKey(ui::VKEY_L);
   SendBrightnessChange(kNonZeroBrightness, kUserCause);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
-  // Since display could still be off, ignore forcing off.
+  // Since display could still be off, ignore additional button presses.
   tick_clock_.Advance(PowerButtonController::kScreenStateChangeDelay -
                       base::TimeDelta::FromMilliseconds(1));
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
-  // After avoiding ignoring the repeated power button releases, we should be
-  // able to set display off.
+  // After waiting long enough, we should be able to force the display off.
   AdvanceClockToAvoidIgnoring();
   PressPowerButton();
   ReleasePowerButton();
@@ -821,6 +737,7 @@ TEST_F(PowerButtonControllerTest, A11yAlert) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   controller->SetClient(client.CreateInterfacePtrAndBind());
+  EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   SendBrightnessChange(0, kUserCause);
@@ -910,11 +827,11 @@ TEST_F(PowerButtonControllerTest, LongPressButtonWhenMenuIsOpened) {
 // opened menu.
 TEST_F(PowerButtonControllerTest, EnterOrLeaveTabletModeDismissMenu) {
   OpenPowerButtonMenu();
-  power_button_controller_->OnTabletModeEnded();
+  EnableTabletMode(true);
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 
   OpenPowerButtonMenu();
-  power_button_controller_->OnTabletModeStarted();
+  EnableTabletMode(false);
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
@@ -928,6 +845,7 @@ TEST_F(PowerButtonControllerTest, DismissMenuWhenScreenIsIdleOff) {
 
 // Tests that tapping the power button should dimiss the opened menu.
 TEST_F(PowerButtonControllerTest, TappingPowerButtonWhenMenuIsOpened) {
+  EnableTabletMode(true);
   OpenPowerButtonMenu();
 
   // Tapping the power button when menu is opened will dismiss the menu.
@@ -1009,7 +927,6 @@ TEST_F(PowerButtonControllerTest, HideCursorAfterShowMenu) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   PressPowerButton();
-  EXPECT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
   ReleasePowerButton();
   EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
