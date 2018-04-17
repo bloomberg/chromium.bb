@@ -107,8 +107,7 @@ void RoundedOmniboxResultsFrame::Layout() {
 
   gfx::Rect top_bounds(bounds);
   top_bounds.set_height(GetNonResultSectionHeight());
-  // Height is already accounted for in GetNonResultSectionHeight();
-  top_bounds.set_width(bounds.width() - kLocationBarAlignmentInsets.width());
+  top_bounds.Inset(kLocationBarAlignmentInsets);
   top_background_->SetBoundsRect(top_bounds);
 
   gfx::Rect results_bounds(bounds);
