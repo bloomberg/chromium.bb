@@ -8,8 +8,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupTracker);
 
@@ -30,7 +34,8 @@ PopupTracker::PopupTracker(content::WebContents* contents,
     : content::WebContentsObserver(contents),
       visibility_tracker_(
           base::DefaultTickClock::GetInstance(),
-          contents->GetVisibility() != content::Visibility::HIDDEN) {
+          contents->GetVisibility() != content::Visibility::HIDDEN),
+      opener_source_id_(ukm::GetSourceIdForWebContentsDocument(opener)) {
   if (auto* popup_opener = PopupOpenerTabHelper::FromWebContents(opener))
     popup_opener->OnOpenedPopup(this);
 }
@@ -55,6 +60,14 @@ void PopupTracker::WebContentsDestroyed() {
         "ContentSettings.Popups.EngagementTime.GestureClose",
         total_foreground_duration, base::TimeDelta::FromMilliseconds(1),
         base::TimeDelta::FromHours(6), 50);
+  }
+
+  if (opener_source_id_ != ukm::kInvalidSourceId) {
+    ukm::builders::Popup_Closed(opener_source_id_)
+        .SetEngagementTime(ukm::GetExponentialBucketMinForUserTiming(
+            total_foreground_duration.InMilliseconds()))
+        .SetUserInitiatedClose(web_contents()->GetClosedByUserGesture())
+        .Record(ukm::UkmRecorder::Get());
   }
 }
 

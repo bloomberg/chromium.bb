@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/blocked_content/scoped_visibility_tracker.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
 class WebContents;
@@ -49,6 +50,10 @@ class PopupTracker : public content::WebContentsObserver,
 
   ScopedVisibilityTracker visibility_tracker_;
 
+  // The id of the web contents that created the popup at the time of creation.
+  // SourceIds are permanent so it's okay to use at any point so long as it's
+  // not invalid.
+  const ukm::SourceId opener_source_id_;
   DISALLOW_COPY_AND_ASSIGN(PopupTracker);
 };
 
