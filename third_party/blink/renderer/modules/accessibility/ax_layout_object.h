@@ -96,7 +96,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   const AtomicString& AccessKey() const override;
   RGBA32 ComputeBackgroundColor() const final;
   RGBA32 GetColor() const final;
-  String FontFamily() const final;
+  AtomicString FontFamily() const final;
   // Font size is in pixels.
   float FontSize() const final;
   String ImageDataUrl(const IntSize& max_size) const final;
@@ -172,6 +172,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   Document* GetDocument() const override;
   LocalFrameView* DocumentFrameView() const override;
   Element* AnchorElement() const override;
+  AtomicString Language() const override;
 
   // Notifications that this object may have changed.
   void HandleActiveDescendantChanged() override;
