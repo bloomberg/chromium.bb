@@ -116,10 +116,10 @@ TEST_F(BluetoothPowerControllerTest, ToggleBluetoothEnabled) {
   // local state prefs.
   EXPECT_FALSE(
       local_state_prefs_.GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
-  GetController()->ToggleBluetoothEnabled();
+  GetController()->SetBluetoothEnabled(true);
   EXPECT_TRUE(
       local_state_prefs_.GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
-  GetController()->ToggleBluetoothEnabled();
+  GetController()->SetBluetoothEnabled(false);
   EXPECT_FALSE(
       local_state_prefs_.GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
 
@@ -128,10 +128,10 @@ TEST_F(BluetoothPowerControllerTest, ToggleBluetoothEnabled) {
   AddUserSessionAndStartWatchingPrefsChanges(kUser1Email);
   EXPECT_FALSE(
       active_user_prefs_.GetBoolean(prefs::kUserBluetoothAdapterEnabled));
-  GetController()->ToggleBluetoothEnabled();
+  GetController()->SetBluetoothEnabled(true);
   EXPECT_TRUE(
       active_user_prefs_.GetBoolean(prefs::kUserBluetoothAdapterEnabled));
-  GetController()->ToggleBluetoothEnabled();
+  GetController()->SetBluetoothEnabled(false);
   EXPECT_FALSE(
       active_user_prefs_.GetBoolean(prefs::kUserBluetoothAdapterEnabled));
 }
@@ -357,10 +357,10 @@ TEST_F(BluetoothPowerControllerIntegrationTest, Basics) {
 
   // Verify toggling bluetooth before login.
   PrefService* local_state = ash_test_helper()->GetLocalStatePrefService();
-  GetController()->ToggleBluetoothEnabled();
+  GetController()->SetBluetoothEnabled(true);
   EXPECT_TRUE(local_state->GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
   EXPECT_TRUE(adapter->IsPowered());
-  GetController()->ToggleBluetoothEnabled();
+  GetController()->SetBluetoothEnabled(false);
   EXPECT_FALSE(local_state->GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
   EXPECT_FALSE(adapter->IsPowered());
 
@@ -368,10 +368,10 @@ TEST_F(BluetoothPowerControllerIntegrationTest, Basics) {
   SimulateUserLogin(kUser1Email);
   PrefService* user_prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
-  GetController()->ToggleBluetoothEnabled();
+  GetController()->SetBluetoothEnabled(true);
   EXPECT_TRUE(user_prefs->GetBoolean(prefs::kUserBluetoothAdapterEnabled));
   EXPECT_TRUE(adapter->IsPowered());
-  GetController()->ToggleBluetoothEnabled();
+  GetController()->SetBluetoothEnabled(false);
   EXPECT_FALSE(user_prefs->GetBoolean(prefs::kUserBluetoothAdapterEnabled));
   EXPECT_FALSE(adapter->IsPowered());
 }
