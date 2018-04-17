@@ -252,10 +252,6 @@ const base::Feature kExperimentalKeyboardLockUI{
     "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_VR)
-// Enables the virtual keyboard for Chrome VR.
-const base::Feature kVrBrowserKeyboard{"VrBrowserKeyboard",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls features related to VR browsing that are under development.
 const base::Feature kVrBrowsingExperimentalFeatures{
     "VrBrowsingExperimentalFeatures", base::FEATURE_DISABLED_BY_DEFAULT};

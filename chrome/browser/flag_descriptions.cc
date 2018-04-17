@@ -2976,10 +2976,6 @@ const char kWebVrVsyncAlignDescription[] =
 
 #if defined(OS_ANDROID)
 
-const char kVrBrowserKeyboardName[] = "Chrome VR virtual keyboard.";
-const char kVrBrowserKeyboardDescription[] =
-    "Enable a virtual keyboard for Chrome VR.";
-
 const char kVrWebInputEditingName[] = "VR browsing web input editing";
 const char kVrWebInputEditingDescription[] =
     "Allow editing web input fields while in VR mode.";

@@ -2048,20 +2048,15 @@ void UiSceneCreator::CreateUrlBar() {
                 &Rect::SetColor);
   scene_->AddUiElement(kUrlBarLayout, std::move(separator));
 
-  base::RepeatingCallback<void()> url_click_callback;
-  if (base::FeatureList::IsEnabled(features::kVrBrowserKeyboard)) {
-    url_click_callback = base::BindRepeating(
-        [](Model* model, UiBrowserInterface* browser) {
-          if (model->needs_keyboard_update) {
-            browser->OnUnsupportedMode(UiUnsupportedMode::kNeedsKeyboardUpdate);
-          } else {
-            model->push_mode(kModeEditingOmnibox);
-          }
-        },
-        base::Unretained(model_), base::Unretained(browser_));
-  } else {
-    url_click_callback = base::BindRepeating([] {});
-  }
+  auto url_click_callback = base::BindRepeating(
+      [](Model* model, UiBrowserInterface* browser) {
+        if (model->needs_keyboard_update) {
+          browser->OnUnsupportedMode(UiUnsupportedMode::kNeedsKeyboardUpdate);
+        } else {
+          model->push_mode(kModeEditingOmnibox);
+        }
+      },
+      base::Unretained(model_), base::Unretained(browser_));
 
   auto origin_region = Create<Button>(kUrlBarOriginRegion, kPhaseForeground,
                                       url_click_callback, audio_delegate_);
