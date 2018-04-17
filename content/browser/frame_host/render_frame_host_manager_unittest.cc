@@ -315,7 +315,6 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
 class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
  public:
   void SetUp() override {
-    mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
@@ -495,7 +494,6 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
                                RenderFrameHostManager*)>& commit_lambda);
 
  private:
-  base::test::ScopedFeatureList mojo_feature_list_;
   RenderFrameHostManagerTestWebUIControllerFactory factory_;
 };
 

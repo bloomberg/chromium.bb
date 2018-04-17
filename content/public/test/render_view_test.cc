@@ -407,9 +407,8 @@ void RenderViewTest::SendNativeKeyEvent(
 
 void RenderViewTest::SendInputEvent(const blink::WebInputEvent& input_event) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnMessageReceived(InputMsg_HandleInputEvent(
-      0, &input_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
-      InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
+  impl->HandleInputEvent(blink::WebCoalescedInputEvent(input_event),
+                         ui::LatencyInfo(), HandledEventCallback());
 }
 
 void RenderViewTest::SendWebKeyboardEvent(
@@ -490,13 +489,11 @@ void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
   mouse_event.SetPositionInWidget(point.x(), point.y());
   mouse_event.click_count = 1;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnMessageReceived(InputMsg_HandleInputEvent(
-      0, &mouse_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
-      InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
+  impl->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
+                         ui::LatencyInfo(), HandledEventCallback());
   mouse_event.SetType(WebInputEvent::kMouseUp);
-  impl->OnMessageReceived(InputMsg_HandleInputEvent(
-      0, &mouse_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
-      InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
+  impl->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
+                         ui::LatencyInfo(), HandledEventCallback());
 }
 
 
@@ -516,13 +513,11 @@ void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
   mouse_event.SetPositionInWidget(point.x(), point.y());
   mouse_event.click_count = 1;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnMessageReceived(InputMsg_HandleInputEvent(
-      0, &mouse_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
-      InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
+  impl->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
+                         ui::LatencyInfo(), HandledEventCallback());
   mouse_event.SetType(WebInputEvent::kMouseUp);
-  impl->OnMessageReceived(InputMsg_HandleInputEvent(
-      0, &mouse_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
-      InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
+  impl->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
+                         ui::LatencyInfo(), HandledEventCallback());
 }
 
 void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
@@ -535,9 +530,8 @@ void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   gesture_event.data.tap.width = rect.width();
   gesture_event.data.tap.height = rect.height();
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnMessageReceived(InputMsg_HandleInputEvent(
-      0, &gesture_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
-      InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
+  impl->HandleInputEvent(blink::WebCoalescedInputEvent(gesture_event),
+                         ui::LatencyInfo(), HandledEventCallback());
   impl->FocusChangeComplete();
 }
 

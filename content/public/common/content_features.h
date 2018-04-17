@@ -55,7 +55,6 @@ CONTENT_EXPORT extern const base::Feature kMediaDevicesSystemMonitorCache;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsImportMetaUrl;
-CONTENT_EXPORT extern const base::Feature kMojoInputMessages;
 CONTENT_EXPORT extern const base::Feature kMojoSessionStorage;
 CONTENT_EXPORT extern const base::Feature kMojoVideoCapture;
 CONTENT_EXPORT extern const base::Feature kNavigationMojoResponse;

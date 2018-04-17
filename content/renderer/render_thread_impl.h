@@ -138,7 +138,6 @@ class FileSystemDispatcher;
 class FrameSwapMessageQueue;
 class GpuVideoAcceleratorFactoriesImpl;
 class IndexedDBDispatcher;
-class InputHandlerManager;
 class MidiMessageFilter;
 class NotificationDispatcher;
 class P2PSocketDispatcher;
@@ -152,7 +151,6 @@ class VideoCaptureImplManager;
 
 #if defined(OS_ANDROID)
 class StreamTextureFactory;
-class SynchronousCompositorFilter;
 #endif
 
 #if defined(COMPILER_MSVC)
@@ -320,10 +318,6 @@ class CONTENT_EXPORT RenderThreadImpl
     return blink_platform_impl_.get();
   }
 
-  InputHandlerManager* input_handler_manager() const {
-    return input_handler_manager_.get();
-  }
-
   // Will be null if threaded compositing has not been enabled.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner() const {
     return compositor_task_runner_;
@@ -354,10 +348,6 @@ class CONTENT_EXPORT RenderThreadImpl
   }
 
 #if defined(OS_ANDROID)
-  SynchronousCompositorFilter* sync_compositor_message_filter() {
-    return sync_compositor_message_filter_.get();
-  }
-
   scoped_refptr<StreamTextureFactory> GetStreamTexureFactory();
   bool EnableStreamTextureCopy();
 #endif
@@ -729,12 +719,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // Pool of workers used for raster operations (e.g., tile rasterization).
   scoped_refptr<CategorizedWorkerPool> categorized_worker_pool_;
 
-  base::CancelableCallback<void(const IPC::Message&)> main_input_callback_;
-  scoped_refptr<IPC::MessageFilter> input_event_filter_;
-  std::unique_ptr<InputHandlerManager> input_handler_manager_;
-
 #if defined(OS_ANDROID)
-  scoped_refptr<SynchronousCompositorFilter> sync_compositor_message_filter_;
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 #endif
 

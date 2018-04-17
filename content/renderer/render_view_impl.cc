@@ -76,7 +76,6 @@
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/ime_event_guard.h"
-#include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/media/audio_device_factory.h"
@@ -614,7 +613,7 @@ void RenderViewImpl::Initialize(
 
   OnResize(params->initial_size);
 
-  idle_user_detector_.reset(new IdleUserDetector(this));
+  idle_user_detector_.reset(new IdleUserDetector());
 
   GetContentClient()->renderer()->RenderViewCreated(this);
 
@@ -1045,16 +1044,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
       active_url = main_frame->ToWebLocalFrame()->GetDocument().Url();
     GetContentClient()->SetActiveURL(
         active_url, main_frame->Top()->GetSecurityOrigin().ToString().Utf8());
-  }
-
-  // Input IPC messages must not be processed if the RenderView is in
-  // swapped out state.
-  if (is_swapped_out_ &&
-      IPC_MESSAGE_ID_CLASS(message.type()) == InputMsgStart) {
-    IPC_BEGIN_MESSAGE_MAP(RenderViewImpl, message)
-      IPC_MESSAGE_HANDLER(InputMsg_HandleInputEvent, OnDiscardInputEvent)
-    IPC_END_MESSAGE_MAP()
-    return false;
   }
 
   for (auto& observer : observers_) {
@@ -1738,10 +1727,6 @@ gfx::RectF RenderViewImpl::ElementBoundsInWindow(
   blink::WebRect bounding_box_in_window = element.BoundsInViewport();
   ConvertViewportToWindowViaWidget(&bounding_box_in_window);
   return gfx::RectF(bounding_box_in_window);
-}
-
-bool RenderViewImpl::HasAddedInputHandler() const {
-  return has_added_input_handler_;
 }
 
 void RenderViewImpl::CheckPreferredSize() {
@@ -2428,20 +2413,6 @@ void RenderViewImpl::DidCommitCompositorFrame() {
   RenderWidget::DidCommitCompositorFrame();
   for (auto& observer : observers_)
     observer.DidCommitCompositorFrame();
-}
-
-void RenderViewImpl::OnDiscardInputEvent(
-    const blink::WebInputEvent* input_event,
-    const std::vector<const blink::WebInputEvent*>& coalesced_events,
-    const ui::LatencyInfo& latency_info,
-    InputEventDispatchType dispatch_type) {
-  if (!input_event || dispatch_type == DISPATCH_TYPE_NON_BLOCKING) {
-    return;
-  }
-
-  InputEventAck ack(InputEventAckSource::MAIN_THREAD, input_event->GetType(),
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
 }
 
 void RenderViewImpl::HandleInputEvent(

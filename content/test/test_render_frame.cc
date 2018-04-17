@@ -15,6 +15,7 @@
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_thread.h"
+#include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -169,23 +170,23 @@ void TestRenderFrame::SwapOut(
 }
 
 void TestRenderFrame::SetEditableSelectionOffsets(int start, int end) {
-  OnSetEditableSelectionOffsets(start, end);
+  GetFrameInputHandler()->SetEditableSelectionOffsets(start, end);
 }
 
 void TestRenderFrame::ExtendSelectionAndDelete(int before, int after) {
-  OnExtendSelectionAndDelete(before, after);
+  GetFrameInputHandler()->ExtendSelectionAndDelete(before, after);
 }
 
 void TestRenderFrame::DeleteSurroundingText(int before, int after) {
-  OnDeleteSurroundingText(before, after);
+  GetFrameInputHandler()->DeleteSurroundingText(before, after);
 }
 
 void TestRenderFrame::DeleteSurroundingTextInCodePoints(int before, int after) {
-  OnDeleteSurroundingTextInCodePoints(before, after);
+  GetFrameInputHandler()->DeleteSurroundingTextInCodePoints(before, after);
 }
 
 void TestRenderFrame::CollapseSelection() {
-  OnCollapseSelection();
+  GetFrameInputHandler()->CollapseSelection();
 }
 
 void TestRenderFrame::SetAccessibilityMode(ui::AXMode new_mode) {
@@ -195,8 +196,9 @@ void TestRenderFrame::SetAccessibilityMode(ui::AXMode new_mode) {
 void TestRenderFrame::SetCompositionFromExistingText(
     int start,
     int end,
-    const std::vector<blink::WebImeTextSpan>& ime_text_spans) {
-  OnSetCompositionFromExistingText(start, end, ime_text_spans);
+    const std::vector<ui::ImeTextSpan>& ime_text_spans) {
+  GetFrameInputHandler()->SetCompositionFromExistingText(start, end,
+                                                         ime_text_spans);
 }
 
 blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
@@ -247,6 +249,16 @@ mojom::FrameHost* TestRenderFrame::GetFrameHost() {
   // a message loop already, pumping messags before 1.2 would constitute a
   // nested message loop and is therefore undesired.
   return mock_frame_host_.get();
+}
+
+mojom::FrameInputHandler* TestRenderFrame::GetFrameInputHandler() {
+  if (!frame_input_handler_) {
+    mojom::FrameInputHandlerRequest frame_input_handler_request =
+        mojo::MakeRequest(&frame_input_handler_);
+    FrameInputHandlerImpl::CreateMojoService(
+        weak_factory_.GetWeakPtr(), std::move(frame_input_handler_request));
+  }
+  return frame_input_handler_.get();
 }
 
 }  // namespace content

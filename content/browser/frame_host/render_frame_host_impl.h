@@ -115,7 +115,6 @@ namespace content {
 class AssociatedInterfaceProviderImpl;
 class AssociatedInterfaceRegistryImpl;
 class AuthenticatorImpl;
-class LegacyIPCFrameInputHandler;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
@@ -1509,7 +1508,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   viz::mojom::InputTargetClient* input_target_client_ = nullptr;
   mojom::FrameInputHandlerPtr frame_input_handler_;
-  std::unique_ptr<LegacyIPCFrameInputHandler> legacy_frame_input_handler_;
 
   std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
   base::TimeDelta keep_alive_timeout_;

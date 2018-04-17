@@ -43,12 +43,8 @@ target(link_target_type, "renderer") {
     "android/disambiguation_popup_helper.h",
     "android/renderer_date_time_picker.cc",
     "android/renderer_date_time_picker.h",
-    "android/synchronous_compositor_filter.cc",
-    "android/synchronous_compositor_filter.h",
     "android/synchronous_compositor_proxy.cc",
     "android/synchronous_compositor_proxy.h",
-    "android/synchronous_compositor_proxy_chrome_ipc.cc",
-    "android/synchronous_compositor_proxy_chrome_ipc.h",
     "android/synchronous_compositor_proxy_mojo.cc",
     "android/synchronous_compositor_proxy_mojo.h",
     "android/synchronous_compositor_registry.h",
@@ -190,14 +186,6 @@ target(link_target_type, "renderer") {
     "indexed_db/webidbfactory_impl.h",
     "input/frame_input_handler_impl.cc",
     "input/frame_input_handler_impl.h",
-    "input/input_event_filter.cc",
-    "input/input_event_filter.h",
-    "input/input_event_filter_ipc_names.cc",
-    "input/input_handler_manager.cc",
-    "input/input_handler_manager.h",
-    "input/input_handler_manager_client.h",
-    "input/input_handler_wrapper.cc",
-    "input/input_handler_wrapper.h",
     "input/input_target_client_impl.cc",
     "input/input_target_client_impl.h",
     "input/main_thread_event_queue.cc",
@@ -205,8 +193,6 @@ target(link_target_type, "renderer") {
     "input/main_thread_event_queue_task.h",
     "input/main_thread_event_queue_task_list.cc",
     "input/main_thread_event_queue_task_list.h",
-    "input/main_thread_input_event_filter.cc",
-    "input/main_thread_input_event_filter.h",
     "input/render_widget_input_handler.cc",
     "input/render_widget_input_handler.h",
     "input/render_widget_input_handler_delegate.h",
@@ -484,16 +470,6 @@ target(link_target_type, "renderer") {
     "worker_thread_message_filter.h",
     "worker_thread_registry.cc",
     "worker_thread_registry.h",
-  ]
-
-  jumbo_excluded_sources = [
-    # IPC code is built with macros that redefine the default meaning
-    # of the IPC macros. When that happens in a translation unit there
-    # is no way to get the default meaning of the macros
-    # back. Therefore any code that redefines the default IPC macros
-    # need to be excluded from jumbo
-    # compilations. https://crbug.com/794176
-    "input/input_event_filter_ipc_names.cc",
   ]
 
   if (!is_component_build) {

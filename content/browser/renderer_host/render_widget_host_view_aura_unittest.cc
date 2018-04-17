@@ -577,7 +577,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   }
 
   void SetUpEnvironment() {
-    mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
     ImageTransportFactory::SetFactory(
         std::make_unique<TestImageTransportFactory>());
     aura_test_helper_.reset(new aura::test::AuraTestHelper());
@@ -1741,7 +1740,6 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   InputEventAck ack(
       InputEventAckSource::COMPOSITOR_THREAD, blink::WebInputEvent::kTouchStart,
       INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, press.unique_event_id());
-  widget_host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());
 
@@ -2978,8 +2976,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
   EXPECT_EQ(local_surface_id4, merged_local_surface_id);
 }
 
-// Checks that InputMsg_CursorVisibilityChange IPC messages are dispatched
-// to the renderer at the correct times.
+// Checks that WidgetInputHandler::CursorVisibilityChange IPC messages are
+// dispatched to the renderer at the correct times.
 TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(

@@ -498,23 +498,6 @@ MockRenderProcessHost::GetSharedBitmapAllocationNotifier() {
   return &shared_bitmap_allocation_notifier_impl_;
 }
 
-std::string GetInputMessageTypes(MockRenderProcessHost* process) {
-  std::vector<std::string> result;
-  for (size_t i = 0; i < process->sink().message_count(); ++i) {
-    const IPC::Message* message = process->sink().GetMessageAt(i);
-    InputMsg_HandleInputEvent::Param params;
-    if (message->type() != InputMsg_HandleInputEvent::ID ||
-        !InputMsg_HandleInputEvent::Read(message, &params)) {
-      result.push_back("*");
-      break;
-    }
-    const blink::WebInputEvent* event = std::get<0>(params);
-    result.push_back(blink::WebInputEvent::GetName(event->GetType()));
-  }
-  process->sink().ClearMessages();
-  return base::JoinString(result, " ");
-}
-
 ScopedMockRenderProcessHostFactory::ScopedMockRenderProcessHostFactory() {
   RenderProcessHostImpl::set_render_process_host_factory(this);
 }

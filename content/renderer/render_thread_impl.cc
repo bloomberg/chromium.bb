@@ -93,9 +93,6 @@
 #include "content/renderer/fileapi/webfilesystem_impl.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/indexed_db/indexed_db_dispatcher.h"
-#include "content/renderer/input/input_event_filter.h"
-#include "content/renderer/input/input_handler_manager.h"
-#include "content/renderer/input/main_thread_input_event_filter.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
@@ -179,8 +176,6 @@
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
-#include "content/renderer/android/synchronous_compositor_filter.h"
-#include "content/renderer/android/synchronous_compositor_proxy.h"
 #include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "media/base/android/media_codec_util.h"
@@ -1282,30 +1277,6 @@ void RenderThreadImpl::InitializeCompositorThread() {
   render_message_filter()->SetThreadPriority(compositor_thread_->ThreadId(),
                                              base::ThreadPriority::DISPLAY);
 #endif
-
-  if (!base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-    SynchronousInputHandlerProxyClient* synchronous_input_handler_proxy_client =
-        nullptr;
-#if defined(OS_ANDROID)
-    if (GetContentClient()->UsingSynchronousCompositing()) {
-      sync_compositor_message_filter_ =
-          new SynchronousCompositorFilter(compositor_task_runner_);
-      AddFilter(sync_compositor_message_filter_.get());
-      synchronous_input_handler_proxy_client =
-          sync_compositor_message_filter_.get();
-    }
-#endif
-    scoped_refptr<InputEventFilter> compositor_input_event_filter(
-        new InputEventFilter(main_input_callback_.callback(),
-                             main_thread_compositor_task_runner_,
-                             compositor_task_runner_));
-    InputHandlerManagerClient* input_handler_manager_client =
-        compositor_input_event_filter.get();
-    input_event_filter_ = compositor_input_event_filter;
-    input_handler_manager_.reset(new InputHandlerManager(
-        compositor_task_runner_, input_handler_manager_client,
-        synchronous_input_handler_proxy_client, main_thread_scheduler_.get()));
-  }
 }
 
 void RenderThreadImpl::InitializeWebKit(
@@ -1337,22 +1308,8 @@ void RenderThreadImpl::InitializeWebKit(
   main_thread_compositor_task_runner_ =
       main_thread_scheduler_->CompositorTaskRunner();
 
-  main_input_callback_.Reset(
-      base::Bind(base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
-                 base::Unretained(this)));
-
   if (!command_line.HasSwitch(switches::kDisableThreadedCompositing))
     InitializeCompositorThread();
-
-  if (!input_event_filter_.get()) {
-    // Always provide an input event filter implementation to ensure consistent
-    // input event scheduling and prioritization.
-    // TODO(jdduke): Merge InputEventFilter, InputHandlerManager and
-    // MainThreadInputEventFilter, crbug.com/436057.
-    input_event_filter_ = new MainThreadInputEventFilter(
-        main_input_callback_.callback(), main_thread_compositor_task_runner_);
-  }
-  AddFilter(input_event_filter_.get());
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_impl_side_task_runner;
   if (compositor_task_runner_)
@@ -2186,32 +2143,19 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
-    if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-      RenderViewImpl* view = RenderViewImpl::FromRoutingID(routing_id);
-      if (view) {
-        callback.Run(std::make_unique<SynchronousLayerTreeFrameSink>(
-            std::move(context_provider), std::move(worker_context_provider),
-            compositor_task_runner_, GetGpuMemoryBufferManager(),
-            sync_message_filter(), routing_id,
-            g_next_layer_tree_frame_sink_id++,
-            std::move(params.synthetic_begin_frame_source),
-            view->widget_input_handler_manager()
-                ->GetSynchronousCompositorRegistry(),
-            std::move(frame_swap_message_queue)));
-        return;
-      } else {
-        NOTREACHED();
-      }
-    } else {
+    RenderViewImpl* view = RenderViewImpl::FromRoutingID(routing_id);
+    if (view) {
       callback.Run(std::make_unique<SynchronousLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
           compositor_task_runner_, GetGpuMemoryBufferManager(),
-          sync_compositor_message_filter_.get(), routing_id,
-          g_next_layer_tree_frame_sink_id++,
+          sync_message_filter(), routing_id, g_next_layer_tree_frame_sink_id++,
           std::move(params.synthetic_begin_frame_source),
-          sync_compositor_message_filter_.get(),
+          view->widget_input_handler_manager()
+              ->GetSynchronousCompositorRegistry(),
           std::move(frame_swap_message_queue)));
       return;
+    } else {
+      NOTREACHED();
     }
   }
 #endif

@@ -1698,8 +1698,9 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
            "</html>");
   ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
   frame()->SetEditableSelectionOffsets(4, 8);
-  const std::vector<blink::WebImeTextSpan> empty_ime_text_span;
+  const std::vector<ui::ImeTextSpan> empty_ime_text_span;
   frame()->SetCompositionFromExistingText(7, 10, empty_ime_text_span);
+  base::RunLoop().RunUntilIdle();
   blink::WebInputMethodController* controller =
       frame()->GetWebFrame()->GetInputMethodController();
   blink::WebTextInputInfo info = controller->TextInputInfo();
@@ -1708,6 +1709,7 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
   EXPECT_EQ(7, info.composition_start);
   EXPECT_EQ(10, info.composition_end);
   frame()->CollapseSelection();
+  base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ(8, info.selection_start);
   EXPECT_EQ(8, info.selection_end);
@@ -1725,6 +1727,7 @@ TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
   ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
   frame()->SetEditableSelectionOffsets(10, 10);
   frame()->ExtendSelectionAndDelete(3, 4);
+  base::RunLoop().RunUntilIdle();
   blink::WebInputMethodController* controller =
       frame()->GetWebFrame()->GetInputMethodController();
   blink::WebTextInputInfo info = controller->TextInputInfo();
@@ -1733,6 +1736,7 @@ TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
   EXPECT_EQ(7, info.selection_end);
   frame()->SetEditableSelectionOffsets(4, 8);
   frame()->ExtendSelectionAndDelete(2, 5);
+  base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("abuvwxyz", info.value);
   EXPECT_EQ(2, info.selection_start);
@@ -1753,6 +1757,7 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingText) {
 
   frame()->SetEditableSelectionOffsets(10, 10);
   frame()->DeleteSurroundingText(3, 4);
+  base::RunLoop().RunUntilIdle();
   blink::WebInputMethodController* controller =
       frame()->GetWebFrame()->GetInputMethodController();
   blink::WebTextInputInfo info = controller->TextInputInfo();
@@ -1762,6 +1767,7 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingText) {
 
   frame()->SetEditableSelectionOffsets(4, 8);
   frame()->DeleteSurroundingText(2, 5);
+  base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("abefgouvwxyz", info.value);
   EXPECT_EQ(2, info.selection_start);
@@ -1769,18 +1775,21 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingText) {
 
   frame()->SetEditableSelectionOffsets(5, 5);
   frame()->DeleteSurroundingText(10, 0);
+  base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("ouvwxyz", info.value);
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 
   frame()->DeleteSurroundingText(0, 10);
+  base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("", info.value);
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 
   frame()->DeleteSurroundingText(10, 10);
+  base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("", info.value);
 
@@ -1797,6 +1806,7 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingTextInCodePoints) {
 
   frame()->SetEditableSelectionOffsets(4, 4);
   frame()->DeleteSurroundingTextInCodePoints(2, 2);
+  base::RunLoop().RunUntilIdle();
   blink::WebInputMethodController* controller =
       frame()->GetWebFrame()->GetInputMethodController();
   blink::WebTextInputInfo info = controller->TextInputInfo();
@@ -1807,6 +1817,7 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingTextInCodePoints) {
 
   frame()->SetEditableSelectionOffsets(1, 3);
   frame()->DeleteSurroundingTextInCodePoints(1, 4);
+  base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("deh", info.value);
   EXPECT_EQ(0, info.selection_start);

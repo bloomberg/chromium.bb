@@ -23,10 +23,6 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
 
-namespace IPC {
-class Message;
-}
-
 namespace ui {
 class WindowAndroid;
 struct DidOverscrollParams;
@@ -37,8 +33,6 @@ namespace content {
 class RenderProcessHost;
 class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
-class SynchronousCompositorBrowserFilter;
-class SynchronousCompositorLegacyChromeIPC;
 class SynchronousCompositorSyncCallBridge;
 struct SyncCompositorCommonRendererParams;
 
@@ -69,7 +63,6 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   void BeginFrame(ui::WindowAndroid* window_android,
                   const viz::BeginFrameArgs& args);
   void SetBeginFramePaused(bool paused);
-  bool OnMessageReceived(const IPC::Message& message);
 
   // Called by SynchronousCompositorSyncCallBridge.
   int routing_id() const { return routing_id_; }
@@ -81,7 +74,6 @@ class SynchronousCompositorHost : public SynchronousCompositor,
 
   SynchronousCompositorClient* client() { return client_; }
 
-  SynchronousCompositorBrowserFilter* GetFilter();
   RenderProcessHost* GetRenderProcessHost();
 
   // mojom::SynchronousCompositorHost overrides.
@@ -115,9 +107,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   SynchronousCompositorClient* const client_;
   const int process_id_;
   const int routing_id_;
-  const bool use_mojo_;
   const bool use_in_process_zero_copy_software_draw_;
-  std::unique_ptr<SynchronousCompositorLegacyChromeIPC> legacy_compositor_;
   mojom::SynchronousCompositorAssociatedPtr sync_compositor_;
   mojo::AssociatedBinding<mojom::SynchronousCompositorHost> host_binding_;
 

@@ -1826,58 +1826,6 @@
             ]
         }
     ],
-    "MojoInputMessages": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MojoInputMessages"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NTPArticleSuggestionsExpandableHeader": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NTPArticleSuggestionsExpandableHeader"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NTPArticleSuggestionsNowStream": [
-        {
-            "platforms": [
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "content_suggestions_backend": "https://chromefeedcontentsuggestions-pa.googleapis.com/v2/suggestions/fetch"
-                    },
-                    "enable_features": [
-                        "NTPArticleSuggestions"
-                    ]
-                }
-            ]
-        }
-    ],
     "NTPBreakingNewsPush": [
         {
             "platforms": [

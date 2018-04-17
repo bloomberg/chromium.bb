@@ -1004,22 +1004,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                  unsigned action);
   void OnMoveCaret(const gfx::Point& point);
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
-  void OnUndo();
-  void OnRedo();
-  void OnCut();
-  void OnCopy();
-  void OnPaste();
-  void OnPasteAndMatchStyle();
-  void OnDelete();
-  void OnSelectAll();
   void OnSelectRange(const gfx::Point& base, const gfx::Point& extent);
-  void OnAdjustSelectionByCharacterOffset(int start_adjust,
-                                          int end_adjust,
-                                          bool show_selection_menu);
-  void OnCollapseSelection();
-  void OnMoveRangeSelectionExtent(const gfx::Point& point);
-  void OnReplace(const base::string16& text);
-  void OnReplaceMisspelling(const base::string16& text);
   void OnCopyImageAt(int x, int y);
   void OnSaveImageAt(int x, int y);
   void OnAddMessageToConsole(ConsoleMessageLevel level,
@@ -1036,15 +1021,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                                  bool notify_result,
                                                  int world_id);
   void OnVisualStateRequest(uint64_t key);
-  void OnSetEditableSelectionOffsets(int start, int end);
-  void OnSetCompositionFromExistingText(
-      int start,
-      int end,
-      const std::vector<blink::WebImeTextSpan>& ime_text_spans);
-  void OnExecuteNoValueEditCommand(const std::string& name);
-  void OnExtendSelectionAndDelete(int before, int after);
-  void OnDeleteSurroundingText(int before, int after);
-  void OnDeleteSurroundingTextInCodePoints(int before, int after);
   void OnReload(bool bypass_cache);
   void OnReloadLoFiImages();
   void OnTextSurroundingSelectionRequest(uint32_t max_length);
@@ -1484,7 +1460,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // could correspond to a substring of |selection_text_|; see above).
   gfx::Range selection_range_;
   // Used to inform didChangeSelection() when it is called in the context
-  // of handling a InputMsg_SelectRange IPC.
+  // of handling a FrameInputHandler::SelectRange IPC.
   bool handling_select_range_;
 
   // The next group of objects all implement RenderFrameObserver, so are deleted

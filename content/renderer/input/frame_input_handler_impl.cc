@@ -33,7 +33,8 @@ FrameInputHandlerImpl::FrameInputHandlerImpl(
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
   // If we have created an input event queue move the mojo request over to the
   // compositor thread.
-  if (RenderThreadImpl::current()->compositor_task_runner() &&
+  if (RenderThreadImpl::current() &&
+      RenderThreadImpl::current()->compositor_task_runner() &&
       input_event_queue_) {
     // Mojo channel bound on compositor thread.
     RenderThreadImpl::current()->compositor_task_runner()->PostTask(

@@ -242,9 +242,6 @@ void RenderWidgetHostViewAndroid::RemoveDestructionObserver(
 
 bool RenderWidgetHostViewAndroid::OnMessageReceived(
     const IPC::Message& message) {
-  if (IPC_MESSAGE_ID_CLASS(message.type()) == SyncCompositorMsgStart) {
-    return SyncCompositorOnMessageReceived(message);
-  }
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectWordAroundCaretAck,
@@ -252,12 +249,6 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-bool RenderWidgetHostViewAndroid::SyncCompositorOnMessageReceived(
-    const IPC::Message& message) {
-  DCHECK(!view_.parent() || sync_compositor_) << !!view_.parent();
-  return sync_compositor_ && sync_compositor_->OnMessageReceived(message);
 }
 
 void RenderWidgetHostViewAndroid::InitAsChild(gfx::NativeView parent_view) {

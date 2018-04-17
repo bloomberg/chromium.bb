@@ -52,7 +52,6 @@
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
-#include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -324,6 +323,8 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
   }
 };
 
+base::LazyInstance<UnboundWidgetInputHandler>::Leaky g_unbound_input_handler =
+    LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -602,13 +603,8 @@ bool RenderWidgetHostImpl::IsLoading() const {
 
 bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   // Only process most messages if the RenderWidget is alive.
-  if (!renderer_initialized()) {
-    // SetNeedsBeginFrame messages are only sent by the renderer once and so
-    // should never be dropped.
-    if (msg.type() == SyncCompositorHostMsg_SetNeedsBeginFrames::ID && view_)
-      return view_->OnMessageReceived(msg);
+  if (!renderer_initialized())
     return false;
-  }
 
   if (owner_delegate_ && owner_delegate_->OnMessageReceived(msg))
     return true;
@@ -617,8 +613,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HittestData, OnHittestData)
-    IPC_MESSAGE_HANDLER(InputHostMsg_ImeCancelComposition,
-                        OnImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
@@ -637,8 +631,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnShowDisambiguationPopup)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
-    IPC_MESSAGE_HANDLER(InputHostMsg_ImeCompositionRangeChanged,
-                        OnImeCompositionRangeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
@@ -1474,8 +1466,8 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   DispatchInputEventWithLatencyInfo(key_event, &key_event_with_latency.latency);
   // TODO(foolip): |InputRouter::SendKeyboardEvent()| may filter events, in
   // which the commands will be treated as belonging to the next key event.
-  // InputMsg_SetEditCommandsForNextKeyEvent should only be sent if
-  // InputMsg_HandleInputEvent is, but has to be sent first.
+  // WidgetInputHandler::SetEditCommandsForNextKeyEvent should only be sent if
+  // WidgetInputHandler::DispatchEvent is, but has to be sent first.
   // https://crbug.com/684298
   if (commands && !commands->empty()) {
     GetWidgetInputHandler()->SetEditCommandsForNextKeyEvent(*commands);
@@ -1686,7 +1678,12 @@ mojom::WidgetInputHandler* RenderWidgetHostImpl::GetWidgetInputHandler() {
     return associated_widget_input_handler_.get();
   if (widget_input_handler_)
     return widget_input_handler_.get();
-  return legacy_widget_input_handler_.get();
+  // TODO(dtapuska): Remove the need for the unbound interface. It is
+  // possible that a RVHI may make calls to a WidgetInputHandler when
+  // the main frame is remote. This is because of ordering issues during
+  // widget shutdown, so we present an UnboundWidgetInputHandler had
+  // DLOGS the message calls.
+  return g_unbound_input_handler.Pointer();
 }
 
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
@@ -3078,23 +3075,8 @@ void RenderWidgetHostImpl::SetupInputRouter() {
   associated_widget_input_handler_ = nullptr;
   widget_input_handler_ = nullptr;
 
-  if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-    input_router_.reset(
-        new InputRouterImpl(this, this, GetInputRouterConfigForPlatform()));
-    // TODO(dtapuska): Remove the need for the unbound interface. It is
-    // possible that a RVHI may make calls to a WidgetInputHandler when
-    // the main frame is remote. This is because of ordering issues during
-    // widget shutdown, so we present an UnboundWidgetInputHandler had
-    // DLOGS the message calls.
-    legacy_widget_input_handler_ =
-        std::make_unique<UnboundWidgetInputHandler>();
-  } else {
-    input_router_.reset(new LegacyInputRouterImpl(
-        process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
-    legacy_widget_input_handler_ =
-        std::make_unique<LegacyIPCWidgetInputHandler>(
-            static_cast<LegacyInputRouterImpl*>(input_router_.get()));
-  }
+  input_router_.reset(
+      new InputRouterImpl(this, this, GetInputRouterConfigForPlatform()));
 
   // input_router_ recreated, need to update the force_enable_zoom_ state.
   input_router_->SetForceEnableZoom(force_enable_zoom_);
@@ -3112,10 +3094,8 @@ void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
 void RenderWidgetHostImpl::SetWidgetInputHandler(
     mojom::WidgetInputHandlerAssociatedPtr widget_input_handler,
     mojom::WidgetInputHandlerHostRequest host_request) {
-  if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-    associated_widget_input_handler_ = std::move(widget_input_handler);
-    input_router_->BindHost(std::move(host_request), true);
-  }
+  associated_widget_input_handler_ = std::move(widget_input_handler);
+  input_router_->BindHost(std::move(host_request), true);
 }
 
 void RenderWidgetHostImpl::SetInputTargetClient(
@@ -3124,7 +3104,7 @@ void RenderWidgetHostImpl::SetInputTargetClient(
 }
 
 void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
-  if (widget && base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
+  if (widget) {
     // If we have a bound handler ensure that we destroy the old input router.
     if (widget_input_handler_.get())
       SetupInputRouter();

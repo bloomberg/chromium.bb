@@ -1883,14 +1883,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), storage_partition_impl_->GetPlatformNotificationContext(),
       resource_context, service_worker_context, browser_context);
   AddFilter(notification_message_filter_.get());
-
-#if defined(OS_ANDROID)
-  if (!base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-    synchronous_compositor_filter_ =
-        new SynchronousCompositorBrowserFilter(GetID());
-    AddFilter(synchronous_compositor_filter_.get());
-  }
-#endif
 }
 
 void RenderProcessHostImpl::BindCacheStorage(

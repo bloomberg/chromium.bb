@@ -27,7 +27,6 @@
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/android/synchronous_compositor_filter.h"
 #include "content/renderer/android/synchronous_compositor_registry.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/render_thread_impl.h"

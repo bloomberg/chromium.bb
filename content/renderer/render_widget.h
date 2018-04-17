@@ -465,8 +465,8 @@ class CONTENT_EXPORT RenderWidget
   void OnRequestTextInputStateUpdate();
 
   // Called by the browser process to update the cursor and composition
-  // information by sending InputHostMsg_ImeCompositionRangeChanged. If
-  // |immediate_request| is true, an IPC is sent back with current state.
+  // information by sending WidgetInputHandlerHost::ImeCompositionRangeChanged.
+  // If |immediate_request| is true, an IPC is sent back with current state.
   // When |monitor_update| is true, then RenderWidget will send the updates
   // in each compositor frame when there are changes. Outside of compositor
   // frame updates, a change in text selection might also lead to an update for
@@ -866,8 +866,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
-
-  bool has_added_input_handler_;
 
   // Sometimes a parent-allocated LocalSurfaceId is used. But other times
   // the child allocates its own with this.
