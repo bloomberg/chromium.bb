@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -26,6 +27,7 @@ class ASH_EXPORT NewWindowController : public mojom::NewWindowController {
   // NewWindowController:
   void SetClient(mojom::NewWindowClientAssociatedPtrInfo client) override;
   void ShowKeyboardOverlay() override;
+  void NewTabWithUrl(const GURL& url) override;
 
   // Pass throughs for methods of the same name on |client_|.
   void NewTab();

@@ -19,6 +19,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -28,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_system.h"
@@ -137,6 +140,14 @@ void ChromeNewWindowClient::NewTab() {
   }
 
   browser->SetFocusToLocationBar(false);
+}
+
+void ChromeNewWindowClient::NewTabWithUrl(const GURL& url) {
+  NavigateParams navigate_params(
+      ProfileManager::GetActiveUserProfile(), url,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_FROM_API));
+  Navigate(&navigate_params);
 }
 
 void ChromeNewWindowClient::NewWindow(bool is_incognito) {
