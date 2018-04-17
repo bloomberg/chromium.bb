@@ -1456,7 +1456,12 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
   // Store the CDM to hold a reference to it.
   cdm_for_reference_holding_only_ =
       CdmManager::GetInstance()->GetCdm(config_.cdm_id);
-  DCHECK(cdm_for_reference_holding_only_);
+  if (!cdm_for_reference_holding_only_) {
+    // This could happen during the destruction of the media element and the CDM
+    // and due to IPC CDM could be destroyed before the decoder.
+    NOTIFY_ERROR(PLATFORM_FAILURE, "CDM not available.");
+    return;
+  }
 
   auto* cdm_context = cdm_for_reference_holding_only_->GetCdmContext();
   media_crypto_context_ =
