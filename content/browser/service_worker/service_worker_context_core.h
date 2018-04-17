@@ -371,8 +371,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // This is used to avoid unnecessary disk read operation in tests. This value
   // is false if Chrome was relaunched after service workers were registered.
   bool was_service_worker_registered_;
-  scoped_refptr<base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>>
-      observer_list_;
+  using ServiceWorkerContextObserverList =
+      base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>;
+  const scoped_refptr<ServiceWorkerContextObserverList> observer_list_;
+
   base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);

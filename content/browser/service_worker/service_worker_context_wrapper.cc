@@ -165,12 +165,9 @@ bool ServiceWorkerContext::ScopeMatches(const GURL& scope, const GURL& url) {
 ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
     BrowserContext* browser_context)
     : core_observer_list_(
-          new base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>()),
+          base::MakeRefCounted<ServiceWorkerContextObserverList>()),
       process_manager_(
-          std::make_unique<ServiceWorkerProcessManager>(browser_context)),
-      is_incognito_(false),
-      storage_partition_(nullptr),
-      resource_context_(nullptr) {
+          std::make_unique<ServiceWorkerProcessManager>(browser_context)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Add this object as an observer of the wrapped |context_core_|. This lets us
@@ -858,10 +855,10 @@ void ServiceWorkerContextWrapper::InitInternal(
     quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));
   }
 
-  context_core_.reset(new ServiceWorkerContextCore(
+  context_core_ = std::make_unique<ServiceWorkerContextCore>(
       user_data_directory, std::move(database_task_runner), quota_manager_proxy,
       special_storage_policy, loader_factory_getter, core_observer_list_.get(),
-      this));
+      this);
 }
 
 void ServiceWorkerContextWrapper::ShutdownOnIO() {
