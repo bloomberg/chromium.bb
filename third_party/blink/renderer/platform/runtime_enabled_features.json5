@@ -526,7 +526,7 @@
     {
       name: "GamepadExtensions",
       origin_trial_feature_name: "WebVR1.1M62",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "GeometryInterfaces",
@@ -1322,7 +1322,7 @@
     {
       name: "WebVR",
       origin_trial_feature_name: "WebVR1.1M62",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "WebVTTRegions",
@@ -1331,7 +1331,7 @@
     {
       name: "WebXR",
       origin_trial_feature_name: "WebXRDevice",
-      status: "test",
+      status: "experimental",
     },
     // Subset of the GamepadExtensions wanted for WebXR, which expose VR controller
     // functionality as Gamepads.
@@ -1340,7 +1340,7 @@
       origin_trial_feature_name: "WebXRGamepadSupport",
       // This feature is a strict subset of GamepadExtensions.
       implied_by: ["GamepadExtensions"],
-      status: "test",
+      status: "experimental",
     },
     {
       name: "WorkerNosniffBlock",

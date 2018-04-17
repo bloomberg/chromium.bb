@@ -253,7 +253,10 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       # Try disabling the GPU watchdog to see if this affects the
       # intermittent GPU process hangs that have been seen on the
       # waterfall. crbug.com/596622 crbug.com/609252
-      '--disable-gpu-watchdog'
+      '--disable-gpu-watchdog',
+      # TODO(http://crbug.com/832952): Remove this when WebXR spec is more
+      # stable and setCompatibleXRDevice is part of the conformance test.
+      '--disable-blink-features=WebXR'
     ]
     # Note that the overriding of the default --js-flags probably
     # won't interact well with RestartBrowserIfNecessaryWithArgs, but
