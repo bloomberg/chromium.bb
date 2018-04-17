@@ -615,7 +615,6 @@ Document::Document(const DocumentInit& initializer,
       visually_ordered_(false),
       ready_state_(kComplete),
       parsing_state_(kFinishedParsing),
-      goto_anchor_needed_after_stylesheets_load_(false),
       contains_validity_style_rules_(false),
       contains_plugins_(false),
       ignore_destructive_write_count_(0),
@@ -2345,7 +2344,6 @@ void Document::UpdateStyleAndLayout() {
   DCHECK(IsMainThread());
 
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
-  ScriptForbiddenScope forbid_script;
 
   LocalFrameView* frame_view = View();
   DCHECK(!frame_view || !frame_view->IsInPerformLayout())
@@ -2362,9 +2360,6 @@ void Document::UpdateStyleAndLayout() {
   if (frame_view && frame_view->NeedsLayout())
     frame_view->UpdateLayout();
 
-  if (frame_view && goto_anchor_needed_after_stylesheets_load_)
-    frame_view->ProcessUrlFragment(url_);
-
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
 
@@ -2373,6 +2368,18 @@ void Document::UpdateStyleAndLayout() {
 }
 
 void Document::LayoutUpdated() {
+  if (GetFrame() && View()) {
+    // If we're restoring a scroll position from history, that takes precedence
+    // over scrolling to the anchor in the URL.
+    View()->ScrollAndFocusFragmentAnchor();
+    GetFrame()->Loader().RestoreScrollPositionAndViewState();
+
+    // The focus call above can execute JS which can dirty layout. Ensure
+    // layout is clean since this is called from UpdateLayout.
+    if (View()->NeedsLayout())
+      View()->UpdateLayout();
+  }
+
   // Plugins can run script inside layout which can detach the page.
   // TODO(dcheng): Does it make sense to do any of this work if detached?
   if (GetFrame() && GetFrame()->IsMainFrame())
@@ -3266,12 +3273,6 @@ void Document::ImplicitClose() {
     if (View() && GetLayoutView() &&
         (!GetLayoutView()->FirstChild() || GetLayoutView()->NeedsLayout()))
       View()->UpdateLayout();
-
-    // TODO(bokan): This is a temporary fix to https://crbug.com/788486.
-    // There's some better cleanups that should be done to follow-up:
-    // https://crbug.com/795381.
-    if (View() && goto_anchor_needed_after_stylesheets_load_)
-      View()->ProcessUrlFragment(url_);
   }
 
   load_event_progress_ = kLoadEventCompleted;
