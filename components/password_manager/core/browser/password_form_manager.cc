@@ -1577,14 +1577,13 @@ base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
     // PasswordStore primary key, the old primary key must be used in order to
     // match and update the existing entry.
     old_primary_key = pending_credentials_;
-    old_primary_key->username_element =
-        best_matches()
-            .at(pending_credentials_.username_value)
-            ->username_element;
-    old_primary_key->password_element =
-        best_matches()
-            .at(pending_credentials_.username_value)
-            ->password_element;
+    // TODO(crbug.com/833171) It is possible for best_matches to not contain the
+    // username being updated. Add comments and a test, when we realise why.
+    auto best_match = best_matches().find(pending_credentials_.username_value);
+    if (best_match != best_matches().end()) {
+      old_primary_key->username_element = best_match->second->username_element;
+      old_primary_key->password_element = best_match->second->password_element;
+    }
     pending_credentials_.password_element = observed_form_.password_element;
     pending_credentials_.username_element = observed_form_.username_element;
     pending_credentials_.submit_element = observed_form_.submit_element;
