@@ -12,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::FileSystemUsageCache;
@@ -21,8 +20,7 @@ namespace content {
 
 class FileSystemUsageCacheTest : public testing::Test {
  public:
-  FileSystemUsageCacheTest()
-      : usage_cache_(base::ThreadTaskRunnerHandle::Get().get()) {}
+  FileSystemUsageCacheTest() = default;
 
   void SetUp() override { ASSERT_TRUE(data_dir_.CreateUniqueTempDir()); }
 

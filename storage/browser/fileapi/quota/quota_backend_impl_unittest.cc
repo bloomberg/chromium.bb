@@ -95,9 +95,7 @@ class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
 
 class QuotaBackendImplTest : public testing::Test {
  public:
-  QuotaBackendImplTest()
-      : file_system_usage_cache_(file_task_runner()),
-        quota_manager_proxy_(new MockQuotaManagerProxy) {}
+  QuotaBackendImplTest() : quota_manager_proxy_(new MockQuotaManagerProxy) {}
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());

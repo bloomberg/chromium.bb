@@ -190,7 +190,7 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
                                  base::Bind(&GetTypeStringForURL),
                                  GetKnownTypeStrings(),
                                  this))),
-      file_system_usage_cache_(new FileSystemUsageCache(file_task_runner)),
+      file_system_usage_cache_(std::make_unique<FileSystemUsageCache>()),
       quota_observer_(new SandboxQuotaObserver(quota_manager_proxy,
                                                file_task_runner,
                                                obfuscated_file_util(),

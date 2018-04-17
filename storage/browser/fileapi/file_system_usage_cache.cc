@@ -14,24 +14,21 @@
 #include "base/files/file_util.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "storage/browser/fileapi/timed_task_helper.h"
 
 namespace storage {
 
 namespace {
-const int64_t kCloseDelaySeconds = 5;
+constexpr base::TimeDelta kCloseDelay = base::TimeDelta::FromSeconds(5);
 const size_t kMaxHandleCacheSize = 2;
 }  // namespace
 
-FileSystemUsageCache::FileSystemUsageCache(
-    base::SequencedTaskRunner* task_runner)
-    : task_runner_(task_runner),
-      weak_factory_(this) {
+FileSystemUsageCache::FileSystemUsageCache() : weak_factory_(this) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 FileSystemUsageCache::~FileSystemUsageCache() {
-  task_runner_ = NULL;
   CloseCacheFiles();
 }
 
@@ -48,7 +45,7 @@ const int FileSystemUsageCache::kUsageFileSize =
 bool FileSystemUsageCache::GetUsage(const base::FilePath& usage_file_path,
                                     int64_t* usage_out) {
   TRACE_EVENT0("FileSystem", "UsageCache::GetUsage");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(usage_out);
   bool is_valid = true;
   uint32_t dirty = 0;
@@ -62,7 +59,7 @@ bool FileSystemUsageCache::GetUsage(const base::FilePath& usage_file_path,
 bool FileSystemUsageCache::GetDirty(const base::FilePath& usage_file_path,
                                     uint32_t* dirty_out) {
   TRACE_EVENT0("FileSystem", "UsageCache::GetDirty");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(dirty_out);
   bool is_valid = true;
   uint32_t dirty = 0;
@@ -76,7 +73,7 @@ bool FileSystemUsageCache::GetDirty(const base::FilePath& usage_file_path,
 bool FileSystemUsageCache::IncrementDirty(
     const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::IncrementDirty");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool is_valid = true;
   uint32_t dirty = 0;
   int64_t usage = 0;
@@ -93,7 +90,7 @@ bool FileSystemUsageCache::IncrementDirty(
 bool FileSystemUsageCache::DecrementDirty(
     const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::DecrementDirty");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool is_valid = true;
   uint32_t dirty = 0;
   int64_t usage = 0;
@@ -105,7 +102,7 @@ bool FileSystemUsageCache::DecrementDirty(
 
 bool FileSystemUsageCache::Invalidate(const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::Invalidate");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool is_valid = true;
   uint32_t dirty = 0;
   int64_t usage = 0;
@@ -117,7 +114,7 @@ bool FileSystemUsageCache::Invalidate(const base::FilePath& usage_file_path) {
 
 bool FileSystemUsageCache::IsValid(const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::IsValid");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool is_valid = true;
   uint32_t dirty = 0;
   int64_t usage = 0;
@@ -130,7 +127,7 @@ bool FileSystemUsageCache::AtomicUpdateUsageByDelta(
     const base::FilePath& usage_file_path,
     int64_t delta) {
   TRACE_EVENT0("FileSystem", "UsageCache::AtomicUpdateUsageByDelta");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool is_valid = true;
   uint32_t dirty = 0;
   int64_t usage = 0;
@@ -142,28 +139,28 @@ bool FileSystemUsageCache::AtomicUpdateUsageByDelta(
 bool FileSystemUsageCache::UpdateUsage(const base::FilePath& usage_file_path,
                                        int64_t fs_usage) {
   TRACE_EVENT0("FileSystem", "UsageCache::UpdateUsage");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return Write(usage_file_path, true, 0, fs_usage);
 }
 
 bool FileSystemUsageCache::Exists(const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::Exists");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::PathExists(usage_file_path);
 }
 
 bool FileSystemUsageCache::Delete(const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::Delete");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CloseCacheFiles();
   return base::DeleteFile(usage_file_path, false);
 }
 
 void FileSystemUsageCache::CloseCacheFiles() {
   TRACE_EVENT0("FileSystem", "UsageCache::CloseCacheFiles");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cache_files_.clear();
-  timer_.reset();
+  timer_.Stop();
 }
 
 bool FileSystemUsageCache::Read(const base::FilePath& usage_file_path,
@@ -171,7 +168,7 @@ bool FileSystemUsageCache::Read(const base::FilePath& usage_file_path,
                                 uint32_t* dirty_out,
                                 int64_t* usage_out) {
   TRACE_EVENT0("FileSystem", "UsageCache::Read");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(is_valid);
   DCHECK(dirty_out);
   DCHECK(usage_out);
@@ -207,7 +204,7 @@ bool FileSystemUsageCache::Write(const base::FilePath& usage_file_path,
                                  int32_t dirty,
                                  int64_t usage) {
   TRACE_EVENT0("FileSystem", "UsageCache::Write");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Pickle write_pickle;
   write_pickle.WriteBytes(kUsageFileHeader, kUsageFileHeaderSize);
   write_pickle.WriteBool(is_valid);
@@ -224,7 +221,7 @@ bool FileSystemUsageCache::Write(const base::FilePath& usage_file_path,
 }
 
 base::File* FileSystemUsageCache::GetFile(const base::FilePath& file_path) {
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (cache_files_.size() >= kMaxHandleCacheSize)
     CloseCacheFiles();
   ScheduleCloseTimer();
@@ -250,7 +247,7 @@ base::File* FileSystemUsageCache::GetFile(const base::FilePath& file_path) {
 bool FileSystemUsageCache::ReadBytes(const base::FilePath& file_path,
                                      char* buffer,
                                      int64_t buffer_size) {
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::File* file = GetFile(file_path);
   if (!file)
     return false;
@@ -260,7 +257,7 @@ bool FileSystemUsageCache::ReadBytes(const base::FilePath& file_path,
 bool FileSystemUsageCache::WriteBytes(const base::FilePath& file_path,
                                       const char* buffer,
                                       int64_t buffer_size) {
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::File* file = GetFile(file_path);
   if (!file)
     return false;
@@ -269,7 +266,7 @@ bool FileSystemUsageCache::WriteBytes(const base::FilePath& file_path,
 
 bool FileSystemUsageCache::FlushFile(const base::FilePath& file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::FlushFile");
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::File* file = GetFile(file_path);
   if (!file)
     return false;
@@ -277,27 +274,20 @@ bool FileSystemUsageCache::FlushFile(const base::FilePath& file_path) {
 }
 
 void FileSystemUsageCache::ScheduleCloseTimer() {
-  DCHECK(CalledOnValidSequence());
-  if (!timer_)
-    timer_.reset(new TimedTaskHelper(task_runner_.get()));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (timer_->IsRunning()) {
-    timer_->Reset();
+  if (timer_.IsRunning()) {
+    timer_.Reset();
     return;
   }
 
-  timer_->Start(FROM_HERE,
-                base::TimeDelta::FromSeconds(kCloseDelaySeconds),
-                base::Bind(&FileSystemUsageCache::CloseCacheFiles,
-                           weak_factory_.GetWeakPtr()));
-}
-
-bool FileSystemUsageCache::CalledOnValidSequence() {
-  return !task_runner_.get() || task_runner_->RunsTasksInCurrentSequence();
+  timer_.Start(FROM_HERE, kCloseDelay,
+               base::Bind(&FileSystemUsageCache::CloseCacheFiles,
+                          weak_factory_.GetWeakPtr()));
 }
 
 bool FileSystemUsageCache::HasCacheFileHandle(const base::FilePath& file_path) {
-  DCHECK(CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LE(cache_files_.size(), kMaxHandleCacheSize);
   return base::ContainsKey(cache_files_, file_path);
 }
