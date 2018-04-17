@@ -23,9 +23,6 @@ class MojoWebUIControllerBase : public content::WebUIController {
   explicit MojoWebUIControllerBase(content::WebUI* contents);
   ~MojoWebUIControllerBase() override;
 
-  // content::WebUIController overrides:
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MojoWebUIControllerBase);
 };
@@ -36,39 +33,26 @@ class MojoWebUIControllerBase : public content::WebUIController {
 //   files, eg:
 //     AddMojoResourcePath("chrome/browser/ui/webui/omnibox/omnibox.mojom",
 //                         IDR_OMNIBOX_MOJO_JS);
-// . Override BindUIHandler() to create and bind the implementation of the
-//   bindings.
-template <typename Interface>
+// . Call AddHandlerToRegistry for all Mojo Interfaces it wishes to handle.
 class MojoWebUIController : public MojoWebUIControllerBase,
                             public content::WebContentsObserver {
  public:
-  explicit MojoWebUIController(content::WebUI* contents)
-      : MojoWebUIControllerBase(contents),
-        content::WebContentsObserver(contents->GetWebContents()),
-        weak_factory_(this) {
-    registry_.AddInterface<Interface>(base::Bind(
-        &MojoWebUIController::BindUIHandler, base::Unretained(this)));
-  }
-  ~MojoWebUIController() override {}
+  explicit MojoWebUIController(content::WebUI* contents);
+  ~MojoWebUIController() override;
 
   // content::WebContentsObserver implementation.
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override {
-    // Right now, this is expected to be called only for main frames.
-    DCHECK(!render_frame_host->GetParent());
-    registry_.TryBindInterface(interface_name, interface_pipe);
-  }
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
- protected:
-  // Invoked to create the specific bindings implementation.
-  virtual void BindUIHandler(mojo::InterfaceRequest<Interface> request) = 0;
+  template <typename Binder>
+  void AddHandlerToRegistry(Binder binder) {
+    registry_.AddInterface(std::move(binder));
+  }
 
  private:
   service_manager::BinderRegistry registry_;
-
-  base::WeakPtrFactory<MojoWebUIController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoWebUIController);
 };

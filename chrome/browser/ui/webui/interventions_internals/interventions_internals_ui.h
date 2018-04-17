@@ -17,16 +17,14 @@ class PreviewsUIService;
 class UINetworkQualityEstimatorService;
 
 // The WebUI for chrome://interventions-internals.
-class InterventionsInternalsUI
-    : public ui::MojoWebUIController<mojom::InterventionsInternalsPageHandler> {
+class InterventionsInternalsUI : public ui::MojoWebUIController {
  public:
   explicit InterventionsInternalsUI(content::WebUI* web_ui);
   ~InterventionsInternalsUI() override;
 
  private:
-  // ui::MojoWebUIController overrides:
-  void BindUIHandler(
-      mojom::InterventionsInternalsPageHandlerRequest request) override;
+  void BindInterventionsInternalsPageHandler(
+      mojom::InterventionsInternalsPageHandlerRequest request);
 
   // The PreviewsUIService associated with this UI.
   previews::PreviewsUIService* previews_ui_service_;

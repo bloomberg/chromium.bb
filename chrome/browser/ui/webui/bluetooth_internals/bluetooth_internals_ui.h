@@ -12,18 +12,14 @@
 class BluetoothInternalsHandler;
 
 // The WebUI for chrome://bluetooth-internals
-class BluetoothInternalsUI
-    : public ui::MojoWebUIController<mojom::BluetoothInternalsHandler> {
+class BluetoothInternalsUI : public ui::MojoWebUIController {
  public:
   explicit BluetoothInternalsUI(content::WebUI* web_ui);
   ~BluetoothInternalsUI() override;
 
  private:
-  // ui::MojoWebUIController overrides:
-  void BindUIHandler(
-      // mojo::InterfaceRequest<mojom::BluetoothInternalsHandler> request)
-      // override;
-      mojom::BluetoothInternalsHandlerRequest request) override;
+  void BindBluetoothInternalsHandler(
+      mojom::BluetoothInternalsHandlerRequest request);
 
   std::unique_ptr<BluetoothInternalsHandler> page_handler_;
 

@@ -1,6 +1,6 @@
 include_rules = [
   "+content/public",
-  "+mojo/public/cpp/system/core.h",
+  "+mojo/public",
   "+net",
   "+services/service_manager/public/cpp/binder_registry.h",
   "+ui/base",

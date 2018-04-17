@@ -150,7 +150,7 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
 }  // namespace
 
 DiscardsUI::DiscardsUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController<mojom::DiscardsDetailsProvider>(web_ui) {
+    : ui::MojoWebUIController(web_ui) {
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIDiscardsHost));
 
@@ -163,11 +163,14 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source.release());
+  AddHandlerToRegistry(base::BindRepeating(
+      &DiscardsUI::BindDiscardsDetailsProvider, base::Unretained(this)));
 }
 
 DiscardsUI::~DiscardsUI() {}
 
-void DiscardsUI::BindUIHandler(mojom::DiscardsDetailsProviderRequest request) {
+void DiscardsUI::BindDiscardsDetailsProvider(
+    mojom::DiscardsDetailsProviderRequest request) {
   ui_handler_ =
       std::make_unique<DiscardsDetailsProviderImpl>(std::move(request));
 }

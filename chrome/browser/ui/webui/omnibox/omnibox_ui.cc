@@ -14,8 +14,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 
-OmniboxUI::OmniboxUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController<mojom::OmniboxPageHandler>(web_ui) {
+OmniboxUI::OmniboxUI(content::WebUI* web_ui) : ui::MojoWebUIController(web_ui) {
   // Set up the chrome://omnibox/ source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIOmniboxHost);
@@ -27,11 +26,13 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui)
   source->UseGzip();
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+  AddHandlerToRegistry(base::BindRepeating(&OmniboxUI::BindOmniboxPageHandler,
+                                           base::Unretained(this)));
 }
 
 OmniboxUI::~OmniboxUI() {}
 
-void OmniboxUI::BindUIHandler(
+void OmniboxUI::BindOmniboxPageHandler(
     mojom::OmniboxPageHandlerRequest request) {
   omnibox_handler_.reset(
       new OmniboxPageHandler(Profile::FromWebUI(web_ui()), std::move(request)));
