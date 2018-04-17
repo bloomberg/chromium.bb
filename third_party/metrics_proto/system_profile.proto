@@ -15,7 +15,7 @@ import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
 // The system configuration fields are recorded once per client session.
-// Next tag: 26
+// Next tag: 27
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -972,4 +972,8 @@ message SystemProfileProto {
   // extensions from all fully-initialized profiles. If a single extension is
   // installed in multiple profiles, it will be recorded multiple times.
   repeated ExtensionInstallProto extension_install = 25;
+
+  // The Chrome package name on Android, if it's different from
+  // "com.android.chrome".
+  optional string app_package_name = 26;
 }
