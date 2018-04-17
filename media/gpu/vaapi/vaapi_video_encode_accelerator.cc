@@ -39,14 +39,14 @@ namespace media {
 namespace {
 // Need 2 surfaces for each frame: one for input data and one for
 // reconstructed picture, which is later used for reference.
-const size_t kMinSurfacesToEncode = 2;
+constexpr size_t kMinSurfacesToEncode = 2;
 
 // Subjectively chosen.
-const size_t kNumInputBuffers = 4;
-const size_t kMaxNumReferenceFrames = 4;
+constexpr size_t kNumInputBuffers = 4;
+constexpr size_t kMaxNumReferenceFrames = 4;
 
 // TODO(owenlin): Adjust the value after b/71367113 is fixed
-const size_t kExtraOutputBufferSize = 32768;  // bytes
+constexpr size_t kExtraOutputBufferSize = 32768;  // bytes
 
 // We need up to kMaxNumReferenceFrames surfaces for reference, plus one
 // for input and one for encode (which will be added to the set of reference
@@ -56,28 +56,28 @@ const size_t kExtraOutputBufferSize = 32768;  // bytes
 // encode surfaces (i.e. kMaxNumReferenceFrames + kMinSurfacesToEncode), and
 // (kNumInputBuffers - 1) of kMinSurfacesToEncode for the remaining frames
 // in flight.
-const size_t kNumSurfaces = kMaxNumReferenceFrames + kMinSurfacesToEncode +
-                            kMinSurfacesToEncode * (kNumInputBuffers - 1);
+constexpr size_t kNumSurfaces = kMaxNumReferenceFrames + kMinSurfacesToEncode +
+                                kMinSurfacesToEncode * (kNumInputBuffers - 1);
 
 // An IDR every 2048 frames, an I frame every 256 and no B frames.
 // We choose IDR period to equal MaxFrameNum so it must be a power of 2.
-const int kIDRPeriod = 2048;
-const int kIPeriod = 256;
-const int kIPPeriod = 1;
+constexpr int kIDRPeriod = 2048;
+constexpr int kIPeriod = 256;
+constexpr int kIPPeriod = 1;
 
-const int kDefaultFramerate = 30;
+constexpr int kDefaultFramerate = 30;
 
 // HRD parameters (ch. E.2.2 in spec).
-const int kBitRateScale = 0;  // bit_rate_scale for SPS HRD parameters.
-const int kCPBSizeScale = 0;  // cpb_size_scale for SPS HRD parameters.
+constexpr int kBitRateScale = 0;  // bit_rate_scale for SPS HRD parameters.
+constexpr int kCPBSizeScale = 0;  // cpb_size_scale for SPS HRD parameters.
 
-const int kDefaultQP = 26;
+constexpr int kDefaultQP = 26;
 // All Intel codecs can do at least 4.1.
-const int kDefaultLevelIDC = 41;
-const int kChromaFormatIDC = 1;  // 4:2:0
+constexpr int kDefaultLevelIDC = 41;
+constexpr int kChromaFormatIDC = 1;  // 4:2:0
 
 // Arbitrarily chosen bitrate window size for rate control, in ms.
-const int kCPBWindowSizeMs = 1500;
+constexpr int kCPBWindowSizeMs = 1500;
 
 // UMA errors that the VaapiVideoEncodeAccelerator class reports.
 enum VAVEAEncoderFailure {

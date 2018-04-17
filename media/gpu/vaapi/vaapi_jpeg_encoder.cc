@@ -26,25 +26,25 @@ namespace media {
 namespace {
 
 // JPEG header only uses 2 bytes to represent width and height.
-const int kMaxDimension = 65535;
-const size_t kDctSize2 = 64;
-const size_t kNumDcRunSizeBits = 16;
-const size_t kNumAcRunSizeBits = 16;
-const size_t kNumDcCodeWordsHuffVal = 12;
-const size_t kNumAcCodeWordsHuffVal = 162;
-const size_t kJpegDefaultHeaderSize =
+constexpr int kMaxDimension = 65535;
+constexpr size_t kDctSize2 = 64;
+constexpr size_t kNumDcRunSizeBits = 16;
+constexpr size_t kNumAcRunSizeBits = 16;
+constexpr size_t kNumDcCodeWordsHuffVal = 12;
+constexpr size_t kNumAcCodeWordsHuffVal = 162;
+constexpr size_t kJpegDefaultHeaderSize =
     67 + (kDctSize2 * 2) + (kNumDcRunSizeBits * 2) +
     (kNumDcCodeWordsHuffVal * 2) + (kNumAcRunSizeBits * 2) +
     (kNumAcCodeWordsHuffVal * 2);
-const size_t kJFIFApp0Size = 16;
+constexpr size_t kJFIFApp0Size = 16;
 
-const uint8_t kZigZag8x8[64] = {
+constexpr uint8_t kZigZag8x8[64] = {
     0,  1,  8,  16, 9,  2,  3,  10, 17, 24, 32, 25, 18, 11, 4,  5,
     12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6,  7,  14, 21, 28,
     35, 42, 49, 56, 57, 50, 43, 36, 29, 22, 15, 23, 30, 37, 44, 51,
     58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63};
 
-const JpegQuantizationTable kDefaultQuantTable[2] = {
+constexpr JpegQuantizationTable kDefaultQuantTable[2] = {
     // Table K.1 Luminance quantization table values.
     {
         true,
