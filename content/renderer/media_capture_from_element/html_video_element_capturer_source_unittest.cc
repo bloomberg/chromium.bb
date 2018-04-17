@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
+
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -48,7 +52,6 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
     return blink::WebTimeRanges();
   }
   void SetSinkId(const blink::WebString& sinkId,
-                 const blink::WebSecurityOrigin&,
                  blink::WebSetSinkIdCallbacks*) override {}
   bool HasVideo() const override { return true; }
   bool HasAudio() const override { return false; }

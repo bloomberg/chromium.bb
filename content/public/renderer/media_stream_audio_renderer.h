@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/output_device_info.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -50,7 +49,6 @@ class MediaStreamAudioRenderer
   // update clients accordingly and fix the comment.
   virtual void SwitchOutputDevice(
       const std::string& device_id,
-      const url::Origin& security_origin,
       const media::OutputDeviceStatusCB& callback) = 0;
 
   // Time stamp that reflects the current render time. Should not be updated

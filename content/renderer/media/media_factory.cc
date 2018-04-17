@@ -4,6 +4,9 @@
 
 #include "content/renderer/media/media_factory.h"
 
+#include <string>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
@@ -199,7 +202,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   scoped_refptr<media::SwitchableAudioRendererSink> audio_renderer_sink =
       AudioDeviceFactory::NewSwitchableAudioRendererSink(
           AudioDeviceFactory::kSourceMediaElement,
-          render_frame_->GetRoutingID(), 0, sink_id.Utf8(), security_origin);
+          render_frame_->GetRoutingID(), 0, sink_id.Utf8());
 
   const WebPreferences webkit_preferences =
       render_frame_->GetWebkitPreferences();
@@ -459,7 +462,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       CreateMediaStreamRendererFactory(), render_thread->GetIOTaskRunner(),
       compositor_task_runner, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
-      sink_id, security_origin);
+      sink_id);
 #else
   return NULL;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)

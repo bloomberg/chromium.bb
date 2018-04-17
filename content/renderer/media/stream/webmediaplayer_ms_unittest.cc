@@ -4,6 +4,9 @@
 
 #include <stddef.h>
 
+#include <utility>
+#include <vector>
+
 #include "base/containers/circular_deque.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -231,7 +234,6 @@ class MockMediaStreamAudioRenderer : public MediaStreamAudioRenderer {
 
   void SwitchOutputDevice(
       const std::string& device_id,
-      const url::Origin& security_origin,
       const media::OutputDeviceStatusCB& callback) override {}
   base::TimeDelta GetCurrentRenderTime() const override {
     return base::TimeDelta();
@@ -391,8 +393,7 @@ class MockRenderFactory : public MediaStreamRendererFactory {
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const blink::WebMediaStream& web_stream,
       int render_frame_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) override {
+      const std::string& device_id) override {
     return audio_renderer_;
   }
 
@@ -470,8 +471,7 @@ class WebMediaPlayerMSTest
             message_loop_.task_runner(),
             message_loop_.task_runner(),
             gpu_factories_.get(),
-            blink::WebString(),
-            blink::WebSecurityOrigin())),
+            blink::WebString())),
         web_layer_set_(false),
         rendering_(false),
         background_rendering_(false) {}

@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -15,7 +18,6 @@
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
-#include "url/origin.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -37,8 +39,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
       int channels,
       const blink::WebAudioLatencyHint& latency_hint,
       blink::WebAudioDevice::RenderCallback* callback,
-      int session_id,
-      const url::Origin& security_origin);
+      int session_id);
 
   // blink::WebAudioDevice implementation.
   void Start() override;
@@ -63,11 +64,10 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
 
  protected:
   // Callback to get output device params (for tests).
-  using OutputDeviceParamsCallback = base::Callback<media::AudioParameters(
-      int frame_id,
-      int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin)>;
+  using OutputDeviceParamsCallback =
+      base::Callback<media::AudioParameters(int frame_id,
+                                            int session_id,
+                                            const std::string& device_id)>;
 
   // Callback get render frame ID for current context (for tests).
   using RenderFrameIdCallback = base::Callback<int()>;
@@ -77,7 +77,6 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
                              const blink::WebAudioLatencyHint& latency_hint,
                              blink::WebAudioDevice::RenderCallback* callback,
                              int session_id,
-                             const url::Origin& security_origin,
                              const OutputDeviceParamsCallback& device_params_cb,
                              const RenderFrameIdCallback& render_frame_id_cb);
 
@@ -100,9 +99,6 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
 
   // ID to allow browser to select the correct input device for unified IO.
   int session_id_;
-
-  // Security origin, used to check permissions for |output_device_|.
-  url::Origin security_origin_;
 
   // Used to suspend |sink_| usage when silence has been detected for too long.
   std::unique_ptr<media::SilentSinkSuspender> webaudio_suspender_;

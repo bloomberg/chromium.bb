@@ -5,8 +5,9 @@
 #include "third_party/blink/renderer/modules/audio_output_devices/html_media_element_audio_output_device.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -75,7 +76,6 @@ void SetSinkIdResolver::TimerFired(TimerBase* timer) {
     // Using release() to transfer ownership because |webMediaPlayer| is a
     // platform object that takes raw pointers.
     web_media_player->SetSinkId(sink_id_,
-                                WebSecurityOrigin(context->GetSecurityOrigin()),
                                 callbacks.release());
   } else {
     if (AudioOutputDeviceClient* client =

@@ -12,10 +12,6 @@
 #include "content/common/content_export.h"
 #include "media/base/output_device_info.h"
 
-namespace url {
-class Origin;
-}
-
 namespace media {
 class AudioRendererSink;
 }
@@ -34,19 +30,16 @@ class CONTENT_EXPORT AudioRendererSinkCache {
   static std::unique_ptr<AudioRendererSinkCache> Create();
 
   // Returns output device information for a specified sink.
-  virtual media::OutputDeviceInfo GetSinkInfo(
-      int source_render_frame_id,
-      int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) = 0;
+  virtual media::OutputDeviceInfo GetSinkInfo(int source_render_frame_id,
+                                              int session_id,
+                                              const std::string& device_id) = 0;
 
   // Provides a sink for usage. The sink must be returned to the cache by
   // calling ReleaseSink(). The sink must be stopped by the user before
   // deletion, but after releasing it from the cache.
   virtual scoped_refptr<media::AudioRendererSink> GetSink(
       int source_render_frame_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) = 0;
+      const std::string& device_id) = 0;
 
   // Notifies the cache that the sink is not in use any more. Must be
   // called by the client, so that the cache can garbage-collect the sink

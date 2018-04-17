@@ -751,7 +751,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                  const blink::WebURL& url) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
   blink::WebSpeechRecognizer* SpeechRecognizer() override;
   blink::mojom::PageVisibilityState VisibilityState() const override;

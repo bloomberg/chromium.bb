@@ -88,7 +88,6 @@ bool NullAudioSink::CurrentThreadIsRenderingThread() {
 }
 
 void NullAudioSink::SwitchOutputDevice(const std::string& device_id,
-                                       const url::Origin& security_origin,
                                        const OutputDeviceStatusCB& callback) {
   callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
 }

@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_video_renderer.h"
-#include "url/origin.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -42,8 +41,7 @@ class MediaStreamRendererFactory {
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const blink::WebMediaStream& web_stream,
       int render_frame_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) = 0;
+      const std::string& device_id) = 0;
 };
 
 }  // namespace content

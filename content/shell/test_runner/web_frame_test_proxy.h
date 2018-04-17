@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/command_line.h"
@@ -251,10 +252,9 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
 
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override {
-    test_client()->CheckIfAudioSinkExistsAndIsAuthorized(
-        sink_id, security_origin, web_callbacks);
+    test_client()->CheckIfAudioSinkExistsAndIsAuthorized(sink_id,
+                                                         web_callbacks);
   }
 
   blink::WebSpeechRecognizer* SpeechRecognizer() override {

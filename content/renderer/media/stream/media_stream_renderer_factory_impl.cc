@@ -74,8 +74,7 @@ scoped_refptr<MediaStreamAudioRenderer>
 MediaStreamRendererFactoryImpl::GetAudioRenderer(
     const blink::WebMediaStream& web_stream,
     int render_frame_id,
-    const std::string& device_id,
-    const url::Origin& security_origin) {
+    const std::string& device_id) {
   DCHECK(!web_stream.IsNull());
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   web_stream.AudioTracks(audio_tracks);
@@ -112,8 +111,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
              << (audio_track->is_local_track() ? "local" : "remote")
              << " track.";
     return new TrackAudioRenderer(audio_tracks[0], render_frame_id,
-                                  0 /* no session_id */, device_id,
-                                  security_origin);
+                                  0 /* no session_id */, device_id);
   }
 
   // This is a remote WebRTC media stream.
@@ -130,7 +128,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     renderer = new WebRtcAudioRenderer(
         GetPeerConnectionDependencyFactory()->GetWebRtcSignalingThread(),
         web_stream, render_frame_id, GetSessionIdForWebRtcAudioRenderer(),
-        device_id, security_origin);
+        device_id);
 
     if (!audio_device->SetAudioRenderer(renderer.get())) {
       WebRtcLogMessage("Error: SetAudioRenderer failed for remote track.");

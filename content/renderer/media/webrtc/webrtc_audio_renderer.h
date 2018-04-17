@@ -83,8 +83,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
       const blink::WebMediaStream& media_stream,
       int source_render_frame_id,
       int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin);
+      const std::string& device_id);
 
   // Initialize function called by clients like WebRtcAudioDeviceImpl.
   // Stop() has to be called before |source| is deleted.
@@ -126,7 +125,6 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   base::TimeDelta GetCurrentRenderTime() const override;
   bool IsLocalRenderer() const override;
   void SwitchOutputDevice(const std::string& device_id,
-                          const url::Origin& security_origin,
                           const media::OutputDeviceStatusCB& callback) override;
 
   // Called when an audio renderer, either the main or a proxy, starts playing.
@@ -250,7 +248,6 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // The preferred device id of the output device or empty for the default
   // output device. Can change as a result of a SetSinkId() call.
   std::string output_device_id_;
-  url::Origin security_origin_;
 
   // Maps audio sources to a list of active audio renderers.
   // Pointers to PlayingState objects are only kept in this map while the

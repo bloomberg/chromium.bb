@@ -57,7 +57,6 @@ AudioOutputDevice::AudioOutputDevice(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     int session_id,
     const std::string& device_id,
-    const url::Origin& security_origin,
     base::TimeDelta authorization_timeout)
     : ScopedTaskRunnerObserver(io_task_runner),
       callback_(NULL),
@@ -67,7 +66,6 @@ AudioOutputDevice::AudioOutputDevice(
       play_on_start_(true),
       session_id_(session_id),
       device_id_(device_id),
-      security_origin_(security_origin),
       stopping_hack_(false),
       did_receive_auth_(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -192,8 +190,7 @@ void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
   DCHECK_EQ(state_, IDLE);
 
   state_ = AUTHORIZING;
-  ipc_->RequestDeviceAuthorization(this, session_id_, device_id_,
-                                   security_origin_);
+  ipc_->RequestDeviceAuthorization(this, session_id_, device_id_);
 
   if (auth_timeout_ > base::TimeDelta()) {
     // Create the timer on the thread it's used on. It's guaranteed to be
@@ -220,8 +217,7 @@ void AudioOutputDevice::CreateStreamOnIOThread() {
       break;
 
     case IDLE:
-      if (did_receive_auth_.IsSignaled() && device_id_.empty() &&
-          security_origin_.unique()) {
+      if (did_receive_auth_.IsSignaled() && device_id_.empty()) {
         state_ = CREATING_STREAM;
         ipc_->CreateStream(this, audio_parameters_);
       } else {

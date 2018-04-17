@@ -27,8 +27,7 @@ void AudioOutputDeviceClientImpl::CheckIfAudioSinkExistsAndIsAuthorized(
   WebLocalFrameImpl* web_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
   web_frame->Client()->CheckIfAudioSinkExistsAndIsAuthorized(
-      sink_id, WebSecurityOrigin(context->GetSecurityOrigin()),
-      callbacks.release());
+      sink_id, callbacks.release());
 }
 
 }  // namespace blink

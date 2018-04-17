@@ -2533,8 +2533,7 @@ uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputSampleRate(
     PP_Instance instance) {
   return render_frame() ? AudioDeviceFactory::GetOutputDeviceInfo(
                               render_frame()->GetRoutingID(),
-                              0 /* session_id */, std::string() /* device_id */,
-                              url::Origin::Create(document_url()))
+                              0 /* session_id */, std::string() /* device_id */)
                               .output_params()
                               .sample_rate()
                         : 0;
@@ -2544,8 +2543,8 @@ uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputBufferSize(
     PP_Instance instance) {
   return render_frame() ? AudioDeviceFactory::GetOutputDeviceInfo(
                               render_frame()->GetRoutingID(),
-                              0 /* session_id */, std::string() /* device_id */,
-                              url::Origin::Create(document_url()))
+                              0 /* session_id */, std::string() /* device_id */
+                              )
                               .output_params()
                               .frames_per_buffer()
                         : 0;

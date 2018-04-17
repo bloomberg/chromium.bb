@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <limits>
 #include <memory>
 #include <tuple>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -92,7 +95,6 @@ class AudioRendererMixerTest
                                const AudioParameters& params,
                                AudioLatency::LatencyType latency,
                                const std::string& device_id,
-                               const url::Origin& security_origin,
                                OutputDeviceStatus* device_status) final {
     return mixer_.get();
   };
@@ -101,9 +103,8 @@ class AudioRendererMixerTest
     EXPECT_EQ(mixer_.get(), mixer);
   }
 
-  MOCK_METHOD4(
-      GetOutputDeviceInfo,
-      OutputDeviceInfo(int, int, const std::string&, const url::Origin&));
+  MOCK_METHOD3(GetOutputDeviceInfo,
+               OutputDeviceInfo(int, int, const std::string&));
 
   void InitializeInputs(int inputs_per_sample_rate) {
     mixer_inputs_.reserve(inputs_per_sample_rate * input_parameters_.size());
@@ -334,10 +335,10 @@ class AudioRendererMixerTest
   }
 
   scoped_refptr<AudioRendererMixerInput> CreateMixerInput() {
-    return new AudioRendererMixerInput(
-        this,
-        // Zero frame id, default device ID and security origin.
-        0, std::string(), url::Origin(), AudioLatency::LATENCY_PLAYBACK);
+    return new AudioRendererMixerInput(this,
+                                       // Zero frame id, default device ID.
+                                       0, std::string(),
+                                       AudioLatency::LATENCY_PLAYBACK);
   }
 
  protected:

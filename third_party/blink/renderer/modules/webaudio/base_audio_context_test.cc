@@ -79,8 +79,7 @@ class BaseAudioContextTestPlatform : public TestingPlatformSupport {
       unsigned number_of_channels,
       const WebAudioLatencyHint& latency_hint,
       WebAudioDevice::RenderCallback*,
-      const WebString& device_id,
-      const WebSecurityOrigin&) override {
+      const WebString& device_id) override {
     return std::make_unique<MockWebAudioDeviceForBaseAudioContext>(
         AudioHardwareSampleRate(), AudioHardwareBufferSize());
   }

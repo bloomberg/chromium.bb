@@ -20,12 +20,10 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
-#include "url/origin.h"
 
 namespace blink {
 class WebLocalFrame;
 class WebMediaPlayerClient;
-class WebSecurityOrigin;
 class WebString;
 }
 
@@ -83,8 +81,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       scoped_refptr<base::TaskRunner> worker_task_runner,
       media::GpuVideoAcceleratorFactories* gpu_factories,
-      const blink::WebString& sink_id,
-      const blink::WebSecurityOrigin& security_origin);
+      const blink::WebString& sink_id);
 
   ~WebMediaPlayerMS() override;
 
@@ -101,7 +98,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void EnterPictureInPicture() override;
   void ExitPictureInPicture() override;
   void SetSinkId(const blink::WebString& sink_id,
-                 const blink::WebSecurityOrigin& security_origin,
                  blink::WebSetSinkIdCallbacks* web_callback) override;
   void SetPreload(blink::WebMediaPlayer::Preload preload) override;
   blink::WebTimeRanges Buffered() const override;
@@ -254,11 +250,11 @@ class CONTENT_EXPORT WebMediaPlayerMS
   class FrameDeliverer;
   std::unique_ptr<FrameDeliverer> frame_deliverer_;
 
-  scoped_refptr<MediaStreamVideoRenderer> video_frame_provider_; // Weak
+  scoped_refptr<MediaStreamVideoRenderer> video_frame_provider_;  // Weak
 
   std::unique_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
-  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_; // Weak
+  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;  // Weak
   media::PaintCanvasVideoRenderer video_renderer_;
 
   bool paused_;
@@ -280,7 +276,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   scoped_refptr<WebMediaPlayerMSCompositor> compositor_;
 
   const std::string initial_audio_output_device_id_;
-  const url::Origin initial_security_origin_;
 
   // The last volume received by setVolume() and the last volume multiplier from
   // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less

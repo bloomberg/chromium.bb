@@ -683,7 +683,6 @@ blink::WebNavigationPolicy WebFrameTestClient::DecidePolicyForNavigation(
 
 void WebFrameTestClient::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
-    const blink::WebSecurityOrigin& security_origin,
     blink::WebSetSinkIdCallbacks* web_callbacks) {
   std::unique_ptr<blink::WebSetSinkIdCallbacks> callback(web_callbacks);
   std::string device_id = sink_id.Utf8();

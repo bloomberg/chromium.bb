@@ -40,8 +40,7 @@ MojoAudioOutputIPC::~MojoAudioOutputIPC() {
 void MojoAudioOutputIPC::RequestDeviceAuthorization(
     media::AudioOutputIPCDelegate* delegate,
     int session_id,
-    const std::string& device_id,
-    const url::Origin& security_origin) {
+    const std::string& device_id) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate);
   DCHECK(!delegate_);

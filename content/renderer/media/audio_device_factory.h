@@ -20,10 +20,6 @@ class SwitchableAudioRendererSink;
 class AudioCapturerSource;
 }
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 // A factory for creating AudioRendererSinks and AudioCapturerSources. There is
@@ -57,15 +53,14 @@ class CONTENT_EXPORT AudioDeviceFactory {
   // |render_frame_id| refers to the RenderFrame containing the entity
   // producing the audio. If |session_id| is nonzero, it is used by the browser
   // to select the correct input device ID and its associated output device, if
-  // it exists. If |session_id| is zero, |device_id| and |security_origin|
-  // identify the output device to use.
-  // If |session_id| is zero and |device_id| and |security_origin| are empty,
-  // the default output device will be selected.
+  // it exists. If |session_id| is zero, |device_id| identify the output device
+  // to use.
+  // If |session_id| is zero and |device_id| is empty, the default output
+  // device will be selected.
   static scoped_refptr<media::AudioRendererSink> NewAudioRendererMixerSink(
       int render_frame_id,
       int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin);
+      const std::string& device_id);
 
   // Creates an AudioRendererSink bound to an AudioOutputDevice.
   // Basing on |source_type| and build configuration, audio played out through
@@ -76,8 +71,7 @@ class CONTENT_EXPORT AudioDeviceFactory {
       SourceType source_type,
       int render_frame_id,
       int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin);
+      const std::string& device_id);
 
   // Creates a SwitchableAudioRendererSink bound to an AudioOutputDevice
   // Basing on |source_type| and build configuration, audio played out through
@@ -86,16 +80,14 @@ class CONTENT_EXPORT AudioDeviceFactory {
   NewSwitchableAudioRendererSink(SourceType source_type,
                                  int render_frame_id,
                                  int session_id,
-                                 const std::string& device_id,
-                                 const url::Origin& security_origin);
+                                 const std::string& device_id);
 
   // A helper to get device info in the absence of AudioOutputDevice.
   // Must be called on renderer thread only.
   static media::OutputDeviceInfo GetOutputDeviceInfo(
       int render_frame_id,
       int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin);
+      const std::string& device_id);
 
   // Creates an AudioCapturerSource using the currently registered factory.
   // |render_frame_id| refers to the RenderFrame containing the entity
@@ -117,22 +109,19 @@ class CONTENT_EXPORT AudioDeviceFactory {
   virtual scoped_refptr<media::AudioRendererSink> CreateFinalAudioRendererSink(
       int render_frame_id,
       int sesssion_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) = 0;
+      const std::string& device_id) = 0;
 
   virtual scoped_refptr<media::AudioRendererSink> CreateAudioRendererSink(
       SourceType source_type,
       int render_frame_id,
       int sesssion_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) = 0;
+      const std::string& device_id) = 0;
 
   virtual scoped_refptr<media::SwitchableAudioRendererSink>
   CreateSwitchableAudioRendererSink(SourceType source_type,
                                     int render_frame_id,
                                     int sesssion_id,
-                                    const std::string& device_id,
-                                    const url::Origin& security_origin) = 0;
+                                    const std::string& device_id) = 0;
 
   virtual scoped_refptr<media::AudioCapturerSource> CreateAudioCapturerSource(
       int render_frame_id) = 0;
@@ -145,8 +134,7 @@ class CONTENT_EXPORT AudioDeviceFactory {
   static scoped_refptr<media::AudioRendererSink> NewFinalAudioRendererSink(
       int render_frame_id,
       int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin);
+      const std::string& device_id);
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceFactory);
 };

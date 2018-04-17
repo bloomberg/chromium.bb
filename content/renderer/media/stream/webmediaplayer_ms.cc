@@ -236,8 +236,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     scoped_refptr<base::TaskRunner> worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories,
-    const blink::WebString& sink_id,
-    const blink::WebSecurityOrigin& security_origin)
+    const blink::WebString& sink_id)
     : frame_(frame),
       network_state_(WebMediaPlayer::kNetworkStateEmpty),
       ready_state_(WebMediaPlayer::kReadyStateHaveNothing),
@@ -255,9 +254,6 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       worker_task_runner_(worker_task_runner),
       gpu_factories_(gpu_factories),
       initial_audio_output_device_id_(sink_id.Utf8()),
-      initial_security_origin_(security_origin.IsNull()
-                                   ? url::Origin()
-                                   : url::Origin(security_origin)),
       volume_(1.0),
       volume_multiplier_(1.0),
       should_play_upon_shown_(false) {
@@ -347,8 +343,7 @@ void WebMediaPlayerMS::Load(LoadType load_type,
   }
 
   audio_renderer_ = renderer_factory_->GetAudioRenderer(
-      web_stream_, routing_id, initial_audio_output_device_id_,
-      initial_security_origin_);
+      web_stream_, routing_id, initial_audio_output_device_id_);
 
   if (!audio_renderer_)
     WebRtcLogMessage("Warning: Failed to instantiate audio renderer.");
@@ -483,8 +478,7 @@ void WebMediaPlayerMS::ReloadAudio() {
         audio_renderer_->Stop();
 
       audio_renderer_ = renderer_factory_->GetAudioRenderer(
-          web_stream_, frame->GetRoutingID(), initial_audio_output_device_id_,
-          initial_security_origin_);
+          web_stream_, frame->GetRoutingID(), initial_audio_output_device_id_);
       audio_renderer_->SetVolume(volume_);
       audio_renderer_->Start();
       audio_renderer_->Play();
@@ -589,15 +583,13 @@ void WebMediaPlayerMS::ExitPictureInPicture() {
 
 void WebMediaPlayerMS::SetSinkId(
     const blink::WebString& sink_id,
-    const blink::WebSecurityOrigin& security_origin,
     blink::WebSetSinkIdCallbacks* web_callback) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   const media::OutputDeviceStatusCB callback =
       media::ConvertToOutputDeviceStatusCB(web_callback);
   if (audio_renderer_) {
-    audio_renderer_->SwitchOutputDevice(sink_id.Utf8(), security_origin,
-                                        callback);
+    audio_renderer_->SwitchOutputDevice(sink_id.Utf8(), callback);
   } else {
     callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   }

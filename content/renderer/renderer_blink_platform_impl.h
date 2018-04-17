@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/containers/id_map.h"
@@ -150,8 +151,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       unsigned channels,
       const blink::WebAudioLatencyHint& latency_hint,
       blink::WebAudioDevice::RenderCallback* callback,
-      const blink::WebString& input_device_id,
-      const blink::WebSecurityOrigin& security_origin) override;
+      const blink::WebString& input_device_id) override;
 
   bool DecodeAudioFileData(blink::WebAudioBus* destination_bus,
                            const char* audio_file_data,
