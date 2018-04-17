@@ -48,18 +48,14 @@ struct DidOverscrollParams;
                       RenderWidgetHostNSViewClientOwner,
                       NSTextInputClient> {
  @private
-  // The communications channel to the RenderWidgetHostViewMac.
-  // TODO(ccameron): When RenderWidgetHostViewCocoa no longer directly accesses
-  // RenderWidgetHostViewMac, then |client_| can be made to be a weak pointer,
-  // and |clientWasDestroyed_| can be replaced with a null-check on |client_|.
-  std::unique_ptr<content::RenderWidgetHostNSViewClient> client_;
+  // The communications channel to the RenderWidgetHostViewMac. This pointer is
+  // always valid. When the original client disconnects, |client_| is changed to
+  // point to |noopClient_|, to avoid having to preface every dereference with
+  // a nullptr check.
+  content::RenderWidgetHostNSViewClient* client_;
 
-  // Whether or not it is safe to call back into the |client_| (see above TODO).
-  BOOL clientWasDestroyed_;
-
-  // TODO(ccameron): Make all communication with the RenderWidgetHostView go
-  // through |client_| and delete this member variable.
-  content::RenderWidgetHostViewMac* renderWidgetHostView_;
+  // Dummy client that is always valid (see above).
+  std::unique_ptr<content::RenderWidgetHostNSViewClient> noopClient_;
 
   // This ivar is the cocoa delegate of the NSResponder.
   base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
@@ -193,7 +189,7 @@ struct DidOverscrollParams;
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
 // Inidicate that the client was destroyed and can't be called back into.
-- (void)setClientWasDestroyed;
+- (void)setClientDisconnected;
 // True for always-on-top special windows (e.g. Balloons and Panels).
 - (BOOL)acceptsMouseEventsWhenInactive;
 // Cancel ongoing composition (abandon the marked text).
@@ -220,8 +216,7 @@ struct DidOverscrollParams;
 // Set the current TextInputManager::CompositionRangeInfo from the renderer.
 - (void)setCompositionRange:(gfx::Range)range;
 // Methods previously marked as private.
-- (id)initWithClient:
-    (std::unique_ptr<content::RenderWidgetHostNSViewClient>)client;
+- (id)initWithClient:(content::RenderWidgetHostNSViewClient*)client;
 - (void)setResponderDelegate:
     (NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
 - (void)processedGestureScrollEvent:(const blink::WebGestureEvent&)event

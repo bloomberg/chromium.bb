@@ -85,7 +85,11 @@ void RenderWidgetHostViewMac::DidReceiveFirstFrameAfterNavigation() {
 }
 
 void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
-  browser_compositor_.reset();
+  // When RenderWidgetHostViewMac was owned by an NSView, this function was
+  // necessary to ensure that the ui::Compositor did not outlive the
+  // infrastructure that was needed to support it.
+  // https://crbug.com/805726
+  Destroy();
 }
 
 void RenderWidgetHostViewMac::WasResized() {
@@ -131,13 +135,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
       weak_factory_(this) {
-  // The NSView on the other side of |ns_view_bridge_| owns us. We will
-  // be destroyed when it releases the unique_ptr that we pass to it here at
-  // creation.
-  // The NSView is autoreleased, so our caller must put |GetNativeView()| into
-  // the view hierarchy right after calling us.
-  ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(
-      std::unique_ptr<RenderWidgetHostNSViewClient>(this));
+  // The NSView is on the other side of |ns_view_bridge_|.
+  ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(this);
 
   // Guess that the initial screen we will be on is the screen of the current
   // window (since that's the best guess that we have, and is usually right).
@@ -191,36 +190,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
-  // |this| is owned by RenderWidgetHostViewCocoa and is destroyed when the
-  // RenderWidgetHostViewCocoa is deallocated, so destroy the bridge to the
-  // RenderWidgetHostViewCocoa.
-  ns_view_bridge_.reset();
-
-  UnlockMouse();
-
-  browser_compositor_.reset();
-
-  // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
-  // RenderWidgetHost does we need to tell it not to hold a stale pointer to
-  // us.
-  if (host()) {
-    // If this is a RenderWidgetHostViewGuest's platform_view_, we're not the
-    // RWH's view, the RenderWidgetHostViewGuest is. So don't reset the RWH's
-    // view, the RenderWidgetHostViewGuest will do it.
-    if (!is_guest_view_hack_)
-      host()->SetView(NULL);
-  }
-
-  // In case the view is deleted (by cocoa view) before calling destroy, we need
-  // to remove this view from the observer list of TextInputManager.
-  if (text_input_manager_ && text_input_manager_->HasObserver(this))
-    text_input_manager_->RemoveObserver(this);
 }
 
 RenderWidgetHostViewCocoa* RenderWidgetHostViewMac::cocoa_view() const {
-  if (ns_view_bridge_)
-    return ns_view_bridge_->GetRenderWidgetHostViewCocoa();
-  return nil;
+  return ns_view_bridge_->GetRenderWidgetHostViewCocoa();
 }
 
 void RenderWidgetHostViewMac::SetDelegate(
@@ -320,9 +293,6 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetWidgetForIme() {
 }
 
 void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
-  if (!browser_compositor_)
-    return;
-
   static bool is_vsync_disabled =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuVsync);
@@ -379,9 +349,6 @@ void RenderWidgetHostViewMac::Show() {
 }
 
 void RenderWidgetHostViewMac::Hide() {
-  if (!browser_compositor_)
-    return;
-
   is_visible_ = false;
   ns_view_bridge_->SetVisible(is_visible_);
   host()->WasHidden();
@@ -389,17 +356,11 @@ void RenderWidgetHostViewMac::Hide() {
 }
 
 void RenderWidgetHostViewMac::WasUnOccluded() {
-  if (!browser_compositor_)
-    return;
-
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
   host()->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
-  if (!browser_compositor_)
-    return;
-
   host()->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
 }
@@ -576,13 +537,15 @@ void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewMac::Destroy() {
-  // FrameSinkIds registered with RenderWidgetHostInputEventRouter
-  // have already been cleared when RenderWidgetHostViewBase notified its
-  // observers of our impending destruction.
+  // Unlock the mouse in the NSView's process before destroying our bridge to
+  // it.
+  if (mouse_locked_) {
+    mouse_locked_ = false;
+    ns_view_bridge_->SetCursorLocked(false);
+  }
 
-  // We've been told to destroy.
-  if (ns_view_bridge_)
-    ns_view_bridge_->Destroy();
+  // Destroy the brige to the NSView. Note that the NSView on the other side
+  // of |ns_view_bridge_| may outlive us due to other retains.
   ns_view_bridge_.reset();
 
   // Delete the delegated frame state, which will reach back into
@@ -598,12 +561,10 @@ void RenderWidgetHostViewMac::Destroy() {
 
   mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
 
-  // We get this call just before host() deletes
-  // itself.  But we are owned by |cocoa_view()|, which may be retained
-  // by some other code.  Examples are WebContentsViewMac's
-  // |latent_focus_view_| and TabWindowController's
-  // |cachedContentView_|.
+  // The call to the base class will set host() to nullptr.
   RenderWidgetHostViewBase::Destroy();
+
+  delete this;
 }
 
 void RenderWidgetHostViewMac::SetTooltipText(
@@ -972,8 +933,7 @@ bool RenderWidgetHostViewMac::LockMouse() {
   mouse_locked_ = true;
 
   // Lock position of mouse cursor and hide it.
-  CGAssociateMouseAndMouseCursorPosition(NO);
-  [NSCursor hide];
+  ns_view_bridge_->SetCursorLocked(true);
 
   // Clear the tooltip window.
   ns_view_bridge_->SetTooltipText(base::string16());
@@ -985,10 +945,7 @@ void RenderWidgetHostViewMac::UnlockMouse() {
   if (!mouse_locked_)
     return;
   mouse_locked_ = false;
-
-  // Unlock position of mouse cursor and unhide it.
-  CGAssociateMouseAndMouseCursorPosition(YES);
-  [NSCursor unhide];
+  ns_view_bridge_->SetCursorLocked(false);
 
   if (host())
     host()->LostMouseLock();
@@ -1023,14 +980,10 @@ RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
 }
 
 viz::LocalSurfaceId RenderWidgetHostViewMac::GetLocalSurfaceId() const {
-  if (!browser_compositor_)
-    return viz::LocalSurfaceId();
   return browser_compositor_->GetRendererLocalSurfaceId();
 }
 
 viz::FrameSinkId RenderWidgetHostViewMac::GetFrameSinkId() {
-  if (!browser_compositor_)
-    return viz::FrameSinkId();
   return browser_compositor_->GetDelegatedFrameHost()->frame_sink_id();
 }
 
@@ -1088,14 +1041,10 @@ bool RenderWidgetHostViewMac::TransformPointToCoordSpaceForView(
 }
 
 viz::FrameSinkId RenderWidgetHostViewMac::GetRootFrameSinkId() {
-  if (!browser_compositor_)
-    return viz::FrameSinkId();
   return browser_compositor_->GetRootFrameSinkId();
 }
 
 viz::SurfaceId RenderWidgetHostViewMac::GetCurrentSurfaceId() const {
-  if (!browser_compositor_)
-    return viz::SurfaceId();
   return browser_compositor_->GetDelegatedFrameHost()->GetCurrentSurfaceId();
 }
 
@@ -1189,9 +1138,7 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
 
 gfx::AcceleratedWidget
 RenderWidgetHostViewMac::AccessibilityGetAcceleratedWidget() {
-  if (browser_compositor_)
-    return browser_compositor_->GetAcceleratedWidget();
-  return gfx::kNullAcceleratedWidget;
+  return browser_compositor_->GetAcceleratedWidget();
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
@@ -1229,10 +1176,6 @@ RenderWidgetHostViewMac::AllocateFrameSinkIdForGuestViewHack() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostNSViewClient implementation:
-
-RenderWidgetHostViewMac* RenderWidgetHostViewMac::GetRenderWidgetHostViewMac() {
-  return this;
-}
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewMac::GetRootBrowserAccessibilityManager() {
@@ -1273,9 +1216,6 @@ void RenderWidgetHostViewMac::OnNSViewWindowIsKeyChanged(bool is_key) {
 void RenderWidgetHostViewMac::OnNSViewBoundsInWindowChanged(
     const gfx::Rect& view_bounds_in_window_dip,
     bool attached_to_window) {
-  if (!browser_compositor_)
-    return;
-
   bool view_size_changed =
       view_bounds_in_window_dip_.size() != view_bounds_in_window_dip.size();
 
@@ -1700,8 +1640,7 @@ void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
       if (auto* rwhv = widget_host->GetView())
         baseline_point = rwhv->TransformPointToRootCoordSpace(baseline_point);
     }
-    if (ns_view_bridge_)
-      ns_view_bridge_->ShowDictionaryOverlay(encoded_string, baseline_point);
+    ns_view_bridge_->ShowDictionaryOverlay(encoded_string, baseline_point);
   }
 }
 

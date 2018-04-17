@@ -20,10 +20,6 @@ class RenderWidgetHostNSViewClient {
   RenderWidgetHostNSViewClient() {}
   virtual ~RenderWidgetHostNSViewClient() {}
 
-  // TODO(ccameron): As with the GetRenderWidgetHostViewCocoa method on
-  // RenderWidgetHostNSViewBridge, this method is to be removed.
-  virtual RenderWidgetHostViewMac* GetRenderWidgetHostViewMac() = 0;
-
   // Return the RenderWidget's BrowserAccessibilityManager.
   // TODO(ccameron): This returns nullptr for non-local NSViews. A scheme for
   // non-local accessibility needs to be developed.
