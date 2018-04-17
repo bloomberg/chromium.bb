@@ -23,6 +23,48 @@ class SharedURLLoaderFactory;
 namespace safe_browsing {
 class TriggerManager;
 
+// Metric for tracking what the Suspicious Site trigger does on each event.
+extern const char kSuspiciousSiteTriggerEventMetricName[];
+
+// Metric for tracking how often reports from this trigger are rejected by the
+// trigger manager, and for what reason.
+extern const char kSuspiciousSiteTriggerReportRejectionMetricName[];
+
+// Metric for tracking the state of the trigger when the report delay timer
+// fires.
+extern const char kSuspiciousSiteTriggerReportDelayStateMetricName[];
+
+// Tracks events this trigger listens for or actions it performs. These values
+// are written to logs. New enum values can be added, but existing enums must
+// never be renumbered or deleted and reused.
+enum class SuspiciousSiteTriggerEvent {
+  // A page load started.
+  PAGE_LOAD_START = 0,
+  // A page load finished.
+  PAGE_LOAD_FINISH = 1,
+  // A suspicious site was detected.
+  SUSPICIOUS_SITE_DETECTED = 2,
+  // The report delay timer fired.
+  REPORT_DELAY_TIMER = 3,
+  // A suspicious site report was started.
+  REPORT_STARTED = 4,
+  // A suspicious site report was created and sent.
+  REPORT_FINISHED = 5,
+  // The trigger was waiting for a load to finish before creating a report but
+  // a new load started before the previous load could finish, so the report
+  // was cancelled.
+  PENDING_REPORT_CANCELLED_BY_LOAD = 6,
+  // The trigger tried to start the report but it was rejected by the trigger
+  // manager.
+  REPORT_START_FAILED = 7,
+  // The trigger tried to finish the report but it was rejected by the trigger
+  // manager.
+  REPORT_FINISH_FAILED = 8,
+  // New events must be added before kMaxValue, and the value of kMaxValue
+  // updated.
+  kMaxValue = REPORT_FINISH_FAILED
+};
+
 // This class watches tab-level events such as the start and end of a page
 // load, and also listens for events from the SuspiciousSiteURLThrottle that
 // indicate there was a hit on the suspicious site list. This trigger is
@@ -32,6 +74,24 @@ class SuspiciousSiteTrigger
     : public content::WebContentsObserver,
       public content::WebContentsUserData<SuspiciousSiteTrigger> {
  public:
+  // The different states the trigger could be in.
+  // These values are written to logs. New enum values can be added, but
+  // existing enums must never be renumbered or deleted and reused.
+  enum class TriggerState {
+    // Trigger is idle, page is not loading, no report requested.
+    IDLE = 0,
+    // Page load has started, no report requested.
+    LOADING = 1,
+    // Page load has started and a report is requested. The report will be
+    // created when the page load finishes.
+    LOADING_WILL_REPORT = 2,
+    // A page load finished and a report for the page has started.
+    REPORT_STARTED = 3,
+    // New states must be added before kMaxValue and the value of kMaxValue
+    // updated.
+    kMaxValue = REPORT_STARTED
+  };
+
   ~SuspiciousSiteTrigger() override;
 
   static void CreateForWebContents(
@@ -53,18 +113,6 @@ class SuspiciousSiteTrigger
   friend class content::WebContentsUserData<SuspiciousSiteTrigger>;
   friend class SuspiciousSiteTriggerTest;
 
-  // The different states the trigger could be in.
-  enum class TriggerState {
-    // Trigger is idle, page is not loading, no report requested.
-    IDLE,
-    // Page load has started, no report requested.
-    LOADING,
-    // Page load has started and a report is requested. The report will be
-    // created when the page load finishes.
-    LOADING_WILL_REPORT,
-    // A page load finished and a report for the page has started.
-    REPORT_STARTED,
-  };
 
   SuspiciousSiteTrigger(
       content::WebContents* web_contents,

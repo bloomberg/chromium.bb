@@ -25,6 +25,15 @@ class MockTriggerManager : public TriggerManager {
            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
            history::HistoryService* history_service,
            const SBErrorOptions& error_display_options));
+  MOCK_METHOD7(
+      StartCollectingThreatDetailsWithReason,
+      bool(TriggerType trigger_type,
+           content::WebContents* web_contents,
+           const security_interstitials::UnsafeResource& resource,
+           scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+           history::HistoryService* history_service,
+           const SBErrorOptions& error_display_options,
+           TriggerManagerReason* out_reason));
 
   MOCK_METHOD6(FinishCollectingThreatDetails,
                bool(TriggerType trigger_type,

@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/triggers/suspicious_site_trigger.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
@@ -25,6 +26,15 @@ namespace {
 // report (since this trigger runs in the background).
 const int64_t kSuspiciousSiteCollectionPeriodMilliseconds = 5000;
 }  // namespace
+
+const char kSuspiciousSiteTriggerEventMetricName[] =
+    "SafeBrowsing.Triggers.SuspiciousSite.Event";
+
+const char kSuspiciousSiteTriggerReportRejectionMetricName[] =
+    "SafeBrowsing.Triggers.SuspiciousSite.ReportRejectionReason";
+
+const char kSuspiciousSiteTriggerReportDelayStateMetricName[] =
+    "SafeBrowsing.Triggers.SuspiciousSite.DelayTimerState";
 
 SuspiciousSiteTrigger::SuspiciousSiteTrigger(
     content::WebContents* web_contents,
@@ -71,9 +81,14 @@ bool SuspiciousSiteTrigger::MaybeStartReport() {
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
       web_contents()->GetMainFrame()->GetRoutingID());
 
-  if (!trigger_manager_->StartCollectingThreatDetails(
+  TriggerManagerReason reason;
+  if (!trigger_manager_->StartCollectingThreatDetailsWithReason(
           TriggerType::SUSPICIOUS_SITE, web_contents(), resource,
-          url_loader_factory_, history_service_, error_options)) {
+          url_loader_factory_, history_service_, error_options, &reason)) {
+    UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
+                              SuspiciousSiteTriggerEvent::REPORT_START_FAILED);
+    UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerReportRejectionMetricName,
+                              reason);
     return false;
   }
 
@@ -81,22 +96,32 @@ bool SuspiciousSiteTrigger::MaybeStartReport() {
   // to complete.
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&SuspiciousSiteTrigger::FinishReport,
+      base::BindOnce(&SuspiciousSiteTrigger::ReportDelayTimerFired,
                      weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(finish_report_delay_ms_));
 
+  UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
+                            SuspiciousSiteTriggerEvent::REPORT_STARTED);
   return true;
 }
 
 void SuspiciousSiteTrigger::FinishReport() {
   SBErrorOptions error_options =
       TriggerManager::GetSBErrorDisplayOptions(*prefs_, *web_contents());
-  trigger_manager_->FinishCollectingThreatDetails(
-      TriggerType::SUSPICIOUS_SITE, web_contents(), base::TimeDelta(),
-      /*did_proceed=*/false, /*num_visits=*/0, error_options);
+  if (trigger_manager_->FinishCollectingThreatDetails(
+          TriggerType::SUSPICIOUS_SITE, web_contents(), base::TimeDelta(),
+          /*did_proceed=*/false, /*num_visits=*/0, error_options)) {
+    UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
+                              SuspiciousSiteTriggerEvent::REPORT_FINISHED);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
+                              SuspiciousSiteTriggerEvent::REPORT_FINISH_FAILED);
+  }
 }
 
 void SuspiciousSiteTrigger::DidStartLoading() {
+  UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
+                            SuspiciousSiteTriggerEvent::PAGE_LOAD_START);
   switch (current_state_) {
     case TriggerState::IDLE:
       // Load started, move to loading state.
@@ -111,6 +136,9 @@ void SuspiciousSiteTrigger::DidStartLoading() {
       // This happens if the user leaves the suspicious page before it
       // finishes loading. A report can't be created in this case since the
       // page is now gone.
+      UMA_HISTOGRAM_ENUMERATION(
+          kSuspiciousSiteTriggerEventMetricName,
+          SuspiciousSiteTriggerEvent::PENDING_REPORT_CANCELLED_BY_LOAD);
       current_state_ = TriggerState::LOADING;
       return;
 
@@ -126,6 +154,9 @@ void SuspiciousSiteTrigger::DidStartLoading() {
 }
 
 void SuspiciousSiteTrigger::DidStopLoading() {
+  UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
+                            SuspiciousSiteTriggerEvent::PAGE_LOAD_FINISH);
+
   switch (current_state_) {
     case TriggerState::IDLE:
       // No-op, load stopped and we're already idle.
@@ -155,6 +186,10 @@ void SuspiciousSiteTrigger::DidStopLoading() {
 
 void SuspiciousSiteTrigger::SuspiciousSiteDetected() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  UMA_HISTOGRAM_ENUMERATION(
+      kSuspiciousSiteTriggerEventMetricName,
+      SuspiciousSiteTriggerEvent::SUSPICIOUS_SITE_DETECTED);
+
   switch (current_state_) {
     case TriggerState::IDLE:
       // Suspicious site detected while idle, start a report immediately.
@@ -184,6 +219,10 @@ void SuspiciousSiteTrigger::SuspiciousSiteDetected() {
 }
 
 void SuspiciousSiteTrigger::ReportDelayTimerFired() {
+  UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
+                            SuspiciousSiteTriggerEvent::REPORT_DELAY_TIMER);
+  UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerReportDelayStateMetricName,
+                            current_state_);
   switch (current_state_) {
     case TriggerState::IDLE:
     case TriggerState::LOADING:

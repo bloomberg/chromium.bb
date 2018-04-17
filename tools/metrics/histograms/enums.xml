@@ -43147,6 +43147,25 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Attempted"/>
 </enum>
 
+<enum name="SuspiciousSiteTriggerEvent">
+  <int value="0" label="A page load started"/>
+  <int value="1" label="A page load finished"/>
+  <int value="2" label="A suspicious site was detected"/>
+  <int value="3" label="The report delay timer fired"/>
+  <int value="4" label="A report was started"/>
+  <int value="5" label="A report was finished and sent"/>
+  <int value="6" label="A pending report was cancelled"/>
+  <int value="7" label="A report failed to start"/>
+  <int value="8" label="An active report failed to finish"/>
+</enum>
+
+<enum name="SuspiciousSiteTriggerState">
+  <int value="0" label="The trigger is idle"/>
+  <int value="1" label="A page is loading"/>
+  <int value="2" label="A report will begin when the page loads"/>
+  <int value="3" label="A report has started"/>
+</enum>
+
 <enum name="SwapchainFormat">
   <int value="0" label="B8G8R8A8"/>
   <int value="1" label="YUY2"/>
@@ -44685,6 +44704,14 @@ Full version information for the fingerprint enum values:
   <int value="11" label="FAILURE_AVAILABILITY_PRECONDITION_UNMET"/>
   <int value="12" label="SUCCESS_TRACKING_ONLY"/>
   <int value="13" label="FAILURE_DISPLAY_LOCK"/>
+</enum>
+
+<enum name="TriggerManagerReason">
+  <int value="0" label="No reason"/>
+  <int value="1" label="The user opted-out of reports"/>
+  <int value="2" label="A report is already running on this page"/>
+  <int value="3" label="No report was started on this page"/>
+  <int value="4" label="The user has exceeded their report quota"/>
 </enum>
 
 <enum name="TrimMemoryLevel">
