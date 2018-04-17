@@ -27,7 +27,7 @@ class WebActiveGestureAnimation;
 class WebImage;
 class WebLayer;
 class WebLayerTreeView;
-class WebLocalFrame;
+class WebLocalFrameImpl;
 class WebViewImpl;
 class HitTestResult;
 struct WebFloatPoint;
@@ -37,16 +37,21 @@ class CORE_EXPORT WebFrameWidgetBase
       public WebFrameWidget,
       public WebGestureCurveTarget {
  public:
-  WebFrameWidgetBase();
+  explicit WebFrameWidgetBase(WebWidgetClient&);
   virtual ~WebFrameWidgetBase();
 
+  WebWidgetClient* Client() const { return client_; }
+  WebLocalFrameImpl* LocalRootImpl() const { return local_root_; }
+
+  void BindLocalRoot(WebLocalFrame&);
+
+  // Called once the local root is bound via |BindLocalRoot()|.
+  virtual void Initialize() = 0;
   virtual bool ForSubframe() const = 0;
   virtual void ScheduleAnimation() = 0;
   virtual void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) {}
   virtual base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) = 0;
-
-  virtual WebWidgetClient* Client() const = 0;
 
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
   // the root layer.
@@ -71,6 +76,8 @@ class CORE_EXPORT WebFrameWidgetBase
                 const WebFloatSize& velocity) override;
 
   // WebFrameWidget implementation.
+  void Close() override;
+  WebLocalFrame* LocalRoot() const override;
   WebDragOperation DragTargetDragEnter(const WebDragData&,
                                        const WebFloatPoint& point_in_viewport,
                                        const WebFloatPoint& screen_point,
@@ -170,6 +177,13 @@ class CORE_EXPORT WebFrameWidgetBase
   WebGestureEvent CreateGestureScrollEventFromFling(WebInputEvent::Type,
                                                     WebGestureDevice) const;
   void CancelDrag();
+
+  WebWidgetClient* client_;
+
+  // WebFrameWidget is associated with a subtree of the frame tree,
+  // corresponding to a maximal connected tree of LocalFrames. This member
+  // points to the root of that subtree.
+  Member<WebLocalFrameImpl> local_root_;
 
   std::unique_ptr<WebActiveGestureAnimation> gesture_animation_;
   WebFloatPoint position_on_fling_start_;

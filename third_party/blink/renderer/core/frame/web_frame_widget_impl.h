@@ -69,7 +69,7 @@ using WebFrameWidgetsSet =
 class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                                  public PageWidgetEventHandler {
  public:
-  static WebFrameWidgetImpl* Create(WebWidgetClient*, WebLocalFrame*);
+  static WebFrameWidgetImpl* Create(WebWidgetClient&);
 
   ~WebFrameWidgetImpl();
 
@@ -111,7 +111,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                                     bool subtree_throttled) override;
 
   // WebFrameWidget implementation.
-  WebLocalFrameImpl* LocalRoot() const override { return local_root_; }
   void SetVisibilityState(mojom::PageVisibilityState) override;
   void SetBackgroundColorOverride(WebColor) override;
   void ClearBackgroundColorOverride() override;
@@ -135,12 +134,12 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
       override;
 
   // WebFrameWidgetBase overrides:
+  void Initialize() override;
   bool ForSubframe() const override { return true; }
   void ScheduleAnimation() override;
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
   void DidCreateLocalRootView() override;
 
-  WebWidgetClient* Client() const override { return client_; }
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   void SetRootLayer(WebLayer*) override;
   WebLayerTreeView* GetLayerTreeView() const override;
@@ -166,7 +165,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
  private:
   friend class WebFrameWidget;  // For WebFrameWidget::create.
 
-  explicit WebFrameWidgetImpl(WebWidgetClient*, WebLocalFrame*);
+  explicit WebFrameWidgetImpl(WebWidgetClient&);
 
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(
@@ -201,13 +200,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
       const Element& element,
       LayoutRect& rect_to_scroll,
       WebScrollIntoViewParams& params);
-
-  WebWidgetClient* client_;
-
-  // WebFrameWidget is associated with a subtree of the frame tree,
-  // corresponding to a maximal connected tree of LocalFrames. This member
-  // points to the root of that subtree.
-  Member<WebLocalFrameImpl> local_root_;
 
   WTF::Optional<WebSize> size_;
 
