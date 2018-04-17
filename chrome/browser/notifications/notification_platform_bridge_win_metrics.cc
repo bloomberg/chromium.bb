@@ -39,6 +39,16 @@ void LogGetNotificationLaunchIdStatus(GetNotificationLaunchIdStatus status) {
       GetNotificationLaunchIdStatus::COUNT);
 }
 
+void LogGetSettingPolicy(GetSettingPolicy policy) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.GetSettingPolicy", policy,
+                            GetSettingPolicy::COUNT);
+}
+
+void LogGetSettingStatus(GetSettingStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.GetSettingStatus", status,
+                            GetSettingStatus::COUNT);
+}
+
 void LogHandleEventStatus(HandleEventStatus status) {
   UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.HandleEventStatus", status,
                             HandleEventStatus::COUNT);
@@ -62,11 +72,6 @@ void LogOnDismissedStatus(OnDismissedStatus status) {
 void LogOnFailedStatus(OnFailedStatus status) {
   UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.OnFailedStatus", status,
                             OnFailedStatus::COUNT);
-}
-
-void LogGetSettingStatus(GetSettingStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.GetSettingStatus", status,
-                            GetSettingStatus::COUNT);
 }
 
 }  // namespace notifications_uma
