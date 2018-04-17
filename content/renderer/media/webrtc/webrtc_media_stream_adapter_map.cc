@@ -77,8 +77,8 @@ WebRtcMediaStreamAdapterMap::WebRtcMediaStreamAdapterMap(
 }
 
 WebRtcMediaStreamAdapterMap::~WebRtcMediaStreamAdapterMap() {
-  DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(local_stream_adapters_.empty());
+  DCHECK(remote_stream_adapters_.empty());
 }
 
 std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>

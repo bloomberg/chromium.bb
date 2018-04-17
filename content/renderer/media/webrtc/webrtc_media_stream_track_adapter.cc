@@ -69,7 +69,6 @@ WebRtcMediaStreamTrackAdapter::WebRtcMediaStreamTrackAdapter(
 }
 
 WebRtcMediaStreamTrackAdapter::~WebRtcMediaStreamTrackAdapter() {
-  DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(!remote_track_can_complete_initialization_.IsSignaled());
   DCHECK(!is_initialized_);
 }
