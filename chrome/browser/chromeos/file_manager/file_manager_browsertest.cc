@@ -152,7 +152,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDrive"),
+        // Flaky https://crbug.com/833049
+        // TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDrive"),
         TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
@@ -161,10 +162,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         // Test is disabled due to flakiness: https://crbug.com/832192
         // TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
 
-        TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive"),
+        // Flaky https://crbug.com/832192
+        // TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive"),
         TestParameter(IN_GUEST_MODE, "renameNewDirectoryDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDrive")));
+        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDownloads")));
+// Flaky https://crbug.com/833752
+// TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDrive")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_Delete DISABLED_Delete
@@ -210,14 +213,16 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       "copyFromDirectoryTreeWithoutChaningCurrentDirectory"),
         TestParameter(NOT_IN_GUEST_MODE, "cutFromDirectoryTreeWithContextMenu"),
         TestParameter(IN_GUEST_MODE, "cutFromDirectoryTreeWithContextMenu"),
-        TestParameter(NOT_IN_GUEST_MODE,
-                      "cutFromDirectoryTreeWithKeyboardShortcut"),
+        // Flaky https://crbug.com/832799
+        // TestParameter(NOT_IN_GUEST_MODE,
+        //              "cutFromDirectoryTreeWithKeyboardShortcut"),
         TestParameter(IN_GUEST_MODE,
                       "cutFromDirectoryTreeWithKeyboardShortcut"),
         TestParameter(NOT_IN_GUEST_MODE,
                       "cutFromDirectoryTreeWithoutChaningCurrentDirectory"),
-        TestParameter(NOT_IN_GUEST_MODE,
-                      "pasteIntoFolderFromDirectoryTreeWithContextMenu"),
+        // Flaky https://crbug.com/832798
+        // TestParameter(NOT_IN_GUEST_MODE,
+        //              "pasteIntoFolderFromDirectoryTreeWithContextMenu"),
         TestParameter(IN_GUEST_MODE,
                       "pasteIntoFolderFromDirectoryTreeWithContextMenu"),
         TestParameter(
