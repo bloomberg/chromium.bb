@@ -14,6 +14,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
+class AccountId;
 class Profile;
 class ProfileOAuth2TokenService;
 
@@ -78,7 +79,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
  protected:
   // UserPolicySigninServiceBase implementation:
   void InitializeUserCloudPolicyManager(
-      const std::string& username,
+      const AccountId& account_id,
       std::unique_ptr<CloudPolicyClient> client) override;
 
   void PrepareForUserCloudPolicyManagerShutdown() override;

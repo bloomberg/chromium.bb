@@ -119,7 +119,7 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   task_runner_ = new base::TestMockTimeTaskRunner();
   cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_));
   store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
-  store_->SetCredentials(ComponentPolicyBuilder::GetFakeAccountId(),
+  store_->SetCredentials(ComponentPolicyBuilder::GetFakeAccountIdForTesting(),
                          ComponentPolicyBuilder::kFakeToken,
                          ComponentPolicyBuilder::kFakeDeviceId, public_key_,
                          ComponentPolicyBuilder::kFakePublicKeyVersion);

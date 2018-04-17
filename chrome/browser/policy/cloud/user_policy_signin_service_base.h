@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class AccountId;
 class PrefService;
 class Profile;
 
@@ -77,7 +78,7 @@ class UserPolicySigninServiceBase : public KeyedService,
   // succeeded.
   // Virtual for testing.
   virtual void FetchPolicyForSignedInUser(
-      const std::string& username,
+      const AccountId& account_id,
       const std::string& dm_token,
       const std::string& client_id,
       scoped_refptr<net::URLRequestContextGetter> profile_request_context,
@@ -127,13 +128,13 @@ class UserPolicySigninServiceBase : public KeyedService,
   // InitializeForSignedInUser(); otherwise it clears any stored policies.
   void InitializeOnProfileReady(Profile* profile);
 
-  // Invoked to initialize the cloud policy service for |username|, which is the
-  // account associated with the Profile that owns this service. This is invoked
-  // from InitializeOnProfileReady() if the Profile already has a signed-in
-  // account at startup, or (on the desktop platforms) as soon as the user
-  // signs-in and an OAuth2 login refresh token becomes available.
+  // Invoked to initialize the cloud policy service for |account_id|, which is
+  // the account associated with the Profile that owns this service. This is
+  // invoked from InitializeOnProfileReady() if the Profile already has a
+  // signed-in account at startup, or (on the desktop platforms) as soon as the
+  // user signs-in and an OAuth2 login refresh token becomes available.
   void InitializeForSignedInUser(
-      const std::string& username,
+      const AccountId& account_id,
       scoped_refptr<net::URLRequestContextGetter> profile_request_context);
 
   // Initializes the cloud policy manager with the passed |client|. This is
@@ -141,7 +142,7 @@ class UserPolicySigninServiceBase : public KeyedService,
   // signed in account at startup, and from FetchPolicyForSignedInUser() during
   // the initial policy fetch after signing in.
   virtual void InitializeUserCloudPolicyManager(
-      const std::string& username,
+      const AccountId& account_id,
       std::unique_ptr<CloudPolicyClient> client);
 
   // Prepares for the UserCloudPolicyManager to be shutdown due to

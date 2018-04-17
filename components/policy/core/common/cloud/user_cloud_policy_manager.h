@@ -6,7 +6,6 @@
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_CLOUD_POLICY_MANAGER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
@@ -16,6 +15,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/policy_export.h"
 
+class AccountId;
 class PrefService;
 
 namespace base {
@@ -49,7 +49,7 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
   // ConfigurationPolicyProvider overrides:
   void Shutdown() override;
 
-  void SetSigninUsername(const std::string& username);
+  void SetSigninAccountId(const AccountId& account_id);
 
   // Initializes the cloud connection. |local_state| must stay valid until this
   // object is deleted or DisconnectAndRemovePolicy() gets called. Virtual for

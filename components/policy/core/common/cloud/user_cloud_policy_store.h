@@ -13,6 +13,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/policy_signing_key.pb.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -119,11 +120,11 @@ class POLICY_EXPORT UserCloudPolicyStore : public DesktopCloudPolicyStore {
       const base::FilePath& profile_path,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
-  // The username from signin for validation of the policy.
-  std::string signin_username() const { return signin_username_; }
+  // The account id from signin for validation of the policy.
+  const AccountId& signin_account_id() const { return account_id_; }
 
-  // Sets the username from signin for validation of the policy.
-  void SetSigninUsername(const std::string& username);
+  // Sets the account id from signin for validation of the policy.
+  void SetSigninAccountId(const AccountId& account_id);
 
  private:
   void Validate(
@@ -132,8 +133,8 @@ class POLICY_EXPORT UserCloudPolicyStore : public DesktopCloudPolicyStore {
       bool validate_in_background,
       const UserCloudPolicyValidator::CompletionCallback& callback) override;
 
-  // The username from signin for validation of the policy.
-  std::string signin_username_;
+  // The account id from signin for validation of the policy.
+  AccountId account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStore);
 };

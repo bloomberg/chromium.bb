@@ -422,8 +422,8 @@ std::unique_ptr<UserCloudPolicyStore> UserCloudPolicyStore::Create(
       new UserCloudPolicyStore(policy_path, key_path, background_task_runner));
 }
 
-void UserCloudPolicyStore::SetSigninUsername(const std::string& username) {
-  signin_username_ = username;
+void UserCloudPolicyStore::SetSigninAccountId(const AccountId& account_id) {
+  account_id_ = account_id;
 }
 
 void UserCloudPolicyStore::Validate(
@@ -443,14 +443,14 @@ void UserCloudPolicyStore::Validate(
   // initialization is complete (http://crbug.com/342327).
   std::string owning_domain;
 
-  // Validate the username if the user is signed in. The signin_username_ can
+  // Validate the account id if the user is signed in. The account_id_ can
   // be empty during initial policy load because this happens before the
   // Prefs subsystem is initialized.
-  if (!signin_username_.empty()) {
-    DVLOG(1) << "Validating username: " << signin_username_;
-    validator->ValidateUsername(signin_username_, true);
-    owning_domain = gaia::ExtractDomainName(
-        gaia::CanonicalizeEmail(gaia::SanitizeEmail(signin_username_)));
+  if (account_id_.is_valid()) {
+    DVLOG(1) << "Validating account: " << account_id_;
+    validator->ValidateUser(account_id_);
+    owning_domain = gaia::ExtractDomainName(gaia::CanonicalizeEmail(
+        gaia::SanitizeEmail(account_id_.GetUserEmail())));
   }
 
   ValidateKeyAndSignature(validator.get(), cached_key.get(), owning_domain);

@@ -63,3 +63,10 @@ bool AccountInfo::UpdateWith(const AccountInfo& other) {
 
   return modified;
 }
+
+AccountId AccountInfo::GetAccountId() const {
+  if (IsEmpty())
+    return EmptyAccountId();
+  DCHECK(!email.empty() && !gaia.empty());
+  return AccountId::FromUserEmailGaiaId(email, gaia);
+}

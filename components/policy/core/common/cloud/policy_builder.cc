@@ -366,7 +366,7 @@ std::vector<std::string> PolicyBuilder::GetUserAffiliationIds() {
 }
 
 // static
-AccountId PolicyBuilder::GetFakeAccountId() {
+AccountId PolicyBuilder::GetFakeAccountIdForTesting() {
   return AccountId::FromUserEmailGaiaId(kFakeUsername, kFakeGaiaId);
 }
 
