@@ -290,7 +290,14 @@
 }
 
 - (CGFloat)overscrollHeaderHeight {
-  return [self.headerController toolBarView].bounds.size.height;
+  CGFloat height = [self.headerController toolBarView].bounds.size.height;
+  CGFloat topInset = 0.0;
+  if (@available(iOS 11, *)) {
+    topInset = self.suggestionsViewController.view.safeAreaInsets.top;
+  } else {
+    topInset = self.suggestionsViewController.topLayoutGuide.length;
+  }
+  return height + topInset;
 }
 
 #pragma mark - NewTabPagePanelProtocol

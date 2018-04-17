@@ -1816,6 +1816,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Update the toolbar visibility.
   [self updateToolbar];
+
+  // Normally this happens in -viewSafeAreaInsetsDidChange, but added here to
+  // support iOS10.
+  if (IsUIRefreshPhase1Enabled() && !base::ios::IsRunningOnIOS11OrLater()) {
+    [self setUpViewLayout:NO];
+  }
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size

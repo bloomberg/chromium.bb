@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
 
+#include "base/ios/ios_util.h"
+#import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_controlling.h"
@@ -160,10 +162,18 @@ initWithCollectionController:
   }
 
   if (self.shouldAnimateHeader) {
+    UIEdgeInsets insets = SafeAreaInsetsForView(self.collectionView);
+    if (IsUIRefreshPhase1Enabled() && !base::ios::IsRunningOnIOS11OrLater()) {
+      UIViewController* collectionController =
+          base::mac::ObjCCastStrict<UIViewController>(
+              self.collectionController);
+      insets =
+          UIEdgeInsetsMake(collectionController.topLayoutGuide.length, 0, 0, 0);
+    }
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
                        screenWidth:self.collectionView.frame.size.width
-                    safeAreaInsets:SafeAreaInsetsForView(self.collectionView)];
+                    safeAreaInsets:insets];
   }
 }
 
