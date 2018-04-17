@@ -204,7 +204,7 @@ InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
 }
 
 // TODO(xiaochengh): Unify left and right edge handling with template.
-InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
+InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
     InlineBox* inline_box,
     int caret_offset,
     UnicodeBidi unicode_bidi) {
@@ -394,9 +394,59 @@ PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPositionAlgorithm(
   return AdjustBlockFlowPositionToInline(position.GetPosition());
 }
 
+// Returns true if |layout_object| and |offset| points after line end.
+template <typename Strategy>
+bool NeedsLineEndAdjustment(
+    const PositionWithAffinityTemplate<Strategy>& adjusted) {
+  const PositionTemplate<Strategy>& position = adjusted.GetPosition();
+  const LayoutObject& layout_object = *position.AnchorNode()->GetLayoutObject();
+  if (!layout_object.IsText())
+    return false;
+  const LayoutText& layout_text = ToLayoutText(layout_object);
+  if (layout_text.IsBR())
+    return position.IsAfterAnchor();
+  // For normal text nodes.
+  if (!layout_text.Style()->PreserveNewline())
+    return false;
+  if (!layout_text.TextLength() ||
+      layout_text.CharacterAt(layout_text.TextLength() - 1) != '\n')
+    return false;
+  if (position.IsAfterAnchor())
+    return true;
+  return position.IsOffsetInAnchor() &&
+         position.OffsetInContainerNode() ==
+             static_cast<int>(layout_text.TextLength());
+}
+
+// Returns the first InlineBoxPosition at next line of last InlineBoxPosition
+// in |layout_object| if it exists to avoid making InlineBoxPosition at end of
+// line.
+template <typename Strategy>
+InlineBoxPosition NextLinePositionOf(
+    const PositionWithAffinityTemplate<Strategy>& adjusted) {
+  const PositionTemplate<Strategy>& position = adjusted.GetPosition();
+  const LayoutText& layout_text =
+      ToLayoutTextOrDie(*position.AnchorNode()->GetLayoutObject());
+  InlineTextBox* const last = layout_text.LastTextBox();
+  if (!last)
+    return InlineBoxPosition();
+  const RootInlineBox& root = last->Root();
+  const RootInlineBox* const next_root = root.NextRootBox();
+  if (!next_root)
+    return InlineBoxPosition();
+  InlineBox* const inline_box = next_root->FirstLeafChild();
+  auto ans = AdjustInlineBoxPositionForTextDirection(
+      inline_box, inline_box->CaretMinOffset(),
+      layout_text.Style()->GetUnicodeBidi());
+  return ans;
+}
+
 template <typename Strategy>
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& adjusted) {
+  if (NeedsLineEndAdjustment(adjusted))
+    return NextLinePositionOf(adjusted);
+
   const PositionTemplate<Strategy>& position = adjusted.GetPosition();
   DCHECK(!position.AnchorNode()->IsShadowRoot()) << adjusted;
   DCHECK(position.AnchorNode()->GetLayoutObject()) << adjusted;
@@ -468,14 +518,6 @@ InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
     const PositionInFlatTreeWithAffinity& position) {
   return ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(position);
-}
-
-InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
-    InlineBox* inline_box,
-    int caret_offset,
-    UnicodeBidi unicode_bidi) {
-  return AdjustInlineBoxPositionForTextDirectionInternal(
-      inline_box, caret_offset, unicode_bidi);
 }
 
 }  // namespace blink
