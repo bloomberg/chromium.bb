@@ -94,9 +94,13 @@ class AudioSinkAudioTrackImpl {
     private static final long TIMESTAMP_UPDATE_PERIOD = 250 * MSEC_IN_NSEC;
     private static final long UNDERRUN_LOG_THROTTLE_PERIOD = SEC_IN_NSEC;
 
-    private static long sInstanceCounter;
+    // Internally Android fetches data from AudioTrack buffer in periods of 20ms.
+    private static final long ANDROID_AUDIO_PERIOD_SIZE_US = 20000;
 
-    private String mTag = TAG;
+    // Threshold at which we start logging low buffer warnings.
+    private static final long VERY_LOW_BUFFER_LEVEL = ANDROID_AUDIO_PERIOD_SIZE_US;
+
+    private static long sInstanceCounter;
 
     // Maximum amount a timestamp may deviate from the previous one to be considered stable at
     // startup or after an underrun event.
@@ -113,7 +117,7 @@ class AudioSinkAudioTrackImpl {
     private static final long MAX_TIME_IGNORING_TSTAMPS_NSECS = SEC_IN_NSEC;
 
     // Additional padding for minimum buffer time, determined experimentally.
-    private static final long MIN_BUFFERED_TIME_PADDING_US = 20000;
+    private static final long MIN_BUFFERED_TIME_PADDING_US = ANDROID_AUDIO_PERIOD_SIZE_US;
 
     private static AudioManager sAudioManager = null;
 
@@ -121,6 +125,12 @@ class AudioSinkAudioTrackImpl {
     private static int sSessionIdCommunication = AudioManager.ERROR;
 
     private final long mNativeAudioSinkAudioTrackImpl;
+
+    private String mTag = TAG;
+
+    private ThrottledLog mBufferLevelWarningLog;
+    private ThrottledLog mUnderrunWarningLog;
+    private ThrottledLog mTStampJitterWarningLog;
 
     private enum ReferenceTimestampState {
         STARTING_UP, // Starting up, no valid reference time yet.
@@ -155,8 +165,10 @@ class AudioSinkAudioTrackImpl {
     private boolean mTriggerTimestampUpdateNow; // Set to true to trigger an early update.
     private long mTimestampStabilityCounter; // Counts consecutive stable timestamps at startup.
     private long mTimestampStabilityStartTimeNsec; // Time when we started being stable.
+
+    private long mLastRenderingDelayUsecs;
+
     private int mLastUnderrunCount;
-    private long mLastUnderrunLogNsec;
 
     // Statistics
     private long mTotalFramesWritten;
@@ -238,7 +250,7 @@ class AudioSinkAudioTrackImpl {
     private void reset() {
         mIsInitialized = false;
         mLastTimestampUpdateNsec = NO_TIMESTAMP;
-        mLastUnderrunLogNsec = NO_TIMESTAMP;
+        mLastRenderingDelayUsecs = NO_TIMESTAMP;
         mTriggerTimestampUpdateNow = false;
         mTimestampStabilityCounter = 0;
         mReferenceTimestampState = ReferenceTimestampState.STARTING_UP;
@@ -265,6 +277,12 @@ class AudioSinkAudioTrackImpl {
     private void init(
             @AudioContentType int castContentType, int sampleRateInHz, int bytesPerBuffer) {
         mTag = TAG + "(" + castContentType + ":" + (sInstanceCounter++) + ")";
+
+        // Setup throttled logs: pass the first 5, then every 1sec, reset after 5.
+        mBufferLevelWarningLog = new ThrottledLog(Log::w, 5, 1000, 5000);
+        mUnderrunWarningLog = new ThrottledLog(Log::w, 5, 1000, 5000);
+        mTStampJitterWarningLog = new ThrottledLog(Log::w, 5, 1000, 5000);
+
         Log.i(mTag,
                 "Init:"
                         + " sampleRateInHz=" + sampleRateInHz
@@ -440,6 +458,9 @@ class AudioSinkAudioTrackImpl {
             return -1;
         }
 
+        // Check buffer level before feeding in new data.
+        if (haveValidRefPoint()) checkBufferLevel();
+
         // Setup the PCM ByteBuffer correctly.
         mPcmBuffer.limit(sizeInBytes);
         mPcmBuffer.position(0);
@@ -504,6 +525,19 @@ class AudioSinkAudioTrackImpl {
         return System.nanoTime() - startTimeNsec;
     }
 
+    private void checkBufferLevel() {
+        long bufferLevel = mTotalFramesWritten - mAudioTrack.getPlaybackHeadPosition();
+        long bufferLevelUsec = convertNsecsToUsecs(convertFramesToNanoTime(bufferLevel));
+        if (bufferLevelUsec <= VERY_LOW_BUFFER_LEVEL) {
+            long lastRenderingDelayUsec =
+                    (mLastRenderingDelayUsecs == NO_TIMESTAMP) ? -1 : mLastRenderingDelayUsecs;
+            boolean hitUnderrun = (getUnderrunCount() != mLastUnderrunCount);
+            mBufferLevelWarningLog.log(mTag,
+                    "Low buffer level=" + bufferLevelUsec + "us "
+                            + " RD=" + lastRenderingDelayUsec + (hitUnderrun ? "us *" : "us"));
+        }
+    }
+
     private void updateSampleRateMeasure(long framesWritten) {
         if (mSRWindowFramesWritten == 0) {
             // Start new window.
@@ -528,6 +562,7 @@ class AudioSinkAudioTrackImpl {
             // No timestamp available yet, just put dummy values and return.
             mRenderingDelayBuffer.putLong(0, 0);
             mRenderingDelayBuffer.putLong(8, NO_TIMESTAMP);
+            mLastRenderingDelayUsecs = NO_TIMESTAMP;
             return;
         }
 
@@ -540,6 +575,7 @@ class AudioSinkAudioTrackImpl {
         // Populate RenderingDelay return value for native land.
         mRenderingDelayBuffer.putLong(0, delayUsecs);
         mRenderingDelayBuffer.putLong(8, nowUsecs);
+        mLastRenderingDelayUsecs = delayUsecs;
 
         if (DEBUG_LEVEL >= 3) {
             Log.i(mTag, "RenderingDelay: delay=" + delayUsecs + " play=" + nowUsecs);
@@ -580,7 +616,9 @@ class AudioSinkAudioTrackImpl {
     private void checkForUnderruns() {
         int underruns = getUnderrunCount();
         if (underruns != mLastUnderrunCount) {
-            logUnderruns(underruns);
+            mUnderrunWarningLog.log(mTag,
+                    "Underrun detected (" + mLastUnderrunCount + "->" + underruns
+                            + ")! Resetting rendering delay logic.");
             // Invalidate timestamp (resets RenderingDelay).
             mLastTimestampUpdateNsec = NO_TIMESTAMP;
             mLastUnderrunCount = underruns;
@@ -691,7 +729,8 @@ class AudioSinkAudioTrackImpl {
                 // Currently none of the devices using this code do this.
                 long devNsec = mRefNanoTimeAtFramePos0 - newNanoTimeAtFramePos0;
                 if (Math.abs(devNsec) > TSTAMP_DEV_THRESHOLD_TO_IGNORE_NSEC) {
-                    Log.i(mTag, "Too jittery timestamp (" + convertNsecsToUsecs(devNsec) + ")");
+                    mTStampJitterWarningLog.log(
+                            mTag, "Too jittery timestamp (" + convertNsecsToUsecs(devNsec) + ")");
                     long timeSinceLastGoodTstamp = elapsedNsec(mLastTimestampUpdateNsec);
                     if (timeSinceLastGoodTstamp <= MAX_TIME_IGNORING_TSTAMPS_NSECS) {
                         return; // Ignore this one.
@@ -720,18 +759,6 @@ class AudioSinkAudioTrackImpl {
 
         mLastTimestampUpdateNsec = System.nanoTime();
         mTriggerTimestampUpdateNow = false;
-    }
-
-    /** Logs underruns in a throttled manner. */
-    private void logUnderruns(int newUnderruns) {
-        if (DEBUG_LEVEL >= 1
-                || (mLastUnderrunLogNsec == NO_TIMESTAMP
-                           || elapsedNsec(mLastUnderrunLogNsec) > UNDERRUN_LOG_THROTTLE_PERIOD)) {
-            Log.i(mTag,
-                    "Underrun detected (" + mLastUnderrunCount + "->" + newUnderruns
-                            + ")! Resetting rendering delay logic.");
-            mLastUnderrunLogNsec = System.nanoTime();
-        }
     }
 
     //
