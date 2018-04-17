@@ -2110,7 +2110,6 @@ class MainThreadSchedulerImplWithMessageLoopTest
   void PostFromNestedRunloop(
       std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>*
           tasks) {
-    base::MessageLoop::ScopedNestableTaskAllower allow(message_loop_.get());
     for (std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>& pair : *tasks) {
       if (pair.second) {
         idle_task_runner_->PostIdleTask(FROM_HERE, std::move(pair.first));
@@ -2120,7 +2119,7 @@ class MainThreadSchedulerImplWithMessageLoopTest
       }
     }
     EnableIdleTasks();
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
   }
 
  private:
