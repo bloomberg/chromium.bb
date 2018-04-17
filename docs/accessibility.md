@@ -6,6 +6,7 @@
 ## Cross-Platform
 
 * [Offscreen, Invisible and Size](accessibility/offscreen.md)
+* [Text to Speech in Chrome and Chrome OS](accessibility/tts.md)
 
 ## Chrome OS
 
