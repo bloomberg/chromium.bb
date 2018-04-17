@@ -663,7 +663,6 @@ void AudioInputController::CheckMutedState() {
   const bool new_state = stream_->IsMuted();
   if (new_state != is_muted_) {
     is_muted_ = new_state;
-    // We don't log OnMuted here, but leave that for AudioInputRendererHost.
     handler_->OnMuted(is_muted_);
   }
 }

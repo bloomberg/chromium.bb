@@ -69,8 +69,6 @@ class CONTENT_EXPORT RendererAudioOutputStreamFactoryContextImpl
       media::mojom::AudioOutputStreamObserverPtr stream_observer,
       media::AudioOutputDelegate::EventHandler* handler) override;
 
-  static bool UseMojoFactories();
-
  private:
   // Used for hashing the device_id.
   media::AudioSystem* const audio_system_;

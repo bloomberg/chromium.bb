@@ -421,16 +421,6 @@ const base::Feature kUnifiedTouchAdjustment{"UnifiedTouchAdjustment",
 const base::Feature kUseFeaturePolicyForPermissions{
     "UseFeaturePolicyForPermissions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use MojoAudioInputIPC and RenderFrameAudioInputStreamFactory rather than
-// AudioInputMessageFilter and AudioInputRendererHost.
-const base::Feature kUseMojoAudioInputStreamFactory{
-    "UseMojoAudioInputStreamFactory", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Use MojoAudioOutputIPC and RenderFrameAudioOutputStreamFactory rather than
-// AudioMessageFilter and AudioRendererHost.
-const base::Feature kUseMojoAudioOutputStreamFactory{
-    "UseMojoAudioOutputStreamFactory", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // An experimental simple user-activation model where the user gesture state is
 // tracked through a frame-based state instead of the gesture tokens we use
 // today.

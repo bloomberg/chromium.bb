@@ -82,12 +82,6 @@ RenderFrameAudioInputStreamFactory::~RenderFrameAudioInputStreamFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-// static
-bool RenderFrameAudioInputStreamFactory::UseMojoFactories() {
-  return base::FeatureList::IsEnabled(
-      features::kUseMojoAudioInputStreamFactory);
-}
-
 void RenderFrameAudioInputStreamFactory::CreateStream(
     mojom::RendererAudioInputStreamFactoryClientPtr client,
     int32_t session_id,

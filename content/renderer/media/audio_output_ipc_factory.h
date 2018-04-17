@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
-#include "content/renderer/media/audio_message_filter.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -27,20 +26,18 @@ class InterfaceProvider;
 
 namespace content {
 
-// This is a factory for AudioOutputIPC objects. It has two modes, using either
-// AudioMessageFilter or Mojo RendererAudioOutputStreamFactory objects. It is
-// threadsafe. This class is designed to be leaked at shutdown, as it posts
-// tasks to itself using base::Unretained and also hands out references to
-// itself in the AudioOutputIPCs it creates, but in the case where the owner is
-// sure that there are no outstanding references (such as in a unit test), the
-// class can be destructed.
+// This is a factory for AudioOutputIPC objects. It is threadsafe. This class
+// is designed to be leaked at shutdown, as it posts tasks to itself using
+// base::Unretained and also hands out references to itself in the
+// AudioOutputIPCs it creates, but in the case where the owner is sure that
+// there are no outstanding references (such as in a unit test), the class can
+// be destructed.
 // TODO(maxmorin): Registering the factories for each frame will become
 // unnecessary when https://crbug.com/668275 is fixed. When that is done, this
 // class can be greatly simplified.
 class CONTENT_EXPORT AudioOutputIPCFactory {
  public:
   AudioOutputIPCFactory(
-      scoped_refptr<AudioMessageFilter> audio_message_filter,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~AudioOutputIPCFactory();
 
@@ -52,7 +49,7 @@ class CONTENT_EXPORT AudioOutputIPCFactory {
 
   // Enables |this| to create MojoAudioOutputIPCs for the specified frame.
   // Does nothing if not using mojo factories.
-  void MaybeRegisterRemoteFactory(
+  void RegisterRemoteFactory(
       int frame_id,
       service_manager::InterfaceProvider* interface_provider);
 
@@ -81,9 +78,6 @@ class CONTENT_EXPORT AudioOutputIPCFactory {
 
   // Maps frame id to the corresponding factory.
   StreamFactoryMap factory_ptrs_;
-
-  // If this is non-null, it will be used rather than using mojo implementation.
-  const scoped_refptr<AudioMessageFilter> audio_message_filter_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
