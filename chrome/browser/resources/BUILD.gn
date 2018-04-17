@@ -10,17 +10,8 @@ assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 if (closure_compile) {
   group("closure_compile") {
     deps = [
-      "cryptotoken:closure_compile",
       "engagement:closure_compile",
       "md_bookmarks:closure_compile",
-      "md_downloads:closure_compile",
-      "md_extensions:closure_compile",
-      "md_history:closure_compile",
-      "md_user_manager:closure_compile",
-      "offline_pages:closure_compile",
-      "signin/dice_sync_confirmation:closure_compile",
-      "webapks:closure_compile",
-      "welcome/dice_welcome:closure_compile",
     ]
   }
 }
