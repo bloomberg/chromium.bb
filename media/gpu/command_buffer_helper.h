@@ -18,6 +18,11 @@ namespace gpu {
 class CommandBufferStub;
 }  // namespace gpu
 
+namespace gl {
+class GLContext;
+class GLImage;
+}  // namespace gl
+
 namespace media {
 
 // TODO(sandersd): CommandBufferHelper does not inherently need to be ref
@@ -34,6 +39,13 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   static scoped_refptr<CommandBufferHelper> Create(
       gpu::CommandBufferStub* stub);
 
+  // Gets the associated GLContext.
+  //
+  // Used by DXVAVDA to test for D3D11 support, and by V4L2VDA to create
+  // EGLImages. New clients should use more specialized accessors instead.
+  virtual gl::GLContext* GetGLContext() = 0;
+
+  // Makes the GL context current.
   virtual bool MakeContextCurrent() = 0;
 
   // Creates a texture and returns its |service_id|.
@@ -60,15 +72,27 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   // The context must be current.
   virtual void DestroyTexture(GLuint service_id) = 0;
 
+  // Sets the cleared flag on level 0 of the texture.
+  virtual void SetCleared(GLuint service_id) = 0;
+
+  // Binds level 0 of the texture to an image.
+  //
+  // If the sampler binding already exists, set |can_bind_to_sampler| to true.
+  // Otherwise set it to false, and BindTexImage()/CopyTexImage() will be called
+  // when the texture is used.
+  //
+  // TODO(sandersd): Should we expose ImageState directly, rather than
+  // |can_bind_to_sampler|?
+  virtual bool BindImage(GLuint service_id,
+                         gl::GLImage* image,
+                         bool can_bind_to_sampler) = 0;
+
   // Creates a mailbox for a texture.
   //
   // TODO(sandersd): Specify the behavior when the stub has been destroyed. The
   // current implementation returns an empty (zero) mailbox. One solution would
   // be to add a HasStub() method, and not define behavior when it is false.
   virtual gpu::Mailbox CreateMailbox(GLuint service_id) = 0;
-
-  // Marks layer 0 of the texture as cleared.
-  virtual void SetCleared(GLuint service_id) = 0;
 
   // Waits for a SyncToken, then runs |done_cb|.
   //
