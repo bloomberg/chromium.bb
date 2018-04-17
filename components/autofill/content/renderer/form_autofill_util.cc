@@ -9,12 +9,12 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -1011,12 +1011,12 @@ bool ExtractFieldsFromControlElements(
       continue;
 
     // Create a new FormFieldData, fill it out and map it to the field's name.
-    FormFieldData* form_field = new FormFieldData;
+    auto form_field = std::make_unique<FormFieldData>();
     WebFormControlElementToFormField(control_element,
                                      field_value_and_properties_map,
-                                     extract_mask, form_field);
-    form_fields->push_back(base::WrapUnique(form_field));
-    (*element_map)[control_element] = form_field;
+                                     extract_mask, form_field.get());
+    (*element_map)[control_element] = form_field.get();
+    form_fields->push_back(std::move(form_field));
     (*fields_extracted)[i] = true;
 
     // To avoid overly expensive computation, we impose a maximum number of
