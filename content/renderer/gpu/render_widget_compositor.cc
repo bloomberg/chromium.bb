@@ -68,7 +68,6 @@
 #include "media/base/media_switches.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
-#include "third_party/blink/public/platform/web_composite_and_readback_async_callback.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
@@ -1020,7 +1019,7 @@ void RenderWidgetCompositor::InvokeLayoutAndPaintCallback() {
 }
 
 void RenderWidgetCompositor::CompositeAndReadbackAsync(
-    blink::WebCompositeAndReadbackAsyncCallback* callback) {
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   DCHECK(layout_and_paint_async_callback_.is_null());
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner();
@@ -1028,17 +1027,14 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           base::BindOnce(
-              [](blink::WebCompositeAndReadbackAsyncCallback* callback,
+              [](base::OnceCallback<void(const SkBitmap&)> callback,
                  scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                  std::unique_ptr<viz::CopyOutputResult> result) {
                 task_runner->PostTask(
                     FROM_HERE,
-                    base::BindOnce(
-                        &blink::WebCompositeAndReadbackAsyncCallback::
-                            DidCompositeAndReadback,
-                        base::Unretained(callback), result->AsSkBitmap()));
+                    base::BindOnce(std::move(callback), result->AsSkBitmap()));
               },
-              callback, std::move(main_thread_task_runner)));
+              std::move(callback), std::move(main_thread_task_runner)));
   auto swap_promise =
       delegate_->RequestCopyOfOutputForLayoutTest(std::move(request));
 

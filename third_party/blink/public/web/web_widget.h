@@ -47,9 +47,10 @@
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 
+class SkBitmap;
+
 namespace blink {
 
-class WebCompositeAndReadbackAsyncCallback;
 class WebCoalescedInputEvent;
 class WebLayerTreeView;
 class WebPagePopup;
@@ -123,11 +124,9 @@ class WebWidget {
   // Run layout and paint of all pending document changes asynchronously.
   virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}
 
-  // The caller is responsible for keeping the
-  // WebCompositeAndReadbackAsyncCallback object alive until it is called. This
-  // should only be called when isAcceleratedCompositingActive() is true.
+  // This should only be called when isAcceleratedCompositingActive() is true.
   virtual void CompositeAndReadbackAsync(
-      WebCompositeAndReadbackAsyncCallback*) {}
+      base::OnceCallback<void(const SkBitmap&)> callback) {}
 
   // Called to inform the WebWidget of a change in theme.
   // Implementors that cache rendered copies of widgets need to re-render

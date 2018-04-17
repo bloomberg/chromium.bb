@@ -80,8 +80,8 @@ void WebViewFrameWidget::LayoutAndPaintAsync(base::OnceClosure callback) {
 }
 
 void WebViewFrameWidget::CompositeAndReadbackAsync(
-    WebCompositeAndReadbackAsyncCallback* callback) {
-  return web_view_->CompositeAndReadbackAsync(callback);
+    base::OnceCallback<void(const SkBitmap&)> callback) {
+  return web_view_->CompositeAndReadbackAsync(std::move(callback));
 }
 
 void WebViewFrameWidget::ThemeChanged() {

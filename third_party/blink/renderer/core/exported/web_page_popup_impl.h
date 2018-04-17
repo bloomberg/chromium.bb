@@ -67,7 +67,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   LocalDOMWindow* Window();
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
-      WebCompositeAndReadbackAsyncCallback*) override;
+      base::OnceCallback<void(const SkBitmap&)> callback) override;
   WebPoint PositionRelativeToOwner() override;
   void PostMessageToPopup(const String& message) override;
   void Cancel();

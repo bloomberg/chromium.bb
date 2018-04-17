@@ -150,7 +150,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidStopFlinging() override;
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
-      blink::WebCompositeAndReadbackAsyncCallback* callback) override;
+      base::OnceCallback<void(const SkBitmap&)> callback) override;
   void SynchronouslyCompositeNoRasterForTesting() override;
   void SetDeferCommits(bool defer_commits) override;
   void RegisterViewportLayers(

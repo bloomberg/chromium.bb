@@ -374,8 +374,8 @@ void WebFrameWidgetImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
 }
 
 void WebFrameWidgetImpl::CompositeAndReadbackAsync(
-    WebCompositeAndReadbackAsyncCallback* callback) {
-  layer_tree_view_->CompositeAndReadbackAsync(callback);
+    base::OnceCallback<void(const SkBitmap&)> callback) {
+  layer_tree_view_->CompositeAndReadbackAsync(std::move(callback));
 }
 
 void WebFrameWidgetImpl::ThemeChanged() {
