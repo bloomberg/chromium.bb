@@ -134,8 +134,8 @@ void InitLogging(const base::CommandLine& command_line) {
 
 namespace content {
 
-ShellMainDelegate::ShellMainDelegate(bool is_browsertest)
-    : is_browsertest_(is_browsertest) {}
+ShellMainDelegate::ShellMainDelegate() {
+}
 
 ShellMainDelegate::~ShellMainDelegate() {
 }
@@ -401,7 +401,7 @@ ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
 }
 
 ContentUtilityClient* ShellMainDelegate::CreateContentUtilityClient() {
-  utility_client_.reset(new ShellContentUtilityClient(is_browsertest_));
+  utility_client_.reset(new ShellContentUtilityClient);
   return utility_client_.get();
 }
 
