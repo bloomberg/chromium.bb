@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_signin_promo_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -184,6 +185,8 @@ const int kRelativeTimeMaxHours = 4;
   header.text = l10n_util::GetNSString(IDS_IOS_RECENT_TABS_RECENTLY_CLOSED);
   [model setHeader:header
       forSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
+  header.collapsed = [self.tableViewModel
+      sectionIsCollapsed:SectionIdentifierRecentlyClosedTabs];
 
   // Add Recently Closed Tabs Cells.
   [self addRecentlyClosedTabItems];
@@ -291,6 +294,7 @@ const int kRelativeTimeMaxHours = 4;
     header.subtitleText = l10n_util::GetNSStringF(
         IDS_IOS_OPEN_TABS_LAST_USED,
         base::SysNSStringToUTF16([self lastSyncStringForSesssion:session]));
+    header.collapsed = [model sectionIsCollapsed:sessionIdentifier];
     [model setHeader:header forSectionWithIdentifier:sessionIdentifier];
     [self addItemsForSession:session];
   }
@@ -379,6 +383,7 @@ const int kRelativeTimeMaxHours = 4;
       [[TableViewDisclosureHeaderFooterItem alloc]
           initWithType:ItemTypeRecentlyClosedHeader];
   header.text = l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
+  header.collapsed = [model sectionIsCollapsed:SectionIdentifierOtherDevices];
   [model setHeader:header
       forSectionWithIdentifier:SectionIdentifierOtherDevices];
 
@@ -773,15 +778,30 @@ const int kRelativeTimeMaxHours = 4;
     [self toggleExpansionOfSectionIdentifier:
               self.lastTappedHeaderSectionIdentifier];
 
-    // Highlight the section header being tapped.
     NSInteger section = [self.tableViewModel
         sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
     UITableViewHeaderFooterView* headerView =
         [self.tableView headerViewForSection:section];
-    TableViewDisclosureHeaderFooterView* headerTextView =
-        base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
-            headerView);
-    [headerTextView animateHighlight];
+    ListItem* headerItem = [self.tableViewModel headerForSection:section];
+    // Highlight and collapse the section header being tapped.
+    // Don't for the Loading Other Devices section header.
+    if (headerItem.type == ItemTypeRecentlyClosedHeader ||
+        headerItem.type == ItemTypeSessionHeader) {
+      TableViewDisclosureHeaderFooterView* disclosureHeaderView =
+          base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
+              headerView);
+      TableViewDisclosureHeaderFooterItem* disclosureItem =
+          base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterItem>(
+              headerItem);
+      BOOL collapsed = [self.tableViewModel
+          sectionIsCollapsed:[self.tableViewModel
+                                 sectionIdentifierForSection:section]];
+      DisclosureDirection direction =
+          collapsed ? DisclosureDirectionRight : DisclosureDirectionDown;
+
+      [disclosureHeaderView animateHighlightAndRotateToDirection:direction];
+      disclosureItem.collapsed = collapsed;
+    }
   }
 }
 
@@ -833,12 +853,16 @@ const int kRelativeTimeMaxHours = 4;
     // Highlight the section header being long pressed.
     NSInteger section = [self.tableViewModel
         sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
+    ListItem* headerItem = [self.tableViewModel headerForSection:section];
     UITableViewHeaderFooterView* headerView =
         [self.tableView headerViewForSection:section];
-    TableViewDisclosureHeaderFooterView* headerTextView =
-        base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
-            headerView);
-    [headerTextView animateHighlight];
+    if (headerItem.type == ItemTypeRecentlyClosedHeader ||
+        headerItem.type == ItemTypeSessionHeader) {
+      TableViewDisclosureHeaderFooterView* textHeaderView =
+          base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
+              headerView);
+      [textHeaderView animateHighlight];
+    }
 
     web::ContextMenuParams params;
     // Get view coordinates in local space.
