@@ -173,23 +173,56 @@ cr.define('settings_sections_tests', function() {
          ]
        },
        {option: [{type: 'STANDARD_MONOCHROME', is_default: true}]},
+       {option: [
+         {type: 'CUSTOM_MONOCHROME', is_default: true, vendor_id: '42'}
+       ]},
+       {option: [{type: 'CUSTOM_COLOR', is_default: true, vendor_id: '42'}]},
       ].forEach(colorCap => {
         capabilities =
             print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
         capabilities.printer.color = colorCap;
         // Layout section should now be hidden.
         page.set('destination_.capabilities', capabilities);
-        expectEquals(true, colorElement.hidden);
+        assertTrue(colorElement.hidden);
       });
 
-      // Custom color and monochrome options should make the section visible.
-      capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      capabilities.printer.color =
-        {option: [{ type: 'CUSTOM_COLOR', is_default: true },
-                  { type: 'CUSTOM_MONOCHROME' }]};
-      page.set('destination_.capabilities', capabilities);
-      expectEquals(false, colorElement.hidden);
+      // Each of these settings should show the capability with the default
+      // value given by expectedValue.
+      [
+        {
+          colorCap: {
+            option: [{type: 'STANDARD_MONOCHROME', is_default: true},
+                     {type: 'STANDARD_COLOR'}]
+          },
+          expectedValue: false,
+        },
+        {
+          colorCap: {
+            option: [{type: 'STANDARD_MONOCHROME'},
+                     {type: 'STANDARD_COLOR', is_default: true}]
+          },
+          expectedValue: true,
+        },
+        {
+          colorCap: {
+            option: [
+              {type: 'CUSTOM_MONOCHROME', vendor_id: '42'},
+              {type: 'CUSTOM_COLOR', is_default: true, vendor_id: '43'}
+            ]
+          },
+          expectedValue: true,
+        }
+      ].forEach(capabilityAndValue => {
+        capabilities =
+            print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
+        capabilities.printer.color = capabilityAndValue.colorCap;
+        page.set('destination_.capabilities', capabilities);
+        assertFalse(colorElement.hidden);
+        assertEquals(capabilityAndValue.expectedValue ? 'color' : 'bw',
+                     colorElement.$$('select').value);
+        assertEquals(capabilityAndValue.expectedValue,
+                     page.settings.color.value);
+      });
     });
 
     test(assert(TestNames.MediaSize), function() {
