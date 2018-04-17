@@ -28,6 +28,8 @@ namespace media {
 namespace mp4 {
 
 struct Movie;
+struct MovieHeader;
+struct TrackHeader;
 class BoxReader;
 
 class MEDIA_EXPORT MP4StreamParser : public StreamParser {
@@ -47,6 +49,10 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
             MediaLog* media_log) override;
   void Flush() override;
   bool Parse(const uint8_t* buf, int size) override;
+
+  // Calculates the rotation value from the track header display matricies.
+  VideoRotation CalculateRotation(const TrackHeader& track,
+                                  const MovieHeader& movie);
 
  private:
   enum State {

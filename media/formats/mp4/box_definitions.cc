@@ -386,7 +386,7 @@ bool MovieHeader::Parse(BoxReader* reader) {
   RCHECK(reader->Read4s(&rate) &&
          reader->Read2s(&volume) &&
          reader->SkipBytes(10) &&  // reserved
-         reader->SkipBytes(36) &&  // matrix
+         reader->ReadDisplayMatrix(display_matrix) &&
          reader->SkipBytes(24) &&  // predefined zero
          reader->Read4(&next_track_id));
   return true;
@@ -427,7 +427,7 @@ bool TrackHeader::Parse(BoxReader* reader) {
          reader->Read2s(&alternate_group) &&
          reader->Read2s(&volume) &&
          reader->SkipBytes(2) &&  // reserved
-         reader->SkipBytes(36) &&  // matrix
+         reader->ReadDisplayMatrix(display_matrix) &&
          reader->Read4(&width) &&
          reader->Read4(&height));
 

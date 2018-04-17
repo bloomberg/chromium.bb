@@ -13,6 +13,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/numerics/math_constants.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -236,6 +237,71 @@ ParseResult MP4StreamParser::ParseBox() {
 
   queue_.Pop(reader->box_size());
   return ParseResult::kOk;
+}
+
+static inline double FixedToFloatingPoint(const int32_t& i) {
+  return static_cast<double>(i >> 16);
+}
+
+VideoRotation MP4StreamParser::CalculateRotation(const TrackHeader& track,
+                                                 const MovieHeader& movie) {
+  static_assert(kDisplayMatrixDimension == 9, "Display matrix must be 3x3");
+  // 3x3 matrix: [ a b c ]
+  //             [ d e f ]
+  //             [ x y z ]
+  int32_t rotation_matrix[kDisplayMatrixDimension] = {0};
+
+  // Shift values for fixed point multiplications.
+  const int32_t shifts[kDisplayMatrixHeight] = {16, 16, 30};
+
+  // Matrix multiplication for
+  // track.display_matrix * movie.display_matrix
+  // with special consideration taken that entries a-f are 16.16 fixed point
+  // decimals and x-z are 2.30 fixed point decimals.
+  for (int i = 0; i < kDisplayMatrixWidth; i++) {
+    for (int j = 0; j < kDisplayMatrixHeight; j++) {
+      for (int e = 0; e < kDisplayMatrixHeight; e++) {
+        rotation_matrix[i * kDisplayMatrixHeight + j] +=
+            ((int64_t)track.display_matrix[i * kDisplayMatrixHeight + e] *
+             movie.display_matrix[e * kDisplayMatrixHeight + j]) >>
+            shifts[e];
+      }
+    }
+  }
+
+  // Rotation by angle Θ is represented in the matrix as:
+  // [ cos(Θ), -sin(Θ), ...]
+  // [ sin(Θ),  cos(Θ), ...]
+  // [ ...,     ...,     1 ]
+  // But we only need cos(Θ) for the angle and sin(Θ) for the quadrant.
+  double angle = acos(FixedToFloatingPoint(rotation_matrix[0]))
+    * 180 / base::kPiDouble;
+
+  if (angle < 0)
+    angle += 360;
+
+  if (angle >= 360)
+    angle -= 360;
+
+  // 16 bits of fixed point decimal is enough to give 6 decimals of precision
+  // to cos(Θ). A delta of ±0.000001 causes acos(cos(Θ)) to differ by a minimum
+  // of 0.0002, which is why we only need to check that the angle is only
+  // accurate to within four decimal places. This is preferred to checking for
+  // a more precise accuracy, as the 'double' type is architecture dependant and
+  // ther may variance in floating point errors.
+  if (abs(angle - 0) < 1e-4)
+    return VIDEO_ROTATION_0;
+
+  if (abs(angle - 180) < 1e-4)
+    return VIDEO_ROTATION_180;
+
+  if (abs(angle - 90) < 1e-4) {
+    bool quadrant = asin(FixedToFloatingPoint(rotation_matrix[3])) < 0;
+    return quadrant ? VIDEO_ROTATION_90 : VIDEO_ROTATION_270;
+  }
+
+  // TODO(tmathmeyer): Record this event and the faulty matrix somewhere.
+  return VIDEO_ROTATION_0;
 }
 
 bool MP4StreamParser::ParseMoov(BoxReader* reader) {
@@ -472,8 +538,8 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       }
       video_config.Initialize(entry.video_codec, entry.video_codec_profile,
                               PIXEL_FORMAT_I420, COLOR_SPACE_HD_REC709,
-                              VIDEO_ROTATION_0, coded_size, visible_rect,
-                              natural_size,
+                              CalculateRotation(track->header, moov_->header),
+                              coded_size, visible_rect, natural_size,
                               // No decoder-specific buffer needed for AVC;
                               // SPS/PPS are embedded in the video stream
                               EmptyExtraData(), scheme);

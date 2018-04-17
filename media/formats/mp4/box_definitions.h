@@ -167,6 +167,12 @@ struct MEDIA_EXPORT MovieHeader : Box {
   uint64_t duration;
   int32_t rate;
   int16_t volume;
+  // A 3x3 matrix of [ A B C ]
+  //                 [ D E F ]
+  //                 [ U V W ]
+  // Where A-F are 16.16 fixed point decimals
+  // And U, V, W are 2.30 fixed point decimals.
+  DisplayMatrix display_matrix;
   uint32_t next_track_id;
 };
 
@@ -180,6 +186,7 @@ struct MEDIA_EXPORT TrackHeader : Box {
   int16_t layer;
   int16_t alternate_group;
   int16_t volume;
+  DisplayMatrix display_matrix;  // See MovieHeader.display_matrix
   uint32_t width;
   uint32_t height;
 };

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -33,6 +34,7 @@
 #include "media/formats/mp4/fourccs.h"
 #include "media/media_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::InSequence;
@@ -585,6 +587,56 @@ TEST_F(MP4StreamParserTest, MultiTrackFile) {
   EXPECT_EQ(audio_track2.label(), "SoundHandler");
   EXPECT_EQ(audio_track2.language(), "und");
 }
+
+// <cos(θ), sin(θ), θ expressed as a rotation Enum>
+using MatrixRotationTestCaseParam = std::tuple<double, double, VideoRotation>;
+
+class MP4StreamParserRotationMatrixEvaluatorTest
+    : public ::testing::TestWithParam<MatrixRotationTestCaseParam> {
+ public:
+  MP4StreamParserRotationMatrixEvaluatorTest() {
+    std::set<int> audio_object_types;
+    audio_object_types.insert(kISO_14496_3);
+    parser_.reset(new MP4StreamParser(audio_object_types, false, false));
+  }
+
+ protected:
+  std::unique_ptr<MP4StreamParser> parser_;
+};
+
+TEST_P(MP4StreamParserRotationMatrixEvaluatorTest, RotationCalculation) {
+  TrackHeader track_header;
+  MovieHeader movie_header;
+
+  // Identity matrix, with 16.16 and 2.30 fixed points.
+  uint32_t identity_matrix[9] = {1 << 16, 0, 0, 0, 1 << 16, 0, 0, 0, 1 << 30};
+
+  memcpy(movie_header.display_matrix, identity_matrix, sizeof(identity_matrix));
+  memcpy(track_header.display_matrix, identity_matrix, sizeof(identity_matrix));
+
+  MatrixRotationTestCaseParam data = GetParam();
+
+  // Insert fixed point decimal data into the rotation matrix.
+  track_header.display_matrix[0] = std::get<0>(data) * (1 << 16);
+  track_header.display_matrix[4] = std::get<0>(data) * (1 << 16);
+  track_header.display_matrix[1] = -(std::get<1>(data) * (1 << 16));
+  track_header.display_matrix[3] = std::get<1>(data) * (1 << 16);
+
+  EXPECT_EQ(parser_->CalculateRotation(track_header, movie_header),
+            std::get<2>(data));
+}
+
+MatrixRotationTestCaseParam rotation_test_cases[6] = {
+    {1, 0, VIDEO_ROTATION_0},     // cos(0)  = 1, sin(0)  = 0
+    {0, -1, VIDEO_ROTATION_90},   // cos(90) = 0, sin(90) =-1
+    {-1, 0, VIDEO_ROTATION_180},  // cos(180)=-1, sin(180)= 0
+    {0, 1, VIDEO_ROTATION_270},   // cos(270)= 0, sin(270)= 1
+    {1, 1, VIDEO_ROTATION_0},     // Error case
+    {5, 5, VIDEO_ROTATION_0},     // Error case
+};
+INSTANTIATE_TEST_CASE_P(CheckMath,
+                        MP4StreamParserRotationMatrixEvaluatorTest,
+                        testing::ValuesIn(rotation_test_cases));
 
 }  // namespace mp4
 }  // namespace media
