@@ -41,13 +41,14 @@
 
 namespace blink {
 class InspectedFrames;
+class WorkerGlobalScope;
 class WorkerInspectorProxy;
 
 class CORE_EXPORT InspectorWorkerAgent final
     : public InspectorBaseAgent<protocol::Target::Metainfo>,
       public WorkerInspectorProxy::PageInspector {
  public:
-  explicit InspectorWorkerAgent(InspectedFrames*);
+  InspectorWorkerAgent(InspectedFrames*, WorkerGlobalScope*);
   ~InspectorWorkerAgent() override;
   void Trace(blink::Visitor*) override;
 
@@ -80,7 +81,10 @@ class CORE_EXPORT InspectorWorkerAgent final
                                  int connection,
                                  const String& message) override;
 
+  // This is null while inspecting workers.
   Member<InspectedFrames> inspected_frames_;
+  // This is null while inspecting frames.
+  Member<WorkerGlobalScope> worker_global_scope_;
   HeapHashMap<int, Member<WorkerInspectorProxy>> connected_proxies_;
   HashMap<int, String> connection_to_session_id_;
   HashMap<String, int> session_id_to_connection_;

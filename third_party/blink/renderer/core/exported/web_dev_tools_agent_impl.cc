@@ -438,7 +438,8 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
   inspector_session_->Append(
       InspectorApplicationCacheAgent::Create(inspected_frames));
 
-  inspector_session_->Append(new InspectorWorkerAgent(inspected_frames));
+  inspector_session_->Append(
+      new InspectorWorkerAgent(inspected_frames, nullptr));
 
   tracing_agent_ = new InspectorTracingAgent(agent_, inspected_frames);
   inspector_session_->Append(tracing_agent_);

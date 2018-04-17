@@ -57,10 +57,6 @@ class CORE_EXPORT WorkerInspectorProxy final
   const String& InspectorId();
   WorkerThread* GetWorkerThread() { return worker_thread_; }
 
-  using WorkerInspectorProxySet =
-      PersistentHeapHashSet<WeakMember<WorkerInspectorProxy>>;
-  static const WorkerInspectorProxySet& AllProxies();
-
  private:
   WorkerInspectorProxy();
 

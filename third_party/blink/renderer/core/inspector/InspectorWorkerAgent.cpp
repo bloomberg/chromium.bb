@@ -32,7 +32,10 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/workers/execution_context_worker_registry.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -49,8 +52,11 @@ static const char kAttachedSessionIds[] = "attachedSessionIds";
 
 int InspectorWorkerAgent::s_last_connection_ = 0;
 
-InspectorWorkerAgent::InspectorWorkerAgent(InspectedFrames* inspected_frames)
-    : inspected_frames_(inspected_frames) {}
+InspectorWorkerAgent::InspectorWorkerAgent(
+    InspectedFrames* inspected_frames,
+    WorkerGlobalScope* worker_global_scope)
+    : inspected_frames_(inspected_frames),
+      worker_global_scope_(worker_global_scope) {}
 
 InspectorWorkerAgent::~InspectorWorkerAgent() = default;
 
@@ -158,12 +164,19 @@ void InspectorWorkerAgent::WorkerTerminated(WorkerInspectorProxy* proxy) {
 }
 
 void InspectorWorkerAgent::ConnectToAllProxies() {
-  for (WorkerInspectorProxy* proxy : WorkerInspectorProxy::AllProxies()) {
-    // For now we assume this is document. TODO(kinuko): Fix this.
-    DCHECK(proxy->GetExecutionContext()->IsDocument());
-    Document* document = ToDocument(proxy->GetExecutionContext());
-    if (document->GetFrame() &&
-        inspected_frames_->Contains(document->GetFrame())) {
+  if (worker_global_scope_) {
+    for (WorkerInspectorProxy* proxy :
+         ExecutionContextWorkerRegistry::From(*worker_global_scope_)
+             ->GetWorkerInspectorProxies()) {
+      ConnectToProxy(proxy, false);
+    }
+    return;
+  }
+
+  for (LocalFrame* frame : *inspected_frames_) {
+    for (WorkerInspectorProxy* proxy :
+         ExecutionContextWorkerRegistry::From(*frame->GetDocument())
+             ->GetWorkerInspectorProxies()) {
       ConnectToProxy(proxy, false);
     }
   }
@@ -243,6 +256,7 @@ void InspectorWorkerAgent::DispatchMessageFromWorker(
 void InspectorWorkerAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(connected_proxies_);
   visitor->Trace(inspected_frames_);
+  visitor->Trace(worker_global_scope_);
   InspectorBaseAgent::Trace(visitor);
 }
 
