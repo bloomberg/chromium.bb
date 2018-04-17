@@ -4383,3 +4383,24 @@ TEST_F(DiskCacheBackendTest, SparseEvict) {
   entry2->Close();
   entry0->Close();
 }
+
+TEST_F(DiskCacheBackendTest, InMemorySparseDoom) {
+  const int kMaxSize = 512;
+
+  SetMaxSize(kMaxSize);
+  SetMemoryOnlyMode();
+  InitCache();
+
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(64));
+  CacheTestFillBuffer(buffer->data(), 64, false);
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry("http://www.0.com/", &entry), IsOk());
+
+  ASSERT_EQ(net::ERR_FAILED, WriteSparseData(entry, 4337, buffer.get(), 64));
+  entry->Close();
+
+  // Dooming all entries at this point should properly iterate over
+  // the parent and its children
+  DoomAllEntries();
+}

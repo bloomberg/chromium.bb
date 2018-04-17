@@ -40,6 +40,19 @@ bool CheckLRUListOrder(const base::LinkedList<MemEntryImpl>& lru_list) {
   return true;
 }
 
+// Returns the next entry after |node| in |lru_list| that's not a child
+// of |node|.  This is useful when dooming, since dooming a parent entry
+// will also doom its children.
+base::LinkNode<MemEntryImpl>* NextSkippingChildren(
+    const base::LinkedList<MemEntryImpl>& lru_list,
+    base::LinkNode<MemEntryImpl>* node) {
+  MemEntryImpl* cur = node->value();
+  do {
+    node = node->next();
+  } while (node != lru_list.end() && node->value()->parent() == cur);
+  return node;
+}
+
 }  // namespace
 
 MemBackendImpl::MemBackendImpl(net::NetLog* net_log)
@@ -207,7 +220,7 @@ int MemBackendImpl::DoomEntriesBetween(Time initial_time,
     node = node->next();
   while (node != lru_list_.end() && node->value()->GetLastUsed() < end_time) {
     MemEntryImpl* to_doom = node->value();
-    node = node->next();
+    node = NextSkippingChildren(lru_list_, node);
     to_doom->Doom();
   }
 
@@ -332,12 +345,7 @@ void MemBackendImpl::EvictIfNeeded() {
   base::LinkNode<MemEntryImpl>* entry = lru_list_.head();
   while (current_size_ > target_size && entry != lru_list_.end()) {
     MemEntryImpl* to_doom = entry->value();
-
-    do {
-      entry = entry->next();
-      // It's possible that entry now points to a child of to_doom, and the
-      // parent is about to be deleted. Skip past any child entries.
-    } while (entry != lru_list_.end() && entry->value()->parent() == to_doom);
+    entry = NextSkippingChildren(lru_list_, entry);
 
     if (!to_doom->InUse())
       to_doom->Doom();
