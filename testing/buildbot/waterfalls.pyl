@@ -945,21 +945,6 @@
           'gtest_tests': 'chromium_win_fyi_gtests',
         },
       },
-      'CrWinAsan tester': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
-        },
-      },
-      'CrWinAsan(dll) tester': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
-        },
-      },
-      'CrWinAsanCov tester': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
-        },
-      },
       'Dummy WebKit Mac10.13': {
         'swarming': {
           'dimension_sets': [
