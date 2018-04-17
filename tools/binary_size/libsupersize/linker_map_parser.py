@@ -284,12 +284,12 @@ class MapFileParserLld(object):
   # TODO(huangs): Add LTO support.
   # Map file writer for LLD linker (for ELF):
   # https://github.com/llvm-mirror/lld/blob/HEAD/ELF/MapFile.cpp
-  _LINE_RE_V0 = re.compile(r'([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
-  _LINE_RE_V1 = re.compile(
+  _OLD_LINE_RE = re.compile(r'([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
+  _NEW_LINE_RE = re.compile(
       r'\s*[0-9a-f]+\s+([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
 
-  def __init__(self, linker_name):
-    self._linker_name = linker_name
+  def __init__(self, is_newer_format):
+    self._is_newer_format = is_newer_format
     self._common_symbols = []
     self._section_sizes = {}
 
@@ -328,10 +328,7 @@ class MapFileParserLld(object):
     sym_maker = _SymbolMaker()
     cur_section = None
     cur_section_is_useful = None
-    if self._linker_name.endswith('v1'):
-      pattern = self._LINE_RE_v1
-    else:
-      pattern = self._LINE_RE_v0
+    pattern = self._NEW_LINE_RE if self._is_newer_format else self._OLD_LINE_RE
 
     for line in lines:
       m = pattern.match(line)
@@ -404,7 +401,7 @@ class MapFileParser(object):
     """
     linker_name = DetectLinkerNameFromMapFileHeader(next(lines))
     if linker_name.startswith('lld'):
-      inner_parser = MapFileParserLld(linker_name)
+      inner_parser = MapFileParserLld(linker_name.endswith('v1'))
     elif linker_name == 'gold':
       inner_parser = MapFileParserGold()
     else:
