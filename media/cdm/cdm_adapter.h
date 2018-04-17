@@ -39,7 +39,6 @@ class CdmWrapper;
 class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
                                 public CdmContext,
                                 public Decryptor,
-                                public cdm::Host_8,
                                 public cdm::Host_9,
                                 public cdm::Host_10 {
  public:
@@ -153,26 +152,6 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   // cdm::Host_10 specific implementation.
   void OnInitialized(bool success) override;
   cdm::CdmProxy* RequestCdmProxy(cdm::CdmProxyClient* client) override;
-
-  // cdm::Host_8 specific implementation.
-  void OnRejectPromise(uint32_t promise_id,
-                       cdm::Error error,
-                       uint32_t system_code,
-                       const char* error_message,
-                       uint32_t error_message_size) override;
-  void OnSessionMessage(const char* session_id,
-                        uint32_t session_id_size,
-                        cdm::MessageType message_type,
-                        const char* message,
-                        uint32_t message_size,
-                        const char* legacy_destination_url,
-                        uint32_t legacy_destination_url_size) override;
-  void OnLegacySessionError(const char* session_id,
-                            uint32_t session_id_size,
-                            cdm::Error error,
-                            uint32_t system_code,
-                            const char* error_message,
-                            uint32_t error_message_size) override;
 
  private:
   CdmAdapter(const std::string& key_system,
