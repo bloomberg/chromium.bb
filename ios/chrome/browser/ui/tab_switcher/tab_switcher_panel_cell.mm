@@ -171,8 +171,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
     ];
     NSDictionary* metrics =
         @{ @"barHeight" : @(tabSwitcherLocalSessionCellTopBarHeight()) };
-    ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics,
-                                      [self containerView]);
+    ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
 
     // Create and add subviews to the cell bar.
     // Title label.
@@ -213,7 +212,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
       @"V:[favicon(==24)]",
       @"V:[closeButton(==32)]",
     ];
-    ApplyVisualConstraints(barConstraints, barViewsDictionary, _topBar);
+    ApplyVisualConstraints(barConstraints, barViewsDictionary);
     AddSameCenterYConstraint(_topBar, _favicon);
     AddSameCenterYConstraint(_topBar, _titleLabel);
     AddSameCenterYConstraint(_topBar, _closeButton);
@@ -350,8 +349,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
             forControlEvents:UIControlEventTouchUpInside];
     [[self containerView] addSubview:_raisedButton];
     ApplyVisualConstraints(@[ @"H:|-0-[button]-0-|", @"V:|-0-[button]-0-|" ],
-                           @{ @"button" : _raisedButton },
-                           [self containerView]);
+                           @{@"button" : _raisedButton});
 
     // Create and add view that will be vertically centered in the space over
     // the favicon.
@@ -394,7 +392,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
       @"H:[favicon(==16)]",
       @"V:|-(>=16)-[centeredView]-(>=16)-[favicon(==16)]-16-|",
     ];
-    ApplyVisualConstraints(constraintsInButton, viewsDictionary, _raisedButton);
+    ApplyVisualConstraints(constraintsInButton, viewsDictionary);
     AddSameCenterXConstraint(_raisedButton, _favicon);
     [_raisedButton addConstraint:[NSLayoutConstraint
                                      constraintWithItem:_verticallyCenteredView
@@ -410,8 +408,8 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
       @"H:|-16-[title]-16-|",
       @"V:|-0-[newTabIcon(==24)]-16-[title(>=16)]-0-|",
     ];
-    ApplyVisualConstraints(constraintsInVerticallyCenteredView, viewsDictionary,
-                           _verticallyCenteredView);
+    ApplyVisualConstraints(constraintsInVerticallyCenteredView,
+                           viewsDictionary);
     AddSameCenterXConstraint(_verticallyCenteredView, _newTabIcon);
   }
   return self;

@@ -93,8 +93,7 @@ const CGFloat kDesiredHeight = 48;
       @"H:|-16-[icon]-16-[label]-(>=16)-[disclosureView]-16-|",
       @"V:|-12-[label]-12-|"
     ];
-    ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
-                                      LayoutOptionForRTLSupport(), self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
     [self addConstraint:[NSLayoutConstraint
                             constraintWithItem:_disclosureView
                                      attribute:NSLayoutAttributeCenterY

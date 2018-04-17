@@ -69,7 +69,7 @@ const CGFloat kDesiredHeight = 48;
       @"V:|-12-[label]-12-|",
       @"V:[activityIndicator(16)]",
     ];
-    ApplyVisualConstraints(constraints, viewsDictionary, self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
     [self addConstraint:[NSLayoutConstraint
                             constraintWithItem:activityIndicator
                                      attribute:NSLayoutAttributeCenterY

@@ -177,7 +177,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
       @"V:[subtitle]-24-[activityIndicator]", @"H:|-[title]-|",
       @"H:|-[subtitle]-|", @"H:[button(>=180)]", @"H:[floatingButton(==48)]"
     ];
-    ApplyVisualConstraints(constraints, viewsDictionary, _container);
+    ApplyVisualConstraints(constraints, viewsDictionary);
 
     // Sets the container's width relative to the parent.
     ApplyVisualConstraintsWithMetrics(

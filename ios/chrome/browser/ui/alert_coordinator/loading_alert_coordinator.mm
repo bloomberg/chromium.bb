@@ -171,8 +171,7 @@ const CGFloat kPrefHeight = 300;
     @"H:|-[spinner]-|", @"H:[cancel]-(buttonPadding)-|", @"V:|[contentView]",
     @"H:|[contentView]|"
   ];
-  ApplyVisualConstraintsWithMetricsAndOptions(constraints, viewsDictionary,
-                                              metrics, 0);
+  ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
 
   [_contentView addConstraint:[NSLayoutConstraint
                                   constraintWithItem:title

@@ -52,8 +52,7 @@ const CGFloat kDesiredHeight = 48;
     };
     NSArray* constraints =
         @[ @"H:|-56-[icon(==16)]-16-[label]-(>=16)-|", @"V:[icon(==16)]" ];
-    ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
-                                      LayoutOptionForRTLSupport(), self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
     [self addConstraint:[NSLayoutConstraint
                             constraintWithItem:icon
                                      attribute:NSLayoutAttributeCenterY

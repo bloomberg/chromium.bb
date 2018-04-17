@@ -18,38 +18,11 @@ void ApplyVisualConstraints(NSArray* constraints,
                                               nil, 0);
 }
 
-void ApplyVisualConstraints(NSArray* constraints,
-                            NSDictionary* subviewsDictionary,
-                            UIView* unused_parentView) {
-  ApplyVisualConstraints(constraints, subviewsDictionary);
-}
-
-void ApplyVisualConstraintsWithOptions(NSArray* constraints,
-                                       NSDictionary* subviewsDictionary,
-                                       NSLayoutFormatOptions options) {
-  ApplyVisualConstraintsWithMetricsAndOptions(constraints, subviewsDictionary,
-                                              nil, options);
-}
-
-void ApplyVisualConstraintsWithOptions(NSArray* constraints,
-                                       NSDictionary* subviewsDictionary,
-                                       NSLayoutFormatOptions options,
-                                       UIView* unused_parentView) {
-  ApplyVisualConstraintsWithOptions(constraints, subviewsDictionary, options);
-}
-
 void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
                                        NSDictionary* subviewsDictionary,
                                        NSDictionary* metrics) {
   ApplyVisualConstraintsWithMetricsAndOptions(constraints, subviewsDictionary,
                                               metrics, 0);
-}
-
-void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
-                                       NSDictionary* subviewsDictionary,
-                                       NSDictionary* metrics,
-                                       UIView* unused_parentView) {
-  ApplyVisualConstraintsWithMetrics(constraints, subviewsDictionary, metrics);
 }
 
 void ApplyVisualConstraintsWithMetricsAndOptions(
@@ -60,16 +33,6 @@ void ApplyVisualConstraintsWithMetricsAndOptions(
   NSArray* layoutConstraints = VisualConstraintsWithMetricsAndOptions(
       constraints, subviewsDictionary, metrics, options);
   [NSLayoutConstraint activateConstraints:layoutConstraints];
-}
-
-void ApplyVisualConstraintsWithMetricsAndOptions(
-    NSArray* constraints,
-    NSDictionary* subviewsDictionary,
-    NSDictionary* metrics,
-    NSLayoutFormatOptions options,
-    UIView* unused_parentView) {
-  ApplyVisualConstraintsWithMetricsAndOptions(constraints, subviewsDictionary,
-                                              metrics, options);
 }
 
 NSArray* VisualConstraintsWithMetrics(NSArray* constraints,

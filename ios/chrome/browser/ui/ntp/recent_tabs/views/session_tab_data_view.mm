@@ -66,8 +66,7 @@ const CGFloat kDesiredHeight = 48;
       @"H:|-56-[favicon(==16)]-16-[label]-16-|",
       @"V:|-(>=0)-[favicon(==16)]-(>=0)-|"
     ];
-    ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
-                                      LayoutOptionForRTLSupport(), self);
+    ApplyVisualConstraints(constraints, viewsDictionary);
 
     [self addConstraint:[NSLayoutConstraint
                             constraintWithItem:_favicon

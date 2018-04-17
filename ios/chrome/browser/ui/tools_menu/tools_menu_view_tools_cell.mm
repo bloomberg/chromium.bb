@@ -146,12 +146,10 @@
 }
 
 - (void)addConstraints {
-  UIView* contentView = [self contentView];
-
   for (UIButton* button in [self allButtons]) {
     NSDictionary* view = @{ @"button" : button };
     NSArray* constraints = @[ @"V:|-(0)-[button]-(0)-|", @"H:[button(==48)]" ];
-    ApplyVisualConstraints(constraints, view, self);
+    ApplyVisualConstraints(constraints, view);
   }
 
   NSDictionary* views = @{
@@ -170,8 +168,7 @@
     @"H:[star]-(space)-[stop]"
   ];
   // clang-format on
-  ApplyVisualConstraintsWithMetricsAndOptions(
-      constraints, views, metrics, LayoutOptionForRTLSupport(), contentView);
+  ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
 }
 
 // These should be added in display order, so they are animated in display
