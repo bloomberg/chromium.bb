@@ -25,8 +25,6 @@
 namespace {
 
 const SkColor kMenuPopupBackgroundColor = SK_ColorWHITE;
-const SkColor kMenuSeparatorColor = SkColorSetA(SK_ColorBLACK, 38);
-const SkColor kMenuBorderColor = SkColorSetARGB(60, 0, 0, 0);
 
 // Hardcoded color used for some existing dialogs in Chrome's Cocoa UI.
 const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
@@ -144,9 +142,11 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_MenuBackgroundColor:
       return kMenuPopupBackgroundColor;
     case kColorId_MenuSeparatorColor:
-      return kMenuSeparatorColor;
+      return UsesHighContrastColors() ? SK_ColorBLACK
+                                      : SkColorSetA(SK_ColorBLACK, 0x26);
     case kColorId_MenuBorderColor:
-      return kMenuBorderColor;
+      return UsesHighContrastColors() ? SK_ColorBLACK
+                                      : SkColorSetA(SK_ColorBLACK, 0x60);
 
     // Mac has a different "pressed button" styling because it doesn't use
     // ripples.
@@ -270,19 +270,13 @@ void NativeThemeMac::PaintMenuItemBackground(
     State state,
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item) const {
-  cc::PaintFlags flags;
   switch (state) {
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:
       // Draw nothing over the regular background.
       break;
     case NativeTheme::kHovered:
-      // TODO(tapted): Draw a gradient, and use [NSColor currentControlTint] to
-      // pick colors. The System color "selectedMenuItemColor" is actually still
-      // blue for Graphite. And while "keyboardFocusIndicatorColor" does change,
-      // and is a good shade of gray, it's not blue enough for the Blue theme.
-      flags.setColor(GetSystemColor(kColorId_FocusedMenuItemBackgroundColor));
-      canvas->drawRect(gfx::RectToSkRect(rect), flags);
+      PaintSelectedMenuItem(canvas, rect);
       break;
     default:
       NOTREACHED();
@@ -305,6 +299,26 @@ NativeThemeMac::NativeThemeMac() {
 }
 
 NativeThemeMac::~NativeThemeMac() {
+}
+
+void NativeThemeMac::PaintSelectedMenuItem(cc::PaintCanvas* canvas,
+                                           const gfx::Rect& rect) const {
+  // Draw the background.
+  cc::PaintFlags flags;
+  flags.setColor(GetSystemColor(kColorId_FocusedMenuItemBackgroundColor));
+  canvas->drawRect(gfx::RectToSkRect(rect), flags);
+
+  // In high contrast, draw a border stroke as well.
+  if (UsesHighContrastColors()) {
+    constexpr int kStrokeWidth = 2;
+    cc::PaintFlags border_flags;
+    gfx::Rect border_rect = rect;
+    border_rect.Inset(kStrokeWidth / 2, kStrokeWidth / 2);
+    border_flags.setColor(GetSystemColor(kColorId_MenuBorderColor));
+    border_flags.setStyle(cc::PaintFlags::kStroke_Style);
+    border_flags.setStrokeWidth(kStrokeWidth);
+    canvas->drawRect(gfx::RectToSkRect(border_rect), border_flags);
+  }
 }
 
 }  // namespace ui
