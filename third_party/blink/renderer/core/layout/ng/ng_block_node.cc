@@ -169,6 +169,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     layout_result = ToLayoutBlockFlow(box_)->CachedLayoutResult(
         constraint_space, break_token);
     if (layout_result) {
+      // We have to re-set the cached result here, because it is used for
+      // LayoutNGMixin::CurrentFragment and therefore has to be up-to-date.
+      // In particular, that fragment would have an incorrect offset if we
+      // don't re-set the result here.
+      ToLayoutBlockFlow(box_)->SetCachedLayoutResult(
+          constraint_space, break_token, layout_result);
       block_flow->ClearPaintFragment();
       if (first_child && first_child.IsInline())
         block_flow->SetPaintFragment(layout_result->PhysicalFragment());
