@@ -219,8 +219,8 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
     case Type::BOOKMARK_TITLE:
     case Type::NAVSUGGEST_PERSONALIZED:
     case Type::CLIPBOARD:
-    case Type::PHYSICAL_WEB:
-    case Type::PHYSICAL_WEB_OVERFLOW:
+    case Type::PHYSICAL_WEB_DEPRECATED:
+    case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
       return is_touch_ui ? omnibox::kTouchablePageIcon : omnibox::kHttpIcon;
 
@@ -236,7 +236,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
       return is_touch_ui ? omnibox::kTouchableSearchIcon
                          : vector_icons::kSearchIcon;
 
-    case Type::EXTENSION_APP:
+    case Type::EXTENSION_APP_DEPRECATED:
       return is_touch_ui ? omnibox::kExtensionApp20Icon
                          : omnibox::kExtensionAppIcon;
 

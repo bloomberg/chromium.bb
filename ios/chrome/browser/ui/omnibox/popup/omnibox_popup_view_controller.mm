@@ -313,8 +313,8 @@ UIColor* BackgroundColorIncognito() {
     [row updateLeadingImage:match.imageID];
   }
 
-  // Show append button for search history/search suggestions/Physical Web as
-  // the right control element (aka an accessory element of a table view cell).
+  // Show append button for search history/search suggestions as the right
+  // control element (aka an accessory element of a table view cell).
   row.appendButton.hidden = !match.isAppendable;
   [row.appendButton cancelTrackingWithEvent:nil];
 

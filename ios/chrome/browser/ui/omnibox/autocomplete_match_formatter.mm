@@ -172,7 +172,7 @@ UIColor* DimColorIncognito() {
   return _match.type == AutocompleteMatchType::SEARCH_HISTORY ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
-         _match.type == AutocompleteMatchType::PHYSICAL_WEB;
+         _match.type == AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED;
 }
 
 - (GURL)imageURL {

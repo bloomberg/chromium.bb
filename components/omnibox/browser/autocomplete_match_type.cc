@@ -95,8 +95,8 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
       0,                               // CALCULATOR
       IDS_ACC_AUTOCOMPLETE_CLIPBOARD,  // CLIPBOARD
       0,                               // VOICE_SUGGEST
-      0,                               // PHYSICAL_WEB
-      0,                               // PHYSICAL_WEB_OVERFLOW
+      0,                               // PHYSICAL_WEB_DEPRECATED
+      0,                               // PHYSICAL_WEB_OVERFLOW_DEPRECATED
       IDS_ACC_AUTOCOMPLETE_HISTORY,    // TAB_SEARCH_DEPRECATED
   };
   static_assert(arraysize(message_ids) == AutocompleteMatchType::NUM_TYPES,

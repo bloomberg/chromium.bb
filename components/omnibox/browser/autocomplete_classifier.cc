@@ -36,10 +36,7 @@ void AutocompleteClassifier::Shutdown() {
 // static
 int AutocompleteClassifier::DefaultOmniboxProviders() {
   return
-#if defined(OS_ANDROID) || defined(OS_IOS)
-      // The Physical Web currently is only implemented on mobile devices.
-      AutocompleteProvider::TYPE_PHYSICAL_WEB |
-#else
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
       // Custom search engines cannot be used on mobile.
       AutocompleteProvider::TYPE_KEYWORD |
 #endif

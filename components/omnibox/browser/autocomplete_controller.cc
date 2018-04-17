@@ -33,7 +33,6 @@
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/physical_web_provider.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/shortcuts_provider.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
@@ -147,14 +146,6 @@ void AutocompleteMatchToAssistedQuery(
       *subtype = 177;
       return;
     }
-    case AutocompleteMatchType::PHYSICAL_WEB: {
-      *subtype = 190;
-      return;
-    }
-    case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW: {
-      *subtype = 191;
-      return;
-    }
     default: {
       // This value indicates a native chrome suggestion with no named subtype
       // (yet).
@@ -260,12 +251,6 @@ AutocompleteController::AutocompleteController(
           provider_client_.get(), history_url_provider_,
           ClipboardRecentContent::GetInstance()));
     }
-  }
-  if (provider_types & AutocompleteProvider::TYPE_PHYSICAL_WEB) {
-    PhysicalWebProvider* physical_web_provider = PhysicalWebProvider::Create(
-        provider_client_.get(), history_url_provider_);
-    if (physical_web_provider)
-      providers_.push_back(physical_web_provider);
   }
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
