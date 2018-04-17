@@ -261,6 +261,13 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
   hungContents_ = nullptr;
   hungWidget_ = nullptr;
 
+  // Reset the observer now. It is not necessarily the case that this class
+  // actually holds a reference to the containing BrowserWindow, and if it does
+  // not, the BrowserWindow's destructor can run *before* this object is cleaned
+  // up by the autorelease pool. This can't happen in practice, but it can
+  // happen in tests.
+  hungContentsObserver_.reset();
+
   [self autorelease];
 }
 
