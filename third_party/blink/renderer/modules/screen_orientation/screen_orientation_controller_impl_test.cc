@@ -9,8 +9,8 @@
 
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_lock_orientation_callback.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 
 namespace blink {
 

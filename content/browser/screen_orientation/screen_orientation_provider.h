@@ -14,7 +14,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "services/device/public/mojom/screen_orientation.mojom.h"
 #include "services/device/public/mojom/screen_orientation_lock_types.mojom.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 
 namespace content {
 

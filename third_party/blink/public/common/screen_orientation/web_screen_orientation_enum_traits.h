@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SCREEN_ORIENTATION_WEB_SCREEN_ORIENTATION_ENUM_TRAITS_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SCREEN_ORIENTATION_WEB_SCREEN_ORIENTATION_ENUM_TRAITS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_SCREEN_ORIENTATION_WEB_SCREEN_ORIENTATION_ENUM_TRAITS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_SCREEN_ORIENTATION_WEB_SCREEN_ORIENTATION_ENUM_TRAITS_H_
 
 #include "services/device/public/mojom/screen_orientation_lock_types.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 
 namespace mojo {
 
@@ -77,4 +77,4 @@ struct EnumTraits<::device::mojom::ScreenOrientationLockType,
 
 }  // namespace mojo
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SCREEN_ORIENTATION_WEB_SCREEN_ORIENTATION_ENUM_TRAITS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_SCREEN_ORIENTATION_WEB_SCREEN_ORIENTATION_ENUM_TRAITS_H_
