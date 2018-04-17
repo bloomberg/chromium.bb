@@ -195,7 +195,7 @@ void AdaptiveScreenBrightnessUkmLoggerImpl::LogActivity(
 
   const ScreenBrightnessEvent_Event event = screen_brightness_event.event();
 
-  DCHECK(event.brightness());
+  DCHECK(event.has_brightness());
   ukm_screen_brightness.SetBrightness(event.brightness());
 
   if (event.has_reason()) {

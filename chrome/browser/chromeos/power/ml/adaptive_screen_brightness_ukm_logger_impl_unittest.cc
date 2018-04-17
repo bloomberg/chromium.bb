@@ -160,7 +160,7 @@ TEST_F(AdaptiveScreenBrightnessUkmLoggerImplTest, AccessibilityOff) {
 
   ScreenBrightnessEvent::Event* const event =
       screen_brightness_event.mutable_event();
-  event->set_brightness(1);
+  event->set_brightness(0);
 
   LogActivity(screen_brightness_event, ukm::kInvalidSourceId,
               false /* has_form_entry */);
@@ -170,7 +170,7 @@ TEST_F(AdaptiveScreenBrightnessUkmLoggerImplTest, AccessibilityOff) {
 
   // Construct the expected output logs.
   const UkmMetricMap screen_brightness_values = {
-      {ukm::builders::ScreenBrightness::kBrightnessName, 1},
+      {ukm::builders::ScreenBrightness::kBrightnessName, 0},
       {ukm::builders::ScreenBrightness::kIsAutoclickEnabledName, 0},
       {ukm::builders::ScreenBrightness::kIsBrailleDisplayConnectedName, 0},
       {ukm::builders::ScreenBrightness::kIsCaretHighlightEnabledName, 0},
