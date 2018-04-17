@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/circular_deque.h"
 #include "base/containers/hash_tables.h"
@@ -22,6 +23,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -212,6 +214,8 @@ class CONTENT_EXPORT ResourceDispatcher {
         navigation_response_override;
     bool should_follow_redirect = true;
     bool always_access_network = false;
+
+    std::vector<content::mojom::RedirectInfoPtr> redirect_info_chain;
 
     // For mojo loading.
     std::unique_ptr<ThrottlingURLLoader> url_loader;

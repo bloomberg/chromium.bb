@@ -738,7 +738,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       resource_url, /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SCRIPT,
       "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/false, before, after));
-  EXPECT_TRUE(observer.resource_load_infos()[1]->network_accessed);
+  EXPECT_TRUE(
+      observer.resource_load_infos()[1]->network_info->network_accessed);
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
   observer.Reset();
 
@@ -773,7 +774,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       "text/html", "127.0.0.1",
       /*was_cached=*/true, /*first_network_request=*/false, before, after));
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
-  EXPECT_FALSE(observer.resource_load_infos()[1]->network_accessed);
+  EXPECT_FALSE(
+      observer.resource_load_infos()[1]->network_info->network_accessed);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -783,15 +785,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   NavigateToURL(shell(),
                 GURL(embedded_test_server()->GetURL("/page_with_image.html")));
   ASSERT_EQ(2U, observer.resource_load_infos().size());
-  EXPECT_TRUE(observer.resource_load_infos()[0]->network_accessed);
-  EXPECT_TRUE(observer.resource_load_infos()[1]->network_accessed);
+  EXPECT_TRUE(
+      observer.resource_load_infos()[0]->network_info->network_accessed);
+  EXPECT_TRUE(
+      observer.resource_load_infos()[1]->network_info->network_accessed);
   observer.Reset();
 
   NavigateToURL(shell(), GURL("chrome://gpu"));
   ASSERT_LE(1U, observer.resource_load_infos().size());
   for (const mojom::ResourceLoadInfoPtr& resource_load_info :
        observer.resource_load_infos()) {
-    EXPECT_FALSE(resource_load_info->network_accessed);
+    EXPECT_FALSE(resource_load_info->network_info->network_accessed);
   }
 }
 
@@ -863,7 +867,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL cacheable_url(embedded_test_server()->GetURL("/set-header"));
   NavigateToURL(shell(), cacheable_url);
   ASSERT_EQ(1U, observer.resource_load_infos().size());
-  EXPECT_FALSE(observer.resource_load_infos()[0]->always_access_network);
+  EXPECT_FALSE(
+      observer.resource_load_infos()[0]->network_info->always_access_network);
   observer.Reset();
 
   std::array<std::string, 3> headers = {
@@ -872,9 +877,45 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     GURL no_cache_url(embedded_test_server()->GetURL("/set-header?" + header));
     NavigateToURL(shell(), no_cache_url);
     ASSERT_EQ(1U, observer.resource_load_infos().size());
-    EXPECT_TRUE(observer.resource_load_infos()[0]->always_access_network);
+    EXPECT_TRUE(
+        observer.resource_load_infos()[0]->network_info->always_access_network);
     observer.Reset();
   }
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ResourceLoadCompleteWithRedirects) {
+  ResourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL target_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL intermediate_url(
+      embedded_test_server()->GetURL("/server-redirect?" + target_url.spec()));
+  GURL start_url(embedded_test_server()->GetURL("/server-redirect?" +
+                                                intermediate_url.spec()));
+
+  NavigateToURL(shell(), start_url);
+
+  ASSERT_EQ(1U, observer.resource_load_infos().size());
+  EXPECT_EQ(target_url, observer.resource_load_infos()[0]->url);
+
+  ASSERT_EQ(2U, observer.resource_load_infos()[0]->redirect_info_chain.size());
+  EXPECT_EQ(intermediate_url,
+            observer.resource_load_infos()[0]->redirect_info_chain[0]->url);
+  EXPECT_TRUE(observer.resource_load_infos()[0]
+                  ->redirect_info_chain[0]
+                  ->network_info->network_accessed);
+  EXPECT_FALSE(observer.resource_load_infos()[0]
+                   ->redirect_info_chain[0]
+                   ->network_info->always_access_network);
+  EXPECT_EQ(target_url,
+            observer.resource_load_infos()[0]->redirect_info_chain[1]->url);
+  EXPECT_TRUE(observer.resource_load_infos()[0]
+                  ->redirect_info_chain[1]
+                  ->network_info->network_accessed);
+  EXPECT_FALSE(observer.resource_load_infos()[0]
+                   ->redirect_info_chain[1]
+                   ->network_info->always_access_network);
 }
 
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
