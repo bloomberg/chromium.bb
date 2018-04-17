@@ -50,6 +50,8 @@ blink_modules_sources("peerconnection") {
     "rtc_void_request_impl.h",
     "rtc_void_request_promise_impl.cc",
     "rtc_void_request_promise_impl.h",
+    "rtc_void_request_script_promise_resolver_impl.cc",
+    "rtc_void_request_script_promise_resolver_impl.h",
     "web_rtc_stats_report_callback_resolver.cc",
     "web_rtc_stats_report_callback_resolver.h",
   ]

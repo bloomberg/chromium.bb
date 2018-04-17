@@ -35,6 +35,9 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
   virtual void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) = 0;
   virtual std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const = 0;
   virtual std::unique_ptr<WebRTCRtpParameters> GetParameters() const = 0;
+  virtual void SetParameters(WebVector<WebRTCRtpEncodingParameters>,
+                             WebRTCDegradationPreference,
+                             WebRTCVoidRequest) = 0;
   virtual void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) = 0;
 };
 
