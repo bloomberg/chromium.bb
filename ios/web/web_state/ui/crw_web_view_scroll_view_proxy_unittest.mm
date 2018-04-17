@@ -190,6 +190,51 @@ TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewAbsent) {
   [webViewScrollViewProxy_ setContentSize:kContentSize];
 }
 
+// Tests that CRWWebViewScrollViewProxy returns the correct property values when
+// they are set while there isn't an underlying scroll view, then a new scroll
+// view is set.
+TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewAbsentThenReset) {
+  [webViewScrollViewProxy_ setScrollView:nil];
+  UIScrollView* scrollView = [[UIScrollView alloc] init];
+
+  [[mockScrollView_ expect] setClipsToBounds:YES];
+  [webViewScrollViewProxy_ setClipsToBounds:YES];
+  if (@available(iOS 11, *)) {
+    [[mockScrollView_ expect] setContentInsetAdjustmentBehavior:
+                                  UIScrollViewContentInsetAdjustmentNever];
+    [webViewScrollViewProxy_ setContentInsetAdjustmentBehavior:
+                                 UIScrollViewContentInsetAdjustmentNever];
+  }
+
+  [webViewScrollViewProxy_ setScrollView:scrollView];
+
+  [webViewScrollViewProxy_ setScrollView:mockScrollView_];
+
+  EXPECT_OCMOCK_VERIFY(mockScrollView_);
+}
+
+// Tests that CRWWebViewScrollViewProxy returns the correct property values when
+// they are set while there is an underlying scroll view, then a new scroll view
+// is set.
+TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewPresentThenReset) {
+  [webViewScrollViewProxy_ setScrollView:nil];
+  UIScrollView* scrollView = [[UIScrollView alloc] init];
+
+  [webViewScrollViewProxy_ setScrollView:scrollView];
+  [[mockScrollView_ expect] setClipsToBounds:YES];
+  [webViewScrollViewProxy_ setClipsToBounds:YES];
+  if (@available(iOS 11, *)) {
+    [[mockScrollView_ expect] setContentInsetAdjustmentBehavior:
+                                  UIScrollViewContentInsetAdjustmentNever];
+    [webViewScrollViewProxy_ setContentInsetAdjustmentBehavior:
+                                 UIScrollViewContentInsetAdjustmentNever];
+  }
+
+  [webViewScrollViewProxy_ setScrollView:mockScrollView_];
+
+  EXPECT_OCMOCK_VERIFY(mockScrollView_);
+}
+
 // Tests releasing a scroll view when none is owned by the
 // CRWWebViewScrollViewProxy.
 TEST_F(CRWWebViewScrollViewProxyTest, ReleasingAScrollView) {
