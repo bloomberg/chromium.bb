@@ -188,12 +188,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             final AppMenuHandler menuHandler, AppMenuPropertiesDelegate appMenuPropertiesDelegate,
             Invalidator invalidator, Callback<Boolean> urlFocusChangedCallback) {
         mActivity = activity;
-        if (activity.getBottomSheet() != null) {
-            mActionBarDelegate =
-                    new ViewShiftingActionBarDelegate(activity, activity.getBottomSheet());
-        } else {
-            mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
-        }
+        mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
 
         mToolbarModel = new ToolbarModel(activity.getBottomSheet(),
                 activity.supportsModernDesign() && FeatureUtilities.isChromeModernDesignEnabled());
