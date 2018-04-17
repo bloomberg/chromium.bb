@@ -55,6 +55,7 @@ using notifications_uma::DisplayStatus;
 using notifications_uma::GetDisplayedLaunchIdStatus;
 using notifications_uma::GetDisplayedStatus;
 using notifications_uma::GetNotificationLaunchIdStatus;
+using notifications_uma::GetSettingPolicy;
 using notifications_uma::GetSettingStatus;
 using notifications_uma::HandleEventStatus;
 using notifications_uma::HistoryStatus;
@@ -155,7 +156,7 @@ class NotificationPlatformBridgeWinImpl
         base::win::RoActivateInstance(ref_class_name.get(), &inspectable);
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::RO_ACTIVATE_FAILED);
-      DLOG(ERROR) << "Unable to activate the XML Document";
+      DLOG(ERROR) << "Unable to activate the XML Document " << std::hex << hr;
       return hr;
     }
 
@@ -164,7 +165,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogDisplayHistogram(
           DisplayStatus::CONVERSION_FAILED_INSPECTABLE_TO_XML_IO);
-      DLOG(ERROR) << "Failed to get XmlDocument as IXmlDocumentIO";
+      DLOG(ERROR) << "Failed to get XmlDocument as IXmlDocumentIO " << std::hex
+                  << hr;
       return hr;
     }
 
@@ -174,7 +176,8 @@ class NotificationPlatformBridgeWinImpl
     hr = document_io->LoadXml(ref_template.get());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::LOAD_XML_FAILED);
-      DLOG(ERROR) << "Unable to load the template's XML into the document";
+      DLOG(ERROR) << "Unable to load the template's XML into the document "
+                  << std::hex << hr;
       return hr;
     }
 
@@ -182,7 +185,7 @@ class NotificationPlatformBridgeWinImpl
     hr = document_io.As<winxml::Dom::IXmlDocument>(&document);
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CONVERSION_FAILED_XML_IO_TO_XML);
-      DLOG(ERROR) << "Unable to get as XMLDocument";
+      DLOG(ERROR) << "Unable to get as XMLDocument " << std::hex << hr;
       return hr;
     }
 
@@ -193,7 +196,8 @@ class NotificationPlatformBridgeWinImpl
         toast_notification_factory.GetAddressOf());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CREATE_FACTORY_FAILED);
-      DLOG(ERROR) << "Unable to create the IToastNotificationFactory";
+      DLOG(ERROR) << "Unable to create the IToastNotificationFactory "
+                  << std::hex << hr;
       return hr;
     }
 
@@ -201,7 +205,8 @@ class NotificationPlatformBridgeWinImpl
         document.Get(), toast_notification);
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CREATE_TOAST_NOTIFICATION_FAILED);
-      DLOG(ERROR) << "Unable to create the IToastNotification";
+      DLOG(ERROR) << "Unable to create the IToastNotification " << std::hex
+                  << hr;
       return hr;
     }
 
@@ -209,7 +214,8 @@ class NotificationPlatformBridgeWinImpl
     hr = (*toast_notification)->QueryInterface(&toast2ptr);
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CREATE_TOAST_NOTIFICATION2_FAILED);
-      DLOG(ERROR) << "Failed to get IToastNotification2 object";
+      DLOG(ERROR) << "Failed to get IToastNotification2 object " << std::hex
+                  << hr;
       return hr;
     }
 
@@ -229,14 +235,14 @@ class NotificationPlatformBridgeWinImpl
     hr = toast2->put_Group(group.get());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::SETTING_GROUP_FAILED);
-      DLOG(ERROR) << "Failed to set Group";
+      DLOG(ERROR) << "Failed to set Group " << std::hex << hr;
       return hr;
     }
 
     hr = toast2->put_Tag(tag.get());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::SETTING_TAG_FAILED);
-      DLOG(ERROR) << "Failed to set Tag";
+      DLOG(ERROR) << "Failed to set Tag " << std::hex << hr;
       return hr;
     }
 
@@ -259,7 +265,7 @@ class NotificationPlatformBridgeWinImpl
         hr = t2->get_Group(&hstring_group);
         if (FAILED(hr)) {
           LogDisplayHistogram(DisplayStatus::GET_GROUP_FAILED);
-          DLOG(ERROR) << "Failed to get group value";
+          DLOG(ERROR) << "Failed to get group value " << std::hex << hr;
           return hr;
         }
         ScopedHString scoped_group(hstring_group);
@@ -268,7 +274,7 @@ class NotificationPlatformBridgeWinImpl
         hr = t2->get_Tag(&hstring_tag);
         if (FAILED(hr)) {
           LogDisplayHistogram(DisplayStatus::GET_TAG_FAILED);
-          DLOG(ERROR) << "Failed to get tag value";
+          DLOG(ERROR) << "Failed to get tag value " << std::hex << hr;
           return hr;
         }
         ScopedHString scoped_tag(hstring_tag);
@@ -279,7 +285,7 @@ class NotificationPlatformBridgeWinImpl
         hr = toast2->put_SuppressPopup(true);
         if (FAILED(hr)) {
           LogDisplayHistogram(DisplayStatus::SUPPRESS_POPUP_FAILED);
-          DLOG(ERROR) << "Failed to set suppress value";
+          DLOG(ERROR) << "Failed to set suppress value " << std::hex << hr;
           return hr;
         }
       }
@@ -309,23 +315,24 @@ class NotificationPlatformBridgeWinImpl
       LogGetSettingStatus(GetSettingStatus::SUCCESS);
       switch (setting) {
         case winui::Notifications::NotificationSetting_Enabled:
+          LogGetSettingPolicy(GetSettingPolicy::ENABLED);
           break;
         case winui::Notifications::NotificationSetting_DisabledForApplication:
-          LogDisplayHistogram(DisplayStatus::DISABLED_FOR_APPLICATION);
-          DLOG(ERROR) << "Notification disabled for application";
-          return;
+          LogGetSettingPolicy(GetSettingPolicy::DISABLED_FOR_APPLICATION);
+          DLOG(ERROR) << "Notifications disabled for application";
+          break;
         case winui::Notifications::NotificationSetting_DisabledForUser:
-          LogDisplayHistogram(DisplayStatus::DISABLED_FOR_USER);
-          DLOG(ERROR) << "Notification disabled for user";
-          return;
+          LogGetSettingPolicy(GetSettingPolicy::DISABLED_FOR_USER);
+          DLOG(ERROR) << "Notifications disabled for user";
+          break;
         case winui::Notifications::NotificationSetting_DisabledByGroupPolicy:
-          LogDisplayHistogram(DisplayStatus::DISABLED_BY_GROUP_POLICY);
-          DLOG(ERROR) << "Notification disabled by group policy";
-          return;
+          LogGetSettingPolicy(GetSettingPolicy::DISABLED_BY_GROUP_POLICY);
+          DLOG(ERROR) << "Notifications disabled by group policy";
+          break;
         case winui::Notifications::NotificationSetting_DisabledByManifest:
-          LogDisplayHistogram(DisplayStatus::DISABLED_BY_MANIFEST);
-          DLOG(ERROR) << "Notification disabled by manifest";
-          return;
+          LogGetSettingPolicy(GetSettingPolicy::DISABLED_BY_MANIFEST);
+          DLOG(ERROR) << "Notifications disabled by manifest";
+          break;
       }
     } else {
       LogGetSettingStatus(GetSettingStatus::UNKNOWN_FAILURE);
@@ -342,7 +349,7 @@ class NotificationPlatformBridgeWinImpl
                               incognito, &toast);
     if (FAILED(hr)) {
       // A histogram should have already been logged for this failure.
-      DLOG(ERROR) << "Unable to get a toast notification";
+      DLOG(ERROR) << "Unable to get a toast notification " << std::hex << hr;
       return;
     }
 
@@ -355,7 +362,8 @@ class NotificationPlatformBridgeWinImpl
     hr = toast->add_Dismissed(dismissed_handler.Get(), &dismissed_token);
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::ADD_TOAST_DISMISS_HANDLER_FAILED);
-      DLOG(ERROR) << "Unable to add toast dismissed event handler";
+      DLOG(ERROR) << "Unable to add toast dismissed event handler " << std::hex
+                  << hr;
       return;
     }
 
@@ -365,14 +373,15 @@ class NotificationPlatformBridgeWinImpl
     hr = toast->add_Failed(failed_handler.Get(), &failed_token);
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::ADD_TOAST_ERROR_HANDLER_FAILED);
-      DLOG(ERROR) << "Unable to add toast failed event handler";
+      DLOG(ERROR) << "Unable to add toast failed event handler " << std::hex
+                  << hr;
       return;
     }
 
     hr = notifier_->Show(toast.Get());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::SHOWING_TOAST_FAILED);
-      DLOG(ERROR) << "Unable to display the notification";
+      DLOG(ERROR) << "Unable to display the notification " << std::hex << hr;
     } else {
       LogDisplayHistogram(DisplayStatus::SUCCESS);
     }
@@ -398,7 +407,7 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogCloseHistogram(CloseStatus::REMOVING_TOAST_FAILED);
       DLOG(ERROR) << "Failed to remove notification with id "
-                  << notification_id.c_str();
+                  << notification_id.c_str() << " " << std::hex << hr;
     } else {
       LogCloseHistogram(CloseStatus::SUCCESS);
     }
@@ -415,7 +424,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogHistoryHistogram(
           HistoryStatus::CREATE_TOAST_NOTIFICATION_MANAGER_FAILED);
-      DLOG(ERROR) << "Unable to create the ToastNotificationManager";
+      DLOG(ERROR) << "Unable to create the ToastNotificationManager "
+                  << std::hex << hr;
       return false;
     }
 
@@ -427,14 +437,16 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogHistoryHistogram(
           HistoryStatus::QUERY_TOAST_MANAGER_STATISTICS2_FAILED);
-      DLOG(ERROR) << "Failed to get IToastNotificationManagerStatics2";
+      DLOG(ERROR) << "Failed to get IToastNotificationManagerStatics2 "
+                  << std::hex << hr;
       return false;
     }
 
     hr = toast_manager2->get_History(notification_history);
     if (FAILED(hr)) {
       LogHistoryHistogram(HistoryStatus::GET_TOAST_HISTORY_FAILED);
-      DLOG(ERROR) << "Failed to get IToastNotificationHistory";
+      DLOG(ERROR) << "Failed to get IToastNotificationHistory " << std::hex
+                  << hr;
       return false;
     }
 
@@ -460,7 +472,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetDisplayedStatus(
           GetDisplayedStatus::QUERY_TOAST_NOTIFICATION_HISTORY2_FAILED);
-      DLOG(ERROR) << "Failed to get IToastNotificationHistory2";
+      DLOG(ERROR) << "Failed to get IToastNotificationHistory2 " << std::hex
+                  << hr;
       return;
     }
 
@@ -472,7 +485,7 @@ class NotificationPlatformBridgeWinImpl
     hr = history2->GetHistoryWithId(application_id.get(), &list);
     if (FAILED(hr)) {
       LogGetDisplayedStatus(GetDisplayedStatus::GET_HISTORY_WITH_ID_FAILED);
-      DLOG(ERROR) << "GetHistoryWithId failed";
+      DLOG(ERROR) << "GetHistoryWithId failed " << std::hex << hr;
       return;
     }
 
@@ -480,7 +493,7 @@ class NotificationPlatformBridgeWinImpl
     hr = list->get_Size(&size);
     if (FAILED(hr)) {
       LogGetDisplayedStatus(GetDisplayedStatus::GET_SIZE_FAILED);
-      DLOG(ERROR) << "History get_Size call failed";
+      DLOG(ERROR) << "History get_Size call failed " << std::hex << hr;
       return;
     }
 
@@ -490,7 +503,8 @@ class NotificationPlatformBridgeWinImpl
       hr = list->GetAt(0U, &tn);
       if (FAILED(hr)) {
         status = GetDisplayedStatus::SUCCESS_WITH_GET_AT_FAILURE;
-        DLOG(ERROR) << "Failed to get notification " << index << " of " << size;
+        DLOG(ERROR) << "Failed to get notification " << index << " of " << size
+                    << " " << std::hex << hr;
         continue;
       }
       notifications->push_back(tn);
@@ -650,7 +664,7 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetNotificationLaunchIdStatus(
           GetNotificationLaunchIdStatus::NOTIFICATION_GET_CONTENT_FAILED);
-      DLOG(ERROR) << "Failed to get XML document";
+      DLOG(ERROR) << "Failed to get XML document " << std::hex << hr;
       return NotificationLaunchId();
     }
 
@@ -660,7 +674,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetNotificationLaunchIdStatus(
           GetNotificationLaunchIdStatus::GET_ELEMENTS_BY_TAG_FAILED);
-      DLOG(ERROR) << "Failed to get <toast> elements from document";
+      DLOG(ERROR) << "Failed to get <toast> elements from document " << std::hex
+                  << hr;
       return NotificationLaunchId();
     }
 
@@ -678,7 +693,7 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetNotificationLaunchIdStatus(
           GetNotificationLaunchIdStatus::ITEM_AT_FAILED);
-      DLOG(ERROR) << "Failed to get first <toast> element";
+      DLOG(ERROR) << "Failed to get first <toast> element " << std::hex << hr;
       return NotificationLaunchId();
     }
 
@@ -687,7 +702,7 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetNotificationLaunchIdStatus(
           GetNotificationLaunchIdStatus::GET_ATTRIBUTES_FAILED);
-      DLOG(ERROR) << "Failed to get attributes of <toast>";
+      DLOG(ERROR) << "Failed to get attributes of <toast> " << std::hex << hr;
       return NotificationLaunchId();
     }
 
@@ -697,7 +712,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetNotificationLaunchIdStatus(
           GetNotificationLaunchIdStatus::GET_NAMED_ITEM_FAILED);
-      DLOG(ERROR) << "Failed to get launch attribute of <toast>";
+      DLOG(ERROR) << "Failed to get launch attribute of <toast> " << std::hex
+                  << hr;
       return NotificationLaunchId();
     }
 
@@ -706,7 +722,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetNotificationLaunchIdStatus(
           GetNotificationLaunchIdStatus::GET_FIRST_CHILD_FAILED);
-      DLOG(ERROR) << "Failed to get content of launch attribute";
+      DLOG(ERROR) << "Failed to get content of launch attribute " << std::hex
+                  << hr;
       return NotificationLaunchId();
     }
 
@@ -715,7 +732,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetNotificationLaunchIdStatus(
           GetNotificationLaunchIdStatus::GET_NODE_VALUE_FAILED);
-      DLOG(ERROR) << "Failed to get node value of launch attribute";
+      DLOG(ERROR) << "Failed to get node value of launch attribute " << std::hex
+                  << hr;
       return NotificationLaunchId();
     }
 
@@ -724,7 +742,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetNotificationLaunchIdStatus(
           GetNotificationLaunchIdStatus::CONVERSION_TO_PROP_VALUE_FAILED);
-      DLOG(ERROR) << "Failed to convert node value of launch attribute";
+      DLOG(ERROR) << "Failed to convert node value of launch attribute "
+                  << std::hex << hr;
       return NotificationLaunchId();
     }
 
@@ -733,7 +752,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogGetNotificationLaunchIdStatus(
           GetNotificationLaunchIdStatus::GET_STRING_FAILED);
-      DLOG(ERROR) << "Failed to get string for launch attribute";
+      DLOG(ERROR) << "Failed to get string for launch attribute " << std::hex
+                  << hr;
       return NotificationLaunchId();
     }
 
@@ -791,7 +811,8 @@ class NotificationPlatformBridgeWinImpl
     if (FAILED(hr)) {
       LogDisplayHistogram(
           DisplayStatus::CREATE_TOAST_NOTIFICATION_MANAGER_FAILED);
-      DLOG(ERROR) << "Unable to create the ToastNotificationManager";
+      DLOG(ERROR) << "Unable to create the ToastNotificationManager "
+                  << std::hex << hr;
       return hr;
     }
 
@@ -800,7 +821,7 @@ class NotificationPlatformBridgeWinImpl
                                                   &notifier_);
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CREATE_TOAST_NOTIFIER_WITH_ID_FAILED);
-      DLOG(ERROR) << "Unable to create the ToastNotifier";
+      DLOG(ERROR) << "Unable to create the ToastNotifier " << std::hex << hr;
     }
     return hr;
   }

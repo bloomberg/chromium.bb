@@ -47518,10 +47518,10 @@ Full version information for the fingerprint enum values:
   <int value="15" label="SHOWING_TOAST_FAILED"/>
   <int value="16" label="CREATE_TOAST_NOTIFICATION_MANAGER_FAILED"/>
   <int value="17" label="CREATE_TOAST_NOTIFIER_WITH_ID_FAILED"/>
-  <int value="18" label="DISABLED_FOR_APPLICATION"/>
-  <int value="19" label="DISABLED_FOR_USER"/>
-  <int value="20" label="DISABLED_BY_GROUP_POLICY"/>
-  <int value="21" label="DISABLED_BY_MANIFEST"/>
+  <int value="18" label="DISABLED_FOR_APPLICATION (deprecated)"/>
+  <int value="19" label="DISABLED_FOR_USER (deprecated)"/>
+  <int value="20" label="DISABLED_BY_GROUP_POLICY (deprecated)"/>
+  <int value="21" label="DISABLED_BY_MANIFEST (deprecated)"/>
 </enum>
 
 <enum name="WindowsNotificationGetDisplayedLaunchIdStatus">
@@ -47550,6 +47550,14 @@ Full version information for the fingerprint enum values:
   <int value="8" label="GET_NODE_VALUE_FAILED"/>
   <int value="9" label="CONVERSION_TO_PROP_VALUE_FAILED"/>
   <int value="10" label="GET_STRING_FAILED"/>
+</enum>
+
+<enum name="WindowsNotificationGetSettingPolicy">
+  <int value="0" label="ENABLED"/>
+  <int value="1" label="DISABLED_FOR_APPLICATION"/>
+  <int value="2" label="DISABLED_FOR_USER"/>
+  <int value="3" label="DISABLED_BY_GROUP_POLICY"/>
+  <int value="4" label="DISABLED_BY_MANIFEST"/>
 </enum>
 
 <enum name="WindowsNotificationGetSettingStatus">
