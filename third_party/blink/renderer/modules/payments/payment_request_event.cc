@@ -75,6 +75,13 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* context = ExecutionContext::From(script_state);
 
+  if (!isTrusted()) {
+    resolver->Reject(DOMException::Create(
+        kInvalidStateError,
+        "Cannot open a window when the event is not trusted"));
+    return promise;
+  }
+
   KURL parsed_url_to_open = context->CompleteURL(url);
   if (!parsed_url_to_open.IsValid()) {
     resolver->Reject(V8ThrowException::CreateTypeError(
@@ -103,6 +110,13 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
 void PaymentRequestEvent::respondWith(ScriptState* script_state,
                                       ScriptPromise script_promise,
                                       ExceptionState& exception_state) {
+  if (!isTrusted()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "Cannot respond with data when the event is not trusted");
+    return;
+  }
+
   stopImmediatePropagation();
   if (observer_) {
     observer_->RespondWith(script_state, script_promise, exception_state);
