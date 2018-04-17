@@ -57,30 +57,33 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
       EXPECT_TRUE(binding_);
   }
 
-  void Acquire(media::mojom::AudioOutputStreamRequest stream_request,
-               media::mojom::AudioOutputStreamClientPtr client_ptr,
-               const media::AudioParameters& params,
-               AcquireCallback callback) override {
+  void Acquire(const media::AudioParameters& params,
+               media::mojom::AudioOutputStreamProviderClientPtr provider_client)
+      override {
     EXPECT_EQ(binding_, base::nullopt);
     EXPECT_NE(stream_, nullptr);
-    std::swap(client_, client_ptr);
-    binding_.emplace(stream_, std::move(stream_request));
+    std::swap(provider_client, provider_client_);
+    media::mojom::AudioOutputStreamPtr stream_ptr;
+    binding_.emplace(stream_, mojo::MakeRequest(&stream_ptr));
     base::CancelableSyncSocket foreign_socket;
     EXPECT_TRUE(
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
-    std::move(callback).Run({base::in_place,
-                             mojo::SharedBufferHandle::Create(kMemoryLength),
-                             mojo::WrapPlatformFile(foreign_socket.Release())});
+    provider_client_->Created(
+        std::move(stream_ptr),
+        {base::in_place, mojo::SharedBufferHandle::Create(kMemoryLength),
+         mojo::WrapPlatformFile(foreign_socket.Release())});
   }
 
-  media::mojom::AudioOutputStreamClient* client() {
-    DCHECK(client_.get());
-    return client_.get();
+  void SignalErrorToProviderClient() {
+    provider_client_.ResetWithReason(
+        media::mojom::AudioOutputStreamProviderClient::
+            kPlatformErrorDisconnectReason,
+        std::string());
   }
 
  private:
   media::mojom::AudioOutputStream* stream_;
-  media::mojom::AudioOutputStreamClientPtr client_;
+  media::mojom::AudioOutputStreamProviderClientPtr provider_client_;
   base::Optional<mojo::Binding<media::mojom::AudioOutputStream>> binding_;
   base::CancelableSyncSocket socket_;
 };
@@ -134,6 +137,10 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
     expected_device_id_ = device_id;
   }
 
+  void SignalErrorToProviderClient() {
+    provider_->SignalErrorToProviderClient();
+  }
+
   void Disconnect() {
     binding_.Close();
     this_proxy_.reset();
@@ -141,10 +148,6 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
     provider_binding_.reset();
     provider_.reset();
     expect_request_ = false;
-  }
-
-  media::mojom::AudioOutputStreamClient* client() {
-    return provider_->client();
   }
 
   MojoAudioOutputIPC::FactoryAccessorCB GetAccessor() {
@@ -386,7 +389,7 @@ TEST(MojoAudioOutputIPC, IsReusableAfterError) {
     Mock::VerifyAndClearExpectations(&delegate);
 
     EXPECT_CALL(delegate, OnError());
-    stream_factory.client()->OnError();
+    stream_factory.SignalErrorToProviderClient();
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&delegate);
 
@@ -530,6 +533,12 @@ TEST(MojoAudioOutputIPC, Play_Plays) {
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
 
+  EXPECT_CALL(delegate, OnDeviceAuthorized(
+                            media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
+                            _, std::string(kReturnedDeviceId)));
+  EXPECT_CALL(delegate, GotOnStreamCreated());
+  EXPECT_CALL(stream, Play());
+
   const std::unique_ptr<media::AudioOutputIPC> ipc =
       std::make_unique<MojoAudioOutputIPC>(
           stream_factory.GetAccessor(),
@@ -539,15 +548,9 @@ TEST(MojoAudioOutputIPC, Play_Plays) {
 
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId);
   ipc->CreateStream(&delegate, Params());
-  ipc->PlayStream();
-
-  EXPECT_CALL(delegate, OnDeviceAuthorized(
-                            media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
-                            _, std::string(kReturnedDeviceId)));
-  EXPECT_CALL(delegate, GotOnStreamCreated());
-  EXPECT_CALL(stream, Play());
   base::RunLoop().RunUntilIdle();
-
+  ipc->PlayStream();
+  base::RunLoop().RunUntilIdle();
   ipc->CloseStream();
   base::RunLoop().RunUntilIdle();
 }
@@ -558,6 +561,12 @@ TEST(MojoAudioOutputIPC, Pause_Pauses) {
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
 
+  EXPECT_CALL(delegate, OnDeviceAuthorized(
+                            media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
+                            _, std::string(kReturnedDeviceId)));
+  EXPECT_CALL(delegate, GotOnStreamCreated());
+  EXPECT_CALL(stream, Pause());
+
   const std::unique_ptr<media::AudioOutputIPC> ipc =
       std::make_unique<MojoAudioOutputIPC>(
           stream_factory.GetAccessor(),
@@ -567,15 +576,9 @@ TEST(MojoAudioOutputIPC, Pause_Pauses) {
 
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId);
   ipc->CreateStream(&delegate, Params());
-  ipc->PauseStream();
-
-  EXPECT_CALL(delegate, OnDeviceAuthorized(
-                            media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
-                            _, std::string(kReturnedDeviceId)));
-  EXPECT_CALL(delegate, GotOnStreamCreated());
-  EXPECT_CALL(stream, Pause());
   base::RunLoop().RunUntilIdle();
-
+  ipc->PauseStream();
+  base::RunLoop().RunUntilIdle();
   ipc->CloseStream();
   base::RunLoop().RunUntilIdle();
 }
@@ -586,6 +589,12 @@ TEST(MojoAudioOutputIPC, SetVolume_SetsVolume) {
   StrictMock<MockStream> stream;
   StrictMock<MockDelegate> delegate;
 
+  EXPECT_CALL(delegate, OnDeviceAuthorized(
+                            media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
+                            _, std::string(kReturnedDeviceId)));
+  EXPECT_CALL(delegate, GotOnStreamCreated());
+  EXPECT_CALL(stream, SetVolume(kNewVolume));
+
   const std::unique_ptr<media::AudioOutputIPC> ipc =
       std::make_unique<MojoAudioOutputIPC>(
           stream_factory.GetAccessor(),
@@ -595,15 +604,9 @@ TEST(MojoAudioOutputIPC, SetVolume_SetsVolume) {
 
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId);
   ipc->CreateStream(&delegate, Params());
-  ipc->SetVolume(kNewVolume);
-
-  EXPECT_CALL(delegate, OnDeviceAuthorized(
-                            media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
-                            _, std::string(kReturnedDeviceId)));
-  EXPECT_CALL(delegate, GotOnStreamCreated());
-  EXPECT_CALL(stream, SetVolume(kNewVolume));
   base::RunLoop().RunUntilIdle();
-
+  ipc->SetVolume(kNewVolume);
+  base::RunLoop().RunUntilIdle();
   ipc->CloseStream();
   base::RunLoop().RunUntilIdle();
 }

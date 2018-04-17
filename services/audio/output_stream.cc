@@ -22,7 +22,6 @@ OutputStream::OutputStream(
     CreatedCallback created_callback,
     DeleteCallback delete_callback,
     media::mojom::AudioOutputStreamRequest stream_request,
-    media::mojom::AudioOutputStreamClientPtr client,
     media::mojom::AudioOutputStreamObserverAssociatedPtr observer,
     media::mojom::AudioLogPtr log,
     media::AudioManager* audio_manager,
@@ -33,7 +32,6 @@ OutputStream::OutputStream(
     : foreign_socket_(),
       delete_callback_(std::move(delete_callback)),
       binding_(this, std::move(stream_request)),
-      client_(std::move(client)),
       observer_(std::move(observer)),
       log_(media::mojom::ThreadSafeAudioLogPtr::Create(std::move(log))),
       coordinator_(coordinator),
@@ -50,7 +48,6 @@ OutputStream::OutputStream(
                   &reader_),
       weak_factory_(this) {
   DCHECK(binding_.is_bound());
-  DCHECK(client_.is_bound());
   DCHECK(observer_.is_bound());
   DCHECK(created_callback);
   DCHECK(delete_callback_);
@@ -60,7 +57,6 @@ OutputStream::OutputStream(
   base::RepeatingClosure error_handler =
       base::BindRepeating(&OutputStream::OnError, base::Unretained(this));
   binding_.set_connection_error_handler(error_handler);
-  client_.set_connection_error_handler(error_handler);
 
   // We allow the observer to terminate the stream by closing the message pipe.
   observer_.set_connection_error_handler(std::move(error_handler));
@@ -182,8 +178,10 @@ void OutputStream::OnControllerPaused() {
 void OutputStream::OnControllerError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
-  // Only propagate platform errors to the renderer.
-  client_->OnError();
+  // Only propagate platform errors to the observer.
+  observer_.ResetWithReason(
+      media::mojom::AudioOutputStreamObserver::kPlatformErrorDisconnectReason,
+      std::string());
   log_->get()->OnError();
   OnError();
 }

@@ -187,6 +187,9 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   // State of Play() / Pause() calls before OnStreamCreated() is called.
   bool play_on_start_;
 
+  // Last set volume.
+  double volume_ = 1.0;
+
   // The media session ID used to identify which input device to be started.
   // Only used by Unified IO.
   int session_id_;

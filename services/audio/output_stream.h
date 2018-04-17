@@ -48,7 +48,6 @@ class OutputStream final : public media::mojom::AudioOutputStream,
   OutputStream(CreatedCallback created_callback,
                DeleteCallback delete_callback,
                media::mojom::AudioOutputStreamRequest stream_request,
-               media::mojom::AudioOutputStreamClientPtr client,
                media::mojom::AudioOutputStreamObserverAssociatedPtr observer,
                media::mojom::AudioLogPtr log,
                media::AudioManager* audio_manager,
@@ -82,7 +81,6 @@ class OutputStream final : public media::mojom::AudioOutputStream,
   base::CancelableSyncSocket foreign_socket_;
   DeleteCallback delete_callback_;
   mojo::Binding<AudioOutputStream> binding_;
-  media::mojom::AudioOutputStreamClientPtr client_;
   media::mojom::AudioOutputStreamObserverAssociatedPtr observer_;
   const scoped_refptr<media::mojom::ThreadSafeAudioLogPtr> log_;
   GroupCoordinator* const coordinator_;

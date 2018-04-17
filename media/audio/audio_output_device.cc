@@ -249,6 +249,7 @@ void AudioOutputDevice::PlayOnIOThread() {
   if (state_ == PAUSED) {
     TRACE_EVENT_ASYNC_BEGIN0(
         "audio", "StartingPlayback", audio_callback_.get());
+    ipc_->SetVolume(volume_);
     ipc_->PlayStream();
     state_ = PLAYING;
     play_on_start_ = false;
@@ -301,8 +302,12 @@ void AudioOutputDevice::ShutDownOnIOThread() {
 
 void AudioOutputDevice::SetVolumeOnIOThread(double volume) {
   DCHECK(task_runner()->BelongsToCurrentThread());
-  if (state_ >= CREATING_STREAM)
-    ipc_->SetVolume(volume);
+  if (state_ >= CREATING_STREAM) {
+    // Defer playing until start unless we've already started.
+    volume_ = volume;
+    if (state_ == PLAYING)
+      ipc_->SetVolume(volume_);
+  }
 }
 
 void AudioOutputDevice::OnError() {

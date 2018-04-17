@@ -15,3 +15,6 @@ per-file test_manifest.json=file://ipc/SECURITY_OWNERS
 
 per-file pipeline_apptest_manifest.json=set noparent
 per-file pipeline_apptest_manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file mojo_audio_output*=file://media/audio/OWNERS
+per-file mojo_audio_input*=file://media/audio/OWNERS
