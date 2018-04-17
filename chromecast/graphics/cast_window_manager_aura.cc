@@ -30,15 +30,16 @@ gfx::Transform GetPrimaryDisplayRotationTransform() {
     case display::Display::ROTATE_0:
       break;
     case display::Display::ROTATE_90:
-      rotation.Translate(display.bounds().height(), 0);
+      rotation.Translate(display.bounds().height() - 1, 0);
       rotation.Rotate(90);
       break;
     case display::Display::ROTATE_180:
-      rotation.Translate(display.bounds().width(), display.bounds().height());
+      rotation.Translate(display.bounds().width() - 1,
+                         display.bounds().height() - 1);
       rotation.Rotate(180);
       break;
     case display::Display::ROTATE_270:
-      rotation.Translate(0, display.bounds().width());
+      rotation.Translate(0, display.bounds().width() - 1);
       rotation.Rotate(270);
       break;
   }
