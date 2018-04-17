@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
-#include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/mojo_audio_input_ipc.h"
 #include "content/renderer/render_frame_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -52,11 +51,9 @@ void CreateMojoAudioInputStream(
 AudioInputIPCFactory* AudioInputIPCFactory::instance_ = nullptr;
 
 AudioInputIPCFactory::AudioInputIPCFactory(
-    scoped_refptr<AudioInputMessageFilter> audio_input_message_filter,
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : audio_input_message_filter_(std::move(audio_input_message_filter)),
-      main_task_runner_(std::move(main_task_runner)),
+    : main_task_runner_(std::move(main_task_runner)),
       io_task_runner_(std::move(io_task_runner)) {
   DCHECK(!instance_);
   instance_ = this;
@@ -69,8 +66,6 @@ AudioInputIPCFactory::~AudioInputIPCFactory() {
 
 std::unique_ptr<media::AudioInputIPC> AudioInputIPCFactory::CreateAudioInputIPC(
     int frame_id) const {
-  if (audio_input_message_filter_)
-    return audio_input_message_filter_->CreateAudioInputIPC(frame_id);
   return std::make_unique<MojoAudioInputIPC>(base::BindRepeating(
       &CreateMojoAudioInputStream, main_task_runner_, frame_id));
 }

@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/mojo_audio_output_ipc.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -17,10 +16,8 @@ namespace content {
 AudioOutputIPCFactory* AudioOutputIPCFactory::instance_ = nullptr;
 
 AudioOutputIPCFactory::AudioOutputIPCFactory(
-    scoped_refptr<AudioMessageFilter> audio_message_filter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : audio_message_filter_(std::move(audio_message_filter)),
-      io_task_runner_(std::move(io_task_runner)) {
+    : io_task_runner_(std::move(io_task_runner)) {
   DCHECK(!instance_);
   instance_ = this;
 }
@@ -34,21 +31,16 @@ AudioOutputIPCFactory::~AudioOutputIPCFactory() {
 
 std::unique_ptr<media::AudioOutputIPC>
 AudioOutputIPCFactory::CreateAudioOutputIPC(int frame_id) const {
-  if (UsingMojoFactories()) {
     // Unretained is safe due to the contract at the top of the header file.
     return std::make_unique<MojoAudioOutputIPC>(
         base::BindRepeating(&AudioOutputIPCFactory::GetRemoteFactory,
                             base::Unretained(this), frame_id),
         io_task_runner_);
-  }
-  return audio_message_filter_->CreateAudioOutputIPC(frame_id);
 }
 
-void AudioOutputIPCFactory::MaybeRegisterRemoteFactory(
+void AudioOutputIPCFactory::RegisterRemoteFactory(
     int frame_id,
     service_manager::InterfaceProvider* interface_provider) {
-  if (!UsingMojoFactories())
-    return;
   mojom::RendererAudioOutputStreamFactoryPtr factory_ptr;
   interface_provider->GetInterface(&factory_ptr);
   // PassInterface unbinds the message pipe from the current thread. This
@@ -62,8 +54,6 @@ void AudioOutputIPCFactory::MaybeRegisterRemoteFactory(
 }
 
 void AudioOutputIPCFactory::MaybeDeregisterRemoteFactory(int frame_id) {
-  if (!UsingMojoFactories())
-    return;
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -74,7 +64,6 @@ void AudioOutputIPCFactory::MaybeDeregisterRemoteFactory(int frame_id) {
 mojom::RendererAudioOutputStreamFactory*
 AudioOutputIPCFactory::GetRemoteFactory(int frame_id) const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(UsingMojoFactories());
   auto it = factory_ptrs_.find(frame_id);
   return it == factory_ptrs_.end() ? nullptr : it->second.get();
 }
@@ -83,7 +72,6 @@ void AudioOutputIPCFactory::RegisterRemoteFactoryOnIOThread(
     int frame_id,
     mojom::RendererAudioOutputStreamFactoryPtrInfo factory_ptr_info) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(UsingMojoFactories());
   std::pair<StreamFactoryMap::iterator, bool> emplace_result =
       factory_ptrs_.emplace(frame_id,
                             mojo::MakeProxy(std::move(factory_ptr_info)));
@@ -106,16 +94,11 @@ void AudioOutputIPCFactory::RegisterRemoteFactoryOnIOThread(
 void AudioOutputIPCFactory::MaybeDeregisterRemoteFactoryOnIOThread(
     int frame_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(UsingMojoFactories());
   // This function can be called both by the frame and the connection error
   // handler of the factory pointer. Calling erase multiple times even though
   // there is nothing to erase is safe, so we don't have to handle this in any
   // particular way.
   factory_ptrs_.erase(frame_id);
-}
-
-bool AudioOutputIPCFactory::UsingMojoFactories() const {
-  return audio_message_filter_ == nullptr;
 }
 
 }  // namespace content

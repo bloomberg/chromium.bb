@@ -52,11 +52,6 @@
 #ifndef CONTENT_COMMON_MEDIA_AEC_DUMP_MESSAGES_H_
 #error "Failed to include content/common/media/aec_dump_messages.h"
 #endif
-#undef CONTENT_COMMON_MEDIA_AUDIO_MESSAGES_H_
-#include "content/common/media/audio_messages.h"
-#ifndef CONTENT_COMMON_MEDIA_AUDIO_MESSAGES_H_
-#error "Failed to include content/common/media/audio_messages.h"
-#endif
 #undef CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_
 #include "content/common/media/media_player_delegate_messages.h"
 #ifndef CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

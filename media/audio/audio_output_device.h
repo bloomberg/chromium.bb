@@ -8,10 +8,10 @@
 // Relationship of classes.
 //
 //  AudioOutputController                AudioOutputDevice
-//           ^                                ^
-//           |                                |
-//           v               IPC              v
-//    AudioRendererHost  <---------> AudioOutputIPC (AudioMessageFilter)
+//           ^                                  ^
+//           |                                  |
+//           v                 IPC              v
+//  MojoAudioOutputStream  <---------> AudioOutputIPC (MojoAudioOutputIPC)
 //
 // Transportation of audio samples from the render to the browser process
 // is done by using shared memory in combination with a sync socket pair
@@ -171,7 +171,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   RenderCallback* callback_;
 
   // A pointer to the IPC layer that takes care of sending requests over to
-  // the AudioRendererHost.  Only valid when state_ != IPC_CLOSED and must only
+  // the implementation.  Only valid when state_ != IPC_CLOSED and must only
   // be accessed on the IO thread.
   std::unique_ptr<AudioOutputIPC> ipc_;
 

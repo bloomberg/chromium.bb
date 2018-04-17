@@ -377,15 +377,13 @@ class MEDIA_EXPORT AudioInputController
   // A weak pointer factory that we use when posting tasks to the audio thread
   // that we want to be automatically discarded after Close() has been called
   // and that we do not want to keep the AudioInputController instance alive
-  // beyond what is desired by the user of the instance (e.g.
-  // AudioInputRendererHost). An example of where this is important is when
-  // we fire error notifications from the hw callback thread, post them to
-  // the audio thread. In that case, we do not want the error notification to
-  // keep the AudioInputController alive for as long as the error notification
-  // is pending and then make a callback from an AudioInputController that has
-  // already been closed.
-  // The weak_ptr_factory_ and all outstanding weak pointers, are invalidated
-  // at the end of DoClose.
+  // beyond what is desired by the user of the instance. An example of where
+  // this is important is when we fire error notifications from the hw callback
+  // thread, post them to the audio thread. In that case, we do not want the
+  // error notification to keep the AudioInputController alive for as long as
+  // the error notification is pending and then make a callback from an
+  // AudioInputController that has already been closed.
+  // All outstanding weak pointers, are invalidated at the end of DoClose.
   base::WeakPtrFactory<AudioInputController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputController);

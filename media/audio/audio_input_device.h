@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Low-latency audio capturing class utilizing audio input stream provided
-// by a server (browser) process by use of an IPC interface.
+// by a server process by use of an IPC interface.
 //
 // Relationship of classes:
 //
@@ -11,8 +11,8 @@
 //           ^                                  ^
 //           |                                  |
 //           v                  IPC             v
-// AudioInputRendererHost  <----------->  AudioInputIPC
-//           ^                            (AudioInputMessageFilter)
+// MojoAudioInputStream    <----------->  AudioInputIPC
+//           ^                            (MojoAudioInputIPC)
 //           |
 //           v
 // AudioInputDeviceManager
@@ -22,8 +22,8 @@
 // The AudioInputDevice user registers an AudioInputDevice::CaptureCallback by
 // calling Initialize().  The callback will be called with recorded audio from
 // the underlying audio layers.
-// The session ID is used by the AudioInputRendererHost to start the device
-// referenced by this ID.
+// The session ID is used by the RenderFrameAudioInputStreamFactory to start
+// the device referenced by this ID.
 //
 // State sequences:
 //
@@ -122,8 +122,7 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
 
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that needs to
-  // be executed on that thread. They interact with AudioInputMessageFilter and
-  // sends IPC messages on that thread.
+  // be executed on that thread.
   void InitializeOnIOThread(const AudioParameters& params,
                             CaptureCallback* callback,
                             int session_id);
@@ -145,7 +144,7 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   CaptureCallback* callback_;
 
   // A pointer to the IPC layer that takes care of sending requests over to
-  // the AudioInputRendererHost.  Only valid when state_ != IPC_CLOSED and must
+  // the stream implementation.  Only valid when state_ != IPC_CLOSED and must
   // only be accessed on the IO thread.
   std::unique_ptr<AudioInputIPC> ipc_;
 

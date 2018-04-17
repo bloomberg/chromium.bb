@@ -22,15 +22,10 @@ class AudioInputIPC;
 
 namespace content {
 
-class AudioInputMessageFilter;
-
 // This is a thread-safe factory for AudioInputIPC objects.
 class CONTENT_EXPORT AudioInputIPCFactory {
  public:
-  // If |audio_input_message_filter| is given, it is used for creating
-  // AudioInputIPC objects. Otherwise, MojoAudioInputIPC objects are created.
   AudioInputIPCFactory(
-      scoped_refptr<AudioInputMessageFilter> audio_input_message_filter,
       scoped_refptr<base::SequencedTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
@@ -49,7 +44,6 @@ class CONTENT_EXPORT AudioInputIPCFactory {
   std::unique_ptr<media::AudioInputIPC> CreateAudioInputIPC(int frame_id) const;
 
  private:
-  const scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   const scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 

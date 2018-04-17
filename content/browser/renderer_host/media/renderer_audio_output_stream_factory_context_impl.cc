@@ -75,10 +75,4 @@ RendererAudioOutputStreamFactoryContextImpl::CreateDelegate(
       std::move(stream_observer), unique_device_id);
 }
 
-// static
-bool RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories() {
-  return base::FeatureList::IsEnabled(
-      features::kUseMojoAudioOutputStreamFactory);
-}
-
 }  // namespace content

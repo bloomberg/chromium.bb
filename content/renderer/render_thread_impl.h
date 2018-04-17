@@ -130,7 +130,6 @@ namespace content {
 
 class AppCacheDispatcher;
 class AecDumpMessageFilter;
-class AudioMessageFilter;
 class AudioRendererMixerManager;
 class BrowserPluginManager;
 class CategorizedWorkerPool;
@@ -669,9 +668,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // Provides AudioInputIPC objects for audio input devices. Initialized in
   // Init.
   base::Optional<AudioInputIPCFactory> audio_input_ipc_factory_;
-  // Provides AudioOutputIPC objects for audio output devices. It either uses
-  // an AudioMessageFilter for this or provides MojoAudioOutputIPC objects.
-  // Initialized in Init.
+  // Provides AudioOutputIPC objects for audio output devices. Initialized in
+  // Init.
   base::Optional<AudioOutputIPCFactory> audio_output_ipc_factory_;
 
   // Used on the render thread.

@@ -205,7 +205,6 @@ source_set("common") {
     "mac/font_loader.h",
     "mac/font_loader.mm",
     "media/aec_dump_messages.h",
-    "media/audio_messages.h",
     "media/cdm_info.cc",
     "media/media_devices.cc",
     "media/media_devices.h",

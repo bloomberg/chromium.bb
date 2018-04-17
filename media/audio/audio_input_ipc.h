@@ -20,13 +20,8 @@ namespace media {
 class MEDIA_EXPORT AudioInputIPCDelegate {
  public:
   // Called when an AudioInputController has been created.
-  // The shared memory |handle| points to a memory section that's used to
-  // transfer data between the AudioInputDevice and AudioInputController
-  // objects.  The implementation of OnStreamCreated takes ownership.
-  // The |socket_handle| is used by the AudioInputController to signal
-  // notifications that more data is available and can optionally provide
-  // parameter changes back.  The AudioInputDevice must read from this socket
-  // and process the shared memory whenever data is read from the socket.
+  // See media/mojo/interfaces/audio_data_pipe.mojom for documentation of
+  // |handle| and |socket_handle|.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
                                bool initially_muted) = 0;

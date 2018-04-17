@@ -111,8 +111,6 @@
 #include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/renderer_host/clipboard_host_impl.h"
 #include "content/browser/renderer_host/file_utilities_host_impl.h"
-#include "content/browser/renderer_host/media/audio_input_renderer_host.h"
-#include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
@@ -1840,24 +1838,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   AddFilter(resource_message_filter_.get());
 
-  media::AudioManager* audio_manager =
-      BrowserMainLoop::GetInstance()->audio_manager();
-  MediaStreamManager* media_stream_manager =
-      BrowserMainLoop::GetInstance()->media_stream_manager();
-  if (!RenderFrameAudioInputStreamFactory::UseMojoFactories()) {
-    AddFilter(base::MakeRefCounted<AudioInputRendererHost>(
-                  GetID(), audio_manager, media_stream_manager,
-                  AudioMirroringManager::GetInstance(),
-                  BrowserMainLoop::GetInstance()->user_input_monitor())
-                  .get());
-  }
-  if (!RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories()) {
-    AddFilter(base::MakeRefCounted<AudioRendererHost>(
-                  GetID(), audio_manager,
-                  BrowserMainLoop::GetInstance()->audio_system(),
-                  media_stream_manager)
-                  .get());
-  }
   AddFilter(
       new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_service()));
   AddFilter(new DOMStorageMessageFilter(

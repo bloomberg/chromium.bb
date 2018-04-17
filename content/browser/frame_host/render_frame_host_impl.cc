@@ -3225,17 +3225,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface<device::mojom::VRService>(base::Bind(
       &WebvrServiceProvider::BindWebvrService, base::Unretained(this)));
 
-  if (RenderFrameAudioInputStreamFactory::UseMojoFactories()) {
-    registry_->AddInterface(
-        base::BindRepeating(&RenderFrameHostImpl::CreateAudioInputStreamFactory,
-                            base::Unretained(this)));
-  }
+  registry_->AddInterface(
+      base::BindRepeating(&RenderFrameHostImpl::CreateAudioInputStreamFactory,
+                          base::Unretained(this)));
 
-  if (RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories()) {
-    registry_->AddInterface(base::BindRepeating(
-        &RenderFrameHostImpl::CreateAudioOutputStreamFactory,
-        base::Unretained(this)));
-  }
+  registry_->AddInterface(
+      base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
+                          base::Unretained(this)));
 
   if (resource_coordinator::IsResourceCoordinatorEnabled()) {
     registry_->AddInterface(

@@ -1462,7 +1462,7 @@ void RenderFrameImpl::Initialize() {
 
   // AudioOutputIPCFactory may be null in tests.
   if (auto* factory = AudioOutputIPCFactory::get())
-    factory->MaybeRegisterRemoteFactory(GetRoutingID(), GetRemoteInterfaces());
+    factory->RegisterRemoteFactory(GetRoutingID(), GetRemoteInterfaces());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -4326,8 +4326,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
       // factory to be registered here, make this a RenderFrameObserver.
       // code.
       factory->MaybeDeregisterRemoteFactory(GetRoutingID());
-      factory->MaybeRegisterRemoteFactory(GetRoutingID(),
-                                          GetRemoteInterfaces());
+      factory->RegisterRemoteFactory(GetRoutingID(), GetRemoteInterfaces());
     }
 
     // If the request for |audio_input_stream_factory_| is in flight when

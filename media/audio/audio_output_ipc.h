@@ -32,13 +32,8 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
                                   const std::string& matched_device_id) = 0;
 
   // Called when an audio stream has been created.
-  // The shared memory |handle| points to a memory section that's used to
-  // transfer audio buffers from the AudioOutputIPCDelegate back to the
-  // AudioRendererHost.  The implementation of OnStreamCreated takes ownership.
-  // The |socket_handle| is used by AudioRendererHost to signal requests for
-  // audio data to be written into the shared memory. The AudioOutputIPCDelegate
-  // must read from this socket and provide audio whenever data (search for
-  // "pending_bytes") is received.
+  // See media/mojo/interfaces/audio_data_pipe.mojom for documentation of
+  // |handle| and |socket_handle|.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle) = 0;
 
