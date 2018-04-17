@@ -138,6 +138,11 @@ extern const char kDatasaverPromptName[];
 extern const char kDatasaverPromptDescription[];
 extern const char kDatasaverPromptDemoMode[];
 
+#if DCHECK_IS_CONFIGURABLE
+extern const char kDcheckIsFatalName[];
+extern const char kDcheckIsFatalDescription[];
+#endif  // DCHECK_IS_CONFIGURABLE
+
 extern const char kDebugPackedAppName[];
 extern const char kDebugPackedAppDescription[];
 
@@ -1516,11 +1521,6 @@ extern const char kUseWinrtMidiApiDescription[];
 
 extern const char kWindows10CustomTitlebarName[];
 extern const char kWindows10CustomTitlebarDescription[];
-
-#if DCHECK_IS_CONFIGURABLE
-extern const char kDcheckIsFatalName[];
-extern const char kDcheckIsFatalDescription[];
-#endif  // DCHECK_IS_CONFIGURABLE
 
 #endif  // defined(OS_WIN)
 

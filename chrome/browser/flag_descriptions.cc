@@ -175,6 +175,13 @@ const char kDatasaverPromptDescription[] =
     "Store.";
 const char kDatasaverPromptDemoMode[] = "Demo mode";
 
+#if DCHECK_IS_CONFIGURABLE
+const char kDcheckIsFatalName[] = "DCHECKs are fatal";
+const char kDcheckIsFatalDescription[] =
+    "By default Chrome will evaluate in this build, but only log failures, "
+    "rather than crashing. If enabled, DCHECKs will crash the calling process.";
+#endif  // DCHECK_IS_CONFIGURABLE
+
 const char kDebugPackedAppName[] = "Debugging for packed apps";
 const char kDebugPackedAppDescription[] =
     "Enables debugging context menu options such as Inspect Element for packed "
@@ -2491,13 +2498,6 @@ const char kWindows10CustomTitlebarName[] = "Custom-drawn Windows 10 Titlebar";
 const char kWindows10CustomTitlebarDescription[] =
     "If enabled, Chrome will draw the titlebar and caption buttons instead of "
     "deferring to Windows.";
-
-#if DCHECK_IS_CONFIGURABLE
-const char kDcheckIsFatalName[] = "DCHECKs are fatal";
-const char kDcheckIsFatalDescription[] =
-    "By default Chrome will evaluate DCHECKs in some Canary builds, but only "
-    "log failed DCHECKs. If enabled, DCHECKs will crash the calling process.";
-#endif  // DCHECK_IS_CONFIGURABLE
 
 #endif  // defined(OS_WIN)
 
