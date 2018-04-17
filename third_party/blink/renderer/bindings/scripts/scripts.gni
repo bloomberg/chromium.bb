@@ -29,8 +29,7 @@ idl_lexer_parser_files = get_path_info([
                                          "blink_idl_parser.py",
                                        ],
                                        "abspath")
-idl_compiler_files =
-    get_path_info(
+idl_compiler_files = get_path_info(
         [
           "idl_compiler.py",
 
@@ -55,7 +54,7 @@ idl_compiler_files =
           "v8_types.py",
           "v8_union.py",
           "v8_utilities.py",
-          "//third_party/blink/tools/blinkpy/common/name_style_converter.py",
+          "//third_party/blink/renderer/build/scripts/blinkbuild/name_style_converter.py",
         ],
         "abspath")
 

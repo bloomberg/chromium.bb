@@ -17,11 +17,10 @@ import re
 import sys
 from functools import partial
 
-# Without abspath(), PathFinder can't find chromium_base correctly.
-sys.path.append(os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                 'third_party', 'WebKit', 'Tools', 'Scripts')))
-from blinkpy.common.name_style_converter import NameStyleConverter
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             '..', 'renderer', 'build', 'scripts'))
+from blinkbuild.name_style_converter import NameStyleConverter
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 from plan_blink_move import plan_blink_move
 from plan_blink_move import relative_dest
 from webkitpy.common.checkout.git import Git
