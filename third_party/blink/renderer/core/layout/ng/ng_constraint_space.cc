@@ -94,22 +94,41 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
   bool fixed_inline = false, fixed_block = false;
 
   LayoutUnit available_logical_width;
-  if (parallel_containing_block)
-    available_logical_width = box.ContainingBlockLogicalWidthForContent();
-  else
-    available_logical_width = box.PerpendicularContainingBlockLogicalHeight();
+  if (parallel_containing_block &&
+      box.HasOverrideContainingBlockLogicalWidth()) {
+    // Grid layout sets OverrideContainingBlockLogicalWidth|Height
+    available_logical_width = box.OverrideContainingBlockContentLogicalWidth();
+  } else if (!parallel_containing_block &&
+             box.HasOverrideContainingBlockLogicalHeight()) {
+    available_logical_width = box.OverrideContainingBlockContentLogicalHeight();
+  } else {
+    if (parallel_containing_block)
+      available_logical_width = box.ContainingBlockLogicalWidthForContent();
+    else
+      available_logical_width = box.PerpendicularContainingBlockLogicalHeight();
+  }
   available_logical_width = std::max(LayoutUnit(), available_logical_width);
 
   LayoutUnit available_logical_height;
-  if (!box.Parent()) {
-    available_logical_height = box.View()->ViewLogicalHeightForPercentages();
-  } else if (box.ContainingBlock()) {
-    if (parallel_containing_block) {
-      available_logical_height =
-          box.ContainingBlock()
-              ->AvailableLogicalHeightForPercentageComputation();
-    } else {
-      available_logical_height = box.ContainingBlockLogicalWidthForContent();
+  if (parallel_containing_block &&
+      box.HasOverrideContainingBlockLogicalHeight()) {
+    // Grid layout sets OverrideContainingBlockLogicalWidth|Height
+    available_logical_height =
+        box.OverrideContainingBlockContentLogicalHeight();
+  } else if (!parallel_containing_block &&
+             box.HasOverrideContainingBlockLogicalWidth()) {
+    available_logical_height = box.OverrideContainingBlockContentLogicalWidth();
+  } else {
+    if (!box.Parent()) {
+      available_logical_height = box.View()->ViewLogicalHeightForPercentages();
+    } else if (box.ContainingBlock()) {
+      if (parallel_containing_block) {
+        available_logical_height =
+            box.ContainingBlock()
+                ->AvailableLogicalHeightForPercentageComputation();
+      } else {
+        available_logical_height = box.ContainingBlockLogicalWidthForContent();
+      }
     }
   }
   NGLogicalSize percentage_size = {available_logical_width,
