@@ -94,7 +94,6 @@ source_set("material_components_ios") {
     "src/components/ButtonBar/src/MaterialButtonBar.h",
     "src/components/ButtonBar/src/private/MDCAppBarButtonBarBuilder.h",
     "src/components/ButtonBar/src/private/MDCAppBarButtonBarBuilder.m",
-    "src/components/ButtonBar/src/private/MDCButtonBarButton+Private.h",
     "src/components/ButtonBar/src/private/MDCButtonBarButton.m",
     "src/components/Buttons/src/MDCButton.h",
     "src/components/Buttons/src/MDCButton.m",
