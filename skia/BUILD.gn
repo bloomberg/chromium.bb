@@ -75,6 +75,8 @@ config("skia_config") {
     ]
   }
 
+  include_dirs += [ "//third_party/skia/third_party/skcms" ]
+
   if (skia_support_gpu) {
     include_dirs += [
       "//third_party/skia/src/gpu",
@@ -339,6 +341,12 @@ component("skia") {
   if (current_cpu == "arm") {
     sources += [ "//third_party/skia/src/core/SkUtilsArm.cpp" ]
   }
+
+  # skcms
+  sources += [
+    "//third_party/skia/src/core/SkColorSpaceXform_skcms.cpp",
+    "//third_party/skia/third_party/skcms/skcms.c",
+  ]
 
   # GPU
   if (skia_support_gpu) {
