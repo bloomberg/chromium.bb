@@ -67,7 +67,8 @@ class CONTENT_EXPORT MojoAudioOutputIPC
                                     const std::string& device_id,
                                     AuthorizationCB callback);
 
-  void ReceivedDeviceAuthorization(media::OutputDeviceStatus status,
+  void ReceivedDeviceAuthorization(base::TimeTicks auth_start_time,
+                                   media::OutputDeviceStatus status,
                                    const media::AudioParameters& params,
                                    const std::string& device_id) const;
 

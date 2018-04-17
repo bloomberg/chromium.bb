@@ -57,7 +57,7 @@ void MojoAudioOutputIPC::RequestDeviceAuthorization(
       session_id, device_id,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&MojoAudioOutputIPC::ReceivedDeviceAuthorization,
-                         weak_factory_.GetWeakPtr()),
+                         weak_factory_.GetWeakPtr(), base::TimeTicks::Now()),
           media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL,
           media::AudioParameters::UnavailableDeviceParams(), std::string()));
 }
@@ -187,11 +187,20 @@ void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
 }
 
 void MojoAudioOutputIPC::ReceivedDeviceAuthorization(
+    base::TimeTicks auth_start_time,
     media::OutputDeviceStatus status,
     const media::AudioParameters& params,
     const std::string& device_id) const {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
+
+  // Times over 15 s should be very rare, so we don't lose interesting data by
+  // making it the upper limit.
+  UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Render.OutputDeviceAuthorizationTime",
+                             base::TimeTicks::Now() - auth_start_time,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromSeconds(15), 100);
+
   delegate_->OnDeviceAuthorized(status, params, device_id);
 }
 

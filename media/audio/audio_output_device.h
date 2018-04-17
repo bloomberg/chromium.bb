@@ -224,9 +224,6 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   const base::TimeDelta auth_timeout_;
   std::unique_ptr<base::OneShotTimer> auth_timeout_action_;
 
-  // Set when authorization starts, for UMA stats.
-  base::TimeTicks auth_start_time_;
-
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDevice);
 };
 
