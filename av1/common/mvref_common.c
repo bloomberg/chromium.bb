@@ -14,8 +14,6 @@
 #include "av1/common/mvref_common.h"
 #include "av1/common/warped_motion.h"
 
-#define USE_CUR_GM_REFMV 1
-
 // Although we assign 32 bit integers, all the values are strictly under 14
 // bits.
 static int div_mult[32] = {
@@ -77,10 +75,8 @@ static void add_ref_mv_candidate(
     uint8_t ref_match_counts[MODE_CTX_REF_FRAMES],
     uint8_t newmv_counts[MODE_CTX_REF_FRAMES],
     CANDIDATE_MV ref_mv_stacks[][MAX_REF_MV_STACK_SIZE],
-#if USE_CUR_GM_REFMV
-    int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params,
-#endif  // USE_CUR_GM_REFMV
-    int col, int weight) {
+    int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params, int col,
+    int weight) {
   if (!is_inter_block(candidate)) return;  // for intrabc
   int index = 0, ref;
   assert(weight % 2 == 0);
@@ -96,11 +92,9 @@ static void add_ref_mv_candidate(
     for (ref = 0; ref < 2; ++ref) {
       if (candidate->ref_frame[ref] == rf[0]) {
         int_mv this_refmv;
-#if USE_CUR_GM_REFMV
         if (is_global_mv_block(candidate, gm_params[rf[0]].wmtype))
           this_refmv = gm_mv_candidates[0];
         else
-#endif  // USE_CUR_GM_REFMV
           this_refmv = get_sub_block_mv(candidate, ref, col);
 
         for (index = 0; index < *refmv_count; ++index)
@@ -131,11 +125,9 @@ static void add_ref_mv_candidate(
       int_mv this_refmv[2];
 
       for (ref = 0; ref < 2; ++ref) {
-#if USE_CUR_GM_REFMV
         if (is_global_mv_block(candidate, gm_params[rf[ref]].wmtype))
           this_refmv[ref] = gm_mv_candidates[ref];
         else
-#endif  // USE_CUR_GM_REFMV
           this_refmv[ref] = get_sub_block_mv(candidate, ref, col);
       }
 
@@ -166,10 +158,8 @@ static void scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                           uint8_t refmv_count[MODE_CTX_REF_FRAMES],
                           uint8_t ref_match_count[MODE_CTX_REF_FRAMES],
                           uint8_t newmv_count[MODE_CTX_REF_FRAMES],
-#if USE_CUR_GM_REFMV
-                          int_mv *gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
-                          int max_row_offset, int *processed_rows) {
+                          int_mv *gm_mv_candidates, int max_row_offset,
+                          int *processed_rows) {
   int end_mi = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
   end_mi = AOMMIN(end_mi, mi_size_wide[BLOCK_64X64]);
   const int n8_w_8 = mi_size_wide[BLOCK_8X8];
@@ -207,11 +197,8 @@ static void scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
 
     add_ref_mv_candidate(candidate, rf, refmv_count, ref_match_count,
-                         newmv_count, ref_mv_stack,
-#if USE_CUR_GM_REFMV
-                         gm_mv_candidates, cm->global_motion,
-#endif  // USE_CUR_GM_REFMV
-                         col_offset + i, len * weight);
+                         newmv_count, ref_mv_stack, gm_mv_candidates,
+                         cm->global_motion, col_offset + i, len * weight);
 
     i += len;
   }
@@ -224,10 +211,8 @@ static void scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                           uint8_t refmv_count[MODE_CTX_REF_FRAMES],
                           uint8_t ref_match_count[MODE_CTX_REF_FRAMES],
                           uint8_t newmv_count[MODE_CTX_REF_FRAMES],
-#if USE_CUR_GM_REFMV
-                          int_mv *gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
-                          int max_col_offset, int *processed_cols) {
+                          int_mv *gm_mv_candidates, int max_col_offset,
+                          int *processed_cols) {
   int end_mi = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
   end_mi = AOMMIN(end_mi, mi_size_high[BLOCK_64X64]);
   const int n8_h_8 = mi_size_high[BLOCK_8X8];
@@ -264,11 +249,8 @@ static void scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
 
     add_ref_mv_candidate(candidate, rf, refmv_count, ref_match_count,
-                         newmv_count, ref_mv_stack,
-#if USE_CUR_GM_REFMV
-                         gm_mv_candidates, cm->global_motion,
-#endif  // USE_CUR_GM_REFMV
-                         col_offset, len * weight);
+                         newmv_count, ref_mv_stack, gm_mv_candidates,
+                         cm->global_motion, col_offset, len * weight);
 
     i += len;
   }
@@ -281,9 +263,7 @@ static void scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                           CANDIDATE_MV ref_mv_stack[][MAX_REF_MV_STACK_SIZE],
                           uint8_t ref_match_count[MODE_CTX_REF_FRAMES],
                           uint8_t newmv_count[MODE_CTX_REF_FRAMES],
-#if USE_CUR_GM_REFMV
                           int_mv *gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
                           uint8_t refmv_count[MODE_CTX_REF_FRAMES]) {
   const TileInfo *const tile = &xd->tile;
   POSITION mi_pos;
@@ -297,11 +277,8 @@ static void scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const int len = mi_size_wide[BLOCK_8X8];
 
     add_ref_mv_candidate(candidate, rf, refmv_count, ref_match_count,
-                         newmv_count, ref_mv_stack,
-#if USE_CUR_GM_REFMV
-                         gm_mv_candidates, cm->global_motion,
-#endif  // USE_CUR_GM_REFMV
-                         mi_pos.col, 2 * len);
+                         newmv_count, ref_mv_stack, gm_mv_candidates,
+                         cm->global_motion, mi_pos.col, 2 * len);
   }  // Analyze a single 8x8 block motion information.
 }
 
@@ -489,10 +466,7 @@ static void setup_ref_mv_list(
     const AV1_COMMON *cm, const MACROBLOCKD *xd, MV_REFERENCE_FRAME ref_frame,
     uint8_t refmv_count[MODE_CTX_REF_FRAMES],
     CANDIDATE_MV ref_mv_stack[][MAX_REF_MV_STACK_SIZE],
-    int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES],
-#if USE_CUR_GM_REFMV
-    int_mv *gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
+    int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES], int_mv *gm_mv_candidates,
     int mi_row, int mi_col, int16_t *mode_context) {
   const int bs = AOMMAX(xd->n8_w, xd->n8_h);
   const int has_tr = has_top_right(cm, xd, mi_row, mi_col, bs);
@@ -537,27 +511,17 @@ static void setup_ref_mv_list(
   // Scan the first above row mode info. row_offset = -1;
   if (abs(max_row_offset) >= 1)
     scan_row_mbmi(cm, xd, mi_row, mi_col, rf, -1, ref_mv_stack, refmv_count,
-                  row_match_count, newmv_count,
-#if USE_CUR_GM_REFMV
-                  gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
+                  row_match_count, newmv_count, gm_mv_candidates,
                   max_row_offset, &processed_rows);
   // Scan the first left column mode info. col_offset = -1;
   if (abs(max_col_offset) >= 1)
     scan_col_mbmi(cm, xd, mi_row, mi_col, rf, -1, ref_mv_stack, refmv_count,
-                  col_match_count, newmv_count,
-#if USE_CUR_GM_REFMV
-                  gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
+                  col_match_count, newmv_count, gm_mv_candidates,
                   max_col_offset, &processed_cols);
   // Check top-right boundary
   if (has_tr)
     scan_blk_mbmi(cm, xd, mi_row, mi_col, rf, -1, xd->n8_w, ref_mv_stack,
-                  row_match_count, newmv_count,
-#if USE_CUR_GM_REFMV
-                  gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
-                  refmv_count);
+                  row_match_count, newmv_count, gm_mv_candidates, refmv_count);
 
   uint8_t nearest_match[MODE_CTX_REF_FRAMES];
   uint8_t nearest_refmv_count[MODE_CTX_REF_FRAMES];
@@ -622,10 +586,7 @@ static void setup_ref_mv_list(
 
   // Scan the second outer area.
   scan_blk_mbmi(cm, xd, mi_row, mi_col, rf, -1, -1, ref_mv_stack,
-                row_match_count, dummy_newmv_count,
-#if USE_CUR_GM_REFMV
-                gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
+                row_match_count, dummy_newmv_count, gm_mv_candidates,
                 refmv_count);
 
   for (int idx = 2; idx <= MVREF_ROW_COLS; ++idx) {
@@ -636,19 +597,13 @@ static void setup_ref_mv_list(
         abs(row_offset) > processed_rows)
       scan_row_mbmi(cm, xd, mi_row, mi_col, rf, row_offset, ref_mv_stack,
                     refmv_count, row_match_count, dummy_newmv_count,
-#if USE_CUR_GM_REFMV
-                    gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
-                    max_row_offset, &processed_rows);
+                    gm_mv_candidates, max_row_offset, &processed_rows);
 
     if (abs(col_offset) <= abs(max_col_offset) &&
         abs(col_offset) > processed_cols)
       scan_col_mbmi(cm, xd, mi_row, mi_col, rf, col_offset, ref_mv_stack,
                     refmv_count, col_match_count, dummy_newmv_count,
-#if USE_CUR_GM_REFMV
-                    gm_mv_candidates,
-#endif  // USE_CUR_GM_REFMV
-                    max_col_offset, &processed_cols);
+                    gm_mv_candidates, max_col_offset, &processed_cols);
   }
 
   ref_match_count[ref_frame] =
@@ -961,10 +916,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack, mv_ref_list,
-#if USE_CUR_GM_REFMV
-                    zeromv,
-#endif  // USE_CUR_GM_REFMV
-                    mi_row, mi_col, mode_context);
+                    zeromv, mi_row, mi_col, mode_context);
 }
 
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
