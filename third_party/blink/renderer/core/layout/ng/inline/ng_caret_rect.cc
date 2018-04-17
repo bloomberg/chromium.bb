@@ -332,7 +332,7 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
                                        unsigned offset,
                                        TextAffinity affinity) {
   const NGPaintFragment* root_fragment = context.PaintFragment();
-  DCHECK(root_fragment);
+  DCHECK(root_fragment) << "no paint fragment on layout object " << &context;
 
   NGCaretPosition candidate;
   for (const auto& child :

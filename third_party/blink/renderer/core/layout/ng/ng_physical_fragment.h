@@ -136,7 +136,8 @@ class CORE_EXPORT NGPhysicalFragment
 
   // Returns the offset relative to the parent fragment's content-box.
   NGPhysicalOffset Offset() const {
-    DCHECK(is_placed_);
+    DCHECK(is_placed_) << "this=" << this << " for layout object "
+                       << layout_object_;
     return offset_;
   }
 
