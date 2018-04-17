@@ -330,12 +330,13 @@ void AppListControllerImpl::OnSessionStateChanged(
 
 void AppListControllerImpl::OnAppListItemWillBeDeleted(
     app_list::AppListItem* item) {
-  if (item->is_folder())
+  if (client_ && item->is_folder())
     client_->OnFolderDeleted(item->CloneMetadata());
 }
 
 void AppListControllerImpl::OnAppListItemUpdated(app_list::AppListItem* item) {
-  client_->OnItemUpdated(item->CloneMetadata());
+  if (client_)
+    client_->OnItemUpdated(item->CloneMetadata());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -470,60 +471,72 @@ bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
 // Methods of |client_|:
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
-  client_->StartSearch(raw_query);
+  if (client_)
+    client_->StartSearch(raw_query);
 }
 
 void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
                                              int event_flags) {
-  client_->OpenSearchResult(result_id, event_flags);
+  if (client_)
+    client_->OpenSearchResult(result_id, event_flags);
 }
 
 void AppListControllerImpl::InvokeSearchResultAction(
     const std::string& result_id,
     int action_index,
     int event_flags) {
-  client_->InvokeSearchResultAction(result_id, action_index, event_flags);
+  if (client_)
+    client_->InvokeSearchResultAction(result_id, action_index, event_flags);
 }
 
 void AppListControllerImpl::ViewShown(int64_t display_id) {
-  client_->ViewShown(display_id);
+  if (client_)
+    client_->ViewShown(display_id);
 }
 
 void AppListControllerImpl::ViewClosing() {
-  client_->ViewClosing();
+  if (client_)
+    client_->ViewClosing();
 }
 
 void AppListControllerImpl::ActivateItem(const std::string& id,
                                          int event_flags) {
-  client_->ActivateItem(id, event_flags);
+  if (client_)
+    client_->ActivateItem(id, event_flags);
 }
 
 void AppListControllerImpl::GetContextMenuModel(
     const std::string& id,
     GetContextMenuModelCallback callback) {
-  client_->GetContextMenuModel(id, std::move(callback));
+  if (client_)
+    client_->GetContextMenuModel(id, std::move(callback));
 }
 
 void AppListControllerImpl::ContextMenuItemSelected(const std::string& id,
                                                     int command_id,
                                                     int event_flags) {
-  client_->ContextMenuItemSelected(id, command_id, event_flags);
+  if (client_)
+    client_->ContextMenuItemSelected(id, command_id, event_flags);
 }
 
 void AppListControllerImpl::OnVisibilityChanged(bool visible) {
-  client_->OnAppListVisibilityChanged(visible);
+  if (client_)
+    client_->OnAppListVisibilityChanged(visible);
 }
 
 void AppListControllerImpl::OnTargetVisibilityChanged(bool visible) {
-  client_->OnAppListTargetVisibilityChanged(visible);
+  if (client_)
+    client_->OnAppListTargetVisibilityChanged(visible);
 }
 
 void AppListControllerImpl::StartVoiceInteractionSession() {
-  client_->StartVoiceInteractionSession();
+  if (client_)
+    client_->StartVoiceInteractionSession();
 }
 
 void AppListControllerImpl::ToggleVoiceInteractionSession() {
-  client_->ToggleVoiceInteractionSession();
+  if (client_)
+    client_->ToggleVoiceInteractionSession();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
