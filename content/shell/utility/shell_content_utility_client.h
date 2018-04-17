@@ -13,7 +13,7 @@ namespace content {
 
 class ShellContentUtilityClient : public ContentUtilityClient {
  public:
-  explicit ShellContentUtilityClient(bool is_browsertest = false);
+  ShellContentUtilityClient();
   ~ShellContentUtilityClient() override;
 
   // ContentUtilityClient:
