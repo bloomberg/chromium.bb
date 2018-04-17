@@ -555,6 +555,23 @@ GURL TeamDriveListRequest::GetURLInternal() const {
   return url_generator_.GetTeamDriveListUrl(max_results_, page_token_);
 }
 
+//========================= StartPageTokenRequest =============================
+
+StartPageTokenRequest::StartPageTokenRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const StartPageTokenCallback& callback)
+    : DriveApiDataRequest<StartPageToken>(sender, callback),
+      url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
+}
+
+StartPageTokenRequest::~StartPageTokenRequest() = default;
+
+GURL StartPageTokenRequest::GetURLInternal() const {
+  return url_generator_.GetStartPageTokenUrl(team_drive_id_);
+}
+
 //============================= FilesListRequest =============================
 
 FilesListRequest::FilesListRequest(RequestSender* sender,

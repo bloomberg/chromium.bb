@@ -548,4 +548,19 @@ TEST_F(DriveApiUrlGeneratorTest, GenerateTeamDriveListUrl) {
       team_drives_url_generator_.GetTeamDriveListUrl(100, "theToken").spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GeneraeStartPageTokenUrl) {
+  EXPECT_EQ("https://www.example.com/drive/v2/changes/startPageToken",
+            url_generator_.GetStartPageTokenUrl("").spec());
+
+  EXPECT_EQ(
+      "https://www.example.com/drive/v2/changes/"
+      "startPageToken?supportsTeamDrives=true",
+      team_drives_url_generator_.GetStartPageTokenUrl("").spec());
+
+  EXPECT_EQ(
+      "https://www.example.com/drive/v2/changes/"
+      "startPageToken?supportsTeamDrives=true&teamDriveId=team_drive_id",
+      team_drives_url_generator_.GetStartPageTokenUrl("team_drive_id").spec());
+}
+
 }  // namespace google_apis

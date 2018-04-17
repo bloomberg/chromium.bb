@@ -26,6 +26,8 @@ std::string JobTypeToString(JobType type) {
       return "TYPE_SEARCH";
     case TYPE_GET_CHANGE_LIST:
       return "TYPE_GET_CHANGE_LIST";
+    case TYPE_GET_START_PAGE_TOKEN:
+      return "TYPE_GET_START_PAGE_TOKEN";
     case TYPE_GET_REMAINING_CHANGE_LIST:
       return "TYPE_GET_REMAINING_CHANGE_LIST";
     case TYPE_GET_REMAINING_TEAM_DRIVE_LIST:
@@ -104,6 +106,7 @@ bool IsActiveFileTransferJobInfo(const JobInfo& job_info) {
   // are added.
   switch (job_info.job_type) {
     case TYPE_GET_ABOUT_RESOURCE:
+    case TYPE_GET_START_PAGE_TOKEN:
     case TYPE_GET_APP_LIST:
     case TYPE_GET_ALL_TEAM_DRIVE_LIST:
     case TYPE_GET_ALL_RESOURCE_LIST:

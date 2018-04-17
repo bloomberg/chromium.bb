@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "components/drive/file_errors.h"
@@ -23,6 +24,7 @@ enum JobType {
   TYPE_GET_RESOURCE_LIST_IN_DIRECTORY,
   TYPE_SEARCH,
   TYPE_GET_CHANGE_LIST,
+  TYPE_GET_START_PAGE_TOKEN,
   TYPE_GET_REMAINING_CHANGE_LIST,
   TYPE_GET_REMAINING_TEAM_DRIVE_LIST,
   TYPE_GET_REMAINING_FILE_LIST,

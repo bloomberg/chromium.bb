@@ -209,6 +209,19 @@ TEST_F(JobSchedulerTest, GetAboutResource) {
   ASSERT_TRUE(about_resource);
 }
 
+TEST_F(JobSchedulerTest, GetStartPageToken) {
+  ConnectToWifi();
+
+  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
+  std::unique_ptr<google_apis::StartPageToken> start_page_token;
+  scheduler_->GetStartPageToken(
+      "team_drive_id", google_apis::test_util::CreateCopyResultCallback(
+                           &error, &start_page_token));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(start_page_token);
+}
+
 TEST_F(JobSchedulerTest, GetAppList) {
   ConnectToWifi();
 

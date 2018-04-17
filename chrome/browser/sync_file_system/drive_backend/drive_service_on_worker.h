@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -55,6 +58,10 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
 
   google_apis::CancelCallback GetAboutResource(
       const google_apis::AboutResourceCallback& callback) override;
+
+  google_apis::CancelCallback GetStartPageToken(
+      const std::string& team_drive_id,
+      const google_apis::StartPageTokenCallback& callback) override;
 
   google_apis::CancelCallback GetChangeList(
       int64_t start_changestamp,

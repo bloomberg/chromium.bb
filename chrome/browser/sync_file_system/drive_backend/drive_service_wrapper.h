@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -42,6 +44,9 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
 
   void GetAboutResource(
       const google_apis::AboutResourceCallback& callback);
+
+  void GetStartPageToken(const std::string& team_drive_id,
+                         const google_apis::StartPageTokenCallback& callback);
 
   void GetChangeList(int64_t start_changestamp,
                      const google_apis::ChangeListCallback& callback);

@@ -60,6 +60,13 @@ void DriveServiceWrapper::GetAboutResource(
   drive_service_->GetAboutResource(callback);
 }
 
+void DriveServiceWrapper::GetStartPageToken(
+    const std::string& team_drive_id,
+    const google_apis::StartPageTokenCallback& callback) {
+  DCHECK(sequece_checker_.CalledOnValidSequence());
+  drive_service_->GetStartPageToken(team_drive_id, callback);
+}
+
 void DriveServiceWrapper::GetChangeList(
     int64_t start_changestamp,
     const google_apis::ChangeListCallback& callback) {
