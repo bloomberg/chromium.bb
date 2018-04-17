@@ -35,8 +35,8 @@
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "url/gurl.h"
 
-using blink::WebDocument;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
 using blink::WebInputElement;
@@ -71,7 +71,8 @@ struct SyntheticForm {
   // Contains control elements of the represented form, including not fillable
   // ones.
   std::vector<blink::WebFormControlElement> control_elements;
-  blink::WebDocument document;
+  // The origin of the containing document.
+  GURL origin;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyntheticForm);
@@ -159,7 +160,8 @@ void PopulateSyntheticFormFromWebForm(const WebFormElement& web_form,
   web_form.GetFormControlElements(web_control_elements);
   synthetic_form->control_elements.assign(web_control_elements.begin(),
                                           web_control_elements.end());
-  synthetic_form->document = web_form.GetDocument();
+  synthetic_form->origin =
+      form_util::GetCanonicalOriginForDocument(web_form.GetDocument());
 }
 
 // Helper to determine which password is the main (current) one, and which is
@@ -750,8 +752,7 @@ bool GetPasswordForm(
     password_form->username_value = username_value;
   }
 
-  password_form->origin =
-      form_util::GetCanonicalOriginForDocument(form.document);
+  password_form->origin = form.origin;
   password_form->signon_realm = GetSignOnRealm(password_form->origin);
 
   // Convert |possible_usernames| to ValueElementVector.
@@ -917,7 +918,8 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
   SyntheticForm synthetic_form;
   synthetic_form.control_elements = form_util::GetUnownedFormFieldElements(
       frame.GetDocument().All(), &synthetic_form.fieldsets);
-  synthetic_form.document = frame.GetDocument();
+  synthetic_form.origin =
+      form_util::GetCanonicalOriginForDocument(frame.GetDocument());
 
   if (synthetic_form.control_elements.empty())
     return std::unique_ptr<PasswordForm>();
