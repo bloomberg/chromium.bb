@@ -2613,7 +2613,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
 
-  if (!cm->seq_params.reduced_still_picture_hdr) {
+  if (cm->seq_params.reduced_still_picture_hdr) {
+    cm->show_existing_frame = 0;
+    cm->show_frame = 1;
+    cm->frame_type = KEY_FRAME;
+    cm->error_resilient_mode = 1;
+  } else {
     cm->show_existing_frame = aom_rb_read_bit(rb);
     cm->reset_decoder_state = 0;
 
@@ -2670,6 +2675,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
     cm->show_frame = aom_rb_read_bit(rb);
+    if (cm->seq_params.still_picture &&
+        (cm->frame_type != KEY_FRAME || !cm->show_frame)) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Still pictures must be coded as shown keyframes");
+    }
     cm->showable_frame = 0;
 #if CONFIG_BUFFER_MODEL
     if (cm->show_frame) {
@@ -2689,11 +2699,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         frame_is_sframe(cm) || (cm->frame_type == KEY_FRAME && cm->show_frame)
             ? 1
             : aom_rb_read_bit(rb);
-  }
-  if (cm->seq_params.still_picture) {
-    cm->show_existing_frame = 0;
-    cm->show_frame = 1;
-    cm->frame_type = KEY_FRAME;
   }
 
   cm->disable_cdf_update = aom_rb_read_bit(rb);
