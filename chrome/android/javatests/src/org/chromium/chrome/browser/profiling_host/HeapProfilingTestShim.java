@@ -7,13 +7,13 @@ package org.chromium.chrome.browser.profiling_host;
 import org.chromium.base.annotations.MainDex;
 
 /**
- * Provides direct access to test_android_shim, which in turn forwards to
- * ProfilingTestDriver. Only used for testing.
+ * Provides direct access to heap_profiling_test_shim, which in turn forwards to
+ * heap_profiling::TestDriver. Only used for testing.
  */
 @MainDex
-public class TestAndroidShim {
-    public TestAndroidShim() {
-        mNativeTestAndroidShim = nativeInit();
+public class HeapProfilingTestShim {
+    public HeapProfilingTestShim() {
+        mNativeHeapProfilingTestShim = nativeInit();
     }
 
     /**
@@ -24,7 +24,7 @@ public class TestAndroidShim {
      */
     public boolean runTestForMode(String mode, boolean dynamicallyStartProfiling, String stackMode,
             boolean shouldSample, boolean sampleEverything) {
-        return nativeRunTestForMode(mNativeTestAndroidShim, mode, dynamicallyStartProfiling,
+        return nativeRunTestForMode(mNativeHeapProfilingTestShim, mode, dynamicallyStartProfiling,
                 stackMode, shouldSample, sampleEverything);
     }
 
@@ -33,16 +33,16 @@ public class TestAndroidShim {
      * After the call, this class instance shouldn't be used.
      */
     public void destroy() {
-        if (mNativeTestAndroidShim != 0) {
-            nativeDestroy(mNativeTestAndroidShim);
-            mNativeTestAndroidShim = 0;
+        if (mNativeHeapProfilingTestShim != 0) {
+            nativeDestroy(mNativeHeapProfilingTestShim);
+            mNativeHeapProfilingTestShim = 0;
         }
     }
 
-    private long mNativeTestAndroidShim;
+    private long mNativeHeapProfilingTestShim;
     private native long nativeInit();
-    private native void nativeDestroy(long nativeTestAndroidShim);
-    private native boolean nativeRunTestForMode(long nativeTestAndroidShim, String mode,
+    private native void nativeDestroy(long nativeHeapProfilingTestShim);
+    private native boolean nativeRunTestForMode(long nativeHeapProfilingTestShim, String mode,
             boolean dynamicallyStartProfiling, String stackMode, boolean shouldSample,
             boolean sampleEverything);
 }

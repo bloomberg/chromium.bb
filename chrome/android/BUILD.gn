@@ -848,10 +848,10 @@ chrome_shared_library("libchrome") {
 chrome_shared_library("libchromefortest") {
   testonly = true
   sources = [
+    "../../components/heap_profiling/heap_profiling_test_shim.cc",
+    "../../components/heap_profiling/heap_profiling_test_shim.h",
     "../app/android/chrome_main_delegate_android_initializer.cc",
     "../browser/android/chrome_entry_point_for_test.cc",
-    "../browser/profiling_host/test_android_shim.cc",
-    "../browser/profiling_host/test_android_shim.h",
   ]
   deps = [
     ":chrome_jni_for_test_registration($default_toolchain)",

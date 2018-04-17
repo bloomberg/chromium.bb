@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROFILING_HOST_TEST_ANDROID_SHIM_H_
-#define CHROME_BROWSER_PROFILING_HOST_TEST_ANDROID_SHIM_H_
+#ifndef COMPONENTS_HEAP_PROFILING_HEAP_PROFILING_TEST_SHIM_H_
+#define COMPONENTS_HEAP_PROFILING_HEAP_PROFILING_TEST_SHIM_H_
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 
-// This class implements the native methods of TestAndroidShim.java,
-// and acts as a bridge to ProfilingProcessHost. Note that this class is only
-// used for testing.
-class TestAndroidShim {
+// This class implements the native methods of HeapProfilingTestShim.java, and
+// acts as a bridge to TestDriver. Note that this class is only used for
+// testing.
+class HeapProfilingTestShim {
  public:
-  TestAndroidShim(JNIEnv* env, jobject obj);
+  HeapProfilingTestShim(JNIEnv* env, jobject obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   jboolean RunTestForMode(
@@ -27,9 +27,9 @@ class TestAndroidShim {
       jboolean sample_everything);
 
  private:
-  ~TestAndroidShim();
+  ~HeapProfilingTestShim();
 
-  DISALLOW_COPY_AND_ASSIGN(TestAndroidShim);
+  DISALLOW_COPY_AND_ASSIGN(HeapProfilingTestShim);
 };
 
-#endif  // CHROME_BROWSER_PROFILING_HOST_TEST_ANDROID_SHIM_H_
+#endif  // COMPONENTS_HEAP_PROFILING_HEAP_PROFILING_TEST_SHIM_H_

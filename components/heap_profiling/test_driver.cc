@@ -647,8 +647,31 @@ bool TestDriver::CheckOrStartProfiling() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (options_.profiling_already_started) {
-    if (Supervisor::GetInstance()->HasStarted())
+    if (Supervisor::GetInstance()->HasStarted()) {
+      // Even if profiling has started, it's possible that the allocator shim
+      // has not yet been initialized. Wait for it.
+      if (ShouldProfileBrowser()) {
+        bool already_initialized = false;
+        std::unique_ptr<base::RunLoop> run_loop;
+        if (running_on_ui_thread_) {
+          run_loop.reset(new base::RunLoop);
+          already_initialized = SetOnInitAllocatorShimCallbackForTesting(
+              run_loop->QuitClosure(), base::ThreadTaskRunnerHandle::Get());
+
+          if (!already_initialized)
+            run_loop->Run();
+        } else {
+          already_initialized = SetOnInitAllocatorShimCallbackForTesting(
+              base::Bind(&base::WaitableEvent::Signal,
+                         base::Unretained(&wait_for_ui_thread_)),
+              base::ThreadTaskRunnerHandle::Get());
+          if (!already_initialized) {
+            wait_for_profiling_to_start_ = true;
+          }
+        }
+      }
       return true;
+    }
     LOG(ERROR) << "Profiling should have been started, but wasn't";
     return false;
   }
@@ -880,6 +903,11 @@ bool TestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
 }
 
 bool TestDriver::ValidateRendererAllocations(base::Value* dump_json) {
+  // On Android Webview, there is may not be a separate Renderer process. If we
+  // are not asked to profile the Renderer, do not perform any Renderer checks.
+  if (!ShouldProfileRenderer())
+    return true;
+
   std::vector<int> pids;
   bool result = NumProcessesWithName(dump_json, "Renderer", &pids) >= 1;
   if (!result) {
@@ -890,41 +918,16 @@ bool TestDriver::ValidateRendererAllocations(base::Value* dump_json) {
   for (int pid : pids) {
     base::ProcessId renderer_pid = static_cast<base::ProcessId>(pid);
     base::Value* heaps_v2 = FindArgDump(renderer_pid, dump_json, "heaps_v2");
-    if (ShouldProfileRenderer()) {
-      if (!heaps_v2) {
-        LOG(ERROR) << "Failed to find heaps v2 for renderer";
-        return false;
-      }
-
-      base::Value* process_mmaps =
-          FindArgDump(renderer_pid, dump_json, "process_mmaps");
-      if (!ValidateProcessMmaps(process_mmaps, HasNativeFrames())) {
-        LOG(ERROR) << "Failed to validate renderer process mmaps.";
-        return false;
-      }
-
-      // ValidateDump doesn't always succeed for the renderer, since we don't do
-      // anything to flush allocations, there are very few allocations recorded
-      // by the heap profiler. When we do a heap dump, we prune small
-      // allocations...and this can cause all allocations to be pruned.
-      // ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(), 0, 0));
-    } else {
-      if (heaps_v2) {
-        LOG(ERROR) << "There should be no heap dump for the renderer.";
-        return false;
-      }
+    if (!heaps_v2) {
+      LOG(ERROR) << "Failed to find heaps v2 for renderer";
+      return false;
     }
 
-    if (options_.mode == Mode::kAllRenderers) {
-      if (NumProcessesWithName(dump_json, "Renderer", nullptr) == 0) {
-        LOG(ERROR) << "There should be at least 1 renderer dump";
-        return false;
-      }
-    } else {
-      if (NumProcessesWithName(dump_json, "Renderer", nullptr) == 0) {
-        LOG(ERROR) << "There should be more than 1 renderer dump";
-        return false;
-      }
+    base::Value* process_mmaps =
+        FindArgDump(renderer_pid, dump_json, "process_mmaps");
+    if (!ValidateProcessMmaps(process_mmaps, HasNativeFrames())) {
+      LOG(ERROR) << "Failed to validate renderer process mmaps.";
+      return false;
     }
   }
 

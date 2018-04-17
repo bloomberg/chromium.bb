@@ -78,6 +78,8 @@ namespace {
 
 using base::allocator::AllocatorDispatch;
 
+bool g_initialized_ = false;
+base::LazyInstance<base::Lock>::Leaky g_on_init_allocator_shim_lock_;
 base::LazyInstance<base::OnceClosure>::Leaky g_on_init_allocator_shim_callback_;
 base::LazyInstance<scoped_refptr<base::TaskRunner>>::Leaky
     g_on_init_allocator_shim_task_runner_;
@@ -246,8 +248,9 @@ class SendBuffer {
   void SendCurrentBuffer() {
     SenderPipe::Result result = g_sender_pipe->Send(buffer_, used_, kTimeoutMs);
     used_ = 0;
-    if (result == SenderPipe::Result::kError)
+    if (result == SenderPipe::Result::kError) {
       StopAllocatorShimDangerous();
+    }
     if (result == SenderPipe::Result::kTimeout) {
       StopAllocatorShimDangerous();
       // TODO(erikchen): Emit a histogram. https://crbug.com/777546.
@@ -694,10 +697,14 @@ void InitAllocatorShim(SenderPipe* sender_pipe,
     g_hook_gc_free(&HookGCFree);
   }
 
-  if (*g_on_init_allocator_shim_callback_.Pointer()) {
-    (*g_on_init_allocator_shim_task_runner_.Pointer())
-        ->PostTask(FROM_HERE,
-                   std::move(*g_on_init_allocator_shim_callback_.Pointer()));
+  {
+    base::AutoLock lock(*g_on_init_allocator_shim_lock_.Pointer());
+    g_initialized_ = true;
+    if (*g_on_init_allocator_shim_callback_.Pointer()) {
+      (*g_on_init_allocator_shim_task_runner_.Pointer())
+          ->PostTask(FROM_HERE,
+                     std::move(*g_on_init_allocator_shim_callback_.Pointer()));
+    }
   }
 }
 
@@ -886,11 +893,15 @@ void SetGCHeapAllocationHookFunctions(SetGCAllocHookFunction hook_alloc,
   }
 }
 
-void SetOnInitAllocatorShimCallbackForTesting(
+bool SetOnInitAllocatorShimCallbackForTesting(
     base::OnceClosure callback,
     scoped_refptr<base::TaskRunner> task_runner) {
+  base::AutoLock lock(*g_on_init_allocator_shim_lock_.Pointer());
+  if (g_initialized_)
+    return true;
   *g_on_init_allocator_shim_callback_.Pointer() = std::move(callback);
   *g_on_init_allocator_shim_task_runner_.Pointer() = task_runner;
+  return false;
 }
 
 }  // namespace heap_profiling

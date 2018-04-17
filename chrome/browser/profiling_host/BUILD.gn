@@ -52,7 +52,7 @@ if (!is_android) {
 
   generate_jni("jni_headers") {
     sources = [
-      "../../android/javatests/src/org/chromium/chrome/browser/profiling_host/TestAndroidShim.java",
+      "../../android/javatests/src/org/chromium/chrome/browser/profiling_host/HeapProfilingTestShim.java",
     ]
     jni_package = "chrome_profiling_host"
   }
@@ -61,7 +61,7 @@ if (!is_android) {
   # shim to function correctly.
   android_library("profiling_host_java_test_support") {
     testonly = true
-    java_files = [ "../../android/javatests/src/org/chromium/chrome/browser/profiling_host/TestAndroidShim.java" ]
+    java_files = [ "../../android/javatests/src/org/chromium/chrome/browser/profiling_host/HeapProfilingTestShim.java" ]
     deps = [
       "//base:base_java",
     ]
