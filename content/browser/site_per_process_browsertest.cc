@@ -10872,9 +10872,7 @@ class CommitMessageOrderReverser : public DidCommitProvisionalLoadInterceptor {
     if (params->url == deferred_url_) {
       std::move(deferred_url_triggered_action_).Run(render_frame_host);
 
-      base::MessageLoop::ScopedNestableTaskAllower allow(
-          base::MessageLoop::current());
-      base::RunLoop nested_run_loop;
+      base::RunLoop nested_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
       nested_loop_quit_ = nested_run_loop.QuitClosure();
       nested_run_loop.Run();
       outer_run_loop.Quit();
