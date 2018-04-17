@@ -27,6 +27,7 @@ enum class ConciergeClientResult {
   CREATE_DISK_IMAGE_FAILED,
   VM_START_FAILED,
   VM_STOP_FAILED,
+  DESTROY_DISK_IMAGE_FAILED,
   CLIENT_ERROR,
   DISK_TYPE_ERROR,
   CONTAINER_START_FAILED,
@@ -49,6 +50,9 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   using CreateDiskImageCallback =
       base::OnceCallback<void(ConciergeClientResult result,
                               const base::FilePath& disk_path)>;
+  // The type of the callback for CrostiniManager::DestroyDiskImage.
+  using DestroyDiskImageCallback =
+      base::OnceCallback<void(ConciergeClientResult result)>;
   // The type of the callback for CrostiniManager::StopVm.
   using StopVmCallback = base::OnceCallback<void(ConciergeClientResult result)>;
   // The type of the callback for CrostiniManager::StartContainer.
@@ -76,6 +80,20 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
       // The storage location for the disk image
       vm_tools::concierge::StorageLocation storage_location,
       CreateDiskImageCallback callback);
+
+  // Checks the arguments for destroying a named Termina VM disk image.
+  // Removes the named Termina VM via ConciergeClient::DestroyDiskImage.
+  // |callback| is called if the arguments are bad, or after the method call
+  // finishes.
+  void DestroyDiskImage(
+      // The cryptohome id for the user's encrypted storage.
+      const std::string& cryptohome_id,
+      // The path to the disk image, including the name of
+      // the image itself.
+      const base::FilePath& disk_path,
+      // The storage location of the disk image
+      vm_tools::concierge::StorageLocation storage_location,
+      DestroyDiskImageCallback callback);
 
   // Checks the arguments for starting a Termina VM. Starts a Termina VM via
   // ConciergeClient::StartTerminaVm. |callback| is called if the arguments
@@ -135,6 +153,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   void OnCreateDiskImage(
       CreateDiskImageCallback callback,
       base::Optional<vm_tools::concierge::CreateDiskImageResponse> response);
+
+  // Callback for ConciergeClient::DestroyDiskImage. Called after the Concierge
+  // service method finishes.
+  void OnDestroyDiskImage(
+      DestroyDiskImageCallback callback,
+      base::Optional<vm_tools::concierge::DestroyDiskImageResponse> response);
 
   // Callback for ConciergeClient::StartTerminaVm. Called after the Concierge
   // service method finishes.

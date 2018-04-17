@@ -78,7 +78,7 @@ void CrostiniManager::CreateDiskImage(
     return;
   }
 
-  std::string disk_path_string = disk_path.MaybeAsASCII();
+  std::string disk_path_string = disk_path.AsUTF8Unsafe();
   if (disk_path_string.empty()) {
     LOG(ERROR) << "Disk path cannot be empty";
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR,
@@ -134,6 +134,43 @@ void CrostiniManager::CreateDiskImageAfterSizeCheck(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void CrostiniManager::DestroyDiskImage(
+    const std::string& cryptohome_id,
+    const base::FilePath& disk_path,
+    vm_tools::concierge::StorageLocation storage_location,
+    DestroyDiskImageCallback callback) {
+  if (cryptohome_id.empty()) {
+    LOG(ERROR) << "Cryptohome id cannot be empty";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+
+  std::string disk_path_string = disk_path.AsUTF8Unsafe();
+  if (disk_path_string.empty()) {
+    LOG(ERROR) << "Disk path cannot be empty";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+
+  vm_tools::concierge::DestroyDiskImageRequest request;
+  request.set_cryptohome_id(std::move(cryptohome_id));
+  request.set_disk_path(std::move(disk_path_string));
+
+  if (storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT &&
+      storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS) {
+    LOG(ERROR) << "'" << storage_location
+               << "' is not a valid storage location";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  request.set_storage_location(storage_location);
+
+  GetConciergeClient()->DestroyDiskImage(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnDestroyDiskImage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void CrostiniManager::StartTerminaVm(std::string name,
                                      const base::FilePath& disk_path,
                                      StartTerminaVmCallback callback) {
@@ -143,7 +180,7 @@ void CrostiniManager::StartTerminaVm(std::string name,
     return;
   }
 
-  std::string disk_path_string = disk_path.MaybeAsASCII();
+  std::string disk_path_string = disk_path.AsUTF8Unsafe();
   if (disk_path_string.empty()) {
     LOG(ERROR) << "Disk path cannot be empty";
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
@@ -296,6 +333,27 @@ void CrostiniManager::OnCreateDiskImage(
 
   std::move(callback).Run(ConciergeClientResult::SUCCESS,
                           base::FilePath(response.disk_path()));
+}
+
+void CrostiniManager::OnDestroyDiskImage(
+    DestroyDiskImageCallback callback,
+    base::Optional<vm_tools::concierge::DestroyDiskImageResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to destroy disk image. Empty response.";
+    std::move(callback).Run(ConciergeClientResult::DESTROY_DISK_IMAGE_FAILED);
+    return;
+  }
+  vm_tools::concierge::DestroyDiskImageResponse response =
+      std::move(reply).value();
+
+  if (response.status() != vm_tools::concierge::DISK_STATUS_DESTROYED &&
+      response.status() != vm_tools::concierge::DISK_STATUS_DOES_NOT_EXIST) {
+    LOG(ERROR) << "Failed to destroy disk image: " << response.failure_reason();
+    std::move(callback).Run(ConciergeClientResult::DESTROY_DISK_IMAGE_FAILED);
+    return;
+  }
+
+  std::move(callback).Run(ConciergeClientResult::SUCCESS);
 }
 
 void CrostiniManager::OnStartTerminaVm(
