@@ -6046,7 +6046,7 @@ void GLES2DecoderImpl::ClearAllAttributes() const {
 }
 
 void GLES2DecoderImpl::RestoreAllAttributes() const {
-  state_.RestoreVertexAttribs();
+  state_.RestoreVertexAttribs(nullptr);
 }
 
 void GLES2DecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {

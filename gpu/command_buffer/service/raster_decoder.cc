@@ -942,7 +942,7 @@ void RasterDecoderImpl::ClearAllAttributes() const {
 }
 
 void RasterDecoderImpl::RestoreAllAttributes() const {
-  state_.RestoreVertexAttribs();
+  state_.RestoreVertexAttribs(nullptr);
 }
 
 void RasterDecoderImpl::RestoreState(const ContextState* prev_state) {
