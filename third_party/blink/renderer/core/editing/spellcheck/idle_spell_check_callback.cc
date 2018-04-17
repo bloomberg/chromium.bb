@@ -87,6 +87,8 @@ void IdleSpellCheckCallback::SetNeedsInvocation() {
   if (state_ == State::kHotModeRequested)
     return;
 
+  cold_mode_requester_->ClearProgress();
+
   if (state_ == State::kColdModeTimerStarted) {
     DCHECK(cold_mode_timer_.IsActive());
     cold_mode_timer_.Stop();
@@ -182,7 +184,7 @@ void IdleSpellCheckCallback::invoke(IdleDeadline* deadline) {
     DCHECK(RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled());
     state_ = State::kInColdModeInvocation;
     cold_mode_requester_->Invoke(deadline);
-    if (cold_mode_requester_->FullDocumentChecked())
+    if (cold_mode_requester_->FullyChecked())
       state_ = State::kInactive;
     else
       SetNeedsColdModeInvocation();

@@ -62,13 +62,4 @@ spellcheck_test(
           'Marker appears after setting spellcheck=true.'
       )
     });
-
-spellcheck_test(
-    '<div contenteditable>zz</div>',
-    '',
-    '<div contenteditable>#zz#</div>',
-    {
-      title: 'Text without focus is checked by cold mode checker',
-      needsFullCheck: true
-    });
 </script>
