@@ -188,12 +188,6 @@
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/1
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/1
--PrerenderBrowserTestWithExtensions.StreamsTest
--StreamsPrivateApiTest.Abort
--StreamsPrivateApiTest.FileURL
--StreamsPrivateApiTest.Headers
--StreamsPrivateApiTest.Navigate
--StreamsPrivateApiTest.NavigateCrossSite
 
 # http://crbug.com/784576
 # Convert ExtensionRequestLimitingThrottle into a URLLoaderThrottle.

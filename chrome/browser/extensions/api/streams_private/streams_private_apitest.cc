@@ -32,6 +32,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::BrowserContext;
@@ -237,6 +238,9 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 // installed, white-listed extension invokes the extension's
 // onExecuteContentHandler event (and does not start a download).
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // Streams not used with network service.
+
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
@@ -261,6 +265,9 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
 // Tests that navigating to a file URL also intercepts despite there being no
 // HTTP headers. This is a regression test for https://crbug.com/416433.
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, FileURL) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // Streams not used with network service.
+
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
@@ -285,6 +292,9 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, FileURL) {
 // onExecuteContentHandler event (and does not start a download).
 // Regression test for http://crbug.com/342999.
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateCrossSite) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // Streams not used with network service.
+
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
@@ -426,6 +436,9 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, MAYBE_DirectDownload) {
 // Tests that response headers are correctly passed to the API and that multiple
 // repsonse headers with the same name are merged correctly.
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Headers) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // Streams not used with network service.
+
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
@@ -449,6 +462,9 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Headers) {
 
 // Tests that chrome.streamsPrivate.abort() works correctly.
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Abort) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // Streams not used with network service.
+
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
