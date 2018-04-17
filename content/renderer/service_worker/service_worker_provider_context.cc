@@ -156,8 +156,7 @@ void ServiceWorkerProviderContext::SetRegistrationForServiceWorkerGlobalScope(
 }
 
 scoped_refptr<WebServiceWorkerRegistrationImpl>
-ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope(
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope() {
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
             provider_type_);
   ProviderStateForServiceWorker* state = state_for_service_worker_.get();
@@ -170,7 +169,7 @@ ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope(
   DCHECK(state->registration->request.is_pending());
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
       WebServiceWorkerRegistrationImpl::CreateForServiceWorkerGlobalScope(
-          std::move(state->registration), std::move(io_task_runner));
+          std::move(state->registration));
   return registration;
 }
 
@@ -260,12 +259,10 @@ ServiceWorkerProviderContext::GetOrCreateRegistrationForServiceWorkerClient(
 
   auto found = state_for_client_->registrations_.find(info->registration_id);
   if (found != state_for_client_->registrations_.end()) {
-    DCHECK(!info->request.is_pending());
     found->second->AttachForServiceWorkerClient(std::move(info));
     return found->second;
   }
 
-  DCHECK(info->request.is_pending());
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration to add itself into
   // |state_for_client_->registrations_|.

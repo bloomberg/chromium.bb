@@ -26,8 +26,6 @@ bool ServiceWorkerMessageFilter::ShouldHandleMessage(
 
 void ServiceWorkerMessageFilter::OnFilteredMessageReceived(
     const IPC::Message& msg) {
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance()
-      ->OnMessageReceived(msg);
 }
 
 bool ServiceWorkerMessageFilter::GetWorkerThreadIdForMessage(

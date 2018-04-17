@@ -11,6 +11,8 @@
 
 namespace content {
 
+// TODO(leonhsl): Eliminate this class since we're in a pure Mojo world now, no
+// longer need to handle any legacy IPCs.
 class CONTENT_EXPORT ServiceWorkerMessageFilter
     : public WorkerThreadMessageFilter {
  public:

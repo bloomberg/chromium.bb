@@ -175,8 +175,7 @@ ServiceWorkerHandle::~ServiceWorkerHandle() {
 
 void ServiceWorkerHandle::OnVersionStateChanged(ServiceWorkerVersion* version) {
   DCHECK(version);
-  provider_host_->SendServiceWorkerStateChangedMessage(
-      handle_id_,
+  remote_object_->StateChanged(
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version->status()));
 }
 
@@ -189,6 +188,7 @@ ServiceWorkerHandle::CreateObjectInfo() {
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version_->status());
   info->version_id = version_->version_id();
   bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
+  info->request = mojo::MakeRequest(&remote_object_);
   return info;
 }
 

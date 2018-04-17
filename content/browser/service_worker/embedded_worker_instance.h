@@ -297,8 +297,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   std::unique_ptr<EmbeddedWorkerInstance::WorkerProcessHandle> process_handle_;
   int thread_id_;
 
-  // |client_| is used to send messages to the renderer process.
-  mojom::EmbeddedWorkerInstanceClientAssociatedPtr client_;
+  // |client_| is used to send messages to the renderer process. The browser
+  // process should not disconnect the pipe because associated interfaces may be
+  // using it. The renderer process will disconnect the pipe when appropriate.
+  mojom::EmbeddedWorkerInstanceClientPtr client_;
 
   // Binding for EmbeddedWorkerInstanceHost, runs on IO thread.
   mojo::AssociatedBinding<EmbeddedWorkerInstanceHost> instance_host_binding_;

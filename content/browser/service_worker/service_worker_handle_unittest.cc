@@ -16,7 +16,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -25,25 +24,12 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_state.mojom.h"
 
 namespace content {
 namespace service_worker_handle_unittest {
-
-void VerifyStateChangedMessage(int expected_handle_id,
-                               blink::mojom::ServiceWorkerState expected_state,
-                               const IPC::Message* message) {
-  ASSERT_TRUE(message != nullptr);
-  ServiceWorkerMsg_ServiceWorkerStateChanged::Param param;
-  ASSERT_TRUE(ServiceWorkerMsg_ServiceWorkerStateChanged::Read(
-      message, &param));
-  EXPECT_EQ(expected_handle_id, std::get<1>(param));
-  EXPECT_EQ(expected_state, std::get<2>(param));
-}
 
 static void SaveStatusCallback(bool* called,
                                ServiceWorkerStatusCode* out,
@@ -106,24 +92,26 @@ class FailToStartWorkerTestHelper : public ExtendableMessageEventTestHelper {
   }
 };
 
-class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
+class MockServiceWorkerObject : public blink::mojom::ServiceWorkerObject {
  public:
-  TestingServiceWorkerDispatcherHost(int process_id,
-                                     ResourceContext* resource_context,
-                                     EmbeddedWorkerTestHelper* helper)
-      : ServiceWorkerDispatcherHost(process_id, resource_context),
-        bad_message_received_count_(0),
-        helper_(helper) {}
+  explicit MockServiceWorkerObject(
+      blink::mojom::ServiceWorkerObjectInfoPtr info)
+      : info_(std::move(info)),
+        state_(info_->state),
+        binding_(this, std::move(info_->request)) {}
+  ~MockServiceWorkerObject() override = default;
 
-  bool Send(IPC::Message* message) override { return helper_->Send(message); }
+  blink::mojom::ServiceWorkerState state() const { return state_; }
 
-  void ShutdownForBadMessage() override { ++bad_message_received_count_; }
+ private:
+  // Implements blink::mojom::ServiceWorkerObject.
+  void StateChanged(blink::mojom::ServiceWorkerState state) override {
+    state_ = state;
+  }
 
-  int bad_message_received_count_;
-
- protected:
-  EmbeddedWorkerTestHelper* helper_;
-  ~TestingServiceWorkerDispatcherHost() override {}
+  blink::mojom::ServiceWorkerObjectInfoPtr info_;
+  blink::mojom::ServiceWorkerState state_;
+  mojo::AssociatedBinding<blink::mojom::ServiceWorkerObject> binding_;
 };
 
 class ServiceWorkerHandleTest : public testing::Test {
@@ -134,8 +122,8 @@ class ServiceWorkerHandleTest : public testing::Test {
   void Initialize(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
     helper_ = std::move(helper);
 
-    dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
-        helper_->mock_render_process_id(), &resource_context_, helper_.get());
+    dispatcher_host_ = new ServiceWorkerDispatcherHost(
+        helper_->mock_render_process_id(), &resource_context_);
     helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
                                     dispatcher_host_);
     dispatcher_host_->Init(helper_->context_wrapper());
@@ -201,7 +189,30 @@ class ServiceWorkerHandleTest : public testing::Test {
     return nullptr;
   }
 
-  IPC::TestSink* ipc_sink() { return helper_->ipc_sink(); }
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+  GetRegistrationFromRemote(mojom::ServiceWorkerContainerHost* container_host,
+                            const GURL& scope) {
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info;
+    base::RunLoop run_loop;
+    container_host->GetRegistration(
+        scope, base::BindOnce(
+                   [](base::OnceClosure quit_closure,
+                      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr*
+                          out_registration_info,
+                      blink::mojom::ServiceWorkerErrorType error,
+                      const base::Optional<std::string>& error_msg,
+                      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+                          registration) {
+                     ASSERT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
+                               error);
+                     *out_registration_info = std::move(registration);
+                     std::move(quit_closure).Run();
+                   },
+                   run_loop.QuitClosure(), &registration_info));
+    run_loop.Run();
+    EXPECT_TRUE(registration_info);
+    return registration_info;
+  }
 
   TestBrowserThreadBundle browser_thread_bundle_;
   MockResourceContext resource_context_;
@@ -210,7 +221,7 @@ class ServiceWorkerHandleTest : public testing::Test {
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
+  scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleTest);
@@ -223,6 +234,7 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
   SetUpRegistration(pattern, script_url);
+  registration_->SetInstallingVersion(version_);
 
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> provider_host =
@@ -230,32 +242,21 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
           helper_->mock_render_process_id(), kProviderId,
           helper_->context()->AsWeakPtr(), kRenderFrameId,
           dispatcher_host_.get(), &remote_endpoint);
-  blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host->GetOrCreateServiceWorkerHandle(version_.get());
-  ServiceWorkerHandle* handle =
-      GetServiceWorkerHandle(provider_host.get(), version_->version_id());
-
-  // Start the worker, and then...
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  provider_host->SetDocumentUrl(pattern);
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
+      GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), pattern);
+  // |version_| is the installing version of |registration_| now.
+  EXPECT_TRUE(registration_info->installing);
+  EXPECT_EQ(version_->version_id(), registration_info->installing->version_id);
+  auto mock_object = std::make_unique<MockServiceWorkerObject>(
+      std::move(registration_info->installing));
 
   // ...update state to installed.
+  EXPECT_EQ(blink::mojom::ServiceWorkerState::kInstalling,
+            mock_object->state());
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
-
-  ASSERT_EQ(0L, dispatcher_host_->bad_message_received_count_);
-
-  const IPC::Message* message = nullptr;
-  // StartWorker shouldn't be recorded here.
-  ASSERT_EQ(1UL, ipc_sink()->message_count());
-  message = ipc_sink()->GetMessageAt(0);
-
-  // StateChanged (state == Installed).
-  VerifyStateChangedMessage(handle->handle_id(),
-                            blink::mojom::ServiceWorkerState::kInstalled,
-                            message);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(blink::mojom::ServiceWorkerState::kInstalled, mock_object->state());
 }
 
 TEST_F(ServiceWorkerHandleTest,

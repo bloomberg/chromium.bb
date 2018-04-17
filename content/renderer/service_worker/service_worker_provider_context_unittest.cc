@@ -34,7 +34,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider_client.h"
-#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 
 namespace content {
@@ -52,6 +51,7 @@ class MockServiceWorkerObjectHost
     info->handle_id = handle_id_;
     info->version_id = version_id_;
     bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
+    info->request = mojo::MakeRequest(&remote_object_);
     return info;
   }
 
@@ -70,6 +70,7 @@ class MockServiceWorkerObjectHost
   int32_t handle_id_;
   int64_t version_id_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
+  blink::mojom::ServiceWorkerObjectAssociatedPtr remote_object_;
 };
 
 class MockServiceWorkerRegistrationObjectHost
@@ -90,9 +91,7 @@ class MockServiceWorkerRegistrationObjectHost
     auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
     info->registration_id = registration_id_;
     bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
-    info->request = remote_registration_
-                        ? nullptr
-                        : mojo::MakeRequest(&remote_registration_);
+    info->request = mojo::MakeRequest(&remote_registration_);
 
     info->active = active->CreateObjectInfo();
     info->waiting = waiting->CreateObjectInfo();
@@ -714,8 +713,7 @@ TEST_F(ServiceWorkerProviderContextTest,
   // references to the remote instances of ServiceWorkerRegistrationObjectHost
   // and ServiceWorkerHandle in the browser process.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
-      provider_context->TakeRegistrationForServiceWorkerGlobalScope(
-          blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+      provider_context->TakeRegistrationForServiceWorkerGlobalScope();
   EXPECT_TRUE(registration);
   EXPECT_EQ(registration_id, registration->RegistrationId());
   EXPECT_EQ(1, mock_registration_object_host->GetBindingCount());

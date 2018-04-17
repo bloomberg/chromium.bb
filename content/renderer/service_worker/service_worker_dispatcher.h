@@ -21,46 +21,26 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_state.mojom.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
-
-namespace IPC {
-class Message;
-}
 
 namespace content {
 
 class WebServiceWorkerImpl;
 
-// This class manages communication with the browser process about
-// registration of the service worker, exposed to renderer and worker
-// scripts through methods like navigator.registerServiceWorker().
+// TODO(leonhsl): Later once we changed to manage WebServiceWorkerImpl instances
+// per provider, this class will become totally useless and we can eliminate it
+// finally.
 class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
  public:
   explicit ServiceWorkerDispatcher();
   ~ServiceWorkerDispatcher() override;
 
-  void OnMessageReceived(const IPC::Message& msg);
-
   // Returns the existing service worker or a newly created one with the given
   // object info.
   scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorker(
       blink::mojom::ServiceWorkerObjectInfoPtr info);
-
-  // Sets the IO thread task runner. This is only called for a
-  // ServiceWorkerDispatcher instance on a service worker thread when the thread
-  // has just started, and the provided IO thread task runner will be used only
-  // for creating WebServiceWorkerImpl later.
-  // TODO(leonhsl): Remove this function once we addressed the TODO in
-  // WebServiceWorkerImpl about the legacy IPC channel-associated interface.
-  void SetIOThreadTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
 
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance();
 
@@ -80,10 +60,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void OnServiceWorkerStateChanged(int thread_id,
-                                   int handle_id,
-                                   blink::mojom::ServiceWorkerState state);
-
   // Keeps map from handle_id to ServiceWorker object.
   void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);
   void RemoveServiceWorker(int handle_id);
@@ -93,8 +69,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   bool allow_reinstantiation_ = false;
 
   WorkerObjectMap service_workers_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcher);
 };

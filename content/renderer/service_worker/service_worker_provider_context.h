@@ -107,11 +107,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // ServiceWorkerGlobalScope#registration. Called on the worker thread.
   // This takes the registration that was passed to
   // SetRegistrationForServiceWorkerScope(), then creates a new
-  // WebServiceWorkerRegistrationImpl instance and returns it. |io_task_runner|
-  // is used to initialize WebServiceWorkerRegistrationImpl.
+  // WebServiceWorkerRegistrationImpl instance and returns it.
   scoped_refptr<WebServiceWorkerRegistrationImpl>
-  TakeRegistrationForServiceWorkerGlobalScope(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  TakeRegistrationForServiceWorkerGlobalScope();
 
   // For service worker clients. Returns version id of the controller service
   // worker object (ServiceWorkerContainer#controller).

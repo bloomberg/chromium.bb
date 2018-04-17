@@ -339,71 +339,6 @@ base::OnceCallback<void(int /* event_id */)> CreateAbortCallback(MapType* map,
       map, std::forward<Args>(args)..., base::Time::Now());
 }
 
-template <typename Signature>
-class CallbackWrapperOnWorkerThread;
-
-// Always lives (create/run/destroy) on the same one worker thread.
-// This is needed because we're using Mojo ThreadSafeAssociatedInterfacePtr for
-// |context_->service_worker_host|, so we need to ensure Web*Callbacks are
-// destructed on the worker thread. If the worker thread dies before the
-// callback is run, this gets notified in WillStopCurrentWorkerThread() and
-// deletes itself and the callback on the worker thread, otherwise, it runs the
-// callback on the worker thread as normal and deletes itself.
-//
-// TODO(leonhsl): Once we can detach ServiceWorkerHost interface's association
-// on the legacy IPC channel, we can avoid using
-// ThreadSafeAssociatedInterfacePtr for |context_->service_worker_host|, then we
-// can eliminate this wrapping mechanism.
-template <typename... Args>
-class CallbackWrapperOnWorkerThread<void(Args...)>
-    : public WorkerThread::Observer {
- public:
-  using Signature = void(Args...);
-
-  static base::WeakPtr<CallbackWrapperOnWorkerThread<Signature>> Create(
-      base::OnceCallback<Signature> callback) {
-    // |wrapper| controls its own lifetime via WorkerThread::Observer
-    // implementation.
-    auto* wrapper =
-        new CallbackWrapperOnWorkerThread<Signature>(std::move(callback));
-    return wrapper->weak_ptr_factory_.GetWeakPtr();
-  }
-
-  ~CallbackWrapperOnWorkerThread() override {
-    DCHECK_GT(WorkerThread::GetCurrentId(), 0);
-    WorkerThread::RemoveObserver(this);
-  }
-
-  void Run(Args... args) {
-    DCHECK(callback_);
-    std::move(callback_).Run(std::forward<Args>(args)...);
-    delete this;
-  }
-
- private:
-  explicit CallbackWrapperOnWorkerThread(base::OnceCallback<Signature> callback)
-      : callback_(std::move(callback)), weak_ptr_factory_(this) {
-    DCHECK_GT(WorkerThread::GetCurrentId(), 0);
-    WorkerThread::AddObserver(this);
-  }
-
-  // WorkerThread::Observer implementation.
-  void WillStopCurrentWorkerThread() override { delete this; }
-
-  base::OnceCallback<Signature> callback_;
-  base::WeakPtrFactory<CallbackWrapperOnWorkerThread> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackWrapperOnWorkerThread);
-};
-
-template <typename Signature>
-base::OnceCallback<Signature> WrapCallbackThreadSafe(
-    base::OnceCallback<Signature> callback) {
-  return base::BindOnce(
-      &CallbackWrapperOnWorkerThread<Signature>::Run,
-      CallbackWrapperOnWorkerThread<Signature>::Create(std::move(callback)));
-}
-
 void DidGetClients(
     std::unique_ptr<blink::WebServiceWorkerClientsCallbacks> callbacks,
     std::vector<blink::mojom::ServiceWorkerClientInfoPtr> clients) {
@@ -522,15 +457,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   mojo::Binding<mojom::ServiceWorkerEventDispatcher> event_dispatcher_binding;
 
-  // |service_worker_host| is used on the worker thread but bound on the IO
-  // thread, because it's a channel-associated interface which can be bound
-  // only on the main or IO thread.
-  // TODO(xiaofeng.zhang): Once we can detach this interface out from the legacy
-  // IPC channel-associated interfaces world, we should bind it always on the
-  // worker thread on which |this| lives. Although it is a scoped_refptr, the
-  // only owner is |this|.
-  scoped_refptr<blink::mojom::ThreadSafeServiceWorkerHostAssociatedPtr>
-      service_worker_host;
+  blink::mojom::ServiceWorkerHostAssociatedPtr service_worker_host;
 
   // Maps for inflight event callbacks.
   // These are mapped from an event id issued from ServiceWorkerTimeoutTimer to
@@ -797,9 +724,8 @@ void ServiceWorkerContextClient::GetClient(
     const blink::WebString& id,
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
-  (*context_->service_worker_host)
-      ->GetClient(id.Utf8(), WrapCallbackThreadSafe(base::BindOnce(
-                                 &DidGetClient, std::move(callbacks))));
+  context_->service_worker_host->GetClient(
+      id.Utf8(), base::BindOnce(&DidGetClient, std::move(callbacks)));
 }
 
 void ServiceWorkerContextClient::GetClients(
@@ -808,42 +734,37 @@ void ServiceWorkerContextClient::GetClients(
   DCHECK(callbacks);
   auto options = blink::mojom::ServiceWorkerClientQueryOptions::New(
       weboptions.include_uncontrolled, weboptions.client_type);
-  (*context_->service_worker_host)
-      ->GetClients(std::move(options),
-                   WrapCallbackThreadSafe(
-                       base::BindOnce(&DidGetClients, std::move(callbacks))));
+  context_->service_worker_host->GetClients(
+      std::move(options), base::BindOnce(&DidGetClients, std::move(callbacks)));
 }
 
 void ServiceWorkerContextClient::OpenNewTab(
     const blink::WebURL& url,
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
-  (*context_->service_worker_host)
-      ->OpenNewTab(url, WrapCallbackThreadSafe(base::BindOnce(
-                            &DidOpenWindow, std::move(callbacks))));
+  context_->service_worker_host->OpenNewTab(
+      url, base::BindOnce(&DidOpenWindow, std::move(callbacks)));
 }
 
 void ServiceWorkerContextClient::OpenPaymentHandlerWindow(
     const blink::WebURL& url,
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
-  (*context_->service_worker_host)
-      ->OpenPaymentHandlerWindow(
-          url, WrapCallbackThreadSafe(
-                   base::BindOnce(&DidOpenWindow, std::move(callbacks))));
+  context_->service_worker_host->OpenPaymentHandlerWindow(
+      url, base::BindOnce(&DidOpenWindow, std::move(callbacks)));
 }
 
 void ServiceWorkerContextClient::SetCachedMetadata(const blink::WebURL& url,
                                                    const char* data,
                                                    size_t size) {
   DCHECK(context_->service_worker_host);
-  (*context_->service_worker_host)
-      ->SetCachedMetadata(url, std::vector<uint8_t>(data, data + size));
+  context_->service_worker_host->SetCachedMetadata(
+      url, std::vector<uint8_t>(data, data + size));
 }
 
 void ServiceWorkerContextClient::ClearCachedMetadata(const blink::WebURL& url) {
   DCHECK(context_->service_worker_host);
-  (*context_->service_worker_host)->ClearCachedMetadata(url);
+  context_->service_worker_host->ClearCachedMetadata(url);
 }
 
 void ServiceWorkerContextClient::WorkerReadyForInspection() {
@@ -890,8 +811,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   context_.reset(new WorkerContextData(this));
   // Create ServiceWorkerDispatcher first for this worker thread to be used
   // later by TakeRegistrationForServiceWorkerGlobalScope() etc.
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance()
-      ->SetIOThreadTaskRunner(io_thread_task_runner_);
+  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance();
 
   DCHECK(pending_dispatcher_request_.is_pending());
   DCHECK(pending_controller_request_.is_pending());
@@ -907,13 +827,10 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 
   DCHECK(pending_service_worker_host_.is_valid());
   DCHECK(!context_->service_worker_host);
-  context_->service_worker_host =
-      blink::mojom::ThreadSafeServiceWorkerHostAssociatedPtr::Create(
-          std::move(pending_service_worker_host_), io_thread_task_runner_);
+  context_->service_worker_host.Bind(std::move(pending_service_worker_host_));
   // Set ServiceWorkerGlobalScope#registration.
   proxy_->SetRegistration(WebServiceWorkerRegistrationImpl::CreateHandle(
-      provider_context_->TakeRegistrationForServiceWorkerGlobalScope(
-          io_thread_task_runner_)));
+      provider_context_->TakeRegistrationForServiceWorkerGlobalScope()));
 
   (*instance_host_)->OnThreadStarted(WorkerThread::GetCurrentId());
 
@@ -1311,17 +1228,16 @@ ServiceWorkerContextClient::CreateServiceWorkerProvider() {
 void ServiceWorkerContextClient::PostMessageToClient(
     const blink::WebString& uuid,
     blink::TransferableMessage message) {
-  (*context_->service_worker_host)
-      ->PostMessageToClient(uuid.Utf8(), std::move(message));
+  context_->service_worker_host->PostMessageToClient(uuid.Utf8(),
+                                                     std::move(message));
 }
 
 void ServiceWorkerContextClient::Focus(
     const blink::WebString& uuid,
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
-  (*context_->service_worker_host)
-      ->FocusClient(uuid.Utf8(), WrapCallbackThreadSafe(base::BindOnce(
-                                     &DidFocusClient, std::move(callbacks))));
+  context_->service_worker_host->FocusClient(
+      uuid.Utf8(), base::BindOnce(&DidFocusClient, std::move(callbacks)));
 }
 
 void ServiceWorkerContextClient::Navigate(
@@ -1329,28 +1245,25 @@ void ServiceWorkerContextClient::Navigate(
     const blink::WebURL& url,
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
-  (*context_->service_worker_host)
-      ->NavigateClient(uuid.Utf8(), url,
-                       WrapCallbackThreadSafe(base::BindOnce(
-                           &DidNavigateClient, std::move(callbacks))));
+  context_->service_worker_host->NavigateClient(
+      uuid.Utf8(), url,
+      base::BindOnce(&DidNavigateClient, std::move(callbacks)));
 }
 
 void ServiceWorkerContextClient::SkipWaiting(
     std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks> callbacks) {
   DCHECK(callbacks);
   DCHECK(context_->service_worker_host);
-  (*context_->service_worker_host)
-      ->SkipWaiting(WrapCallbackThreadSafe(
-          base::BindOnce(&DidSkipWaiting, std::move(callbacks))));
+  context_->service_worker_host->SkipWaiting(
+      base::BindOnce(&DidSkipWaiting, std::move(callbacks)));
 }
 
 void ServiceWorkerContextClient::Claim(
     std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks> callbacks) {
   DCHECK(callbacks);
   DCHECK(context_->service_worker_host);
-  (*context_->service_worker_host)
-      ->ClaimClients(WrapCallbackThreadSafe(
-          base::BindOnce(&DidClaimClients, std::move(callbacks))));
+  context_->service_worker_host->ClaimClients(
+      base::BindOnce(&DidClaimClients, std::move(callbacks)));
 }
 
 void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(

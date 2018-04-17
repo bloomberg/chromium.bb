@@ -33,7 +33,7 @@ EmbeddedWorkerInstanceClientImpl::WorkerWrapper::~WorkerWrapper() = default;
 void EmbeddedWorkerInstanceClientImpl::Create(
     base::TimeTicks blink_initialized_time,
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
-    mojom::EmbeddedWorkerInstanceClientAssociatedRequest request) {
+    mojom::EmbeddedWorkerInstanceClientRequest request) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
   EmbeddedWorkerInstanceClientImpl* client =
@@ -116,7 +116,7 @@ void EmbeddedWorkerInstanceClientImpl::BindDevToolsAgent(
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
-    mojom::EmbeddedWorkerInstanceClientAssociatedRequest request)
+    mojom::EmbeddedWorkerInstanceClientRequest request)
     : binding_(this, std::move(request)),
       temporal_self_(this),
       io_thread_runner_(std::move(io_thread_runner)) {

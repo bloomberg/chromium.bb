@@ -42,8 +42,7 @@ ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
       registration_->pattern(), registration_->update_via_cache());
   info->registration_id = registration_->id();
   bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
-  if (!remote_registration_)
-    info->request = mojo::MakeRequest(&remote_registration_);
+  info->request = mojo::MakeRequest(&remote_registration_);
 
   info->installing = provider_host_->GetOrCreateServiceWorkerHandle(
       registration_->installing_version());

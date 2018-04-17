@@ -43,7 +43,7 @@ struct ServiceWorkerRegistrationObjectInfo {
   // |request| is expected to be bound on the implementation of interface
   // ServiceWorkerRegistrationObject in the renderer process. The other end
   // point of this Mojo connection is held by the browser process.
-  associated ServiceWorkerRegistrationObject&? request;
+  associated ServiceWorkerRegistrationObject& request;
 
   // Corresponds to ServiceWorkerRegistration#{installing,waiting,active}.
   // Null value means the corresponding object does not exist.

@@ -102,10 +102,22 @@ void ServiceWorkerRemoteProviderEndpoint::BindWithProviderInfo(
   client_request_ = std::move(info->client_request);
   host_ptr_.Bind(std::move(info->host_ptr_info));
   registration_object_info_ = std::move(info->registration);
-  // To enable the caller end point to make calls safely with no need to pass
-  // |registration_object_info_->request| through a message pipe endpoint.
+  // To enable the caller end points to make calls safely with no need to pass
+  // these |request|s through a message pipe endpoint.
   mojo::AssociateWithDisconnectedPipe(
       registration_object_info_->request.PassHandle());
+  if (registration_object_info_->installing) {
+    mojo::AssociateWithDisconnectedPipe(
+        registration_object_info_->installing->request.PassHandle());
+  }
+  if (registration_object_info_->waiting) {
+    mojo::AssociateWithDisconnectedPipe(
+        registration_object_info_->waiting->request.PassHandle());
+  }
+  if (registration_object_info_->active) {
+    mojo::AssociateWithDisconnectedPipe(
+        registration_object_info_->active->request.PassHandle());
+  }
 }
 
 std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(

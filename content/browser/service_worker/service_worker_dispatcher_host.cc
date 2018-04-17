@@ -59,7 +59,6 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
                                                                      this),
       render_process_id_(render_process_id),
       resource_context_(resource_context),
-      channel_ready_(false),
       weak_ptr_factory_(this) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
@@ -90,18 +89,6 @@ void ServiceWorkerDispatcherHost::Init(
   phase_ = Phase::kAddedToContext;
 }
 
-void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnFilterAdded");
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  channel_ready_ = true;
-  std::vector<std::unique_ptr<IPC::Message>> messages;
-  messages.swap(pending_messages_);
-  for (auto& message : messages) {
-    BrowserMessageFilter::Send(message.release());
-  }
-}
-
 void ServiceWorkerDispatcherHost::OnFilterRemoved() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Don't wait until the destructor to teardown since a new dispatcher host
@@ -112,7 +99,6 @@ void ServiceWorkerDispatcherHost::OnFilterRemoved() {
   }
   phase_ = Phase::kRemovedFromContext;
   context_wrapper_ = nullptr;
-  channel_ready_ = false;
 }
 
 void ServiceWorkerDispatcherHost::OnDestruct() const {
@@ -124,17 +110,6 @@ void ServiceWorkerDispatcherHost::OnDestruct() const {
 bool ServiceWorkerDispatcherHost::OnMessageReceived(
     const IPC::Message& message) {
   return false;
-}
-
-bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {
-  if (channel_ready_) {
-    BrowserMessageFilter::Send(message);
-    // Don't bother passing through Send()'s result: it's not reliable.
-    return true;
-  }
-
-  pending_messages_.push_back(base::WrapUnique(message));
-  return true;
 }
 
 base::WeakPtr<ServiceWorkerDispatcherHost>
