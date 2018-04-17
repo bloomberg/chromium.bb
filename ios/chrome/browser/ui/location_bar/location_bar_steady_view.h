@@ -18,6 +18,8 @@
 @property(nonatomic, strong) UILabel* locationLabel;
 // The image view displaying the current location icon (i.e. http[s] status).
 @property(nonatomic, strong) UIImageView* locationIconImageView;
+// The button displayed in the trailing corner of the view, i.e. share button.
+@property(nonatomic, strong) UIButton* trailingButton;
 
 @end
 

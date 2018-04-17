@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
 
+#import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_edit_view.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -25,6 +26,7 @@
 @synthesize locationBarSteadyView = _locationBarSteadyView;
 @synthesize incognito = _incognito;
 @synthesize delegate = _delegate;
+@synthesize dispatcher = _dispatcher;
 
 #pragma mark - public
 
@@ -59,6 +61,15 @@
 - (void)setIncognito:(BOOL)incognito {
   _incognito = incognito;
   self.locationBarEditView.incognito = incognito;
+}
+
+- (void)setDispatcher:(id<ActivityServiceCommands>)dispatcher {
+  _dispatcher = dispatcher;
+
+  [self.locationBarSteadyView.trailingButton
+             addTarget:dispatcher
+                action:@selector(sharePage)
+      forControlEvents:UIControlEventTouchUpInside];
 }
 
 #pragma mark - UIViewController
