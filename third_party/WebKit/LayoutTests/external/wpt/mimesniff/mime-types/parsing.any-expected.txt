@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1873 tests; 699 PASS, 1174 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1877 tests; 701 PASS, 1176 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS text/html;charset=gbk (Blob/File)
 PASS text/html;charset=gbk (Request/Response)
@@ -93,6 +93,8 @@ PASS  (Blob/File)
 PASS  (Request/Response)
 PASS 	 (Blob/File)
 PASS 	 (Request/Response)
+FAIL / (Blob/File) assert_equals: Blob expected "" but got "/"
+FAIL / (Request/Response) assert_equals: expected "" but got "/"
 FAIL bogus (Blob/File) assert_equals: Blob expected "" but got "bogus"
 FAIL bogus (Request/Response) assert_equals: expected "" but got "bogus"
 FAIL bogus/ (Blob/File) assert_equals: Blob expected "" but got "bogus/"
@@ -105,6 +107,8 @@ FAIL </> (Blob/File) assert_equals: Blob expected "" but got "</>"
 FAIL </> (Request/Response) assert_equals: expected "" but got "</>"
 FAIL (/) (Blob/File) assert_equals: Blob expected "" but got "(/)"
 FAIL (/) (Request/Response) assert_equals: expected "" but got "(/)"
+PASS ÿ/ÿ (Blob/File)
+PASS ÿ/ÿ (Request/Response)
 FAIL text/html(;doesnot=matter (Blob/File) assert_equals: Blob expected "" but got "text/html(;doesnot=matter"
 FAIL text/html(;doesnot=matter (Request/Response) assert_equals: expected "" but got "text/html(;doesnot=matter"
 FAIL {/} (Blob/File) assert_equals: Blob expected "" but got "{/}"
