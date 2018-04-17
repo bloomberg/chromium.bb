@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 
 namespace features {
@@ -79,11 +80,12 @@ struct ProactiveTabDiscardParams {
   // it is very unlikely that memory pressure will be encountered with this many
   // tabs loaded.
   int low_loaded_tab_count;
-  // Tab count (inclusive) beyond which the state transitions to HIGH, expressed
-  // relative to system memory.
-  int moderate_loaded_tab_count_per_gb;
+  // Tab count (inclusive) beyond which the state transitions to HIGH. This
+  // value is determined based on the available system memory, and is ensured to
+  // be in the interval [low_loaded_tab_count, high_loaded_tab_count].
+  int moderate_loaded_tab_count;
   // Tab count (inclusive) beyond which the state transitions to EXCESSIVE.
-  // Not expressed relative to system memory, as its intended to be a hard cap
+  // Not relative to system memory, as its intended to be a hard cap
   // more akin to a maximum mental model size.
   int high_loaded_tab_count;
   // Amount of time a tab must be occluded before eligible for proactive
@@ -100,7 +102,10 @@ struct ProactiveTabDiscardParams {
 // Gets parameters for the proactive tab discarding feature. This does no
 // parameter validation, and sets the default values if the feature is not
 // enabled.
-void GetProactiveTabDiscardParams(ProactiveTabDiscardParams* params);
+void GetProactiveTabDiscardParams(
+    ProactiveTabDiscardParams* params,
+    int memory_in_gb = base::SysInfo::AmountOfPhysicalMemory() /
+                       (1024 * 1024 * 1024));
 
 base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout);
 

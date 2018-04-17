@@ -5,6 +5,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 
 #include "base/metrics/field_trial_params.h"
+#include "base/numerics/ranges.h"
 #include "chrome/common/chrome_features.h"
 
 namespace {
@@ -41,6 +42,30 @@ const base::Feature kStaggeredBackgroundTabOpeningExperiment{
 }  // namespace features
 
 namespace resource_coordinator {
+
+namespace {
+
+// Determines the moderate threshold for tab discarding based on system memory,
+// and enforces the constraint that it must be in the interval
+// [low_loaded_tab_count, high_loaded_tab_count].
+int GetModerateThresholdTabCountBasedOnSystemMemory(
+    ProactiveTabDiscardParams* params,
+    int memory_in_gb) {
+  int moderate_loaded_tab_count_per_gb = base::GetFieldTrialParamByFeatureAsInt(
+      features::kProactiveTabDiscarding,
+      kProactiveTabDiscard_ModerateLoadedTabsPerGbRamParam,
+      kProactiveTabDiscard_ModerateLoadedTabsPerGbRamDefault);
+
+  int moderate_level = moderate_loaded_tab_count_per_gb * memory_in_gb;
+
+  moderate_level =
+      base::ClampToRange(moderate_level, params->low_loaded_tab_count,
+                         params->high_loaded_tab_count);
+
+  return moderate_level;
+}
+
+}  // namespace
 
 // Field-trial parameter names for proactive tab discarding.
 const char kProactiveTabDiscard_LowLoadedTabCountParam[] = "LowLoadedTabCount";
@@ -80,22 +105,22 @@ const base::TimeDelta kProactiveTabDiscard_ModerateOccludedTimeoutDefault =
 const base::TimeDelta kProactiveTabDiscard_HighOccludedTimeoutDefault =
     base::TimeDelta::FromMinutes(10);
 
-void GetProactiveTabDiscardParams(ProactiveTabDiscardParams* params) {
+void GetProactiveTabDiscardParams(ProactiveTabDiscardParams* params,
+                                  int memory_in_gb) {
   params->low_loaded_tab_count = base::GetFieldTrialParamByFeatureAsInt(
       features::kProactiveTabDiscarding,
       kProactiveTabDiscard_LowLoadedTabCountParam,
       kProactiveTabDiscard_LowLoadedTabCountDefault);
 
-  params->moderate_loaded_tab_count_per_gb =
-      base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabDiscarding,
-          kProactiveTabDiscard_ModerateLoadedTabsPerGbRamParam,
-          kProactiveTabDiscard_ModerateLoadedTabsPerGbRamDefault);
-
   params->high_loaded_tab_count = base::GetFieldTrialParamByFeatureAsInt(
       features::kProactiveTabDiscarding,
       kProactiveTabDiscard_HighLoadedTabCountParam,
       kProactiveTabDiscard_HighLoadedTabCountDefault);
+
+  // |moderate_loaded_tab_count| determined after |high_loaded_tab_count| so it
+  // can be enforced that it is lower than |high_loaded_tab_count|.
+  params->moderate_loaded_tab_count =
+      GetModerateThresholdTabCountBasedOnSystemMemory(params, memory_in_gb);
 
   params->low_occluded_timeout =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
