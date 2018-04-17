@@ -487,17 +487,22 @@ TEST_F(U2fSignTest, TestSignWithCorruptedResponse) {
 
 MATCHER_P(WithApplicationParameter, expected, "") {
   // See
+  // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#request-message-framing
+  // and
   // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#authentication-request-message---u2f_authenticate
-  if (arg.size() < 71) {
+  constexpr size_t kAppParamOffset = 4 /* CLA + INS + P1 + P2 */ +
+                                     3 /* Extended Lc */ +
+                                     32 /* Challenge Parameter */;
+  constexpr size_t kAppParamLength = 32;
+  if (arg.size() < kAppParamOffset + kAppParamLength) {
     return false;
   }
 
-  base::span<const uint8_t> cmd_bytes(arg);
-  auto application_parameter = cmd_bytes.subspan(
-      4 /* framing bytes */ + 3 /* request length */ + 32 /* challenge hash */,
-      32);
+  auto application_parameter =
+      base::make_span(arg).subspan(kAppParamOffset, kAppParamLength);
+
   return std::equal(application_parameter.begin(), application_parameter.end(),
-                    expected.begin());
+                    expected.begin(), expected.end());
 }
 
 TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
@@ -537,6 +542,48 @@ TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
             sign_callback_receiver().value()->signature());
   EXPECT_EQ(signing_key_handle,
             sign_callback_receiver().value()->raw_credential_id());
+}
+
+// This is a regression test in response to https://crbug.com/833398.
+TEST_F(U2fSignTest, TestAlternativeApplicationParameterRejection) {
+  const std::vector<uint8_t> signing_key_handle(32, 0x0A);
+  const std::vector<uint8_t> primary_app_param(32, 1);
+  const std::vector<uint8_t> alt_app_param(32, 2);
+
+  ForgeNextHidDiscovery();
+  auto request = std::make_unique<U2fSign>(
+      nullptr /* connector */,
+      base::flat_set<FidoTransportProtocol>(
+          {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
+      std::vector<std::vector<uint8_t>>({signing_key_handle}),
+      std::vector<uint8_t>(32), primary_app_param, alt_app_param,
+      sign_callback_receiver_.callback());
+  request->Start();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
+  EXPECT_CALL(*device, TryWinkRef(_))
+      .WillOnce(::testing::Invoke(MockFidoDevice::WinkDoNothing));
+
+  // The first request will use the primary app_param, which will be rejected.
+  EXPECT_CALL(*device,
+              DeviceTransactPtr(WithApplicationParameter(primary_app_param), _))
+      .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
+
+  // After the rejection, the alternative should be tried, which will also be
+  // rejected.
+  EXPECT_CALL(*device,
+              DeviceTransactPtr(WithApplicationParameter(alt_app_param), _))
+      .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
+
+  // The second rejection will trigger a bogus register command. This will be
+  // rejected as well, triggering the device to be abandoned.
+  EXPECT_CALL(*device,
+              DeviceTransactPtr(WithApplicationParameter(kBogusAppParam), _))
+      .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
+
+  discovery()->AddDevice(std::move(device));
 }
 
 }  // namespace device

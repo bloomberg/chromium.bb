@@ -48,7 +48,7 @@ U2fSign::U2fSign(service_manager::Connector* connector,
   // U2F devices require at least one key handle.
   // TODO(crbug.com/831712): When CTAP2 authenticators are supported, this check
   // should be enforced by handlers in fido/device on a per-device basis.
-  DCHECK(registered_keys_.size() > 0);
+  CHECK(!registered_keys_.empty());
 }
 
 U2fSign::~U2fSign() = default;
@@ -113,7 +113,7 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
     case apdu::ApduResponse::Status::SW_WRONG_DATA:
     case apdu::ApduResponse::Status::SW_WRONG_LENGTH: {
       if (application_parameter_type == ApplicationParameterType::kPrimary &&
-          alt_application_parameter_) {
+          alt_application_parameter_ && it != registered_keys_.cend()) {
         // |application_parameter_| failed, but there is also
         // |alt_application_parameter_| to try.
         InitiateDeviceTransaction(
