@@ -844,31 +844,6 @@ message AppStatus {
   optional string required_platform_version = 5;
 }
 
-// The data about browser policies set and their sources.
-message BrowserPolicyData {
-  enum PolicySource {
-    UNKNOWN = 0;
-    // A machine level platform policy.
-    MACHINE_PLATFORM = 1;
-    // A user level platform policy.
-    USER_PLATFORM = 2;
-    // Machine level user cloud policy.
-    MACHINE_LEVEL_USER_CLOUD = 3;
-    // User level cloud policy.
-    USER_CLOUD = 4;
-  }
-  optional PolicySource source = 1;
-  optional string name = 2;
-  // TODO(b/68124101) maybe add policy value data.
-}
-
-// The data for an extension installed in the browser.
-message ExtensionData {
-  optional string extension_id = 1;  // required.
-  optional string version = 2;
-  repeated string permissions = 3;
-}
-
 // Chrome user profile level status.
 message ChromeUserProfileReport {
   // An string to uniquely identify this profile within the browser.
