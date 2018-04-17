@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "components/signin/core/account_id/account_id.h"
+
 // Information about a specific account.
 struct AccountInfo {
   AccountInfo();
@@ -32,6 +34,9 @@ struct AccountInfo {
   // Updates the empty fields of |this| with |other|. Returns whether at least
   // one field was updated.
   bool UpdateWith(const AccountInfo& other);
+
+  // Returns AccountId populated from the account info.
+  AccountId GetAccountId() const;
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_INFO_H_

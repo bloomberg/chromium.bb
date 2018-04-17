@@ -170,6 +170,10 @@ class SigninManager : public SigninManagerBase,
   // authenticated. Returns an empty string if no auth is in progress.
   const std::string& GetAccountIdForAuthInProgress() const;
 
+  // If an authentication is in progress, return the gaia id being
+  // authenticated. Returns an empty string if no auth is in progress.
+  const std::string& GetGaiaIdForAuthInProgress() const;
+
   // If an authentication is in progress, return the username being
   // authenticated. Returns an empty string if no auth is in progress.
   const std::string& GetUsernameForAuthInProgress() const;

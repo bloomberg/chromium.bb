@@ -29,6 +29,7 @@ namespace policy {
 // A helper class for testing that provides a straightforward interface for
 // constructing policy blobs for use in testing. NB: This uses fake data and
 // hard-coded signing keys by default, so should not be used in production code.
+// TODO: Add "ForTesting" suffix to trigger presubmit checks.
 class PolicyBuilder {
  public:
   // Constants used as dummy data for filling the PolicyData protobuf.
@@ -129,7 +130,8 @@ class PolicyBuilder {
 
   static std::vector<std::string> GetUserAffiliationIds();
 
-  static AccountId GetFakeAccountId();
+  // Created using dummy data used for filling the PolicyData protobuf.
+  static AccountId GetFakeAccountIdForTesting();
 
  private:
   enterprise_management::PolicyFetchResponse policy_;

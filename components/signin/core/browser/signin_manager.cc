@@ -380,6 +380,10 @@ const std::string& SigninManager::GetAccountIdForAuthInProgress() const {
   return possibly_invalid_account_id_;
 }
 
+const std::string& SigninManager::GetGaiaIdForAuthInProgress() const {
+  return possibly_invalid_gaia_id_;
+}
+
 const std::string& SigninManager::GetUsernameForAuthInProgress() const {
   return possibly_invalid_email_;
 }

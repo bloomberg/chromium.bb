@@ -173,10 +173,10 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
     policy::UserPolicySigninService* service =
         policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
     service->FetchPolicyForSignedInUser(
-        username_,
-        dm_token_,
-        client_id_,
-        profile_->GetRequestContext(),
+        AccountTrackerServiceFactory::GetForProfile(profile_)
+            ->FindAccountInfoByEmail(username_)
+            .GetAccountId(),
+        dm_token_, client_id_, profile_->GetRequestContext(),
         base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
                    weak_factory_.GetWeakPtr()));
     dm_token_.clear();

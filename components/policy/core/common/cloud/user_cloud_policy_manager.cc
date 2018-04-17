@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;
@@ -46,8 +48,8 @@ void UserCloudPolicyManager::Shutdown() {
   CloudPolicyManager::Shutdown();
 }
 
-void UserCloudPolicyManager::SetSigninUsername(const std::string& username) {
-  store_->SetSigninUsername(username);
+void UserCloudPolicyManager::SetSigninAccountId(const AccountId& account_id) {
+  store_->SetSigninAccountId(account_id);
 }
 
 void UserCloudPolicyManager::Connect(

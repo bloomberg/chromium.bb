@@ -26,6 +26,9 @@ static_library("account_info") {
     "account_info.cc",
     "account_info.h",
   ]
+  deps = [
+    "//components/signin/core/account_id",
+  ]
 }
 
 # Split into its own target to allow browser clients of the Identity Service to

@@ -38,6 +38,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -260,11 +261,14 @@ void OneClickSigninSyncStarter::LoadPolicyWithCachedCredentials() {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   policy::UserPolicySigninService* policy_service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
+  std::string username = signin->GetUsernameForAuthInProgress();
+  std::string gaia_id = signin->GetGaiaIdForAuthInProgress();
+  DCHECK(username.empty() == gaia_id.empty());
+  AccountId account_id =
+      username.empty() ? EmptyAccountId()
+                       : AccountId::FromUserEmailGaiaId(username, gaia_id);
   policy_service->FetchPolicyForSignedInUser(
-      signin->GetUsernameForAuthInProgress(),
-      dm_token_,
-      client_id_,
-      profile_->GetRequestContext(),
+      account_id, dm_token_, client_id_, profile_->GetRequestContext(),
       base::Bind(&OneClickSigninSyncStarter::OnPolicyFetchComplete,
                  weak_pointer_factory_.GetWeakPtr()));
 }

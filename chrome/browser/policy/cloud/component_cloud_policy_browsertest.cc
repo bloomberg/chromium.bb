@@ -178,7 +178,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     ASSERT_TRUE(policy_manager);
 #else
     // Mock a signed-in user. This is used by the UserCloudPolicyStore to pass
-    // the username to the UserCloudPolicyValidator.
+    // the account id to the UserCloudPolicyValidator.
     SigninManager* signin_manager =
         SigninManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(signin_manager);
@@ -190,7 +190,8 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
         UserCloudPolicyManagerFactory::GetForBrowserContext(
             browser()->profile());
     ASSERT_TRUE(policy_manager);
-    policy_manager->SetSigninUsername(PolicyBuilder::kFakeUsername);
+    policy_manager->SetSigninAccountId(
+        PolicyBuilder::GetFakeAccountIdForTesting());
     policy_manager->Connect(g_browser_process->local_state(),
                             g_browser_process->system_request_context(),
                             UserCloudPolicyManager::CreateCloudPolicyClient(
