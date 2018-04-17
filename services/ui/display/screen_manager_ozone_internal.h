@@ -17,7 +17,7 @@
 #include "services/ui/public/interfaces/display/output_protection.mojom.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
-#include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/mojo/dev_display_controller.mojom.h"
 #include "ui/display/types/display_constants.h"

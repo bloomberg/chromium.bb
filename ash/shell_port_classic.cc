@@ -27,7 +27,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/env.h"
-#include "ui/display/manager/chromeos/default_touch_transform_setter.h"
+#include "ui/display/manager/default_touch_transform_setter.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"
 

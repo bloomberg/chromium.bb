@@ -14,7 +14,7 @@
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/display/manager/chromeos/touch_device_manager.h"
+#include "ui/display/manager/touch_device_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/event.h"

@@ -41,7 +41,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #include "chromeos/system/devicemode.h"
-#include "ui/display/manager/chromeos/display_util.h"
+#include "ui/display/manager/display_util.h"
 #endif
 
 #if defined(OS_WIN)

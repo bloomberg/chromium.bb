@@ -5,8 +5,8 @@
 #include "ash/touch/ash_touch_transform_controller.h"
 
 #include "ash/shell.h"
-#include "ui/display/manager/chromeos/touch_transform_setter.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/touch_transform_setter.h"
 
 namespace ash {
 

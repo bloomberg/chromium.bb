@@ -4,31 +4,10 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//ui/display/display.gni")
 
 jumbo_component("manager") {
   sources = [
-    "chromeos/apply_content_protection_task.cc",
-    "chromeos/apply_content_protection_task.h",
-    "chromeos/configure_displays_task.cc",
-    "chromeos/configure_displays_task.h",
-    "chromeos/default_touch_transform_setter.cc",
-    "chromeos/default_touch_transform_setter.h",
-    "chromeos/display_change_observer.cc",
-    "chromeos/display_change_observer.h",
-    "chromeos/display_configurator.cc",
-    "chromeos/display_configurator.h",
-    "chromeos/display_layout_manager.h",
-    "chromeos/display_util.cc",
-    "chromeos/display_util.h",
-    "chromeos/query_content_protection_task.cc",
-    "chromeos/query_content_protection_task.h",
-    "chromeos/touch_device_manager.cc",
-    "chromeos/touch_device_manager.h",
-    "chromeos/touch_transform_controller.cc",
-    "chromeos/touch_transform_controller.h",
-    "chromeos/touch_transform_setter.h",
-    "chromeos/update_display_configuration_task.cc",
-    "chromeos/update_display_configuration_task.h",
     "display_layout_store.cc",
     "display_layout_store.h",
     "display_manager.cc",
@@ -47,6 +26,33 @@ jumbo_component("manager") {
     "managed_display_info.cc",
     "managed_display_info.h",
   ]
+
+  if (build_display_configuration) {
+    sources += [
+      "apply_content_protection_task.cc",
+      "apply_content_protection_task.h",
+      "configure_displays_task.cc",
+      "configure_displays_task.h",
+      "default_touch_transform_setter.cc",
+      "default_touch_transform_setter.h",
+      "display_change_observer.cc",
+      "display_change_observer.h",
+      "display_configurator.cc",
+      "display_configurator.h",
+      "display_layout_manager.h",
+      "display_util.cc",
+      "display_util.h",
+      "query_content_protection_task.cc",
+      "query_content_protection_task.h",
+      "touch_device_manager.cc",
+      "touch_device_manager.h",
+      "touch_transform_controller.cc",
+      "touch_transform_controller.h",
+      "touch_transform_setter.h",
+      "update_display_configuration_task.cc",
+      "update_display_configuration_task.h",
+    ]
+  }
 
   public_deps = [
     "//ui/display",

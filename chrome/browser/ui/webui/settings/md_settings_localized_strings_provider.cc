@@ -57,7 +57,7 @@
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/display/display_switches.h"
-#include "ui/display/manager/chromeos/touch_device_manager.h"
+#include "ui/display/manager/touch_device_manager.h"
 #else
 #include "chrome/browser/ui/webui/settings/system_handler.h"
 #include "components/signin/core/browser/profile_management_switches.h"

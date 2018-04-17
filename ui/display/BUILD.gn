@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//ui/display/display.gni")
 
 component("display") {
   sources = [
@@ -98,18 +99,6 @@ component("display_manager_test_api") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "manager/chromeos/test/action_logger.cc",
-    "manager/chromeos/test/action_logger.h",
-    "manager/chromeos/test/action_logger_util.cc",
-    "manager/chromeos/test/action_logger_util.h",
-    "manager/chromeos/test/test_display_layout_manager.cc",
-    "manager/chromeos/test/test_display_layout_manager.h",
-    "manager/chromeos/test/test_native_display_delegate.cc",
-    "manager/chromeos/test/test_native_display_delegate.h",
-    "manager/chromeos/test/touch_device_manager_test_api.cc",
-    "manager/chromeos/test/touch_device_manager_test_api.h",
-    "manager/chromeos/test/touch_transform_controller_test_api.cc",
-    "manager/chromeos/test/touch_transform_controller_test_api.h",
     "test/display_matchers.cc",
     "test/display_matchers.h",
     "test/display_test_util.h",
@@ -120,6 +109,23 @@ static_library("test_support") {
     "win/test/screen_util_win.cc",
     "win/test/screen_util_win.h",
   ]
+
+  if (build_display_configuration) {
+    sources += [
+      "manager/test/action_logger.cc",
+      "manager/test/action_logger.h",
+      "manager/test/action_logger_util.cc",
+      "manager/test/action_logger_util.h",
+      "manager/test/test_display_layout_manager.cc",
+      "manager/test/test_display_layout_manager.h",
+      "manager/test/test_native_display_delegate.cc",
+      "manager/test/test_native_display_delegate.h",
+      "manager/test/touch_device_manager_test_api.cc",
+      "manager/test/touch_device_manager_test_api.h",
+      "manager/test/touch_transform_controller_test_api.cc",
+      "manager/test/touch_transform_controller_test_api.h",
+    ]
+  }
 
   public_deps = [
     ":display",
@@ -144,15 +150,6 @@ test("display_unittests") {
     "display_layout_unittest.cc",
     "display_list_unittest.cc",
     "display_unittest.cc",
-    "manager/chromeos/apply_content_protection_task_unittest.cc",
-    "manager/chromeos/configure_displays_task_unittest.cc",
-    "manager/chromeos/display_change_observer_unittest.cc",
-    "manager/chromeos/display_configurator_unittest.cc",
-    "manager/chromeos/display_utils_unittest.cc",
-    "manager/chromeos/query_content_protection_task_unittest.cc",
-    "manager/chromeos/touch_device_manager_unittest.cc",
-    "manager/chromeos/touch_transform_controller_unittest.cc",
-    "manager/chromeos/update_display_configuration_task_unittest.cc",
     "manager/display_manager_utilities_unittest.cc",
     "manager/fake_display_snapshot_unittest.cc",
     "manager/json_converter_unittest.cc",
@@ -165,6 +162,20 @@ test("display_unittests") {
     "win/scaling_util_unittest.cc",
     "win/screen_win_unittest.cc",
   ]
+
+  if (build_display_configuration) {
+    sources += [
+      "manager/apply_content_protection_task_unittest.cc",
+      "manager/configure_displays_task_unittest.cc",
+      "manager/display_change_observer_unittest.cc",
+      "manager/display_configurator_unittest.cc",
+      "manager/display_utils_unittest.cc",
+      "manager/query_content_protection_task_unittest.cc",
+      "manager/touch_device_manager_unittest.cc",
+      "manager/touch_transform_controller_unittest.cc",
+      "manager/update_display_configuration_task_unittest.cc",
+    ]
+  }
 
   deps = [
     ":display",

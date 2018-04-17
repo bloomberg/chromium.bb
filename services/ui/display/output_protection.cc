@@ -4,7 +4,7 @@
 
 #include "services/ui/display/output_protection.h"
 
-#include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/display_configurator.h"
 
 namespace display {
 

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "services/ui/public/interfaces/input_devices/touch_device_server.mojom.h"
-#include "ui/display/manager/chromeos/touch_transform_setter.h"
+#include "ui/display/manager/touch_transform_setter.h"
 
 namespace service_manager {
 class Connector;

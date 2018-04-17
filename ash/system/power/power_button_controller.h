@@ -16,7 +16,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/display_configurator.h"
 
 namespace base {
 class TickClock;
