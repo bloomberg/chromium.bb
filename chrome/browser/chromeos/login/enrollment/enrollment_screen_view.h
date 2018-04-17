@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
 
 class GoogleServiceAuthError;
 
@@ -35,7 +36,13 @@ class EnrollmentScreenView {
     virtual void OnRetry() = 0;
     virtual void OnCancel() = 0;
     virtual void OnConfirmationClosed() = 0;
-    virtual void OnAdJoined(const std::string& realm) = 0;
+    virtual void OnActiveDirectoryCredsProvided(
+        const std::string& machine_name,
+        const std::string& distinguished_name,
+        int encryption_types,
+        const std::string& username,
+        const std::string& password) = 0;
+
     virtual void OnDeviceAttributeProvided(const std::string& asset_id,
                                            const std::string& location) = 0;
   };
@@ -62,7 +69,9 @@ class EnrollmentScreenView {
       const base::DictionaryValue& license_types) = 0;
 
   // Shows the Active Directory domain joining screen.
-  virtual void ShowAdJoin() = 0;
+  virtual void ShowActiveDirectoryScreen(const std::string& machine_name,
+                                         const std::string& username,
+                                         authpolicy::ErrorType error) = 0;
 
   // Shows the device attribute prompt screen.
   virtual void ShowAttributePromptScreen(const std::string& asset_id,

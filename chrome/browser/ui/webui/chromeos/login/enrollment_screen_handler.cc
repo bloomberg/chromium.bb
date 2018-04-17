@@ -221,11 +221,80 @@ void EnrollmentScreenHandler::ShowLicenseTypeSelectionScreen(
   ShowStep(kEnrollmentStepPickLicense);
 }
 
-void EnrollmentScreenHandler::ShowAdJoin() {
+void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
+    const std::string& machine_name,
+    const std::string& username,
+    authpolicy::ErrorType error) {
   observe_network_failure_ = false;
-  if (!authpolicy_login_helper_)
-    authpolicy_login_helper_ = std::make_unique<AuthPolicyLoginHelper>();
-  ShowStep(kEnrollmentStepAdJoin);
+  switch (error) {
+    case authpolicy::ERROR_NONE: {
+      CallJS("invalidateAd", machine_name, username,
+             static_cast<int>(ActiveDirectoryErrorState::NONE));
+      ShowStep(kEnrollmentStepAdJoin);
+      return;
+    }
+    case authpolicy::ERROR_NETWORK_PROBLEM:
+      // Could be a network problem, but could also be a misspelled domain name.
+      ShowError(IDS_AD_AUTH_NETWORK_ERROR, true);
+      return;
+    case authpolicy::ERROR_PARSE_UPN_FAILED:
+    case authpolicy::ERROR_BAD_USER_NAME:
+      CallJS("invalidateAd", machine_name, username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
+      ShowStep(kEnrollmentStepAdJoin);
+      return;
+    case authpolicy::ERROR_BAD_PASSWORD:
+      CallJS("invalidateAd", machine_name, username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_PASSWORD));
+      ShowStep(kEnrollmentStepAdJoin);
+      return;
+    case authpolicy::ERROR_MACHINE_NAME_TOO_LONG:
+      CallJS(
+          "invalidateAd", machine_name, username,
+          static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG));
+      ShowStep(kEnrollmentStepAdJoin);
+      return;
+    case authpolicy::ERROR_INVALID_MACHINE_NAME:
+      CallJS("invalidateAd", machine_name, username,
+             static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID));
+      ShowStep(kEnrollmentStepAdJoin);
+      return;
+    case authpolicy::ERROR_PASSWORD_EXPIRED:
+      ShowError(IDS_AD_PASSWORD_EXPIRED, true);
+      return;
+    case authpolicy::ERROR_JOIN_ACCESS_DENIED:
+      ShowError(IDS_AD_USER_DENIED_TO_JOIN_MACHINE, true);
+      return;
+    case authpolicy::ERROR_USER_HIT_JOIN_QUOTA:
+      ShowError(IDS_AD_USER_HIT_JOIN_QUOTA, true);
+      return;
+    case authpolicy::ERROR_OU_DOES_NOT_EXIST:
+      ShowError(IDS_AD_OU_DOES_NOT_EXIST, true);
+      return;
+    case authpolicy::ERROR_INVALID_OU:
+      ShowError(IDS_AD_OU_INVALID, true);
+      return;
+    case authpolicy::ERROR_OU_ACCESS_DENIED:
+      ShowError(IDS_AD_OU_ACCESS_DENIED, true);
+      return;
+    case authpolicy::ERROR_SETTING_OU_FAILED:
+      ShowError(IDS_AD_OU_SETTING_FAILED, true);
+      return;
+    case authpolicy::ERROR_KDC_DOES_NOT_SUPPORT_ENCRYPTION_TYPE:
+      ShowError(IDS_AD_NOT_SUPPORTED_ENCRYPTION, true);
+      return;
+#if !defined(ARCH_CPU_X86_64)
+    // Currently, the Active Directory integration is only supported on x86_64
+    // systems. (see https://crbug.com/676602)
+    case authpolicy::ERROR_DBUS_FAILURE:
+      ShowError(IDS_AD_BOARD_NOT_SUPPORTED, true);
+      return;
+#endif
+    default:
+      LOG(ERROR) << "Unhandled error code: " << error;
+      ShowError(IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR, true);
+      return;
+  }
 }
 
 void EnrollmentScreenHandler::ShowAttributePromptScreen(
@@ -589,8 +658,6 @@ void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   DCHECK(controller_);
 
   if (reason == "cancel") {
-    if (authpolicy_login_helper_)
-      authpolicy_login_helper_->CancelRequestsAndRestart();
     controller_->OnCancel();
   } else if (reason == "done") {
     controller_->OnConfirmationClosed();
@@ -616,82 +683,8 @@ void EnrollmentScreenHandler::HandleAdCompleteLogin(
     const std::string& password) {
   observe_network_failure_ = false;
   DCHECK(controller_);
-  DCHECK(authpolicy_login_helper_);
-  authpolicy_login_helper_->JoinAdDomain(
-      machine_name, distinguished_name, encryption_types, user_name, password,
-      base::BindOnce(&EnrollmentScreenHandler::HandleAdDomainJoin,
-                     weak_ptr_factory_.GetWeakPtr(), machine_name, user_name));
-}
-
-void EnrollmentScreenHandler::HandleAdDomainJoin(
-    const std::string& machine_name,
-    const std::string& user_name,
-    authpolicy::ErrorType code,
-    const std::string& machine_domain) {
-  switch (code) {
-    case authpolicy::ERROR_NONE: {
-      ShowEnrollmentSpinnerScreen();
-      controller_->OnAdJoined(machine_domain);
-      return;
-    }
-    case authpolicy::ERROR_NETWORK_PROBLEM:
-      // Could be a network problem, but could also be a misspelled domain name.
-      ShowError(IDS_AD_AUTH_NETWORK_ERROR, true);
-      return;
-    case authpolicy::ERROR_PARSE_UPN_FAILED:
-    case authpolicy::ERROR_BAD_USER_NAME:
-      CallJS("invalidateAd", machine_name, user_name,
-             static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
-      return;
-    case authpolicy::ERROR_BAD_PASSWORD:
-      CallJS("invalidateAd", machine_name, user_name,
-             static_cast<int>(ActiveDirectoryErrorState::BAD_PASSWORD));
-      return;
-    case authpolicy::ERROR_MACHINE_NAME_TOO_LONG:
-      CallJS(
-          "invalidateAd", machine_name, user_name,
-          static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG));
-      return;
-    case authpolicy::ERROR_INVALID_MACHINE_NAME:
-      CallJS("invalidateAd", machine_name, user_name,
-             static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID));
-      return;
-    case authpolicy::ERROR_PASSWORD_EXPIRED:
-      ShowError(IDS_AD_PASSWORD_EXPIRED, true);
-      return;
-    case authpolicy::ERROR_JOIN_ACCESS_DENIED:
-      ShowError(IDS_AD_USER_DENIED_TO_JOIN_MACHINE, true);
-      return;
-    case authpolicy::ERROR_USER_HIT_JOIN_QUOTA:
-      ShowError(IDS_AD_USER_HIT_JOIN_QUOTA, true);
-      return;
-    case authpolicy::ERROR_OU_DOES_NOT_EXIST:
-      ShowError(IDS_AD_OU_DOES_NOT_EXIST, true);
-      return;
-    case authpolicy::ERROR_INVALID_OU:
-      ShowError(IDS_AD_OU_INVALID, true);
-      return;
-    case authpolicy::ERROR_OU_ACCESS_DENIED:
-      ShowError(IDS_AD_OU_ACCESS_DENIED, true);
-      return;
-    case authpolicy::ERROR_SETTING_OU_FAILED:
-      ShowError(IDS_AD_OU_SETTING_FAILED, true);
-      return;
-    case authpolicy::ERROR_KDC_DOES_NOT_SUPPORT_ENCRYPTION_TYPE:
-      ShowError(IDS_AD_NOT_SUPPORTED_ENCRYPTION, true);
-      return;
-#if !defined(ARCH_CPU_X86_64)
-    // Currently, the Active Directory integration is only supported on x86_64
-    // systems. (see https://crbug.com/676602)
-    case authpolicy::ERROR_DBUS_FAILURE:
-      ShowError(IDS_AD_BOARD_NOT_SUPPORTED, true);
-      return;
-#endif
-    default:
-      LOG(WARNING) << "Unhandled error code: " << code;
-      ShowError(IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR, true);
-      return;
-  }
+  controller_->OnActiveDirectoryCredsProvided(
+      machine_name, distinguished_name, encryption_types, user_name, password);
 }
 
 void EnrollmentScreenHandler::HandleRetry() {

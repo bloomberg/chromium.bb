@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/policy/active_directory_join_delegate.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "net/base/backoff_entry.h"
@@ -68,7 +69,11 @@ class EnrollmentScreen
   void OnRetry() override;
   void OnCancel() override;
   void OnConfirmationClosed() override;
-  void OnAdJoined(const std::string& realm) override;
+  void OnActiveDirectoryCredsProvided(const std::string& machine_name,
+                                      const std::string& distinguished_name,
+                                      int encryption_types,
+                                      const std::string& username,
+                                      const std::string& password) override;
   void OnDeviceAttributeProvided(const std::string& asset_id,
                                  const std::string& location) override;
 
@@ -178,6 +183,12 @@ class EnrollmentScreen
   // Called by OnRetry() and AutomaticRetry().
   void ProcessRetry();
 
+  // Callback for Active Directory domain join.
+  void OnActiveDirectoryJoined(const std::string& machine_name,
+                               const std::string& username,
+                               authpolicy::ErrorType error,
+                               const std::string& machine_domain);
+
   pairing_chromeos::ControllerPairingController* shark_controller_ = nullptr;
 
   EnrollmentScreenView* view_;
@@ -194,8 +205,12 @@ class EnrollmentScreen
   int num_retries_ = 0;
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
   OnDomainJoinedCallback on_joined_callback_;
-  base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
 
+  // Helper to call AuthPolicyClient and cancel calls if needed. Used to join
+  // Active Directory domain.
+  std::unique_ptr<AuthPolicyLoginHelper> authpolicy_login_helper_;
+
+  base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreen);
 };
 
