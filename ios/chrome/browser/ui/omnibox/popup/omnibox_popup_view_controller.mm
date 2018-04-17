@@ -63,6 +63,8 @@ UIColor* BackgroundColorIncognito() {
 // tapping and holding on them or by using arrow keys on a hardware keyboard.
 @property(nonatomic, strong) NSIndexPath* highlightedIndexPath;
 
+@property(nonatomic, strong) UITableView* tableView;
+
 @end
 
 @implementation OmniboxPopupViewController
