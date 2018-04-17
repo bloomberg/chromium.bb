@@ -111,6 +111,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -12172,6 +12173,60 @@ TEST_P(WebFrameSimTest, ChangeBackgroundColor) {
   body->SetInlineStyleProperty(CSSPropertyBackgroundColor, "red");
   Compositor().BeginFrame();
   EXPECT_EQ(SK_ColorRED, Compositor().background_color());
+}
+
+// Ensure we don't crash if we try to scroll into view the focused editable
+// element which doesn't have a LayoutObject.
+TEST_P(WebFrameSimTest, ScrollFocusedEditableIntoViewNoLayoutObject) {
+  WebView().Resize(WebSize(500, 600));
+  WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
+
+  SimRequest r("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  r.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        input {
+          position: absolute;
+          top: 1000px;
+          left: 800px;
+        }
+
+        @media (max-height: 500px) {
+          input {
+            display: none;
+          }
+        }
+      </style>
+      <input id="target" type="text"></input>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  Element* input = GetDocument().getElementById("target");
+  input->focus();
+
+  ScrollableArea* area = GetDocument().View()->LayoutViewportScrollableArea();
+  area->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
+
+  ASSERT_TRUE(input->GetLayoutObject());
+  ASSERT_EQ(input, WebView().FocusedElement());
+  ASSERT_EQ(ScrollOffset(0, 0), area->GetScrollOffset());
+
+  // The resize should cause the focused element to lose its LayoutObject. If
+  // this resize came from the Android on-screen keyboard, this would be
+  // followed by a ScrollFocusedEditableElementIntoView. Ensure we don't crash.
+  WebView().Resize(WebSize(500, 300));
+
+  ASSERT_FALSE(input->GetLayoutObject());
+  ASSERT_EQ(input, WebView().FocusedElement());
+
+  WebFrameWidget* widget = WebView().MainFrameImpl()->FrameWidgetImpl();
+  widget->ScrollFocusedEditableElementIntoView();
+  Compositor().BeginFrame();
+
+  // Shouldn't cause any scrolling either.
+  EXPECT_EQ(ScrollOffset(0, 0), area->GetScrollOffset());
 }
 
 TEST_P(WebFrameSimTest, DisplayNoneIFrameHasNoLayoutObjects) {
