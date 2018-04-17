@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_THREAD_SUPPORTING_GC_H_
 
 #include <memory>
+#include "base/threading/thread_checker.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
@@ -86,6 +87,8 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   // existing thread via createForThread().
   WebThread* thread_ = nullptr;
   std::unique_ptr<WebThread> owning_thread_;
+
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace blink

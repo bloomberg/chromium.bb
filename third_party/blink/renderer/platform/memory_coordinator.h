@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -51,8 +52,8 @@ class PLATFORM_EXPORT MemoryCoordinator final
   // the heap size.
   static void Initialize();
 
-  static void RegisterThread(WebThread*);
-  static void UnregisterThread(WebThread*);
+  void RegisterThread(WebThread*) LOCKS_EXCLUDED(web_threads_mutex_);
+  void UnregisterThread(WebThread*) LOCKS_EXCLUDED(web_threads_mutex_);
 
   void RegisterClient(MemoryCoordinatorClient*);
   void UnregisterClient(MemoryCoordinatorClient*);
@@ -81,6 +82,7 @@ class PLATFORM_EXPORT MemoryCoordinator final
 
   HeapHashSet<WeakMember<MemoryCoordinatorClient>> clients_;
   HashSet<WebThread*> web_threads_;
+  Mutex web_threads_mutex_;
 };
 
 }  // namespace blink

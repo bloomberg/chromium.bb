@@ -28,7 +28,7 @@ WebThreadSupportingGC::WebThreadSupportingGC(
     const WebThreadCreationParams* params,
     WebThread* thread)
     : thread_(thread) {
-  DCHECK(IsMainThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!params || !thread);
 #if DCHECK_IS_ON()
   // We call this regardless of whether an existing thread is given or not,
@@ -43,14 +43,14 @@ WebThreadSupportingGC::WebThreadSupportingGC(
         params ? *params : WebThreadCreationParams(WebThreadType::kTestThread));
     thread_ = owning_thread_.get();
   }
-  MemoryCoordinator::RegisterThread(thread_);
+  MemoryCoordinator::Instance().RegisterThread(thread_);
 }
 
 WebThreadSupportingGC::~WebThreadSupportingGC() {
-  DCHECK(IsMainThread());
+  DETACH_FROM_THREAD(thread_checker_);
   // WebThread's destructor blocks until all the tasks are processed.
   owning_thread_.reset();
-  MemoryCoordinator::UnregisterThread(thread_);
+  MemoryCoordinator::Instance().UnregisterThread(thread_);
 }
 
 void WebThreadSupportingGC::InitializeOnThread() {
