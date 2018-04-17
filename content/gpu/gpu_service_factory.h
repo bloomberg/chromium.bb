@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/child/service_factory.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/mojo/buildflags.h"
 
@@ -25,6 +26,7 @@ class GpuServiceFactory : public ServiceFactory {
  public:
   GpuServiceFactory(
       const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
       base::WeakPtr<media::MediaGpuChannelManager> media_gpu_channel_manager,
       media::AndroidOverlayMojoFactoryCB android_overlay_factory_cb);
   ~GpuServiceFactory() override;
@@ -42,6 +44,7 @@ class GpuServiceFactory : public ServiceFactory {
   base::WeakPtr<media::MediaGpuChannelManager> media_gpu_channel_manager_;
   media::AndroidOverlayMojoFactoryCB android_overlay_factory_cb_;
   gpu::GpuPreferences gpu_preferences_;
+  gpu::GpuDriverBugWorkarounds gpu_workarounds_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceFactory);

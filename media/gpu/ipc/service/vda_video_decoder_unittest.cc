@@ -120,8 +120,9 @@ class VdaVideoDecoderTest : public testing::Test {
                        base::Unretained(this)),
         base::BindOnce(&VdaVideoDecoderTest::CreateCommandBufferHelper,
                        base::Unretained(this)),
-        base::BindOnce(&VdaVideoDecoderTest::CreateVda, base::Unretained(this)),
-        base::BindRepeating(&GetCapabilities)));
+        base::BindOnce(&VdaVideoDecoderTest::CreateAndInitializeVda,
+                       base::Unretained(this)),
+        GetCapabilities()));
     client_ = vdavd_.get();
   }
 
@@ -217,9 +218,13 @@ class VdaVideoDecoderTest : public testing::Test {
     return pbm_;
   }
 
-  std::unique_ptr<VideoDecodeAccelerator> CreateVda(
-      scoped_refptr<CommandBufferHelper> command_buffer_helper) {
+  std::unique_ptr<VideoDecodeAccelerator> CreateAndInitializeVda(
+      scoped_refptr<CommandBufferHelper> command_buffer_helper,
+      VideoDecodeAccelerator::Client* client,
+      const VideoDecodeAccelerator::Config& config) {
     DCHECK(owned_vda_);
+    if (!owned_vda_->Initialize(config, client))
+      return nullptr;
     return std::move(owned_vda_);
   }
 

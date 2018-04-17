@@ -27,6 +27,8 @@
 
 namespace gpu {
 class CommandBufferStub;
+class GpuDriverBugWorkarounds;
+struct GpuPreferences;
 }  // namespace gpu
 
 namespace media {
@@ -37,18 +39,20 @@ class VdaVideoDecoder : public VideoDecoder,
                         public VideoDecodeAccelerator::Client {
  public:
   using GetStubCB = base::RepeatingCallback<gpu::CommandBufferStub*()>;
-  using AllocateShmCB =
-      base::RepeatingCallback<std::unique_ptr<base::SharedMemory>(size_t)>;
   using CreatePictureBufferManagerCB =
       base::OnceCallback<scoped_refptr<PictureBufferManager>(
           PictureBufferManager::ReusePictureBufferCB)>;
   using CreateCommandBufferHelperCB =
       base::OnceCallback<scoped_refptr<CommandBufferHelper>()>;
-  using CreateVdaCB =
+  using CreateAndInitializeVdaCB =
       base::OnceCallback<std::unique_ptr<VideoDecodeAccelerator>(
-          scoped_refptr<CommandBufferHelper>)>;
+          scoped_refptr<CommandBufferHelper>,
+          VideoDecodeAccelerator::Client*,
+          const VideoDecodeAccelerator::Config&)>;
   using GetVdaCapabilitiesCB =
-      base::RepeatingCallback<VideoDecodeAccelerator::Capabilities()>;
+      base::OnceCallback<VideoDecodeAccelerator::Capabilities(
+          const gpu::GpuPreferences&,
+          const gpu::GpuDriverBugWorkarounds&)>;
 
   // Creates a VdaVideoDecoder. The returned unique_ptr can be safely upcast to
   // unique_ptr<VideoDecoder>.
@@ -61,24 +65,27 @@ class VdaVideoDecoder : public VideoDecoder,
   static std::unique_ptr<VdaVideoDecoder, std::default_delete<VideoDecoder>>
   Create(scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+         const gpu::GpuPreferences& gpu_preferences,
+         const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
          GetStubCB get_stub_cb);
 
   // |parent_task_runner|: Task runner that |this| should operate on. All
   //     methods must be called on |parent_task_runner| (should be the Mojo
   //     MediaService task runner).
-  // |gpu_task_runner|: Task runner that |get_stub_cb| and GPU command buffer
-  //     methods must be called on (should be the GPU main thread).
+  // |gpu_task_runner|: Task runner that GPU command buffer methods must be
+  //     called on (should be the GPU main thread).
   // |create_picture_buffer_manager_cb|: PictureBufferManager factory.
   // |create_command_buffer_helper_cb|: CommandBufferHelper factory.
-  // |create_vda_cb|: VideoDecodeAccelerator factory.
-  // |get_vda_capabilities_cb|: VideDecodeAccelerator::Capabilities provider.
+  // |create_and_initialize_vda_cb|: VideoDecodeAccelerator factory.
+  // |vda_capabilities|: Capabilities of the VDA that
+  //     |create_and_initialize_vda_cb| will produce.
   VdaVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       CreatePictureBufferManagerCB create_picture_buffer_manager_cb,
       CreateCommandBufferHelperCB create_command_buffer_helper_cb,
-      CreateVdaCB create_vda_cb,
-      GetVdaCapabilitiesCB get_vda_capabilities_cb);
+      CreateAndInitializeVdaCB create_and_initialize_vda_cb,
+      const VideoDecodeAccelerator::Capabilities& vda_capabilities);
 
   // media::VideoDecoder implementation.
   std::string GetDisplayName() const override;
@@ -141,7 +148,7 @@ class VdaVideoDecoder : public VideoDecoder,
   void DestroyCallbacks();
 
   //
-  // Constant after construction, safe to read on any thread.
+  // Construction parameters.
   //
   scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
@@ -149,8 +156,9 @@ class VdaVideoDecoder : public VideoDecoder,
   scoped_refptr<PictureBufferManager> picture_buffer_manager_;
 
   CreateCommandBufferHelperCB create_command_buffer_helper_cb_;
-  CreateVdaCB create_vda_cb_;
-  GetVdaCapabilitiesCB get_vda_capabilities_cb_;
+  CreateAndInitializeVdaCB create_and_initialize_vda_cb_;
+
+  const VideoDecodeAccelerator::Capabilities vda_capabilities_;
 
   //
   // Parent thread state.
@@ -172,6 +180,7 @@ class VdaVideoDecoder : public VideoDecoder,
   // GPU thread state.
   //
   std::unique_ptr<VideoDecodeAccelerator> vda_;
+  bool vda_initialized_ = false;
 
   //
   // Shared state.

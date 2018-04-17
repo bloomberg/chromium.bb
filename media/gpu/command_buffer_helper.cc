@@ -30,13 +30,22 @@ class CommandBufferHelperImpl
  public:
   explicit CommandBufferHelperImpl(gpu::CommandBufferStub* stub) : stub_(stub) {
     DVLOG(1) << __func__;
-    DCHECK(stub_);
     DCHECK(stub_->channel()->task_runner()->BelongsToCurrentThread());
 
     stub_->AddDestructionObserver(this);
     wait_sequence_id_ = stub_->channel()->scheduler()->CreateSequence(
         gpu::SchedulingPriority::kNormal);
     decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
+  }
+
+  gl::GLContext* GetGLContext() override {
+    DVLOG(2) << __func__;
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    if (!decoder_helper_)
+      return nullptr;
+
+    return decoder_helper_->GetGLContext();
   }
 
   bool MakeContextCurrent() override {
@@ -73,17 +82,6 @@ class CommandBufferHelperImpl
     texture_refs_.erase(service_id);
   }
 
-  gpu::Mailbox CreateMailbox(GLuint service_id) override {
-    DVLOG(2) << __func__ << "(" << service_id << ")";
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-    if (!decoder_helper_)
-      return gpu::Mailbox();
-
-    DCHECK(texture_refs_.count(service_id));
-    return decoder_helper_->CreateMailbox(texture_refs_[service_id].get());
-  }
-
   void SetCleared(GLuint service_id) override {
     DVLOG(2) << __func__ << "(" << service_id << ")";
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -93,6 +91,32 @@ class CommandBufferHelperImpl
 
     DCHECK(texture_refs_.count(service_id));
     decoder_helper_->SetCleared(texture_refs_[service_id].get());
+  }
+
+  bool BindImage(GLuint service_id,
+                 gl::GLImage* image,
+                 bool can_bind_to_sampler) override {
+    DVLOG(2) << __func__ << "(" << service_id << ")";
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    if (!decoder_helper_)
+      return false;
+
+    DCHECK(texture_refs_.count(service_id));
+    decoder_helper_->BindImage(texture_refs_[service_id].get(), image,
+                               can_bind_to_sampler);
+    return true;
+  }
+
+  gpu::Mailbox CreateMailbox(GLuint service_id) override {
+    DVLOG(2) << __func__ << "(" << service_id << ")";
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    if (!decoder_helper_)
+      return gpu::Mailbox();
+
+    DCHECK(texture_refs_.count(service_id));
+    return decoder_helper_->CreateMailbox(texture_refs_[service_id].get());
   }
 
   void WaitForSyncToken(gpu::SyncToken sync_token,

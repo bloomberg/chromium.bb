@@ -44,6 +44,11 @@ void FakeCommandBufferHelper::ReleaseSyncToken(gpu::SyncToken sync_token) {
   waits_.erase(sync_token);
 }
 
+gl::GLContext* FakeCommandBufferHelper::GetGLContext() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return nullptr;
+}
+
 bool FakeCommandBufferHelper::MakeContextCurrent() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   is_context_current_ = !is_context_lost_;
@@ -70,15 +75,24 @@ void FakeCommandBufferHelper::DestroyTexture(GLuint service_id) {
   service_ids_.erase(service_id);
 }
 
+void FakeCommandBufferHelper::SetCleared(GLuint service_id) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(service_ids_.count(service_id));
+}
+
+bool FakeCommandBufferHelper::BindImage(GLuint service_id,
+                                        gl::GLImage* image,
+                                        bool can_bind_to_sampler) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(service_ids_.count(service_id));
+  DCHECK(image);
+  return has_stub_;
+}
+
 gpu::Mailbox FakeCommandBufferHelper::CreateMailbox(GLuint service_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(service_ids_.count(service_id));
   return gpu::Mailbox::Generate();
-}
-
-void FakeCommandBufferHelper::SetCleared(GLuint service_id) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(service_ids_.count(service_id));
 }
 
 void FakeCommandBufferHelper::WaitForSyncToken(gpu::SyncToken sync_token,

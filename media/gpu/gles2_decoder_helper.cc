@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_context.h"
@@ -108,6 +109,23 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     texture_manager_->SetLevelCleared(
         texture_ref, texture_ref->texture()->target(), 0, true);
+  }
+
+  void BindImage(gpu::gles2::TextureRef* texture_ref,
+                 gl::GLImage* image,
+                 bool can_bind_to_sampler) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    GLenum target = gpu::gles2::GLES2Util::GLFaceTargetToTextureTarget(
+        texture_ref->texture()->target());
+    gpu::gles2::Texture::ImageState state = can_bind_to_sampler
+                                                ? gpu::gles2::Texture::BOUND
+                                                : gpu::gles2::Texture::UNBOUND;
+    texture_manager_->SetLevelImage(texture_ref, target, 0, image, state);
+  }
+
+  gl::GLContext* GetGLContext() override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return decoder_->GetGLContext();
   }
 
   gpu::Mailbox CreateMailbox(gpu::gles2::TextureRef* texture_ref) override {

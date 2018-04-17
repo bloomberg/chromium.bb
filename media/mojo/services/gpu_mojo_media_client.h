@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/mojo/services/mojo_media_client.h"
@@ -28,6 +29,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
   // CdmProxy is not supported on the platform.
   GpuMojoMediaClient(
       const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
       AndroidOverlayMojoFactoryCB android_overlay_factory_cb,
@@ -51,6 +53,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
 
  private:
   gpu::GpuPreferences gpu_preferences_;
+  gpu::GpuDriverBugWorkarounds gpu_workarounds_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager_;
   AndroidOverlayMojoFactoryCB android_overlay_factory_cb_;

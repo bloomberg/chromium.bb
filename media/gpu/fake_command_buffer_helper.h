@@ -36,6 +36,7 @@ class FakeCommandBufferHelper : public CommandBufferHelper {
   bool HasTexture(GLuint service_id);
 
   // CommandBufferHelper implementation.
+  gl::GLContext* GetGLContext() override;
   bool MakeContextCurrent() override;
   GLuint CreateTexture(GLenum target,
                        GLenum internal_format,
@@ -44,8 +45,11 @@ class FakeCommandBufferHelper : public CommandBufferHelper {
                        GLenum format,
                        GLenum type) override;
   void DestroyTexture(GLuint service_id) override;
-  gpu::Mailbox CreateMailbox(GLuint service_id) override;
   void SetCleared(GLuint service_id) override;
+  bool BindImage(GLuint service_id,
+                 gl::GLImage* image,
+                 bool can_bind_to_sampler) override;
+  gpu::Mailbox CreateMailbox(GLuint service_id) override;
   void WaitForSyncToken(gpu::SyncToken sync_token,
                         base::OnceClosure done_cb) override;
 

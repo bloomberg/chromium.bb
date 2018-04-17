@@ -22,6 +22,11 @@ class TextureRef;
 }  // namespace gles2
 }  // namespace gpu
 
+namespace gl {
+class GLContext;
+class GLImage;
+}  // namespace gl
+
 namespace media {
 
 // Utility methods to simplify working with a gpu::DecoderContext from
@@ -52,6 +57,14 @@ class MEDIA_GPU_EXPORT GLES2DecoderHelper {
 
   // Sets the cleared flag on level 0 of the texture.
   virtual void SetCleared(gpu::gles2::TextureRef* texture_ref) = 0;
+
+  // Binds level 0 of the texture to an image.
+  virtual void BindImage(gpu::gles2::TextureRef* texture_ref,
+                         gl::GLImage* image,
+                         bool can_bind_to_sampler) = 0;
+
+  // Gets the associated GLContext.
+  virtual gl::GLContext* GetGLContext() = 0;
 
   // Creates a mailbox for a texture.
   virtual gpu::Mailbox CreateMailbox(gpu::gles2::TextureRef* texture_ref) = 0;
