@@ -343,9 +343,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // Observers of |context_core_| which live within content's implementation
   // boundary. Shared with |context_core_|.
-  const scoped_refptr<
-      base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>>
-      core_observer_list_;
+  using ServiceWorkerContextObserverList =
+      base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>;
+  const scoped_refptr<ServiceWorkerContextObserverList> core_observer_list_;
 
   // Observers which live outside content's implementation boundary. Observer
   // methods will always be dispatched on the UI thread.
@@ -356,13 +356,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   std::unique_ptr<ServiceWorkerContextCore> context_core_;
 
   // Initialized in Init(); true if the user data directory is empty.
-  bool is_incognito_;
+  bool is_incognito_ = false;
 
   // Raw pointer to the StoragePartitionImpl owning |this|.
-  StoragePartitionImpl* storage_partition_;
+  StoragePartitionImpl* storage_partition_ = nullptr;
 
   // The ResourceContext associated with this context.
-  ResourceContext* resource_context_;
+  ResourceContext* resource_context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextWrapper);
 };
