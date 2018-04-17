@@ -2779,6 +2779,7 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kPane:
     case ax::mojom::Role::kParagraph:
     case ax::mojom::Role::kPresentational:
+    case ax::mojom::Role::kScrollView:
     case ax::mojom::Role::kSliderThumb:
     case ax::mojom::Role::kSwitch:
     case ax::mojom::Role::kUnknown:

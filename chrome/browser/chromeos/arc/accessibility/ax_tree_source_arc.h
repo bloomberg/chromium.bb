@@ -105,6 +105,9 @@ class AXTreeSourceArc
   // Resets tree state.
   void Reset();
 
+  void PopulateAXRole(mojom::AccessibilityNodeInfoData* node,
+                      ui::AXNodeData* out_data) const;
+
   // Maps an AccessibilityNodeInfo to its tree data.
   std::map<int32_t, mojom::AccessibilityNodeInfoData*> tree_map_;
   std::map<int32_t, int32_t> parent_map_;

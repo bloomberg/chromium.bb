@@ -417,6 +417,8 @@ const char* ToString(ax::mojom::Role role) {
       return "svgRoot";
     case ax::mojom::Role::kScrollBar:
       return "scrollBar";
+    case ax::mojom::Role::kScrollView:
+      return "scrollView";
     case ax::mojom::Role::kSearch:
       return "search";
     case ax::mojom::Role::kSearchBox:

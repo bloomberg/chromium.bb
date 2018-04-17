@@ -757,6 +757,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kScrollBar:
       message_id = IDS_AX_ROLE_SCROLL_BAR;
       break;
+    case ax::mojom::Role::kScrollView:
+      // No role description.
+      break;
     case ax::mojom::Role::kSearch:
       message_id = IDS_AX_ROLE_SEARCH;
       break;
