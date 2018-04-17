@@ -157,6 +157,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   bool LockMouse() override;
   void UnlockMouse() override;
+  bool LockKeyboard(base::Optional<base::flat_set<int>> keys) override;
+  void UnlockKeyboard() override;
+  bool IsKeyboardLocked() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
 
@@ -531,6 +534,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // one.
   bool pinch_has_reached_zoom_threshold_ = false;
   float pinch_unused_amount_ = 1.f;
+
+  // Tracks whether keyboard lock is active.
+  bool is_keyboard_locked_ = false;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

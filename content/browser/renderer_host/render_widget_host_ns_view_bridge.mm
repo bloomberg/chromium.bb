@@ -53,6 +53,8 @@ class RenderWidgetHostViewNSViewBridgeLocal
   void ShowDictionaryOverlay(
       const mac::AttributedStringCoder::EncodedString& encoded_string,
       gfx::Point baseline_point) override;
+  void LockKeyboard(base::Optional<base::flat_set<int>> keys) override;
+  void UnlockKeyboard() override;
 
  private:
   bool IsPopup() const {
@@ -267,6 +269,15 @@ void RenderWidgetHostViewNSViewBridgeLocal::ShowDictionaryOverlay(
   };
   [cocoa_view_ showDefinitionForAttributedString:string
                                          atPoint:flipped_baseline_point];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::LockKeyboard(
+    base::Optional<base::flat_set<int>> keys) {
+  [cocoa_view_ lockKeyboard:std::move(keys)];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::UnlockKeyboard() {
+  [cocoa_view_ unlockKeyboard];
 }
 
 }  // namespace

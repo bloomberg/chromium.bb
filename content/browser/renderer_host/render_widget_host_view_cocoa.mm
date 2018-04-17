@@ -10,6 +10,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/mac_util.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
@@ -25,6 +26,8 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
 using content::BrowserAccessibility;
@@ -187,7 +190,10 @@ void ExtractUnderlines(NSAttributedString* string,
 // RenderWidgetHostViewCocoa ---------------------------------------------------
 
 // Private methods:
-@interface RenderWidgetHostViewCocoa ()
+@interface RenderWidgetHostViewCocoa () {
+  bool keyboardLockActive_;
+  base::Optional<base::flat_set<int>> lockedKeys_;
+}
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed;
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
@@ -198,6 +204,7 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)sendViewBoundsInWindowToClient;
 - (void)sendWindowFrameInScreenToClient;
 - (bool)clientIsDisconnected;
+- (bool)isKeyLocked:(int)keyCode;
 @end
 
 @implementation RenderWidgetHostViewCocoa
@@ -214,6 +221,7 @@ void ExtractUnderlines(NSAttributedString* string,
     client_ = client;
     canBeKeyView_ = YES;
     isStylusEnteringProximity_ = false;
+    keyboardLockActive_ = false;
   }
   return self;
 }
@@ -535,6 +543,26 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 }
 
+- (void)lockKeyboard:(base::Optional<base::flat_set<int>>)keysToLock {
+  // TODO(joedow): Integrate System-level keyboard hook into this method.
+  lockedKeys_ = std::move(keysToLock);
+  keyboardLockActive_ = true;
+}
+
+- (void)unlockKeyboard {
+  keyboardLockActive_ = false;
+  lockedKeys_.reset();
+}
+
+- (bool)isKeyLocked:(int)keyCode {
+  // Note: We do not want to treat the ESC key as locked as that key is used
+  // to exit fullscreen and we don't want to prevent them from exiting.
+  const int escNativeKeyCode =
+      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ESCAPE);
+  return keyboardLockActive_ && keyCode != escNativeKeyCode &&
+         (!lockedKeys_ || base::ContainsKey(lockedKeys_.value(), keyCode));
+}
+
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
   // |performKeyEquivalent:| is sent to all views of a window, not only down the
   // responder chain (cf. "Handling Key Equivalents" in
@@ -636,6 +664,11 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+
+  // If KeyboardLock has been requested for this keyCode, then mark the event
+  // so it skips the pre-handler and is delivered straight to the website.
+  if ([self isKeyLocked:keyCode])
+    event.skip_in_browser = true;
 
   // Do not forward key up events unless preceded by a matching key down,
   // otherwise we might get an event from releasing the return key in the

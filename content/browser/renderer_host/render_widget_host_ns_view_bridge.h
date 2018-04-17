@@ -9,7 +9,9 @@
 
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/common/mac/attributed_string_coder.h"
 #include "third_party/blink/public/web/web_popup_type.h"
@@ -91,6 +93,12 @@ class RenderWidgetHostNSViewBridge {
   virtual void ShowDictionaryOverlay(
       const mac::AttributedStringCoder::EncodedString& encoded_string,
       gfx::Point baseline_point) = 0;
+
+  // Start intercepting keyboard events.
+  virtual void LockKeyboard(base::Optional<base::flat_set<int>> keys) = 0;
+
+  // Stop intercepting keyboard events.
+  virtual void UnlockKeyboard() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridge);

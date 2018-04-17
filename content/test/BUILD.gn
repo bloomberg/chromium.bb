@@ -747,6 +747,8 @@ test("content_browsertests") {
     "../browser/indexed_db/mock_browsertest_indexed_db_class_factory.h",
     "../browser/isolated_origin_browsertest.cc",
     "../browser/keyboard_lock_browsertest.cc",
+    "../browser/keyboard_lock_browsertest.h",
+    "../browser/keyboard_lock_browsertest_mac.mm",
     "../browser/loader/cors_file_origin_browsertest.cc",
     "../browser/loader/cross_site_document_blocking_browsertest.cc",
     "../browser/loader/prefetch_browsertest.cc",

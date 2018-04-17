@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/keyboard_lock_browsertest.h"
+
 #include <vector>
 
 #include "base/macros.h"
@@ -29,7 +31,7 @@ namespace content {
 namespace {
 
 // TODO(joedow): Enable tests on additional platforms as they are implemented.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_RUN(test_name) test_name
 #else
 #define MAYBE_RUN(test_name) DISABLED_##test_name
@@ -69,9 +71,10 @@ constexpr char kKeyboardLockMethodCallWithSomeInvalidKeys[] =
 
 constexpr char kKeyboardUnlockMethodCall[] = "navigator.keyboard.unlock()";
 
+#if defined(USE_AURA)
+
 bool g_window_has_focus = false;
 
-#if defined(USE_AURA)
 class TestRenderWidgetHostView : public RenderWidgetHostViewAura {
  public:
   TestRenderWidgetHostView(RenderWidgetHost* host, bool is_guest_view_hack)
@@ -88,13 +91,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewAura {
   }
 };
 
-void InstallCreateHooksForKeyboardLockBrowserTests() {
-  WebContentsViewAura::InstallCreateHookForTests(
-      [](RenderWidgetHost* host,
-         bool is_guest_view_hack) -> RenderWidgetHostViewAura* {
-        return new TestRenderWidgetHostView(host, is_guest_view_hack);
-      });
-}
 #endif  // USE_AURA
 
 class FakeKeyboardLockWebContentsDelegate : public WebContentsDelegate {
@@ -154,6 +150,22 @@ void FakeKeyboardLockWebContentsDelegate::CancelKeyboardLockRequest(
 
 }  // namespace
 
+#if defined(USE_AURA)
+
+void SetWindowFocusForKeyboardLockBrowserTests(bool is_focused) {
+  g_window_has_focus = is_focused;
+}
+
+void InstallCreateHooksForKeyboardLockBrowserTests() {
+  WebContentsViewAura::InstallCreateHookForTests(
+      [](RenderWidgetHost* host,
+         bool is_guest_view_hack) -> RenderWidgetHostViewAura* {
+        return new TestRenderWidgetHostView(host, is_guest_view_hack);
+      });
+}
+
+#endif  // USE_AURA
+
 class KeyboardLockBrowserTest : public ContentBrowserTest {
  public:
   KeyboardLockBrowserTest();
@@ -206,10 +218,8 @@ KeyboardLockBrowserTest::~KeyboardLockBrowserTest() = default;
 
 void KeyboardLockBrowserTest::SetUp() {
   // Assume we have focus to start with.
-  g_window_has_focus = true;
-#if defined(USE_AURA)
+  SetWindowFocusForKeyboardLockBrowserTests(true);
   InstallCreateHooksForKeyboardLockBrowserTests();
-#endif
   SetUpFeatureList();
   ContentBrowserTest::SetUp();
 }
@@ -299,7 +309,7 @@ void KeyboardLockBrowserTest::ExitFullscreen(const base::Location& from_here) {
 }
 
 void KeyboardLockBrowserTest::FocusContent(const base::Location& from_here) {
-  g_window_has_focus = true;
+  SetWindowFocusForKeyboardLockBrowserTests(true);
   RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
       web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost());
   host->GotFocus();
@@ -312,7 +322,7 @@ void KeyboardLockBrowserTest::FocusContent(const base::Location& from_here) {
 }
 
 void KeyboardLockBrowserTest::BlurContent(const base::Location& from_here) {
-  g_window_has_focus = false;
+  SetWindowFocusForKeyboardLockBrowserTests(false);
   RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
       web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost());
   host->SetActive(false);
