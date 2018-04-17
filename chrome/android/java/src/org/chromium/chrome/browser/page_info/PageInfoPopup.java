@@ -22,12 +22,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
-import android.support.annotation.StringRes;
-import android.support.v7.widget.AppCompatTextView;
-import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -35,17 +30,12 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.text.style.TextAppearanceSpan;
-import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
@@ -62,6 +52,9 @@ import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.page_info.PageInfoView.ConnectionInfoParams;
+import org.chromium.chrome.browser.page_info.PageInfoView.PageInfoViewParams;
+import org.chromium.chrome.browser.page_info.PageInfoView.PermissionParams;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -74,7 +67,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr_shell.UiUnsupportedMode;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
@@ -135,171 +127,9 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         }
     }
 
-    /**
-     * A TextView which truncates and displays a URL such that the origin is always visible.
-     * The URL can be expanded by clicking on the it.
-     */
-    public static class ElidedUrlTextView extends AppCompatTextView {
-        // The number of lines to display when the URL is truncated. This number
-        // should still allow the origin to be displayed. NULL before
-        // setUrlAfterLayout() is called.
-        private Integer mTruncatedUrlLinesToDisplay;
-
-        // The number of lines to display when the URL is expanded. This should be enough to display
-        // at most two lines of the fragment if there is one in the URL.
-        private Integer mFullLinesToDisplay;
-
-        // If true, the text view will show the truncated text. If false, it
-        // will show the full, expanded text.
-        private boolean mIsShowingTruncatedText = true;
-
-        // The length of the URL's origin in number of characters.
-        private int mOriginLength = -1;
-
-        // The maximum number of lines currently shown in the view
-        private int mCurrentMaxLines = Integer.MAX_VALUE;
-
-        // Whether or not the full URL should always be shown.
-        private boolean mAlwaysShowFullUrl;
-
-        /** Constructor for inflating from XML. */
-        public ElidedUrlTextView(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        @Override
-        public void setMaxLines(int maxlines) {
-            super.setMaxLines(maxlines);
-            mCurrentMaxLines = maxlines;
-        }
-
-        /**
-         * Find the number of lines of text which must be shown in order to display the character at
-         * a given index.
-         */
-        private int getLineForIndex(int index) {
-            Layout layout = getLayout();
-            int endLine = 0;
-            while (endLine < layout.getLineCount() && layout.getLineEnd(endLine) < index) {
-                endLine++;
-            }
-            // Since endLine is an index, add 1 to get the number of lines.
-            return endLine + 1;
-        }
-
-        @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            setMaxLines(Integer.MAX_VALUE);
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            assert mOriginLength >= 0 : "setUrl() must be called before layout.";
-            String urlText = getText().toString();
-
-            // Find the range of lines containing the origin.
-            int originEndLine = getLineForIndex(mOriginLength);
-
-            // Display an extra line so we don't accidentally hide the origin with
-            // ellipses
-            mTruncatedUrlLinesToDisplay = originEndLine + 1;
-
-            // Find the line where the fragment starts. Since # is a reserved character, it is safe
-            // to just search for the first # to appear in the url.
-            int fragmentStartIndex = urlText.indexOf('#');
-            if (fragmentStartIndex == -1) fragmentStartIndex = urlText.length();
-
-            int fragmentStartLine = getLineForIndex(fragmentStartIndex);
-            mFullLinesToDisplay = fragmentStartLine + 1;
-
-            // If there is no origin (according to OmniboxUrlEmphasizer), make sure the fragment is
-            // still hidden correctly.
-            if (mFullLinesToDisplay < mTruncatedUrlLinesToDisplay) {
-                mTruncatedUrlLinesToDisplay = mFullLinesToDisplay;
-            }
-
-            if (updateMaxLines()) super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        }
-
-        /**
-         * @param show Whether or not the full URL should always be shown on the page info dialog.
-         */
-        public void setAlwaysShowFullUrl(boolean show) {
-            mAlwaysShowFullUrl = show;
-        }
-
-        /**
-         * Sets the URL and the length of the URL's origin.
-         * Must be called before layout.
-         *
-         * @param url The URL.
-         * @param originLength The length of the URL's origin in number of characters.
-         */
-        public void setUrl(CharSequence url, int originLength) {
-            assert originLength >= 0 && originLength <= url.length();
-            setText(url);
-            mOriginLength = originLength;
-        }
-
-        /**
-         * Toggles truncating/expanding the URL text. If the URL text is not
-         * truncated, has no effect.
-         */
-        public void toggleTruncation() {
-            mIsShowingTruncatedText = !mIsShowingTruncatedText;
-            updateMaxLines();
-        }
-
-        private boolean updateMaxLines() {
-            int maxLines = mFullLinesToDisplay;
-            if (mIsShowingTruncatedText && !mAlwaysShowFullUrl) {
-                maxLines = mTruncatedUrlLinesToDisplay;
-            }
-            if (maxLines != mCurrentMaxLines) {
-                setMaxLines(maxLines);
-                return true;
-            }
-            return false;
-        }
-    }
-
-    /**  Parameters to configure the view of the page info popup. */
-    private static class PageInfoViewParams {
-        public boolean instantAppButtonShown = true;
-        public boolean siteSettingsButtonShown = true;
-        public boolean openOnlineButtonShown = true;
-
-        public Runnable urlTitleClickCallback;
-        public Runnable urlTitleLongClickCallback;
-        public Runnable instantAppButtonClickCallback;
-        public Runnable siteSettingsButtonClickCallback;
-        public Runnable openOnlineButtonClickCallback;
-
-        public boolean alwaysShowFullUrl;
-        public CharSequence url;
-        public int urlOriginLength;
-    }
-
-    /**  Parameters to configure the view of a permission row. */
-    private static class PermissionParams {
-        public CharSequence status;
-        public @DrawableRes int iconResource;
-        public @ColorRes int iconTintColorResource;
-        public @StringRes int warningTextResource;
-        public @StringRes int subtitleTextResource;
-        public Runnable clickCallback;
-    }
-
-    /**  Parameters to configure the view of the connection message. */
-    private static class ConnectionInfoParams {
-        public CharSequence message;
-        public CharSequence summary;
-        public Runnable clickCallback;
-    }
-
-    // Delay enter to allow the triggering button to animate before we cover it.
-    private static final int ENTER_START_DELAY = 100;
-    private static final int FADE_DURATION = 200;
-    private static final int FADE_IN_BASE_DELAY = 150;
-    private static final int FADE_IN_DELAY_OFFSET = 20;
-    private static final int CLOSE_CLEANUP_DELAY = 10;
+    private static final int ENTER_START_DELAY_MS = 100;
+    private static final int ENTER_EXIT_DURATION_MS = 200;
+    private static final int CLOSE_CLEANUP_DELAY_MS = 10;
 
     private static final int MAX_MODAL_DIALOG_WIDTH_DP = 400;
 
@@ -310,17 +140,8 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     // A pointer to the C++ object for this UI.
     private long mNativePageInfoPopup;
 
-    // The outer container, filled with the layout from page_info.xml.
-    private LinearLayout mContainer;
-
-    // UI elements in the dialog.
-    private ElidedUrlTextView mUrlTitle;
-    private TextView mConnectionSummary;
-    private TextView mConnectionMessage;
-    private LinearLayout mPermissionsList;
-    private Button mInstantAppButton;
-    private Button mSiteSettingsButton;
-    private Button mOpenOnlineButton;
+    // The view inside the popup.
+    private PageInfoView mView;
 
     // The dialog the container is placed in.
     // mSheetDialog is set if the dialog appears as a sheet. Otherwise, mModalDialog is set.
@@ -331,7 +152,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     private final boolean mIsBottomPopup;
 
     // Animation which is currently running, if there is one.
-    private AnimatorSet mCurrentAnimation;
+    private Animator mCurrentAnimation;
 
     private boolean mDismissWithoutAnimation;
 
@@ -350,7 +171,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     // The security level of the page (a valid ConnectionSecurityLevel).
     private int mSecurityLevel;
 
-    // Permissions available to be displayed in mPermissionsList.
+    // Permissions available to be displayed.
     private List<PageInfoPermissionEntry> mDisplayedPermissions;
 
     // Creation date of an offline copy, if web contents contains an offline page.
@@ -365,6 +186,10 @@ public class PageInfoPopup implements ModalDialogView.Controller {
 
     // Observer for dismissing dialog if web contents get destroyed, navigate etc.
     private WebContentsObserver mWebContentsObserver;
+
+    // A task that should be run once the page info popup is animated out and dismissed. Null if no
+    // task is pending.
+    private Runnable mPendingRunAfterDismissTask;
 
     /**
      * Creates the PageInfoPopup, but does not display it. Also initializes the corresponding
@@ -394,7 +219,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         viewParams.alwaysShowFullUrl = mIsBottomPopup;
         viewParams.urlTitleClickCallback = () -> {
             // Expand/collapse the displayed URL title.
-            mUrlTitle.toggleTruncation();
+            mView.toggleUrlTruncation();
         };
         // Long press the url text to copy it to the clipboard.
         viewParams.urlTitleLongClickCallback = () -> {
@@ -499,7 +324,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
                     mContext.startActivity(instantAppIntent);
                     RecordUserAction.record("Android.InstantApps.LaunchedFromWebsiteSettingsPopup");
                 } catch (ActivityNotFoundException e) {
-                    mInstantAppButton.setEnabled(false);
+                    mView.disableInstantAppButton();
                 }
             };
             RecordUserAction.record("Android.InstantApps.OpenInstantAppButtonShown");
@@ -512,7 +337,19 @@ public class PageInfoPopup implements ModalDialogView.Controller {
             createSheetDialog();
         }
 
-        initializePageInfoView(viewParams);
+        mView = new PageInfoView(mContext, viewParams);
+        mView.setVisibility(View.INVISIBLE);
+        mView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(
+                    View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                // Trigger the entrance animations once the main container has been laid out and has
+                // a height.
+                mView.removeOnLayoutChangeListener(this);
+                mView.setVisibility(View.VISIBLE);
+                createAllAnimations(true, null).start();
+            }
+        });
 
         // This needs to come after other member initialization.
         mNativePageInfoPopup = nativeInit(this, mTab.getWebContents());
@@ -601,7 +438,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         for (PageInfoPermissionEntry permission : mDisplayedPermissions) {
             permissionParamsList.add(createPermissionParams(permission));
         }
-        setPermissions(permissionParamsList);
+        mView.setPermissions(permissionParamsList);
     }
 
     private Runnable createPermissionClickCallback(
@@ -777,7 +614,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
                 });
             };
         }
-        setConnectionInfo(connectionInfoParams);
+        mView.setConnectionInfo(connectionInfoParams);
     }
 
     /**
@@ -820,7 +657,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
             };
         }
 
-        dialogView.addView(mContainer);
+        dialogView.addView(mView);
 
         if (isSheet()) {
             mSheetDialog.addContentView(dialogView,
@@ -846,12 +683,8 @@ public class PageInfoPopup implements ModalDialogView.Controller {
      * Dismiss the popup, and then run a task after the animation has completed (if there is one).
      */
     private void runAfterDismiss(Runnable task) {
+        mPendingRunAfterDismissTask = task;
         dismissDialog();
-        if (!isSheet()) {
-            task.run();
-        } else {
-            mContainer.postDelayed(task, FADE_DURATION + CLOSE_CLEANUP_DELAY);
-        }
     }
 
     @Override
@@ -866,6 +699,10 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         mWebContentsObserver.destroy();
         nativeDestroy(mNativePageInfoPopup);
         mNativePageInfoPopup = 0;
+        if (mPendingRunAfterDismissTask != null) {
+            mPendingRunAfterDismissTask.run();
+            mPendingRunAfterDismissTask = null;
+        }
     }
 
     private void dismissDialog() {
@@ -877,98 +714,46 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     }
 
     /**
-     * Create a list of all the views which we want to individually fade in.
-     */
-    private List<View> collectAnimatableViews() {
-        List<View> animatableViews = new ArrayList<View>();
-        animatableViews.add(mUrlTitle);
-        if (mConnectionSummary.getVisibility() == View.VISIBLE) {
-            animatableViews.add(mConnectionSummary);
-        }
-        animatableViews.add(mConnectionMessage);
-        animatableViews.add(mInstantAppButton);
-        for (int i = 0; i < mPermissionsList.getChildCount(); i++) {
-            animatableViews.add(mPermissionsList.getChildAt(i));
-        }
-        animatableViews.add(mSiteSettingsButton);
-
-        return animatableViews;
-    }
-
-    /**
-     * Create an animator to fade an individual dialog element.
-     */
-    private Animator createInnerFadeAnimator(final View view, int position, boolean isEnter) {
-        ObjectAnimator alphaAnim;
-
-        if (isEnter) {
-            view.setAlpha(0f);
-            alphaAnim = ObjectAnimator.ofFloat(view, View.ALPHA, 1f);
-            alphaAnim.setStartDelay(FADE_IN_BASE_DELAY + FADE_IN_DELAY_OFFSET * position);
-        } else {
-            alphaAnim = ObjectAnimator.ofFloat(view, View.ALPHA, 0f);
-        }
-
-        alphaAnim.setDuration(FADE_DURATION);
-        return alphaAnim;
-    }
-
-    /**
      * Create an animator to slide in the entire dialog from the top of the screen.
      */
-    private Animator createDialogSlideAnimator(boolean isEnter) {
-        final float animHeight = (mIsBottomPopup ? 1f : -1f) * mContainer.getHeight();
+    private Animator createDialogSlideAnimaton(boolean isEnter) {
+        final float animHeight = (mIsBottomPopup ? 1f : -1f) * mView.getHeight();
         ObjectAnimator translateAnim;
         if (isEnter) {
-            mContainer.setTranslationY(animHeight);
-            translateAnim = ObjectAnimator.ofFloat(mContainer, View.TRANSLATION_Y, 0f);
+            mView.setTranslationY(animHeight);
+            translateAnim = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y, 0f);
             translateAnim.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
         } else {
-            translateAnim = ObjectAnimator.ofFloat(mContainer, View.TRANSLATION_Y, animHeight);
+            translateAnim = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y, animHeight);
             translateAnim.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         }
-        translateAnim.setDuration(FADE_DURATION);
+        translateAnim.setDuration(ENTER_EXIT_DURATION_MS);
         return translateAnim;
     }
 
     /**
-     * Create animations for showing/hiding the popup.
-     *
-     * On phones the dialog is slid in as a sheet. Otherwise, the default fade-in is used.
+     * Create an animator to show/hide the entire dialog. On phones the dialog is slid in as a
+     * sheet. Otherwise, the default fade-in is used.
      */
-    private Animator createAllAnimations(boolean isEnter) {
-        AnimatorSet animation = new AnimatorSet();
-        AnimatorSet.Builder builder = null;
-        Animator startAnim;
-
-        if (!isSheet()) {
-            // The start time of the entire AnimatorSet is the start time of the first animation
-            // added to the Builder. We use a blank AnimatorSet for modal dialogs as an easy way to
-            // co-ordinate this start time.
-            startAnim = new AnimatorSet();
-        } else {
-            startAnim = createDialogSlideAnimator(isEnter);
-        }
-
-        if (isEnter) startAnim.setStartDelay(ENTER_START_DELAY);
-        builder = animation.play(startAnim);
-
-        List<View> animatableViews = collectAnimatableViews();
-        for (int i = 0; i < animatableViews.size(); i++) {
-            View view = animatableViews.get(i);
-            Animator anim = createInnerFadeAnimator(view, i, isEnter);
-            builder.with(anim);
-        }
-
-        animation.addListener(new AnimatorListenerAdapter() {
+    private Animator createAllAnimations(boolean isEnter, Runnable onAnimationEnd) {
+        Animator dialogAnimation =
+                isSheet() ? createDialogSlideAnimaton(isEnter) : new AnimatorSet();
+        Animator viewAnimation =
+                isEnter ? mView.createEnterAnimation() : mView.createExitAnimation();
+        AnimatorSet allAnimations = new AnimatorSet();
+        if (isEnter) allAnimations.setStartDelay(ENTER_START_DELAY_MS);
+        allAnimations.playTogether(dialogAnimation, viewAnimation);
+        allAnimations.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mCurrentAnimation = null;
+                if (onAnimationEnd == null) return;
+                onAnimationEnd.run();
             }
         });
         if (mCurrentAnimation != null) mCurrentAnimation.cancel();
-        mCurrentAnimation = animation;
-        return animation;
+        mCurrentAnimation = allAnimations;
+        return allAnimations;
     }
 
     private void recordAction(int action) {
@@ -1001,22 +786,12 @@ public class PageInfoPopup implements ModalDialogView.Controller {
                     // Dismiss the modal dialogs without any custom animations.
                     super.dismiss();
                 } else {
-                    Animator animator = createAllAnimations(false);
-                    animator.addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            // onAnimationEnd is called during the final frame of the animation.
-                            // Delay the cleanup by a tiny amount to give this frame a chance to
-                            // be displayed before we destroy the dialog.
-                            mContainer.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    superDismiss();
-                                }
-                            }, CLOSE_CLEANUP_DELAY);
-                        }
-                    });
-                    animator.start();
+                    createAllAnimations(false, () -> {
+                        // onAnimationEnd is called during the final frame of the animation.
+                        // Delay the cleanup by a tiny amount to give this frame a chance to
+                        // be displayed before we destroy the dialog.
+                        mView.postDelayed(this ::superDismiss, CLOSE_CLEANUP_DELAY_MS);
+                    }).start();
                 }
             }
         };
@@ -1043,116 +818,6 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         if (!mTab.getWebContents().isDestroyed()) {
             recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
             ConnectionInfoPopup.show(mContext, mTab.getWebContents());
-        }
-    }
-
-    private void initializePageInfoView(PageInfoViewParams params) {
-        // Find the container and all it's important subviews.
-        mContainer = (LinearLayout) LayoutInflater.from(mContext).inflate(R.layout.page_info, null);
-        mContainer.setVisibility(View.INVISIBLE);
-        mContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(
-                    View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
-                // Trigger the entrance animations once the main container has been laid out and has
-                // a height.
-                mContainer.removeOnLayoutChangeListener(this);
-                mContainer.setVisibility(View.VISIBLE);
-                createAllAnimations(true).start();
-            }
-        });
-
-        mUrlTitle = (ElidedUrlTextView) mContainer.findViewById(R.id.page_info_url);
-        mConnectionSummary = (TextView) mContainer.findViewById(R.id.page_info_connection_summary);
-        mConnectionMessage = (TextView) mContainer.findViewById(R.id.page_info_connection_message);
-        mPermissionsList = (LinearLayout) mContainer.findViewById(R.id.page_info_permissions_list);
-        mInstantAppButton = (Button) mContainer.findViewById(R.id.page_info_instant_app_button);
-        mSiteSettingsButton = (Button) mContainer.findViewById(R.id.page_info_site_settings_button);
-        mOpenOnlineButton = (Button) mContainer.findViewById(R.id.page_info_open_online_button);
-
-        mUrlTitle.setAlwaysShowFullUrl(params.alwaysShowFullUrl);
-        mUrlTitle.setUrl(params.url, params.urlOriginLength);
-        if (params.urlTitleLongClickCallback != null) {
-            mUrlTitle.setOnLongClickListener((View v) -> {
-                params.urlTitleLongClickCallback.run();
-                return true;
-            });
-        }
-
-        initializePageInfoViewChild(mUrlTitle, true, params.urlTitleClickCallback);
-        // Hide the permissions list for sites with no permissions.
-        initializePageInfoViewChild(mPermissionsList, false, null);
-        initializePageInfoViewChild(mInstantAppButton, params.instantAppButtonShown,
-                params.instantAppButtonClickCallback);
-        initializePageInfoViewChild(mSiteSettingsButton, params.siteSettingsButtonShown,
-                params.siteSettingsButtonClickCallback);
-        initializePageInfoViewChild(mOpenOnlineButton, params.openOnlineButtonShown,
-                params.openOnlineButtonClickCallback);
-    }
-
-    private void initializePageInfoViewChild(View child, boolean shown, Runnable clickCallback) {
-        child.setVisibility(shown ? View.VISIBLE : View.GONE);
-        if (clickCallback == null) return;
-        child.setOnClickListener((View v) -> { clickCallback.run(); });
-    }
-
-    private void setPermissions(List<PermissionParams> permissionParamsList) {
-        mPermissionsList.removeAllViews();
-        // If we have at least one permission show the lower permissions area.
-        mPermissionsList.setVisibility(!permissionParamsList.isEmpty() ? View.VISIBLE : View.GONE);
-        for (PermissionParams params : permissionParamsList) {
-            mPermissionsList.addView(createPermissionRow(params));
-        }
-    }
-
-    private View createPermissionRow(PermissionParams params) {
-        View permissionRow =
-                LayoutInflater.from(mContext).inflate(R.layout.page_info_permission_row, null);
-
-        TextView permissionStatus =
-                (TextView) permissionRow.findViewById(R.id.page_info_permission_status);
-        permissionStatus.setText(params.status);
-
-        ImageView permissionIcon =
-                (ImageView) permissionRow.findViewById(R.id.page_info_permission_icon);
-        if (params.iconTintColorResource == 0) {
-            permissionIcon.setImageDrawable(TintedDrawable.constructTintedDrawable(
-                    mContext.getResources(), params.iconResource));
-        } else {
-            permissionIcon.setImageResource(params.iconResource);
-            permissionIcon.setColorFilter(ApiCompatibilityUtils.getColor(
-                    mContext.getResources(), params.iconTintColorResource));
-        }
-
-        if (params.warningTextResource != 0) {
-            TextView permissionUnavailable = (TextView) permissionRow.findViewById(
-                    R.id.page_info_permission_unavailable_message);
-            permissionUnavailable.setVisibility(View.VISIBLE);
-            permissionUnavailable.setText(params.warningTextResource);
-        }
-
-        if (params.subtitleTextResource != 0) {
-            TextView permissionSubtitle =
-                    (TextView) permissionRow.findViewById(R.id.page_info_permission_subtitle);
-            permissionSubtitle.setVisibility(View.VISIBLE);
-            permissionSubtitle.setText(params.subtitleTextResource);
-        }
-
-        if (params.clickCallback != null) {
-            permissionRow.setOnClickListener((View v) -> { params.clickCallback.run(); });
-        }
-
-        return permissionRow;
-    }
-
-    private void setConnectionInfo(ConnectionInfoParams params) {
-        mConnectionMessage.setText(params.message);
-        if (params.summary != null) {
-            mConnectionSummary.setVisibility(View.VISIBLE);
-            mConnectionSummary.setText(params.summary);
-        }
-        if (params.clickCallback != null) {
-            mConnectionMessage.setOnClickListener((View v) -> { params.clickCallback.run(); });
         }
     }
 
