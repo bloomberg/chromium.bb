@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/test/bind_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "services/data_decoder/xml_parser.h"
@@ -20,13 +21,17 @@ std::unique_ptr<base::Value> ParseXml(const std::string& xml) {
   XmlParser parser_impl(/*service_ref=*/nullptr);
   mojom::XmlParser& parser = parser_impl;
   std::unique_ptr<base::Value> root_node;
-  parser.Parse(xml, base::Bind(
-                        [](std::unique_ptr<base::Value>* node,
-                           std::unique_ptr<base::Value> parsed_root_node,
-                           const base::Optional<std::string>& error) {
-                          *node = std::move(parsed_root_node);
-                        },
-                        &root_node));
+
+  parser.Parse(xml,
+               base::BindLambdaForTesting(
+                   [&root_node](base::Optional<base::Value> parsed_root_node,
+                                const base::Optional<std::string>& error) {
+                     root_node = parsed_root_node
+                                     ? base::Value::ToUniquePtrValue(
+                                           std::move(parsed_root_node.value()))
+                                     : nullptr;
+                   }));
+
   return root_node;
 }
 
