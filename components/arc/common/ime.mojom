@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 9
+// Next MinVersion: 10
 
 module arc.mojom;
 
@@ -34,7 +34,7 @@ struct CompositionSegment {
   bool emphasized;
 };
 
-// Next method ID: 4
+// Next method ID: 6
 interface ImeHost {
   // Notifies Chrome that the text input focus is changed.
   OnTextInputTypeChanged@0(TextInputType type);
@@ -75,6 +75,12 @@ interface ImeHost {
       [MinVersion=8] bool is_screen_coordinates  // Whether or not the |rect|
                                                  // are in screen coordinates.
       );
+
+  // Requests Chrome to hide the virtual keyboard.
+  // Howver, hiding can be canceled if a text field gets focus.
+  // TODO(yhanada): We might be able to remove this method by adding an argument
+  //                to OnTextInputTypeChanged().
+  [MinVersion=9] RequestHideIme@5();
 };
 
 // Next method ID: 7

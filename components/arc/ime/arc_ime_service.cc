@@ -305,6 +305,11 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
     input_method->OnCaretBoundsChanged(this);
 }
 
+void ArcImeService::RequestHideIme() {
+  if (keyboard_controller_)
+    keyboard_controller_->RequestHideKeyboard();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from keyboard::KeyboardControllerObserver
 void ArcImeService::OnKeyboardAppearanceChanged(

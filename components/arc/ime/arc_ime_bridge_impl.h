@@ -48,6 +48,7 @@ class ArcImeBridgeImpl : public ArcImeBridge, public mojom::ImeHost {
                                               const std::string& text_in_range,
                                               const gfx::Range& selection_range,
                                               bool screen_coordinates) override;
+  void RequestHideIme() override;
 
  private:
   Delegate* const delegate_;

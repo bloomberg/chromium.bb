@@ -162,4 +162,8 @@ void ArcImeBridgeImpl::OnCursorRectChangedWithSurroundingText(
       is_screen_coordinates);
 }
 
+void ArcImeBridgeImpl::RequestHideIme() {
+  delegate_->RequestHideIme();
+}
+
 }  // namespace arc
