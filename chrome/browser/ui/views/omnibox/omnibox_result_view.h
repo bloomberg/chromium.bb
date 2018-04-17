@@ -32,7 +32,6 @@ class Image;
 }
 
 class OmniboxImageView;
-class OmniboxSeparatedLineView;
 class OmniboxSuggestionView;
 class OmniboxTabSwitchButton;
 class OmniboxTextView;
@@ -95,12 +94,6 @@ class OmniboxResultView : public views::View,
 
   gfx::Image GetIcon() const;
 
-  // Returns the height of the the description section of answer suggestions.
-  int GetAnswerHeight() const;
-
-  // Returns the margin that should appear at the top and bottom of the result.
-  int GetVerticalMargin() const;
-
   // Sets the hovered state of this result.
   void SetHovered(bool hovered);
 
@@ -136,7 +129,7 @@ class OmniboxResultView : public views::View,
 
   // Weak pointers for easy reference.
   OmniboxSuggestionView* suggestion_view_;  // The leading (or left) view.
-  OmniboxSeparatedLineView* keyword_view_;  // The trailing (or right) view.
+  OmniboxSuggestionView* keyword_view_;     // The trailing (or right) view.
   std::unique_ptr<OmniboxTabSwitchButton> suggestion_tab_switch_button_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);

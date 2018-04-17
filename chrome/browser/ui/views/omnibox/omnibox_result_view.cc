@@ -93,6 +93,35 @@ int GetIconAlignmentOffset() {
   return offset;
 }
 
+// Returns the margin that should appear at the top and bottom of the result.
+int GetVerticalMargin(int text_height) {
+  // Regardless of the text size, we ensure a minimum size for the content line
+  // here. This minimum is larger for hybrid mouse/touch devices to ensure an
+  // adequately sized touch target.
+  using Md = ui::MaterialDesignController;
+  const int kIconVerticalPad = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kUIExperimentVerticalMargin,
+      OmniboxFieldTrial::kUIVerticalMarginParam,
+      Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
+  int min_height =
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE) + (kIconVerticalPad * 2);
+
+  // Make sure the minimum height of an omnibox result matches the height of the
+  // location bar view / non-results section of the omnibox popup in touch.
+  if (Md::IsTouchOptimizedUiEnabled()) {
+    min_height = std::max(
+        min_height, RoundedOmniboxResultsFrame::GetNonResultSectionHeight());
+  }
+
+  return std::max(kVerticalMargin, (min_height - text_height) / 2);
+}
+
+// Returns the padding width between elements.
+int HorizontalPadding() {
+  return GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
+         GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,13 +133,17 @@ class OmniboxImageView : public views::ImageView {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxSeparatedLineView:
+// OmniboxSuggestionView:
 
-class OmniboxSeparatedLineView : public views::View {
+// TODO(dschuyler): Move this class to its own file. The reason it started in
+// the omnibox_result_view file was to ease the refactor of this code. I intend
+// to resolve this in mid-2018.
+class OmniboxSuggestionView : public views::View {
  public:
-  explicit OmniboxSeparatedLineView(OmniboxResultView* result_view,
-                                    const gfx::FontList& font_list);
-  ~OmniboxSeparatedLineView() override;
+  explicit OmniboxSuggestionView(OmniboxResultView* result_view,
+                                 const gfx::FontList& font_list,
+                                 int text_height);
+  ~OmniboxSuggestionView() override;
 
   views::ImageView* icon() { return icon_view_; }
   views::ImageView* image() { return image_view_; }
@@ -119,8 +152,9 @@ class OmniboxSeparatedLineView : public views::View {
   OmniboxTextView* separator() { return separator_view_; }
 
   void OnMatchUpdate(const AutocompleteMatch& match);
-  void OnHighlightUpdate(const AutocompleteMatch& match);
 
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   bool CanProcessEventsWithinSubtree() const override { return false; }
 
  protected:
@@ -128,8 +162,19 @@ class OmniboxSeparatedLineView : public views::View {
   void Layout() override;
   const char* GetClassName() const override;
 
+  // Returns the height of the the description section of answer suggestions.
+  int GetAnswerHeight() const;
+
+  void LayoutAnswer();
+  void LayoutEntity();
+  void LayoutSplit();
+  void LayoutTwoLine();
+
+  bool is_answer_;
+  bool is_search_type_;
+  int text_height_;
+
   // Weak pointers for easy reference.
-  OmniboxResultView* result_view_;
   views::ImageView* icon_view_;   // An icon resembling a '>'.
   views::ImageView* image_view_;  // For rich suggestions.
   OmniboxTextView* content_view_;
@@ -137,69 +182,168 @@ class OmniboxSeparatedLineView : public views::View {
   OmniboxTextView* separator_view_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OmniboxSeparatedLineView);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxSuggestionView);
 };
 
-OmniboxSeparatedLineView::OmniboxSeparatedLineView(
-    OmniboxResultView* result_view,
-    const gfx::FontList& font_list)
-    : result_view_(result_view) {
+OmniboxSuggestionView::OmniboxSuggestionView(OmniboxResultView* result_view,
+                                             const gfx::FontList& font_list,
+                                             int text_height)
+    : is_answer_(false), is_search_type_(false), text_height_(text_height) {
   AddChildView(icon_view_ = new OmniboxImageView());
   AddChildView(image_view_ = new OmniboxImageView());
   AddChildView(content_view_ = new OmniboxTextView(result_view, font_list));
   AddChildView(description_view_ = new OmniboxTextView(result_view, font_list));
   AddChildView(separator_view_ = new OmniboxTextView(result_view, font_list));
+
+  const base::string16& separator =
+      l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
+  separator_view_->SetText(separator);
 }
-
-OmniboxSeparatedLineView::~OmniboxSeparatedLineView() = default;
-
-void OmniboxSeparatedLineView::OnMatchUpdate(const AutocompleteMatch& match) {
-  // TODO(dschuyler): Fill this in.
-}
-
-void OmniboxSeparatedLineView::OnHighlightUpdate(
-    const AutocompleteMatch& match) {
-  // TODO(dschuyler): Fill this in.
-}
-
-const char* OmniboxSeparatedLineView::GetClassName() const {
-  return "OmniboxSeparatedLineView";
-}
-
-void OmniboxSeparatedLineView::Layout() {
-  // TODO(dschuyler): Fill this in.
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OmniboxSuggestionView:
-
-class OmniboxSuggestionView : public OmniboxSeparatedLineView {
- public:
-  explicit OmniboxSuggestionView(OmniboxResultView* result_view,
-                                 const gfx::FontList& font_list);
-  ~OmniboxSuggestionView() override;
-
- private:
-  // views::View:
-  void Layout() override;
-  const char* GetClassName() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxSuggestionView);
-};
-
-OmniboxSuggestionView::OmniboxSuggestionView(OmniboxResultView* result_view,
-                                             const gfx::FontList& font_list)
-    : OmniboxSeparatedLineView::OmniboxSeparatedLineView(result_view,
-                                                         font_list) {}
 
 OmniboxSuggestionView::~OmniboxSuggestionView() = default;
+
+gfx::Size OmniboxSuggestionView::CalculatePreferredSize() const {
+  int height = text_height_ + (2 * GetVerticalMargin(text_height_));
+  if (is_answer_)
+    height += GetAnswerHeight();
+  else if (IsTwoLineLayout())
+    height += text_height_;
+  return gfx::Size(0, height);
+}
+
+int OmniboxSuggestionView::GetAnswerHeight() const {
+  int icon_width = icon_view_->width();
+  int answer_icon_size = image_view_->visible()
+                             ? image_view_->height() + kAnswerIconToTextPadding
+                             : 0;
+  // TODO(dschuyler): The GetIconAlignmentOffset() is applied an extra time to
+  // match the math in Layout(). This seems like a (minor) mistake.
+  int deduction = (GetIconAlignmentOffset() * 2) + icon_width +
+                  (HorizontalPadding() * 3) + answer_icon_size;
+  int description_width = std::max(width() - deduction, 0);
+  return description_view_->GetHeightForWidth(description_width) +
+         kVerticalPadding;
+}
+
+void OmniboxSuggestionView::OnMatchUpdate(const AutocompleteMatch& match) {
+  is_answer_ = !!match.answer;
+  is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
+  if (is_answer_ || IsTwoLineLayout()) {
+    separator_view_->SetSize(gfx::Size());
+  }
+  if (is_answer_ &&
+      base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions)) {
+    icon_view_->SetSize(gfx::Size());
+  }
+}
 
 const char* OmniboxSuggestionView::GetClassName() const {
   return "OmniboxSuggestionView";
 }
 
 void OmniboxSuggestionView::Layout() {
-  // TODO(dschuyler): Fill this in.
+  views::View::Layout();
+  if (is_answer_) {
+    if (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions)) {
+      LayoutEntity();
+    } else {
+      LayoutAnswer();
+    }
+  } else if (IsTwoLineLayout()) {
+    LayoutTwoLine();
+  } else {
+    LayoutSplit();
+  }
+}
+
+void OmniboxSuggestionView::LayoutAnswer() {
+  const int start_x = GetIconAlignmentOffset() + HorizontalPadding();
+  int x = start_x + LocationBarView::GetBorderThicknessDip();
+  int y = GetVerticalMargin(text_height_);
+  icon_view_->SetSize(icon_view_->CalculatePreferredSize());
+  int center_icon_within = IsTwoLineLayout() ? height() : text_height_;
+  icon_view_->SetPosition(
+      gfx::Point(x, (center_icon_within - icon_view_->height()) / 2));
+  x += icon_view_->width() + HorizontalPadding();
+  content_view_->SetBounds(x, y, width() - x, text_height_);
+  y += text_height_;
+  if (image_view_->visible()) {
+    // The description may be multi-line. Using the view height results in
+    // an image that's too large, so we use the line height here instead.
+    int image_edge_length = description_view_->GetLineHeight();
+    image_view_->SetBounds(start_x + icon_view_->width() + HorizontalPadding(),
+                           y + (kVerticalPadding / 2), image_edge_length,
+                           image_edge_length);
+    image_view_->SetImageSize(gfx::Size(image_edge_length, image_edge_length));
+    x += image_view_->width() + kAnswerIconToTextPadding;
+  }
+  int description_width = width() - x;
+  description_view_->SetBounds(
+      x, y, description_width,
+      description_view_->GetHeightForWidth(description_width) +
+          kVerticalPadding);
+}
+
+void OmniboxSuggestionView::LayoutEntity() {
+  int x = GetIconAlignmentOffset() + HorizontalPadding() +
+          LocationBarView::GetBorderThicknessDip();
+  int y = GetVerticalMargin(text_height_);
+  int image_edge_length = text_height_ + description_view_->GetLineHeight();
+  image_view_->SetImageSize(gfx::Size(image_edge_length, image_edge_length));
+  image_view_->SetBounds(x, y, image_edge_length, image_edge_length);
+  x += image_edge_length + HorizontalPadding();
+  content_view_->SetBounds(x, y, width() - x, text_height_);
+  y += text_height_;
+  description_view_->SetBounds(x, y, width() - x, text_height_);
+}
+
+void OmniboxSuggestionView::LayoutSplit() {
+  int x = GetIconAlignmentOffset() + HorizontalPadding() +
+          LocationBarView::GetBorderThicknessDip();
+  icon_view_->SetSize(icon_view_->CalculatePreferredSize());
+  icon_view_->SetPosition(
+      gfx::Point(x, (text_height_ - icon_view_->height()) / 2));
+  x += icon_view_->width() + HorizontalPadding();
+  int content_width = content_view_->CalculatePreferredSize().width();
+  int description_width = description_view_->CalculatePreferredSize().width();
+  OmniboxPopupModel::ComputeMatchMaxWidths(
+      content_width, separator_view_->width(), description_width, width(),
+      /*description_on_separate_line=*/false, !is_search_type_, &content_width,
+      &description_width);
+  int y = GetVerticalMargin(text_height_);
+  content_view_->SetBounds(x, y, content_width, text_height_);
+  if (description_width != 0) {
+    x += content_view_->width();
+    separator_view_->SetSize(separator_view_->CalculatePreferredSize());
+    separator_view_->SetBounds(x, y, separator_view_->width(), text_height_);
+    x += separator_view_->width();
+    description_view_->SetBounds(x, y, description_width, text_height_);
+  } else {
+    separator_view_->SetSize(gfx::Size());
+  }
+}
+
+void OmniboxSuggestionView::LayoutTwoLine() {
+  int x = GetIconAlignmentOffset() + HorizontalPadding() +
+          LocationBarView::GetBorderThicknessDip();
+  int y = GetVerticalMargin(text_height_);
+  icon_view_->SetSize(icon_view_->CalculatePreferredSize());
+  icon_view_->SetPosition(gfx::Point(x, (height() - icon_view_->height()) / 2));
+  x += icon_view_->width() + HorizontalPadding();
+  if (!!description_view_->GetContentsBounds().width()) {
+    // A description is present.
+    content_view_->SetBounds(x, y, width() - x, text_height_);
+    y += text_height_;
+    int description_width = width() - x;
+    description_view_->SetBounds(
+        x, y, description_width,
+        description_view_->GetHeightForWidth(description_width) +
+            kVerticalPadding);
+  } else {
+    // For no description, shift down halfway to draw contents in middle.
+    y += text_height_ / 2;
+    content_view_->SetBounds(x, y, width() - x, text_height_);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -217,8 +361,10 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
 
-  AddChildView(suggestion_view_ = new OmniboxSuggestionView(this, font_list));
-  AddChildView(keyword_view_ = new OmniboxSeparatedLineView(this, font_list));
+  AddChildView(suggestion_view_ =
+                   new OmniboxSuggestionView(this, font_list, GetTextHeight()));
+  AddChildView(keyword_view_ =
+                   new OmniboxSuggestionView(this, font_list, GetTextHeight()));
 
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
   keyword_view_->icon()->SetImage(gfx::CreateVectorIcon(
@@ -275,8 +421,9 @@ void OmniboxResultView::Invalidate() {
     SetBackground(CreateBackgroundWithColor(color));
   }
 
-  suggestion_view_->OnHighlightUpdate(match_);
-  keyword_view_->OnHighlightUpdate(match_);
+  // Reapply the dim color to account for the highlight state.
+  suggestion_view_->separator()->Dim();
+  keyword_view_->separator()->Dim();
 
   // Recreate the icons in case the color needs to change.
   // Note: if this is an extension icon or favicon then this can be done in
@@ -297,13 +444,6 @@ void OmniboxResultView::Invalidate() {
     suggestion_view_->description()->SetText(match_.description,
                                              match_.description_class);
   }
-
-  const base::string16& separator =
-      l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
-  suggestion_view_->separator()->SetText(separator);
-  suggestion_view_->separator()->Dim();
-  keyword_view_->separator()->SetText(separator);
-  keyword_view_->separator()->Dim();
 
   AutocompleteMatch* keyword_match = match_.associated_keyword.get();
   keyword_view_->content()->SetVisible(keyword_match);
@@ -439,12 +579,10 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 gfx::Size OmniboxResultView::CalculatePreferredSize() const {
-  int height = GetTextHeight() + (2 * GetVerticalMargin());
-  if (match_.answer)
-    height += GetAnswerHeight();
-  else if (IsTwoLineLayout())
-    height += GetTextHeight();
-  return gfx::Size(0, height);
+  // The keyword_view_ is not added because keyword_view_ uses the same space as
+  // suggestion_view_. So the 'preferred' size is just the suggestion_view_
+  // size.
+  return suggestion_view_->CalculatePreferredSize();
 }
 
 void OmniboxResultView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -476,47 +614,6 @@ gfx::Image OmniboxResultView::GetIcon() const {
   return model_->GetMatchIcon(match_, GetColor(OmniboxPart::RESULTS_ICON));
 }
 
-int OmniboxResultView::GetAnswerHeight() const {
-  const int horizontal_padding =
-      GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-      GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
-  const gfx::Image icon = GetIcon();
-  int icon_width = icon.Width();
-  int answer_icon_size =
-      suggestion_view_->image()->visible()
-          ? suggestion_view_->image()->height() + kAnswerIconToTextPadding
-          : 0;
-  // TODO(dschuyler): The GetIconAlignmentOffset() is applied an extra time to
-  // match the math in Layout(). This seems like a (minor) mistake.
-  int deduction = (GetIconAlignmentOffset() * 2) + icon_width +
-                  (horizontal_padding * 3) + answer_icon_size;
-  int description_width = std::max(width() - deduction, 0);
-  return suggestion_view_->description()->GetHeightForWidth(description_width) +
-         kVerticalPadding;
-}
-
-int OmniboxResultView::GetVerticalMargin() const {
-  // Regardless of the text size, we ensure a minimum size for the content line
-  // here. This minimum is larger for hybrid mouse/touch devices to ensure an
-  // adequately sized touch target.
-  using Md = ui::MaterialDesignController;
-  const int kIconVerticalPad = base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kUIExperimentVerticalMargin,
-      OmniboxFieldTrial::kUIVerticalMarginParam,
-      Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
-  int min_height =
-      GetLayoutConstant(LOCATION_BAR_ICON_SIZE) + (kIconVerticalPad * 2);
-
-  // Make sure the minimum height of an omnibox result matches the height of the
-  // location bar view / non-results section of the omnibox popup in touch.
-  if (Md::IsTouchOptimizedUiEnabled()) {
-    min_height = std::max(
-        min_height, RoundedOmniboxResultsFrame::GetNonResultSectionHeight());
-  }
-
-  return std::max(kVerticalMargin, (min_height - GetTextHeight()) / 2);
-}
-
 void OmniboxResultView::SetHovered(bool hovered) {
   if (is_hovered_ != hovered) {
     is_hovered_ = hovered;
@@ -538,16 +635,12 @@ void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition) {
 
 void OmniboxResultView::Layout() {
   views::View::Layout();
-
-  const int horizontal_padding =
-      GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-      GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
   // NOTE: While animating the keyword match, both matches may be visible.
   int suggestion_width = width();
   AutocompleteMatch* keyword_match = match_.associated_keyword.get();
   if (keyword_match) {
     const int icon_width = keyword_view_->icon()->width() +
-                           GetIconAlignmentOffset() + (horizontal_padding * 2);
+                           GetIconAlignmentOffset() + (HorizontalPadding() * 2);
     const int max_kw_x = width() - icon_width;
     suggestion_width = animation_->CurrentValueBetween(max_kw_x, 0);
   }
@@ -563,139 +656,8 @@ void OmniboxResultView::Layout() {
     suggestion_tab_switch_button_->SetPosition(
         gfx::Point(suggestion_width, margin));
   }
-  keyword_view_->SetBounds(suggestion_width, 0, width() - suggestion_width,
-                           height());
+  keyword_view_->SetBounds(suggestion_width, 0, width(), height());
   suggestion_view_->SetBounds(0, 0, suggestion_width, height());
-
-  const int start_x = GetIconAlignmentOffset() + horizontal_padding;
-  int end_x = suggestion_view_->width();
-
-  int text_height = GetTextHeight();
-  int row_height = text_height;
-  if (IsTwoLineLayout())
-    row_height += match_.answer ? GetAnswerHeight() : GetTextHeight();
-  suggestion_view_->separator()->SetVisible(false);
-  keyword_view_->separator()->SetVisible(false);
-
-  // TODO(dschuyler): Refactor these if/else's into separate pieces of code to
-  // improve readability/maintainability.
-
-  if (keyword_match) {
-    int kw_x = start_x + LocationBarView::GetBorderThicknessDip();
-    keyword_view_->icon()->SetPosition(gfx::Point(
-        kw_x, (keyword_view_->height() - keyword_view_->icon()->height()) / 2));
-    kw_x += keyword_view_->icon()->width() + horizontal_padding;
-
-    int content_width =
-        keyword_view_->content()->CalculatePreferredSize().width();
-    int description_width =
-        keyword_view_->description()->CalculatePreferredSize().width();
-    OmniboxPopupModel::ComputeMatchMaxWidths(
-        content_width, keyword_view_->separator()->width(), description_width,
-        width(),
-        /*description_on_separate_line=*/false,
-        !AutocompleteMatch::IsSearchType(match_.type), &content_width,
-        &description_width);
-    int y = GetVerticalMargin();
-    keyword_view_->content()->SetBounds(kw_x, y, content_width, text_height);
-    if (description_width != 0) {
-      kw_x += keyword_view_->content()->width();
-      keyword_view_->separator()->SetVisible(true);
-      keyword_view_->separator()->SetBounds(
-          kw_x, y, keyword_view_->separator()->width(), text_height);
-      kw_x += keyword_view_->separator()->width();
-      keyword_view_->description()->SetBounds(kw_x, y, description_width,
-                                              text_height);
-    } else if (IsTwoLineLayout()) {
-      keyword_view_->content()->SetSize(
-          gfx::Size(content_width, text_height * 2));
-    }
-  }
-
-  const gfx::Image icon = GetIcon();
-  const int icon_y = GetVerticalMargin() + (row_height - icon.Height()) / 2;
-  suggestion_view_->icon()->SetBounds(
-      start_x, icon_y, std::min(end_x, icon.Width()), icon.Height());
-
-  // NOTE: While animating the keyword match, both matches may be visible.
-  int x = start_x;
-  int y = GetVerticalMargin();
-
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) &&
-      match_.answer) {
-    suggestion_view_->icon()->SetVisible(false);
-    int image_edge_length =
-        text_height + suggestion_view_->description()->GetLineHeight();
-    suggestion_view_->image()->SetImageSize(
-        gfx::Size(image_edge_length, image_edge_length));
-    suggestion_view_->image()->SetBounds(x, y, image_edge_length,
-                                         image_edge_length);
-    x += image_edge_length + horizontal_padding;
-    suggestion_view_->content()->SetBounds(x, y, end_x - x, text_height);
-    y += text_height;
-    suggestion_view_->description()->SetBounds(x, y, end_x - x, text_height);
-    return;
-  }
-
-  suggestion_view_->icon()->SetVisible(true);
-  x += icon.Width() + horizontal_padding;
-  if (match_.answer) {
-    suggestion_view_->content()->SetBounds(x, y, end_x - x, text_height);
-    y += text_height;
-    if (suggestion_view_->image()->visible()) {
-      // The description may be multi-line. Using the view height results in
-      // an image that's too large, so we use the line height here instead.
-      int image_edge_length = suggestion_view_->description()->GetLineHeight();
-      suggestion_view_->image()->SetBounds(
-          start_x + suggestion_view_->icon()->width() + horizontal_padding,
-          y + (kVerticalPadding / 2), image_edge_length, image_edge_length);
-      suggestion_view_->image()->SetImageSize(
-          gfx::Size(image_edge_length, image_edge_length));
-      x += suggestion_view_->image()->width() + kAnswerIconToTextPadding;
-    }
-    int description_width = end_x - x;
-    suggestion_view_->description()->SetBounds(
-        x, y, description_width,
-        suggestion_view_->description()->GetHeightForWidth(description_width) +
-            kVerticalPadding);
-  } else if (IsTwoLineLayout()) {
-    if (!!suggestion_view_->description()->GetContentsBounds().width()) {
-      // A description is present.
-      suggestion_view_->content()->SetBounds(x, y, end_x - x, GetTextHeight());
-      y += GetTextHeight();
-      int description_width = end_x - x;
-      suggestion_view_->description()->SetBounds(
-          x, y, description_width,
-          suggestion_view_->description()->GetHeightForWidth(
-              description_width) +
-              kVerticalPadding);
-    } else {
-      // For no description, shift down halfway to draw contents in middle.
-      y += GetTextHeight() / 2;
-      suggestion_view_->content()->SetBounds(x, y, end_x - x, GetTextHeight());
-    }
-  } else {
-    int content_width =
-        suggestion_view_->content()->CalculatePreferredSize().width();
-    int description_width =
-        suggestion_view_->description()->CalculatePreferredSize().width();
-    OmniboxPopupModel::ComputeMatchMaxWidths(
-        content_width, suggestion_view_->separator()->width(),
-        description_width, end_x - x,
-        /*description_on_separate_line=*/false,
-        !AutocompleteMatch::IsSearchType(match_.type), &content_width,
-        &description_width);
-    suggestion_view_->content()->SetBounds(x, y, content_width, text_height);
-    x += content_width;
-    if (description_width) {
-      suggestion_view_->separator()->SetVisible(true);
-      suggestion_view_->separator()->SetBounds(
-          x, y, suggestion_view_->separator()->width(), text_height);
-      x += suggestion_view_->separator()->width();
-    }
-    suggestion_view_->description()->SetBounds(x, y, description_width,
-                                               text_height);
-  }
 }
 
 const char* OmniboxResultView::GetClassName() const {
