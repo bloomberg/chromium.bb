@@ -29,9 +29,6 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb);
 int av1_check_trailing_bits(struct AV1Decoder *pbi,
                             struct aom_read_bit_buffer *rb);
 
-// This function is now obsolete
-void av1_decode_frame(struct AV1Decoder *pbi, const uint8_t *data,
-                      const uint8_t *data_end, const uint8_t **p_data_end);
 int av1_decode_frame_headers_and_setup(struct AV1Decoder *pbi,
                                        struct aom_read_bit_buffer *rb,
                                        const uint8_t *data,
