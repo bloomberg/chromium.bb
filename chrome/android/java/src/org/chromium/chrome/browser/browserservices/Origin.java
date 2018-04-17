@@ -7,8 +7,15 @@ package org.chromium.chrome.browser.browserservices;
 import android.net.Uri;
 
 /**
- * A class to canonically represent a web origin in Java. It intends to mirror the behaviour of
- * GURLUtils.getOrigin, but needs to work without native being loaded.
+ * A class to canonically represent a web origin in Java. In comparison to
+ * {@link org.chromium.net.GURLUtils#getOrigin} it can be used before native is loaded and lets us
+ * ensure conversion to an origin has been done with the type system.
+ *
+ * {@link #toString()} does <b>not</b> match {@link org.chromium.net.GURLUtils#getOrigin}. The
+ * latter will return a String with a trailing "/". Not having a trailing slash matches RFC
+ * behaviour (https://tools.ietf.org/html/rfc6454), it seems that
+ * {@link org.chromium.net.GURLUtils#getOrigin} adds it as a bug, but as its result is saved to
+ * user's Android Preferences, it is not trivial to change.
  */
 public class Origin {
     private static final int HTTP_DEFAULT_PORT = 80;
@@ -46,7 +53,7 @@ public class Origin {
                     .buildUpon()
                     .opaquePart("")
                     .fragment("")
-                    .path("/")
+                    .path("")
                     .encodedAuthority(authority)
                     .clearQuery()
                     .build();
@@ -56,6 +63,11 @@ public class Origin {
 
         mOrigin = origin;
     }
+
+    /**
+     * Returns whether the Origin is valid.
+     */
+    public boolean isValid() { return !mOrigin.equals(Uri.EMPTY); }
 
     /**
      * Returns a Uri representing the Origin.

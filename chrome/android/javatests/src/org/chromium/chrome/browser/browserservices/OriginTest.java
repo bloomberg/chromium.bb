@@ -64,18 +64,15 @@ public class OriginTest {
         Assert.assertEquals(host, origin.uri().getHost());
         Assert.assertEquals(port, origin.uri().getPort());
 
-        if (port == -1) {
-            Assert.assertEquals(origin.toString(), scheme + "://" + host + "/");
-        } else {
-            Assert.assertEquals(origin.toString(), scheme + "://" + host + ":" + port + "/");
-        }
+        Assert.assertEquals(origin.toString(),
+                scheme + "://" + host + (port == -1 ? "" : ":" + port));
     }
 
     @Test
     @SmallTest
     public void testConstruction() {
         Origin origin = new Origin("http://www.example.com/path/to/page.html");
-        Assert.assertEquals("http://www.example.com/", origin.toString());
+        Assert.assertEquals("http://www.example.com", origin.toString());
     }
 
     @Test
@@ -95,7 +92,7 @@ public class OriginTest {
     @SmallTest
     public void testToUri() {
         Origin origin = new Origin(Uri.parse("http://www.example.com/page.html"));
-        Uri uri = Uri.parse("http://www.example.com/");
+        Uri uri = Uri.parse("http://www.example.com");
         Assert.assertEquals(uri, origin.uri());
     }
 
@@ -103,6 +100,14 @@ public class OriginTest {
     @SmallTest
     public void testToString() {
         Origin origin = new Origin("http://www.example.com/page.html");
-        Assert.assertEquals("http://www.example.com/", origin.toString());
+        Assert.assertEquals("http://www.example.com", origin.toString());
+    }
+
+    @Test
+    @SmallTest
+    public void testValidity() {
+        Assert.assertTrue(new Origin("http://www.example.com").isValid());
+        Assert.assertFalse(new Origin("null").isValid());
+        Assert.assertFalse(new Origin("www.example.com").isValid());
     }
 }
