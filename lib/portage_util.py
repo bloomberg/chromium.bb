@@ -1824,8 +1824,13 @@ def GetPackageDependencies(board, package):
   packages = []
   for line in emerge_output:
     columns = line.split()
-    package = columns[1] + '-' + columns[2]
-    packages.append(package)
+    try:
+      package = columns[1] + '-' + columns[2]
+      packages.append(package)
+    except IndexError:
+      logging.error('Wrong format of output: \n%r', emerge_output)
+      raise
+
   return packages
 
 
