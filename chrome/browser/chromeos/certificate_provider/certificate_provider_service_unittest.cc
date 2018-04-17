@@ -480,8 +480,8 @@ TEST_F(CertificateProviderServiceTest, SignRequest) {
   const int sign_request_id = test_delegate_->last_sign_request_id_;
   EXPECT_EQ(TestDelegate::RequestType::NONE,
             test_delegate_->expected_request_type_);
-  EXPECT_TRUE(
-      cert_info1_.certificate->Equals(test_delegate_->last_certificate_.get()));
+  EXPECT_TRUE(cert_info1_.certificate->EqualsExcludingChain(
+      test_delegate_->last_certificate_.get()));
 
   // No signature received until the extension replied to the service.
   EXPECT_TRUE(received_signature.empty());

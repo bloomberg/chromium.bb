@@ -181,7 +181,7 @@ class NET_EXPORT X509Certificate
 
   // Returns true if this object and |other| represent the same certificate.
   // Does not consider any associated intermediates.
-  bool Equals(const X509Certificate* other) const;
+  bool EqualsExcludingChain(const X509Certificate* other) const;
 
   // Returns true if this object and |other| represent the same certificate
   // and intermediates.

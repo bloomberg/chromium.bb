@@ -2347,8 +2347,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   EXPECT_TRUE(entry->GetSSL().initialized);
   EXPECT_FALSE(!!(entry->GetSSL().content_status &
                   SSLStatus::DISPLAYED_INSECURE_CONTENT));
-  EXPECT_TRUE(
-      https_server.GetCertificate()->Equals(entry->GetSSL().certificate.get()));
+  EXPECT_TRUE(https_server.GetCertificate()->EqualsExcludingChain(
+      entry->GetSSL().certificate.get()));
   EXPECT_FALSE(net::IsCertStatusError(entry->GetSSL().cert_status));
 
   shell()->Close();

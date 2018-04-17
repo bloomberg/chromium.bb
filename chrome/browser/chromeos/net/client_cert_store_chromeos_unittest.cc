@@ -208,7 +208,8 @@ TEST_F(ClientCertStoreChromeOSTest, Filter) {
     run_loop.Run();
 
     ASSERT_EQ(1u, selected_identities.size());
-    EXPECT_TRUE(cert_1->Equals(selected_identities[0]->certificate()));
+    EXPECT_TRUE(
+        cert_1->EqualsExcludingChain(selected_identities[0]->certificate()));
   }
 
   {
@@ -222,7 +223,8 @@ TEST_F(ClientCertStoreChromeOSTest, Filter) {
     run_loop.Run();
 
     ASSERT_EQ(1u, selected_identities.size());
-    EXPECT_TRUE(cert_2->Equals(selected_identities[0]->certificate()));
+    EXPECT_TRUE(
+        cert_2->EqualsExcludingChain(selected_identities[0]->certificate()));
   }
 }
 
@@ -262,7 +264,8 @@ TEST_F(ClientCertStoreChromeOSTest, CertRequestMatching) {
   run_loop.Run();
 
   ASSERT_EQ(1u, selected_identities.size());
-  EXPECT_TRUE(cert_1->Equals(selected_identities[0]->certificate()));
+  EXPECT_TRUE(
+      cert_1->EqualsExcludingChain(selected_identities[0]->certificate()));
 }
 
 }  // namespace chromeos

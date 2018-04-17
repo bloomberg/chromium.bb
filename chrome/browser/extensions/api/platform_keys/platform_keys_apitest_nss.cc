@@ -204,7 +204,7 @@ class TestSelectDelegate
     scoped_refptr<net::X509Certificate> selection;
     if (certs_to_select_.back()) {
       for (scoped_refptr<net::X509Certificate> cert : certs) {
-        if (cert->Equals(certs_to_select_.back().get())) {
+        if (cert->EqualsExcludingChain(certs_to_select_.back().get())) {
           selection = cert;
           break;
         }

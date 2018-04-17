@@ -739,9 +739,9 @@ TEST(X509CertificateTest, Equals) {
   ASSERT_EQ(4u, certs.size());
 
   // Comparing X509Certificates with no intermediates.
-  EXPECT_TRUE(certs[0]->Equals(certs[0].get()));
-  EXPECT_FALSE(certs[1]->Equals(certs[0].get()));
-  EXPECT_FALSE(certs[0]->Equals(certs[1].get()));
+  EXPECT_TRUE(certs[0]->EqualsExcludingChain(certs[0].get()));
+  EXPECT_FALSE(certs[1]->EqualsExcludingChain(certs[0].get()));
+  EXPECT_FALSE(certs[0]->EqualsExcludingChain(certs[1].get()));
   EXPECT_TRUE(certs[0]->EqualsIncludingChain(certs[0].get()));
   EXPECT_FALSE(certs[1]->EqualsIncludingChain(certs[0].get()));
   EXPECT_FALSE(certs[0]->EqualsIncludingChain(certs[1].get()));
@@ -756,8 +756,8 @@ TEST(X509CertificateTest, Equals) {
 
   // Comparing X509Certificate with one intermediate to X509Certificate with no
   // intermediates.
-  EXPECT_TRUE(certs[0]->Equals(cert0_with_intermediate.get()));
-  EXPECT_TRUE(cert0_with_intermediate->Equals(certs[0].get()));
+  EXPECT_TRUE(certs[0]->EqualsExcludingChain(cert0_with_intermediate.get()));
+  EXPECT_TRUE(cert0_with_intermediate->EqualsExcludingChain(certs[0].get()));
   EXPECT_FALSE(certs[0]->EqualsIncludingChain(cert0_with_intermediate.get()));
   EXPECT_FALSE(cert0_with_intermediate->EqualsIncludingChain(certs[0].get()));
 
@@ -771,8 +771,10 @@ TEST(X509CertificateTest, Equals) {
 
   // Comparing X509Certificate with one intermediate to X509Certificate with
   // one different intermediate.
-  EXPECT_TRUE(cert0_with_intermediate2->Equals(cert0_with_intermediate.get()));
-  EXPECT_TRUE(cert0_with_intermediate->Equals(cert0_with_intermediate2.get()));
+  EXPECT_TRUE(cert0_with_intermediate2->EqualsExcludingChain(
+      cert0_with_intermediate.get()));
+  EXPECT_TRUE(cert0_with_intermediate->EqualsExcludingChain(
+      cert0_with_intermediate2.get()));
   EXPECT_FALSE(cert0_with_intermediate2->EqualsIncludingChain(
       cert0_with_intermediate.get()));
   EXPECT_FALSE(cert0_with_intermediate->EqualsIncludingChain(
@@ -802,10 +804,10 @@ TEST(X509CertificateTest, Equals) {
 
   // Comparing X509Certificate with two intermediates to X509Certificate with
   // same two intermediates but in reverse order
-  EXPECT_TRUE(
-      cert0_with_intermediates21->Equals(cert0_with_intermediates12.get()));
-  EXPECT_TRUE(
-      cert0_with_intermediates12->Equals(cert0_with_intermediates21.get()));
+  EXPECT_TRUE(cert0_with_intermediates21->EqualsExcludingChain(
+      cert0_with_intermediates12.get()));
+  EXPECT_TRUE(cert0_with_intermediates12->EqualsExcludingChain(
+      cert0_with_intermediates21.get()));
   EXPECT_FALSE(cert0_with_intermediates21->EqualsIncludingChain(
       cert0_with_intermediates12.get()));
   EXPECT_FALSE(cert0_with_intermediates12->EqualsIncludingChain(
@@ -824,10 +826,10 @@ TEST(X509CertificateTest, Equals) {
 
   // Comparing X509Certificate with two intermediates to X509Certificate with
   // same two intermediates in same order.
-  EXPECT_TRUE(
-      cert0_with_intermediates12->Equals(cert0_with_intermediates12b.get()));
-  EXPECT_TRUE(
-      cert0_with_intermediates12b->Equals(cert0_with_intermediates12.get()));
+  EXPECT_TRUE(cert0_with_intermediates12->EqualsExcludingChain(
+      cert0_with_intermediates12b.get()));
+  EXPECT_TRUE(cert0_with_intermediates12b->EqualsExcludingChain(
+      cert0_with_intermediates12.get()));
   EXPECT_TRUE(cert0_with_intermediates12->EqualsIncludingChain(
       cert0_with_intermediates12b.get()));
   EXPECT_TRUE(cert0_with_intermediates12b->EqualsIncludingChain(

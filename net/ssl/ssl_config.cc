@@ -43,7 +43,7 @@ SSLConfig::~SSLConfig() = default;
 bool SSLConfig::IsAllowedBadCert(X509Certificate* cert,
                                  CertStatus* cert_status) const {
   for (const auto& allowed_bad_cert : allowed_bad_certs) {
-    if (cert->Equals(allowed_bad_cert.cert.get())) {
+    if (cert->EqualsExcludingChain(allowed_bad_cert.cert.get())) {
       if (cert_status)
         *cert_status = allowed_bad_cert.cert_status;
       return true;

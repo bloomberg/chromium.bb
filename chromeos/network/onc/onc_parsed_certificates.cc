@@ -105,7 +105,7 @@ bool OncParsedCertificates::ServerOrAuthorityCertificate::operator==(
   if (guid() != other.guid())
     return false;
 
-  if (!certificate()->Equals(other.certificate().get()))
+  if (!certificate()->EqualsExcludingChain(other.certificate().get()))
     return false;
 
   if (web_trust_requested() != other.web_trust_requested())

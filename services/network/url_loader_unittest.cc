@@ -551,7 +551,8 @@ TEST_F(URLLoaderTest, BasicSSL) {
   ASSERT_TRUE(!!ssl_info());
   ASSERT_TRUE(!!ssl_info()->cert);
 
-  ASSERT_TRUE(https_server.GetCertificate()->Equals(ssl_info()->cert.get()));
+  ASSERT_TRUE(https_server.GetCertificate()->EqualsExcludingChain(
+      ssl_info()->cert.get()));
 }
 
 TEST_F(URLLoaderTest, SSLSentOnlyWhenRequested) {

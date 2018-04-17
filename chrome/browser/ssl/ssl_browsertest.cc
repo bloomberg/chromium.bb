@@ -329,10 +329,14 @@ net::SpawnedTestServer::SSLOptions GetOCSPSSLOptions(
 // statuses match and false otherwise.
 bool ComparePreAndPostInterstitialSSLStatuses(const content::SSLStatus& one,
                                               const content::SSLStatus& two) {
+  // TODO(mattm): It feels like this should use
+  // certificate->EqualsIncludingChain, but that fails on some platforms. Find
+  // out why and document or fix.
   return one.initialized == two.initialized &&
          !!one.certificate == !!two.certificate &&
-         (one.certificate ? one.certificate->Equals(two.certificate.get())
-                          : true) &&
+         (one.certificate
+              ? one.certificate->EqualsExcludingChain(two.certificate.get())
+              : true) &&
          one.cert_status == two.cert_status &&
          one.security_bits == two.security_bits &&
          one.key_exchange_group == two.key_exchange_group &&

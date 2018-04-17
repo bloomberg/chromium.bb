@@ -183,7 +183,8 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertError) {
   ASSERT_EQ(net::ERR_ABORTED, delegate.net_error());
   net::SSLInfo ssl_info = delegate.ssl_info();
   EXPECT_TRUE(ssl_info.is_valid());
-  EXPECT_TRUE(https_server.GetCertificate()->Equals(ssl_info.cert.get()));
+  EXPECT_TRUE(
+      https_server.GetCertificate()->EqualsExcludingChain(ssl_info.cert.get()));
   EXPECT_EQ(net::ERR_CERT_COMMON_NAME_INVALID,
             net::MapCertStatusToNetError(ssl_info.cert_status));
   EXPECT_FALSE(ssl_info.is_fatal_cert_error);
@@ -215,7 +216,8 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
   ASSERT_EQ(net::ERR_ABORTED, delegate.net_error());
   net::SSLInfo ssl_info = delegate.ssl_info();
   EXPECT_TRUE(ssl_info.is_valid());
-  EXPECT_TRUE(https_server.GetCertificate()->Equals(ssl_info.cert.get()));
+  EXPECT_TRUE(
+      https_server.GetCertificate()->EqualsExcludingChain(ssl_info.cert.get()));
   EXPECT_EQ(net::ERR_CERT_COMMON_NAME_INVALID,
             net::MapCertStatusToNetError(ssl_info.cert_status));
   EXPECT_TRUE(ssl_info.is_fatal_cert_error);

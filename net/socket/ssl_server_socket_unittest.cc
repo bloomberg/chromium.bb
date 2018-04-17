@@ -681,7 +681,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCert) {
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, ssl_info.cert_status);
   server_socket_->GetSSLInfo(&ssl_info);
   ASSERT_TRUE(ssl_info.cert.get());
-  EXPECT_TRUE(client_cert->Equals(ssl_info.cert.get()));
+  EXPECT_TRUE(client_cert->EqualsExcludingChain(ssl_info.cert.get()));
 }
 
 // This test executes Connect() on SSLClientSocket and Handshake() twice on
@@ -716,7 +716,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertCached) {
   SSLInfo ssl_server_info;
   ASSERT_TRUE(server_socket_->GetSSLInfo(&ssl_server_info));
   ASSERT_TRUE(ssl_server_info.cert.get());
-  EXPECT_TRUE(client_cert->Equals(ssl_server_info.cert.get()));
+  EXPECT_TRUE(client_cert->EqualsExcludingChain(ssl_server_info.cert.get()));
   EXPECT_EQ(ssl_server_info.handshake_type, SSLInfo::HANDSHAKE_FULL);
   server_socket_->Disconnect();
   client_socket_->Disconnect();
@@ -742,7 +742,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertCached) {
   SSLInfo ssl_server_info2;
   ASSERT_TRUE(server_socket_->GetSSLInfo(&ssl_server_info2));
   ASSERT_TRUE(ssl_server_info2.cert.get());
-  EXPECT_TRUE(client_cert->Equals(ssl_server_info2.cert.get()));
+  EXPECT_TRUE(client_cert->EqualsExcludingChain(ssl_server_info2.cert.get()));
   EXPECT_EQ(ssl_server_info2.handshake_type, SSLInfo::HANDSHAKE_RESUME);
 }
 

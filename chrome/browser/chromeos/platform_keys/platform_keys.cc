@@ -39,7 +39,7 @@ void IntersectOnWorkerThread(const net::CertificateList& certs1,
     if (it == fingerprints2.end())
       continue;
     const auto& cert2 = it->second;
-    DCHECK(cert1->Equals(cert2.get()));
+    DCHECK(cert1->EqualsExcludingChain(cert2.get()));
     intersection->push_back(cert1);
   }
 }
