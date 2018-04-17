@@ -73,9 +73,9 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -662,7 +662,7 @@ void DocumentLoader::ResponseReceived(
   }
 
   if (frame_->Owner() && response_.IsHTTP() &&
-      !FetchUtils::IsOkStatus(response_.HttpStatusCode()))
+      !CORS::IsOkStatus(response_.HttpStatusCode()))
     frame_->Owner()->RenderFallbackContent();
 }
 

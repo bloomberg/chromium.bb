@@ -1045,7 +1045,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   upload_events_allowed_ =
       same_origin_request_ || upload_events ||
       !CORS::IsCORSSafelistedMethod(method_) ||
-      !FetchUtils::ContainsOnlyCORSSafelistedHeaders(request_headers_);
+      !CORS::ContainsOnlyCORSSafelistedHeaders(request_headers_);
 
   ResourceRequest request(url_);
   request.SetHTTPMethod(method_);
@@ -1408,7 +1408,7 @@ void XMLHttpRequest::setRequestHeader(const AtomicString& name,
 
   // "5. Terminate these steps if |name| is a forbidden header name."
   // No script (privileged or not) can set unsafe headers.
-  if (FetchUtils::IsForbiddenHeaderName(name)) {
+  if (CORS::IsForbiddenHeaderName(name)) {
     LogConsoleError(GetExecutionContext(),
                     "Refused to set unsafe header \"" + name + "\"");
     return;
@@ -1719,7 +1719,7 @@ void XMLHttpRequest::EndLoading() {
     return;
 
   if (GetDocument() && GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->GetPage() && FetchUtils::IsOkStatus(status()))
+      GetDocument()->GetFrame()->GetPage() && CORS::IsOkStatus(status()))
     GetDocument()->GetFrame()->GetPage()->GetChromeClient().AjaxSucceeded(
         GetDocument()->GetFrame());
 }

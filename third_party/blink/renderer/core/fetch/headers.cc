@@ -95,7 +95,7 @@ void Headers::append(const String& name,
   }
   // "4. Otherwise, if guard is |request| and |name| is a forbidden header
   //     name, return."
-  if (guard_ == kRequestGuard && FetchUtils::IsForbiddenHeaderName(name))
+  if (guard_ == kRequestGuard && CORS::IsForbiddenHeaderName(name))
     return;
   // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
   //     CORS-safelisted header, return."
@@ -127,7 +127,7 @@ void Headers::remove(const String& name, ExceptionState& exception_state) {
   }
   // "3. Otherwise, if guard is |request| and |name| is a forbidden header
   //     name, return."
-  if (guard_ == kRequestGuard && FetchUtils::IsForbiddenHeaderName(name))
+  if (guard_ == kRequestGuard && CORS::IsForbiddenHeaderName(name))
     return;
   // "4. Otherwise, if guard is |request-no-CORS| and |name|/`invalid` is not
   //     a CORS-safelisted header, return."
@@ -195,7 +195,7 @@ void Headers::set(const String& name,
   }
   // "4. Otherwise, if guard is |request| and |name| is a forbidden header
   //     name, return."
-  if (guard_ == kRequestGuard && FetchUtils::IsForbiddenHeaderName(name))
+  if (guard_ == kRequestGuard && CORS::IsForbiddenHeaderName(name))
     return;
   // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
   //     CORS-safelisted header, return."

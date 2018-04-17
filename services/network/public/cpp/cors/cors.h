@@ -92,6 +92,11 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value);
 // See https://fetch.spec.whatwg.org/#forbidden-header-name.
 COMPONENT_EXPORT(NETWORK_CPP) bool IsForbiddenHeader(const std::string& name);
 
+// https://fetch.spec.whatwg.org/#ok-status aka a successful 2xx status code,
+// https://tools.ietf.org/html/rfc7231#section-6.3 . We opt to use the Fetch
+// term in naming the predicate.
+COMPONENT_EXPORT(NETWORK_CPP) bool IsOkStatus(int status);
+
 }  // namespace cors
 
 }  // namespace network

@@ -581,7 +581,7 @@ void FetchManager::Loader::LoadSucceeded() {
 
   if (GetDocument() && GetDocument()->GetFrame() &&
       GetDocument()->GetFrame()->GetPage() &&
-      FetchUtils::IsOkStatus(response_http_status_code_)) {
+      CORS::IsOkStatus(response_http_status_code_)) {
     GetDocument()->GetFrame()->GetPage()->GetChromeClient().AjaxSucceeded(
         GetDocument()->GetFrame());
   }
@@ -766,7 +766,7 @@ void FetchManager::Loader::PerformHTTPFetch() {
     // Since |fetch_request_data_|'s headers are populated with either of the
     // "request" guard or "request-no-cors" guard, we can assume that none of
     // the headers have a name listed in the forbidden header names.
-    DCHECK(!FetchUtils::IsForbiddenHeaderName(header.first));
+    DCHECK(!CORS::IsForbiddenHeaderName(header.first));
 
     request.AddHTTPHeaderField(AtomicString(header.first),
                                AtomicString(header.second));
@@ -806,7 +806,7 @@ void FetchManager::Loader::PerformHTTPFetch() {
 
   if (fetch_request_data_->Keepalive()) {
     if (!CORS::IsCORSSafelistedMethod(request.HttpMethod()) ||
-        !WebCORS::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+        !CORS::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
             request.HttpHeaderFields())) {
       PerformNetworkError(
           "Preflight request for request with keepalive "
