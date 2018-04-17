@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -75,6 +76,12 @@ ToolbarActionView::ToolbarActionView(
 
   if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
+
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    const int radii =
+        ChromeLayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_MEDIUM);
+    set_ink_drop_corner_radii(radii, radii);
+  }
 
   UpdateState();
 }
