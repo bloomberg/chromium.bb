@@ -65,9 +65,6 @@ class MockAutocompleteProviderClient
       KeywordProvider* keyword_provider) override {
     return nullptr;
   }
-  physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override {
-    return nullptr;
-  }
 
   MOCK_CONST_METHOD0(GetAcceptLanguages, std::string());
   MOCK_METHOD0(GetEmbedderRepresentationOfAboutScheme, std::string());

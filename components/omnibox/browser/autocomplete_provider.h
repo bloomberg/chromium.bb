@@ -40,7 +40,6 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // ZERO SUGGEST (empty) input type:
 // --------------------------------------------------------------------|-----
 // Clipboard URL                                                       |  800
-// Physical Web (zero suggest)                                         |  700--
 // Zero Suggest (most visited, Android only)                           |  600--
 // Zero Suggest (default, may be overridden by server)                 |  100
 //
@@ -58,7 +57,6 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // BookmarkProvider (prefix match in bookmark title or URL)            |  900+-
 // Built-in                                                            |  860++
 // Search Primary Provider (navigational suggestion)                   |  800++
-// Physical Web (prefix match in page title or URL)                    |  700--
 // Search Primary Provider (suggestion)                                |  600++
 // Keyword (inexact match)                                             |  450
 // Search Secondary Provider (what you typed)                          |  250
@@ -96,7 +94,6 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // HistoryURL (inexact match)                                          |  900++
 // BookmarkProvider (prefix match in bookmark title or URL)            |  900+-
 // Search Primary Provider (navigational suggestion)                   |  800++
-// Physical Web (prefix match in page title or URL)                    |  700--
 // Search Primary Provider (suggestion)                                |  600++
 // Keyword (inexact match)                                             |  450
 // Search Secondary Provider (what you typed)                          |  250
@@ -142,7 +139,6 @@ class AutocompleteProvider
     TYPE_SHORTCUTS        = 1 << 6,
     TYPE_ZERO_SUGGEST     = 1 << 7,
     TYPE_CLIPBOARD_URL    = 1 << 8,
-    TYPE_PHYSICAL_WEB     = 1 << 9,
   };
 
   explicit AutocompleteProvider(Type type);
