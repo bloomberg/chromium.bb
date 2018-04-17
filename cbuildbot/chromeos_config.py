@@ -596,6 +596,7 @@ _x86_internal_release_boards = frozenset([
     'nautilus',
     'newbie',
     'ninja',
+    'nocturne',
     'novato',
     'novato-arc64',
     'octopus',
@@ -2567,6 +2568,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'caroline-arcnext',
       'eve-campfire', # contact:yueherngl@
       'nami',
+      'nocturne', # contact:moragues@
       'octopus',
       'tael',
       'atlas',
