@@ -28,18 +28,45 @@ DevToolsStreamBlob::ReadRequest::ReadRequest(off_t position,
 DevToolsStreamBlob::ReadRequest::~ReadRequest() = default;
 
 DevToolsStreamBlob::DevToolsStreamBlob()
-    : DevToolsIOContext::ROStream(
+    : DevToolsIOContext::Stream(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
       last_read_pos_(0),
       failed_(false),
       is_binary_(false) {}
 
-DevToolsStreamBlob::~DevToolsStreamBlob() = default;
+DevToolsStreamBlob::~DevToolsStreamBlob() {
+  if (blob_reader_)
+    blob_reader_->Kill();
+}
+
+namespace {
+void UnregisterIfOpenFailed(base::WeakPtr<DevToolsIOContext> context,
+                            const std::string& handle,
+                            bool success) {
+  if (!success && context)
+    context->Close(handle);
+}
+}  // namespace
+
+// static
+scoped_refptr<DevToolsIOContext::Stream> DevToolsStreamBlob::Create(
+    DevToolsIOContext* io_context,
+    ChromeBlobStorageContext* blob_context,
+    StoragePartition* partition,
+    const std::string& handle,
+    const std::string& uuid) {
+  scoped_refptr<DevToolsStreamBlob> result = new DevToolsStreamBlob();
+  result->Register(io_context, handle);
+  result->Open(
+      blob_context, partition, uuid,
+      base::BindOnce(&UnregisterIfOpenFailed, io_context->AsWeakPtr(), handle));
+  return std::move(result);
+}
 
 void DevToolsStreamBlob::ReadRequest::Fail() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(std::move(callback), nullptr, false,
-                                         ROStream::StatusFailure));
+                                         Stream::StatusFailure));
 }
 
 // static
@@ -72,12 +99,6 @@ void DevToolsStreamBlob::Read(off_t position,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DevToolsStreamBlob::ReadOnIO, this, std::move(request)));
-}
-
-void DevToolsStreamBlob::Close(bool invoke_pending_callbacks) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&DevToolsStreamBlob::CloseOnIO, this,
-                                         invoke_pending_callbacks));
 }
 
 void DevToolsStreamBlob::OpenOnIO(
@@ -136,22 +157,6 @@ void DevToolsStreamBlob::FailOnIO(OpenCallback callback) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(std::move(callback), false));
   FailOnIO();
-}
-
-void DevToolsStreamBlob::CloseOnIO(bool invoke_pending_callbacks) {
-  if (blob_reader_) {
-    blob_reader_->Kill();
-    blob_reader_.reset();
-  }
-  if (blob_handle_)
-    blob_handle_.reset();
-  if (invoke_pending_callbacks) {
-    FailOnIO();
-    return;
-  }
-  failed_ = true;
-  pending_reads_ = base::queue<std::unique_ptr<ReadRequest>>();
-  open_callback_ = OpenCallback();
 }
 
 void DevToolsStreamBlob::StartReadRequest() {

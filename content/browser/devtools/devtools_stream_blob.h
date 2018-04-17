@@ -24,13 +24,21 @@ class BlobReader;
 }  // namespace storage
 
 namespace content {
-
 class ChromeBlobStorageContext;
+class StoragePartition;
 
-class DevToolsStreamBlob : public DevToolsIOContext::ROStream {
+class DevToolsStreamBlob : public DevToolsIOContext::Stream {
  public:
   using OpenCallback = base::OnceCallback<void(bool)>;
 
+  static scoped_refptr<DevToolsIOContext::Stream> Create(
+      DevToolsIOContext* io_context,
+      ChromeBlobStorageContext* blob_context,
+      StoragePartition* partition,
+      const std::string& handle,
+      const std::string& uuid);
+
+ private:
   DevToolsStreamBlob();
 
   void Open(scoped_refptr<ChromeBlobStorageContext> context,
@@ -39,9 +47,7 @@ class DevToolsStreamBlob : public DevToolsIOContext::ROStream {
             OpenCallback callback);
 
   void Read(off_t position, size_t max_size, ReadCallback callback) override;
-  void Close(bool invoke_pending_callbacks) override;
 
- private:
   struct ReadRequest {
     off_t position;
     size_t max_size;
@@ -83,8 +89,6 @@ class DevToolsStreamBlob : public DevToolsIOContext::ROStream {
   off_t last_read_pos_;
   bool failed_;
   bool is_binary_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsStreamBlob);
 };
 
 }  // namespace content
