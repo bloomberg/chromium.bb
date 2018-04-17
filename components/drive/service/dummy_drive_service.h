@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "components/drive/service/drive_service_interface.h"
@@ -68,6 +69,9 @@ class DummyDriveService : public DriveServiceInterface {
       const google_apis::GetShareUrlCallback& callback) override;
   google_apis::CancelCallback GetAboutResource(
       const google_apis::AboutResourceCallback& callback) override;
+  google_apis::CancelCallback GetStartPageToken(
+      const std::string& team_drive_id,
+      const google_apis::StartPageTokenCallback& callback) override;
   google_apis::CancelCallback GetAppList(
       const google_apis::AppListCallback& callback) override;
   google_apis::CancelCallback DeleteResource(

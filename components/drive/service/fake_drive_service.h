@@ -7,7 +7,11 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+#include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -126,6 +130,12 @@ class FakeDriveService : public DriveServiceInterface {
     return blocked_file_list_load_count_;
   }
 
+  // Returns the number of times the start page token is successfully loaded
+  // by GetStartPageToken().
+  int start_page_token_load_count() const {
+    return start_page_token_load_count_;
+  }
+
   // Returns the file path whose request is cancelled just before this method
   // invocation.
   const base::FilePath& last_cancelled_file() const {
@@ -188,6 +198,9 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::GetShareUrlCallback& callback) override;
   google_apis::CancelCallback GetAboutResource(
       const google_apis::AboutResourceCallback& callback) override;
+  google_apis::CancelCallback GetStartPageToken(
+      const std::string& team_drive_id,
+      const google_apis::StartPageTokenCallback& callback) override;
   google_apis::CancelCallback GetAppList(
       const google_apis::AppListCallback& callback) override;
   google_apis::CancelCallback DeleteResource(
@@ -417,6 +430,7 @@ class FakeDriveService : public DriveServiceInterface {
   int about_resource_load_count_;
   int app_list_load_count_;
   int blocked_file_list_load_count_;
+  int start_page_token_load_count_;
   bool offline_;
   bool never_return_all_file_list_;
   base::FilePath last_cancelled_file_;

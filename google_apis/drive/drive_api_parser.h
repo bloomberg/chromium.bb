@@ -970,6 +970,36 @@ class ChangeList {
   DISALLOW_COPY_AND_ASSIGN(ChangeList);
 };
 
+// StartPageToken represets the starting pageToken for listing changes in the
+// users corpus or in a team drive.
+// https://developers.google.com/drive/v2/reference/changes/getStartPageToken
+class StartPageToken {
+ public:
+  StartPageToken();
+  ~StartPageToken();
+
+  // Registers the mapping between JSON field names and the members in this
+  // class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<StartPageToken>* converter);
+
+  // Creates StartPageToken from parsed JSON
+  static std::unique_ptr<StartPageToken> CreateFrom(const base::Value& value);
+
+  const std::string& start_page_token() const { return start_page_token_; }
+
+  void set_start_page_token(const std::string& token) {
+    start_page_token_ = token;
+  }
+
+ private:
+  // Pareses and initializes data members from content of |value|.
+  // Returns false if parsing fails.
+  bool Parse(const base::Value& value);
+
+  std::string start_page_token_;
+};
+
 }  // namespace google_apis
 
 #endif  // GOOGLE_APIS_DRIVE_DRIVE_API_PARSER_H_

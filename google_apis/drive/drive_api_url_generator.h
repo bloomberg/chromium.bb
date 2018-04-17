@@ -143,6 +143,11 @@ class DriveApiUrlGenerator {
   // Generates a URL for batch upload.
   GURL GetBatchUploadUrl() const;
 
+  // Returns a URL for the start page token for a |team_drive|. |team_drive|
+  // may be empty, in which case the start page token will be returned for
+  // the users changes.
+  GURL GetStartPageTokenUrl(const std::string& team_drive) const;
+
  private:
   const GURL base_url_;
   const GURL base_download_url_;

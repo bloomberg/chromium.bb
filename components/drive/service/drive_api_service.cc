@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -48,6 +49,7 @@ using google_apis::HTTP_SUCCESS;
 using google_apis::InitiateUploadCallback;
 using google_apis::ProgressCallback;
 using google_apis::RequestSender;
+using google_apis::StartPageTokenCallback;
 using google_apis::TeamDriveListCallback;
 using google_apis::UploadRangeResponse;
 using google_apis::drive::AboutGetRequest;
@@ -69,6 +71,7 @@ using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
 using google_apis::drive::InitiateUploadNewFileRequest;
 using google_apis::drive::ResumeUploadRequest;
+using google_apis::drive::StartPageTokenRequest;
 using google_apis::drive::TeamDriveListRequest;
 using google_apis::drive::UploadRangeCallback;
 
@@ -537,6 +540,19 @@ CancelCallback DriveAPIService::GetAboutResource(
   std::unique_ptr<AboutGetRequest> request = std::make_unique<AboutGetRequest>(
       sender_.get(), url_generator_, callback);
   request->set_fields(kAboutResourceFields);
+  return sender_->StartRequestWithAuthRetry(std::move(request));
+}
+
+CancelCallback DriveAPIService::GetStartPageToken(
+    const std::string& team_drive_id,
+    const StartPageTokenCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!callback.is_null());
+
+  std::unique_ptr<StartPageTokenRequest> request =
+      std::make_unique<StartPageTokenRequest>(sender_.get(), url_generator_,
+                                              callback);
+  request->set_team_drive_id(team_drive_id);
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 

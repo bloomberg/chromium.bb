@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/drive/service/test_util.h"
@@ -41,6 +42,7 @@ using google_apis::HTTP_PRECONDITION;
 using google_apis::HTTP_RESUME_INCOMPLETE;
 using google_apis::HTTP_SUCCESS;
 using google_apis::ProgressCallback;
+using google_apis::StartPageToken;
 using google_apis::TeamDriveList;
 using google_apis::UploadRangeResponse;
 
@@ -763,6 +765,23 @@ TEST_F(FakeDriveServiceTest, GetAboutResource) {
   EXPECT_EQ(fake_service_.GetRootResourceId(),
             about_resource->root_folder_id());
   EXPECT_EQ(1, fake_service_.about_resource_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetStartPageToken) {
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  std::unique_ptr<StartPageToken> start_page_token;
+  fake_service_.GetStartPageToken(
+      "team_drive_id",
+      test_util::CreateCopyResultCallback(&error, &start_page_token));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  ASSERT_TRUE(start_page_token);
+  // Do some sanity check.
+  EXPECT_EQ(base::NumberToString(GetLargestChangeByAboutResource()),
+            start_page_token->start_page_token());
+  EXPECT_EQ(1, fake_service_.start_page_token_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetAboutResource_Offline) {

@@ -337,4 +337,16 @@ TEST(DriveAPIParserTest, HasKind) {
   EXPECT_TRUE(FileList::HasFileListKind(*file_list_json));
 }
 
+TEST(DriveAPIParserTest, StartPageToken) {
+  std::unique_ptr<base::Value> document(
+      test_util::LoadJSONFile("drive/start_page_token.json"));
+
+  ASSERT_TRUE(document.get());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, document->type());
+  std::unique_ptr<StartPageToken> resource =
+      StartPageToken::CreateFrom(*document);
+
+  EXPECT_EQ("15734", resource->start_page_token());
+}
+
 }  // namespace google_apis

@@ -23,6 +23,7 @@ namespace {
 const char kDriveV2AboutUrl[] = "drive/v2/about";
 const char kDriveV2AppsUrl[] = "drive/v2/apps";
 const char kDriveV2ChangelistUrl[] = "drive/v2/changes";
+const char kDriveV2StartPageTokenUrl[] = "drive/v2/changes/startPageToken";
 const char kDriveV2FilesUrl[] = "drive/v2/files";
 const char kDriveV2FileUrlPrefix[] = "drive/v2/files/";
 const char kDriveV2ChildrenUrlFormat[] = "drive/v2/files/%s/children";
@@ -412,6 +413,20 @@ GURL DriveApiUrlGenerator::GetTeamDriveListUrl(
   }
   if (!page_token.empty())
     url = net::AppendOrReplaceQueryParameter(url, "pageToken", page_token);
+
+  return url;
+}
+
+GURL DriveApiUrlGenerator::GetStartPageTokenUrl(
+    const std::string& team_drive) const {
+  GURL url = base_url_.Resolve(kDriveV2StartPageTokenUrl);
+
+  if (enable_team_drives_) {
+    url = net::AppendOrReplaceQueryParameter(url, kSupportsTeamDrives, "true");
+
+    if (!team_drive.empty())
+      url = net::AppendOrReplaceQueryParameter(url, kTeamDriveId, team_drive);
+  }
 
   return url;
 }

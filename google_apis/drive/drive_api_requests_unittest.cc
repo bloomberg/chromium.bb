@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -931,6 +933,33 @@ TEST_F(DriveApiRequestsTest, TeamDriveListRequest) {
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/teamdrives?maxResults=50&pageToken=PAGE_TOKEN",
             http_request_.relative_url);
+  EXPECT_TRUE(result);
+}
+
+TEST_F(DriveApiRequestsTest, StartPageTokenRequest) {
+  // Set an expected data file containing valid result
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("drive/start_page_token.json");
+
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  std::unique_ptr<StartPageToken> result;
+
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<drive::StartPageTokenRequest> request =
+        std::make_unique<drive::StartPageTokenRequest>(
+            request_sender_.get(), *url_generator_,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &result)));
+    request_sender_->StartRequestWithAuthRetry(std::move(request));
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/drive/v2/changes/startPageToken", http_request_.relative_url);
+  EXPECT_EQ("15734", result->start_page_token());
   EXPECT_TRUE(result);
 }
 

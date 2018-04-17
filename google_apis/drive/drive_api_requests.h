@@ -44,6 +44,12 @@ typedef base::Callback<void(DriveApiErrorCode error,
                             std::unique_ptr<ChangeList> entry)>
     ChangeListCallback;
 
+// Callback used for requests that the server returns StartToken data
+// formatted into JSON value.
+using StartPageTokenCallback =
+    base::RepeatingCallback<void(DriveApiErrorCode error,
+                                 std::unique_ptr<StartPageToken> entry)>;
+
 namespace drive {
 
 // Represents a property for a file or a directory.
@@ -506,6 +512,37 @@ class TeamDriveListRequest : public DriveApiDataRequest<TeamDriveList> {
   std::string page_token_;
 
   DISALLOW_COPY_AND_ASSIGN(TeamDriveListRequest);
+};
+
+//========================== StartPageTokenRequest =============================
+
+// This class performs the request for fetching the start page token.
+// |team_drive_id_| may be empty, in which case the start page token will be
+// returned for the users changes.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/changes/getStartPageToken
+class StartPageTokenRequest : public DriveApiDataRequest<StartPageToken> {
+ public:
+  StartPageTokenRequest(RequestSender* sender,
+                        const DriveApiUrlGenerator& url_generator,
+                        const StartPageTokenCallback& callback);
+  ~StartPageTokenRequest() override;
+
+  // Optional parameter
+  const std::string& team_drive_id() const { return team_drive_id_; }
+  void set_team_drive_id(const std::string& team_drive_id) {
+    team_drive_id_ = team_drive_id;
+  }
+
+ protected:
+  // Overridden from DriveApiDataRequest.
+  GURL GetURLInternal() const override;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  std::string team_drive_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(StartPageTokenRequest);
 };
 
 //============================= FilesListRequest =============================

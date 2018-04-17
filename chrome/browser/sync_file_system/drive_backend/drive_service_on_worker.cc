@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/drive_service_on_worker.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -91,6 +92,21 @@ google_apis::CancelCallback DriveServiceOnWorker::GetAboutResource(
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&DriveServiceWrapper::GetAboutResource, wrapper_,
+                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
+                                               FROM_HERE, callback)));
+
+  return google_apis::CancelCallback();
+}
+
+google_apis::CancelCallback DriveServiceOnWorker::GetStartPageToken(
+    const std::string& team_drive_id,
+    const google_apis::StartPageTokenCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DriveServiceWrapper::GetStartPageToken, wrapper_,
+                     team_drive_id,
                      RelayCallbackToTaskRunner(worker_task_runner_.get(),
                                                FROM_HERE, callback)));
 

@@ -64,6 +64,7 @@ using google_apis::HTTP_SUCCESS;
 using google_apis::InitiateUploadCallback;
 using google_apis::ParentReference;
 using google_apis::ProgressCallback;
+using google_apis::StartPageToken;
 using google_apis::TeamDriveList;
 using google_apis::TeamDriveListCallback;
 using google_apis::TeamDriveResource;
@@ -246,6 +247,7 @@ FakeDriveService::FakeDriveService()
       about_resource_load_count_(0),
       app_list_load_count_(0),
       blocked_file_list_load_count_(0),
+      start_page_token_load_count_(0),
       offline_(false),
       never_return_all_file_list_(false),
       share_url_base_("https://share_url/"),
@@ -680,6 +682,32 @@ CancelCallback FakeDriveService::GetAboutResource(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(callback, HTTP_SUCCESS, std::move(about_resource)));
+  return CancelCallback();
+}
+
+CancelCallback FakeDriveService::GetStartPageToken(
+    const std::string& team_drive_id,
+    const google_apis::StartPageTokenCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!callback.is_null());
+
+  if (offline_) {
+    std::unique_ptr<StartPageToken> null;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(callback, DRIVE_NO_CONNECTION, std::move(null)));
+    return CancelCallback();
+  }
+
+  ++start_page_token_load_count_;
+  // TODO(slangley): Needs to support team_drive_id.
+  std::unique_ptr<StartPageToken> start_page_token =
+      std::make_unique<StartPageToken>();
+  start_page_token->set_start_page_token(
+      base::NumberToString(about_resource_->largest_change_id()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(callback, HTTP_SUCCESS, std::move(start_page_token)));
   return CancelCallback();
 }
 
