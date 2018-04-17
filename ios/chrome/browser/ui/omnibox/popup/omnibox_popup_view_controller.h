@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/commands/omnibox_suggestion_commands.h"
 #import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
-#import "ios/chrome/browser/ui/omnibox/popup/table_view_owning.h"
 
 @protocol ImageRetriever;
 
@@ -21,9 +20,7 @@
 // is the first responder, this view controller cannot receive these events.
 // Hence the delegation.
 @interface OmniboxPopupViewController
-    : UIViewController<AutocompleteResultConsumer,
-                       OmniboxSuggestionCommands,
-                       TableViewOwning>
+    : UIViewController<AutocompleteResultConsumer, OmniboxSuggestionCommands>
 
 @property(nonatomic, assign) BOOL incognito;
 @property(nonatomic, weak) id<AutocompleteResultConsumerDelegate> delegate;
