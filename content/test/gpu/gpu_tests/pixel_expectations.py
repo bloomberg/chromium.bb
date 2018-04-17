@@ -114,3 +114,13 @@ class PixelExpectations(GpuTestExpectations):
 
     # TODO(kbr): temporary suppression for new test.
     self.Fail('Pixel_WebGLSadCanvas', bug=575305)
+
+    # TODO(kainino): remove after rebaselining (crbug.com/833463)
+    self.Fail('Pixel_2DCanvasWebGL', bug=833463)
+    self.Fail('Pixel_OffscreenCanvasTransferAfterStyleResize', bug=833463)
+    self.Fail('Pixel_OffscreenCanvasTransferBeforeStyleResize', bug=833463)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=833463)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=833463)
+    self.Fail('Pixel_OffscreenCanvasWebglResizeOnWorker', bug=833463)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha', bug=833463)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha', bug=833463)

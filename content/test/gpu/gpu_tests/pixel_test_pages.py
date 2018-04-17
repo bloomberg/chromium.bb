@@ -114,7 +114,7 @@ def DefaultPages(base_name):
       'pixel_webgl_aa_alpha.html',
       base_name + '_WebGLGreenTriangle_AA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=3),
+      revision=4),
 
     PixelTestPage(
       'pixel_webgl_noaa_alpha.html',
@@ -126,7 +126,7 @@ def DefaultPages(base_name):
       'pixel_webgl_aa_noalpha.html',
       base_name + '_WebGLGreenTriangle_AA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=4),
+      revision=5),
 
     PixelTestPage(
       'pixel_webgl_noaa_noalpha.html',
@@ -180,7 +180,7 @@ def DefaultPages(base_name):
       'pixel_canvas2d_webgl.html',
       base_name + '_2DCanvasWebGL',
       test_rect=[0, 0, 300, 300],
-      revision=6),
+      revision=7),
 
     PixelTestPage(
       'pixel_background.html',
@@ -401,14 +401,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_transfer_after_style_resize.html',
       base_name + '_OffscreenCanvasTransferAfterStyleResize',
       test_rect=[0, 0, 350, 350],
-      revision=5,
+      revision=6,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_transfer_before_style_resize.html',
       base_name + '_OffscreenCanvasTransferBeforeStyleResize',
       test_rect=[0, 0, 350, 350],
-      revision=5,
+      revision=6,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -429,14 +429,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_webgl_commit_main.html',
       base_name + '_OffscreenCanvasWebGLDefault',
       test_rect=[0, 0, 360, 200],
-      revision=7,
+      revision=8,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_worker.html',
       base_name + '_OffscreenCanvasWebGLDefaultWorker',
       test_rect=[0, 0, 360, 200],
-      revision=7,
+      revision=8,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -506,7 +506,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_webgl_resize_on_worker.html',
       base_name + '_OffscreenCanvasWebglResizeOnWorker',
       test_rect=[0, 0, 200, 200],
-      revision=5,
+      revision=6,
       browser_args=browser_args),
 
     PixelTestPage(
