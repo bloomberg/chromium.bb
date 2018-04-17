@@ -23,9 +23,9 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_request_handle_interface.h"
+#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/resume_mode.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -33,7 +33,6 @@ class URLRequestContextGetter;
 }
 
 namespace download {
-
 class DownloadFile;
 class DownloadItemImplDelegate;
 class DownloadJob;
@@ -298,12 +297,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // download resumption request.
   // TODO(qinmin): Remove |url_request_context_getter| once network service is
   // enabled.
-  virtual void Start(
-      std::unique_ptr<DownloadFile> download_file,
-      std::unique_ptr<DownloadRequestHandleInterface> req_handle,
-      const DownloadCreateInfo& new_create_info,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
-      net::URLRequestContextGetter* url_request_context_getter);
+  virtual void Start(std::unique_ptr<DownloadFile> download_file,
+                     std::unique_ptr<DownloadRequestHandleInterface> req_handle,
+                     const DownloadCreateInfo& new_create_info,
+                     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+                         url_loader_factory_getter,
+                     net::URLRequestContextGetter* url_request_context_getter);
 
   // Needed because of intertwining with DownloadManagerImpl -------------------
 

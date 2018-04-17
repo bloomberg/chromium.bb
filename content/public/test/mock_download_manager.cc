@@ -5,8 +5,8 @@
 #include "content/public/test/mock_download_manager.h"
 
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "content/browser/byte_stream.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
 
@@ -112,7 +112,8 @@ MockDownloadManager::~MockDownloadManager() {}
 void MockDownloadManager::StartDownload(
     std::unique_ptr<download::DownloadCreateInfo> info,
     std::unique_ptr<download::InputStream> stream,
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+        url_loader_factory_getter,
     const download::DownloadUrlParameters::OnStartedCallback& callback) {
   MockStartDownload(info.get(), stream.get());
 }

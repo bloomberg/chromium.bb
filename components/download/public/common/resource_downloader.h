@@ -13,11 +13,8 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 namespace download {
+class DownloadURLLoaderFactoryGetter;
 
 // Class for handing the download of a url.
 class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
@@ -29,7 +26,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
       std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+          url_loader_factory_getter,
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
@@ -53,7 +51,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const scoped_refptr<network::ResourceResponse>& response,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+          url_loader_factory_getter,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   ResourceDownloader(
@@ -66,7 +65,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const GURL& tab_referrer_url,
       uint32_t download_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
+      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+          url_loader_factory_getter);
   ~ResourceDownloader() override;
 
   // download::DownloadResponseHandler::Delegate
@@ -133,8 +133,9 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // TaskRunner to post callbacks to the |delegate_|
   scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
 
-  // URLLoaderFactory for issueing network requests.
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  // URLLoaderFactory getter for issueing network requests.
+  scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+      url_loader_factory_getter_;
 
   base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_;
 

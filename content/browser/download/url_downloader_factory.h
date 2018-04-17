@@ -7,6 +7,10 @@
 
 #include "components/download/public/common/url_download_handler_factory.h"
 
+namespace download {
+class DownloadURLLoaderFactoryGetter;
+};
+
 namespace content {
 
 // Class for creating UrlDownloader object.
@@ -21,7 +25,8 @@ class UrlDownloaderFactory : public download::UrlDownloadHandlerFactory {
   CreateUrlDownloadHandler(
       std::unique_ptr<download::DownloadUrlParameters> params,
       base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+          shared_url_loader_factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) override;
 };
 

@@ -12,6 +12,7 @@
 #include "components/download/internal/common/parallel_download_utils.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_stats.h"
+#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace download {
@@ -23,7 +24,8 @@ ParallelDownloadJob::ParallelDownloadJob(
     DownloadItem* download_item,
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const DownloadCreateInfo& create_info,
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+        url_loader_factory_getter,
     net::URLRequestContextGetter* url_request_context_getter)
     : DownloadJobImpl(download_item, std::move(request_handle), true),
       initial_request_offset_(create_info.offset),
@@ -31,7 +33,7 @@ ParallelDownloadJob::ParallelDownloadJob(
       content_length_(create_info.total_bytes),
       requests_sent_(false),
       is_canceled_(false),
-      shared_url_loader_factory_(std::move(shared_url_loader_factory)),
+      url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       url_request_context_getter_(url_request_context_getter) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
@@ -286,7 +288,7 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
 
   // Send the request.
-  worker->SendRequest(std::move(download_params), shared_url_loader_factory_);
+  worker->SendRequest(std::move(download_params), url_loader_factory_getter_);
   DCHECK(workers_.find(offset) == workers_.end());
   workers_[offset] = std::move(worker);
 }

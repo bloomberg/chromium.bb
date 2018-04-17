@@ -35,7 +35,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
       DownloadItem* download_item,
       std::unique_ptr<DownloadRequestHandleInterface> request_handle,
       const DownloadCreateInfo& create_info,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+          url_loader_factory_getter,
       net::URLRequestContextGetter* url_request_context_getter);
   ~ParallelDownloadJob() override;
 
@@ -110,8 +111,9 @@ class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
   // If the download progress is canceled.
   bool is_canceled_;
 
-  // SharedURLLoaderFactory to issue network requests with network service
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  // URLLoaderFactory getter to issue network requests with network service
+  scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+      url_loader_factory_getter_;
 
   // URLRequestContextGetter for issueing network requests when network service
   // is disabled.
