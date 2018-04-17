@@ -274,10 +274,13 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
     // Do not defer creating a box fragment if this is an empty inline box.
     // An empty box fragment is still flat that we do not have to defer.
     // Also, placeholders cannot be reordred if empty.
-    scoped_refptr<NGLayoutResult> layout_result =
-        box_data.CreateBoxFragment(line_box);
     offset.inline_offset += box_data.margin_line_left;
-    line_box->AddChild(layout_result, offset, box_data.size.inline_size, 0);
+    LayoutUnit advance = box_data.margin_border_padding_line_left +
+                         box_data.margin_border_padding_line_right;
+    box_data.size.inline_size =
+        advance - box_data.margin_line_left - box_data.margin_line_right;
+    line_box->AddChild(box_data.CreateBoxFragment(line_box), offset, advance,
+                       0);
     box_data_list_.pop_back();
   }
 }
@@ -365,55 +368,67 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
   if (box_data_list_.IsEmpty())
     return position;
 
-  // Create box fragments.
+  // Compute inline positions of inline boxes.
   for (auto& box_data : box_data_list_) {
     unsigned start = box_data.fragment_start;
     unsigned end = box_data.fragment_end;
     DCHECK_GT(end, start);
     NGLineBoxFragmentBuilder::Child& start_child = (*line_box)[start];
+
     // Clamping left offset is not defined, match to the existing behavior.
     LayoutUnit line_left_offset =
         start_child.offset.inline_offset.ClampNegativeToZero();
     LayoutUnit line_right_offset = end < line_box->size()
                                        ? (*line_box)[end].offset.inline_offset
                                        : position;
-    box_data.offset.inline_offset = line_left_offset;
-    box_data.size.inline_size = line_right_offset - line_left_offset;
+    box_data.offset.inline_offset =
+        line_left_offset + box_data.margin_line_left;
+    box_data.size.inline_size =
+        line_right_offset - line_left_offset +
+        box_data.margin_border_padding_line_left - box_data.margin_line_left +
+        box_data.margin_border_padding_line_right - box_data.margin_line_right;
+
+    // Adjust child offsets for margin/border/padding.
+    if (box_data.margin_border_padding_line_left) {
+      line_box->MoveInInlineDirection(box_data.margin_border_padding_line_left,
+                                      start, line_box->size());
+      position += box_data.margin_border_padding_line_left;
+    }
+
+    if (box_data.margin_border_padding_line_right) {
+      line_box->MoveInInlineDirection(box_data.margin_border_padding_line_right,
+                                      end, line_box->size());
+      position += box_data.margin_border_padding_line_right;
+    }
+  }
+
+  return position;
+}
+
+void NGInlineLayoutStateStack::CreateBoxFragments(
+    NGLineBoxFragmentBuilder::ChildList* line_box) {
+  DCHECK(!box_data_list_.IsEmpty());
+
+  for (auto& box_data : box_data_list_) {
+    unsigned start = box_data.fragment_start;
+    unsigned end = box_data.fragment_end;
+    DCHECK_GT(end, start);
+    NGLineBoxFragmentBuilder::Child& start_child = (*line_box)[start];
 
     scoped_refptr<NGLayoutResult> box_fragment =
         box_data.CreateBoxFragment(line_box);
-    NGLogicalOffset offset(line_left_offset + box_data.margin_line_left,
-                           box_data.offset.block_offset);
     if (!start_child.HasFragment()) {
       start_child.layout_result = std::move(box_fragment);
-      start_child.offset = offset;
+      start_child.offset = box_data.offset;
     } else {
       // In most cases, |start_child| is moved to the children of the box, and
       // is empty. It's not empty when it's out-of-flow. Insert in such case.
-      line_box->InsertChild(start, std::move(box_fragment), offset,
+      line_box->InsertChild(start, std::move(box_fragment), box_data.offset,
                             LayoutUnit(), 0);
-    }
-
-    // Out-of-flow fragments are left in (start + 1, end). Move them by the left
-    // margin/border/padding.
-    if (box_data.margin_border_padding_line_left) {
-      line_box->MoveInInlineDirection(box_data.margin_border_padding_line_left,
-                                      start + 1, end);
-    }
-    // Move the rest of children by the inline size the box consumes.
-    LayoutUnit margin_border_padding =
-        box_data.margin_border_padding_line_left +
-        box_data.margin_border_padding_line_right;
-    if (margin_border_padding) {
-      line_box->MoveInInlineDirection(margin_border_padding, end,
-                                      line_box->size());
-      position += margin_border_padding;
     }
   }
 
   box_data_list_.clear();
-
-  return position;
 }
 
 scoped_refptr<NGLayoutResult>
@@ -432,12 +447,6 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // was fragmented. Fragmenting a line box in block direction is not
   // supported today.
   box.SetBorderEdges({true, has_line_right_edge, true, has_line_left_edge});
-  LayoutUnit border_padding_line_left =
-      margin_border_padding_line_left - margin_line_left;
-  LayoutUnit border_padding_line_right =
-      margin_border_padding_line_right - margin_line_right;
-  offset.inline_offset -= border_padding_line_left;
-  size.inline_size += border_padding_line_left + border_padding_line_right;
   box.SetInlineSize(size.inline_size.ClampNegativeToZero());
   box.SetBlockSize(size.block_size);
   box.SetPadding(padding);
