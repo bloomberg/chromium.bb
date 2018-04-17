@@ -3623,6 +3623,9 @@
     ]
   },
 
+  "DeviceSamlLoginAuthenticationType": {
+  },
+
   "SafeBrowsingWhitelistDomains": {
   },
 
