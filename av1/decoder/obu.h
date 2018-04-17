@@ -27,13 +27,6 @@ typedef struct {
 // TODO(tomfinegan): Functions exposed here should be prefixed w/aom_ for
 // conformance w/naming elsewhere in the library, and to avoid potential
 // collisions with other software using the library.
-
-// Extracts OBU type from 'obu_header_byte' and returns it via 'obu_type'
-// pointer.
-// Return value is 0 when the OBU header contains a valid OBU_TYPE value, -1
-// otherwise.
-int get_obu_type(uint8_t obu_header_byte, OBU_TYPE *obu_type);
-
 aom_codec_err_t aom_read_obu_header(uint8_t *buffer, size_t buffer_length,
                                     size_t *consumed, ObuHeader *header,
                                     int is_annexb);

@@ -40,23 +40,6 @@ typedef enum {
   SCALABILITY_SS = 13
 } SCALABILITY_STRUCTURES;
 
-int get_obu_type(uint8_t obu_header, OBU_TYPE *obu_type) {
-  if (!obu_type) return -1;
-  *obu_type = (OBU_TYPE)((obu_header >> 3) & 0xF);
-  switch (*obu_type) {
-    case OBU_SEQUENCE_HEADER:
-    case OBU_TEMPORAL_DELIMITER:
-    case OBU_FRAME_HEADER:
-    case OBU_REDUNDANT_FRAME_HEADER:
-    case OBU_FRAME:
-    case OBU_TILE_GROUP:
-    case OBU_METADATA:
-    case OBU_PADDING: break;
-    default: return -1;
-  }
-  return 0;
-}
-
 // Returns 1 when OBU type is valid, and 0 otherwise.
 static int valid_obu_type(int obu_type) {
   int valid_type = 0;
