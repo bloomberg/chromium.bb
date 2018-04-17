@@ -72,18 +72,21 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
   // coordinates.
   Rect rect = local_rect;
   // Writing-mode flipping doesn't apply to non-root SVG.
-  if (!is_svg_child && !disable_flip) {
-    if (object.IsBox()) {
-      ToLayoutBox(object).FlipForWritingMode(rect);
-    } else if (!(context.subtree_flags &
-                 PaintInvalidatorContext::kSubtreeSlowPathRect)) {
-      // For SPv2 and the GeometryMapper path, we also need to convert the rect
-      // for non-boxes into physical coordinates before applying paint offset.
-      // (Otherwise we'll call mapToVisualrectInAncestorSpace() which requires
-      // physical coordinates for boxes, but "physical coordinates with flipped
-      // block-flow direction" for non-boxes for which we don't need to flip.)
-      // TODO(wangxianzhu): Avoid containingBlock().
-      object.ContainingBlock()->FlipForWritingMode(rect);
+  if (!is_svg_child) {
+    if (!disable_flip) {
+      if (object.IsBox()) {
+        ToLayoutBox(object).FlipForWritingMode(rect);
+      } else if (!(context.subtree_flags &
+                   PaintInvalidatorContext::kSubtreeSlowPathRect)) {
+        // For SPv2 and the GeometryMapper path, we also need to convert the
+        // rect for non-boxes into physical coordinates before applying paint
+        // offset. (Otherwise we'll call mapToVisualrectInAncestorSpace() which
+        // requires physical coordinates for boxes, but "physical coordinates
+        // with flipped block-flow direction" for non-boxes for which we don't
+        // need to flip.)
+        // TODO(wangxianzhu): Avoid containingBlock().
+        object.ContainingBlock()->FlipForWritingMode(rect);
+      }
     }
 
     // Unite visual rect with clip path bounding rect.
