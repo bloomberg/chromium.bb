@@ -717,7 +717,7 @@ static void setup_ref_mv_list(
   if (rf[1] > NONE_FRAME) {
     // TODO(jingning, yunqing): Refactor and consolidate the compound and
     // single reference frame modes. Reduce unnecessary redundancy.
-    if (refmv_count[ref_frame] < 2) {
+    if (refmv_count[ref_frame] < MAX_MV_REF_CANDIDATES) {
       int_mv ref_id[2][2], ref_diff[2][2];
       int ref_id_count[2] = { 0 }, ref_diff_count[2] = { 0 };
 
