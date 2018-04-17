@@ -6,6 +6,9 @@
 <script src="../wasm/resources/wasm-module-builder.js"></script>
 <script>
   promise_test(TestStreamedCompile, "test compileStreaming");
+
+  promise_test(TestCompileOkStatusIsChecked, "test HTTP status is verified (compileStreaming)");
+  promise_test(TestInstantiateOkStatusIsChecked, "test HTTP status is verified (instantiateStreaming)");
   promise_test(TestCompileMimeTypeIsChecked, "test MIME type is verified (compileStreaming)");
   promise_test(TestInstantiateMimeTypeIsChecked, "test MIME type is verified (instantiateStreaming)");
   promise_test(TestShortFormStreamedCompile, "test compileStreaming with promise parameter");
