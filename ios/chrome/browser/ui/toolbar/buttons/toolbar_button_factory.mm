@@ -44,7 +44,7 @@ const int styleCount = 2;
 // Omnibox background.
 const CGFloat kOmniboxBackgroundHeight = 38;
 const CGFloat kOmniboxBackgroundCornerRadius = 13;
-const CGFloat kOmniboxBackgroundAlpha = 0.05;
+const CGFloat kOmniboxButtonBackgroundAlphaFactor = 0.5;
 }  // namespace
 
 @implementation ToolbarButtonFactory
@@ -423,7 +423,8 @@ const CGFloat kOmniboxBackgroundAlpha = 0.05;
   background.translatesAutoresizingMaskIntoConstraints = NO;
   background.userInteractionEnabled = NO;
   background.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kOmniboxBackgroundAlpha];
+      [self.toolbarConfiguration locationBarBackgroundColorWithVisibility:
+                                     kOmniboxButtonBackgroundAlphaFactor];
   background.layer.cornerRadius = kOmniboxBackgroundCornerRadius;
   [omniboxButton addSubview:background];
   AddSameCenterConstraints(omniboxButton, background);
