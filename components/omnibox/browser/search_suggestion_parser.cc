@@ -562,6 +562,10 @@ bool SearchSuggestionParser::ParseSuggestResults(
           suggestion_detail->GetString("i", &image_url);
           suggestion_detail->GetString("q", &suggest_query_params);
 
+          if (!image_url.empty()) {
+            results->prefetch_image_urls.push_back(GURL(image_url));
+          }
+
           // Extract the Answer, if provided.
           const base::DictionaryValue* answer_json = nullptr;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
