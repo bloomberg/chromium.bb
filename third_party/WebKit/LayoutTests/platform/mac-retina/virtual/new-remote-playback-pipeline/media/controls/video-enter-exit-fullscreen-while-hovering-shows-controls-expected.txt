@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Tests that video controls are shown when entering/exiting fullscreen
-whilst hovering over the controls. Opposite of
-video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html assert_equals: Fullscreen controls should be hidden by timer expected "0" but got "0.0350492"
-Harness: the test ran to completion.
-
