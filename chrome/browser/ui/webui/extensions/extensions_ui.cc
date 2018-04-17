@@ -202,8 +202,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
   source->AddLocalizedString("itemDependentEntry",
                              IDS_MD_EXTENSIONS_DEPENDENT_ENTRY);
   source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
-  source->AddLocalizedString("itemReloadDone",
-                             IDS_MD_EXTENSIONS_ITEM_RELOAD_DONE);
   source->AddLocalizedString("itemErrors", IDS_MD_EXTENSIONS_ITEM_ERRORS);
   source->AddLocalizedString("accessibilityErrorLine",
                              IDS_MD_EXTENSIONS_ACCESSIBILITY_ERROR_LINE);
