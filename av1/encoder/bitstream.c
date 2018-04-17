@@ -246,6 +246,10 @@ static int write_skip_mode(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 static void write_is_inter(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            int segment_id, aom_writer *w, const int is_inter) {
   if (!segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
+    if (segfeature_active(&cm->seg, segment_id, SEG_LVL_GLOBALMV)) {
+      assert(is_inter);
+      return;
+    }
     const int ctx = av1_get_intra_inter_context(xd);
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
     aom_write_symbol(w, is_inter, ec_ctx->intra_inter_cdf[ctx], 2);
