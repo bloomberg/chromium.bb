@@ -129,7 +129,9 @@ def windows_prepare_toolchain(tempdir):
        toolchain_paths["vs_path"],
        toolchain_paths["sdk_path"],
        toolchain_paths["runtime_dirs"],
+       "win",
        "x64",
+       "environment.x64",
        "true"
       ],
       cwd=tempdir)

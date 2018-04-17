@@ -13,6 +13,7 @@ import shutil
 import stat
 import subprocess
 import sys
+from gn_helpers import ToGNString
 
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -448,17 +449,17 @@ def GetToolchainDir():
   runtime_dll_dirs = SetEnvironmentAndGetRuntimeDllDirs()
   win_sdk_dir = SetEnvironmentAndGetSDKDir()
 
-  print '''vs_path = "%s"
-sdk_path = "%s"
-vs_version = "%s"
-wdk_dir = "%s"
-runtime_dirs = "%s"
+  print '''vs_path = %s
+sdk_path = %s
+vs_version = %s
+wdk_dir = %s
+runtime_dirs = %s
 ''' % (
-      NormalizePath(os.environ['GYP_MSVS_OVERRIDE_PATH']),
-      win_sdk_dir,
-      GetVisualStudioVersion(),
-      NormalizePath(os.environ.get('WDK_DIR', '')),
-      os.path.pathsep.join(runtime_dll_dirs or ['None']))
+      ToGNString(NormalizePath(os.environ['GYP_MSVS_OVERRIDE_PATH'])),
+      ToGNString(win_sdk_dir),
+      ToGNString(GetVisualStudioVersion()),
+      ToGNString(NormalizePath(os.environ.get('WDK_DIR', ''))),
+      ToGNString(os.path.pathsep.join(runtime_dll_dirs or ['None'])))
 
 
 def main():
