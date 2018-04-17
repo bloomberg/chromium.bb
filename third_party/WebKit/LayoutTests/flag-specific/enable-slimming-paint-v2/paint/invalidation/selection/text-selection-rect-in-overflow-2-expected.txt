@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Should have blue, not gray, highlight'",
-          "rect": [18, 18, 233, 19],
+          "rect": [18, 18, 234, 19],
           "reason": "selection"
         }
       ]

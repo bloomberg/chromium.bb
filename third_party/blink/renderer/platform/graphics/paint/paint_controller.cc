@@ -924,8 +924,11 @@ void PaintController::GenerateRasterInvalidation(
   }
 
   auto reason = client.GetPaintInvalidationReason();
-  if ((reason != PaintInvalidationReason::kRectangle &&
-       reason != PaintInvalidationReason::kSelection &&
+  bool partial_raster_invalidation =
+      RuntimeEnabledFeatures::PartialRasterInvalidationEnabled() &&
+      (reason == PaintInvalidationReason::kRectangle ||
+       reason == PaintInvalidationReason::kSelection);
+  if ((!partial_raster_invalidation &&
        reason != PaintInvalidationReason::kIncremental) ||
       // Need full invalidation when visual rect location changed.
       old_item->VisualRect().Location() != new_item->VisualRect().Location()) {
@@ -935,9 +938,11 @@ void PaintController::GenerateRasterInvalidation(
 
   GenerateIncrementalRasterInvalidation(chunk, *old_item, *new_item);
 
-  auto partial_rect = client.PartialInvalidationRect();
-  if (!partial_rect.IsEmpty())
-    AddRasterInvalidation(client, chunk, FloatRect(partial_rect), reason);
+  if (RuntimeEnabledFeatures::PartialRasterInvalidationEnabled()) {
+    auto partial_rect = client.PartialInvalidationRect();
+    if (!partial_rect.IsEmpty())
+      AddRasterInvalidation(client, chunk, FloatRect(partial_rect), reason);
+  }
 }
 
 static FloatRect ComputeRightDelta(const FloatPoint& location,
