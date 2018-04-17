@@ -31,7 +31,7 @@
 
 import unittest
 
-from webkitpy.style.patchreader import PatchReader
+from blinkpy.style.patchreader import PatchReader
 
 
 class PatchReaderTest(unittest.TestCase):

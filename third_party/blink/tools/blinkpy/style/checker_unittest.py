@@ -37,29 +37,29 @@ import logging
 import os
 import unittest
 
+from blinkpy.style import checker as style
+from blinkpy.style.checker import _all_categories
+from blinkpy.style.checker import _BASE_FILTER_RULES
+from blinkpy.style.checker import _MAX_REPORTS_PER_CATEGORY
+from blinkpy.style.checker import _PATH_RULES_SPECIFIER as PATH_RULES_SPECIFIER
+from blinkpy.style.checker import check_webkit_style_configuration
+from blinkpy.style.checker import check_webkit_style_parser
+from blinkpy.style.checker import CheckerDispatcher
+from blinkpy.style.checker import configure_logging
+from blinkpy.style.checker import StyleProcessor
+from blinkpy.style.checker import StyleProcessorConfiguration
+from blinkpy.style.checkers.cpp import CppChecker
+from blinkpy.style.checkers.jsonchecker import JSONChecker
+from blinkpy.style.checkers.python import PythonChecker
+from blinkpy.style.checkers.text import TextChecker
+from blinkpy.style.checkers.xml import XMLChecker
+from blinkpy.style.error_handlers import DefaultStyleErrorHandler
+from blinkpy.style.filter import FilterConfiguration
+from blinkpy.style.filter import validate_filter_rules
+from blinkpy.style.optparser import ArgumentParser
+from blinkpy.style.optparser import CommandOptionValues
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.common.system.log_testing import TestLogStream
-from webkitpy.style import checker as style
-from webkitpy.style.checker import _all_categories
-from webkitpy.style.checker import _BASE_FILTER_RULES
-from webkitpy.style.checker import _MAX_REPORTS_PER_CATEGORY
-from webkitpy.style.checker import _PATH_RULES_SPECIFIER as PATH_RULES_SPECIFIER
-from webkitpy.style.checker import check_webkit_style_configuration
-from webkitpy.style.checker import check_webkit_style_parser
-from webkitpy.style.checker import CheckerDispatcher
-from webkitpy.style.checker import configure_logging
-from webkitpy.style.checker import StyleProcessor
-from webkitpy.style.checker import StyleProcessorConfiguration
-from webkitpy.style.checkers.cpp import CppChecker
-from webkitpy.style.checkers.jsonchecker import JSONChecker
-from webkitpy.style.checkers.python import PythonChecker
-from webkitpy.style.checkers.text import TextChecker
-from webkitpy.style.checkers.xml import XMLChecker
-from webkitpy.style.error_handlers import DefaultStyleErrorHandler
-from webkitpy.style.filter import FilterConfiguration
-from webkitpy.style.filter import validate_filter_rules
-from webkitpy.style.optparser import ArgumentParser
-from webkitpy.style.optparser import CommandOptionValues
 
 
 class ConfigureLoggingTestBase(unittest.TestCase):

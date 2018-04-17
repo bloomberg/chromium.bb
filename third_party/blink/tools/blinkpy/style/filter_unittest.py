@@ -24,9 +24,9 @@
 
 import unittest
 
-from webkitpy.style.filter import _CategoryFilter as CategoryFilter
-from webkitpy.style.filter import validate_filter_rules
-from webkitpy.style.filter import FilterConfiguration
+from blinkpy.style.filter import _CategoryFilter as CategoryFilter
+from blinkpy.style.filter import validate_filter_rules
+from blinkpy.style.filter import FilterConfiguration
 
 # On Testing __eq__() and __ne__():
 #

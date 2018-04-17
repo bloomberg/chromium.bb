@@ -96,7 +96,7 @@ def _CommonChecks(input_api, output_api):
 
 def _CheckStyle(input_api, output_api):
     style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-                                                '..', 'WebKit', 'Tools', 'Scripts', 'check-webkit-style')
+                                                'tools', 'check_blink_style.py')
     args = [input_api.python_executable, style_checker_path, '--diff-files']
     files = []
     for f in input_api.AffectedFiles():
@@ -107,7 +107,7 @@ def _CheckStyle(input_api, output_api):
         if '/PRESUBMIT' in file_path:
             continue
         files.append(input_api.os_path.join('..', '..', file_path))
-    # Do not call check-webkit-style with empty affected file list if all
+    # Do not call check_blink_style.py with empty affected file list if all
     # input_api.AffectedFiles got filtered.
     if not files:
         return []
@@ -120,10 +120,10 @@ def _CheckStyle(input_api, output_api):
         _, stderrdata = child.communicate()
         if child.returncode != 0:
             results.append(output_api.PresubmitError(
-                'check-webkit-style failed', [stderrdata]))
+                'check_blink_style.py failed', [stderrdata]))
     except Exception as e:
         results.append(output_api.PresubmitNotifyResult(
-            'Could not run check-webkit-style', [str(e)]))
+            'Could not run check_blink_style.py', [str(e)]))
 
     return results
 

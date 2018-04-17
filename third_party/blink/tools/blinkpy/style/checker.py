@@ -35,21 +35,21 @@ import os.path
 import re
 import sys
 
+from blinkpy.style.checkers.common import CarriageReturnChecker
+from blinkpy.style.checkers.common import categories as CommonCategories
+from blinkpy.style.checkers.cpp import CppChecker
+from blinkpy.style.checkers.jsonchecker import JSONChecker
+from blinkpy.style.checkers.png import PNGChecker
+from blinkpy.style.checkers.python import PythonChecker
+from blinkpy.style.checkers.test_expectations import TestExpectationsChecker
+from blinkpy.style.checkers.text import TextChecker
+from blinkpy.style.checkers.xcodeproj import XcodeProjectFileChecker
+from blinkpy.style.checkers.xml import XMLChecker
+from blinkpy.style.error_handlers import DefaultStyleErrorHandler
+from blinkpy.style.filter import FilterConfiguration
+from blinkpy.style.optparser import ArgumentParser
+from blinkpy.style.optparser import DefaultCommandOptionValues
 from webkitpy.common.system.log_utils import configure_logging as _configure_logging
-from webkitpy.style.checkers.common import CarriageReturnChecker
-from webkitpy.style.checkers.common import categories as CommonCategories
-from webkitpy.style.checkers.cpp import CppChecker
-from webkitpy.style.checkers.jsonchecker import JSONChecker
-from webkitpy.style.checkers.png import PNGChecker
-from webkitpy.style.checkers.python import PythonChecker
-from webkitpy.style.checkers.test_expectations import TestExpectationsChecker
-from webkitpy.style.checkers.text import TextChecker
-from webkitpy.style.checkers.xcodeproj import XcodeProjectFileChecker
-from webkitpy.style.checkers.xml import XMLChecker
-from webkitpy.style.error_handlers import DefaultStyleErrorHandler
-from webkitpy.style.filter import FilterConfiguration
-from webkitpy.style.optparser import ArgumentParser
-from webkitpy.style.optparser import DefaultCommandOptionValues
 
 
 _log = logging.getLogger(__name__)
@@ -98,7 +98,8 @@ _BASE_FILTER_RULES = [
     '-pep8/E501',
 
     # FIXME: Move the pylint rules from the pylintrc to here. This will
-    # also require us to re-work lint-webkitpy to produce the equivalent output.
+    # also require us to re-work lint_blinkpy.py to produce the equivalent
+    # output.
 ]
 
 
@@ -207,7 +208,7 @@ _MAX_REPORTS_PER_CATEGORY = {
 
 
 def _all_categories():
-    """Return the set of all categories used by check-webkit-style."""
+    """Return the set of all categories used by check_blink_style.py."""
     # Take the union across all checkers.
     categories = CommonCategories.union(CppChecker.categories)
     categories = categories.union(JSONChecker.categories)
@@ -225,7 +226,7 @@ def _all_categories():
 
 
 def _check_webkit_style_defaults():
-    """Return the default command-line options for check-webkit-style."""
+    """Return the default command-line options for check_blink_style.py."""
     return DefaultCommandOptionValues(min_confidence=_DEFAULT_MIN_CONFIDENCE,
                                       output_format=_DEFAULT_OUTPUT_FORMAT)
 
@@ -240,7 +241,7 @@ def check_webkit_style_parser():
 
 
 def check_webkit_style_configuration(options):
-    """Return a StyleProcessorConfiguration instance for check-webkit-style.
+    """Return a StyleProcessorConfiguration instance for check_blink_style.py.
 
     Args:
       options: A CommandOptionValues instance.

@@ -1,19 +1,17 @@
-#!/usr/bin/env vpython
-#
-# Copyright (C) 2011 Google Inc. All rights reserved.
-# Copyright (C) 2010 Chris Jerdonek (chris.jerdonek@gmail.com)
+# Copyright (C) 2009 Google Inc. All rights reserved.
+# Copyright (C) 2010 Chris Jerdonek (cjerdonek@webkit.org)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
 #
-#    * Redistributions of source code must retain the above copyright
+#     * Redistributions of source code must retain the above copyright
 # notice, this list of conditions and the following disclaimer.
-#    * Redistributions in binary form must reproduce the above
+#     * Redistributions in binary form must reproduce the above
 # copyright notice, this list of conditions and the following disclaimer
 # in the documentation and/or other materials provided with the
 # distribution.
-#    * Neither the name of Google Inc. nor the names of its
+#     * Neither the name of Google Inc. nor the names of its
 # contributors may be used to endorse or promote products derived from
 # this software without specific prior written permission.
 #
@@ -29,20 +27,24 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Does WebKit-lint on C/C++ or text files.
+"""Checks WebKit style for text files."""
 
-The goal of this script is to identify places in the code that *may*
-be in non-compliance with WebKit style.  It does not attempt to fix
-up these problems -- the point is to educate.  It does also not
-attempt to find all problems, or to ensure that everything it does
-find is legitimately a problem."""
-
-import sys
-
-import webkitpy.common.version_check
-
-from webkitpy.style.main import CheckWebKitStyle
+from blinkpy.style.checkers.common import TabChecker
 
 
-if __name__ == "__main__":
-    sys.exit(CheckWebKitStyle().main())
+class TextChecker(object):
+    """Processes text lines for checking style."""
+
+    def __init__(self, file_path, handle_style_error):
+        self.file_path = file_path
+        self.handle_style_error = handle_style_error
+        self._tab_checker = TabChecker(file_path, handle_style_error)
+
+    def check(self, lines):
+        self._tab_checker.check(lines)
+
+
+# FIXME: Remove this function (requires refactoring unit tests).
+def process_file_data(filename, lines, error):
+    checker = TextChecker(filename, error)
+    checker.check(lines)

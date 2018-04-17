@@ -39,7 +39,7 @@ class PresubmitTest(unittest.TestCase):
 
     @mock.patch('subprocess.Popen')
     def testCheckChangeOnUploadWithBlinkAndChromiumFiles(self, _):
-        """This verifies that CheckChangeOnUpload will only call check-webkit-style
+        """This verifies that CheckChangeOnUpload will only call check_blink_style.py
         on non-test files.
         """
         diff_file_blink_h = ['some diff']
@@ -64,7 +64,7 @@ class PresubmitTest(unittest.TestCase):
     @mock.patch('subprocess.Popen')
     def testCheckChangeOnUploadWithEmptyAffectedFileList(self, _):
         """This verifies that CheckChangeOnUpload will skip calling
-        check-webkit-style if the affected file list is empty.
+        check_blink_style.py if the affected file list is empty.
         """
         diff_file_chromium1_h = ['some diff']
         diff_file_chromium2_h = ['another diff']

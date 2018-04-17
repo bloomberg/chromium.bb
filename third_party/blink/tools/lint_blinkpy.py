@@ -29,11 +29,11 @@
 
 import sys
 
-from webkitpy.style.checkers.python import PythonChecker
+from blinkpy.style.checkers.python import PythonChecker
 
 
 if len(sys.argv) <= 1:
-    sys.stderr.write('Usage: lint-webkitpy path [path ...]\n')
+    sys.stderr.write('Usage: lint_blinkpy.py path [path ...]\n')
     sys.exit(1)
 
 for path in sys.argv[1:]:

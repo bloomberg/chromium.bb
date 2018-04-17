@@ -20,9 +20,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from blinkpy.style.main import change_directory
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.log_testing import LoggingTestCase
-from webkitpy.style.main import change_directory
 
 
 class ChangeDirectoryTest(LoggingTestCase):

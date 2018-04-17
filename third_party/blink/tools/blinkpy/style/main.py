@@ -24,11 +24,11 @@ import codecs
 import logging
 import sys
 
+from blinkpy.style import checker
+from blinkpy.style.checker import StyleProcessor
+from blinkpy.style.filereader import TextFileReader
+from blinkpy.style.patchreader import PatchReader
 from webkitpy.common.host import Host
-from webkitpy.style import checker
-from webkitpy.style.checker import StyleProcessor
-from webkitpy.style.filereader import TextFileReader
-from webkitpy.style.patchreader import PatchReader
 
 
 _log = logging.getLogger(__name__)
@@ -100,6 +100,7 @@ def change_directory(filesystem, checkout_root, paths):
     return paths
 
 
+# TODO(tkent): Replace "WebKit" with "Blink" in code.
 class CheckWebKitStyle(object):
 
     def _engage_awesome_stderr_hacks(self):

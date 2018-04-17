@@ -24,11 +24,11 @@
 
 import unittest
 
+from blinkpy.style.optparser import ArgumentParser
+from blinkpy.style.optparser import ArgumentPrinter
+from blinkpy.style.optparser import CommandOptionValues as ProcessorOptions
+from blinkpy.style.optparser import DefaultCommandOptionValues
 from webkitpy.common.system.log_testing import LoggingTestCase
-from webkitpy.style.optparser import ArgumentParser
-from webkitpy.style.optparser import ArgumentPrinter
-from webkitpy.style.optparser import CommandOptionValues as ProcessorOptions
-from webkitpy.style.optparser import DefaultCommandOptionValues
 
 
 class ArgumentPrinterTest(unittest.TestCase):

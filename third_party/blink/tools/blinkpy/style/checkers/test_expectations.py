@@ -30,9 +30,9 @@
 
 import logging
 
+from blinkpy.style.checkers.common import TabChecker
 from webkitpy.common.host import Host
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
-from webkitpy.style.checkers.common import TabChecker
 
 
 class TestExpectationsChecker(object):

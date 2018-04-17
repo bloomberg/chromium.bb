@@ -20,13 +20,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Supports the parsing of command-line options for check-webkit-style."""
+"""Supports the parsing of command-line options for check_blink_style.py."""
 
 import logging
 from optparse import OptionParser
 import sys
 
-from webkitpy.style.filter import validate_filter_rules
+from blinkpy.style.filter import validate_filter_rules
 # This module should not import anything from checker.py.
 
 _log = logging.getLogger(__name__)
@@ -103,7 +103,7 @@ _EPILOG = ('This script can miss errors and does not substitute for '
 # This class should not have knowledge of the flag key names.
 class DefaultCommandOptionValues(object):
 
-    """Stores the default check-webkit-style command-line options.
+    """Stores the default check_blink_style.py command-line options.
 
     Attributes:
       output_format: A string that is the default output format.
@@ -193,7 +193,7 @@ class CommandOptionValues(object):
 
 class ArgumentPrinter(object):
 
-    """Supports the printing of check-webkit-style command arguments."""
+    """Supports the printing of check_blink_style.py command arguments."""
 
     def _flag_pair_to_string(self, flag_key, flag_value):
         return '--%(key)s=%(val)s' % {'key': flag_key, 'val': flag_value}
@@ -230,13 +230,13 @@ class ArgumentParser(object):
 
     # FIXME: Move the documentation of the attributes to the __init__
     #        docstring after making the attributes internal.
-    """Supports the parsing of check-webkit-style command arguments.
+    """Supports the parsing of check_blink_style.py command arguments.
 
     Attributes:
       create_usage: A function that accepts a DefaultCommandOptionValues
                     instance and returns a string of usage instructions.
                     Defaults to the function that generates the usage
-                    string for check-webkit-style.
+                    string for check_blink_style.py.
       default_options: A DefaultCommandOptionValues instance that provides
                        the default values for options not explicitly
                        provided by the user.
@@ -396,7 +396,7 @@ class ArgumentParser(object):
         return filters
 
     def parse(self, args):
-        """Parse the command line arguments to check-webkit-style.
+        """Parse the command line arguments to check_blink_style.py.
 
         Args:
           args: A list of command-line arguments as returned by sys.argv[1:].
