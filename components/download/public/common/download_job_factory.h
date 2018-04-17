@@ -15,15 +15,12 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-}  // namespace network
-
 namespace download {
 
 class DownloadItem;
 class DownloadJob;
 class DownloadRequestHandleInterface;
+class DownloadURLLoaderFactoryGetter;
 
 // Factory class to create different kinds of DownloadJob.
 class COMPONENTS_DOWNLOAD_EXPORT DownloadJobFactory {
@@ -33,7 +30,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadJobFactory {
       std::unique_ptr<DownloadRequestHandleInterface> req_handle,
       const DownloadCreateInfo& create_info,
       bool is_save_package_download,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+          url_loader_factory_getter,
       net::URLRequestContextGetter* url_request_context_getter);
 
  private:

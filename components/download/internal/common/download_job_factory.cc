@@ -12,7 +12,7 @@
 #include "components/download/internal/common/save_package_download_job.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_stats.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "components/download/public/common/download_url_loader_factory_getter.h"
 
 namespace download {
 
@@ -93,7 +93,8 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     std::unique_ptr<DownloadRequestHandleInterface> req_handle,
     const DownloadCreateInfo& create_info,
     bool is_save_package_download,
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+        url_loader_factory_getter,
     net::URLRequestContextGetter* url_request_context_getter) {
   if (is_save_package_download) {
     return std::make_unique<SavePackageDownloadJob>(download_item,
@@ -105,7 +106,7 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
   if (IsParallelDownloadEnabled() && is_parallelizable) {
     return std::make_unique<ParallelDownloadJob>(
         download_item, std::move(req_handle), create_info,
-        std::move(shared_url_loader_factory), url_request_context_getter);
+        std::move(url_loader_factory_getter), url_request_context_getter);
   }
 
   // An ordinary download job.

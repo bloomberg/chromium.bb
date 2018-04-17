@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/resource_downloader.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -25,14 +26,15 @@ class DefaultUrlDownloadHandlerFactory : public UrlDownloadHandlerFactory {
   UrlDownloadHandler::UniqueUrlDownloadHandlerPtr CreateUrlDownloadHandler(
       std::unique_ptr<download::DownloadUrlParameters> params,
       base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+          url_loader_factory_getter,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) override {
     std::unique_ptr<network::ResourceRequest> request =
         CreateResourceRequest(params.get());
     return UrlDownloadHandler::UniqueUrlDownloadHandlerPtr(
         download::ResourceDownloader::BeginDownload(
             delegate, std::move(params), std::move(request),
-            std::move(shared_url_loader_factory), GURL(), GURL(), GURL(),
+            std::move(url_loader_factory_getter), GURL(), GURL(), GURL(),
             download::DownloadItem::kInvalidId, true, task_runner)
             .release(),
         base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
@@ -57,13 +59,14 @@ UrlDownloadHandler::UniqueUrlDownloadHandlerPtr
 UrlDownloadHandlerFactory::Create(
     std::unique_ptr<download::DownloadUrlParameters> params,
     base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+        url_loader_factory_getter,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   base::AutoLock auto_lock(GetURLDownloadHandlerFactoryLock());
   if (!g_url_download_handler_factory)
     g_url_download_handler_factory = new DefaultUrlDownloadHandlerFactory();
   return g_url_download_handler_factory->CreateUrlDownloadHandler(
-      std::move(params), delegate, std::move(shared_url_loader_factory),
+      std::move(params), delegate, std::move(url_loader_factory_getter),
       task_runner);
 }
 

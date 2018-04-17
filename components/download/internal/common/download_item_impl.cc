@@ -1383,7 +1383,8 @@ void DownloadItemImpl::Start(
     std::unique_ptr<DownloadFile> file,
     std::unique_ptr<DownloadRequestHandleInterface> req_handle,
     const DownloadCreateInfo& new_create_info,
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+        url_loader_factory_getter,
     net::URLRequestContextGetter* url_request_context_getter) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!download_file_.get());
@@ -1393,7 +1394,7 @@ void DownloadItemImpl::Start(
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(
       this, std::move(req_handle), new_create_info, false,
-      std::move(shared_url_loader_factory), url_request_context_getter);
+      std::move(url_loader_factory_getter), url_request_context_getter);
   if (job_->IsParallelizable()) {
     RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());
   }

@@ -6,11 +6,13 @@
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_URL_DOWNLOAD_HANDLER_H_
 
 #include "components/download/public/common/download_export.h"
+#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace download {
 struct DownloadCreateInfo;
+class DownloadURLLoaderFactoryGetter;
 class InputStream;
 
 // Class for handling the download of a url. Implemented by child classes.
@@ -24,8 +26,8 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandler {
     virtual void OnUrlDownloadStarted(
         std::unique_ptr<DownloadCreateInfo> download_create_info,
         std::unique_ptr<InputStream> input_stream,
-        scoped_refptr<network::SharedURLLoaderFactory>
-            shared_url_loader_factory,
+        scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+            url_loader_factory_getter,
         const DownloadUrlParameters::OnStartedCallback& callback) = 0;
 
     // Called after the connection is cancelled or finished.

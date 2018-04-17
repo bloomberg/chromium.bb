@@ -5,6 +5,7 @@
 #include "content/browser/download/url_downloader_factory.h"
 
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/download/url_downloader.h"
 
@@ -18,7 +19,8 @@ download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr
 UrlDownloaderFactory::CreateUrlDownloadHandler(
     std::unique_ptr<download::DownloadUrlParameters> params,
     base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+        url_loader_factory_getter,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   std::unique_ptr<net::URLRequest> url_request =
       DownloadRequestCore::CreateRequestOnIOThread(
