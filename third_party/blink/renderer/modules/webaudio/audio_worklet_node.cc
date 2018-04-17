@@ -143,6 +143,13 @@ void AudioWorkletHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
     }
   }
 
+  // If the node has zero output, it becomes the "automatic pull" node. This
+  // does not apply to the general case where we have outputs that aren't
+  // connected.
+  if (NumberOfOutputs() == 0) {
+    Context()->GetDeferredTaskHandler().AddAutomaticPullNode(this);
+  }
+
   AudioHandler::CheckNumberOfChannelsForInput(input);
 }
 
@@ -322,8 +329,12 @@ AudioWorkletNode* AudioWorkletNode::Create(
 
   node->HandleChannelOptions(options, exception_state);
 
-  // context keeps reference as a source node.
-  context->NotifySourceNodeStartedProcessing(node);
+  // context keeps reference as a source node if the node has a valid output.
+  // The node with zero output cannot be a source, so it won't be added as an
+  // active source node.
+  if (node->numberOfOutputs() > 0) {
+    context->NotifySourceNodeStartedProcessing(node);
+  }
 
   v8::Isolate* isolate = script_state->GetIsolate();
   SerializedScriptValue::SerializeOptions serialize_options;
