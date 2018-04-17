@@ -20,8 +20,8 @@
   __weak UIScrollView* _scrollView;
   id _observers;
   std::unique_ptr<UIScrollViewContentInsetAdjustmentBehavior>
-      _pendingContentInsetAdjustmentBehavior API_AVAILABLE(ios(11.0));
-  std::unique_ptr<BOOL> _pendingClipsToBounds;
+      _storedContentInsetAdjustmentBehavior API_AVAILABLE(ios(11.0));
+  std::unique_ptr<BOOL> _storedClipsToBounds;
 }
 
 // Returns the key paths that need to be observed for UIScrollView.
@@ -74,18 +74,16 @@
   scrollView.delegate = self;
   [self startObservingScrollView:scrollView];
   _scrollView = scrollView;
-  if (_pendingClipsToBounds) {
-    scrollView.clipsToBounds = *_pendingClipsToBounds;
-    _pendingClipsToBounds.reset();
+  if (_storedClipsToBounds) {
+    scrollView.clipsToBounds = *_storedClipsToBounds;
   }
 
   // Assigns |contentInsetAdjustmentBehavior| which was set before setting the
   // scroll view.
   if (@available(iOS 11, *)) {
-    if (_pendingContentInsetAdjustmentBehavior) {
+    if (_storedContentInsetAdjustmentBehavior) {
       _scrollView.contentInsetAdjustmentBehavior =
-          *_pendingContentInsetAdjustmentBehavior;
-      _pendingContentInsetAdjustmentBehavior.reset();
+          *_storedContentInsetAdjustmentBehavior;
     }
   }
 
@@ -113,18 +111,15 @@
 }
 
 - (BOOL)clipsToBounds {
-  if (_pendingClipsToBounds) {
-    return *_pendingClipsToBounds;
+  if (!_scrollView && _storedClipsToBounds) {
+    return *_storedClipsToBounds;
   }
   return _scrollView.clipsToBounds;
 }
 
 - (void)setClipsToBounds:(BOOL)clipsToBounds {
-  if (_scrollView) {
-    _scrollView.clipsToBounds = clipsToBounds;
-  } else {
-    _pendingClipsToBounds = std::make_unique<BOOL>(clipsToBounds);
-  }
+  _storedClipsToBounds = std::make_unique<BOOL>(clipsToBounds);
+  _scrollView.clipsToBounds = clipsToBounds;
 }
 
 - (BOOL)isDecelerating {
@@ -195,8 +190,8 @@
     API_AVAILABLE(ios(11.0)) {
   if (_scrollView) {
     return [_scrollView contentInsetAdjustmentBehavior];
-  } else if (_pendingContentInsetAdjustmentBehavior) {
-    return *_pendingContentInsetAdjustmentBehavior;
+  } else if (_storedContentInsetAdjustmentBehavior) {
+    return *_storedContentInsetAdjustmentBehavior;
   } else {
     return UIScrollViewContentInsetAdjustmentAutomatic;
   }
@@ -205,14 +200,11 @@
 - (void)setContentInsetAdjustmentBehavior:
     (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
     API_AVAILABLE(ios(11.0)) {
-  if (_scrollView) {
-    [_scrollView
-        setContentInsetAdjustmentBehavior:contentInsetAdjustmentBehavior];
-  } else {
-    _pendingContentInsetAdjustmentBehavior =
-        std::make_unique<UIScrollViewContentInsetAdjustmentBehavior>(
-            contentInsetAdjustmentBehavior);
-  }
+  [_scrollView
+      setContentInsetAdjustmentBehavior:contentInsetAdjustmentBehavior];
+  _storedContentInsetAdjustmentBehavior =
+      std::make_unique<UIScrollViewContentInsetAdjustmentBehavior>(
+          contentInsetAdjustmentBehavior);
 }
 
 - (UIPanGestureRecognizer*)panGestureRecognizer {
