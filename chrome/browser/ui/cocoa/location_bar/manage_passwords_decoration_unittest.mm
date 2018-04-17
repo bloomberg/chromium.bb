@@ -82,11 +82,9 @@ TEST_F(ManagePasswordsDecorationTest, ExecutesManagePasswordsCommandOnClick) {
 struct ManagePasswordsTestCase {
   // Inputs
   password_manager::ui::State state;
-  bool active;
 
   // Outputs
   bool visible;
-  int image;
   int toolTip;
 };
 
@@ -99,19 +97,13 @@ class ManagePasswordsDecorationStateTest
 
 TEST_P(ManagePasswordsDecorationStateTest, TestState) {
   decoration()->icon()->SetState(GetParam().state);
-  decoration()->icon()->SetActive(GetParam().active);
   EXPECT_EQ(GetParam().visible, decoration()->IsVisible());
-  NSImage* expected_image = nil;
-  if (GetParam().image) {
-    // IDR_SAVE_PASSWORD_ACTIVE and IDR_SAVE_PASSWORD_INACTIVE map to
-    // kKeyIcon in Material Design; fail the test if somehow some other
-    // value is present.
-    EXPECT_TRUE(GetParam().image == IDR_SAVE_PASSWORD_ACTIVE ||
-                GetParam().image == IDR_SAVE_PASSWORD_INACTIVE);
-    const int kIconSize = 16;
-    expected_image = NSImageFromImageSkia(
-        gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey));
-  }
+  const int kIconSize = 16;
+  NSImage* expected_image =
+      GetParam().state == password_manager::ui::INACTIVE_STATE
+          ? nil
+          : NSImageFromImageSkia(gfx::CreateVectorIcon(kKeyIcon, kIconSize,
+                                                       gfx::kChromeIconGrey));
   EXPECT_TRUE(ImagesEqual(expected_image, decoration()->GetImage()));
   EXPECT_NSEQ(GetParam().toolTip
                   ? l10n_util::GetNSStringWithFixup(GetParam().toolTip)
@@ -119,53 +111,17 @@ TEST_P(ManagePasswordsDecorationStateTest, TestState) {
               decoration()->GetToolTip());
 }
 
-ManagePasswordsTestCase managerInactiveOnPageAndEnabledTests[] = {
+ManagePasswordsTestCase testCases[] = {
     {.state = password_manager::ui::INACTIVE_STATE,
-     .active = true,
      .visible = false,
-     .image = 0,
      .toolTip = 0},
-    {.state = password_manager::ui::INACTIVE_STATE,
-     .active = false,
-     .visible = false,
-     .image = 0,
-     .toolTip = 0}};
-
-INSTANTIATE_TEST_CASE_P(
-    ManagerInactiveOnPage,
-    ManagePasswordsDecorationStateTest,
-    ::testing::ValuesIn(managerInactiveOnPageAndEnabledTests));
-
-ManagePasswordsTestCase managerActiveOnPageAndEnabledTests[] = {
     {.state = password_manager::ui::MANAGE_STATE,
-     .active = true,
      .visible = true,
-     .image = IDR_SAVE_PASSWORD_ACTIVE,
      .toolTip = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE},
-    {.state = password_manager::ui::MANAGE_STATE,
-     .active = false,
-     .visible = true,
-     .image = IDR_SAVE_PASSWORD_INACTIVE,
-     .toolTip = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE}};
-
-INSTANTIATE_TEST_CASE_P(
-    ManagerActiveOnPageAndEnabled,
-    ManagePasswordsDecorationStateTest,
-    ::testing::ValuesIn(managerActiveOnPageAndEnabledTests));
-
-ManagePasswordsTestCase managerActiveOnPageAndPendingTests[] = {
     {.state = password_manager::ui::PENDING_PASSWORD_STATE,
-     .active = true,
      .visible = true,
-     .image = IDR_SAVE_PASSWORD_ACTIVE,
-     .toolTip = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE},
-    {.state = password_manager::ui::PENDING_PASSWORD_STATE,
-     .active = false,
-     .visible = true,
-     .image = IDR_SAVE_PASSWORD_INACTIVE,
      .toolTip = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE}};
 
-INSTANTIATE_TEST_CASE_P(
-    ManagerActiveOnPageAndPending,
-    ManagePasswordsDecorationStateTest,
-    ::testing::ValuesIn(managerActiveOnPageAndPendingTests));
+INSTANTIATE_TEST_CASE_P(,
+                        ManagePasswordsDecorationStateTest,
+                        ::testing::ValuesIn(testCases));

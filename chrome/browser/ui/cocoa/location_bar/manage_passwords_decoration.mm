@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
-#include "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -48,10 +47,7 @@ ManagePasswordsDecoration::ManagePasswordsDecoration(
   UpdateUIState();
 }
 
-ManagePasswordsDecoration::~ManagePasswordsDecoration() {
-  if (ManagePasswordsBubbleCocoa::instance())
-    ManagePasswordsBubbleCocoa::instance()->SetIcon(NULL);
-}
+ManagePasswordsDecoration::~ManagePasswordsDecoration() = default;
 
 NSPoint ManagePasswordsDecoration::GetBubblePointInFrame(NSRect frame) {
   const NSRect draw_frame = GetDrawRectInFrame(frame);
@@ -102,12 +98,8 @@ void ManagePasswordsDecoration::UpdateVisibleUI() {
 }
 
 void ManagePasswordsDecoration::HideBubble() {
-  if (chrome::ShowAllDialogsWithViewsToolkit()) {
-    if (IsBubbleShowing())
-      PasswordBubbleViewBase::CloseCurrentBubble();
-  } else if (icon()->active() && ManagePasswordsBubbleCocoa::instance()) {
-    ManagePasswordsBubbleCocoa::instance()->Close();
-  }
+  if (IsBubbleShowing())
+    PasswordBubbleViewBase::CloseCurrentBubble();
 }
 
 const gfx::VectorIcon* ManagePasswordsDecoration::GetMaterialVectorIcon()
@@ -118,7 +110,5 @@ const gfx::VectorIcon* ManagePasswordsDecoration::GetMaterialVectorIcon()
 }
 
 bool ManagePasswordsDecoration::IsBubbleShowing() {
-  if (chrome::ShowAllDialogsWithViewsToolkit())
-    return PasswordBubbleViewBase::manage_password_bubble() != nullptr;
-  return ManagePasswordsBubbleCocoa::instance() != nullptr;
+  return PasswordBubbleViewBase::manage_password_bubble() != nullptr;
 }

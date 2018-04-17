@@ -8,21 +8,9 @@
 #include "chrome/grit/theme_resources.h"
 
 ManagePasswordsIcon::ManagePasswordsIcon()
-    : icon_id_(0),
-      tooltip_text_id_(0),
-      state_(password_manager::ui::INACTIVE_STATE),
-      active_(false) {
-}
+    : tooltip_text_id_(0), state_(password_manager::ui::INACTIVE_STATE) {}
 
 ManagePasswordsIcon::~ManagePasswordsIcon() {
-}
-
-void ManagePasswordsIcon::SetActive(bool active) {
-  if (active_ == active)
-    return;
-  active_ = active;
-  UpdateIDs();
-  UpdateVisibleUI();
 }
 
 void ManagePasswordsIcon::SetState(password_manager::ui::State state) {
@@ -37,14 +25,12 @@ void ManagePasswordsIcon::SetState(password_manager::ui::State state) {
 void ManagePasswordsIcon::UpdateIDs() {
   // If the icon is inactive: clear out its image and tooltip and exit early.
   if (state() == password_manager::ui::INACTIVE_STATE) {
-    icon_id_ = 0;
     tooltip_text_id_ = 0;
     return;
   }
 
   // Otherwise, start with the correct values for MANAGE_STATE, and adjust
   // things accordingly if we're in PENDING_STATE.
-  icon_id_ = active() ? IDR_SAVE_PASSWORD_ACTIVE : IDR_SAVE_PASSWORD_INACTIVE;
   tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE;
   if (state() == password_manager::ui::PENDING_PASSWORD_STATE)
     tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE;
