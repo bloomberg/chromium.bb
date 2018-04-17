@@ -211,6 +211,9 @@ enum ResultCodeValues : ResultCode {
   // which has been deprecated.
   RESULT_CODE_MANUAL_EXECUTION_BY_USER = 52,
 
+  // Some of the scanning configuration switches have invalid values.
+  RESULT_CODE_INVALID_SCANNING_SWITCHES = 53,
+
   // WHEN YOU ADD NEW EXIT CODES, DON'T FORGET TO UPDATE THE MONITORING RULES.
   // See http://go/chrome-cleaner-exit-codes. (Google internal only - external
   // contributors please ask one of the OWNERS to do the update.)
