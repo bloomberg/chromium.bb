@@ -234,7 +234,7 @@ interface WidgetInputHandler {
   RequestTextInputStateUpdate();
 
   // Request from browser to update the cursor and composition information which
-  // will be sent through InputHostMsg_ImeCompositionRangeChanged. Setting
+  // will be sent through ImeCompositionRangeChanged. Setting
   // |immediate_request| to true  will lead to an immediate update. If
   // |monitor_updates| is set to true then changes to text selection or regular
   // updates in each compositor frame (when there is a change in composition

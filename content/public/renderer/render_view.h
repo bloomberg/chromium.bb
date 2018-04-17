@@ -126,8 +126,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   virtual gfx::RectF ElementBoundsInWindow(const blink::WebElement& element)
       = 0;
 
-  virtual bool HasAddedInputHandler() const = 0;
-
  protected:
   ~RenderView() override {}
 

@@ -11,7 +11,6 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -228,7 +227,6 @@ int InteractiveRenderWidget::next_routing_id_ = 0;
 class RenderWidgetUnittest : public testing::Test {
  public:
   RenderWidgetUnittest() {
-    mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
     widget_ = new InteractiveRenderWidget(&compositor_deps_);
     // RenderWidget::Init does an AddRef that's balanced by a browser-initiated
     // Close IPC. That Close will never happen in this test, so do a Release
@@ -247,7 +245,6 @@ class RenderWidgetUnittest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::test::ScopedFeatureList mojo_feature_list_;
 
  private:
   MockRenderProcess render_process_;
@@ -573,7 +570,6 @@ int PopupRenderWidget::routing_id_ = 1;
 class RenderWidgetPopupUnittest : public testing::Test {
  public:
   RenderWidgetPopupUnittest() {
-    mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
     widget_ = new PopupRenderWidget(&compositor_deps_);
     // RenderWidget::Init does an AddRef that's balanced by a browser-initiated
     // Close IPC. That Close will never happen in this test, so do a Release
@@ -588,7 +584,6 @@ class RenderWidgetPopupUnittest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::test::ScopedFeatureList mojo_feature_list_;
 
  private:
   MockRenderProcess render_process_;

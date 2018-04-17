@@ -353,7 +353,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
 #endif
   void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
   gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
-  bool HasAddedInputHandler() const override;
 
   bool uses_temporary_zoom_level() const { return uses_temporary_zoom_level_; }
 
@@ -589,13 +588,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
 #else
   void UpdateThemePrefs() {}
 #endif
-
-  // Send the appropriate ack to be able discard this input event message.
-  void OnDiscardInputEvent(
-      const blink::WebInputEvent* input_event,
-      const std::vector<const blink::WebInputEvent*>& coalesced_events,
-      const ui::LatencyInfo& latency_info,
-      InputEventDispatchType dispatch_type);
 
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put

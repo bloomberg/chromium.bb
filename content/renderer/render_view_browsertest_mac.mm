@@ -179,15 +179,6 @@ TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
       TextInputClientMsg_StringForRange(routing_id, Range()));
   view->OnMessageReceived(
       TextInputClientMsg_CharacterIndexForPoint(routing_id, Point()));
-
-  // Simulate some IME related IPCs.
-  using Text = base::string16;
-  using ImeTextSpans = std::vector<blink::WebImeTextSpan>;
-  view->OnMessageReceived(InputMsg_ImeSetComposition(
-      routing_id, Text(), ImeTextSpans(), Range(), 0, 0));
-  view->OnMessageReceived(
-      InputMsg_ImeCommitText(routing_id, Text(), ImeTextSpans(), Range(), 0));
-  view->OnMessageReceived(InputMsg_ImeFinishComposingText(routing_id, false));
 }
 
 }  // namespace content

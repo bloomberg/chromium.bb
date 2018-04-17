@@ -349,12 +349,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                        int relative_cursor_pos);
   void OnImeFinishComposingText(int instance_id, bool keep_selection);
   void OnExtendSelectionAndDelete(int instance_id, int before, int after);
-  void OnImeCancelComposition();
-#if defined(OS_MACOSX) || defined(USE_AURA)
-  void OnImeCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds);
-#endif
 
   // Message handlers for messages from guest.
   void OnHandleInputEventAck(

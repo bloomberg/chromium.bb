@@ -13,7 +13,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "content/browser/android/synchronous_compositor_browser_filter.h"
 #include "content/browser/android/synchronous_compositor_sync_call_bridge.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -35,116 +34,6 @@
 #include "ui/gfx/skia_util.h"
 
 namespace content {
-
-class SynchronousCompositorLegacyChromeIPC
-    : public mojom::SynchronousCompositor {
- public:
-  SynchronousCompositorLegacyChromeIPC(IPC::Sender* sender, int routing_id)
-      : sender_(sender), routing_id_(routing_id) {}
-
-  void ComputeScroll(base::TimeTicks animation_time) override {
-    sender_->Send(
-        new SyncCompositorMsg_ComputeScroll(routing_id_, animation_time));
-  }
-
-  void DemandDrawHwAsync(
-      const SyncCompositorDemandDrawHwParams& draw_params) override {
-    sender_->Send(
-        new SyncCompositorMsg_DemandDrawHwAsync(routing_id_, draw_params));
-  }
-
-  bool DemandDrawHw(
-      const content::SyncCompositorDemandDrawHwParams& draw_params,
-      content::SyncCompositorCommonRendererParams* out_result,
-      uint32_t* out_layer_tree_frame_sink_id,
-      uint32_t* out_metadata_version,
-      base::Optional<viz::CompositorFrame>* out_frame) override {
-    return sender_->Send(new SyncCompositorMsg_DemandDrawHw(
-        routing_id_, draw_params, out_result, out_layer_tree_frame_sink_id,
-        out_metadata_version, out_frame));
-  }
-
-  void DemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
-                    DemandDrawHwCallback callback) override {
-    NOTREACHED();
-  }
-
-  bool SetSharedMemory(
-      const content::SyncCompositorSetSharedMemoryParams& params,
-      bool* out_success,
-      content::SyncCompositorCommonRendererParams* out_result) override {
-    return sender_->Send(new SyncCompositorMsg_SetSharedMemory(
-        routing_id_, params, out_success, out_result));
-  }
-
-  void SetSharedMemory(const SyncCompositorSetSharedMemoryParams& params,
-                       SetSharedMemoryCallback callback) override {
-    NOTREACHED();
-  }
-
-  bool DemandDrawSw(
-      const content::SyncCompositorDemandDrawSwParams& draw_params,
-      content::SyncCompositorCommonRendererParams* out_result,
-      uint32_t* out_metadata_version,
-      base::Optional<viz::CompositorFrameMetadata>* out_meta_data) override {
-    return sender_->Send(new SyncCompositorMsg_DemandDrawSw(
-        routing_id_, draw_params, out_result, out_metadata_version,
-        out_meta_data));
-  }
-
-  void DemandDrawSw(const SyncCompositorDemandDrawSwParams& params,
-                    DemandDrawSwCallback callback) override {
-    NOTREACHED();
-  }
-
-  void ZeroSharedMemory() override {
-    sender_->Send(new SyncCompositorMsg_ZeroSharedMemory(routing_id_));
-  }
-
-  bool ZoomBy(
-      float delta,
-      const gfx::Point& anchor,
-      content::SyncCompositorCommonRendererParams* out_result) override {
-    return sender_->Send(
-        new SyncCompositorMsg_ZoomBy(routing_id_, delta, anchor, out_result));
-  }
-
-  void ZoomBy(float zoom_delta,
-              const gfx::Point& anchor,
-              ZoomByCallback) override {
-    NOTREACHED();
-  }
-
-  void SetMemoryPolicy(uint32_t bytes_limit) override {
-    sender_->Send(
-        new SyncCompositorMsg_SetMemoryPolicy(routing_id_, bytes_limit));
-  }
-
-  void ReclaimResources(
-      uint32_t layer_tree_frame_sink_id,
-      const std::vector<viz::ReturnedResource>& resources) override {
-    sender_->Send(new SyncCompositorMsg_ReclaimResources(
-        routing_id_, layer_tree_frame_sink_id, resources));
-  }
-
-  void SetScroll(const gfx::ScrollOffset& total_scroll_offset) override {
-    sender_->Send(
-        new SyncCompositorMsg_SetScroll(routing_id_, total_scroll_offset));
-  }
-
-  void BeginFrame(const viz::BeginFrameArgs& args) override {
-    sender_->Send(new SyncCompositorMsg_BeginFrame(routing_id_, args));
-  }
-
-  void SetBeginFrameSourcePaused(bool paused) override {
-    sender_->Send(
-        new SyncCompositorMsg_SetBeginFramePaused(routing_id_, paused));
-  }
-
- private:
-  IPC::Sender* const sender_;
-  int routing_id_;
-};
 
 // This class runs on the IO thread and is destroyed when the renderer
 // side closes the mojo channel.
@@ -224,7 +113,6 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       client_(rwhva->synchronous_compositor_client()),
       process_id_(rwhva_->GetRenderWidgetHost()->GetProcess()->GetID()),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
-      use_mojo_(base::FeatureList::IsEnabled(features::kMojoInputMessages)),
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       host_binding_(this),
       bytes_limit_(0u),
@@ -234,12 +122,6 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       did_activate_pending_tree_count_(0u) {
   client_->DidInitializeCompositor(this, process_id_, routing_id_);
   bridge_ = new SynchronousCompositorSyncCallBridge(this);
-
-  if (!use_mojo_) {
-    bridge_->BindFilterOnUIThread();
-    legacy_compositor_ = std::make_unique<SynchronousCompositorLegacyChromeIPC>(
-        rwhva_->GetRenderWidgetHost(), routing_id_);
-  }
 }
 
 SynchronousCompositorHost::~SynchronousCompositorHost() {
@@ -248,9 +130,6 @@ SynchronousCompositorHost::~SynchronousCompositorHost() {
 }
 
 void SynchronousCompositorHost::InitMojo() {
-  if (!use_mojo_)
-    return;
-
   mojom::SynchronousCompositorControlHostPtr host_control;
   mojom::SynchronousCompositorControlHostRequest host_request =
       mojo::MakeRequest(&host_control);
@@ -272,19 +151,6 @@ bool SynchronousCompositorHost::IsReadyForSynchronousCall() {
   bool res = bridge_->IsRemoteReadyOnUIThread();
   DCHECK(!res || GetSynchronousCompositor());
   return res;
-}
-
-bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorHost, message)
-    IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_LayerTreeFrameSinkCreated,
-                        LayerTreeFrameSinkCreated)
-    IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_SetNeedsBeginFrames,
-                        SetNeedsBeginFrames)
-    IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_UpdateState, UpdateState)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 scoped_refptr<SynchronousCompositor::FrameFuture>
@@ -613,8 +479,7 @@ void SynchronousCompositorHost::SetNeedsBeginFrames(bool needs_begin_frames) {
 }
 
 void SynchronousCompositorHost::LayerTreeFrameSinkCreated() {
-  if (use_mojo_)
-    bridge_->RemoteReady();
+  bridge_->RemoteReady();
 
   // New LayerTreeFrameSink is not aware of state from Browser side. So need to
   // re-send all browser side state here.
@@ -660,20 +525,12 @@ void SynchronousCompositorHost::UpdateState(
   }
 }
 
-SynchronousCompositorBrowserFilter* SynchronousCompositorHost::GetFilter() {
-  return static_cast<RenderProcessHostImpl*>(
-             rwhva_->GetRenderWidgetHost()->GetProcess())
-      ->synchronous_compositor_filter();
-}
-
 RenderProcessHost* SynchronousCompositorHost::GetRenderProcessHost() {
   return rwhva_->GetRenderWidgetHost()->GetProcess();
 }
 
 mojom::SynchronousCompositor*
 SynchronousCompositorHost::GetSynchronousCompositor() {
-  if (legacy_compositor_)
-    return legacy_compositor_.get();
   return sync_compositor_.get();
 }
 

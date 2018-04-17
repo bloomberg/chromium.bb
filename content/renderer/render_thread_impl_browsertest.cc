@@ -307,21 +307,6 @@ class RenderThreadImplBrowserTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImplBrowserTest);
 };
 
-class RenderThreadImplMojoInputMessagesDisabledBrowserTest
-    : public RenderThreadImplBrowserTest {
- public:
-  RenderThreadImplMojoInputMessagesDisabledBrowserTest() {
-    feature_list_.InitAndDisableFeature(features::kMojoInputMessages);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {
-  ASSERT_TRUE(thread->input_handler_manager());
-}
-
 // Check that InputHandlerManager outlives compositor thread because it uses
 // raw pointers to post tasks.
 // Disabled under LeakSanitizer due to memory leaks. http://crbug.com/348994
@@ -333,14 +318,6 @@ void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {
 #define MAYBE_InputHandlerManagerDestroyedAfterCompositorThread \
   InputHandlerManagerDestroyedAfterCompositorThread
 #endif
-TEST_F(RenderThreadImplMojoInputMessagesDisabledBrowserTest,
-       WILL_LEAK(MAYBE_InputHandlerManagerDestroyedAfterCompositorThread)) {
-  ASSERT_TRUE(thread_->input_handler_manager());
-
-  thread_->compositor_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CheckRenderThreadInputHandlerManager, thread_));
-}
 
 // Disabled under LeakSanitizer due to memory leaks.
 TEST_F(RenderThreadImplBrowserTest,

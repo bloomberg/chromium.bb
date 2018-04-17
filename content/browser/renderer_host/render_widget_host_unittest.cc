@@ -29,7 +29,6 @@
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
-#include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -210,31 +209,15 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   void DisableGestureDebounce() {
-    if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-      input_router_.reset(
-          new InputRouterImpl(this, this, InputRouter::Config()));
-      legacy_widget_input_handler_ = nullptr;
-    } else {
-      input_router_.reset(new LegacyInputRouterImpl(
-          process_, this, this, routing_id_, InputRouter::Config()));
-      legacy_widget_input_handler_ =
-          std::make_unique<LegacyIPCWidgetInputHandler>(
-              static_cast<LegacyInputRouterImpl*>(input_router_.get()));
-    }
+    input_router_.reset(new InputRouterImpl(this, this, InputRouter::Config()));
   }
 
   void ExpectForceEnableZoom(bool enable) {
     EXPECT_EQ(enable, force_enable_zoom_);
 
-    if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-      InputRouterImpl* input_router =
-          static_cast<InputRouterImpl*>(input_router_.get());
-      EXPECT_EQ(enable, input_router->touch_action_filter_.force_enable_zoom_);
-    } else {
-      LegacyInputRouterImpl* input_router =
-          static_cast<LegacyInputRouterImpl*>(input_router_.get());
-      EXPECT_EQ(enable, input_router->touch_action_filter_.force_enable_zoom_);
-    }
+    InputRouterImpl* input_router =
+        static_cast<InputRouterImpl*>(input_router_.get());
+    EXPECT_EQ(enable, input_router->touch_action_filter_.force_enable_zoom_);
   }
 
   WebInputEvent::Type acked_touch_event_type() const {
@@ -252,7 +235,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   void SetupForInputRouterTest() {
     input_router_.reset(new MockInputRouter(this));
-    legacy_widget_input_handler_ = nullptr;
   }
 
   MockInputRouter* mock_input_router() {
@@ -278,10 +260,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   mojom::WidgetInputHandler* GetWidgetInputHandler() override {
-    if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-      return &mock_widget_input_handler_;
-    }
-    return RenderWidgetHostImpl::GetWidgetInputHandler();
+    return &mock_widget_input_handler_;
   }
 
   MockWidgetInputHandler mock_widget_input_handler_;
@@ -629,14 +608,11 @@ enum WheelScrollingMode {
   kAsyncWheelEvents,
 };
 
-enum class UseMojoInputMessages { kEnabled, kDisabled };
-
 // RenderWidgetHostTest --------------------------------------------------------
 
 class RenderWidgetHostTest : public testing::Test {
  public:
   RenderWidgetHostTest(
-      UseMojoInputMessages input_messages_mode = UseMojoInputMessages::kEnabled,
       WheelScrollingMode wheel_scrolling_mode = kWheelScrollLatching)
       : process_(nullptr),
         handle_key_press_event_(false),
@@ -646,11 +622,6 @@ class RenderWidgetHostTest : public testing::Test {
                                        kWheelScrollingModeNone) {
     std::vector<base::StringPiece> features;
     std::vector<base::StringPiece> disabled_features;
-    if (input_messages_mode == UseMojoInputMessages::kEnabled) {
-      features.push_back(features::kMojoInputMessages.name);
-    } else {
-      disabled_features.push_back(features::kMojoInputMessages.name);
-    }
 
     switch (wheel_scrolling_mode) {
       case kWheelScrollingModeNone:
@@ -776,20 +747,6 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   int64_t GetLatencyComponentId() { return host_->GetLatencyComponentId(); }
-
-  void SendInputEventACK(WebInputEvent::Type type,
-                         InputEventAckState ack_result) {
-    DCHECK(!WebInputEvent::IsTouchEventType(type));
-    InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, type, ack_result);
-    host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
-  }
-
-  void SendScrollBeginAckIfneeded(InputEventAckState ack_result) {
-    if (wheel_scroll_latching_enabled_) {
-      // GSB events are blocking, send the ack.
-      SendInputEventACK(WebInputEvent::kGestureScrollBegin, ack_result);
-    }
-  }
 
   double GetNextSimulatedEventTimeSeconds() {
     last_simulated_event_time_seconds_ += simulated_event_time_delta_seconds_;
@@ -935,11 +892,8 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void UnhandledWheelEvent();
-  void UnhandledWheelEventMojoInputDisabled();
   void HandleWheelEvent();
-  void HandleWheelEventMojoInputDisabled();
   void InputEventRWHLatencyComponent();
-  void InputEventRWHLatencyComponentMojoInputDisabled();
 
   std::unique_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
@@ -968,42 +922,18 @@ class RenderWidgetHostTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
 
-class RenderWidgetHostMojoInputDisabledTest : public RenderWidgetHostTest {
- public:
-  RenderWidgetHostMojoInputDisabledTest()
-      : RenderWidgetHostTest(UseMojoInputMessages::kDisabled) {}
-};
-
 class RenderWidgetHostWheelScrollLatchingDisabledTest
     : public RenderWidgetHostTest {
  public:
   RenderWidgetHostWheelScrollLatchingDisabledTest()
-      : RenderWidgetHostTest(UseMojoInputMessages::kEnabled,
-                             kWheelScrollingModeNone) {}
+      : RenderWidgetHostTest(kWheelScrollingModeNone) {}
 };
 
 class RenderWidgetHostAsyncWheelEventsEnabledTest
     : public RenderWidgetHostTest {
  public:
   RenderWidgetHostAsyncWheelEventsEnabledTest()
-      : RenderWidgetHostTest(UseMojoInputMessages::kEnabled,
-                             kAsyncWheelEvents) {}
-};
-
-class RenderWidgetHostWheelScrollLatchingMojoInputDisabledTest
-    : public RenderWidgetHostTest {
- public:
-  RenderWidgetHostWheelScrollLatchingMojoInputDisabledTest()
-      : RenderWidgetHostTest(UseMojoInputMessages::kDisabled,
-                             kWheelScrollingModeNone) {}
-};
-
-class RenderWidgetHostAsyncWheelEventsEnabledMojoInputDisabledTest
-    : public RenderWidgetHostTest {
- public:
-  RenderWidgetHostAsyncWheelEventsEnabledMojoInputDisabledTest()
-      : RenderWidgetHostTest(UseMojoInputMessages::kDisabled,
-                             kAsyncWheelEvents) {}
+      : RenderWidgetHostTest(kAsyncWheelEvents) {}
 };
 
 // RenderWidgetHostWithSourceTest ----------------------------------------------
@@ -1262,21 +1192,6 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   EXPECT_TRUE(std::get<0>(needs_repaint));
 }
 
-TEST_F(RenderWidgetHostMojoInputDisabledTest,
-       IgnoreKeyEventsHandledByRenderer) {
-  // Simulate a keyboard event.
-  SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
-
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  InputMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::kRawKeyDown, INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_FALSE(delegate_->unhandled_keyboard_event_called());
-}
-
 TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
   // Simulate a keyboard event.
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
@@ -1292,26 +1207,6 @@ TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
   EXPECT_FALSE(delegate_->unhandled_keyboard_event_called());
 }
 
-TEST_F(RenderWidgetHostMojoInputDisabledTest, SendEditCommandsBeforeKeyEvent) {
-  // Clear any messages unrelated to this test.
-  process_->sink().ClearMessages();
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Simulate a keyboard event.
-  SimulateKeyboardEventWithCommands(WebInputEvent::kRawKeyDown);
-
-  // Make sure we sent commands and key event to the renderer.
-  EXPECT_EQ(2U, process_->sink().message_count());
-  EXPECT_EQ(static_cast<uint32_t>(InputMsg_SetEditCommandsForNextKeyEvent::ID),
-            process_->sink().GetMessageAt(0)->type());
-  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
-            process_->sink().GetMessageAt(1)->type());
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::kRawKeyDown, INPUT_EVENT_ACK_STATE_CONSUMED);
-}
-
 TEST_F(RenderWidgetHostTest, SendEditCommandsBeforeKeyEvent) {
   // Simulate a keyboard event.
   SimulateKeyboardEventWithCommands(WebInputEvent::kRawKeyDown);
@@ -1325,53 +1220,6 @@ TEST_F(RenderWidgetHostTest, SendEditCommandsBeforeKeyEvent) {
   ASSERT_TRUE(dispatched_events[1]->ToEvent());
   // Send the simulated response from the renderer back.
   dispatched_events[1]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
-}
-
-TEST_F(RenderWidgetHostMojoInputDisabledTest, PreHandleRawKeyDownEvent) {
-  // Simulate the situation that the browser handled the key down event during
-  // pre-handle phrase.
-  delegate_->set_prehandle_keyboard_event(true);
-  process_->sink().ClearMessages();
-
-  // Simulate a keyboard event.
-  SimulateKeyboardEventWithCommands(WebInputEvent::kRawKeyDown);
-
-  EXPECT_TRUE(delegate_->prehandle_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::kRawKeyDown,
-            delegate_->prehandle_keyboard_event_type());
-
-  // Make sure the commands and key event are not sent to the renderer.
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // The browser won't pre-handle a Char event.
-  delegate_->set_prehandle_keyboard_event(false);
-
-  // Forward the Char event.
-  SimulateKeyboardEvent(WebInputEvent::kChar);
-
-  // Make sure the Char event is suppressed.
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Forward the KeyUp event.
-  SimulateKeyboardEvent(WebInputEvent::kKeyUp);
-
-  // Make sure the KeyUp event is suppressed.
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Simulate a new RawKeyDown event.
-  SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
-            process_->sink().GetMessageAt(0)->type());
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::kRawKeyDown,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-  EXPECT_TRUE(delegate_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::kRawKeyDown,
-            delegate_->unhandled_keyboard_event_type());
 }
 
 TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
@@ -1426,59 +1274,6 @@ TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
   EXPECT_TRUE(delegate_->unhandled_keyboard_event_called());
   EXPECT_EQ(WebInputEvent::kRawKeyDown,
             delegate_->unhandled_keyboard_event_type());
-}
-
-TEST_F(RenderWidgetHostMojoInputDisabledTest, RawKeyDownShortcutEvent) {
-  // Simulate the situation that the browser marks the key down as a keyboard
-  // shortcut, but doesn't consume it in the pre-handle phase.
-  delegate_->set_prehandle_keyboard_event_is_shortcut(true);
-  process_->sink().ClearMessages();
-
-  // Simulate a keyboard event.
-  SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
-
-  EXPECT_TRUE(delegate_->prehandle_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::kRawKeyDown,
-            delegate_->prehandle_keyboard_event_type());
-
-  // Make sure the RawKeyDown event is sent to the renderer.
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ("RawKeyDown", GetInputMessageTypes(process_));
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::kRawKeyDown,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kRawKeyDown,
-            delegate_->unhandled_keyboard_event_type());
-
-  // The browser won't pre-handle a Char event.
-  delegate_->set_prehandle_keyboard_event_is_shortcut(false);
-
-  // Forward the Char event.
-  SimulateKeyboardEvent(WebInputEvent::kChar);
-
-  // The Char event is not suppressed; the renderer will ignore it
-  // if the preceding RawKeyDown shortcut goes unhandled.
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ("Char", GetInputMessageTypes(process_));
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::kChar, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kChar, delegate_->unhandled_keyboard_event_type());
-
-  // Forward the KeyUp event.
-  SimulateKeyboardEvent(WebInputEvent::kKeyUp);
-
-  // Make sure only KeyUp was sent to the renderer.
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ("KeyUp", GetInputMessageTypes(process_));
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::kKeyUp, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kKeyUp, delegate_->unhandled_keyboard_event_type());
 }
 
 TEST_F(RenderWidgetHostTest, RawKeyDownShortcutEvent) {
@@ -1544,34 +1339,6 @@ TEST_F(RenderWidgetHostTest, RawKeyDownShortcutEvent) {
   EXPECT_EQ(WebInputEvent::kKeyUp, delegate_->unhandled_keyboard_event_type());
 }
 
-void RenderWidgetHostTest::UnhandledWheelEventMojoInputDisabled() {
-  SimulateWheelEventPossiblyIncludingPhase(-5, 0, 0, true,
-                                           WebMouseWheelEvent::kPhaseBegan);
-
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(
-      process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::kMouseWheel,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_TRUE(delegate_->handle_wheel_event_called());
-  EXPECT_EQ(1, view_->unhandled_wheel_event_count());
-  EXPECT_EQ(-5, view_->unhandled_wheel_event().delta_x);
-}
-TEST_F(RenderWidgetHostMojoInputDisabledTest, UnhandledWheelEvent) {
-  UnhandledWheelEventMojoInputDisabled();
-}
-TEST_F(RenderWidgetHostWheelScrollLatchingMojoInputDisabledTest,
-       UnhandledWheelEvent) {
-  UnhandledWheelEventMojoInputDisabled();
-}
-TEST_F(RenderWidgetHostAsyncWheelEventsEnabledMojoInputDisabledTest,
-       UnhandledWheelEvent) {
-  UnhandledWheelEventMojoInputDisabled();
-}
-
 void RenderWidgetHostTest::UnhandledWheelEvent() {
   SimulateWheelEventPossiblyIncludingPhase(-5, 0, 0, true,
                                            WebMouseWheelEvent::kPhaseBegan);
@@ -1599,40 +1366,6 @@ TEST_F(RenderWidgetHostWheelScrollLatchingDisabledTest, UnhandledWheelEvent) {
 }
 TEST_F(RenderWidgetHostAsyncWheelEventsEnabledTest, UnhandledWheelEvent) {
   UnhandledWheelEvent();
-}
-
-void RenderWidgetHostTest::HandleWheelEventMojoInputDisabled() {
-  // Indicate that we're going to handle this wheel event
-  delegate_->set_handle_wheel_event(true);
-
-  SimulateWheelEventPossiblyIncludingPhase(-5, 0, 0, true,
-                                           WebMouseWheelEvent::kPhaseBegan);
-
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(
-      process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::kMouseWheel,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-  // ensure the wheel event handler was invoked
-  EXPECT_TRUE(delegate_->handle_wheel_event_called());
-
-  // and that it suppressed the unhandled wheel event handler.
-  EXPECT_EQ(0, view_->unhandled_wheel_event_count());
-}
-TEST_F(RenderWidgetHostMojoInputDisabledTest, HandleWheelEvent) {
-  HandleWheelEventMojoInputDisabled();
-}
-TEST_F(RenderWidgetHostWheelScrollLatchingMojoInputDisabledTest,
-       HandleWheelEvent) {
-  HandleWheelEventMojoInputDisabled();
-}
-TEST_F(RenderWidgetHostAsyncWheelEventsEnabledMojoInputDisabledTest,
-       HandleWheelEvent) {
-  HandleWheelEventMojoInputDisabled();
 }
 
 void RenderWidgetHostTest::HandleWheelEvent() {
@@ -1667,22 +1400,6 @@ TEST_F(RenderWidgetHostWheelScrollLatchingDisabledTest, HandleWheelEvent) {
 }
 TEST_F(RenderWidgetHostAsyncWheelEventsEnabledTest, HandleWheelEvent) {
   HandleWheelEvent();
-}
-
-TEST_F(RenderWidgetHostMojoInputDisabledTest, UnhandledGestureEvent) {
-  SimulateGestureEvent(WebInputEvent::kGestureTwoFingerTap,
-                       blink::kWebGestureDeviceTouchscreen);
-
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  InputMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::kGestureTwoFingerTap,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kGestureTwoFingerTap, view_->gesture_event_type());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, view_->ack_result());
 }
 
 TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
@@ -1805,7 +1522,14 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   // Send two events but only one ack.
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
-  SendInputEventACK(WebInputEvent::kRawKeyDown, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  MockWidgetInputHandler::MessageVector dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  ASSERT_EQ(2u, dispatched_events.size());
+  ASSERT_TRUE(dispatched_events[0]->ToEvent());
+
+  // Send the simulated response from the renderer back.
+  dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Wait long enough for first timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -1962,159 +1686,6 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     EXPECT_TRUE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
   }
-}
-
-TEST_F(RenderWidgetHostMojoInputDisabledTest, TouchEmulator) {
-  simulated_event_time_delta_seconds_ = 0.1;
-  // Immediately ack all touches instead of sending them to the renderer.
-  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
-  host_->GetTouchEmulator()->Enable(
-      TouchEmulator::Mode::kEmulatingTouchFromMouse,
-      ui::GestureProviderConfigType::GENERIC_MOBILE);
-  process_->sink().ClearMessages();
-  view_->SetBounds(gfx::Rect(0, 0, 400, 200));
-  view_->Show();
-
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 10, 0, false);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Mouse press becomes touch start which in turn becomes tap.
-  SimulateMouseEvent(WebInputEvent::kMouseDown, 10, 10, 0, true);
-  EXPECT_EQ(WebInputEvent::kTouchStart, host_->acked_touch_event_type());
-  EXPECT_EQ("GestureTapDown", GetInputMessageTypes(process_));
-
-  // Mouse drag generates touch move, cancels tap and starts scroll.
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 30, 0, true);
-  EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
-  SendScrollBeginAckIfneeded(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(
-      "GestureTapCancel GestureScrollBegin TouchScrollStarted "
-      "GestureScrollUpdate",
-      GetInputMessageTypes(process_));
-  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Mouse drag with shift becomes pinch.
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 40,
-                     WebInputEvent::kShiftKey, true);
-  EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
-  EXPECT_EQ("GesturePinchBegin",
-            GetInputMessageTypes(process_));
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 50,
-                     WebInputEvent::kShiftKey, true);
-  EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
-  EXPECT_EQ("GesturePinchUpdate",
-            GetInputMessageTypes(process_));
-  SendInputEventACK(WebInputEvent::kGesturePinchUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Mouse drag without shift becomes scroll again.
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 60, 0, true);
-  EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
-  EXPECT_EQ("GesturePinchEnd GestureScrollUpdate",
-            GetInputMessageTypes(process_));
-  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 70, 0, true);
-  EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
-  EXPECT_EQ("GestureScrollUpdate",
-            GetInputMessageTypes(process_));
-  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  SimulateMouseEvent(WebInputEvent::kMouseUp, 10, 70, 0, true);
-  EXPECT_EQ(WebInputEvent::kTouchEnd, host_->acked_touch_event_type());
-  EXPECT_EQ("GestureScrollEnd", GetInputMessageTypes(process_));
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Mouse move does nothing.
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 80, 0, false);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Another mouse down continues scroll.
-  SimulateMouseEvent(WebInputEvent::kMouseDown, 10, 80, 0, true);
-  EXPECT_EQ(WebInputEvent::kTouchStart, host_->acked_touch_event_type());
-  EXPECT_EQ("GestureTapDown", GetInputMessageTypes(process_));
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 100, 0, true);
-  EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
-  SendScrollBeginAckIfneeded(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(
-      "GestureTapCancel GestureScrollBegin TouchScrollStarted "
-      "GestureScrollUpdate",
-      GetInputMessageTypes(process_));
-  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Another pinch.
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 110,
-                     WebInputEvent::kShiftKey, true);
-  EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
-  EXPECT_EQ("GesturePinchBegin",
-            GetInputMessageTypes(process_));
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 120,
-                     WebInputEvent::kShiftKey, true);
-  EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
-  EXPECT_EQ("GesturePinchUpdate",
-            GetInputMessageTypes(process_));
-  SendInputEventACK(WebInputEvent::kGesturePinchUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Turn off emulation during a pinch.
-  host_->GetTouchEmulator()->Disable();
-  EXPECT_EQ(WebInputEvent::kTouchCancel, host_->acked_touch_event_type());
-  EXPECT_EQ("GesturePinchEnd GestureScrollEnd",
-            GetInputMessageTypes(process_));
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Mouse event should pass untouched.
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 10,
-                     WebInputEvent::kShiftKey, true);
-  EXPECT_EQ("MouseMove", GetInputMessageTypes(process_));
-  SendInputEventACK(WebInputEvent::kMouseMove, INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Turn on emulation.
-  host_->GetTouchEmulator()->Enable(
-      TouchEmulator::Mode::kEmulatingTouchFromMouse,
-      ui::GestureProviderConfigType::GENERIC_MOBILE);
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Another touch.
-  SimulateMouseEvent(WebInputEvent::kMouseDown, 10, 10, 0, true);
-  EXPECT_EQ(WebInputEvent::kTouchStart, host_->acked_touch_event_type());
-  EXPECT_EQ("GestureTapDown", GetInputMessageTypes(process_));
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Scroll.
-  SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 30, 0, true);
-  EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
-  SendScrollBeginAckIfneeded(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(
-      "GestureTapCancel GestureScrollBegin TouchScrollStarted "
-      "GestureScrollUpdate",
-      GetInputMessageTypes(process_));
-  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-
-  // Turn off emulation during a scroll.
-  host_->GetTouchEmulator()->Disable();
-  EXPECT_EQ(WebInputEvent::kTouchCancel, host_->acked_touch_event_type());
-
-  EXPECT_EQ("GestureScrollEnd", GetInputMessageTypes(process_));
-  EXPECT_EQ(0U, process_->sink().message_count());
 }
 
 TEST_F(RenderWidgetHostTest, TouchEmulator) {
@@ -2437,160 +2008,12 @@ TEST_F(RenderWidgetHostTest, MouseEventCallbackCanHandleEvent) {
   EXPECT_TRUE(host_->mock_input_router()->sent_mouse_event_);
 }
 
-TEST_F(RenderWidgetHostTest, InputRouterReceivesHandleInputEvent_ACK) {
-  host_->SetupForInputRouterTest();
-
-  SendInputEventACK(WebInputEvent::kRawKeyDown, INPUT_EVENT_ACK_STATE_CONSUMED);
-
-  EXPECT_TRUE(host_->mock_input_router()->message_received_);
-}
-
-TEST_F(RenderWidgetHostTest, InputRouterReceivesMoveCaret_ACK) {
-  host_->SetupForInputRouterTest();
-
-  host_->OnMessageReceived(InputHostMsg_MoveCaret_ACK(0));
-
-  EXPECT_TRUE(host_->mock_input_router()->message_received_);
-}
-
-TEST_F(RenderWidgetHostTest, InputRouterReceivesSelectRange_ACK) {
-  host_->SetupForInputRouterTest();
-
-  host_->OnMessageReceived(InputHostMsg_SelectRange_ACK(0));
-
-  EXPECT_TRUE(host_->mock_input_router()->message_received_);
-}
-
 TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
   host_->SetupForInputRouterTest();
 
   host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
 
   EXPECT_TRUE(host_->mock_input_router()->message_received_);
-}
-
-void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
-                                        int64_t component_id,
-                                        WebInputEvent::Type expected_type) {
-  EXPECT_EQ(process->sink().message_count(), 1U);
-
-  const IPC::Message* message = process->sink().GetMessageAt(0);
-  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
-            message->type());
-  InputMsg_HandleInputEvent::Param params;
-  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-
-  const WebInputEvent* event = std::get<0>(params);
-  ui::LatencyInfo latency_info = std::get<2>(params);
-
-  EXPECT_TRUE(event->GetType() == expected_type);
-  EXPECT_TRUE(latency_info.FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, nullptr));
-
-  process->sink().ClearMessages();
-}
-
-void CheckLatencyInfoComponentInGestureScrollUpdate(
-    RenderWidgetHostProcess* process,
-    int64_t component_id) {
-  EXPECT_EQ(process->sink().message_count(), 2U);
-  const IPC::Message* message = process->sink().GetMessageAt(0);
-  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
-            message->type());
-  InputMsg_HandleInputEvent::Param params;
-  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-
-  const WebInputEvent* event = std::get<0>(params);
-  ui::LatencyInfo latency_info = std::get<2>(params);
-
-  EXPECT_TRUE(event->GetType() == WebInputEvent::kTouchScrollStarted);
-
-  message = process->sink().GetMessageAt(1);
-  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
-            message->type());
-  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-
-  event = std::get<0>(params);
-  latency_info = std::get<2>(params);
-
-  EXPECT_TRUE(event->GetType() == WebInputEvent::kGestureScrollUpdate);
-  EXPECT_TRUE(latency_info.FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, nullptr));
-
-  process->sink().ClearMessages();
-}
-
-// Tests that after input event passes through RWHI through ForwardXXXEvent()
-// or ForwardXXXEventWithLatencyInfo(), LatencyInfo component
-// ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT will always present in the
-// event's LatencyInfo.
-void RenderWidgetHostTest::InputEventRWHLatencyComponentMojoInputDisabled() {
-  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
-  process_->sink().ClearMessages();
-
-  // Tests RWHI::ForwardWheelEvent().
-  SimulateWheelEventPossiblyIncludingPhase(-5, 0, 0, true,
-                                           WebMouseWheelEvent::kPhaseBegan);
-  CheckLatencyInfoComponentInMessage(process_, GetLatencyComponentId(),
-                                     WebInputEvent::kMouseWheel);
-  SendInputEventACK(WebInputEvent::kMouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
-
-  // Tests RWHI::ForwardWheelEventWithLatencyInfo().
-  SimulateWheelEventWithLatencyInfoAndPossiblyPhase(
-      -5, 0, 0, true, ui::LatencyInfo(), WebMouseWheelEvent::kPhaseChanged);
-  CheckLatencyInfoComponentInMessage(process_, GetLatencyComponentId(),
-                                     WebInputEvent::kMouseWheel);
-  SendInputEventACK(WebInputEvent::kMouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
-
-  // Tests RWHI::ForwardMouseEvent().
-  SimulateMouseEvent(WebInputEvent::kMouseMove);
-  CheckLatencyInfoComponentInMessage(process_, GetLatencyComponentId(),
-                                     WebInputEvent::kMouseMove);
-  SendInputEventACK(WebInputEvent::kMouseMove, INPUT_EVENT_ACK_STATE_CONSUMED);
-
-  // Tests RWHI::ForwardMouseEventWithLatencyInfo().
-  SimulateMouseEventWithLatencyInfo(WebInputEvent::kMouseMove,
-                                    ui::LatencyInfo());
-  CheckLatencyInfoComponentInMessage(process_, GetLatencyComponentId(),
-                                     WebInputEvent::kMouseMove);
-  SendInputEventACK(WebInputEvent::kMouseMove, INPUT_EVENT_ACK_STATE_CONSUMED);
-
-  // Tests RWHI::ForwardGestureEvent().
-  SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
-  SendScrollBeginAckIfneeded(INPUT_EVENT_ACK_STATE_CONSUMED);
-  CheckLatencyInfoComponentInMessage(process_, GetLatencyComponentId(),
-                                     WebInputEvent::kGestureScrollBegin);
-
-  // Tests RWHI::ForwardGestureEventWithLatencyInfo().
-  SimulateGestureEventWithLatencyInfo(WebInputEvent::kGestureScrollUpdate,
-                                      blink::kWebGestureDeviceTouchscreen,
-                                      ui::LatencyInfo());
-  CheckLatencyInfoComponentInGestureScrollUpdate(process_,
-                                                 GetLatencyComponentId());
-  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-
-  // Tests RWHI::ForwardTouchEventWithLatencyInfo().
-  PressTouchPoint(0, 1);
-  uint32_t touch_event_id = SendTouchEvent();
-  InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD,
-                    WebInputEvent::kTouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
-                    touch_event_id);
-  host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
-  CheckLatencyInfoComponentInMessage(process_, GetLatencyComponentId(),
-                                     WebInputEvent::kTouchStart);
-}
-TEST_F(RenderWidgetHostMojoInputDisabledTest, InputEventRWHLatencyComponent) {
-  InputEventRWHLatencyComponentMojoInputDisabled();
-}
-TEST_F(RenderWidgetHostWheelScrollLatchingMojoInputDisabledTest,
-       InputEventRWHLatencyComponent) {
-  InputEventRWHLatencyComponentMojoInputDisabled();
-}
-TEST_F(RenderWidgetHostAsyncWheelEventsEnabledMojoInputDisabledTest,
-       InputEventRWHLatencyComponent) {
-  InputEventRWHLatencyComponentMojoInputDisabled();
 }
 
 void CheckLatencyInfoComponentInMessage(

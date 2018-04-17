@@ -107,8 +107,8 @@
 #include "content/renderer/image_downloader/image_downloader_impl.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/frame_input_handler_impl.h"
-#include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/input_target_client_impl.h"
+#include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/installedapp/related_apps_fetcher.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -1390,13 +1390,6 @@ RenderFrameImpl::~RenderFrameImpl() {
 
   base::trace_event::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
 
-  // Unregister from InputHandlerManager. render_thread may be NULL in tests.
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : nullptr;
-  if (input_handler_manager)
-    input_handler_manager->UnregisterRoutingID(GetRoutingID());
-
   if (auto* factory = AudioOutputIPCFactory::get())
     factory->MaybeDeregisterRemoteFactory(GetRoutingID());
 
@@ -1448,16 +1441,6 @@ void RenderFrameImpl::Initialize() {
   // We delay calling this until we have the WebFrame so that any observer or
   // embedder can call GetWebFrame on any RenderFrame.
   GetContentClient()->renderer()->RenderFrameCreated(this);
-
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  // render_thread may be NULL in tests.
-  InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : nullptr;
-  if (input_handler_manager) {
-    DCHECK(render_view_->HasAddedInputHandler());
-    input_handler_manager->RegisterAssociatedRenderFrameRoutingID(
-        GetRoutingID(), render_view_->GetRoutingID());
-  }
 
   // AudioOutputIPCFactory may be null in tests.
   if (auto* factory = AudioOutputIPCFactory::get())
@@ -1538,7 +1521,11 @@ void RenderFrameImpl::PepperCancelComposition(
     PepperPluginInstanceImpl* instance) {
   if (instance != focused_pepper_plugin_)
     return;
-  Send(new InputHostMsg_ImeCancelComposition(render_view_->GetRoutingID()));
+  if (mojom::WidgetInputHandlerHost* host = GetRenderWidget()
+                                                ->widget_input_handler_manager()
+                                                ->GetWidgetInputHandlerHost()) {
+    host->ImeCancelComposition();
+  }
 #if defined(OS_MACOSX) || defined(USE_AURA)
   GetRenderWidget()->UpdateCompositionInfo(
       false /* not an immediate request */);
@@ -1732,38 +1719,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameMsg_SetPepperVolume, OnSetPepperVolume)
 #endif
-    IPC_MESSAGE_HANDLER(InputMsg_Undo, OnUndo)
-    IPC_MESSAGE_HANDLER(InputMsg_Redo, OnRedo)
-    IPC_MESSAGE_HANDLER(InputMsg_Cut, OnCut)
-    IPC_MESSAGE_HANDLER(InputMsg_Copy, OnCopy)
-    IPC_MESSAGE_HANDLER(InputMsg_Paste, OnPaste)
-    IPC_MESSAGE_HANDLER(InputMsg_PasteAndMatchStyle, OnPasteAndMatchStyle)
-    IPC_MESSAGE_HANDLER(InputMsg_Delete, OnDelete)
-    IPC_MESSAGE_HANDLER(InputMsg_SelectAll, OnSelectAll)
-    IPC_MESSAGE_HANDLER(InputMsg_SelectRange, OnSelectRange)
-    IPC_MESSAGE_HANDLER(InputMsg_AdjustSelectionByCharacterOffset,
-                        OnAdjustSelectionByCharacterOffset)
-    IPC_MESSAGE_HANDLER(InputMsg_CollapseSelection, OnCollapseSelection)
-    IPC_MESSAGE_HANDLER(InputMsg_MoveRangeSelectionExtent,
-                        OnMoveRangeSelectionExtent)
-    IPC_MESSAGE_HANDLER(InputMsg_Replace, OnReplace)
-    IPC_MESSAGE_HANDLER(InputMsg_ReplaceMisspelling, OnReplaceMisspelling)
-    IPC_MESSAGE_HANDLER(InputMsg_MoveCaret, OnMoveCaret)
-    IPC_MESSAGE_HANDLER(InputMsg_ScrollFocusedEditableNodeIntoRect,
-                        OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(FrameMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(FrameMsg_SaveImageAt, OnSaveImageAt)
-    IPC_MESSAGE_HANDLER(InputMsg_ExtendSelectionAndDelete,
-                        OnExtendSelectionAndDelete)
-    IPC_MESSAGE_HANDLER(InputMsg_DeleteSurroundingText, OnDeleteSurroundingText)
-    IPC_MESSAGE_HANDLER(InputMsg_DeleteSurroundingTextInCodePoints,
-                        OnDeleteSurroundingTextInCodePoints)
-    IPC_MESSAGE_HANDLER(InputMsg_SetCompositionFromExistingText,
-                        OnSetCompositionFromExistingText)
-    IPC_MESSAGE_HANDLER(InputMsg_SetEditableSelectionOffsets,
-                        OnSetEditableSelectionOffsets)
-    IPC_MESSAGE_HANDLER(InputMsg_ExecuteNoValueEditCommand,
-                        OnExecuteNoValueEditCommand)
     IPC_MESSAGE_HANDLER(FrameMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequest,
                         OnJavaScriptExecuteRequest)
@@ -1830,9 +1787,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 #endif
 #endif
 
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
-#endif
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -2037,50 +1991,6 @@ void RenderFrameImpl::OnCustomContextMenuAction(
   }
 }
 
-void RenderFrameImpl::OnMoveCaret(const gfx::Point& point) {
-  Send(new InputHostMsg_MoveCaret_ACK(render_view_->GetRoutingID()));
-  frame_->MoveCaretSelection(render_view_->ConvertWindowPointToViewport(point));
-}
-
-void RenderFrameImpl::OnScrollFocusedEditableNodeIntoRect(
-    const gfx::Rect& rect) {
-  ScrollFocusedEditableElementIntoRect(rect);
-}
-
-void RenderFrameImpl::OnUndo() {
-  frame_->ExecuteCommand(WebString::FromUTF8("Undo"));
-}
-
-void RenderFrameImpl::OnRedo() {
-  frame_->ExecuteCommand(WebString::FromUTF8("Redo"));
-}
-
-void RenderFrameImpl::OnCut() {
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-  frame_->ExecuteCommand(WebString::FromUTF8("Cut"));
-}
-
-void RenderFrameImpl::OnCopy() {
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-  frame_->ExecuteCommand(WebString::FromUTF8("Copy"));
-}
-
-void RenderFrameImpl::OnPaste() {
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-  AutoResetMember<bool> handling_paste(this, &RenderFrameImpl::is_pasting_,
-                                       true);
-  frame_->ExecuteCommand(WebString::FromUTF8("Paste"));
-}
-
-void RenderFrameImpl::OnPasteAndMatchStyle() {
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-  frame_->ExecuteCommand(WebString::FromUTF8("PasteAndMatchStyle"));
-}
-
 #if defined(OS_MACOSX)
 void RenderFrameImpl::OnCopyToFindPboard() {
   // Since the find pasteboard supports only plain text, this can be simpler
@@ -2096,92 +2006,6 @@ void RenderFrameImpl::OnCopyToFindPboard() {
   }
 }
 #endif
-
-void RenderFrameImpl::OnDelete() {
-  frame_->ExecuteCommand(WebString::FromUTF8("Delete"));
-}
-
-void RenderFrameImpl::OnSelectAll() {
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-  frame_->ExecuteCommand(WebString::FromUTF8("SelectAll"));
-}
-
-void RenderFrameImpl::OnSelectRange(const gfx::Point& base,
-                                    const gfx::Point& extent) {
-  // This IPC is dispatched by RenderWidgetHost, so use its routing id.
-  Send(new InputHostMsg_SelectRange_ACK(GetRenderWidget()->routing_id()));
-
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-  frame_->SelectRange(render_view_->ConvertWindowPointToViewport(base),
-                      render_view_->ConvertWindowPointToViewport(extent));
-}
-
-void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(
-    int start_adjust,
-    int end_adjust,
-    bool show_selection_menu) {
-  WebRange range = frame_->GetInputMethodController()->GetSelectionOffsets();
-  if (range.IsNull())
-    return;
-
-  // Sanity checks to disallow empty and out of range selections.
-  if (start_adjust - end_adjust > range.length() ||
-      range.StartOffset() + start_adjust < 0)
-    return;
-
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-
-  // A negative adjust amount moves the selection towards the beginning of
-  // the document, a positive amount moves the selection towards the end of
-  // the document.
-  frame_->SelectRange(WebRange(range.StartOffset() + start_adjust,
-                               range.length() + end_adjust - start_adjust),
-                      WebLocalFrame::kPreserveHandleVisibility,
-                      show_selection_menu ? SelectionMenuBehavior::kShow
-                                          : SelectionMenuBehavior::kHide);
-}
-
-void RenderFrameImpl::OnCollapseSelection() {
-  const WebRange& range =
-      frame_->GetInputMethodController()->GetSelectionOffsets();
-  if (range.IsNull())
-    return;
-
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-  frame_->SelectRange(WebRange(range.EndOffset(), 0),
-                      WebLocalFrame::kHideSelectionHandle,
-                      SelectionMenuBehavior::kHide);
-}
-
-void RenderFrameImpl::OnMoveRangeSelectionExtent(const gfx::Point& point) {
-  // This IPC is dispatched by RenderWidgetHost, so use its routing id.
-  Send(new InputHostMsg_MoveRangeSelectionExtent_ACK(
-      GetRenderWidget()->routing_id()));
-
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-  frame_->MoveRangeSelectionExtent(
-      render_view_->ConvertWindowPointToViewport(point));
-}
-
-void RenderFrameImpl::OnReplace(const base::string16& text) {
-  if (!frame_->HasSelection())
-    frame_->SelectWordAroundCaret();
-
-  frame_->ReplaceSelection(WebString::FromUTF16(text));
-  SyncSelectionIfRequired();
-}
-
-void RenderFrameImpl::OnReplaceMisspelling(const base::string16& text) {
-  if (!frame_->HasSelection())
-    return;
-
-  frame_->ReplaceMisspelledRange(WebString::FromUTF16(text));
-}
 
 void RenderFrameImpl::OnCopyImageAt(int x, int y) {
   blink::WebFloatRect viewport_position(x, y, 0, 0);
@@ -2336,41 +2160,6 @@ void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
   GetRenderWidget()->QueueMessage(
       new FrameHostMsg_VisualStateResponse(routing_id_, id),
       MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
-}
-
-void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {
-  AutoResetMember<bool> handling_select_range(
-      this, &RenderFrameImpl::handling_select_range_, true);
-  ImeEventGuard guard(GetRenderWidget());
-  frame_->SetEditableSelectionOffsets(start, end);
-}
-
-void RenderFrameImpl::OnSetCompositionFromExistingText(
-    int start,
-    int end,
-    const std::vector<blink::WebImeTextSpan>& ime_text_spans) {
-  ImeEventGuard guard(GetRenderWidget());
-  frame_->SetCompositionFromExistingText(start, end, ime_text_spans);
-}
-
-void RenderFrameImpl::OnExecuteNoValueEditCommand(const std::string& name) {
-  frame_->ExecuteCommand(WebString::FromUTF8(name));
-}
-
-void RenderFrameImpl::OnExtendSelectionAndDelete(int before, int after) {
-  ImeEventGuard guard(GetRenderWidget());
-  frame_->ExtendSelectionAndDelete(before, after);
-}
-
-void RenderFrameImpl::OnDeleteSurroundingText(int before, int after) {
-  ImeEventGuard guard(GetRenderWidget());
-  frame_->DeleteSurroundingText(before, after);
-}
-
-void RenderFrameImpl::OnDeleteSurroundingTextInCodePoints(int before,
-                                                          int after) {
-  ImeEventGuard guard(GetRenderWidget());
-  frame_->DeleteSurroundingTextInCodePoints(before, after);
 }
 
 void RenderFrameImpl::OnSetAccessibilityMode(ui::AXMode new_mode) {

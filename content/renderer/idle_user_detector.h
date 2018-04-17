@@ -6,40 +6,19 @@
 #define CONTENT_RENDERER_IDLE_USER_DETECTOR_H_
 
 #include "base/macros.h"
-#include "content/common/input/input_event_dispatch_type.h"
-#include "content/public/renderer/render_view_observer.h"
-
-#include <vector>
-
-namespace blink {
-class WebInputEvent;
-}
-
-namespace ui {
-class LatencyInfo;
-}
 
 namespace content {
 
 // Class which observes user input events and postpones
 // idle notifications if the user is active.
-class IdleUserDetector : public RenderViewObserver {
+class IdleUserDetector {
  public:
-  IdleUserDetector(RenderView* render_view);
-  ~IdleUserDetector() override;
+  IdleUserDetector();
+  ~IdleUserDetector();
 
   void ActivityDetected();
 
  private:
-  // RenderViewObserver implementation:
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void OnDestruct() override;
-
-  void OnHandleInputEvent(
-      const blink::WebInputEvent* event,
-      const std::vector<const blink::WebInputEvent*>& coalesced_events,
-      const ui::LatencyInfo& latency_info,
-      InputEventDispatchType dispatch_type);
 
   DISALLOW_COPY_AND_ASSIGN(IdleUserDetector);
 };

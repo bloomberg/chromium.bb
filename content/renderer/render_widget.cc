@@ -31,7 +31,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/drag_messages.h"
-#include "content/common/input_messages.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/swapped_out_messages.h"
@@ -54,7 +53,6 @@
 #include "content/renderer/gpu/queue_message_swap_promise.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
-#include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -405,7 +403,6 @@ RenderWidget::RenderWidget(
       frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
       resizing_mode_selector_(new ResizingModeSelector()),
       has_host_context_menu_location_(false),
-      has_added_input_handler_(false),
       has_focus_(false),
       for_oopif_(false),
 #if defined(OS_MACOSX)
@@ -577,17 +574,15 @@ void RenderWidget::Init(const ShowCallback& show_callback,
 
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
-  if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-    RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
+  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
 
-    widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
-        weak_ptr_factory_.GetWeakPtr(),
-        render_thread_impl && compositor_
-            ? render_thread_impl->compositor_task_runner()
-            : nullptr,
-        render_thread_impl ? render_thread_impl->GetWebMainThreadScheduler()
-                           : nullptr);
-  }
+  widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
+      weak_ptr_factory_.GetWeakPtr(),
+      render_thread_impl && compositor_
+          ? render_thread_impl->compositor_task_runner()
+          : nullptr,
+      render_thread_impl ? render_thread_impl->GetWebMainThreadScheduler()
+                         : nullptr);
 
   show_callback_ = show_callback;
 
@@ -654,17 +649,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
-    IPC_MESSAGE_HANDLER(InputMsg_HandleInputEvent, OnHandleInputEvent)
-    IPC_MESSAGE_HANDLER(InputMsg_CursorVisibilityChange,
-                        OnCursorVisibilityChange)
-    IPC_MESSAGE_HANDLER(InputMsg_ImeSetComposition, OnImeSetComposition)
-    IPC_MESSAGE_HANDLER(InputMsg_ImeCommitText, OnImeCommitText)
-    IPC_MESSAGE_HANDLER(InputMsg_ImeFinishComposingText,
-                        OnImeFinishComposingText)
-    IPC_MESSAGE_HANDLER(InputMsg_MouseCaptureLost, OnMouseCaptureLost)
-    IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
-                        OnSetEditCommandsForNextKeyEvent)
-    IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
@@ -685,8 +669,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
-    IPC_MESSAGE_HANDLER(InputMsg_RequestCompositionUpdates,
-                        OnRequestCompositionUpdates)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
@@ -694,10 +676,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DragMsg_SourceEnded, OnDragSourceEnded)
     IPC_MESSAGE_HANDLER(DragMsg_SourceSystemDragEnded,
                         OnDragSourceSystemDragEnded)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(InputMsg_RequestTextInputStateUpdate,
-                        OnRequestTextInputStateUpdate)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -879,25 +857,6 @@ GURL RenderWidget::GetURLForGraphicsContext3D() {
   return GURL();
 }
 
-void RenderWidget::OnHandleInputEvent(
-    const blink::WebInputEvent* input_event,
-    const std::vector<const blink::WebInputEvent*>& coalesced_events,
-    const ui::LatencyInfo& latency_info,
-    InputEventDispatchType dispatch_type) {
-  if (!input_event)
-    return;
-
-  HandledEventCallback callback;
-  if (dispatch_type == DISPATCH_TYPE_BLOCKING) {
-    callback = base::Bind(
-        &RenderWidget::SendInputEventAck, this, input_event->GetType(),
-        ui::WebInputEventTraits::GetUniqueTouchEventId(*input_event));
-  }
-  input_handler_->HandleInputEvent(
-      blink::WebCoalescedInputEvent(*input_event, coalesced_events),
-      latency_info, std::move(callback));
-}
-
 viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::Point& point) {
   return input_handler_->GetFrameSinkIdAtPoint(point);
 }
@@ -908,19 +867,6 @@ void RenderWidget::HandleInputEvent(
     HandledEventCallback callback) {
   input_handler_->HandleInputEvent(input_event, latency_info,
                                    std::move(callback));
-}
-
-void RenderWidget::SendInputEventAck(
-    blink::WebInputEvent::Type type,
-    uint32_t touch_event_id,
-    InputEventAckState ack_state,
-    const ui::LatencyInfo& latency_info,
-    std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
-    base::Optional<cc::TouchAction> touch_action) {
-  InputEventAck ack(InputEventAckSource::MAIN_THREAD, type, ack_state,
-                    latency_info, std::move(overscroll_params), touch_event_id,
-                    touch_action);
-  Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
 }
 
 scoped_refptr<MainThreadEventQueue> RenderWidget::GetInputEventQueue() {
@@ -1132,16 +1078,8 @@ void RenderWidget::ObserveGestureEventAndResult(
   scroll_result.unused_scroll_delta = unused_delta;
   scroll_result.overscroll_behavior = overscroll_behavior;
 
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : nullptr;
-  if (input_handler_manager) {
-    input_handler_manager->ObserveGestureEventAndResultOnMainThread(
-        routing_id_, gesture_event, scroll_result);
-  } else if (widget_input_handler_manager_) {
-    widget_input_handler_manager_->ObserveGestureEventOnMainThread(
-        gesture_event, scroll_result);
-  }
+  widget_input_handler_manager_->ObserveGestureEventOnMainThread(gesture_event,
+                                                                 scroll_result);
 }
 
 void RenderWidget::OnDidHandleKeyEvent() {
@@ -1159,13 +1097,9 @@ void RenderWidget::ClearEditCommands() {
 }
 
 void RenderWidget::OnDidOverscroll(const ui::DidOverscrollParams& params) {
-  if (widget_input_handler_manager_) {
-    if (mojom::WidgetInputHandlerHost* host =
-            widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
-      host->DidOverscroll(params);
-    }
-  } else {
-    Send(new InputHostMsg_DidOverscroll(routing_id_, params));
+  if (mojom::WidgetInputHandlerHost* host =
+          widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
+    host->DidOverscroll(params);
   }
 }
 
@@ -1495,16 +1429,6 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
     input_event_queue_ = new MainThreadEventQueue(
         this, render_thread->GetWebMainThreadScheduler()->InputTaskRunner(),
         render_thread->GetWebMainThreadScheduler(), should_generate_frame_sink);
-
-    InputHandlerManager* input_handler_manager =
-        render_thread->input_handler_manager();
-    if (input_handler_manager) {
-      input_handler_manager->AddInputHandler(
-          routing_id_, compositor()->GetInputHandler(), input_event_queue_,
-          weak_ptr_factory_.GetWeakPtr(),
-          compositor_deps_->IsScrollAnimatorEnabled());
-      has_added_input_handler_ = true;
-    }
   }
 
   UpdateURLForCompositorUkm();
@@ -1829,13 +1753,9 @@ void RenderWidget::OnImeSetComposition(
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
     // sure we are in a consistent state.
-    if (widget_input_handler_manager_) {
-      if (mojom::WidgetInputHandlerHost* host =
-              widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
-        host->ImeCancelComposition();
-      }
-    } else {
-      Send(new InputHostMsg_ImeCancelComposition(routing_id()));
+    if (mojom::WidgetInputHandlerHost* host =
+            widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
+      host->ImeCancelComposition();
     }
   }
   UpdateCompositionInfo(false /* not an immediate request */);
@@ -2125,15 +2045,10 @@ void RenderWidget::UpdateCompositionInfo(bool immediate_request) {
   }
   composition_character_bounds_ = character_bounds;
   composition_range_ = range;
-  if (widget_input_handler_manager_) {
-    if (mojom::WidgetInputHandlerHost* host =
-            widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
-      host->ImeCompositionRangeChanged(composition_range_,
-                                       composition_character_bounds_);
-    }
-  } else {
-    Send(new InputHostMsg_ImeCompositionRangeChanged(
-        routing_id(), composition_range_, composition_character_bounds_));
+  if (mojom::WidgetInputHandlerHost* host =
+          widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
+    host->ImeCompositionRangeChanged(composition_range_,
+                                     composition_character_bounds_);
   }
 }
 
@@ -2562,11 +2477,7 @@ void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
   if (!input_handler_->ProcessTouchAction(touch_action))
     return;
 
-  if (widget_input_handler_manager_) {
-    widget_input_handler_manager_->ProcessTouchAction(touch_action);
-  } else {
-    Send(new InputHostMsg_SetTouchAction(routing_id_, touch_action));
-  }
+  widget_input_handler_manager_->ProcessTouchAction(touch_action);
 }
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {

@@ -54,7 +54,7 @@ class TestRenderFrame : public RenderFrameImpl {
   void SetCompositionFromExistingText(
       int start,
       int end,
-      const std::vector<blink::WebImeTextSpan>& ime_text_spans);
+      const std::vector<ui::ImeTextSpan>& ime_text_spans);
 
   blink::WebNavigationPolicy DecidePolicyForNavigation(
       const blink::WebFrameClient::NavigationPolicyInfo& info) override;
@@ -70,8 +70,11 @@ class TestRenderFrame : public RenderFrameImpl {
 
   mojom::FrameHost* GetFrameHost() override;
 
+  mojom::FrameInputHandler* GetFrameInputHandler();
+
   std::unique_ptr<MockFrameHost> mock_frame_host_;
   base::Optional<GURL> next_request_url_override_;
+  mojom::FrameInputHandlerPtr frame_input_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrame);
 };

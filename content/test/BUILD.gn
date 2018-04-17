@@ -1400,7 +1400,6 @@ test("content_unittests") {
     "../browser/renderer_host/input/fling_controller_unittest.cc",
     "../browser/renderer_host/input/gesture_event_queue_unittest.cc",
     "../browser/renderer_host/input/input_router_impl_unittest.cc",
-    "../browser/renderer_host/input/legacy_input_router_impl_unittest.cc",
     "../browser/renderer_host/input/mock_input_disposition_handler.cc",
     "../browser/renderer_host/input/mock_input_disposition_handler.h",
     "../browser/renderer_host/input/mock_input_router_client.cc",
@@ -1537,7 +1536,6 @@ test("content_unittests") {
     "../common/indexed_db/indexed_db_key_unittest.cc",
     "../common/input/event_with_latency_info_unittest.cc",
     "../common/input/gesture_event_stream_validator_unittest.cc",
-    "../common/input/input_param_traits_unittest.cc",
     "../common/input/touch_event_stream_validator_unittest.cc",
     "../common/inter_process_time_ticks_converter_unittest.cc",
     "../common/mac/attributed_string_coder_unittest.mm",
@@ -1588,7 +1586,6 @@ test("content_unittests") {
     "../renderer/indexed_db/mock_webidbcallbacks.h",
     "../renderer/indexed_db/webidbcursor_impl_unittest.cc",
     "../renderer/indexed_db/webidbdatabase_impl_unittest.cc",
-    "../renderer/input/input_event_filter_unittest.cc",
     "../renderer/input/main_thread_event_queue_unittest.cc",
     "../renderer/loader/resource_dispatcher_unittest.cc",
     "../renderer/loader/shared_memory_data_consumer_handle_unittest.cc",
@@ -2091,7 +2088,6 @@ test("content_perftests") {
   }
 
   sources = [
-    "../browser/renderer_host/input/legacy_input_router_impl_perftest.cc",
     "../test/run_all_perftests.cc",
   ]
   deps = [

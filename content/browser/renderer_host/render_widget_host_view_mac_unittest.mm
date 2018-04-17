@@ -359,7 +359,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     ui::SetEventTickClockForTesting(&mock_clock_);
     SetFeatureList();
 
-    mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
     vsync_feature_list_.InitAndEnableFeature(
         features::kVsyncAlignedInputEvents);
   }
@@ -451,7 +450,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   // This class isn't derived from PlatformTest.
   base::mac::ScopedNSAutoreleasePool pool_;
 
-  base::test::ScopedFeatureList mojo_feature_list_;
   base::test::ScopedFeatureList vsync_feature_list_;
   base::test::ScopedFeatureList feature_list_;
 

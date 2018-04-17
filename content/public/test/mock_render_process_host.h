@@ -262,12 +262,6 @@ class ScopedMockRenderProcessHostFactory : public MockRenderProcessHostFactory {
   DISALLOW_COPY_AND_ASSIGN(ScopedMockRenderProcessHostFactory);
 };
 
-// Convenient method to retrieve |InputMsg_HandleInputEvent|s from process sink
-// and returns a string of WebInputEvent types. Will append a trailing '*' if
-// other types of messages were found.
-// This method clears the sink.
-std::string GetInputMessageTypes(MockRenderProcessHost*);
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_MOCK_RENDER_PROCESS_HOST_H_

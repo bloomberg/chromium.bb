@@ -212,10 +212,6 @@ const base::Feature kModuleScriptsDynamicImport{
 const base::Feature kModuleScriptsImportMetaUrl{
     "ModuleScriptsImportMetaUrl", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Mojo-based Input Event routing.
-const base::Feature kMojoInputMessages{"MojoInputMessages",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Mojo-based Session Storage.
 const base::Feature kMojoSessionStorage{"MojoSessionStorage",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

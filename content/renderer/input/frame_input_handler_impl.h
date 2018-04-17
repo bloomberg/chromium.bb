@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_INPUT_FRAME_INPUT_HANDLER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -35,7 +36,7 @@ class MainThreadEventQueue;
 //
 // When a compositor thread isn't used the mojo channel is just bound
 // on the main thread and messages are handled right away.
-class FrameInputHandlerImpl : public mojom::FrameInputHandler {
+class CONTENT_EXPORT FrameInputHandlerImpl : public mojom::FrameInputHandler {
  public:
   static void CreateMojoService(
       base::WeakPtr<RenderFrameImpl> render_frame,

@@ -122,56 +122,6 @@ class ScreenshotTracker : public NavigationEntryScreenshotManager {
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTracker);
 };
 
-class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
- public:
-  InputEventMessageFilterWaitsForAcks()
-      : BrowserMessageFilter(InputMsgStart),
-        type_(blink::WebInputEvent::kUndefined),
-        state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {}
-
-  void WaitForAck(blink::WebInputEvent::Type type) {
-    base::RunLoop run_loop;
-    base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
-    base::AutoReset<blink::WebInputEvent::Type> reset_type(&type_, type);
-    run_loop.Run();
-  }
-
-  InputEventAckState last_ack_state() const { return state_; }
-
- protected:
-  ~InputEventMessageFilterWaitsForAcks() override {}
-
- private:
-  void ReceivedEventAck(blink::WebInputEvent::Type type,
-                        InputEventAckState state) {
-    if (type_ == type) {
-      state_ = state;
-      quit_.Run();
-    }
-  }
-
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
-      InputHostMsg_HandleInputEvent_ACK::Param params;
-      InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
-      blink::WebInputEvent::Type type = std::get<0>(params).type;
-      InputEventAckState ack = std::get<0>(params).state;
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&InputEventMessageFilterWaitsForAcks::ReceivedEventAck,
-                         this, type, ack));
-    }
-    return false;
-  }
-
-  base::Closure quit_;
-  blink::WebInputEvent::Type type_;
-  InputEventAckState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputEventMessageFilterWaitsForAcks);
-};
-
 class WebContentsViewAuraTest : public ContentBrowserTest {
  public:
   WebContentsViewAuraTest() : screenshot_manager_(nullptr) {}
@@ -338,10 +288,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
         GetRenderViewHost()->GetWidget()->GetView());
   }
 
-  InputEventMessageFilterWaitsForAcks* filter() {
-    return filter_.get();
-  }
-
   void WaitAFrame() {
     while (!GetRenderWidgetHost()->ScheduleComposite())
       GiveItSomeTime();
@@ -356,11 +302,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     screenshot_manager_->SetScreenshotInterval(interval_ms);
   }
 
-  void AddInputEventMessageFilter() {
-    filter_ = new InputEventMessageFilterWaitsForAcks();
-    GetRenderWidgetHost()->GetProcess()->AddFilter(filter_.get());
-  }
-
   // ContentBrowserTest:
   void PostRunTestOnMainThread() override {
     // Delete this before the WebContents is destroyed.
@@ -370,7 +311,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
  private:
   ScreenshotTracker* screenshot_manager_;
-  scoped_refptr<InputEventMessageFilterWaitsForAcks> filter_;
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
@@ -965,8 +905,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_OverscrollNavigationTouchThrottling) {
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
-  AddInputEventMessageFilter();
-
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   aura::Window* content = web_contents->GetContentNativeView();
@@ -984,24 +922,35 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       ExecuteSyncJSFunction(web_contents->GetMainFrame(),
                             "reset_touchmove_count()");
     }
+    InputEventAckWaiter touch_start_waiter(
+        GetRenderWidgetHost(),
+        base::BindRepeating([](content::InputEventAckSource,
+                               content::InputEventAckState state,
+                               const blink::WebInputEvent& event) {
+          return event.GetType() == blink::WebGestureEvent::kTouchStart &&
+                 state == content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+        }));
     // Send touch press.
     SyntheticWebTouchEvent touch;
     touch.PressPoint(bounds.x() + 2, bounds.y() + 10);
     GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
                                                             ui::LatencyInfo());
-    filter()->WaitForAck(blink::WebInputEvent::kTouchStart);
+    touch_start_waiter.Wait();
     WaitAFrame();
-
-    // Assert on the ack, because we'll end up waiting for acks that will never
-    // come if this is not true.
-    ASSERT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter()->last_ack_state());
 
     // Send first touch move, and then a scroll begin.
     touch.MovePoint(0, bounds.x() + 20 + 1 * dx, bounds.y() + 100);
+    InputEventAckWaiter touch_move_waiter(
+        GetRenderWidgetHost(),
+        base::BindRepeating([](content::InputEventAckSource,
+                               content::InputEventAckState state,
+                               const blink::WebInputEvent& event) {
+          return event.GetType() == blink::WebGestureEvent::kTouchMove &&
+                 state == content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+        }));
     GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
                                                             ui::LatencyInfo());
-    filter()->WaitForAck(blink::WebInputEvent::kTouchMove);
-    ASSERT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter()->last_ack_state());
+    touch_move_waiter.Wait();
 
     blink::WebGestureEvent scroll_begin =
         SyntheticWebGestureEventBuilder::BuildScrollBegin(
