@@ -292,7 +292,7 @@
     <div class="dialog-header">
       <div id="location-breadcrumbs" class="breadcrumbs"></div>
       <div id="cancel-selection-button-wrapper">
-        <paper-button id="cancel-selection-button" tabindex="8"
+        <paper-button id="cancel-selection-button" class="menu-button" tabindex="8"
               i18n-values="aria-label:CANCEL_SELECTION_BUTTON_LABEL">
           <span class="icon-arrow-back"></span>
           <span id="cancel-selection-label" i18n-content="CANCEL_SELECTION_BUTTON_LABEL"></span>
@@ -300,11 +300,11 @@
       </div>
       <div id="files-selected-label"></div>
       <div class="spacer"></div>
-      <button id="tasks" class="combobutton" menu="#tasks-menu"
+      <button id="tasks" class="combobutton menu-button" menu="#tasks-menu"
               tabindex="10" hidden
               i18n-values="aria-label:TASKS_BUTTON_LABEL">
       </button>
-      <button id="share-menu-button" class="icon-button" tabindex="11" hidden
+      <button id="share-menu-button" class="icon-button menu-button" tabindex="11" hidden
               menu="#share-menu"
               i18n-values="aria-label:SHARE_BUTTON_TOOLTIP"
               aria-activedescendant="share-menu"
@@ -312,14 +312,14 @@
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>
-      <button id="delete-button" class="icon-button" tabindex="12" hidden
+      <button id="delete-button" class="icon-button menu-button" tabindex="12" hidden
               i18n-values="aria-label:DELETE_BUTTON_LABEL"
               visibleif="full-page"
               has-tooltip>
         <files-ripple></files-ripple>
         <div class="icon"></div>
       </button>
-      <button id="search-button" class="icon-button" tabindex="13"
+      <button id="search-button" class="icon-button menu-button" tabindex="13"
               i18n-values="aria-label:SEARCH_TEXT_LABEL"
               has-tooltip>
         <files-toggle-ripple></files-toggle-ripple>
@@ -332,7 +332,7 @@
           <span class="clear" slot="suffix"></span>
         </paper-input-container>
       </div>
-      <button id="refresh-button" class="icon-button" tabindex="15" hidden
+      <button id="refresh-button" class="icon-button menu-button" tabindex="15" hidden
               i18n-values="aria-label:REFRESH_BUTTON_LABEL"
               command="#refresh" has-tooltip>
         <files-ripple></files-ripple>
@@ -343,14 +343,14 @@
            hidden>
         <div class="buttons">
           <button id="cloud-import-button"
-                  class="icon-button"
+                  class="icon-button menu-button"
                   tabindex="16"
                   i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
                   has-tooltip>
             <iron-icon icon="files:cloud-queue"></iron-icon>
           </button>
           <button id="cloud-import-details-button"
-                  class="icon-button"
+                  class="icon-button menu-button"
                   tabindex="16"
                   i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS"
                   has-tooltip>
@@ -362,13 +362,13 @@
           <files-toggle-ripple></files-toggle-ripple>
         </div>
       </div>
-      <button id="view-button" class="icon-button" tabindex="17"
+      <button id="view-button" class="icon-button menu-button" tabindex="17"
               i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL"
               has-tooltip>
         <files-ripple></files-ripple>
         <div class="icon"></div>
       </button>
-      <button id="sort-button" class="icon-button" tabindex="18"
+      <button id="sort-button" class="icon-button menu-button" tabindex="18"
               menu="#sort-menu"
               i18n-values="aria-label:SORT_BUTTON_TOOLTIP"
               aria-activedescendant="sort-menu"
@@ -376,7 +376,7 @@
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>
-      <button id="gear-button" class="icon-button" tabindex="19"
+      <button id="gear-button" class="icon-button menu-button" tabindex="19"
               menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu"
@@ -384,7 +384,7 @@
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>
-      <button id="selection-menu-button" class="icon-button" tabindex="19"
+      <button id="selection-menu-button" class="icon-button menu-button" tabindex="19"
               menu="#file-context-menu"
               i18n-values="aria-label:SELECTION_MENU_BUTTON_TOOLTIP"
               aria-activedescendant="file-context-menu"
