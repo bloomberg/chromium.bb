@@ -745,6 +745,10 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     # Update Gerrit and Google Storage with the Pre-CQ status.
+    if not self.sync_stage.pool:
+      logging.warning('No validation pool available. Skipping PreCQCompletion.')
+      return
+
     if self.success:
       self.sync_stage.pool.HandlePreCQPerConfigSuccess()
     else:
