@@ -326,7 +326,6 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     bool updated = MaybeUpdateFragmentBfcOffset(input_bfc_block_offset);
 
     if (updated && abort_when_bfc_resolved_) {
-      container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
       return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
     }
 
@@ -408,7 +407,6 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
       if (!success) {
         // We need to abort the layout, as our BFC offset was resolved.
-        container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
         return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
       }
       if (container_builder_.DidBreak() && IsFragmentainerOutOfSpace())
@@ -515,7 +513,6 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     DCHECK(!previous_inflow_position.empty_block_affected_by_clearance);
     DCHECK(!ConstraintSpace().IsNewFormattingContext());
 
-    container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
     return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
   }
 
