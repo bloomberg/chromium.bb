@@ -153,12 +153,12 @@ TEST(EscapeTest, UnescapeURLComponent) {
        "Some%20random text %25%2dOK"},
       {"Some%20random text %25%2dOK", UnescapeRule::NORMAL,
        "Some%20random text %25-OK"},
-      {"Some%20random text %25%E2%80", UnescapeRule::NORMAL,
-       "Some%20random text %25\xE2\x80"},
-      {"Some%20random text %25%E2%80OK", UnescapeRule::NORMAL,
-       "Some%20random text %25\xE2\x80OK"},
-      {"Some%20random text %25%E2%80%84OK", UnescapeRule::NORMAL,
-       "Some%20random text %25\xE2\x80\x84OK"},
+      {"Some%20random text %25%E1%A6", UnescapeRule::NORMAL,
+       "Some%20random text %25\xE1\xA6"},
+      {"Some%20random text %25%E1%A6OK", UnescapeRule::NORMAL,
+       "Some%20random text %25\xE1\xA6OK"},
+      {"Some%20random text %25%E1%A6%99OK", UnescapeRule::NORMAL,
+       "Some%20random text %25\xE1\xA6\x99OK"},
 
       // BiDi Control characters should not be unescaped unless explicity told
       // to
@@ -235,6 +235,18 @@ TEST(EscapeTest, UnescapeURLComponent) {
       {"Some%20random text %25%F0%9F%94%93OK",
        UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
        "Some%20random text %25\xF0\x9F\x94\x93OK"},
+
+      // Spaces
+      {"(%C2%85)(%C2%A0)(%E1%9A%80)(%E2%80%80)", UnescapeRule::NORMAL,
+       "(%C2%85)(%C2%A0)(%E1%9A%80)(%E2%80%80)"},
+      {"(%E2%80%81)(%E2%80%82)(%E2%80%83)(%E2%80%84)", UnescapeRule::NORMAL,
+       "(%E2%80%81)(%E2%80%82)(%E2%80%83)(%E2%80%84)"},
+      {"(%E2%80%85)(%E2%80%86)(%E2%80%87)(%E2%80%88)", UnescapeRule::NORMAL,
+       "(%E2%80%85)(%E2%80%86)(%E2%80%87)(%E2%80%88)"},
+      {"(%E2%80%89)(%E2%80%8A)(%E2%80%A8)(%E2%80%A9)", UnescapeRule::NORMAL,
+       "(%E2%80%89)(%E2%80%8A)(%E2%80%A8)(%E2%80%A9)"},
+      {"(%E2%80%AF)(%E2%81%9F)(%E3%80%80)", UnescapeRule::NORMAL,
+       "(%E2%80%AF)(%E2%81%9F)(%E3%80%80)"},
 
       // Two spoofing characters in a row should not be unescaped.
       {"%D8%9C%D8%9C", UnescapeRule::NORMAL, "%D8%9C%D8%9C"},
