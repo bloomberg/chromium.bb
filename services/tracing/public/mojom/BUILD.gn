@@ -10,6 +10,7 @@ mojom_component("mojom") {
 
   sources = [
     "constants.mojom",
+    "perfetto_service.mojom",
     "tracing.mojom",
   ]
 
