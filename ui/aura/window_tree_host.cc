@@ -37,8 +37,19 @@
 
 namespace aura {
 
+namespace {
+
 const char kWindowTreeHostForAcceleratedWidget[] =
     "__AURA_WINDOW_TREE_HOST_ACCELERATED_WIDGET__";
+
+bool ShouldAllocateLocalSurfaceId() {
+  // When running with the window service (either in 'mus' or 'mash' mode), the
+  // LocalSurfaceId allocation for the WindowTreeHost is managed by the
+  // WindowTreeClient and WindowTreeHostMus.
+  return Env::GetInstance()->mode() == Env::Mode::LOCAL;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, public:
@@ -65,8 +76,8 @@ void WindowTreeHost::InitHost() {
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();
 
-  InitCompositor();
   UpdateRootWindowSizeInPixels();
+  InitCompositor();
   Env::GetInstance()->NotifyHostInitialized(this);
 }
 
@@ -117,10 +128,20 @@ gfx::Transform WindowTreeHost::GetInverseRootTransformForLocalEventCoordinates()
 }
 
 void WindowTreeHost::UpdateRootWindowSizeInPixels() {
+#if DCHECK_IS_ON()
+  // Validate that the LocalSurfaceId does not change
+  bool compositor_inited = !!compositor()->root_layer();
+  auto store_local_surface_id =
+      compositor_inited ? window()->GetLocalSurfaceId() : viz::LocalSurfaceId();
+#endif
   gfx::Rect transformed_bounds_in_pixels =
       GetTransformedRootWindowBoundsInPixels(GetBoundsInPixels().size());
   window()->SetBounds(transformed_bounds_in_pixels);
-  window()->SetDeviceScaleFactor(device_scale_factor_);
+#if DCHECK_IS_ON()
+  if (compositor_inited && ShouldAllocateLocalSurfaceId()) {
+    DCHECK_EQ(store_local_surface_id, window()->GetLocalSurfaceId());
+  }
+#endif
 }
 
 void WindowTreeHost::ConvertDIPToScreenInPixels(gfx::Point* point) const {
@@ -338,12 +359,12 @@ void WindowTreeHost::OnHostResizedInPixels(
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();
 
-  // The layer, and the observers should be notified of the
-  // transformed size of the root window.
+  // Update the state of the root window.
   UpdateRootWindowSizeInPixels();
 
-  // The compositor should have the same size as the native root window host.
-  // Get the latest scale from display because it might have been changed.
+  // Allocate a new LocalSurfaceId for the new state.
+  if (ShouldAllocateLocalSurfaceId())
+    window_->AllocateLocalSurfaceId();
   compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
                                window()->GetLocalSurfaceId());
 

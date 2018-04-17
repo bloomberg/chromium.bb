@@ -217,11 +217,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // LayoutManager may adjust the bounds.
   void SetBounds(const gfx::Rect& new_bounds);
 
-  // Explicitly set a device scale factor for the window. Note that the
-  // window's device scale factor is also set when adding its ui::Layer to the
-  // layer tree of a ui::Compositor.
-  void SetDeviceScaleFactor(float device_scale_factor);
-
   // Changes the bounds of the window in the screen coordinates.
   // If present, the window's parent's LayoutManager may adjust the bounds.
   void SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen_coords,

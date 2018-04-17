@@ -764,17 +764,6 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   }
 }
 
-void Window::SetDeviceScaleFactor(float device_scale_factor) {
-  float old_device_scale_factor = layer()->device_scale_factor();
-  layer()->OnDeviceScaleFactorChanged(device_scale_factor);
-
-  // If we are currently not the layer's delegate, we will not get the device
-  // scale factor changed notification from the layer (this typically happens
-  // after animating hidden). We must notify ourselves.
-  if (layer()->delegate() != this)
-    OnDeviceScaleFactorChanged(old_device_scale_factor, device_scale_factor);
-}
-
 void Window::SetVisible(bool visible) {
   if (visible == layer()->GetTargetVisibility())
     return;  // No change.
