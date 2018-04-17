@@ -522,11 +522,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Transitions to the loaded state.
   void ChangeToLoadedState();
 
-  // Called by DefaultSearchManager when the effective default search engine has
-  // changed.
-  void OnDefaultSearchChange(const TemplateURLData* new_dse_data,
-                             DefaultSearchManager::Source source);
-
   // Applies a DSE change and reports metrics if appropriate.
   void ApplyDefaultSearchChange(const TemplateURLData* new_dse_data,
                                 DefaultSearchManager::Source source);
@@ -573,9 +568,9 @@ class TemplateURLService : public WebDataServiceConsumer,
                                               PrefService* prefs);
 
   // If the TemplateURL's sync GUID matches the kSyncedDefaultSearchProviderGUID
-  // preference it will be used to update the DSE in memory and as persisted in
-  // preferences.
-  void MaybeUpdateDSEAfterSync(TemplateURL* synced_turl);
+  // preference it will be used to update the DSE in prefs.
+  // OnDefaultSearchChange may be triggered as a result.
+  void MaybeUpdateDSEViaPrefs(TemplateURL* synced_turl);
 
   // Iterates through the TemplateURLs to see if one matches the visited url.
   // For each TemplateURL whose url matches the visited url

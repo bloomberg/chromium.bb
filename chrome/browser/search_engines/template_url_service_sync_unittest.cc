@@ -1794,6 +1794,46 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithExtensionDefaultSearch) {
   EXPECT_EQ(expected_default, model()->GetDefaultSearchProvider());
 }
 
+TEST_F(TemplateURLServiceSyncTest, OverrideSyncPrefWithExtensionDefaultSearch) {
+  // Add third-party default search engine.
+  TemplateURL* user_dse = model()->Add(CreateTestTemplateURL(
+      ASCIIToUTF16("some_keyword"), "http://new.com/{searchTerms}", "guid"));
+  ASSERT_TRUE(user_dse);
+  model()->SetUserSelectedDefaultSearchProvider(user_dse);
+  EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
+
+  // Change the default search provider to an extension one.
+  std::unique_ptr<TemplateURLData> extension =
+      GenerateDummyTemplateURLData("extensiondefault");
+  const TemplateURL* ext_dse =
+      test_util_a_->AddExtensionControlledTURL(std::make_unique<TemplateURL>(
+          *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext_id",
+          Time(), true));
+  EXPECT_EQ(ext_dse, model()->GetDefaultSearchProvider());
+
+  // Update the custom search engine that was default but now is hidden by
+  // |ext_dse|.
+  model()->ResetTemplateURL(user_dse, ASCIIToUTF16("New search engine"),
+                            ASCIIToUTF16("new_keyword"),
+                            "http://new.com/{searchTerms}");
+
+  // Change kSyncedDefaultSearchProviderGUID to point to an nonexisting entry.
+  // It can happen when the prefs are synced but the search engines are not.
+  // That step is importnt because otherwise RemoveExtensionControlledTURL below
+  // will not overwrite the GUID and won't trigger a recursion call.
+  profile_a()->GetTestingPrefService()->SetString(
+      prefs::kSyncedDefaultSearchProviderGUID, "remote_default_guid");
+
+  // The search engine is still the same.
+  EXPECT_EQ(ext_dse, model()->GetDefaultSearchProvider());
+
+  // Remove extension DSE. Ensure that the DSP changes to the existing search
+  // engine. It should not cause a crash.
+  test_util_a_->RemoveExtensionControlledTURL("ext_id");
+
+  EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
+}
+
 // Check that keyword conflict between synced engine and extension engine is
 // resolved correctly.
 TEST_F(TemplateURLServiceSyncTest, ExtensionAndNormalEngineConflict) {
