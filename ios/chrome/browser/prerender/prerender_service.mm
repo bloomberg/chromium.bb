@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/prerender/preload_controller.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#include "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,6 +33,13 @@ void PrerenderService::StartPrerender(const GURL& url,
                                       const web::Referrer& referrer,
                                       ui::PageTransition transition,
                                       bool immediately) {
+  // PrerenderService is not compatible with WKBasedNavigationManager because it
+  // loads the URL in a new WKWebView, which doesn't have the current session
+  // history. TODO(crbug.com/814789): decide whether PrerenderService needs to
+  // be supported after evaluating the performance impact in Finch experiment.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
+    return;
+
   [controller_ prerenderURL:url
                    referrer:referrer
                  transition:transition
