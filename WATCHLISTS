@@ -1974,6 +1974,7 @@
     'chromeos_dbus': ['hashimoto+watch@chromium.org'],
     'chromeos_geolocation': ['alemate+watch@chromium.org'],
     'chromeos_lkgm': ['achuith+watch@chromium.org',
+                      'bpastene+watch@chromium.org',
                       'stevenjb+watch@chromium.org'],
     'chromeos_login': ['achuith+watch@chromium.org',
                        'alemate+watch@chromium.org'],
