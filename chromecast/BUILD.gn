@@ -201,8 +201,9 @@ cast_test_group("cast_tests") {
     gtest_excludes = []
     if (target_os == "linux") {
       if (is_cast_desktop_build) {
-        # Disable PartitionAllocTest.RepeatedReturnNullDirect (b/67975693)
-        gtest_excludes += [ "PartitionAllocTest.RepeatedReturnNullDirect" ]
+        # Disable PartitionAllocReturnNullTest.RepeatedReturnNullDirect (b/67975693)
+        gtest_excludes +=
+            [ "PartitionAllocReturnNullTest.RepeatedReturnNullDirect" ]
       } else {
         # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
         # Disable ProcessUtilTest.* (need to define OS_ANDROID)
