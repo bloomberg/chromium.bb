@@ -295,13 +295,15 @@ body.check-select .dialog-header button paper-ripple {
   color: rgb(90, 90, 90);
 }
 
+/** Avoid highlighting if element doesn't have focus by tab (tabindex=-1)
+ *  or if focusing during mouse click event ":active" pseudo-selector. */
 .dialog-header
-    button:focus:not(.using-mouse):not([tabindex='-1']):not(:active) {
+    .menu-button:focus:not([tabindex='-1']):not(:active) {
   background-color: rgba(255, 255, 255, 0.20);
 }
 
 body.check-select .dialog-header
-    button:focus:not(.using-mouse):not([tabindex='-1']):not(:active) {
+    .menu-button:focus:not([tabindex='-1']):not(:active) {
   background-color: rgba(153, 153, 153, 0.20);
 }
 
