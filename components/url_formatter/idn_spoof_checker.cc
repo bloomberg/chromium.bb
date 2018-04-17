@@ -38,7 +38,9 @@ const size_t kNumberOfLabelsToCheck = 3;
 const unsigned char* g_graph = kDafsa;
 size_t g_graph_length = sizeof(kDafsa);
 
-bool LookupMatchInTopDomains(base::StringPiece skeleton) {
+bool LookupMatchInTopDomains(const icu::UnicodeString& ustr_skeleton) {
+  std::string skeleton;
+  ustr_skeleton.toUTF8String(skeleton);
   DCHECK_NE(skeleton.back(), '.');
   auto labels = base::SplitStringPiece(skeleton, ".", base::KEEP_WHITESPACE,
                                        base::SPLIT_WANT_ALL);
@@ -169,7 +171,6 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - {U+04AB (ҫ), U+1004 (င)} => c
   //   - U+04B1 (ұ) => y
   //   - U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ) => x
-  //   - U+04CF (ӏ) => i (on Windows), l (elsewhere)
   //   - U+0503 (ԃ) => d
   //   - {U+050D (ԍ), U+100c (ဌ)} => g
   //   - {U+0D1F (ട), U+0E23 (ร)} => s
@@ -182,11 +183,6 @@ IDNSpoofChecker::IDNSpoofChecker() {
                                    "[ƅьҍв] > b;  [ωшщฟ] > w; [мӎ] > m;"
                                    "[єҽҿၔ] > e; ґ > r; [ғӻ] > f; [ҫင] > c;"
                                    "ұ > y; [χҳӽӿ] > x;"
-#if defined(OS_WIN)
-                                   "ӏ > i;"
-#else
-                                   "ӏ > l;"
-#endif
                                    "ԃ  > d; [ԍဌ] > g; [ടร] > s; ၂ > j;"
                                    "[зӡ] > 3"),
       UTRANS_FORWARD, parse_error, status));
@@ -309,23 +305,36 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
 
 bool IDNSpoofChecker::SimilarToTopDomains(base::StringPiece16 hostname) {
   size_t hostname_length = hostname.length() - (hostname.back() == '.' ? 1 : 0);
-  icu::UnicodeString ustr_host(FALSE, hostname.data(), hostname_length);
+  icu::UnicodeString host(FALSE, hostname.data(), hostname_length);
   // If input has any characters outside Latin-Greek-Cyrillic and [0-9._-],
   // there is no point in getting rid of diacritics because combining marks
   // attached to non-LGC characters are already blocked.
-  if (lgc_letters_n_ascii_.span(ustr_host, 0, USET_SPAN_CONTAINED) ==
-      ustr_host.length())
-    diacritic_remover_.get()->transliterate(ustr_host);
-  extra_confusable_mapper_.get()->transliterate(ustr_host);
+  if (lgc_letters_n_ascii_.span(host, 0, USET_SPAN_CONTAINED) == host.length())
+    diacritic_remover_.get()->transliterate(host);
+  extra_confusable_mapper_.get()->transliterate(host);
 
   UErrorCode status = U_ZERO_ERROR;
-  icu::UnicodeString ustr_skeleton;
-  uspoof_getSkeletonUnicodeString(checker_, 0, ustr_host, ustr_skeleton,
-                                  &status);
-  if (U_FAILURE(status))
-    return false;
-  std::string skeleton;
-  return LookupMatchInTopDomains(ustr_skeleton.toUTF8String(skeleton));
+  icu::UnicodeString skeleton;
+
+  // Map U+04CF (ӏ) to lowercase L in addition to what uspoof_getSkeleton does
+  // (mapping it to lowercase I).
+  int32_t u04cf_pos;
+  if ((u04cf_pos = host.indexOf(0x4CF)) != -1) {
+    icu::UnicodeString host_alt(host);
+    size_t length = host_alt.length();
+    char16_t* buffer = host_alt.getBuffer(-1);
+    for (char16_t* uc = buffer + u04cf_pos ; uc < buffer + length; ++uc) {
+      if (*uc == 0x4CF)
+        *uc = 0x6C;  // Lowercase L
+    }
+    host_alt.releaseBuffer(length);
+    uspoof_getSkeletonUnicodeString(checker_, 0, host_alt, skeleton, &status);
+    if (U_SUCCESS(status) && LookupMatchInTopDomains(skeleton))
+      return true;
+  }
+
+  uspoof_getSkeletonUnicodeString(checker_, 0, host, skeleton, &status);
+  return U_SUCCESS(status) && LookupMatchInTopDomains(skeleton);
 }
 
 bool IDNSpoofChecker::IsMadeOfLatinAlikeCyrillic(

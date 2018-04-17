@@ -511,6 +511,16 @@ const IDNTestCase idn_cases[] = {
     // ӏԃԍ.com
     {"xn--s5a8h4a.com", L"\x04cf\x0503\x050d.com", false},
 
+    // U+04CF(ӏ) is mapped to multiple characters, lowercase L(l) and
+    // lowercase I(i). Lowercase L is also regarded as similar to digit 1.
+    // The test domain list has {ig, ld, 1gd}.com for Cyrillic.
+    // ӏԍ.com
+    {"xn--s5a8j.com", L"\x04cf\x050d.com", false},
+    // ӏԃ.com
+    {"xn--s5a8h.com", L"\x04cf\x0503.com", false},
+    // ӏԍԃ.com
+    {"xn--s5a8h3a.com", L"\x04cf\x050d\x0503.com", false},
+
     // ꓲ2345б7890.com
     {"xn--23457890-e7g93622b.com", L"\xa4f2" L"2345\x0431" L"7890.com", false},
     // 1ᒿ345б7890.com
@@ -533,7 +543,8 @@ const IDNTestCase idn_cases[] = {
     // ငၔဌ၂ဝ.com (entirely made of Myanmar characters)
     {"xn--ridq5c9hnd.com", L"\x1004\x1054\x100c" L"\x1042\x101d.com", false},
 
-    // ฟรฟร.com (made of two Thai characters)
+    // ฟรฟร.com (made of two Thai characters. similar to wsws.com in
+    // some fonts)
     {"xn--w3calb.com", L"\x0e1f\x0e23\x0e1f\x0e23.com", false},
 
     // At one point the skeleton of 'w' was 'vv', ensure that
