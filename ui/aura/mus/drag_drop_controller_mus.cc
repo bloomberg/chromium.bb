@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -137,7 +136,7 @@ int DragDropControllerMus::StartDragAndDrop(
     ui::DragDropTypes::DragEventSource source) {
   DCHECK(!current_drag_state_);
 
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   WindowMus* root_window_mus = WindowMus::Get(root_window);
   const uint32_t change_id =
       drag_drop_controller_host_->CreateChangeIdForDrag(root_window_mus);
@@ -148,9 +147,6 @@ int DragDropControllerMus::StartDragAndDrop(
   // current_drag_state_ will be reset in |OnPerformDragDropCompleted| before
   // run_loop.Run() quits.
   current_drag_state_ = &current_drag_state;
-
-  base::MessageLoop* loop = base::MessageLoop::current();
-  base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
 
   ui::mojom::PointerKind mojo_source = ui::mojom::PointerKind::MOUSE;
   if (source != ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE) {
