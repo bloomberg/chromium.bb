@@ -89,8 +89,6 @@ class ASH_EXPORT AccessibilityController
   void SetVirtualKeyboardEnabled(bool enabled);
   bool IsVirtualKeyboardEnabled() const;
 
-  bool braille_display_connected() const { return braille_display_connected_; }
-
   // Triggers an accessibility alert to give the user feedback.
   void TriggerAccessibilityAlert(mojom::AccessibilityAlert alert);
 
@@ -194,7 +192,6 @@ class ASH_EXPORT AccessibilityController
   bool select_to_speak_enabled_ = false;
   bool sticky_keys_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;
-  bool braille_display_connected_ = false;
 
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>

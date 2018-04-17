@@ -505,8 +505,7 @@ void AccessibilityController::BrailleDisplayStateChanged(bool connected) {
   else if (connected && !spoken_feedback_enabled_)
     type = A11yNotificationType::kSpokenFeedbackBrailleEnabled;
 
-  braille_display_connected_ = connected;
-  if (braille_display_connected_)
+  if (connected)
     SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged();
 
