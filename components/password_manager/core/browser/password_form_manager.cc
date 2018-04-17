@@ -152,7 +152,7 @@ void SetFieldLabelsOnUpdate(const autofill::ServerFieldType password_type,
 // Sets the autofill type of the password field stored in |submitted_form| to
 // |password_type| in |field_types| map.
 void SetFieldLabelsOnSave(const autofill::ServerFieldType password_type,
-                          const autofill::PasswordForm& submitted_form,
+                          const autofill::PasswordForm& form,
                           FieldTypeMap* field_types) {
   DCHECK(password_type == autofill::PASSWORD ||
          password_type == autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD ||
@@ -160,11 +160,11 @@ void SetFieldLabelsOnSave(const autofill::ServerFieldType password_type,
          password_type == autofill::NOT_ACCOUNT_CREATION_PASSWORD)
       << password_type;
 
-  if (!submitted_form.new_password_element.empty()) {
-    (*field_types)[submitted_form.new_password_element] = password_type;
+  if (!form.new_password_element.empty()) {
+    (*field_types)[form.new_password_element] = password_type;
   } else {
-    DCHECK(!submitted_form.password_element.empty());
-    (*field_types)[submitted_form.password_element] = password_type;
+    DCHECK(!form.password_element.empty());
+    (*field_types)[form.password_element] = password_type;
   }
 }
 
@@ -914,18 +914,18 @@ bool PasswordFormManager::UploadPasswordVote(
       autofill::AutofillUploadContents::Field::NO_INFORMATION;
   if (autofill_type != autofill::USERNAME) {
     if (has_autofill_vote) {
-      DCHECK(submitted_form_);
       bool is_update = autofill_type == autofill::NEW_PASSWORD ||
                        autofill_type == autofill::PROBABLY_NEW_PASSWORD ||
                        autofill_type == autofill::NOT_NEW_PASSWORD;
+
       if (is_update) {
-        if (submitted_form_->new_password_element.empty())
+        if (form_to_upload.new_password_element.empty())
           return false;
-        SetFieldLabelsOnUpdate(autofill_type, *submitted_form_, &field_types);
+        SetFieldLabelsOnUpdate(autofill_type, form_to_upload, &field_types);
       } else {  // Saving.
-        SetFieldLabelsOnSave(autofill_type, *submitted_form_, &field_types);
+        SetFieldLabelsOnSave(autofill_type, form_to_upload, &field_types);
       }
-      field_types[submitted_form_->confirmation_password_element] =
+      field_types[form_to_upload.confirmation_password_element] =
           autofill::CONFIRMATION_PASSWORD;
     }
     if (autofill_type != autofill::ACCOUNT_CREATION_PASSWORD) {
@@ -1146,7 +1146,7 @@ void PasswordFormManager::CreatePendingCredentials() {
       // If a password was generated and we didn't find a match, we have to save
       // it in a separate entry since we have to store it but we don't know
       // where.
-      CreatePendingCredentialsForNewCredentials();
+      CreatePendingCredentialsForNewCredentials(password_to_save.second);
       is_new_login_ = true;
     } else {
       // We don't have a good candidate to choose as the default credential for
@@ -1159,7 +1159,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     is_new_login_ = true;
     // No stored credentials can be matched to the submitted form. Offer to
     // save new credentials.
-    CreatePendingCredentialsForNewCredentials();
+    CreatePendingCredentialsForNewCredentials(password_to_save.second);
     // Generate username correction votes.
     bool username_correction_found = FindCorrectedUsernameElement(
         submitted_form_->username_value, submitted_form_->password_value);
@@ -1174,7 +1174,6 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   if (!IsValidAndroidFacetURI(pending_credentials_.signon_realm)) {
     pending_credentials_.action = submitted_form_->action;
-    pending_credentials_.password_element = password_to_save.second;
     // If the user selected credentials we autofilled from a PasswordForm
     // that contained no action URL (IE6/7 imported passwords, for example),
     // bless it with the action URL from the observed form. See b/1107719.
@@ -1348,7 +1347,8 @@ const PasswordForm* PasswordFormManager::FindBestSavedMatch(
   return nullptr;
 }
 
-void PasswordFormManager::CreatePendingCredentialsForNewCredentials() {
+void PasswordFormManager::CreatePendingCredentialsForNewCredentials(
+    const base::string16& password_element) {
   // User typed in a new, unknown username.
   SetUserAction(UserAction::kOverrideUsernameAndPassword);
   pending_credentials_ = observed_form_;
@@ -1361,7 +1361,9 @@ void PasswordFormManager::CreatePendingCredentialsForNewCredentials() {
 
   // The password value will be filled in later, remove any garbage for now.
   pending_credentials_.password_value.clear();
-  pending_credentials_.password_element.clear();
+  // The password element should be determined earlier in |PasswordToSave|.
+  pending_credentials_.password_element = password_element;
+  // The new password's value and element name should be empty.
   pending_credentials_.new_password_value.clear();
   pending_credentials_.new_password_element.clear();
 }
