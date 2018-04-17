@@ -59,14 +59,21 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         mTaskFinishedCallback = callback;
         mLimitlessPrefetchingEnabled = taskParameters.getExtras().getBoolean(LIMITLESS_BUNDLE_KEY);
 
-        if (sSkipConditionCheckingForTesting) return NativeBackgroundTask.LOAD_NATIVE;
+        // Check current device conditions. They might be set to null when testing and for some
+        // specific Android devices.
+        final DeviceConditions deviceConditions;
+        if (!sSkipConditionCheckingForTesting) {
+            deviceConditions = DeviceConditions.getCurrentConditions(context);
+        } else {
+            deviceConditions = null;
+        }
 
-        // Check current device conditions.
-        DeviceConditions deviceConditions = DeviceConditions.getCurrentConditions(context);
-
-        if (!areBatteryConditionsMet(deviceConditions)
-                || !areNetworkConditionsMet(context, deviceConditions)
-                || deviceConditions.inPowerSaveMode()) {
+        // Note: when |deviceConditions| is null native is always loaded because with the evidence
+        // we have so far only specific devices that do not run on batteries actually return null.
+        if (deviceConditions != null
+                && (!areBatteryConditionsMet(deviceConditions)
+                           || !areNetworkConditionsMet(context, deviceConditions)
+                           || deviceConditions.inPowerSaveMode())) {
             return NativeBackgroundTask.RESCHEDULE;
         }
 

@@ -18,7 +18,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 
-/** Device network and power conditions. */
+/**
+ * Device network and power conditions.
+ * TODO(https://crbug.com/833644): improve API and implementation of DeviceConditions.
+ */
 public class DeviceConditions {
     private final boolean mPowerConnected;
     private final int mBatteryPercentage;
@@ -47,7 +50,10 @@ public class DeviceConditions {
         mPowerSaveOn = false;
     }
 
-    /** Returns the current device conditions. May be overridden for testing. */
+    /**
+     * Returns the current device conditions if the device supports obtaining battery status.
+     * Otherwise it will return null. May be overridden for testing.
+     */
     public static DeviceConditions getCurrentConditions(Context context) {
         Intent batteryStatus = getBatteryStatus(context);
         if (batteryStatus == null) return null;
