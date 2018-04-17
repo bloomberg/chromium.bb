@@ -102,6 +102,10 @@ cvox.TabsApiHandler.prototype = {
     }
     this.updateLoadingSoundsWhenTabFocusChanges_(activeInfo.tabId);
     chrome.tabs.get(activeInfo.tabId, function(tab) {
+      if (tab.status == 'loading') {
+        return;
+      }
+
       if (cvox.TabsApiHandler.shouldOutputSpeechAndBraille) {
         var title = tab.title ? tab.title : tab.url;
         cvox.ChromeVox.tts.speak(
@@ -176,6 +180,10 @@ cvox.TabsApiHandler.prototype = {
           this.updateLoadingSoundsWhenTabFocusChanges_(tabs[0].id);
 
         var tab = tabs[0] || {};
+        if (tab.status == 'loading') {
+          return;
+        }
+
         if (cvox.TabsApiHandler.shouldOutputSpeechAndBraille) {
           var msgId = window.incognito ? 'chrome_incognito_window_selected' :
                                          'chrome_normal_window_selected';
