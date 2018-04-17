@@ -2010,7 +2010,8 @@ void av1_read_bitdepth(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   } else if (cm->profile <= PROFILE_2) {
     cm->bit_depth = high_bitdepth ? AOM_BITS_10 : AOM_BITS_8;
   } else {
-    assert(0 && "unsupported profile/bit-depth combination");
+    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                       "Unsupported profile/bit-depth combination");
   }
   return;
 }
@@ -3150,7 +3151,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
   }
-  assert(IMPLIES(cm->all_lossless, av1_superres_unscaled(cm)));
   setup_loopfilter(cm, rb);
 
   if (!cm->coded_lossless && cm->seq_params.enable_cdef) {
