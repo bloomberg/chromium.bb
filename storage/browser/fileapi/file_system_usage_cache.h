@@ -14,16 +14,15 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/sequence_checker.h"
+#include "base/timer/timer.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
-class TimedTaskHelper;
-
 class STORAGE_EXPORT FileSystemUsageCache {
  public:
-  explicit FileSystemUsageCache(base::SequencedTaskRunner* task_runner);
+  FileSystemUsageCache();
   ~FileSystemUsageCache();
 
   // Gets the size described in the .usage file even if dirty > 0 or
@@ -88,12 +87,13 @@ class STORAGE_EXPORT FileSystemUsageCache {
 
   bool HasCacheFileHandle(const base::FilePath& file_path);
 
-  bool CalledOnValidSequence();
+  // Used to verify that this is used from a single sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
 
-  std::unique_ptr<TimedTaskHelper> timer_;
+  // Used to scheduled delayed calls to CloseCacheFiles().
+  base::OneShotTimer timer_;
+
   std::map<base::FilePath, std::unique_ptr<base::File>> cache_files_;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::WeakPtrFactory<FileSystemUsageCache> weak_factory_;
 
