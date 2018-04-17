@@ -57,6 +57,13 @@ const HeapVector<PaymentDetailsModifier>& CanMakePaymentEvent::modifiers()
 void CanMakePaymentEvent::respondWith(ScriptState* script_state,
                                       ScriptPromise script_promise,
                                       ExceptionState& exception_state) {
+  if (!isTrusted()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "Cannot respond with data when the event is not trusted");
+    return;
+  }
+
   stopImmediatePropagation();
   if (observer_) {
     observer_->RespondWith(script_state, script_promise, exception_state);
