@@ -57,7 +57,7 @@ class RTCSessionDescriptionRequestImpl final
   ~RTCSessionDescriptionRequestImpl() override;
 
   void RequestSucceeded(const WebRTCSessionDescription&) override;
-  void RequestFailed(const String& error) override;
+  void RequestFailed(const WebRTCError& error) override;
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;

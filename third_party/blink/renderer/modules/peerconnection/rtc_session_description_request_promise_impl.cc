@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description.h"
 
@@ -47,11 +48,9 @@ void RTCSessionDescriptionRequestPromiseImpl::RequestSucceeded(
 }
 
 void RTCSessionDescriptionRequestPromiseImpl::RequestFailed(
-    const String& error) {
+    const WebRTCError& error) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
-    // TODO(guidou): The error code should come from the content layer. See
-    // crbug.com/589455
-    resolver_->Reject(DOMException::Create(kOperationError, error));
+    resolver_->Reject(CreateDOMExceptionFromWebRTCError(error));
   } else {
     // This is needed to have the resolver release its internal resources
     // while leaving the associated promise pending as specified.
