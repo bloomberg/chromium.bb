@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
@@ -523,59 +522,53 @@ class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
 
  protected:
   testing::AssertionResult ExpectGetAccounts(
-      const std::vector<std::string>& accounts) {
+      const std::vector<std::string>& gaia_ids) {
     scoped_refptr<IdentityGetAccountsFunction> func(
         new IdentityGetAccountsFunction);
     func->set_extension(
         ExtensionBuilder("Test").SetID(kExtensionId).Build().get());
     if (!utils::RunFunction(func.get(), std::string("[]"), browser(),
                             api_test_utils::NONE)) {
-      return GenerateFailureResult(accounts, NULL)
+      return GenerateFailureResult(gaia_ids, NULL)
              << "getAccounts did not return a result.";
     }
     const base::ListValue* callback_arguments = func->GetResultList();
     if (!callback_arguments)
-      return GenerateFailureResult(accounts, NULL) << "NULL result";
+      return GenerateFailureResult(gaia_ids, NULL) << "NULL result";
 
     if (callback_arguments->GetSize() != 1) {
-      return GenerateFailureResult(accounts, NULL)
+      return GenerateFailureResult(gaia_ids, NULL)
              << "Expected 1 argument but got " << callback_arguments->GetSize();
     }
 
     const base::ListValue* results;
     if (!callback_arguments->GetList(0, &results))
-      GenerateFailureResult(accounts, NULL) << "Result was not an array";
+      GenerateFailureResult(gaia_ids, NULL) << "Result was not an array";
 
     std::set<std::string> result_ids;
-    for (base::ListValue::const_iterator it = results->begin();
-         it != results->end();
-         ++it) {
+    for (const base::Value& item : *results) {
       std::unique_ptr<api::identity::AccountInfo> info =
-          api::identity::AccountInfo::FromValue(*it);
+          api::identity::AccountInfo::FromValue(item);
       if (info.get())
         result_ids.insert(info->id);
       else
-        return GenerateFailureResult(accounts, results);
+        return GenerateFailureResult(gaia_ids, results);
     }
 
-    for (std::vector<std::string>::const_iterator it = accounts.begin();
-         it != accounts.end();
-         ++it) {
-      if (result_ids.find(*it) == result_ids.end())
-        return GenerateFailureResult(accounts, results);
+    for (const std::string& gaia_id : gaia_ids) {
+      if (result_ids.find(gaia_id) == result_ids.end())
+        return GenerateFailureResult(gaia_ids, results);
     }
 
     return testing::AssertionResult(true);
   }
 
   testing::AssertionResult GenerateFailureResult(
-      const ::std::vector<std::string>& accounts,
+      const ::std::vector<std::string>& gaia_ids,
       const base::ListValue* results) {
     testing::Message msg("Expected: ");
-    for (std::vector<std::string>::const_iterator it = accounts.begin();
-         it != accounts.end();
-         ++it) {
-      msg << *it << " ";
+    for (const std::string& gaia_id : gaia_ids) {
+      msg << gaia_id << " ";
     }
     msg << "Actual: ";
     if (!results) {
@@ -600,12 +593,12 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, MultiAccountOn) {
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoneSignedIn) {
-  EXPECT_TRUE(ExpectGetAccounts(std::vector<std::string>()));
+  EXPECT_TRUE(ExpectGetAccounts({}));
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoPrimaryAccount) {
   AddAccount("secondary@example.com");
-  EXPECT_TRUE(ExpectGetAccounts(std::vector<std::string>()));
+  EXPECT_TRUE(ExpectGetAccounts({}));
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest,
@@ -616,24 +609,20 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest,
   // AccountFetcherService::OnRefreshTokenRevoked), which triggers DCHECKs in
   // IdentityManager::GetPrimaryAccountInfo.
   token_service_->RevokeCredentials(primary_account_id);
-  EXPECT_TRUE(ExpectGetAccounts(std::vector<std::string>()));
+  EXPECT_TRUE(ExpectGetAccounts({}));
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest,
                        PrimaryAccountSignedIn) {
   SignIn("primary@example.com");
-  std::vector<std::string> primary;
-  primary.push_back("gaia_id_for_primary@example.com");
-  EXPECT_TRUE(ExpectGetAccounts(primary));
+  EXPECT_TRUE(ExpectGetAccounts({"gaia_id_for_primary@example.com"}));
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, TwoAccountsSignedIn) {
   SignIn("primary@example.com");
   AddAccount("secondary@example.com");
-  std::vector<std::string> two_accounts;
-  two_accounts.push_back("gaia_id_for_primary@example.com");
-  two_accounts.push_back("gaia_id_for_secondary@example.com");
-  EXPECT_TRUE(ExpectGetAccounts(two_accounts));
+  EXPECT_TRUE(ExpectGetAccounts({"gaia_id_for_primary@example.com",
+                                 "gaia_id_for_secondary@example.com"}));
 }
 
 class IdentityOldProfilesGetAccountsFunctionTest
@@ -653,9 +642,7 @@ IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
                        TwoAccountsSignedIn) {
   SignIn("primary@example.com");
   AddAccount("secondary@example.com");
-  std::vector<std::string> only_primary;
-  only_primary.push_back("gaia_id_for_primary@example.com");
-  EXPECT_TRUE(ExpectGetAccounts(only_primary));
+  EXPECT_TRUE(ExpectGetAccounts({"gaia_id_for_primary@example.com"}));
 }
 
 class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
