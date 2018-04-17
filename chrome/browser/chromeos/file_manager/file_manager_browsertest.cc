@@ -425,13 +425,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_TabindexFocus DISABLED_TabindexFocus
-#else
-#define MAYBE_TabindexFocus TabindexFocus
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_TabindexFocus,
+    DISABLED_TabindexFocus,
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "tabindexFocus")));
 
