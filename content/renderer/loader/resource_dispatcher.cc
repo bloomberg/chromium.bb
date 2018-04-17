@@ -276,6 +276,15 @@ void ResourceDispatcher::OnReceivedRedirect(
     request_info->response_method = redirect_info.new_method;
     request_info->response_referrer = GURL(redirect_info.new_referrer);
     request_info->has_pending_redirect = true;
+    mojom::RedirectInfoPtr net_redirect_info = mojom::RedirectInfo::New();
+    net_redirect_info->url = redirect_info.new_url;
+    net_redirect_info->network_info = mojom::CommonNetworkInfo::New();
+    net_redirect_info->network_info->network_accessed =
+        response_head.network_accessed;
+    net_redirect_info->network_info->always_access_network =
+        AlwaysAccessNetwork(response_head.headers);
+    request_info->redirect_info_chain.push_back(std::move(net_redirect_info));
+
     if (!request_info->is_deferred)
       FollowPendingRedirect(request_info);
   } else {
@@ -314,12 +323,17 @@ void ResourceDispatcher::OnRequestComplete(
   if (request_info->parsed_ip.IsValid())
     resource_load_info->ip = request_info->parsed_ip;
   resource_load_info->mime_type = request_info->mime_type;
-  resource_load_info->network_accessed = request_info->network_accessed;
-  resource_load_info->always_access_network =
+  resource_load_info->network_info = mojom::CommonNetworkInfo::New();
+  resource_load_info->network_info->network_accessed =
+      request_info->network_accessed;
+  resource_load_info->network_info->always_access_network =
       request_info->always_access_network;
   resource_load_info->was_cached = status.exists_in_cache;
   resource_load_info->net_error = status.error_code;
   resource_load_info->request_start = request_info->request_start;
+  resource_load_info->redirect_info_chain =
+      std::move(request_info->redirect_info_chain);
+
   NotifyResourceLoadComplete(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,
                              std::move(resource_load_info));

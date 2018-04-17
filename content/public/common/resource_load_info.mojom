@@ -9,6 +9,25 @@ import "mojo/public/mojom/base/time.mojom";
 import "net/interfaces/ip_address.mojom";
 import "url/mojom/url.mojom";
 
+// Network related information reported for loads and redirects.
+struct CommonNetworkInfo {
+  // True if the request accessed the network in the process of retrieving data.
+  bool network_accessed;
+
+  // True if loading this resource always requires accessing the network, either
+  // because it should always be revalidated or because it should not be cached.
+  bool always_access_network;
+};
+
+// Information for a redirect.
+struct RedirectInfo {
+  // The URL after the redirect.
+  url.mojom.Url url;
+
+  // Various network related information.
+  CommonNetworkInfo network_info;
+};
+
 // Information pertaining to resource loading.
 // This will be passed to ResourceResponse callback methods.
 struct ResourceLoadInfo {
@@ -40,16 +59,16 @@ struct ResourceLoadInfo {
   // True if the response was fetched from the network cache.
   bool was_cached;
 
-  // True if the request accessed the network in the process of retrieving data.
-  bool network_accessed;
-
-  // True if loading this resource always requires accessing the network, either
-  // because it should always be revalidated or because it should not be cached.
-  bool always_access_network;
+  // Various network related information.
+  CommonNetworkInfo network_info;
 
   // The network error code, net::OK if no error happened.
   int32 net_error;
 
   // The time at which the request was started.
   mojo_base.mojom.TimeTicks request_start;
+
+  // The list of redirects that led to this resource load. Empty if there were
+  // no redirects.
+  array<RedirectInfo> redirect_info_chain;
 };
