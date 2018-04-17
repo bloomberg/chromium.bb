@@ -8,7 +8,6 @@
 
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/hung_renderer_controller.h"
-#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_signin_confirmation_dialog_cocoa.h"
 #include "chrome/browser/ui/cocoa/tab_dialogs_views_mac.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
@@ -88,9 +87,13 @@ void TabDialogsCocoa::ShowProfileSigninConfirmation(
 }
 
 void TabDialogsCocoa::ShowManagePasswordsBubble(bool user_action) {
-  ManagePasswordsBubbleCocoa::Show(web_contents_, user_action);
+  // The method is implemented by TabDialogsViewsMac and only that one is to be
+  // called due to MacViews release.
+  NOTREACHED();
 }
 
 void TabDialogsCocoa::HideManagePasswordsBubble() {
-  // The bubble is closed when it loses the focus.
+  // The method is implemented by TabDialogsViewsMac and only that one is to be
+  // called due to MacViews release.
+  NOTREACHED();
 }

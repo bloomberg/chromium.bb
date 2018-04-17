@@ -19,12 +19,8 @@ class ManagePasswordsIcon : public ManagePasswordsIconView {
   void SetState(password_manager::ui::State state) override;
   password_manager::ui::State state() const { return state_; }
 
-  void SetActive(bool active);
-  bool active() const { return active_; }
-
  protected:
-  // The ID of the icon and text resources that are currently displayed.
-  int icon_id_;
+  // The ID of the text resource that is currently displayed.
   int tooltip_text_id_;
 
   ManagePasswordsIcon();
@@ -42,7 +38,6 @@ class ManagePasswordsIcon : public ManagePasswordsIconView {
   void UpdateIDs();
 
   password_manager::ui::State state_;
-  bool active_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIcon);
 };

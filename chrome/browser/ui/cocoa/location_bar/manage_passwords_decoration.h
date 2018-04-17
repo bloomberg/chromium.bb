@@ -27,7 +27,6 @@ class ManagePasswordsIconCocoa : public ManagePasswordsIcon {
   void UpdateVisibleUI() override;
   void OnChangingState() override;
 
-  int icon_id() { return icon_id_; }
   int tooltip_text_id() { return tooltip_text_id_; }
 
  private:

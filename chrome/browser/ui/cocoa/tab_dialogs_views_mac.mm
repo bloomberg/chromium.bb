@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
-#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
@@ -139,10 +138,6 @@ void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
 
 void TabDialogsViewsMac::HideManagePasswordsBubble() {
   // Close toolkit-views bubble.
-  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
-    TabDialogsCocoa::HideManagePasswordsBubble();
-    return;
-  }
   if (!PasswordBubbleViewBase::manage_password_bubble())
     return;
   const content::WebContents* bubble_web_contents =
