@@ -1493,6 +1493,11 @@ void MenuController::Accept(MenuItemView* item, int event_flags) {
 void MenuController::ReallyAccept(MenuItemView* item, int event_flags) {
   DCHECK(IsBlockingRun());
   result_ = item;
+#if defined(OS_MACOSX)
+  // Reset the closure animation since it's now finished - this also unblocks
+  // input events for the menu.
+  menu_closure_animation_.reset();
+#endif
   if (item && !menu_stack_.empty() &&
       !item->GetDelegate()->ShouldCloseAllMenusOnExecute(item->GetCommand())) {
     SetExitType(EXIT_OUTERMOST);
