@@ -123,16 +123,12 @@ class TrayAccessibility : public TrayImageItem, public AccessibilityObserver {
 
   // Overridden from AccessibilityObserver.
   void OnAccessibilityStatusChanged() override;
-  void ShowAccessibilityNotification() override;
 
   views::View* default_;
   tray::AccessibilityDetailedView* detailed_menu_;
 
   bool tray_icon_visible_;
   LoginStatus login_;
-
-  // Bitmap of values from AccessibilityState enum.
-  uint32_t previous_accessibility_state_;
 
   // A11y feature status on just entering the lock screen.
   bool show_a11y_menu_on_lock_screen_;
