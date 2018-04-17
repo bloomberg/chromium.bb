@@ -7,7 +7,9 @@ package org.chromium.chromecast.shell;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -19,6 +21,7 @@ import android.widget.Toast;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chromecast.base.Both;
+import org.chromium.chromecast.base.CastSwitches;
 import org.chromium.chromecast.base.Controller;
 import org.chromium.chromecast.base.Observable;
 import org.chromium.chromecast.base.ScopeFactories;
@@ -86,8 +89,12 @@ public class CastWebContentsActivity extends Activity {
                     setContentView(R.layout.cast_web_contents_activity);
 
                     mSurfaceHelper = new CastWebContentsSurfaceHelper(this, /* hostActivity */
-                            (FrameLayout) findViewById(R.id.web_contents_container),
-                            false /* showInFragment */);
+                            CastWebContentsView.onLayout(getApplicationContext(),
+                                    (FrameLayout) findViewById(R.id.web_contents_container),
+                                    CastSwitches.getSwitchValueColor(
+                                            CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK),
+                                    mResumedState),
+                            (Uri uri) -> mIsFinishingState.set("Delayed teardown for URI: " + uri));
                 }));
 
         // Initialize the audio manager in onCreate() if tests haven't already.
@@ -157,9 +164,6 @@ public class CastWebContentsActivity extends Activity {
         if (DEBUG) Log.d(TAG, "onPause");
         super.onPause();
         mResumedState.reset();
-        if (mSurfaceHelper != null) {
-            mSurfaceHelper.onPause();
-        }
     }
 
     @Override
@@ -167,9 +171,6 @@ public class CastWebContentsActivity extends Activity {
         if (DEBUG) Log.d(TAG, "onResume");
         super.onResume();
         mResumedState.set(Unit.unit());
-        if (mSurfaceHelper != null) {
-            mSurfaceHelper.onResume();
-        }
     }
 
     @Override

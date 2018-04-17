@@ -5,29 +5,26 @@
 package org.chromium.chromecast.shell;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.widget.FrameLayout;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chromecast.base.CastSwitches;
+import org.chromium.base.annotations.RemovableInRelease;
+import org.chromium.chromecast.base.Both;
+import org.chromium.chromecast.base.Consumer;
 import org.chromium.chromecast.base.Controller;
+import org.chromium.chromecast.base.Observable;
+import org.chromium.chromecast.base.ScopeFactories;
+import org.chromium.chromecast.base.ScopeFactory;
 import org.chromium.chromecast.base.Unit;
-import org.chromium.components.content_view.ContentView;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
-import org.chromium.content.browser.ContentViewRenderView;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.ViewAndroidDelegate;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A util class for CastWebContentsActivity and CastWebContentsFragment to show
@@ -47,20 +44,18 @@ class CastWebContentsSurfaceHelper {
 
     private static final int TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS = 300;
 
-    private final Controller<Unit> mResumedState = new Controller<>();
+    private final Controller<Unit> mCreatedState = new Controller<>();
+    // Activated when we have an instance URI, from which the instance ID is derived.
+    // Is (re)activated when new StartParams are received, and deactivated in onDestroy().
     private final Controller<Uri> mHasUriState = new Controller<>();
+    // Activated when we have WebContents to display.
+    private final Controller<WebContents> mWebContentsState = new Controller<>();
 
-    private final Activity mHostActivity;
-    private final boolean mShowInFragment;
+    private final Consumer<Uri> mFinishCallback;
     private final Handler mHandler;
-    private final FrameLayout mCastWebContentsLayout;
 
-    private Uri mUri;
     private String mInstanceId;
-    private ContentViewRenderView mContentViewRenderView;
-    private WindowAndroid mWindow;
-    private ContentViewCore mContentViewCore;
-    private ContentView mContentView;
+    private ContentVideoViewEmbedderSetter mContentVideoViewEmbedderSetter;
 
     // TODO(vincentli) interrupt touch event from Fragment's root view when it's false.
     private boolean mTouchInputEnabled = false;
@@ -111,25 +106,24 @@ class CastWebContentsSurfaceHelper {
 
     /**
      * @param hostActivity Activity hosts the view showing WebContents
-     * @param castWebContentsLayout view group to add ContentViewRenderView and ContentView
-     * @param showInFragment true if the cast web view is hosted by a CastWebContentsFragment
+     * @param webContentsView A ScopeFactory that displays incoming WebContents.
+     * @param finishCallback Invoked to tell host to finish.
      */
-    CastWebContentsSurfaceHelper(
-            Activity hostActivity, FrameLayout castWebContentsLayout, boolean showInFragment) {
-        mHostActivity = hostActivity;
-        mShowInFragment = showInFragment;
-        mCastWebContentsLayout = castWebContentsLayout;
-        mCastWebContentsLayout.setBackgroundColor(CastSwitches.getSwitchValueColor(
-                CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK));
+    CastWebContentsSurfaceHelper(Activity hostActivity, ScopeFactory<WebContents> webContentsView,
+            Consumer<Uri> finishCallback) {
+        mFinishCallback = finishCallback;
         mHandler = new Handler();
+        mContentVideoViewEmbedderSetter =
+                (WebContents webContents, ContentVideoViewEmbedder embedder)
+                -> nativeSetContentVideoViewEmbedder(webContents, embedder);
 
         // Receive broadcasts indicating the screen turned off while we have active WebContents.
-        mHasUriState.watch(() -> {
+        mHasUriState.watch((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_SCREEN_OFF);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
-                detachWebContentsIfAny();
-                maybeFinishLater();
+                mWebContentsState.reset();
+                maybeFinishLater(uri);
             });
         });
 
@@ -141,17 +135,16 @@ class CastWebContentsSurfaceHelper {
                 String intentUri = CastWebContentsIntentUtils.getUriString(intent);
                 Log.d(TAG, "Intent action=" + intent.getAction() + "; URI=" + intentUri);
                 if (!uri.toString().equals(intentUri)) {
-                    Log.d(TAG, "Current URI=" + mUri + "; intent URI=" + intentUri);
+                    Log.d(TAG, "Current URI=" + uri + "; intent URI=" + intentUri);
                     return;
                 }
-                detachWebContentsIfAny();
-                maybeFinishLater();
+                mWebContentsState.reset();
+                maybeFinishLater(uri);
             });
         });
 
         // Receive broadcasts indicating that touch input should be enabled.
-        // TODO(yyzhong) Handle this intent in an external activity hosting a cast fragment as
-        // well.
+        // TODO(yyzhong) Handle this intent in an external activity hosting a cast fragment as well.
         mHasUriState.watch((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
@@ -159,141 +152,64 @@ class CastWebContentsSurfaceHelper {
                 String intentUri = CastWebContentsIntentUtils.getUriString(intent);
                 Log.d(TAG, "Intent action=" + intent.getAction() + "; URI=" + intentUri);
                 if (!uri.toString().equals(intentUri)) {
-                    Log.d(TAG, "Current URI=" + mUri + "; intent URI=" + intentUri);
+                    Log.d(TAG, "Current URI=" + uri + "; intent URI=" + intentUri);
                     return;
                 }
                 mTouchInputEnabled = CastWebContentsIntentUtils.isTouchable(intent);
             });
         });
 
-        mResumedState.watch(() -> {
-            if (mContentViewCore != null) {
-                mContentViewCore.onResume();
-            }
-            return () -> {
-                if (mContentViewCore != null) {
-                    mContentViewCore.onPause();
-                }
-            };
+        // webContentsView is responsible for displaying each new WebContents.
+        mWebContentsState.watch(webContentsView);
+
+        // Miscellaneous actions responding to WebContents lifecycle.
+        mWebContentsState.watch((WebContents webContents) -> {
+            // Set ContentVideoViewEmbedder to allow video playback.
+            mContentVideoViewEmbedderSetter.set(
+                    webContents, new ActivityContentVideoViewEmbedder(hostActivity));
+            // Whenever our app is visible, volume controls should modify the music stream.
+            // For more information read:
+            // http://developer.android.com/training/managing-audio/volume-playback.html
+            hostActivity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+            // Notify CastWebContentsComponent when closed.
+            return () -> CastWebContentsComponent.onComponentClosed(mInstanceId);
         });
+
+        // When onDestroy() is called after onNewStartParams(), log and reset StartParams states.
+        mHasUriState.andThen(Observable.not(mCreatedState))
+                .map(Both::getFirst)
+                .watch(ScopeFactories.onEnter((Uri uri) -> {
+                    Log.d(TAG, "onDestroy: " + uri);
+                    mWebContentsState.reset();
+                    mHasUriState.reset();
+                }));
+
+        mCreatedState.set(Unit.unit());
     }
 
     void onNewStartParams(final StartParams params) {
         mTouchInputEnabled = params.touchInputEnabled;
         Log.d(TAG, "content_uri=" + params.uri);
-        mUri = params.uri;
+        mHasUriState.set(params.uri);
+        mWebContentsState.set(params.webContents);
+        // Mutate instance ID cache only after observers have reacted to new web contents.
         mInstanceId = params.uri.getPath();
-
-        // Whenever our app is visible, volume controls should modify the music stream.
-        // For more information read:
-        // http://developer.android.com/training/managing-audio/volume-playback.html
-        mHostActivity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
-        mHasUriState.set(mUri);
-
-        showWebContents(params.webContents);
     }
 
     // Closes this activity if a new WebContents is not being displayed.
-    private void maybeFinishLater() {
-        Log.d(TAG, "maybeFinishLater: " + mUri);
+    private void maybeFinishLater(Uri uri) {
+        Log.d(TAG, "maybeFinishLater: " + uri);
         final String currentInstanceId = mInstanceId;
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (currentInstanceId != null && currentInstanceId.equals(mInstanceId)) {
-                    if (mShowInFragment) {
-                        Log.d(TAG, "Sending intent: ON_WEB_CONTENT_STOPPED: URI=" + mUri);
-                        CastWebContentsIntentUtils.getLocalBroadcastManager().sendBroadcastSync(
-                                CastWebContentsIntentUtils.onWebContentStopped(mUri));
-                    } else {
-                        Log.d(TAG, "Finishing cast content activity of URI:" + mUri);
-                        mHostActivity.finish();
-                    }
-                }
+        mHandler.postDelayed(() -> {
+            if (currentInstanceId != null && currentInstanceId.equals(mInstanceId)) {
+                mFinishCallback.accept(uri);
             }
         }, TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS);
     }
 
-    private Activity getActivity() {
-        return mHostActivity;
-    }
-
-    // Sets webContents to be the currently displayed webContents.
-    private void showWebContents(WebContents webContents) {
-        Log.d(TAG, "showWebContents: " + mUri);
-
-        detachWebContentsIfAny();
-
-        // Set ContentVideoViewEmbedder to allow video playback.
-        nativeSetContentVideoViewEmbedder(
-                webContents, new ActivityContentVideoViewEmbedder(getActivity()));
-
-        mWindow = new WindowAndroid(getActivity());
-        mContentViewRenderView = new ContentViewRenderView(getActivity()) {
-            @Override
-            protected void onReadyToRender() {
-                setOverlayVideoMode(true);
-            }
-        };
-        mContentViewRenderView.onNativeLibraryLoaded(mWindow);
-        // Setting the background color avoids rendering a white splash screen
-        // before the players are loaded. See https://crbug/307113 for details.
-        mContentViewRenderView.setSurfaceViewBackgroundColor(CastSwitches.getSwitchValueColor(
-                CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK));
-
-        mCastWebContentsLayout.addView(mContentViewRenderView,
-                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT));
-
-        Context context = getActivity().getApplicationContext();
-        mContentView = ContentView.createContentView(context, webContents);
-        // TODO(derekjchow): productVersion
-        mContentViewCore = ContentViewCore.create(context, "", webContents,
-                ViewAndroidDelegate.createBasicDelegate(mContentView), mContentView, mWindow);
-        // Enable display of current webContents.
-        webContents.onShow();
-        mCastWebContentsLayout.addView(mContentView,
-                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT));
-        mContentView.setFocusable(true);
-        mContentView.requestFocus();
-        mContentViewRenderView.setCurrentWebContents(webContents);
-    }
-
-    // Remove the currently displayed webContents. no-op if nothing is being displayed.
-    private void detachWebContentsIfAny() {
-        Log.d(TAG, "Maybe detach web contents if any: " + mUri);
-        if (mContentView != null) {
-            mCastWebContentsLayout.removeView(mContentView);
-            mCastWebContentsLayout.removeView(mContentViewRenderView);
-            mContentViewCore.destroy();
-            mContentViewRenderView.destroy();
-            mWindow.destroy();
-            mContentView = null;
-            mContentViewCore = null;
-            mContentViewRenderView = null;
-            mWindow = null;
-            CastWebContentsComponent.onComponentClosed(mInstanceId);
-            Log.d(TAG, "Detach web contents done: " + mUri);
-        }
-    }
-
-    void onPause() {
-        Log.d(TAG, "onPause: " + mUri);
-        mResumedState.reset();
-    }
-
-    void onResume() {
-        Log.d(TAG, "onResume: " + mUri);
-        mResumedState.set(Unit.unit());
-    }
-
     // Destroys all resources. After calling this method, this object must be dropped.
     void onDestroy() {
-        Log.d(TAG, "onDestroy: " + mUri);
-        detachWebContentsIfAny();
-        mHasUriState.reset();
+        mCreatedState.reset();
     }
 
     String getInstanceId() {
@@ -302,6 +218,15 @@ class CastWebContentsSurfaceHelper {
 
     boolean isTouchInputEnabled() {
         return mTouchInputEnabled;
+    }
+
+    @RemovableInRelease
+    void setContentVideoViewEmbedderSetterForTesting(ContentVideoViewEmbedderSetter cvves) {
+        mContentVideoViewEmbedderSetter = cvves;
+    }
+
+    interface ContentVideoViewEmbedderSetter {
+        void set(WebContents webContents, ContentVideoViewEmbedder embedder);
     }
 
     private native void nativeSetContentVideoViewEmbedder(
