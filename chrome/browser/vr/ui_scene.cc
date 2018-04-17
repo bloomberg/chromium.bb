@@ -174,6 +174,7 @@ void UiScene::CallPerFrameCallbacks() {
 }
 
 bool UiScene::UpdateTextures() {
+  TRACE_EVENT0("gpu", "UiScene::UpdateTextures");
   bool needs_redraw = false;
   std::vector<UiElement*> elements = GetVisibleElementsMutable();
   for (auto* element : elements) {
