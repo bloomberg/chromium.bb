@@ -331,7 +331,6 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                           int16_t *mode_context) {
   POSITION mi_pos;
   int idx;
-  int coll_blk_count = 0;
   const int weight_unit = 1;  // mi_size_wide[BLOCK_8X8];
 
   (void)gm_mv_candidates;
@@ -339,8 +338,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   mi_pos.row = (mi_row & 0x01) ? blk_row : blk_row + 1;
   mi_pos.col = (mi_col & 0x01) ? blk_col : blk_col + 1;
 
-  if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, &mi_pos))
-    return coll_blk_count;
+  if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, &mi_pos)) return 0;
 
   const TPL_MV_REF *prev_frame_mvs =
       cm->tpl_mvs + ((mi_row + mi_pos.row) >> 1) * (cm->mi_stride >> 1) +
@@ -380,9 +378,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         ref_mv_stack[idx].weight = 2 * weight_unit;
         ++(refmv_count[rf[0]]);
       }
-
-      ++coll_blk_count;
-      return coll_blk_count;
+      return 1;
     }
   } else {
     // Process compound inter mode
@@ -431,13 +427,10 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         ref_mv_stack[idx].weight = 2 * weight_unit;
         ++(refmv_count[ref_frame]);
       }
-
-      ++coll_blk_count;
-      return coll_blk_count;
+      return 1;
     }
   }
-
-  return coll_blk_count;
+  return 0;
 }
 
 static void setup_ref_mv_list(
