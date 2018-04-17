@@ -1,6 +1,6 @@
 {
     "protocol": {
-        "path": "browser_protocol.json",
+        "path": "browser_protocol.pdl",
         "package": "core/inspector/protocol",
         "output": "inspector/protocol",
         "namespace": ["blink", "protocol"],

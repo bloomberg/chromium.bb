@@ -36,7 +36,7 @@ if (!is_android) {
   _concatenated_protocol_path =
       "$root_gen_dir/chrome/browser/devtools/protocol.json"
   action("concatenate_protocols") {
-    script = _inspector_protocol + "/ConcatenateProtocols.py"
+    script = _inspector_protocol + "/concatenate_protocols.py"
 
     deps = [
       "//third_party/blink/renderer/core/inspector:protocol_version",
@@ -54,8 +54,8 @@ if (!is_android) {
 
     args = [ rebase_path(_blink_protocol_path, root_build_dir) ]
     if (is_chromeos) {
-      inputs += [ "cros_protocol.json" ]
-      args += [ rebase_path("cros_protocol.json", root_build_dir) ]
+      inputs += [ "cros_protocol.pdl" ]
+      args += [ rebase_path("cros_protocol.pdl", root_build_dir) ]
     }
 
     args += [ rebase_path(output_file, root_build_dir) ]

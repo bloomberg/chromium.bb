@@ -14,6 +14,8 @@ try:
 except ImportError:
     import simplejson as json
 
+import pdl
+
 # Path handling for libraries and templates
 # Paths have to be normalized because Jinja uses the exact template path to
 # determine the hash used in the cache filename, and we need a pre-caching step
@@ -335,9 +337,8 @@ class Protocol(object):
 
     def read_protocol_file(self, file_name):
         input_file = open(file_name, "r")
-        json_string = input_file.read()
+        parsed_json = pdl.loads(input_file.read(), file_name)
         input_file.close()
-        parsed_json = json.loads(json_string)
         version = parsed_json["version"]["major"] + "." + parsed_json["version"]["minor"]
         domains = []
         for domain in parsed_json["domains"]:

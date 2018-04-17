@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,7 +8,6 @@ import os.path
 import re
 import sys
 
-file_name = None
 description = ''
 
 primitiveTypes = ['integer', 'number', 'boolean', 'string', 'object', 'any', 'array']
@@ -43,7 +42,7 @@ def createItem(d, experimental, deprecated, name=None):
     return result
 
 
-def parse(data):
+def parse(data, file_name):
     protocol = collections.OrderedDict()
     protocol['version'] = collections.OrderedDict()
     protocol['domains'] = []
@@ -161,23 +160,8 @@ def parse(data):
         sys.exit(1)
     return protocol
 
-def main(argv):
-    if len(argv) < 2:
-        sys.stderr.write("Usage: %s <protocol.pdl> <protocol.json>\n" % sys.argv[0])
-        return 1
-    global file_name
-    file_name = os.path.normpath(argv[0])
-    input_file = open(file_name, "r")
-    pdl_string = input_file.read()
-    protocol = parse(pdl_string)
-    output_file = open(argv[0].replace('.pdl', '.json'), 'wb')
-    json.dump(protocol, output_file, indent=4, separators=(',', ': '))
-    output_file.close()
 
-    output_file = open(os.path.normpath(argv[1]), 'wb')
-    json.dump(protocol, output_file, indent=4, separators=(',', ': '))
-    output_file.close()
-
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+def loads(data, file_name):
+    if file_name.endswith(".pdl"):
+        return parse(data, file_name)
+    return json.loads(data)
