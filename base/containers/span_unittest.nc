@@ -42,6 +42,14 @@ void WontCompile() {
   span<const int*> const_span(non_const_span);
 }
 
+#elif defined(NCTEST_STD_ARRAY_CONVERSION_DISALLOWED)  // [r"fatal error: no matching constructor for initialization of 'span<int>'"]
+
+// This isn't implemented today. Maybe it will be some day.
+void WontCompile() {
+  std::array<int, 3> array;
+  span<int> span(array);
+}
+
 #elif defined(NCTEST_CONST_CONTAINER_TO_MUTABLE_CONVERSION_DISALLOWED)  // [r"fatal error: no matching constructor for initialization of 'span<int>'"]
 
 // A const container should not be convertible to a mutable span.
