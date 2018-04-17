@@ -24,12 +24,12 @@ namespace {
 // from ITU-T REC H.264 spec
 // section 8.5.6
 // "Inverse scanning process for 4x4 transform coefficients and scaling lists"
-static const int kZigzagScan4x4[16] = {0, 1,  4,  8,  5, 2,  3,  6,
-                                       9, 12, 13, 10, 7, 11, 14, 15};
+static constexpr int kZigzagScan4x4[16] = {0, 1,  4,  8,  5, 2,  3,  6,
+                                           9, 12, 13, 10, 7, 11, 14, 15};
 
 // section 8.5.7
 // "Inverse scanning process for 8x8 transform coefficients and scaling lists"
-static const uint8_t kZigzagScan8x8[64] = {
+static constexpr uint8_t kZigzagScan8x8[64] = {
     0,  1,  8,  16, 9,  2,  3,  10, 17, 24, 32, 25, 18, 11, 4,  5,
     12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6,  7,  14, 21, 28,
     35, 42, 49, 56, 57, 50, 43, 36, 29, 22, 15, 23, 30, 37, 44, 51,

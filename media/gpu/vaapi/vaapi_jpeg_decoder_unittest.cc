@@ -26,8 +26,8 @@
 namespace media {
 namespace {
 
-const char* kTestFilename = "pixel-1280x720.jpg";
-const char* kExpectedMd5Sum = "6e9e1716073c9a9a1282e3f0e0dab743";
+constexpr char* kTestFilename = "pixel-1280x720.jpg";
+constexpr char* kExpectedMd5Sum = "6e9e1716073c9a9a1282e3f0e0dab743";
 
 void LogOnError() {
   LOG(FATAL) << "Oh noes! Decoder failed";

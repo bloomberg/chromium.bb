@@ -30,7 +30,7 @@ namespace {
 // JPEG format uses 2 bytes to denote the size of a segment, and the size
 // includes the 2 bytes used for specifying it. Therefore, maximum data size
 // allowed is: 65535 - 2 = 65533.
-const size_t kMaxExifSizeAllowed = 65533;
+constexpr size_t kMaxExifSizeAllowed = 65533;
 
 // UMA results that the VaapiJpegEncodeAccelerator class reports.
 // These values are persisted to logs, and should therefore never be renumbered

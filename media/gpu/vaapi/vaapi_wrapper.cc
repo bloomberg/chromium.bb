@@ -124,7 +124,7 @@ namespace {
 
 // Maximum framerate of encoded profile. This value is an arbitary limit
 // and not taken from HW documentation.
-const int kMaxEncoderFramerate = 30;
+constexpr int kMaxEncoderFramerate = 30;
 
 // A map between VideoCodecProfile and VAProfile.
 static const struct {
