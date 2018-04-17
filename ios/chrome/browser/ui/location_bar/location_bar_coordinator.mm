@@ -91,6 +91,8 @@ const int kLocationAuthorizationStatusCount = 4;
           tintColor:tintColor];
   self.viewController.incognito = isIncognito;
   self.viewController.delegate = self;
+  self.viewController.dispatcher =
+      static_cast<id<ActivityServiceCommands>>(self.dispatcher);
 
   _editController = std::make_unique<WebOmniboxEditControllerImpl>(self);
   _editController->SetURLLoader(self);

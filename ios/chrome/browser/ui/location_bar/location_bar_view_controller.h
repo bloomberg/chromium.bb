@@ -11,6 +11,7 @@
 
 @class LocationBarEditView;
 @class OmniboxTextFieldIOS;
+@protocol ActivityServiceCommands;
 
 @protocol LocationBarViewControllerDelegate<NSObject>
 
@@ -35,6 +36,9 @@
 // The omnibox textfield displayed in the editing mode. Exposed for being passed
 // to the OmniboxCoordinator.
 @property(nonatomic, strong, readonly) OmniboxTextFieldIOS* textField;
+
+// The dispatcher for the share button action.
+@property(nonatomic, weak) id<ActivityServiceCommands> dispatcher;
 
 // Delegate for this location bar view controller.
 @property(nonatomic, weak) id<LocationBarViewControllerDelegate> delegate;
