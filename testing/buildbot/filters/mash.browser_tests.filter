@@ -36,9 +36,6 @@
 -AutomationApiTestWithDeviceScaleFactor.*
 -AutomationManagerAuraBrowserTest.*
 
-# Uses Shell::GetPrimaryRootWindow to create an EventGenerator
--LoginWebDialogTest.CloseDialogByAccelerator
-
 # Direct access to ash window frames, tablet mode, overview mode, etc.
 -BrowserNonClientFrameViewAshBackButtonTest.*
 -BrowserNonClientFrameViewAshTest.*
