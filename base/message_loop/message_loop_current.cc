@@ -94,6 +94,19 @@ bool MessageLoopCurrent::NestableTasksAllowed() const {
   return current_->task_execution_allowed_;
 }
 
+MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
+    : ScopedNestableTaskAllower(MessageLoopCurrent::Get()) {}
+
+MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower(
+    MessageLoop* loop)
+    : loop_(loop), old_state_(loop_->NestableTasksAllowed()) {
+  loop_->SetNestableTasksAllowed(true);
+}
+
+MessageLoopCurrent::ScopedNestableTaskAllower::~ScopedNestableTaskAllower() {
+  loop_->SetNestableTasksAllowed(old_state_);
+}
+
 // static
 void MessageLoopCurrent::BindToCurrentThreadInternal(MessageLoop* current) {
   DCHECK(!GetTLSMessageLoop()->Get())

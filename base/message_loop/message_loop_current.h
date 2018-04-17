@@ -152,23 +152,25 @@ class BASE_EXPORT MessageLoopCurrent {
   void SetNestableTasksAllowed(bool allowed);
   bool NestableTasksAllowed() const;
 
-  // Enables nestable tasks on |loop| while in scope.
+  // Enables nestable tasks on the current MessageLoop while in scope.
   // DEPRECATED(https://crbug.com/750779): This should not be used when the
   // nested loop is driven by RunLoop (use RunLoop::Type::kNestableTasksAllowed
   // instead). It can however still be useful in a few scenarios where re-
   // entrancy is caused by a native message loop.
   // TODO(gab): Remove usage of this class alongside RunLoop and rename it to
   // ScopedApplicationTasksAllowedInNativeNestedLoop(?) for remaining use cases.
-  class ScopedNestableTaskAllower {
+  class BASE_EXPORT ScopedNestableTaskAllower {
    public:
-    explicit ScopedNestableTaskAllower(MessageLoopCurrent* loop)
-        : loop_(loop), old_state_(loop_->NestableTasksAllowed()) {
-      loop_->SetNestableTasksAllowed(true);
-    }
-    ~ScopedNestableTaskAllower() { loop_->SetNestableTasksAllowed(old_state_); }
+    ScopedNestableTaskAllower();
+
+    // DEPRECATED(https://crbug.com/750779): Prefer the argument less
+    // constructor to obtaining and injecting MessageLoopCurrent manually.
+    explicit ScopedNestableTaskAllower(MessageLoop* loop);
+
+    ~ScopedNestableTaskAllower();
 
    private:
-    MessageLoopCurrent* const loop_;
+    MessageLoop* loop_;
     const bool old_state_;
   };
 
@@ -194,7 +196,7 @@ class BASE_EXPORT MessageLoopCurrent {
   static bool IsBoundToCurrentThreadInternal(MessageLoop* message_loop);
 
  protected:
-  MessageLoopCurrent(MessageLoop* current) : current_(current) {}
+  explicit MessageLoopCurrent(MessageLoop* current) : current_(current) {}
 
   MessageLoop* const current_;
 };
