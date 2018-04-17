@@ -504,21 +504,6 @@ FileManagerBrowserTestBase::FileManagerBrowserTestBase() {
 FileManagerBrowserTestBase::~FileManagerBrowserTestBase() {
 }
 
-void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
-  ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-
-  local_volume_.reset(new DownloadsTestVolume);
-  if (GetGuestModeParam() != IN_GUEST_MODE) {
-    create_drive_integration_service_ =
-        base::Bind(&FileManagerBrowserTestBase::CreateDriveIntegrationService,
-                   base::Unretained(this));
-    service_factory_for_test_.reset(
-        new drive::DriveIntegrationServiceFactory::ScopedFactoryForTest(
-            &create_drive_integration_service_));
-  }
-}
-
 void FileManagerBrowserTestBase::SetUp() {
   net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
   ExtensionApiTest::SetUp();
@@ -537,6 +522,21 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   }
 
   ExtensionApiTest::SetUpCommandLine(command_line);
+}
+
+void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
+  ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+
+  local_volume_.reset(new DownloadsTestVolume);
+  if (GetGuestModeParam() != IN_GUEST_MODE) {
+    create_drive_integration_service_ =
+        base::Bind(&FileManagerBrowserTestBase::CreateDriveIntegrationService,
+                   base::Unretained(this));
+    service_factory_for_test_.reset(
+        new drive::DriveIntegrationServiceFactory::ScopedFactoryForTest(
+            &create_drive_integration_service_));
+  }
 }
 
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
