@@ -55,6 +55,27 @@ class ConciergeClientImpl : public ConciergeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void DestroyDiskImage(
+      const vm_tools::concierge::DestroyDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
+          callback) override {
+    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
+                                 vm_tools::concierge::kDestroyDiskImageMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode DestroyDiskImageRequest protobuf";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::DestroyDiskImageResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void StartTerminaVm(const vm_tools::concierge::StartVmRequest& request,
                       DBusMethodCallback<vm_tools::concierge::StartVmResponse>
                           callback) override {

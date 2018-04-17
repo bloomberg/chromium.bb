@@ -45,6 +45,13 @@ class CHROMEOS_EXPORT ConciergeClient : public DBusClient {
       DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse>
           callback) = 0;
 
+  // Destroys a Termina VM and removes its disk image.
+  // |callback| is called after the method call finishes.
+  virtual void DestroyDiskImage(
+      const vm_tools::concierge::DestroyDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
+          callback) = 0;
+
   // Starts a Termina VM if there is not alread one running.
   // |callback| is called after the method call finishes.
   virtual void StartTerminaVm(

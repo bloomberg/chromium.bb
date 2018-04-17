@@ -34,6 +34,15 @@ void FakeConciergeClient::CreateDiskImage(
       FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
 }
 
+void FakeConciergeClient::DestroyDiskImage(
+    const vm_tools::concierge::DestroyDiskImageRequest& request,
+    DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
+        callback) {
+  destroy_disk_image_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+}
+
 void FakeConciergeClient::StartTerminaVm(
     const vm_tools::concierge::StartVmRequest& request,
     DBusMethodCallback<vm_tools::concierge::StartVmResponse> callback) {
