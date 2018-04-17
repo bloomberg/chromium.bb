@@ -268,7 +268,7 @@ MON_GS_ERROR = 'chromeos/gs/error_count'
 # Major is used for tracking heavy API breakage- for example, no longer
 # supporting the --resume option.
 REEXEC_API_MAJOR = 0
-REEXEC_API_MINOR = 7
+REEXEC_API_MINOR = 8
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
 
 # Support --master-build-id
@@ -281,6 +281,8 @@ REEXEC_API_GOMA = 5
 REEXEC_API_TSMON_TASK_NUM = 6
 # Support --sanity-check-build
 REEXEC_API_SANITY_CHECK_BUILD = 7
+# Support --previous-build-state
+REEXEC_API_PREVIOUS_BUILD_STATE = 8
 
 # We rely on the (waterfall, builder name, build number) to uniquely identify
 # a build. However, future migrations or state wipes of the buildbot master may

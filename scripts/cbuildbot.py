@@ -555,6 +555,10 @@ def _CreateParser():
                                'method of MasterSlaveSyncCompletionStage, by '
                                'specifying a file with a pickle of the result '
                                'to be returned.')
+  group.add_option('--previous-build-state', type='string', default='',
+                   api=constants.REEXEC_API_PREVIOUS_BUILD_STATE,
+                   help='A base64-encoded BuildSummary object describing the '
+                        'previous build run on the same build machine.')
 
   parser.add_argument_group(group)
 
