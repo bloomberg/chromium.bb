@@ -18,5 +18,8 @@ const char kMetricsRecordingOnly[] = "metrics-recording-only";
 // known as the Chrome Variations state.
 const char kResetVariationState[] = "reset-variation-state";
 
+// Forces metrics reporting to be enabled.
+const char kForceEnableMetricsReporting[] = "force-enable-metrics-reporting";
+
 }  // namespace switches
 }  // namespace metrics
