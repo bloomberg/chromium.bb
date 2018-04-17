@@ -202,10 +202,18 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (CGFloat)pinnedOffsetY {
   CGFloat headerHeight = content_suggestions::heightForLogoHeader(
       self.logoIsShowing, self.promoCanShow, YES);
+
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
-  if (!content_suggestions::IsRegularXRegularSizeClass(self.view))
-    offsetY -= ntp_header::ToolbarHeight();
+  if (!content_suggestions::IsRegularXRegularSizeClass(self.view)) {
+    CGFloat top = 0;
+    if (@available(iOS 11, *)) {
+      top = self.parentViewController.view.safeAreaInsets.top;
+    } else {
+      top = self.parentViewController.topLayoutGuide.length;
+    }
+    offsetY -= ntp_header::ToolbarHeight() + top;
+  }
 
   return offsetY;
 }

@@ -216,11 +216,12 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
   self.collectionView.prefetchingEnabled = NO;
   if (@available(iOS 11, *)) {
-    // Use automatic behavior as each element takes the safe area into account
-    // separately and the overscroll action does not work well with content
-    // offset.
+    // Overscroll action does not work well with content offset, so set this
+    // to never and internally offset the UI to account for safe area insets.
     self.collectionView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentAutomatic;
+        IsUIRefreshPhase1Enabled()
+            ? UIScrollViewContentInsetAdjustmentNever
+            : UIScrollViewContentInsetAdjustmentAutomatic;
   }
   self.collectionView.accessibilityIdentifier =
       [[self class] collectionAccessibilityIdentifier];

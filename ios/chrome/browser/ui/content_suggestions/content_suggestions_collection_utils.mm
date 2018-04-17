@@ -153,7 +153,7 @@ CGFloat doodleTopMargin(BOOL toolbarPresent) {
   if (IsUIRefreshPhase1Enabled()) {
     if (!IsCompactWidth() && !IsCompactHeight())
       return kDoodleTopMarginRegularXRegular;
-    return kDoodleTopMarginOther;
+    return StatusBarHeight() + kDoodleTopMarginOther;
   }
   if (IsIPadIdiom())
     return kDoodleTopMarginIPadLegacy;

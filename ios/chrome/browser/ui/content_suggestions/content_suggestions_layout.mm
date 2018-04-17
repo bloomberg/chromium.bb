@@ -24,8 +24,16 @@
   // top of the screen.
   CGFloat minimumHeight = collectionViewHeight + headerHeight -
                           ntp_header::kScrolledToTopOmniboxBottomMargin;
+  CGFloat topSafeArea = 0;
+  if (IsUIRefreshPhase1Enabled()) {
+    if (@available(iOS 11, *)) {
+      topSafeArea = self.collectionView.safeAreaInsets.top;
+    } else {
+      topSafeArea = StatusBarHeight();
+    }
+  }
   if (!content_suggestions::IsRegularXRegularSizeClass(self.collectionView))
-    minimumHeight -= ntp_header::ToolbarHeight();
+    minimumHeight -= ntp_header::ToolbarHeight() + topSafeArea;
 
   CGSize contentSize = [super collectionViewContentSize];
   if (contentSize.height < minimumHeight) {

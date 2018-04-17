@@ -81,9 +81,10 @@ const CGFloat kSearchIconLeftMargin = 9;
     kTabSwitcherGuide,
   ];
   AddNamedGuidesToView(guideNames, self);
+  id<LayoutGuideProvider> layoutGuide = SafeAreaLayoutGuideForView(self);
   [NSLayoutConstraint activateConstraints:@[
     [self.toolBarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [self.toolBarView.topAnchor constraintEqualToAnchor:self.topAnchor],
+    [self.toolBarView.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
     [self.toolBarView.trailingAnchor
         constraintEqualToAnchor:self.trailingAnchor],
   ]];
