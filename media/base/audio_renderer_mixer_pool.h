@@ -10,10 +10,6 @@
 #include "media/base/audio_latency.h"
 #include "media/base/output_device_info.h"
 
-namespace url {
-class Origin;
-}
-
 namespace media {
 class AudioParameters;
 class AudioRendererMixer;
@@ -32,7 +28,6 @@ class MEDIA_EXPORT AudioRendererMixerPool {
                                        const AudioParameters& params,
                                        AudioLatency::LatencyType latency,
                                        const std::string& device_id,
-                                       const url::Origin& security_origin,
                                        OutputDeviceStatus* device_status) = 0;
 
   // Returns mixer back to the pool, must be called when the mixer is not needed
@@ -43,8 +38,7 @@ class MEDIA_EXPORT AudioRendererMixerPool {
   virtual OutputDeviceInfo GetOutputDeviceInfo(
       int owner_id,
       int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) = 0;
+      const std::string& device_id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerPool);

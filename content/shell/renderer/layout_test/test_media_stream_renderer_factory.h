@@ -5,6 +5,8 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_MEDIA_STREAM_RENDERER_FACTORY_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_MEDIA_STREAM_RENDERER_FACTORY_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 
@@ -28,8 +30,7 @@ class TestMediaStreamRendererFactory : public MediaStreamRendererFactory {
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const blink::WebMediaStream& web_stream,
       int render_frame_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) override;
+      const std::string& device_id) override;
 };
 
 }  // namespace content

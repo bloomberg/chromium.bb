@@ -42,7 +42,6 @@
 namespace blink {
 
 class PushPullFIFO;
-class SecurityOrigin;
 class WebAudioLatencyHint;
 
 // The AudioDestination class is an audio sink interface between the media
@@ -64,15 +63,13 @@ class PLATFORM_EXPORT AudioDestination
  public:
   AudioDestination(AudioIOCallback&,
                    unsigned number_of_output_channels,
-                   const WebAudioLatencyHint&,
-                   scoped_refptr<const SecurityOrigin>);
+                   const WebAudioLatencyHint&);
   ~AudioDestination() override;
 
   static scoped_refptr<AudioDestination> Create(
       AudioIOCallback&,
       unsigned number_of_output_channels,
-      const WebAudioLatencyHint&,
-      scoped_refptr<const SecurityOrigin>);
+      const WebAudioLatencyHint&);
 
   // The actual render function (WebAudioDevice::RenderCallback) isochronously
   // invoked by the media renderer. This is never called after Stop() is called.

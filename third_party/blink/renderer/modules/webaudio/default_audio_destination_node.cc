@@ -84,8 +84,7 @@ void DefaultAudioDestinationHandler::Uninitialize() {
 }
 
 void DefaultAudioDestinationHandler::CreateDestination() {
-  destination_ = AudioDestination::Create(*this,
-      ChannelCount(), latency_hint_, Context()->GetSecurityOrigin());
+  destination_ = AudioDestination::Create(*this, ChannelCount(), latency_hint_);
 }
 
 void DefaultAudioDestinationHandler::StartDestination() {

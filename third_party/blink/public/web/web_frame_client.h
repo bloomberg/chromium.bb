@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_CLIENT_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
@@ -50,7 +51,6 @@
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
@@ -806,7 +806,6 @@ class BLINK_EXPORT WebFrameClient {
   // pointer.
   virtual void CheckIfAudioSinkExistsAndIsAuthorized(
       const WebString& sink_id,
-      const WebSecurityOrigin&,
       WebSetSinkIdCallbacks* callbacks) {
     if (callbacks) {
       callbacks->OnError(WebSetSinkIdError::kNotSupported);
@@ -854,4 +853,4 @@ class BLINK_EXPORT WebFrameClient {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_CLIENT_H_

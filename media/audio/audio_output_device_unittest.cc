@@ -79,11 +79,10 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MockAudioOutputIPC() = default;
   virtual ~MockAudioOutputIPC() = default;
 
-  MOCK_METHOD4(RequestDeviceAuthorization,
+  MOCK_METHOD3(RequestDeviceAuthorization,
                void(AudioOutputIPCDelegate* delegate,
                     int session_id,
-                    const std::string& device_id,
-                    const url::Origin& security_origin));
+                    const std::string& device_id));
   MOCK_METHOD2(CreateStream,
                void(AudioOutputIPCDelegate* delegate,
                     const AudioParameters& params));
@@ -172,14 +171,13 @@ void AudioOutputDeviceTest::CreateDevice(const std::string& device_id) {
   audio_output_ipc_ = new MockAudioOutputIPC();
   audio_device_ = new AudioOutputDevice(
       base::WrapUnique(audio_output_ipc_), io_loop_.task_runner(), 0, device_id,
-      url::Origin(),
       base::TimeDelta::FromMilliseconds(kAuthTimeoutForTestingMs));
 }
 
 void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
   CreateDevice(device_id);
   EXPECT_CALL(*audio_output_ipc_,
-              RequestDeviceAuthorization(audio_device_.get(), 0, device_id, _));
+              RequestDeviceAuthorization(audio_device_.get(), 0, device_id));
   audio_device_->RequestDeviceAuthorization();
   base::RunLoop().RunUntilIdle();
 
@@ -368,7 +366,7 @@ TEST_F(AudioOutputDeviceTest, NonDefaultStartStopStartStop) {
   StopAudioDevice();
 
   EXPECT_CALL(*audio_output_ipc_,
-              RequestDeviceAuthorization(audio_device_.get(), 0, _, _));
+              RequestDeviceAuthorization(audio_device_.get(), 0, _));
   StartAudioDevice();
   // Simulate reply from browser
   ReceiveAuthorization(OUTPUT_DEVICE_STATUS_OK);
@@ -398,11 +396,11 @@ TEST_F(AudioOutputDeviceTest, AuthorizationFailsBeforeInitialize_NoError) {
   audio_output_ipc_ = new MockAudioOutputIPC();
   audio_device_ = new AudioOutputDevice(
       base::WrapUnique(audio_output_ipc_), io_loop_.task_runner(), 0,
-      kDefaultDeviceId, url::Origin(),
+      kDefaultDeviceId,
       base::TimeDelta::FromMilliseconds(kAuthTimeoutForTestingMs));
   EXPECT_CALL(
       *audio_output_ipc_,
-      RequestDeviceAuthorization(audio_device_.get(), 0, kDefaultDeviceId, _));
+      RequestDeviceAuthorization(audio_device_.get(), 0, kDefaultDeviceId));
 
   audio_device_->RequestDeviceAuthorization();
   audio_device_->Initialize(default_audio_parameters_, &callback_);
@@ -422,9 +420,9 @@ TEST_F(AudioOutputDeviceTest, AuthorizationTimedOut) {
   thread.Start();
 
   CreateDevice(kNonDefaultDeviceId);
-  EXPECT_CALL(*audio_output_ipc_,
-              RequestDeviceAuthorization(audio_device_.get(), 0,
-                                         kNonDefaultDeviceId, _));
+  EXPECT_CALL(
+      *audio_output_ipc_,
+      RequestDeviceAuthorization(audio_device_.get(), 0, kNonDefaultDeviceId));
   EXPECT_CALL(*audio_output_ipc_, CloseStream());
 
   // Request authorization; no reply from the browser.

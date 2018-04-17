@@ -4,6 +4,7 @@
 
 #include "media/blink/webaudiosourceprovider_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -269,13 +270,12 @@ bool WebAudioSourceProviderImpl::CurrentThreadIsRenderingThread() {
 
 void WebAudioSourceProviderImpl::SwitchOutputDevice(
     const std::string& device_id,
-    const url::Origin& security_origin,
     const OutputDeviceStatusCB& callback) {
   base::AutoLock auto_lock(sink_lock_);
   if (client_ || !sink_)
     callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   else
-    sink_->SwitchOutputDevice(device_id, security_origin, callback);
+    sink_->SwitchOutputDevice(device_id, callback);
 }
 
 void WebAudioSourceProviderImpl::SetCopyAudioCallback(

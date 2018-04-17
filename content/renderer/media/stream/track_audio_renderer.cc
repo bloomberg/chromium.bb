@@ -125,8 +125,7 @@ TrackAudioRenderer::TrackAudioRenderer(
     const blink::WebMediaStreamTrack& audio_track,
     int playout_render_frame_id,
     int session_id,
-    const std::string& device_id,
-    const url::Origin& security_origin)
+    const std::string& device_id)
     : audio_track_(audio_track),
       playout_render_frame_id_(playout_render_frame_id),
       session_id_(session_id),
@@ -134,7 +133,6 @@ TrackAudioRenderer::TrackAudioRenderer(
       num_samples_rendered_(0),
       playing_(false),
       output_device_id_(device_id),
-      security_origin_(security_origin),
       volume_(0.0),
       sink_started_(false) {
   DCHECK(MediaStreamAudioTrack::From(audio_track_));
@@ -158,7 +156,7 @@ void TrackAudioRenderer::Start() {
   DCHECK(!sink_);
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
       AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
-      session_id_, output_device_id_, security_origin_);
+      session_id_, output_device_id_);
 
   base::AutoLock auto_lock(thread_lock_);
   prior_elapsed_render_time_ = base::TimeDelta();
@@ -248,7 +246,6 @@ bool TrackAudioRenderer::IsLocalRenderer() const {
 
 void TrackAudioRenderer::SwitchOutputDevice(
     const std::string& device_id,
-    const url::Origin& security_origin,
     const media::OutputDeviceStatusCB& callback) {
   DVLOG(1) << "TrackAudioRenderer::SwitchOutputDevice()";
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -261,7 +258,7 @@ void TrackAudioRenderer::SwitchOutputDevice(
   scoped_refptr<media::AudioRendererSink> new_sink =
       AudioDeviceFactory::NewAudioRendererSink(
           AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
-          session_id_, device_id, security_origin);
+          session_id_, device_id);
 
   media::OutputDeviceStatus new_sink_status =
       new_sink->GetOutputDeviceInfo().device_status();
@@ -272,7 +269,6 @@ void TrackAudioRenderer::SwitchOutputDevice(
   }
 
   output_device_id_ = device_id;
-  security_origin_ = security_origin;
   bool was_sink_started = sink_started_;
 
   if (sink_)
@@ -353,7 +349,7 @@ void TrackAudioRenderer::ReconfigureSink(const media::AudioParameters& params) {
   sink_started_ = false;
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
       AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
-      session_id_, output_device_id_, security_origin_);
+      session_id_, output_device_id_);
   MaybeStartSink();
 }
 

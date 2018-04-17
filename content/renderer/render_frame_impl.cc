@@ -181,7 +181,6 @@
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -7293,13 +7292,11 @@ void RenderFrameImpl::OnHostZoomClientRequest(
 
 void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
-    const blink::WebSecurityOrigin& security_origin,
     blink::WebSetSinkIdCallbacks* web_callbacks) {
   media::OutputDeviceStatusCB callback =
       media::ConvertToOutputDeviceStatusCB(web_callbacks);
   std::move(callback).Run(
-      AudioDeviceFactory::GetOutputDeviceInfo(GetRoutingID(), 0, sink_id.Utf8(),
-                                              security_origin)
+      AudioDeviceFactory::GetOutputDeviceInfo(GetRoutingID(), 0, sink_id.Utf8())
           .device_status());
 }
 

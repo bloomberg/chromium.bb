@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_RENDERER_FACTORY_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_RENDERER_FACTORY_IMPL_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 
@@ -25,8 +27,7 @@ class MediaStreamRendererFactoryImpl : public MediaStreamRendererFactory {
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const blink::WebMediaStream& web_stream,
       int render_frame_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) override;
+      const std::string& device_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaStreamRendererFactoryImpl);
@@ -34,4 +35,4 @@ class MediaStreamRendererFactoryImpl : public MediaStreamRendererFactory {
 
 }  // namespace content
 
-#endif // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_RENDERER_FACTORY_IMPL_H_
+#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_RENDERER_FACTORY_IMPL_H_

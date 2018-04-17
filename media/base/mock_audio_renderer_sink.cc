@@ -32,7 +32,6 @@ MockAudioRendererSink::~MockAudioRendererSink() = default;
 
 void MockAudioRendererSink::SwitchOutputDevice(
     const std::string& device_id,
-    const url::Origin& security_origin,
     const OutputDeviceStatusCB& callback) {
   // NB: output device won't be changed, since it's not required by any tests
   // now.

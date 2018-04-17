@@ -73,38 +73,33 @@ class WebRtcAudioRendererTest : public testing::Test,
 
   void SetupRenderer(const std::string& device_id) {
     renderer_ = new WebRtcAudioRenderer(message_loop_->task_runner(), stream_,
-                                        1, 1, device_id, url::Origin());
-    EXPECT_CALL(
-        *this, MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
-                                           _, device_id, _));
+                                        1, 1, device_id);
+    EXPECT_CALL(*this, MockCreateAudioRendererSink(
+                           AudioDeviceFactory::kSourceWebRtc, _, _, device_id));
     EXPECT_TRUE(renderer_->Initialize(source_.get()));
 
     renderer_proxy_ = renderer_->CreateSharedAudioRendererProxy(stream_);
   }
   MOCK_METHOD1(CreateAudioCapturerSource,
                scoped_refptr<media::AudioCapturerSource>(int));
-  MOCK_METHOD4(CreateFinalAudioRendererSink,
+  MOCK_METHOD3(CreateFinalAudioRendererSink,
                scoped_refptr<media::AudioRendererSink>(int,
                                                        int,
-                                                       const std::string&,
-                                                       const url::Origin&));
-  MOCK_METHOD5(
+                                                       const std::string&));
+  MOCK_METHOD4(
       CreateSwitchableAudioRendererSink,
       scoped_refptr<media::SwitchableAudioRendererSink>(SourceType,
                                                         int,
                                                         int,
-                                                        const std::string&,
-                                                        const url::Origin&));
-  MOCK_METHOD5(
-      MockCreateAudioRendererSink,
-      void(SourceType, int, int, const std::string&, const url::Origin&));
+                                                        const std::string&));
+  MOCK_METHOD4(MockCreateAudioRendererSink,
+               void(SourceType, int, int, const std::string&));
 
   scoped_refptr<media::AudioRendererSink> CreateAudioRendererSink(
       SourceType source_type,
       int render_frame_id,
       int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) {
+      const std::string& device_id) {
     mock_sink_ = new media::MockAudioRendererSink(
         device_id,
         device_id == kInvalidOutputDeviceId
@@ -122,7 +117,7 @@ class WebRtcAudioRendererTest : public testing::Test,
     }
 
     MockCreateAudioRendererSink(source_type, render_frame_id, session_id,
-                                device_id, security_origin);
+                                device_id);
     return mock_sink_;
   }
 
@@ -240,12 +235,12 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDevice) {
   EXPECT_CALL(*mock_sink_.get(), Stop());
   EXPECT_CALL(*this,
               MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
-                                          _, kOtherOutputDeviceId, _));
+                                          _, kOtherOutputDeviceId));
   EXPECT_CALL(*source_.get(), AudioRendererThreadStopped());
   EXPECT_CALL(*this, MockSwitchDeviceCallback(media::OUTPUT_DEVICE_STATUS_OK));
   base::RunLoop loop;
   renderer_proxy_->SwitchOutputDevice(
-      kOtherOutputDeviceId, url::Origin(),
+      kOtherOutputDeviceId,
       base::Bind(&WebRtcAudioRendererTest::SwitchDeviceCallback,
                  base::Unretained(this), &loop));
   loop.Run();
@@ -266,12 +261,12 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceInvalidDevice) {
 
   EXPECT_CALL(*this,
               MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
-                                          _, kInvalidOutputDeviceId, _));
+                                          _, kInvalidOutputDeviceId));
   EXPECT_CALL(*this, MockSwitchDeviceCallback(
                          media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
   base::RunLoop loop;
   renderer_proxy_->SwitchOutputDevice(
-      kInvalidOutputDeviceId, url::Origin(),
+      kInvalidOutputDeviceId,
       base::Bind(&WebRtcAudioRendererTest::SwitchDeviceCallback,
                  base::Unretained(this), &loop));
   loop.Run();
@@ -285,11 +280,11 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceInvalidDevice) {
 
 TEST_F(WebRtcAudioRendererTest, InitializeWithInvalidDevice) {
   renderer_ = new WebRtcAudioRenderer(message_loop_->task_runner(), stream_, 1,
-                                      1, kInvalidOutputDeviceId, url::Origin());
+                                      1, kInvalidOutputDeviceId);
 
   EXPECT_CALL(*this,
               MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
-                                          _, kInvalidOutputDeviceId, _));
+                                          _, kInvalidOutputDeviceId));
 
   EXPECT_FALSE(renderer_->Initialize(source_.get()));
 

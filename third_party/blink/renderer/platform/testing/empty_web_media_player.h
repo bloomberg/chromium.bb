@@ -27,7 +27,6 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   WebTimeRanges Buffered() const override;
   WebTimeRanges Seekable() const override;
   void SetSinkId(const WebString& sink_id,
-                 const WebSecurityOrigin&,
                  WebSetSinkIdCallbacks*) override {}
   bool HasVideo() const override { return false; }
   bool HasAudio() const override { return false; }

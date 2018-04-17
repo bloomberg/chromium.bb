@@ -65,8 +65,7 @@ class CONTENT_EXPORT TrackAudioRenderer
   TrackAudioRenderer(const blink::WebMediaStreamTrack& audio_track,
                      int playout_render_frame_id,
                      int session_id,
-                     const std::string& device_id,
-                     const url::Origin& security_origin);
+                     const std::string& device_id);
 
   // MediaStreamAudioRenderer implementation.
   // Called on the main thread.
@@ -79,7 +78,6 @@ class CONTENT_EXPORT TrackAudioRenderer
   base::TimeDelta GetCurrentRenderTime() const override;
   bool IsLocalRenderer() const override;
   void SwitchOutputDevice(const std::string& device_id,
-                          const url::Origin& security_origin,
                           const media::OutputDeviceStatusCB& callback) override;
 
  protected:
@@ -164,7 +162,6 @@ class CONTENT_EXPORT TrackAudioRenderer
   // The preferred device id of the output device or empty for the default
   // output device.
   std::string output_device_id_;
-  url::Origin security_origin_;
 
   // Cache value for the volume.  Whenever |sink_| is re-created, its volume
   // should be set to this.

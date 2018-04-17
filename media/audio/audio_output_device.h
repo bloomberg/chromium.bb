@@ -94,7 +94,6 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       int session_id,
       const std::string& device_id,
-      const url::Origin& security_origin,
       base::TimeDelta authorization_timeout);
 
   // Request authorization to use the device specified in the constructor.
@@ -194,7 +193,6 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
 
   // ID of hardware output device to be used (provided |session_id_| is zero)
   const std::string device_id_;
-  const url::Origin security_origin_;
 
   // If |device_id_| is empty and |session_id_| is not, |matched_device_id_| is
   // received in OnDeviceAuthorized().

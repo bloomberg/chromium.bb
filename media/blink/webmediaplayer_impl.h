@@ -136,7 +136,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void EnterPictureInPicture() override;
   void ExitPictureInPicture() override;
   void SetSinkId(const blink::WebString& sink_id,
-                 const blink::WebSecurityOrigin& security_origin,
                  blink::WebSetSinkIdCallbacks* web_callback) override;
   void SetPoster(const blink::WebURL& poster) override;
   void SetPreload(blink::WebMediaPlayer::Preload preload) override;

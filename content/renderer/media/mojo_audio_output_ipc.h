@@ -40,8 +40,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   // AudioOutputIPC implementation.
   void RequestDeviceAuthorization(media::AudioOutputIPCDelegate* delegate,
                                   int session_id,
-                                  const std::string& device_id,
-                                  const url::Origin& security_origin) override;
+                                  const std::string& device_id) override;
   void CreateStream(media::AudioOutputIPCDelegate* delegate,
                     const media::AudioParameters& params) override;
   void PlayStream() override;

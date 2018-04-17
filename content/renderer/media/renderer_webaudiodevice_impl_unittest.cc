@@ -32,8 +32,7 @@ int MockFrameIdFromCurrentContext() {
 media::AudioParameters MockGetOutputDeviceParameters(
     int frame_id,
     int session_id,
-    const std::string& device_id,
-    const url::Origin& security_origin) {
+    const std::string& device_id) {
   return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 media::CHANNEL_LAYOUT_STEREO,
                                 kHardwareSampleRate, 16, kHardwareBufferSize);
@@ -46,14 +45,12 @@ class RendererWebAudioDeviceImplUnderTest : public RendererWebAudioDeviceImpl {
       int channels,
       const blink::WebAudioLatencyHint& latency_hint,
       blink::WebAudioDevice::RenderCallback* callback,
-      int session_id,
-      const url::Origin& security_origin)
+      int session_id)
       : RendererWebAudioDeviceImpl(layout,
                                    channels,
                                    latency_hint,
                                    callback,
                                    session_id,
-                                   security_origin,
                                    base::Bind(&MockGetOutputDeviceParameters),
                                    base::Bind(&MockFrameIdFromCurrentContext)) {
   }
@@ -70,7 +67,7 @@ class RendererWebAudioDeviceImplTest
 
   void SetupDevice(blink::WebAudioLatencyHint latencyHint) {
     webaudio_device_.reset(new RendererWebAudioDeviceImplUnderTest(
-        media::CHANNEL_LAYOUT_MONO, 1, latencyHint, this, 0, url::Origin()));
+        media::CHANNEL_LAYOUT_MONO, 1, latencyHint, this, 0));
     webaudio_device_->SetMediaTaskRunnerForTesting(message_loop_.task_runner());
   }
 
@@ -79,36 +76,33 @@ class RendererWebAudioDeviceImplTest
         layout, channels,
         blink::WebAudioLatencyHint(
             blink::WebAudioLatencyHint::kCategoryInteractive),
-        this, 0, url::Origin()));
+        this, 0));
     webaudio_device_->SetMediaTaskRunnerForTesting(message_loop_.task_runner());
   }
 
   MOCK_METHOD1(CreateAudioCapturerSource,
                scoped_refptr<media::AudioCapturerSource>(int));
-  MOCK_METHOD4(CreateFinalAudioRendererSink,
+  MOCK_METHOD3(CreateFinalAudioRendererSink,
                scoped_refptr<media::AudioRendererSink>(int,
                                                        int,
-                                                       const std::string&,
-                                                       const url::Origin&));
-  MOCK_METHOD5(
+                                                       const std::string&));
+  MOCK_METHOD4(
       CreateSwitchableAudioRendererSink,
       scoped_refptr<media::SwitchableAudioRendererSink>(SourceType,
                                                         int,
                                                         int,
-                                                        const std::string&,
-                                                        const url::Origin&));
+                                                        const std::string&));
 
   scoped_refptr<media::AudioRendererSink> CreateAudioRendererSink(
       SourceType source_type,
       int render_frame_id,
       int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) {
+      const std::string& device_id) {
     scoped_refptr<media::MockAudioRendererSink> mock_sink =
         new media::MockAudioRendererSink(
             device_id, media::OUTPUT_DEVICE_STATUS_OK,
             MockGetOutputDeviceParameters(render_frame_id, session_id,
-                                          device_id, security_origin));
+                                          device_id));
 
     EXPECT_CALL(*mock_sink.get(), Start());
     EXPECT_CALL(*mock_sink.get(), Play());

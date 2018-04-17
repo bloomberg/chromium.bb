@@ -133,10 +133,9 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
 
   void SwitchOutputDevice(
       const std::string& device_id,
-      const url::Origin& security_origin,
       const media::OutputDeviceStatusCB& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return delegate_->SwitchOutputDevice(device_id, security_origin, callback);
+    return delegate_->SwitchOutputDevice(device_id, callback);
   }
 
   base::TimeDelta GetCurrentRenderTime() const override {
@@ -166,8 +165,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
     const blink::WebMediaStream& media_stream,
     int source_render_frame_id,
     int session_id,
-    const std::string& device_id,
-    const url::Origin& security_origin)
+    const std::string& device_id)
     : state_(UNINITIALIZED),
       source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
@@ -177,8 +175,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       play_ref_count_(0),
       start_ref_count_(0),
       sink_params_(kFormat, kChannelLayout, 0, kBitsPerSample, 0),
-      output_device_id_(device_id),
-      security_origin_(security_origin) {
+      output_device_id_(device_id) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_frame_id=%d, session_id=%d, effects=%i",
       source_render_frame_id, session_id, sink_params_.effects()));
@@ -203,7 +200,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
       AudioDeviceFactory::kSourceWebRtc, source_render_frame_id_, session_id_,
-      output_device_id_, security_origin_);
+      output_device_id_);
 
   if (sink_->GetOutputDeviceInfo().device_status() !=
       media::OUTPUT_DEVICE_STATUS_OK) {
@@ -374,7 +371,6 @@ bool WebRtcAudioRenderer::IsLocalRenderer() const {
 
 void WebRtcAudioRenderer::SwitchOutputDevice(
     const std::string& device_id,
-    const url::Origin& security_origin,
     const media::OutputDeviceStatusCB& callback) {
   DVLOG(1) << "WebRtcAudioRenderer::SwitchOutputDevice()";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -388,7 +384,7 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   scoped_refptr<media::AudioRendererSink> new_sink =
       AudioDeviceFactory::NewAudioRendererSink(
           AudioDeviceFactory::kSourceWebRtc, source_render_frame_id_,
-          session_id_, device_id, security_origin);
+          session_id_, device_id);
   media::OutputDeviceStatus status =
       new_sink->GetOutputDeviceInfo().device_status();
   if (status != media::OUTPUT_DEVICE_STATUS_OK) {
@@ -403,7 +399,6 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   sink_->Stop();
   sink_ = new_sink;
   output_device_id_ = device_id;
-  security_origin_ = security_origin;
   {
     base::AutoLock auto_lock(lock_);
     source_->AudioRendererThreadStopped();

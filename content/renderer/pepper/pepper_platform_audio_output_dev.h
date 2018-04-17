@@ -32,7 +32,6 @@ class PepperPlatformAudioOutputDev
   // when the stream is created.
   static PepperPlatformAudioOutputDev* Create(int render_frame_id,
                                               const std::string& device_id,
-                                              const GURL& document_url,
                                               int sample_rate,
                                               int frames_per_buffer,
                                               PepperAudioOutputHost* client);
@@ -86,7 +85,6 @@ class PepperPlatformAudioOutputDev
   PepperPlatformAudioOutputDev();
   PepperPlatformAudioOutputDev(int render_frame_id,
                                const std::string& device_id,
-                               const GURL& document_url,
                                base::TimeDelta authorization_timeout);
 
   // Creates audio stream. Used for new Pepper audio output interface
@@ -133,7 +131,6 @@ class PepperPlatformAudioOutputDev
 
   // ID of hardware output device to be used (provided session_id_ is zero)
   const std::string device_id_;
-  const url::Origin security_origin_;
 
   // If |device_id_| is empty and |session_id_| is not, |matched_device_id_| is
   // received in OnDeviceAuthorized().

@@ -51,7 +51,6 @@ namespace blink {
 class WebAudioSourceProvider;
 class WebContentDecryptionModule;
 class WebMediaPlayerSource;
-class WebSecurityOrigin;
 class WebString;
 class WebURL;
 enum class WebFullscreenVideoStatus;
@@ -146,7 +145,6 @@ class WebMediaPlayer {
   // destructors, run in the same thread where the object is created
   // (i.e., the blink thread).
   virtual void SetSinkId(const WebString& sink_id,
-                         const WebSecurityOrigin&,
                          WebSetSinkIdCallbacks*) = 0;
 
   // True if the loaded media has a playable video/audio track.
@@ -335,4 +333,4 @@ class WebMediaPlayer {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_H_

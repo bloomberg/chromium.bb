@@ -94,9 +94,8 @@ namespace {
 
 void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
                             const std::string& device_id,
-                            const url::Origin& security_origin,
                             const OutputDeviceStatusCB& callback) {
-  sink->SwitchOutputDevice(device_id, security_origin, callback);
+  sink->SwitchOutputDevice(device_id, callback);
 }
 
 bool IsBackgroundedSuspendEnabled() {
@@ -805,7 +804,6 @@ void WebMediaPlayerImpl::ExitPictureInPicture() {
 
 void WebMediaPlayerImpl::SetSinkId(
     const blink::WebString& sink_id,
-    const blink::WebSecurityOrigin& security_origin,
     blink::WebSetSinkIdCallbacks* web_callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __func__;
@@ -813,10 +811,8 @@ void WebMediaPlayerImpl::SetSinkId(
   media::OutputDeviceStatusCB callback =
       media::ConvertToOutputDeviceStatusCB(web_callback);
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SetSinkIdOnMediaThread, audio_source_provider_,
-                 sink_id.Utf8(), static_cast<url::Origin>(security_origin),
-                 callback));
+      FROM_HERE, base::Bind(&SetSinkIdOnMediaThread, audio_source_provider_,
+                            sink_id.Utf8(), callback));
 }
 
 STATIC_ASSERT_ENUM(WebMediaPlayer::kPreloadNone, MultibufferDataSource::NONE);

@@ -33,7 +33,6 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -262,7 +261,7 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
 
   auto device = base::MakeRefCounted<media::AudioOutputDevice>(
       std::move(renderer_side_ipc), renderer_ipc_task_runner, kNoSessionId, "",
-      url::Origin(), base::TimeDelta());
+      base::TimeDelta());
 
   StrictMock<TestRenderCallback> source;
 

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -68,7 +69,6 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
   bool IsOptimizedForHardwareParameters() override;
   bool CurrentThreadIsRenderingThread() override;
   void SwitchOutputDevice(const std::string& device_id,
-                          const url::Origin& security_origin,
                           const OutputDeviceStatusCB& callback) override;
 
   // These methods allow a client to get a copy of the rendered audio.

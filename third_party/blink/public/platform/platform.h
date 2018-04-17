@@ -199,8 +199,7 @@ class BLINK_PLATFORM_EXPORT Platform {
       unsigned number_of_channels,
       const WebAudioLatencyHint& latency_hint,
       WebAudioDevice::RenderCallback*,
-      const WebString& device_id,
-      const WebSecurityOrigin&) {
+      const WebString& device_id) {
     return nullptr;
   }
 
@@ -765,4 +764,4 @@ class BLINK_PLATFORM_EXPORT Platform {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_PLATFORM_H_

@@ -24,7 +24,6 @@
 #include "media/base/audio_converter.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_sink.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -38,7 +37,6 @@ class MEDIA_EXPORT AudioRendererMixerInput
   AudioRendererMixerInput(AudioRendererMixerPool* mixer_pool,
                           int owner_id,
                           const std::string& device_id,
-                          const url::Origin& security_origin,
                           AudioLatency::LatencyType latency);
 
   // SwitchableAudioRendererSink implementation.
@@ -52,7 +50,6 @@ class MEDIA_EXPORT AudioRendererMixerInput
   void Initialize(const AudioParameters& params,
                   AudioRendererSink::RenderCallback* renderer) override;
   void SwitchOutputDevice(const std::string& device_id,
-                          const url::Origin& security_origin,
                           const OutputDeviceStatusCB& callback) override;
   // This is expected to be called on the audio rendering thread. The caller
   // must ensure that this input has been added to a mixer before calling the
@@ -88,7 +85,6 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
   const int owner_id_;
   std::string device_id_;  // ID of hardware device to use
-  url::Origin security_origin_;
   const AudioLatency::LatencyType latency_;
 
   // AudioRendererMixer obtained from mixer pool during Initialize(),

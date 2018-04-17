@@ -86,8 +86,7 @@ class AudioOutputIPCFactoryTest : public testing::Test {
 
   void RequestAuthorizationOnIOThread(
       std::unique_ptr<media::AudioOutputIPC> output_ipc) {
-    output_ipc->RequestDeviceAuthorization(&fake_delegate, 0, "",
-                                           url::Origin());
+    output_ipc->RequestDeviceAuthorization(&fake_delegate, 0, "");
 
     output_ipc->CloseStream();
   }

@@ -28,8 +28,7 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
       base::RepeatingCallback<scoped_refptr<media::AudioRendererSink>(
           int render_frame_id,
           int session_id,
-          const std::string& device_id,
-          const url::Origin& security_origin)>;
+          const std::string& device_id)>;
 
   AudioRendererSinkCacheImpl(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -40,13 +39,11 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
 
   media::OutputDeviceInfo GetSinkInfo(int source_render_frame_id,
                                       int session_id,
-                                      const std::string& device_id,
-                                      const url::Origin& security_origin) final;
+                                      const std::string& device_id) final;
 
   scoped_refptr<media::AudioRendererSink> GetSink(
       int source_render_frame_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) final;
+      const std::string& device_id) final;
 
   void ReleaseSink(const media::AudioRendererSink* sink_ptr) final;
 
@@ -70,12 +67,10 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
   CacheContainer::iterator FindCacheEntry_Locked(
       int source_render_frame_id,
       const std::string& device_id,
-      const url::Origin& security_origin,
       bool unused_only);
 
   void CacheOrStopUnusedSink(int source_render_frame_id,
                              const std::string& device_id,
-                             const url::Origin& security_origin,
                              scoped_refptr<media::AudioRendererSink> sink);
 
   // To avoid publishing CacheEntry structure in the header.

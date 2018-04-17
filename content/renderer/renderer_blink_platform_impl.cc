@@ -203,8 +203,7 @@ media::AudioParameters GetAudioHardwareParams() {
     return media::AudioParameters::UnavailableDeviceParams();
 
   return AudioDeviceFactory::GetOutputDeviceInfo(render_frame->GetRoutingID(),
-                                                 0, std::string(),
-                                                 web_frame->GetSecurityOrigin())
+                                                 0, std::string())
       .output_params();
 }
 
@@ -793,8 +792,7 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
     unsigned channels,
     const blink::WebAudioLatencyHint& latency_hint,
     WebAudioDevice::RenderCallback* callback,
-    const blink::WebString& input_device_id,
-    const blink::WebSecurityOrigin& security_origin) {
+    const blink::WebString& input_device_id) {
   // Use a mock for testing.
   std::unique_ptr<blink::WebAudioDevice> mock_device =
       GetContentClient()->renderer()->OverrideCreateAudioDevice(latency_hint);
@@ -814,9 +812,8 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
     session_id = 0;
   }
 
-  return RendererWebAudioDeviceImpl::Create(
-      layout, channels, latency_hint, callback, session_id,
-      static_cast<url::Origin>(security_origin));
+  return RendererWebAudioDeviceImpl::Create(layout, channels, latency_hint,
+                                            callback, session_id);
 }
 
 bool RendererBlinkPlatformImpl::DecodeAudioFileData(

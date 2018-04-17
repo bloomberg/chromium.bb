@@ -18,7 +18,6 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_mixer_pool.h"
 #include "media/base/output_device_info.h"
-#include "url/origin.h"
 
 namespace media {
 class AudioRendererMixer;
@@ -55,15 +54,14 @@ class CONTENT_EXPORT AudioRendererMixerManager
   // retrieve an AudioRendererMixer instance from AudioRendererMixerManager.
   // |source_render_frame_id| refers to the RenderFrame containing the entity
   // rendering the audio.  Caller must ensure AudioRendererMixerManager outlives
-  // the returned input. |device_id|, |session_id| and |security_origin|
-  // identify the output device to use. If |device_id| is empty and |session_id|
-  // is nonzero, output device associated with the opened input device
-  // designated by |session_id| is used. Otherwise, |session_id| is ignored.
+  // the returned input. |device_id| and |session_id| identify the output
+  // device to use. If |device_id| is empty and |session_id| is nonzero,
+  // output device associated with the opened input device designated by
+  // |session_id| is used. Otherwise, |session_id| is ignored.
   media::AudioRendererMixerInput* CreateInput(
       int source_render_frame_id,
       int session_id,
       const std::string& device_id,
-      const url::Origin& security_origin,
       media::AudioLatency::LatencyType latency);
 
   // AudioRendererMixerPool implementation.
@@ -73,7 +71,6 @@ class CONTENT_EXPORT AudioRendererMixerManager
       const media::AudioParameters& input_params,
       media::AudioLatency::LatencyType latency,
       const std::string& device_id,
-      const url::Origin& security_origin,
       media::OutputDeviceStatus* device_status) final;
 
   void ReturnMixer(media::AudioRendererMixer* mixer) final;
@@ -81,8 +78,7 @@ class CONTENT_EXPORT AudioRendererMixerManager
   media::OutputDeviceInfo GetOutputDeviceInfo(
       int source_render_frame_id,
       int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin) final;
+      const std::string& device_id) final;
 
  protected:
   explicit AudioRendererMixerManager(
@@ -97,14 +93,12 @@ class CONTENT_EXPORT AudioRendererMixerManager
     MixerKey(int source_render_frame_id,
              const media::AudioParameters& params,
              media::AudioLatency::LatencyType latency,
-             const std::string& device_id,
-             const url::Origin& security_origin);
+             const std::string& device_id);
     MixerKey(const MixerKey& other);
     int source_render_frame_id;
     media::AudioParameters params;
     media::AudioLatency::LatencyType latency;
     std::string device_id;
-    url::Origin security_origin;
   };
 
   // Custom compare operator for the AudioRendererMixerMap.  Allows reuse of
@@ -132,15 +126,11 @@ class CONTENT_EXPORT AudioRendererMixerManager
       if (media::AudioDeviceDescription::IsDefaultDevice(a.device_id) &&
           media::AudioDeviceDescription::IsDefaultDevice(b.device_id)) {
         // Both device IDs represent the same default device => do not compare
-        // them; the default device is always authorized => ignoring security
-        // origin.
+        // them.
         return false;
       }
 
-      if (a.device_id != b.device_id)
-        return a.device_id < b.device_id;
-
-      return a.security_origin < b.security_origin;
+      return a.device_id < b.device_id;
     }
   };
 

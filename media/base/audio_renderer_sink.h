@@ -14,7 +14,6 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/output_device_info.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -104,7 +103,6 @@ class SwitchableAudioRendererSink : public RestartableAudioRendererSink {
   // the media::OutputDeviceStatus enum.
   // There is no guarantee about the thread where |callback| will be invoked.
   virtual void SwitchOutputDevice(const std::string& device_id,
-                                  const url::Origin& security_origin,
                                   const OutputDeviceStatusCB& callback) = 0;
 
  protected:

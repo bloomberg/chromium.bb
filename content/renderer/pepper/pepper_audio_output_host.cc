@@ -97,16 +97,12 @@ int32_t PepperAudioOutputHost::OnOpen(ppapi::host::HostMessageContext* context,
   if (audio_output_)
     return PP_ERROR_FAILED;
 
-  GURL document_url = renderer_ppapi_host_->GetDocumentURL(pp_instance());
-  if (!document_url.is_valid())
-    return PP_ERROR_FAILED;
-
   // When it is done, we'll get called back on StreamCreated() or
   // StreamCreationFailed().
   audio_output_ = PepperPlatformAudioOutputDev::Create(
       renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance())
           ->GetRoutingID(),
-      device_id, document_url, static_cast<int>(sample_rate),
+      device_id, static_cast<int>(sample_rate),
       static_cast<int>(sample_frame_count), this);
   if (audio_output_) {
     open_context_ = context->MakeReplyMessageContext();
