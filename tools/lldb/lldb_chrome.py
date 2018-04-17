@@ -17,8 +17,8 @@ def __lldb_init_module(debugger, internal_dict):
 
 # This is highly dependent on libc++ being compiled with little endian.
 def basestring16_SummaryProvider(valobj, internal_dict):
-    s = valobj.GetValueForExpressionPath('.__r_.__first_.__s')
-    l = valobj.GetValueForExpressionPath('.__r_.__first_.__l')
+    s = valobj.GetValueForExpressionPath('.__r_.__value_.__s')
+    l = valobj.GetValueForExpressionPath('.__r_.__value_.__l')
     size = s.GetChildMemberWithName('__size_').GetValueAsUnsigned(0)
     is_short_string = size & 1 == 0
     if is_short_string:
