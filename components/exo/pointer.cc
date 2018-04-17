@@ -88,7 +88,11 @@ Pointer::Pointer(PointerDelegate* delegate)
   auto* helper = WMHelper::GetInstance();
   helper->AddPreTargetHandler(this);
   helper->AddDisplayConfigurationObserver(this);
-  helper->GetCursorClient()->AddObserver(this);
+  // TODO(sky): CursorClient does not exist in mash
+  // yet. https://crbug.com/631103.
+  aura::client::CursorClient* cursor_client = helper->GetCursorClient();
+  if (cursor_client)
+    cursor_client->AddObserver(this);
 }
 
 Pointer::~Pointer() {
@@ -101,7 +105,11 @@ Pointer::~Pointer() {
   auto* helper = WMHelper::GetInstance();
   helper->RemoveDisplayConfigurationObserver(this);
   helper->RemovePreTargetHandler(this);
-  helper->GetCursorClient()->RemoveObserver(this);
+  // TODO(sky): CursorClient does not exist in mash
+  // yet. https://crbug.com/631103.
+  aura::client::CursorClient* cursor_client = helper->GetCursorClient();
+  if (cursor_client)
+    cursor_client->RemoveObserver(this);
   if (root_surface())
     root_surface()->RemoveSurfaceObserver(this);
 }
