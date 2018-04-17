@@ -9,18 +9,24 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "content/public/browser/browser_thread.h"
+#include "printing/print_job_constants.h"
+#include "printing/print_settings.h"
 
 namespace printing {
 
 PrinterQuery::PrinterQuery(int render_process_id, int render_frame_id)
-    : worker_(std::make_unique<PrintJobWorker>(render_process_id,
+    : cookie_(PrintSettings::NewCookie()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      worker_(std::make_unique<PrintJobWorker>(render_process_id,
                                                render_frame_id,
-                                               this)),
-      cookie_(PrintSettings::NewCookie()) {
+                                               this)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
@@ -49,12 +55,10 @@ void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
   }
 }
 
-std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker(
-    PrintJobWorkerOwner* new_owner) {
+std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker() {
   DCHECK(!callback_);
   DCHECK(worker_);
 
-  worker_->SetNewOwner(new_owner);
   return std::move(worker_);
 }
 
@@ -136,6 +140,15 @@ void PrinterQuery::StopWorker() {
     worker_->Stop();
     worker_.reset();
   }
+}
+
+bool PrinterQuery::RunsTasksInCurrentSequence() const {
+  return task_runner_->RunsTasksInCurrentSequence();
+}
+
+bool PrinterQuery::PostTask(const base::Location& from_here,
+                            base::OnceClosure task) {
+  return task_runner_->PostTask(from_here, std::move(task));
 }
 
 bool PrinterQuery::is_callback_pending() const {

@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/print_job_worker_owner.h"
 #include "chrome/browser/printing/printer_query.h"
 
 namespace base {
