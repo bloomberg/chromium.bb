@@ -3684,6 +3684,7 @@ class WaylandKeyboardDelegate : public WaylandInputDelegate,
     wl_keyboard_send_keymap(keyboard_resource_,
                             WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
                             shared_keymap.handle().GetHandle(), keymap_size);
+    wl_client_flush(client());
   }
 
   // The client who own this keyboard instance.
