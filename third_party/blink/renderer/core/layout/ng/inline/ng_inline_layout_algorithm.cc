@@ -244,6 +244,12 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   BidiReorder();
   box_states_->UpdateAfterReorder(&line_box_);
   LayoutUnit inline_size = box_states_->ComputeInlinePositions(&line_box_);
+
+  // Create box fragmetns if needed. After this point forward, |line_box_| is a
+  // tree structure.
+  if (box_states_->HasBoxFragments())
+    box_states_->CreateBoxFragments(&line_box_);
+
   const NGLineHeightMetrics& line_box_metrics =
       box_states_->LineBoxState().metrics;
 
