@@ -387,25 +387,10 @@ class AltGraphModifierTest
   AltGraphModifierTest() : keymap_(GetPlatformKeyboardLayout(GetParam())) {}
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   PlatformKeyMap keymap_;
 };
 
-TEST_P(AltGraphModifierTest, OldAltGraphModifierBehaviour) {
-  feature_list_.InitFromCommandLine("", "FixAltGraph");
-
-  // Regardless of the keyboard layout, modifier flags should be unchanged.
-  for (const auto& test_case : kAltGraphModifierTestCases) {
-    DomKeyAndFlags result = DomKeyAndFlagsFromKeyboardCode(
-        keymap_, test_case.key_code, test_case.flags);
-    EXPECT_EQ(test_case.flags, result.flags)
-        << " for key_code=" << test_case.key_code;
-  }
-}
-
 TEST_P(AltGraphModifierTest, AltGraphModifierBehaviour) {
-  feature_list_.InitFromCommandLine("FixAltGraph", "");
-
   // If the key generates a character under AltGraph then |result| should
   // report AltGraph, but not Control or Alt.
   for (const auto& test_case : kAltGraphModifierTestCases) {

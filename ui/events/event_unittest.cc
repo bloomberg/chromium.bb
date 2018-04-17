@@ -1194,26 +1194,13 @@ class AltGraphEventTest
   }
 
   const MSG msg_;
-  base::test::ScopedFeatureList feature_list_;
   BYTE original_keyboard_state_[256] = {};
   HKL original_keyboard_layout_ = nullptr;
 };
 
 }  // namespace
 
-TEST_P(AltGraphEventTest, OldKeyEventAltGraphModifier) {
-  feature_list_.InitFromCommandLine("", "FixAltGraph");
-
-  // Old behaviour always sets AltGraph modifier whenever both Control and Alt
-  // are pressed.
-  KeyEvent event(msg_);
-  EXPECT_EQ(event.flags() & (EF_CONTROL_DOWN | EF_ALT_DOWN | EF_ALTGR_DOWN),
-            EF_CONTROL_DOWN | EF_ALT_DOWN | EF_ALTGR_DOWN);
-}
-
 TEST_P(AltGraphEventTest, KeyEventAltGraphModifer) {
-  feature_list_.InitFromCommandLine("FixAltGraph", "");
-
   KeyEvent event(msg_);
   if (message_type() == WM_CHAR) {
     // By definition, if we receive a WM_CHAR message when Control and Alt are
