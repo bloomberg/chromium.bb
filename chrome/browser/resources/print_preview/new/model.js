@@ -448,6 +448,13 @@ Polymer({
         caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
       this.set('settings.dpi.unavailableValue', caps.dpi.option[0]);
     }
+    if (this.settings.color.available) {
+      const defaultOption = this.destination.defaultColorOption;
+      this.set(
+          'settings.color.value',
+          !['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'].includes(
+              defaultOption.type));
+    }
 
     if (this.settings.vendorItems.available) {
       const vendorSettings = {};
