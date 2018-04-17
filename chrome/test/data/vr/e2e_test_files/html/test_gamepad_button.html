@@ -15,21 +15,44 @@ View.
     <script src="../resources/webvr_boilerplate.js"></script>
     <script>
       var t = async_test("Screen taps/clicks registered when in VR");
-      window.addEventListener("vrdisplaypresentchange",
-          () => {finishJavaScriptStep();}, false);
       var pressed = false;
       var index = -1;
       var canStartTest = false;
+      var frameCounter = 0;
+      var lastInputChangeFrame = 0;
+      var lastInputValue = false;
+
       window.addEventListener("gamepadconnected", function(e) {
         t.step( () => {
-          assert_equals(index, -1, "Should only receive gamepadconnected once");
+          assert_equals(index, -1, "Should only have one connected controller");
         });
         index = e.gamepad.index;
       });
+
+      // GVR can very briefly disconnect then reconnect the controller, so
+      // handle that case.
+      window.addEventListener("gamepaddisconnected", function(e) {
+        index = -1;
+      });
+
+      // Returns true if no input has been received for 60 frames.
+      function isInputDrained() {
+        return frameCounter - lastInputChangeFrame > 60;
+      }
+
       onPresentingAnimationFrameCallback = function() {
         if (index == -1) return;
-        if (!canStartTest) return;
+        frameCounter++;
         var gp = navigator.getGamepads()[index];
+        // This can happen if the controller has been briefly disconnected.
+        if (gp === null) return;
+        if (!canStartTest) {
+          if (gp.buttons[0].pressed != lastInputValue) {
+            lastInputChangeFrame = frameCounter;
+          }
+          lastInputValue = gp.buttons[0].pressed;
+          return;
+        }
         if (!pressed && gp.buttons[0].pressed == true) {
           pressed = true;
           finishJavaScriptStep();
