@@ -1097,14 +1097,14 @@ public class BottomSheet extends FrameLayout
     /**
      * @return The ratio of the height of the screen that the hidden state is.
      */
-    private float getHiddenRatio() {
+    @VisibleForTesting
+    float getHiddenRatio() {
         return mStateRatios[SHEET_STATE_HIDDEN];
     }
 
     /**
      * @return The ratio of the height of the screen that the peeking state is.
      */
-    @VisibleForTesting
     public float getPeekRatio() {
         return mStateRatios[SHEET_STATE_PEEK];
     }
@@ -1113,7 +1113,7 @@ public class BottomSheet extends FrameLayout
      * @return The ratio of the height of the screen that the half expanded state is.
      */
     @VisibleForTesting
-    public float getHalfRatio() {
+    float getHalfRatio() {
         return mStateRatios[SHEET_STATE_HALF];
     }
 
@@ -1121,14 +1121,13 @@ public class BottomSheet extends FrameLayout
      * @return The ratio of the height of the screen that the fully expanded state is.
      */
     @VisibleForTesting
-    public float getFullRatio() {
+    float getFullRatio() {
         return mStateRatios[SHEET_STATE_FULL];
     }
 
     /**
      * @return The height of the container that the bottom sheet exists in.
      */
-    @VisibleForTesting
     public float getSheetContainerHeight() {
         return mContainerHeight;
     }
