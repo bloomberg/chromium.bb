@@ -8,20 +8,18 @@
   <template>
     <style>
       paper-button {
-        --paper-button: {
-          -webkit-padding-end: var(--cr-button-edge-spacing);
-          -webkit-padding-start: var(--cr-button-edge-spacing);
-          color: var(--paper-grey-600);
-          font-weight: 500;
-          min-width: 1em;  /* A tighter fit than 5.14em for short buttons. */
-          text-decoration: none;
-        };
         --paper-button-flat-keyboard-focus: {
           background: rgba(0, 0, 0, .12);
         };
+        -webkit-padding-end: var(--cr-button-edge-spacing);
+        -webkit-padding-start: var(--cr-button-edge-spacing);
+        color: var(--paper-grey-600);
         flex-shrink: 0;
+        font-weight: 500;
         height: 36px;
         margin: 0;
+        min-width: 1em;  /* A tighter fit than 5.14em for short buttons. */
+        text-decoration: none;
       }
     </style>
   </template>

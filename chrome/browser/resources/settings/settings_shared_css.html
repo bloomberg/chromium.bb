@@ -70,12 +70,10 @@
       }
 
       /* Customize the disabled state of paper buttons within a settings box. */
-      .settings-box paper-button {
-        --paper-button-disabled: {
-          background: none;
-          color: black;
-          opacity: 0.26;
-        };
+      .settings-box paper-button[disabled] {
+        background: none;
+        color: black;
+        opacity: 0.26;
       }
 
       /* For "Advanced" toggle button. */
