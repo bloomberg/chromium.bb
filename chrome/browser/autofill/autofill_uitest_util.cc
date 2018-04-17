@@ -17,7 +17,6 @@
 
 namespace autofill {
 
-// PdmChangeWaiter ------------------------------------------------------------
 // This class is used to wait for asynchronous updates to PersonalDataManager
 // to complete.
 class PdmChangeWaiter : public PersonalDataManagerObserver {
@@ -71,15 +70,6 @@ void AddTestProfile(Browser* browser, const AutofillProfile& profile) {
   observer.Wait();
 }
 
-void AddTestProfile(Browser* browser,
-                    const AutofillProfile& profile,
-                    const CreditCard& card) {
-  AddTestProfile(browser, profile);
-  PdmChangeWaiter observer(browser);
-  GetPersonalDataManager(browser->profile())->AddCreditCard(card);
-  observer.Wait();
-}
-
 void SetTestProfile(Browser* browser, const AutofillProfile& profile) {
   std::vector<AutofillProfile> profiles;
   profiles.push_back(profile);
@@ -98,15 +88,6 @@ void AddTestCreditCard(Browser* browser, const CreditCard& card) {
 
   // AddCreditCard is asynchronous. Wait for it to finish before continuing the
   // tests.
-  observer.Wait();
-}
-
-void AddTestAutofillData(Browser* browser,
-                         const AutofillProfile& profile,
-                         const CreditCard& card) {
-  AddTestProfile(browser, profile);
-  PdmChangeWaiter observer(browser);
-  GetPersonalDataManager(browser->profile())->AddCreditCard(card);
   observer.Wait();
 }
 
