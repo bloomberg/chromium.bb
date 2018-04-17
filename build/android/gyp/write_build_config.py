@@ -716,11 +716,22 @@ def _CreateJavaLibrariesList(library_paths):
   return ('{%s}' % ','.join(['"%s"' % s[3:-3] for s in library_paths]))
 
 
-def _CreateLocalePaksAssetJavaList(assets, locale_paks):
-  """Returns a java literal array from a list of assets in the form src:dst."""
-  asset_paths = [a.split(':')[1] for a in assets]
-  return '{%s}' % ','.join(
-      sorted('"%s"' % a[:-4] for a in asset_paths if a in locale_paks))
+def _CreateJavaLocaleListFromAssets(assets, locale_paks):
+  """Returns a java literal array from a list of locale assets.
+
+  Args:
+    assets: A list of all APK asset paths in the form 'src:dst'
+    locale_paks: A list of asset paths that correponds to the locale pak
+      files of interest. Each |assets| entry will have its 'dst' part matched
+      against it to determine if they are part of the result.
+  Returns:
+    A string that is a Java source literal array listing the locale names
+    of the corresponding asset files, without directory or .pak suffix.
+    E.g. '{"en-GB", "en-US", "es-ES", "fr", ... }'
+  """
+  assets_paths = [a.split(':')[1] for a in assets]
+  locales = [os.path.basename(a)[:-4] for a in assets_paths if a in locale_paks]
+  return '{%s}' % ','.join(['"%s"' % l for l in sorted(locales)])
 
 
 def main(argv):
@@ -1269,9 +1280,9 @@ def main(argv):
     }
     config['assets'], config['uncompressed_assets'], locale_paks = (
         _MergeAssets(deps.All('android_assets')))
-    config['compressed_locales_java_list'] = _CreateLocalePaksAssetJavaList(
+    config['compressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
         config['assets'], locale_paks)
-    config['uncompressed_locales_java_list'] = _CreateLocalePaksAssetJavaList(
+    config['uncompressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
         config['uncompressed_assets'], locale_paks)
 
     config['extra_android_manifests'] = filter(None, (
