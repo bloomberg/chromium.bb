@@ -348,6 +348,12 @@
     },
   },
 
+  'chromeos_gtests': {
+    'crypto_unittests': {},
+    'sql_unittests': {},
+    'url_unittests': {},
+  },
+
   'chromeos_remote_device_isolated_tests': {
     'telemetry_perf_unittests': {
       'args': [
