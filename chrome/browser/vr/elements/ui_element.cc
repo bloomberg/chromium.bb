@@ -623,11 +623,6 @@ void UiElement::SetSounds(Sounds sounds, AudioDelegate* delegate) {
 
 void UiElement::OnUpdatedWorldSpaceTransform() {}
 
-// TODO(cgrant): Remove this method, and use bindings instead.
-gfx::SizeF UiElement::stale_size() const {
-  return size_;
-}
-
 void UiElement::AddChild(std::unique_ptr<UiElement> child) {
   for (UiElement* current = this; current; current = current->parent())
     current->set_descendants_updated(true);

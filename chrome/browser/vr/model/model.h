@@ -49,7 +49,6 @@ struct Model {
       UiElementRenderer::kTextureLocationLocal;
   UiElementRenderer::TextureLocation content_overlay_location =
       UiElementRenderer::kTextureLocationLocal;
-  bool update_ready_snackbar_enabled = false;
   bool waiting_for_background = false;
   bool background_loaded = false;
   bool supports_selection = true;
