@@ -1114,7 +1114,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         'gpu': '1002:6821'
       },
       'device_ids': [
-          'build246-a9', 'build247-a9', 'build248-a9', 'build249-29',
+          'build246-a9', 'build247-a9', 'build248-a9', 'build249-a9',
           'build250-a9', 'build251-a9', 'build252-a9', 'build253-a9',
           'build254-a9', 'build255-a9', 'build256-a9', 'build257-a9',
           'build258-a9', 'build259-a9', 'build260-a9', 'build261-a9',
