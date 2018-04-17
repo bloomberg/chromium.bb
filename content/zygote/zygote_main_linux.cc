@@ -33,7 +33,6 @@
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_descriptors.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/zygote/zygote_linux.h"
 #include "sandbox/linux/services/credentials.h"
@@ -45,6 +44,7 @@
 #include "services/service_manager/sandbox/linux/sandbox_debug_handling_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace content {
@@ -184,7 +184,7 @@ bool ZygoteMain(
 
   // Skip pre-initializing sandbox under --no-sandbox for crbug.com/444900.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNoSandbox)) {
+          service_manager::switches::kNoSandbox)) {
     // This will pre-initialize the various sandboxes that need it.
     linux_sandbox->PreinitializeSandbox();
   }

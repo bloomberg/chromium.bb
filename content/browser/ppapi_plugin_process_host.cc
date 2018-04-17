@@ -367,10 +367,10 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   if (!is_broker_) {
     static const char* const kPluginForwardSwitches[] = {
       service_manager::switches::kDisableSeccompFilterSandbox,
+      service_manager::switches::kNoSandbox,
 #if defined(OS_MACOSX)
-      switches::kEnableSandboxLogging,
+      service_manager::switches::kEnableSandboxLogging,
 #endif
-      switches::kNoSandbox,
       switches::kPpapiStartupDialog,
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kPluginForwardSwitches,

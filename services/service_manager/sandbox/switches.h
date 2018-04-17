@@ -32,18 +32,26 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kProfilingSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowNoSandboxJob[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowSandboxDebugging[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableAppContainer[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableNamespaceSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableSeccompFilterSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableSetuidSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableWin32kLockDown[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableAppContainer[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxAllowSysVShm[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxFailuresFatal[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoSandbox[];
 #if defined(OS_WIN)
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowThirdPartyModules[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAddGpuAppContainerCaps[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuAppContainer[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuLpac[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableGpuAppContainer[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char
+    kNoSandboxAndElevatedPrivileges[];
+#endif
+#if defined(OS_MACOSX)
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableSandboxLogging[];
 #endif
 
 // Flags spied upon from other layers.
@@ -52,13 +60,6 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiBrokerProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiPluginProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kRendererProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilityProcess[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuSandbox[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoSandbox[];
-#if defined(OS_WIN)
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char
-    kNoSandboxAndElevatedPrivileges[];
-#endif
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableSandboxLogging[];
 
 }  // namespace switches
 

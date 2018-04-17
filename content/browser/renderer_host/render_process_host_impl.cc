@@ -2654,6 +2654,11 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     network::switches::kNoReferrers,
     service_manager::switches::kDisableInProcessStackTraces,
     service_manager::switches::kDisableSeccompFilterSandbox,
+    service_manager::switches::kNoSandbox,
+#if defined(OS_MACOSX)
+    // Allow this to be set when invoking the browser and relayed along.
+    service_manager::switches::kEnableSandboxLogging,
+#endif
     switches::kAgcStartupMinVolume,
     switches::kAecRefinedAdaptiveFilter,
     switches::kAllowLoopbackInPeerConnection,
@@ -2744,7 +2749,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMaxUntiledLayerHeight,
     switches::kMSEAudioBufferSizeLimit,
     switches::kMSEVideoBufferSizeLimit,
-    switches::kNoSandbox,
     switches::kNoZygote,
     switches::kOverridePluginPowerSaverForTesting,
     switches::kPassiveListenersDefault,
@@ -2817,10 +2821,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableMediaSessionAPI,
     switches::kOrderfileMemoryOptimization,
     switches::kRendererWaitForJavaDebugger,
-#endif
-#if defined(OS_MACOSX)
-    // Allow this to be set when invoking the browser and relayed along.
-    switches::kEnableSandboxLogging,
 #endif
 #if defined(OS_WIN)
     service_manager::switches::kDisableWin32kLockDown,
@@ -2896,8 +2896,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   // --no-sandbox in official builds because that would bypass the bad_flgs
   // prompt.
   if (renderer_cmd->HasSwitch(switches::kRendererStartupDialog) &&
-      !renderer_cmd->HasSwitch(switches::kNoSandbox)) {
-    renderer_cmd->AppendSwitch(switches::kNoSandbox);
+      !renderer_cmd->HasSwitch(service_manager::switches::kNoSandbox)) {
+    renderer_cmd->AppendSwitch(service_manager::switches::kNoSandbox);
   }
 #endif
 

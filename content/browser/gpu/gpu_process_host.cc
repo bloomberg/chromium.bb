@@ -122,6 +122,8 @@ static const char* const kSwitchNames[] = {
     service_manager::switches::kDisableSeccompFilterSandbox,
     service_manager::switches::kGpuSandboxAllowSysVShm,
     service_manager::switches::kGpuSandboxFailuresFatal,
+    service_manager::switches::kDisableGpuSandbox,
+    service_manager::switches::kNoSandbox,
 #if defined(OS_WIN)
     service_manager::switches::kAddGpuAppContainerCaps,
     service_manager::switches::kDisableGpuAppContainer,
@@ -130,7 +132,6 @@ static const char* const kSwitchNames[] = {
 #endif  // defined(OS_WIN)
     switches::kDisableBreakpad,
     switches::kDisableGpuRasterization,
-    switches::kDisableGpuSandbox,
     switches::kDisableGLExtensions,
     switches::kDisableLogging,
     switches::kDisableShaderNameHashing,
@@ -149,7 +150,6 @@ static const char* const kSwitchNames[] = {
     switches::kLoggingLevel,
     switches::kEnableLowEndDeviceMode,
     switches::kDisableLowEndDeviceMode,
-    switches::kNoSandbox,
     switches::kRunAllCompositorStagesBeforeDraw,
     switches::kTestGLLib,
     switches::kTraceToConsole,
@@ -158,10 +158,10 @@ static const char* const kSwitchNames[] = {
     switches::kV,
     switches::kVModule,
 #if defined(OS_MACOSX)
+    service_manager::switches::kEnableSandboxLogging,
     switches::kDisableAVFoundationOverlays,
     switches::kDisableMacOverlays,
     switches::kDisableRemoteCoreAnimation,
-    switches::kEnableSandboxLogging,
     switches::kShowMacOverlayBorders,
 #endif
 #if defined(USE_OZONE)
@@ -343,7 +343,7 @@ class GpuSandboxedProcessLauncherDelegate
 
   service_manager::SandboxType GetSandboxType() override {
 #if defined(OS_WIN)
-    if (cmd_line_.HasSwitch(switches::kDisableGpuSandbox)) {
+    if (cmd_line_.HasSwitch(service_manager::switches::kDisableGpuSandbox)) {
       DVLOG(1) << "GPU sandbox is disabled";
       return service_manager::SANDBOX_TYPE_NO_SANDBOX;
     }
@@ -1233,7 +1233,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
 #endif  // defined(OS_WIN)
 
   if (kind_ == GPU_PROCESS_KIND_UNSANDBOXED)
-    cmd_line->AppendSwitch(switches::kDisableGpuSandbox);
+    cmd_line->AppendSwitch(service_manager::switches::kDisableGpuSandbox);
 
   // TODO(penghuang): Replace all GPU related switches with GpuPreferences.
   // https://crbug.com/590825

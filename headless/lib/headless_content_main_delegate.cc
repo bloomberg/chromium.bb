@@ -27,6 +27,7 @@
 #include "headless/lib/headless_crash_reporter_client.h"
 #include "headless/lib/headless_macros.h"
 #include "headless/lib/utility/headless_content_utility_client.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -86,7 +87,7 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line->AppendSwitch(switches::kSingleProcess);
 
   if (browser_->options()->disable_sandbox)
-    command_line->AppendSwitch(switches::kNoSandbox);
+    command_line->AppendSwitch(service_manager::switches::kNoSandbox);
 
   if (!browser_->options()->enable_resource_scheduler)
     command_line->AppendSwitch(switches::kDisableResourceScheduler);

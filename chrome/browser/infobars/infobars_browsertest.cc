@@ -44,18 +44,17 @@
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/core/infobar.h"
 #include "components/nacl/common/buildflags.h"
-#include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
 
@@ -352,7 +351,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
     case IBD::BAD_FLAGS_INFOBAR_DELEGATE:
       chrome::ShowBadFlagsInfoBar(GetWebContents(),
                                   IDS_BAD_FLAGS_WARNING_MESSAGE,
-                                  switches::kNoSandbox);
+                                  service_manager::switches::kNoSandbox);
       break;
 
     case IBD::DEFAULT_BROWSER_INFOBAR_DELEGATE:

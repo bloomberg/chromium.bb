@@ -26,6 +26,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -81,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
 #if defined(THREAD_SANITIZER)
   // TSan appears to not be able to report intentional crashes from sandboxed
   // renderer processes.
-  new_test.AppendSwitch(switches::kNoSandbox);
+  new_test.AppendSwitch(service_manager::switches::kNoSandbox);
 #endif
 
   std::string output;

@@ -59,6 +59,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -314,7 +315,7 @@ void InitializeZygoteSandboxForBrowserProcess(
   SandboxHostLinux::GetInstance()->Init();
 
   if (parsed_command_line.HasSwitch(switches::kNoZygote) &&
-      !parsed_command_line.HasSwitch(switches::kNoSandbox)) {
+      !parsed_command_line.HasSwitch(service_manager::switches::kNoSandbox)) {
     LOG(ERROR) << "--no-sandbox should be used together with --no--zygote";
     exit(EXIT_FAILURE);
   }

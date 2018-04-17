@@ -13,6 +13,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,8 +33,8 @@ class LinuxIPCBrowserTest : public ContentBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
     if (GetParam() == "no-zygote") {
+      command_line->AppendSwitch(service_manager::switches::kNoSandbox);
       command_line->AppendSwitch(switches::kNoZygote);
-      command_line->AppendSwitch(switches::kNoSandbox);
     }
   }
 

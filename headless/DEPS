@@ -26,4 +26,5 @@ include_rules = [
   "+ui/ozone/public",
   "+sandbox/win/src",
   "+services/service_manager/public",
+  "+services/service_manager/sandbox",
 ]

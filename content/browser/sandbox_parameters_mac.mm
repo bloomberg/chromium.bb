@@ -22,6 +22,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace content {
 
@@ -48,7 +49,7 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   bool enable_logging =
-      command_line->HasSwitch(switches::kEnableSandboxLogging);
+      command_line->HasSwitch(service_manager::switches::kEnableSandboxLogging);
 
   CHECK(client->SetBooleanParameter(
       service_manager::SandboxMac::kSandboxEnableLogging, enable_logging));

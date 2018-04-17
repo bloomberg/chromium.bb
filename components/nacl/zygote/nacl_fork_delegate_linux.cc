@@ -222,9 +222,9 @@ void NaClForkDelegate::Init(const int sandboxdesc,
       static constexpr const char* kForwardSwitches[] = {
           service_manager::switches::kAllowSandboxDebugging,
           service_manager::switches::kDisableSeccompFilterSandbox,
+          service_manager::switches::kNoSandbox,
           switches::kEnableNaClDebug,
           switches::kNaClDangerousNoSandboxNonSfi,
-          switches::kNoSandbox,
       };
       const base::CommandLine& current_cmd_line =
           *base::CommandLine::ForCurrentProcess();

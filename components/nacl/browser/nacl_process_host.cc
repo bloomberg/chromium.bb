@@ -63,6 +63,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "ppapi/shared_impl/ppapi_nacl_plugin_args.h"
+#include "services/service_manager/sandbox/switches.h"
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/public/common/zygote_handle.h"
@@ -361,7 +362,7 @@ void NaClProcessHost::Launch(
   const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
 #if defined(OS_WIN)
   if (cmd->HasSwitch(switches::kEnableNaClDebug) &&
-      !cmd->HasSwitch(switches::kNoSandbox)) {
+      !cmd->HasSwitch(service_manager::switches::kNoSandbox)) {
     // We don't switch off sandbox automatically for security reasons.
     SendErrorToRenderer("NaCl's GDB debug stub requires --no-sandbox flag"
                         " on Windows. See crbug.com/265624.");
