@@ -55,7 +55,7 @@ ShareToData* ShareToDataForTab(Tab* tab, const GURL& shareURL) {
       !shareURL.is_empty() ? shareURL : tab.webState->GetVisibleURL();
 
   return [[ShareToData alloc] initWithShareURL:finalURLToShare
-                            passwordManagerURL:tab.webState->GetVisibleURL()
+                                    visibleURL:tab.webState->GetVisibleURL()
                                          title:tab.title
                                isOriginalTitle:is_original_title
                                isPagePrintable:is_page_printable

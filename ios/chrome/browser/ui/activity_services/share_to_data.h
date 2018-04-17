@@ -14,16 +14,17 @@
 
 // Designated initializer.
 - (id)initWithShareURL:(const GURL&)shareURL
-    passwordManagerURL:(const GURL&)passwordManagerURL
+            visibleURL:(const GURL&)visibleURL
                  title:(NSString*)title
        isOriginalTitle:(BOOL)isOriginalTitle
        isPagePrintable:(BOOL)isPagePrintable
     thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator;
 
-// The URL to be shared with share extensions.
+// The URL to be shared with share extensions. This URL is the canonical URL of
+// the page.
 @property(nonatomic, readonly) const GURL& shareURL;
-// The URL to be shared with password managers.
-@property(nonatomic, readonly) const GURL& passwordManagerURL;
+// The visible URL of the page.
+@property(nonatomic, readonly) const GURL& visibleURL;
 
 // NSURL versions of 'shareURL' and 'passwordManagerURL'. Use only for passing
 // to libraries that take NSURL.
