@@ -10,9 +10,6 @@
 #include "chrome/common/extensions/api/wallpaper_private.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace {
@@ -149,7 +146,7 @@ ImageInfoFetcher::ImageInfoFetcher(const std::string& collection_id)
 ImageInfoFetcher::~ImageInfoFetcher() = default;
 
 void ImageInfoFetcher::Start(OnImagesInfoFetched callback) {
-  DCHECK(!url_fetcher_ && callback_.is_null());
+  DCHECK(!simple_loader_ && callback_.is_null());
   callback_ = std::move(callback);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -177,14 +174,14 @@ void ImageInfoFetcher::Start(OnImagesInfoFetched callback) {
             "Not implemented, considered not necessary."
         })");
 
-  url_fetcher_ =
-      net::URLFetcher::Create(GURL(kBackdropImagesUrl), net::URLFetcher::POST,
-                              this, traffic_annotation);
-  url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
-  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  SystemNetworkContextManager* system_network_context_manager =
+      g_browser_process->system_network_context_manager();
+  // In unit tests, the browser process can return a null context manager
+  if (!system_network_context_manager)
+    return;
+
+  network::mojom::URLLoaderFactory* loader_factory =
+      system_network_context_manager->GetURLLoaderFactory();
 
   backdrop::GetImagesInCollectionRequest request;
   // The language field may include the country code (e.g. "en-US").
@@ -192,30 +189,45 @@ void ImageInfoFetcher::Start(OnImagesInfoFetched callback) {
   request.set_collection_id(collection_id_);
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
-  url_fetcher_->SetUploadData(kProtoMimeType, serialized_proto);
-  url_fetcher_->Start();
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(kBackdropImagesUrl);
+  resource_request->method = "POST";
+  resource_request->load_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                    traffic_annotation);
+  simple_loader_->AttachStringForUpload(serialized_proto, kProtoMimeType);
+  simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory, base::BindOnce(&ImageInfoFetcher::OnURLFetchComplete,
+                                     base::Unretained(this)));
 }
 
-void ImageInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
+void ImageInfoFetcher::OnURLFetchComplete(
+    std::unique_ptr<std::string> response_body) {
   std::vector<extensions::api::wallpaper_private::ImageInfo> images_info_list;
 
-  if (!source->GetStatus().is_success() ||
-      source->GetResponseCode() != net::HTTP_OK) {
+  if (!response_body) {
     // TODO(crbug.com/800945): Adds retry mechanism and error handling.
+    int response_code = -1;
+    if (simple_loader_->ResponseInfo() &&
+        simple_loader_->ResponseInfo()->headers)
+      response_code = simple_loader_->ResponseInfo()->headers->response_code();
     LOG(ERROR) << "Downloading Backdrop wallpaper proto for collection "
                << collection_id_
-               << " failed with error code: " << source->GetResponseCode();
-    url_fetcher_.reset();
+               << " failed with error code: " << response_code;
+    simple_loader_.reset();
     std::move(callback_).Run(false /*success=*/, images_info_list);
     return;
   }
-  std::string response_string;
-  source->GetResponseAsString(&response_string);
   backdrop::GetImagesInCollectionResponse images_response;
-  if (!images_response.ParseFromString(response_string)) {
+  if (!images_response.ParseFromString(*response_body)) {
     LOG(ERROR) << "Deserializing Backdrop wallpaper proto for collection "
                << collection_id_ << " failed";
-    url_fetcher_.reset();
+    simple_loader_.reset();
     std::move(callback_).Run(false /*success=*/, images_info_list);
     return;
   }
@@ -236,7 +248,7 @@ void ImageInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     images_info_list.push_back(std::move(image_info));
   }
 
-  url_fetcher_.reset();
+  simple_loader_.reset();
   std::move(callback_).Run(true /*success=*/, images_info_list);
 }
 
