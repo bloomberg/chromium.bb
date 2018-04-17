@@ -39,11 +39,12 @@ constexpr viz::FrameSinkId kFrameSinkParent(kRendererClientId, 1);
 constexpr viz::FrameSinkId kFrameSinkA(kRendererClientId, 3);
 constexpr viz::FrameSinkId kFrameSinkB(kRendererClientId, 4);
 
-// Creates a closure that sets |error_variable| true when run.
-base::OnceClosure ConnectionErrorClosure(bool* error_variable) {
-  DCHECK(error_variable);
-  return base::BindOnce([](bool* error_variable) { *error_variable = true; },
-                        error_variable);
+// Runs RunLoop until |endpoint| encounters a connection error.
+template <class T>
+void WaitForConnectionError(T* endpoint) {
+  base::RunLoop run_loop;
+  endpoint->set_connection_error_handler(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 // Stub OffscreenCanvasSurfaceClient that stores the latest SurfaceInfo.
@@ -57,7 +58,8 @@ class StubOffscreenCanvasSurfaceClient
     blink::mojom::OffscreenCanvasSurfaceClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client));
     binding_.set_connection_error_handler(
-        ConnectionErrorClosure(&connection_error_));
+        base::BindOnce([](bool* error_variable) { *error_variable = true; },
+                       &connection_error_));
     return client;
   }
 
@@ -242,16 +244,27 @@ TEST_F(OffscreenCanvasProviderImplTest, ClientConnectionWrongOrder) {
       kFrameSinkA, compositor_frame_sink_client.BindInterfacePtr(),
       mojo::MakeRequest(&compositor_frame_sink));
 
-  // Observe connection errors on |compositor_frame_sink|.
-  bool connection_error = false;
-  compositor_frame_sink.set_connection_error_handler(
-      ConnectionErrorClosure(&connection_error));
+  // The request will fail and trigger a connection error.
+  WaitForConnectionError(&compositor_frame_sink);
+}
 
-  RunUntilIdle();
+// Check that trying to create an OffscreenCanvasSurfaceImpl when the parent
+// FrameSinkId has already been invalidated fails.
+TEST_F(OffscreenCanvasProviderImplTest, ParentNotRegistered) {
+  StubOffscreenCanvasSurfaceClient surface_client;
+  provider()->CreateOffscreenCanvasSurface(kFrameSinkA, kFrameSinkB,
+                                           surface_client.GetInterfacePtr());
 
-  // The connection for |compositor_frame_sink| will have failed and triggered a
-  // connection error.
-  EXPECT_TRUE(connection_error);
+  viz::mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  viz::MockCompositorFrameSinkClient compositor_frame_sink_client;
+  // The embedder, kFrameSinkA, has already been invalidated and isn't
+  // registered at this point. This request should fail.
+  provider()->CreateCompositorFrameSink(
+      kFrameSinkB, compositor_frame_sink_client.BindInterfacePtr(),
+      mojo::MakeRequest(&compositor_frame_sink));
+
+  // The request will fail and trigger a connection error.
+  WaitForConnectionError(&compositor_frame_sink);
 }
 
 // Check that trying to create an OffscreenCanvasSurfaceImpl with a client id

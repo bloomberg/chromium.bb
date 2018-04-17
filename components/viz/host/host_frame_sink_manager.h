@@ -114,9 +114,15 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
                                  mojom::CompositorFrameSinkRequest request,
                                  mojom::CompositorFrameSinkClientPtr client);
 
-  // Registers frame sink hierarchy. Both parent and child FrameSinkIds must be
-  // registered before calling. A frame sink can have multiple parents.
-  void RegisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
+  // Registers FrameSink hierarchy. It's expected that the parent will embed
+  // the child. If |parent_frame_sink_id| is registered then it will be added as
+  // a parent of |child_frame_sink_id| and the function will return true. If
+  // |parent_frame_sink_id| is not registered then the function will return
+  // false.
+  //
+  // |child_frame_sink_id| must be registered before calling. A frame sink
+  // can have multiple parents.
+  bool RegisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                   const FrameSinkId& child_frame_sink_id);
 
   // Unregisters FrameSink hierarchy. Client must have registered frame sink

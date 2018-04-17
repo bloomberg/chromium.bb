@@ -46,11 +46,18 @@ void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
     return;
   }
 
+  // The request to create an embedded surface and the lifetime of the parent
+  // are controlled by different IPC channels. It's possible the parent
+  // FrameSinkId has been invalidated by the time this request has arrived. In
+  // that case, drop the request since there is no embedder.
+  if (!host_frame_sink_manager_->RegisterFrameSinkHierarchy(
+          parent_frame_sink_id_, frame_sink_id_)) {
+    return;
+  }
+
   host_frame_sink_manager_->CreateCompositorFrameSink(
       frame_sink_id_, std::move(request), std::move(client));
 
-  host_frame_sink_manager_->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                       frame_sink_id_);
   has_created_compositor_frame_sink_ = true;
 }
 
