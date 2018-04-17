@@ -16,7 +16,7 @@
 namespace {
 
 void OnParseXml(base::Closure quit_loop,
-                std::unique_ptr<base::Value> value,
+                base::Optional<base::Value> value,
                 const base::Optional<std::string>& error) {
   std::move(quit_loop).Run();
 }
