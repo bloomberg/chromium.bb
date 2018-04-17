@@ -210,6 +210,34 @@ bool IsCORSSafelistedHeader(const String& name, const String& value) {
       std::string(utf8_value.data(), utf8_value.length()));
 }
 
+bool IsForbiddenHeaderName(const String& name) {
+  CString utf8_name = name.Utf8();
+  return network::cors::IsForbiddenHeader(
+      std::string(utf8_name.data(), utf8_name.length()));
+}
+
+bool ContainsOnlyCORSSafelistedHeaders(const HTTPHeaderMap& header_map) {
+  for (const auto& header : header_map) {
+    if (!IsCORSSafelistedHeader(header.key, header.value))
+      return false;
+  }
+  return true;
+}
+
+bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+    const HTTPHeaderMap& header_map) {
+  for (const auto& header : header_map) {
+    if (!IsCORSSafelistedHeader(header.key, header.value) &&
+        !IsForbiddenHeaderName(header.key))
+      return false;
+  }
+  return true;
+}
+
+bool IsOkStatus(int status) {
+  return network::cors::IsOkStatus(status);
+}
+
 }  // namespace CORS
 
 }  // namespace blink

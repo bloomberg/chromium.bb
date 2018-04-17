@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 
@@ -36,7 +37,7 @@ bool WasModuleLoadSuccessful(
 
   const auto& response = resource->GetResponse();
   // - response's status is not an ok status
-  if (response.IsHTTP() && !FetchUtils::IsOkStatus(response.HttpStatusCode())) {
+  if (response.IsHTTP() && !CORS::IsOkStatus(response.HttpStatusCode())) {
     return false;
   }
 

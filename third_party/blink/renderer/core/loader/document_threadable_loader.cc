@@ -415,9 +415,9 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
         ResourceError::CancelledDueToAccessCheckError(
             request.Url(), ResourceRequestBlockedReason::kOther,
             String::Format(
-                "Cross origin requests are only supported for "
-                "protocol schemes: %s.",
-                WebCORS::ListOfCORSEnabledURLSchemes().Ascii().c_str())));
+                "Cross origin requests are only supported for protocol "
+                "schemes: %s.",
+                SchemeRegistry::ListOfCORSEnabledURLSchemes().Ascii().data())));
     return;
   }
 
@@ -466,7 +466,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
     // security, we must reject forbidden headers/methods at the point we
     // accept user's input. Not here.
     if (CORS::IsCORSSafelistedMethod(request.HttpMethod()) &&
-        WebCORS::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+        CORS::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
             request.HttpHeaderFields())) {
       PrepareCrossOriginRequest(cross_origin_request);
       LoadRequest(cross_origin_request, cross_origin_options);

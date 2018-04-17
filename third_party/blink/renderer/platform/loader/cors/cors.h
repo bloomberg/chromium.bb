@@ -63,6 +63,12 @@ PLATFORM_EXPORT bool IsCORSSafelistedMethod(const String& method);
 PLATFORM_EXPORT bool IsCORSSafelistedContentType(const String&);
 PLATFORM_EXPORT bool IsCORSSafelistedHeader(const String& name,
                                             const String& value);
+PLATFORM_EXPORT bool IsForbiddenHeaderName(const String& name);
+PLATFORM_EXPORT bool ContainsOnlyCORSSafelistedHeaders(const HTTPHeaderMap&);
+PLATFORM_EXPORT bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+    const HTTPHeaderMap&);
+
+PLATFORM_EXPORT bool IsOkStatus(int status);
 
 }  // namespace CORS
 

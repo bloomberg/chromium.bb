@@ -132,7 +132,7 @@ bool ShouldBlockCORSPreflight(ExecutionContext* execution_context,
   // element require a CORS-preflight request.
   // https://fetch.spec.whatwg.org/#main-fetch
   if (!CORS::IsCORSSafelistedMethod(web_request.Method()) ||
-      !FetchUtils::ContainsOnlyCORSSafelistedHeaders(web_request.Headers())) {
+      !CORS::ContainsOnlyCORSSafelistedHeaders(web_request.Headers())) {
     return true;
   }
 

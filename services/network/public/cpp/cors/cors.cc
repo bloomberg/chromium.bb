@@ -173,7 +173,7 @@ base::Optional<mojom::CORSError> CheckPreflight(const int status_code) {
   // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch
   // CORS Spec: http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
   // https://crbug.com/452394
-  if (200 <= status_code && status_code < 300)
+  if (IsOkStatus(status_code))
     return base::nullopt;
   return mojom::CORSError::kPreflightInvalidStatus;
 }
@@ -276,6 +276,10 @@ bool IsForbiddenHeader(const std::string& name) {
     return true;
   }
   return forbidden_names.find(lower_name) != forbidden_names.end();
+}
+
+bool IsOkStatus(int status) {
+  return status >= 200 && status < 300;
 }
 
 }  // namespace cors

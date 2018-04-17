@@ -218,15 +218,6 @@ bool IsOnAccessControlResponseHeaderWhitelist(const WebString& name) {
          allowed_cross_origin_response_headers.end();
 }
 
-WebString ListOfCORSEnabledURLSchemes() {
-  return SchemeRegistry::ListOfCORSEnabledURLSchemes();
-}
-
-bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(const WebHTTPHeaderMap& map) {
-  return FetchUtils::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
-      map.GetHTTPHeaderMap());
-}
-
 // In the spec, https://fetch.spec.whatwg.org/#ref-for-concept-request-mode,
 // No-CORS mode is highly discouraged from using it for new features. Only
 // legacy usages for backward compatibility are allowed except for well-designed

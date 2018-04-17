@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -82,7 +83,7 @@ class HTTPRequestHeaderValidator : public WebHTTPHeaderVisitor {
 void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
                                              const WebString& value) {
   is_safe_ = is_safe_ && IsValidHTTPToken(name) &&
-             !FetchUtils::IsForbiddenHeaderName(name) &&
+             !CORS::IsForbiddenHeaderName(name) &&
              IsValidHTTPHeaderValue(value);
 }
 
