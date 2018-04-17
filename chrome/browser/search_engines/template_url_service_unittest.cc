@@ -1612,6 +1612,33 @@ TEST_F(TemplateURLServiceTest, DefaultExtensionEngine) {
   ExpectSimilar(user_dse, model()->GetDefaultSearchProvider());
 }
 
+TEST_F(TemplateURLServiceTest, SetDefaultExtensionEngineAndRemoveUserDSE) {
+  test_util()->VerifyLoad();
+  // Add third-party default search engine.
+  TemplateURL* user_dse =
+      AddKeywordWithDate("user", "user", "http://www.goo.com/s?q={searchTerms}",
+                         std::string(), std::string(), std::string(), true);
+  model()->SetUserSelectedDefaultSearchProvider(user_dse);
+  EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
+
+  TemplateURL* ext_dse_ptr =
+      AddExtensionSearchEngine("extension_keyword", "extension_id", true);
+  EXPECT_EQ(ext_dse_ptr, model()->GetDefaultSearchProvider());
+  auto* prefs = test_util()->profile()->GetTestingPrefService();
+  std::string dse_guid =
+      prefs->GetString(prefs::kSyncedDefaultSearchProviderGUID);
+  EXPECT_EQ(user_dse->sync_guid(), dse_guid);
+
+  model()->Remove(user_dse);
+  EXPECT_EQ(ext_dse_ptr, model()->GetDefaultSearchProvider());
+
+  test_util()->RemoveExtensionControlledTURL("extension_id");
+  // The DSE is set to the fallback search engine.
+  EXPECT_TRUE(model()->GetDefaultSearchProvider());
+  EXPECT_NE(dse_guid,
+            prefs->GetString(prefs::kSyncedDefaultSearchProviderGUID));
+}
+
 TEST_F(TemplateURLServiceTest, DefaultExtensionEnginePersist) {
   test_util()->VerifyLoad();
   // Add third-party default search engine.

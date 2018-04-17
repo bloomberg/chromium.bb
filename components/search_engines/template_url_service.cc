@@ -46,13 +46,6 @@ typedef TemplateURLService::SyncDataMap SyncDataMap;
 
 namespace {
 
-bool IdenticalSyncGUIDs(const TemplateURLData* data, const TemplateURL* turl) {
-  if (!data || !turl)
-    return !data && !turl;
-
-  return data->sync_guid == turl->sync_guid();
-}
-
 const char kDeleteSyncedEngineHistogramName[] =
     "Search.DeleteSyncedSearchEngine";
 
@@ -251,8 +244,8 @@ TemplateURLService::TemplateURLService(
       dsp_change_origin_(DSP_CHANGE_OTHER),
       default_search_manager_(
           prefs_,
-          base::Bind(&TemplateURLService::OnDefaultSearchChange,
-                     base::Unretained(this))) {
+          base::BindRepeating(&TemplateURLService::ApplyDefaultSearchChange,
+                              base::Unretained(this))) {
   DCHECK(search_terms_data_);
   Init(nullptr, 0);
 }
@@ -277,8 +270,8 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
       dsp_change_origin_(DSP_CHANGE_OTHER),
       default_search_manager_(
           prefs_,
-          base::Bind(&TemplateURLService::OnDefaultSearchChange,
-                     base::Unretained(this))) {
+          base::BindRepeating(&TemplateURLService::ApplyDefaultSearchChange,
+                              base::Unretained(this))) {
   Init(initializers, count);
 }
 
@@ -566,8 +559,8 @@ void TemplateURLService::SetUserSelectedDefaultSearchProvider(
                                DefaultSearchManager::FROM_USER);
     }
   } else {
-    // We rely on the DefaultSearchManager to call OnDefaultSearchChange if, in
-    // fact, the effective DSE changes.
+    // We rely on the DefaultSearchManager to call ApplyDefaultSearchChange if,
+    // in fact, the effective DSE changes.
     if (url)
       default_search_manager_.SetUserSelectedDefaultSearchEngine(url->data());
     else
@@ -924,7 +917,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
       TemplateURL* added = added_ptr.get();
       if (AddNoNotify(std::move(added_ptr), true)) {
         should_notify = true;
-        MaybeUpdateDSEAfterSync(added);
+        MaybeUpdateDSEViaPrefs(added);
       }
     } else if (iter->change_type() == syncer::SyncChange::ACTION_UPDATE) {
       if (!existing_turl) {
@@ -941,7 +934,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
       }
       if (UpdateNoNotify(existing_turl, *turl)) {
         should_notify = true;
-        MaybeUpdateDSEAfterSync(existing_turl);
+        MaybeUpdateDSEViaPrefs(existing_turl);
       }
     } else {
       // We've unexpectedly received an ACTION_INVALID.
@@ -1595,11 +1588,10 @@ bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
                              syncer::SyncChange::ACTION_UPDATE);
   }
 
-  if (default_search_provider_ == existing_turl &&
-      default_search_provider_source_ == DefaultSearchManager::FROM_USER) {
-    default_search_manager_.SetUserSelectedDefaultSearchEngine(
-        default_search_provider_->data());
-  }
+  // Even if the DSE is controlled by an extension or policy, update the user
+  // preferences as they may take over later.
+  if (default_search_provider_source_ != DefaultSearchManager::FROM_FALLBACK)
+    MaybeUpdateDSEViaPrefs(existing_turl);
 
   DCHECK(!HasDuplicateKeywords());
   return true;
@@ -1632,7 +1624,7 @@ void TemplateURLService::UpdateTemplateURLIfPrepopulated(
   }
 }
 
-void TemplateURLService::MaybeUpdateDSEAfterSync(TemplateURL* synced_turl) {
+void TemplateURLService::MaybeUpdateDSEViaPrefs(TemplateURL* synced_turl) {
   if (prefs_ &&
       (synced_turl->sync_guid() ==
           prefs_->GetString(prefs::kSyncedDefaultSearchProviderGUID))) {
@@ -1773,17 +1765,6 @@ void TemplateURLService::GoogleBaseURLChanged() {
   }
   if (something_changed)
     NotifyObservers();
-}
-
-void TemplateURLService::OnDefaultSearchChange(
-    const TemplateURLData* data,
-    DefaultSearchManager::Source source) {
-  if (prefs_ && (source == DefaultSearchManager::FROM_USER) &&
-      ((source != default_search_provider_source_) ||
-       !IdenticalSyncGUIDs(data, GetDefaultSearchProvider()))) {
-    prefs_->SetString(prefs::kSyncedDefaultSearchProviderGUID, data->sync_guid);
-  }
-  ApplyDefaultSearchChange(data, source);
 }
 
 void TemplateURLService::ApplyDefaultSearchChange(
@@ -1985,6 +1966,15 @@ void TemplateURLService::RemoveNoNotify(const TemplateURL* template_url) {
     ProcessTemplateURLChange(FROM_HERE,
                              template_url,
                              syncer::SyncChange::ACTION_DELETE);
+
+    // The default search engine can't be deleted. But the user defined DSE can
+    // be hidden by an extension or policy and then deleted. Clean up the user
+    // prefs then.
+    if (prefs_ &&
+        (template_url->sync_guid() ==
+         prefs_->GetString(prefs::kSyncedDefaultSearchProviderGUID))) {
+      prefs_->SetString(prefs::kSyncedDefaultSearchProviderGUID, std::string());
+    }
 
     UMA_HISTOGRAM_ENUMERATION(kDeleteSyncedEngineHistogramName,
                               DELETE_ENGINE_USER_ACTION, DELETE_ENGINE_MAX);
@@ -2281,7 +2271,7 @@ bool TemplateURLService::MergeInSyncTemplateURL(
         &dsp_change_origin_, DSP_CHANGE_SYNC_ADD);
     if (AddNoNotify(std::move(added_ptr), true)) {
       should_notify = true;
-      MaybeUpdateDSEAfterSync(added);
+      MaybeUpdateDSEViaPrefs(added);
     }
     merge_result->set_num_items_added(merge_result->num_items_added() + 1);
   }
