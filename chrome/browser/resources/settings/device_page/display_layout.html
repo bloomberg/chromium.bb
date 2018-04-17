@@ -70,12 +70,8 @@
             draggable="[[dragEnabled]]" on-click="onSelectDisplayTap_"
             style$="[[getDivStyle_(item.id, item.bounds, visualScale)]]"
             selected$="[[isSelected_(item, selectedDisplay)]]">
-          <div hidden$="[[mirroring]]">
-            [[item.name]]
-          </div>
-          <div hidden$="[[!mirroring]]">
-            $i18n{displayMirrorDisplayName}
-          </div>
+          [[getDisplayName_(mirroring, item.name,
+                            '$i18nPolymer{displayMirrorDisplayName}')]]
         </div>
       </template>
     </div>
