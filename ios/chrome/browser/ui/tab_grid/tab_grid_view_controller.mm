@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
@@ -32,10 +33,23 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 
 // Computes the page from the offset and width of |scrollView|.
 TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
-  // TODO(crbug.com/822328) : Fix for RTL.
   CGFloat pageWidth = scrollView.frame.size.width;
-  float fractionalPage = scrollView.contentOffset.x / pageWidth;
-  return static_cast<TabGridPage>(lround(fractionalPage));
+  NSUInteger page = lround(scrollView.contentOffset.x / pageWidth);
+  if (UseRTLLayout()) {
+    // In RTL, page indexes are inverted, so subtract |page| from the highest-
+    // index TabGridPage value.
+    return static_cast<TabGridPage>(TabGridPageRemoteTabs - page);
+  }
+  return static_cast<TabGridPage>(page);
+}
+
+NSUInteger GetPageIndexFromPage(TabGridPage page) {
+  if (UseRTLLayout()) {
+    // In RTL, page indexes are inverted, so subtract |page| from the highest-
+    // index TabGridPage value.
+    return static_cast<NSUInteger>(TabGridPageRemoteTabs - page);
+  }
+  return static_cast<NSUInteger>(page);
 }
 
 // Temporary alert used while building this feature.
@@ -191,6 +205,9 @@ UIAlertController* NotImplementedAlert() {
     CGFloat offsetWidth =
         self.scrollView.contentSize.width - self.scrollView.frame.size.width;
     CGFloat offset = scrollView.contentOffset.x / offsetWidth;
+    // In RTL, flip the offset.
+    if (UseRTLLayout())
+      offset = 1.0 - offset;
     self.topToolbar.pageControl.sliderPosition = offset;
 
     TabGridPage page = GetPageFromScrollView(scrollView);
@@ -296,8 +313,8 @@ UIAlertController* NotImplementedAlert() {
     return;
   }
   CGFloat pageWidth = self.scrollView.frame.size.width;
-  NSUInteger page = static_cast<NSUInteger>(currentPage);
-  CGPoint offset = CGPointMake(page * pageWidth, 0);
+  NSUInteger pageIndex = GetPageIndexFromPage(currentPage);
+  CGPoint offset = CGPointMake(pageIndex * pageWidth, 0);
   // If the view is visible, animate the change. Otherwise don't.
   if (self.view.window == nil) {
     self.scrollView.contentOffset = offset;
