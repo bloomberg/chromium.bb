@@ -13,7 +13,7 @@ extern const CGFloat kTableViewCellViewSpacing;
 // The vertical spacing between text labels in a stackView.
 extern const CGFloat kTableViewVerticalLabelStackSpacing;
 
-// Animation Duration for highlighting selected section header.
+// Animation duration for highlighting selected section header.
 extern const CGFloat kTableViewCellSelectionAnimationDuration;
 
 // Color and alpha used to highlight a cell with a middle gray color to
