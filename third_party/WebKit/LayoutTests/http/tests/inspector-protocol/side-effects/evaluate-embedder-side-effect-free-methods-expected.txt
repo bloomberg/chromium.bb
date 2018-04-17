@@ -1,3 +1,2 @@
 Tests that evaluating V8-embedder callbacks allows side-effect-free methods. Should not crash.
-Checking: `global_performance.now()` for no side effect
 

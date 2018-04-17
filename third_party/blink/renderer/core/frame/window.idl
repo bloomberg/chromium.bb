@@ -149,11 +149,11 @@
     [RuntimeEnabled=VisualViewportAPI, Replaceable, SameObject] readonly attribute VisualViewport visualViewport;
 
     // client
-    [Replaceable] readonly attribute long screenX;
-    [Replaceable] readonly attribute long screenY;
+    [Affects=Nothing, Replaceable] readonly attribute long screenX;
+    [Affects=Nothing, Replaceable] readonly attribute long screenY;
     [Replaceable] readonly attribute long outerWidth;
     [Replaceable] readonly attribute long outerHeight;
-    [Replaceable] readonly attribute double devicePixelRatio;
+    [Affects=Nothing, Replaceable] readonly attribute double devicePixelRatio;
 
     // Selection API
     // https://w3c.github.io/selection-api/#extensions-to-window-interface

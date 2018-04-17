@@ -33,8 +33,8 @@ interface Node : EventTarget {
     const unsigned short DOCUMENT_TYPE_NODE = 10;
     const unsigned short DOCUMENT_FRAGMENT_NODE = 11;
     const unsigned short NOTATION_NODE = 12; // historical
-    [ImplementedAs=getNodeType] readonly attribute unsigned short nodeType;
-    [RuntimeCallStatsCounter=NodeName] readonly attribute DOMString nodeName;
+    [Affects=Nothing, ImplementedAs=getNodeType] readonly attribute unsigned short nodeType;
+    [Affects=Nothing, RuntimeCallStatsCounter=NodeName] readonly attribute DOMString nodeName;
 
     readonly attribute USVString baseURI;
 
@@ -50,9 +50,9 @@ interface Node : EventTarget {
     [PerWorldBindings] readonly attribute Node? nextSibling;
     [MeasureAs=NodeGetRootNode] Node getRootNode(optional GetRootNodeOptions options);
 
-    [CEReactions, CustomElementCallbacks] attribute DOMString? nodeValue;
+    [Affects=Nothing, CEReactions, CustomElementCallbacks] attribute DOMString? nodeValue;
 
-    [CEReactions, CustomElementCallbacks] attribute DOMString? textContent;
+    [Affects=Nothing, CEReactions, CustomElementCallbacks] attribute DOMString? textContent;
     [CEReactions, CustomElementCallbacks] void normalize();
 
     [NewObject, DoNotTestNewObject, CEReactions, CustomElementCallbacks, RaisesException] Node cloneNode(optional boolean deep = false);
@@ -66,7 +66,7 @@ interface Node : EventTarget {
     const unsigned short DOCUMENT_POSITION_CONTAINED_BY = 0x10;
     const unsigned short DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
     unsigned short compareDocumentPosition(Node other);
-    boolean contains(Node? other);
+    [Affects=Nothing] boolean contains(Node? other);
 
     DOMString? lookupPrefix(DOMString? namespaceURI);
     DOMString? lookupNamespaceURI(DOMString? prefix);
