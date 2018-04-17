@@ -90,13 +90,16 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (enableExperimentalWebPlatformFeatures)
     WebRuntimeFeatures::EnableExperimentalFeatures(true);
 
+  SetRuntimeFeatureDefaultsForPlatform();
+
+  // Begin individual features.
+  // Do not add individual features above this line.
+
   WebRuntimeFeatures::EnableOriginTrials(
       base::FeatureList::IsEnabled(features::kOriginTrials));
 
   if (!base::FeatureList::IsEnabled(features::kWebUsb))
     WebRuntimeFeatures::EnableWebUsb(false);
-
-  SetRuntimeFeatureDefaultsForPlatform();
 
   if (command_line.HasSwitch(switches::kDisableDatabases))
     WebRuntimeFeatures::EnableDatabase(false);
@@ -362,11 +365,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableResourceLoadScheduler(
       base::FeatureList::IsEnabled(features::kResourceLoadScheduler));
 
-  if (command_line.HasSwitch(
-          switches::kDisableOriginTrialControlledBlinkFeatures)) {
-    WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
-  }
-
   WebRuntimeFeatures::EnableLazyInitializeMediaControls(
       base::FeatureList::IsEnabled(features::kLazyInitializeMediaControls));
 
@@ -401,17 +399,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (base::FeatureList::IsEnabled(features::kLazyFrameLoading))
     WebRuntimeFeatures::EnableLazyFrameLoading(true);
-
-  // Enable explicitly enabled features, and then disable explicitly disabled
-  // ones.
-  for (const std::string& feature :
-       FeaturesFromSwitch(command_line, switches::kEnableBlinkFeatures)) {
-    WebRuntimeFeatures::EnableFeatureFromString(feature, true);
-  }
-  for (const std::string& feature :
-       FeaturesFromSwitch(command_line, switches::kDisableBlinkFeatures)) {
-    WebRuntimeFeatures::EnableFeatureFromString(feature, false);
-  }
 
   WebRuntimeFeatures::EnableV8ContextSnapshot(
       base::FeatureList::IsEnabled(features::kV8ContextSnapshot));
@@ -449,6 +436,25 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableOffMainThreadWebSocket(
       base::FeatureList::IsEnabled(features::kOffMainThreadWebSocket));
+
+  // End individual features.
+  // Do not add individual features below this line.
+
+  if (command_line.HasSwitch(
+          switches::kDisableOriginTrialControlledBlinkFeatures)) {
+    WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
+  }
+
+  // Enable explicitly enabled features, and then disable explicitly disabled
+  // ones.
+  for (const std::string& feature :
+       FeaturesFromSwitch(command_line, switches::kEnableBlinkFeatures)) {
+    WebRuntimeFeatures::EnableFeatureFromString(feature, true);
+  }
+  for (const std::string& feature :
+       FeaturesFromSwitch(command_line, switches::kDisableBlinkFeatures)) {
+    WebRuntimeFeatures::EnableFeatureFromString(feature, false);
+  }
 };
 
 }  // namespace content
