@@ -4,10 +4,6 @@
 
 #import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
 
-#include <objc/runtime.h>
-#include <map>
-
-#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -17,72 +13,17 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-std::map<SEL, autofill::ServerFieldType> kGettersToType = {
-    {@selector(name), autofill::NAME_FULL},
-    {@selector(company), autofill::COMPANY_NAME},
-    {@selector(address1), autofill::ADDRESS_HOME_LINE1},
-    {@selector(address2), autofill::ADDRESS_HOME_LINE2},
-    {@selector(city), autofill::ADDRESS_HOME_CITY},
-    {@selector(state), autofill::ADDRESS_HOME_STATE},
-    {@selector(zipcode), autofill::ADDRESS_HOME_ZIP},
-    {@selector(country), autofill::ADDRESS_HOME_COUNTRY},
-    {@selector(phone), autofill::PHONE_HOME_WHOLE_NUMBER},
-    {@selector(email), autofill::EMAIL_ADDRESS},
-};
-std::map<SEL, autofill::ServerFieldType> kSettersToType = {
-    {@selector(setName:), autofill::NAME_FULL},
-    {@selector(setCompany:), autofill::COMPANY_NAME},
-    {@selector(setAddress1:), autofill::ADDRESS_HOME_LINE1},
-    {@selector(setAddress2:), autofill::ADDRESS_HOME_LINE2},
-    {@selector(setCity:), autofill::ADDRESS_HOME_CITY},
-    {@selector(setState:), autofill::ADDRESS_HOME_STATE},
-    {@selector(setZipcode:), autofill::ADDRESS_HOME_ZIP},
-    {@selector(setCountry:), autofill::ADDRESS_HOME_COUNTRY},
-    {@selector(setPhone:), autofill::PHONE_HOME_WHOLE_NUMBER},
-    {@selector(setEmail:), autofill::EMAIL_ADDRESS},
-};
-}  // namespace
+@interface CWVAutofillProfile ()
+
+// Sets |value| for |type| in |_internalProfile|.
+- (void)setValue:(NSString*)value forType:(autofill::ServerFieldType)type;
+// Gets |value| for |type| from |_internalProfile|.
+- (NSString*)valueForType:(autofill::ServerFieldType)type;
+
+@end
 
 @implementation CWVAutofillProfile {
   autofill::AutofillProfile _internalProfile;
-}
-
-@dynamic name, company, address1, address2, city, state, zipcode, country,
-    phone, email;
-
-+ (void)initialize {
-  if (self != [CWVAutofillProfile class]) {
-    return;
-  }
-
-  // Add all getters and setters dynamically.
-  for (const auto& pair : kGettersToType) {
-    class_addMethod([self class], pair.first, (IMP)propertyGetter, "@@:");
-  }
-  for (const auto& pair : kSettersToType) {
-    class_addMethod([self class], pair.first, (IMP)propertySetter, "v@:@");
-  }
-}
-
-NSString* propertyGetter(CWVAutofillProfile* self, SEL _cmd) {
-  DCHECK(kGettersToType.find(_cmd) != kGettersToType.end());
-
-  autofill::ServerFieldType type = kGettersToType[_cmd];
-  const std::string& locale =
-      ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale();
-  const base::string16& value =
-      self->_internalProfile.GetInfo(autofill::AutofillType(type), locale);
-  return base::SysUTF16ToNSString(value);
-}
-
-void propertySetter(CWVAutofillProfile* self, SEL _cmd, NSString* value) {
-  DCHECK(kSettersToType.find(_cmd) != kSettersToType.end());
-
-  autofill::ServerFieldType type = kSettersToType[_cmd];
-  const std::string& locale =
-      ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale();
-  self->_internalProfile.SetInfo(type, base::SysNSStringToUTF16(value), locale);
 }
 
 - (instancetype)initWithProfile:(const autofill::AutofillProfile&)profile {
@@ -93,10 +34,106 @@ void propertySetter(CWVAutofillProfile* self, SEL _cmd, NSString* value) {
   return self;
 }
 
+#pragma mark - Public Methods
+
+- (NSString*)name {
+  return [self valueForType:autofill::NAME_FULL];
+}
+
+- (void)setName:(NSString*)name {
+  [self setValue:name forType:autofill::NAME_FULL];
+}
+
+- (NSString*)company {
+  return [self valueForType:autofill::COMPANY_NAME];
+}
+
+- (void)setCompany:(NSString*)company {
+  [self setValue:company forType:autofill::COMPANY_NAME];
+}
+
+- (NSString*)address1 {
+  return [self valueForType:autofill::ADDRESS_HOME_LINE1];
+}
+
+- (void)setAddress1:(NSString*)address1 {
+  [self setValue:address1 forType:autofill::ADDRESS_HOME_LINE1];
+}
+
+- (NSString*)address2 {
+  return [self valueForType:autofill::ADDRESS_HOME_LINE2];
+}
+
+- (void)setAddress2:(NSString*)address2 {
+  [self setValue:address2 forType:autofill::ADDRESS_HOME_LINE2];
+}
+
+- (NSString*)city {
+  return [self valueForType:autofill::ADDRESS_HOME_CITY];
+}
+
+- (void)setCity:(NSString*)city {
+  [self setValue:city forType:autofill::ADDRESS_HOME_CITY];
+}
+
+- (NSString*)state {
+  return [self valueForType:autofill::ADDRESS_HOME_STATE];
+}
+
+- (void)setState:(NSString*)state {
+  [self setValue:state forType:autofill::ADDRESS_HOME_STATE];
+}
+
+- (NSString*)zipcode {
+  return [self valueForType:autofill::ADDRESS_HOME_ZIP];
+}
+
+- (void)setZipcode:(NSString*)zipcode {
+  [self setValue:zipcode forType:autofill::ADDRESS_HOME_ZIP];
+}
+
+- (NSString*)country {
+  return [self valueForType:autofill::ADDRESS_HOME_COUNTRY];
+}
+
+- (void)setCountry:(NSString*)country {
+  [self setValue:country forType:autofill::ADDRESS_HOME_COUNTRY];
+}
+
+- (NSString*)phone {
+  return [self valueForType:autofill::PHONE_HOME_WHOLE_NUMBER];
+}
+
+- (void)setPhone:(NSString*)phone {
+  [self setValue:phone forType:autofill::PHONE_HOME_WHOLE_NUMBER];
+}
+
+- (NSString*)email {
+  return [self valueForType:autofill::EMAIL_ADDRESS];
+}
+
+- (void)setEmail:(NSString*)email {
+  [self setValue:email forType:autofill::EMAIL_ADDRESS];
+}
+
 #pragma mark - Internal Methods
 
 - (autofill::AutofillProfile*)internalProfile {
   return &_internalProfile;
+}
+
+#pragma mark - Private Methods
+
+- (void)setValue:(NSString*)value forType:(autofill::ServerFieldType)type {
+  const std::string& locale =
+      ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale();
+  _internalProfile.SetInfo(type, base::SysNSStringToUTF16(value), locale);
+}
+
+- (NSString*)valueForType:(autofill::ServerFieldType)type {
+  const std::string& locale =
+      ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale();
+  return base::SysUTF16ToNSString(_internalProfile.GetInfo(type, locale));
 }
 
 @end
