@@ -68,6 +68,24 @@ URLLoaderThrottleProviderImpl::~URLLoaderThrottleProviderImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
+URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
+    const URLLoaderThrottleProviderImpl& other)
+    : type_(other.type_),
+      chrome_content_renderer_client_(other.chrome_content_renderer_client_) {
+  DETACH_FROM_THREAD(thread_checker_);
+  if (other.safe_browsing_)
+    other.safe_browsing_->Clone(mojo::MakeRequest(&safe_browsing_info_));
+  // An ad_delay_factory_ is created, rather than cloning the existing one.
+}
+
+std::unique_ptr<content::URLLoaderThrottleProvider>
+URLLoaderThrottleProviderImpl::Clone() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (safe_browsing_info_)
+    safe_browsing_.Bind(std::move(safe_browsing_info_));
+  return base::WrapUnique(new URLLoaderThrottleProviderImpl(*this));
+}
+
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 URLLoaderThrottleProviderImpl::CreateThrottles(
     int render_frame_id,

@@ -23,6 +23,9 @@ class CONTENT_EXPORT WebSocketHandshakeThrottleProvider {
  public:
   virtual ~WebSocketHandshakeThrottleProvider() {}
 
+  // Used to copy a WebSocketHandshakeThrottleProvider between worker threads.
+  virtual std::unique_ptr<WebSocketHandshakeThrottleProvider> Clone() = 0;
+
   // For requests from frames and dedicated workers, |render_frame_id| should be
   // set to the corresponding frame. For requests from shared or service
   // workers, |render_frame_id| should be set to MSG_ROUTING_NONE.

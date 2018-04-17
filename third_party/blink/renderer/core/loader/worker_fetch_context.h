@@ -110,6 +110,10 @@ class WorkerFetchContext final : public BaseFetchContext {
                                ResourceRequest&) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
 
+  WebWorkerFetchContext* GetWebWorkerFetchContext() {
+    return web_context_.get();
+  }
+
   void Trace(blink::Visitor*) override;
 
  private:

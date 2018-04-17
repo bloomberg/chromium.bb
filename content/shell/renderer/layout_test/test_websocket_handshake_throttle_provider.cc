@@ -73,6 +73,11 @@ class TestWebSocketHandshakeThrottle
 
 }  // namespace
 
+std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+TestWebSocketHandshakeThrottleProvider::Clone() {
+  return std::make_unique<TestWebSocketHandshakeThrottleProvider>();
+}
+
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
 TestWebSocketHandshakeThrottleProvider::CreateThrottle(int render_frame_id) {
   return std::make_unique<TestWebSocketHandshakeThrottle>();

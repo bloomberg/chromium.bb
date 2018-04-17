@@ -32,6 +32,11 @@ class WebWorkerFetchContext {
  public:
   virtual ~WebWorkerFetchContext() = default;
 
+  // Used to copy a worker fetch context between worker threads.
+  virtual std::unique_ptr<WebWorkerFetchContext> CloneForNestedWorker() {
+    return nullptr;
+  }
+
   // Set a raw pointer of a WaitableEvent which will be signaled from the main
   // thread when the worker's GlobalScope is terminated, which will terminate
   // sync loading requests on the worker thread. It is guaranteed that the

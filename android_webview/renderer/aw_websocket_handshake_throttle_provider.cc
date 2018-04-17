@@ -31,6 +31,21 @@ AwWebSocketHandshakeThrottleProvider::~AwWebSocketHandshakeThrottleProvider() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
+AwWebSocketHandshakeThrottleProvider::AwWebSocketHandshakeThrottleProvider(
+    const AwWebSocketHandshakeThrottleProvider& other) {
+  DETACH_FROM_THREAD(thread_checker_);
+  if (other.safe_browsing_)
+    other.safe_browsing_->Clone(mojo::MakeRequest(&safe_browsing_info_));
+}
+
+std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+AwWebSocketHandshakeThrottleProvider::Clone() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (safe_browsing_info_)
+    safe_browsing_.Bind(std::move(safe_browsing_info_));
+  return base::WrapUnique(new AwWebSocketHandshakeThrottleProvider(*this));
+}
+
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
 AwWebSocketHandshakeThrottleProvider::CreateThrottle(int render_frame_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
