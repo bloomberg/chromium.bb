@@ -739,8 +739,8 @@ IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
   // Check that one minidump got created.
   {
 #if defined(OS_MACOSX)
-    // Mac outputs dumps in the 'completed' directory.
-    crash_dumps_dir_ = crash_dumps_dir_.Append("completed");
+    // Mac outputs dumps in the 'pending' directory.
+    crash_dumps_dir_ = crash_dumps_dir_.Append("pending");
 #endif
     base::ThreadRestrictions::SetIOAllowed(true);
     base::FileEnumerator it(crash_dumps_dir_, /* recursive */ false,
