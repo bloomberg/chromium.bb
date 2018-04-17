@@ -36,6 +36,7 @@ static_library("device_sync") {
     "//chromeos/services/device_sync/public/mojom",
     "//net",
     "//services/identity/public/cpp",
+    "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
   ]
 }
@@ -78,10 +79,13 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//chromeos",
     "//chromeos/services/device_sync/public/mojom",
     "//chromeos/services/device_sync/public/mojom:unit_tests",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
+    "//components/gcm_driver:test_support",
+    "//components/prefs:test_support",
     "//mojo/common",
     "//services/identity/public/cpp:test_support",
     "//services/service_manager/public/cpp:service_test_support",

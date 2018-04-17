@@ -19,41 +19,18 @@ class FakeDeviceSyncObserver : public device_sync::mojom::DeviceSyncObserver {
   FakeDeviceSyncObserver();
   ~FakeDeviceSyncObserver() override;
 
-  // Receives callbacks when the relevant DeviceSyncObserver functions have been
-  // handled.
-  class Delegate {
-   public:
-    virtual void OnEnrollmentFinishedCalled() = 0;
-    virtual void OnDevicesSyncedCalled() = 0;
-  };
-
-  void SetDelegate(Delegate* delegate);
-
   mojom::DeviceSyncObserverPtr GenerateInterfacePtr();
 
-  size_t num_enrollment_success_events() {
-    return num_enrollment_success_events_;
-  }
-
-  size_t num_enrollment_failure_events() {
-    return num_enrollment_failure_events_;
-  }
-
-  size_t num_sync_success_events() { return num_sync_success_events_; }
-
-  size_t num_sync_failure_events() { return num_sync_failure_events_; }
+  size_t num_enrollment_events() { return num_enrollment_events_; }
+  size_t num_sync_events() { return num_sync_events_; }
 
   // device_sync::mojom::DeviceSyncObserver:
-  void OnEnrollmentFinished(bool success) override;
-  void OnDevicesSynced(bool success) override;
+  void OnEnrollmentFinished() override;
+  void OnNewDevicesSynced() override;
 
  private:
-  Delegate* delegate_ = nullptr;
-
-  size_t num_enrollment_success_events_ = 0u;
-  size_t num_enrollment_failure_events_ = 0u;
-  size_t num_sync_success_events_ = 0u;
-  size_t num_sync_failure_events_ = 0u;
+  size_t num_enrollment_events_ = 0u;
+  size_t num_sync_events_ = 0u;
 
   mojo::BindingSet<mojom::DeviceSyncObserver> bindings_;
 

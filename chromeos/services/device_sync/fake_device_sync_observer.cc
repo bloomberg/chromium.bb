@@ -12,34 +12,18 @@ FakeDeviceSyncObserver::FakeDeviceSyncObserver() = default;
 
 FakeDeviceSyncObserver::~FakeDeviceSyncObserver() = default;
 
-void FakeDeviceSyncObserver::SetDelegate(Delegate* delegate) {
-  delegate_ = delegate;
-}
-
 mojom::DeviceSyncObserverPtr FakeDeviceSyncObserver::GenerateInterfacePtr() {
   mojom::DeviceSyncObserverPtr interface_ptr;
   bindings_.AddBinding(this, mojo::MakeRequest(&interface_ptr));
   return interface_ptr;
 }
 
-void FakeDeviceSyncObserver::OnEnrollmentFinished(bool success) {
-  if (success)
-    ++num_enrollment_success_events_;
-  else
-    ++num_enrollment_failure_events_;
-
-  if (delegate_)
-    delegate_->OnEnrollmentFinishedCalled();
+void FakeDeviceSyncObserver::OnEnrollmentFinished() {
+  ++num_enrollment_events_;
 }
 
-void FakeDeviceSyncObserver::OnDevicesSynced(bool success) {
-  if (success)
-    ++num_sync_success_events_;
-  else
-    ++num_sync_failure_events_;
-
-  if (delegate_)
-    delegate_->OnDevicesSyncedCalled();
+void FakeDeviceSyncObserver::OnNewDevicesSynced() {
+  ++num_sync_events_;
 }
 
 }  // namespace device_sync
