@@ -415,7 +415,7 @@ class CreateSessionDescriptionRequest
 
     tracker_.TrackOnFailure(error);
     // TODO(hta): Convert CreateSessionDescriptionRequest.OnFailure
-    webkit_request_.RequestFailed(ConvertToWebKitRTCError(error).message());
+    webkit_request_.RequestFailed(ConvertToWebKitRTCError(error));
     webkit_request_.Reset();
   }
 
