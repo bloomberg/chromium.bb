@@ -189,9 +189,6 @@ struct VIZ_COMMON_EXPORT Resource {
   ResourceTextureHint hint = ResourceTextureHint::kDefault;
   // The type of backing for the resource (such as gpu vs software).
   ResourceType type = ResourceType::kBitmap;
-  // GpuMemoryBuffer resource allocation needs to know how the resource will
-  // be used.
-  gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
   // This is the the actual format of the underlying GpuMemoryBuffer, if any,
   // and might not correspond to ResourceFormat. This format is needed to
   // allocate the GpuMemoryBuffer and scanout the buffer as a hardware overlay.
