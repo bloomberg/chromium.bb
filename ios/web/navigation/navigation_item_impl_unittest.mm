@@ -185,8 +185,9 @@ TEST_F(NavigationItemTest, SetErrorRetryState) {
   ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
             item.GetErrorRetryState());
 
-  item.SetErrorRetryState(ErrorRetryState::kDisplayingErrorForFailedNavigation);
-  ASSERT_EQ(ErrorRetryState::kDisplayingErrorForFailedNavigation,
+  item.SetErrorRetryState(
+      ErrorRetryState::kDisplayingNativeErrorForFailedNavigation);
+  ASSERT_EQ(ErrorRetryState::kDisplayingNativeErrorForFailedNavigation,
             item.GetErrorRetryState());
 
   item.SetErrorRetryState(ErrorRetryState::kNavigatingToFailedNavigationItem);
@@ -203,7 +204,8 @@ TEST_F(NavigationItemTest, SetErrorRetryState) {
             item.GetErrorRetryState());
 
   // Cycle through again, this time, terminate in no error.
-  item.SetErrorRetryState(ErrorRetryState::kDisplayingErrorForFailedNavigation);
+  item.SetErrorRetryState(
+      ErrorRetryState::kDisplayingNativeErrorForFailedNavigation);
   item.SetErrorRetryState(ErrorRetryState::kNavigatingToFailedNavigationItem);
   item.SetErrorRetryState(ErrorRetryState::kRetryFailedNavigationItem);
   item.SetErrorRetryState(ErrorRetryState::kNoNavigationError);

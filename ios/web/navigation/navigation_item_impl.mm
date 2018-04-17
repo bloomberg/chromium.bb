@@ -303,12 +303,12 @@ void NavigationItemImpl::SetErrorRetryState(ErrorRetryState state) {
              error_retry_state_ == ErrorRetryState::kRetryFailedNavigationItem)
           << "Got unexpected state: " << static_cast<int>(error_retry_state_);
       break;
-    case ErrorRetryState::kDisplayingErrorForFailedNavigation:
+    case ErrorRetryState::kDisplayingNativeErrorForFailedNavigation:
       DCHECK_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
                 error_retry_state_);
       break;
     case ErrorRetryState::kNavigatingToFailedNavigationItem:
-      DCHECK_EQ(ErrorRetryState::kDisplayingErrorForFailedNavigation,
+      DCHECK_EQ(ErrorRetryState::kDisplayingNativeErrorForFailedNavigation,
                 error_retry_state_);
       break;
     case ErrorRetryState::kRetryFailedNavigationItem:

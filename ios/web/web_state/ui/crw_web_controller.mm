@@ -1744,7 +1744,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self removeWebView];
   } else {
     item->SetErrorRetryState(
-        web::ErrorRetryState::kDisplayingErrorForFailedNavigation);
+        web::ErrorRetryState::kDisplayingNativeErrorForFailedNavigation);
   }
   id<CRWNativeContent> nativeContent =
       [_nativeProvider controllerForURL:currentURL
@@ -4730,8 +4730,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                    navigationContext:context];
       } else {
         // This is a back/forward navigation to a native error page.
-        DCHECK_EQ(web::ErrorRetryState::kDisplayingErrorForFailedNavigation,
-                  errorRetryState);
+        DCHECK_EQ(
+            web::ErrorRetryState::kDisplayingNativeErrorForFailedNavigation,
+            errorRetryState);
       }
     }
 
@@ -4740,7 +4741,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // the error retry state.
     if (!web::GetWebClient()->IsAppSpecificURL(item->GetURL())) {
       switch (errorRetryState) {
-        case web::ErrorRetryState::kDisplayingErrorForFailedNavigation:
+        case web::ErrorRetryState::kDisplayingNativeErrorForFailedNavigation:
           DCHECK(context->GetPageTransition() &
                  ui::PAGE_TRANSITION_FORWARD_BACK);
           if (item->GetURL() == webViewURL) {
