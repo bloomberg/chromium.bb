@@ -24,6 +24,9 @@ CHROMIUM_ROOT_DIR = os.path.abspath(os.path.join(FFMPEG_DIR, '..', '..'))
 NDK_ROOT_DIR = os.path.abspath(
     os.path.join(CHROMIUM_ROOT_DIR, 'third_party', 'android_ndk'))
 
+sys.path.append(os.path.join(CHROMIUM_ROOT_DIR, 'build'))
+import gn_helpers
+
 BRANDINGS = [
     'Chrome',
     'ChromeOS',
@@ -70,9 +73,17 @@ Platform specific build notes:
     src/third_party/llvm-build/Release+Asserts/bin
 
   win:
-    Script must be run on Windows with VS2015 or higher under Cygwin (or MinGW,
-    but as of 1.0.11, it has serious performance issues with make which makes
-    building take hours).
+    Script may be run unders Linux or Windows; if cross-compiling you will need
+    to follow the Chromium instruction for Cross-compiling Chrome/win:
+    https://chromium.googlesource.com/chromium/src/+/master/docs/win_cross.md
+
+    Once you have a working Chromium build that can cross-compile, you'll also
+    need to run $chrome_dir/tools/clang/scripts/download_objdump.py to pick up
+    the llvm-ar and llvm-nm tools. You can then build as normal.
+
+    If not cross-compiling, script must be run on Windows with VS2015 or higher
+    under Cygwin (or MinGW, but as of 1.0.11, it has serious performance issues
+    with make which makes building take hours).
 
     Additionally, ensure you have the correct toolchain environment for building.
     The x86 toolchain environment is required for ia32 builds and the x64 one
@@ -216,6 +227,56 @@ def SetupAndroidToolchain(target_arch):
   ]
 
 
+def SetupWindowsCrossCompileToolchain(target_arch):
+  # First retrieve various MSVC and Windows SDK paths.
+  output = subprocess.check_output([
+      os.path.join(CHROMIUM_ROOT_DIR, 'build', 'vs_toolchain.py'),
+      'get_toolchain_dir'
+  ])
+
+  new_args = [
+      '--enable-cross-compile',
+      '--cc=clang-cl',
+      '--ld=lld-link',
+      '--nm=llvm-nm',
+      '--ar=llvm-ar',
+
+      # Separate from optflags because configure strips it from msvc builds...
+      '--extra-cflags=-O2',
+  ]
+
+  if target_arch == 'ia32':
+    new_args += ['--extra-cflags=-m32']
+  if target_arch == 'ia32':
+    target_arch = 'x86'
+
+  # Turn this into a dictionary.
+  win_dirs = gn_helpers.FromGNArgs(output)
+
+  # Use those paths with a second script which will tell us the proper include
+  # and lib paths to specify for cflags and ldflags respectively.
+  output = subprocess.check_output([
+      'python',
+      os.path.join(CHROMIUM_ROOT_DIR, 'build', 'toolchain', 'win',
+                   'setup_toolchain.py'), win_dirs['vs_path'],
+      win_dirs['sdk_path'], win_dirs['runtime_dirs'], 'win', target_arch,
+      'none', 'true'
+  ])
+
+  flags = gn_helpers.FromGNArgs(output)
+  for cflag in flags['include_flags_imsvc'].split(' '):
+    new_args += ['--extra-cflags=' + cflag.strip('"')]
+
+  # TODO(dalecurtis): Why isn't the ucrt path printed?
+  flags['vc_lib_ucrt_path'] = flags['vc_lib_um_path'].replace('/um/', '/ucrt/')
+
+  # Unlike the cflags, the lib include paths are each in a separate variable.
+  for k in flags:
+    if 'lib' in k:
+      new_args += ['--extra-ldflags=-libpath:' + flags[k]]
+  return new_args
+
+
 def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
                 config_only, config, configure_flags):
   config_dir = 'build.%s.%s/%s' % (target_arch, target_os, config)
@@ -256,7 +317,8 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
         os.path.join(config_dir, 'ffbuild/config.mak'), r'(LDFLAGS=.*)',
         (r'\1 -FORCE:UNRESOLVED'))
 
-  if target_os in (host_os, host_os + '-noasm', 'android') and not config_only:
+  if target_os in (host_os, host_os + '-noasm', 'android',
+                   'win') and not config_only:
     libraries = [
         os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 58)),
         os.path.join('libavformat', GetDsoName(target_os, 'avformat', 58)),
@@ -284,7 +346,7 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
       (r'/* \1 -- elide long configuration string from binary */'))
 
   # Sanitizers can't compile the h264 code when EBP is used.
-  if target_os != 'win' and target_arch == 'ia32':
+  if target_arch == 'ia32':
     RewriteFile(
         os.path.join(config_dir,
                      'config.h'), r'(#define HAVE_EBP_AVAILABLE [01])',
@@ -422,6 +484,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
       '--enable-libopus',
 
       # Disable features.
+      '--disable-debug',
       '--disable-bzlib',
       '--disable-error-resilience',
       '--disable-iconv',
@@ -697,14 +760,19 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
 
   # Should be run on Windows.
   if target_os == 'win':
-    if host_os != 'win':
-      print('Script should be run on a Windows host.\n', file=sys.stderr)
-      return 1
-
     configure_flags['Common'].extend([
         '--toolchain=msvc',
         '--extra-cflags=-I' + os.path.join(FFMPEG_DIR, 'chromium/include/win'),
     ])
+
+    if target_arch == 'x64':
+      configure_flags['Common'].extend(['--target-os=win64'])
+    else:
+      configure_flags['Common'].extend(['--target-os=win32'])
+
+    if host_os != 'win':
+      configure_flags['Common'].extend(
+          SetupWindowsCrossCompileToolchain(target_arch))
 
     if 'CYGWIN_NT' in platform.system():
       configure_flags['Common'].extend([

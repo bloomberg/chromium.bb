@@ -25,6 +25,10 @@ Current patches:
     Commented out pkg-config checks for libopus since we use Chromium's
     copy.
 
+    https://patchwork.ffmpeg.org/patch/7469/ should be upstream soon.
+
+    Modify Windows makedef command execution to pick up AR, NM overrides.
+
   !!!SECURITY SENSITIVE ISSUE PLEASE VERIFY AFTER EACH FFMPEG ROLL!!!
   Remove UNCHECKED_BITSTREAM_READER defines in libavcodec/
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
