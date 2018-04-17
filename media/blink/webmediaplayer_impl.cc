@@ -791,24 +791,16 @@ void WebMediaPlayerImpl::EnterPictureInPicture() {
 }
 
 void WebMediaPlayerImpl::ExitPictureInPicture() {
-  // TODO(apacible): Handle ending PiP from a user gesture. This currently
-  // handles ending Picture-in-Picture mode from the source.
-  // https://crbug.com/823172.
-
   // Do not clear |pip_surface_id_| in case we enter Picture-in-Picture mode
   // again.
   if (!pip_surface_id_.is_valid())
     return;
 
-  // Signals that Picture-in-Picture has ended.
+  OnPictureInPictureModeEnded();
+
+  // Signals that Picture-in-Picture has ended. This lets the
+  // PictureInPictureWindowController know the window should be closed.
   exit_pip_cb_.Run();
-
-  // Updates the MediaWebContentsObserver with |delegate_id_| to clear the
-  // tracked media player that is in Picture-in-Picture mode.
-  delegate_->DidPictureInPictureModeEnd(delegate_id_);
-
-  if (client_)
-    client_->PictureInPictureStopped();
 }
 
 void WebMediaPlayerImpl::SetSinkId(
@@ -2070,9 +2062,18 @@ void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
 }
 
 void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {
-  // TODO(apacible): Converge with exiting Picture-in-Picture mode from
-  // wmpi side. https://crbug.com/823172.
-  NOTIMPLEMENTED();
+  // This should never be called if |pip_surface_id_| is invalid. This is either
+  // called from the Picture-in-Picture window side by a user gesture to end
+  // Picture-in-Picture mode, or in ExitPictureInPicture(), which already checks
+  // for validity.
+  DCHECK(pip_surface_id_.is_valid());
+
+  // Updates the MediaWebContentsObserver with |delegate_id_| to clear the
+  // tracked media player that is in Picture-in-Picture mode.
+  delegate_->DidPictureInPictureModeEnd(delegate_id_);
+
+  if (client_)
+    client_->PictureInPictureStopped();
 }
 
 void WebMediaPlayerImpl::ScheduleRestart() {
