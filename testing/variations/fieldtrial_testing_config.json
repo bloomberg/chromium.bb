@@ -3190,6 +3190,25 @@
             ]
         }
     ],
+    "ScrollAnchorSerialization": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ScrollAnchorSerialization"
+                    ]
+                }
+            ]
+        }
+    ],
     "SearchEnginePromo": [
         {
             "platforms": [
