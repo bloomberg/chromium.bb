@@ -37,9 +37,9 @@ class MockFaceDetection {
         new mojo.Binding(shapeDetection.mojom.FaceDetection, this, request);
   }
 
-  detect(bitmap_data) {
-    let receivedStruct = new Uint8Array(bitmap_data.pixelData);
-    this.bufferData_ = new Uint32Array(receivedStruct.buffer);
+  detect(bitmapData) {
+    this.bufferData_ =
+        new Uint32Array(getArrayBufferFromBigBuffer(bitmapData.pixelData));
     return Promise.resolve({
       results: [
         {

@@ -95,6 +95,7 @@ if (is_android) {
       "$google_play_services_package:google_play_services_vision_java",
       "//base:base_java",
       "//mojo/android:system_java",
+      "//mojo/public/java:base_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
       "//services/service_manager/public/java:service_manager_java",

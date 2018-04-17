@@ -4,21 +4,11 @@
 
 module gfx.mojom;
 
-// Mojo transport for a SkBitmap via shared buffer.
-// TODO: Merge into bitmap.mojom in skia and maybe share pixel buffer directly
-//       to make less copies.
-struct SharedBufferSkBitmap {
-  // Shared buffer handle to hold a serialized SkBitmap.
-  handle<shared_buffer> shared_buffer_handle;
+import "skia/public/interfaces/bitmap.mojom";
 
-  // Byte size of the shared buffer.
-  uint64 buffer_byte_size;
-};
-
-// Mojo transport for an ImageSkiaRep using SharedBufferSkBitmap.
 struct ImageSkiaRep {
   // Transport of the bitmap in this representation.
-  SharedBufferSkBitmap bitmap;
+  skia.mojom.Bitmap bitmap;
 
   // Corresponding scale of the bitmap or 0 if unscaled.
   float scale;

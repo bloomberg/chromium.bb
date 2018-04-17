@@ -14,4 +14,7 @@ deps = [
 public_deps = [
   "//skia",
 ]
-type_mappings = [ "skia.mojom.Bitmap=SkBitmap[nullable_is_same_type]" ]
+type_mappings = [
+  "skia.mojom.Bitmap=SkBitmap[nullable_is_same_type]",
+  "skia.mojom.InlineBitmap=SkBitmap[nullable_is_same_type]",
+]

@@ -8,6 +8,10 @@ mojom("interfaces") {
   sources = [
     "image.mojom",
   ]
+
+  public_deps = [
+    "//skia/public/interfaces",
+  ]
 }
 
 source_set("struct_traits") {

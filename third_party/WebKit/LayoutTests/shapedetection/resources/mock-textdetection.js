@@ -12,9 +12,9 @@ class MockTextDetection {
     this.interceptor_.start();
   }
 
-  detect(bitmap_data) {
-    let receivedStruct = new Uint8Array(bitmap_data.pixel_data);
-    this.buffer_data_ = new Uint32Array(receivedStruct.buffer);
+  detect(bitmapData) {
+    this.bufferData_ =
+        new Uint32Array(getArrayBufferFromBigBuffer(bitmapData.pixelData));
     return Promise.resolve({
       results: [
         {
@@ -42,7 +42,7 @@ class MockTextDetection {
   }
 
   getFrameData() {
-    return this.buffer_data_;
+    return this.bufferData_;
   }
 }
 
