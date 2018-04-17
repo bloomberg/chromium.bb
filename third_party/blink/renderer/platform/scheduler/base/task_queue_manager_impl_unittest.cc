@@ -140,7 +140,6 @@ void PostFromNestedRunloop(
     base::MessageLoop* message_loop,
     base::SingleThreadTaskRunner* runner,
     std::vector<std::pair<base::OnceClosure, bool>>* tasks) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
   for (std::pair<base::OnceClosure, bool>& pair : *tasks) {
     if (pair.second) {
       runner->PostTask(FROM_HERE, std::move(pair.first));
@@ -148,7 +147,7 @@ void PostFromNestedRunloop(
       runner->PostNonNestableTask(FROM_HERE, std::move(pair.first));
     }
   }
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
 }
 
 void NopTask() {}
