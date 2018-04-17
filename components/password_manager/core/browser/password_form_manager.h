@@ -411,7 +411,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
 
   // Create pending credentials from provisionally saved form when this form
   // represents credentials that were not previosly saved.
-  void CreatePendingCredentialsForNewCredentials();
+  void CreatePendingCredentialsForNewCredentials(
+      const base::string16& password_element);
 
   // If |best_matches_| contains only one entry, then return this entry.
   // Otherwise for empty |password| return nullptr and for non-empty |password|
