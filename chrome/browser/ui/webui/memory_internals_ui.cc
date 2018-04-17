@@ -251,6 +251,7 @@ void MemoryInternalsDOMHandler::HandleReportProcess(
 
 void MemoryInternalsDOMHandler::HandleStartProfiling(
     const base::ListValue* args) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!args->is_list() || args->GetList().size() != 1)
     return;
 
@@ -294,6 +295,8 @@ void MemoryInternalsDOMHandler::GetProfiledPids(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   heap_profiling::Supervisor* supervisor =
       heap_profiling::Supervisor::GetInstance();
+
+  // The supervisor hasn't started, so return an empty list.
   if (!supervisor->HasStarted()) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
@@ -302,6 +305,7 @@ void MemoryInternalsDOMHandler::GetProfiledPids(
                        std::vector<base::ProcessId>()));
     return;
   }
+
   supervisor->GetProfiledPids(
       base::BindOnce(&MemoryInternalsDOMHandler::ReturnProcessListOnUIThread,
                      weak_factory_.GetWeakPtr(), std::move(children)));

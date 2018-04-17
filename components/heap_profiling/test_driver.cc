@@ -560,7 +560,7 @@ bool TestDriver::RunTest(const Options& options) {
   }
 
   if (running_on_ui_thread_) {
-    if (!CheckOrStartProfiling())
+    if (!CheckOrStartProfilingOnUIThreadWithNestedRunLoops())
       return false;
     Supervisor::GetInstance()->SetKeepSmallAllocations(true);
     if (ShouldProfileRenderer())
@@ -629,7 +629,8 @@ void TestDriver::GetHasStartedOnUIThread() {
 
 void TestDriver::CheckOrStartProfilingOnUIThreadAndSignal() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  initialization_success_ = CheckOrStartProfiling();
+  initialization_success_ =
+      CheckOrStartProfilingOnUIThreadWithAsyncSignalling();
 
   // If the flag is true, then the WaitableEvent will be signaled after
   // profiling has started.
@@ -643,37 +644,81 @@ void TestDriver::SetKeepSmallAllocationsOnUIThreadAndSignal() {
   wait_for_ui_thread_.Signal();
 }
 
-bool TestDriver::CheckOrStartProfiling() {
+bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (options_.profiling_already_started) {
-    if (Supervisor::GetInstance()->HasStarted()) {
-      // Even if profiling has started, it's possible that the allocator shim
-      // has not yet been initialized. Wait for it.
-      if (ShouldProfileBrowser()) {
-        bool already_initialized = false;
-        std::unique_ptr<base::RunLoop> run_loop;
-        if (running_on_ui_thread_) {
-          run_loop.reset(new base::RunLoop);
-          already_initialized = SetOnInitAllocatorShimCallbackForTesting(
-              run_loop->QuitClosure(), base::ThreadTaskRunnerHandle::Get());
-
-          if (!already_initialized)
-            run_loop->Run();
-        } else {
-          already_initialized = SetOnInitAllocatorShimCallbackForTesting(
-              base::Bind(&base::WaitableEvent::Signal,
-                         base::Unretained(&wait_for_ui_thread_)),
-              base::ThreadTaskRunnerHandle::Get());
-          if (!already_initialized) {
-            wait_for_profiling_to_start_ = true;
-          }
-        }
-      }
-      return true;
+    if (!Supervisor::GetInstance()->HasStarted()) {
+      LOG(ERROR) << "Profiling should have been started, but wasn't";
+      return false;
     }
-    LOG(ERROR) << "Profiling should have been started, but wasn't";
+
+    // Even if profiling has started, it's possible that the allocator shim
+    // has not yet been initialized. Wait for it.
+    if (ShouldProfileBrowser()) {
+      bool already_initialized = SetOnInitAllocatorShimCallbackForTesting(
+          base::Bind(&base::WaitableEvent::Signal,
+                     base::Unretained(&wait_for_ui_thread_)),
+          base::ThreadTaskRunnerHandle::Get());
+      if (!already_initialized) {
+        wait_for_profiling_to_start_ = true;
+      }
+    }
+    return true;
+  }
+
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  if (!connection) {
+    LOG(ERROR) << "A ServiceManagerConnection was not available for the "
+                  "current process.";
     return false;
+  }
+
+  wait_for_profiling_to_start_ = true;
+  base::OnceClosure start_callback;
+
+  // If we're going to profile the browser, then wait for the allocator shim to
+  // start. Otherwise, wait for the Supervisor to start.
+  if (ShouldProfileBrowser()) {
+    SetOnInitAllocatorShimCallbackForTesting(
+        base::Bind(&base::WaitableEvent::Signal,
+                   base::Unretained(&wait_for_ui_thread_)),
+        base::ThreadTaskRunnerHandle::Get());
+  } else {
+    start_callback = base::BindOnce(&base::WaitableEvent::Signal,
+                                    base::Unretained(&wait_for_ui_thread_));
+  }
+
+  uint32_t sampling_rate = options_.should_sample
+                               ? (options_.sample_everything ? 2 : kSampleRate)
+                               : 1;
+  Supervisor::GetInstance()->Start(connection, options_.mode,
+                                   options_.stack_mode, sampling_rate,
+                                   std::move(start_callback));
+
+  return true;
+}
+
+bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (options_.profiling_already_started) {
+    if (!Supervisor::GetInstance()->HasStarted()) {
+      LOG(ERROR) << "Profiling should have been started, but wasn't";
+      return false;
+    }
+
+    // Even if profiling has started, it's possible that the allocator shim
+    // has not yet been initialized. Wait for it.
+    if (ShouldProfileBrowser()) {
+      std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
+      bool already_initialized = SetOnInitAllocatorShimCallbackForTesting(
+          run_loop->QuitClosure(), base::ThreadTaskRunnerHandle::Get());
+      if (!already_initialized)
+        run_loop->Run();
+    }
+    return true;
   }
 
   content::ServiceManagerConnection* connection =
@@ -686,32 +731,16 @@ bool TestDriver::CheckOrStartProfiling() {
 
   // When this is not-null, initialization should wait for the QuitClosure to be
   // called.
-  std::unique_ptr<base::RunLoop> run_loop;
+  std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
   base::OnceClosure start_callback;
 
   // If we're going to profile the browser, then wait for the allocator shim to
   // start. Otherwise, wait for the Supervisor to start.
   if (ShouldProfileBrowser()) {
-    if (running_on_ui_thread_) {
-      run_loop.reset(new base::RunLoop);
-      SetOnInitAllocatorShimCallbackForTesting(
-          run_loop->QuitClosure(), base::ThreadTaskRunnerHandle::Get());
-    } else {
-      wait_for_profiling_to_start_ = true;
-      SetOnInitAllocatorShimCallbackForTesting(
-          base::Bind(&base::WaitableEvent::Signal,
-                     base::Unretained(&wait_for_ui_thread_)),
-          base::ThreadTaskRunnerHandle::Get());
-    }
+    SetOnInitAllocatorShimCallbackForTesting(
+        run_loop->QuitClosure(), base::ThreadTaskRunnerHandle::Get());
   } else {
-    if (running_on_ui_thread_) {
-      run_loop.reset(new base::RunLoop);
-      start_callback = run_loop->QuitClosure();
-    } else {
-      wait_for_profiling_to_start_ = true;
-      start_callback = base::BindOnce(&base::WaitableEvent::Signal,
-                                      base::Unretained(&wait_for_ui_thread_));
-    }
+    start_callback = run_loop->QuitClosure();
   }
 
   uint32_t sampling_rate = options_.should_sample
@@ -721,8 +750,7 @@ bool TestDriver::CheckOrStartProfiling() {
                                    options_.stack_mode, sampling_rate,
                                    std::move(start_callback));
 
-  if (run_loop)
-    run_loop->Run();
+  run_loop->Run();
 
   return true;
 }

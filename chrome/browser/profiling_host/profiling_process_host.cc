@@ -136,7 +136,7 @@ void ProfilingProcessHost::SaveTraceWithHeapDumpToFile(
       },
       std::move(dest), std::move(done));
   Supervisor::GetInstance()->RequestTraceWithHeapDump(
-      std::move(finish_trace_callback), false /* anonymize */);
+      std::move(finish_trace_callback), /*anonymize=*/false);
 }
 
 void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
