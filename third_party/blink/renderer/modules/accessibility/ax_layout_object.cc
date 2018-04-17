@@ -919,7 +919,7 @@ RGBA32 AXLayoutObject::GetColor() const {
   return color.Rgb();
 }
 
-String AXLayoutObject::FontFamily() const {
+AtomicString AXLayoutObject::FontFamily() const {
   if (!GetLayoutObject())
     return AXNodeObject::FontFamily();
 
@@ -1766,6 +1766,27 @@ Element* AXLayoutObject::AnchorElement() const {
   }
 
   return nullptr;
+}
+
+AtomicString AXLayoutObject::Language() const {
+  // Uses the style engine to figure out the object's language.
+  // The style engine relies on, for example, the "lang" attribute of the
+  // current node and its ancestors, and the document's "content-language"
+  // header. See the Language of a Node Spec at
+  // https://html.spec.whatwg.org/multipage/dom.html#language
+
+  if (!GetLayoutObject())
+    return AXNodeObject::Language();
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style || !style->Locale())
+    return AXNodeObject::Language();
+
+  Vector<String> languages;
+  String(style->Locale()).Split(',', languages);
+  if (languages.IsEmpty())
+    return AXNodeObject::Language();
+  return AtomicString(languages[0].StripWhiteSpace());
 }
 
 //

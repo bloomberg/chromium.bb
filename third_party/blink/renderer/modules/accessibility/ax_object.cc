@@ -50,10 +50,12 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
+#include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -2042,23 +2044,50 @@ LocalFrameView* AXObject::DocumentFrameView() const {
   return object->DocumentFrameView();
 }
 
-String AXObject::Language() const {
+AtomicString AXObject::Language() const {
+  // This method is used when the style engine is either not available on this
+  // object, e.g. for canvas fallback content, or is unable to determine the
+  // document's language. We use the following signals to detect the element's
+  // language, in decreasing priority:
+  // 1. The [language of a node] as defined in HTML, if known.
+  // 2. The list of languages the browser sends in the [Accept-Language] header.
+  // 3. The browser's default language.
+
   const AtomicString& lang = GetAttribute(langAttr);
   if (!lang.IsEmpty())
     return lang;
 
   AXObject* parent = ParentObject();
+  if (parent)
+    return parent->Language();
 
-  // As a last resort, fall back to the content language specified in the meta
-  // tag.
-  if (!parent) {
-    Document* doc = GetDocument();
-    if (doc)
-      return doc->ContentLanguage();
-    return g_null_atom;
+  const Document* document = GetDocument();
+  if (document) {
+    // Fall back to the first content language specified in the meta tag.
+    // This is not part of what the HTML5 Standard suggests but it still appears
+    // to be necessary.
+    if (document->ContentLanguage()) {
+      const String content_languages = document->ContentLanguage();
+      Vector<String> languages;
+      content_languages.Split(',', languages);
+      if (!languages.IsEmpty())
+        return AtomicString(languages[0].StripWhiteSpace());
+    }
+
+    if (document->GetPage()) {
+      // Use the first accept language preference if present.
+      const String accept_languages =
+          document->GetPage()->GetChromeClient().AcceptLanguages();
+      Vector<String> languages;
+      accept_languages.Split(',', languages);
+      if (!languages.IsEmpty())
+        return AtomicString(languages[0].StripWhiteSpace());
+    }
   }
 
-  return parent->Language();
+  // As a last resort, return the default language of the browser's UI.
+  AtomicString default_language = DefaultLanguage();
+  return default_language;
 }
 
 bool AXObject::HasAttribute(const QualifiedName& attribute) const {

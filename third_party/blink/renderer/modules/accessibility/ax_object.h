@@ -487,7 +487,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Used by objects of role ColorWellRole.
   virtual RGBA32 ColorValue() const { return Color::kTransparent; }
   virtual bool CanvasHasFallbackContent() const { return false; }
-  virtual String FontFamily() const { return g_null_atom; }
+  virtual AtomicString FontFamily() const { return g_null_atom; }
   // Font size is in pixels.
   virtual float FontSize() const { return 0.0f; }
   // Value should be 1-based. 0 means not supported.
@@ -686,7 +686,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual LocalFrameView* DocumentFrameView() const;
   virtual Element* AnchorElement() const { return nullptr; }
   virtual Element* ActionElement() const { return nullptr; }
-  String Language() const;
+  virtual AtomicString Language() const;
   bool HasAttribute(const QualifiedName&) const;
   const AtomicString& GetAttribute(const QualifiedName&) const;
 
