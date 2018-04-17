@@ -58,6 +58,11 @@ class LeftEdge {
     return inline_box.PrevLeafChild();
   }
 
+  static InlineBox* BackwardLeafChildIgnoringLineBreak(
+      const InlineBox& inline_box) {
+    return inline_box.PrevLeafChildIgnoringLineBreak();
+  }
+
   // Returns true if |inlineBox| starts different direction of embedded text ru.
   // See [1] for details.
   // [1] UNICODE BIDIRECTIONAL ALGORITHM, http://unicode.org/reports/tr9/
@@ -76,12 +81,30 @@ class LeftEdge {
     return InlineBoxTraversal::FindRightBidiRun(inline_box, bidi_level);
   }
 
+  static InlineBoxPosition FindForwardBoundaryOfEntireBidiRunIgnoringLineBreak(
+      const InlineBox& inline_box,
+      unsigned bidi_level) {
+    const InlineBox* result_box =
+        InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
+            inline_box, bidi_level);
+    return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
+  }
+
   static InlineBoxPosition FindBackwardBoundaryOfEntireBidiRun(
       const InlineBox& inline_box,
       unsigned bidi_level) {
     const InlineBox* result_box =
         InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(inline_box,
                                                             bidi_level);
+    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
+  }
+
+  static InlineBoxPosition FindBackwardBoundaryOfBidiRunIgnoringLineBreak(
+      const InlineBox& inline_box,
+      unsigned bidi_level) {
+    const InlineBox* result_box =
+        InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
+            inline_box, bidi_level);
     return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
   }
 };
@@ -99,6 +122,11 @@ class RightEdge {
     return inline_box.NextLeafChild();
   }
 
+  static const InlineBox* BackwardLeafChildIgnoringLineBreak(
+      const InlineBox& inline_box) {
+    return inline_box.NextLeafChildIgnoringLineBreak();
+  }
+
   // TODO(editing-dev): This function is almost identical to
   // LeftEdge::IsStartOfDifferentDirection(). Try to unify them.
   static bool IsStartOfDifferentDirection(const InlineBox& inline_box) {
@@ -113,12 +141,30 @@ class RightEdge {
     return InlineBoxTraversal::FindLeftBidiRun(inline_box, bidi_level);
   }
 
+  static InlineBoxPosition FindForwardBoundaryOfEntireBidiRunIgnoringLineBreak(
+      const InlineBox& inline_box,
+      unsigned bidi_level) {
+    const InlineBox* result_box =
+        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
+            inline_box, bidi_level);
+    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
+  }
+
   static InlineBoxPosition FindBackwardBoundaryOfEntireBidiRun(
       const InlineBox& inline_box,
       unsigned bidi_level) {
     const InlineBox* result_box =
         InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(inline_box,
                                                              bidi_level);
+    return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
+  }
+
+  static InlineBoxPosition FindBackwardBoundaryOfBidiRunIgnoringLineBreak(
+      const InlineBox& inline_box,
+      unsigned bidi_level) {
+    const InlineBox* result_box =
+        InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
+            inline_box, bidi_level);
     return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
   }
 };
@@ -203,66 +249,47 @@ InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
   return EdgeSide::FindBackwardBoundaryOfEntireBidiRun(inline_box, level);
 }
 
-// TODO(xiaochengh): Unify left and right edge handling with template.
+template <typename EdgeSide>
+InlineBoxPosition AdjustInlineBoxPositionForTextDirectionAlgorithm(
+    const InlineBox& inline_box,
+    UnicodeBidi unicode_bidi) {
+  const TextDirection primary_direction =
+      inline_box.Root().Block().Style()->Direction();
+  if (inline_box.Direction() == primary_direction)
+    return AdjustInlineBoxPositionForPrimaryDirection<EdgeSide>(inline_box);
+
+  if (unicode_bidi == UnicodeBidi::kPlaintext)
+    return EdgeSide::UnadjustedInlineBoxPosition(inline_box);
+
+  const unsigned char level = inline_box.BidiLevel();
+  const InlineBox* const backward_box =
+      EdgeSide::BackwardLeafChildIgnoringLineBreak(inline_box);
+  if (!backward_box || backward_box->BidiLevel() < level) {
+    // Backward edge of a secondary run. Set to the forward edge of the entire
+    // run.
+    return EdgeSide::FindForwardBoundaryOfEntireBidiRunIgnoringLineBreak(
+        inline_box, level);
+  }
+
+  if (backward_box->BidiLevel() <= level)
+    return EdgeSide::UnadjustedInlineBoxPosition(inline_box);
+
+  // Forward edge of a "tertiary" run. Set to the backward edge of that run.
+  return EdgeSide::FindBackwardBoundaryOfBidiRunIgnoringLineBreak(inline_box,
+                                                                  level);
+}
+
 InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
     InlineBox* inline_box,
     int caret_offset,
     UnicodeBidi unicode_bidi) {
   DCHECK(caret_offset == inline_box->CaretLeftmostOffset() ||
          caret_offset == inline_box->CaretRightmostOffset());
-
-  const TextDirection primary_direction =
-      inline_box->Root().Block().Style()->Direction();
-  if (inline_box->Direction() == primary_direction) {
-    return caret_offset == inline_box->CaretLeftmostOffset()
-               ? AdjustInlineBoxPositionForPrimaryDirection<LeftEdge>(
-                     *inline_box)
-               : AdjustInlineBoxPositionForPrimaryDirection<RightEdge>(
-                     *inline_box);
-  }
-
-  if (unicode_bidi == UnicodeBidi::kPlaintext)
-    return InlineBoxPosition(inline_box, caret_offset);
-
-  const unsigned char level = inline_box->BidiLevel();
-  if (caret_offset == inline_box->CaretLeftmostOffset()) {
-    InlineBox* const prev_box = inline_box->PrevLeafChildIgnoringLineBreak();
-    if (!prev_box || prev_box->BidiLevel() < level) {
-      // Left edge of a secondary run. Set to the right edge of the entire
-      // run.
-      InlineBox* const result_box =
-          InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
-              *inline_box, level);
-      return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
-    }
-
-    if (prev_box->BidiLevel() <= level)
-      return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
-    // Right edge of a "tertiary" run. Set to the left edge of that run.
-    InlineBox* const result_box =
-        InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
-            *inline_box, level);
-    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
-  }
-
-  InlineBox* const next_box = inline_box->NextLeafChildIgnoringLineBreak();
-  if (!next_box || next_box->BidiLevel() < level) {
-    // Right edge of a secondary run. Set to the left edge of the entire
-    // run.
-    InlineBox* const result_box =
-        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
-            *inline_box, level);
-    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
-  }
-
-  if (next_box->BidiLevel() <= level)
-    return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
-
-  // Left edge of a "tertiary" run. Set to the right edge of that run.
-  InlineBox* const result_box =
-      InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
-          *inline_box, level);
-  return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
+  return caret_offset == inline_box->CaretLeftmostOffset()
+             ? AdjustInlineBoxPositionForTextDirectionAlgorithm<LeftEdge>(
+                   *inline_box, unicode_bidi)
+             : AdjustInlineBoxPositionForTextDirectionAlgorithm<RightEdge>(
+                   *inline_box, unicode_bidi);
 }
 
 // Returns true if |caret_offset| is at edge of |box| based on |affinity|.
