@@ -175,7 +175,10 @@ bool NativeWidgetMac::ShouldWindowContentsBeTransparent() const {
 }
 
 void NativeWidgetMac::FrameTypeChanged() {
-  NOTIMPLEMENTED();
+  // This is called when the Theme has changed; forward the event to the root
+  // widget.
+  GetWidget()->ThemeChanged();
+  GetWidget()->GetRootView()->SchedulePaint();
 }
 
 Widget* NativeWidgetMac::GetWidget() {
