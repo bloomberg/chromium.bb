@@ -2188,7 +2188,8 @@ public class LocationBarLayout
         // Because Android versions 4.2 and before lack proper RTL support,
         // force the formatted URL to render as LTR using an LRM character.
         // See: https://www.ietf.org/rfc/rfc3987.txt and crbug.com/709417
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (!TextUtils.isEmpty(displayText)
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             displayText = LRM + displayText;
         }
         return displayText;
