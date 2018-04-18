@@ -335,6 +335,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
  private:
   void RunAckCallbacks();
 
+  bool ShouldRouteEvents() const;
   void SendReclaimCompositorResources(bool is_swap_ack);
 
   void OnFrameMetadataUpdated(
