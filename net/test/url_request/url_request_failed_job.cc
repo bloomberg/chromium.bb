@@ -122,6 +122,8 @@ void URLRequestFailedJob::PopulateNetErrorDetails(
     NetErrorDetails* details) const {
   if (net_error_ == ERR_QUIC_PROTOCOL_ERROR) {
     details->quic_connection_error = QUIC_INTERNAL_ERROR;
+  } else if (net_error_ == ERR_NETWORK_CHANGED) {
+    details->quic_connection_error = QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK;
   }
 }
 

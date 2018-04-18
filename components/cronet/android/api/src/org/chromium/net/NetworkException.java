@@ -22,6 +22,9 @@ public abstract class NetworkException extends CronetException {
     public static final int ERROR_INTERNET_DISCONNECTED = 2;
     /**
      * Error code indicating that as the request was processed the network configuration changed.
+     * When {@link #getErrorCode} returns this code, this exception may be cast to
+     * {@link QuicException} for more information if <a href="https://www.chromium.org/quic">
+     * QUIC</a> protocol is used.
      */
     public static final int ERROR_NETWORK_CHANGED = 3;
     /**

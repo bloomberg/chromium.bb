@@ -2093,6 +2093,26 @@ public class CronetUrlRequestTest {
         assertEquals(1, quicException.getQuicDetailedErrorCode());
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testQuicErrorCodeForNetworkChanged() throws Exception {
+        TestUrlRequestCallback callback =
+                startAndWaitForComplete(MockUrlRequestJobFactory.getMockUrlWithFailure(
+                        FailurePhase.START, NetError.ERR_NETWORK_CHANGED));
+        assertNull(callback.mResponseInfo);
+        assertNotNull(callback.mError);
+        assertEquals(NetworkException.ERROR_NETWORK_CHANGED,
+                ((NetworkException) callback.mError).getErrorCode());
+        assertTrue(callback.mError instanceof QuicException);
+        QuicException quicException = (QuicException) callback.mError;
+        // QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK(83) is set in
+        // URLRequestFailedJob::PopulateNetErrorDetails for this test.
+        final int quicErrorCode = 83;
+        assertEquals(quicErrorCode, quicException.getQuicDetailedErrorCode());
+    }
+
     /**
      * Tests that legacy onFailed callback is invoked with UrlRequestException if there
      * is no onFailed callback implementation that takes CronetException.

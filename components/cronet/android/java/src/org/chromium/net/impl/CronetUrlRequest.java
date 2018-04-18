@@ -653,9 +653,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
         if (mResponseInfo != null) {
             mResponseInfo.setReceivedByteCount(receivedByteCount);
         }
-        if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED) {
-            failWithException(new QuicExceptionImpl(
-                    "Exception in CronetUrlRequest: " + errorString, nativeError, nativeQuicError));
+        if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED
+                || errorCode == NetworkException.ERROR_NETWORK_CHANGED) {
+            failWithException(new QuicExceptionImpl("Exception in CronetUrlRequest: " + errorString,
+                    errorCode, nativeError, nativeQuicError));
         } else {
             int javaError = mapUrlRequestErrorToApiErrorCode(errorCode);
             failWithException(new NetworkExceptionImpl(
