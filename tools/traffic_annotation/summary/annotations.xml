@@ -230,7 +230,7 @@ Refer to README.md for content description and update process.
  <item id="stream_message_pipe_adapter" hash_code="71837756" type="0" content_hash_code="131019242" os_list="linux,windows" file_path="remoting/protocol/stream_message_pipe_adapter.cc"/>
  <item id="suggestions_image_manager" hash_code="13211343" type="0" content_hash_code="36271280" os_list="linux,windows" file_path="components/suggestions/image_manager.cc"/>
  <item id="suggestions_service" hash_code="35370363" type="0" content_hash_code="66296423" os_list="linux,windows" file_path="components/suggestions/suggestions_service_impl.cc"/>
- <item id="supervised_user_refresh_token_fetcher" hash_code="136117054" type="0" content_hash_code="101636136" os_list="linux,windows" file_path="chrome/browser/supervised_user/legacy/supervised_user_refresh_token_fetcher.cc"/>
+ <item id="supervised_user_refresh_token_fetcher" hash_code="136117054" type="0" deprecated="2018-04-18" content_hash_code="101636136" file_path=""/>
  <item id="supervised_user_url_filter" hash_code="14257952" type="0" content_hash_code="30470003" os_list="linux,windows" file_path="chrome/browser/supervised_user/supervised_user_url_filter.cc"/>
  <item id="supervised_users_blacklist" hash_code="78544924" type="0" content_hash_code="10924669" os_list="linux,windows" file_path="chrome/browser/supervised_user/supervised_user_service.cc"/>
  <item id="sync_attachment_downloader" hash_code="26372521" type="0" deprecated="2018-02-08" content_hash_code="70097603" file_path=""/>

@@ -4324,7 +4324,6 @@ test("unit_tests") {
     # support has launched (https://crbug.com/505443).
     sources += [
       "../browser/supervised_user/legacy/supervised_user_pref_mapping_service_unittest.cc",
-      "../browser/supervised_user/legacy/supervised_user_refresh_token_fetcher_unittest.cc",
       "../browser/supervised_user/legacy/supervised_user_shared_settings_service_unittest.cc",
       "../browser/supervised_user/legacy/supervised_user_shared_settings_update_unittest.cc",
       "../browser/supervised_user/legacy/supervised_user_sync_service_unittest.cc",
