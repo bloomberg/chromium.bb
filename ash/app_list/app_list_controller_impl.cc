@@ -589,7 +589,13 @@ syncer::StringOrdinal AppListControllerImpl::GetOemFolderPos() {
 std::unique_ptr<app_list::AppListItem> AppListControllerImpl::CreateAppListItem(
     AppListItemMetadataPtr metadata) {
   std::unique_ptr<app_list::AppListItem> app_list_item =
-      std::make_unique<app_list::AppListItem>(metadata->id);
+      metadata->is_folder
+          ? std::make_unique<app_list::AppListFolderItem>(
+                metadata->id,
+                metadata->id == kOemFolderId
+                    ? app_list::AppListFolderItem::FOLDER_TYPE_OEM
+                    : app_list::AppListFolderItem::FOLDER_TYPE_NORMAL)
+          : std::make_unique<app_list::AppListItem>(metadata->id);
   app_list_item->SetMetadata(std::move(metadata));
   return app_list_item;
 }
