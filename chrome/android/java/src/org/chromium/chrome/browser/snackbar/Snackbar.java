@@ -61,6 +61,7 @@ public class Snackbar {
     public static final int UMA_SNIPPET_FETCH_FAILED = 21;
     // Obsolete; don't use: UMA_CHROME_HOME_OPT_OUT_SURVEY = 22;
     public static final int UMA_SNIPPET_FETCH_NO_NEW_SUGGESTIONS = 23;
+    public static final int UMA_MISSING_FILES_NO_SD_CARD = 24;
 
     private SnackbarController mController;
     private CharSequence mText;

@@ -1308,6 +1308,11 @@ const char kOpenPdfDownloadInSystemReader[] =
 // Int (as defined by DownloadPromptStatus) which specifies whether we should
 // ask the user where they want to download the file (only for Android).
 const char kPromptForDownloadAndroid[] = "download.prompt_for_download_android";
+
+// Boolean which specifies whether we should display the missing SD card error.
+// This is only applicable for Android.
+const char kShowMissingSdCardErrorAndroid[] =
+    "download.show_missing_sd_card_error_android";
 #endif
 
 // String which specifies where to save html files to by default.

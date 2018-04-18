@@ -233,11 +233,14 @@ void DownloadPrefs::RegisterProfilePrefs(
 #endif
 #if defined(OS_ANDROID)
   DownloadPromptStatus download_prompt_status =
-      (base::FeatureList::IsEnabled(features::kDownloadsLocationChange))
+      base::FeatureList::IsEnabled(features::kDownloadsLocationChange)
           ? DownloadPromptStatus::SHOW_INITIAL
           : DownloadPromptStatus::DONT_SHOW;
   registry->RegisterIntegerPref(prefs::kPromptForDownloadAndroid,
                                 static_cast<int>(download_prompt_status));
+  registry->RegisterBooleanPref(
+      prefs::kShowMissingSdCardErrorAndroid,
+      base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
 #endif
 }
 

@@ -1196,7 +1196,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         View
       </message>
 
-      <!-- Downloads preferences -->
+      <!-- Downloads location -->
       <message name="IDS_DOWNLOADS_LOCATION_SELECTOR_TITLE" desc="Title of the preference that allows the user to select which of the folders they would like to make the default location to save their downloads.">
         Download location
       </message>
@@ -1235,6 +1235,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_NO_SD_CARD" desc="Title for download location dialog in the case that the SD card is not found.">
         No SD card found
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_NO_SD_CARD_SNACKBAR" desc="Text for the snackbar that shows up in downloads home to let the user know that since the SD card is not found, some of the files may be missing.">
+        No SD card found. Some of your files may be missing.
       </message>
 
       <!-- About Chrome preferences -->

@@ -139,6 +139,22 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         getSnackbarManager().showSnackbar(snackbar);
     }
 
+    /**
+     * Displays a snackbar that says alerts the user that some downloads may be missing because a
+     * missing SD card was detected.
+     */
+    void onDownloadDirectoryNotFound() {
+        if (getSnackbarManager() == null) return;
+
+        Snackbar snackbar =
+                Snackbar.make(mContext.getString(R.string.download_location_no_sd_card_snackbar),
+                                this, Snackbar.TYPE_NOTIFICATION,
+                                Snackbar.UMA_MISSING_FILES_NO_SD_CARD)
+                        .setSingleLine(false)
+                        .setDuration(getSnackbarDurationMs());
+        getSnackbarManager().showSnackbar(snackbar);
+    }
+
     private Activity getActivity() {
         if (ApplicationStatus.hasVisibleActivities()) {
             return ApplicationStatus.getLastTrackedFocusedActivity();
