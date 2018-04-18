@@ -13,9 +13,6 @@
 
 namespace ash {
 
-// Id of OEM folder in app list.
-extern const char kOemFolderId[];
-
 // All possible states of the app list.
 // Note: Do not change the order of these as they are used for metrics.
 enum class AppListState {
