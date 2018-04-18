@@ -56,12 +56,8 @@
                 "href": "/extensions/tut_oauth"
               },
               {
-                "title": "Options",
+                "title": "Give Users Options",
                 "href": "/extensions/options"
-              },
-              {
-                "title": "Options Version 2",
-                "href": "/extensions/optionsV2"
               }
             ]
           },
