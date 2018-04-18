@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_reuse_defines.h"
@@ -2324,6 +2325,27 @@ TEST_F(PasswordManagerTest, CertErrorReported) {
         "PasswordManager.CertificateErrorsWhileSeeingForms",
         test_case.expected_error, 1);
   }
+}
+
+TEST_F(PasswordManagerTest, CreatingFormManagers) {
+  // Add the NewPasswordFormParsing feature.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
+
+  PasswordForm form(MakeSimpleForm());
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  // Check that the form manager is created.
+  EXPECT_EQ(1u, manager()->form_managers().size());
+  EXPECT_TRUE(manager()->form_managers()[0]->DoesManage(form.form_data));
+
+  // Check that receiving the same form the second time does not lead to
+  // creating new form manager.
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  EXPECT_EQ(1u, manager()->form_managers().size());
 }
 
 }  // namespace password_manager
