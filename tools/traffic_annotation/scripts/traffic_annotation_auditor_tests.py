@@ -45,8 +45,8 @@ class TrafficAnnotationTestsChecker():
     """
 
     configs = [
-      ["--test-only", "--error-resilient"],  # Similar to trybot.
       ["--test-only"],                       # Failing on any runtime error.
+      ["--test-only", "--error-resilient"],  # Similar to trybot.
       # TODO(rhalavati): The --no-filtering mode requires a full Chrome build
       # which is now not available on the FYI bot.
       # ["--test-only", "--no-filtering"]      # Not using heuristic filtering.
