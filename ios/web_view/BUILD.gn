@@ -73,6 +73,7 @@ if (ios_web_view_enable_autofill) {
   ios_web_view_public_headers += [
     "public/cwv_autofill_controller.h",
     "public/cwv_autofill_controller_delegate.h",
+    "public/cwv_autofill_credit_card.h",
     "public/cwv_autofill_data_manager.h",
     "public/cwv_autofill_profile.h",
     "public/cwv_autofill_suggestion.h",
@@ -189,6 +190,8 @@ if (ios_web_view_enable_autofill) {
   ios_web_view_sources += [
     "internal/autofill/cwv_autofill_controller.mm",
     "internal/autofill/cwv_autofill_controller_internal.h",
+    "internal/autofill/cwv_autofill_credit_card.mm",
+    "internal/autofill/cwv_autofill_credit_card_internal.h",
     "internal/autofill/cwv_autofill_data_manager.mm",
     "internal/autofill/cwv_autofill_data_manager_internal.h",
     "internal/autofill/cwv_autofill_profile.mm",
