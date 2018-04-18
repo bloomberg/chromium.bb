@@ -99,3 +99,5 @@ Local Modifications:
 - Support passing system library handles in dlsym() / dlclose() wrappers.
 
 - Improve FileDescriptor class.
+
+- Safer zip parsing code (avoid integer overflows and add range checks).

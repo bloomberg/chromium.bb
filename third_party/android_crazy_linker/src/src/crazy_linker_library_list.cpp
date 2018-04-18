@@ -481,28 +481,19 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
 #error "Unsupported target abi"
 #endif
 
-String LibraryList::GetLibraryFilePathInZipFile(const char* lib_name) {
-  String path;
-  path.Reserve(kMaxFilePathLengthInZip);
-  path = "lib/";
-  path += CURRENT_ABI;
-  path += "/crazy.";
-  path += lib_name;
-  return path;
-}
-
 int LibraryList::FindMappableLibraryInZipFile(
     const char* zip_file_path,
     const char* lib_name,
     Error* error) {
-  String path = GetLibraryFilePathInZipFile(lib_name);
+  String path("lib/" CURRENT_ABI "/crazy.");
+  path += lib_name;
   if (path.size() >= kMaxFilePathLengthInZip) {
     error->Format("Filename too long for a file in a zip file %s\n",
                   path.c_str());
     return CRAZY_OFFSET_FAILED;
   }
 
-  int offset = FindStartOffsetOfFileInZipFile(zip_file_path, path.c_str());
+  int32_t offset = FindStartOffsetOfFileInZipFile(zip_file_path, path.c_str());
   if (offset == CRAZY_OFFSET_FAILED) {
     return CRAZY_OFFSET_FAILED;
   }
