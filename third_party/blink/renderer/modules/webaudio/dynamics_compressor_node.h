@@ -56,7 +56,7 @@ class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
   void ProcessOnlyAudioParams(size_t frames_to_process) override;
   void Initialize() override;
 
-  float ReductionValue() const { return reduction_; }
+  float ReductionValue() const { return NoBarrierLoad(&reduction_); }
 
   void SetChannelCount(unsigned long, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;

@@ -95,8 +95,9 @@ void DynamicsCompressorHandler::Process(size_t frames_to_process) {
 
   dynamics_compressor_->Process(Input(0).Bus(), output_bus, frames_to_process);
 
-  reduction_ =
+  float reduction =
       dynamics_compressor_->ParameterValue(DynamicsCompressor::kParamReduction);
+  NoBarrierStore(&reduction_, reduction);
 }
 
 void DynamicsCompressorHandler::ProcessOnlyAudioParams(
