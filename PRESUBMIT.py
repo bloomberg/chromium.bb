@@ -2824,9 +2824,13 @@ def _CommonChecks(input_api, output_api):
     path, name = input_api.os_path.split(f.LocalPath())
     if name == 'PRESUBMIT.py':
       full_path = input_api.os_path.join(input_api.PresubmitLocalPath(), path)
-      results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
-          input_api, output_api, full_path,
-          whitelist=[r'^PRESUBMIT_test\.py$']))
+      if f.Action() != 'D':
+        # The PRESUBMIT.py file (and the directory containing it) might
+        # have been affected by being moved or removed, so only try to
+        # run the tests if they still exist.
+        results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
+            input_api, output_api, full_path,
+            whitelist=[r'^PRESUBMIT_test\.py$']))
   return results
 
 
