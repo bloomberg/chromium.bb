@@ -73,7 +73,7 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::SetUp();
     render_process_host_factory_ =
         std::make_unique<MockRenderProcessHostFactory>();
-    RenderProcessHostImpl::set_render_process_host_factory(
+    RenderProcessHostImpl::set_render_process_host_factory_for_testing(
         render_process_host_factory_.get());
   }
 

@@ -358,12 +358,17 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnMediaStreamRemoved() override;
   int get_media_stream_count_for_testing() const { return media_stream_count_; }
 
-  // Sets the global factory used to create new RenderProcessHosts.  It may be
-  // nullptr, in which case the default RenderProcessHost will be created (this
-  // is the behavior if you don't call this function).  The factory must be set
-  // back to nullptr before it's destroyed; ownership is not transferred.
-  static void set_render_process_host_factory(
+  // Sets the global factory used to create new RenderProcessHosts in unit
+  // tests.  It may be nullptr, in which case the default RenderProcessHost will
+  // be created (this is the behavior if you don't call this function).  The
+  // factory must be set back to nullptr before it's destroyed; ownership is not
+  // transferred.
+  static void set_render_process_host_factory_for_testing(
       const RenderProcessHostFactory* rph_factory);
+  // Gets the global factory used to create new RenderProcessHosts in unit
+  // tests.
+  static const RenderProcessHostFactory*
+  get_render_process_host_factory_for_testing();
 
   // Tracks which sites frames are hosted in which RenderProcessHosts.
   static void AddFrameWithSite(BrowserContext* browser_context,

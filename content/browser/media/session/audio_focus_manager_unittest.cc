@@ -4,6 +4,8 @@
 
 #include "content/browser/media/session/audio_focus_manager.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "content/browser/media/session/media_session_impl.h"
@@ -43,7 +45,8 @@ class AudioFocusManagerTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableAudioFocus);
     rph_factory_.reset(new MockRenderProcessHostFactory());
-    RenderProcessHostImpl::set_render_process_host_factory(rph_factory_.get());
+    RenderProcessHostImpl::set_render_process_host_factory_for_testing(
+        rph_factory_.get());
     browser_context_.reset(new TestBrowserContext());
     pepper_observer_.reset(new MockMediaSessionPlayerObserver());
   }
@@ -53,7 +56,7 @@ class AudioFocusManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     browser_context_.reset();
-    RenderProcessHostImpl::set_render_process_host_factory(nullptr);
+    RenderProcessHostImpl::set_render_process_host_factory_for_testing(nullptr);
     rph_factory_.reset();
   }
 
