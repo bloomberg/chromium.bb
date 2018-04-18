@@ -97,16 +97,18 @@ TEST(NGExclusionSpaceTest, SingleExclusion) {
   TEST_OPPORTUNITY(opportunites[2], NGBfcOffset(LayoutUnit(10), LayoutUnit(90)),
                    NGBfcOffset(LayoutUnit(60), LayoutUnit::Max()));
 
-  // This will only produce two opportunities, as the RHS opportunity will be
-  // outside the search area.
+  // This will also produce three opportunities, as the RHS opportunity outside
+  // the search area creates a zero-width opportunity.
   opportunites = exclusion_space.AllLayoutOpportunities(
       /* offset */ {LayoutUnit(10), LayoutUnit(10)},
       /* available_size */ LayoutUnit(49));
 
-  EXPECT_EQ(2u, opportunites.size());
+  EXPECT_EQ(3u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(10), LayoutUnit(10)),
                    NGBfcOffset(LayoutUnit(59), LayoutUnit(20)));
-  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(10), LayoutUnit(90)),
+  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(60), LayoutUnit(10)),
+                   NGBfcOffset(LayoutUnit(60), LayoutUnit::Max()));
+  TEST_OPPORTUNITY(opportunites[2], NGBfcOffset(LayoutUnit(10), LayoutUnit(90)),
                    NGBfcOffset(LayoutUnit(59), LayoutUnit::Max()));
 }
 
@@ -127,12 +129,14 @@ TEST(NGExclusionSpaceTest, TwoExclusions) {
           /* offset */ {LayoutUnit(), LayoutUnit()},
           /* available_size */ LayoutUnit(400));
 
-  EXPECT_EQ(3u, opportunites.size());
+  EXPECT_EQ(4u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(150), LayoutUnit()),
                    NGBfcOffset(LayoutUnit(400), LayoutUnit(75)));
-  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(), LayoutUnit(75)),
+  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(150), LayoutUnit()),
+                   NGBfcOffset(LayoutUnit(150), LayoutUnit::Max()));
+  TEST_OPPORTUNITY(opportunites[2], NGBfcOffset(LayoutUnit(), LayoutUnit(75)),
                    NGBfcOffset(LayoutUnit(100), LayoutUnit::Max()));
-  TEST_OPPORTUNITY(opportunites[2], NGBfcOffset(LayoutUnit(), LayoutUnit(150)),
+  TEST_OPPORTUNITY(opportunites[3], NGBfcOffset(LayoutUnit(), LayoutUnit(150)),
                    NGBfcOffset(LayoutUnit(400), LayoutUnit::Max()));
 }
 
@@ -284,6 +288,66 @@ TEST(NGExclusionSpaceTest, InsertBetweenShelves) {
                    NGBfcOffset(LayoutUnit(60), LayoutUnit::Max()));
   TEST_OPPORTUNITY(opportunites[2], NGBfcOffset(LayoutUnit(30), LayoutUnit(35)),
                    NGBfcOffset(LayoutUnit(60), LayoutUnit::Max()));
+}
+
+TEST(NGExclusionSpaceTest, ZeroInlineSizeOpportunity) {
+  NGExclusionSpace exclusion_space;
+
+  exclusion_space.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(), LayoutUnit()),
+                NGBfcOffset(LayoutUnit(100), LayoutUnit(10))),
+      EFloat::kLeft));
+
+  Vector<NGLayoutOpportunity> opportunites =
+      exclusion_space.AllLayoutOpportunities(
+          /* offset */ {LayoutUnit(), LayoutUnit()},
+          /* available_size */ LayoutUnit(100));
+
+  EXPECT_EQ(2u, opportunites.size());
+  TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(100), LayoutUnit()),
+                   NGBfcOffset(LayoutUnit(100), LayoutUnit::Max()));
+  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(), LayoutUnit(10)),
+                   NGBfcOffset(LayoutUnit(100), LayoutUnit::Max()));
+}
+
+TEST(NGExclusionSpaceTest, NegativeInlineSizeOpportunityLeft) {
+  NGExclusionSpace exclusion_space;
+
+  exclusion_space.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(), LayoutUnit()),
+                NGBfcOffset(LayoutUnit(120), LayoutUnit(10))),
+      EFloat::kLeft));
+
+  Vector<NGLayoutOpportunity> opportunites =
+      exclusion_space.AllLayoutOpportunities(
+          /* offset */ {LayoutUnit(), LayoutUnit()},
+          /* available_size */ LayoutUnit(100));
+
+  EXPECT_EQ(2u, opportunites.size());
+  TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(120), LayoutUnit()),
+                   NGBfcOffset(LayoutUnit(120), LayoutUnit::Max()));
+  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(), LayoutUnit(10)),
+                   NGBfcOffset(LayoutUnit(100), LayoutUnit::Max()));
+}
+
+TEST(NGExclusionSpaceTest, NegativeInlineSizeOpportunityRight) {
+  NGExclusionSpace exclusion_space;
+
+  exclusion_space.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(-20), LayoutUnit()),
+                NGBfcOffset(LayoutUnit(100), LayoutUnit(10))),
+      EFloat::kRight));
+
+  Vector<NGLayoutOpportunity> opportunites =
+      exclusion_space.AllLayoutOpportunities(
+          /* offset */ {LayoutUnit(), LayoutUnit()},
+          /* available_size */ LayoutUnit(100));
+
+  EXPECT_EQ(2u, opportunites.size());
+  TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(), LayoutUnit()),
+                   NGBfcOffset(LayoutUnit(), LayoutUnit::Max()));
+  TEST_OPPORTUNITY(opportunites[1], NGBfcOffset(LayoutUnit(), LayoutUnit(10)),
+                   NGBfcOffset(LayoutUnit(100), LayoutUnit::Max()));
 }
 
 }  // namespace
