@@ -2291,6 +2291,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _pi_hwtest_boards = frozenset([
+      'caroline-arcnext',
       'kevin-arcnext',
   ])
   _pi_no_hwtest_boards = frozenset([
@@ -2300,7 +2301,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'eve-arcnext',
   ])
   _pi_hwtest_experimental_boards = frozenset([
-      'caroline-arcnext',
   ])
   _pi_vmtest_boards = frozenset([])
 
@@ -2497,6 +2497,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty-arc64',
       'bob',
       'caroline',
+      'caroline-arcnext',
       'cave',
       'chell',
       'coral',
@@ -2566,7 +2567,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_paine',
       'betty-arcnext',
-      'caroline-arcnext',
       'eve-campfire', # contact:yueherngl@
       'nami',
       'nocturne', # contact:moragues@
@@ -3846,7 +3846,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'caroline-arcnext-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-          'important': False,
       },
 
       'kevin-arcnext-chrome-pfq': {
