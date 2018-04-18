@@ -468,7 +468,7 @@ class NoiseModelUpdateTest : public ::testing::Test, public T {
                                               T::kBitDepth, T::kUseHighBD };
     ASSERT_TRUE(aom_noise_model_init(&model_, params));
 
-    random_.Reset(1071);
+    random_.Reset(100171);
 
     data_.resize(kWidth * kHeight * 3);
     denoised_.resize(kWidth * kHeight * 3);
@@ -799,19 +799,21 @@ TYPED_TEST_P(NoiseModelUpdateTest,
   for (int i = 0; i < kWidth * kHeight; ++i) {
     const uint8_t val = (i % kWidth) < kWidth / 2 ? 64 : 192;
     this->data_ptr_[0][i] =
-        ((uint8_t)(this->noise_ptr_[0][i] * (kStd + 0.1) + val)) << shift;
+        ((uint8_t)(this->noise_ptr_[0][i] * (kStd + 0.085) + val)) << shift;
   }
   EXPECT_EQ(AOM_NOISE_STATUS_OK, this->NoiseModelUpdate());
 
-  EXPECT_EQ(kNumBlocks, model.latest_state[0].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model.latest_state[1].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model.latest_state[2].strength_solver.num_equations);
-  EXPECT_EQ(2 * kNumBlocks,
-            model.combined_state[0].strength_solver.num_equations);
-  EXPECT_EQ(2 * kNumBlocks,
-            model.combined_state[1].strength_solver.num_equations);
-  EXPECT_EQ(2 * kNumBlocks,
-            model.combined_state[2].strength_solver.num_equations);
+  const double kARGainTolerance = 0.02;
+  for (int c = 0; c < 3; ++c) {
+    EXPECT_EQ(kNumBlocks, model.latest_state[c].strength_solver.num_equations);
+    EXPECT_EQ(15250, model.latest_state[c].num_observations);
+    EXPECT_NEAR(1, model.latest_state[c].ar_gain, kARGainTolerance);
+
+    EXPECT_EQ(2 * kNumBlocks,
+              model.combined_state[c].strength_solver.num_equations);
+    EXPECT_EQ(2 * 15250, model.combined_state[c].num_observations);
+    EXPECT_NEAR(1, model.combined_state[c].ar_gain, kARGainTolerance);
+  }
 
   // Bump up the noise strength on half the image for one channel by a
   // significant amount.
@@ -833,12 +835,16 @@ TYPED_TEST_P(NoiseModelUpdateTest,
   // In normal operation, the "latest" estimate can be saved to the "combined"
   // state for continued updates.
   aom_noise_model_save_latest(&model);
-  EXPECT_EQ(kNumBlocks, model.latest_state[0].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model.latest_state[1].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model.latest_state[2].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model.combined_state[0].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model.combined_state[1].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model.combined_state[2].strength_solver.num_equations);
+  for (int c = 0; c < 3; ++c) {
+    EXPECT_EQ(kNumBlocks, model.latest_state[c].strength_solver.num_equations);
+    EXPECT_EQ(15250, model.latest_state[c].num_observations);
+    EXPECT_NEAR(1, model.latest_state[c].ar_gain, kARGainTolerance);
+
+    EXPECT_EQ(kNumBlocks,
+              model.combined_state[c].strength_solver.num_equations);
+    EXPECT_EQ(15250, model.combined_state[c].num_observations);
+    EXPECT_NEAR(1, model.combined_state[c].ar_gain, kARGainTolerance);
+  }
 }
 
 TYPED_TEST_P(NoiseModelUpdateTest, NoiseCoeffsSignalsDifferentNoiseType) {
@@ -994,17 +1000,17 @@ TEST(NoiseModelGetGrainParameters, GetGrainParametersReal) {
                                    0.0107,  -0.1966, 0.00065, -0.0809, 0.04934,
                                    -0.1349, -0.0352, 0.41772, 0.27973, 0.04207,
                                    -0.0429, -0.1372, 0.06193, 0.52032 };
-  const double kInputCoeffsCB[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.25 };
-  const double kInputCoeffsCR[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,
+  const double kInputCoeffsCB[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5 };
+  const double kInputCoeffsCR[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.5 };
   const int kExpectedARCoeffsY[] = { 4,  1,   3,  0,   1,  -3,  8, -3,
                                      7,  -23, 1,  -25, 0,  -10, 6, -17,
                                      -5, 53,  36, 5,   -5, -18, 8, 67 };
   const int kExpectedARCoeffsCB[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32 };
-  const int kExpectedARCoeffsCR[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64 };
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 84 };
+  const int kExpectedARCoeffsCR[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -126 };
   // Scaling function is initialized analytically with a sqrt function.
   const int kNumScalingPointsY = 12;
   const int kExpectedScalingPointsY[][2] = {
@@ -1028,8 +1034,18 @@ TEST(NoiseModelGetGrainParameters, GetGrainParametersReal) {
     const double x =
         ((double)i) / (model.combined_state[0].strength_solver.num_bins - 1.0);
     model.combined_state[0].strength_solver.eqns.x[i] = 6 * sqrt(x);
-    model.combined_state[1].strength_solver.eqns.x[i] = 2;
-    model.combined_state[2].strength_solver.eqns.x[i] = 4;
+    model.combined_state[1].strength_solver.eqns.x[i] = 3;
+    model.combined_state[2].strength_solver.eqns.x[i] = 2;
+
+    // Inject some observations into the strength solver, as during film grain
+    // parameter extraction an estimate of the average strength will be used to
+    // adjust correlation.
+    const int n = model.combined_state[0].strength_solver.num_bins;
+    for (int j = 0; j < model.combined_state[0].strength_solver.num_bins; ++j) {
+      model.combined_state[0].strength_solver.eqns.A[i * n + j] = 1;
+      model.combined_state[1].strength_solver.eqns.A[i * n + j] = 1;
+      model.combined_state[2].strength_solver.eqns.A[i * n + j] = 1;
+    }
   }
 
   aom_film_grain_t film_grain;
@@ -1061,15 +1077,15 @@ TEST(NoiseModelGetGrainParameters, GetGrainParametersReal) {
   EXPECT_EQ(2, film_grain.num_cb_points);
   EXPECT_EQ(0, film_grain.scaling_points_cb[0][0]);
   EXPECT_EQ(255, film_grain.scaling_points_cb[1][0]);
-  EXPECT_EQ(64, film_grain.scaling_points_cb[0][1]);
-  EXPECT_EQ(64, film_grain.scaling_points_cb[1][1]);
+  EXPECT_EQ(96, film_grain.scaling_points_cb[0][1]);
+  EXPECT_EQ(96, film_grain.scaling_points_cb[1][1]);
 
   // CR strength should just be a piecewise segment
   EXPECT_EQ(2, film_grain.num_cr_points);
   EXPECT_EQ(0, film_grain.scaling_points_cr[0][0]);
   EXPECT_EQ(255, film_grain.scaling_points_cr[1][0]);
-  EXPECT_EQ(128, film_grain.scaling_points_cr[0][1]);
-  EXPECT_EQ(128, film_grain.scaling_points_cr[1][1]);
+  EXPECT_EQ(64, film_grain.scaling_points_cr[0][1]);
+  EXPECT_EQ(64, film_grain.scaling_points_cr[1][1]);
 
   EXPECT_EQ(128, film_grain.cb_mult);
   EXPECT_EQ(192, film_grain.cb_luma_mult);

@@ -182,6 +182,8 @@ typedef struct {
 typedef struct {
   aom_equation_system_t eqns;
   aom_noise_strength_solver_t strength_solver;
+  int num_observations;  // The number of observations in the eqn system
+  double ar_gain;        // The gain of the current AR filter
 } aom_noise_state_t;
 
 /*!\brief Complete model of noise for a planar video
