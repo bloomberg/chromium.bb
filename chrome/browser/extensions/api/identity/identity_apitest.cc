@@ -454,8 +454,6 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
         Profile::FromBrowserContext(context));
   }
 
-  bool ShouldAllowLegacyExtensionManifests() override { return true; }
-
   void SetUpOnMainThread() override {
     AsyncExtensionBrowserTest::SetUpOnMainThread();
 
@@ -671,11 +669,7 @@ class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
 
  private:
   scoped_refptr<Extension> CreateExtensionWithEmailPermission() {
-    std::unique_ptr<base::DictionaryValue> test_extension_value(
-        api_test_utils::ParseDictionary(
-            "{\"name\": \"Test\", \"version\": \"1.0\", "
-            "\"permissions\": [\"identity.email\"]}"));
-    return api_test_utils::CreateExtension(test_extension_value.get());
+    return ExtensionBuilder("Test").AddPermission("identity.email").Build();
   }
 };
 
@@ -1964,18 +1958,15 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
   }
 
   scoped_refptr<Extension> CreateTestExtension(const std::string& id) {
-    return ExtensionBuilder()
-        .SetManifest(
+    return ExtensionBuilder("Test")
+        .MergeManifest(
             DictionaryBuilder()
-                .Set("name", "Test")
-                .Set("version", "1.0")
                 .Set("oauth2",
                      DictionaryBuilder()
                          .Set("client_id", "clientId")
                          .Set("scopes", ListBuilder().Append("scope1").Build())
                          .Build())
                 .Build())
-        .SetLocation(Manifest::UNPACKED)
         .SetID(id)
         .Build();
   }
