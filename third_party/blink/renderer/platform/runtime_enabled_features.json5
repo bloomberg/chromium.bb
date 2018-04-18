@@ -197,9 +197,6 @@
       name: "ClientPlaceholdersForServerLoFi",
     },
     {
-      name: "CodeCacheAfterExecute"
-    },
-    {
       name: "CompositedSelectionUpdate",
     },
     {

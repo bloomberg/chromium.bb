@@ -76,10 +76,6 @@ const base::Feature kCanvas2DImageChromium {
 const base::Feature kCheckerImaging{"CheckerImaging",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables code caching after executing the script.
-const base::Feature kCodeCacheAfterExecute{"CodeCacheAfterExecute",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the compositing of fixed position content that is opaque and can
 // preserve LCD text.
 const base::Feature kCompositeOpaqueFixedPosition{
