@@ -11,6 +11,15 @@ namespace blink {
 
 class SelectionModifierTest : public EditingTestBase {};
 
+TEST_F(SelectionModifierTest, ExtendForwardByWordNone) {
+  SetBodyContent("abc");
+  SelectionModifier modifier(GetFrame(), SelectionInDOMTree());
+  modifier.Modify(SelectionModifyAlteration::kExtend,
+                  SelectionModifyDirection::kForward, TextGranularity::kWord);
+  // We should not crash here. See http://crbug.com/832061
+  EXPECT_EQ(SelectionInDOMTree(), modifier.Selection().AsSelection());
+}
+
 TEST_F(SelectionModifierTest, leftPositionOf) {
   const char* body_content =
       "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b "
@@ -47,6 +56,15 @@ TEST_F(SelectionModifierTest, leftPositionOf) {
   EXPECT_EQ(PositionInFlatTree(five->firstChild(), 5),
             LeftPositionOf(CreateVisiblePosition(PositionInFlatTree(three, 0)))
                 .DeepEquivalent());
+}
+
+TEST_F(SelectionModifierTest, MoveForwardByWordNone) {
+  SetBodyContent("abc");
+  SelectionModifier modifier(GetFrame(), SelectionInDOMTree());
+  modifier.Modify(SelectionModifyAlteration::kMove,
+                  SelectionModifyDirection::kForward, TextGranularity::kWord);
+  // We should not crash here. See http://crbug.com/832061
+  EXPECT_EQ(SelectionInDOMTree(), modifier.Selection().AsSelection());
 }
 
 TEST_F(SelectionModifierTest, rightPositionOf) {

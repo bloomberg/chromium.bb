@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_MODIFIER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
@@ -41,7 +42,7 @@ enum class SelectionModifyAlteration { kMove, kExtend };
 enum class SelectionModifyVerticalDirection { kUp, kDown };
 enum class SelectionModifyDirection { kBackward, kForward, kLeft, kRight };
 
-class SelectionModifier {
+class CORE_EXPORT SelectionModifier {
   STACK_ALLOCATED();
 
  public:
