@@ -17,6 +17,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_hid_packet.h"
 
@@ -27,14 +28,16 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidMessage {
  public:
   // Static functions to create CTAP/U2F HID commands.
-  static std::unique_ptr<FidoHidMessage> Create(uint32_t channel_id,
-                                                FidoHidDeviceCommand cmd,
-                                                base::span<const uint8_t> data);
+  static base::Optional<FidoHidMessage> Create(uint32_t channel_id,
+                                               FidoHidDeviceCommand cmd,
+                                               base::span<const uint8_t> data);
 
   // Reconstruct a message from serialized message data.
-  static std::unique_ptr<FidoHidMessage> CreateFromSerializedData(
+  static base::Optional<FidoHidMessage> CreateFromSerializedData(
       base::span<const uint8_t> serialized_data);
 
+  FidoHidMessage(FidoHidMessage&& that);
+  FidoHidMessage& operator=(FidoHidMessage&& other);
   ~FidoHidMessage();
 
   bool MessageComplete() const;

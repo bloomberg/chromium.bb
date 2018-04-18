@@ -160,7 +160,7 @@ TEST(FidoHidMessageTest, TestMaxSize) {
   std::vector<uint8_t> data(kHidMaxMessageSize + 1);
   auto oversize_message =
       FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
-  EXPECT_EQ(nullptr, oversize_message);
+  EXPECT_FALSE(oversize_message);
 }
 
 TEST(FidoHidMessageTest, TestDeconstruct) {

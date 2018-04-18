@@ -148,13 +148,13 @@ void FidoHidDevice::AllocateChannel(std::vector<uint8_t> command,
 void FidoHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
                                       std::vector<uint8_t> command,
                                       DeviceCallback callback,
-                                      bool success,
-                                      std::unique_ptr<FidoHidMessage> message) {
+                                      base::Optional<FidoHidMessage> message) {
   if (state_ == State::kDeviceError)
     return;
+
   timeout_callback_.Cancel();
 
-  if (!success || !message) {
+  if (!message) {
     state_ = State::kDeviceError;
     Transition(std::vector<uint8_t>(), std::move(callback));
     return;
@@ -198,11 +198,11 @@ void FidoHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
   Transition(std::move(command), std::move(callback));
 }
 
-void FidoHidDevice::WriteMessage(std::unique_ptr<FidoHidMessage> message,
+void FidoHidDevice::WriteMessage(base::Optional<FidoHidMessage> message,
                                  bool response_expected,
                                  HidMessageCallback callback) {
   if (!connection_ || !message || message->NumPackets() == 0) {
-    std::move(callback).Run(false, nullptr);
+    std::move(callback).Run(base::nullopt);
     return;
   }
   const auto& packet = message->PopNextPacket();
@@ -213,7 +213,7 @@ void FidoHidDevice::WriteMessage(std::unique_ptr<FidoHidMessage> message,
                      std::move(callback)));
 }
 
-void FidoHidDevice::PacketWritten(std::unique_ptr<FidoHidMessage> message,
+void FidoHidDevice::PacketWritten(base::Optional<FidoHidMessage> message,
                                   bool response_expected,
                                   HidMessageCallback callback,
                                   bool success) {
@@ -222,13 +222,13 @@ void FidoHidDevice::PacketWritten(std::unique_ptr<FidoHidMessage> message,
   } else if (success && response_expected) {
     ReadMessage(std::move(callback));
   } else {
-    std::move(callback).Run(success, nullptr);
+    std::move(callback).Run(base::nullopt);
   }
 }
 
 void FidoHidDevice::ReadMessage(HidMessageCallback callback) {
   if (!connection_) {
-    std::move(callback).Run(false, nullptr);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
@@ -241,14 +241,14 @@ void FidoHidDevice::OnRead(HidMessageCallback callback,
                            uint8_t report_id,
                            const base::Optional<std::vector<uint8_t>>& buf) {
   if (!success) {
-    std::move(callback).Run(success, nullptr);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
   DCHECK(buf);
   auto read_message = FidoHidMessage::CreateFromSerializedData(*buf);
   if (!read_message) {
-    std::move(callback).Run(false, nullptr);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
@@ -261,7 +261,7 @@ void FidoHidDevice::OnRead(HidMessageCallback callback,
   }
 
   if (read_message->MessageComplete()) {
-    std::move(callback).Run(success, std::move(read_message));
+    std::move(callback).Run(std::move(read_message));
     return;
   }
 
@@ -272,20 +272,20 @@ void FidoHidDevice::OnRead(HidMessageCallback callback,
 }
 
 void FidoHidDevice::OnReadContinuation(
-    std::unique_ptr<FidoHidMessage> message,
+    base::Optional<FidoHidMessage> message,
     HidMessageCallback callback,
     bool success,
     uint8_t report_id,
     const base::Optional<std::vector<uint8_t>>& buf) {
   if (!success) {
-    std::move(callback).Run(success, nullptr);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
   DCHECK(buf);
   message->AddContinuationPacket(*buf);
   if (message->MessageComplete()) {
-    std::move(callback).Run(success, std::move(message));
+    std::move(callback).Run(std::move(message));
     return;
   }
   connection_->Read(base::BindOnce(&FidoHidDevice::OnReadContinuation,
@@ -294,13 +294,12 @@ void FidoHidDevice::OnReadContinuation(
 }
 
 void FidoHidDevice::MessageReceived(DeviceCallback callback,
-                                    bool success,
-                                    std::unique_ptr<FidoHidMessage> message) {
+                                    base::Optional<FidoHidMessage> message) {
   if (state_ == State::kDeviceError)
     return;
 
   timeout_callback_.Cancel();
-  if (!success || !message) {
+  if (!message) {
     state_ = State::kDeviceError;
     Transition(std::vector<uint8_t>(), std::move(callback));
     return;
@@ -329,8 +328,8 @@ void FidoHidDevice::MessageReceived(DeviceCallback callback,
   state_ = State::kReady;
   base::WeakPtr<FidoHidDevice> self = weak_factory_.GetWeakPtr();
   std::move(callback).Run(
-      (success && message) ? base::make_optional(message->GetMessagePayload())
-                           : base::nullopt);
+      message ? base::make_optional(message->GetMessagePayload())
+              : base::nullopt);
 
   // Executing |callback| may have freed |this|. Check |self| first.
   if (self && !pending_transactions_.empty()) {
@@ -366,8 +365,7 @@ void FidoHidDevice::OnKeepAlive(DeviceCallback callback) {
 }
 
 void FidoHidDevice::OnWink(WinkCallback callback,
-                           bool success,
-                           std::unique_ptr<FidoHidMessage> response) {
+                           base::Optional<FidoHidMessage> response) {
   std::move(callback).Run();
 }
 
