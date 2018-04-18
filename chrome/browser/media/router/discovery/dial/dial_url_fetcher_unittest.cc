@@ -37,13 +37,12 @@ class DialURLFetcherTest : public testing::Test {
     EXPECT_CALL(*this, DoOnError());
   }
 
-  void StartRequest() {
+  void StartGetRequest() {
     fetcher_ = std::make_unique<TestDialURLFetcher>(
-        url_,
         base::BindOnce(&DialURLFetcherTest::OnSuccess, base::Unretained(this)),
         base::BindOnce(&DialURLFetcherTest::OnError, base::Unretained(this)),
         &loader_factory_);
-    fetcher_->Start();
+    fetcher_->Get(url_);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -59,7 +58,9 @@ class DialURLFetcherTest : public testing::Test {
   MOCK_METHOD0(DoOnError, void());
 
   void OnError(int response_code, const std::string& message) {
-    EXPECT_TRUE(message.find(expected_error_) == 0);
+    EXPECT_TRUE(message.find(expected_error_) != std::string::npos)
+        << "[" << expected_error_ << "] not found in message [" << message
+        << "]";
     DoOnError();
   }
 
@@ -73,16 +74,16 @@ TEST_F(DialURLFetcherTest, FetchSuccessful) {
   status.decoded_body_length = body.size();
   loader_factory_.AddResponse(url_, network::ResourceResponseHead(), body,
                               status);
-  StartRequest();
+  StartGetRequest();
 }
 
 TEST_F(DialURLFetcherTest, FetchFailsOnMissingAppInfo) {
-  ExpectError("HTTP 404:");
+  ExpectError("404");
 
   loader_factory_.AddResponse(
       url_, network::ResourceResponseHead(), "",
       network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
-  StartRequest();
+  StartGetRequest();
 }
 
 TEST_F(DialURLFetcherTest, FetchFailsOnEmptyAppInfo) {
@@ -90,7 +91,7 @@ TEST_F(DialURLFetcherTest, FetchFailsOnEmptyAppInfo) {
 
   loader_factory_.AddResponse(url_, network::ResourceResponseHead(), "",
                               network::URLLoaderCompletionStatus());
-  StartRequest();
+  StartGetRequest();
 }
 
 TEST_F(DialURLFetcherTest, FetchFailsOnBadAppInfo) {
@@ -100,7 +101,7 @@ TEST_F(DialURLFetcherTest, FetchFailsOnBadAppInfo) {
   status.decoded_body_length = body.size();
   loader_factory_.AddResponse(url_, network::ResourceResponseHead(), body,
                               status);
-  StartRequest();
+  StartGetRequest();
 }
 
 }  // namespace media_router

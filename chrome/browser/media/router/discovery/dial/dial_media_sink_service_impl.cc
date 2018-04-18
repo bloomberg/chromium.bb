@@ -13,6 +13,8 @@
 
 namespace media_router {
 
+using SinkAppStatus = DialMediaSinkServiceImpl::SinkAppStatus;
+
 namespace {
 
 static constexpr const char* kDiscoveryOnlyModelNames[3] = {
@@ -27,6 +29,22 @@ bool IsDiscoveryOnly(const std::string& model_name) {
   return std::find(std::begin(kDiscoveryOnlyModelNames),
                    std::end(kDiscoveryOnlyModelNames),
                    lower_model_name) != std::end(kDiscoveryOnlyModelNames);
+}
+
+SinkAppStatus GetSinkAppStatusFromResponse(const DialAppInfoResult& result) {
+  if (!result.app_info) {
+    if (result.result_code == DialAppInfoResultCode::kParsingError ||
+        result.result_code == DialAppInfoResultCode::kNotFound) {
+      return SinkAppStatus::kUnavailable;
+    } else {
+      return SinkAppStatus::kUnknown;
+    }
+  }
+
+  return (result.app_info->state == DialAppState::kRunning ||
+          result.app_info->state == DialAppState::kStopped)
+             ? SinkAppStatus::kAvailable
+             : SinkAppStatus::kUnavailable;
 }
 
 }  // namespace
@@ -67,10 +85,8 @@ void DialMediaSinkServiceImpl::Start() {
       base::BindRepeating(&DialMediaSinkServiceImpl::OnDeviceDescriptionError,
                           base::Unretained(this)));
 
-  app_discovery_service_ = std::make_unique<DialAppDiscoveryService>(
-      connector_.get(),
-      base::BindRepeating(&DialMediaSinkServiceImpl::OnAppInfoParseCompleted,
-                          base::Unretained(this)));
+  app_discovery_service_ =
+      std::make_unique<DialAppDiscoveryService>(connector_.get());
 
   MediaSinkServiceBase::StartTimer();
 
@@ -208,12 +224,21 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionError(
 void DialMediaSinkServiceImpl::OnAppInfoParseCompleted(
     const std::string& sink_id,
     const std::string& app_name,
-    SinkAppStatus app_status) {
+    DialAppInfoResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!base::ContainsKey(registered_apps_, app_name)) {
     DVLOG(2) << "App name not registered: " << app_name;
     return;
   }
+
+  SinkAppStatus app_status = GetSinkAppStatusFromResponse(result);
+  if (app_status == SinkAppStatus::kUnknown) {
+    DVLOG(2) << "Unknown app status for " << sink_id << ", " << app_name;
+    return;
+  }
+
+  DVLOG(2) << "Get parsed DIAL app info from, [sink_id]: " << sink_id
+           << " [name]: " << app_name << " [status]: " << app_status;
 
   SinkAppStatus old_status = GetAppStatus(sink_id, app_name);
   SetAppStatus(sink_id, app_name, app_status);
@@ -247,7 +272,10 @@ void DialMediaSinkServiceImpl::FetchAppInfoForSink(
   if (app_status != SinkAppStatus::kUnknown)
     return;
 
-  app_discovery_service_->FetchDialAppInfo(dial_sink, app_name);
+  app_discovery_service_->FetchDialAppInfo(
+      dial_sink, app_name,
+      base::BindOnce(&DialMediaSinkServiceImpl::OnAppInfoParseCompleted,
+                     base::Unretained(this)));
 }
 
 void DialMediaSinkServiceImpl::RescanAppInfo() {

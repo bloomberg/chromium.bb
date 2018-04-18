@@ -31,13 +31,12 @@ void DeviceDescriptionFetcher::Start() {
   DCHECK(!fetcher_);
 
   fetcher_ = std::make_unique<DialURLFetcher>(
-      device_description_url_,
       base::BindOnce(&DeviceDescriptionFetcher::ProcessResponse,
                      base::Unretained(this)),
       base::BindOnce(&DeviceDescriptionFetcher::ReportError,
                      base::Unretained(this)));
 
-  fetcher_->Start();
+  fetcher_->Get(device_description_url_);
 }
 
 void DeviceDescriptionFetcher::ProcessResponse(const std::string& response) {
