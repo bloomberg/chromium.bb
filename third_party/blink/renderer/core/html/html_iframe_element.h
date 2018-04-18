@@ -48,8 +48,7 @@ class CORE_EXPORT HTMLIFrameElement final
   Policy* policy();
 
   ParsedFeaturePolicy ConstructContainerPolicy(
-      Vector<String>* /* messages */,
-      bool* /* old_syntax */) const override;
+      Vector<String>* /* messages */) const override;
 
  private:
   explicit HTMLIFrameElement(Document&);

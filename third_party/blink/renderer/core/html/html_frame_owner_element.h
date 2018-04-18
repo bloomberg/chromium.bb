@@ -149,19 +149,12 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // Return a feature policy container policy for this frame, based on the
   // frame attributes and the effective origin specified in the frame
   // attributes.
-  // If |old_syntax| (bool*) is not null, it will be set true if the deprecated
-  // space-deparated feature list syntax is detected.
-  // TODO(loonybear): remove the boolean once the space separated feature list
-  // syntax is deprecated.
-  // https://crbug.com/761009.
   virtual ParsedFeaturePolicy ConstructContainerPolicy(
-      Vector<String>* /*  messages */,
-      bool* /* old_syntax */) const = 0;
+      Vector<String>* /*  messages */) const = 0;
 
   // Update the container policy and notify the frame loader client of any
   // changes.
-  void UpdateContainerPolicy(Vector<String>* messages = nullptr,
-                             bool* old_syntax = nullptr);
+  void UpdateContainerPolicy(Vector<String>* messages = nullptr);
 
  private:
   // Intentionally private to prevent redundant checks when the type is

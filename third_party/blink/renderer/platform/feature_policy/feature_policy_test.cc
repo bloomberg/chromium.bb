@@ -186,35 +186,6 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   EXPECT_TRUE(
       parsed_policy[2].origins[0].IsSameOriginWith(expected_url_origin_a_));
 
-  // Old (to be deprecated) iframe allow syntax.
-  messages.clear();
-  parsed_policy =
-      ParseFeaturePolicy("geolocation badname fullscreen payment", nullptr,
-                         origin_a_.get(), &messages, test_feature_name_map);
-  // Expect 2 messages: one about deprecation warning, one about unrecognized
-  // feature name.
-  EXPECT_EQ(2UL, messages.size());
-  EXPECT_EQ(3UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
-            parsed_policy[0].feature);
-  EXPECT_FALSE(parsed_policy[0].matches_all_origins);
-  EXPECT_FALSE(parsed_policy[0].matches_opaque_src);
-  EXPECT_EQ(1UL, parsed_policy[0].origins.size());
-  EXPECT_TRUE(
-      parsed_policy[0].origins[0].IsSameOriginWith(expected_url_origin_a_));
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
-  EXPECT_FALSE(parsed_policy[1].matches_all_origins);
-  EXPECT_FALSE(parsed_policy[1].matches_opaque_src);
-  EXPECT_EQ(1UL, parsed_policy[1].origins.size());
-  EXPECT_TRUE(
-      parsed_policy[1].origins[0].IsSameOriginWith(expected_url_origin_a_));
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, parsed_policy[2].feature);
-  EXPECT_FALSE(parsed_policy[2].matches_all_origins);
-  EXPECT_FALSE(parsed_policy[2].matches_opaque_src);
-  EXPECT_EQ(1UL, parsed_policy[2].origins.size());
-  EXPECT_TRUE(
-      parsed_policy[2].origins[0].IsSameOriginWith(expected_url_origin_a_));
-
   // Header policies with no optional origin lists.
   parsed_policy =
       ParseFeaturePolicy("geolocation;fullscreen;payment", origin_a_.get(),

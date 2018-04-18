@@ -15,74 +15,6 @@
 
 namespace blink {
 
-namespace {
-
-// TODO(loonybear): Deprecate the methods in this namesapce when deprecating old
-// allow syntax.
-bool IsValidOldAllowSyntax(const String& policy,
-                           scoped_refptr<const SecurityOrigin> src_origin) {
-  // Old syntax enable all features on src_origin, If src_origin does not exist
-  // (example, http header does not have a src_origin), then the syntax cannot
-  // be valid.
-  if (!src_origin)
-    return false;
-  // allow = "feature" is also supported by new syntax.
-  if (!policy.Contains(' '))
-    return false;
-  // Old syntax only allows whitespace as valid delimiter.
-  if (policy.Contains(';') || policy.Contains(','))
-    return false;
-  // An empty policy is also allowed in the new syntax.
-  if (policy.ContainsOnlyWhitespace())
-    return false;
-  // Old syntax does not support specifying wildcards / origins for any feature.
-  if (policy.Contains("self") || policy.Contains("src") ||
-      policy.Contains("none") || policy.Contains("*")) {
-    return false;
-  }
-
-  // Verify that the policy follows this syntax:
-  //     allow = "name1 name2 name3 ...", name* = 1*( ALPHA / DIGIT / "-" )
-  auto IsValidFeatureNameCharacter = [](auto c) {
-    return IsASCIIAlphanumeric(c) || c == '-';
-  };
-
-  for (unsigned i = 0; i < policy.length(); i++) {
-    if (!IsValidFeatureNameCharacter(policy[i]) && !IsASCIISpace(policy[i]))
-      return false;
-  }
-  return true;
-}
-
-ParsedFeaturePolicy ParseOldAllowSyntax(const String& policy,
-                                        const url::Origin& origin,
-                                        Vector<String>* messages,
-                                        const FeatureNameMap& feature_names) {
-  ParsedFeaturePolicy whitelists;
-  if (messages) {
-    messages->push_back(
-        "The old syntax (allow=\"feature1 feature2 feature3 ...\") is "
-        "deprecated and will be removed in Chrome 68. Use semicolons to "
-        "separate features (allow=\"feature1; feature2; feature3; ...\").");
-  }
-  Vector<String> tokens;
-  policy.Split(' ', tokens);
-  for (const String& token : tokens) {
-    if (!feature_names.Contains(token)) {
-      if (messages)
-        messages->push_back("Unrecognized feature: '" + token + "'.");
-      continue;
-    }
-    ParsedFeaturePolicyDeclaration whitelist;
-    whitelist.feature = feature_names.at(token);
-    whitelist.origins = {origin};
-    whitelists.push_back(whitelist);
-  }
-  return whitelists;
-}
-
-}  // namespace
-
 ParsedFeaturePolicy ParseFeaturePolicyHeader(
     const String& policy,
     scoped_refptr<const SecurityOrigin> origin,
@@ -95,10 +27,9 @@ ParsedFeaturePolicy ParseFeaturePolicyAttribute(
     const String& policy,
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
-    Vector<String>* messages,
-    bool* old_syntax) {
+    Vector<String>* messages) {
   return ParseFeaturePolicy(policy, self_origin, src_origin, messages,
-                            GetDefaultFeatureNameMap(), old_syntax);
+                            GetDefaultFeatureNameMap());
 }
 
 ParsedFeaturePolicy ParseFeaturePolicy(
@@ -106,18 +37,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
     Vector<String>* messages,
-    const FeatureNameMap& feature_names,
-    bool* old_syntax) {
-  // Temporarily supporting old allow syntax:
-  //     allow = "feature1 feature2 feature3 ... "
-  // TODO(loonybear): depracate this old syntax in the future.
-  if (IsValidOldAllowSyntax(policy, src_origin)) {
-    if (old_syntax)
-      *old_syntax = true;
-    return ParseOldAllowSyntax(policy, src_origin->ToUrlOrigin(), messages,
-                               feature_names);
-  }
-
+    const FeatureNameMap& feature_names) {
   ParsedFeaturePolicy whitelists;
   BitVector features_specified(
       static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue));
