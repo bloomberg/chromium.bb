@@ -175,11 +175,6 @@ class DataReductionProxyConfigTest : public testing::Test {
     }
     histogram_tester.ExpectUniqueSample("DataReductionProxy.ProbeURL",
                                         expected_fetch_result, 1);
-
-    // Recorded on every IP change.
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.CaptivePortalDetected.Platform", is_captive_portal,
-        1);
   }
 
   void RunUntilIdle() {
