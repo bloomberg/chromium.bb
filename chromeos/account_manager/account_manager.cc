@@ -59,7 +59,23 @@ std::string GetSerializedTokens(const AccountManager::TokenMap& tokens) {
   return tokens_proto.SerializeAsString();
 }
 
+std::vector<std::string> GetAccountIdKeys(
+    const AccountManager::TokenMap& tokens) {
+  std::vector<std::string> accounts;
+  accounts.reserve(tokens.size());
+
+  for (const auto& key_val : tokens) {
+    accounts.emplace_back(key_val.first);
+  }
+
+  return accounts;
+}
+
 }  // namespace
+
+AccountManager::Observer::Observer() = default;
+
+AccountManager::Observer::~Observer() = default;
 
 AccountManager::AccountManager() : weak_factory_(this) {}
 
@@ -108,6 +124,7 @@ void AccountManager::InsertTokensAndRunInitializationCallbacks(
     std::move(cb).Run();
   }
   initialization_callbacks_.clear();
+  NotifyAccountListObservers();
 }
 
 AccountManager::~AccountManager() {
@@ -124,8 +141,7 @@ void AccountManager::RunOnInitialization(base::OnceClosure closure) {
   }
 }
 
-void AccountManager::GetAccounts(
-    base::OnceCallback<void(std::vector<std::string>)> callback) {
+void AccountManager::GetAccounts(AccountListCallback callback) {
   DCHECK_NE(init_state_, InitializationState::kNotStarted);
 
   base::OnceClosure closure =
@@ -134,16 +150,11 @@ void AccountManager::GetAccounts(
   RunOnInitialization(std::move(closure));
 }
 
-void AccountManager::GetAccountsInternal(
-    base::OnceCallback<void(std::vector<std::string>)> callback) {
+void AccountManager::GetAccountsInternal(AccountListCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(init_state_, InitializationState::kInitialized);
 
-  std::vector<std::string> accounts;
-  accounts.reserve(tokens_.size());
-  for (auto& key_val : tokens_) {
-    accounts.emplace_back(key_val.first);
-  }
+  std::vector<std::string> accounts = GetAccountIdKeys(tokens_);
   std::move(callback).Run(std::move(accounts));
 }
 
@@ -163,14 +174,41 @@ void AccountManager::UpsertTokenInternal(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(init_state_, InitializationState::kInitialized);
 
-  tokens_[account_id] = login_scoped_token;
-  PersistTokensAsync();
+  auto it = tokens_.find(account_id);
+  const bool is_new_account = (it == tokens_.end());
+  if (is_new_account || (it->second != login_scoped_token)) {
+    tokens_[account_id] = login_scoped_token;
+    PersistTokensAsync();
+  }
+
+  if (is_new_account) {
+    NotifyAccountListObservers();
+  }
 }
 
 void AccountManager::PersistTokensAsync() {
   // Schedule (immediately) a non-blocking write.
   writer_->WriteNow(
       std::make_unique<std::string>(GetSerializedTokens(tokens_)));
+}
+
+void AccountManager::NotifyAccountListObservers() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::vector<std::string> accounts = GetAccountIdKeys(tokens_);
+  for (auto& observer : observers_) {
+    observer.OnAccountListUpdated(accounts);
+  }
+}
+
+void AccountManager::AddObserver(AccountManager::Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observers_.AddObserver(observer);
+}
+
+void AccountManager::RemoveObserver(AccountManager::Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace chromeos

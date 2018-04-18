@@ -42,6 +42,23 @@ class AccountManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AccountManagerTest);
 };
 
+class AccountManagerObserver : public AccountManager::Observer {
+ public:
+  AccountManagerObserver() = default;
+  ~AccountManagerObserver() override = default;
+
+  void OnAccountListUpdated(const std::vector<std::string>& accounts) override {
+    is_callback_called_ = true;
+    accounts_ = accounts;
+  }
+
+  bool is_callback_called_ = false;
+  std::vector<std::string> accounts_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AccountManagerObserver);
+};
+
 TEST_F(AccountManagerTest, TestInitialization) {
   AccountManager account_manager;
 
@@ -49,7 +66,7 @@ TEST_F(AccountManagerTest, TestInitialization) {
             AccountManager::InitializationState::kNotStarted);
   account_manager.Initialize(tmp_dir_.GetPath(),
                              base::SequencedTaskRunnerHandle::Get());
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(account_manager.init_state_,
             AccountManager::InitializationState::kInitialized);
 }
@@ -74,7 +91,7 @@ TEST_F(AccountManagerTest, TestUpsert) {
 
 TEST_F(AccountManagerTest, TestPersistence) {
   account_manager_->UpsertToken("abc", "123");
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   account_manager_ = std::make_unique<AccountManager>();
   account_manager_->Initialize(tmp_dir_.GetPath(),
@@ -93,6 +110,28 @@ TEST_F(AccountManagerTest, TestPersistence) {
 
   EXPECT_EQ(1UL, accounts.size());
   EXPECT_EQ("abc", accounts[0]);
+}
+
+TEST_F(AccountManagerTest, TestObserverAddAccount) {
+  auto observer = std::make_unique<AccountManagerObserver>();
+  EXPECT_FALSE(observer->is_callback_called_);
+
+  account_manager_->AddObserver(observer.get());
+  account_manager_->UpsertToken("abc", "123");
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(observer->is_callback_called_);
+  EXPECT_EQ(1UL, observer->accounts_.size());
+  EXPECT_EQ("abc", observer->accounts_[0]);
+
+  // Observers should not be called if account list does not change.
+  observer->is_callback_called_ = false;
+  account_manager_->UpsertToken("abc", "456");
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(observer->is_callback_called_);
+
+  // Don't leak
+  account_manager_->RemoveObserver(observer.get());
 }
 
 }  // namespace chromeos
