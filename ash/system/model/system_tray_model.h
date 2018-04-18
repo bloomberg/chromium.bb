@@ -14,6 +14,7 @@ namespace ash {
 
 class ClockModel;
 class EnterpriseDomainModel;
+class SessionLengthLimitModel;
 class TracingModel;
 class UpdateModel;
 
@@ -42,12 +43,16 @@ class SystemTrayModel : public mojom::SystemTray {
   EnterpriseDomainModel* enterprise_domain() {
     return enterprise_domain_.get();
   }
+  SessionLengthLimitModel* session_length_limit() {
+    return session_length_limit_.get();
+  }
   TracingModel* tracing() { return tracing_.get(); }
   UpdateModel* update_model() { return update_model_.get(); }
 
  private:
   std::unique_ptr<ClockModel> clock_;
   std::unique_ptr<EnterpriseDomainModel> enterprise_domain_;
+  std::unique_ptr<SessionLengthLimitModel> session_length_limit_;
   std::unique_ptr<TracingModel> tracing_;
   std::unique_ptr<UpdateModel> update_model_;
 
