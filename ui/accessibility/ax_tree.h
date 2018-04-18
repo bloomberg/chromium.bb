@@ -18,6 +18,7 @@
 namespace ui {
 
 class AXNode;
+class AXTableInfo;
 class AXTree;
 struct AXTreeUpdateState;
 
@@ -228,6 +229,17 @@ class AX_EXPORT AXTree {
   const IntListReverseRelationMap& intlist_reverse_relations() {
     return intlist_reverse_relations_;
   }
+
+  // Given a node in this accessibility tree that corresponds to a table
+  // or grid, return an object containing information about the
+  // table structure. This object is computed lazily on-demand and
+  // cached until the next time the tree is updated. Clients should
+  // not retain this pointer, they should just request it every time
+  // it's needed.
+  //
+  // Returns nullptr if the node is not a valid table.
+  AXTableInfo* GetTableInfo(AXNode* table_node);
+
   // Return a multi-line indented string representation, for logging.
   std::string ToString() const;
 
@@ -279,6 +291,9 @@ class AX_EXPORT AXTree {
                             std::vector<AXNode*>* new_children,
                             AXTreeUpdateState* update_state);
 
+  // Clear any cached AXTableInfo objects.
+  void ClearTables();
+
   AXTreeDelegate* delegate_ = nullptr;
   AXNode* root_ = nullptr;
   base::hash_map<int32_t, AXNode*> id_map_;
@@ -291,6 +306,10 @@ class AX_EXPORT AXTree {
   // Map from an int list attribute (if IsNodeIdIntListAttribute is true) to
   // a reverse mapping from target nodes to source nodes.
   IntListReverseRelationMap intlist_reverse_relations_;
+
+  // Map from node ID to cached table info, if the given node is a table.
+  // Cleared every time the tree is updated.
+  base::hash_map<int32_t, AXTableInfo*> table_info_map_;
 };
 
 }  // namespace ui
