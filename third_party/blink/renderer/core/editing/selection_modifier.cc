@@ -639,6 +639,8 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
       GetFrame().GetDocument()->Lifecycle());
 
   selection_ = PrepareToModifySelection(alter, direction);
+  if (selection_.IsNone())
+    return false;
 
   bool was_range = selection_.IsRange();
   VisiblePosition original_start_position = selection_.VisibleStart();
