@@ -372,6 +372,18 @@ void DocumentWebSocketChannel::Fail(const String& reason,
                                        reason);
   const String message =
       "WebSocket connection to '" + url_.ElidedString() + "' failed: " + reason;
+
+  std::unique_ptr<SourceLocation> captured_location = SourceLocation::Capture();
+  if (!captured_location->IsUnknown()) {
+    // If we are in JavaScript context, use the current location instead
+    // of passed one - it's more precise.
+    location = std::move(captured_location);
+  } else if (location->IsUnknown()) {
+    // No information is specified by the caller. Use the line number at the
+    // connection.
+    location = location_at_construction_->Clone();
+  }
+
   GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
       kJSMessageSource, level, message, std::move(location)));
   // |reason| is only for logging and should not be provided for scripts,

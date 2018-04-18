@@ -2276,8 +2276,6 @@ crbug.com/803200 virtual/off-main-thread-websocket/external/wpt/websockets/cooki
 crbug.com/803200 virtual/off-main-thread-websocket/external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
 # These tests are failing because of experimental off-main-thread WebSocket
 # implementation.
-crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/workers/close-code-and-reason.html [ Failure ]
-crbug.com/825740 virtual/off-main-thread-websocket/http/tests/websocket/workers/close.html [ Failure ]
 crbug.com/831320 virtual/off-main-thread-websocket/http/tests/websocket/close-code-and-reason.html [ Pass Failure ]
 
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
