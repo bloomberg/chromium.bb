@@ -63,6 +63,8 @@ static_library("test_support") {
     "base/dialog_test_browser_window.h",
     "base/find_in_page_observer.cc",
     "base/find_in_page_observer.h",
+    "base/process_inspector_win.cc",
+    "base/process_inspector_win.h",
     "base/scoped_browser_locale.cc",
     "base/scoped_browser_locale.h",
     "base/scoped_bundle_swizzler_mac.h",
@@ -3151,9 +3153,14 @@ test("unit_tests") {
 
     if (is_win) {
       sources += [
+        "../browser/notifications/notification_helper_launches_chrome_unittest.cc",
         "../browser/notifications/notification_launch_id_unittest.cc",
         "../browser/notifications/notification_platform_bridge_win_unittest.cc",
       ]
+
+      deps += [ "//chrome/installer/util:with_no_strings" ]
+
+      data_deps += [ "//notification_helper" ]
     }
   }
 
@@ -4616,8 +4623,6 @@ if (!is_android) {
       "base/interactive_test_utils_mac.mm",
       "base/interactive_test_utils_win.cc",
       "base/interactive_ui_tests_main.cc",
-      "base/process_inspector_win.cc",
-      "base/process_inspector_win.h",
       "base/save_desktop_snapshot_win.cc",
       "base/save_desktop_snapshot_win.h",
       "base/view_event_test_platform_part.h",
