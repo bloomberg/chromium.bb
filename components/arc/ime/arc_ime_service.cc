@@ -55,16 +55,19 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
   bool IsArcWindow(const aura::Window* window) const override {
     if (!IsExoWindow(window))
       return false;
+
     aura::Window* active = exo::WMHelper::GetInstance()->GetActiveWindow();
-    if (!active)
+    if (!active || !active->Contains(window))
       return false;
+
+    if (IsArcNotificationWindow(window, active))
+      return true;
+
     // Need to get an application id from the active window because only
     // ShellSurface window has the application id.
     const std::string* app_id = exo::ShellSurface::GetApplicationId(active);
-    if (!active->Contains(window) || !app_id)
-      return false;
-    return base::StartsWith(*app_id, kArcAppIdPrefix,
-                            base::CompareCase::SENSITIVE);
+    return app_id && base::StartsWith(*app_id, kArcAppIdPrefix,
+                                      base::CompareCase::SENSITIVE);
   }
 
   void RegisterFocusObserver() override {
@@ -88,6 +91,20 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
   }
 
  private:
+  bool IsArcNotificationWindow(const aura::Window* window,
+                               const aura::Window* active) const {
+    DCHECK(IsExoWindow(window));
+    // TODO(yhanada): Should set an application id for NotificationSurface
+    //                to kArcAppIdPrefix, then we can eliminate this method.
+    //                https://crbug.com/834027
+    for (const aura::Window* parent = window; parent != active;
+         parent = parent->parent()) {
+      if (parent->GetName() == "ExoNotificationSurface")
+        return true;
+    }
+    return false;
+  }
+
   ArcImeService* const ime_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcWindowDelegateImpl);
