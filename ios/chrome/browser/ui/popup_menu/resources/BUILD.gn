@@ -22,6 +22,15 @@ imageset("popup_menu_add_bookmark") {
   ]
 }
 
+imageset("popup_menu_close_tab") {
+  sources = [
+    "popup_menu_close_tab.imageset/Contents.json",
+    "popup_menu_close_tab.imageset/popup_menu_close_tab.png",
+    "popup_menu_close_tab.imageset/popup_menu_close_tab@2x.png",
+    "popup_menu_close_tab.imageset/popup_menu_close_tab@3x.png",
+  ]
+}
+
 imageset("popup_menu_site_information") {
   sources = [
     "popup_menu_site_information.imageset/Contents.json",
