@@ -11,6 +11,11 @@ import("//services/service_manager/public/tools/test/service_test.gni")
 
 component("lib") {
   sources = [
+    "client_change.cc",
+    "client_change.h",
+    "client_change_tracker.cc",
+    "client_change_tracker.h",
+
     # TODO: client_root should be internal and moved to a different target.
     "client_root.cc",
     "client_root.h",
@@ -48,11 +53,18 @@ static_library("test_support") {
   sources = [
     "test_change_tracker.cc",
     "test_change_tracker.h",
+    "test_window_service_delegate.cc",
+    "test_window_service_delegate.h",
+    "test_window_tree_client.cc",
+    "test_window_tree_client.h",
     "window_server_service_test_base.cc",
     "window_server_service_test_base.h",
+    "window_service_client_test_helper.cc",
+    "window_service_client_test_helper.h",
   ]
 
   deps = [
+    ":lib",
     "//base",
     "//base/test:test_config",
     "//components/viz/test:test_support",
@@ -91,6 +103,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "window_service_client_unittest.cc",
     "window_tree_client_unittest.cc",
   ]
 
@@ -98,6 +111,7 @@ source_set("tests") {
     ":lib",
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//components/viz/common",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp:service_test_support",
@@ -105,6 +119,9 @@ source_set("tests") {
     "//services/ui/public/interfaces",
     "//testing/gtest",
     "//third_party/mesa:osmesa",
+    "//ui/aura:test_support",
+    "//ui/compositor:test_support",
+    "//ui/gl:test_support",
   ]
 
   data_deps = [

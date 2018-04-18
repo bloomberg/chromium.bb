@@ -23,6 +23,7 @@ class Window;
 namespace ui {
 namespace ws2 {
 
+class ClientChangeTracker;
 class ClientRoot;
 class WindowService;
 class WindowServiceClientBinding;
@@ -64,6 +65,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
 
  private:
   friend class ClientRoot;
+  friend class WindowServiceClientTestHelper;
 
   using ClientRoots = std::vector<std::unique_ptr<ClientRoot>>;
 
@@ -345,6 +347,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // WindowServiceClientBindings created by way of Embed().
   std::vector<std::unique_ptr<WindowServiceClientBinding>>
       embedded_client_bindings_;
+
+  // Used to track the active change from the client.
+  std::unique_ptr<ClientChangeTracker> property_change_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceClient);
 };

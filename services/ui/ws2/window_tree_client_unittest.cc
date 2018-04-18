@@ -20,7 +20,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
 #include "services/ui/ws2/ids.h"
-#include "services/ui/ws2/test_change_tracker.h"
+#include "services/ui/ws2/test_window_tree_client.h"
 #include "services/ui/ws2/window_server_service_test_base.h"
 #include "ui/base/cursor/cursor.h"
 
@@ -147,36 +147,21 @@ std::string WindowParentToString(Id window, Id parent) {
 
 // -----------------------------------------------------------------------------
 
-// A WindowTreeClient implementation that logs all changes to a tracker.
-class TestWindowTreeClient : public mojom::WindowTreeClient,
-                             public TestChangeTracker::Delegate,
-                             public mojom::WindowManager {
+// Extends TestWindowTreeClient to also implement WindowManager as well as
+// adding functions to block until WindowTree acks the change.
+class TestWindowTreeClient2 : public TestWindowTreeClient,
+                              public mojom::WindowManager {
  public:
-  TestWindowTreeClient()
+  TestWindowTreeClient2()
       : binding_(this),
-        root_window_id_(0),
         // Start with a random large number so tests can use lower ids if they
         // want.
         next_change_id_(10000),
         waiting_change_id_(0),
-        on_change_completed_result_(false),
-        track_root_bounds_changes_(false) {
-    tracker_.set_delegate(this);
-  }
+        on_change_completed_result_(false) {}
 
   void Bind(mojo::InterfaceRequest<mojom::WindowTreeClient> request) {
     binding_.Bind(std::move(request));
-  }
-
-  mojom::WindowTree* tree() { return tree_.get(); }
-  TestChangeTracker* tracker() { return &tracker_; }
-  Id root_window_id() const { return root_window_id_; }
-
-  // Sets whether changes to the bounds of the root should be tracked. Normally
-  // they are ignored (as during startup we often times get random size
-  // changes).
-  void set_track_root_bounds_changes(bool value) {
-    track_root_bounds_changes_ = value;
   }
 
   // Runs a nested MessageLoop until |count| changes (calls to
@@ -293,15 +278,13 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     base::RunLoop run_loop;
   };
 
-  // TestChangeTracker::Delegate:
+  // TestWindowTreeClient:
   void OnChangeAdded() override {
     if (wait_state_.get() &&
         tracker_.changes()->size() >= wait_state_->change_count) {
       wait_state_->run_loop.Quit();
     }
   }
-
-  // WindowTreeClient:
   void OnEmbed(
       WindowDataPtr root,
       mojom::WindowTreePtr tree,
@@ -309,11 +292,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       Id focused_window_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
-    // TODO(sky): add coverage of |focused_window_id|.
-    ASSERT_TRUE(root);
-    root_window_id_ = root->window_id;
-    tree_ = std::move(tree);
-    tracker()->OnEmbed(std::move(root), drawn);
+    TestWindowTreeClient::OnEmbed(std::move(root), std::move(tree), display_id,
+                                  focused_window_id, drawn, local_surface_id);
     if (embed_run_loop_)
       embed_run_loop_->Quit();
   }
@@ -426,9 +406,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
 
   void OnDragDropStart(
       const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data)
-      override {
-    NOTIMPLEMENTED();
-  }
+      override {}
 
   void OnWindowSurfaceChanged(Id window_id,
                               const viz::SurfaceInfo& surface_info) override {
@@ -439,32 +417,24 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                    uint32_t key_state,
                    const gfx::Point& position,
                    uint32_t effect_bitmask,
-                   OnDragEnterCallback callback) override {
-    NOTIMPLEMENTED();
-  }
+                   OnDragEnterCallback callback) override {}
   void OnDragOver(Id window,
                   uint32_t key_state,
                   const gfx::Point& position,
                   uint32_t effect_bitmask,
-                  OnDragOverCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-  void OnDragLeave(Id window) override { NOTIMPLEMENTED(); }
+                  OnDragOverCallback callback) override {}
+  void OnDragLeave(Id window) override {}
   void OnCompleteDrop(Id window,
                       uint32_t key_state,
                       const gfx::Point& position,
                       uint32_t effect_bitmask,
-                      OnCompleteDropCallback callback) override {
-    NOTIMPLEMENTED();
-  }
+                      OnCompleteDropCallback callback) override {}
 
   void OnPerformDragDropCompleted(uint32_t change_id,
                                   bool success,
-                                  uint32_t action_taken) override {
-    NOTIMPLEMENTED();
-  }
+                                  uint32_t action_taken) override {}
 
-  void OnDragDropDone() override { NOTIMPLEMENTED(); }
+  void OnDragDropDone() override {}
 
   void OnChangeCompleted(uint32_t change_id, bool success) override {
     if (waiting_change_id_ == change_id && change_completed_run_loop_) {
@@ -490,13 +460,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       const display::Display& display,
       mojom::WindowDataPtr root_data,
       bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
-    NOTIMPLEMENTED();
-  }
-  void WmDisplayRemoved(int64_t display_id) override { NOTIMPLEMENTED(); }
-  void WmDisplayModified(const display::Display& display) override {
-    NOTIMPLEMENTED();
-  }
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {}
+  void WmDisplayRemoved(int64_t display_id) override {}
+  void WmDisplayModified(const display::Display& display) override {}
   void WmSetBounds(uint32_t change_id,
                    Id window_id,
                    const gfx::Rect& bounds) override {
@@ -515,13 +481,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       uint32_t change_id,
       const viz::FrameSinkId& frame_sink_id,
       const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
-      override {
-    NOTIMPLEMENTED();
-  }
+      override {}
   void WmClientJankinessChanged(ClientSpecificId client_id,
-                                bool janky) override {
-    NOTIMPLEMENTED();
-  }
+                                bool janky) override {}
   void WmBuildDragImage(const gfx::Point& screen_location,
                         const SkBitmap& drag_image,
                         const gfx::Vector2d& drag_image_offset,
@@ -534,31 +496,17 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void WmPerformMoveLoop(uint32_t change_id,
                          Id window_id,
                          mojom::MoveLoopSource source,
-                         const gfx::Point& cursor_location) override {
-    NOTIMPLEMENTED();
-  }
-  void WmCancelMoveLoop(uint32_t change_id) override { NOTIMPLEMENTED(); }
-  void WmDeactivateWindow(Id window_id) override { NOTIMPLEMENTED(); }
-  void WmStackAbove(uint32_t change_id, Id above_id, Id below_id) override {
-    NOTIMPLEMENTED();
-  }
-  void WmStackAtTop(uint32_t change_id, Id window_id) override {
-    NOTIMPLEMENTED();
-  }
-  void WmPerformWmAction(Id window_id, const std::string& action) override {
-    NOTIMPLEMENTED();
-  }
+                         const gfx::Point& cursor_location) override {}
+  void WmCancelMoveLoop(uint32_t change_id) override {}
+  void WmDeactivateWindow(Id window_id) override {}
+  void WmStackAbove(uint32_t change_id, Id above_id, Id below_id) override {}
+  void WmStackAtTop(uint32_t change_id, Id window_id) override {}
+  void WmPerformWmAction(Id window_id, const std::string& action) override {}
   void OnAccelerator(uint32_t ack_id,
                      uint32_t accelerator_id,
-                     std::unique_ptr<ui::Event> event) override {
-    NOTIMPLEMENTED();
-  }
-  void OnCursorTouchVisibleChanged(bool enabled) override { NOTIMPLEMENTED(); }
-  void OnEventBlockedByModalWindow(Id window_id) override { NOTIMPLEMENTED(); }
-
-  TestChangeTracker tracker_;
-
-  mojom::WindowTreePtr tree_;
+                     std::unique_ptr<ui::Event> event) override {}
+  void OnCursorTouchVisibleChanged(bool enabled) override {}
+  void OnEventBlockedByModalWindow(Id window_id) override {}
 
   // If non-null we're waiting for OnEmbed() using this RunLoop.
   std::unique_ptr<base::RunLoop> embed_run_loop_;
@@ -568,30 +516,28 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   std::unique_ptr<WaitState> wait_state_;
 
   mojo::Binding<WindowTreeClient> binding_;
-  Id root_window_id_;
   uint32_t next_change_id_;
   uint32_t waiting_change_id_;
   bool on_change_completed_result_;
-  bool track_root_bounds_changes_;
   std::unique_ptr<base::RunLoop> change_completed_run_loop_;
 
   std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
       window_manager_binding_;
   mojom::WindowManagerClientAssociatedPtr window_manager_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient2);
 };
 
 // -----------------------------------------------------------------------------
 
-// InterfaceFactory for vending TestWindowTreeClients.
+// InterfaceFactory for vending TestWindowTreeClient2s.
 class WindowTreeClientFactory {
  public:
   WindowTreeClientFactory() {}
   ~WindowTreeClientFactory() {}
 
   // Runs a nested MessageLoop until a new instance has been created.
-  std::unique_ptr<TestWindowTreeClient> WaitForInstance() {
+  std::unique_ptr<TestWindowTreeClient2> WaitForInstance() {
     if (!client_impl_.get()) {
       DCHECK(!run_loop_);
       run_loop_ = std::make_unique<base::RunLoop>();
@@ -602,14 +548,14 @@ class WindowTreeClientFactory {
   }
 
   void BindWindowTreeClientRequest(mojom::WindowTreeClientRequest request) {
-    client_impl_ = std::make_unique<TestWindowTreeClient>();
+    client_impl_ = std::make_unique<TestWindowTreeClient2>();
     client_impl_->Bind(std::move(request));
     if (run_loop_.get())
       run_loop_->Quit();
   }
 
  private:
-  std::unique_ptr<TestWindowTreeClient> client_impl_;
+  std::unique_ptr<TestWindowTreeClient2> client_impl_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientFactory);
@@ -635,9 +581,9 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
   WindowTree* wt2() { return wt_client2_->tree(); }
   WindowTree* wt3() { return wt_client3_->tree(); }
 
-  TestWindowTreeClient* wt_client1() { return wt_client1_.get(); }
-  TestWindowTreeClient* wt_client2() { return wt_client2_.get(); }
-  TestWindowTreeClient* wt_client3() { return wt_client3_.get(); }
+  TestWindowTreeClient2* wt_client1() { return wt_client1_.get(); }
+  TestWindowTreeClient2* wt_client2() { return wt_client2_.get(); }
+  TestWindowTreeClient2* wt_client3() { return wt_client3_.get(); }
 
   Id root_window_id() const { return root_window_id_; }
 
@@ -681,24 +627,24 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
     ASSERT_TRUE(wt_client3_.get() != nullptr);
   }
 
-  std::unique_ptr<TestWindowTreeClient> WaitForWindowTreeClient() {
+  std::unique_ptr<TestWindowTreeClient2> WaitForWindowTreeClient() {
     return client_factory_->WaitForInstance();
   }
 
   // Establishes a new client by way of Embed() on the specified WindowTree.
-  std::unique_ptr<TestWindowTreeClient> EstablishClientViaEmbed(
+  std::unique_ptr<TestWindowTreeClient2> EstablishClientViaEmbed(
       WindowTree* owner,
       Id root_id) {
     return EstablishClientViaEmbedWithPolicyBitmask(owner, root_id);
   }
 
-  std::unique_ptr<TestWindowTreeClient>
+  std::unique_ptr<TestWindowTreeClient2>
   EstablishClientViaEmbedWithPolicyBitmask(WindowTree* owner, Id root_id) {
     if (!EmbedUrl(connector(), owner, test_name(), root_id)) {
       ADD_FAILURE() << "Embed() failed";
       return nullptr;
     }
-    std::unique_ptr<TestWindowTreeClient> client =
+    std::unique_ptr<TestWindowTreeClient2> client =
         client_factory_->WaitForInstance();
     if (!client.get()) {
       ADD_FAILURE() << "WaitForInstance failed";
@@ -734,7 +680,7 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
     connector()->BindInterface("test_ws", &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
-    wt_client1_ = std::make_unique<TestWindowTreeClient>();
+    wt_client1_ = std::make_unique<TestWindowTreeClient2>();
     wt_client1_->Bind(MakeRequest(&tree_client_ptr));
 
     factory->CreateWindowTreeHost(MakeRequest(&host_),
@@ -761,9 +707,9 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
     WindowServerServiceTestBase::TearDown();
   }
 
-  std::unique_ptr<TestWindowTreeClient> wt_client1_;
-  std::unique_ptr<TestWindowTreeClient> wt_client2_;
-  std::unique_ptr<TestWindowTreeClient> wt_client3_;
+  std::unique_ptr<TestWindowTreeClient2> wt_client1_;
+  std::unique_ptr<TestWindowTreeClient2> wt_client2_;
+  std::unique_ptr<TestWindowTreeClient2> wt_client3_;
 
   mojom::WindowTreeHostPtr host_;
 
@@ -1535,7 +1481,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_EmbedWithSameWindowId2) {
     changes3()->clear();
 
     // We should get a new client for the new embedding.
-    std::unique_ptr<TestWindowTreeClient> client4(
+    std::unique_ptr<TestWindowTreeClient2> client4(
         EstablishClientViaEmbed(wt1(), window_1_1));
     Id embedded_window_1_1_wt4 = BuildWindowId(client_id_3(), 0);
     ASSERT_TRUE(client4.get());
@@ -2008,7 +1954,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_DontCleanMapOnDestroy) {
 TEST_F(WindowTreeClientTest2, EmbedSupplyingWindowTreeClient) {
   ASSERT_TRUE(wt_client1()->NewWindow(1));
 
-  TestWindowTreeClient client2;
+  TestWindowTreeClient2 client2;
   mojom::WindowTreeClientPtr client2_ptr;
   mojo::Binding<WindowTreeClient> client2_binding(
       &client2, mojo::MakeRequest(&client2_ptr));
@@ -2022,7 +1968,7 @@ TEST_F(WindowTreeClientTest2, EmbedSupplyingWindowTreeClient) {
 TEST_F(WindowTreeClientTest2, DISABLED_EmbedUsingToken) {
   // Embed client2.
   ASSERT_TRUE(wt_client1()->NewWindow(1));
-  TestWindowTreeClient client2;
+  TestWindowTreeClient2 client2;
   mojom::WindowTreeClientPtr client2_ptr;
   mojo::Binding<WindowTreeClient> client2_binding(
       &client2, mojo::MakeRequest(&client2_ptr));
@@ -2033,7 +1979,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_EmbedUsingToken) {
             SingleChangeToDescription(*client2.tracker()->changes()));
 
   // Schedule an embed of |client3| from wt1().
-  TestWindowTreeClient client3;
+  TestWindowTreeClient2 client3;
   mojom::WindowTreeClientPtr client3_ptr;
   mojo::Binding<WindowTreeClient> client3_binding(
       &client3, mojo::MakeRequest(&client3_ptr));
@@ -2062,7 +2008,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_EmbedUsingToken) {
 TEST_F(WindowTreeClientTest2, DISABLED_EmbedUsingTokenFailsWithInvalidWindow) {
   // Embed client2.
   ASSERT_TRUE(wt_client1()->NewWindow(1));
-  TestWindowTreeClient client2;
+  TestWindowTreeClient2 client2;
   mojom::WindowTreeClientPtr client2_ptr;
   mojo::Binding<WindowTreeClient> client2_binding(
       &client2, mojo::MakeRequest(&client2_ptr));
@@ -2073,7 +2019,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_EmbedUsingTokenFailsWithInvalidWindow) {
             SingleChangeToDescription(*client2.tracker()->changes()));
 
   // Schedule an embed of |client3| from wt1().
-  TestWindowTreeClient client3;
+  TestWindowTreeClient2 client3;
   mojom::WindowTreeClientPtr client3_ptr;
   mojo::Binding<WindowTreeClient> client3_binding(
       &client3, mojo::MakeRequest(&client3_ptr));

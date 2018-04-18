@@ -28,12 +28,7 @@ std::string DirectionToString(mojom::OrderDirection direction) {
   return direction == mojom::OrderDirection::ABOVE ? "above" : "below";
 }
 
-enum class ChangeDescriptionType {
-  ONE,
-  TWO,
-  // Includes display id and location of events.
-  THREE,
-};
+enum class ChangeDescriptionType { ONE, TWO };
 
 std::string ChangeToDescription(const Change& change,
                                 ChangeDescriptionType type) {
@@ -174,6 +169,10 @@ std::string SingleChangeToDescriptionImpl(const std::vector<Change>& changes,
 }
 
 }  // namespace
+
+std::string ChangeToDescription(const Change& change) {
+  return ChangeToDescription(change, ChangeDescriptionType::ONE);
+}
 
 std::vector<std::string> ChangesToDescription1(
     const std::vector<Change>& changes) {
