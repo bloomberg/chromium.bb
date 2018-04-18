@@ -149,7 +149,6 @@ class GoogleServiceAuthError {
     int field_length;
   };
 
-  // For test only.
   bool operator==(const GoogleServiceAuthError &b) const;
   bool operator!=(const GoogleServiceAuthError &b) const;
 
