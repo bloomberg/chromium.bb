@@ -616,6 +616,9 @@ extern const char kNewAudioRenderingMixingStrategyDescription[];
 extern const char kNewBookmarkAppsName[];
 extern const char kNewBookmarkAppsDescription[];
 
+extern const char kNewPasswordFormParsingName[];
+extern const char kNewPasswordFormParsingDescription[];
+
 extern const char kNewRemotePlaybackPipelineName[];
 extern const char kNewRemotePlaybackPipelineDescription[];
 

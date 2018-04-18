@@ -968,6 +968,12 @@ const char kNewBookmarkAppsName[] = "The new bookmark app system";
 const char kNewBookmarkAppsDescription[] =
     "Enables the new system for creating bookmark apps.";
 
+const char kNewPasswordFormParsingName[] = "New password form parsing";
+const char kNewPasswordFormParsingDescription[] =
+    "Replaces existing form parsing in password manager with a new version, "
+    "currently under development. WARNING: when enabled Password Manager might "
+    "stop working";
+
 const char kNewRemotePlaybackPipelineName[] =
     "Enable the new remote playback pipeline.";
 const char kNewRemotePlaybackPipelineDescription[] =
