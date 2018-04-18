@@ -7,12 +7,12 @@
 
 #include "build/build_config.h"
 
-#if !defined(OS_NACL)
+#if !defined(GTEST_DISABLE_PRINT_STACK_TRACE)
 #include "third_party/googletest/custom/gtest/internal/custom/stack_trace_getter.h"
 
 // Tell Google Test to use a stack trace getter based on Chromium's
 // base::debug::StackTrace.
 #define GTEST_OS_STACK_TRACE_GETTER_ StackTraceGetter
-#endif  // defined(OS_NACL)
+#endif  // defined(GTEST_DISABLE_PRINT_STACK_TRACE)
 
 #endif  // THIRD_PARTY_GOOGLETEST_CUSTOM_GTEST_INTERNAL_CUSTOM_GTEST_H_
