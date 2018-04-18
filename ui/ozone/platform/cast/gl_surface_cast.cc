@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/cast/gl_surface_cast.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/cast_features.h"
@@ -17,7 +19,7 @@ namespace {
 // TODO(halliwell): We might need to customize this value on various devices
 // or make it dynamic that throttles framerate if device is overheating.
 base::TimeDelta GetVSyncInterval() {
-  if (base::FeatureList::IsEnabled(chromecast::kTripleBuffer720)) {
+  if (chromecast::IsFeatureEnabled(chromecast::kTripleBuffer720)) {
     return base::TimeDelta::FromSeconds(1) / 59.94;
   }
 

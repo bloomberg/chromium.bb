@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -27,6 +28,10 @@ extern const base::Feature kTripleBuffer720;
 extern const base::Feature kSingleBuffer;
 extern const base::Feature kDisableIdleSocketsCloseOnMemoryPressure;
 
+// Get an iterable list of all of the cast features for checking all features as
+// a collection.
+std::vector<const base::Feature*> GetFeatures();
+
 // Below are utilities needed by the Cast receiver to persist feature
 // information. Client code which is simply querying the status of a feature
 // will not need to use these utilities.
@@ -44,6 +49,10 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
                            const std::string& cmd_line_enable_features,
                            const std::string& cmd_line_disable_features);
 
+// Determine whether or not a feature is enabled. This replaces
+// base::FeatureList::IsEnabled for Cast builds
+bool IsFeatureEnabled(const base::Feature& feature);
+
 // Given a dictionary of features, create a copy that is ready to be persisted
 // to disk. Encodes all values as strings,  which is how the FieldTrial
 // classes expect the param data.
@@ -54,6 +63,16 @@ base::DictionaryValue GetOverriddenFeaturesForStorage(
 // reporting. Must be called after InitializeFeatureList(). May be called on any
 // thread.
 const std::unordered_set<int32_t>& GetDCSExperimentIds();
+
+// Remove all feature registrations. Required for certain test patterns
+void ClearFeaturesForTesting();
+
+// Register a feature. All instances of base::Feature within
+// chromecast should be registered by calling this function.
+void RegisterFeature(const base::Feature* feature);
+
+// Register all known features. For tests only.
+void RegisterFeaturesForTesting();
 
 // Reset static state to ensure clean unittests. For tests only.
 void ResetCastFeaturesForTesting();

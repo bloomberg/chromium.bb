@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_CAST_GL_SURFACE_CAST_H_
 #define UI_OZONE_PLATFORM_CAST_GL_SURFACE_CAST_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
