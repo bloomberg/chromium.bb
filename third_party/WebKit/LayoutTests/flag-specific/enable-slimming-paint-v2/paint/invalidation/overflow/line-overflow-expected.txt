@@ -8,27 +8,27 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox ' eleifend'",
-          "rect": [7, 122, 197, 99],
+          "rect": [8, 122, 195, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'convallis.'",
-          "rect": [7, 122, 197, 99],
+          "rect": [8, 122, 195, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'lacus, at sagittis eros leo'",
-          "rect": [7, 122, 197, 99],
+          "rect": [8, 122, 195, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'pulvinar velit. Integer'",
-          "rect": [7, 122, 197, 99],
+          "rect": [8, 122, 195, 99],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'sollicitudin nisi ut urna blandit'",
-          "rect": [7, 122, 197, 99],
+          "rect": [8, 122, 195, 99],
           "reason": "appeared"
         },
         {
@@ -83,17 +83,17 @@
         },
         {
           "object": "InlineFlowBox",
-          "rect": [113, 92, 36, 49],
+          "rect": [114, 92, 35, 49],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'purus'",
-          "rect": [113, 122, 36, 19],
+          "rect": [114, 122, 35, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'purus'",
-          "rect": [37, 142, 36, 19],
+          "rect": [38, 142, 35, 19],
           "reason": "disappeared"
         }
       ]

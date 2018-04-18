@@ -67,18 +67,18 @@
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'a'",
-          "rect": [8, 48, 8, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'a'",
+          "object": "InlineTextBox 'x'",
           "rect": [8, 48, 8, 19],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'x'",
-          "rect": [8, 48, 8, 19],
+          "object": "InlineTextBox 'a'",
+          "rect": [8, 48, 7, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'a'",
+          "rect": [8, 48, 7, 19],
           "reason": "disappeared"
         },
         {
