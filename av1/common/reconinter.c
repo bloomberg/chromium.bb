@@ -1236,14 +1236,9 @@ int skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize, const struct macroblockd_plane *pd,
 }
 
 void modify_neighbor_predictor_for_obmc(MB_MODE_INFO *mbmi) {
-  if (is_interintra_pred(mbmi)) {
-    mbmi->ref_frame[1] = NONE_FRAME;
-  } else if (has_second_ref(mbmi) &&
-             is_masked_compound_type(mbmi->interinter_compound_type)) {
-    mbmi->interinter_compound_type = COMPOUND_AVERAGE;
-    mbmi->ref_frame[1] = NONE_FRAME;
-  }
-  if (has_second_ref(mbmi)) mbmi->ref_frame[1] = NONE_FRAME;
+  mbmi->ref_frame[1] = NONE_FRAME;
+  mbmi->interinter_compound_type = COMPOUND_AVERAGE;
+
   return;
 }
 
