@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 78 tests; 74 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 79 tests; 75 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup.
 PASS data: URL base64 handling: ""
 PASS data: URL base64 handling: "abcd"
@@ -51,6 +51,7 @@ PASS data: URL base64 handling: "ab=c"
 PASS data: URL base64 handling: "ab=c="
 PASS data: URL base64 handling: "abc=d"
 PASS data: URL base64 handling: "abc=d="
+PASS data: URL base64 handling: "ab\vcd"
 PASS data: URL base64 handling: "ab\tcd"
 PASS data: URL base64 handling: "ab\ncd"
 FAIL data: URL base64 handling: "ab\fcd" promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
