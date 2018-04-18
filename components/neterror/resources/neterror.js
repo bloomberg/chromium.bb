@@ -118,6 +118,9 @@ function downloadButtonClick() {
   if (window.errorPageController) {
     errorPageController.downloadButtonClick();
     var downloadButton = document.getElementById('download-button');
+    if (downloadButton.classList.contains('download-button-alternate')) {
+      downloadButton.classList.add('download-button-alternate-disabled');
+    }
     downloadButton.disabled = true;
     downloadButton.textContent = downloadButton.disabledText;
   }
@@ -197,6 +200,16 @@ function onDocumentLoad() {
       showSavedCopyButton.style.display == 'none' &&
       downloadButton.style.display == 'none') {
     detailsButton.classList.add('singular');
+  }
+
+  // Check for customization of downloadButton style if it's visible.
+  if (downloadButtonVisible &&
+      loadTimeData.valueExists('alternateDownloadButtonStyle')) {
+    downloadButton.classList.add('download-button-alternate');
+    reloadButton.disabled = true;
+    reloadButton.classList.add('reload-button-alternate');
+  } else if (downloadButtonVisible) {
+    downloadButton.classList.add('download-button');
   }
 
   // Show control buttons.
