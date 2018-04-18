@@ -452,7 +452,9 @@ def create_manifest(gclient_output, patch_root, gerrit_ref):
     revision = info.get('revision', '')
     # The format of the url is "https://repo.url/blah.git@abcdefabcdef" or
     # just "https://repo.url/blah.git"
-    url_split = info.get('url', '').split('@')
+    url_split = info.get('url')
+    if url_split is not None:
+      url_split = url_split.split('@')
     if not revision and len(url_split) == 2:
       revision = url_split[1]
     if url_split:
