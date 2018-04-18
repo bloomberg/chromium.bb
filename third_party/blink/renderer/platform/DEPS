@@ -39,6 +39,7 @@ include_rules = [
     "+base/values.h",
     "+base/lazy_instance.h",
     "+net/base/escape.h",
+    "+net/base/filename_util.h",
     "+net/http/http_util.h",
     "+net/http/http_request_headers.h",
     "+net/http/http_response_headers.h",
