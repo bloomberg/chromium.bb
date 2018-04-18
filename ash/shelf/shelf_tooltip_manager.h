@@ -62,7 +62,6 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
  private:
-  class ShelfTooltipBubble;
   friend class ShelfViewTest;
   friend class ShelfTooltipManagerTest;
 
