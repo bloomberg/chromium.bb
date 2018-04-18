@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file tests launching notification_helper.exe by the OS via the registry.
+// An advanced version of this test is in
+// chrome/browser/notifications/notification_helper_launches_chrome_unittest.cc,
+// which additionally tests if chrome.exe can be successfully launched by
+// notification_helper.exe via the NotificationActivator::Activate function.
+
 #include <wrl/client.h>
 
 #include "base/base_paths.h"
