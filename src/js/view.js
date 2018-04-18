@@ -117,14 +117,6 @@ camera.View.prototype.onInactivate = function() {
 };
 
 /**
- * Initializes the view. Call the callback on completion.
- * @param {function()} callback Completion callback.
- */
-camera.View.prototype.initialize = function(callback) {
-  callback();
-};
-
-/**
  * Enters the view.
  * @param {Object=} opt_arguments Optional arguments.
  */

@@ -469,8 +469,8 @@ camera.views.Camera.prototype = {
 };
 
 /**
- * Initializes the view.
- * @override
+ * Initializes the view. Call the callback on completion.
+ * @param {function()} callback Completion callback.
  */
 camera.views.Camera.prototype.initialize = function(callback) {
   // Initialize the webgl canvases.
@@ -558,8 +558,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.updateAlbumButton_();
     callback();
   }.bind(this), function() {
-    // TODO(mtomasz): Add error handling.
-    console.error('Unable to initialize the file system.');
+    // TODO(yuli): Add error handling.
     callback();
   });
 };

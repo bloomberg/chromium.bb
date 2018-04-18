@@ -16,7 +16,6 @@ camera.views = camera.views || {};
 
 /**
  * Creates the Dialog view controller.
- *
  * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
  * @extends {camera.View}
@@ -30,29 +29,25 @@ camera.views.Dialog = function(context, router) {
    * @type {HTMLButtonElement}
    * @private
    */
-  this.positiveButton_ =
-      document.querySelector('#dialog #dialog-positive-button');
+  this.positiveButton_ = document.querySelector('#dialog-positive-button');
 
   /**
    * @type {HTMLButtonElement}
    * @private
    */
-  this.negativeButton_ =
-      document.querySelector('#dialog #dialog-negative-button');
+  this.negativeButton_ = document.querySelector('#dialog-negative-button');
 
   /**
    * @type {HTMLButtonElement}
    * @private
    */
-  this.closeButton_ =
-      document.querySelector('#dialog #dialog-close-button');
+  this.closeButton_ = document.querySelector('#dialog-close-button');
 
   /**
    * @type {HTMLElement}
    * @private
    */
-  this.messageElement_ =
-      document.querySelector('#dialog #dialog-msg');
+  this.messageElement_ = document.querySelector('#dialog-msg');
 
   // End of properties, seal the object.
   Object.seal(this);
@@ -80,34 +75,54 @@ camera.views.Dialog.prototype = {
 };
 
 /**
- * Enters the view. Assumes, that the arguments are provided.
+ * Enters the view. Assumes, that the corresponding arguments are provided
+ * according to each type:
+ * CONFIRMATION type with 'message' argument,
+ * ALERT type with 'message' argument,
  * @param {Object=} opt_arguments Arguments for the dialog.
  * @override
  */
 camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
+  // Update the element's text content and hide it if there is no text content.
+  var updateElement = function(element, text) {
+    if (text) {
+      element.textContent = text.content ? text.content :
+          chrome.i18n.getMessage(text.name);
+      element.hidden = false;
+    } else {
+      element.hidden = true;
+    }
+  };
+
+  var positiveText = null;
+  var negativeText = null;
+  var messageText = null;
   switch (opt_arguments.type) {
     case camera.views.Dialog.Type.CONFIRMATION:
-      this.positiveButton_.textContent =
-          chrome.i18n.getMessage('dialogYesButton');
-      this.negativeButton_.textContent =
-          chrome.i18n.getMessage('dialogNoButton');
-      this.negativeButton_.hidden = false;
+      positiveText = { name: 'dialogYesButton' };
+      negativeText = { name: 'dialogNoButton' };
+      messageText = { content: opt_arguments.message };
       break;
     case camera.views.Dialog.Type.ALERT:
-      this.positiveButton_.textContent =
-          chrome.i18n.getMessage('dialogOKButton');
-      this.negativeButton_.hidden = true;
+      positiveText = { name: 'dialogOKButton' };
+      messageText = { content: opt_arguments.message };
       break;
   }
 
-  this.messageElement_.textContent = opt_arguments.message;
+  updateElement(this.positiveButton_, positiveText);
+  updateElement(this.negativeButton_, negativeText);
+  updateElement(this.messageElement_, messageText);
+
+  // TODO(yuli): Hide the close button if showing the spinner or progress bar.
+  this.closeButton_.hidden = false;
 };
 
 /**
  * @override
  */
 camera.views.Dialog.prototype.onActivate = function() {
-  this.positiveButton_.focus();
+  if (!this.positiveButton_.hidden)
+    this.positiveButton_.focus();
 };
 
 /**
@@ -125,7 +140,7 @@ camera.views.Dialog.prototype.onPositiveButtonClicked_ = function(event) {
  * @private
  */
 camera.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
-  this.router.back({isPositive: false});
+  this.closeDialog_();
 };
 
 /**
@@ -134,6 +149,14 @@ camera.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
  * @private
  */
 camera.views.Dialog.prototype.onCloseButtonClicked_ = function(event) {
+  this.closeDialog_();
+};
+
+/**
+ * Dismisses the dialog without returning a positive result.
+ * @private
+ */
+camera.views.Dialog.prototype.closeDialog_ = function() {
   this.router.back({isPositive: false});
 };
 
@@ -149,7 +172,10 @@ camera.views.Dialog.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
     case 'Escape':
-      this.router.back({isPositive: false});
+      // Don't dismiss the dialog if there is no close-button.
+      if (this.closeButton_.hidden)
+        break;
+      this.closeDialog_();
       event.preventDefault();
       break;
   }

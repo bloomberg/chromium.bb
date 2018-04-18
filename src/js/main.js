@@ -228,8 +228,7 @@ camera.Camera.prototype.start = function() {
   Promise.all([
       new Promise(this.cameraView_.initialize.bind(this.cameraView_)),
       new Promise(this.albumView_.initialize.bind(this.albumView_)),
-      new Promise(this.browserView_.initialize.bind(this.browserView_)),
-      new Promise(this.dialogView_.initialize.bind(this.dialogView_))]).
+      new Promise(this.browserView_.initialize.bind(this.browserView_))]).
     then(function() {
       this.tooltipManager_.initialize();
       this.viewsStack_.push(this.cameraView_);

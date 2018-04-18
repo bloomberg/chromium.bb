@@ -926,10 +926,12 @@ html[dir='rtl'] #dialog #dialog-close-button {
   align-items: center;
   display: flex;
   justify-content: flex-end;
+  margin: -2px;
 }
 
 #dialog #dialog-buttons button {
   padding: 5px 20px;
+  margin: 2px;
 }
 
 #spinner {

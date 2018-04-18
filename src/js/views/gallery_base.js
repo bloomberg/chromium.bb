@@ -96,7 +96,8 @@ camera.views.GalleryBase.prototype = {
 };
 
 /**
- * @override
+ * Initializes the view. Call the callback on completion.
+ * @param {function()} callback Completion callback.
  */
 camera.views.GalleryBase.prototype.initialize = function(callback) {
   camera.models.Gallery.getInstance(function(model) {
@@ -105,8 +106,7 @@ camera.views.GalleryBase.prototype.initialize = function(callback) {
     this.renderPictures_();
     callback();
   }.bind(this), function() {
-    // TODO(mtomasz): Add error handling.
-    console.error('Unable to initialize the file system.');
+    // TODO(yuli): Add error handling.
     callback();
   });
 };
