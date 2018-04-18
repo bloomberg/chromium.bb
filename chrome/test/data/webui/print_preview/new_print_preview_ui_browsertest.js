@@ -97,6 +97,10 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'Other', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Other);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'HeaderFooter', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.HeaderFooter);
+});
+
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetPages', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetPages);
 });
