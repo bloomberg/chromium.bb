@@ -13,12 +13,6 @@ import("//build/toolchain/toolchain.gni")
 
 assert(is_win)
 
-if (disable_goma) {
-  goma_disabled = "true"
-} else {
-  goma_disabled = "false"
-}
-
 declare_args() {
   # Set this to true to enable static analysis through Visual Studio's
   # /analyze. This dramatically slows compiles and reports thousands of
@@ -319,7 +313,6 @@ config("sdk_link") {
                                         current_os,
                                         current_cpu,
                                         "none",
-                                        goma_disabled,
                                       ],
                                       "scope")
 

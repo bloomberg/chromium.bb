@@ -32,12 +32,6 @@ if (use_goma) {
   goma_prefix = ""
 }
 
-if (disable_goma) {
-  goma_disabled = "true"
-} else {
-  goma_disabled = "false"
-}
-
 # Copy the VS runtime DLL for the default toolchain to the root build directory
 # so things will run.
 if (current_toolchain == default_toolchain) {
@@ -130,13 +124,7 @@ template("msvc_toolchain") {
     # %PATH%) -- e.g. 32-bit MSVS builds require %PATH% to be set and just
     # passing in a list of include directories isn't enough.
     if (defined(invoker.sys_include_flags)) {
-      if (disable_goma) {
-        # If disable_goma = true, need to pass GOMA_DISABLED env to
-        # gomacc.exe via environment.{x86,x64}.
-        env_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
-      } else {
-        env_wrapper = ""
-      }
+      env_wrapper = ""
       sys_include_flags = "${invoker.sys_include_flags} "  # Note trailing space.
     } else {
       # clang-cl doesn't need this env hoop, so omit it there.
@@ -360,7 +348,6 @@ if (target_os == "win" &&
                                             target_os,
                                             target_cpu,
                                             "environment." + target_cpu,
-                                            goma_disabled,
                                           ],
                                           "scope")
 
@@ -397,7 +384,6 @@ x64_toolchain_data = exec_script("setup_toolchain.py",
                                    "win",
                                    "x64",
                                    "environment.x64",
-                                   goma_disabled,
                                  ],
                                  "scope")
 
@@ -463,7 +449,6 @@ if (target_os == "winuwp") {
                                            target_os,
                                            target_cpu,
                                            "environment.store_" + target_cpu,
-                                           goma_disabled,
                                          ],
                                          "scope")
 
