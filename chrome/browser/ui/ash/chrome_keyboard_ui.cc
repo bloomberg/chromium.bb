@@ -313,6 +313,8 @@ aura::Window* ChromeKeyboardUI::GetContentsWindow() {
     SetupWebContents(keyboard_contents_.get());
     LoadContents(GetVirtualKeyboardUrl());
     keyboard_contents_->GetNativeView()->AddObserver(this);
+    keyboard_contents_->GetMainFrame()->GetView()->SetBackgroundColor(
+        SK_ColorTRANSPARENT);
   }
 
   return keyboard_contents_->GetNativeView();
@@ -380,6 +382,11 @@ void ChromeKeyboardUI::InitInsets(const gfx::Rect& new_bounds) {
         gfx::Rect window_bounds = window->GetBoundsInScreen();
         gfx::Rect intersect = gfx::IntersectRects(window_bounds, new_bounds);
         int overlap = intersect.height();
+
+        // TODO(crbug.com/826617): get the actual obscured height from IME side.
+        if (keyboard::IsFullscreenHandwritingVirtualKeyboardEnabled())
+          overlap = 0;
+
         if (overlap > 0 && overlap < window_bounds.height())
           view->SetInsets(gfx::Insets(0, 0, overlap, 0));
         else
@@ -462,7 +469,8 @@ bool ChromeKeyboardUI::ShouldEnableInsets(aura::Window* window) {
   return (contents_window->GetRootWindow() == window->GetRootWindow() &&
           keyboard::IsKeyboardOverscrollEnabled() &&
           contents_window->IsVisible() &&
-          keyboard_controller()->keyboard_visible());
+          keyboard_controller()->keyboard_visible() &&
+          !keyboard::IsFullscreenHandwritingVirtualKeyboardEnabled());
 }
 
 void ChromeKeyboardUI::AddBoundsChangedObserver(aura::Window* window) {
