@@ -26,6 +26,7 @@ extern const base::Feature kEnableManualPasswordGeneration;
 extern const base::Feature kPasswordForceSaving;
 extern const base::Feature kEnableShowAllSavedPasswordsContextMenu;
 extern const base::Feature kFillOnAccountSelect;
+extern const base::Feature kNewPasswordFormParsing;
 extern const base::Feature kPasswordExport;
 extern const base::Feature kPasswordImport;
 extern const base::Feature kPasswordSearchMobile;

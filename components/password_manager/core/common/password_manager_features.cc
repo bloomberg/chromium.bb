@@ -73,6 +73,10 @@ const base::Feature kPasswordSearchMobile = {"PasswordSearchMobile",
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables new password form parsing mechanism, details in
+// go/new-cpm-design-refactoring.
+const base::Feature kNewPasswordFormParsing = {
+    "new-password-form-parsing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 
