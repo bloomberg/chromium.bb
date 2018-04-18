@@ -38,6 +38,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "components/offline_pages/core/offline_page_feature.h"
+#endif
+
 namespace error_page {
 
 namespace {
@@ -1060,15 +1064,21 @@ void LocalizedError::GetStrings(
       !is_incognito && failed_url.is_valid() &&
       failed_url.SchemeIsHTTPOrHTTPS() &&
       IsSuggested(options.suggestions, SUGGEST_OFFLINE_CHECKS)) {
-    std::unique_ptr<base::DictionaryValue> download_button =
-        std::make_unique<base::DictionaryValue>();
-    download_button->SetString(
-        "msg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOAD));
-    download_button->SetString(
-        "disabledMsg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOADING));
-    error_strings->Set("downloadButton", std::move(download_button));
+    error_strings->SetPath(
+        {"downloadButton", "msg"},
+        base::Value(l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOAD)));
+    error_strings->SetPath({"downloadButton", "disabledMsg"},
+                           base::Value(l10n_util::GetStringUTF16(
+                               IDS_ERRORPAGES_BUTTON_DOWNLOADING)));
+
+    if (offline_pages::ShouldShowAlternateDinoPage()) {
+      // Under the experiment, we will show a disabled reload button
+      // in addition to an enabled download button.
+      error_strings->SetPath(
+          {"reloadButton", "msg"},
+          base::Value(l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD)));
+      error_strings->SetKey("alternateDownloadButtonStyle", base::Value(true));
+    }
   }
 #endif  // defined(OS_ANDROID)
 }
