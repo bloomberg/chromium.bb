@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/test_change_tracker.h"
+#include "services/ui/ws2/test_change_tracker.h"
 
 #include <stddef.h>
 
@@ -14,12 +14,12 @@
 #include "ui/gfx/geometry/point_conversions.h"
 
 namespace ui {
-
-namespace ws {
+namespace ws2 {
 
 std::string WindowIdToString(Id id) {
   return (id == 0) ? "null"
-                   : base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
+                   : base::StringPrintf("%d,%d", ClientIdFromTransportId(id),
+                                        ClientWindowIdFromTransportId(id));
 }
 
 namespace {
@@ -404,7 +404,7 @@ void TestChangeTracker::OnWindowInputEvent(
 }
 
 void TestChangeTracker::OnPointerEventObserved(const ui::Event& event,
-                                               uint32_t window_id) {
+                                               Id window_id) {
   Change change;
   change.type = CHANGE_TYPE_POINTER_WATCHER_EVENT;
   change.event_action = static_cast<int32_t>(event.type());
@@ -498,6 +498,5 @@ std::string TestWindow::ToString2() const {
       WindowIdToString(parent_id).c_str(), visible ? "true" : "false");
 }
 
-}  // namespace ws
-
+}  // namespace ws2
 }  // namespace ui

@@ -48,6 +48,7 @@ service_test("services_unittests") {
       "//services/ui/input_devices:tests",
       "//services/ui/public/cpp/tests",
       "//services/ui/public/interfaces:tests",
+      "//services/ui/ws2:tests",
     ]
 
     if (is_linux && !is_chromeos) {
@@ -118,6 +119,7 @@ catalog("services_unittests_catalog") {
     catalog_deps += [
       "//services/ui/clipboard:tests_catalog",
       "//services/ui/ime:tests_catalog",
+      "//services/ui/ws2:tests_catalog",
     ]
 
     if (is_linux && !is_chromeos) {
