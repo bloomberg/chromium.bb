@@ -34,6 +34,7 @@ def _CheckExterns(input_api, output_api):
     'file_manager_private.idl': 'file_manager_private.js',
     'language_settings_private.idl': 'language_settings_private.js',
     'passwords_private.idl': 'passwords_private.js',
+    'safe_browsing_private.idl': 'safe_browsing_private.js',
     'system_private.json': 'system_private.js',
     'users_private.idl': 'users_private.js',
     # TODO(rdevlin.cronin): Add more!
