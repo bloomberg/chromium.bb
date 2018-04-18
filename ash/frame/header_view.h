@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/frame/default_frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/interfaces/window_style.mojom.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
@@ -97,6 +98,10 @@ class ASH_EXPORT HeaderView : public views::View,
   views::View* avatar_icon() const;
 
   bool in_immersive_mode() const { return in_immersive_mode_; }
+
+  void set_title(const base::string16& title) {
+    frame_header_->set_title(title);
+  }
 
   void SetShouldPaintHeader(bool paint);
 

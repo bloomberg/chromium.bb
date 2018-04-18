@@ -458,7 +458,8 @@ void ClientControlledShellSurface::SetExtraTitle(
     const base::string16& extra_title) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetExtraTitle",
                "extra_title", base::UTF16ToUTF8(extra_title));
-  extra_title_ = extra_title;
+  // The extra title is used in the window frame.
+  frame_title_ = extra_title;
   if (widget_)
     widget_->UpdateWindowTitle();
 }
@@ -630,16 +631,6 @@ void ClientControlledShellSurface::OnWindowAddedToRootWindow(
 
 bool ClientControlledShellSurface::CanMaximize() const {
   return can_maximize_;
-}
-
-base::string16 ClientControlledShellSurface::GetWindowTitle() const {
-  base::string16 title = ShellSurfaceBase::GetWindowTitle();
-  if (!extra_title_.empty()) {
-    if (!title.empty())
-      title += base::UTF8ToUTF16(" ");
-    title += extra_title_;
-  }
-  return title;
 }
 
 views::NonClientFrameView*

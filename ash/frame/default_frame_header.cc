@@ -145,7 +145,7 @@ void DefaultFrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
       mode_ == MODE_INACTIVE && !UsesCustomFrameColors()) {
     PaintHighlightForInactiveRestoredWindow(canvas);
   }
-  if (frame_->widget_delegate()->ShouldShowWindowTitle())
+  if (frame_->widget_delegate()->ShouldShowWindowTitle() && !title_.empty())
     PaintTitleBar(canvas);
   if (!UsesCustomFrameColors())
     PaintHeaderContentSeparator(canvas);
@@ -315,7 +315,7 @@ void DefaultFrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by its own views::View.
   gfx::Rect title_bounds = GetAvailableTitleBounds();
   title_bounds.set_x(view_->GetMirroredXForRect(title_bounds));
-  canvas->DrawStringRect(frame_->widget_delegate()->GetWindowTitle(),
+  canvas->DrawStringRect(title_,
                          views::NativeWidgetAura::GetWindowTitleFontList(),
                          GetTitleColor(), title_bounds);
 }

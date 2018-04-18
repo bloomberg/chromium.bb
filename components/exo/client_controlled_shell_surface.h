@@ -186,7 +186,6 @@ class ClientControlledShellSurface
 
   // Overridden from views::WidgetDelegate:
   bool CanMaximize() const override;
-  base::string16 GetWindowTitle() const override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
   void SaveWindowPlacement(const gfx::Rect& bounds,
@@ -274,7 +273,6 @@ class ClientControlledShellSurface
 
   uint32_t frame_visible_button_mask_ = 0;
   uint32_t frame_enabled_button_mask_ = 0;
-  base::string16 extra_title_;
 
   StateChangedCallback state_changed_callback_;
   BoundsChangedCallback bounds_changed_callback_;

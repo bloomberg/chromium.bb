@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"  // override
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
@@ -62,6 +63,8 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
     back_button_ = back_button;
   }
   FrameCaptionButton* back_button() { return back_button_; }
+
+  void set_title(const base::string16& title) { title_ = title; }
 
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.
@@ -126,6 +129,7 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   SkColor active_frame_color_;
   SkColor inactive_frame_color_;
   FrameCaptionButtonContainerView* caption_button_container_;
+  base::string16 title_;
 
   // The height of the header to paint.
   int painted_height_;
