@@ -38,19 +38,12 @@
 namespace exo {
 namespace {
 #if defined(USE_OZONE)
-// TODO(dcastagna): The following formats should be determined at runtime
-// querying kms (via ozone).
+// TODO(dcastagna): Remove these formats, since they currently list all the
+// formats that exo uses.
 const gfx::BufferFormat kOverlayFormats[] = {
-// TODO(dcastagna): Remove RGBX/RGBA once all the platforms using the fullscreen
-// optimization will have switched to atomic.
-#if defined(ARCH_CPU_ARM_FAMILY)
     gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
-#endif
-    gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::BGRA_8888};
-
-const gfx::BufferFormat kOverlayFormatsForDrmAtomic[] = {
-    gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
-    gfx::BufferFormat::BGR_565, gfx::BufferFormat::YUV_420_BIPLANAR};
+    gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::BGRA_8888,
+    gfx::BufferFormat::BGR_565,   gfx::BufferFormat::YUV_420_BIPLANAR};
 #endif
 
 }  // namespace
@@ -71,14 +64,6 @@ Display::Display(NotificationSurfaceManager* notification_surface_manager,
           gfx::CreateClientNativePixmapFactoryDmabuf())
 #endif
 {
-#if defined(USE_OZONE)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDrmAtomic)) {
-    overlay_formats_.insert(overlay_formats_.end(),
-                            std::begin(kOverlayFormatsForDrmAtomic),
-                            std::end(kOverlayFormatsForDrmAtomic));
-  }
-#endif
 }
 
 Display::~Display() {}

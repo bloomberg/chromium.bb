@@ -14,8 +14,6 @@ OZONE_BASE_EXPORT extern const char kOzonePlatform[];
 
 OZONE_BASE_EXPORT extern const char kOzoneDumpFile[];
 
-OZONE_BASE_EXPORT extern const char kEnableDrmAtomic[];
-
 OZONE_BASE_EXPORT extern const char kEnableDrmMojo[];
 
 }  // namespace switches

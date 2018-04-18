@@ -342,7 +342,7 @@ DrmDevice::DrmDevice(const base::FilePath& device_path,
 
 DrmDevice::~DrmDevice() {}
 
-bool DrmDevice::Initialize(bool use_atomic) {
+bool DrmDevice::Initialize() {
   // Ignore devices that cannot perform modesetting.
   if (!CanQueryForResources(file_.GetPlatformFile())) {
     VLOG(2) << "Cannot query for resources for '" << device_path_.value()
@@ -350,13 +350,10 @@ bool DrmDevice::Initialize(bool use_atomic) {
     return false;
   }
 
-  // Use atomic only if the build, kernel & flags all allow it.
-  if (use_atomic && SetCapability(DRM_CLIENT_CAP_ATOMIC, 1))
+  // Use atomic only if kernel allows it.
+  if (SetCapability(DRM_CLIENT_CAP_ATOMIC, 1))
     plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic());
 
-  LOG_IF(WARNING, use_atomic && !plane_manager_)
-      << "Drm atomic requested but capabilities don't allow it. Falling back "
-         "to legacy page flip.";
   if (!plane_manager_)
     plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
   if (!plane_manager_->Initialize(this)) {

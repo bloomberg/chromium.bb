@@ -53,7 +53,7 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   bool allow_addfb2_modifiers() const { return allow_addfb2_modifiers_; }
 
   // Open device.
-  virtual bool Initialize(bool use_atomic);
+  virtual bool Initialize();
 
   // Get the CRTC state. This is generally used to save state before using the
   // CRTC. When the user finishes using the CRTC, the user should restore the
