@@ -70,20 +70,23 @@ These heap dumps can take some time to grok, but frequently yield valuable
 insight. At the time of this writing, heap dumps from the wild have resulted in
 real, high impact bugs being found in Chrome code ~90% of the time.
 
-* The first thing to do upon receiving a heap dump is to open it in the [trace
-  viewer](/docs/memory-infra/heap_profiler.md#how-to-manually-browse-a-heap-dump).
-  This will tell us the counts, sizes, and allocating stack traces of the
-  potentially leaked objects. Look for stacks that result in >100 MB of live
-  memory. Frequently, sets of objects will be leaked with similar counts. This
-  can provide insight into the nature of the leak.
+For an example investigation of a real heap dump, see [this
+link](/docs/memory/investigating_heap_dump_example.md).
+
+* Raw heap dumps can be viewed in the trace viewer. [See detailed
+  instructions.](/docs/memory-infra/heap_profiler.md#how-to-manually-browse-a-heap-dump).
+  This interface surfaces all available information, but can be overwhelming and
+  is usually unnecessary for investigating heap dumps.
     * Important note: Heap profiling in the field uses
       [poison process sampling](https://bugs.chromium.org/p/chromium/issues/detail?id=810748)
       with a rate parameter of 10000. This means that for large/frequent allocations
       [e.g. >100 MB], the noise will be quite small [much less than 1%]. But
       there is noise so counts will not be exact.
-* The stack trace is almost always sufficient to tell the type of object being
-  leaked as well, since most functions in Chrome have a limited number of calls
-  to new and malloc.
+* The heap dump summary typically contains all information necessary to diagnose
+  a memory issue.
+  * The stack trace of the potential memory leak is almost always sufficient to
+    tell the type of object being leaked, since most functions in Chrome
+    have a limited number of calls to new and malloc.
 * The next thing to do is to determine whether the memory usage is intentional.
   Very rarely, components in Chrome legitimately need to use many 100s of MBs of
   memory. In this case, it's important to create a
