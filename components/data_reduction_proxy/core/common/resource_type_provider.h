@@ -23,7 +23,8 @@ class ResourceTypeProvider {
   enum ContentType {
     CONTENT_TYPE_UNKNOWN = 0,
     CONTENT_TYPE_MEDIA = 1,
-    CONTENT_TYPE_MAX = 2,
+    CONTENT_TYPE_MAIN_FRAME = 2,
+    CONTENT_TYPE_MAX = 3,
   };
   virtual ~ResourceTypeProvider() {}
 

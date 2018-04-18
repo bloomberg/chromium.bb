@@ -162,6 +162,10 @@ void DataReductionProxyDelegate::OnResolveProxy(
       !params::IsIncludedInHoldbackFieldTrial()) {
     UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.ConfigService.HTTPRequests",
                           !config_->GetProxiesForHttp().empty());
+    if (content_type == ResourceTypeProvider::CONTENT_TYPE_MAIN_FRAME) {
+      UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.ConfigService.MainFrames",
+                            !config_->GetProxiesForHttp().empty());
+    }
   }
 }
 
