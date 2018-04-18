@@ -128,6 +128,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
 
     // Used by QuicCryptoStream to parse data received on this stream.
     virtual CryptoMessageParser* crypto_message_parser() = 0;
+
+    // Returns long header type for next sending handshake message.
+    virtual QuicLongHeaderType GetLongHeaderType(
+        QuicStreamOffset offset) const = 0;
   };
 
   class Helper {
@@ -182,6 +186,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
   // configuration for the certificate used in the connection is accessible.
   bool ShouldSendExpectCTHeader() const;
 
+  QuicLongHeaderType GetLongHeaderType(QuicStreamOffset offset) const override;
   bool encryption_established() const override;
   bool handshake_confirmed() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()

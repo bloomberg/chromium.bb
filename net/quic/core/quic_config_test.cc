@@ -151,7 +151,7 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {
 
   // Set all REQUIRED tags.
   msg.SetValue(kICSL, 1);
-  msg.SetValue(kMSPC, 1);
+  msg.SetValue(kMIDS, 1);
 
   // No error, as rest are optional.
   QuicString error_details;
@@ -166,7 +166,7 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInSHLO) {
 
   // Set all REQUIRED tags.
   msg.SetValue(kICSL, 1);
-  msg.SetValue(kMSPC, 1);
+  msg.SetValue(kMIDS, 1);
 
   // No error, as rest are optional.
   QuicString error_details;

@@ -43,6 +43,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       packet_size_(0),
       connection_id_(connection_id),
       packet_(0, PACKET_1BYTE_PACKET_NUMBER, nullptr, 0, false, false),
+      long_header_type_(HANDSHAKE),
       pending_padding_bytes_(0),
       needs_full_padding_(false),
       can_set_transmission_type_(false) {
@@ -246,9 +247,9 @@ void QuicPacketCreator::ReserializeAllFrames(
                           << " packet_.packet_number_length:"
                           << packet_.packet_number_length;
   }
+  packet_.transmission_type = retransmission.transmission_type;
   SerializePacket(buffer, buffer_len);
   packet_.original_packet_number = retransmission.packet_number;
-  packet_.transmission_type = retransmission.transmission_type;
   OnSerializedPacket();
   // Restore old values.
   packet_.encryption_level = default_encryption_level;
@@ -608,6 +609,10 @@ void QuicPacketCreator::MaybeAddPadding() {
     return;
   }
 
+  if (packet_.transmission_type == PROBING_RETRANSMISSION) {
+    needs_full_padding_ = true;
+  }
+
   if (!needs_full_padding_ && pending_padding_bytes_ == 0) {
     // Do not need padding.
     return;
@@ -661,6 +666,10 @@ void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
       << "Setting Transmission type to "
       << QuicUtils::TransmissionTypeToString(type);
   packet_.transmission_type = type;
+}
+
+void QuicPacketCreator::SetLongHeaderType(QuicLongHeaderType type) {
+  long_header_type_ = type;
 }
 
 }  // namespace net

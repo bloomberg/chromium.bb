@@ -6148,10 +6148,10 @@ TEST_P(QuicConnectionTest, SendDataWhenApplicationLimited) {
     EXPECT_CALL(visitor_, WillingAndAbleToWrite())
         .WillRepeatedly(Return(false));
   }
-  // Fix congestion window to be 2000 bytes.
-  EXPECT_CALL(*send_algorithm_, CanSend(Ge(2000u)))
+  // Fix congestion window to be 20,000 bytes.
+  EXPECT_CALL(*send_algorithm_, CanSend(Ge(20000u)))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*send_algorithm_, CanSend(Lt(2000u)))
+  EXPECT_CALL(*send_algorithm_, CanSend(Lt(20000u)))
       .WillRepeatedly(Return(true));
 
   EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(0);
@@ -6160,9 +6160,12 @@ TEST_P(QuicConnectionTest, SendDataWhenApplicationLimited) {
   connection_.OnHandshakeComplete();
   connection_.SendStreamData3();
 
-  // Since the frame data we send is small, we expect a lot of packets from a
-  // 2000 byte window.
+  // We expect a lot of packets from a 20 kbyte window.
   EXPECT_GT(connection_.GetStats().packets_sent, 10u);
+  // Ensure that the packets are padded.
+  QuicByteCount average_packet_size =
+      connection_.GetStats().bytes_sent / connection_.GetStats().packets_sent;
+  EXPECT_GT(average_packet_size, 1000u);
 
   // Acknowledge all packets sent, except for the last one.
   QuicAckFrame ack = InitAckFrame(

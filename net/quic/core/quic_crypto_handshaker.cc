@@ -15,7 +15,7 @@ namespace net {
 
 QuicCryptoHandshaker::QuicCryptoHandshaker(QuicCryptoStream* stream,
                                            QuicSession* session)
-    : stream_(stream), session_(session) {
+    : stream_(stream), session_(session), last_sent_handshake_message_tag_(0) {
   crypto_framer_.set_visitor(this);
 }
 
@@ -27,6 +27,7 @@ void QuicCryptoHandshaker::SendHandshakeMessage(
                 << message.DebugString(session()->perspective());
   session()->NeuterUnencryptedData();
   session()->OnCryptoHandshakeMessageSent(message);
+  last_sent_handshake_message_tag_ = message.tag();
   const QuicData& data = message.GetSerialized(session()->perspective());
   stream_->WriteOrBufferData(QuicStringPiece(data.data(), data.length()), false,
                              nullptr);

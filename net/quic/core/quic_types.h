@@ -395,6 +395,42 @@ enum QuicIetfTransportErrorCodes : uint16_t {
   FRAME_ERROR_base = 0x100,  // add frame type to this base
 };
 
+enum QuicIetfPacketHeaderForm {
+  // Long header is used for packets that are sent prior to the completion of
+  // version negotiation and establishment of 1-RTT keys.
+  LONG_HEADER,
+  // Short header is used after the version and 1-RTT keys are negotiated.
+  SHORT_HEADER,
+};
+
+// Used in long header to explicitly indicate the packet type.
+enum QuicLongHeaderType : uint8_t {
+  VERSION_NEGOTIATION = 0,  // Value does not matter.
+  ZERO_RTT_PROTECTED = 0x7C,
+  HANDSHAKE = 0x7D,
+  RETRY = 0x7E,
+  INITIAL = 0x7F,
+
+  INVALID_PACKET_TYPE,
+};
+
+// Used in short header to determine the size of packet number field.
+enum QuicShortHeaderType : uint8_t {
+  SHORT_HEADER_1_BYTE_PACKET_NUMBER = 0,
+  SHORT_HEADER_2_BYTE_PACKET_NUMBER = 1,
+  SHORT_HEADER_4_BYTE_PACKET_NUMBER = 2,
+};
+
+enum QuicPacketHeaderTypeFlags : uint8_t {
+  // Bit 5: Indicates the key phase, which allows the receipt of the packet to
+  // identify the packet protection keys that are used to protect the packet.
+  FLAGS_KEY_PHASE_BIT = 1 << 5,
+  // Bit 6: Indicates the connection ID is omitted in short header.
+  FLAGS_OMIT_CONNECTION_ID = 1 << 6,
+  // Bit 7: Indicates the header is long or short header.
+  FLAGS_LONG_HEADER = 1 << 7,
+};
+
 }  // namespace net
 
 #endif  // NET_QUIC_CORE_QUIC_TYPES_H_

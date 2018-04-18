@@ -161,6 +161,11 @@ bool QuicCryptoClientHandshaker::WasChannelIDSourceCallbackRun() const {
   return channel_id_source_callback_run_;
 }
 
+QuicLongHeaderType QuicCryptoClientHandshaker::GetLongHeaderType(
+    QuicStreamOffset offset) const {
+  return offset == 0 ? INITIAL : HANDSHAKE;
+}
+
 QuicString QuicCryptoClientHandshaker::chlo_hash() const {
   return chlo_hash_;
 }
@@ -310,10 +315,6 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
   // Send all the options, regardless of whether we're sending an
   // inchoate or subsequent hello.
   session()->config()->ToHandshakeMessage(&out);
-
-  // Send a local timestamp to the server.
-  out.SetValue(kCTIM,
-               session()->connection()->clock()->WallNow().ToUNIXSeconds());
 
   if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
     crypto_config_->FillInchoateClientHello(

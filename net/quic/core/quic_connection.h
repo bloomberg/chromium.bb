@@ -723,6 +723,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Set transmission type of next sending packets.
   void SetTransmissionType(TransmissionType type);
 
+  // Set long header type of next sending packets.
+  void SetLongHeaderType(QuicLongHeaderType type);
+
   // Return the id of the cipher of the primary decrypter of the framer.
   uint32_t cipher_id() const { return framer_.decrypter()->cipher_id(); }
 
@@ -1169,7 +1172,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // An alarm that is scheduled when the connection can still write and there
   // may be more data to send.
   // TODO(ianswett): Remove resume_writes_alarm when deprecating
-  // FLAGS_quic_reloadable_flag_quic_only_one_sending_alarm
+  // FLAGS_quic_reloadable_flag_quic_unified_send_alarm
   QuicArenaScopedPtr<QuicAlarm> resume_writes_alarm_;
   // An alarm that fires when the connection may have timed out.
   QuicArenaScopedPtr<QuicAlarm> timeout_alarm_;

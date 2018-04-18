@@ -378,6 +378,10 @@ void QuicPacketGenerator::SetTransmissionType(TransmissionType type) {
   packet_creator_.SetTransmissionType(type);
 }
 
+void QuicPacketGenerator::SetLongHeaderType(QuicLongHeaderType type) {
+  packet_creator_.SetLongHeaderType(type);
+}
+
 void QuicPacketGenerator::SetCanSetTransmissionType(
     bool can_set_transmission_type) {
   packet_creator_.set_can_set_transmission_type(can_set_transmission_type);

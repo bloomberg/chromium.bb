@@ -286,10 +286,20 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   static std::unique_ptr<QuicEncryptedPacket> BuildPublicResetPacket(
       const QuicPublicResetPacket& packet);
 
+  // Returns a new IETF stateless reset packet.
+  static std::unique_ptr<QuicEncryptedPacket> BuildIetfStatelessResetPacket(
+      QuicConnectionId connection_id,
+      uint128 stateless_reset_token);
+
   // Returns a new version negotiation packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildVersionNegotiationPacket(
       QuicConnectionId connection_id,
       bool ietf_quic,
+      const ParsedQuicVersionVector& versions);
+
+  // Returns a new IETF version negotiation packet.
+  static std::unique_ptr<QuicEncryptedPacket> BuildIetfVersionNegotiationPacket(
+      QuicConnectionId connection_id,
       const ParsedQuicVersionVector& versions);
 
   // If header.version_flag is set, the version in the

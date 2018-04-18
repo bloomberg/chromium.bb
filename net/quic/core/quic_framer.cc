@@ -163,6 +163,21 @@ QuicPacketNumberLength ReadAckPacketNumberLength(QuicTransportVersion version,
   }
 }
 
+QuicShortHeaderType PacketNumberLengthToShortHeaderType(
+    QuicPacketNumberLength packet_number_length) {
+  switch (packet_number_length) {
+    case PACKET_1BYTE_PACKET_NUMBER:
+      return SHORT_HEADER_1_BYTE_PACKET_NUMBER;
+    case PACKET_2BYTE_PACKET_NUMBER:
+      return SHORT_HEADER_2_BYTE_PACKET_NUMBER;
+    case PACKET_4BYTE_PACKET_NUMBER:
+      return SHORT_HEADER_4_BYTE_PACKET_NUMBER;
+    default:
+      QUIC_BUG << "Invalid packet number length for short header.";
+      return SHORT_HEADER_1_BYTE_PACKET_NUMBER;
+  }
+}
+
 }  // namespace
 
 QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
@@ -557,10 +572,46 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
 }
 
 // static
+std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
+    QuicConnectionId connection_id,
+    uint128 stateless_reset_token) {
+  QUIC_DVLOG(1) << "Building IETF stateless reset packet.";
+  size_t len = kPacketHeaderTypeSize + PACKET_8BYTE_CONNECTION_ID +
+               sizeof(stateless_reset_token);
+  std::unique_ptr<char[]> buffer(new char[len]);
+  QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
+
+  uint8_t type = 0;
+  type |= PacketNumberLengthToShortHeaderType(PACKET_1BYTE_PACKET_NUMBER);
+
+  // Append type byte.
+  if (!writer.WriteUInt8(type)) {
+    return nullptr;
+  }
+
+  // Append connection ID.
+  if (!writer.WriteConnectionId(connection_id)) {
+    return nullptr;
+  }
+
+  // TODO(fayang): Append random number of random bytes after connection ID.
+
+  // Append stateless reset token.
+  if (!writer.WriteBytes(&stateless_reset_token,
+                         sizeof(stateless_reset_token))) {
+    return nullptr;
+  }
+  return QuicMakeUnique<QuicEncryptedPacket>(buffer.release(), len, true);
+}
+
+// static
 std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildVersionNegotiationPacket(
     QuicConnectionId connection_id,
     bool ietf_quic,
     const ParsedQuicVersionVector& versions) {
+  if (ietf_quic) {
+    return BuildIetfVersionNegotiationPacket(connection_id, versions);
+  }
   DCHECK(!versions.empty());
   size_t len = GetVersionNegotiationPacketSize(versions.size());
   std::unique_ptr<char[]> buffer(new char[len]);
@@ -577,6 +628,44 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildVersionNegotiationPacket(
   }
 
   if (!writer.WriteConnectionId(connection_id)) {
+    return nullptr;
+  }
+
+  for (const ParsedQuicVersion& version : versions) {
+    // TODO(rch): Use WriteUInt32() once QUIC_VERSION_38 and earlier
+    // are removed.
+    if (!writer.WriteTag(
+            QuicEndian::HostToNet32(CreateQuicVersionLabel(version)))) {
+      return nullptr;
+    }
+  }
+
+  return QuicMakeUnique<QuicEncryptedPacket>(buffer.release(), len, true);
+}
+
+// static
+std::unique_ptr<QuicEncryptedPacket>
+QuicFramer::BuildIetfVersionNegotiationPacket(
+    QuicConnectionId connection_id,
+    const ParsedQuicVersionVector& versions) {
+  QUIC_DVLOG(1) << "Building IETF version negotiation packet.";
+  DCHECK(!versions.empty());
+  size_t len = kPacketHeaderTypeSize + PACKET_8BYTE_CONNECTION_ID +
+               (versions.size() + 1) * kQuicVersionSize;
+  std::unique_ptr<char[]> buffer(new char[len]);
+  QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
+
+  // TODO(fayang): Randomly select a value for the type.
+  uint8_t type = static_cast<uint8_t>(FLAGS_LONG_HEADER | VERSION_NEGOTIATION);
+  if (!writer.WriteUInt8(type)) {
+    return nullptr;
+  }
+
+  if (!writer.WriteConnectionId(connection_id)) {
+    return nullptr;
+  }
+
+  if (!writer.WriteUInt32(0)) {
     return nullptr;
   }
 

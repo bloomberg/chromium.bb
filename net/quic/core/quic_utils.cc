@@ -193,6 +193,19 @@ const char* QuicUtils::SentPacketStateToString(SentPacketState state) {
 }
 
 // static
+const char* QuicUtils::QuicLongHeaderTypetoString(QuicLongHeaderType type) {
+  switch (type) {
+    RETURN_STRING_LITERAL(VERSION_NEGOTIATION);
+    RETURN_STRING_LITERAL(INITIAL);
+    RETURN_STRING_LITERAL(RETRY);
+    RETURN_STRING_LITERAL(HANDSHAKE);
+    RETURN_STRING_LITERAL(ZERO_RTT_PROTECTED);
+    default:
+      return "INVALID_PACKET_TYPE";
+  }
+}
+
+// static
 AddressChangeType QuicUtils::DetermineAddressChangeType(
     const QuicSocketAddress& old_address,
     const QuicSocketAddress& new_address) {

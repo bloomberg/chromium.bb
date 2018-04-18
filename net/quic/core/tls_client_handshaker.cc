@@ -106,6 +106,13 @@ bool TlsClientHandshaker::WasChannelIDSourceCallbackRun() const {
   return false;
 }
 
+QuicLongHeaderType TlsClientHandshaker::GetLongHeaderType(
+    QuicStreamOffset offset) const {
+  // TODO(fayang): Returns the right header type when actually using TLS
+  // handshaker.
+  return offset == 0 ? INITIAL : HANDSHAKE;
+}
+
 QuicString TlsClientHandshaker::chlo_hash() const {
   return "";
 }

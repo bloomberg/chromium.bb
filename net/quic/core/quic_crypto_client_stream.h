@@ -89,6 +89,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // ChannelIDSource operated asynchronously. Intended for testing.
     virtual bool WasChannelIDSourceCallbackRun() const = 0;
 
+    // Returns long header type for next sending handshake message.
+    virtual QuicLongHeaderType GetLongHeaderType(
+        QuicStreamOffset offset) const = 0;
+
     virtual QuicString chlo_hash() const = 0;
 
     // Returns true once any encrypter (initial/0RTT or final/1RTT) has been set
@@ -140,6 +144,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   int num_scup_messages_received() const override;
 
   // From QuicCryptoStream
+  QuicLongHeaderType GetLongHeaderType(QuicStreamOffset offset) const override;
   bool encryption_established() const override;
   bool handshake_confirmed() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()

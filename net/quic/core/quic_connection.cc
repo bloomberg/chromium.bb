@@ -1672,14 +1672,26 @@ void QuicConnection::OnCanWrite() {
     visitor_->PostProcessAfterData();
   }
 
-  // After the visitor writes, it may have caused the socket to become write
-  // blocked or the congestion manager to prohibit sending, so check again.
-  if (visitor_->WillingAndAbleToWrite() && !resume_writes_alarm_->IsSet() &&
-      CanWrite(HAS_RETRANSMITTABLE_DATA)) {
-    // We're not write blocked, but some stream didn't write out all of its
-    // bytes. Register for 'immediate' resumption so we'll keep writing after
-    // other connections and events have had a chance to use the thread.
-    resume_writes_alarm_->Set(clock_->ApproximateNow());
+  if (GetQuicReloadableFlag(quic_unified_send_alarm)) {
+    // After the visitor writes, it may have caused the socket to become write
+    // blocked or the congestion manager to prohibit sending, so check again.
+    if (visitor_->WillingAndAbleToWrite() && !send_alarm_->IsSet() &&
+        CanWrite(HAS_RETRANSMITTABLE_DATA)) {
+      // We're not write blocked, but some stream didn't write out all of its
+      // bytes. Register for 'immediate' resumption so we'll keep writing after
+      // other connections and events have had a chance to use the thread.
+      send_alarm_->Set(clock_->ApproximateNow());
+    }
+  } else {
+    // After the visitor writes, it may have caused the socket to become write
+    // blocked or the congestion manager to prohibit sending, so check again.
+    if (visitor_->WillingAndAbleToWrite() && !resume_writes_alarm_->IsSet() &&
+        CanWrite(HAS_RETRANSMITTABLE_DATA)) {
+      // We're not write blocked, but some stream didn't write out all of its
+      // bytes. Register for 'immediate' resumption so we'll keep writing after
+      // other connections and events have had a chance to use the thread.
+      resume_writes_alarm_->Set(clock_->ApproximateNow());
+    }
   }
 }
 
@@ -2977,7 +2989,8 @@ void QuicConnection::OnPeerMigrationValidated() {
   active_peer_migration_type_ = NO_CHANGE;
 }
 
-// TODO(jri): Modify method to start migration whenever a new IP address is seen
+// TODO(b/77906482): Modify method to start migration whenever a new IP address
+// is seen
 // from a packet with sequence number > the one that triggered the previous
 // migration. This should happen even if a migration is underway, since the
 // most recent migration is the one that we should pay attention to.
@@ -3001,7 +3014,7 @@ void QuicConnection::StartPeerMigration(AddressChangeType peer_migration_type) {
   peer_address_ = last_packet_source_address_;
   active_peer_migration_type_ = peer_migration_type;
 
-  // TODO(jri): Move these calls to OnPeerMigrationValidated. Rename
+  // TODO(b/77907041): Move these calls to OnPeerMigrationValidated. Rename
   // OnConnectionMigration methods to OnPeerMigration.
   OnConnectionMigration(peer_migration_type);
 }
@@ -3267,6 +3280,10 @@ void QuicConnection::SetDataProducer(
 
 void QuicConnection::SetTransmissionType(TransmissionType type) {
   packet_generator_.SetTransmissionType(type);
+}
+
+void QuicConnection::SetLongHeaderType(QuicLongHeaderType type) {
+  packet_generator_.SetLongHeaderType(type);
 }
 
 bool QuicConnection::session_decides_what_to_write() const {
