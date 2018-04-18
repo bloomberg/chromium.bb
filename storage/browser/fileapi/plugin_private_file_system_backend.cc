@@ -105,7 +105,6 @@ PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
       new AsyncFileUtilAdapter(new ObfuscatedFileUtil(
           special_storage_policy,
           base_path_, file_system_options.env_override(),
-          file_task_runner,
           base::Bind(&FileSystemIDToPluginMap::GetPluginIDForURL,
                      base::Owned(plugin_map_)),
           std::set<std::string>(),
