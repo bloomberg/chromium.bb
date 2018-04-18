@@ -5,6 +5,22 @@
 Polymer({
   is: 'sync-confirmation-app',
 
+  properties: {
+    /** @private */
+    isConsentBump_: {
+      type: Boolean,
+      value: function() {
+        return window.location.search.includes('consent-bump');
+      },
+    },
+
+    /** @private */
+    showMoreOptions_: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
   listeners: {
     // This is necessary since the settingsLink element is inserted by i18nRaw.
     'settingsLink.tap': 'onGoToSettings_'
@@ -80,5 +96,32 @@ Polymer({
             .map(element => element.innerHTML.trim());
     assert(consentDescription);
     return consentDescription;
-  }
+  },
+
+  /** @private */
+  onOK_: function(e) {
+    switch (this.$$('paper-radio-group').selected) {
+      case 'reviewSettings':
+        this.onGoToSettings_(e);
+        break;
+      case 'noChanges':
+        this.onUndo_();
+        break;
+      case 'defaultSettings':
+        this.onConfirm_(e);
+        break;
+    }
+    assertNotReached();
+  },
+
+  /** @private */
+  onMoreOptions_: function() {
+    this.showMoreOptions_ = true;
+  },
+
+  /** @private */
+  onBack_: function() {
+    this.showMoreOptions_ = false;
+  },
+
 });

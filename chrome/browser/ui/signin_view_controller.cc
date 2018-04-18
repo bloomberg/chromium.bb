@@ -96,9 +96,19 @@ void SigninViewController::ShowModalSyncConfirmationDialog(Browser* browser) {
   // The delegate will delete itself on request of the UI code when the widget
   // is closed.
   delegate_ = SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
-      this, browser);
+      this, browser, false /* is consent bump */);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_SYNC_CONFIRMATION);
+}
+
+void SigninViewController::ShowModalSyncConsentBump(Browser* browser) {
+  CloseModalSignin();
+  // The delegate will delete itself on request of the UI code when the widget
+  // is closed.
+  delegate_ = SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
+      this, browser, true /* is consent bump */);
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::UNITY_SYNC_CONSENT_BUMP);
 }
 
 void SigninViewController::ShowModalSigninErrorDialog(Browser* browser) {
