@@ -4,11 +4,14 @@
 
 package org.chromium.base;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.system.Os;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.MainDex;
@@ -24,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @MainDex
 public abstract class PathUtils {
+    private static final String TAG = "PathUtils";
     private static final String THUMBNAIL_DIRECTORY_NAME = "textures";
 
     private static final int DATA_DIRECTORY = 0;
@@ -83,6 +87,18 @@ public abstract class PathUtils {
         return null;
     }
 
+    @SuppressLint("NewApi")
+    private static void chmod(String path, int mode) {
+        // Both Os.chmod and ErrnoException require SDK >= 21. But while Dalvik on < 21 tolerates
+        // Os.chmod, it throws VerifyError for ErrnoException, so catch Exception instead.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+        try {
+            Os.chmod(path, mode);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set permissions for path \"" + path + "\"");
+        }
+    }
+
     /**
      * Fetch the path of the directory where private data is to be stored by the application. This
      * is meant to be called in an AsyncTask in setPrivateDataDirectorySuffix(), but if we need the
@@ -96,6 +112,8 @@ public abstract class PathUtils {
         Context appContext = ContextUtils.getApplicationContext();
         paths[DATA_DIRECTORY] = appContext.getDir(
                 sDataDirectorySuffix, Context.MODE_PRIVATE).getPath();
+        // MODE_PRIVATE results in rwxrwx--x, but we want rwx------, as a defence-in-depth measure.
+        chmod(paths[DATA_DIRECTORY], 0700);
         paths[THUMBNAIL_DIRECTORY] = appContext.getDir(
                 THUMBNAIL_DIRECTORY_NAME, Context.MODE_PRIVATE).getPath();
         if (appContext.getCacheDir() != null) {

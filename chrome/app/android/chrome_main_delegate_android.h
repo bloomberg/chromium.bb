@@ -19,6 +19,7 @@ class SafeBrowsingApiHandler;
 class ChromeMainDelegateAndroid : public ChromeMainDelegate {
  public:
   static ChromeMainDelegateAndroid* Create();
+  static void SecureDataDirectory();  // visible for testing
 
  protected:
   ChromeMainDelegateAndroid();

@@ -59,31 +59,29 @@ void ChromeMainDelegateAndroid::SandboxInitialized(
   ChromeMainDelegate::SandboxInitialized(process_type);
 }
 
+void ChromeMainDelegateAndroid::SecureDataDirectory() {
+  // By default, Android creates the directory accessible by others.
+  // We'd like to tighten security and make it accessible only by
+  // the browser process.
+  // TODO(crbug.com/832388): Remove this once minsdk >= 21,
+  // at which point this will be handled by PathUtils.java.
+  base::FilePath data_path;
+  bool ok = PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
+  if (ok) {
+    ok = base::SetPosixFilePermissions(data_path,
+                                       base::FILE_PERMISSION_USER_MASK);
+  }
+  if (!ok) {
+    LOG(ERROR) << "Failed to set data directory permissions";
+  }
+}
+
 int ChromeMainDelegateAndroid::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
   TRACE_EVENT0("startup", "ChromeMainDelegateAndroid::RunProcess")
   if (process_type.empty()) {
-    // By default, Android creates the directory accessible by others.
-    // We'd like to tighten security and make it accessible only by
-    // the browser process.
-    base::FilePath data_path;
-    bool ok = PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
-    if (ok) {
-      int permissions;
-      ok = base::GetPosixFilePermissions(data_path, &permissions);
-      if (ok) {
-        permissions &= base::FILE_PERMISSION_USER_MASK;
-      } else {
-        permissions = base::FILE_PERMISSION_READ_BY_USER |
-                      base::FILE_PERMISSION_WRITE_BY_USER |
-                      base::FILE_PERMISSION_EXECUTE_BY_USER;
-      }
-
-      ok = base::SetPosixFilePermissions(data_path, permissions);
-    }
-    if (!ok)
-      LOG(ERROR) << "Failed to set permission of " << data_path.value();
+    SecureDataDirectory();
 
     // Because the browser process can be started asynchronously as a series of
     // UI thread tasks a second request to start it can come in while the
