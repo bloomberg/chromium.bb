@@ -85,6 +85,8 @@ struct Statics {
     // in-process renderer should be enabled.
     static bool inProcessResizeOptimizationDisabled;
 
+    static bool rendererUIEnabled;
+
     // ====== some utility functions =============
 
     static bool isOriginalThreadMode()
