@@ -53,6 +53,9 @@
              want to see the coverage on corpus and don't want to fuzz at all.
 
   For more options, please refer to tools/code_coverage/coverage.py -h.
+
+  For an overview of how code coverage works in Chromium, please refer to
+  https://chromium.googlesource.com/chromium/src/+/master/docs/code_coverage.md
 """
 
 from __future__ import print_function
