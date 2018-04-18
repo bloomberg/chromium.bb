@@ -30,6 +30,8 @@ bool DataReductionProxyServer::SupportsResourceType(
           return true;
         case ResourceTypeProvider::CONTENT_TYPE_MEDIA:
           return false;
+        case ResourceTypeProvider::CONTENT_TYPE_MAIN_FRAME:
+          return true;
         case ResourceTypeProvider::CONTENT_TYPE_MAX:
           NOTREACHED();
           return true;

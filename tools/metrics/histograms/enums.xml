@@ -8429,6 +8429,11 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Request went through data saver proxy"/>
 </enum>
 
+<enum name="DataReductionProxyConfigServiceMainFrames">
+  <int value="0" label="Mainframe request did not go through data saver proxy"/>
+  <int value="1" label="Mainframe request went through data saver proxy"/>
+</enum>
+
 <enum name="DataReductionProxyEnabledState">
   <int value="0" label="Off-to-On"/>
   <int value="1" label="On-to-Off"/>
@@ -8587,6 +8592,7 @@ Called by update_net_error_codes.py.-->
 <enum name="DataReductionProxyResourceContentType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Media"/>
+  <int value="2" label="MainFrame"/>
 </enum>
 
 <enum name="DataReductionProxyResponseProxyServerStatus">

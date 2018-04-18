@@ -160,7 +160,7 @@ TEST_F(ContentResourceProviderTest, VerifyCorrectProxyUsed) {
   } tests[] = {
       {GURL("http://www.google.com/main-frame"),
        content::RESOURCE_TYPE_MAIN_FRAME,
-       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+       ResourceTypeProvider::CONTENT_TYPE_MAIN_FRAME},
       {GURL("http://www.google.com/sub-frame"),
        content::RESOURCE_TYPE_SUB_FRAME,
        ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
@@ -241,7 +241,7 @@ TEST_F(ContentResourceProviderTest, SetAndGetContentResourceTypeContent) {
   } tests[] = {
       {GURL("http://www.google.com/main-frame"),
        content::RESOURCE_TYPE_MAIN_FRAME,
-       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+       ResourceTypeProvider::CONTENT_TYPE_MAIN_FRAME},
       {GURL("http://www.google.com/sub-frame"),
        content::RESOURCE_TYPE_SUB_FRAME,
        ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
@@ -327,7 +327,7 @@ TEST_F(ContentResourceProviderTest, FetchDirect) {
   } tests[] = {
       {GURL("http://www.google.com/main-frame"),
        content::RESOURCE_TYPE_MAIN_FRAME,
-       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+       ResourceTypeProvider::CONTENT_TYPE_MAIN_FRAME},
       {GURL("http://www.google.com/sub-frame"),
        content::RESOURCE_TYPE_SUB_FRAME,
        ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
