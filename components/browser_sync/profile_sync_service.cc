@@ -60,6 +60,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_data_type_controller.h"
+#include "components/sync_sessions/session_sync_bridge.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/version_info/version_info_values.h"
@@ -211,10 +212,25 @@ void ProfileSyncService::Initialize() {
   sync_stopped_reporter_ = std::make_unique<syncer::SyncStoppedReporter>(
       sync_service_url_, local_device_->GetSyncUserAgent(),
       url_request_context_, syncer::SyncStoppedReporter::ResultCallback());
-  sessions_sync_manager_ = std::make_unique<SessionsSyncManager>(
-      sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
-      base::BindRepeating(&ProfileSyncService::NotifyForeignSessionUpdated,
-                          sync_enabled_weak_factory_.GetWeakPtr()));
+
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
+    sessions_sync_manager_ = std::make_unique<sync_sessions::SessionSyncBridge>(
+        sync_client_->GetSyncSessionsClient(), &sync_prefs_,
+        local_device_.get(), model_type_store_factory_,
+        base::BindRepeating(&ProfileSyncService::NotifyForeignSessionUpdated,
+                            sync_enabled_weak_factory_.GetWeakPtr()),
+        std::make_unique<ClientTagBasedModelTypeProcessor>(
+            syncer::SESSIONS,
+            base::BindRepeating(&syncer::ReportUnrecoverableError, channel_)));
+  } else {
+    sessions_sync_manager_ =
+        std::make_unique<sync_sessions::SessionsSyncManager>(
+            sync_client_->GetSyncSessionsClient(), &sync_prefs_,
+            local_device_.get(),
+            base::BindRepeating(
+                &ProfileSyncService::NotifyForeignSessionUpdated,
+                sync_enabled_weak_factory_.GetWeakPtr()));
+  }
 
   device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(
       local_device_.get(), model_type_store_factory_,
@@ -404,8 +420,12 @@ void ProfileSyncService::OnSessionRestoreComplete() {
   }
   DCHECK(iter->second);
 
-  static_cast<sync_sessions::SessionDataTypeController*>(iter->second.get())
-      ->OnSessionRestoreComplete();
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
+    sessions_sync_manager_->OnSessionRestoreComplete();
+  } else {
+    static_cast<sync_sessions::SessionDataTypeController*>(iter->second.get())
+        ->OnSessionRestoreComplete();
+  }
 }
 
 SyncCredentials ProfileSyncService::GetCredentials() {
@@ -956,10 +976,7 @@ void ProfileSyncService::OnSyncCycleCompleted(
       !syncer::HasSyncerError(snapshot.model_neutral_state())) {
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SessionsSyncManager::DoGarbageCollection,
-                       base::AsWeakPtr(sessions_sync_manager_.get())));
+    sessions_sync_manager_->ScheduleGarbageCollection();
   }
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();
@@ -2205,7 +2222,16 @@ std::string ProfileSyncService::GetAccessTokenForTest() const {
 
 syncer::SyncableService* ProfileSyncService::GetSessionsSyncableService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return sessions_sync_manager_.get();
+  if (!sessions_sync_manager_)
+    return nullptr;
+  return sessions_sync_manager_->GetSyncableService();
+}
+
+syncer::ModelTypeSyncBridge* ProfileSyncService::GetSessionSyncBridge() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!sessions_sync_manager_)
+    return nullptr;
+  return sessions_sync_manager_->GetModelTypeSyncBridge();
 }
 
 syncer::ModelTypeSyncBridge* ProfileSyncService::GetDeviceInfoSyncBridge() {

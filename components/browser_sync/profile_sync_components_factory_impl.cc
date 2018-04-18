@@ -198,11 +198,17 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     if (!disabled_types.Has(syncer::PROXY_TABS)) {
       sync_service->RegisterDataTypeController(
           std::make_unique<ProxyDataTypeController>(syncer::PROXY_TABS));
-      sync_service->RegisterDataTypeController(
-          std::make_unique<SessionDataTypeController>(
-              error_callback, sync_client_,
-              sync_service->GetLocalDeviceInfoProvider(),
-              history_disabled_pref_));
+      if (FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
+        sync_service->RegisterDataTypeController(
+            std::make_unique<ModelTypeController>(syncer::SESSIONS,
+                                                  sync_client_, ui_thread_));
+      } else {
+        sync_service->RegisterDataTypeController(
+            std::make_unique<SessionDataTypeController>(
+                error_callback, sync_client_,
+                sync_service->GetLocalDeviceInfoProvider(),
+                history_disabled_pref_));
+      }
     }
 
     // Favicon sync is enabled by default. Register unless explicitly disabled.

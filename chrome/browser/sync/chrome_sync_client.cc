@@ -67,6 +67,7 @@
 #include "components/sync/user_events/user_event_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
+#include "components/sync_sessions/session_sync_bridge.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
@@ -492,6 +493,11 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       return browser_sync::UserEventServiceFactory::GetForProfile(profile_)
           ->GetSyncBridge()
           ->AsWeakPtr();
+    case syncer::SESSIONS: {
+      return ProfileSyncServiceFactory::GetForProfile(profile_)
+          ->GetSessionSyncBridge()
+          ->AsWeakPtr();
+    }
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();

@@ -4,6 +4,8 @@
 
 static_library("sync_sessions") {
   sources = [
+    "abstract_sessions_sync_manager.cc",
+    "abstract_sessions_sync_manager.h",
     "favicon_cache.cc",
     "favicon_cache.h",
     "local_session_event_handler_impl.cc",

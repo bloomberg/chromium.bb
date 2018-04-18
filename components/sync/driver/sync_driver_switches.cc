@@ -61,4 +61,8 @@ const base::Feature kSyncUserTranslationEvents{
 const base::Feature kSyncUSSBookmarks{"SyncUSSBookmarks",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable USS implementation of sessions.
+const base::Feature kSyncUSSSessions{"SyncUSSSessions",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace switches

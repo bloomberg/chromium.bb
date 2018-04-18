@@ -142,6 +142,23 @@ SessionSyncBridge::~SessionSyncBridge() {
   }
 }
 
+void SessionSyncBridge::ScheduleGarbageCollection() {
+  if (!syncing_) {
+    return;
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&SessionSyncBridge::DoGarbageCollection,
+                                base::AsWeakPtr(this)));
+}
+
+FaviconCache* SessionSyncBridge::GetFaviconCache() {
+  return &favicon_cache_;
+}
+
+SessionsGlobalIdMapper* SessionSyncBridge::GetGlobalIdMapper() {
+  return &global_id_mapper_;
+}
+
 OpenTabsUIDelegate* SessionSyncBridge::GetOpenTabsUIDelegate() {
   if (!syncing_) {
     return nullptr;
@@ -155,6 +172,14 @@ void SessionSyncBridge::OnSessionRestoreComplete() {
   if (syncing_) {
     StartLocalSessionEventHandler();
   }
+}
+
+syncer::SyncableService* SessionSyncBridge::GetSyncableService() {
+  return nullptr;
+}
+
+syncer::ModelTypeSyncBridge* SessionSyncBridge::GetModelTypeSyncBridge() {
+  return this;
 }
 
 std::unique_ptr<MetadataChangeList>
