@@ -61,6 +61,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   blink::WebString SelectionAsText() const override;
   blink::WebString SelectionAsMarkup() const override;
   bool CanEditText() const override;
+  bool HasEditableText() const override;
   bool ExecuteEditCommand(const blink::WebString& name) override;
   bool ExecuteEditCommand(const blink::WebString& name,
                           const blink::WebString& value) override;

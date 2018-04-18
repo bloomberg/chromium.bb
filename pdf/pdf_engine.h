@@ -315,9 +315,11 @@ class PDFEngine {
   virtual void RotateClockwise() = 0;
   virtual void RotateCounterclockwise() = 0;
   virtual std::string GetSelectedText() = 0;
-  // Returns true if focus is within an editable form text area, and false
-  // otherwise.
+  // Returns true if focus is within an editable form text area.
   virtual bool CanEditText() = 0;
+  // Returns true if focus is within an editable form text area and the text
+  // area has text.
+  virtual bool HasEditableText() = 0;
   // Replace selected text within an editable form text area with another
   // string. If there is no selected text, append the replacement text after the
   // current caret position.

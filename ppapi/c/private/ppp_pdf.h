@@ -73,10 +73,15 @@ struct PPP_Pdf_1_1 {
   void (*SetSelectionBounds)(PP_Instance instance,
                              const struct PP_FloatPoint* base,
                              const struct PP_FloatPoint* extent);
-  // Return true if plugin text can be edited. For the PDF plugin, this
-  // is when focus is within an editable form text area (a form text field
-  // or user-editable form combobox text field).
+
+  // Return true if plugin text can be edited. i.e. When focus is within an
+  // editable form text area (a form text field or user-editable form combobox
+  // text field.
   PP_Bool (*CanEditText)(PP_Instance instance);
+
+  // Return true if plugin has editable text. i.e. When the focused editable
+  // field has content.
+  PP_Bool (*HasEditableText)(PP_Instance instance);
 
   // Replace the plugin's selected text (if focus is in an editable text area).
   // If there is no selected text, append the replacement text after the current
