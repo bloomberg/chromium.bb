@@ -41,12 +41,20 @@ for index, arg in enumerate(input_args[1:]):
 
 use_goma = False
 try:
-  with open(os.path.join(output_dir, 'args.gn')) as file_handle:
-    for line in file_handle:
-      # This regex pattern copied from create_installer_archive.py
-      m = re.match('^\s*use_goma\s*=\s*true(\s*$|\s*#.*$)', line)
-      if m:
-        use_goma = True
+  # If GOMA_DISABLED is set (to anything) then gomacc will use the local
+  # compiler instead of doing a goma compile. This is convenient if you want
+  # to briefly disable goma. It avoids having to rebuild the world when
+  # transitioning between goma/non-goma builds. However, it is not as fast as
+  # doing a "normal" non-goma build because an extra process is created for each
+  # compile step. Checking this environment variable ensures that autoninja uses
+  # an appropriate -j value in this situation.
+  if 'GOMA_DISABLED' not in os.environ:
+    with open(os.path.join(output_dir, 'args.gn')) as file_handle:
+      for line in file_handle:
+        # This regex pattern copied from create_installer_archive.py
+        m = re.match('^\s*use_goma\s*=\s*true(\s*$|\s*#.*$)', line)
+        if m:
+          use_goma = True
 except IOError:
   pass
 
