@@ -7,14 +7,15 @@
  * TODO(yoshiki): Consider providing an exact size icon, instead of relying
  * on downsampling by ash.
  *
- * @type {string}
+ * @type {!string}
  * @const
  */
 var ICON_IMAGE = 'images/icon/video-player-64.png';
 
 /**
  * Configuration of the video player panel.
- * @type {Object}
+ * @type {!Object}
+ * @const
  */
 var windowCreateOptions = {
   frame: {
@@ -25,12 +26,16 @@ var windowCreateOptions = {
 };
 
 /**
- * Backgound object. This is necessary for AppWindowWrapper.
- * @type {BackgroundBase}
+ * Backgound object.
+ * @type {!BackgroundBase}
  */
 var background = new BackgroundBase();
 
-
+/**
+ * Creates a unique windowId string. Each call increments the sequence number
+ * used to create the string. The first call returns "VIDEO_PLAYER_APP_0".
+ * @return {String} windowId The windowId string.
+ */
 var generateWindowId = (function() {
   var seq = 0;
   return function() {
@@ -39,7 +44,7 @@ var generateWindowId = (function() {
 }.wrap())();
 
 /**
- * Opens player window.
+ * Opens the video player window.
  * @param {!Array<string>} urls List of videos to play and index to start
  *     playing.
  * @return {!Promise} Promise to be fulfilled on success, or rejected on error.

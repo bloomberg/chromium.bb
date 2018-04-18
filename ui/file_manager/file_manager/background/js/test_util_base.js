@@ -78,10 +78,10 @@ test.util.async = {};
  * @const
  */
 test.util.TESTING_EXTENSION_IDS = [
-  'oobinhbdbiehknkpbpejbbpdbkdjmoco',  // File Manager test
-  'ejhcmmdhhpdhhgmifplfmjobgegbibkn',  // Gallery test
-  'ljoplibgfehghmibaoaepfagnmbbfiga',  // Video Player test
-  'ddabbgbggambiildohfagdkliahiecfl',  // Audio Player test
+  'oobinhbdbiehknkpbpejbbpdbkdjmoco',  // File Manager test extension.
+  'ejhcmmdhhpdhhgmifplfmjobgegbibkn',  // Gallery test extension.
+  'ljoplibgfehghmibaoaepfagnmbbfiga',  // Video Player test extension.
+  'ddabbgbggambiildohfagdkliahiecfl',  // Audio Player test extension.
 ];
 
 /**

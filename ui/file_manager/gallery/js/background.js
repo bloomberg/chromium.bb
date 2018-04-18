@@ -4,8 +4,8 @@
 
 /**
  * Configuration of the Gallery window.
+ * @type {!Object}
  * @const
- * @type {Object}
  */
 var windowCreateOptions = {
   id: 'gallery',
@@ -26,8 +26,8 @@ var windowCreateOptions = {
 var background = new BackgroundBase();
 
 /**
- * Wrapper of gallery window.
- * @type {SingletonAppWindowWrapper}
+ * Gallery app window wrapper.
+ * @type {!SingletonAppWindowWrapper}
  */
 var gallery = new SingletonAppWindowWrapper('gallery.html',
     windowCreateOptions);
