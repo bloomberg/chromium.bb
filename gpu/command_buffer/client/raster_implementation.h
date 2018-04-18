@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/raster_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace gpu {
 
@@ -104,7 +105,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       GLuint sk_color,
       GLuint msaa_sample_count,
       GLboolean can_use_lcd_text,
-      GLint pixel_config,
+      GLint color_type,
       const cc::RasterColorSpace& raster_color_space) override;
   void RasterCHROMIUM(const cc::DisplayItemList* list,
                       cc::ImageProvider* provider,
@@ -143,6 +144,9 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                                  GLuint id,
                                  GLenum pname,
                                  GLuint64* params);
+
+  void* MapRasterCHROMIUM(GLsizeiptr size);
+  void UnmapRasterCHROMIUM(GLsizeiptr written_size);
 
  private:
   friend class RasterImplementationTest;
@@ -226,9 +230,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void FailGLError(GLenum /* error */) {}
 #endif
 
-  void* MapRasterCHROMIUM(GLsizeiptr size);
-  void UnmapRasterCHROMIUM(GLsizeiptr written_size);
-
   RasterCmdHelper* helper_;
   std::string last_error_;
   gles2::DebugMarkerManager debug_marker_manager_;
@@ -267,6 +268,8 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   mutable base::Lock lost_lock_;
   bool lost_;
+
+  SkColor background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterImplementation);
 };
