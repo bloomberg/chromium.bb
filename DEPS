@@ -306,7 +306,7 @@ deps = {
   },
 
   'src/media/cdm/api':
-    Var('chromium_git') + '/chromium/cdm.git' + '@' + 'cc347b850c11ea791837d5c70b12421fd77a3731',
+    Var('chromium_git') + '/chromium/cdm.git' + '@' + '57e20546bc2afeabae7716ae3fc73bf091a76343',
 
   'src/native_client': {
       'url': Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
