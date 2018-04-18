@@ -917,6 +917,8 @@ Shell::~Shell() {
   // Destroys the MessageCenter singleton, so must happen late.
   message_center_controller_.reset();
 
+  system_tray_model_.reset();
+
   local_state_.reset();
   shell_delegate_.reset();
 
