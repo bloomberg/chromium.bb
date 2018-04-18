@@ -28,9 +28,6 @@ void GetPhotoStateOnIOThread(const std::string& source_id,
                              ImageCaptureImpl::GetPhotoStateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-// TODO(mcasas): Enable PhotoState collection in Windows when understood why it
-// prevents normal capture https://crbug.com/722038.
-#if !defined(OS_WIN)
   const int session_id =
       media_stream_manager->VideoDeviceIdToSessionId(source_id);
 
@@ -38,7 +35,6 @@ void GetPhotoStateOnIOThread(const std::string& source_id,
     return;
   media_stream_manager->video_capture_manager()->GetPhotoState(
       session_id, std::move(callback));
-#endif
 }
 
 void SetOptionsOnIOThread(const std::string& source_id,
