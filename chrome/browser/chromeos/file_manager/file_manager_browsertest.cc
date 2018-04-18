@@ -207,9 +207,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       "copyFromDirectoryTreeWithoutChaningCurrentDirectory"),
         TestParameter(NOT_IN_GUEST_MODE, "cutFromDirectoryTreeWithContextMenu"),
         TestParameter(IN_GUEST_MODE, "cutFromDirectoryTreeWithContextMenu"),
-        // Flaky https://crbug.com/832799
-        // TestParameter(NOT_IN_GUEST_MODE,
-        //              "cutFromDirectoryTreeWithKeyboardShortcut"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "cutFromDirectoryTreeWithKeyboardShortcut"),
         TestParameter(IN_GUEST_MODE,
                       "cutFromDirectoryTreeWithKeyboardShortcut"),
         TestParameter(NOT_IN_GUEST_MODE,
