@@ -258,6 +258,12 @@ crypto_sources = [
   "src/crypto/x509v3/v3_skey.c",
   "src/crypto/x509v3/v3_sxnet.c",
   "src/crypto/x509v3/v3_utl.c",
+  "src/third_party/fiat/curve25519.c",
+  "src/third_party/fiat/curve25519_tables.h",
+  "src/third_party/fiat/internal.h",
+]
+
+crypto_headers = [
   "src/include/openssl/aead.h",
   "src/include/openssl/aes.h",
   "src/include/openssl/arm_arch.h",
@@ -327,16 +333,9 @@ crypto_sources = [
   "src/include/openssl/x509.h",
   "src/include/openssl/x509_vfy.h",
   "src/include/openssl/x509v3.h",
-  "src/third_party/fiat/curve25519.c",
-  "src/third_party/fiat/curve25519_tables.h",
-  "src/third_party/fiat/internal.h",
 ]
 
 ssl_sources = [
-  "src/include/openssl/dtls1.h",
-  "src/include/openssl/ssl.h",
-  "src/include/openssl/ssl3.h",
-  "src/include/openssl/tls1.h",
   "src/ssl/bio_ssl.cc",
   "src/ssl/custom_extensions.cc",
   "src/ssl/d1_both.cc",
@@ -375,6 +374,13 @@ ssl_sources = [
   "src/ssl/tls13_server.cc",
   "src/ssl/tls_method.cc",
   "src/ssl/tls_record.cc",
+]
+
+ssl_headers = [
+  "src/include/openssl/dtls1.h",
+  "src/include/openssl/ssl.h",
+  "src/include/openssl/ssl3.h",
+  "src/include/openssl/tls1.h",
 ]
 
 crypto_sources_ios_aarch64 = [

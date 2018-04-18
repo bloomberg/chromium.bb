@@ -45,6 +45,7 @@ config("no_asm_config") {
 }
 
 all_sources = crypto_sources + ssl_sources
+all_headers = crypto_headers + ssl_headers
 
 # Windows' assembly is built with Yasm. The other platforms use the platform
 # assembler.
@@ -108,6 +109,11 @@ if (is_win && !is_msan) {
 
 component("boringssl") {
   sources = all_sources
+  public = all_headers
+  friend = [
+    ":boringssl_crypto_tests",
+    ":boringssl_ssl_tests",
+  ]
   deps = [
     ":boringssl_asm",
     "//third_party/boringssl/src/third_party/fiat:fiat_license",
@@ -216,6 +222,8 @@ if (build_with_chromium) {
     fuzzer_test("boringssl_${fuzzer}_fuzzer") {
       sources = [
         "src/fuzz/${fuzzer}.cc",
+        "src/ssl/test/fuzzer.h",
+        "src/ssl/test/fuzzer_tags.h",
       ]
       deps = [
         ":boringssl_fuzzer",
@@ -275,6 +283,8 @@ if (build_with_chromium) {
   fuzzer_test("boringssl_client_no_fuzzer_mode_fuzzer") {
     sources = [
       "src/fuzz/client.cc",
+      "src/ssl/test/fuzzer.h",
+      "src/ssl/test/fuzzer_tags.h",
     ]
     deps = [
       ":boringssl_fuzzer_no_fuzzer_mode",
@@ -285,6 +295,8 @@ if (build_with_chromium) {
   fuzzer_test("boringssl_server_no_fuzzer_mode_fuzzer") {
     sources = [
       "src/fuzz/server.cc",
+      "src/ssl/test/fuzzer.h",
+      "src/ssl/test/fuzzer_tags.h",
     ]
     deps = [
       ":boringssl_fuzzer_no_fuzzer_mode",
