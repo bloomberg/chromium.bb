@@ -1285,6 +1285,10 @@ AutomationRootNodeImpl.prototype = {
     if (obj)
       return obj;
 
+    // Validate the backing AXTree has the specified node.
+    if (!GetRole(this.treeID, id))
+      return;
+
     obj = new AutomationNode(this);
     privates(obj).impl.treeID = this.treeID;
     privates(obj).impl.id = id;
