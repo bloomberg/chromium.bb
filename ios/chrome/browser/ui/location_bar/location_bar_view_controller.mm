@@ -5,6 +5,9 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
 
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_foreground_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_edit_view.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -86,6 +89,43 @@
   AddSameConstraints(self.locationBarSteadyView, self.view);
 
   [self switchToEditing:NO];
+}
+
+#pragma mark - FullscreenUIElement
+
+- (void)updateForFullscreenProgress:(CGFloat)progress {
+  CGFloat alphaValue = fmax((progress - 0.85) / 0.15, 0);
+  CGFloat scaleValue = 0.75 + 0.25 * progress;
+  self.locationBarSteadyView.trailingButton.alpha = alphaValue;
+  self.locationBarSteadyView.transform =
+      CGAffineTransformMakeScale(scaleValue, scaleValue);
+}
+
+- (void)updateForFullscreenEnabled:(BOOL)enabled {
+  if (!enabled)
+    [self updateForFullscreenProgress:1.0];
+}
+
+- (void)finishFullscreenScrollWithAnimator:
+    (FullscreenScrollEndAnimator*)animator {
+  [self addFullscreenAnimationsToAnimator:animator];
+}
+
+- (void)scrollFullscreenToTopWithAnimator:
+    (FullscreenScrollToTopAnimator*)animator {
+  [self addFullscreenAnimationsToAnimator:animator];
+}
+
+- (void)showToolbarForForgroundWithAnimator:
+    (FullscreenForegroundAnimator*)animator {
+  [self addFullscreenAnimationsToAnimator:animator];
+}
+
+- (void)addFullscreenAnimationsToAnimator:(FullscreenAnimator*)animator {
+  CGFloat finalProgress = animator.finalProgress;
+  [animator addAnimations:^{
+    [self updateForFullscreenProgress:finalProgress];
+  }];
 }
 
 #pragma mark - LocationBarConsumer

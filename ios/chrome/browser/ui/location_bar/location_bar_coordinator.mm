@@ -16,6 +16,9 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_mediator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
@@ -47,7 +50,10 @@ const int kLocationAuthorizationStatusCount = 4;
 @interface LocationBarCoordinator ()<LocationBarDelegate,
                                      LocationBarViewControllerDelegate,
                                      LocationBarConsumer> {
+  // API endpoint for omnibox.
   std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
+  // Observer that updates |viewController| for fullscreen events.
+  std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
 // Coordinator for the omnibox popup.
 @property(nonatomic, strong) OmniboxPopupCoordinator* omniboxPopupCoordinator;
@@ -113,6 +119,12 @@ const int kLocationAuthorizationStatusCount = 4;
       [[LocationBarMediator alloc] initWithToolbarModel:[self toolbarModel]];
   self.mediator.webStateList = self.webStateList;
   self.mediator.consumer = self;
+
+  _fullscreenObserver =
+      std::make_unique<FullscreenUIUpdater>(self.viewController);
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->AddObserver(_fullscreenObserver.get());
 }
 
 - (void)stop {

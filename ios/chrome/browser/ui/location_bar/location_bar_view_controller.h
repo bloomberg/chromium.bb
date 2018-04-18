@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 
 @class LocationBarEditView;
@@ -24,7 +25,7 @@
 // the omnibox - the editing and the non-editing states. In the editing state,
 // the omnibox textfield is displayed; in the non-editing state, the current
 // location is displayed.
-@interface LocationBarViewController : UIViewController
+@interface LocationBarViewController : UIViewController<FullscreenUIElement>
 
 - (instancetype)initWithFrame:(CGRect)frame
                          font:(UIFont*)font
