@@ -262,9 +262,11 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
   // OEM item is not top level element.
   ChromeAppListItem* oem_app_item = model_updater()->FindItem(oem_app_id);
   EXPECT_NE(nullptr, oem_app_item);
-  EXPECT_EQ(oem_app_item->folder_id(), ash::kOemFolderId);
+  EXPECT_EQ(oem_app_item->folder_id(),
+            app_list::AppListSyncableService::kOemFolderId);
   // But OEM folder is.
-  ChromeAppListItem* oem_folder = model_updater()->FindItem(ash::kOemFolderId);
+  ChromeAppListItem* oem_folder =
+      model_updater()->FindItem(app_list::AppListSyncableService::kOemFolderId);
   EXPECT_NE(nullptr, oem_folder);
   EXPECT_EQ(oem_folder->folder_id(), "");
 }
