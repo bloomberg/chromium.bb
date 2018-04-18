@@ -305,6 +305,80 @@ void GLRendererCopier::StartReadbackFromTexture(
 
 namespace {
 
+class GLPixelBufferRGBAResult : public CopyOutputResult {
+ public:
+  GLPixelBufferRGBAResult(const gfx::Rect& result_rect,
+                          scoped_refptr<ContextProvider> context_provider,
+                          GLuint transfer_buffer,
+                          GLenum readback_format)
+      : CopyOutputResult(CopyOutputResult::Format::RGBA_BITMAP, result_rect),
+        context_provider_(std::move(context_provider)),
+        transfer_buffer_(transfer_buffer),
+        readback_format_(readback_format) {}
+
+  ~GLPixelBufferRGBAResult() final {
+    if (transfer_buffer_)
+      context_provider_->ContextGL()->DeleteBuffers(1, &transfer_buffer_);
+  }
+
+  bool ReadRGBAPlane(uint8_t* dest, int stride) const final {
+    // No need to read from GPU memory if a cached bitmap already exists.
+    if (rect().IsEmpty() || cached_bitmap()->readyToDraw())
+      return CopyOutputResult::ReadRGBAPlane(dest, stride);
+    auto* const gl = context_provider_->ContextGL();
+    gl->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, transfer_buffer_);
+    const uint8_t* pixels = static_cast<uint8_t*>(gl->MapBufferCHROMIUM(
+        GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, GL_READ_ONLY));
+    if (pixels) {
+      const SkColorType src_format = (readback_format_ == GL_BGRA_EXT)
+                                         ? kBGRA_8888_SkColorType
+                                         : kRGBA_8888_SkColorType;
+      const int src_bytes_per_row = size().width() * kRGBABytesPerPixel;
+      const SkImageInfo src_row_image_info =
+          SkImageInfo::Make(size().width(), 1, src_format, kPremul_SkAlphaType);
+      const SkImageInfo dest_row_image_info =
+          SkImageInfo::MakeN32Premul(size().width(), 1);
+
+      for (int y = 0; y < size().height(); ++y) {
+        const int flipped_y = (size().height() - y - 1);
+        const uint8_t* const src_row = pixels + flipped_y * src_bytes_per_row;
+        void* const dest_row = dest + y * stride;
+        SkPixmap src_pixmap(src_row_image_info, src_row, src_bytes_per_row);
+        SkPixmap dest_pixmap(dest_row_image_info, dest_row, stride);
+        src_pixmap.readPixels(dest_pixmap);
+      }
+      gl->UnmapBufferCHROMIUM(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM);
+    }
+    gl->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
+    return !!pixels;
+  }
+
+  const SkBitmap& AsSkBitmap() const final {
+    if (rect().IsEmpty())
+      return *cached_bitmap();  // Return "null" bitmap for empty result.
+
+    if (cached_bitmap()->readyToDraw())
+      return *cached_bitmap();
+
+    SkBitmap result_bitmap;
+    result_bitmap.allocPixels(
+        SkImageInfo::MakeN32Premul(size().width(), size().height()));
+    ReadRGBAPlane(static_cast<uint8_t*>(result_bitmap.getPixels()),
+                  result_bitmap.rowBytes());
+    *cached_bitmap() = result_bitmap;
+    // Now that we have a cached bitmap, no need to read from GPU memory
+    // anymore.
+    context_provider_->ContextGL()->DeleteBuffers(1, &transfer_buffer_);
+    transfer_buffer_ = 0;
+    return *cached_bitmap();
+  }
+
+ private:
+  const scoped_refptr<ContextProvider> context_provider_;
+  mutable GLuint transfer_buffer_;
+  GLenum readback_format_;
+};
+
 // Manages the execution of one asynchronous framebuffer readback and contains
 // all the relevant state needed to complete a copy request. The constructor
 // initiates the operation, and then at some later point either: 1) the Finish()
@@ -357,7 +431,8 @@ class ReadPixelsWorkflow {
   ~ReadPixelsWorkflow() {
     auto* const gl = context_provider_->ContextGL();
     gl->DeleteQueriesEXT(1, &query_);
-    gl->DeleteBuffers(1, &transfer_buffer_);
+    if (transfer_buffer_)
+      gl->DeleteBuffers(1, &transfer_buffer_);
   }
 
   GLuint query() const { return query_; }
@@ -365,42 +440,15 @@ class ReadPixelsWorkflow {
   // Callback for the asynchronous glReadPixels(). The pixels are read from the
   // transfer buffer, and a CopyOutputResult is sent to the requestor.
   void Finish() {
-    auto* const gl = context_provider_->ContextGL();
-
-    gl->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, transfer_buffer_);
-    const uint8_t* pixels = static_cast<uint8_t*>(gl->MapBufferCHROMIUM(
-        GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, GL_READ_ONLY));
-    if (!pixels) {
-      // CopyOutputRequest will auto-send an empty result when its destructor
-      // is run from ~ReadPixelsWorkflow().
-      return;
+    auto result = std::make_unique<GLPixelBufferRGBAResult>(
+        result_rect_, context_provider_, transfer_buffer_, readback_format_);
+    transfer_buffer_ = 0;  // Ownerhip was transferred to the result.
+    if (!copy_request_->SendsResultsInCurrentSequence()) {
+      // Force readback into a SkBitmap now, because after PostTask we don't
+      // have access to |context_provider_|.
+      result->AsSkBitmap();
     }
-
-    // Create the result bitmap, making sure to flip the image in the Y
-    // dimension.
-    //
-    // TODO(crbug/758057): Plumb-through color space into the output bitmap.
-    SkBitmap result_bitmap;
-    const int bytes_per_row = result_rect_.width() * kRGBABytesPerPixel;
-    result_bitmap.allocPixels(
-        SkImageInfo::Make(result_rect_.width(), result_rect_.height(),
-                          (readback_format_ == GL_BGRA_EXT)
-                              ? kBGRA_8888_SkColorType
-                              : kRGBA_8888_SkColorType,
-                          kPremul_SkAlphaType),
-        bytes_per_row);
-    for (int y = 0; y < result_rect_.height(); ++y) {
-      const int flipped_y = (result_rect_.height() - y - 1);
-      const uint8_t* const src_row = pixels + flipped_y * bytes_per_row;
-      void* const dest_row = result_bitmap.getAddr(0, y);
-      memcpy(dest_row, src_row, bytes_per_row);
-    }
-    gl->UnmapBufferCHROMIUM(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM);
-
-    copy_request_->SendResult(std::make_unique<CopyOutputSkBitmapResult>(
-        result_rect_, result_bitmap));
-
-    // |transfer_buffer_| and |query_| will be deleted soon by the destructor.
+    copy_request_->SendResult(std::move(result));
   }
 
  private:

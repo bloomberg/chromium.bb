@@ -564,18 +564,11 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
       frame = nullptr;
     }
   } else {
-    // TODO(samans): Avoid doing an extra copy by implementing a method similar
-    // to ReadI420Planes() that copies directly from GPU memory into shared
-    // memory. https://crbug.com/822264
+    int stride = frame->stride(VideoFrame::kARGBPlane);
     DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format_);
-    const SkBitmap& bitmap = result->AsSkBitmap();
-    if (bitmap.readyToDraw()) {
-      SkImageInfo image_info = SkImageInfo::MakeN32(
-          bitmap.width(), bitmap.height(), kPremul_SkAlphaType);
-      const int stride = frame->stride(VideoFrame::kARGBPlane);
-      uint8_t* const pixels = frame->visible_data(VideoFrame::kARGBPlane) +
-                              content_rect.y() * stride + content_rect.x() * 4;
-      bitmap.readPixels(image_info, pixels, stride, 0, 0);
+    uint8_t* const pixels = frame->visible_data(VideoFrame::kARGBPlane) +
+                            content_rect.y() * stride + content_rect.x() * 4;
+    if (result->ReadRGBAPlane(pixels, stride)) {
       media::LetterboxVideoFrame(
           frame.get(), gfx::Rect(content_rect.origin(),
                                  AdjustSizeForPixelFormat(result->size())));

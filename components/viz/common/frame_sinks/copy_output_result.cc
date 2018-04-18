@@ -77,6 +77,16 @@ bool CopyOutputResult::ReadI420Planes(uint8_t* y_out,
   return false;
 }
 
+bool CopyOutputResult::ReadRGBAPlane(uint8_t* dest, int stride) const {
+  const SkBitmap& bitmap = AsSkBitmap();
+  if (!bitmap.readyToDraw())
+    return false;
+  SkImageInfo image_info = SkImageInfo::MakeN32(bitmap.width(), bitmap.height(),
+                                                kPremul_SkAlphaType);
+  bitmap.readPixels(image_info, dest, stride, 0, 0);
+  return true;
+}
+
 CopyOutputSkBitmapResult::CopyOutputSkBitmapResult(const gfx::Rect& rect,
                                                    const SkBitmap& bitmap)
     : CopyOutputSkBitmapResult(Format::RGBA_BITMAP, rect, bitmap) {}
