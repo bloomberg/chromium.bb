@@ -9,6 +9,8 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/common/util.h"
+#include "services/ui/ws2/client_change.h"
+#include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/client_root.h"
 #include "services/ui/ws2/window_data.h"
 #include "services/ui/ws2/window_service.h"
@@ -32,7 +34,8 @@ WindowServiceClient::WindowServiceClient(WindowService* window_service,
     : window_service_(window_service),
       client_id_(client_id),
       window_tree_client_(client),
-      intercepts_events_(intercepts_events) {}
+      intercepts_events_(intercepts_events),
+      property_change_tracker_(std::make_unique<ClientChangeTracker>()) {}
 
 void WindowServiceClient::InitForEmbed(aura::Window* root,
                                        mojom::WindowTreePtr window_tree_ptr) {
@@ -149,7 +152,7 @@ void WindowServiceClient::DeleteClientRoot(ClientRoot* client_root,
   std::vector<aura::Window*> created_windows;
   RemoveWindowFromKnownWindowsRecursive(window, &created_windows);
   for (aura::Window* created_window : created_windows) {
-    if (created_window != window)
+    if (created_window != window && created_window->parent())
       created_window->parent()->RemoveChild(created_window);
   }
 
@@ -343,7 +346,9 @@ void WindowServiceClient::OnWillBecomeClientRootWindow(aura::Window* window) {
     DCHECK(!window_data->embedded_window_service_client());
   }
 
-  // When embedding there should be no children.
+  // Because a new client is being embedded all existing children are removed.
+  // This is because this client is no longer able to add children to |window|
+  // (until the embedding is removed).
   while (!window->children().empty())
     window->RemoveChild(window->children().front());
 }
@@ -507,8 +512,26 @@ bool WindowServiceClient::SetWindowBoundsImpl(
     return false;
   }
 
+  ClientChange change(property_change_tracker_.get(), window,
+                      ClientChangeType::kBounds);
+  const gfx::Rect original_bounds = window->bounds();
   window->SetBounds(bounds);
-  return true;
+  if (!change.window())
+    return true;  // Return value doesn't matter if window destroyed.
+
+  if (change.window()->bounds() == bounds)
+    return true;
+
+  if (window->bounds() == original_bounds)
+    return false;
+
+  // The window's bounds changed, but not to the value the client requested.
+  // Tell the client the new value, and return false, which triggers the client
+  // to use the value supplied to OnWindowBoundsChanged().
+  window_tree_client_->OnWindowBoundsChanged(TransportIdForWindow(window),
+                                             original_bounds, window->bounds(),
+                                             local_surface_id);
+  return false;
 }
 
 bool WindowServiceClient::EmbedImpl(
@@ -643,6 +666,7 @@ void WindowServiceClient::NewTopLevelWindow(
     window_tree_client_->OnChangeCompleted(change_id, false);
     return;
   }
+  top_level_ptr->set_owned_by_parent(false);
   aura::Window* top_level =
       AddClientCreatedWindow(client_window_id, std::move(top_level_ptr));
   WindowData::GetMayBeNull(top_level)->SetFrameSinkId(client_window_id);

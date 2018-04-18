@@ -4,6 +4,8 @@
 
 #include "services/ui/ws2/client_root.h"
 
+#include "services/ui/ws2/client_change.h"
+#include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/window_data.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "ui/aura/mus/client_surface_embedder.h"
@@ -70,6 +72,12 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
   UpdatePrimarySurfaceId();
   client_surface_embedder_->UpdateSizeAndGutters();
   base::Optional<viz::LocalSurfaceId> surface_id = local_surface_id_;
+  if (window_service_client_->property_change_tracker_
+          ->IsProcessingChangeForWindow(window, ClientChangeType::kBounds)) {
+    // The expectation is the client is not notified of changes the client
+    // initiated.
+    return;
+  }
   window_service_client_->window_tree_client_->OnWindowBoundsChanged(
       window_service_client_->TransportIdForWindow(window), old_bounds,
       new_bounds, std::move(surface_id));

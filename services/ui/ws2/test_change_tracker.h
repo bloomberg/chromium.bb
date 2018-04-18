@@ -103,6 +103,15 @@ struct Change {
   gfx::PointF location2;
 };
 
+// The ChangeToDescription related functions convert a Change into a string.
+// To avoid updating all tests as more descriptive strings are added, new
+// variants are added and identified with a numeric suffix. Differences
+// between versions:
+// 1 and no suffix is the original version.
+// 2: OnEmbed() includes the boolean value supplied to OnEmbed().
+
+std::string ChangeToDescription(const Change& change);
+
 // Converts Changes to string descriptions.
 std::vector<std::string> ChangesToDescription1(
     const std::vector<Change>& changes);
@@ -110,6 +119,7 @@ std::vector<std::string> ChangesToDescription1(
 // Convenience for returning the description of the first item in |changes|.
 // Returns an empty string if |changes| has something other than one entry.
 std::string SingleChangeToDescription(const std::vector<Change>& changes);
+
 std::string SingleChangeToDescription2(const std::vector<Change>& changes);
 
 // Convenience for returning the description of the first item in |windows|.
