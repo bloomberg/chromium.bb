@@ -142,7 +142,7 @@ class MockUserManager : public ChromeUserManager {
   UserFlow* GetCurrentUserFlow() const override;
   UserFlow* GetUserFlow(const AccountId&) const override;
   MOCK_METHOD2(SetUserAffiliation,
-               void(const std::string& user_id,
+               void(const AccountId& account_id,
                     const chromeos::AffiliationIDSet& user_affiliation_ids));
 
   bool ShouldReportUser(const std::string& user_id) const override;

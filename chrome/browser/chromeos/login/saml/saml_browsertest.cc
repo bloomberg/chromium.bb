@@ -72,6 +72,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -125,6 +126,12 @@ constexpr char kSecondSAMLUserEmail[] = "alice@example.com";
 constexpr char kHTTPSAMLUserEmail[] = "carol@example.com";
 constexpr char kNonSAMLUserEmail[] = "dan@example.com";
 constexpr char kDifferentDomainSAMLUserEmail[] = "eve@example.test";
+
+constexpr char kFirstSAMLUserGaiaId[] = "bob-gaia";
+constexpr char kSecondSAMLUserGaiaId[] = "alice-gaia";
+constexpr char kHTTPSAMLUserGaiaId[] = "carol-gaia";
+constexpr char kNonSAMLUserGaiaId[] = "dan-gaia";
+constexpr char kDifferentDomainSAMLUserGaiaId[] = "eve-gaia";
 
 constexpr char kIdPHost[] = "login.example.com";
 constexpr char kAdditionalIdPHost[] = "login2.example.com";
@@ -1069,26 +1076,32 @@ void SAMLPolicyTest::SetUpOnMainThread() {
 
   // Pretend that the test users' OAuth tokens are valid.
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      AccountId::FromUserEmail(kFirstSAMLUserEmail),
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail, kFirstSAMLUserGaiaId),
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      AccountId::FromUserEmail(kNonSAMLUserEmail),
+      AccountId::FromUserEmailGaiaId(kNonSAMLUserEmail, kNonSAMLUserGaiaId),
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      AccountId::FromUserEmail(kDifferentDomainSAMLUserEmail),
+      AccountId::FromUserEmailGaiaId(kDifferentDomainSAMLUserEmail,
+                                     kDifferentDomainSAMLUserGaiaId),
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
   // Give affiliated users appropriate affiliation IDs.
   std::set<std::string> user_affiliation_ids;
   user_affiliation_ids.insert(kAffiliationID);
-  chromeos::ChromeUserManager::Get()->SetUserAffiliation(kFirstSAMLUserEmail,
-                                                         user_affiliation_ids);
-  chromeos::ChromeUserManager::Get()->SetUserAffiliation(kSecondSAMLUserEmail,
-                                                         user_affiliation_ids);
-  chromeos::ChromeUserManager::Get()->SetUserAffiliation(kHTTPSAMLUserEmail,
-                                                         user_affiliation_ids);
-  chromeos::ChromeUserManager::Get()->SetUserAffiliation(kNonSAMLUserEmail,
-                                                         user_affiliation_ids);
+  chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail, kFirstSAMLUserGaiaId),
+      user_affiliation_ids);
+  chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+      AccountId::FromUserEmailGaiaId(kSecondSAMLUserEmail,
+                                     kSecondSAMLUserGaiaId),
+      user_affiliation_ids);
+  chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+      AccountId::FromUserEmailGaiaId(kHTTPSAMLUserEmail, kHTTPSAMLUserGaiaId),
+      user_affiliation_ids);
+  chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+      AccountId::FromUserEmailGaiaId(kNonSAMLUserEmail, kNonSAMLUserGaiaId),
+      user_affiliation_ids);
 
   // Set up fake networks.
   DBusThreadManager::Get()

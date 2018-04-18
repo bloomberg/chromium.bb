@@ -429,7 +429,7 @@ void UserCloudPolicyManagerChromeOS::OnStoreLoaded(
         policy_data->user_affiliation_ids().end());
 
     chromeos::ChromeUserManager::Get()->SetUserAffiliation(
-        policy_data->username(), set_of_user_affiliation_ids);
+        account_id_, set_of_user_affiliation_ids);
   }
 }
 

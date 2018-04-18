@@ -707,7 +707,7 @@ void FakeChromeUserManager::OnUserRemoved(const AccountId& account_id) {
 }
 
 void FakeChromeUserManager::SetUserAffiliation(
-    const std::string& user_email,
+    const AccountId& account_id,
     const AffiliationIDSet& user_affiliation_ids) {}
 
 bool FakeChromeUserManager::ShouldReportUser(const std::string& user_id) const {

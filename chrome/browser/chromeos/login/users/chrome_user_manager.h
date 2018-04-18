@@ -10,6 +10,8 @@
 #include "base/task_runner.h"
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/user_manager_interface.h"
+#include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager_base.h"
 
 namespace chromeos {
@@ -30,10 +32,10 @@ class ChromeUserManager : public user_manager::UserManagerBase,
   static user_manager::UserList GetUsersAllowedAsSupervisedUserManagers(
       const user_manager::UserList& user_list);
 
-  // Sets affiliation status for the user |user_id| judging by
-  // |user_affiliation_ids| and device affiliation IDs.
+  // Sets affiliation status for the user identified with |account_id|
+  // judging by |user_affiliation_ids| and device affiliation IDs.
   virtual void SetUserAffiliation(
-      const std::string& user_email,
+      const AccountId& account_id,
       const AffiliationIDSet& user_affiliation_ids) = 0;
 
   // Return whether the given user should be reported (see
