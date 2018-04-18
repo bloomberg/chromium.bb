@@ -162,6 +162,13 @@ bool MockSharedWorkerClient::CheckNotReceivedOnFeatureUsed() {
   return !on_feature_used_received_;
 }
 
+bool MockSharedWorkerClient::CheckReceivedOnScriptLoadFailed() {
+  if (!on_script_load_failed_)
+    return false;
+  on_script_load_failed_ = false;
+  return true;
+}
+
 void MockSharedWorkerClient::OnCreated(
     blink::mojom::SharedWorkerCreationContextType creation_context_type) {
   DCHECK(!on_created_received_);
@@ -177,7 +184,8 @@ void MockSharedWorkerClient::OnConnected(
 }
 
 void MockSharedWorkerClient::OnScriptLoadFailed() {
-  NOTREACHED();
+  DCHECK(!on_script_load_failed_);
+  on_script_load_failed_ = true;
 }
 
 void MockSharedWorkerClient::OnFeatureUsed(blink::mojom::WebFeature feature) {
