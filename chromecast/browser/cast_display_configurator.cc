@@ -5,10 +5,11 @@
 #include "chromecast/browser/cast_display_configurator.h"
 
 #include <math.h>
+#include <algorithm>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/cast_features.h"
@@ -34,7 +35,7 @@ constexpr char kDisplayRotation[] = "display-rotation";
 gfx::Size GetScreenResolution() {
   gfx::Size res(1280, 720);
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!base::FeatureList::IsEnabled(kTripleBuffer720) &&
+  if (!chromecast::IsFeatureEnabled(kTripleBuffer720) &&
       GraphicsPropertiesShlib::IsSupported(GraphicsPropertiesShlib::k1080p,
                                            cmd_line->argv())) {
     res = gfx::Size(1920, 1080);

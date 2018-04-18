@@ -11,7 +11,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
@@ -447,9 +446,9 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
                                       base::IntToString(res.height()));
     }
 
-    if (base::FeatureList::IsEnabled(kSingleBuffer)) {
+    if (chromecast::IsFeatureEnabled(kSingleBuffer)) {
       command_line->AppendSwitchASCII(switches::kGraphicsBufferCount, "1");
-    } else if (base::FeatureList::IsEnabled(chromecast::kTripleBuffer720)) {
+    } else if (chromecast::IsFeatureEnabled(chromecast::kTripleBuffer720)) {
       command_line->AppendSwitchASCII(switches::kGraphicsBufferCount, "3");
     }
 #endif  // defined(USE_AURA)

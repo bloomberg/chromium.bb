@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/url_request_context_factory.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/command_line.h"
@@ -258,8 +259,9 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   http_server_properties_.reset(new net::HttpServerPropertiesImpl);
 
   DCHECK(proxy_config_service_);
-  proxy_resolution_service_ = net::ProxyResolutionService::CreateUsingSystemProxyResolver(
-      std::move(proxy_config_service_), NULL);
+  proxy_resolution_service_ =
+      net::ProxyResolutionService::CreateUsingSystemProxyResolver(
+          std::move(proxy_config_service_), NULL);
   system_dependencies_initialized_ = true;
 }
 
@@ -329,7 +331,7 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
 
   // Enable QUIC if instructed by DCS. This remains constant for the lifetime of
   // the process.
-  session_params->enable_quic = base::FeatureList::IsEnabled(kEnableQuic);
+  session_params->enable_quic = chromecast::IsFeatureEnabled(kEnableQuic);
   LOG(INFO) << "Set HttpNetworkSessionParams.enable_quic = "
             << session_params->enable_quic;
 
@@ -340,7 +342,7 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
   // 2. if idle sockets are kept alive when memory pressure happens, this may
   // cause JS engine gc frequently, leading to JS suspending.
   session_params->disable_idle_sockets_close_on_memory_pressure =
-      base::FeatureList::IsEnabled(kDisableIdleSocketsCloseOnMemoryPressure);
+      chromecast::IsFeatureEnabled(kDisableIdleSocketsCloseOnMemoryPressure);
   LOG(INFO) << "Set HttpNetworkSessionParams."
             << "disable_idle_sockets_close_on_memory_pressure = "
             << session_params->disable_idle_sockets_close_on_memory_pressure;
