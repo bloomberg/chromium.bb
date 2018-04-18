@@ -37,6 +37,7 @@ class BrowserSavePasswordProgressLogger;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordFormManager;
+class NewPasswordFormManager;
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
@@ -204,6 +205,10 @@ class PasswordManager : public LoginModel {
   pending_login_managers() {
     return pending_login_managers_;
   }
+
+  const std::vector<std::unique_ptr<NewPasswordFormManager>>& form_managers() {
+    return form_managers_;
+  }
 #endif
 
   NavigationEntryToCheck entry_to_check() const { return entry_to_check_; }
@@ -246,11 +251,15 @@ class PasswordManager : public LoginModel {
   // appropriate.
   void OnLoginSuccessful();
 
-  // Checks for every from in |forms| whether |pending_login_managers_| already
+  // Checks for every form in |forms| whether |pending_login_managers_| already
   // contain a manager for that form. If not, adds a manager for each such form.
   void CreatePendingLoginManagers(
       password_manager::PasswordManagerDriver* driver,
       const std::vector<autofill::PasswordForm>& forms);
+
+  // Checks for every form in |forms| whether |form_managers_| already contain a
+  // manager for that form. If not, adds a manager for each such form.
+  void CreateFormManagers(const std::vector<autofill::PasswordForm>& forms);
 
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.
@@ -280,6 +289,9 @@ class PasswordManager : public LoginModel {
   // Scoped in case PasswordManager gets deleted (e.g tab closes) between the
   // time a user submits a login form and gets to the next page.
   std::unique_ptr<PasswordFormManager> provisional_save_manager_;
+
+  // Contains one NewPasswordFormManager per each form on the page.
+  std::vector<std::unique_ptr<NewPasswordFormManager>> form_managers_;
 
   // The embedder-level client. Must outlive this class.
   PasswordManagerClient* const client_;

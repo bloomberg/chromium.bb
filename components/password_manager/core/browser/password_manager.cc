@@ -25,6 +25,7 @@
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/keychain_migration_status_mac.h"
 #include "components/password_manager/core/browser/log_manager.h"
+#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -447,6 +448,7 @@ void PasswordManager::UpdateFormManagers() {
 
 void PasswordManager::DropFormManagers() {
   pending_login_managers_.clear();
+  form_managers_.clear();
   provisional_save_manager_.reset();
   all_visible_forms_.clear();
 }
@@ -482,6 +484,7 @@ void PasswordManager::RemoveObserver(LoginModelObserver* observer) {
 void PasswordManager::DidNavigateMainFrame() {
   entry_to_check_ = NavigationEntryToCheck::LAST_COMMITTED;
   pending_login_managers_.clear();
+  form_managers_.clear();
 }
 
 void PasswordManager::OnPasswordFormSubmitted(
@@ -570,6 +573,11 @@ void PasswordManager::CreatePendingLoginManagers(
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_CREATE_LOGIN_MANAGERS_METHOD);
+  }
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kNewPasswordFormParsing)) {
+    CreateFormManagers(forms);
   }
 
   const PasswordForm::Scheme effective_form_scheme =
@@ -668,6 +676,27 @@ void PasswordManager::CreatePendingLoginManagers(
   if (logger) {
     logger->LogNumber(Logger::STRING_NEW_NUMBER_LOGIN_MANAGERS,
                       pending_login_managers_.size());
+  }
+}
+
+void PasswordManager::CreateFormManagers(
+    const std::vector<autofill::PasswordForm>& forms) {
+  // Find new forms.
+  std::vector<const autofill::FormData*> new_forms;
+  for (const autofill::PasswordForm& form : forms) {
+    bool form_manager_exists =
+        std::any_of(form_managers_.begin(), form_managers_.end(),
+                    [&form](const auto& form_manager) {
+                      return form_manager->DoesManage(form.form_data);
+                    });
+    if (!form_manager_exists)
+      new_forms.push_back(&form.form_data);
+  }
+
+  // Create form manager for new forms.
+  for (const autofill::FormData* new_form : new_forms) {
+    form_managers_.push_back(
+        std::make_unique<NewPasswordFormManager>(*new_form));
   }
 }
 
