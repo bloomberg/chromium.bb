@@ -1007,7 +1007,7 @@ String StylePropertySerializer::BorderImagePropertyValue() const {
       continue;
     if (!result.IsEmpty())
       result.Append(" ");
-    if (i == 2 | i == 3)
+    if (i == 2 || i == 3)
       result.Append("/ ");
     result.Append(value_text);
   }
