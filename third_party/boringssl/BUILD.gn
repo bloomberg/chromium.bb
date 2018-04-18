@@ -110,10 +110,7 @@ if (is_win && !is_msan) {
 component("boringssl") {
   sources = all_sources
   public = all_headers
-  friend = [
-    ":boringssl_crypto_tests",
-    ":boringssl_ssl_tests",
-  ]
+  friend = [ ":*" ]
   deps = [
     ":boringssl_asm",
     "//third_party/boringssl/src/third_party/fiat:fiat_license",
