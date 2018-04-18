@@ -17,6 +17,11 @@ PositionWithAffinityTemplate<Strategy>::PositionWithAffinityTemplate()
     : affinity_(TextAffinity::kDownstream) {}
 
 template <typename Strategy>
+PositionWithAffinityTemplate<Strategy>::PositionWithAffinityTemplate(
+    const PositionTemplate<Strategy>& position)
+    : position_(position), affinity_(TextAffinity::kDownstream) {}
+
+template <typename Strategy>
 PositionWithAffinityTemplate<Strategy>::~PositionWithAffinityTemplate() =
     default;
 
