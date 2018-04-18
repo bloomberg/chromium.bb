@@ -220,6 +220,13 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
     std::move(quit_closure).Run();
   }
 
+  void DidReadNotificationData(base::OnceClosure quit_closure,
+                               bool success,
+                               const NotificationDatabaseData& data) {
+    read_notification_data_callback_result_ = success;
+    std::move(quit_closure).Run();
+  }
+
   void DisplayPersistentNotificationSync(
       int64_t service_worker_registration_id,
       const PlatformNotificationData& platform_notification_data,
@@ -259,6 +266,19 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
     return get_displayed_callback_result_;
   }
 
+  // Synchronous wrapper of
+  // PlatformNotificationContext::ReadNotificationData
+  bool ReadNotificationData(const std::string& notification_id) {
+    base::RunLoop run_loop;
+    notification_context_->ReadNotificationData(
+        notification_id, GURL(kTestOrigin),
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            &BlinkNotificationServiceImplTest::DidReadNotificationData,
+            base::Unretained(this), run_loop.QuitClosure())));
+    run_loop.Run();
+    return read_notification_data_callback_result_;
+  }
+
  protected:
   TestBrowserThreadBundle thread_bundle_;  // Must be first member.
 
@@ -267,6 +287,8 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   std::unique_ptr<BlinkNotificationServiceImpl> notification_service_;
 
   TestBrowserContext browser_context_;
+
+  scoped_refptr<PlatformNotificationContextImpl> notification_context_;
 
   MockPlatformNotificationService mock_platform_service_;
 
@@ -277,14 +299,14 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
  private:
   NotificationBrowserClient notification_browser_client_;
 
-  scoped_refptr<PlatformNotificationContextImpl> notification_context_;
-
   blink::mojom::PermissionStatus permission_callback_result_ =
       blink::mojom::PermissionStatus::ASK;
 
   std::set<std::string> get_displayed_callback_result_;
 
   std::vector<std::string> get_notifications_callback_result_;
+
+  bool read_notification_data_callback_result_ = false;
 
   MockResourceContext resource_context_;
 
@@ -369,6 +391,65 @@ TEST_F(BlinkNotificationServiceImplTest,
   RunAllTasksUntilIdle();
 
   EXPECT_EQ(1u, GetDisplayedNotifications().size());
+}
+
+TEST_F(BlinkNotificationServiceImplTest, CloseDisplayedPersistentNotification) {
+  mock_platform_service_.SetPermission(blink::mojom::PermissionStatus::GRANTED);
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  RegisterServiceWorker(&registration);
+
+  DisplayPersistentNotificationSync(
+      registration->id(), PlatformNotificationData(), NotificationResources());
+
+  ASSERT_EQ(blink::mojom::PersistentNotificationError::NONE,
+            display_persistent_callback_result_);
+
+  // Wait for service to receive the Display call.
+  RunAllTasksUntilIdle();
+
+  std::set<std::string> notification_ids = GetDisplayedNotifications();
+  ASSERT_EQ(1u, notification_ids.size());
+
+  notification_service_->ClosePersistentNotification(*notification_ids.begin());
+
+  // Wait for service to receive the Close call.
+  RunAllTasksUntilIdle();
+
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(BlinkNotificationServiceImplTest,
+       ClosePersistentNotificationDeletesFromDatabase) {
+  mock_platform_service_.SetPermission(blink::mojom::PermissionStatus::GRANTED);
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  RegisterServiceWorker(&registration);
+
+  DisplayPersistentNotificationSync(
+      registration->id(), PlatformNotificationData(), NotificationResources());
+
+  ASSERT_EQ(blink::mojom::PersistentNotificationError::NONE,
+            display_persistent_callback_result_);
+
+  // Wait for service to receive the Display call.
+  RunAllTasksUntilIdle();
+
+  std::set<std::string> notification_ids = GetDisplayedNotifications();
+  ASSERT_EQ(1u, notification_ids.size());
+
+  std::string notification_id = *notification_ids.begin();
+
+  // Check data was indeed written.
+  ASSERT_EQ(true /* success */, ReadNotificationData(notification_id));
+
+  notification_service_->ClosePersistentNotification(notification_id);
+
+  // Wait for service to receive the Close call.
+  RunAllTasksUntilIdle();
+
+  // Data should now be deleted.
+  EXPECT_EQ(false /* success */, ReadNotificationData(notification_id));
 }
 
 TEST_F(BlinkNotificationServiceImplTest,

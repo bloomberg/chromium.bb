@@ -51,6 +51,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       const PlatformNotificationData& platform_notification_data,
       const NotificationResources& notification_resources,
       DisplayPersistentNotificationCallback) override;
+  void ClosePersistentNotification(const std::string& notification_id) override;
   void GetNotifications(int64_t service_worker_registration_id,
                         const std::string& filter_tag,
                         GetNotificationsCallback callback) override;

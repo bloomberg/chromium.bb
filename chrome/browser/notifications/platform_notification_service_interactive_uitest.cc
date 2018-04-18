@@ -1112,3 +1112,27 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
   ASSERT_EQ(1u, notification_ids.size());
   ASSERT_EQ(notification_ids[0], first_id);
 }
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
+                       CloseDisplayedPersistentNotification) {
+  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
+
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotification('action_close')",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications(true /* is_persistent */);
+  ASSERT_EQ(1u, notifications.size());
+
+  display_service_tester_->SimulateClick(
+      NotificationHandler::Type::WEB_PERSISTENT, notifications[0].id(),
+      base::nullopt /* action_index */, base::nullopt /* reply */);
+
+  ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
+  EXPECT_EQ("action_close", script_result);
+
+  notifications = GetDisplayedNotifications(true /* is_persistent */);
+  ASSERT_EQ(0u, notifications.size());
+}
