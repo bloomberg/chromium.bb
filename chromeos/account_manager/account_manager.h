@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "chromeos/chromeos_export.h"
 
@@ -31,6 +32,32 @@ class CHROMEOS_EXPORT AccountManager {
   // A map of account identifiers to login scoped tokens.
   using TokenMap = std::unordered_map<std::string, std::string>;
 
+  // A callback for list of Account Id Keys.
+  using AccountListCallback =
+      base::OnceCallback<void(std::vector<std::string>)>;
+
+  class Observer {
+   public:
+    Observer();
+    virtual ~Observer();
+
+    // Called when the list of accounts known to |AccountManager| is updated.
+    // Use |AccountManager::AddObserver| to add an |Observer|.
+    // Note: This is not called when the refresh token for an already known
+    // account is updated.
+    // Note: |Observer|s which register with |AccountManager| before its
+    // initialization is complete will get notified when |AccountManager| is
+    // fully initialized.
+    // Note: |Observer|s which register with |AccountManager| after its
+    // initialization is complete will not get an immediate
+    // notification-on-registration.
+    virtual void OnAccountListUpdated(
+        const std::vector<std::string>& accounts) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
   // Note: |Initialize| MUST be called at least once on this object.
   AccountManager();
   ~AccountManager();
@@ -40,12 +67,19 @@ class CHROMEOS_EXPORT AccountManager {
   void Initialize(const base::FilePath& home_dir);
 
   // Gets (async) a list of account identifiers known to |AccountManager|.
-  void GetAccounts(base::OnceCallback<void(std::vector<std::string>)> callback);
+  void GetAccounts(AccountListCallback callback);
 
   // Updates or inserts an LST (Login Scoped Token), for the account
   // corresponding to the given account id.
   void UpsertToken(const std::string& account_id,
                    const std::string& login_scoped_token);
+
+  // Add a non owning pointer to an |AccountManager::Observer|.
+  void AddObserver(Observer* observer);
+
+  // Removes an |AccountManager::Observer|. Does nothing if the |observer| is
+  // not in the list of known observers.
+  void RemoveObserver(Observer* observer);
 
  private:
   enum InitializationState {
@@ -56,7 +90,6 @@ class CHROMEOS_EXPORT AccountManager {
 
   friend class AccountManagerTest;
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestInitialization);
-  FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestUpsert);
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestPersistence);
 
   // Initializes |AccountManager| with the provided |task_runner| and location
@@ -75,16 +108,19 @@ class CHROMEOS_EXPORT AccountManager {
 
   // Does the actual work of getting a list of accounts. Assumes that
   // |AccountManager| initialization (|init_state_|) is complete.
-  void GetAccountsInternal(
-      base::OnceCallback<void(std::vector<std::string>)> callback);
+  void GetAccountsInternal(AccountListCallback callback);
 
   // Does the actual work of updating or inserting tokens. Assumes that
   // |AccountManager| initialization (|init_state_|) is complete.
   void UpsertTokenInternal(const std::string& account_id,
                            const std::string& login_scoped_token);
 
-  // Persists (async) the current state of |tokens_| on disk.
+  // Posts a task on |task_runner_|, which is usually a background thread, to
+  // persist the current state of |tokens_|.
   void PersistTokensAsync();
+
+  // Notify |Observer|s about an account list update.
+  void NotifyAccountListObservers();
 
   // Status of this object's initialization.
   InitializationState init_state_ = InitializationState::kNotStarted;
@@ -98,6 +134,10 @@ class CHROMEOS_EXPORT AccountManager {
 
   // Callbacks waiting on class initialization (|init_state_|).
   std::vector<base::OnceClosure> initialization_callbacks_;
+
+  // A list of |AccountManager| observers.
+  // Verifies that the list is empty on destruction.
+  base::ObserverList<Observer, true /* check_empty */> observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
