@@ -53,21 +53,24 @@ var ReportingView = (function() {
     },
 
     onReportingInfoChanged: function(reportingInfo) {
-      if (!reportingInfo)
+      if (!isObject_(reportingInfo))
         return false;
 
-      var enabled = reportingInfo.reportingEnabled;
+      var enabled = !!reportingInfo.reportingEnabled;
       setNodeDisplay($(ReportingView.DISABLED_BOX_ID), !enabled);
       setNodeDisplay($(ReportingView.ENABLED_BOX_ID), enabled);
+      if (!enabled)
+        return true;
 
-      displayReportDetail_(reportingInfo.reports);
-      displayClientDetail_(reportingInfo.clients);
+      displayReportDetail_(ensureArray_(reportingInfo.reports));
+      displayClientDetail_(ensureArray_(reportingInfo.clients));
       return true;
     },
   };
 
   /**
    * Displays information about each queued report in the Reporting cache.
+   * REQUIRES: |reportList| must be an array
    */
   function displayReportDetail_(reportList) {
     // Clear the existing content.
@@ -80,24 +83,29 @@ var ReportingView = (function() {
       return;
 
     for (var i = 0; i < reportList.length; ++i) {
-      var report = reportList[i];
+      var report = ensureObject_(reportList[i]);
       var tr = addNode($(ReportingView.REPORTS_TBODY_ID), 'tr');
 
       var queuedNode = addNode(tr, 'td');
-      var queuedDate = timeutil.convertTimeTicksToDate(report.queued);
-      timeutil.addNodeWithDate(queuedNode, queuedDate);
+      if (report.queued != undefined) {
+        var queuedDate = timeutil.convertTimeTicksToDate(report.queued);
+        timeutil.addNodeWithDate(queuedNode, queuedDate);
+      }
 
-      addNodeWithText(tr, 'td', report.url);
+      addNodeWithText(tr, 'td', valueOrDefault_(report.url, '[unknown URL]'));
 
       var statusNode = addNode(tr, 'td');
-      addTextNode(statusNode, report.status + ' (' + report.group);
-      if (report.depth > 0)
+      addTextNode(
+          statusNode, valueOrDefault_(report.status, '[unknown status]'));
+      addTextNode(
+          statusNode, ' (' + valueOrDefault_(report.group, '[unknown group]'));
+      if (report.depth !== undefined && report.depth > 0)
         addTextNode(statusNode, ', depth: ' + report.depth);
-      if (report.attempts > 0)
+      if (report.attempts !== undefined && report.attempts > 0)
         addTextNode(statusNode, ', attempts: ' + report.attempts);
       addTextNode(statusNode, ')');
 
-      addNodeWithText(tr, 'td', report.type);
+      addNodeWithText(tr, 'td', valueOrDefault_(report.type, '[unknown type]'));
 
       var contentNode = addNode(tr, 'td');
       if (report.type == 'network-error')
@@ -142,14 +150,17 @@ var ReportingView = (function() {
 
   /**
    * Displays format-specific detail for Network Error Logging reports.
+   * REQUIRES: |report| must be an object
    */
   function displayNetworkErrorContent_(contentNode, report) {
     var contentSections =
         addContentSections_(contentNode, 'Show raw report', 'Hide raw report');
 
-    addTextNode(contentSections.summary, report.body.type);
+    var body = ensureObject_(report.body);
+    addTextNode(
+        contentSections.summary, valueOrDefault_(body.type, '[unknown type]'));
     // Only show the status code if it's present and not 0.
-    if (report.body['status-code'])
+    if (body['status-code'])
       addTextNode(
           contentSections.summary, ' (' + report.body['status-code'] + ')');
 
@@ -160,6 +171,7 @@ var ReportingView = (function() {
   /**
    * Displays a generic content cell for reports whose type we don't know how to
    * render something specific for.
+   * REQUIRES: |report| must be an object
    */
   function displayGenericReportContent_(contentNode, report) {
     var contentSections =
@@ -170,6 +182,7 @@ var ReportingView = (function() {
 
   /**
    * Displays information about each origin that has provided Reporting headers.
+   * REQUIRES: |clientList| must be an array
    */
   function displayClientDetail_(clientList) {
     // Clear the existing content.
@@ -181,60 +194,72 @@ var ReportingView = (function() {
     if (empty)
       return;
 
+    var now = new Date();
     for (var i = 0; i < clientList.length; ++i) {
-      var now = new Date();
-
-      var client = clientList[i];
+      var client = ensureObject_(clientList[i]);
+      var groups = ensureArray_(client.groups);
+      if (groups.length == 0)
+        continue;
 
       // Calculate the total number of endpoints for this origin, so that we can
       // rowspan its origin cell.
       var originHeight = 0;
-      for (var j = 0; j < client.groups.length; ++j) {
-        var group = client.groups[j];
+      for (var j = 0; j < groups.length; ++j) {
+        var group = ensureObject_(groups[j]);
+        var endpoints = ensureArray_(group.endpoints);
         originHeight += group.endpoints.length;
       }
+      if (originHeight == 0)
+        continue;
 
-      for (var j = 0; j < client.groups.length; ++j) {
-        var group = client.groups[j];
-        for (var k = 0; k < group.endpoints.length; ++k) {
-          var endpoint = group.endpoints[k];
+      for (var j = 0; j < groups.length; ++j) {
+        var group = ensureObject_(groups[j]);
+        var endpoints = ensureArray_(group.endpoints);
+        for (var k = 0; k < endpoints.length; ++k) {
+          var endpoint = ensureObject_(endpoints[k]);
           var tr = addNode($(ReportingView.CLIENTS_TBODY_ID), 'tr');
 
           if (j == 0 && k == 0) {
             var originNode = addNode(tr, 'td');
             originNode.setAttribute('rowspan', originHeight);
-            addTextNode(originNode, client.origin);
+            addTextNode(
+                originNode, valueOrDefault_(client.origin, '[unknown origin]'));
           }
 
           if (k == 0) {
             var groupNode = addNode(tr, 'td');
             groupNode.setAttribute('rowspan', group.endpoints.length);
-            addTextNode(groupNode, group.name);
+            addTextNode(
+                groupNode, valueOrDefault_(group.name, '[unknown group]'));
 
             var expiresNode = addNode(tr, 'td');
             expiresNode.setAttribute('rowspan', group.endpoints.length);
-            var expiresDate = timeutil.convertTimeTicksToDate(group.expires);
-            timeutil.addNodeWithDate(expiresNode, expiresDate);
-            if (now > expiresDate) {
-              var expiredSpan = addNode(expiresNode, 'span');
-              expiredSpan.classList.add('warning-text');
-              addTextNode(expiredSpan, ' [expired]');
+            if (group.expires !== undefined) {
+              var expiresDate = timeutil.convertTimeTicksToDate(group.expires);
+              timeutil.addNodeWithDate(expiresNode, expiresDate);
+              if (now > expiresDate) {
+                var expiredSpan = addNode(expiresNode, 'span');
+                expiredSpan.classList.add('warning-text');
+                addTextNode(expiredSpan, ' [expired]');
+              }
             }
           }
 
           var endpointNode = addNode(tr, 'td');
-          addTextNode(endpointNode, endpoint.url);
+          addTextNode(
+              endpointNode,
+              valueOrDefault_(endpoint.url, '[unknown endpoint]'));
 
           var priorityNode = addNode(tr, 'td');
           priorityNode.classList.add('reporting-centered');
-          addTextNode(priorityNode, endpoint.priority);
+          addTextNode(priorityNode, valueOrDefault_(endpoint.priority, 0));
 
           var weightNode = addNode(tr, 'td');
           weightNode.classList.add('reporting-centered');
-          addTextNode(weightNode, endpoint.weight);
+          addTextNode(weightNode, valueOrDefault_(endpoint.weight, 1));
 
-          addUploadCount_(tr, endpoint.successful);
-          addUploadCount_(tr, endpoint.failed);
+          addUploadCount_(tr, ensureObject_(endpoint.successful));
+          addUploadCount_(tr, ensureObject_(endpoint.failed));
         }
       }
     }
@@ -242,15 +267,44 @@ var ReportingView = (function() {
 
   /**
    * Adds an upload count cell to the client details table.
+   * REQUIRES: |counts| must be an object
    */
   function addUploadCount_(tr, counts) {
     var node = addNode(tr, 'td');
     node.classList.add('reporting-centered');
-    if (counts.uploads == 0 && counts.reports == 0) {
+    var uploads = valueOrDefault_(counts.uploads, 0);
+    var reports = valueOrDefault_(counts.reports, 0);
+    if (uploads == 0 && reports == 0) {
       addTextNode(node, '-');
     } else {
-      addTextNode(node, counts.uploads + ' (' + counts.reports + ')');
+      addTextNode(node, uploads + ' (' + reports + ')');
     }
+  }
+
+  function isObject_(value) {
+    return value && typeof(value) === 'object';
+  }
+
+  function isArray_(value) {
+    return value !== undefined && value instanceof Array;
+  }
+
+  function ensureObject_(value) {
+    if (isObject_(value))
+      return value;
+    return {};
+  }
+
+  function ensureArray_(value) {
+    if (isArray_(value))
+      return value;
+    return [];
+  }
+
+  function valueOrDefault_(value, defaultValue) {
+    if (value != undefined)
+      return value;
+    return defaultValue;
   }
 
   return ReportingView;
