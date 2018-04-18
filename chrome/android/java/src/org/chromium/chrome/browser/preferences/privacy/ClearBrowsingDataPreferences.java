@@ -257,6 +257,8 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
         }
     }
 
+    public static final String CLEAR_BROWSING_DATA_FETCHER = "clearBrowsingDataFetcher";
+
     private OtherFormsOfHistoryDialogFragment mDialogAboutOtherFormsOfBrowsingHistory;
 
     private ProgressDialog mProgressDialog;
@@ -499,7 +501,9 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        if (savedInstanceState != null) {
+            mFetcher = savedInstanceState.getParcelable(CLEAR_BROWSING_DATA_FETCHER);
+        }
         mDialogOpened = SystemClock.elapsedRealtime();
         getActivity().setTitle(R.string.clear_browsing_data_title);
         PreferenceUtils.addPreferencesFromResource(this, getPreferenceXmlId());
@@ -552,6 +556,14 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
         assert spinnerOptionIndex != -1;
         spinner.setOptions(spinnerOptions, spinnerOptionIndex);
         spinner.setOnPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // mFetcher acts as a cache for important sites and history data. If the activity gets
+        // suspended, we can save the cached data and reuse it when we are activated again.
+        outState.putParcelable(CLEAR_BROWSING_DATA_FETCHER, mFetcher);
     }
 
     @Override
