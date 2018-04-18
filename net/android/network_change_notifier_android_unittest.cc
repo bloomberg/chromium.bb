@@ -420,7 +420,7 @@ TEST_F(NetworkChangeNotifierDelegateAndroidTest,
   EXPECT_EQ(2, delegate_observer_.bandwidth_notifications_count());
 }
 
-TEST_F(NetworkChangeNotifierAndroidTest, InitialSignal) {
+TEST_F(NetworkChangeNotifierAndroidTest, DISABLED_InitialSignal) {
   DNSChangeObserver dns_change_observer;
   NetworkChangeNotifier::AddDNSObserver(&dns_change_observer);
   base::RunLoop().Run();
