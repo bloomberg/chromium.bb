@@ -146,22 +146,6 @@ class ListContainer {
     helper_.data_.swap(other.helper_.data_);
   }
 
-  // Appends a new item without copying. The original item will not be
-  // destructed and will be replaced with a new DerivedElementType. The
-  // DerivedElementType does not have to match the moved type as a full block
-  // of memory will be moved (up to MaxSizeForDerivedClass()). A pointer to
-  // the moved element is returned.
-  template <typename DerivedElementType>
-  DerivedElementType* AppendByMoving(DerivedElementType* item) {
-    size_t max_size_for_derived_class = helper_.MaxSizeForDerivedClass();
-    void* new_item = helper_.Allocate(alignof(DerivedElementType),
-                                      max_size_for_derived_class);
-    memcpy(new_item, static_cast<void*>(item), max_size_for_derived_class);
-    // Construct a new element in-place so it can be destructed safely.
-    new (item) DerivedElementType;
-    return static_cast<DerivedElementType*>(new_item);
-  }
-
   size_t size() const { return helper_.size(); }
   bool empty() const { return helper_.empty(); }
   size_t GetCapacityInBytes() const { return helper_.GetCapacityInBytes(); }
