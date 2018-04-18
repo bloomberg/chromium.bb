@@ -312,6 +312,8 @@ TEST_F(DownloadManagerCoordinatorTest, Close) {
       "Download.IOSDownloadFileResult",
       static_cast<base::HistogramBase::Sample>(DownloadFileResult::NotStarted),
       1);
+  histogram_tester_.ExpectTotalCount(
+      "Download.IOSDownloadInstallDrivePromoShown", 0);
 }
 
 // Tests presenting Install Google Drive dialog. Coordinator presents StoreKit
@@ -429,6 +431,9 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
       static_cast<base::HistogramBase::Sample>(
           DownloadFileInBackground::SucceededWithoutBackgrounding),
       1);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadInstallDrivePromoShown",
+      static_cast<base::HistogramBase::Sample>(true), 1);
 }
 
 // Tests destroying download task for in progress download.
@@ -464,6 +469,8 @@ TEST_F(DownloadManagerCoordinatorTest, DestroyInProgressDownload) {
   histogram_tester_.ExpectUniqueSample(
       "Download.IOSDownloadFileResult",
       static_cast<base::HistogramBase::Sample>(DownloadFileResult::Other), 1);
+  histogram_tester_.ExpectTotalCount(
+      "Download.IOSDownloadInstallDrivePromoShown", 0);
 }
 
 // Tests quitting the app during in-progress download.
@@ -512,11 +519,16 @@ TEST_F(DownloadManagerCoordinatorTest, QuitDuringInProgressDownload) {
   histogram_tester_.ExpectUniqueSample(
       "Download.IOSDownloadFileResult",
       static_cast<base::HistogramBase::Sample>(DownloadFileResult::Other), 1);
+  histogram_tester_.ExpectTotalCount(
+      "Download.IOSDownloadInstallDrivePromoShown", 0);
   coordinator_.webStateList = nullptr;
 }
 
 // Tests opening the download in Google Drive app.
 TEST_F(DownloadManagerCoordinatorTest, OpenInDrive) {
+  application_ = OCMClassMock([UIApplication class]);
+  OCMStub([application_ sharedApplication]).andReturn(application_);
+  OCMStub([application_ canOpenURL:GetGoogleDriveAppUrl()]).andReturn(YES);
   web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
   task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
   coordinator_.downloadTask = &task;
@@ -546,6 +558,7 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInDrive) {
     base::RunLoop().RunUntilIdle();
     return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
   }));
+  task.SetDone(true);
 
   // Present Open In... menu.
   ASSERT_FALSE([document_interaction_controller presentedOpenInMenu]);
@@ -565,11 +578,17 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInDrive) {
   }
 
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileNetError", 0);
-  histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileResult", 0);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadFileResult",
+      static_cast<base::HistogramBase::Sample>(DownloadFileResult::Completed),
+      1);
   histogram_tester_.ExpectUniqueSample("Download.IOSDownloadedFileAction",
                                        static_cast<base::HistogramBase::Sample>(
                                            DownloadedFileAction::OpenedInDrive),
                                        1);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadInstallDrivePromoShown",
+      static_cast<base::HistogramBase::Sample>(false), 1);
 }
 
 // Tests opening the download in app other than Google Drive app.
@@ -628,6 +647,8 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInOtherApp) {
       static_cast<base::HistogramBase::Sample>(
           DownloadedFileAction::OpenedInOtherApp),
       1);
+  histogram_tester_.ExpectTotalCount(
+      "Download.IOSDownloadInstallDrivePromoShown", 0);
 }
 
 // Tests the failure to present Open In... menu. Typically happens on iOS 10
@@ -854,6 +875,8 @@ TEST_F(DownloadManagerCoordinatorTest, FailingInBackground) {
       static_cast<base::HistogramBase::Sample>(
           DownloadFileInBackground::FailedWithBackgrounding),
       1);
+  histogram_tester_.ExpectTotalCount(
+      "Download.IOSDownloadInstallDrivePromoShown", 0);
 }
 
 // Tests successful download in background.

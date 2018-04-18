@@ -58,6 +58,9 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
       if (task->GetErrorCode()) {
         base::UmaHistogramSparse("Download.IOSDownloadedFileNetError",
                                  -task->GetErrorCode());
+      } else {
+        UMA_HISTOGRAM_BOOLEAN("Download.IOSDownloadInstallDrivePromoShown",
+                              !IsGoogleDriveAppInstalled());
       }
 
       bool backgrounded = task->HasPerformedBackgroundDownload();
