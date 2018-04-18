@@ -89,19 +89,20 @@ class BluetoothAdapterWinTest : public testing::Test {
     num_stop_discovery_error_callbacks_++;
   }
 
-  typedef base::Callback<void(UMABluetoothDiscoverySessionOutcome)>
+  typedef base::OnceCallback<void(UMABluetoothDiscoverySessionOutcome)>
       DiscoverySessionErrorCallback;
 
-  void CallAddDiscoverySession(
-      const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) {
-    adapter_win_->AddDiscoverySession(nullptr, callback, error_callback);
+  void CallAddDiscoverySession(const base::Closure& callback,
+                               DiscoverySessionErrorCallback error_callback) {
+    adapter_win_->AddDiscoverySession(nullptr, callback,
+                                      std::move(error_callback));
   }
 
   void CallRemoveDiscoverySession(
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) {
-    adapter_win_->RemoveDiscoverySession(nullptr, callback, error_callback);
+      DiscoverySessionErrorCallback error_callback) {
+    adapter_win_->RemoveDiscoverySession(nullptr, callback,
+                                         std::move(error_callback));
   }
 
  protected:

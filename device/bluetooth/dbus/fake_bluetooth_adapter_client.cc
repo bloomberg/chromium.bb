@@ -133,9 +133,10 @@ FakeBluetoothAdapterClient::GetProperties(const dbus::ObjectPath& object_path) {
 void FakeBluetoothAdapterClient::StartDiscovery(
     const dbus::ObjectPath& object_path,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (object_path != dbus::ObjectPath(kAdapterPath)) {
-    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
+    PostDelayedTask(
+        base::BindOnce(std::move(error_callback), kNoResponseError, ""));
     return;
   }
 
@@ -157,15 +158,17 @@ void FakeBluetoothAdapterClient::StartDiscovery(
 void FakeBluetoothAdapterClient::StopDiscovery(
     const dbus::ObjectPath& object_path,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (object_path != dbus::ObjectPath(kAdapterPath)) {
-    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
+    PostDelayedTask(
+        base::BindOnce(std::move(error_callback), kNoResponseError, ""));
     return;
   }
 
   if (!discovering_count_) {
     LOG(WARNING) << "StopDiscovery called when not discovering";
-    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
+    PostDelayedTask(
+        base::BindOnce(std::move(error_callback), kNoResponseError, ""));
     return;
   }
 
@@ -194,9 +197,9 @@ void FakeBluetoothAdapterClient::RemoveDevice(
     const dbus::ObjectPath& object_path,
     const dbus::ObjectPath& device_path,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (object_path != dbus::ObjectPath(kAdapterPath)) {
-    error_callback.Run(kNoResponseError, "");
+    std::move(error_callback).Run(kNoResponseError, "");
     return;
   }
 
@@ -218,15 +221,17 @@ void FakeBluetoothAdapterClient::SetDiscoveryFilter(
     const dbus::ObjectPath& object_path,
     const DiscoveryFilter& discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (object_path != dbus::ObjectPath(kAdapterPath)) {
-    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
+    PostDelayedTask(
+        base::BindOnce(std::move(error_callback), kNoResponseError, ""));
     return;
   }
   VLOG(1) << "SetDiscoveryFilter: " << object_path.value();
 
   if (set_discovery_filter_should_fail_) {
-    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
+    PostDelayedTask(
+        base::BindOnce(std::move(error_callback), kNoResponseError, ""));
     set_discovery_filter_should_fail_ = false;
     return;
   }
@@ -240,7 +245,7 @@ void FakeBluetoothAdapterClient::CreateServiceRecord(
     const dbus::ObjectPath& object_path,
     const bluez::BluetoothServiceRecordBlueZ& record,
     const ServiceRecordCallback& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   ++last_handle_;
   records_.insert(
       std::pair<uint32_t, BluetoothServiceRecordBlueZ>(last_handle_, record));
@@ -251,11 +256,12 @@ void FakeBluetoothAdapterClient::RemoveServiceRecord(
     const dbus::ObjectPath& object_path,
     uint32_t handle,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   auto it = records_.find(handle);
   if (it == records_.end()) {
-    error_callback.Run(bluetooth_adapter::kErrorDoesNotExist,
-                       "Service record does not exist.");
+    std::move(error_callback)
+        .Run(bluetooth_adapter::kErrorDoesNotExist,
+             "Service record does not exist.");
     return;
   }
   records_.erase(it);
@@ -337,10 +343,9 @@ void FakeBluetoothAdapterClient::OnPropertyChanged(
   }
 }
 
-void FakeBluetoothAdapterClient::PostDelayedTask(
-    const base::Closure& callback) {
+void FakeBluetoothAdapterClient::PostDelayedTask(base::OnceClosure callback) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, callback,
+      FROM_HERE, std::move(callback),
       base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 }
 

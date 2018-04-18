@@ -43,17 +43,17 @@ bool MockBluetoothAdapter::SetPoweredImpl(bool powered) {
 void MockBluetoothAdapter::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {}
+    DiscoverySessionErrorCallback error_callback) {}
 
 void MockBluetoothAdapter::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {}
+    DiscoverySessionErrorCallback error_callback) {}
 
 void MockBluetoothAdapter::SetDiscoveryFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   SetDiscoveryFilterRaw(discovery_filter.get(), callback, error_callback);
 }
 

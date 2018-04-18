@@ -147,17 +147,17 @@ class TestBluetoothAdapter : public BluetoothAdapter {
   void AddDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) override {}
+      DiscoverySessionErrorCallback error_callback) override {}
 
   void RemoveDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) override {}
+      DiscoverySessionErrorCallback error_callback) override {}
 
   void SetDiscoveryFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) override {}
+      DiscoverySessionErrorCallback error_callback) override {}
 
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override {}

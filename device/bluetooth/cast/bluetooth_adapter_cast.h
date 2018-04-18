@@ -93,15 +93,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   void AddDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) override;
+      DiscoverySessionErrorCallback error_callback) override;
   void RemoveDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) override;
+      DiscoverySessionErrorCallback error_callback) override;
   void SetDiscoveryFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) override;
+      DiscoverySessionErrorCallback error_callback) override;
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
@@ -173,7 +173,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
     DiscoveryParams(device::BluetoothDiscoveryFilter* filter,
                     base::Closure success_callback,
                     DiscoverySessionErrorCallback error_callback);
-    DiscoveryParams(const DiscoveryParams&);
+    DiscoveryParams(DiscoveryParams&& params) noexcept;
+    DiscoveryParams& operator=(DiscoveryParams&& params);
     ~DiscoveryParams();
     device::BluetoothDiscoveryFilter* filter = nullptr;
     base::Closure success_callback;

@@ -350,7 +350,7 @@ void BluetoothAdapterMac::SetPowerStateFunctionForTesting(
 void BluetoothAdapterMac::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   DVLOG(1) << __func__;
   if (num_discovery_sessions_ > 0) {
     DCHECK(IsDiscovering());
@@ -361,7 +361,7 @@ void BluetoothAdapterMac::AddDiscoverySession(
       // TODO: Provide a more precise error here.
       ui_task_runner_->PostTask(
           FROM_HERE,
-          base::BindOnce(error_callback,
+          base::BindOnce(std::move(error_callback),
                          UMABluetoothDiscoverySessionOutcome::UNKNOWN));
       return;
     }
@@ -375,7 +375,7 @@ void BluetoothAdapterMac::AddDiscoverySession(
     // TODO: Provide a more precise error here.
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        UMABluetoothDiscoverySessionOutcome::UNKNOWN));
     return;
   }
@@ -390,7 +390,7 @@ void BluetoothAdapterMac::AddDiscoverySession(
 void BluetoothAdapterMac::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   DVLOG(1) << __func__;
 
   if (num_discovery_sessions_ > 1) {
@@ -403,7 +403,8 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
 
   if (num_discovery_sessions_ == 0) {
     DVLOG(1) << "No active discovery sessions. Returning error.";
-    error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_ACTIVE);
+    std::move(error_callback)
+        .Run(UMABluetoothDiscoverySessionOutcome::NOT_ACTIVE);
     return;
   }
 
@@ -416,7 +417,8 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
     if (!classic_discovery_manager_->StopDiscovery()) {
       DVLOG(1) << "Failed to stop classic discovery";
       // TODO: Provide a more precise error here.
-      error_callback.Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
+      std::move(error_callback)
+          .Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
       return;
     }
   }
@@ -437,9 +439,10 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
 void BluetoothAdapterMac::SetDiscoveryFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   NOTIMPLEMENTED();
-  error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
+  std::move(error_callback)
+      .Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
 }
 
 bool BluetoothAdapterMac::StartDiscovery(

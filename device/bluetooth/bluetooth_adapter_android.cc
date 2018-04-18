@@ -281,7 +281,7 @@ bool BluetoothAdapterAndroid::SetPoweredImpl(bool powered) {
 void BluetoothAdapterAndroid::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   // TODO(scheib): Support filters crbug.com/490401
   bool session_added = false;
   if (IsPowered()) {
@@ -309,14 +309,14 @@ void BluetoothAdapterAndroid::AddDiscoverySession(
     callback.Run();
   } else {
     // TODO(scheib): Eventually wire the SCAN_FAILED result through to here.
-    error_callback.Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
+    std::move(error_callback).Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
   }
 }
 
 void BluetoothAdapterAndroid::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   bool session_removed = false;
   if (num_discovery_sessions_ == 0) {
     VLOG(1) << "RemoveDiscoverySession: No scan in progress.";
@@ -341,17 +341,18 @@ void BluetoothAdapterAndroid::RemoveDiscoverySession(
     callback.Run();
   } else {
     // TODO(scheib): Eventually wire the SCAN_FAILED result through to here.
-    error_callback.Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
+    std::move(error_callback).Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
   }
 }
 
 void BluetoothAdapterAndroid::SetDiscoveryFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   // TODO(scheib): Support filters crbug.com/490401
   NOTIMPLEMENTED();
-  error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
+  std::move(error_callback)
+      .Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
 }
 
 void BluetoothAdapterAndroid::RemovePairingDelegateInternal(
