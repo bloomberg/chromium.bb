@@ -76,6 +76,12 @@ const char* ArrayBufferView::TypeName() {
     case kTypeUint32:
       return "Uint32";
       break;
+    case kTypeBigInt64:
+      return "BigInt64";
+      break;
+    case kTypeBigUint64:
+      return "BigUint64";
+      break;
     case kTypeFloat32:
       return "Float32";
       break;

@@ -1068,6 +1068,10 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
     return V8Uint16Array::ToImpl(object);
   if (object->IsUint32Array())
     return V8Uint32Array::ToImpl(object);
+  if (object->IsBigInt64Array())
+    return V8BigInt64Array::ToImpl(object);
+  if (object->IsBigUint64Array())
+    return V8BigUint64Array::ToImpl(object);
   if (object->IsFloat32Array())
     return V8Float32Array::ToImpl(object);
   if (object->IsFloat64Array())

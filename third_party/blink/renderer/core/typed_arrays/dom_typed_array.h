@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/bigint64_array.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/biguint64_array.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/float32_array.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/float64_array.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/int16_array.h"
@@ -100,6 +102,10 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    DOMTypedArray<WTF::BigInt64Array, v8::BigInt64Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    DOMTypedArray<WTF::BigUint64Array, v8::BigUint64Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
     DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     DOMTypedArray<WTF::Float64Array, v8::Float64Array>;
@@ -112,6 +118,9 @@ typedef DOMTypedArray<WTF::Uint8ClampedArray, v8::Uint8ClampedArray>
     DOMUint8ClampedArray;
 typedef DOMTypedArray<WTF::Uint16Array, v8::Uint16Array> DOMUint16Array;
 typedef DOMTypedArray<WTF::Uint32Array, v8::Uint32Array> DOMUint32Array;
+typedef DOMTypedArray<WTF::BigInt64Array, v8::BigInt64Array> DOMBigInt64Array;
+typedef DOMTypedArray<WTF::BigUint64Array, v8::BigUint64Array>
+    DOMBigUint64Array;
 typedef DOMTypedArray<WTF::Float32Array, v8::Float32Array> DOMFloat32Array;
 typedef DOMTypedArray<WTF::Float64Array, v8::Float64Array> DOMFloat64Array;
 

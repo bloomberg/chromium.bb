@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_big_int_64_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_big_uint_64_array.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_float32_array.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_float64_array.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_int16_array.h"
@@ -61,6 +63,8 @@ DEFINE_DOMTYPEDARRAY_TRAITS(DOMUint8Array, V8Uint8Array);
 DEFINE_DOMTYPEDARRAY_TRAITS(DOMUint8ClampedArray, V8Uint8ClampedArray);
 DEFINE_DOMTYPEDARRAY_TRAITS(DOMUint16Array, V8Uint16Array);
 DEFINE_DOMTYPEDARRAY_TRAITS(DOMUint32Array, V8Uint32Array);
+DEFINE_DOMTYPEDARRAY_TRAITS(DOMBigInt64Array, V8BigInt64Array);
+DEFINE_DOMTYPEDARRAY_TRAITS(DOMBigUint64Array, V8BigUint64Array);
 DEFINE_DOMTYPEDARRAY_TRAITS(DOMFloat32Array, V8Float32Array);
 DEFINE_DOMTYPEDARRAY_TRAITS(DOMFloat64Array, V8Float64Array);
 
@@ -85,6 +89,10 @@ template class CORE_TEMPLATE_EXPORT
     DOMTypedArray<WTF::Uint16Array, v8::Uint16Array>;
 template class CORE_TEMPLATE_EXPORT
     DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
+template class CORE_TEMPLATE_EXPORT
+    DOMTypedArray<WTF::BigInt64Array, v8::BigInt64Array>;
+template class CORE_TEMPLATE_EXPORT
+    DOMTypedArray<WTF::BigUint64Array, v8::BigUint64Array>;
 template class CORE_TEMPLATE_EXPORT
     DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
 template class CORE_TEMPLATE_EXPORT

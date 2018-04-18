@@ -74,6 +74,8 @@ TYPED_ARRAY_TYPES = frozenset([
     'Uint8ClampedArray',
     'Uint16Array',
     'Uint32Array',
+    'BigInt64Array',
+    'BigUint64Array',
 ])
 ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
     'ArrayBufferView'

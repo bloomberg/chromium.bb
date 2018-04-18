@@ -232,6 +232,8 @@ def interface_context(interface, interfaces):
             'bindings/core/v8/v8_uint8_clamped_array.h',
             'bindings/core/v8/v8_uint16_array.h',
             'bindings/core/v8/v8_uint32_array.h',
+            'bindings/core/v8/v8_big_int_64_array.h',
+            'bindings/core/v8/v8_big_uint_64_array.h',
             'bindings/core/v8/v8_float32_array.h',
             'bindings/core/v8/v8_float64_array.h',
             'bindings/core/v8/v8_data_view.h'))
