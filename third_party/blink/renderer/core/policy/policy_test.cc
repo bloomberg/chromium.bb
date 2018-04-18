@@ -140,7 +140,7 @@ TEST_F(IFramePolicyTest, TestCombinedPolicy) {
   ParsedFeaturePolicy container_policy = ParseFeaturePolicyAttribute(
       "geolocation 'src'; payment 'none'; midi; camera 'src'",
       SecurityOrigin::CreateFromString(kSelfOrigin),
-      SecurityOrigin::CreateFromString(kOriginA), nullptr, nullptr);
+      SecurityOrigin::CreateFromString(kOriginA), nullptr);
   GetPolicy()->UpdateContainerPolicy(
       container_policy, SecurityOrigin::CreateFromString(kOriginA));
   Vector<String> allowed_features = GetPolicy()->allowedFeatures();
