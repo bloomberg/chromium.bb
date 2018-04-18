@@ -75,9 +75,10 @@ constexpr char kIntentPrefix[] = "#Intent";
 constexpr char kLaunchFlags[] = "launchFlags";
 
 constexpr char kAndroidClockAppId[] = "ddmmnabaeomoacfpfjgghfpocfolhjlg";
+constexpr char kAndroidFilesAppId[] = "gmiohhmfhgfclpeacmdfancbipocempm";
 
 constexpr char const* kAppIdsHiddenInLauncher[] = {
-    kAndroidClockAppId, kSettingsAppId,
+    kAndroidClockAppId, kSettingsAppId, kAndroidFilesAppId,
 };
 
 // Returns true if |event_flags| came from a mouse or touch event.
