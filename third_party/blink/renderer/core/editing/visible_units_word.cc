@@ -81,6 +81,7 @@ PositionTemplate<Strategy> EndOfWordAlgorithm(
 
 PositionInFlatTree NextWordPositionInternal(
     const PositionInFlatTree& position) {
+  DCHECK(position.IsNotNull());
   PositionInFlatTree block_end_position;
   for (const LayoutBlock* block =
            &TextOffsetMapping::ComputeContainigBlock(position);
