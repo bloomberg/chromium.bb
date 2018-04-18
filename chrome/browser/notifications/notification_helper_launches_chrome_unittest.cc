@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This test file is an evolution of
+// notification_helper/notification_helper_process_unittest.cc. In addition to
+// testing launching notification_helper.exe by the OS via registry which is
+// what notification_helper_process_unittest is all about, this test also tests
+// if chrome.exe can be successfully launched by notification_helper.exe via the
+// NotificationActivator::Activate function.
+//
+// This test is compiled into unit_tests.exe under chrome rather than
+// notification_helper_unittests.exe. This is because unit_tests.exe has data
+// dependency on chrome.exe which is required by this test, and it's undesired
+// to make notification_helper_unittests.exe have data dependency on chrome.exe.
+
 #include <memory>
 
 #include <NotificationActivationCallback.h>
