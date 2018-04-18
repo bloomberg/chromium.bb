@@ -220,6 +220,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+    builder.set_enable_brotli(true);
+
     url_request_context_ = builder.Build();
   }
 
