@@ -111,7 +111,9 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
     signin_metrics::LogSigninAccessPointStarted(
         access_point,
         signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
-    signin_metrics::RecordSigninUserActionForAccessPoint(access_point);
+    signin_metrics::RecordSigninUserActionForAccessPoint(
+        access_point,
+        signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
     base::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
     params.SetBoolean("isLoginPrimaryAccount", true);
   }

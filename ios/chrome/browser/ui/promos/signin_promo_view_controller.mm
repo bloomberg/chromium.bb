@@ -96,9 +96,10 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
   [super viewDidAppear:animated];
 
   if ([self isBeingPresented] || [self isMovingToParentViewController]) {
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Signin_FromSigninPromo"));
     signin_metrics::LogSigninAccessPointStarted(
+        signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO,
+        signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+    signin_metrics::RecordSigninUserActionForAccessPoint(
         signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO,
         signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
   }

@@ -49,84 +49,6 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
   }
 }
 
-void RecordSigninDefaultUserActionForAccessPoint(
-    signin_metrics::AccessPoint access_point) {
-  switch (access_point) {
-    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninWithDefault_FromBookmarkManager"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_SigninWithDefault_FromRecentTabs"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_SigninWithDefault_FromSettings"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_SigninWithDefault_FromTabSwitcher"));
-      break;
-    default:
-      NOTREACHED() << "Unexpected value for access point "
-                   << static_cast<int>(access_point);
-      break;
-  }
-}
-
-void RecordSigninNotDefaultUserActionForAccessPoint(
-    signin_metrics::AccessPoint access_point) {
-  switch (access_point) {
-    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNotDefault_FromBookmarkManager"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_SigninNotDefault_FromRecentTabs"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_SigninNotDefault_FromSettings"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_SigninNotDefault_FromTabSwitcher"));
-      break;
-    default:
-      NOTREACHED() << "Unexpected value for access point "
-                   << static_cast<int>(access_point);
-      break;
-  }
-}
-
-void RecordSigninNewAccountUserActionForAccessPoint(
-    signin_metrics::AccessPoint access_point) {
-  switch (access_point) {
-    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccount_FromBookmarkManager"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_SigninNewAccount_FromRecentTabs"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_SigninNewAccount_FromSettings"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_SigninNewAccount_FromTabSwitcher"));
-      break;
-    default:
-      NOTREACHED() << "Unexpected value for access point "
-                   << static_cast<int>(access_point);
-      break;
-  }
-}
-
 void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
     signin_metrics::AccessPoint access_point,
     int displayed_count) {
@@ -507,8 +429,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
   DCHECK(_isSigninPromoViewVisible);
   DCHECK(![self isInvalidClosedOrNeverVisible]);
   [self sendImpressionsTillSigninButtonsHistogram];
-  signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint);
-  RecordSigninNewAccountUserActionForAccessPoint(_accessPoint);
+  signin_metrics::RecordSigninUserActionForAccessPoint(
+      _accessPoint, signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT);
   [self showSigninWithIdentity:nil
                    promoAction:signin_metrics::PromoAction::
                                    PROMO_ACTION_NEW_ACCOUNT];
@@ -520,8 +442,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
   DCHECK(_isSigninPromoViewVisible);
   DCHECK(![self isInvalidClosedOrNeverVisible]);
   [self sendImpressionsTillSigninButtonsHistogram];
-  signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint);
-  RecordSigninDefaultUserActionForAccessPoint(_accessPoint);
+  signin_metrics::RecordSigninUserActionForAccessPoint(
+      _accessPoint, signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT);
   [self showSigninWithIdentity:_defaultIdentity
                    promoAction:signin_metrics::PromoAction::
                                    PROMO_ACTION_WITH_DEFAULT];
@@ -533,8 +455,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
   DCHECK(_isSigninPromoViewVisible);
   DCHECK(![self isInvalidClosedOrNeverVisible]);
   [self sendImpressionsTillSigninButtonsHistogram];
-  signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint);
-  RecordSigninNotDefaultUserActionForAccessPoint(_accessPoint);
+  signin_metrics::RecordSigninUserActionForAccessPoint(
+      _accessPoint, signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT);
   [self showSigninWithIdentity:nil
                    promoAction:signin_metrics::PromoAction::
                                    PROMO_ACTION_NOT_DEFAULT];

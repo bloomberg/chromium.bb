@@ -89,8 +89,10 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 
   if (!_hasRecordedSigninStarted) {
     _hasRecordedSigninStarted = YES;
-    base::RecordAction(base::UserMetricsAction("Signin_Signin_FromStartPage"));
     signin_metrics::LogSigninAccessPointStarted(
+        signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+        signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+    signin_metrics::RecordSigninUserActionForAccessPoint(
         signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
         signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
   }

@@ -192,7 +192,8 @@ void EnableSyncFromPromo(
   }
 
   signin_metrics::LogSigninAccessPointStarted(access_point, promo_action);
-  signin_metrics::RecordSigninUserActionForAccessPoint(access_point);
+  signin_metrics::RecordSigninUserActionForAccessPoint(access_point,
+                                                       promo_action);
   std::move(create_dice_turn_sync_on_helper_callback)
       .Run(profile, browser, access_point, promo_action,
            signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,

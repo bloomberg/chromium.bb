@@ -245,6 +245,13 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
 
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
+    if (is_default_promo_account) {
+      EXPECT_EQ(1, user_action_tester.GetActionCount(
+                       "Signin_SigninWithDefault_FromBookmarkBubble"));
+    } else {
+      EXPECT_EQ(1, user_action_tester.GetActionCount(
+                       "Signin_SigninNotDefault_FromBookmarkBubble"));
+    }
 
     // Verify that the helper to enable sync is created with the expected
     // params.
@@ -288,6 +295,14 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
 
+    if (is_default_promo_account) {
+      EXPECT_EQ(1, user_action_tester.GetActionCount(
+                       "Signin_SigninWithDefault_FromBookmarkBubble"));
+    } else {
+      EXPECT_EQ(1, user_action_tester.GetActionCount(
+                       "Signin_SigninNotDefault_FromBookmarkBubble"));
+    }
+
     // Verify that the active tab has the correct DICE sign-in URL.
     content::WebContents* active_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -312,6 +327,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
       histogram_tester, signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Signin_SigninNewAccount_FromBookmarkBubble"));
 
   // Verify that the active tab has the correct DICE sign-in URL.
   content::WebContents* active_contents =
@@ -337,6 +354,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
       histogram_tester, signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Signin_SigninNewAccount_FromBookmarkBubble"));
 
   // Verify that the active tab has the correct DICE sign-in URL.
   content::WebContents* active_contents =

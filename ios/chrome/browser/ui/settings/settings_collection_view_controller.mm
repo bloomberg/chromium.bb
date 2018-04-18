@@ -751,7 +751,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   switch (itemType) {
     case ItemTypeSignInButton:
       signin_metrics::RecordSigninUserActionForAccessPoint(
-          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
+          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
+          signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
       [self showSignInWithIdentity:nil
                        promoAction:signin_metrics::PromoAction::
                                        PROMO_ACTION_NO_SIGNIN_PROMO

@@ -34,7 +34,7 @@ const AccessPoint kAccessPointsThatSupportImpression[] = {
     AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR,
     AccessPoint::ACCESS_POINT_TAB_SWITCHER};
 
-const AccessPoint kAccessPointsThatSupportImpressionWithAccount[] = {
+const AccessPoint kAccessPointsThatSupportPersonalizedPromos[] = {
     AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER,
     AccessPoint::ACCESS_POINT_RECENT_TABS,
     AccessPoint::ACCESS_POINT_SETTINGS,
@@ -118,9 +118,42 @@ class SigninMetricsTest : public ::testing::Test {
 TEST_F(SigninMetricsTest, RecordSigninUserActionForAccessPoint) {
   for (const AccessPoint& ap : GetAllAccessPoints()) {
     base::UserActionTester user_action_tester;
-    RecordSigninUserActionForAccessPoint(ap);
+    RecordSigninUserActionForAccessPoint(
+        ap, signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Signin_Signin_From" + GetAccessPointDescription(ap)));
+  }
+}
+
+TEST_F(SigninMetricsTest, RecordSigninUserActionWithPromoAction) {
+  for (const AccessPoint& ap : kAccessPointsThatSupportPersonalizedPromos) {
+    {
+      // PROMO_ACTION_WITH_DEFAULT promo action
+      base::UserActionTester user_action_tester;
+      RecordSigninUserActionForAccessPoint(
+          ap, signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT);
+      EXPECT_EQ(
+          1, user_action_tester.GetActionCount("Signin_SigninWithDefault_From" +
+                                               GetAccessPointDescription(ap)));
+    }
+    {
+      // PROMO_ACTION_NOT_DEFAULT promo action
+      base::UserActionTester user_action_tester;
+      RecordSigninUserActionForAccessPoint(
+          ap, signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT);
+      EXPECT_EQ(
+          1, user_action_tester.GetActionCount("Signin_SigninNotDefault_From" +
+                                               GetAccessPointDescription(ap)));
+    }
+    {
+      // PROMO_ACTION_NEW_ACCOUNT promo action
+      base::UserActionTester user_action_tester;
+      RecordSigninUserActionForAccessPoint(
+          ap, signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT);
+      EXPECT_EQ(
+          1, user_action_tester.GetActionCount("Signin_SigninNewAccount_From" +
+                                               GetAccessPointDescription(ap)));
+    }
   }
 }
 
@@ -134,7 +167,7 @@ TEST_F(SigninMetricsTest, RecordSigninImpressionUserAction) {
 }
 
 TEST_F(SigninMetricsTest, RecordSigninImpressionWithAccountUserAction) {
-  for (const AccessPoint& ap : kAccessPointsThatSupportImpressionWithAccount) {
+  for (const AccessPoint& ap : kAccessPointsThatSupportPersonalizedPromos) {
     base::UserActionTester user_action_tester;
     RecordSigninImpressionWithAccountUserActionForAccessPoint(ap, true);
     EXPECT_EQ(1, user_action_tester.GetActionCount(
@@ -144,7 +177,7 @@ TEST_F(SigninMetricsTest, RecordSigninImpressionWithAccountUserAction) {
 }
 
 TEST_F(SigninMetricsTest, RecordSigninImpressionWithNoAccountUserAction) {
-  for (const AccessPoint& ap : kAccessPointsThatSupportImpressionWithAccount) {
+  for (const AccessPoint& ap : kAccessPointsThatSupportPersonalizedPromos) {
     base::UserActionTester user_action_tester;
     RecordSigninImpressionWithAccountUserActionForAccessPoint(ap, false);
     EXPECT_EQ(1, user_action_tester.GetActionCount(

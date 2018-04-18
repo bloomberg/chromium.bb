@@ -397,7 +397,8 @@ void LogIsShared(const bool is_shared, const ReportingType type);
 // -----------------------------------------------------------------------------
 
 // Records corresponding sign in user action for an access point.
-void RecordSigninUserActionForAccessPoint(AccessPoint access_point);
+void RecordSigninUserActionForAccessPoint(AccessPoint access_point,
+                                          PromoAction promo_action);
 
 // Records |Signin_ImpressionWithAccount_From*| user action.
 void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point);
