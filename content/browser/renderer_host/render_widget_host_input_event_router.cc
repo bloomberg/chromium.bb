@@ -180,7 +180,8 @@ bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
 }
 
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
-    : last_mouse_move_target_(nullptr),
+    : touchscreen_gesture_target_in_map_(false),
+      last_mouse_move_target_(nullptr),
       last_mouse_move_root_view_(nullptr),
       active_touches_(0),
       in_touchscreen_gesture_pinch_(false),
@@ -1064,6 +1065,15 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
   return {nullptr, false, base::nullopt};
 }
 
+bool RenderWidgetHostInputEventRouter::IsViewInMap(
+    const RenderWidgetHostViewBase* view) const {
+  for (auto entry : owner_map_) {
+    if (entry.second == view)
+      return true;
+  }
+  return false;
+}
+
 void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
@@ -1132,6 +1142,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // RenderWidgetTargeter. These gesture events should always have a
     // unique_touch_event_id of 0.
     touchscreen_gesture_target_.target = target;
+    touchscreen_gesture_target_in_map_ = IsViewInMap(target);
     base::debug::SetCrashKeyString(target_source_key, "touch_id=0");
     DCHECK(target_location.has_value());
     touchscreen_gesture_target_.delta =
@@ -1157,11 +1168,14 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // don't worry about the fact we're ignoring |result.should_query_view|, as
     // this is the best we can do until we fix https://crbug.com/595422.
     touchscreen_gesture_target_.target = result.view;
+    touchscreen_gesture_target_in_map_ = IsViewInMap(result.view);
     base::debug::SetCrashKeyString(target_source_key, "no_matching_id");
     touchscreen_gesture_target_.delta = transformed_point - original_point;
   } else if (is_gesture_start) {
     touchscreen_gesture_target_ = gesture_target_it->second;
     touchscreen_gesture_target_map_.erase(gesture_target_it);
+    touchscreen_gesture_target_in_map_ =
+        IsViewInMap(touchscreen_gesture_target_.target);
 
     // Abort any scroll bubbling in progress to avoid double entry.
     if (touchscreen_gesture_target_.target &&
@@ -1189,6 +1203,11 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
   base::debug::SetCrashKeyString(
       target_ptr_key,
       base::StringPrintf("%p", touchscreen_gesture_target_.target));
+  static auto* target_ptr_in_map_key = base::debug::AllocateCrashKeyString(
+      "touchscreen-gesture-target-in-map", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(
+      target_ptr_in_map_key,
+      touchscreen_gesture_target_in_map_ ? "true" : "false");
   touchscreen_gesture_target_.target->ProcessGestureEvent(event, latency);
 }
 

@@ -146,6 +146,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       viz::EventSource source,
       gfx::PointF* transformed_point) const;
 
+  bool IsViewInMap(const RenderWidgetHostViewBase* view) const;
   void RouteTouchscreenGestureEvent(RenderWidgetHostViewBase* root_view,
                                     blink::WebGestureEvent* event,
                                     const ui::LatencyInfo& latency);
@@ -253,6 +254,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   TargetMap touchscreen_gesture_target_map_;
   TargetData touch_target_;
   TargetData touchscreen_gesture_target_;
+  // The following variable is temporary, for diagnosis of
+  // https://crbug.com/824774.
+  bool touchscreen_gesture_target_in_map_;
   TargetData touchpad_gesture_target_;
   TargetData bubbling_gesture_scroll_target_;
   TargetData first_bubbling_scroll_target_;
