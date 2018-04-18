@@ -180,29 +180,6 @@ void AddEntriesMessage::RegisterJSONConverter(
       "entries", &AddEntriesMessage::entries);
 }
 
-// Test volume.
-class TestVolume {
- protected:
-  explicit TestVolume(const std::string& name) : name_(name) {}
-  virtual ~TestVolume() {}
-
-  bool CreateRootDirectory(const Profile* profile) {
-    if (root_initialized_)
-      return true;
-
-    root_initialized_ = root_.Set(profile->GetPath().Append(name_));
-    return root_initialized_;
-  }
-
-  const std::string& name() const { return name_; }
-  const base::FilePath& root_path() const { return root_.GetPath(); }
-
- private:
-  std::string name_;
-  base::ScopedTempDir root_;
-  bool root_initialized_ = false;
-};
-
 // Listener to obtain the test relative messages synchronously.
 class FileManagerTestListener : public content::NotificationObserver {
  public:
@@ -250,6 +227,29 @@ class FileManagerTestListener : public content::NotificationObserver {
  private:
   base::circular_deque<Message> messages_;
   content::NotificationRegistrar registrar_;
+};
+
+// Test volume.
+class TestVolume {
+ protected:
+  explicit TestVolume(const std::string& name) : name_(name) {}
+  virtual ~TestVolume() {}
+
+  bool CreateRootDirectory(const Profile* profile) {
+    if (root_initialized_)
+      return true;
+
+    root_initialized_ = root_.Set(profile->GetPath().Append(name_));
+    return root_initialized_;
+  }
+
+  const std::string& name() const { return name_; }
+  const base::FilePath& root_path() const { return root_.GetPath(); }
+
+ private:
+  std::string name_;
+  base::ScopedTempDir root_;
+  bool root_initialized_ = false;
 };
 
 }  // anonymous namespace
