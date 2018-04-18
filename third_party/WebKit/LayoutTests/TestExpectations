@@ -4107,3 +4107,5 @@ crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ 
 crbug.com/833655 [ Linux ] virtual/new-remote-playback-pipeline/media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833658 [ Linux Win Mac ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Failure ]
+
+crbug.com/834446 [ Linux ] http/tests/misc/performance-memory.html [ Pass Failure ]
