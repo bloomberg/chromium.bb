@@ -87,7 +87,7 @@ using AppsNavigationCallback =
 
 // Callback to allow app-platform-specific code to asynchronously provide a list
 // of apps which can handle the navigation.
-using QueryAppsCallback =
+using GetAppsCallback =
     base::OnceCallback<void(std::vector<IntentPickerAppInfo> apps)>;
 
 }  // namespace chromeos
