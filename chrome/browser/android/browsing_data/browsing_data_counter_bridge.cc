@@ -68,7 +68,10 @@ void BrowsingDataCounterBridge::onCounterFinished(
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> result_string =
       base::android::ConvertUTF16ToJavaString(
-          env, GetChromeCounterTextFromResult(result.get()));
+          env,
+          GetChromeCounterTextFromResult(
+              result.get(),
+              ProfileManager::GetActiveUserProfile()->GetOriginalProfile()));
   Java_BrowsingDataCounterBridge_onBrowsingDataCounterFinished(env, jobject_,
                                                                result_string);
 }

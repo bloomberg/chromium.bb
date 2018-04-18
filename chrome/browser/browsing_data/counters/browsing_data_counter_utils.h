@@ -9,8 +9,11 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 
+class Profile;
+
 // Constructs the text to be displayed by a counter from the given |result|.
 base::string16 GetChromeCounterTextFromResult(
-    const browsing_data::BrowsingDataCounter::Result* result);
+    const browsing_data::BrowsingDataCounter::Result* result,
+    Profile* profile);
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_COUNTERS_BROWSING_DATA_COUNTER_UTILS_H_

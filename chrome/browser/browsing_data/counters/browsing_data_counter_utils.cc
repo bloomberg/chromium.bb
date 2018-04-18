@@ -8,6 +8,7 @@
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
 #include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -35,7 +36,8 @@ base::string16 FormatBytesMBOrHigher(
 }
 
 base::string16 GetChromeCounterTextFromResult(
-    const browsing_data::BrowsingDataCounter::Result* result) {
+    const browsing_data::BrowsingDataCounter::Result* result,
+    Profile* profile) {
   std::string pref_name = result->source()->GetPrefName();
 
   if (!result->Finished()) {
@@ -81,8 +83,20 @@ base::string16 GetChromeCounterTextFromResult(
         static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
             result)
             ->Value();
-    return l10n_util::GetPluralStringFUTF16(IDS_DEL_COOKIES_COUNTER_ADVANCED,
-                                            origins);
+
+    // Determines whether or not to show the count with exception message.
+    int del_cookie_counter_msg_id = IDS_DEL_COOKIES_COUNTER_ADVANCED;
+
+#if defined(OS_CHROMEOS)
+    if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
+#else  // !defined(OS_CHROMEOS)
+    if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
+#endif
+      del_cookie_counter_msg_id =
+          IDS_DEL_COOKIES_COUNTER_ADVANCED_WITH_EXCEPTION;
+    }
+
+    return l10n_util::GetPluralStringFUTF16(del_cookie_counter_msg_id, origins);
   }
 
   if (pref_name == browsing_data::prefs::kDeleteMediaLicenses) {

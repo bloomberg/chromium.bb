@@ -358,5 +358,4 @@ Polymer({
           'ClearBrowsingData_SwitchTo_AdvancedTab');
     }
   },
-
 });

@@ -75,7 +75,8 @@ TEST_F(BrowsingDataCounterUtilsTest, CacheCounterResult) {
         "Test params: %d bytes, %d is_upper_limit, %d is_basic_tab.",
         test_case.bytes, test_case.is_upper_limit, test_case.is_basic_tab));
 
-    base::string16 output = GetChromeCounterTextFromResult(&result);
+    base::string16 output =
+        GetChromeCounterTextFromResult(&result, GetProfile());
     EXPECT_EQ(output, base::ASCIIToUTF16(test_case.expected_output));
   }
 }
@@ -118,7 +119,8 @@ TEST_F(BrowsingDataCounterUtilsTest, HostedAppsCounterResult) {
         apps.size(),
         examples);
 
-    base::string16 output = GetChromeCounterTextFromResult(&result);
+    base::string16 output =
+        GetChromeCounterTextFromResult(&result, GetProfile());
     EXPECT_EQ(output, base::ASCIIToUTF16(test_case.expected_output));
   }
 }

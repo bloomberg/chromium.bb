@@ -487,7 +487,7 @@ void ClearBrowsingDataHandler::UpdateCounterText(
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::Value("update-counter-text"),
       base::Value(result->source()->GetPrefName()),
-      base::Value(GetChromeCounterTextFromResult(result.get())));
+      base::Value(GetChromeCounterTextFromResult(result.get(), profile_)));
 }
 
 void ClearBrowsingDataHandler::HandleTimePeriodChanged(
