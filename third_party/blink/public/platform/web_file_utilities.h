@@ -31,32 +31,16 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_UTILITIES_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_UTILITIES_H_
 
-#include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_url.h"
-
-#ifdef WIN32
-typedef void* HANDLE;
-#endif
-
 namespace blink {
 
+class WebString;
 struct WebFileInfo;
 
 class WebFileUtilities {
  public:
-#ifdef WIN32
-  typedef HANDLE FileHandle;
-#else
-  typedef int FileHandle;
-#endif
   virtual bool GetFileInfo(const WebString& path, WebFileInfo& result) {
     return false;
   }
-  virtual WebString DirectoryName(const WebString& path) { return WebString(); }
-  virtual WebString BaseName(const WebString& path) { return WebString(); }
-  virtual bool IsDirectory(const WebString& path) { return false; }
-  virtual WebURL FilePathToURL(const WebString& path) { return WebURL(); }
 
  protected:
   ~WebFileUtilities() = default;

@@ -39,17 +39,4 @@ bool WebFileUtilitiesImpl::GetFileInfo(const WebString& path,
   return true;
 }
 
-WebString WebFileUtilitiesImpl::DirectoryName(const WebString& path) {
-  return blink::FilePathToWebString(blink::WebStringToFilePath(path).DirName());
-}
-
-WebString WebFileUtilitiesImpl::BaseName(const WebString& path) {
-  return blink::FilePathToWebString(
-      blink::WebStringToFilePath(path).BaseName());
-}
-
-blink::WebURL WebFileUtilitiesImpl::FilePathToURL(const WebString& path) {
-  return net::FilePathToFileURL(blink::WebStringToFilePath(path));
-}
-
 }  // namespace content

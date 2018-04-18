@@ -30,9 +30,12 @@
 
 #include "third_party/blink/renderer/platform/file_metadata.h"
 
+#include "net/base/filename_util.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_file_info.h"
 #include "third_party/blink/public/platform/web_file_utilities.h"
+#include "url/gurl.h"
 
 namespace blink {
 
@@ -64,11 +67,14 @@ bool GetFileMetadata(const String& path, FileMetadata& metadata) {
 }
 
 String DirectoryName(const String& path) {
-  return Platform::Current()->GetFileUtilities()->DirectoryName(path);
+  return FilePathToWebString(WebStringToFilePath(path).DirName());
 }
 
 KURL FilePathToURL(const String& path) {
-  return Platform::Current()->GetFileUtilities()->FilePathToURL(path);
+  GURL gurl = net::FilePathToFileURL(WebStringToFilePath(path));
+  const std::string& url_spec = gurl.possibly_invalid_spec();
+  return KURL(AtomicString::FromUTF8(url_spec.data(), url_spec.length()),
+              gurl.parsed_for_possibly_invalid_spec(), gurl.is_valid());
 }
 
 STATIC_ASSERT_ENUM(WebFileInfo::kTypeUnknown, FileMetadata::kTypeUnknown);
