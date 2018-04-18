@@ -1141,11 +1141,15 @@
     ],
     "isolated_scripts": [
       {
-        "experiment_percentage": 10,
         "isolate_name": "mini_installer_tests",
         "name": "mini_installer_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high"
+            }
+          ]
         }
       }
     ]
