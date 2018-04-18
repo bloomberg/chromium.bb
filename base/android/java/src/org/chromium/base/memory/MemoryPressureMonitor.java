@@ -71,9 +71,8 @@ import java.util.concurrent.TimeUnit;
  * 2. Services (GPU, renderers) don't poll, instead they get additional pressure signals
  *    from the main process.
  *
- * NOTE: except for notifyCurrentPressure() this class should only be used on UiThread
- *       as defined by ThreadUtils (which is Android main thread for Chrome, but can be
- *       some other thread for WebView).
+ * NOTE: This class should only be used on UiThread as defined by ThreadUtils (which is
+ *       Android main thread for Chrome, but can be some other thread for WebView).
  */
 @MainDex
 public class MemoryPressureMonitor {
@@ -176,14 +175,18 @@ public class MemoryPressureMonitor {
      * Notifies the class about change in memory pressure.
      * Note that |pressure| might get throttled or delayed, i.e. calling this method doesn't
      * necessarily call the callbacks. See the class comment.
-     * Unlike all other methods in this class, this method can be called on any thread.
      */
     public void notifyPressure(@MemoryPressureLevel int pressure) {
-        if (ThreadUtils.runningOnUiThread()) {
-            notifyPressureOnUiThread(pressure);
-        } else {
-            ThreadUtils.postOnUiThread(() -> notifyPressureOnUiThread(pressure));
+        ThreadUtils.assertOnUiThread();
+
+        if (mIsInsideThrottlingInterval) {
+            // We've already reported during this interval. Save |pressure| and act on
+            // it later, when the interval finishes.
+            mThrottledPressure = pressure;
+            return;
         }
+
+        reportPressure(pressure);
     }
 
     /**
@@ -193,17 +196,6 @@ public class MemoryPressureMonitor {
     public @MemoryPressureLevel int getLastReportedPressure() {
         ThreadUtils.assertOnUiThread();
         return mLastReportedPressure;
-    }
-
-    private void notifyPressureOnUiThread(@MemoryPressureLevel int pressure) {
-        if (mIsInsideThrottlingInterval) {
-            // We've already reported during this interval. Save |pressure| and act on
-            // it later, when the interval finishes.
-            mThrottledPressure = pressure;
-            return;
-        }
-
-        reportPressure(pressure);
     }
 
     private void reportPressure(@MemoryPressureLevel int pressure) {

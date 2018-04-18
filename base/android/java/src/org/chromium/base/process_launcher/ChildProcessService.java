@@ -21,6 +21,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureLevel;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.memory.MemoryPressureMonitor;
@@ -151,9 +152,11 @@ public abstract class ChildProcessService extends Service {
             // So we're ignoring pressure from the host process if it's better than the last
             // reported pressure. I.e. the host process can drive pressure up, but it'll go
             // down only when we the service get a signal through ComponentCallbacks2.
-            if (pressure >= MemoryPressureMonitor.INSTANCE.getLastReportedPressure()) {
-                MemoryPressureMonitor.INSTANCE.notifyPressure(pressure);
-            }
+            ThreadUtils.postOnUiThread(() -> {
+                if (pressure >= MemoryPressureMonitor.INSTANCE.getLastReportedPressure()) {
+                    MemoryPressureMonitor.INSTANCE.notifyPressure(pressure);
+                }
+            });
         }
     };
 
