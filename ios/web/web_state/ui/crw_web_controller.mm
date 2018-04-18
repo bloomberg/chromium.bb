@@ -1998,11 +1998,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
   context->SetUrl(URL);
   web::NavigationItemImpl* item = web::GetItemWithUniqueID(
       self.navigationManagerImpl, context->GetNavigationItemUniqueID());
-  item->SetVirtualURL(URL);
-  item->SetURL(URL);
-  // Redirects (3xx response code), must change POST requests to GETs.
-  item->SetPostData(nil);
-  item->ResetHttpRequestHeaders();
+
+  // Associated item can be a pending item, previously discarded by another
+  // navigation. WKWebView allows multiple provisional navigations, while
+  // Navigation Manager has only one pending navigation.
+  if (item) {
+    item->SetVirtualURL(URL);
+    item->SetURL(URL);
+    // Redirects (3xx response code), must change POST requests to GETs.
+    item->SetPostData(nil);
+    item->ResetHttpRequestHeaders();
+  }
 
   _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
 }
