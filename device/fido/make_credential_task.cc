@@ -63,8 +63,21 @@ void MakeCredentialTask::OnCtapMakeCredentialResponseReceived(
     return;
   }
 
-  std::move(callback_).Run(GetResponseCode(*device_response),
-                           ReadCTAPMakeCredentialResponse(*device_response));
+  auto response_code = GetResponseCode(*device_response);
+  if (response_code != CtapDeviceResponseCode::kSuccess) {
+    std::move(callback_).Run(response_code, base::nullopt);
+    return;
+  }
+
+  auto parsed_response = ReadCTAPMakeCredentialResponse(*device_response);
+  if (!parsed_response ||
+      !parsed_response->CheckRpIdHash(request_parameter_.rp().rp_id())) {
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                             base::nullopt);
+    return;
+  }
+
+  std::move(callback_).Run(response_code, std::move(parsed_response));
 }
 
 bool MakeCredentialTask::CheckIfAuthenticatorSelectionCriteriaAreSatisfied() {

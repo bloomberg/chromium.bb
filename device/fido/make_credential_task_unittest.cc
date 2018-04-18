@@ -29,7 +29,7 @@ namespace {
 
 constexpr uint8_t kClientDataHash[] = {0x01, 0x02, 0x03};
 constexpr uint8_t kUserId[] = {0x01, 0x02, 0x03};
-constexpr char kRpId[] = "google.com";
+constexpr char kRpId[] = "acme.com";
 
 using TestMakeCredentialTaskCallback =
     ::device::test::StatusAndValueCallbackReceiver<
@@ -115,6 +115,23 @@ TEST_F(FidoMakeCredentialTaskTest, TestIncorrectAuthenticatorGetInfoResponse) {
             make_credential_callback_receiver().status());
   EXPECT_EQ(ProtocolVersion::kU2f, device->supported_protocol());
   EXPECT_FALSE(device->device_info());
+}
+
+TEST_F(FidoMakeCredentialTaskTest, TestMakeCredentialWithIncorrectRpIdHash) {
+  auto device = std::make_unique<MockFidoDevice>();
+
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorMakeCredential,
+      test_data::kTestMakeCredentialResponseWithIncorrectRpIdHash);
+
+  const auto task = CreateMakeCredentialTask(device.get());
+  make_credential_callback_receiver().WaitForCallback();
+
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
+            make_credential_callback_receiver().status());
 }
 
 TEST_F(FidoMakeCredentialTaskTest,

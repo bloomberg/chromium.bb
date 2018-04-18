@@ -60,6 +60,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
     return attested_data_;
   }
 
+  const std::vector<uint8_t>& application_parameter() const {
+    return application_parameter_;
+  }
+
   bool obtained_user_presence() const {
     return flags_ & base::strict_cast<uint8_t>(Flag::kTestOfUserPresence);
   }
@@ -79,6 +83,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
  private:
   // The application parameter: a SHA-256 hash of either the RP ID or the AppID
   // associated with the credential.
+  // TODO(hongjunchoi): Replace fixed size vector components with std::array.
   std::vector<uint8_t> application_parameter_;
 
   // Flags (bit 0 is the least significant bit):

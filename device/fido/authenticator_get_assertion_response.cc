@@ -48,8 +48,8 @@ AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
   if (signature.empty())
     return base::nullopt;
 
-  auto response = AuthenticatorGetAssertionResponse(
-      std::move(authenticator_data), std::move(signature));
+  AuthenticatorGetAssertionResponse response(std::move(authenticator_data),
+                                             std::move(signature));
   response.SetCredential(PublicKeyCredentialDescriptor(
       to_string(CredentialType::kPublicKey), key_handle));
 
@@ -70,6 +70,11 @@ AuthenticatorGetAssertionResponse& AuthenticatorGetAssertionResponse::operator=(
 
 AuthenticatorGetAssertionResponse::~AuthenticatorGetAssertionResponse() =
     default;
+
+const std::vector<uint8_t>& AuthenticatorGetAssertionResponse::GetRpIdHash()
+    const {
+  return authenticator_data_.application_parameter();
+}
 
 AuthenticatorGetAssertionResponse&
 AuthenticatorGetAssertionResponse::SetCredential(

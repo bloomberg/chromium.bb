@@ -59,7 +59,7 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
 
 constexpr char kRelyingPartySecurityErrorMessage[] =
     "SecurityError: The relying party ID 'localhost' is not a registrable "
-    "domain suffix of, nor equal to 'https://www.example.com";
+    "domain suffix of, nor equal to 'https://www.acme.com";
 
 constexpr char kAlgorithmUnsupportedErrorMessage[] =
     "NotSupportedError: None of the algorithms specified in "
@@ -114,7 +114,7 @@ constexpr char kRequiredVerification[] = "required";
 
 // Default values for kCreatePublicKeyTemplate.
 struct CreateParameters {
-  const char* rp_id = "example.com";
+  const char* rp_id = "acme.com";
   bool require_resident_key = false;
   const char* user_verification = kPreferredVerification;
   const char* authenticator_attachment = kCrossPlatform;
@@ -135,7 +135,7 @@ std::string BuildCreateCallWithParameters(const CreateParameters& parameters) {
 constexpr char kGetPublicKeyTemplate[] =
     "navigator.credentials.get({ publicKey: {"
     "  challenge: new TextEncoder().encode('climb a mountain'),"
-    "  rp: 'example.com',"
+    "  rp: 'acme.com',"
     "  timeout: 60000,"
     "  userVerification: '$1',"
     "  $2}"
@@ -234,7 +234,7 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
     https_server().ServeFilesFromSourceDirectory("content/test/data");
     ASSERT_TRUE(https_server().Start());
 
-    NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title1.html"));
+    NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
   }
 
   GURL GetHttpsURL(const std::string& hostname,
@@ -293,7 +293,7 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
   webauth::mojom::PublicKeyCredentialCreationOptionsPtr
   BuildBasicCreateOptions() {
     auto rp = webauth::mojom::PublicKeyCredentialRpEntity::New(
-        "example.com", "example.com", base::nullopt);
+        "acme.com", "acme.com", base::nullopt);
 
     std::vector<uint8_t> kTestUserId{0, 0, 0};
     auto user = webauth::mojom::PublicKeyCredentialUserEntity::New(
@@ -331,7 +331,7 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
 
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
     auto mojo_options = webauth::mojom::PublicKeyCredentialRequestOptions::New(
-        kTestChallenge, base::TimeDelta::FromSeconds(30), "example.com",
+        kTestChallenge, base::TimeDelta::FromSeconds(30), "acme.com",
         std::move(credentials),
         webauth::mojom::UserVerificationRequirement::PREFERRED, base::nullopt);
 
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
                                   create_callback_receiver.callback());
 
   fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
-  NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title2.html"));
+  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html"));
   WaitForConnectionError();
 
   // The next active document should be able to successfully call
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
                                 get_callback_receiver.callback());
 
   fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
-  NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title2.html"));
+  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html"));
   WaitForConnectionError();
 
   // The next active document should be able to successfully call
@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
   ScopedNavigationCancellingThrottleInstaller navigation_canceller(
       shell()->web_contents());
 
-  NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title2.html"));
+  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html"));
 
   auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
   TestCreateCallbackReceiver create_callback_receiver;
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
       }));
 
   auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
-  NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title2.html"));
+  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html"));
   WaitForConnectionError();
 
   // Normally, when the request is serviced, the implementation retrieves the

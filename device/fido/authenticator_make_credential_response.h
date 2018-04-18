@@ -36,7 +36,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
       AuthenticatorMakeCredentialResponse&& that);
   AuthenticatorMakeCredentialResponse& operator=(
       AuthenticatorMakeCredentialResponse&& other);
-  ~AuthenticatorMakeCredentialResponse();
+  ~AuthenticatorMakeCredentialResponse() override;
 
   std::vector<uint8_t> GetCBOREncodedAttestationObject() const;
 
@@ -50,6 +50,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
   // the bit to request that is not set. (Normal attestation certificates are
   // not indended to be trackable.)
   bool IsAttestationCertificateInappropriatelyIdentifying();
+
+  // ResponseData:
+  const std::vector<uint8_t>& GetRpIdHash() const override;
 
  private:
   AttestationObject attestation_object_;

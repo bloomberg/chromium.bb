@@ -29,7 +29,7 @@ namespace {
 
 constexpr uint8_t kClientDataHash[] = {0x01, 0x02, 0x03};
 constexpr uint8_t kUserId[] = {0x01, 0x02, 0x03};
-constexpr char kRpId[] = "google.com";
+constexpr char kRpId[] = "acme.com";
 
 using TestMakeCredentialRequestCallback = test::StatusAndValueCallbackReceiver<
     FidoReturnCode,

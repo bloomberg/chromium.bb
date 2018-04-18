@@ -85,4 +85,9 @@ bool AuthenticatorMakeCredentialResponse::
       .IsAttestationCertificateInappropriatelyIdentifying();
 }
 
+const std::vector<uint8_t>& AuthenticatorMakeCredentialResponse::GetRpIdHash()
+    const {
+  return attestation_object_.rp_id_hash();
+}
+
 }  // namespace device
