@@ -138,12 +138,13 @@ void av1_decoder_remove(AV1Decoder *pbi) {
 
   aom_get_worker_interface()->end(&pbi->lf_worker);
   aom_free(pbi->lf_worker.data1);
-  aom_free(pbi->tile_data);
+  aom_free(pbi->thread_data);
+
   for (i = 0; i < pbi->num_tile_workers; ++i) {
     AVxWorker *const worker = &pbi->tile_workers[i];
     aom_get_worker_interface()->end(worker);
   }
-  aom_free(pbi->tile_worker_info);
+  aom_free(pbi->tile_data);
   aom_free(pbi->tile_workers);
 
 #if CONFIG_ACCOUNTING

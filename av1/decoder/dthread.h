@@ -22,6 +22,13 @@ extern "C" {
 
 struct AV1Common;
 struct AV1Decoder;
+struct ThreadData;
+
+typedef struct DecWorkerData {
+  struct ThreadData *td;
+  int tile_start, tile_end;  // pbi->tile_buffers to decode, inclusive
+  struct aom_internal_error_info error_info;
+} DecWorkerData;
 
 // WorkerData for the FrameWorker thread. It contains all the information of
 // the worker and decode structures for decoding a frame.

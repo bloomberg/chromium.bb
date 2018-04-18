@@ -33,15 +33,19 @@
 extern "C" {
 #endif
 
-typedef struct TileData {
-  AV1_COMMON *cm;
-  aom_reader bit_reader;
+typedef struct ThreadData {
+  aom_reader *bit_reader;
   DECLARE_ALIGNED(32, MACROBLOCKD, xd);
   /* dqcoeff are shared by all the planes. So planes must be decoded serially */
   DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MAX_TX_SQUARE]);
-  DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
   DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_PALETTE_SQUARE]);
-} TileData;
+} ThreadData;
+
+typedef struct TileDataDec {
+  TileInfo tile_info;
+  aom_reader bit_reader;
+  DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
+} TileDataDec;
 
 typedef struct TileBufferDec {
   const uint8_t *data;
@@ -67,10 +71,10 @@ typedef struct AV1Decoder {
   AVxWorker *frame_worker_owner;  // frame_worker that owns this pbi.
   AVxWorker lf_worker;
   AVxWorker *tile_workers;
-  TileInfo *tile_worker_info;
   int num_tile_workers;
-
-  TileData *tile_data;
+  DecWorkerData *thread_data;
+  ThreadData td;
+  TileDataDec *tile_data;
   int allocated_tiles;
 
   TileBufferDec tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];

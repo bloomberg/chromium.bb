@@ -26,6 +26,8 @@ typedef struct TileInfo {
   int mi_row_start, mi_row_end;
   int mi_col_start, mi_col_end;
   int tg_horz_boundary;
+  int tile_row;
+  int tile_col;
 } TileInfo;
 
 // initializes 'tile->mi_(row|col)_(start|end)' for (row, col) based on
