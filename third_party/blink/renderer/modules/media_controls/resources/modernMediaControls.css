@@ -315,6 +315,10 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
   background-image: -webkit-image-set(url(ic_pause.svg) 1x);
 }
 
+video::-webkit-media-controls.state-playing:not(.audio-only) input[pseudo="-webkit-media-controls-play-button" i] {
+  background-image: -webkit-image-set(url(ic_pause_white.svg) 1x);
+}
+
 /**
  * Timeline
  */
