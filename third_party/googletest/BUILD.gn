@@ -90,7 +90,11 @@ source_set("gtest") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
+  defines = []
   if (is_nacl || !build_with_chromium) {
+    defines += [
+      "GTEST_DISABLE_PRINT_STACK_TRACE"
+    ]
     sources -= [
       "custom/gtest/internal/custom/stack_trace_getter.cc",
       "custom/gtest/internal/custom/stack_trace_getter.h",
