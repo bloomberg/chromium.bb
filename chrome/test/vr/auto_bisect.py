@@ -498,10 +498,16 @@ def BisectRegression(args, unknown_args):
     os.environ['DOWNLOAD_VR_TEST_APKS'] = '1'
     try:
       if args.good_value == None:
+        # Once we've run "git bisect start" and set the good/bad revisions,
+        # we'll be in a detached head state before we sync. However, the git
+        # bisect has to start after this point, so we can't use that behavior
+        # here. So, manually sync to the revision to get into a detached state.
+        subprocess.check_output(['git', 'checkout', args.good_revision])
         args.good_value = GetValueAtRevision(args, unknown_args,
             args.good_revision, output_dir)
         print '=== Got initial good value of %f ===' % args.good_value
       if args.bad_value == None:
+        subprocess.check_output(['git', 'checkout', args.bad_revision])
         args.bad_value = GetValueAtRevision(args, unknown_args,
             args.bad_revision, output_dir)
         print '=== Got initial bad value of %f ===' % args.bad_value
