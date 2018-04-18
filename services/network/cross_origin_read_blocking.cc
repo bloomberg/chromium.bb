@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <string>
+#include <unordered_set>
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -16,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 
 using base::StringPiece;
@@ -77,6 +79,51 @@ CrossOriginReadBlocking::SniffingResult MatchesSignature(
     }
   }
   return CrossOriginReadBlocking::kNo;
+}
+
+// Headers from
+// https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
+//
+// Note that XSDB doesn't block responses allowed through CORS - this means
+// that the list of allowed headers below doesn't have to consider header
+// names listed in the Access-Control-Expose-Headers header.
+const char* const kCorsSafelistedHeaders[] = {
+    "cache-control", "content-language", "content-type",
+    "expires",       "last-modified",    "pragma",
+};
+
+// Removes headers that should be blocked in cross-origin case.
+// See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
+void BlockResponseHeaders(
+    const scoped_refptr<net::HttpResponseHeaders>& headers) {
+  DCHECK(headers);
+  std::unordered_set<std::string> names_of_headers_to_remove;
+
+  size_t it = 0;
+  std::string name;
+  std::string value;
+  while (headers->EnumerateHeaderLines(&it, &name, &value)) {
+    // Don't remove CORS headers - doing so would lead to incorrect error
+    // messages for CORS-blocked responses (e.g. Blink would say "[...] No
+    // 'Access-Control-Allow-Origin' header is present [...]" instead of saying
+    // something like "[...] Access-Control-Allow-Origin' header has a value
+    // 'http://www2.localhost:8000' that is not equal to the supplied origin
+    // [...]").
+    if (base::StartsWith(name, "Access-Control-",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      continue;
+    }
+
+    // Remove all other headers (but note the final exclusion below).
+    names_of_headers_to_remove.insert(base::ToLowerASCII(name));
+  }
+
+  // Exclude from removals headers from
+  // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
+  for (const char* header : kCorsSafelistedHeaders)
+    names_of_headers_to_remove.erase(header);
+
+  headers->RemoveHeaders(names_of_headers_to_remove);
 }
 
 }  // namespace
@@ -329,6 +376,23 @@ CrossOriginReadBlocking::SniffForFetchOnlyResource(base::StringPiece data) {
 
   // A non-empty JSON object also effectively introduces a JS syntax error.
   return SniffForJSON(data);
+}
+
+// static
+void CrossOriginReadBlocking::SanitizeBlockedResponse(
+    const scoped_refptr<network::ResourceResponse>& response) {
+  DCHECK(response);
+  response->head.content_length = 0;
+  if (response->head.headers)
+    BlockResponseHeaders(response->head.headers);
+}
+
+// static
+std::vector<std::string>
+CrossOriginReadBlocking::GetCorsSafelistedHeadersForTesting() {
+  return std::vector<std::string>(
+      kCorsSafelistedHeaders,
+      kCorsSafelistedHeaders + arraysize(kCorsSafelistedHeaders));
 }
 
 }  // namespace network

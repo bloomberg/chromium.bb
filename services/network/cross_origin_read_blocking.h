@@ -6,14 +6,18 @@
 #define SERVICES_NETWORK_CROSS_ORIGIN_READ_BLOCKING_H_
 
 #include <string>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_piece_forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace network {
+
+struct ResourceResponse;
 
 // CrossOriginReadBlocking (CORB) implements response blocking
 // policy for Site Isolation.  CORB will monitor network responses to a
@@ -34,6 +38,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     kMax,
     kInvalid = kMax,
   };
+
+  // Used to strip response headers if a decision to block has been made.
+  static void SanitizeBlockedResponse(
+      const scoped_refptr<network::ResourceResponse>& response);
+
+  // Returns explicitly named headers from
+  // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
+  //
+  // Note that CORB doesn't block responses allowed through CORS - this means
+  // that the list of allowed headers below doesn't have to consider header
+  // names listed in the Access-Control-Expose-Headers header.
+  static std::vector<std::string> GetCorsSafelistedHeadersForTesting();
 
   // Three conclusions are possible from sniffing a byte sequence:
   //  - No: meaning that the data definitively doesn't match the indicated type.

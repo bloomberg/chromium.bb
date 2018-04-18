@@ -153,60 +153,6 @@ class LocalIoBufferWithOffset : public net::WrappedIOBuffer {
   scoped_refptr<net::IOBuffer> buf_;
 };
 
-// Headers from
-// https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
-//
-// Note that XSDB doesn't block responses allowed through CORS - this means
-// that the list of allowed headers below doesn't have to consider header
-// names listed in the Access-Control-Expose-Headers header.
-const char* const kCorsSafelistedHeaders[] = {
-    "cache-control", "content-language", "content-type",
-    "expires",       "last-modified",    "pragma",
-};
-
-// Removes headers that should be blocked in cross-origin case.
-// See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
-void SanitizeResponseHeaders(
-    const scoped_refptr<net::HttpResponseHeaders>& headers) {
-  DCHECK(headers);
-  std::unordered_set<std::string> names_of_headers_to_remove;
-
-  size_t it = 0;
-  std::string name;
-  std::string value;
-  while (headers->EnumerateHeaderLines(&it, &name, &value)) {
-    // Don't remove CORS headers - doing so would lead to incorrect error
-    // messages for CORS-blocked responses (e.g. Blink would say "[...] No
-    // 'Access-Control-Allow-Origin' header is present [...]" instead of saying
-    // something like "[...] Access-Control-Allow-Origin' header has a value
-    // 'http://www2.localhost:8000' that is not equal to the supplied origin
-    // [...]").
-    if (base::StartsWith(name, "Access-Control-",
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      continue;
-    }
-
-    // Remove all other headers (but note the final exclusion below).
-    names_of_headers_to_remove.insert(base::ToLowerASCII(name));
-  }
-
-  // Exclude from removals headers from
-  // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
-  for (const char* header : kCorsSafelistedHeaders)
-    names_of_headers_to_remove.erase(header);
-
-  headers->RemoveHeaders(names_of_headers_to_remove);
-}
-
-// Sanitizes/strips metadata of a response we decided to block.
-void SanitizeResourceResponse(
-    const scoped_refptr<network::ResourceResponse>& response) {
-  DCHECK(response);
-  response->head.content_length = 0;
-  if (response->head.headers)
-    SanitizeResponseHeaders(response->head.headers);
-}
-
 }  // namespace
 
 // static
@@ -621,7 +567,8 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
     // Block the response and throw away the data.  Report zero bytes read.
     blocked_read_completed_ = true;
     info->set_blocked_cross_site_document(true);
-    SanitizeResourceResponse(pending_response_start_);
+    network::CrossOriginReadBlocking::SanitizeBlockedResponse(
+        pending_response_start_);
 
     // Pass an empty/blocked body onto the next handler.  size of the two
     // buffers is the same (see OnWillRead).  After the next statement,
@@ -930,14 +877,6 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   }
 
   return true;
-}
-
-// static
-std::vector<std::string>
-CrossSiteDocumentResourceHandler::GetCorsSafelistedHeadersForTesting() {
-  return std::vector<std::string>(
-      kCorsSafelistedHeaders,
-      kCorsSafelistedHeaders + arraysize(kCorsSafelistedHeaders));
 }
 
 }  // namespace content
