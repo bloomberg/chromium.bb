@@ -1414,7 +1414,7 @@
           'scripts': 'check_network_annotations_script',
         }
       },
-      'linux64-jumbo-rel': {
+      'linux-jumbo-rel': {
         'additional_compile_targets': [
           'all'
         ]
@@ -2040,7 +2040,7 @@
           'scripts': 'check_network_annotations_script',
         },
       },
-      'win64-jumbo-rel': {
+      'win-jumbo-rel': {
         'additional_compile_targets': [
           'all'
         ]

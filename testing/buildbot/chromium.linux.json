@@ -2701,7 +2701,7 @@
       "empty_main"
     ]
   },
-  "linux64-jumbo-rel": {
+  "linux-jumbo-rel": {
     "additional_compile_targets": [
       "all"
     ]
