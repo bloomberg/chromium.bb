@@ -2041,7 +2041,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       description='Launcher for Pre-CQ builders',
       trybot_list=False,
@@ -4002,7 +4002,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.GENERIC_TYPE,
       boards=[],
       builder_class_name='alert_builders.SomDispatcherBuilder',
-      active_waterfall=constants.WATERFALL_INTERNAL,
+      active_waterfall=constants.WATERFALL_SWARMING,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
@@ -4018,7 +4018,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.GENERIC_TYPE,
       boards=[],
       builder_class_name='config_builders.UpdateConfigBuilder',
-      active_waterfall=waterfall.WATERFALL_INFRA,
+      active_waterfall=constants.WATERFALL_SWARMING,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       binhost_test=True,
   )

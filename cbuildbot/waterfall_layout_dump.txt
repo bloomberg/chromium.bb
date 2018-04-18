@@ -211,7 +211,6 @@ peppy-release (gce_beefy)
 plaso-release (gce_beefy)
 poppy-paladin (gce_beefy)
 poppy-release (gce_beefy)
-pre-cq-launcher (gce_wimpy)
 pyro-release (gce_beefy)
 quawks-paladin (gce_beefy)
 quawks-release (gce_beefy)
@@ -238,7 +237,6 @@ sentry-paladin (gce_beefy)
 sentry-release (gce_beefy)
 setzer-release (gce_beefy)
 snappy-release (gce_beefy)
-som-dispatcher (gce_beefy)
 soraka-release (gce_beefy)
 squawks-release (gce_beefy)
 stout-paladin (gce_beefy)
@@ -288,9 +286,6 @@ wooten-release (gce_beefy)
 zako-release (gce_beefy)
 zoombini-paladin (gce_beefy)
 zoombini-release (gce_beefy)
-
-== chromeos.infra ==
-config-updater (gce_wimpy)
 
 == chromeos_release ==
 reef-android-nyc-pre-flight-branch (gce_beefy)
@@ -3592,6 +3587,9 @@ zoombini-unittest-stress (gce_beefy)
 
 == go/legoland ==
 amd64-generic-tot-chromium-pfq-informational (baremetal)
+config-updater (gce_wimpy)
 daisy-tot-chromium-pfq-informational (gce_beefy)
 eve-tot-chrome-pfq-informational (gce_beefy)
+pre-cq-launcher (gce_wimpy)
+som-dispatcher (gce_beefy)
 
