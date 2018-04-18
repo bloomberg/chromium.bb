@@ -31,7 +31,8 @@ void DiceTabHelper::InitializeSigninFlow(
 
   if (signin_reason_ == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT) {
     signin_metrics::LogSigninAccessPointStarted(access_point, promo_action);
-    signin_metrics::RecordSigninUserActionForAccessPoint(access_point);
+    signin_metrics::RecordSigninUserActionForAccessPoint(access_point,
+                                                         promo_action);
     base::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
   }
 }

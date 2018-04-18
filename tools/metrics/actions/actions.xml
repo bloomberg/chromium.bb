@@ -17527,6 +17527,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNewAccount_FromAvatarBubbleSignin">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, with a new
+    account.
+  </description>
+</action>
+
+<action name="Signin_SigninNewAccount_FromBookmarkBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, with a new
+    account.
+  </description>
+</action>
+
 <action name="Signin_SigninNewAccount_FromBookmarkManager">
   <owner>jlebel@chromium.org</owner>
   <description>
@@ -17536,12 +17554,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNewAccount_FromExtensionInstallBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE, with a
+    new account.
+  </description>
+</action>
+
 <action name="Signin_SigninNewAccount_FromNTPContentSuggestions">
   <owner>bsazonov@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS, with a
     new account.
+  </description>
+</action>
+
+<action name="Signin_SigninNewAccount_FromPasswordBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE, with a new
+    account.
   </description>
 </action>
 
@@ -17569,6 +17605,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNotDefault_FromAvatarBubbleSignin">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, using
+    another account than the default one.
+  </description>
+</action>
+
+<action name="Signin_SigninNotDefault_FromBookmarkBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, using another
+    account than the default one.
+  </description>
+</action>
+
 <action name="Signin_SigninNotDefault_FromBookmarkManager">
   <owner>jlebel@chromium.org</owner>
   <description>
@@ -17578,12 +17632,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNotDefault_FromExtensionInstallBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE, using
+    another account than the default one.
+  </description>
+</action>
+
 <action name="Signin_SigninNotDefault_FromNTPContentSuggestions">
   <owner>bsazonov@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS, using
     another account than the default one.
+  </description>
+</action>
+
+<action name="Signin_SigninNotDefault_FromPasswordBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE, using another
+    account than the default one.
   </description>
 </action>
 
@@ -17624,6 +17696,24 @@ should be able to be added at any place in this file.
   <description>Recorded when sign in page is shown.</description>
 </action>
 
+<action name="Signin_SigninWithDefault_FromAvatarBubbleSignin">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, using the
+    default account.
+  </description>
+</action>
+
+<action name="Signin_SigninWithDefault_FromBookmarkBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, using the default
+    account.
+  </description>
+</action>
+
 <action name="Signin_SigninWithDefault_FromBookmarkManager">
   <owner>jlebel@chromium.org</owner>
   <description>
@@ -17633,12 +17723,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninWithDefault_FromExtensionInstallBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE, using
+    the default account.
+  </description>
+</action>
+
 <action name="Signin_SigninWithDefault_FromNTPContentSuggestions">
   <owner>bsazonov@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS, using the
     default account.
+  </description>
+</action>
+
+<action name="Signin_SigninWithDefault_FromPasswordBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE, using the default
+    account.
   </description>
 </action>
 
