@@ -49,6 +49,8 @@ struct TestFieldData {
   // is assumed to be not important for a test and it will be set to some unique
   // value.
   const char* value = nullptr;
+
+  const char* form_control_type = nullptr;
 };
 
 struct FormParsingTestCase {
@@ -76,7 +78,10 @@ FormData GetFormData(const FormParsingTestCase& test_form) {
     // An exact id is not important, set id such that different fields have
     // different id.
     field.id = ASCIIToUTF16("field_id") + UintToString16(i);
-    field.form_control_type = field_data.is_password ? "password" : "text";
+    if (field_data.form_control_type)
+      field.form_control_type = field_data.form_control_type;
+    else
+      field.form_control_type = field_data.is_password ? "password" : "text";
     field.is_focusable = field_data.is_focusable;
     if (field_data.value) {
       field.value = ASCIIToUTF16(field_data.value);
@@ -177,6 +182,21 @@ TEST_F(IOSFormParserTest, NotPasswordForm) {
           {{.is_password = false}, {.is_password = false}},
           {kFieldNotFound, kFieldNotFound, kFieldNotFound, kFieldNotFound},
           {kFieldNotFound, kFieldNotFound, kFieldNotFound, kFieldNotFound},
+      },
+  };
+
+  CheckTestData(test_data);
+}
+
+TEST_F(IOSFormParserTest, SkipNotTextFields) {
+  std::vector<FormParsingTestCase> test_data = {
+      {
+          "Select between username and password fields",
+          {{.is_password = false, .is_empty = false},
+           {.form_control_type = "select", .is_empty = false},
+           {.is_password = true, .is_empty = false}},
+          {0, 2, kFieldNotFound, kFieldNotFound},
+          {0, 2, kFieldNotFound, kFieldNotFound},
       },
   };
 

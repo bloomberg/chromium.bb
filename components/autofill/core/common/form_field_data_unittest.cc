@@ -334,9 +334,27 @@ TEST(FormFieldDataTest, DeserializeBadData) {
   base::PickleIterator iter(pickle);
   FormFieldData actual;
   EXPECT_FALSE(DeserializeFormFieldData(&iter, &actual));
-
   FormFieldData empty;
   EXPECT_TRUE(actual.SameFieldAs(empty));
+}
+
+TEST(FormFieldDataTest, IsTextField) {
+  struct TestData {
+    const char* form_control_type;
+    bool expected;
+  } test_data[] = {
+      {"text", true},      {"search", true},
+      {"tel", true},       {"url", true},
+      {"email", true},     {"password", true},
+      {"select", false},   {"", false},
+      {"checkbox", false}, {"random_string", false},
+  };
+
+  for (const auto& test_case : test_data) {
+    FormFieldData data;
+    data.form_control_type = test_case.form_control_type;
+    EXPECT_EQ(test_case.expected, data.IsTextField());
+  }
 }
 
 }  // namespace autofill

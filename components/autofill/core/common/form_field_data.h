@@ -78,6 +78,11 @@ struct FormFieldData {
   // other information isn't changed.
   bool SimilarFieldAs(const FormFieldData& field) const;
 
+  // Returns true for all of textfield-looking types such as text, password,
+  // search, email, url, and number. It must work the same way as Blink function
+  // WebInputElement::IsTextField().
+  bool IsTextField() const;
+
   // Note: operator==() performs a full-field-comparison(byte by byte), this is
   // different from SameFieldAs(), which ignores comparison for those "values"
   // not regarded as part of identity of the field, such as is_autofilled and
