@@ -82,6 +82,9 @@ class TabWebContentsDelegateAndroid
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
+  blink::WebSecurityStyle GetSecurityStyle(
+      content::WebContents* web_contents,
+      content::SecurityStyleExplanations* security_style_explanations) override;
   void RequestAppBannerFromDevTools(
       content::WebContents* web_contents) override;
   void OnAudioStateChanged(content::WebContents* web_contents,
