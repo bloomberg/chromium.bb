@@ -31,7 +31,6 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
-#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -229,10 +228,9 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     // once http://crbug.com/171406 has been fixed.
     AboutSigninInternalsFactory::GetForProfile(profile);
 
-    init_params.signin_wrapper =
-        std::make_unique<SupervisedUserSigninManagerWrapper>(
-            profile, IdentityManagerFactory::GetForProfile(profile),
-            SigninManagerFactory::GetForProfile(profile));
+    init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(
+        IdentityManagerFactory::GetForProfile(profile),
+        SigninManagerFactory::GetForProfile(profile));
     // Note: base::Unretained(signin_client) is safe because the SigninClient is
     // guaranteed to outlive the PSS, per a DependsOn() above (and because PSS
     // clears the callback in its Shutdown()).
