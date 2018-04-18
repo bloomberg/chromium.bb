@@ -2851,7 +2851,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
     affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
     affected_file.AbsoluteLocalPath().AndReturn('/path1/to/.vpython')
-    input_api.AffectedFiles(
+    input_api.AffectedTestableFiles(
         file_filter=mox.IgnoreArg()).AndReturn([affected_file])
 
     self.mox.ReplayAll()

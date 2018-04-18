@@ -654,7 +654,7 @@ class InputApi(object):
     """Returns absolute local paths of input_api.AffectedFiles()."""
     return [af.AbsoluteLocalPath() for af in self.AffectedFiles()]
 
-  def AffectedTestableFiles(self, include_deletes=None):
+  def AffectedTestableFiles(self, include_deletes=None, **kwargs):
     """Same as input_api.change.AffectedTestableFiles() except only lists files
     in the same directory as the current presubmit script, or subdirectories
     thereof.
@@ -665,7 +665,7 @@ class InputApi(object):
            category=DeprecationWarning,
            stacklevel=2)
     return filter(lambda x: x.IsTestableFile(),
-                  self.AffectedFiles(include_deletes=False))
+                  self.AffectedFiles(include_deletes=False, **kwargs))
 
   def AffectedTextFiles(self, include_deletes=None):
     """An alias to AffectedTestableFiles for backwards compatibility."""
@@ -1124,7 +1124,7 @@ class Change(object):
       return affected
     return filter(lambda x: x.Action() != 'D', affected)
 
-  def AffectedTestableFiles(self, include_deletes=None):
+  def AffectedTestableFiles(self, include_deletes=None, **kwargs):
     """Return a list of the existing text files in a change."""
     if include_deletes is not None:
       warn("AffectedTeestableFiles(include_deletes=%s)"
@@ -1132,7 +1132,7 @@ class Change(object):
            category=DeprecationWarning,
            stacklevel=2)
     return filter(lambda x: x.IsTestableFile(),
-                  self.AffectedFiles(include_deletes=False))
+                  self.AffectedFiles(include_deletes=False, **kwargs))
 
   def AffectedTextFiles(self, include_deletes=None):
     """An alias to AffectedTestableFiles for backwards compatibility."""
