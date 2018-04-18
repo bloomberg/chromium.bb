@@ -153,20 +153,73 @@ std::unique_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
   return data;
 }
 
+// Fills |out_result_matrix_vector| from the given skia |matrix|.
+void ColorMatrixVectorFromSkMatrix44(
+    const SkMatrix44& matrix,
+    std::vector<float>* out_result_matrix_vector) {
+  DCHECK(out_result_matrix_vector);
+  out_result_matrix_vector->assign(9, 0.0f);
+  (*out_result_matrix_vector)[0] = matrix.get(0, 0);
+  (*out_result_matrix_vector)[4] = matrix.get(1, 1);
+  (*out_result_matrix_vector)[8] = matrix.get(2, 2);
+}
+
+SkMatrix44 SkMatrix44FromColorMatrixVector(
+    const std::vector<float>& matrix_vector) {
+  SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
+  matrix.set3x3RowMajorf(matrix_vector.data());
+  return matrix;
+}
+
 }  // namespace
 
 DisplayColorManager::DisplayColorManager(
-    display::DisplayConfigurator* configurator)
+    display::DisplayConfigurator* configurator,
+    display::Screen* screen_to_observe)
     : configurator_(configurator),
+      matrix_buffer_(9, 0.0f),  // 3x3 matrix.
       sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      screen_to_observe_(screen_to_observe),
       weak_ptr_factory_(this) {
   configurator_->AddObserver(this);
+  if (screen_to_observe_)
+    screen_to_observe_->AddObserver(this);
 }
 
 DisplayColorManager::~DisplayColorManager() {
+  if (screen_to_observe_)
+    screen_to_observe_->RemoveObserver(this);
   configurator_->RemoveObserver(this);
+}
+
+bool DisplayColorManager::SetDisplayColorMatrix(
+    int64_t display_id,
+    const SkMatrix44& color_matrix) {
+  for (const auto* display_snapshot : configurator_->cached_displays()) {
+    if (display_snapshot->display_id() != display_id)
+      continue;
+
+    if (!display_snapshot->has_color_correction_matrix()) {
+      // This display doesn't support setting a CRTC matrix.
+      return false;
+    }
+
+    displays_color_matrix_map_.emplace(display_id, color_matrix);
+    const auto iter = calibration_map_.find(display_snapshot->product_code());
+    SkMatrix44 combined_matrix = color_matrix;
+    if (iter != calibration_map_.end() && iter->second) {
+      combined_matrix.preConcat(
+          SkMatrix44FromColorMatrixVector(iter->second->correction_matrix));
+    }
+
+    ColorMatrixVectorFromSkMatrix44(combined_matrix, &matrix_buffer_);
+    return configurator_->SetColorCorrection(
+        display_id, {} /* degamma_lut */, {} /* gamma_lut */, matrix_buffer_);
+  }
+
+  return false;
 }
 
 void DisplayColorManager::OnDisplayModeChanged(
@@ -198,15 +251,31 @@ void DisplayColorManager::OnDisplayModeChanged(
   }
 }
 
+void DisplayColorManager::OnDisplayRemoved(
+    const display::Display& old_display) {
+  displays_color_matrix_map_.erase(old_display.id());
+}
+
 void DisplayColorManager::ApplyDisplayColorCalibration(int64_t display_id,
-                                                       int64_t product_id) {
-  if (calibration_map_.find(product_id) != calibration_map_.end()) {
-    ColorCalibrationData* data = calibration_map_[product_id].get();
-    if (!configurator_->SetColorCorrection(display_id, data->degamma_lut,
-                                           data->gamma_lut,
-                                           data->correction_matrix)) {
-      LOG(WARNING) << "Error applying color correction data";
-    }
+                                                       int64_t product_code) {
+  const auto calibration_iter = calibration_map_.find(product_code);
+  if (calibration_iter == calibration_map_.end() || !calibration_iter->second)
+    return;
+
+  const auto color_matrix_iter = displays_color_matrix_map_.find(display_id);
+  ColorCalibrationData* data = calibration_iter->second.get();
+  const std::vector<float>* final_matrix = &data->correction_matrix;
+  if (color_matrix_iter != displays_color_matrix_map_.end()) {
+    SkMatrix44 combined_matrix = color_matrix_iter->second;
+    combined_matrix.preConcat(
+        SkMatrix44FromColorMatrixVector(data->correction_matrix));
+    ColorMatrixVectorFromSkMatrix44(combined_matrix, &matrix_buffer_);
+    final_matrix = &matrix_buffer_;
+  }
+
+  if (!configurator_->SetColorCorrection(display_id, data->degamma_lut,
+                                         data->gamma_lut, *final_matrix)) {
+    LOG(WARNING) << "Error applying color correction data";
   }
 }
 
@@ -234,14 +303,14 @@ void DisplayColorManager::LoadCalibrationForDisplay(
 
 void DisplayColorManager::FinishLoadCalibrationForDisplay(
     int64_t display_id,
-    int64_t product_id,
+    int64_t product_code,
     bool has_color_correction_matrix,
     display::DisplayConnectionType type,
     const base::FilePath& path,
     bool file_downloaded) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::string product_string = quirks::IdToHexString(product_id);
+  std::string product_string = quirks::IdToHexString(product_code);
   if (path.empty()) {
     VLOG(1) << "No ICC file found with product id: " << product_string
             << " for display id: " << display_id;
@@ -266,7 +335,7 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
       sequenced_task_runner_.get(), FROM_HERE,
       base::Bind(&ParseDisplayProfile, path, has_color_correction_matrix),
       base::Bind(&DisplayColorManager::UpdateCalibrationData,
-                 weak_ptr_factory_.GetWeakPtr(), display_id, product_id));
+                 weak_ptr_factory_.GetWeakPtr(), display_id, product_code));
 }
 
 void DisplayColorManager::UpdateCalibrationData(
