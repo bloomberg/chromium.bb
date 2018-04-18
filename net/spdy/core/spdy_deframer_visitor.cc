@@ -32,7 +32,8 @@ namespace test {
 enum class HeaderDirection { REQUEST, RESPONSE };
 
 // Types of HTTP/2 frames, per RFC 7540.
-// TODO(jamessynge): Switch to using //net/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using //net/third_party/http2/http2_constants.h
+// when ready.
 enum Http2FrameType {
   DATA = 0,
   HEADERS = 1,
@@ -51,7 +52,8 @@ enum Http2FrameType {
   UNKNOWN = -2,
 };
 
-// TODO(jamessynge): Switch to using //net/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using //net/third_party/http2/http2_constants.h
+// when ready.
 const char* Http2FrameTypeToString(Http2FrameType v) {
   switch (v) {
     case DATA:
@@ -85,7 +87,8 @@ const char* Http2FrameTypeToString(Http2FrameType v) {
   }
 }
 
-// TODO(jamessynge): Switch to using //net/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using //net/third_party/http2/http2_constants.h
+// when ready.
 inline std::ostream& operator<<(std::ostream& out, Http2FrameType v) {
   return out << Http2FrameTypeToString(v);
 }
@@ -94,7 +97,8 @@ inline std::ostream& operator<<(std::ostream& out, Http2FrameType v) {
 // (see https://httpwg.github.io/specs/rfc7540.html#FrameHeader for details on
 // the fixed 9-octet header structure shared by all frames).
 // Flag bits are only valid for specified frame types.
-// TODO(jamessynge): Switch to using //net/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using //net/third_party/http2/http2_constants.h
+// when ready.
 enum Http2HeaderFlag {
   NO_FLAGS = 0,
 
@@ -106,7 +110,8 @@ enum Http2HeaderFlag {
 };
 
 // Returns name of frame type.
-// TODO(jamessynge): Switch to using //net/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using //net/third_party/http2/http2_constants.h
+// when ready.
 const char* Http2FrameTypeToString(Http2FrameType v);
 
 void SpdyDeframerVisitorInterface::OnPingAck(

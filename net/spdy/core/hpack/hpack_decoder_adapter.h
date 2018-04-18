@@ -13,16 +13,16 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "net/http2/hpack/decoder/hpack_decoder.h"
-#include "net/http2/hpack/decoder/hpack_decoder_listener.h"
-#include "net/http2/hpack/decoder/hpack_decoder_tables.h"
-#include "net/http2/hpack/hpack_string.h"
-#include "net/http2/hpack/http2_hpack_constants.h"
 #include "net/spdy/core/hpack/hpack_header_table.h"
 #include "net/spdy/core/spdy_header_block.h"
 #include "net/spdy/core/spdy_headers_handler_interface.h"
 #include "net/spdy/platform/api/spdy_export.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
+#include "net/third_party/http2/hpack/decoder/hpack_decoder.h"
+#include "net/third_party/http2/hpack/decoder/hpack_decoder_listener.h"
+#include "net/third_party/http2/hpack/decoder/hpack_decoder_tables.h"
+#include "net/third_party/http2/hpack/hpack_string.h"
+#include "net/third_party/http2/hpack/http2_hpack_constants.h"
 
 namespace net {
 namespace test {

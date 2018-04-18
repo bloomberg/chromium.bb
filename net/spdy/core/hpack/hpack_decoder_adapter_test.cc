@@ -14,16 +14,16 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/http2/hpack/decoder/hpack_decoder_state.h"
-#include "net/http2/hpack/decoder/hpack_decoder_tables.h"
-#include "net/http2/hpack/tools/hpack_block_builder.h"
-#include "net/http2/tools/http2_random.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/hpack/hpack_encoder.h"
 #include "net/spdy/core/hpack/hpack_output_stream.h"
 #include "net/spdy/core/spdy_test_utils.h"
 #include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
+#include "net/third_party/http2/hpack/decoder/hpack_decoder_state.h"
+#include "net/third_party/http2/hpack/decoder/hpack_decoder_tables.h"
+#include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
+#include "net/third_party/http2/tools/http2_random.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -689,8 +689,8 @@ TEST_P(HpackDecoderAdapterTest, BasicC31) {
 // RFC 7541, Section C.4: Request Examples with Huffman Coding
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.4
 TEST_P(HpackDecoderAdapterTest, SectionC4RequestHuffmanExamples) {
-  // TODO(jamessynge): Use net/http2/hpack/tools/hpack_example.h to parse the
-  // example directly, instead of having it as a comment.
+  // TODO(jamessynge): Use net/third_party/http2/hpack/tools/hpack_example.h to
+  // parse the example directly, instead of having it as a comment.
   // 82                                      | == Indexed - Add ==
   //                                         |   idx = 2
   //                                         | -> :method: GET

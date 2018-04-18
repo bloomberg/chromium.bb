@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "net/http2/decoder/decode_buffer.h"
-#include "net/http2/decoder/decode_status.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/third_party/http2/decoder/decode_buffer.h"
+#include "net/third_party/http2/decoder/decode_status.h"
 
 namespace net {
 namespace {

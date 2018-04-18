@@ -18,13 +18,6 @@
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
-#include "net/http2/decoder/decode_buffer.h"
-#include "net/http2/decoder/decode_status.h"
-#include "net/http2/decoder/http2_frame_decoder.h"
-#include "net/http2/decoder/http2_frame_decoder_listener.h"
-#include "net/http2/http2_constants.h"
-#include "net/http2/http2_structures.h"
-#include "net/http2/platform/api/http2_string.h"
 #include "net/spdy/core/hpack/hpack_decoder_adapter.h"
 #include "net/spdy/core/hpack/hpack_header_table.h"
 #include "net/spdy/core/spdy_alt_svc_wire_format.h"
@@ -37,6 +30,13 @@
 #include "net/spdy/platform/api/spdy_flags.h"
 #include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
+#include "net/third_party/http2/decoder/decode_buffer.h"
+#include "net/third_party/http2/decoder/decode_status.h"
+#include "net/third_party/http2/decoder/http2_frame_decoder.h"
+#include "net/third_party/http2/decoder/http2_frame_decoder_listener.h"
+#include "net/third_party/http2/http2_constants.h"
+#include "net/third_party/http2/http2_structures.h"
+#include "net/third_party/http2/platform/api/http2_string.h"
 
 namespace net {
 namespace {
