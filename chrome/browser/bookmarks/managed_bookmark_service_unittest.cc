@@ -13,6 +13,8 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -295,4 +297,19 @@ TEST_F(ManagedBookmarkServiceTest, HasDescendantsOfManagedNode) {
   EXPECT_FALSE(bookmarks::HasDescendantsOf(nodes, managed_->managed_node()));
   nodes.push_back(managed_node);
   EXPECT_TRUE(bookmarks::HasDescendantsOf(nodes, managed_->managed_node()));
+}
+
+TEST_F(ManagedBookmarkServiceTest, GetManagedBookmarksDomain) {
+  // Not managed profile
+  profile_.set_profile_name("user@google.com");
+  EXPECT_TRUE(
+      ManagedBookmarkServiceFactory::GetManagedBookmarksDomain(&profile_)
+          .empty());
+
+  // Managed profile
+  policy::ProfilePolicyConnectorFactory::GetForBrowserContext(&profile_)
+      ->OverrideIsManagedForTesting(true);
+  EXPECT_EQ(
+      "google.com",
+      ManagedBookmarkServiceFactory::GetManagedBookmarksDomain(&profile_));
 }
