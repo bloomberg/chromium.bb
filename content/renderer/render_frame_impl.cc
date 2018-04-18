@@ -4241,13 +4241,18 @@ void RenderFrameImpl::DidReceiveTitle(const blink::WebString& title,
 }
 
 void RenderFrameImpl::DidChangeIcon(blink::WebIconURL::Type icon_type) {
-  SendUpdateFaviconURL(icon_type);
+  SendUpdateFaviconURL();
 }
 
-void RenderFrameImpl::SendUpdateFaviconURL(
-    blink::WebIconURL::Type icon_types_mask) {
+void RenderFrameImpl::SendUpdateFaviconURL() {
   if (frame_->Parent())
     return;
+
+  blink::WebIconURL::Type icon_types_mask =
+      static_cast<blink::WebIconURL::Type>(
+          blink::WebIconURL::kTypeFavicon |
+          blink::WebIconURL::kTypeTouchPrecomposed |
+          blink::WebIconURL::kTypeTouch);
 
   WebVector<blink::WebIconURL> icon_urls = frame_->IconURLs(icon_types_mask);
   if (icon_urls.empty())
@@ -5725,12 +5730,7 @@ void RenderFrameImpl::DidStopLoading() {
   // this state anymore.
   history_subframe_unique_names_.clear();
 
-  blink::WebIconURL::Type icon_types_mask =
-      static_cast<blink::WebIconURL::Type>(
-          blink::WebIconURL::kTypeFavicon |
-          blink::WebIconURL::kTypeTouchPrecomposed |
-          blink::WebIconURL::kTypeTouch);
-  SendUpdateFaviconURL(icon_types_mask);
+  SendUpdateFaviconURL();
 
   render_view_->FrameDidStopLoading(frame_);
   Send(new FrameHostMsg_DidStopLoading(routing_id_));

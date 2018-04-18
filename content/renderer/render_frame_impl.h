@@ -1248,7 +1248,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Ask the host to send our AndroidOverlay routing token to us.
   void RequestOverlayRoutingTokenFromHost();
 
-  void SendUpdateFaviconURL(blink::WebIconURL::Type icon_types_mask);
+  void SendUpdateFaviconURL();
 
   void BindWidget(mojom::WidgetRequest request);
 
