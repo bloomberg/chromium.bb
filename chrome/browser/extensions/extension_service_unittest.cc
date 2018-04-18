@@ -4475,6 +4475,15 @@ TEST_F(ExtensionServiceTest, ExternalExtensionRemainsDisabledIfIgnored) {
   EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
   EXPECT_EQ(extensions::disable_reason::DISABLE_EXTERNAL_EXTENSION,
             prefs->GetDisableReasons(good_crx));
+
+  // Then re-enabling the extension (or otherwise causing the alert to be
+  // updated again) should work. Regression test for https://crbug.com/736292.
+  {
+    extensions::TestExtensionRegistryObserver registry_observer(registry());
+    service()->EnableExtension(good_crx);
+    registry_observer.WaitForExtensionLoaded();
+    base::RunLoop().RunUntilIdle();
+  }
 }
 
 #if !defined(OS_CHROMEOS)
