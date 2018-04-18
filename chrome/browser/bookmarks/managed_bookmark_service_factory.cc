@@ -15,23 +15,17 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/policy_constants.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace {
-
-std::string GetManagedBookmarksDomain(Profile* profile) {
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
-  if (connector->IsProfilePolicy(policy::key::kManagedBookmarks))
-    return connector->GetManagementDomain();
-  return std::string();
-}
 
 std::unique_ptr<KeyedService> BuildManagedBookmarkService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   return std::make_unique<bookmarks::ManagedBookmarkService>(
       profile->GetPrefs(),
-      base::Bind(&GetManagedBookmarksDomain, base::Unretained(profile)));
+      base::Bind(&ManagedBookmarkServiceFactory::GetManagedBookmarksDomain,
+                 base::Unretained(profile)));
 }
 
 }  // namespace
@@ -52,6 +46,18 @@ ManagedBookmarkServiceFactory* ManagedBookmarkServiceFactory::GetInstance() {
 BrowserContextKeyedServiceFactory::TestingFactoryFunction
 ManagedBookmarkServiceFactory::GetDefaultFactory() {
   return &BuildManagedBookmarkService;
+}
+
+// static
+std::string ManagedBookmarkServiceFactory::GetManagedBookmarksDomain(
+    Profile* profile) {
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+  if (connector->IsManaged() &&
+      connector->IsProfilePolicy(policy::key::kManagedBookmarks)) {
+    return gaia::ExtractDomainName(profile->GetProfileUserName());
+  }
+  return std::string();
 }
 
 ManagedBookmarkServiceFactory::ManagedBookmarkServiceFactory()
