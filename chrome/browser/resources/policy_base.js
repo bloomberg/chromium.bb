@@ -81,6 +81,11 @@ cr.define('policy', function() {
         var username = this.querySelector('.username');
         username.textContent = status.username;
         username.parentElement.hidden = false;
+        // Populate the user gaia id.
+        var gaiaId = this.querySelector('.gaia-id');
+        gaiaId.textContent =
+            status.gaiaId || loadTimeData.getString('notSpecified');
+        gaiaId.parentElement.hidden = false;
       }
       // Populate all remaining items.
       this.querySelector('.client-id').textContent = status.clientId || '';
