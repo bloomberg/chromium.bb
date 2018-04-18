@@ -2289,6 +2289,8 @@ crbug.com/833215 [ Mac10.12 Mac10.13 Retina ] external/wpt/accelerometer/Acceler
 crbug.com/833215 [ Linux ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ Skip ]
+crbug.com/626703 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-003a.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-004a.html [ Failure ]
 crbug.com/626703 external/wpt/css/cssom/cssstyledeclaration-mutationrecord-001.html [ Timeout ]
