@@ -14,6 +14,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -36,7 +38,10 @@ import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -1492,6 +1497,61 @@ public class DownloadManagerService
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
             adapter.onAllDownloadsRetrieved(list, isOffTheRecord);
         }
+        maybeShowMissingSdCardError(list);
+    }
+
+    /**
+     * Shows a snackbar that tells the user that files may be missing because no SD card was found
+     * in the case that the error was not shown before and at least one of the items was
+     * externally removed and has a path that points to a missing external drive.
+     *
+     * @param list  List of DownloadItems to check.
+     */
+    private void maybeShowMissingSdCardError(List<DownloadItem> list) {
+        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+        if (!prefServiceBridge.getBoolean(Pref.SHOW_MISSING_SD_CARD_ERROR_ANDROID)) return;
+        for (DownloadItem item : list) {
+            if (!isUnresumableOrCancelled(item) && item.hasBeenExternallyRemoved()
+                    && isFilePathOnMissingExternalDrive(item.getDownloadInfo().getFilePath())) {
+                mHandler.post(() -> mDownloadSnackbarController.onDownloadDirectoryNotFound());
+                prefServiceBridge.setBoolean(Pref.SHOW_MISSING_SD_CARD_ERROR_ANDROID, false);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Checks to see if the item is either unresumable or cancelled.
+     *
+     * @param downloadItem  Item to check.
+     * @return              Whether the item is unresumable or cancelled.
+     */
+    private boolean isUnresumableOrCancelled(DownloadItem downloadItem) {
+        @DownloadState
+        int state = downloadItem.getDownloadInfo().state();
+        return (state == DownloadState.INTERRUPTED && !downloadItem.getDownloadInfo().isResumable())
+                || state == DownloadState.CANCELLED;
+    }
+
+    /**
+     * Returns whether a given file path is in a directory that is no longer available, most likely
+     * because it is on an SD card that was removed.
+     *
+     * @param filePath  The file path to check.
+     * @return          Whether this file path is in a directory that is no longer available.
+     */
+    private boolean isFilePathOnMissingExternalDrive(String filePath) {
+        if (filePath.contains(Environment.getExternalStorageDirectory().getAbsolutePath())) {
+            return false;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            File[] externalDirs = mContext.getExternalFilesDirs(Environment.DIRECTORY_DOWNLOADS);
+            for (File dir : externalDirs) {
+                if (dir == null) continue;
+                if (filePath.contains(dir.getAbsolutePath())) return false;
+            }
+        }
+        return true;
     }
 
     @CalledByNative

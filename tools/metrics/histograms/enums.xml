@@ -41444,6 +41444,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="21" label="SNIPPET_FETCH_FAILED"/>
   <int value="22" label="CHROME_HOME_OPT_OUT_SURVEY"/>
   <int value="23" label="SNIPPET_FETCH_NO_NEW_SUGGESTIONS"/>
+  <int value="24" label="MISSING_FILES_NO_SD_CARD"/>
 </enum>
 
 <enum name="SnippetOpenMethod">

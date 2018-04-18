@@ -466,6 +466,7 @@ extern const char kOpenPdfDownloadInSystemReader[];
 #endif
 #if defined(OS_ANDROID)
 extern const char kPromptForDownloadAndroid[];
+extern const char kShowMissingSdCardErrorAndroid[];
 #endif
 
 extern const char kSaveFileDefaultDirectory[];
