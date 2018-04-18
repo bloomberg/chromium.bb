@@ -457,7 +457,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     self.bookmarkItem.title =
         l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK);
     self.bookmarkItem.accessibilityIdentifier = kToolsMenuEditBookmark;
-    self.bookmarkItem.image = [[UIImage imageNamed:@"popup_menu_add_bookmark"]
+    self.bookmarkItem.image = [[UIImage imageNamed:@"popup_menu_edit_bookmark"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   } else {
     self.bookmarkItem.title =
