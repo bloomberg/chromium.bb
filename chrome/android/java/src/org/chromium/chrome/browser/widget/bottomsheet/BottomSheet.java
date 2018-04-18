@@ -636,7 +636,7 @@ public class BottomSheet extends FrameLayout
                 if (getCurrentOffsetPx() > getSheetHeightForState(SHEET_STATE_PEEK)) return;
 
                 // Updating the offset will automatically account for the browser controls.
-                setSheetOffsetFromBottom(getCurrentOffsetPx());
+                setSheetOffsetFromBottom(getCurrentOffsetPx(), StateChangeReason.SWIPE);
             }
 
             @Override
@@ -672,9 +672,6 @@ public class BottomSheet extends FrameLayout
             mTabModelSelector.openNewTab(
                     params, TabModel.TabLaunchType.FROM_CHROME_UI, getActiveTab(), incognito);
         }
-
-        // In all non-native cases, minimize the sheet.
-        setSheetState(SHEET_STATE_PEEK, true, StateChangeReason.NAVIGATION);
 
         return tabLoadStatus;
     }
@@ -1018,7 +1015,7 @@ public class BottomSheet extends FrameLayout
         mSettleAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animator) {
-                setSheetOffsetFromBottom((Float) animator.getAnimatedValue());
+                setSheetOffsetFromBottom((Float) animator.getAnimatedValue(), reason);
             }
         });
 
@@ -1040,7 +1037,7 @@ public class BottomSheet extends FrameLayout
      * Sets the sheet's offset relative to the bottom of the screen.
      * @param offset The offset that the sheet should be.
      */
-    private void setSheetOffsetFromBottom(float offset) {
+    private void setSheetOffsetFromBottom(float offset, @StateChangeReason int reason) {
         mCurrentOffsetPx = offset;
 
         // The browser controls offset is added here so that the sheet's toolbar behaves like the
@@ -1050,6 +1047,15 @@ public class BottomSheet extends FrameLayout
         if (MathUtils.areFloatsEqual(translationY, getTranslationY())) return;
 
         setTranslationY(translationY);
+
+        float peekHeight = getSheetHeightForState(SHEET_STATE_PEEK);
+        boolean isAtPeekingHeight = MathUtils.areFloatsEqual(getCurrentOffsetPx(), peekHeight);
+        if (isSheetOpen() && (getCurrentOffsetPx() < peekHeight || isAtPeekingHeight)) {
+            onSheetClosed(reason);
+        } else if (!isSheetOpen() && getCurrentOffsetPx() > peekHeight) {
+            onSheetOpened(reason);
+        }
+
         sendOffsetChangeEvents();
     }
 
@@ -1069,7 +1075,7 @@ public class BottomSheet extends FrameLayout
         } else {
             setInternalCurrentState(
                     BottomSheet.SHEET_STATE_SCROLLING, BottomSheet.StateChangeReason.SWIPE);
-            setSheetOffsetFromBottom(offset);
+            setSheetOffsetFromBottom(offset, BottomSheet.StateChangeReason.SWIPE);
         }
     }
 
@@ -1086,12 +1092,13 @@ public class BottomSheet extends FrameLayout
     }
 
     /**
-     * This is the same as {@link #setSheetOffsetFromBottom(float)} but exclusively for testing.
+     * This is the same as {@link #setSheetOffsetFromBottom(float, int)} but exclusively for
+     * testing.
      * @param offset The offset to set the sheet to.
      */
     @VisibleForTesting
     public void setSheetOffsetFromBottomForTesting(float offset) {
-        setSheetOffsetFromBottom(offset);
+        setSheetOffsetFromBottom(offset, StateChangeReason.NONE);
     }
 
     /**
@@ -1212,7 +1219,7 @@ public class BottomSheet extends FrameLayout
         if (animate && state != mCurrentState) {
             createSettleAnimation(state, reason);
         } else {
-            setSheetOffsetFromBottom(getSheetHeightForState(state));
+            setSheetOffsetFromBottom(getSheetHeightForState(state), reason);
             setInternalCurrentState(mTargetState, reason);
             mTargetState = SHEET_STATE_NONE;
         }
@@ -1259,8 +1266,6 @@ public class BottomSheet extends FrameLayout
             return;
         }
 
-        @SheetState
-        final int previousState = mCurrentState;
         mCurrentState = state;
 
         if (mCurrentState == SHEET_STATE_HALF || mCurrentState == SHEET_STATE_FULL) {
@@ -1282,30 +1287,6 @@ public class BottomSheet extends FrameLayout
         for (BottomSheetObserver o : mObservers) {
             o.onSheetStateChanged(mCurrentState);
         }
-
-        if (isSheetOpen() && isClosedState(getSheetState())) {
-            onSheetClosed(reason);
-        } else if (!isSheetOpen() && isClosedState(previousState)
-                && isOpenedState(getSheetState())) {
-            onSheetOpened(reason);
-        }
-    }
-
-    /**
-     * @param state A state of the {@link BottomSheet}.
-     * @return Whether the provided state is considered open.
-     */
-    private boolean isOpenedState(@SheetState int state) {
-        return state == SHEET_STATE_HALF || state == SHEET_STATE_FULL
-                || state == SHEET_STATE_SCROLLING;
-    }
-
-    /**
-     * @param state A state of the {@link BottomSheet}.
-     * @return Whether the provided state is considered closed.
-     */
-    private boolean isClosedState(@SheetState int state) {
-        return state == SHEET_STATE_PEEK || state == SHEET_STATE_HIDDEN;
     }
 
     /**
