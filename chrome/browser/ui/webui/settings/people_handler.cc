@@ -638,6 +638,9 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     if (service && !sync_blocker_)
       sync_blocker_ = service->GetSetupInProgressHandle();
 
+    // Preemptively mark login UI as active, because the user could potentially
+    // sign-in directly from this UI without triggering handleShowSetupUI again.
+    GetLoginUIService()->SetLoginUI(this);
     FireWebUIListener("sync-prefs-changed", base::DictionaryValue());
     return;
   }
