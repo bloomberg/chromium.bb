@@ -502,10 +502,6 @@ void WebRuntimeFeatures::EnablePWAFullCodeCache(bool enable) {
   RuntimeEnabledFeatures::SetPWAFullCodeCacheEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableCodeCacheAfterExecute(bool enable) {
-  RuntimeEnabledFeatures::SetCodeCacheAfterExecuteEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableUnifiedTouchAdjustment(bool enable) {
   RuntimeEnabledFeatures::SetUnifiedTouchAdjustmentEnabled(enable);
 }

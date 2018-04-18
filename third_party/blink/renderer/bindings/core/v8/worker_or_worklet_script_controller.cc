@@ -283,17 +283,10 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
                                     kSharableCrossOrigin, compile_options,
                                     no_cache_reason, referrer_info)
           .ToLocal(&compiled_script)) {
-    if (RuntimeEnabledFeatures::CodeCacheAfterExecuteEnabled()) {
-      maybe_result = V8ScriptRunner::RunCompiledScript(
-          isolate_, compiled_script, global_scope_);
-      V8ScriptRunner::ProduceCache(isolate_, compiled_script, source_code,
-                                   produce_cache_options, compile_options);
-    } else {
-      V8ScriptRunner::ProduceCache(isolate_, compiled_script, source_code,
-                                   produce_cache_options, compile_options);
-      maybe_result = V8ScriptRunner::RunCompiledScript(
-          isolate_, compiled_script, global_scope_);
-    }
+    maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
+                                                     global_scope_);
+    V8ScriptRunner::ProduceCache(isolate_, compiled_script, source_code,
+                                 produce_cache_options, compile_options);
   }
 
   if (!block.CanContinue()) {

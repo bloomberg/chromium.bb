@@ -421,9 +421,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnablePictureInPicture(
       base::FeatureList::IsEnabled(media::kPictureInPicture));
 
-  WebRuntimeFeatures::EnableCodeCacheAfterExecute(
-      base::FeatureList::IsEnabled(features::kCodeCacheAfterExecute));
-
   WebRuntimeFeatures::EnableCacheInlineScriptCode(
       base::FeatureList::IsEnabled(features::kCacheInlineScriptCode));
 
