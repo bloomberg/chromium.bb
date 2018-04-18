@@ -10,6 +10,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -20,6 +22,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "ui/base/ui_base_features.h"
 
 using extensions::Manifest;
@@ -136,8 +139,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest, InvokeUi_NoAction) {
   // Sign in to supppress the signin promo.
-  SigninManagerFactory::GetForProfile(browser()->profile())
-      ->SetAuthenticatedAccountInfo("test", "test@example.com");
+  identity::MakePrimaryAccountAvailable(
+      SigninManagerFactory::GetForProfile(profile()),
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
+      IdentityManagerFactory::GetForProfile(profile()), "test@example.com");
   ShowAndVerifyUi();
 }
 
