@@ -90,7 +90,7 @@ system_health.common_desktop,"charliea@chromium.org, nednguyen@chromium.org",
 system_health.common_mobile,"charliea@chromium.org, nednguyen@chromium.org, perezju@chromium.org",
 system_health.memory_desktop,perezju@chromium.org,
 system_health.memory_mobile,perezju@chromium.org,
-system_health.webview_startup,"perezju@chromium.org, torne@chromium.org",
+system_health.webview_startup,"perezju@chromium.org, torne@chromium.org, changwan@chromium.org",Mobile>WebView>Perf
 tab_switching.typical_25,vovoy@chromium.org,OS>Performance
 thread_times.key_hit_test_cases,"vmiura@chromium.org, sadrul@chromium.org",
 thread_times.key_idle_power_cases,skyostil@chromium.org,
