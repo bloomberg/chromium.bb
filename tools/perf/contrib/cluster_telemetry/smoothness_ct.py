@@ -17,6 +17,8 @@ def ScrollToEndOfPage(action_runner):
 class SmoothnessCT(perf_benchmark.PerfBenchmark):
   """Measures smoothness performance for Cluster Telemetry."""
 
+  options = {'upload_results': True}
+
   test = smoothness.Smoothness
 
   @classmethod
