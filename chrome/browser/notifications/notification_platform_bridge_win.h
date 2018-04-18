@@ -59,6 +59,8 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, GetDisplayed);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleEvent);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleSettings);
+  FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest,
+                           DisplayWithMockAC);
 
   // Simulates a click/dismiss event. Only for use in testing.
   // Note: Ownership of |notification| and |args| is retained by the caller.
@@ -72,6 +74,10 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   void SetDisplayedNotificationsForTesting(
       std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
           notifications);
+
+  // Sets a Toast Notifier to use to display notifications, when run in a test.
+  void SetNotifierForTesting(
+      ABI::Windows::UI::Notifications::IToastNotifier* notifier);
 
   // Obtain an IToastNotification interface from a given XML (provided by the
   // NotificationTemplateBuilder). For testing use only.

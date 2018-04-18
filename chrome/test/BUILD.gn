@@ -4900,6 +4900,8 @@ if (!is_android) {
     if (is_win) {
       sources += [
         "../browser/downgrade/user_data_downgrade_browsertest.cc",
+        "../browser/notifications/mock_itoastnotifier.cc",
+        "../browser/notifications/mock_itoastnotifier.h",
         "../browser/notifications/notification_platform_bridge_win_interactive_uitest.cc",
         "../browser/ui/views/touch_events_interactive_uitest_win.cc",
         "//ui/resources/cursors/aliasb.cur",
