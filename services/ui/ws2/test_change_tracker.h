@@ -19,8 +19,7 @@
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
-
-namespace ws {
+namespace ws2 {
 
 enum ChangeType {
   CHANGE_TYPE_CAPTURE_CHANGED,
@@ -179,8 +178,7 @@ class TestChangeTracker {
       int64_t display_id,
       const gfx::PointF& event_location_in_screen_pixel_layout,
       bool matches_pointer_watcher);
-  void OnPointerEventObserved(const ui::Event& event,
-                              uint32_t window_id);
+  void OnPointerEventObserved(const ui::Event& event, Id window_id);
   void OnWindowSharedPropertyChanged(
       Id window_id,
       const std::string& name,
@@ -203,8 +201,7 @@ class TestChangeTracker {
   DISALLOW_COPY_AND_ASSIGN(TestChangeTracker);
 };
 
-}  // namespace ws
-
+}  // namespace ws2
 }  // namespace ui
 
 #endif  // SERVICES_UI_WS2_TEST_CHANGE_TRACKER_H_
