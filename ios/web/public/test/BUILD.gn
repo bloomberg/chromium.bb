@@ -27,6 +27,8 @@ source_set("test") {
   allow_circular_includes_from = [ "//ios/web/test:test_support" ]
 
   sources = [
+    "error_test_util.h",
+    "error_test_util.mm",
     "js_test_util.h",
     "js_test_util.mm",
     "native_controller_test_util.h",

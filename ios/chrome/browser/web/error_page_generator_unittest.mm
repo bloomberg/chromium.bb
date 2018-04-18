@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/web/error_page_generator.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/web/public/test/error_test_util.h"
 #include "ios/web/public/test/web_test.h"
-#include "ios/web/web_state/error_translation_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +47,7 @@ class ErrorPageGeneratorTest : public web::WebTest {
       NSURLErrorFailingURLStringErrorKey :
           base::SysUTF8ToNSString(errorURL.spec())
     };
-    return web::NetErrorFromError(
+    return web::testing::CreateTestNetError(
         [NSError errorWithDomain:errorDomain code:errorCode userInfo:info]);
   }
 
