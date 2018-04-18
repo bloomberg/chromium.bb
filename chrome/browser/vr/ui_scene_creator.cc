@@ -2347,10 +2347,25 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_text_field->set_hit_testable(false);
   omnibox_text_field->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_WEB_ADDRESS));
-  omnibox_text_field->SetSize(kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM -
-                                  kOmniboxTextFieldIconButtonSizeDMM -
-                                  kOmniboxTextFieldRightMargin,
-                              0);
+  // TODO(crbug.com/834308): Refactor this element to be resized by a
+  // fixed-width layout, rather than adjusting based on other elements.
+  omnibox_text_field->AddBinding(std::make_unique<Binding<bool>>(
+      VR_BIND_LAMBDA(
+          [](Model* m) {
+            return m->speech.has_or_can_request_audio_permission &&
+                   !m->incognito && !m->capturing_state.audio_capture_enabled;
+          },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](TextInput* e, const bool& mic_button_visible) {
+            float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM;
+            if (mic_button_visible) {
+              width -= kOmniboxTextFieldIconButtonSizeDMM +
+                       kOmniboxTextFieldRightMargin;
+            }
+            e->SetSize(width, 0);
+          },
+          base::Unretained(omnibox_text_field.get()))));
 
   EventHandlers event_handlers;
   event_handlers.focus_change = base::BindRepeating(
