@@ -25,6 +25,7 @@ class Clock;
 }  // namespace base
 
 namespace cryptauth {
+class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
 class GcmDeviceInfoProvider;
 }  // namespace cryptauth
@@ -157,6 +158,7 @@ class DeviceSyncImpl : public mojom::DeviceSync,
   std::unique_ptr<PrefService> pref_service_;
 
   std::unique_ptr<cryptauth::CryptAuthGCMManager> cryptauth_gcm_manager_;
+  std::unique_ptr<cryptauth::CryptAuthClientFactory> cryptauth_client_factory_;
   std::unique_ptr<cryptauth::CryptAuthEnrollmentManager>
       cryptauth_enrollment_manager_;
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> cryptauth_device_manager_;

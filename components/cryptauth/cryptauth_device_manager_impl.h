@@ -31,7 +31,7 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
    public:
     static std::unique_ptr<CryptAuthDeviceManager> NewInstance(
         base::Clock* clock,
-        std::unique_ptr<CryptAuthClientFactory> client_factory,
+        CryptAuthClientFactory* cryptauth_client_factory,
         CryptAuthGCMManager* gcm_manager,
         PrefService* pref_service);
 
@@ -41,7 +41,7 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
     virtual ~Factory();
     virtual std::unique_ptr<CryptAuthDeviceManager> BuildInstance(
         base::Clock* clock,
-        std::unique_ptr<CryptAuthClientFactory> client_factory,
+        CryptAuthClientFactory* cryptauth_client_factory,
         CryptAuthGCMManager* gcm_manager,
         PrefService* pref_service);
 
@@ -67,17 +67,17 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
  protected:
   // Creates the manager:
   // |clock|: Used to determine the time between sync attempts.
-  // |client_factory|: Creates CryptAuthClient instances to perform each sync.
-  // |gcm_manager|: Notifies when GCM push messages trigger device syncs.
+  // |cryptauth_client_factory|: Creates CryptAuthClient instances to perform
+  // each sync. |gcm_manager|: Notifies when GCM push messages trigger device
+  // syncs.
   //                Not owned and must outlive this instance.
   // |pref_service|: Stores syncing metadata and unlock key information to
   //                 persist across browser restarts. Must already be registered
   //                 with RegisterPrefs().
-  CryptAuthDeviceManagerImpl(
-      base::Clock* clock,
-      std::unique_ptr<CryptAuthClientFactory> client_factory,
-      CryptAuthGCMManager* gcm_manager,
-      PrefService* pref_service);
+  CryptAuthDeviceManagerImpl(base::Clock* clock,
+                             CryptAuthClientFactory* cryptauth_client_factory,
+                             CryptAuthGCMManager* gcm_manager,
+                             PrefService* pref_service);
 
   void SetSyncSchedulerForTest(std::unique_ptr<SyncScheduler> sync_scheduler);
 
@@ -100,7 +100,7 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
   base::Clock* clock_;
 
   // Creates CryptAuthClient instances for each sync attempt.
-  std::unique_ptr<CryptAuthClientFactory> client_factory_;
+  CryptAuthClientFactory* cryptauth_client_factory_;
 
   // Notifies when GCM push messages trigger device sync. Not owned and must
   // outlive this instance.

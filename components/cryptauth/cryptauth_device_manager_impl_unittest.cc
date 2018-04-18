@@ -277,13 +277,12 @@ void ExpectSyncedDevicesAndPrefAreEqual(
 // Harness for testing CryptAuthDeviceManager.
 class TestCryptAuthDeviceManager : public CryptAuthDeviceManagerImpl {
  public:
-  TestCryptAuthDeviceManager(
-      base::Clock* clock,
-      std::unique_ptr<CryptAuthClientFactory> client_factory,
-      CryptAuthGCMManager* gcm_manager,
-      PrefService* pref_service)
+  TestCryptAuthDeviceManager(base::Clock* clock,
+                             CryptAuthClientFactory* client_factory,
+                             CryptAuthGCMManager* gcm_manager,
+                             PrefService* pref_service)
       : CryptAuthDeviceManagerImpl(clock,
-                                   std::move(client_factory),
+                                   client_factory,
                                    gcm_manager,
                                    pref_service),
         scoped_sync_scheduler_(new NiceMock<MockSyncScheduler>()),
@@ -319,7 +318,7 @@ class CryptAuthDeviceManagerImplTest
       public MockCryptAuthClientFactory::Observer {
  protected:
   CryptAuthDeviceManagerImplTest()
-      : client_factory_(new MockCryptAuthClientFactory(
+      : client_factory_(std::make_unique<MockCryptAuthClientFactory>(
             MockCryptAuthClientFactory::MockType::MAKE_STRICT_MOCKS)),
         gcm_manager_("existing gcm registration id") {
     client_factory_->AddObserver(this);
@@ -408,8 +407,7 @@ class CryptAuthDeviceManagerImplTest
     }
 
     device_manager_.reset(new TestCryptAuthDeviceManager(
-        &clock_, base::WrapUnique(client_factory_), &gcm_manager_,
-        &pref_service_));
+        &clock_, client_factory_.get(), &gcm_manager_, &pref_service_));
     device_manager_->AddObserver(this);
 
     get_my_devices_response_.add_devices()->CopyFrom(devices_in_response_[0]);
@@ -470,8 +468,7 @@ class CryptAuthDeviceManagerImplTest
 
   base::SimpleTestClock clock_;
 
-  // Owned by |device_manager_|.
-  MockCryptAuthClientFactory* client_factory_;
+  std::unique_ptr<MockCryptAuthClientFactory> client_factory_;
 
   TestingPrefServiceSimple pref_service_;
 
@@ -537,11 +534,8 @@ TEST_F(CryptAuthDeviceManagerImplTest, InitWithDefaultPrefs) {
   TestingPrefServiceSimple pref_service;
   CryptAuthDeviceManager::RegisterPrefs(pref_service.registry());
 
-  TestCryptAuthDeviceManager device_manager(
-      &clock,
-      std::make_unique<MockCryptAuthClientFactory>(
-          MockCryptAuthClientFactory::MockType::MAKE_STRICT_MOCKS),
-      &gcm_manager_, &pref_service);
+  TestCryptAuthDeviceManager device_manager(&clock, client_factory_.get(),
+                                            &gcm_manager_, &pref_service);
 
   EXPECT_CALL(
       *(device_manager.GetSyncScheduler()),

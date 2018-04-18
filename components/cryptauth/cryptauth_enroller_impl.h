@@ -32,7 +32,7 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   // |client_factory| creates CryptAuthClient instances for making API calls.
   // |crypto_delegate| is responsible for SecureMessage operations.
   CryptAuthEnrollerImpl(
-      std::unique_ptr<CryptAuthClientFactory> client_factory,
+      CryptAuthClientFactory* client_factory,
       std::unique_ptr<SecureMessageDelegate> secure_message_delegate);
   ~CryptAuthEnrollerImpl() override;
 
@@ -62,7 +62,7 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   void OnOuterSecureMessageCreated(const std::string& outer_message);
 
   // Creates the CryptAuthClient instances to make API requests.
-  std::unique_ptr<CryptAuthClientFactory> client_factory_;
+  CryptAuthClientFactory* client_factory_;
 
   // Handles SecureMessage operations.
   std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;

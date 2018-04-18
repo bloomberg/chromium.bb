@@ -122,7 +122,7 @@ class FakeCryptAuthDeviceManagerFactory
   // cryptauth::CryptAuthDeviceManagerImpl::Factory:
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> BuildInstance(
       base::Clock* clock,
-      std::unique_ptr<cryptauth::CryptAuthClientFactory> client_factory,
+      cryptauth::CryptAuthClientFactory* client_factory,
       cryptauth::CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service) override {
     EXPECT_EQ(simple_test_clock_, clock);

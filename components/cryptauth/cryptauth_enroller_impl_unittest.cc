@@ -103,10 +103,10 @@ class CryptAuthEnrollerTest
       public MockCryptAuthClientFactory::Observer {
  public:
   CryptAuthEnrollerTest()
-      : client_factory_(new MockCryptAuthClientFactory(
+      : client_factory_(std::make_unique<MockCryptAuthClientFactory>(
             MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS)),
         secure_message_delegate_(new FakeSecureMessageDelegate()),
-        enroller_(base::WrapUnique(client_factory_),
+        enroller_(client_factory_.get(),
                   base::WrapUnique(secure_message_delegate_)) {
     client_factory_->AddObserver(this);
 
@@ -243,7 +243,7 @@ class CryptAuthEnrollerTest
   std::string user_private_key_;
 
   // Owned by |enroller_|.
-  MockCryptAuthClientFactory* client_factory_;
+  std::unique_ptr<MockCryptAuthClientFactory> client_factory_;
   // Owned by |enroller_|.
   FakeSecureMessageDelegate* secure_message_delegate_;
   // The CryptAuthEnroller under test.

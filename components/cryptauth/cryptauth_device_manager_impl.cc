@@ -325,13 +325,13 @@ CryptAuthDeviceManagerImpl::Factory*
 std::unique_ptr<CryptAuthDeviceManager>
 CryptAuthDeviceManagerImpl::Factory::NewInstance(
     base::Clock* clock,
-    std::unique_ptr<CryptAuthClientFactory> client_factory,
+    CryptAuthClientFactory* cryptauth_client_factory,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
 
-  return factory_instance_->BuildInstance(clock, std::move(client_factory),
+  return factory_instance_->BuildInstance(clock, cryptauth_client_factory,
                                           gcm_manager, pref_service);
 }
 
@@ -346,20 +346,20 @@ CryptAuthDeviceManagerImpl::Factory::~Factory() = default;
 std::unique_ptr<CryptAuthDeviceManager>
 CryptAuthDeviceManagerImpl::Factory::BuildInstance(
     base::Clock* clock,
-    std::unique_ptr<CryptAuthClientFactory> client_factory,
+    CryptAuthClientFactory* cryptauth_client_factory,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service) {
   return base::WrapUnique(new CryptAuthDeviceManagerImpl(
-      clock, std::move(client_factory), gcm_manager, pref_service));
+      clock, cryptauth_client_factory, gcm_manager, pref_service));
 }
 
 CryptAuthDeviceManagerImpl::CryptAuthDeviceManagerImpl(
     base::Clock* clock,
-    std::unique_ptr<CryptAuthClientFactory> client_factory,
+    CryptAuthClientFactory* cryptauth_client_factory,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
     : clock_(clock),
-      client_factory_(std::move(client_factory)),
+      cryptauth_client_factory_(cryptauth_client_factory),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),
       scheduler_(CreateSyncScheduler(this)),
@@ -554,7 +554,7 @@ void CryptAuthDeviceManagerImpl::OnSyncRequested(
   NotifySyncStarted();
 
   sync_request_ = std::move(sync_request);
-  cryptauth_client_ = client_factory_->CreateInstance();
+  cryptauth_client_ = cryptauth_client_factory_->CreateInstance();
 
   InvocationReason invocation_reason = INVOCATION_REASON_UNKNOWN;
 
