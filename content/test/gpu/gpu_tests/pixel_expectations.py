@@ -71,9 +71,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
         ['win10', ('intel', 0x1912)], bug=690663)
 
-    self.Flaky('Pixel_OffscreenCanvasTransferToImageBitmap',
-              ['linux', 'win', 'android'], bug=807742)
-
     self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
         ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
 
