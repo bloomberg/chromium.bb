@@ -470,6 +470,8 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   std::string use_gl;
   if (card_disabled_ && SwiftShaderAllowed()) {
     use_gl = gl::kGLImplementationSwiftShaderForWebGLName;
+  } else if (card_disabled_) {
+    use_gl = gl::kGLImplementationDisabledName;
   } else {
     use_gl = browser_command_line->GetSwitchValueASCII(switches::kUseGL);
   }

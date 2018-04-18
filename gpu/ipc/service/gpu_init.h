@@ -65,6 +65,8 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
   bool ShouldEnableSwiftShader(base::CommandLine* command_line,
                                bool blacklist_needs_more_info);
   void AdjustInfoToSwiftShader();
+  void AdjustInfoToNoGpu();
+
   DISALLOW_COPY_AND_ASSIGN(GpuInit);
 };
 

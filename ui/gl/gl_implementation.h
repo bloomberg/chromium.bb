@@ -31,6 +31,7 @@ enum GLImplementation {
   kGLImplementationEGLGLES2,
   kGLImplementationMockGL,
   kGLImplementationStubGL,
+  kGLImplementationDisabled,
 };
 
 struct GL_EXPORT GLWindowSystemBindingInfo {

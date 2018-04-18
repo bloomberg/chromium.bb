@@ -205,6 +205,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
     return false;
   }
+  bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
   // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
   // However, on Mac we don't actually use them. As documented in
@@ -213,7 +214,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // By skipping the following code on Mac, we don't really lose anything,
   // because the basic GPU information is passed down from the host process.
 #if !defined(OS_MACOSX)
-  if (!use_swiftshader) {
+  if (!gl_disabled && !use_swiftshader) {
     if (!CollectGraphicsInfo(&gpu_info_))
       return false;
     gpu::SetKeysForCrashLogging(gpu_info_);
@@ -234,20 +235,25 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif
   if (use_swiftshader) {
     AdjustInfoToSwiftShader();
+  } else if (gl_disabled) {
+    AdjustInfoToNoGpu();
   }
+
   if (kGpuFeatureStatusEnabled !=
       gpu_feature_info_
           .status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE]) {
     gpu_preferences_.disable_accelerated_video_decode = true;
   }
 
-  if (!gpu_feature_info_.disabled_extensions.empty()) {
-    gl::init::SetDisabledExtensionsPlatform(
-        gpu_feature_info_.disabled_extensions);
-  }
-  if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
-    VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
-    return false;
+  if (!gl_disabled) {
+    if (!gpu_feature_info_.disabled_extensions.empty()) {
+      gl::init::SetDisabledExtensionsPlatform(
+          gpu_feature_info_.disabled_extensions);
+    }
+    if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
+      VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
+      return false;
+    }
   }
 
   base::TimeDelta initialize_one_off_time =
@@ -345,8 +351,9 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
     return;
   }
+  bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
-  if (!use_swiftshader) {
+  if (!gl_disabled && !use_swiftshader) {
     CollectContextGraphicsInfo(&gpu_info_);
     gpu_feature_info_ = ComputeGpuFeatureInfo(
         gpu_info_, gpu_preferences.ignore_gpu_blacklist,
@@ -364,13 +371,18 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
   if (use_swiftshader) {
     AdjustInfoToSwiftShader();
+  } else if (gl_disabled) {
+    AdjustInfoToNoGpu();
   }
-  if (!gpu_feature_info_.disabled_extensions.empty()) {
-    gl::init::SetDisabledExtensionsPlatform(
-        gpu_feature_info_.disabled_extensions);
-  }
-  if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
-    VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
+
+  if (!gl_disabled) {
+    if (!gpu_feature_info_.disabled_extensions.empty()) {
+      gl::init::SetDisabledExtensionsPlatform(
+          gpu_feature_info_.disabled_extensions);
+    }
+    if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
+      VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
+    }
   }
 }
 #endif  // OS_ANDROID
@@ -402,6 +414,13 @@ void GpuInit::AdjustInfoToSwiftShader() {
   gpu_info_.gl_renderer = "Google SwiftShader (" + gpu_info_.gl_renderer + ")";
   gpu_info_.gl_version =
       "OpenGL ES 2.0 SwiftShader (" + gpu_info_.gl_version + ")";
+}
+
+void GpuInit::AdjustInfoToNoGpu() {
+  gpu_feature_info_ = ComputeGpuFeatureInfoWithNoGpu();
+  gpu_info_.gl_vendor = "Disabled";
+  gpu_info_.gl_renderer = "Disabled";
+  gpu_info_.gl_version = "Disabled";
 }
 
 }  // namespace gpu

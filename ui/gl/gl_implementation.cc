@@ -38,7 +38,8 @@ const struct {
     {kGLImplementationAppleName, kGLImplementationAppleGL},
 #endif
     {kGLImplementationEGLName, kGLImplementationEGLGLES2},
-    {kGLImplementationMockName, kGLImplementationMockGL}};
+    {kGLImplementationMockName, kGLImplementationMockGL},
+    {kGLImplementationDisabledName, kGLImplementationDisabled}};
 
 typedef std::vector<base::NativeLibrary> LibraryArray;
 
