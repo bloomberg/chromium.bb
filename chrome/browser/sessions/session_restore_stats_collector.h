@@ -258,6 +258,12 @@ class SessionRestoreStatsCollector::StatsReportingDelegate {
   // use of the tab.
   virtual void ReportTabTimeSinceActive(base::TimeDelta elapsed) = 0;
 
+  // Called when a tab starts being tracked. Logs the relative time since last
+  // use of the tab. The |engagement| is a value that is typically between
+  // 0 and 100, but is technically unbounded. See
+  // chrome/browser/engagement/site_engagement_service.h for details.
+  virtual void ReportTabSiteEngagementScore(double engagement) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(StatsReportingDelegate);
 };
@@ -274,6 +280,7 @@ class SessionRestoreStatsCollector::UmaStatsReportingDelegate
   void ReportTabDeferred() override;
   void ReportDeferredTabLoaded() override;
   void ReportTabTimeSinceActive(base::TimeDelta elapsed) override;
+  void ReportTabSiteEngagementScore(double engagement) override;
 
  private:
   // Has ReportTabDeferred been called?
