@@ -127,6 +127,7 @@ class Text : public TexturedElement {
 
  private:
   UiTexture* GetTexture() const override;
+  bool TextureDependsOnMeasurement() const override;
   gfx::Size MeasureTextureSize() override;
 
   TextLayoutMode text_layout_mode_ = kMultiLineFixedWidth;

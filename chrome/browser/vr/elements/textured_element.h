@@ -44,6 +44,11 @@ class TexturedElement : public UiElement {
   bool PrepareToDraw() final;
 
  private:
+  // Subclasses must return true if redrawing a texture depends on measurement
+  // (text, for example).  If true, a texture dirtied by user input (after
+  // measurement) will not be redrawn until the following frame.
+  virtual bool TextureDependsOnMeasurement() const = 0;
+
   virtual gfx::Size MeasureTextureSize() = 0;
 
   gfx::Size texture_size_;

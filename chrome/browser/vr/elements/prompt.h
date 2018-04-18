@@ -58,6 +58,7 @@ class Prompt : public TexturedElement {
  private:
   void OnStateUpdated(const gfx::PointF& position);
 
+  bool TextureDependsOnMeasurement() const override;
   gfx::Size MeasureTextureSize() override;
 
   bool primary_down_ = false;

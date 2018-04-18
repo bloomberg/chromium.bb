@@ -40,6 +40,7 @@ class VectorIcon : public TexturedElement {
   UiTexture* GetTexture() const override;
 
  private:
+  bool TextureDependsOnMeasurement() const override;
   gfx::Size MeasureTextureSize() override;
 
   std::unique_ptr<VectorIconTexture> texture_;

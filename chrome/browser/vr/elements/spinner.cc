@@ -121,6 +121,10 @@ UiTexture* Spinner::GetTexture() const {
   return texture_.get();
 }
 
+bool Spinner::TextureDependsOnMeasurement() const {
+  return false;
+}
+
 gfx::Size Spinner::MeasureTextureSize() {
   return gfx::Size(texture_width_, texture_width_);
 }

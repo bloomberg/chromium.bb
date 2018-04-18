@@ -31,6 +31,9 @@ bool TexturedElement::PrepareToDraw() {
     return false;
 
   texture_size_ = MeasureTextureSize();
+  if (TextureDependsOnMeasurement())
+    DCHECK(GetTexture()->measured());
+
   return true;
 }
 
@@ -38,7 +41,12 @@ bool TexturedElement::UpdateTexture() {
   if (!GetTexture()->dirty() || !IsVisible())
     return false;
 
-  // If GL isn't ready yet, or we're in unit tests, present we drew a texture to
+  // Elements can be dirtied by user input.  If the texture draw depends on
+  // measurement, defer until the next frame.
+  if (TextureDependsOnMeasurement() && !GetTexture()->measured())
+    return false;
+
+  // If GL isn't ready yet, or we're in unit tests, pretend we drew a texture to
   // accurate articulate that we would have.  When GL is initialized, all
   // textures are dirtied again.
   if (!initialized_) {
