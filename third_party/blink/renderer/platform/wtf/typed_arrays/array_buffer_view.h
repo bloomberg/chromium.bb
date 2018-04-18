@@ -46,6 +46,8 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
     kTypeUint32,
     kTypeFloat32,
     kTypeFloat64,
+    kTypeBigInt64,
+    kTypeBigUint64,
     kTypeDataView
   };
   virtual ViewType GetType() const = 0;

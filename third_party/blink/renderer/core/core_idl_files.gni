@@ -424,6 +424,8 @@ core_idl_files =
                     "timing/worker_performance.idl",
                     "typed_arrays/array_buffer.idl",
                     "typed_arrays/array_buffer_view.idl",
+                    "typed_arrays/big_int_64_array.idl",
+                    "typed_arrays/big_uint_64_array.idl",
                     "typed_arrays/data_view.idl",
                     "typed_arrays/float32_array.idl",
                     "typed_arrays/float64_array.idl",

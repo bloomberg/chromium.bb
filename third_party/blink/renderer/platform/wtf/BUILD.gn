@@ -220,6 +220,8 @@ jumbo_component("wtf") {
     "typed_arrays/array_buffer_view.h",
     "typed_arrays/array_piece.cc",
     "typed_arrays/array_piece.h",
+    "typed_arrays/bigint64_array.h",
+    "typed_arrays/biguint64_array.h",
     "typed_arrays/float32_array.h",
     "typed_arrays/float64_array.h",
     "typed_arrays/int16_array.h",

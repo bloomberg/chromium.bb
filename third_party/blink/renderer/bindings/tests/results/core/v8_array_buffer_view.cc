@@ -15,6 +15,8 @@
 #include "bindings/core/v8/idl_types.h"
 #include "bindings/core/v8/native_value_traits_impl.h"
 #include "bindings/core/v8/v8_array_buffer.h"
+#include "bindings/core/v8/v8_bigint64_array.h"
+#include "bindings/core/v8/v8_biguint64_array.h"
 #include "bindings/core/v8/v8_data_view.h"
 #include "bindings/core/v8/v8_dom_configuration.h"
 #include "bindings/core/v8/v8_float32_array.h"
@@ -93,6 +95,10 @@ TestArrayBufferView* V8ArrayBufferView::ToImpl(v8::Local<v8::Object> object) {
     return V8Uint16Array::ToImpl(object);
   if (object->IsUint32Array())
     return V8Uint32Array::ToImpl(object);
+  if (object->IsBigInt64Array())
+    return V8BigInt64Array::ToImpl(object);
+  if (object->IsBigUint64Array())
+    return V8BigUint64Array::ToImpl(object);
   if (object->IsFloat32Array())
     return V8Float32Array::ToImpl(object);
   if (object->IsFloat64Array())

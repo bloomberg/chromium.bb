@@ -68,6 +68,8 @@ function allocationsThatIncreaseExternalMemory() {
     test("(new Uint8Array(MB))");
     test("(new Uint16Array(MB))");
     test("(new Uint32Array(MB))");
+    test("(new BigInt64Array(MB))");
+    test("(new BigUint64Array(MB))");
     var largeJSArray = [];
     for (var i = 0; i < MB; i++) largeJSArray.push(i);
     test("(new Float32Array(largeJSArray))");
@@ -78,6 +80,8 @@ function allocationsThatIncreaseExternalMemory() {
     test("(new Uint8Array(largeJSArray))");
     test("(new Uint16Array(largeJSArray))");
     test("(new Uint32Array(largeJSArray))");
+    test("(new BigInt64Array(largeJSArray, (x) => BigInt(x))");
+    test("(new BigUint64Array(largeJSArray, (x) => BigInt(x))");
     var int8Array = new Int8Array(MB);
     test("(new  Float32Array(int8Array))");
     test("(new  Float64Array(int8Array))");
@@ -87,6 +91,8 @@ function allocationsThatIncreaseExternalMemory() {
     test("(new  Uint8Array(int8Array))");
     test("(new  Uint16Array(int8Array))");
     test("(new  Uint32Array(int8Array))");
+    test("(new  BigInt64Array(int8Array, (x) => BigInt(x))");
+    test("(new  BigUint64Array(int8Array, (x) => BigInt(x))");
 }
 
 
@@ -119,6 +125,8 @@ function allocationsThatDoNotChangeExternalMemory() {
     test("(new  Uint8Array(arrayBuffer))");
     test("(new  Uint16Array(arrayBuffer))");
     test("(new  Uint32Array(arrayBuffer))");
+    test("(new  BigInt64Array(arrayBuffer))");
+    test("(new  BigUint64Array(arrayBuffer))");
     var int8Array = new Int8Array(MB);
     test("(new  Float32Array(int8Array.buffer))");
     test("(new  Float64Array(int8Array.buffer))");
@@ -128,6 +136,8 @@ function allocationsThatDoNotChangeExternalMemory() {
     test("(new  Uint8Array(int8Array.buffer))");
     test("(new  Uint16Array(int8Array.buffer))");
     test("(new  Uint32Array(int8Array.buffer))");
+    test("(new  BigInt64Array(int8Array.buffer))");
+    test("(new  BigUint64Array(int8Array.buffer))");
 }
 
 
@@ -192,6 +202,8 @@ function transfersThatDecreaseExternalMemory() {
     test("(new Uint8Array(MB)).buffer");
     test("(new Uint16Array(MB)).buffer");
     test("(new Uint32Array(MB)).buffer");
+    test("(new BigInt64Array(MB)).buffer");
+    test("(new BigUint64Array(MB)).buffer");
 }
 
 
