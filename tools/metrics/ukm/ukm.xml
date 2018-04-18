@@ -679,18 +679,31 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="CPUUsageMeasurement">
-  <owner>matthalp@google.com</owner>
-  <owner>oysteine@chromium.org</owner>
+  <owner>chrisha@chromium.org</owner>
+  <owner>siggi@chromium.org</owner>
   <summary>
     A CPU usage measurement that corresponds to a tick in a CPU usage
-    time-series The tick interval is set as a FieldTrial parameter, which can be
-    obtained by cross referencing the UKM entry with the FieldTrial it was
-    launched with. There is also some metadata stored to determine how faitful
+    time-series. There is also some metadata stored to determine how faithful
     the CPU usage measurement is (e.g. NumberOfCoresidentTabs).
   </summary>
   <metric name="CPUUsage">
     <summary>
-      CPU usage measurement.
+      CPU usage measurement. This is in units of clock-cycles. For example, 1.2
+      seconds of 100% CPU usage on a 2.5GHz CPU corresponds to a value of 1.2 x
+      1.0 x 2.5e9 = 3e6.
+    </summary>
+  </metric>
+  <metric name="EventType">
+    <summary>
+      The event associated with the measurement. This is an integer value
+      corresponding to the enum defined in
+      resource_coordinator::ResourceCoordinatorRenderProcessProbe.
+    </summary>
+  </metric>
+  <metric name="IsVisible">
+    <summary>
+      Indicates if any frame hosted in this tab is visible at the moment the
+      measurement is taken.
     </summary>
   </metric>
   <metric name="NumberOfCoresidentTabs">
@@ -699,9 +712,15 @@ be describing additional metrics about the same event.
       associated with when the CPU usage measurement is taken.
     </summary>
   </metric>
-  <metric name="Tick">
+  <metric name="ObservationWindowSizeMs">
     <summary>
-      Tick CPU Usage measurement was taken at.
+      The size of the observation window (time since last CPU measurement) in
+      milliseconds.
+    </summary>
+  </metric>
+  <metric name="ProcessUptimeMs">
+    <summary>
+      The uptime of the process being measured, in milliseconds.
     </summary>
   </metric>
 </event>

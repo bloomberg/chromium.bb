@@ -235,7 +235,6 @@ void MetricsCollector::RecordCPUUsageForUkm(
   UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
 
   ukm::builders::CPUUsageMeasurement(state.ukm_source_id)
-      .SetTick(state.num_cpu_usage_measurements++)
       .SetCPUUsage(cpu_usage)
       .SetNumberOfCoresidentTabs(num_coresident_tabs)
       .Record(coordination_unit_manager().ukm_recorder());
