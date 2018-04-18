@@ -20,6 +20,7 @@ const CGFloat kMinHeight = 200;
 const CGFloat kMinWidth = 200;
 const CGFloat kMaxWidth = 300;
 const CGFloat kMaxHeight = 400;
+const CGFloat kMinWidthDifference = 50;
 const CGFloat kMinHorizontalMargin = 5;
 const CGFloat kMinVerticalMargin = 15;
 const CGFloat kDamping = 0.85;
@@ -104,6 +105,11 @@ const CGFloat kDamping = 0.85;
   [self.baseViewController addChildViewController:self.popupViewController];
   [self.baseViewController.view addSubview:self.popupViewController.view];
   self.popupViewController.view.frame = self.baseViewController.view.bounds;
+
+  [popup.widthAnchor constraintLessThanOrEqualToAnchor:self.popupViewController
+                                                           .view.widthAnchor
+                                              constant:-kMinWidthDifference]
+      .active = YES;
 
   UILayoutGuide* namedGuide =
       [NamedGuide guideWithName:self.guideName
