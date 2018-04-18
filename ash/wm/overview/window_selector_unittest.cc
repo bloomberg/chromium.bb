@@ -59,6 +59,7 @@
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/transform.h"
@@ -2952,8 +2953,7 @@ TEST_F(WindowSelectorTest, ShadowBounds) {
 }
 
 // Verify that attempting to drag with a secondary finger works as expected.
-// Flaky, see https://crbug.com/827435.
-TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
+TEST_F(WindowSelectorTest, DraggingWithTwoFingers) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
 
@@ -2976,10 +2976,10 @@ TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
   // Dispatches a long press event at the event generators current location.
   // Long press is one way to start dragging in splitview.
   auto dispatch_long_press = [this]() {
-    ui::TouchEvent long_press(
-        ui::ET_GESTURE_LONG_PRESS, GetEventGenerator().current_location(),
-        base::TimeTicks::Now(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH));
+    ui::GestureEventDetails event_details(ui::ET_GESTURE_LONG_PRESS);
+    const gfx::Point location = GetEventGenerator().current_location();
+    ui::GestureEvent long_press(location.x(), location.y(), 0,
+                                ui::EventTimeForNow(), event_details);
     GetEventGenerator().Dispatch(&long_press);
   };
 
