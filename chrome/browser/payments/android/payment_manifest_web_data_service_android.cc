@@ -100,6 +100,17 @@ void PaymentManifestWebDataServiceAndroid::OnPaymentMethodManifestRequestDone(
 void PaymentManifestWebDataServiceAndroid::Destroy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj) {
+  scoped_refptr<payments::PaymentManifestWebDataService> web_data_service =
+      WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
+          ProfileManager::GetActiveUserProfile(),
+          ServiceAccessType::EXPLICIT_ACCESS);
+  if (web_data_service) {
+    for (const auto& request : web_data_service_requests_) {
+      web_data_service->CancelRequest(request.first);
+    }
+    web_data_service_requests_.clear();
+  }
+
   delete this;
 }
 
