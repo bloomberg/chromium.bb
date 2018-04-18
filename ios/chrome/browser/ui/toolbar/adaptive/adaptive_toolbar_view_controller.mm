@@ -109,6 +109,8 @@
   self.loading = loading;
   self.view.reloadButton.hiddenInCurrentState = loading;
   self.view.stopButton.hiddenInCurrentState = !loading;
+  [self.view layoutIfNeeded];
+
   if (!loading) {
     [self stopProgressBar];
   } else if (self.view.progressBar.hidden) {
