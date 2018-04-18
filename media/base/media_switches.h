@@ -145,6 +145,7 @@ MEDIA_EXPORT extern const base::Feature kCafMediaRouterImpl;
 MEDIA_EXPORT extern const base::Feature kDelayCopyNV12Textures;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationH264Encoding;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVideoCapture;
+MEDIA_EXPORT extern const base::Feature kDirectShowGetPhotoState;
 #endif  // defined(OS_WIN)
 
 // Based on a |command_line| and the current platform, returns the effective

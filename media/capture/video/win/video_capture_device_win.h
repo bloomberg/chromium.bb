@@ -144,6 +144,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
 
   base::ThreadChecker thread_checker_;
 
+  bool enable_get_photo_state_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceWin);
 };
 

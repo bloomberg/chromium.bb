@@ -343,6 +343,12 @@ const base::Feature kMediaFoundationH264Encoding{
 const base::Feature kMediaFoundationVideoCapture{
     "MediaFoundationVideoCapture", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables DirectShow GetPhotoState implementation
+// Created to act as a kill switch by disabling it, in the case of the
+// resurgence of https://crbug.com/722038
+const base::Feature kDirectShowGetPhotoState{"DirectShowGetPhotoState",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 #endif  // defined(OS_WIN)
 
 std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
