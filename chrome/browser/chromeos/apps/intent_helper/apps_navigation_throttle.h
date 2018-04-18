@@ -15,12 +15,6 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
 
-class Browser;
-
-namespace arc {
-class ArcNavigationThrottle;
-}
-
 namespace content {
 class NavigationHandle;
 class WebContents;
@@ -43,10 +37,9 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static std::unique_ptr<content::NavigationThrottle> MaybeCreate(
       content::NavigationHandle* handle);
 
-  // Queries for installed app which can handle |url|, and displays the intent
-  // picker bubble in |browser|.
-  static void ShowIntentPickerBubble(const Browser* browser,
-                                     content::WebContents* web_contents,
+  // Queries for installed apps which can handle |url|, and displays the intent
+  // picker bubble for |web_contents|.
+  static void ShowIntentPickerBubble(content::WebContents* web_contents,
                                      const GURL& url);
 
   // Called when the intent picker is closed for |url|, in |web_contents|, with
@@ -139,7 +132,6 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       bool should_persist);
 
   static void FindPwaForUrlAndShowIntentPickerForApps(
-      const Browser* browser,
       content::WebContents* web_contents,
       const GURL& url,
       std::vector<IntentPickerAppInfo> apps);
@@ -152,7 +144,6 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       std::vector<IntentPickerAppInfo> apps);
 
   static void ShowIntentPickerBubbleForApps(
-      const Browser* browser,
       content::WebContents* web_contents,
       const GURL& url,
       std::vector<IntentPickerAppInfo> apps);
@@ -161,17 +152,18 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   content::NavigationThrottle::ThrottleCheckResult HandleRequest();
 
-  // Passed as a callback to allow app-platform-specific code to asychronously
-  // inform this object of the apps which can handle this URL, and optionally
-  // request that the navigation be completely cancelled (e.g. if a preferred
-  // app has been opened).
-  void OnDeferredRequestProcessed(AppsNavigationAction action,
-                                  std::vector<IntentPickerAppInfo> apps);
+  // Passed as a callback to allow ARC-specific code to asynchronously inform
+  // this object of the apps which can handle this URL, and optionally request
+  // that the navigation be completely cancelled (e.g. if a preferred app has
+  // been opened).
+  void OnDeferredNavigationProcessed(AppsNavigationAction action,
+                                     std::vector<IntentPickerAppInfo> apps);
 
   // A reference to the starting GURL.
   GURL starting_url_;
 
-  std::unique_ptr<arc::ArcNavigationThrottle> arc_throttle_;
+  // True if ARC is enabled, false otherwise.
+  const bool arc_enabled_;
 
   // Keeps track of whether we already shown the UI or preferred app. Since
   // AppsNavigationThrottle cannot wait for the user (due to the non-blocking

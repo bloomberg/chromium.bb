@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,19 +48,43 @@ size_t FindPreferredApp(
 
 }  // namespace
 
-ArcNavigationThrottle::ArcNavigationThrottle() : weak_ptr_factory_(this) {}
+// static
+void ArcNavigationThrottle::GetArcAppsForPicker(
+    content::WebContents* web_contents,
+    const GURL& url,
+    chromeos::GetAppsCallback callback) {
+  arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
+    DVLOG(1) << "Cannot get an instance of ArcServiceManager";
+    std::move(callback).Run({});
+    return;
+  }
 
-ArcNavigationThrottle::~ArcNavigationThrottle() = default;
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->intent_helper(),
+      RequestUrlHandlerList);
+  if (!instance) {
+    DVLOG(1) << "Cannot get access to RequestUrlHandlerList";
+    std::move(callback).Run({});
+    return;
+  }
 
-bool ArcNavigationThrottle::ShouldDeferRequest(
+  // |throttle| will delete itself when it is finished.
+  ArcNavigationThrottle* throttle = new ArcNavigationThrottle(web_contents);
+  throttle->GetArcAppsForPicker(instance, url, std::move(callback));
+}
+
+// static
+bool ArcNavigationThrottle::WillGetArcAppsForNavigation(
     content::NavigationHandle* handle,
     chromeos::AppsNavigationCallback callback) {
   ArcServiceManager* arc_service_manager = ArcServiceManager::Get();
   if (!arc_service_manager)
     return false;
 
+  content::WebContents* web_contents = handle->GetWebContents();
   auto* intent_helper_bridge = ArcIntentHelperBridge::GetForBrowserContext(
-      handle->GetWebContents()->GetBrowserContext());
+      web_contents->GetBrowserContext());
   if (!intent_helper_bridge)
     return false;
 
@@ -72,141 +95,24 @@ bool ArcNavigationThrottle::ShouldDeferRequest(
     return false;
   }
 
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+  mojom::IntentHelperInstance* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_service_manager->arc_bridge_service()->intent_helper(),
       RequestUrlHandlerList);
   if (!instance)
     return false;
 
+  // |throttle| will delete itself when it is finished.
+  ArcNavigationThrottle* throttle = new ArcNavigationThrottle(web_contents);
+
   // Return true to defer the navigation until we asynchronously hear back from
   // ARC whether a preferred app should be launched. This makes it safe to bind
   // |handle| as a raw pointer argument. We will either resume or cancel the
-  // navigation as soon as the callback is run.
-  instance->RequestUrlHandlerList(
-      url.spec(),
-      base::BindOnce(&ArcNavigationThrottle::OnAppCandidatesReceived,
-                     weak_ptr_factory_.GetWeakPtr(), handle,
-                     std::move(callback)));
+  // navigation as soon as the callback is run. If the WebContents is destroyed
+  // prior to this asynchronous method finishing, it is safe to not run
+  // |callback| since it will not matter what we do with the deferred navigation
+  // for a now-closed tab.
+  throttle->GetArcAppsForNavigation(instance, url, std::move(callback));
   return true;
-}
-
-void ArcNavigationThrottle::OnAppCandidatesReceived(
-    content::NavigationHandle* handle,
-    chromeos::AppsNavigationCallback callback,
-    std::vector<mojom::IntentHandlerInfoPtr> app_candidates) {
-  const GURL& url = handle->GetURL();
-  if (!IsAppAvailable(app_candidates)) {
-    // This scenario shouldn't be accessed as ArcNavigationThrottle is created
-    // iff there are ARC apps which can actually handle the given URL.
-    DVLOG(1) << "There are no app candidates for this URL: " << url;
-    chromeos::AppsNavigationThrottle::RecordUma(
-        std::string(), chromeos::AppType::INVALID,
-        chromeos::IntentPickerCloseReason::ERROR, false /* should_persist */);
-    std::move(callback).Run(chromeos::AppsNavigationAction::RESUME, {});
-    return;
-  }
-
-  content::WebContents* web_contents = handle->GetWebContents();
-  // If one of the apps is marked as preferred, launch it immediately.
-  if (DidLaunchPreferredArcApp(url, web_contents, app_candidates)) {
-    std::move(callback).Run(chromeos::AppsNavigationAction::CANCEL, {});
-    return;
-  }
-
-  // We are always going to resume navigation at this point, and possibly show
-  // the intent picker bubble to prompt the user to choose if they would like to
-  // use an ARC app to open the URL.
-  ArcAppIconQuery(url, web_contents, std::move(app_candidates),
-                  base::BindOnce(std::move(callback),
-                                 chromeos::AppsNavigationAction::RESUME));
-}
-
-bool ArcNavigationThrottle::DidLaunchPreferredArcApp(
-    const GURL& url,
-    content::WebContents* web_contents,
-    const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  bool cancel_navigation = false;
-  const size_t index = FindPreferredApp(app_candidates, url);
-  if (index != app_candidates.size()) {
-    auto close_reason = chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND;
-    const std::string package_name = app_candidates[index]->package_name;
-
-    // Make sure that the instance at least supports HandleUrl.
-    auto* arc_service_manager = ArcServiceManager::Get();
-    mojom::IntentHelperInstance* instance = nullptr;
-    if (arc_service_manager) {
-      instance = ARC_GET_INSTANCE_FOR_METHOD(
-          arc_service_manager->arc_bridge_service()->intent_helper(),
-          HandleUrl);
-    }
-
-    if (!instance) {
-      close_reason = chromeos::IntentPickerCloseReason::ERROR;
-    } else if (ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
-      chrome::SetIntentPickerViewVisibility(
-          chrome::FindBrowserWithWebContents(web_contents), true);
-    } else {
-      instance->HandleUrl(url.spec(), package_name);
-      cancel_navigation = true;
-    }
-    chromeos::AppsNavigationThrottle::RecordUma(
-        package_name, chromeos::AppType::ARC, close_reason,
-        false /* should_persist */);
-  }
-  return cancel_navigation;
-}
-
-void ArcNavigationThrottle::ArcAppIconQuery(
-    const GURL& url,
-    content::WebContents* web_contents,
-    std::vector<mojom::IntentHandlerInfoPtr> app_candidates,
-    chromeos::QueryAppsCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  auto* intent_helper_bridge = ArcIntentHelperBridge::GetForBrowserContext(
-      web_contents->GetBrowserContext());
-  if (!intent_helper_bridge) {
-    LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
-    chromeos::AppsNavigationThrottle::RecordUma(
-        std::string(), chromeos::AppType::INVALID,
-        chromeos::IntentPickerCloseReason::ERROR, false /* should_persist */);
-    std::move(callback).Run({});
-    return;
-  }
-  std::vector<ArcIntentHelperBridge::ActivityName> activities;
-  for (const auto& candidate : app_candidates)
-    activities.emplace_back(candidate->package_name, candidate->activity_name);
-
-  intent_helper_bridge->GetActivityIcons(
-      activities,
-      base::BindOnce(&ArcNavigationThrottle::OnAppIconsReceived,
-                     chrome::FindBrowserWithWebContents(web_contents),
-                     std::move(app_candidates), url, std::move(callback)));
-}
-
-// static
-void ArcNavigationThrottle::OnAppIconsReceived(
-    const Browser* browser,
-    std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates,
-    const GURL& url,
-    chromeos::QueryAppsCallback callback,
-    std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons) {
-  std::vector<chromeos::IntentPickerAppInfo> app_info;
-
-  for (const auto& candidate : app_candidates) {
-    gfx::Image icon;
-    const arc::ArcIntentHelperBridge::ActivityName activity(
-        candidate->package_name, candidate->activity_name);
-    const auto it = icons->find(activity);
-
-    app_info.emplace_back(chromeos::AppType::ARC,
-                          it != icons->end() ? it->second.icon16 : gfx::Image(),
-                          candidate->package_name, candidate->name);
-  }
-
-  std::move(callback).Run(std::move(app_info));
 }
 
 // static
@@ -276,60 +182,179 @@ size_t ArcNavigationThrottle::FindPreferredAppForTesting(
   return FindPreferredApp(app_candidates, GURL());
 }
 
-// static
-void ArcNavigationThrottle::QueryArcApps(const Browser* browser,
-                                         const GURL& url,
-                                         chromeos::QueryAppsCallback callback) {
-  arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager) {
-    DVLOG(1) << "Cannot get an instance of ArcServiceManager";
-    std::move(callback).Run({});
-    return;
-  }
+ArcNavigationThrottle::~ArcNavigationThrottle() = default;
 
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_service_manager->arc_bridge_service()->intent_helper(),
-      RequestUrlHandlerList);
-  if (!instance) {
-    DVLOG(1) << "Cannot get access to RequestUrlHandlerList";
-    std::move(callback).Run({});
-    return;
-  }
+ArcNavigationThrottle::ArcNavigationThrottle(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents), weak_ptr_factory_(this) {}
+
+void ArcNavigationThrottle::GetArcAppsForNavigation(
+    mojom::IntentHelperInstance* instance,
+    const GURL& url,
+    chromeos::AppsNavigationCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   instance->RequestUrlHandlerList(
       url.spec(),
-      base::BindOnce(&ArcNavigationThrottle::AsyncOnAppCandidatesReceived,
-                     browser, url, std::move(callback)));
+      base::BindOnce(
+          &ArcNavigationThrottle::OnAppCandidatesReceivedForNavigation,
+          weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
 }
 
-// static
-void ArcNavigationThrottle::AsyncOnAppCandidatesReceived(
-    const Browser* browser,
+void ArcNavigationThrottle::GetArcAppsForPicker(
+    mojom::IntentHelperInstance* instance,
     const GURL& url,
-    chromeos::QueryAppsCallback callback,
+    chromeos::GetAppsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  instance->RequestUrlHandlerList(
+      url.spec(),
+      base::BindOnce(&ArcNavigationThrottle::OnAppCandidatesReceivedForPicker,
+                     weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+}
+
+void ArcNavigationThrottle::OnAppCandidatesReceivedForNavigation(
+    const GURL& url,
+    chromeos::AppsNavigationCallback callback,
+    std::vector<mojom::IntentHandlerInfoPtr> app_candidates) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<ArcNavigationThrottle> deleter(this);
+  if (!IsAppAvailable(app_candidates)) {
+    // This scenario shouldn't be accessed as ArcNavigationThrottle is created
+    // iff there are ARC apps which can actually handle the given URL.
+    DVLOG(1) << "There are no app candidates for this URL: " << url;
+    chromeos::AppsNavigationThrottle::RecordUma(
+        std::string(), chromeos::AppType::INVALID,
+        chromeos::IntentPickerCloseReason::ERROR, /*should_persist=*/false);
+    std::move(callback).Run(chromeos::AppsNavigationAction::RESUME, {});
+    return;
+  }
+
+  // If one of the apps is marked as preferred, launch it immediately.
+  if (DidLaunchPreferredArcApp(url, app_candidates)) {
+    std::move(callback).Run(chromeos::AppsNavigationAction::CANCEL, {});
+    return;
+  }
+
+  // We are always going to resume navigation at this point, and possibly show
+  // the intent picker bubble to prompt the user to choose if they would like to
+  // use an ARC app to open the URL.
+  deleter.release();
+  GetArcAppIcons(url, std::move(app_candidates),
+                 base::BindOnce(std::move(callback),
+                                chromeos::AppsNavigationAction::RESUME));
+}
+
+void ArcNavigationThrottle::OnAppCandidatesReceivedForPicker(
+    const GURL& url,
+    chromeos::GetAppsCallback callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<ArcNavigationThrottle> deleter(this);
   if (!IsAppAvailable(app_candidates)) {
     DVLOG(1) << "There are no app candidates for this URL";
     std::move(callback).Run({});
     return;
   }
 
-  auto* intent_helper_bridge = arc::ArcIntentHelperBridge::GetForBrowserContext(
-      browser->tab_strip_model()->GetActiveWebContents()->GetBrowserContext());
+  deleter.release();
+  GetArcAppIcons(url, std::move(app_candidates), std::move(callback));
+}
+
+bool ArcNavigationThrottle::DidLaunchPreferredArcApp(
+    const GURL& url,
+    const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  bool cancel_navigation = false;
+  const size_t index = FindPreferredApp(app_candidates, url);
+  if (index != app_candidates.size()) {
+    auto close_reason = chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND;
+    const std::string& package_name = app_candidates[index]->package_name;
+
+    // Make sure that the instance at least supports HandleUrl.
+    auto* arc_service_manager = ArcServiceManager::Get();
+    mojom::IntentHelperInstance* instance = nullptr;
+    if (arc_service_manager) {
+      instance = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->intent_helper(),
+          HandleUrl);
+    }
+
+    if (!instance) {
+      close_reason = chromeos::IntentPickerCloseReason::ERROR;
+    } else if (ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
+      chrome::SetIntentPickerViewVisibility(
+          chrome::FindBrowserWithWebContents(web_contents()), true);
+    } else {
+      instance->HandleUrl(url.spec(), package_name);
+      cancel_navigation = true;
+    }
+    chromeos::AppsNavigationThrottle::RecordUma(
+        package_name, chromeos::AppType::ARC, close_reason,
+        /*should_persist=*/false);
+  }
+  return cancel_navigation;
+}
+
+void ArcNavigationThrottle::GetArcAppIcons(
+    const GURL& url,
+    std::vector<mojom::IntentHandlerInfoPtr> app_candidates,
+    chromeos::GetAppsCallback callback) {
+  std::unique_ptr<ArcNavigationThrottle> deleter(this);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto* intent_helper_bridge = ArcIntentHelperBridge::GetForBrowserContext(
+      web_contents()->GetBrowserContext());
   if (!intent_helper_bridge) {
-    DVLOG(1) << "Cannot get an instance of ArcIntentHelperBridge";
+    LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
+    chromeos::AppsNavigationThrottle::RecordUma(
+        std::string(), chromeos::AppType::INVALID,
+        chromeos::IntentPickerCloseReason::ERROR, /*should_persist=*/false);
     std::move(callback).Run({});
     return;
   }
-
-  std::vector<arc::ArcIntentHelperBridge::ActivityName> activities;
+  std::vector<ArcIntentHelperBridge::ActivityName> activities;
   for (const auto& candidate : app_candidates)
     activities.emplace_back(candidate->package_name, candidate->activity_name);
 
+  deleter.release();
   intent_helper_bridge->GetActivityIcons(
       activities,
-      base::BindOnce(&ArcNavigationThrottle::OnAppIconsReceived, browser,
-                     std::move(app_candidates), url, std::move(callback)));
+      base::BindOnce(&ArcNavigationThrottle::OnAppIconsReceived,
+                     weak_ptr_factory_.GetWeakPtr(), url,
+                     std::move(app_candidates), std::move(callback)));
+}
+
+void ArcNavigationThrottle::OnAppIconsReceived(
+    const GURL& url,
+    std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates,
+    chromeos::GetAppsCallback callback,
+    std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<ArcNavigationThrottle> deleter(this);
+  std::vector<chromeos::IntentPickerAppInfo> app_info;
+
+  for (const auto& candidate : app_candidates) {
+    gfx::Image icon;
+    const arc::ArcIntentHelperBridge::ActivityName activity(
+        candidate->package_name, candidate->activity_name);
+    const auto it = icons->find(activity);
+
+    app_info.emplace_back(chromeos::AppType::ARC,
+                          it != icons->end() ? it->second.icon16 : gfx::Image(),
+                          candidate->package_name, candidate->name);
+  }
+
+  // After running the callback, |this| is always deleted by |deleter| going out
+  // of scope.
+  std::move(callback).Run(std::move(app_info));
+}
+
+void ArcNavigationThrottle::WebContentsDestroyed() {
+  delete this;
 }
 
 }  // namespace arc

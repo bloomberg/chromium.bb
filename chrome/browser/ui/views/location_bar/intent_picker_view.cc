@@ -47,8 +47,7 @@ void IntentPickerView::OnExecuting(
         browser_->tab_strip_model()->GetActiveWebContents();
     const GURL& url = chrome::GetURLToBookmark(web_contents);
 
-    chromeos::AppsNavigationThrottle::ShowIntentPickerBubble(browser_,
-                                                             web_contents, url);
+    chromeos::AppsNavigationThrottle::ShowIntentPickerBubble(web_contents, url);
   } else {
     SetVisible(false);
   }

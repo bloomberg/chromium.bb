@@ -133,19 +133,13 @@ AppsNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
 
 // static
 void AppsNavigationThrottle::ShowIntentPickerBubble(
-    const Browser* browser,
     content::WebContents* web_contents,
     const GURL& url) {
-  // TODO(crbug.com/824598): remove |browser| as a parameter for this method,
-  // and instead factor out asychronous querying to a helper object that is
-  // a WebContentsObserver and self-deletes when querying is complete or if the
-  // WebContents is destroyed. Always lookup |browser| via the WebContents. This
-  // will avoid lifetime issues.
-  arc::ArcNavigationThrottle::QueryArcApps(
-      browser, url,
+  arc::ArcNavigationThrottle::GetArcAppsForPicker(
+      web_contents, url,
       base::BindOnce(
           &AppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps,
-          browser, web_contents, url));
+          web_contents, url));
 }
 
 // static
@@ -219,8 +213,7 @@ AppsNavigationThrottle::AppsNavigationThrottle(
     content::NavigationHandle* navigation_handle,
     bool arc_enabled)
     : content::NavigationThrottle(navigation_handle),
-      arc_throttle_(arc_enabled ? std::make_unique<arc::ArcNavigationThrottle>()
-                                : nullptr),
+      arc_enabled_(arc_enabled),
       ui_displayed_(false),
       weak_factory_(this) {}
 
@@ -317,15 +310,13 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
 
 // static
 void AppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
-    const Browser* browser,
     content::WebContents* web_contents,
     const GURL& url,
     std::vector<IntentPickerAppInfo> apps) {
   std::vector<IntentPickerAppInfo> apps_for_picker =
       FindPwaForUrl(web_contents, url, std::move(apps));
 
-  ShowIntentPickerBubbleForApps(browser, web_contents, url,
-                                std::move(apps_for_picker));
+  ShowIntentPickerBubbleForApps(web_contents, url, std::move(apps_for_picker));
 }
 
 // static
@@ -357,15 +348,17 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
 
 // static
 void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
-    const Browser* browser,
     content::WebContents* web_contents,
     const GURL& url,
     std::vector<IntentPickerAppInfo> apps) {
   if (apps.empty())
     return;
 
+  // It should be safe to bind |web_contents| since closing the current tab will
+  // close the intent picker and run the callback prior to the WebContents being
+  // deallocated.
   chrome::ShowIntentPickerBubble(
-      browser, std::move(apps),
+      chrome::FindBrowserWithWebContents(web_contents), std::move(apps),
       base::BindOnce(&AppsNavigationThrottle::OnIntentPickerClosed,
                      web_contents, url));
 }
@@ -378,7 +371,7 @@ void AppsNavigationThrottle::CancelNavigation() {
     CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
 }
 
-void AppsNavigationThrottle::OnDeferredRequestProcessed(
+void AppsNavigationThrottle::OnDeferredNavigationProcessed(
     AppsNavigationAction action,
     std::vector<IntentPickerAppInfo> apps) {
   if (action == AppsNavigationAction::CANCEL) {
@@ -399,9 +392,7 @@ void AppsNavigationThrottle::OnDeferredRequestProcessed(
   if (apps_for_picker.empty())
     ui_displayed_ = false;
 
-  ShowIntentPickerBubbleForApps(
-      chrome::FindBrowserWithWebContents(web_contents), web_contents, url,
-      std::move(apps_for_picker));
+  ShowIntentPickerBubbleForApps(web_contents, url, std::move(apps_for_picker));
 
   // We are about to resume the navigation, which may destroy this object.
   Resume();
@@ -435,16 +426,16 @@ AppsNavigationThrottle::HandleRequest() {
   if (!ShouldOverrideUrlLoading(starting_url_, url))
     return content::NavigationThrottle::PROCEED;
 
-  if (arc_throttle_ &&
-      arc_throttle_->ShouldDeferRequest(
+  if (arc_enabled_ &&
+      arc::ArcNavigationThrottle::WillGetArcAppsForNavigation(
           handle,
-          base::BindOnce(&AppsNavigationThrottle::OnDeferredRequestProcessed,
+          base::BindOnce(&AppsNavigationThrottle::OnDeferredNavigationProcessed,
                          weak_factory_.GetWeakPtr()))) {
-    // Handling is now deferred to |arc_throttle_|, which asynchronously queries
-    // ARC for apps, and runs OnDeferredRequestProcessed() with an action based
-    // on whether an acceptable app was found and user consent to open received.
-    // We assume the UI is shown or a preferred app was found; reset to false if
-    // we resume the navigation.
+    // Handling is now deferred to ArcNavigationThrottle, which asynchronously
+    // queries ARC for apps, and runs OnDeferredNavigationProcessed() with an
+    // action based on whether an acceptable app was found and user consent to
+    // open received. We assume the UI is shown or a preferred app was found;
+    // reset to false if we resume the navigation.
     ui_displayed_ = true;
     return content::NavigationThrottle::DEFER;
   }
@@ -459,9 +450,7 @@ AppsNavigationThrottle::HandleRequest() {
     if (!apps.empty())
       ui_displayed_ = true;
 
-    ShowIntentPickerBubbleForApps(
-        chrome::FindBrowserWithWebContents(web_contents), web_contents, url,
-        std::move(apps));
+    ShowIntentPickerBubbleForApps(web_contents, url, std::move(apps));
   }
 
   return content::NavigationThrottle::PROCEED;
