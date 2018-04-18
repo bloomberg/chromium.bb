@@ -348,21 +348,19 @@ void NavigationManagerImpl::ReloadWithUserAgentType(
     return;
 
   // |reloadURL| will be empty if a page was open by DOM.
-  GURL reload_url(last_non_redirect_item->GetOriginalRequestURL());
-  if (reload_url.is_empty()) {
-    reload_url = last_non_redirect_item->GetVirtualURL();
+  GURL reloadURL(last_non_redirect_item->GetOriginalRequestURL());
+  if (reloadURL.is_empty()) {
+    reloadURL = last_non_redirect_item->GetVirtualURL();
   }
 
   // Reload using a client-side redirect URL to create a new entry in
   // WKBackForwardList for the new user agent type. This hack is not needed for
   // LegacyNavigationManagerImpl which manages its own history entries.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    reload_url = wk_navigation_util::CreateRedirectUrl(reload_url);
+    reloadURL = wk_navigation_util::CreateRedirectUrl(reloadURL);
   }
 
-  WebLoadParams params(reload_url);
-  if (last_non_redirect_item->GetVirtualURL() != reload_url)
-    params.virtual_url = last_non_redirect_item->GetVirtualURL();
+  WebLoadParams params(reloadURL);
   params.referrer = last_non_redirect_item->GetReferrer();
   params.transition_type = ui::PAGE_TRANSITION_RELOAD;
 
