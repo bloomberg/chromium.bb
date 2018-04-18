@@ -143,9 +143,9 @@ TEST_F(SampleVectorTest, BucketIndexDeath) {
   EXPECT_EQ(3, samples.GetCount(65));
 
   // Extreme case.
-  EXPECT_DCHECK_DEATH(samples.Accumulate(INT_MIN, 100));
-  EXPECT_DCHECK_DEATH(samples.Accumulate(-1, 100));
-  EXPECT_DCHECK_DEATH(samples.Accumulate(INT_MAX, 100));
+  EXPECT_DEATH_IF_SUPPORTED(samples.Accumulate(INT_MIN, 100), "");
+  EXPECT_DEATH_IF_SUPPORTED(samples.Accumulate(-1, 100), "");
+  EXPECT_DEATH_IF_SUPPORTED(samples.Accumulate(INT_MAX, 100), "");
 
   // Custom buckets: [1, 5) [5, 10)
   // Note, this is not a valid BucketRanges for Histogram because it does not
@@ -165,8 +165,8 @@ TEST_F(SampleVectorTest, BucketIndexDeath) {
   EXPECT_EQ(4, samples2.GetCount(5));
 
   // Extreme case.
-  EXPECT_DCHECK_DEATH(samples2.Accumulate(0, 100));
-  EXPECT_DCHECK_DEATH(samples2.Accumulate(10, 100));
+  EXPECT_DEATH_IF_SUPPORTED(samples2.Accumulate(0, 100), "");
+  EXPECT_DEATH_IF_SUPPORTED(samples2.Accumulate(10, 100), "");
 }
 
 TEST_F(SampleVectorTest, AddSubtractBucketNotMatchDeath) {
@@ -190,18 +190,20 @@ TEST_F(SampleVectorTest, AddSubtractBucketNotMatchDeath) {
   samples1.Add(samples2);
   EXPECT_EQ(100, samples1.GetCountAtIndex(0));
 
-  // Extra bucket in the beginning.
+  // Extra bucket in the beginning. These should CHECK in GetBucketIndex.
   samples2.Accumulate(0, 100);
-  EXPECT_DCHECK_DEATH(samples1.Add(samples2));
-  EXPECT_DCHECK_DEATH(samples1.Subtract(samples2));
+  EXPECT_DEATH_IF_SUPPORTED(samples1.Add(samples2), "");
+  EXPECT_DEATH_IF_SUPPORTED(samples1.Subtract(samples2), "");
 
-  // Extra bucket in the end.
+  // Extra bucket in the end. These should cause AddSubtractImpl to fail, and
+  // Add to DCHECK as a result.
   samples2.Accumulate(0, -100);
   samples2.Accumulate(6, 100);
   EXPECT_DCHECK_DEATH(samples1.Add(samples2));
   EXPECT_DCHECK_DEATH(samples1.Subtract(samples2));
 
-  // Bucket not match: [3, 5) VS [3, 6)
+  // Bucket not match: [3, 5) VS [3, 6). These should cause AddSubtractImpl to
+  // DCHECK.
   samples2.Accumulate(6, -100);
   samples2.Accumulate(3, 100);
   EXPECT_DCHECK_DEATH(samples1.Add(samples2));
