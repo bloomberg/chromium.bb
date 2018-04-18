@@ -63,24 +63,35 @@ CORSURLLoader::CORSURLLoader(
     mojom::URLLoaderFactory* network_loader_factory)
     : network_loader_factory_(network_loader_factory),
       network_client_binding_(this),
+      request_(resource_request),
       forwarding_client_(std::move(client)),
       security_origin_(
           resource_request.request_initiator.value_or(url::Origin())),
       last_response_url_(resource_request.url),
-      fetch_request_mode_(resource_request.fetch_request_mode),
-      fetch_credentials_mode_(resource_request.fetch_credentials_mode),
       fetch_cors_flag_(CalculateCORSFlag(resource_request)) {
   DCHECK(network_loader_factory_);
 
   if (fetch_cors_flag_ &&
-      fetch_request_mode_ == mojom::FetchRequestMode::kSameOrigin) {
+      request_.fetch_request_mode == mojom::FetchRequestMode::kSameOrigin) {
     forwarding_client_->OnComplete(URLLoaderCompletionStatus(
         CORSErrorStatus(mojom::CORSError::kDisallowedByMode)));
     return;
   }
 
-  // TODO(toyoshim): Needs some checks if the calculated fetch_cors_flag_
-  // is allowed in this request or not.
+  if (fetch_cors_flag_ &&
+      cors::IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
+    // Username and password should be stripped in a CORS-enabled request.
+    if (request_.url.has_username() || request_.url.has_password()) {
+      GURL::Replacements replacements;
+      replacements.SetUsernameStr("");
+      replacements.SetPasswordStr("");
+      request_.url = request_.url.ReplaceComponents(replacements);
+      last_response_url_ = request_.url;
+    }
+  }
+
+  // TODO(toyoshim): Needs some checks if the calculated fetch_cors_flag_ is
+  // allowed in this request or not.
 
   mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
@@ -90,7 +101,7 @@ CORSURLLoader::CORSURLLoader(
       &CORSURLLoader::OnUpstreamConnectionError, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
-      resource_request, std::move(network_client), traffic_annotation);
+      request_, std::move(network_client), traffic_annotation);
 }
 
 CORSURLLoader::~CORSURLLoader() {}
@@ -133,7 +144,8 @@ void CORSURLLoader::OnReceiveResponse(
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
-  if (fetch_cors_flag_ && cors::IsCORSEnabledRequestMode(fetch_request_mode_)) {
+  if (fetch_cors_flag_ &&
+      cors::IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
     // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
     base::Optional<mojom::CORSError> cors_error = cors::CheckAccess(
         last_response_url_, response_head.headers->response_code(),
@@ -141,7 +153,7 @@ void CORSURLLoader::OnReceiveResponse(
                         cors::header_names::kAccessControlAllowOrigin),
         GetHeaderString(response_head.headers,
                         cors::header_names::kAccessControlAllowCredentials),
-        fetch_credentials_mode_, security_origin_);
+        request_.fetch_credentials_mode, security_origin_);
     if (cors_error) {
       // TODO(toyoshim): Generate related_response_headers here.
       CORSErrorStatus cors_error_status(*cors_error);

@@ -75,6 +75,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   // For the actual request.
   mojom::URLLoaderPtr network_loader_;
   mojo::Binding<mojom::URLLoaderClient> network_client_binding_;
+  ResourceRequest request_;
 
   // To be a URLLoader for the client.
   mojom::URLLoaderClientPtr forwarding_client_;
@@ -91,8 +92,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   bool is_waiting_follow_redirect_call_ = false;
 
   // Corresponds to the Fetch spec, https://fetch.spec.whatwg.org/.
-  mojom::FetchRequestMode fetch_request_mode_;
-  mojom::FetchCredentialsMode fetch_credentials_mode_;
   bool fetch_cors_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoader);
