@@ -754,6 +754,9 @@ scoped_refptr<CachedMetadata> V8ScriptRunner::GenerateFullCodeCache(
 
   ScriptState::Scope scope(script_state);
   v8::Isolate* isolate = script_state->GetIsolate();
+  // v8::TryCatch is needed to suppress all exceptions thrown during the code
+  // cache generation.
+  v8::TryCatch block(isolate);
   ReferrerScriptInfo referrer_info;
   v8::ScriptOrigin origin(
       V8String(isolate, file_name),
@@ -775,6 +778,8 @@ scoped_refptr<CachedMetadata> V8ScriptRunner::GenerateFullCodeCache(
   std::unique_ptr<v8::ScriptCompiler::CachedData> cached_data;
 
   v8::Local<v8::UnboundScript> unbound_script;
+  // When failed to compile the script with syntax error, the exceptions is
+  // suppressed by the v8::TryCatch, and returns null.
   if (v8::ScriptCompiler::CompileUnboundScript(
           isolate, &source, v8::ScriptCompiler::kEagerCompile)
           .ToLocal(&unbound_script)) {
