@@ -612,7 +612,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
 
   base::Value html(base::UTF8ToUTF16(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_PRINT_PREVIEW_PAGE)));
+          IDR_PRINT_HEADER_FOOTER_TEMPLATE_PAGE)));
   // Load page with script to avoid async operations.
   ExecuteScript(frame, kPageLoadScriptFormat, html);
 
