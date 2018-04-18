@@ -118,7 +118,8 @@ bool HasRlzEmbargoEndDatePassed() {
 
 }  // namespace
 
-const int RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays = 7;
+const int RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays =
+    14;
 
 const int RlzValueStoreChromeOS::kMaxRetryCount = 3;
 
