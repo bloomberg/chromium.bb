@@ -190,5 +190,5 @@ void BrowserNonClientFrameViewMac::PaintThemedFrame(gfx::Canvas* canvas) {
   gfx::ImageSkia image = GetFrameImage();
   canvas->TileImageInt(image, 0, 0, width(), image.height());
   gfx::ImageSkia overlay = GetFrameOverlayImage();
-  canvas->TileImageInt(overlay, 0, 0, width(), overlay.height());
+  canvas->DrawImageInt(overlay, 0, 0);
 }
