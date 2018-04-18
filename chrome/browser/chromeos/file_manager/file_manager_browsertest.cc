@@ -160,9 +160,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive"),
         TestParameter(IN_GUEST_MODE, "renameNewDirectoryDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDownloads")));
-// Flaky https://crbug.com/833752
-// TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDrive")));
+        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDrive")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_Delete DISABLED_Delete
