@@ -8,7 +8,9 @@
 
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
@@ -35,6 +37,9 @@ D3D11VideoDecoderImpl::D3D11VideoDecoderImpl(
 D3D11VideoDecoderImpl::~D3D11VideoDecoderImpl() {
   // TODO(liberato): be sure to clear |picture_buffers_| on the main thread.
   // For now, we always run on the main thread anyway.
+
+  if (stub_ && !wait_sequence_id_.is_null())
+    stub_->channel()->scheduler()->DestroySequence(wait_sequence_id_);
 }
 
 std::string D3D11VideoDecoderImpl::GetDisplayName() const {
@@ -59,6 +64,8 @@ void D3D11VideoDecoderImpl::Initialize(
   }
   // TODO(liberato): see GpuVideoFrameFactory.
   // stub_->AddDestructionObserver(this);
+  wait_sequence_id_ = stub_->channel()->scheduler()->CreateSequence(
+      gpu::SchedulingPriority::kNormal);
 
   // Use the ANGLE device, rather than create our own.  It would be nice if we
   // could use our own device, and run on the mojo thread, but texture sharing
@@ -362,8 +369,16 @@ void D3D11VideoDecoderImpl::OnMailboxReleased(
   // Note that |buffer| might no longer be in |picture_buffers_| if we've
   // replaced them.  That's okay.
 
-  // TODO(liberato): Wait for the sync token here.
+  stub_->channel()->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+      wait_sequence_id_,
+      base::BindOnce(&D3D11VideoDecoderImpl::OnSyncTokenReleased, GetWeakPtr(),
+                     std::move(buffer)),
+      std::vector<gpu::SyncToken>({sync_token})));
+}
 
+void D3D11VideoDecoderImpl::OnSyncTokenReleased(
+    scoped_refptr<D3D11PictureBuffer> buffer) {
+  // Note that |buffer| might no longer be in |picture_buffers_|.
   buffer->set_in_client_use(false);
 
   // Also re-start decoding in case it was waiting for more pictures.
@@ -371,7 +386,7 @@ void D3D11VideoDecoderImpl::OnMailboxReleased(
   // probably check.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&D3D11VideoDecoderImpl::DoDecode, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&D3D11VideoDecoderImpl::DoDecode, GetWeakPtr()));
 }
 
 base::WeakPtr<D3D11VideoDecoderImpl> D3D11VideoDecoderImpl::GetWeakPtr() {

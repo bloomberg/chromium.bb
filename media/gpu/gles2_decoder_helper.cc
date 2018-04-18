@@ -53,6 +53,13 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
     glGenTextures(1, &texture_id);
     glBindTexture(target, texture_id);
 
+    // Mark external textures as clear, since nobody is going to take any action
+    // that would "clear" them.
+    // TODO(liberato): should we make the client do this when it binds an image?
+    gfx::Rect cleared_rect = (target == GL_TEXTURE_EXTERNAL_OES)
+                                 ? gfx::Rect(width, height)
+                                 : gfx::Rect();
+
     scoped_refptr<gpu::gles2::TextureRef> texture_ref =
         gpu::gles2::TextureRef::Create(texture_manager_, 0, texture_id);
     texture_manager_->SetTarget(texture_ref.get(), target);
@@ -66,7 +73,7 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
                                    0,                  // border
                                    format,             // format
                                    type,               // type
-                                   gfx::Rect());       // cleared_rect
+                                   cleared_rect);      // cleared_rect
 
     texture_manager_->SetParameteri(__func__, decoder_->GetErrorState(),
                                     texture_ref.get(), GL_TEXTURE_MAG_FILTER,
