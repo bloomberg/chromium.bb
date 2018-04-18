@@ -13,6 +13,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.SystemClock;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
@@ -46,6 +47,12 @@ public class DecoderService extends Service {
 
     @Override
     public void onCreate() {
+        // DecoderService does not require flags, but LibraryLoader.ensureInitialized() checks for
+        // --enable-low-end-device-mode. Rather than forwarding the flags from the browser process,
+        // just assume no flags.
+        if (!CommandLine.isInitialized()) {
+            CommandLine.init(null);
+        }
         try {
             // The decoder service relies on PathUtils.
             ThreadUtils.runOnUiThreadBlocking(() -> {
