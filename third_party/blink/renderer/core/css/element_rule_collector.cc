@@ -144,8 +144,8 @@ void ElementRuleCollector::CollectMatchingRulesForList(
       continue;
     }
 
-    // FIXME: Exposing the non-standard getMatchedCSSRules API to web is the
-    // only reason this is needed.
+    // Don't return cross-origin rules if we did not explicitly ask for them
+    // through SetSameOriginOnly.
     if (same_origin_only_ && !rule_data.HasDocumentSecurityOrigin())
       continue;
 
