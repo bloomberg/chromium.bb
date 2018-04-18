@@ -104,6 +104,11 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
                               uint8_t* v_out,
                               int v_out_stride) const;
 
+  // Copies the result of an RGBA_BITMAP into |dest|. The result is in N32Premul
+  // form. Returns true if successful, or false if: 1) the result is empty, or
+  // 2) the result format is not RGBA_BITMAP and conversion is not implemented.
+  virtual bool ReadRGBAPlane(uint8_t* dest, int stride) const;
+
  protected:
   // Accessor for subclasses to initialize the cached SkBitmap.
   SkBitmap* cached_bitmap() const { return &cached_bitmap_; }
