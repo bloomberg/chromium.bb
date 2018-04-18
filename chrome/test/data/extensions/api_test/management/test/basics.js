@@ -100,12 +100,17 @@ var tests = [
   },
 
   function permissionWarnings() {
-    var manifest_str = "{ \"name\": \"Hello World!\", \"version\": \"1.0\", " +
-                       "\"permissions\": [\"http://api.flickr.com/\", " +
-                       "\"bookmarks\", \"geolocation\", " +
-                       "\"history\", \"tabs\"]," +
-                       "\"content_scripts\": [{\"js\": [\"script.js\"], " +
-                       "\"matches\": [\"http://*.flickr.com/*\"]}]}";
+    var manifest_str =
+        `{
+           "name": "Hello World!",
+           "manifest_version": 2,
+           "version": "1.0",
+           "permissions": ["http://api.flickr.com/", "bookmarks", "geolocation",
+                           "history", "tabs"],
+           "content_scripts": [
+             {"js": ["script.js"], "matches": ["http://*.flickr.com/*"]}
+           ]
+         }`;
 
     chrome.management.getPermissionWarningsByManifest(
         manifest_str, callback(function(warnings) {
@@ -134,8 +139,13 @@ var tests = [
   },
 
   function permissionWarningsClipboardReadApi() {
-    var manifest_str = "{ \"name\": \"Clipboard!\", \"version\": \"1.0\", " +
-                       "\"permissions\": [\"clipboardRead\"] }";
+    var manifest_str =
+        `{
+           "name": "Clipboard!",
+           "version": "1.0",
+           "manifest_version": 2,
+           "permissions": ["clipboardRead"]
+         }`;
 
     chrome.management.getPermissionWarningsByManifest(
         manifest_str, callback(function(warnings) {

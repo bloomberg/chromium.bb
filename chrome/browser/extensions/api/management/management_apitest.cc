@@ -44,8 +44,6 @@ Browser* FindOtherBrowser(Browser* browser) {
 
 class ExtensionManagementApiTest : public ExtensionApiTest {
  public:
-  bool ShouldAllowLegacyExtensionManifests() override { return true; }
-
   virtual void LoadExtensions() {
     base::FilePath basedir = test_data_dir_.AppendASCII("management");
 
