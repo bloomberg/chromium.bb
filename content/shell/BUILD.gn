@@ -19,6 +19,7 @@ if (is_android) {
 } else if (is_mac) {
   import("//build/config/mac/rules.gni")
   import("//build/mac/tweak_info_plist.gni")
+  import("//ui/gl/features.gni")
   import("//third_party/icu/config.gni")
   import("//v8/gni/v8.gni")
 }
@@ -732,9 +733,11 @@ if (is_mac) {
       ":content_shell_lib",
     ]
     deps = [
+      ":content_shell_angle_library",
       ":content_shell_framework_helpers",
       ":content_shell_framework_resources",
       ":content_shell_framework_xibs",
+      ":content_shell_swiftshader_library",
       "//third_party/icu:icudata",
     ]
 
@@ -822,6 +825,52 @@ if (is_mac) {
     outputs = [
       "{{bundle_resources_dir}}/{{source_file_part}}",
     ]
+  }
+
+  if (use_egl) {
+    # Add the ANGLE .dylibs in the MODULE_DIR of Chromium.app
+    bundle_data("content_shell_angle_binaries") {
+      sources = [
+        "$root_out_dir/egl_intermediates/libEGL.dylib",
+        "$root_out_dir/egl_intermediates/libGLESv2.dylib",
+      ]
+      outputs = [
+        "{{bundle_contents_dir}}/Libraries/{{source_file_part}}",
+      ]
+      public_deps = [
+        "//ui/gl:angle_library_copy",
+      ]
+    }
+
+    # Add the SwiftShader .dylibs in the MODULE_DIR of Chromium.app
+    bundle_data("content_shell_swiftshader_binaries") {
+      sources = [
+        "$root_out_dir/egl_intermediates/libswiftshader_libEGL.dylib",
+        "$root_out_dir/egl_intermediates/libswiftshader_libGLESv2.dylib",
+      ]
+      outputs = [
+        "{{bundle_contents_dir}}/Libraries/{{source_file_part}}",
+      ]
+      public_deps = [
+        "//ui/gl:swiftshader_library_copy",
+      ]
+    }
+  }
+
+  group("content_shell_angle_library") {
+    if (use_egl) {
+      deps = [
+        ":content_shell_angle_binaries",
+      ]
+    }
+  }
+
+  group("content_shell_swiftshader_library") {
+    if (use_egl) {
+      deps = [
+        ":content_shell_swiftshader_binaries",
+      ]
+    }
   }
 }
 
