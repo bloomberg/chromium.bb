@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_util.h"
 #include "ui/gfx/image/image_skia.h"
 
 // static
@@ -38,22 +39,51 @@ const char* CrostiniAppItem::GetItemType() const {
   return CrostiniAppItem::kItemType;
 }
 
-void CrostiniAppItem::Activate(int event_flags) {
-  chromeos::CrostiniRegistryService* registry_service =
-      chromeos::CrostiniRegistryServiceFactory::GetForProfile(profile());
-  std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
-      registration = registry_service->GetRegistration(id());
-  if (registration) {
+namespace {
+void MaybeLaunchTerminal(Profile* profile,
+                         crostini::ConciergeClientResult result) {
+  if (result == crostini::ConciergeClientResult::SUCCESS) {
+    crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
+        profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+  }
+}
+
+void MaybeLaunchContainerAppplication(
+    std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
+        registration,
+    crostini::ConciergeClientResult result) {
+  if (result == crostini::ConciergeClientResult::SUCCESS) {
     // TODO(timloh): Do something if launching failed, as otherwise the app
     // launcher remains open and there's no feedback.
     crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
         registration->vm_name, registration->container_name,
         registration->desktop_file_id,
         base::BindOnce([](crostini::ConciergeClientResult result) {}));
+  }
+}
+}  // namespace
+
+void CrostiniAppItem::Activate(int event_flags) {
+  chromeos::CrostiniRegistryService* registry_service =
+      chromeos::CrostiniRegistryServiceFactory::GetForProfile(profile());
+  std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
+      registration = registry_service->GetRegistration(id());
+  auto* crostini_manager = crostini::CrostiniManager::GetInstance();
+  if (registration) {
+    crostini_manager->RestartCrostini(
+        profile(), registration->vm_name, registration->container_name,
+        base::BindOnce(&MaybeLaunchContainerAppplication,
+                       std::move(registration)));
+
     return;
   }
-
-  CrostiniInstallerView::Show(this, profile());
+  if (!crostini_manager->IsCrosTerminaInstalled()) {
+    CrostiniInstallerView::Show(this, profile());
+  } else {
+    crostini_manager->RestartCrostini(
+        profile(), kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+        base::BindOnce(&MaybeLaunchTerminal, base::Unretained(profile())));
+  }
 }
 
 ui::MenuModel* CrostiniAppItem::GetContextMenuModel() {

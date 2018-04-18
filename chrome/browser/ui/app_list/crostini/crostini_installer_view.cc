@@ -325,8 +325,7 @@ void CrostiniInstallerView::ShowLoginShell() {
   state_ = State::SHOW_LOGIN_SHELL;
 
   crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
-      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      container_user_name_);
+      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
 
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
   GetWidget()->UpdateWindowTitle();
