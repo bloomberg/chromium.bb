@@ -734,8 +734,8 @@ public class ContextualSearchUma {
      *        by the user.
      */
     public static void logBarOverlapPeekDuration(boolean wasBarOverlap, long panelPeekDurationMs) {
-        String histogram = wasBarOverlap ? "Search.ContextualSearchBarOverlap.DurationSeen"
-                                         : "Search.ContextualSearchBarNoOverlap.DurationSeen";
+        String histogram = wasBarOverlap ? "Search.ContextualSearchBarOverlap.PeekDuration"
+                                         : "Search.ContextualSearchBarNoOverlap.PeekDuration";
         RecordHistogram.recordMediumTimesHistogram(
                 histogram, panelPeekDurationMs, TimeUnit.MILLISECONDS);
     }
