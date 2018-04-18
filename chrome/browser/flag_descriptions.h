@@ -1801,6 +1801,9 @@ extern const char kWakeOnPacketsDescription[];
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
 
+extern const char kEnableSettingsShortcutSearchName[];
+extern const char kEnableSettingsShortcutSearchDescription[];
+
 #endif  // #if defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------
