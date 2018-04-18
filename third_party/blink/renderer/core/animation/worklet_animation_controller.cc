@@ -24,8 +24,7 @@ void WorkletAnimationController::AttachAnimation(
   DCHECK(!compositor_animations_.Contains(&animation));
   pending_animations_.insert(&animation);
 
-  // TODO(majidvp): We should DCHECK that the animation document is the same
-  // as the controller's owning document.
+  DCHECK_EQ(document_, animation.GetDocument());
   if (LocalFrameView* view = animation.GetDocument()->View())
     view->ScheduleAnimation();
 }
@@ -35,6 +34,8 @@ void WorkletAnimationController::DetachAnimation(
   DCHECK(IsMainThread());
   DCHECK(pending_animations_.Contains(&animation) !=
          compositor_animations_.Contains(&animation));
+  // If detached animation is in pending list, it has not been started on the
+  // compositor yet so it just needs to be removed from pending list.
   if (pending_animations_.Contains(&animation))
     pending_animations_.erase(&animation);
   else

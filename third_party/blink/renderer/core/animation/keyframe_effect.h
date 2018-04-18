@@ -104,7 +104,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
                                   CompositorAnimation* = nullptr);
   bool HasActiveAnimationsOnCompositor() const;
   bool HasActiveAnimationsOnCompositor(const PropertyHandle&) const;
-  bool CancelAnimationOnCompositor();
+  bool CancelAnimationOnCompositor(CompositorAnimation*);
   void CancelIncompatibleAnimationsOnCompositor();
   void PauseAnimationForTestingOnCompositor(double pause_time);
 

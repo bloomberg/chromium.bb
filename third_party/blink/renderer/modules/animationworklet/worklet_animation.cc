@@ -225,9 +225,15 @@ void WorkletAnimation::cancel() {
   if (play_state_ == Animation::kIdle)
     return;
   document_->GetWorkletAnimationController().DetachAnimation(*this);
-  play_state_ = Animation::kIdle;
 
   KeyframeEffect* target_effect = effects_.at(0);
+  if (compositor_animation_) {
+    target_effect->CancelAnimationOnCompositor(compositor_animation_.get());
+    DestroyCompositorAnimation();
+  }
+
+  play_state_ = Animation::kIdle;
+
   Element* target = target_effect->target();
   if (!target)
     return;
@@ -301,16 +307,23 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   return true;
 }
 
-void WorkletAnimation::Dispose() {
-  DCHECK(IsMainThread());
+void WorkletAnimation::DestroyCompositorAnimation() {
+  if (compositor_animation_ && compositor_animation_->IsElementAttached())
+    compositor_animation_->DetachElement();
 
   if (CompositorAnimationTimeline* compositor_timeline =
           document_->Timeline().CompositorTimeline())
     compositor_timeline->AnimationDestroyed(*this);
+
   if (compositor_animation_) {
     compositor_animation_->SetAnimationDelegate(nullptr);
     compositor_animation_ = nullptr;
   }
+}
+
+void WorkletAnimation::Dispose() {
+  DCHECK(IsMainThread());
+  DestroyCompositorAnimation();
 }
 
 void WorkletAnimation::Trace(blink::Visitor* visitor) {

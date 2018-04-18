@@ -955,8 +955,10 @@ void Animation::SetCompositorPending(bool effect_changed) {
 }
 
 void Animation::CancelAnimationOnCompositor() {
-  if (HasActiveAnimationsOnCompositor())
-    ToKeyframeEffect(content_.Get())->CancelAnimationOnCompositor();
+  if (HasActiveAnimationsOnCompositor()) {
+    ToKeyframeEffect(content_.Get())
+        ->CancelAnimationOnCompositor(GetCompositorAnimation());
+  }
 
   DestroyCompositorAnimation();
 }
@@ -964,8 +966,8 @@ void Animation::CancelAnimationOnCompositor() {
 void Animation::RestartAnimationOnCompositor() {
   if (!HasActiveAnimationsOnCompositor())
     return;
-
-  if (ToKeyframeEffect(content_.Get())->CancelAnimationOnCompositor())
+  if (ToKeyframeEffect(content_.Get())
+          ->CancelAnimationOnCompositor(GetCompositorAnimation()))
     SetCompositorPending(true);
 }
 

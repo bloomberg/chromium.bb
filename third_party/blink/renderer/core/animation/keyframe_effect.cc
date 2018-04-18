@@ -255,7 +255,8 @@ bool KeyframeEffect::HasActiveAnimationsOnCompositor(
   return HasActiveAnimationsOnCompositor() && Affects(property);
 }
 
-bool KeyframeEffect::CancelAnimationOnCompositor() {
+bool KeyframeEffect::CancelAnimationOnCompositor(
+    CompositorAnimation* compositor_animation) {
   // FIXME: cancelAnimationOnCompositor is called from withins style recalc.
   // This queries compositingState, which is not necessarily up to date.
   // https://code.google.com/p/chromium/issues/detail?id=339847
@@ -264,10 +265,9 @@ bool KeyframeEffect::CancelAnimationOnCompositor() {
     return false;
   if (!target_ || !target_->GetLayoutObject())
     return false;
-  DCHECK(GetAnimation());
   for (const auto& compositor_animation_id : compositor_animation_ids_) {
-    CompositorAnimations::CancelAnimationOnCompositor(*target_, *GetAnimation(),
-                                                      compositor_animation_id);
+    CompositorAnimations::CancelAnimationOnCompositor(
+        *target_, compositor_animation, compositor_animation_id);
   }
   compositor_animation_ids_.clear();
   return true;
