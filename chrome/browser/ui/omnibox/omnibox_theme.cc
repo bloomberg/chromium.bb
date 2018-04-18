@@ -5,12 +5,13 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_MACOSX)
 #include "ui/native_theme/native_theme_dark_aura.h"
 #endif
 
@@ -175,7 +176,7 @@ SkColor GetLegacyColor(OmniboxPart part,
   }
 
   ui::NativeTheme* native_theme = nullptr;
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_MACOSX)
   if (tint == OmniboxTint::DARK)
     native_theme = ui::NativeThemeDarkAura::instance();
 #endif
