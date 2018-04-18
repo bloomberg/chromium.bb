@@ -153,6 +153,7 @@ def UseBuildbucketScheduler(config):
   return (config.active_waterfall in (waterfall.WATERFALL_INTERNAL,
                                       waterfall.WATERFALL_EXTERNAL,
                                       waterfall.WATERFALL_TRYBOT,
+                                      waterfall.WATERFALL_SWARMING,
                                       waterfall.WATERFALL_RELEASE) and
           config.name in (constants.CQ_MASTER,
                           constants.CANARY_MASTER,
