@@ -116,6 +116,11 @@ def ParseArgsAndAssertValid():
                            'a range where some change breaks gclient sync and '
                            'a patch needs to be applied at each step before '
                            'syncing.')
+  parser.add_argument('--apply-stash-before-sync',
+                      help='Applies the given stash entry (e.g. "stash@{0}"), '
+                           'commits it, and syncs to the new revision during '
+                           'each iteration. Primary use case for this is '
+                           'fixing bad DEPS entries in the revision range.')
 
   parser.add_argument_group('swarming arguments')
   parser.add_argument('--swarming-server', required=True,
@@ -203,6 +208,9 @@ def VerifyInput(args, unknown_args):
     for pair in args.checkout_overrides:
       for key, val in pair.iteritems():
         print '%s will be synced to revision %s' % (key, val)
+  if args.apply_stash_before_sync:
+    print 'The stash entry %s will be applied before each sync' % (
+        args.apply_stash_before_sync)
   if args.num_attempts_before_marking_good > 1:
     print ('Each revision must be found to be good %d times before actually '
            'being marked as good' % args.num_attempts_before_marking_good)
@@ -435,9 +443,17 @@ def SyncAndBuild(args, unknown_args, revision):
     # that isn't the case before we try to run gclient sync
     if args.reset_before_sync:
       subprocess.check_output(['git', 'reset', '--hard', 'HEAD'])
+    sync_revision = revision
+    if args.apply_stash_before_sync:
+      print 'Applying stash entry %s' % args.apply_stash_before_sync
+      subprocess.check_output(
+          ['git', 'stash', 'apply', args.apply_stash_before_sync])
+      subprocess.check_output(['git', 'add', '-u'])
+      subprocess.check_output(['git', 'commit', '-m', 'Apply stash.'])
+      sync_revision = 'HEAD'
     print 'Syncing'
     output = subprocess.check_output(['gclient', 'sync', '-r',
-        'src@%s' % revision])
+        'src@%s' % sync_revision])
     if ('error: Your local changes to the following files would be overwritten '
         'by checkout:' in output):
       raise RuntimeError('Could not run gclient sync due to uncommitted '
