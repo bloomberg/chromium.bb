@@ -2199,13 +2199,12 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
           if (hash_value2 == ref_block_hash.hash_value2) {
             // For intra, make sure the prediction is from valid area.
             if (intra) {
-              const TileInfo *tile = &x->e_mbd.tile;
               const int mi_col = x_pos / MI_SIZE;
               const int mi_row = y_pos / MI_SIZE;
               const MV dv = { 8 * (ref_block_hash.y - y_pos),
                               8 * (ref_block_hash.x - x_pos) };
-              if (!av1_is_dv_valid(dv, tile, mi_row, mi_col, bsize,
-                                   cpi->common.seq_params.mib_size_log2))
+              if (!av1_is_dv_valid(dv, &cpi->common, &x->e_mbd, mi_row, mi_col,
+                                   bsize, cpi->common.seq_params.mib_size_log2))
                 continue;
             }
             MV hash_mv;

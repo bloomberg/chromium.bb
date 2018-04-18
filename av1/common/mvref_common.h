@@ -302,9 +302,9 @@ static INLINE void av1_find_ref_dv(int_mv *ref_dv, const TileInfo *const tile,
   ref_dv->as_mv.col *= 8;
 }
 
-static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
-                                  int mi_row, int mi_col, BLOCK_SIZE bsize,
-                                  int mib_size_log2) {
+static INLINE int av1_is_dv_valid(const MV dv, const AV1_COMMON *cm,
+                                  const MACROBLOCKD *xd, int mi_row, int mi_col,
+                                  BLOCK_SIZE bsize, int mib_size_log2) {
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   const int SCALE_PX_TO_MV = 8;
@@ -313,6 +313,7 @@ static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
   if (((dv.row & (SCALE_PX_TO_MV - 1)) || (dv.col & (SCALE_PX_TO_MV - 1))))
     return 0;
 
+  const TileInfo *const tile = &xd->tile;
   // Is the source top-left inside the current tile?
   const int src_top_edge = mi_row * MI_SIZE * SCALE_PX_TO_MV + dv.row;
   const int tile_top_edge = tile->mi_row_start * MI_SIZE * SCALE_PX_TO_MV;
@@ -327,6 +328,19 @@ static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
   const int src_right_edge = (mi_col * MI_SIZE + bw) * SCALE_PX_TO_MV + dv.col;
   const int tile_right_edge = tile->mi_col_end * MI_SIZE * SCALE_PX_TO_MV;
   if (src_right_edge > tile_right_edge) return 0;
+
+  // Special case for sub 8x8 chroma cases, to prevent referring to chroma
+  // pixels outside current tile.
+  for (int plane = 1; plane < av1_num_planes(cm); ++plane) {
+    const struct macroblockd_plane *const pd = &xd->plane[plane];
+    if (is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                            pd->subsampling_y)) {
+      if (bw < 8 && pd->subsampling_x)
+        if (src_left_edge < tile_left_edge + 4 * SCALE_PX_TO_MV) return 0;
+      if (bh < 8 && pd->subsampling_y)
+        if (src_top_edge < tile_top_edge + 4 * SCALE_PX_TO_MV) return 0;
+    }
+  }
 
   // Is the bottom right within an already coded SB? Also consider additional
   // constraints to facilitate HW decoder.

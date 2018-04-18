@@ -664,7 +664,7 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
   mv->as_mv.col = (mv->as_mv.col >> 3) * 8;
   mv->as_mv.row = (mv->as_mv.row >> 3) * 8;
   int valid = is_mv_valid(&mv->as_mv) &&
-              av1_is_dv_valid(mv->as_mv, &xd->tile, mi_row, mi_col, bsize,
+              av1_is_dv_valid(mv->as_mv, cm, xd, mi_row, mi_col, bsize,
                               cm->seq_params.mib_size_log2);
   return valid;
 }
