@@ -1317,6 +1317,80 @@ TEST(AXTreeTest, IntListReverseRelations) {
   EXPECT_TRUE(base::ContainsKey(reverse_labelled_by, 1));
 }
 
+TEST(AXTreeTest, DeletingNodeUpdatesReverseRelations) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].AddIntAttribute(
+      ax::mojom::IntAttribute::kActivedescendantId, 2);
+  AXTree tree(initial_state);
+
+  auto reverse_active_descendant =
+      tree.GetReverseRelations(ax::mojom::IntAttribute::kActivedescendantId, 2);
+  ASSERT_EQ(1U, reverse_active_descendant.size());
+  EXPECT_TRUE(base::ContainsKey(reverse_active_descendant, 3));
+
+  AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.resize(1);
+  update.nodes[0].id = 1;
+  update.nodes[0].child_ids = {2};
+  EXPECT_TRUE(tree.Unserialize(update));
+
+  reverse_active_descendant =
+      tree.GetReverseRelations(ax::mojom::IntAttribute::kActivedescendantId, 2);
+  ASSERT_EQ(0U, reverse_active_descendant.size());
+}
+
+TEST(AXTreeTest, ReverseRelationsDoNotKeepGrowing) {
+  // The number of total entries in int_reverse_relations and
+  // intlist_reverse_relations should not keep growing as the tree
+  // changes.
+
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(2);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].AddIntAttribute(
+      ax::mojom::IntAttribute::kActivedescendantId, 2);
+  initial_state.nodes[0].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kLabelledbyIds, {2});
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
+  AXTree tree(initial_state);
+
+  for (int i = 0; i < 1000; ++i) {
+    AXTreeUpdate update;
+    update.root_id = 1;
+    update.nodes.resize(2);
+    update.nodes[0].id = 1;
+    update.nodes[1].id = i + 3;
+    update.nodes[0].AddIntAttribute(
+        ax::mojom::IntAttribute::kActivedescendantId, update.nodes[1].id);
+    update.nodes[0].AddIntListAttribute(
+        ax::mojom::IntListAttribute::kLabelledbyIds, {update.nodes[1].id});
+    update.nodes[0].child_ids.push_back(update.nodes[1].id);
+    EXPECT_TRUE(tree.Unserialize(update));
+  }
+
+  size_t int_size = 0;
+  for (auto& iter : tree.int_reverse_relations())
+    int_size += iter.second.size() + 1;
+  // Note: 10 is arbitary, the idea here is just that we mutated a note
+  // with a relationship 1000 times, so if we have fewer than 10 entries
+  // in the map then clearly the map isn't growing / leaking. Same below.
+  EXPECT_LT(int_size, 10U);
+
+  size_t intlist_size = 0;
+  for (auto& iter : tree.intlist_reverse_relations())
+    intlist_size += iter.second.size() + 1;
+  EXPECT_LT(intlist_size, 10U);
+}
+
 TEST(AXTreeTest, SkipIgnoredNodes) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
