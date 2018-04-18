@@ -1565,11 +1565,19 @@ copy("visual_elements_resources") {
   if (is_chrome_branded) {
     sources += [
       "//chrome/app/theme/$branding_path_component/win/tiles/LogoBeta.png",
+      "//chrome/app/theme/$branding_path_component/win/tiles/LogoBetaLight.png",
       "//chrome/app/theme/$branding_path_component/win/tiles/LogoCanary.png",
+      "//chrome/app/theme/$branding_path_component/win/tiles/LogoCanaryLight.png",
       "//chrome/app/theme/$branding_path_component/win/tiles/LogoDev.png",
+      "//chrome/app/theme/$branding_path_component/win/tiles/LogoDevLight.png",
+      "//chrome/app/theme/$branding_path_component/win/tiles/LogoLight.png",
       "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoBeta.png",
+      "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoBetaLight.png",
       "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoCanary.png",
+      "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoCanaryLight.png",
       "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoDev.png",
+      "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoDevLight.png",
+      "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoLight.png",
     ]
   }
 
