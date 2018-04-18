@@ -32,6 +32,7 @@
 #include "chrome/browser/notifications/notification_image_retainer.h"
 #include "chrome/browser/notifications/notification_launch_id.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win_metrics.h"
+#include "chrome/browser/notifications/notification_platform_bridge_win_util.h"
 #include "chrome/browser/notifications/notification_template_builder.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -303,14 +304,18 @@ class NotificationPlatformBridgeWinImpl
     // crbug.com/761039.
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-    if (!notifier_.Get() && FAILED(InitializeToastNotifier())) {
+    if (!notifier_for_testing_ && !notifier_.Get() &&
+        FAILED(InitializeToastNotifier())) {
       // A histogram should have already been logged for this failure.
       DLOG(ERROR) << "Unable to initialize toast notifier";
       return;
     }
 
+    winui::Notifications::IToastNotifier* notifier =
+        notifier_for_testing_ ? notifier_for_testing_ : notifier_.Get();
+
     winui::Notifications::NotificationSetting setting;
-    HRESULT hr = notifier_->get_Setting(&setting);
+    HRESULT hr = notifier->get_Setting(&setting);
     if (SUCCEEDED(hr)) {
       LogGetSettingStatus(GetSettingStatus::SUCCESS);
       switch (setting) {
@@ -378,7 +383,7 @@ class NotificationPlatformBridgeWinImpl
       return;
     }
 
-    hr = notifier_->Show(toast.Get());
+    hr = notifier->Show(toast.Get());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::SHOWING_TOAST_FAILED);
       DLOG(ERROR) << "Unable to display the notification " << std::hex << hr;
@@ -645,6 +650,7 @@ class NotificationPlatformBridgeWinImpl
 
  private:
   friend class base::RefCountedThreadSafe<NotificationPlatformBridgeWinImpl>;
+  friend class MockIToastNotifier;
   friend class NotificationPlatformBridgeWin;
 
   ~NotificationPlatformBridgeWinImpl() = default;
@@ -655,112 +661,6 @@ class NotificationPlatformBridgeWinImpl
 
   base::string16 GetTag(const std::string& notification_id) {
     return base::UintToString16(base::Hash(notification_id));
-  }
-
-  NotificationLaunchId GetNotificationLaunchId(
-      winui::Notifications::IToastNotification* notification) const {
-    mswr::ComPtr<winxml::Dom::IXmlDocument> document;
-    HRESULT hr = notification->get_Content(&document);
-    if (FAILED(hr)) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::NOTIFICATION_GET_CONTENT_FAILED);
-      DLOG(ERROR) << "Failed to get XML document " << std::hex << hr;
-      return NotificationLaunchId();
-    }
-
-    ScopedHString tag = ScopedHString::Create(kNotificationToastElement);
-    mswr::ComPtr<winxml::Dom::IXmlNodeList> elements;
-    hr = document->GetElementsByTagName(tag.get(), &elements);
-    if (FAILED(hr)) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::GET_ELEMENTS_BY_TAG_FAILED);
-      DLOG(ERROR) << "Failed to get <toast> elements from document " << std::hex
-                  << hr;
-      return NotificationLaunchId();
-    }
-
-    UINT32 length;
-    hr = elements->get_Length(&length);
-    if (length == 0) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::MISSING_TOAST_ELEMENT_IN_DOC);
-      DLOG(ERROR) << "No <toast> elements in document.";
-      return NotificationLaunchId();
-    }
-
-    mswr::ComPtr<winxml::Dom::IXmlNode> node;
-    hr = elements->Item(0, &node);
-    if (FAILED(hr)) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::ITEM_AT_FAILED);
-      DLOG(ERROR) << "Failed to get first <toast> element " << std::hex << hr;
-      return NotificationLaunchId();
-    }
-
-    mswr::ComPtr<winxml::Dom::IXmlNamedNodeMap> attributes;
-    hr = node->get_Attributes(&attributes);
-    if (FAILED(hr)) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::GET_ATTRIBUTES_FAILED);
-      DLOG(ERROR) << "Failed to get attributes of <toast> " << std::hex << hr;
-      return NotificationLaunchId();
-    }
-
-    mswr::ComPtr<winxml::Dom::IXmlNode> leaf;
-    ScopedHString id = ScopedHString::Create(kNotificationLaunchAttribute);
-    hr = attributes->GetNamedItem(id.get(), &leaf);
-    if (FAILED(hr)) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::GET_NAMED_ITEM_FAILED);
-      DLOG(ERROR) << "Failed to get launch attribute of <toast> " << std::hex
-                  << hr;
-      return NotificationLaunchId();
-    }
-
-    mswr::ComPtr<winxml::Dom::IXmlNode> child;
-    hr = leaf->get_FirstChild(&child);
-    if (FAILED(hr)) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::GET_FIRST_CHILD_FAILED);
-      DLOG(ERROR) << "Failed to get content of launch attribute " << std::hex
-                  << hr;
-      return NotificationLaunchId();
-    }
-
-    mswr::ComPtr<IInspectable> inspectable;
-    hr = child->get_NodeValue(&inspectable);
-    if (FAILED(hr)) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::GET_NODE_VALUE_FAILED);
-      DLOG(ERROR) << "Failed to get node value of launch attribute " << std::hex
-                  << hr;
-      return NotificationLaunchId();
-    }
-
-    mswr::ComPtr<winfoundtn::IPropertyValue> property_value;
-    hr = inspectable.As<winfoundtn::IPropertyValue>(&property_value);
-    if (FAILED(hr)) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::CONVERSION_TO_PROP_VALUE_FAILED);
-      DLOG(ERROR) << "Failed to convert node value of launch attribute "
-                  << std::hex << hr;
-      return NotificationLaunchId();
-    }
-
-    HSTRING value_hstring;
-    hr = property_value->GetString(&value_hstring);
-    if (FAILED(hr)) {
-      LogGetNotificationLaunchIdStatus(
-          GetNotificationLaunchIdStatus::GET_STRING_FAILED);
-      DLOG(ERROR) << "Failed to get string for launch attribute " << std::hex
-                  << hr;
-      return NotificationLaunchId();
-    }
-
-    LogGetNotificationLaunchIdStatus(GetNotificationLaunchIdStatus::SUCCESS);
-
-    ScopedHString value(value_hstring);
-    return NotificationLaunchId(value.GetAsUTF8());
   }
 
   HRESULT OnDismissed(
@@ -829,6 +729,8 @@ class NotificationPlatformBridgeWinImpl
   static std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
       notifications_for_testing_;
 
+  static ABI::Windows::UI::Notifications::IToastNotifier* notifier_for_testing_;
+
   // Whether the required functions from combase.dll have been loaded.
   bool com_functions_initialized_;
 
@@ -846,6 +748,9 @@ class NotificationPlatformBridgeWinImpl
 
 std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
     NotificationPlatformBridgeWinImpl::notifications_for_testing_ = nullptr;
+
+ABI::Windows::UI::Notifications::IToastNotifier*
+    NotificationPlatformBridgeWinImpl::notifier_for_testing_ = nullptr;
 
 NotificationPlatformBridgeWin::NotificationPlatformBridgeWin() {
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
@@ -969,6 +874,11 @@ void NotificationPlatformBridgeWin::SetDisplayedNotificationsForTesting(
     std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
         notifications) {
   NotificationPlatformBridgeWinImpl::notifications_for_testing_ = notifications;
+}
+
+void NotificationPlatformBridgeWin::SetNotifierForTesting(
+    ABI::Windows::UI::Notifications::IToastNotifier* notifier) {
+  NotificationPlatformBridgeWinImpl::notifier_for_testing_ = notifier;
 }
 
 HRESULT NotificationPlatformBridgeWin::GetToastNotificationForTesting(

@@ -13,6 +13,7 @@ per-file *_mac*=rsesek@chromium.org
 
 # Windows files
 per-file *_win*=finnur@chromium.org
+per-file mock_i*=finnur@chromium.org
 per-file notification_template_builder*=finnur@chromium.org
 per-file notification_helper_launches_chrome_unittest.cc=file://notification_helper/OWNERS
 

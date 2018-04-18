@@ -2935,6 +2935,8 @@ jumbo_split_static_library("browser") {
         "notifications/notification_platform_bridge_win.h",
         "notifications/notification_platform_bridge_win_metrics.cc",
         "notifications/notification_platform_bridge_win_metrics.h",
+        "notifications/notification_platform_bridge_win_util.cc",
+        "notifications/notification_platform_bridge_win_util.h",
       ]
     }
 
