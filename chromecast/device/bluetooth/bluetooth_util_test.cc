@@ -43,6 +43,10 @@ TEST(BluetoothUtilTest, AddrStringConversion) {
 TEST(BluetoothUtilTest, UuidStringConversion) {
   const char kBadUuid1[] = "hello";
   const char kBadUuid2[] = "a822c885-af02-c780-9d4d-bd9a1fa06d9z";
+  const char kBadUuid3[] = "00000000-0000-0000-0000-0x0000000000";
+  const char kBadUuid4[] = "123e-567-e89b-12d3-a456-426655440000";
+  const char kBadUuid5[] = "123e456--e89b-12d3-a456-426655440000";
+  const char kBadUuid6[] = "123e4567--e89b-12d3-a456-426655440000";
 
   const char kUuid1[] = "123e4567-e89b-12d3-a456-426655440000";
   const char kUuid2[] = "123E4567-E89B-12D3-A456-426655440000";
@@ -64,6 +68,10 @@ TEST(BluetoothUtilTest, UuidStringConversion) {
   bluetooth_v2_shlib::Uuid uuid;
   EXPECT_FALSE(ParseUuid(kBadUuid1, &uuid));
   EXPECT_FALSE(ParseUuid(kBadUuid2, &uuid));
+  EXPECT_FALSE(ParseUuid(kBadUuid3, &uuid));
+  EXPECT_FALSE(ParseUuid(kBadUuid4, &uuid));
+  EXPECT_FALSE(ParseUuid(kBadUuid5, &uuid));
+  EXPECT_FALSE(ParseUuid(kBadUuid6, &uuid));
 
   EXPECT_TRUE(ParseUuid(kUuid1, &uuid));
   EXPECT_EQ(kGoodBytes1, uuid);
