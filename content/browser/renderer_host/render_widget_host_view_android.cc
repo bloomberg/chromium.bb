@@ -206,7 +206,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 
     // Let the page-level input event router know about our frame sink ID
     // for surface-based hit testing.
-    if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
+    if (ShouldRouteEvents()) {
       host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
           GetFrameSinkId(), this);
     }
@@ -674,7 +674,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
 
   ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-  if (host()->delegate()->GetInputEventRouter()) {
+  if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteTouchEvent(this, &web_event,
                                                                latency_info);
   } else {
@@ -722,7 +722,7 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
     blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
         *cancel_event, causes_scrolling /* may_cause_scrolling */,
         false /* hovering */);
-    if (host()->delegate()->GetInputEventRouter()) {
+    if (ShouldRouteEvents()) {
       host()->delegate()->GetInputEventRouter()->RouteTouchEvent(
           this, &web_event, latency_info);
     } else {
@@ -835,6 +835,12 @@ std::unique_ptr<SyntheticGestureTarget>
 RenderWidgetHostViewAndroid::CreateSyntheticGestureTarget() {
   return std::unique_ptr<SyntheticGestureTarget>(
       new SyntheticGestureTargetAndroid(host(), &view_));
+}
+
+bool RenderWidgetHostViewAndroid::ShouldRouteEvents() const {
+  DCHECK(host());
+  return using_browser_compositor_ && host()->delegate() &&
+         host()->delegate()->GetInputEventRouter();
 }
 
 void RenderWidgetHostViewAndroid::SendReclaimCompositorResources(
@@ -1620,7 +1626,7 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
   if (!host() || !host()->delegate())
     return;
 
-  if (host()->delegate()->GetInputEventRouter()) {
+  if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteMouseEvent(
         this, &mouse_event, ui::LatencyInfo());
   } else {
@@ -1660,12 +1666,12 @@ void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
   ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   blink::WebMouseWheelEvent wheel_event(event);
-  bool should_route_event = !!host()->delegate()->GetInputEventRouter();
+  bool should_route_events = ShouldRouteEvents();
   if (wheel_scroll_latching_enabled()) {
     mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
-        wheel_event, should_route_event);
+        wheel_event, should_route_events);
   }
-  if (should_route_event) {
+  if (should_route_events) {
     host()->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
         this, &wheel_event, latency_info);
   } else {
@@ -1736,8 +1742,7 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
       mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
     }
   }
-  bool should_route_event = !!host()->delegate()->GetInputEventRouter();
-  if (should_route_event) {
+  if (ShouldRouteEvents()) {
     blink::WebGestureEvent gesture_event(event);
     host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
         this, &gesture_event, latency_info);
