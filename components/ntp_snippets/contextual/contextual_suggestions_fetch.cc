@@ -9,12 +9,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
 #include "components/ntp_snippets/contextual/proto/chrome_search_api_request_context.pb.h"
 #include "components/ntp_snippets/contextual/proto/get_pivots_request.pb.h"
 #include "components/ntp_snippets/contextual/proto/get_pivots_response.pb.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -34,13 +36,21 @@ static constexpr int kNumberOfSuggestionsToFetch = 10;
 static constexpr int kMinNumberOfClusters = 1;
 static constexpr int kMaxNumberOfClusters = 5;
 
+// Wrapper for net::UnescapeForHTML that also handles utf8<->16 conversion.
+std::string Unescape(const std::string& encoded_text) {
+  return base::UTF16ToUTF8(
+      net::UnescapeForHTML(base::UTF8ToUTF16(encoded_text)));
+}
+
+// Converts |item| to a ContextualSuggestion, un-escaping any HTML entities
+// encountered.
 ContextualSuggestion ItemToSuggestion(const PivotItem& item) {
   PivotDocument document = item.document();
 
   return SuggestionBuilder(GURL(document.url().raw_url()))
-      .Title(document.title())
-      .Snippet(document.summary())
-      .PublisherName(document.site_name())
+      .Title(Unescape(document.title()))
+      .Snippet(Unescape(document.summary()))
+      .PublisherName(Unescape(document.site_name()))
       .ImageId(document.image().id().encrypted_docid())
       .FaviconImageId(document.favicon_image().id().encrypted_docid())
       .Build();
