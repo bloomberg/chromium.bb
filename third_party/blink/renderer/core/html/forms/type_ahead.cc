@@ -52,20 +52,24 @@ static String StripLeadingWhiteSpace(const String& string) {
 }
 
 int TypeAhead::HandleEvent(KeyboardEvent* event, MatchModeFlags match_mode) {
-  if (event->PlatformTimeStamp() < last_type_time_)
-    return -1;
+  if (last_type_time_) {
+    if (event->PlatformTimeStamp() < *last_type_time_)
+      return -1;
 
-  int option_count = data_source_->OptionCount();
-  TimeDelta delta = event->PlatformTimeStamp() - last_type_time_;
+    if (event->PlatformTimeStamp() - *last_type_time_ > kTypeAheadTimeout)
+      buffer_.Clear();
+  } else {
+    // If |last_type_time_| is null, there should be no type ahead session in
+    // progress. Thus, |buffer_|, which represents a partial match, should be
+    // empty.
+    DCHECK(buffer_.IsEmpty());
+  }
   last_type_time_ = event->PlatformTimeStamp();
 
   UChar c = event->charCode();
-
-  if (delta > kTypeAheadTimeout)
-    buffer_.Clear();
-
   buffer_.Append(c);
 
+  int option_count = data_source_->OptionCount();
   if (option_count < 1)
     return -1;
 
@@ -116,12 +120,14 @@ int TypeAhead::HandleEvent(KeyboardEvent* event, MatchModeFlags match_mode) {
 }
 
 bool TypeAhead::HasActiveSession(KeyboardEvent* event) {
-  TimeDelta delta = event->PlatformTimeStamp() - last_type_time_;
+  if (!last_type_time_)
+    return false;
+  TimeDelta delta = event->PlatformTimeStamp() - *last_type_time_;
   return delta <= kTypeAheadTimeout;
 }
 
 void TypeAhead::ResetSession() {
-  last_type_time_ = TimeTicks();
+  last_type_time_.reset();
   buffer_.Clear();
 }
 
