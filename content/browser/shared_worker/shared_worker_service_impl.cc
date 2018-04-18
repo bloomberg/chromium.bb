@@ -45,6 +45,8 @@ void CreateScriptLoaderOnIO(
     base::OnceCallback<void(mojom::ServiceWorkerProviderInfoForSharedWorkerPtr,
                             network::mojom::URLLoaderFactoryAssociatedPtrInfo)>
         callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   // Set up for service worker.
   auto provider_info = mojom::ServiceWorkerProviderInfoForSharedWorker::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
@@ -77,6 +79,7 @@ bool SharedWorkerServiceImpl::TerminateWorker(
     const GURL& url,
     const std::string& name,
     const url::Origin& constructor_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (auto& host : worker_hosts_) {
     if (host->IsAvailable() &&
         host->instance()->Matches(url, name, constructor_origin)) {
@@ -160,29 +163,12 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     DestroyHost(host);
   }
 
-  // Bounce to the IO thread to setup service worker support in case the request
-  // for the worker script will need to be intercepted by service workers.
-  // TODO(falken): Move service worker to the UI thread.
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&CreateScriptLoaderOnIO,
-                       service_worker_context_->storage_partition()
-                           ->url_loader_factory_getter(),
-                       service_worker_context_, process_id,
-                       base::BindOnce(&SharedWorkerServiceImpl::CreateWorker,
-                                      weak_factory_.GetWeakPtr(),
-                                      std::move(instance), std::move(client),
-                                      process_id, frame_id, message_port)));
-    return;
-  }
-
   CreateWorker(std::move(instance), std::move(client), process_id, frame_id,
-               message_port, nullptr /*  service_worker_provider_info */,
-               {} /* script_loader_factory */);
+               message_port);
 }
 
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* process_host =
       RenderProcessHost::FromID(host->process_id());
   worker_hosts_.erase(worker_hosts_.find(host));
@@ -201,6 +187,45 @@ void SharedWorkerServiceImpl::CreateWorker(
     mojom::SharedWorkerClientPtr client,
     int process_id,
     int frame_id,
+    const blink::MessagePortChannel& message_port) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Create the host. We need to do this even before starting the worker,
+  // because we are about to bounce to the IO thread. If another ConnectToWorker
+  // request arrives in the meantime, it finds and reuses the host instead of
+  // creating a new host and therefore new SharedWorker thread.
+  auto host =
+      std::make_unique<SharedWorkerHost>(this, std::move(instance), process_id);
+  auto weak_host = host->AsWeakPtr();
+  worker_hosts_.insert(std::move(host));
+
+  // Bounce to the IO thread to setup service worker support in case the request
+  // for the worker script will need to be intercepted by service workers.
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &CreateScriptLoaderOnIO,
+            service_worker_context_->storage_partition()
+                ->url_loader_factory_getter(),
+            service_worker_context_, process_id,
+            base::BindOnce(&SharedWorkerServiceImpl::StartWorker,
+                           weak_factory_.GetWeakPtr(), std::move(instance),
+                           weak_host, std::move(client), process_id, frame_id,
+                           message_port)));
+    return;
+  }
+
+  StartWorker(std::move(instance), weak_host, std::move(client), process_id,
+              frame_id, message_port, nullptr, {});
+}
+
+void SharedWorkerServiceImpl::StartWorker(
+    std::unique_ptr<SharedWorkerInstance> instance,
+    base::WeakPtr<SharedWorkerHost> host,
+    mojom::SharedWorkerClientPtr client,
+    int process_id,
+    int frame_id,
     const blink::MessagePortChannel& message_port,
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
@@ -208,17 +233,23 @@ void SharedWorkerServiceImpl::CreateWorker(
         script_loader_factory_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderProcessHost* process_host = RenderProcessHost::FromID(process_id);
-  // If the requesting process is shutting down, then just drop this request on
-  // the floor. The client is not going to be around much longer anyways.
-  if (IsShuttingDown(process_host))
+  // The host may already be gone if something forcibly terminated the worker
+  // before it could start (e.g., in tests or a UI action). Just fail.
+  if (!host)
     return;
+
+  RenderProcessHost* process_host = RenderProcessHost::FromID(process_id);
+  // If the target process is shutting down, then just drop this request and
+  // tell the host to destruct. This also means clients that were still waiting
+  // for the shared worker to start will fail.
+  if (!process_host || IsShuttingDown(process_host)) {
+    host->TerminateWorker();
+    return;
+  }
 
   // Keep the renderer process alive that will be hosting the shared worker.
   process_host->IncrementKeepAliveRefCount(
       RenderProcessHost::KeepAliveClientType::kSharedWorker);
-  auto host =
-      std::make_unique<SharedWorkerHost>(this, std::move(instance), process_id);
 
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
@@ -228,8 +259,6 @@ void SharedWorkerServiceImpl::CreateWorker(
   host->Start(std::move(factory), std::move(service_worker_provider_info),
               std::move(script_loader_factory_info));
   host->AddClient(std::move(client), process_id, frame_id, message_port);
-
-  worker_hosts_.insert(std::move(host));
 }
 
 SharedWorkerHost* SharedWorkerServiceImpl::FindAvailableSharedWorkerHost(

@@ -104,6 +104,7 @@ class MockSharedWorkerClient : public mojom::SharedWorkerClient {
       std::set<blink::mojom::WebFeature> expected_used_features);
   bool CheckReceivedOnFeatureUsed(blink::mojom::WebFeature expected_feature);
   bool CheckNotReceivedOnFeatureUsed();
+  bool CheckReceivedOnScriptLoadFailed();
 
  private:
   // mojom::SharedWorkerClient methods:
@@ -121,6 +122,7 @@ class MockSharedWorkerClient : public mojom::SharedWorkerClient {
   bool on_feature_used_received_ = false;
   blink::mojom::WebFeature on_feature_used_feature_ =
       blink::mojom::WebFeature();
+  bool on_script_load_failed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockSharedWorkerClient);
 };

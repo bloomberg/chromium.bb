@@ -41,8 +41,9 @@ class SharedWorkerServiceImpl;
 // the browser <-> worker communication channel. This is owned by
 // SharedWorkerServiceImpl and destructed when a worker context or worker's
 // message filter is closed.
-class SharedWorkerHost : public mojom::SharedWorkerHost,
-                         public service_manager::mojom::InterfaceProvider {
+class CONTENT_EXPORT SharedWorkerHost
+    : public mojom::SharedWorkerHost,
+      public service_manager::mojom::InterfaceProvider {
  public:
   SharedWorkerHost(SharedWorkerServiceImpl* service,
                    std::unique_ptr<SharedWorkerInstance> instance,
@@ -87,8 +88,21 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
   int process_id() const { return process_id_; }
   bool IsAvailable() const;
 
+  base::WeakPtr<SharedWorkerHost> AsWeakPtr();
+
  private:
+  friend class SharedWorkerHostTest;
+
+  enum class Phase {
+    kInitial,
+    kStarted,
+    kClosed,
+    kTerminationSent,
+    kTerminationSentAndClosed
+  };
+
   class ScopedDevToolsHandle;
+
   struct ClientInfo {
     ClientInfo(mojom::SharedWorkerClientPtr client,
                int connection_request_id,
@@ -123,18 +137,20 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  void AdvanceTo(Phase phase);
+
   mojo::Binding<mojom::SharedWorkerHost> binding_;
+
   // |service_| owns |this|.
   SharedWorkerServiceImpl* service_;
   std::unique_ptr<SharedWorkerInstance> instance_;
   ClientList clients_;
 
+  mojom::SharedWorkerRequest worker_request_;
   mojom::SharedWorkerPtr worker_;
 
   const int process_id_;
   int next_connection_request_id_;
-  bool termination_message_sent_ = false;
-  bool closed_ = false;
   const base::TimeTicks creation_time_;
   std::unique_ptr<ScopedDevToolsHandle> devtools_handle_;
 
@@ -151,6 +167,8 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
 
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
+
+  Phase phase_ = Phase::kInitial;
 
   base::WeakPtrFactory<SharedWorkerHost> weak_factory_;
 

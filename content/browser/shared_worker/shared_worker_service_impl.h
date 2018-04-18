@@ -56,16 +56,23 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
  private:
   friend class SharedWorkerServiceImplTest;
+  friend class SharedWorkerHostTest;
 
   void CreateWorker(std::unique_ptr<SharedWorkerInstance> instance,
                     mojom::SharedWorkerClientPtr client,
                     int process_id,
                     int frame_id,
-                    const blink::MessagePortChannel& message_port,
-                    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
-                        service_worker_provider_info,
-                    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-                        script_loader_factory_info);
+                    const blink::MessagePortChannel& message_port);
+  void StartWorker(std::unique_ptr<SharedWorkerInstance> instance,
+                   base::WeakPtr<SharedWorkerHost> host,
+                   mojom::SharedWorkerClientPtr client,
+                   int process_id,
+                   int frame_id,
+                   const blink::MessagePortChannel& message_port,
+                   mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+                       service_worker_provider_info,
+                   network::mojom::URLLoaderFactoryAssociatedPtrInfo
+                       script_loader_factory_info);
 
   // Returns nullptr if there is no such host.
   SharedWorkerHost* FindSharedWorkerHost(int process_id, int route_id);
