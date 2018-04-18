@@ -20,13 +20,13 @@
 #include <type_traits>
 
 #include "base/logging.h"
-#include "net/http2/tools/failure.h"
 #include "net/quic/http/decoder/quic_http_decode_buffer.h"
 #include "net/quic/http/decoder/quic_http_decode_status.h"
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_test_random.h"  // IWYU pragma: export
+#include "net/third_party/http2/tools/failure.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

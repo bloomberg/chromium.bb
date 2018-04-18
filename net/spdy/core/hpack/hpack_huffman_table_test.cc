@@ -11,10 +11,10 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "net/http2/hpack/huffman/hpack_huffman_decoder.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/hpack/hpack_output_stream.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
+#include "net/third_party/http2/hpack/huffman/hpack_huffman_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

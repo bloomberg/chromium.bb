@@ -10,10 +10,10 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/http2/tools/failure.h"
 #include "net/quic/http/decoder/quic_http_decode_buffer.h"
 #include "net/quic/http/decoder/quic_http_decode_status.h"
 #include "net/quic/http/quic_http_constants.h"
+#include "net/third_party/http2/tools/failure.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // It's rather time consuming to decode large buffers one at a time,

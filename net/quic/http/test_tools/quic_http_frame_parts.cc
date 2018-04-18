@@ -7,8 +7,8 @@
 #include <type_traits>
 
 #include "net/base/escape.h"
-#include "net/http2/tools/failure.h"
 #include "net/quic/http/quic_http_structures_test_util.h"
+#include "net/third_party/http2/tools/failure.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AssertionFailure;

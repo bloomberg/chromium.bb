@@ -11,13 +11,13 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "net/http2/decoder/http2_frame_decoder.h"
 #include "net/spdy/core/hpack/hpack_decoder_adapter.h"
 #include "net/spdy/core/hpack/hpack_header_table.h"
 #include "net/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/spdy/core/spdy_headers_handler_interface.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
+#include "net/third_party/http2/decoder/http2_frame_decoder.h"
 
 namespace net {
 
