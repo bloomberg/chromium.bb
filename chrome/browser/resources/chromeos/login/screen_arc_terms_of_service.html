@@ -3,62 +3,7 @@
 
 <div class="step right hidden arc-tos-loading no-logo" id="arc-tos"
     role="group" hidden>
-  <arc-tos-md id="arc-tos-md" hidden></arc-tos-md>
-  <div id="arc-tos-legacy">
-    <div class="step-contents">
-      <iron-icon src="chrome://oobe/playstore.svg" class="oobe-icon">
-      </iron-icon>
-      <h1 i18n-content="arcTermsOfServiceScreenHeading"></h1>
-      <h2 i18n-content="arcTermsOfServiceScreenDescription"></h2>
-      <div id="arc-tos-container">
-        <div id="arc-tos-content">
-          <div id="arc-tos-view-container">
-            <webview id="arc-tos-view"></webview>
-          </div>
-          <div>
-            <label>
-              <a id="arc-policy-link" href="#" i18n-content="arcPolicyLink">
-              </a>
-            </label>
-          </div>
-          <div>
-            <label>
-              <p id="arc-text-metrics"></p>
-            </label>
-          </div>
-          <div>
-            <label>
-              <input type="checkbox" id="arc-enable-backup-restore">
-              <p i18n-values=".innerHTML:arcTextBackupRestore"></p>
-            </label>
-          </div>
-          <div>
-            <label id = "arc-location-service">
-              <input type="checkbox" id="arc-enable-location-service">
-              <p i18n-values=".innerHTML:arcTextLocationService"></p>
-            </label>
-          </div>
-          <div>
-            <label id="arc-pai-service">
-              <p i18n-values=".innerHTML:arcTextPaiService"></p>
-            </label>
-          </div>
-          <div>
-            <label id="arc-google-service-confirmation">
-              <p i18n-values=".innerHTML:arcTextGoogleServiceConfirmation"></p>
-            </label>
-          </div>
-        </div>
-        <div id="arc-tos-loading">
-          <p i18n-content="arcTermsOfServiceLoading"></p>
-        </div>
-        <div id="arc-tos-error">
-          <p i18n-content="arcTermsOfServiceError"></p>
-        </div>
-      </div>
-    </div>
-    <div id="arc-tos-controls" class="step-controls"></div>
-  </div>
+  <arc-tos-root id="arc-tos-root"></arc-tos-root>
 
   <div id="arc-tos-overlay-text" class="popup-overlay" hidden>
     <div class="oobe-popup not-resizable">

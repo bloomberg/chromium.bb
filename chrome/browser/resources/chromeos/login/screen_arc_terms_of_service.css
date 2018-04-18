@@ -2,136 +2,19 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#arc-tos:not([md-mode]) {
-  padding: 16px 17px 21px;
-}
-
-#arc-tos[md-mode] {
+#arc-tos {
   /* To prevent appearing visual gap at the bottom for the some languages. */
   height: 640px;
   min-height: unset;
   padding: unset;
 }
 
-#arc-tos[md-mode] .arc-tos-overlay-close-bottom {
+#arc-tos .arc-tos-overlay-close-bottom {
   display: none;
 }
 
-#arc-tos[md-mode] .popup-overlay {
+#arc-tos .popup-overlay {
   background: rgba(0, 0, 0, .5);
-}
-
-#arc-tos .step-contents {
-  -webkit-margin-start: 32px;
-  margin-bottom: 49px;
-}
-
-#arc-tos a:link,
-#arc-tos a:visited {
-  color: rgb(51, 103, 214);
-  text-decoration: none;
-}
-
-#arc-tos h1,
-#arc-tos h2 {
-  color: rgba(0, 0, 0, 0.54);
-  margin: 12px 0 8px 0;
-  width: 630px;
-}
-
-#arc-tos h1 {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-#arc-tos h2 {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-#arc-tos input[type='checkbox'] {
-  flex-shrink: 0;
-  height: 12px;
-  margin: 0 8px 0 0;
-  padding: 0;
-  width: 12px;
-}
-
-#arc-tos label {
-  color: rgba(0, 0, 0, 0.54);
-  display: flex;
-  flex-direction: row;
-  font-size: 10px;
-  margin: auto;
-  padding: 8px 0 0 0;
-  text-align: left;
-  width: 100%;
-}
-
-#arc-tos-container {
-  height: 320px;
-  overflow: hidden;
-  width: 630px;
-}
-
-#arc-tos-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  margin: auto;
-  padding: 16 px;
-  width: 100%;
-}
-
-#arc-tos-content p {
-  font-size: 10px;
-  font-weight: 400;
-  line-height: 16px;
-  margin: 0;
-}
-
-#arc-tos-legacy .oobe-icon {
-  -webkit-margin-start: -36px;
-}
-
-#arc-tos-loading,
-#arc-tos-error {
-  -webkit-align-items: center;
-  -webkit-justify-content: center;
-  display: none;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-}
-
-#arc-tos-loading p,
-#arc-tos-error p {
-  color: rgba(0, 0, 0, 0.54);
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 16px;
-}
-
-#arc-tos-logo {
-  height: 32px;
-  margin-left: -28px;
-  width: auto;
-}
-
-#arc-tos-view {
-  display: block;
-  height: 10px;
-  margin: auto;
-  padding: 0;
-}
-
-#arc-tos-view-container {
-  border: 1px solid #d9d9d9;
-  box-sizing: border-box;
-  flex: auto;
-  margin: auto;
-  padding: 0;
-  width: 100%;
 }
 
 #arc-tos-overlay-content-text {
@@ -171,32 +54,6 @@
   width: 100%;
 }
 
-#arc-tos-skip-button {
-  margin-right: 12px;
-}
-
-.step.arc-tos-loading #arc-tos-content {
-  display: none;
-}
-
-.step.arc-tos-loading #arc-tos-loading {
-  display: flex;
-}
-
-.step.error #arc-tos-content,
-.step.error #arc-tos-accept-button {
-  display: none;
-}
-
-.step.arc-tos-loading #arc-tos-retry-button,
-.step.arc-tos-loaded #arc-tos-retry-button {
-  display: none;
-}
-
-.step.error #arc-tos-error {
-  display: flex;
-}
-
 .arc-tos-overlay-wide {
   width: 640px;
 }
@@ -226,8 +83,7 @@ html[dir='rtl'] .arc-tos-overlay-close-up {
   background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
 }
 
-#arc-tos[md-mode] #arc-tos-overlay-content-text p {
+#arc-tos #arc-tos-overlay-content-text p {
   color: rgba(0, 0, 0, 0.87);
   font-size: 13px;
 }
-

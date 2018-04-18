@@ -18,6 +18,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       // Valid newOobeUI is not available at this time.
       this.countryCode_ = null;
       this.language_ = null;
+      this.pageReady_ = false;
     },
 
     /**
@@ -38,34 +39,17 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
-     * Returns true if page was intialized.
+     * Makes sure that UI is initialized.
      *
      * @private
      */
-    isPageReady_: function() {
-      return typeof this.useMDOobe !== 'undefined';
-    },
-
-    /**
-     * Makes sure that UI is initialized and MD mode is correctly set.
-     *
-     * @private
-     */
-    setMDMode_: function() {
-      var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
-      if (this.isPageReady_() && this.useMDOobe == useMDOobe) {
+    ensureInitialized_: function() {
+      if (this.pageReady_) {
         return;
       }
 
-      this.useMDOobe = useMDOobe;
-      $('arc-tos-md').screen = this;
-      $('arc-tos-md').hidden = !this.useMDOobe;
-      $('arc-tos-legacy').hidden = this.useMDOobe;
-      if (this.useMDOobe) {
-        $('arc-tos').setAttribute('md-mode', 'true');
-      } else {
-        $('arc-tos').removeAttribute('md-mode');
-      }
+      this.pageReady_ = true;
+      $('arc-tos-root').screen = this;
 
       var closeButtons = document.querySelectorAll('.arc-overlay-close-button');
       for (var i = 0; i < closeButtons.length; i++) {
@@ -122,7 +106,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     setMetricsMode: function(text, visible) {
       var metrics = this.getElement_('arc-text-metrics');
       metrics.innerHTML = text;
-      // This element is wrapped by label in legacy mode and by div in MD mode.
+      // This element is wrapped by div.
       metrics.parentElement.hidden = !visible;
 
       if (!visible) {
@@ -180,7 +164,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     loadPlayStoreToS: function(countryCode) {
       // Make sure page is initialized for login mode. For OOBE mode, page is
       // initialized as result of handling updateLocalizedContent.
-      this.setMDMode_();
+      this.ensureInitialized_();
 
       var language = this.getCurrentLanguage_();
       countryCode = countryCode.toLowerCase();
@@ -198,9 +182,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       var scriptSetParameters =
           'document.countryCode = \'' + countryCode + '\';';
       scriptSetParameters += 'document.language = \'' + language + '\';';
-      if (this.useMDOobe) {
-        scriptSetParameters += 'document.viewMode = \'large-view\';';
-      }
+      scriptSetParameters += 'document.viewMode = \'large-view\';';
 
       var termsView = this.getElement_('arc-tos-view');
       termsView.removeContentScripts(['preProcess']);
@@ -328,19 +310,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * @private
      */
     enableButtons_: function(enable) {
-      $('arc-tos-skip-button').disabled = !enable;
-      $('arc-tos-accept-button').disabled = !enable;
-      $('arc-tos-next-button').disabled = !enable;
-      $('arc-tos-retry-button').disabled = !enable;
-      $('arc-tos-md').arcTosButtonsDisabled = !enable;
-    },
-
-    /**
-     * Returns the control which should receive initial focus.
-     */
-    get defaultControl() {
-      return $('arc-tos-accept-button').disabled ? $('arc-tos-skip-button') :
-                                                   $('arc-tos-accept-button');
+      $('arc-tos-root').arcTosButtonsDisabled = !enable;
     },
 
     /**
@@ -392,45 +362,37 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
-     * Adds new class to the list of classes of root OOBE MD style and legacy
-     * style root elements.
+     * Adds new class to the list of classes of root OOBE style.
      * @param {string} className class to remove.
      *
      * @private
      */
     addClass_: function(className) {
-      this.classList.add(className);
-      $('arc-tos-md').getElement('arc-tos-dialog-md').classList.add(className);
+      $('arc-tos-root').getElement('arc-tos-dialog').classList.add(className);
     },
 
     /**
-     * Removes class from the list of classes of root OOBE MD style and legacy
-     * style root elements.
+     * Removes class from the list of classes of root OOBE style.
      * @param {string} className class to remove.
      *
      * @private
      */
     removeClass_: function(className) {
-      this.classList.remove(className);
-      $('arc-tos-md')
-          .getElement('arc-tos-dialog-md')
+      $('arc-tos-root')
+          .getElement('arc-tos-dialog')
           .classList.remove(className);
     },
 
     /**
-     * Checks if class exsists in the list of classes of root OOBE MD style and
-     * legacy style root elements.
+     * Checks if class exsists in the list of classes of root OOBE style.
      * @param {string} className class to check.
      *
      * @private
      */
     hasClass_: function(className) {
-      if (this.useMDOobe) {
-        return $('arc-tos-md')
-            .getElement('arc-tos-dialog-md')
-            .classList.contains(className);
-      }
-      return this.classList.contains(className);
+      return $('arc-tos-root')
+          .getElement('arc-tos-dialog')
+          .classList.contains(className);
     },
 
     /**
@@ -551,24 +513,20 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
-     * Returns requested element from related part of HTML determined by current
-     * MD OOBE mode.
+     * Returns requested element from related part of HTML.
      * @param {string} id Id of an element to find.
      *
      * @private
      */
     getElement_: function(id) {
-      if (this.useMDOobe) {
-        return $('arc-tos-md').getElement(id + '-md');
-      }
-      return $(id);
+      return $('arc-tos-root').getElement(id);
     },
 
     /**
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {
-      this.setMDMode_();
+      this.ensureInitialized_();
       this.setLearnMoreHandlers_();
 
       // We might need to reload Play Store ToS in case language was changed.
