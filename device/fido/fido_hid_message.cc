@@ -15,12 +15,12 @@
 namespace device {
 
 // static
-std::unique_ptr<FidoHidMessage> FidoHidMessage::Create(
+base::Optional<FidoHidMessage> FidoHidMessage::Create(
     uint32_t channel_id,
     FidoHidDeviceCommand type,
     base::span<const uint8_t> data) {
   if (data.size() > kHidMaxMessageSize)
-    return nullptr;
+    return base::nullopt;
 
   switch (type) {
     case FidoHidDeviceCommand::kPing:
@@ -28,52 +28,55 @@ std::unique_ptr<FidoHidMessage> FidoHidMessage::Create(
     case FidoHidDeviceCommand::kMsg:
     case FidoHidDeviceCommand::kCbor: {
       if (data.empty())
-        return nullptr;
+        return base::nullopt;
       break;
     }
 
     case FidoHidDeviceCommand::kCancel:
     case FidoHidDeviceCommand::kWink: {
       if (!data.empty())
-        return nullptr;
+        return base::nullopt;
       break;
     }
     case FidoHidDeviceCommand::kLock: {
       if (data.size() != 1 || data[0] > kHidMaxLockSeconds)
-        return nullptr;
+        return base::nullopt;
       break;
     }
     case FidoHidDeviceCommand::kInit: {
       if (data.size() != 8)
-        return nullptr;
+        return base::nullopt;
       break;
     }
     case FidoHidDeviceCommand::kKeepAlive:
     case FidoHidDeviceCommand::kError:
       if (data.size() != 1)
-        return nullptr;
+        return base::nullopt;
   }
 
-  return base::WrapUnique(new FidoHidMessage(channel_id, type, data));
+  return FidoHidMessage(channel_id, type, data);
 }
 
 // static
-std::unique_ptr<FidoHidMessage> FidoHidMessage::CreateFromSerializedData(
+base::Optional<FidoHidMessage> FidoHidMessage::CreateFromSerializedData(
     base::span<const uint8_t> serialized_data) {
   size_t remaining_size = 0;
   if (serialized_data.size() > kHidPacketSize ||
       serialized_data.size() < kHidInitPacketHeaderSize)
-    return nullptr;
+    return base::nullopt;
 
   auto init_packet = FidoHidInitPacket::CreateFromSerializedData(
       serialized_data, &remaining_size);
 
   if (init_packet == nullptr)
-    return nullptr;
+    return base::nullopt;
 
-  return base::WrapUnique(
-      new FidoHidMessage(std::move(init_packet), remaining_size));
+  return FidoHidMessage(std::move(init_packet), remaining_size);
 }
+
+FidoHidMessage::FidoHidMessage(FidoHidMessage&& that) = default;
+
+FidoHidMessage& FidoHidMessage::operator=(FidoHidMessage&& other) = default;
 
 FidoHidMessage::~FidoHidMessage() = default;
 

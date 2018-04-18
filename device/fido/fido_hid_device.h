@@ -5,7 +5,6 @@
 #ifndef DEVICE_FIDO_FIDO_HID_DEVICE_H_
 #define DEVICE_FIDO_FIDO_HID_DEVICE_H_
 
-#include <memory>
 #include <queue>
 #include <string>
 #include <utility>
@@ -15,6 +14,7 @@
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
 #include "device/fido/fido_device.h"
@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   static constexpr uint32_t kBroadcastChannel = 0xffffffff;
 
   using HidMessageCallback =
-      base::OnceCallback<void(bool, std::unique_ptr<FidoHidMessage>)>;
+      base::OnceCallback<void(base::Optional<FidoHidMessage>)>;
   using ConnectCallback = device::mojom::HidManager::ConnectCallback;
 
   // Open a connection to this device.
@@ -71,35 +71,31 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   void OnAllocateChannel(std::vector<uint8_t> nonce,
                          std::vector<uint8_t> command,
                          DeviceCallback callback,
-                         bool success,
-                         std::unique_ptr<FidoHidMessage> message);
+                         base::Optional<FidoHidMessage> message);
   void Transition(std::vector<uint8_t> command, DeviceCallback callback);
   // Write all message packets to device, and read response if expected.
-  void WriteMessage(std::unique_ptr<FidoHidMessage> message,
+  void WriteMessage(base::Optional<FidoHidMessage> message,
                     bool response_expected,
                     HidMessageCallback callback);
-  void PacketWritten(std::unique_ptr<FidoHidMessage> message,
+  void PacketWritten(base::Optional<FidoHidMessage> message,
                      bool response_expected,
                      HidMessageCallback callback,
                      bool success);
   // Read all response message packets from device.
   void ReadMessage(HidMessageCallback callback);
   void MessageReceived(DeviceCallback callback,
-                       bool success,
-                       std::unique_ptr<FidoHidMessage> message);
+                       base::Optional<FidoHidMessage> message);
   void OnRead(HidMessageCallback callback,
               bool success,
               uint8_t report_id,
               const base::Optional<std::vector<uint8_t>>& buf);
-  void OnReadContinuation(std::unique_ptr<FidoHidMessage> message,
+  void OnReadContinuation(base::Optional<FidoHidMessage> message,
                           HidMessageCallback callback,
                           bool success,
                           uint8_t report_id,
                           const base::Optional<std::vector<uint8_t>>& buf);
   void OnKeepAlive(DeviceCallback callback);
-  void OnWink(WinkCallback callback,
-              bool success,
-              std::unique_ptr<FidoHidMessage> response);
+  void OnWink(WinkCallback callback, base::Optional<FidoHidMessage> response);
   void ArmTimeout(DeviceCallback callback);
   void OnTimeout(DeviceCallback callback);
 
