@@ -795,7 +795,7 @@ cr.define('bookmarks', function() {
      * @private
      */
     onMenuMousedown_: function(e) {
-      if (e.path[0] != this.$.dropdown.getIfExists())
+      if (e.path[0].tagName != 'DIALOG')
         return;
 
       this.closeCommandMenu();
