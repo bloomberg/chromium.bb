@@ -3843,14 +3843,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-lazy-frame-loading",
      flag_descriptions::kEnableLazyFrameLoadingName,
      flag_descriptions::kEnableLazyFrameLoadingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kLazyFrameLoading)},
-
-#if defined(OS_CHROMEOS)
-    {"enable-settings-shortcut-search",
-     flag_descriptions::kEnableSettingsShortcutSearchName,
-     flag_descriptions::kEnableSettingsShortcutSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableSettingsShortcutSearch)}
-#endif  // OS_CHROMEOS
+     FEATURE_VALUE_TYPE(features::kLazyFrameLoading)}
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

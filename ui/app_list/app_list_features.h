@@ -34,14 +34,10 @@ APP_LIST_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 // windows instead of toggling the launcher.
 APP_LIST_EXPORT extern const base::Feature kEnableHomeLauncher;
 
-// Enables the Settings shortcut search.
-APP_LIST_EXPORT extern const base::Feature kEnableSettingsShortcutSearch;
-
 bool APP_LIST_EXPORT IsAnswerCardEnabled();
 bool APP_LIST_EXPORT IsBackgroundBlurEnabled();
 bool APP_LIST_EXPORT IsPlayStoreAppSearchEnabled();
 bool APP_LIST_EXPORT IsHomeLauncherEnabled();
-bool APP_LIST_EXPORT IsSettingsShortcutSearchEnabled();
 std::string APP_LIST_EXPORT AnswerServerUrl();
 std::string APP_LIST_EXPORT AnswerServerQuerySuffix();
 
