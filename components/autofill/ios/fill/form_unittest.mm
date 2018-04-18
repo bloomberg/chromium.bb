@@ -30,16 +30,40 @@ class FormJsTest : public web::WebJsTest<web::WebTestWithWebState> {
             std::make_unique<FormTestClient>()) {}
 };
 
-// Tests that keyup event correctly delivered to WebStateObserver.
-TEST_F(FormJsTest, KeyUpEvent) {
+// Tests that keyup event correctly delivered to WebStateObserver if the element
+// is focused.
+TEST_F(FormJsTest, KeyUpEventFocused) {
   web::TestWebStateObserver observer(web_state());
-  LoadHtml(@"<p></p>");
+  LoadHtml(@"<p><input id='test'/></p>");
   ASSERT_FALSE(observer.form_activity_info());
-  ExecuteJavaScript(@"document.dispatchEvent(new KeyboardEvent('keyup'));");
+  ExecuteJavaScript(
+      @"var e = document.getElementById('test');"
+       "e.focus();"
+       "var ev = new KeyboardEvent('keyup', {bubbles:true});"
+       "e.dispatchEvent(ev);");
+  web::TestWebStateObserver* block_observer = &observer;
+  WaitForCondition(^bool {
+    return block_observer->form_activity_info() != nullptr;
+  });
   web::TestFormActivityInfo* info = observer.form_activity_info();
   ASSERT_TRUE(info);
   EXPECT_EQ("keyup", info->form_activity.type);
   EXPECT_FALSE(info->form_activity.input_missing);
+}
+
+// Tests that keyup event is not delivered to WebStateObserver if the element is
+// not focused.
+TEST_F(FormJsTest, KeyUpEventNotFocused) {
+  web::TestWebStateObserver observer(web_state());
+  LoadHtml(@"<p><input id='test'/></p>");
+  ASSERT_FALSE(observer.form_activity_info());
+  ExecuteJavaScript(
+      @"var e = document.getElementById('test');"
+       "var ev = new KeyboardEvent('keyup', {bubbles:true});"
+       "e.dispatchEvent(ev);");
+  WaitForBackgroundTasks();
+  web::TestFormActivityInfo* info = observer.form_activity_info();
+  ASSERT_FALSE(info);
 }
 
 // Tests that focus event correctly delivered to WebStateObserver.
@@ -52,6 +76,10 @@ TEST_F(FormJsTest, FocusMainFrame) {
        "</form>");
   ASSERT_FALSE(observer.form_activity_info());
   ExecuteJavaScript(@"document.getElementById('id1').focus();");
+  web::TestWebStateObserver* block_observer = &observer;
+  WaitForCondition(^bool {
+    return block_observer->form_activity_info() != nullptr;
+  });
   web::TestFormActivityInfo* info = observer.form_activity_info();
   ASSERT_TRUE(info);
   EXPECT_EQ("focus", info->form_activity.type);
@@ -88,6 +116,10 @@ TEST_F(FormJsTest, FocusSameOriginIFrame) {
   ExecuteJavaScript(
       @"document.getElementById('frame1').contentDocument.getElementById('id1')"
       @".focus()");
+  web::TestWebStateObserver* block_observer = &observer;
+  WaitForCondition(^bool {
+    return block_observer->form_activity_info() != nullptr;
+  });
   web::TestFormActivityInfo* info = observer.form_activity_info();
   ASSERT_TRUE(info);
   EXPECT_EQ("focus", info->form_activity.type);

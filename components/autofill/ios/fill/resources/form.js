@@ -59,6 +59,16 @@ __gCrWeb.form.formMutationObserver = null;
 __gCrWeb.form.formMutationMessageToSend = null;
 
 /**
+ * A message scheduled to be sent to host on the next runloop.
+ */
+__gCrWeb.form.messageToSend = null;
+
+/**
+ * The last HTML element that was focused by the user.
+ */
+__gCrWeb.form.lastFocusedElement = null;
+
+/**
  * Based on Element::isFormControlElement() (WebKit)
  * @param {Element} element A DOM element.
  * @return {boolean} true if the |element| is a form control element.
@@ -287,31 +297,55 @@ __gCrWeb.form.getFormElementFromIdentifier = function(name) {
   return null;
 };
 
-
+/**
+ * Schedule |mesg| to be sent on next runloop.
+ * If called multiple times on the same runloop, only the last message is really
+ * sent.
+ */
+var sendMessageOnNextLoop_ = function(mesg) {
+  if (!__gCrWeb.form.messageToSend) {
+    setTimeout(function() {
+      __gCrWeb.message.invokeOnHost(__gCrWeb.form.messageToSend);
+      __gCrWeb.form.messageToSend = null;
+    }, 0);
+  }
+  __gCrWeb.form.messageToSend = mesg;
+}
 
 /**
- * Focus and input events for form elements are messaged to the main
- * application for broadcast to WebStateObservers.
+ * Focus, input, change, keyup and blur events for form elements (form and input
+ * elements) are messaged to the main application for broadcast to
+ * WebStateObservers.
+ * Events will be included in a message to be sent in a future runloop (without
+ * delay). If an event is already scheduled to be sent, it is replaced by |evt|.
+ * Notably, 'blur' event will not be transmitted to the main application if they
+ * are triggered by the focus of another element as the 'focus' event will
+ * replace it.
+ * Only the events targetting the active element (or the previously active in
+ * case of 'blur') are sent to the main application.
  * This is done with a single event handler for each type being added to the
  * main document element which checks the source element of the event; this
  * is much easier to manage than adding handlers to individual elements.
  * @private
  */
 var formActivity_ = function(evt) {
-  var srcElement = evt.srcElement;
-  var value = srcElement.value || '';
-  var fieldType = srcElement.type || '';
-
+  var target = evt.target;
+  var value = target.value || '';
+  var fieldType = target.type || '';
+  if (evt.type != 'blur') {
+    __gCrWeb.form.lastFocusedElement = document.activeElement;
+  }
+  if (target != __gCrWeb.form.lastFocusedElement) return;
   var msg = {
     'command': 'form.activity',
-    'formName': __gCrWeb.form.getFormIdentifier(evt.srcElement.form),
-    'fieldName': __gCrWeb.form.getFieldName(srcElement),
-    'fieldIdentifier': __gCrWeb.form.getFieldIdentifier(srcElement),
+    'formName': __gCrWeb.form.getFormIdentifier(evt.target.form),
+    'fieldName': __gCrWeb.form.getFieldName(target),
+    'fieldIdentifier': __gCrWeb.form.getFieldIdentifier(target),
     'fieldType': fieldType,
     'type': evt.type,
     'value': value
   };
-  __gCrWeb.message.invokeOnHost(msg);
+  sendMessageOnNextLoop_(msg);
 };
 
 /**
