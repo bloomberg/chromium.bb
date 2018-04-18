@@ -4,16 +4,16 @@
 
 package org.chromium.content.browser.test.util;
 
-import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
 
 /**
  * Util class that allows tests to get various view-related coordinate values and
- * scale factors from {@link RenderCoordinates}.
+ * scale factors from {@link RenderCoordinatesImpl}.
  */
 public class Coordinates {
-    private final RenderCoordinates mRenderCoordinates;
+    private final RenderCoordinatesImpl mRenderCoordinates;
 
     public static Coordinates createFor(WebContents webContents) {
         return new Coordinates(webContents);

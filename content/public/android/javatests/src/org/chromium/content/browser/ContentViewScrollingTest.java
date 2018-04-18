@@ -88,7 +88,7 @@ public class ContentViewScrollingTest {
         }
     }
 
-    private RenderCoordinates mCoordinates;
+    private RenderCoordinatesImpl mCoordinates;
 
     private void waitForScroll(final boolean hugLeft, final boolean hugTop) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
@@ -111,7 +111,7 @@ public class ContentViewScrollingTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mCoordinates.getLastFrameViewportWidthCss() != 0;
+                return mCoordinates.getLastFrameViewportWidthPixInt() != 0;
             }
         });
     }

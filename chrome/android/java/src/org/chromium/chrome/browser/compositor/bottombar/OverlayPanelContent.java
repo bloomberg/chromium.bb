@@ -23,6 +23,7 @@ import org.chromium.components.web_contents_delegate_android.WebContentsDelegate
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -407,8 +408,9 @@ public class OverlayPanelContent {
      * @return The Y scroll position.
      */
     public float getContentVerticalScroll() {
-        return mContentViewCore != null
-                ? mContentViewCore.computeVerticalScrollOffset() : -1.f;
+        return mWebContents != null
+                ? RenderCoordinates.fromWebContents(mWebContents).getScrollXPixInt()
+                : -1.f;
     }
 
     /**

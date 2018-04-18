@@ -200,36 +200,6 @@ public interface ContentViewCore {
     void scrollBy(float dxPix, float dyPix);
 
     /**
-     * @see View#computeHorizontalScrollOffset()
-     */
-    int computeHorizontalScrollOffset();
-
-    /**
-     * @see View#computeVerticalScrollOffset()
-     */
-    int computeVerticalScrollOffset();
-
-    /**
-     * @see View#computeHorizontalScrollRange()
-     */
-    int computeHorizontalScrollRange();
-
-    /**
-     * @see View#computeVerticalScrollExtent()
-     */
-    int computeVerticalScrollRange();
-
-    /**
-     * @see View#computeHorizontalScrollExtent()
-     */
-    int computeHorizontalScrollExtent();
-
-    /**
-     * @see View#computeVerticalScrollExtent()
-     */
-    int computeVerticalScrollExtent();
-
-    /**
      * Enable or disable multi-touch zoom support.
      * @param supportsMultiTouchZoom {@code true} if the feature is enabled.
      */

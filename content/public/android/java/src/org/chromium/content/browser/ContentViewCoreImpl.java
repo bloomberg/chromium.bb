@@ -58,7 +58,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private boolean mAttachedToWindow;
 
     // Cached copy of all positions and scales as reported by the renderer.
-    private RenderCoordinates mRenderCoordinates;
+    private RenderCoordinatesImpl mRenderCoordinates;
 
     /**
      * PID used to indicate an invalid render process.
@@ -532,42 +532,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         final float dxPix = xPix - xCurrentPix;
         final float dyPix = yPix - yCurrentPix;
         scrollBy(dxPix, dyPix);
-    }
-
-    @SuppressWarnings("javadoc")
-    @Override
-    public int computeHorizontalScrollExtent() {
-        return mRenderCoordinates.getLastFrameViewportWidthPixInt();
-    }
-
-    @SuppressWarnings("javadoc")
-    @Override
-    public int computeHorizontalScrollOffset() {
-        return mRenderCoordinates.getScrollXPixInt();
-    }
-
-    @SuppressWarnings("javadoc")
-    @Override
-    public int computeHorizontalScrollRange() {
-        return mRenderCoordinates.getContentWidthPixInt();
-    }
-
-    @SuppressWarnings("javadoc")
-    @Override
-    public int computeVerticalScrollExtent() {
-        return mRenderCoordinates.getLastFrameViewportHeightPixInt();
-    }
-
-    @SuppressWarnings("javadoc")
-    @Override
-    public int computeVerticalScrollOffset() {
-        return mRenderCoordinates.getScrollYPixInt();
-    }
-
-    @SuppressWarnings("javadoc")
-    @Override
-    public int computeVerticalScrollRange() {
-        return mRenderCoordinates.getContentHeightPixInt();
     }
 
     // End FrameLayout overrides.

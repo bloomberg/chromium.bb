@@ -23,6 +23,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.TraceEvent;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ImeAdapter;
+import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.SmartClipProvider;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -260,46 +261,38 @@ public class ContentView
 
     @Override
     protected int computeHorizontalScrollExtent() {
-        // TODO(dtrainor): Need to expose scroll events properly to public. Either make getScroll*
-        // work or expose computeHorizontalScrollOffset()/computeVerticalScrollOffset as public.
-        ContentViewCore cvc = getContentViewCore();
-        assert cvc != null;
-        return cvc.computeHorizontalScrollExtent();
+        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        return rc != null ? rc.getLastFrameViewportWidthPixInt() : 0;
     }
 
     @Override
     protected int computeHorizontalScrollOffset() {
-        ContentViewCore cvc = getContentViewCore();
-        assert cvc != null;
-        return cvc.computeHorizontalScrollOffset();
+        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        return rc != null ? rc.getScrollXPixInt() : 0;
     }
 
     @Override
     protected int computeHorizontalScrollRange() {
-        ContentViewCore cvc = getContentViewCore();
-        assert cvc != null;
-        return cvc.computeHorizontalScrollRange();
+        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        return rc != null ? rc.getContentWidthPixInt() : 0;
     }
 
     @Override
     protected int computeVerticalScrollExtent() {
-        ContentViewCore cvc = getContentViewCore();
-        assert cvc != null;
-        return cvc.computeVerticalScrollExtent();
+        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        return rc != null ? rc.getLastFrameViewportHeightPixInt() : 0;
     }
 
     @Override
     protected int computeVerticalScrollOffset() {
-        ContentViewCore cvc = getContentViewCore();
-        assert cvc != null;
-        return cvc.computeVerticalScrollOffset();
+        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        return rc != null ? rc.getScrollYPixInt() : 0;
     }
 
     @Override
     protected int computeVerticalScrollRange() {
-        ContentViewCore cvc = getContentViewCore();
-        assert cvc != null;
-        return cvc.computeVerticalScrollRange();
+        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        return rc != null ? rc.getContentHeightPixInt() : 0;
     }
 
     // End FrameLayout overrides.
