@@ -30,7 +30,6 @@ group("features") {
     "//ios/showcase/payments",
     "//ios/showcase/settings",
     "//ios/showcase/tab_grid",
-    "//ios/showcase/table_view",
     "//ios/showcase/text_badge_view",
     "//ios/showcase/uikit_table_view_cell",
     "//ios/showcase/widget",

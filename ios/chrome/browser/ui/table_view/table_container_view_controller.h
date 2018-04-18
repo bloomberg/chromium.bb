@@ -10,9 +10,9 @@
 @class ChromeTableViewController;
 @class TableContainerBottomToolbar;
 
-// TableContainerViewController contains a ChromeTableViewController and a
-// Bottom Toolbar that interacts with the ChromeTableViewController.
-@interface TableContainerViewController : UIViewController
+// TableContainerViewController encapsulates a ChromeTableViewController inside
+// a UINavigationController.
+@interface TableContainerViewController : UINavigationController
 
 - (instancetype)initWithTable:(ChromeTableViewController*)table
     NS_DESIGNATED_INITIALIZER;
@@ -21,15 +21,9 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
-// The bottom toolbar owned by this ViewController.
-@property(nonatomic, strong) TableContainerBottomToolbar* bottomToolbar;
-
-// UIBarButtonItem to be used on a Navigation Controller to dismiss this
-// ViewController.
-@property(nonatomic, strong, readonly) UIBarButtonItem* dismissButton;
-
 // The ChromeTableViewController owned by this ViewController.
-@property(nonatomic, strong) ChromeTableViewController* tableViewController;
+@property(nonatomic, readonly, strong)
+    ChromeTableViewController* tableViewController;
 
 @end
 

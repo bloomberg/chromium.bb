@@ -10,10 +10,8 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_transitioning_delegate.h"
+#import "ios/chrome/browser/ui/table_view/table_container_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
-#import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -52,6 +50,15 @@
   recentTabsTableViewController.dispatcher = self.dispatcher;
   recentTabsTableViewController.handsetCommandHandler = self;
 
+  // Adds the "Done" button and hooks it up to |stop|.
+  UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                           target:self
+                           action:@selector(stop)];
+  [dismissButton setAccessibilityIdentifier:kTableContainerDismissButtonId];
+  recentTabsTableViewController.navigationItem.rightBarButtonItem =
+      dismissButton;
+
   // Initialize and configure RecentTabsMediator.
   DCHECK(!self.mediator);
   self.mediator = [[RecentTabsMediator alloc] init];
@@ -62,33 +69,21 @@
   [self.mediator initObservers];
   [self.mediator reloadSessions];
 
-  // Initialize and configure RecentTabsViewController.
+  // Present RecentTabsViewController.
   self.recentTabsContainerViewController = [[TableContainerViewController alloc]
       initWithTable:recentTabsTableViewController];
-  self.recentTabsContainerViewController.title =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
-  // TODO(crbug.com/805135): Move this configuration code to
-  // RecentTabsContainerVC once its created, we will use a dispatcher then.
-  [self.recentTabsContainerViewController.dismissButton setTarget:self];
-  [self.recentTabsContainerViewController.dismissButton
-      setAction:@selector(stop)];
-  self.recentTabsContainerViewController.navigationItem.rightBarButtonItem =
-      self.recentTabsContainerViewController.dismissButton;
+  self.recentTabsContainerViewController.toolbarHidden = YES;
 
-  // Present RecentTabsViewController.
-  FormSheetNavigationController* navController =
-      [[FormSheetNavigationController alloc]
-          initWithRootViewController:self.recentTabsContainerViewController];
   self.recentTabsTransitioningDelegate =
       [[RecentTabsTransitioningDelegate alloc] init];
-  [navController.navigationBar setBackgroundImage:[UIImage new]
-                                    forBarMetrics:UIBarMetricsDefault];
-  navController.navigationBar.translucent = NO;
-  navController.transitioningDelegate = self.recentTabsTransitioningDelegate;
-  [navController setModalPresentationStyle:UIModalPresentationCustom];
-  [self.baseViewController presentViewController:navController
-                                        animated:YES
-                                      completion:nil];
+  self.recentTabsContainerViewController.transitioningDelegate =
+      self.recentTabsTransitioningDelegate;
+  [self.recentTabsContainerViewController
+      setModalPresentationStyle:UIModalPresentationCustom];
+  [self.baseViewController
+      presentViewController:self.recentTabsContainerViewController
+                   animated:YES
+                 completion:nil];
 }
 
 - (void)stop {
