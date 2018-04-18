@@ -716,6 +716,7 @@ source_set("common") {
     "//components/crash/content/browser",
     "//components/download/public/common:public",
     "//components/google/core/browser",
+    "//components/heap_profiling",
     "//components/keyed_service/content",
     "//components/metrics",
     "//components/metrics:gpu",

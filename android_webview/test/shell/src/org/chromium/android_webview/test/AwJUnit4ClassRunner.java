@@ -26,7 +26,9 @@ import java.util.List;
  * By default, all tests run both in single-process mode, and with sandboxed
  * renderer. If a test doesn't yet work with sandboxed renderer, an entire
  * class, or an individual test method can be marked for single-process testing
- * only by adding @SkipCommandLineParameterization to the test
+ * only by adding @SkipCommandLineParameterization to the test.
+ *
+ * Single process tests can be skipped by adding @SkipSingleProcessTests.
  */
 public final class AwJUnit4ClassRunner extends BaseJUnit4ClassRunner {
     /**
@@ -50,7 +52,9 @@ public final class AwJUnit4ClassRunner extends BaseJUnit4ClassRunner {
             if (method.getAnnotation(SkipCommandLineParameterization.class) == null) {
                 result.add(new WebViewMultiProcessFrameworkMethod(method));
             }
-            result.add(method);
+            if (method.getAnnotation(SkipSingleProcessTests.class) == null) {
+                result.add(method);
+            }
         }
         return result;
     }

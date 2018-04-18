@@ -36,6 +36,7 @@ android_apk("webview_instrumentation_apk") {
   apk_name = "WebViewInstrumentation"
   android_manifest = "shell/AndroidManifest.xml"
   java_files = [
+    "../javatests/src/org/chromium/android_webview/test/HeapProfilingTestShim.java",
     "shell/src/org/chromium/android_webview/shell/AwShellActivity.java",
     "shell/src/org/chromium/android_webview/shell/AwShellApplication.java",
     "shell/src/org/chromium/android_webview/shell/AwShellResourceProvider.java",
@@ -46,8 +47,10 @@ android_apk("webview_instrumentation_apk") {
     "shell/src/org/chromium/android_webview/test/AwJUnit4ClassRunner.java",
     "shell/src/org/chromium/android_webview/test/NullContentsClient.java",
     "shell/src/org/chromium/android_webview/test/SecondBrowserProcess.java",
+    "shell/src/org/chromium/android_webview/test/SkipSingleProcessTests.java",
     "shell/src/org/chromium/android_webview/test/TestContentProvider.java",
   ]
+
   shared_libraries = [
     ":libdrawgl",
     ":libstandalonelibwebviewchromium",
@@ -101,13 +104,24 @@ android_assets("android_webview_apk_assets") {
   }
 }
 
+generate_jni("heap_profiling_jni_headers") {
+  sources = [
+    "../javatests/src/org/chromium/android_webview/test/HeapProfilingTestShim.java",
+  ]
+  jni_package = "heap_profiling"
+}
+
 shared_library("libstandalonelibwebviewchromium") {
   sources = [
+    "../../components/heap_profiling/heap_profiling_test_shim.cc",
+    "../../components/heap_profiling/heap_profiling_test_shim.h",
     "../lib/webview_entry_point.cc",
   ]
   ldflags = [ "-Wl,-shared,-Bsymbolic" ]
   deps = [
+    ":heap_profiling_jni_headers",
     "//android_webview:common",
+    "//components/heap_profiling:test_support",
   ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   configs += [ "//build/config/android:hide_all_but_jni" ]
@@ -202,6 +216,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/FullScreenVideoTestAwContentsClient.java",
     "../javatests/src/org/chromium/android_webview/test/GeolocationTest.java",
     "../javatests/src/org/chromium/android_webview/test/GetTitleTest.java",
+    "../javatests/src/org/chromium/android_webview/test/HeapProfilingTest.java",
     "../javatests/src/org/chromium/android_webview/test/HttpAuthDatabaseTest.java",
     "../javatests/src/org/chromium/android_webview/test/HttpCacheTest.java",
     "../javatests/src/org/chromium/android_webview/test/KeySystemTest.java",
