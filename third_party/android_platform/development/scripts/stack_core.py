@@ -184,7 +184,7 @@ def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome, arch_define
 
   # if arch isn't defined in command line, find it from log
   if not arch_defined:
-    arch = FindAbi(useful_log)
+    arch = _FindAbi(useful_log)
     if arch:
       print ('Find ABI:' + arch)
       symbol.ARCH = arch
@@ -221,7 +221,7 @@ class PreProcessLog:
     if self._shared_libraries_mapping.has_key(key):
       soname = self._shared_libraries_mapping[key]
     else:
-      soname, host_so = FindSharedLibraryFromAPKs(constants.GetOutDirectory(),
+      soname, host_so = _FindSharedLibraryFromAPKs(constants.GetOutDirectory(),
                                                   int(offset, 16))
       if soname:
         self._shared_libraries_mapping[key] = soname
@@ -421,6 +421,7 @@ def ResolveCrashSymbol(lines, more_info, llvm_symbolizer):
     java_lines = java_stderr_by_pid[pid]
   PrintOutput(trace_lines, value_lines, java_lines, more_info)
 
+
 def UpdateLibrarySearchPath(so_dirs):
   # All dirs in so_dirs must be same, since a dir represents the cpu arch.
   so_dir = set(so_dirs)
@@ -432,6 +433,7 @@ def UpdateLibrarySearchPath(so_dirs):
       search_path = so_dir.pop()
       print "Search libraries in " + search_path
       symbol.SetSecondaryAbiOutputPath(search_path)
+
 
 def GetUncompressedSharedLibraryFromAPK(apkname, offset):
   """Check if there is uncompressed shared library at specifc offset of APK."""
@@ -457,11 +459,15 @@ def GetUncompressedSharedLibraryFromAPK(apkname, offset):
             break
   return soname, sosize
 
-def GetSharedLibraryInHost(soname, dirs):
-  """Find the shared library in given host directories by comparing
-     the name.
-  Return:
-     the shared libray in host if found.
+
+def _GetSharedLibraryInHost(soname, dirs):
+  """Find a shared library by name in a list of directories.
+
+  Args:
+    soname: library name (e.g. libfoo.so)
+    dirs: list of directories to look for the corresponding file.
+  Returns:
+    host library path if found, or None
   """
   for dir in dirs:
     host_so_file = os.path.join(dir, os.path.basename(soname))
@@ -470,12 +476,35 @@ def GetSharedLibraryInHost(soname, dirs):
     logging.debug("%s match to the one in APK" % host_so_file)
     return host_so_file
 
-def FindSharedLibraryFromAPKs(out_dir, offset):
-  """Find the shared library at the specifc offset of APK.
-  Return:
-     a pair of library which is in apk and host respectively
-     only if one library is found, otherwise, it means detecting
-     library failed.
+
+def _FindSharedLibraryFromAPKs(out_dir, offset):
+  """Find the shared library at the specifc offset of an APK file.
+
+    WARNING: This function will look at *all* the apks under $out_dir/apks/
+    looking for native libraries they may contain at |offset|.
+
+    This is error-prone, since a typical full Chrome build has more than a
+    hundred APKs these days, meaning that several APKs might actually match
+    the offset.
+
+    The function tries to detect this by looking at the names of the
+    extracted libraries. If they are all the same, it will consider that
+    as a success, and return its name, even if the APKs embed the same
+    library at different offsets!!
+
+    If there are more than one library at offset from the pool of all APKs,
+    the function prints an error message and fails.
+
+    TODO(digit): Either find a way to pass a list of valid APKs here, or
+    rewrite this script entirely to avoid so many other problematic things
+    in it.
+
+  Args:
+    out_dir: Chromium output directory.
+    offset: APK file offset, as extracted from the stack trace.
+  Returns:
+    A (library_name, host_library_path) tuple on success, or (None, None)
+    in case of failure.
   """
   apk_dir = os.path.join(out_dir, "apks")
   if not os.path.isdir(apk_dir):
@@ -499,7 +528,7 @@ def FindSharedLibraryFromAPKs(out_dir, offset):
            os.path.join(out_dir, "android_%s" % symbol.ARCH),
            out_dir,
            ]
-    host_so_file = GetSharedLibraryInHost(soname, dirs)
+    host_so_file = _GetSharedLibraryInHost(soname, dirs)
     if host_so_file:
       shared_libraries += [(soname, host_so_file)]
   # If there are more than one libraries found, it means detecting
@@ -511,7 +540,8 @@ def FindSharedLibraryFromAPKs(out_dir, offset):
     print "More than one libraries could be loaded from APK."
   return (None, None)
 
-def FindAbi(lines):
+
+def _FindAbi(lines):
   for line in lines:
     match = _ABI_LINE.search(line)
     if match:
