@@ -259,7 +259,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
             float contentHeight, float viewportWidth, float viewportHeight, float topBarShownPix,
             boolean topBarChanged) {
         TraceEvent.begin("GestureListenerManagerImpl:updateScrollInfo");
-        RenderCoordinates rc = mWebContents.getRenderCoordinates();
+        RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
 
         // Adjust contentWidth/Height to be always at least as big as
         // the actual viewport (as set by onSizeChanged).

@@ -23,7 +23,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content.browser.MediaSessionImpl;
-import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
@@ -163,7 +163,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     }
 
     // Cached copy of all positions and scales as reported by the renderer.
-    private RenderCoordinates mRenderCoordinates;
+    private RenderCoordinatesImpl mRenderCoordinates;
 
     private InternalsHolder mInternalsHolder;
 
@@ -183,7 +183,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         WebContentsInternalsImpl internals = new WebContentsInternalsImpl();
         internals.userDataMap = new HashMap<>();
 
-        mRenderCoordinates = new RenderCoordinates();
+        mRenderCoordinates = new RenderCoordinatesImpl();
         mRenderCoordinates.reset();
 
         mInternalsHolder = new DefaultInternalsHolder();
@@ -542,7 +542,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     public void requestSmartClipExtract(int x, int y, int width, int height) {
         if (mSmartClipCallback == null) return;
         mSmartClipCallback.storeRequestRect(new Rect(x, y, x + width, y + height));
-        RenderCoordinates coordinateSpace = getRenderCoordinates();
+        RenderCoordinatesImpl coordinateSpace = getRenderCoordinates();
         float dpi = coordinateSpace.getDeviceScaleFactor();
         y = (int) (y - coordinateSpace.getContentOffsetYPix());
         nativeRequestSmartClipExtract(mNativeWebContentsAndroid, mSmartClipCallback,
@@ -742,9 +742,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     }
 
     /**
-     * Returns {@link RenderCoordinates}. This method is intended for use in content layer only.
+     * Returns {@link RenderCoordinatesImpl}.
      */
-    public RenderCoordinates getRenderCoordinates() {
+    public RenderCoordinatesImpl getRenderCoordinates() {
         return mRenderCoordinates;
     }
 

@@ -30,7 +30,7 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.accessibility.captioning.CaptioningController;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -374,7 +374,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         } else {
             viewNode.setText(node.text);
         }
-        RenderCoordinates renderCoordinates = mWebContents.getRenderCoordinates();
+        RenderCoordinatesImpl renderCoordinates = mWebContents.getRenderCoordinates();
         int left = (int) renderCoordinates.fromLocalCssToPix(node.x);
         int top = (int) renderCoordinates.fromLocalCssToPix(node.y);
         int width = (int) renderCoordinates.fromLocalCssToPix(node.width);
@@ -920,7 +920,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             // We already got frame info since WebContents finished its lifecycle.
             return true;
         }
-        RenderCoordinates rc = mWebContents.getRenderCoordinates();
+        RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
         return rc.getContentWidthCss() != 0.0 || rc.getContentHeightCss() != 0.0;
     }
 
@@ -1166,7 +1166,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     protected void convertWebRectToAndroidCoordinates(Rect rect) {
         // Offset by the scroll position.
-        RenderCoordinates rc = mWebContents.getRenderCoordinates();
+        RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
         rect.offset(-(int) rc.getScrollX(), -(int) rc.getScrollY());
 
         // Convert CSS (web) pixels to Android View pixels
@@ -1199,7 +1199,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 parentRelativeLeft + width, parentRelativeTop + height);
         if (isRootNode) {
             // Offset of the web content relative to the View.
-            RenderCoordinates rc = mWebContents.getRenderCoordinates();
+            RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
             boundsInParent.offset(0, (int) rc.getContentOffsetYPix());
         }
         node.setBoundsInParent(boundsInParent);

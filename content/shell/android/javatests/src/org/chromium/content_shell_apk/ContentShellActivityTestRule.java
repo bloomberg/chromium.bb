@@ -23,7 +23,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCoreImpl;
-import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -156,7 +156,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     /**
      * Returns the RenderCoordinates of the WebContents.
      */
-    public RenderCoordinates getRenderCoordinates() {
+    public RenderCoordinatesImpl getRenderCoordinates() {
         try {
             return ThreadUtils.runOnUiThreadBlocking(
                     () -> { return ((WebContentsImpl) getWebContents()).getRenderCoordinates(); });
@@ -265,7 +265,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * from the compositor and asserts that this happens.
      */
     public void assertWaitForPageScaleFactorMatch(float expectedScale) {
-        final RenderCoordinates coord = getRenderCoordinates();
+        final RenderCoordinatesImpl coord = getRenderCoordinates();
         CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(expectedScale, new Callable<Float>() {
                     @Override

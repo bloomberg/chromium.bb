@@ -50,7 +50,7 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -446,9 +446,9 @@ public class FullscreenManagerTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                ContentViewCore contentViewCore = tab.getContentViewCore();
-                return contentViewCore.computeVerticalScrollRange()
-                        > contentViewCore.getContainerView().getHeight();
+                return RenderCoordinates.fromWebContents(tab.getWebContents())
+                               .getContentHeightPixInt()
+                        > tab.getContentViewCore().getContainerView().getHeight();
             }
         });
     }

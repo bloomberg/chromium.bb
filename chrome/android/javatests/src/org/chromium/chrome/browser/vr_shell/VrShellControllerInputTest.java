@@ -13,6 +13,7 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.TimeoutException;
@@ -63,12 +65,14 @@ public class VrShellControllerInputTest {
         mController.recenterView();
     }
 
-    private void waitForPageToBeScrollable(final ContentViewCore cvc) {
+    private void waitForPageToBeScrollable(ContentViewCore cvc) {
+        final RenderCoordinates coord = RenderCoordinates.fromWebContents(cvc.getWebContents());
+        final View view = cvc.getContainerView();
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return cvc.computeVerticalScrollRange() > cvc.getContainerView().getHeight()
-                        && cvc.computeHorizontalScrollRange() > cvc.getContainerView().getWidth();
+                return coord.getContentHeightPixInt() > view.getHeight()
+                        && coord.getContentWidthPixInt() > view.getWidth();
             }
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
     }

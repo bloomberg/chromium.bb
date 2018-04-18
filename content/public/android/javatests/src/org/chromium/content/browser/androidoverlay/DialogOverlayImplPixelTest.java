@@ -25,7 +25,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.androidoverlay.DialogOverlayImplTestRule.Client;
 
 import java.util.concurrent.Callable;
@@ -97,7 +97,7 @@ public class DialogOverlayImplPixelTest {
     // Screenshot of the test page, before we do anything.
     Bitmap mInitialScreenshot;
 
-    RenderCoordinates mCoordinates;
+    RenderCoordinatesImpl mCoordinates;
 
     @Before
     public void setUp() throws Exception {

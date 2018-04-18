@@ -96,7 +96,7 @@ public class ContentViewPointerTypeTest {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                RenderCoordinates coord = mActivityTestRule.getRenderCoordinates();
+                RenderCoordinatesImpl coord = mActivityTestRule.getRenderCoordinates();
                 float x = coord.fromLocalCssToPix((float) (rect.left + rect.right) / 2.0f);
                 float y = coord.fromLocalCssToPix((float) (rect.top + rect.bottom) / 2.0f);
                 moveCursor(x, y);

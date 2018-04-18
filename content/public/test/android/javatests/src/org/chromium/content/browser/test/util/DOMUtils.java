@@ -13,7 +13,7 @@ import android.view.View;
 import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -493,7 +493,7 @@ public class DOMUtils {
      * @return the click target of the node in the form of a [ x, y ] array.
      */
     private static int[] getClickTargetForBounds(WebContents webContents, Rect bounds) {
-        RenderCoordinates coord = ((WebContentsImpl) webContents).getRenderCoordinates();
+        RenderCoordinatesImpl coord = ((WebContentsImpl) webContents).getRenderCoordinates();
         int clickX = (int) coord.fromLocalCssToPix(bounds.exactCenterX());
         int clickY = (int) coord.fromLocalCssToPix(bounds.exactCenterY())
                 + getMaybeTopControlsHeight(webContents);
