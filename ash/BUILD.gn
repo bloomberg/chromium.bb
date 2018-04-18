@@ -462,6 +462,8 @@ component("ash") {
     "shelf/shelf_locking_manager.cc",
     "shelf/shelf_locking_manager.h",
     "shelf/shelf_observer.h",
+    "shelf/shelf_tooltip_bubble.cc",
+    "shelf/shelf_tooltip_bubble.h",
     "shelf/shelf_tooltip_manager.cc",
     "shelf/shelf_tooltip_manager.h",
     "shelf/shelf_view.cc",
