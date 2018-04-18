@@ -490,11 +490,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   }
 #endif  // !OS_MACOSX
 
-#if defined(USE_OZONE)
-  if (browser_command_line->HasSwitch(switches::kEnableDrmAtomic)) {
-    command_line->AppendSwitch(switches::kEnableDrmAtomic);
-  }
-#endif
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuPreferences(
