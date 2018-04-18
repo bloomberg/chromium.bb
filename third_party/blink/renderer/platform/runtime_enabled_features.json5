@@ -533,9 +533,6 @@
       status: "stable",
     },
     {
-      name: "GetMatchedCSSRules",
-    },
-    {
       name: "HeapCompaction",
       status: "stable",
     },

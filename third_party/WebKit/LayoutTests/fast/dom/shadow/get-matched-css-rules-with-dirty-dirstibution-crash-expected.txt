@@ -1,3 +1,0 @@
-CONSOLE WARNING: line 8: document.getMatchedCSSRules() is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4606972603138048 for more details.
-Tests that getMatchedCSSRules with dirty distribution doesn't crash.
-

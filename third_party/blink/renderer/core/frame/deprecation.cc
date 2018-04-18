@@ -246,11 +246,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "because of its detrimental effects to the end user's "
               "experience. For more help, check https://xhr.spec.whatwg.org/."};
 
-    case WebFeature::kGetMatchedCSSRules:
-      return {"GetMatchedCSSRules", kM64,
-              WillBeRemoved("document.getMatchedCSSRules()", kM64,
-                            "4606972603138048")};
-
     case WebFeature::kPrefixedWindowURL:
       return {"PrefixedWindowURL", kUnknown,
               ReplacedBy("'webkitURL'", "'URL'")};
