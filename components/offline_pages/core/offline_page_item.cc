@@ -74,7 +74,7 @@ OfflinePageItem::~OfflinePageItem() {}
 bool OfflinePageItem::operator==(const OfflinePageItem& other) const {
   return url == other.url && offline_id == other.offline_id &&
          client_id == other.client_id && file_path == other.file_path &&
-         creation_time == other.creation_time &&
+         file_size == other.file_size && creation_time == other.creation_time &&
          last_access_time == other.last_access_time &&
          access_count == other.access_count && title == other.title &&
          flags == other.flags && original_url == other.original_url &&
