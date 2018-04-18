@@ -97,10 +97,6 @@ void DataReductionProxyService::ReadPersistedClientConfig() {
       !last_config_retrieval_time.is_null() &&
       time_since_last_config_retrieval > base::TimeDelta::FromHours(24);
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "DataReductionProxy.ConfigService.PersistedConfigIsExpired",
-      persisted_config_is_expired);
-
   if (persisted_config_is_expired)
     return;
 

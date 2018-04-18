@@ -45,7 +45,6 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
       event_creator_(event_creator),
       bypass_stats_(bypass_stats),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      first_data_saver_request_recorded_(false),
       io_data_(nullptr),
       net_log_(net_log) {
   DCHECK(config_);
@@ -143,19 +142,9 @@ void DataReductionProxyDelegate::OnResolveProxy(
     result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
 
     GetAlternativeProxy(url, proxy_retry_info, result);
-
-    if (!first_data_saver_request_recorded_) {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "DataReductionProxy.TimeToFirstDataSaverRequest",
-          tick_clock_->NowTicks() - last_network_change_time_);
-      first_data_saver_request_recorded_ = true;
-    }
   }
 
   DCHECK_GT(ResourceTypeProvider::CONTENT_TYPE_MAX, content_type);
-  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.ResourceContentType",
-                            content_type,
-                            ResourceTypeProvider::CONTENT_TYPE_MAX);
 
   if (config_->enabled_by_user_and_reachable() &&
       url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url) &&
@@ -251,7 +240,6 @@ void DataReductionProxyDelegate::RecordQuicProxyStatus(
 
 void DataReductionProxyDelegate::OnIPAddressChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  first_data_saver_request_recorded_ = false;
   last_network_change_time_ = tick_clock_->NowTicks();
 }
 

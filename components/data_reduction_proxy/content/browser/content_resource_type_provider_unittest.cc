@@ -202,10 +202,6 @@ TEST_F(ContentResourceProviderTest, VerifyCorrectProxyUsed) {
     request->Start();
     base::RunLoop().RunUntilIdle();
 
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.ResourceContentType", test.expected_content_type,
-        1);
-
     EXPECT_EQ(test.expected_content_type,
               content_resource_type_provider()->GetContentType(request->url()));
 
@@ -282,10 +278,6 @@ TEST_F(ContentResourceProviderTest, SetAndGetContentResourceTypeContent) {
         CreateRequestByType(test.gurl, test.resource_type);
     request->Start();
     base::RunLoop().RunUntilIdle();
-
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.ResourceContentType", test.expected_content_type,
-        1);
 
     EXPECT_EQ(test.expected_content_type,
               content_resource_type_provider()->GetContentType(request->url()));
@@ -368,10 +360,6 @@ TEST_F(ContentResourceProviderTest, FetchDirect) {
         CreateRequestByType(test.gurl, test.resource_type);
     request->Start();
     base::RunLoop().RunUntilIdle();
-
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.ResourceContentType", test.expected_content_type,
-        1);
 
     EXPECT_EQ(test.expected_content_type,
               content_resource_type_provider()->GetContentType(request->url()));

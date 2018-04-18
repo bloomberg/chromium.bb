@@ -929,9 +929,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
     if (test.expect_valid_config) {
       EXPECT_EQ(kSuccessSessionKey, request_options()->GetSecureSession());
     }
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.ConfigService.PersistedConfigIsExpired",
-        !test.expect_valid_config, 1);
   }
 }
 

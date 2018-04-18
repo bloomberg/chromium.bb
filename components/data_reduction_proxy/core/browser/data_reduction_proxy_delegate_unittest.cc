@@ -724,56 +724,6 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
   }
 }
 
-TEST_F(DataReductionProxyDelegateTest, TimeToFirstHttpDataSaverRequest) {
-  base::SimpleTestTickClock tick_clock;
-  proxy_delegate()->SetTickClockForTesting(&tick_clock);
-
-  const char kResponseHeaders[] =
-      "HTTP/1.1 200 OK\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy-Suffix\r\n"
-      "Content-Length: 10\r\n\r\n";
-
-  params()->UseNonSecureProxiesForHttp();
-  {
-    base::HistogramTester histogram_tester;
-    base::TimeDelta advance_time(base::TimeDelta::FromSeconds(1));
-    tick_clock.Advance(advance_time);
-
-    FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
-                    10);
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.TimeToFirstDataSaverRequest",
-        advance_time.InMilliseconds(), 1);
-
-    // Second request should not result in recording of UMA.
-    FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
-                    10);
-    histogram_tester.ExpectTotalCount(
-        "DataReductionProxy.TimeToFirstDataSaverRequest", 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    // Third request should result in recording of UMA due to change in IP.
-    base::TimeDelta advance_time(base::TimeDelta::FromSeconds(2));
-    net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::RunLoop().RunUntilIdle();
-
-    tick_clock.Advance(advance_time);
-    FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
-                    10);
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.TimeToFirstDataSaverRequest",
-        advance_time.InMilliseconds(), 1);
-
-    // Fourth request should not result in recording of UMA.
-    FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
-                    10);
-    histogram_tester.ExpectTotalCount(
-        "DataReductionProxy.TimeToFirstDataSaverRequest", 1);
-  }
-}
-
 TEST_F(DataReductionProxyDelegateTest, Holdback) {
   const char kResponseHeaders[] =
       "HTTP/1.1 200 OK\r\n"

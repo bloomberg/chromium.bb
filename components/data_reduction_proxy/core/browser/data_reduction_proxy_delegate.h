@@ -94,11 +94,6 @@ class DataReductionProxyDelegate
   // Tick clock used for obtaining the current time.
   const base::TickClock* tick_clock_;
 
-  // True if the metrics related to the first request whose resolved proxy was a
-  // data saver proxy has been recorded. |first_data_saver_request_recorded_| is
-  // reset to false on IP address change events.
-  bool first_data_saver_request_recorded_;
-
   // Set to the time when last IP address change event was received, or the time
   // of initialization of |this|, whichever is later.
   base::TimeTicks last_network_change_time_;
