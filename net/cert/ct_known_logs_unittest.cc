@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/cert/ct_known_logs.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -13,6 +15,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+
+namespace ct {
 
 namespace {
 #include "net/data/ssl/certificate_transparency/log_list-inc.cc"
@@ -32,5 +36,7 @@ TEST(CTKnownLogsTest, DisallowedLogsAreSortedByLogID) {
         return memcmp(a.log_id, b.log_id, crypto::kSHA256Length) < 0;
       }));
 }
+
+}  // namespace ct
 
 }  // namespace net

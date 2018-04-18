@@ -38,12 +38,11 @@ class NET_EXPORT CTLogVerifier
   // using |public_key|, which is a DER-encoded SubjectPublicKeyInfo.
   // If |public_key| refers to an unsupported public key, returns NULL.
   // |description| is a textual description of the log.
-  // |url| is the URL of the log's HTTPS API endpoint.
   // |dns_domain| is the DNS name of the log's DNS API endpoint, if one exists.
   static scoped_refptr<const CTLogVerifier> Create(
       const base::StringPiece& public_key,
-      const base::StringPiece& description,
-      const base::StringPiece& dns_domain);
+      std::string description,
+      std::string dns_domain);
 
   // Returns the log's key ID (RFC6962, Section 3.2)
   const std::string& key_id() const { return key_id_; }
@@ -52,7 +51,6 @@ class NET_EXPORT CTLogVerifier
 
   // Returns the log's DNS domain for CT over DNS queries, as described in
   // https://github.com/google/certificate-transparency-rfcs/blob/master/dns/draft-ct-over-dns.md.
-  // This will be empty if the log has no DNS API endpoint.
   const std::string& dns_domain() const { return dns_domain_; }
 
   // Verifies that |sct| is valid for |entry| and was signed by this log.
@@ -83,8 +81,7 @@ class NET_EXPORT CTLogVerifier
   FRIEND_TEST_ALL_PREFIXES(CTLogVerifierTest, VerifySignature);
   friend class base::RefCountedThreadSafe<CTLogVerifier>;
 
-  CTLogVerifier(const base::StringPiece& description,
-                const base::StringPiece& dns_domain);
+  CTLogVerifier(std::string description, std::string dns_domain);
   ~CTLogVerifier();
 
   // Performs crypto-library specific initialization.

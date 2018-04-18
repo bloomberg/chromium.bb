@@ -22,6 +22,20 @@ class CTLogVerifier;
 
 namespace ct {
 
+struct CTLogInfo {
+  // The DER-encoded SubjectPublicKeyInfo for the log.
+  const char* log_key;
+  // The length, in bytes, of |log_key|.
+  size_t log_key_length;
+  // The user-friendly log name.
+  // Note: This will not be translated.
+  const char* log_name;
+  // The DNS API endpoint for the log.
+  // This is used as the parent domain for all queries about the log.
+  // https://github.com/google/certificate-transparency-rfcs/blob/master/dns/draft-ct-over-dns.md.
+  const char* log_dns_domain;
+};
+
 #if !defined(OS_NACL)
 // CreateLogVerifiersForKnownLogs returns a vector of CT logs for all the known
 // logs. This set includes logs that are presently qualified for inclusion and
@@ -30,6 +44,12 @@ namespace ct {
 NET_EXPORT std::vector<scoped_refptr<const CTLogVerifier>>
 CreateLogVerifiersForKnownLogs();
 #endif
+
+// Returns information about all known logs, which includes those that are
+// presently qualified for inclusion and logs which were previously qualified,
+// but have since been disqualified. To determine the status of a given log
+// (via its log ID), use |IsLogDisqualified()|.
+NET_EXPORT std::vector<CTLogInfo> GetKnownLogs();
 
 // Returns true if the log identified by |log_id| (the SHA-256 hash of the
 // log's DER-encoded SPKI) is operated by Google.
