@@ -17,8 +17,11 @@ static_library("child") {
     "//chrome/common:buildflags",
     "//content/public/child",
     "//gin",
-    "//tools/v8_context_snapshot",
     "//v8",
+  ]
+
+  data_deps = [
+    "//tools/v8_context_snapshot",
   ]
 
   if (is_win) {
