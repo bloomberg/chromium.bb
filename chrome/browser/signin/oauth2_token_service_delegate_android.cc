@@ -137,13 +137,6 @@ std::string AndroidAccessTokenFetcher::CombineScopes(
 
 bool OAuth2TokenServiceDelegateAndroid::is_testing_profile_ = false;
 
-OAuth2TokenServiceDelegateAndroid::ErrorInfo::ErrorInfo()
-    : error(GoogleServiceAuthError::NONE) {}
-
-OAuth2TokenServiceDelegateAndroid::ErrorInfo::ErrorInfo(
-    const GoogleServiceAuthError& error)
-    : error(error) {}
-
 OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
     AccountTrackerService* account_tracker_service)
     : account_tracker_service_(account_tracker_service),
@@ -216,7 +209,7 @@ GoogleServiceAuthError OAuth2TokenServiceDelegateAndroid::GetAuthError(
     const std::string& account_id) const {
   auto it = errors_.find(account_id);
   return (it == errors_.end()) ? GoogleServiceAuthError::AuthErrorNone()
-                               : it->second.error;
+                               : it->second;
 }
 
 void OAuth2TokenServiceDelegateAndroid::UpdateAuthError(
@@ -229,10 +222,17 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAuthError(
   if (error.IsTransientError())
     return;
 
-  if (error.state() == GoogleServiceAuthError::NONE)
-    errors_.erase(account_id);
-  else
-    errors_[account_id] = ErrorInfo(error);
+  auto it = errors_.find(account_id);
+  if (error.state() == GoogleServiceAuthError::NONE) {
+    if (it == errors_.end())
+      return;
+    errors_.erase(it);
+  } else {
+    if (it != errors_.end() && it->second == error)
+      return;
+    errors_[account_id] = error;
+  }
+  FireAuthErrorChanged(account_id, error);
 }
 
 std::vector<std::string> OAuth2TokenServiceDelegateAndroid::GetAccounts() {
