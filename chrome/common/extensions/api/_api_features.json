@@ -680,6 +680,10 @@
     "dependencies": ["permission:rtcPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "safeBrowsingPrivate": {
+    "dependencies": ["permission:safeBrowsingPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "sessions": {
     "dependencies": ["permission:sessions"],
     "contexts": ["blessed_extension"]
