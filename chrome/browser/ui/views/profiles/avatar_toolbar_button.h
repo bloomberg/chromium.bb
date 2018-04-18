@@ -20,6 +20,7 @@ class AvatarToolbarButton : public ToolbarButton,
   ~AvatarToolbarButton() override;
 
   void UpdateIcon();
+  void UpdateTooltipText();
 
  private:
   // AvatarButtonErrorControllerDelegate:
@@ -27,6 +28,12 @@ class AvatarToolbarButton : public ToolbarButton,
 
   // ProfileAttributesStorage::Observer:
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
+  void OnProfileHighResAvatarLoaded(
+      const base::FilePath& profile_path) override;
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override;
+
+  bool IsIncognito() const;
 
   Profile* const profile_;
 
