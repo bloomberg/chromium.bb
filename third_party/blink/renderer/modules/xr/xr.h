@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/page/focus_changed_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -21,7 +22,8 @@ class XRDevice;
 
 class XR final : public EventTargetWithInlineData,
                  public ContextLifecycleObserver,
-                 public device::mojom::blink::VRServiceClient {
+                 public device::mojom::blink::VRServiceClient,
+                 public FocusChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(XR);
 
@@ -44,16 +46,18 @@ class XR final : public EventTargetWithInlineData,
 
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
-
-  void Dispose();
-
   void Trace(blink::Visitor*) override;
+
+  // FocusChangedObserver overrides.
+  void FocusedFrameChanged() override;
+  bool IsFrameFocused();
 
  private:
   explicit XR(LocalFrame& frame);
 
   void OnDevicesSynced();
   void ResolveRequestDevice();
+  void Dispose();
 
   bool devices_synced_;
 
