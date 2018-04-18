@@ -10,16 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -29,13 +25,11 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
 #include "components/sync/driver/startup_controller.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service_base.h"
 #include "components/sync/driver/sync_stopped_reporter.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
@@ -44,10 +38,8 @@
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/engine/sync_engine_host.h"
-#include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/js/sync_js_controller.h"
 #include "components/sync/model/model_type_store.h"
-#include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -56,6 +48,10 @@
 
 class ProfileOAuth2TokenService;
 class SigninManagerWrapper;
+
+namespace base {
+class MessageLoop;
+}
 
 namespace sync_sessions {
 class FaviconCache;
@@ -66,7 +62,6 @@ class SessionsSyncManager;
 namespace syncer {
 class BackendMigrator;
 class BaseTransaction;
-class DataTypeManager;
 class DeviceInfoSyncBridge;
 class DeviceInfoTracker;
 class LocalDeviceInfoProvider;

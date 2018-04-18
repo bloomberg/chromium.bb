@@ -487,8 +487,6 @@ jumbo_static_library("sync") {
     "syncable/scoped_kernel_lock.h",
     "syncable/scoped_parent_child_index_updater.cc",
     "syncable/scoped_parent_child_index_updater.h",
-    "syncable/sync_db_util.cc",
-    "syncable/sync_db_util.h",
     "syncable/syncable_base_transaction.cc",
     "syncable/syncable_base_transaction.h",
     "syncable/syncable_base_write_transaction.cc",

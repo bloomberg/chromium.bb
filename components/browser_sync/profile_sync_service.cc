@@ -37,7 +37,6 @@
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/directory_data_type_controller.h"
-#include "components/sync/driver/glue/sync_backend_host_impl.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -46,7 +45,6 @@
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/driver/user_selectable_sync_type.h"
 #include "components/sync/engine/configure_reason.h"
-#include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 #include "components/sync/engine/net/network_resources.h"
@@ -57,9 +55,7 @@
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/sync_db_util.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
@@ -68,16 +64,10 @@
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/version_info/version_info_values.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
-
-#if defined(OS_ANDROID)
-#include "components/sync/syncable/read_transaction.h"
-#endif
 
 using sync_sessions::SessionsSyncManager;
 using syncer::BackendMigrator;
-using syncer::ChangeProcessor;
 using syncer::ClientTagBasedModelTypeProcessor;
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
@@ -85,11 +75,9 @@ using syncer::DataTypeStatusTable;
 using syncer::DeviceInfoSyncBridge;
 using syncer::JsBackend;
 using syncer::JsController;
-using syncer::JsEventDetails;
 using syncer::JsEventHandler;
 using syncer::ModelSafeRoutingInfo;
 using syncer::ModelType;
-using syncer::ModelTypeChangeProcessor;
 using syncer::ModelTypeSet;
 using syncer::ModelTypeStore;
 using syncer::ProtocolEventObserver;
@@ -351,7 +339,7 @@ void ProfileSyncService::UnregisterAuthNotifications() {
 }
 
 void ProfileSyncService::RegisterDataTypeController(
-    std::unique_ptr<syncer::DataTypeController> data_type_controller) {
+    std::unique_ptr<DataTypeController> data_type_controller) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(data_type_controllers_.count(data_type_controller->type()), 0U);
   data_type_controllers_[data_type_controller->type()] =
