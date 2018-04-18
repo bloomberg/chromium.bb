@@ -2949,11 +2949,6 @@ const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";
 
-const char kEnableSettingsShortcutSearchName[] =
-    "Enable Settings shortcut search";
-const char kEnableSettingsShortcutSearchDescription[] =
-    "Enable Settings shortcut search in launcher.";
-
 #endif  // defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------
