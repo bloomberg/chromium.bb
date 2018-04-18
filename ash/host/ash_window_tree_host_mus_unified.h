@@ -31,7 +31,8 @@ class AshWindowTreeHostMusUnified : public AshWindowTreeHostMus,
   void RegisterMirroringHost(AshWindowTreeHost* mirroring_ash_host) override;
 
   // aura::WindowTreeHost:
-  void SetBoundsInPixels(const gfx::Rect& bounds) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds,
+                         const viz::LocalSurfaceId& local_surface_id) override;
   void SetCursorNative(gfx::NativeCursor cursor) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 

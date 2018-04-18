@@ -903,11 +903,9 @@ void WindowTreeClient::SetWindowBoundsFromServer(
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   if (IsRoot(window)) {
     // WindowTreeHost expects bounds to be in pixels.
-    GetWindowTreeHostMus(window)->SetBoundsFromServer(revert_bounds_in_pixels);
-    if (local_surface_id && local_surface_id->is_valid()) {
-      ui::Compositor* compositor = window->GetWindow()->GetHost()->compositor();
-      compositor->SetLocalSurfaceId(*local_surface_id);
-    }
+    GetWindowTreeHostMus(window)->SetBoundsFromServer(
+        revert_bounds_in_pixels,
+        local_surface_id ? *local_surface_id : viz::LocalSurfaceId());
     return;
   }
 
@@ -1075,21 +1073,8 @@ void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
   // OnWindowTreeHostBoundsWillChange(). Any bounds that happen here are a side
   // effect of those and can be ignored.
   if (IsRoot(window)) {
-    // NOTE: this has to happen to here as during the call to
-    // OnWindowTreeHostBoundsWillChange() the compositor hasn't been updated
-    // yet.
-    if (window->window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED) {
-      WindowTreeHost* window_tree_host = window->GetWindow()->GetHost();
-      // |window_tree_host| may be null if this is called during creation of
-      // the window associated with the WindowTreeHostMus.
-      if (window_tree_host) {
-        viz::LocalSurfaceId local_surface_id =
-            window->GetOrAllocateLocalSurfaceId(
-                window_tree_host->GetBoundsInPixels().size());
-        DCHECK(local_surface_id.is_valid());
-        window_tree_host->compositor()->SetLocalSurfaceId(local_surface_id);
-      }
-    }
+    // Do not set the LocalSurfaceId on the compositor here, because it has
+    // already been set.
     return;
   }
   const float device_scale_factor = window->GetDeviceScaleFactor();

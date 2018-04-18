@@ -280,7 +280,8 @@ float DesktopWindowTreeHostMus::GetScaleFactor() const {
 }
 
 void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
-  SetBoundsInPixels(gfx::ConvertRectToPixel(GetScaleFactor(), bounds_in_dip));
+  SetBoundsInPixels(gfx::ConvertRectToPixel(GetScaleFactor(), bounds_in_dip),
+                    viz::LocalSurfaceId());
 }
 
 bool DesktopWindowTreeHostMus::ShouldSendClientAreaToServer() const {
@@ -824,7 +825,8 @@ void DesktopWindowTreeHostMus::HideImpl() {
 }
 
 void DesktopWindowTreeHostMus::SetBoundsInPixels(
-    const gfx::Rect& bounds_in_pixels) {
+    const gfx::Rect& bounds_in_pixels,
+    const viz::LocalSurfaceId& local_surface_id) {
   gfx::Rect final_bounds_in_pixels = bounds_in_pixels;
   if (GetBoundsInPixels().size() != bounds_in_pixels.size()) {
     gfx::Size size = bounds_in_pixels.size();
@@ -837,7 +839,8 @@ void DesktopWindowTreeHostMus::SetBoundsInPixels(
     final_bounds_in_pixels.set_size(size);
   }
   const gfx::Rect old_bounds_in_pixels = GetBoundsInPixels();
-  WindowTreeHostMus::SetBoundsInPixels(final_bounds_in_pixels);
+  WindowTreeHostMus::SetBoundsInPixels(final_bounds_in_pixels,
+                                       local_surface_id);
   if (old_bounds_in_pixels.size() != final_bounds_in_pixels.size()) {
     SendClientAreaToServer();
     SendHitTestMaskToServer();

@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -180,14 +181,17 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Hides the WindowTreeHost.
   void Hide();
 
-  // Gets/Sets the size of the WindowTreeHost (in pixels).
-  // TODO(ccameron): The existence of OnHostMoved/ResizedInPixels and this
-  // function create confusion as to the source of the true bounds. Should it
-  // be expected that this will always return the values most recently
-  // specified by OnHostMoved/ResizedInPixels? If so, why do we ask the
-  // sub-classes to return the value when this class already knows the value?
+  // Sets/Gets the bounds of the WindowTreeHost (in pixels). Note that a call to
+  // GetBoundsInPixels() immediately following a SetBoundsInPixels() can return
+  // the old bounds, because SetBoundsInPixels() can take effect asynchronously,
+  // depending on the platform. The |local_surface_id| takes effect when (and
+  // if) the new size is confirmed (potentially asynchronously) by the platform.
+  // If |local_surface_id| is invalid, then a new LocalSurfaceId is allocated
+  // when the size change takes effect.
+  virtual void SetBoundsInPixels(
+      const gfx::Rect& bounds_in_pixels,
+      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId()) = 0;
   virtual gfx::Rect GetBoundsInPixels() const = 0;
-  virtual void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) = 0;
 
   // Sets the OS capture to the root window.
   virtual void SetCapture() = 0;
@@ -230,10 +234,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::Point GetLocationOnScreenInPixels() const = 0;
 
   void OnHostMovedInPixels(const gfx::Point& new_location_in_pixels);
-  // TODO(ccameron): This needs to specify a device scale factor. It should
-  // arguably be merged with OnHostMovedInPixels (since all callers are pulling
-  // the size or position from a rect which also feeds OnHostMovedInPixels).
-  void OnHostResizedInPixels(const gfx::Size& new_size_in_pixels);
+  void OnHostResizedInPixels(
+      const gfx::Size& new_size_in_pixels,
+      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId());
   void OnHostWorkspaceChanged();
   void OnHostDisplayChanged();
   void OnHostCloseRequested();

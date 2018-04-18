@@ -134,8 +134,10 @@ void AshWindowTreeHostPlatform::OnCursorVisibilityChangedNative(bool show) {
   SetTapToClickPaused(!show);
 }
 
-void AshWindowTreeHostPlatform::SetBoundsInPixels(const gfx::Rect& bounds) {
-  WindowTreeHostPlatform::SetBoundsInPixels(bounds);
+void AshWindowTreeHostPlatform::SetBoundsInPixels(
+    const gfx::Rect& bounds,
+    const viz::LocalSurfaceId& local_surface_id) {
+  WindowTreeHostPlatform::SetBoundsInPixels(bounds, local_surface_id);
   ConfineCursorToRootWindow();
 }
 

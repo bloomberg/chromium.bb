@@ -358,6 +358,11 @@ void Compositor::SetScaleAndSize(float scale,
   bool device_scale_factor_changed = device_scale_factor_ != scale;
   device_scale_factor_ = scale;
 
+  if (size_ != size_in_pixel && local_surface_id.is_valid()) {
+    // A new LocalSurfaceId must be set when the compositor size changes.
+    DCHECK_NE(local_surface_id, host_->local_surface_id());
+  }
+
   if (!size_in_pixel.IsEmpty()) {
     size_ = size_in_pixel;
     host_->SetViewportSizeAndScale(size_in_pixel, scale, local_surface_id);

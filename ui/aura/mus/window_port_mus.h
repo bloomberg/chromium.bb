@@ -304,6 +304,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   viz::SurfaceInfo fallback_surface_info_;
 
   viz::LocalSurfaceId local_surface_id_;
+  // TODO(sad, fsamuel): For 'mash' mode, where the embedder is responsible for
+  // allocating the LocalSurfaceIds, this should use a
+  // ChildLocalSurfaceIdAllocator instead.
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   gfx::Size last_surface_size_in_pixels_;
 

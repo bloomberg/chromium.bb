@@ -54,14 +54,16 @@ gfx::Rect HeadlessWindowTreeHost::GetBoundsInPixels() const {
   return bounds_;
 }
 
-void HeadlessWindowTreeHost::SetBoundsInPixels(const gfx::Rect& bounds) {
+void HeadlessWindowTreeHost::SetBoundsInPixels(
+    const gfx::Rect& bounds,
+    const viz::LocalSurfaceId& local_surface_id) {
   bool origin_changed = bounds_.origin() != bounds.origin();
   bool size_changed = bounds_.size() != bounds.size();
   bounds_ = bounds;
   if (origin_changed)
     OnHostMovedInPixels(bounds.origin());
   if (size_changed)
-    OnHostResizedInPixels(bounds.size());
+    OnHostResizedInPixels(bounds.size(), local_surface_id);
 }
 
 void HeadlessWindowTreeHost::ShowImpl() {}

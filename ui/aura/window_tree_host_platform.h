@@ -33,7 +33,8 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   void ShowImpl() override;
   void HideImpl() override;
   gfx::Rect GetBoundsInPixels() const override;
-  void SetBoundsInPixels(const gfx::Rect& bounds) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds,
+                         const viz::LocalSurfaceId& local_surface_id) override;
   gfx::Point GetLocationOnScreenInPixels() const override;
   void SetCapture() override;
   void ReleaseCapture() override;
@@ -80,6 +81,14 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   std::unique_ptr<ui::PlatformWindow> platform_window_;
   gfx::NativeCursor current_cursor_;
   gfx::Rect bounds_;
+
+  // |pending_local_surface_id_| and |pending_size_| are set when the
+  // PlatformWindow instance is requested to adopt a new size (in
+  // SetBoundsInPixels()). When the platform confirms the new size (by way of
+  // OnBoundsChanged() callback), the LocalSurfaceId is set on the compositor,
+  // by WindowTreeHost.
+  viz::LocalSurfaceId pending_local_surface_id_;
+  gfx::Size pending_size_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostPlatform);
 };

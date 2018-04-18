@@ -521,7 +521,14 @@ gfx::Rect DesktopWindowTreeHostWin::GetBoundsInPixels() const {
   return without_expansion;
 }
 
-void DesktopWindowTreeHostWin::SetBoundsInPixels(const gfx::Rect& bounds) {
+void DesktopWindowTreeHostWin::SetBoundsInPixels(
+    const gfx::Rect& bounds,
+    const viz::LocalSurfaceId& local_surface_id) {
+  // On Windows, the callers of SetBoundsInPixels() shouldn't need to (or be
+  // able to) allocate LocalSurfaceId for the compositor. Aura itself should
+  // allocate the new ids as needed, instead.
+  DCHECK(!local_surface_id.is_valid());
+
   // If the window bounds have to be expanded we need to subtract the
   // window_expansion_top_left_delta_ from the origin and add the
   // window_expansion_bottom_right_delta_ to the width and height

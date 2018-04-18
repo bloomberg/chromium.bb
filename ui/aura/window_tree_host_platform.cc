@@ -102,7 +102,11 @@ gfx::Rect WindowTreeHostPlatform::GetBoundsInPixels() const {
   return platform_window_ ? platform_window_->GetBounds() : gfx::Rect();
 }
 
-void WindowTreeHostPlatform::SetBoundsInPixels(const gfx::Rect& bounds) {
+void WindowTreeHostPlatform::SetBoundsInPixels(
+    const gfx::Rect& bounds,
+    const viz::LocalSurfaceId& local_surface_id) {
+  pending_size_ = bounds.size();
+  pending_local_surface_id_ = local_surface_id;
   platform_window_->SetBounds(bounds);
 }
 
@@ -162,8 +166,15 @@ void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
   bounds_ = new_bounds;
   if (bounds_.origin() != old_bounds.origin())
     OnHostMovedInPixels(bounds_.origin());
-  if (bounds_.size() != old_bounds.size() || current_scale != new_scale)
-    OnHostResizedInPixels(bounds_.size());
+  if (pending_local_surface_id_.is_valid() ||
+      bounds_.size() != old_bounds.size() || current_scale != new_scale) {
+    auto local_surface_id = bounds_.size() == pending_size_
+                                ? pending_local_surface_id_
+                                : viz::LocalSurfaceId();
+    pending_local_surface_id_ = viz::LocalSurfaceId();
+    pending_size_ = gfx::Size();
+    OnHostResizedInPixels(bounds_.size(), local_surface_id);
+  }
 }
 
 void WindowTreeHostPlatform::OnDamageRect(const gfx::Rect& damage_rect) {
