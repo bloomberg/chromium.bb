@@ -22,21 +22,21 @@ p {
 
 .arc-tos-loaded .arc-tos-loading,
 .arc-tos-loaded .arc-tos-error,
-.arc-tos-loaded #arc-tos-retry-button-md,
+.arc-tos-loaded #arc-tos-retry-button,
 .arc-tos-loading .arc-tos-content,
 .arc-tos-loading .arc-tos-error,
-.arc-tos-loading #arc-tos-retry-button-md,
-.arc-tos-loading #arc-tos-accept-button-md,
+.arc-tos-loading #arc-tos-retry-button,
+.arc-tos-loading #arc-tos-accept-button,
 .error .arc-tos-content,
 .error .arc-tos-loading,
-.error #arc-tos-accept-button-md,
-.error #arc-tos-next-button-md {
+.error #arc-tos-accept-button,
+.error #arc-tos-next-button {
   display: none;
 }
 
-.arc-tos-loading #arc-tos-next-button-md,
-.arc-tos-loading #arc-tos-skip-button-md,
-.arc-tos-loading #arc-tos-retry-button-md {
+.arc-tos-loading #arc-tos-next-button,
+.arc-tos-loading #arc-tos-skip-button,
+.arc-tos-loading #arc-tos-retry-button {
   pointer-events: none;
 }
 
@@ -54,20 +54,20 @@ p {
   padding: 0 20px 16px 20px;
 }
 
-#arc-enable-backup-restore-md,
-#arc-enable-location-service-md {
+#arc-enable-backup-restore,
+#arc-enable-location-service {
   --paper-checkbox-size: 12px;
   --paper-checkbox-checked-color: rgb(66, 133, 244); /* #4285f4 */
   --paper-checkbox-label-spacing: 20px;
   --paper-checkbox-vertical-align: top;
 }
 
-#arc-policy-link-md {
+#arc-policy-link {
   margin: 0;
   padding: 16px 0 16px 20px;
 }
 
-#arc-tos-skip-button-md {
+#arc-tos-skip-button {
   color: rgba(0, 0, 0, 0.54);
 }
 
@@ -76,20 +76,20 @@ p {
   font-weight: 600;
 }
 
-#arc-tos-dialog-md {
+#arc-tos-dialog {
   height: 640px;
 }
 
-#arc-tos-container-md {
+#arc-tos-container {
   box-shadow: 0 -2px 2px -2px rgba(0, 0, 0, 0.14);
   padding: -4px 0 0 0;
 }
 
-#arc-tos-container-md::-webkit-scrollbar {
+#arc-tos-container::-webkit-scrollbar {
   display: none;
 }
 
-#arc-tos-view-md {
+#arc-tos-view {
   display: block;
   height: 10px;
   margin: auto;
@@ -97,7 +97,7 @@ p {
   width: 638px;
 }
 
-#arc-tos-view-container-md {
+#arc-tos-view-container {
   border: 1px solid #d9d9d9;
   box-sizing: border-box;
   flex: auto;
@@ -106,12 +106,12 @@ p {
   width: 100%;
 }
 
-#arc-tos-skip-button-md {
+#arc-tos-skip-button {
   -webkit-padding-end: 6px;
 }
 
-#arc-tos-accept-button-md,
-#arc-tos-next-button-md,
-#arc-tos-retry-button-md {
+#arc-tos-accept-button,
+#arc-tos-next-button,
+#arc-tos-retry-button {
   -webkit-padding-end: 18px;
 }
