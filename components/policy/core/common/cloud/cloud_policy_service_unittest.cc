@@ -51,16 +51,6 @@ MATCHER_P(ProtoMatches, proto, std::string()) {
   return arg.SerializePartialAsString() == proto.SerializePartialAsString();
 }
 
-TEST_F(CloudPolicyServiceTest, ManagedByEmptyPolicy) {
-  EXPECT_EQ(std::string(), service_.ManagedBy());
-}
-
-TEST_F(CloudPolicyServiceTest, ManagedByValidPolicy) {
-  store_.policy_.reset(new em::PolicyData());
-  store_.policy_->set_username("user@example.com");
-  EXPECT_EQ("example.com", service_.ManagedBy());
-}
-
 TEST_F(CloudPolicyServiceTest, PolicyUpdateSuccess) {
   em::PolicyFetchResponse policy;
   policy.set_policy_data("fake policy");

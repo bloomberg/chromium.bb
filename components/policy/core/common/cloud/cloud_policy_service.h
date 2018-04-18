@@ -48,10 +48,6 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
                      CloudPolicyStore* store);
   ~CloudPolicyService() override;
 
-  // Returns the domain that manages this user/device, according to the current
-  // policy blob. Empty if not managed/not available.
-  std::string ManagedBy() const;
-
   // Refreshes policy. |callback| will be invoked after the operation completes
   // or aborts because of errors.
   void RefreshPolicy(const RefreshPolicyCallback& callback);
