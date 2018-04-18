@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/generated_resources.h"
@@ -35,18 +36,17 @@ AvatarToolbarButton::AvatarToolbarButton(Profile* profile,
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                               ui::EF_MIDDLE_MOUSE_BUTTON);
   set_tag(IDC_SHOW_AVATAR_MENU);
-  if (profile->IsOffTheRecord()) {
-    SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_INCOGNITO_AVATAR_BUTTON_TOOLTIP));
-    SetEnabled(false);
-  } else {
-    // TODO(pbos): Incorporate GetAvatarButtonTextForProfile. See
-    // AvatarButton.
-    SetTooltipText(l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
-    SetAccessibleName(l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
-  }
   set_id(VIEW_ID_AVATAR_BUTTON);
+
   Init();
+
+  // The profile switcher is only available outside incognito.
+  SetEnabled(!IsIncognito());
+
+  // Set initial tooltip. UpdateIcon() needs to be called from the outside as
+  // GetThemeProvider() is not available until the button is added to
+  // ToolbarView's hierarchy.
+  UpdateTooltipText();
 }
 
 AvatarToolbarButton::~AvatarToolbarButton() = default;
@@ -74,6 +74,15 @@ void AvatarToolbarButton::UpdateIcon() {
   }
 }
 
+void AvatarToolbarButton::UpdateTooltipText() {
+  if (IsIncognito()) {
+    SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_INCOGNITO_AVATAR_BUTTON_TOOLTIP));
+  } else {
+    SetTooltipText(profiles::GetAvatarNameForProfile(profile_->GetPath()));
+  }
+}
+
 void AvatarToolbarButton::OnAvatarErrorChanged() {
   UpdateIcon();
 }
@@ -81,4 +90,19 @@ void AvatarToolbarButton::OnAvatarErrorChanged() {
 void AvatarToolbarButton::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   UpdateIcon();
+}
+
+void AvatarToolbarButton::OnProfileHighResAvatarLoaded(
+    const base::FilePath& profile_path) {
+  UpdateIcon();
+}
+
+void AvatarToolbarButton::OnProfileNameChanged(
+    const base::FilePath& profile_path,
+    const base::string16& old_profile_name) {
+  UpdateTooltipText();
+}
+
+bool AvatarToolbarButton::IsIncognito() const {
+  return profile_->IsOffTheRecord() && !profile_->IsGuestSession();
 }
