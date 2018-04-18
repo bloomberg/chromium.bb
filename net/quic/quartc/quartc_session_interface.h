@@ -108,6 +108,15 @@ class QUIC_EXPORT_PRIVATE QuartcSessionInterface {
   // QuicConnection.
   virtual bool OnTransportReceived(const char* data, size_t data_len) = 0;
 
+  // Bundles subsequent writes on a best-effort basis.
+  // Data is sent whenever enough data is accumulated to fill a packet.
+  // The session stops bundling writes and sends data immediately as soon as
+  // FlushWrites() is called or a packet is received.
+  virtual void BundleWrites() = 0;
+
+  // Stop bundling writes and flush any pending writes immediately.
+  virtual void FlushWrites() = 0;
+
   // Callbacks called by the QuartcSession to notify the user of the
   // QuartcSession of certain events.
   class Delegate {
@@ -132,8 +141,11 @@ class QUIC_EXPORT_PRIVATE QuartcSessionInterface {
   // The |delegate| is not owned by QuartcSession.
   virtual void SetDelegate(Delegate* delegate) = 0;
 
-  // Sets a visitor for the session.
-  virtual void SetSessionVisitor(QuartcSessionVisitor* debug_visitor) = 0;
+  // Add or remove session visitors.  Session visitors observe internals of the
+  // Quartc/QUIC session for the purpose of gathering metrics or debug
+  // information.
+  virtual void AddSessionVisitor(QuartcSessionVisitor* visitor) = 0;
+  virtual void RemoveSessionVisitor(QuartcSessionVisitor* visitor) = 0;
 };
 
 }  // namespace net

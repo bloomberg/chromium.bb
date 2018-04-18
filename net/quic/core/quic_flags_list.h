@@ -189,13 +189,13 @@ QUIC_FLAG(
 // processing the packet header.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_server_early_version_negotiation,
-          false)
+          true)
 
 // If true, QUIC will always discard outgoing packets after connection close.
 // Currently out-of-order outgoing packets are not discarded
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_always_discard_packets_after_close,
-          false)
+          true)
 
 // If true, stop sending a redundant PING every 20 acks.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_redundant_ping, true)
@@ -225,7 +225,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_static_streams, false)
 // Base the QUIC crypto retransmission timer on the last sent crypto packet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_better_crypto_retransmission,
-          false)
+          true)
 
 // If true, enable server proxy support in QUIC.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_server_proxy, false)
@@ -244,3 +244,13 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
 // If true, check again that the writer isn\'t blocked before calling
 // QuicConnection::OnCanWrite from WriteAndBundleAcksIfNotBlocked
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_is_write_blocked, false)
+
+// If true, use the send alarm instead of the resume_writes alarm in
+// QuicConnection.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_send_alarm, false)
+
+// If true, do not use QUIC's MSPC handshake tag and instead require MIDS.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_mspc, false)
+
+// If true, simplify pacing sender logic.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_pacing_sender, false)

@@ -1236,6 +1236,10 @@ size_t QuicSentPacketManager::GetConsecutiveTlpCount() const {
 }
 
 void QuicSentPacketManager::OnApplicationLimited() {
+  if (using_pacing_ && pacing_sender_.is_simplified_pacing()) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_simplify_pacing_sender, 2, 2);
+    pacing_sender_.OnApplicationLimited();
+  }
   send_algorithm_->OnApplicationLimited(unacked_packets_.bytes_in_flight());
 }
 

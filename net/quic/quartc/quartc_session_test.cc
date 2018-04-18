@@ -347,17 +347,17 @@ class FakeQuartcStreamDelegate : public QuartcStreamInterface::Delegate {
   void OnReceived(QuartcStreamInterface* stream,
                   const char* data,
                   size_t size) override {
-    last_received_data_ = string(data, size);
+    received_data_[stream->stream_id()] += string(data, size);
   }
 
   void OnClose(QuartcStreamInterface* stream) override {}
 
   void OnBufferChanged(QuartcStreamInterface* stream) override {}
 
-  string data() { return last_received_data_; }
+  std::map<QuicStreamId, string> data() { return received_data_; }
 
  private:
-  string last_received_data_;
+  std::map<QuicStreamId, string> received_data_;
 };
 
 class QuartcSessionForTest : public QuartcSession,
@@ -387,7 +387,7 @@ class QuartcSessionForTest : public QuartcSession,
     OnTransportReceived(data.c_str(), data.length());
   }
 
-  string data() { return stream_delegate_->data(); }
+  std::map<QuicStreamId, string> data() { return stream_delegate_->data(); }
 
   bool has_data() { return !data().empty(); }
 
@@ -526,6 +526,7 @@ class QuartcSessionTest : public ::testing::Test,
     // Now we can establish encrypted outgoing stream.
     QuartcStreamInterface* outgoing_stream =
         server_peer_->CreateOutgoingStream(kDefaultStreamParam);
+    QuicStreamId stream_id = outgoing_stream->stream_id();
     ASSERT_NE(nullptr, outgoing_stream);
     EXPECT_TRUE(server_peer_->HasOpenDynamicStreams());
 
@@ -544,9 +545,10 @@ class QuartcSessionTest : public ::testing::Test,
     QuartcStreamInterface* incoming =
         client_peer_->session_delegate()->incoming_stream();
     ASSERT_TRUE(incoming);
+    EXPECT_EQ(incoming->stream_id(), stream_id);
     EXPECT_TRUE(client_peer_->HasOpenDynamicStreams());
 
-    EXPECT_EQ(client_peer_->data(), kTestMessage);
+    EXPECT_EQ(client_peer_->data()[stream_id], kTestMessage);
     // Send a test message from peer 2 to peer 1.
     char kTestResponse[] = "Response";
     test::QuicTestMemSliceVector response(
@@ -556,7 +558,7 @@ class QuartcSessionTest : public ::testing::Test,
     // Wait for peer 1 to receive messages.
     ASSERT_TRUE(server_peer_->has_data());
 
-    EXPECT_EQ(server_peer_->data(), kTestResponse);
+    EXPECT_EQ(server_peer_->data()[stream_id], kTestResponse);
   }
 
   // Test that client and server are not connected after handshake failure.
@@ -660,6 +662,89 @@ TEST_F(QuartcSessionTest, CancelQuartcStream) {
   EXPECT_EQ(stream->stream_error(),
             QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
   EXPECT_TRUE(client_peer_->IsClosedStream(id));
+}
+
+TEST_F(QuartcSessionTest, BundleWrites) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
+  ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
+
+  client_peer_->BundleWrites();
+  QuartcStreamInterface* first =
+      client_peer_->CreateOutgoingStream(kDefaultStreamParam);
+  QuicStreamId first_id = first->stream_id();
+  first->SetDelegate(client_peer_->stream_delegate());
+
+  char kFirstMessage[] = "Hello";
+  test::QuicTestMemSliceVector first_data(
+      {std::make_pair(kFirstMessage, strlen(kFirstMessage))});
+  first->Write(first_data.span(), kDefaultWriteParam);
+  RunTasks();
+
+  // Server should not receive any data until the client flushes writes.
+  EXPECT_FALSE(server_peer_->has_data());
+
+  QuartcStreamInterface* second =
+      client_peer_->CreateOutgoingStream(kDefaultStreamParam);
+  QuicStreamId second_id = second->stream_id();
+  second->SetDelegate(client_peer_->stream_delegate());
+
+  char kSecondMessage[] = "World";
+  test::QuicTestMemSliceVector second_data(
+      {std::make_pair(kSecondMessage, strlen(kSecondMessage))});
+  second->Write(second_data.span(), kDefaultWriteParam);
+  RunTasks();
+
+  EXPECT_FALSE(server_peer_->has_data());
+
+  client_peer_->FlushWrites();
+  RunTasks();
+
+  ASSERT_TRUE(server_peer_->has_data());
+  EXPECT_EQ(server_peer_->data()[first_id], kFirstMessage);
+  EXPECT_EQ(server_peer_->data()[second_id], kSecondMessage);
+}
+
+TEST_F(QuartcSessionTest, StopBundlingOnIncomingData) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
+  ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
+
+  client_peer_->BundleWrites();
+  QuartcStreamInterface* first =
+      client_peer_->CreateOutgoingStream(kDefaultStreamParam);
+  QuicStreamId first_id = first->stream_id();
+  first->SetDelegate(client_peer_->stream_delegate());
+
+  char kFirstMessage[] = "Hello";
+  test::QuicTestMemSliceVector first_data(
+      {std::make_pair(kFirstMessage, strlen(kFirstMessage))});
+  first->Write(first_data.span(), kDefaultWriteParam);
+  RunTasks();
+
+  // Server should not receive any data until the client flushes writes.
+  EXPECT_FALSE(server_peer_->has_data());
+
+  QuartcStreamInterface* second =
+      server_peer_->CreateOutgoingStream(kDefaultStreamParam);
+  QuicStreamId second_id = second->stream_id();
+  second->SetDelegate(server_peer_->stream_delegate());
+
+  char kSecondMessage[] = "World";
+  test::QuicTestMemSliceVector second_data(
+      {std::make_pair(kSecondMessage, strlen(kSecondMessage))});
+  second->Write(second_data.span(), kDefaultWriteParam);
+  RunTasks();
+
+  ASSERT_TRUE(client_peer_->has_data());
+  EXPECT_EQ(client_peer_->data()[second_id], kSecondMessage);
+
+  // Server should receive data as well, since the client stops bundling to
+  // process incoming packets.
+  ASSERT_TRUE(server_peer_->has_data());
+  EXPECT_EQ(server_peer_->data()[first_id], kFirstMessage);
 }
 
 TEST_F(QuartcSessionTest, GetStats) {

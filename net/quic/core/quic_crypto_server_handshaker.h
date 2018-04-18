@@ -47,6 +47,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   void SetPreviousCachedNetworkParams(
       CachedNetworkParameters cached_network_params) override;
   bool ShouldSendExpectCTHeader() const override;
+  QuicLongHeaderType GetLongHeaderType(QuicStreamOffset offset) const override;
 
   // From QuicCryptoStream
   bool encryption_established() const override;

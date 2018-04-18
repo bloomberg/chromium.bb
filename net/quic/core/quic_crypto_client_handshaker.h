@@ -41,6 +41,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   int num_scup_messages_received() const override;
   bool WasChannelIDSent() const override;
   bool WasChannelIDSourceCallbackRun() const override;
+  QuicLongHeaderType GetLongHeaderType(QuicStreamOffset offset) const override;
   QuicString chlo_hash() const override;
   bool encryption_established() const override;
   bool handshake_confirmed() const override;

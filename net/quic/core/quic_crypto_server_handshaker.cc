@@ -346,6 +346,11 @@ bool QuicCryptoServerHandshaker::ShouldSendExpectCTHeader() const {
   return signed_config_->proof.send_expect_ct_header;
 }
 
+QuicLongHeaderType QuicCryptoServerHandshaker::GetLongHeaderType(
+    QuicStreamOffset /*offset*/) const {
+  return last_sent_handshake_message_tag() == kSREJ ? RETRY : HANDSHAKE;
+}
+
 bool QuicCryptoServerHandshaker::GetBase64SHA256ClientChannelID(
     QuicString* output) const {
   if (!encryption_established() ||

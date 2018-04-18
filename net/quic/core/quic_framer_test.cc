@@ -4009,15 +4009,30 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
       // version tag
       QUIC_VERSION_BYTES,
   };
+  unsigned char packet99[] = {
+      // type (long header)
+      0x80,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // version tag
+      0x00, 0x00, 0x00, 0x00,
+      // version tag
+      QUIC_VERSION_BYTES,
+  };
   // clang-format on
-
+  unsigned char* p = packet;
+  size_t p_size = QUIC_ARRAYSIZE(packet);
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    p = packet99;
+    p_size = QUIC_ARRAYSIZE(packet99);
+  }
   QuicConnectionId connection_id = kConnectionId;
   std::unique_ptr<QuicEncryptedPacket> data(
-      framer_.BuildVersionNegotiationPacket(connection_id, false,
-                                            SupportedVersions(GetParam())));
+      framer_.BuildVersionNegotiationPacket(
+          connection_id, framer_.transport_version() == QUIC_VERSION_99,
+          SupportedVersions(GetParam())));
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
-                                      data->length(), AsChars(packet),
-                                      QUIC_ARRAYSIZE(packet));
+                                      data->length(), AsChars(p), p_size);
 }
 
 TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
@@ -5549,6 +5564,27 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(packet),
                                       QUIC_ARRAYSIZE(packet));
+}
+
+TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {
+  // clang-format off
+  unsigned char packet[] = {
+    // type (short header, 1 byte packet number)
+    0x00,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // stateless reset token
+    0xB5, 0x69, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  };
+  // clang-format on
+  std::unique_ptr<QuicEncryptedPacket> data(
+      framer_.BuildIetfStatelessResetPacket(kConnectionId,
+                                            kTestStatelessResetToken));
+  ASSERT_TRUE(data != nullptr);
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, EncryptPacket) {

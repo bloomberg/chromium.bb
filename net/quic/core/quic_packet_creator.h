@@ -201,6 +201,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Sets transmission type of next constructed packets.
   void SetTransmissionType(TransmissionType type);
 
+  // Sets long header type of next constructed packets.
+  void SetLongHeaderType(QuicLongHeaderType type);
+
   void set_debug_delegate(DebugDelegate* debug_delegate) {
     debug_delegate_ = debug_delegate;
   }
@@ -296,6 +299,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Packet used to invoke OnSerializedPacket.
   SerializedPacket packet_;
+
+  // Long header type of next constructed packets.
+  QuicLongHeaderType long_header_type_;
 
   // Pending padding bytes to send. Pending padding bytes will be sent in next
   // packet(s) (after all other frames) if current constructed packet does not

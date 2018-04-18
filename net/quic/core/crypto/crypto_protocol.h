@@ -46,9 +46,6 @@ const QuicTag kC255 = TAG('C', '2', '5', '5');   // ECDH, Curve25519
 const QuicTag kAESG = TAG('A', 'E', 'S', 'G');   // AES128 + GCM-12
 const QuicTag kCC20 = TAG('C', 'C', '2', '0');   // ChaCha20 + Poly1305 RFC7539
 
-// Socket receive buffer
-const QuicTag kSRBF = TAG('S', 'R', 'B', 'F');   // Socket receive buffer
-
 // Congestion control feedback types
 const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');   // TCP cubic
 
@@ -142,8 +139,6 @@ const QuicTag kSSLR = TAG('S', 'S', 'L', 'R');   // Slow Start Large Reduction.
 const QuicTag kNPRR = TAG('N', 'P', 'R', 'R');   // Pace at unity instead of PRR
 const QuicTag k5RTO = TAG('5', 'R', 'T', 'O');   // Close connection on 5 RTOs
 const QuicTag k3RTO = TAG('3', 'R', 'T', 'O');   // Close connection on 3 RTOs
-const QuicTag kCTIM = TAG('C', 'T', 'I', 'M');   // Client timestamp in seconds
-                                                 // since UNIX epoch.
 const QuicTag kDHDT = TAG('D', 'H', 'D', 'T');   // Disable HPACK dynamic table.
 const QuicTag kCONH = TAG('C', 'O', 'N', 'H');   // Conservative Handshake
                                                  // Retransmissions.
@@ -199,8 +194,6 @@ const QuicTag kSCLS = TAG('S', 'C', 'L', 'S');   // Silently close on timeout
 const QuicTag kMSPC = TAG('M', 'S', 'P', 'C');   // Max streams per connection.
 const QuicTag kMIDS = TAG('M', 'I', 'D', 'S');   // Max incoming dynamic streams
 const QuicTag kIRTT = TAG('I', 'R', 'T', 'T');   // Estimated initial RTT in us.
-const QuicTag kSWND = TAG('S', 'W', 'N', 'D');   // Server's Initial congestion
-                                                 // window.
 const QuicTag kSNI  = TAG('S', 'N', 'I', '\0');  // Server name
                                                  // indication
 const QuicTag kPUBS = TAG('P', 'U', 'B', 'S');   // Public key values

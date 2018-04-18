@@ -392,8 +392,11 @@ QuicConfig::QuicConfig()
       client_connection_options_(kCLOP, PRESENCE_OPTIONAL),
       idle_network_timeout_seconds_(kICSL, PRESENCE_REQUIRED),
       silent_close_(kSCLS, PRESENCE_OPTIONAL),
+      do_not_use_mspc_(GetQuicReloadableFlag(quic_no_mspc)),
       max_streams_per_connection_(kMSPC, PRESENCE_OPTIONAL),
-      max_incoming_dynamic_streams_(kMIDS, PRESENCE_OPTIONAL),
+      max_incoming_dynamic_streams_(
+          kMIDS,
+          do_not_use_mspc_ ? PRESENCE_REQUIRED : PRESENCE_OPTIONAL),
       bytes_for_connection_id_(kTCID, PRESENCE_OPTIONAL),
       initial_round_trip_time_us_(kIRTT, PRESENCE_OPTIONAL),
       initial_stream_flow_control_window_bytes_(kSFCW, PRESENCE_OPTIONAL),
@@ -402,6 +405,9 @@ QuicConfig::QuicConfig()
       alternate_server_address_(kASAD, PRESENCE_OPTIONAL),
       support_max_header_list_size_(kSMHL, PRESENCE_OPTIONAL),
       stateless_reset_token_(kSRST, PRESENCE_OPTIONAL) {
+  if (do_not_use_mspc_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_no_mspc);
+  }
   SetDefaults();
 }
 

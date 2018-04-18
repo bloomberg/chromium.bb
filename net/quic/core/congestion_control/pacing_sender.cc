@@ -4,6 +4,7 @@
 
 #include "net/quic/core/congestion_control/pacing_sender.h"
 
+#include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
 
 namespace net {
@@ -26,7 +27,10 @@ PacingSender::PacingSender()
       last_delayed_packet_sent_time_(QuicTime::Zero()),
       ideal_next_packet_send_time_(QuicTime::Zero()),
       was_last_send_delayed_(false),
-      initial_burst_size_(kInitialUnpacedBurst) {}
+      initial_burst_size_(kInitialUnpacedBurst),
+      pacing_limited_(false),
+      is_simplified_pacing_(
+          GetQuicReloadableFlag(quic_simplify_pacing_sender)) {}
 
 PacingSender::~PacingSender() {}
 
@@ -75,12 +79,26 @@ void PacingSender::OnPacketSent(
     was_last_send_delayed_ = false;
     last_delayed_packet_sent_time_ = QuicTime::Zero();
     ideal_next_packet_send_time_ = QuicTime::Zero();
+    pacing_limited_ = false;
     return;
   }
   // The next packet should be sent as soon as the current packet has been
   // transferred.  PacingRate is based on bytes in flight including this packet.
   QuicTime::Delta delay =
       PacingRate(bytes_in_flight + bytes).TransferTime(bytes);
+  if (is_simplified_pacing_) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_simplify_pacing_sender, 1, 2);
+    if (pacing_limited_) {
+      // Make up for lost time since pacing throttles the sending.
+      ideal_next_packet_send_time_ = ideal_next_packet_send_time_ + delay;
+    } else {
+      ideal_next_packet_send_time_ =
+          std::max(ideal_next_packet_send_time_ + delay, sent_time + delay);
+    }
+    // Stop making up for lost time if underlying sender prevents sending.
+    pacing_limited_ = sender_->CanSend(bytes_in_flight + bytes);
+    return;
+  }
   // If the last send was delayed, and the alarm took a long time to get
   // invoked, allow the connection to make up for lost time.
   if (was_last_send_delayed_) {
@@ -107,6 +125,12 @@ void PacingSender::OnPacketSent(
   }
 }
 
+void PacingSender::OnApplicationLimited() {
+  DCHECK(is_simplified_pacing_);
+  // The send is application limited, stop making up for lost time.
+  pacing_limited_ = false;
+}
+
 QuicTime::Delta PacingSender::TimeUntilSend(QuicTime now,
                                             QuicByteCount bytes_in_flight) {
   DCHECK(sender_ != nullptr);
@@ -125,7 +149,9 @@ QuicTime::Delta PacingSender::TimeUntilSend(QuicTime now,
   if (ideal_next_packet_send_time_ > now + kAlarmGranularity) {
     QUIC_DVLOG(1) << "Delaying packet: "
                   << (ideal_next_packet_send_time_ - now).ToMicroseconds();
-    was_last_send_delayed_ = true;
+    if (!is_simplified_pacing_) {
+      was_last_send_delayed_ = true;
+    }
     return ideal_next_packet_send_time_ - now;
   }
 

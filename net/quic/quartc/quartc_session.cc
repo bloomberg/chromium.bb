@@ -97,6 +97,7 @@ class InsecureProofVerifier : public ProofVerifier {
     return QUIC_SUCCESS;
   }
 };
+
 }  // namespace
 
 QuicConnectionId QuartcCryptoServerStreamHelper::GenerateConnectionIdForReject(
@@ -109,6 +110,58 @@ bool QuartcCryptoServerStreamHelper::CanAcceptClientHello(
     const QuicSocketAddress& self_address,
     string* error_details) const {
   return true;
+}
+
+QuartcSessionVisitorAdapter::~QuartcSessionVisitorAdapter() {}
+
+QuartcSessionVisitorAdapter::QuartcSessionVisitorAdapter() {}
+
+void QuartcSessionVisitorAdapter::OnPacketSent(
+    const SerializedPacket& serialized_packet,
+    QuicPacketNumber original_packet_number,
+    TransmissionType transmission_type,
+    QuicTime sent_time) {
+  for (QuartcSessionVisitor* visitor : visitors_) {
+    visitor->OnPacketSent(serialized_packet, original_packet_number,
+                          transmission_type, sent_time);
+  }
+}
+
+void QuartcSessionVisitorAdapter::OnIncomingAck(
+    const QuicAckFrame& ack_frame,
+    QuicTime ack_receive_time,
+    QuicPacketNumber largest_observed,
+    bool rtt_updated,
+    QuicPacketNumber least_unacked_sent_packet) {
+  for (QuartcSessionVisitor* visitor : visitors_) {
+    visitor->OnIncomingAck(ack_frame, ack_receive_time, largest_observed,
+                           rtt_updated, least_unacked_sent_packet);
+  }
+}
+
+void QuartcSessionVisitorAdapter::OnPacketLoss(
+    QuicPacketNumber lost_packet_number,
+    TransmissionType transmission_type,
+    QuicTime detection_time) {
+  for (QuartcSessionVisitor* visitor : visitors_) {
+    visitor->OnPacketLoss(lost_packet_number, transmission_type,
+                          detection_time);
+  }
+}
+
+void QuartcSessionVisitorAdapter::OnWindowUpdateFrame(
+    const QuicWindowUpdateFrame& frame,
+    const QuicTime& receive_time) {
+  for (QuartcSessionVisitor* visitor : visitors_) {
+    visitor->OnWindowUpdateFrame(frame, receive_time);
+  }
+}
+
+void QuartcSessionVisitorAdapter::OnSuccessfulVersionNegotiation(
+    const ParsedQuicVersion& version) {
+  for (QuartcSessionVisitor* visitor : visitors_) {
+    visitor->OnSuccessfulVersionNegotiation(version);
+  }
 }
 
 QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
@@ -284,9 +337,23 @@ void QuartcSession::SetDelegate(
   DCHECK(session_delegate_);
 }
 
-void QuartcSession::SetSessionVisitor(QuartcSessionVisitor* debug_visitor) {
-  debug_visitor->SetQuicConnection(connection_.get());
-  connection_->set_debug_visitor(debug_visitor->GetConnectionVisitor());
+void QuartcSession::AddSessionVisitor(QuartcSessionVisitor* visitor) {
+  // If there aren't any visitors yet, install the adapter as a connection debug
+  // visitor to delegate any future calls.
+  if (session_visitor_adapter_.visitors().empty()) {
+    connection_->set_debug_visitor(&session_visitor_adapter_);
+  }
+  session_visitor_adapter_.mutable_visitors().insert(visitor);
+  visitor->OnQuicConnection(connection_.get());
+}
+
+void QuartcSession::RemoveSessionVisitor(QuartcSessionVisitor* visitor) {
+  session_visitor_adapter_.mutable_visitors().erase(visitor);
+  // If the last visitor is removed, uninstall the connection debug visitor to
+  // avoid delegating debug calls unnecessarily.
+  if (session_visitor_adapter_.visitors().empty()) {
+    connection_->set_debug_visitor(nullptr);
+  }
 }
 
 void QuartcSession::OnTransportCanWrite() {
@@ -297,10 +364,27 @@ void QuartcSession::OnTransportCanWrite() {
 }
 
 bool QuartcSession::OnTransportReceived(const char* data, size_t data_len) {
+  // If the session is currently bundling packets, it must stop and flush writes
+  // before processing incoming data.  QUIC expects pending packets to be
+  // written before receiving data, because received data may change the
+  // contents of ACK frames in pending packets.
+  FlushWrites();
+
   QuicReceivedPacket packet(data, data_len, clock_->Now());
   ProcessUdpPacket(connection()->self_address(), connection()->peer_address(),
                    packet);
   return true;
+}
+
+void QuartcSession::BundleWrites() {
+  if (!packet_flusher_) {
+    packet_flusher_ = QuicMakeUnique<QuicConnection::ScopedPacketFlusher>(
+        connection_.get(), QuicConnection::SEND_ACK_IF_QUEUED);
+  }
+}
+
+void QuartcSession::FlushWrites() {
+  packet_flusher_ = nullptr;
 }
 
 void QuartcSession::OnProofValid(

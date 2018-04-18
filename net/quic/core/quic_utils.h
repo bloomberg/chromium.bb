@@ -57,6 +57,9 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // Returns SentPacketState as a char*.
   static const char* SentPacketStateToString(SentPacketState state);
 
+  // Returns QuicLongHeaderType as a char*.
+  static const char* QuicLongHeaderTypetoString(QuicLongHeaderType type);
+
   // Determines and returns change type of address change from |old_address| to
   // |new_address|.
   static AddressChangeType DetermineAddressChangeType(

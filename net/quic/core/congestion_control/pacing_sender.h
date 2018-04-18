@@ -57,9 +57,15 @@ class QUIC_EXPORT_PRIVATE PacingSender {
                     QuicByteCount bytes,
                     HasRetransmittableData has_retransmittable_data);
 
+  // Called when application throttles the sending, so that pacing sender stops
+  // making up for lost time.
+  void OnApplicationLimited();
+
   QuicTime::Delta TimeUntilSend(QuicTime now, QuicByteCount bytes_in_flight);
 
   QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const;
+
+  bool is_simplified_pacing() const { return is_simplified_pacing_; }
 
  private:
   friend class test::QuicSentPacketManagerPeer;
@@ -72,10 +78,19 @@ class QUIC_EXPORT_PRIVATE PacingSender {
   // Number of unpaced packets to be sent before packets are delayed.
   uint32_t burst_tokens_;
   // Send time of the last packet considered delayed.
+  // TODO(fayang): Remove last_delayed_packet_sent_time_ and
+  // was_last_send_delayed_ when deprecating
+  // quic_reloadable_flag_quic_simplify_pacing_sender.
   QuicTime last_delayed_packet_sent_time_;
   QuicTime ideal_next_packet_send_time_;  // When can the next packet be sent.
   bool was_last_send_delayed_;  // True when the last send was delayed.
   uint32_t initial_burst_size_;
+
+  // Indicates whether pacing throttles the sending. If true, make up for lost
+  // time.
+  bool pacing_limited_;
+  // Latched value of quic_reloadable_flag_quic_simplify_pacing_sender.
+  const bool is_simplified_pacing_;
 
   DISALLOW_COPY_AND_ASSIGN(PacingSender);
 };

@@ -186,6 +186,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // Set transmission type of next constructed packets.
   void SetTransmissionType(TransmissionType type);
 
+  // Set long header type of next constructed packets.
+  void SetLongHeaderType(QuicLongHeaderType type);
+
   // Allow/Disallow setting transmission type of next constructed packets.
   void SetCanSetTransmissionType(bool can_set_transmission_type);
 

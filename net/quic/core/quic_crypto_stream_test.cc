@@ -44,6 +44,11 @@ class MockQuicCryptoStream : public QuicCryptoStream,
 
   std::vector<CryptoHandshakeMessage>* messages() { return &messages_; }
 
+  QuicLongHeaderType GetLongHeaderType(
+      QuicStreamOffset /*offset*/) const override {
+    return HANDSHAKE;
+  }
+
   bool encryption_established() const override { return false; }
   bool handshake_confirmed() const override { return false; }
 

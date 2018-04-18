@@ -407,6 +407,14 @@ QuicConsumedData QuicSession::WritevData(QuicStream* stream,
     // up write blocked until OnCanWrite is next called.
     return QuicConsumedData(0, false);
   }
+  if (connection_->encryption_level() != ENCRYPTION_FORWARD_SECURE) {
+    // Set the next sending packets' long header type.
+    QuicLongHeaderType type = ZERO_RTT_PROTECTED;
+    if (id == kCryptoStreamId) {
+      type = GetCryptoStream()->GetLongHeaderType(offset);
+    }
+    connection_->SetLongHeaderType(type);
+  }
   QuicConsumedData data =
       connection_->SendStreamData(id, write_length, offset, state);
   if (offset >= stream->stream_bytes_written()) {
@@ -561,7 +569,8 @@ void QuicSession::OnConfigNegotiated() {
   connection_->SetFromConfig(config_);
 
   uint32_t max_streams = 0;
-  if (config_.HasReceivedMaxIncomingDynamicStreams()) {
+  if (config_.do_not_use_mspc() ||
+      config_.HasReceivedMaxIncomingDynamicStreams()) {
     max_streams = config_.ReceivedMaxIncomingDynamicStreams();
   } else {
     max_streams = config_.MaxStreamsPerConnection();

@@ -26,6 +26,11 @@ class QUIC_EXPORT_PRIVATE QuicCryptoHandshaker
 
   CryptoMessageParser* crypto_message_parser();
 
+ protected:
+  QuicTag last_sent_handshake_message_tag() const {
+    return last_sent_handshake_message_tag_;
+  }
+
  private:
   QuicSession* session() { return session_; }
 
@@ -33,6 +38,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoHandshaker
   QuicSession* session_;
 
   CryptoFramer crypto_framer_;
+
+  // Records last sent crypto handshake message tag.
+  QuicTag last_sent_handshake_message_tag_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoHandshaker);
 };

@@ -128,6 +128,12 @@ bool TlsServerHandshaker::ShouldSendExpectCTHeader() const {
   return false;
 }
 
+QuicLongHeaderType TlsServerHandshaker::GetLongHeaderType(
+    QuicStreamOffset /*offset*/) const {
+  // TODO(fayang): Returns the right value when actually using TLS handshaker.
+  return HANDSHAKE;
+}
+
 bool TlsServerHandshaker::encryption_established() const {
   return encryption_established_;
 }

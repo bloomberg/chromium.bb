@@ -102,6 +102,8 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
   CryptoHandshakeMessage peer_hello;
   peer_hello.SetValue(kICSL,
                       static_cast<uint32_t>(kMaximumIdleTimeoutSecs - 1));
+  peer_hello.SetValue(kMIDS,
+                      static_cast<uint32_t>(kDefaultMaxStreamsPerConnection));
   QuicConfig config;
   QuicErrorCode error_code = config.ProcessPeerHello(
       peer_hello, perspective == Perspective::IS_CLIENT ? SERVER : CLIENT,

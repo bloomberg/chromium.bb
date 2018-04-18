@@ -66,19 +66,12 @@ std::vector<uint8_t> CryptoUtils::QhkdfExpand(
   return out;
 }
 
-template <class QuicCrypter>
-void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
-                              const std::vector<uint8_t>& pp_secret,
-                              QuicCrypter* crypter) {
-  std::vector<uint8_t> key =
-      CryptoUtils::QhkdfExpand(prf, pp_secret, "key", crypter->GetKeySize());
-  std::vector<uint8_t> iv =
-      CryptoUtils::QhkdfExpand(prf, pp_secret, "iv", crypter->GetIVSize());
-  crypter->SetKey(
-      QuicStringPiece(reinterpret_cast<char*>(key.data()), key.size()));
-  crypter->SetIV(
-      QuicStringPiece(reinterpret_cast<char*>(iv.data()), iv.size()));
-}
+template void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
+                                       const std::vector<uint8_t>& pp_secret,
+                                       QuicEncrypter*);
+template void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
+                                       const std::vector<uint8_t>& pp_secret,
+                                       QuicDecrypter*);
 
 namespace {
 

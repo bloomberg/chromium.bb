@@ -128,6 +128,9 @@ class StatelessConnectionTerminator {
     QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame;
     frame->error_code = error_code;
     frame->error_details = error_details;
+    // TODO(fayang): Use the right long header type for conneciton close sent by
+    // dispatcher.
+    creator_.SetLongHeaderType(RETRY);
     if (!creator_.AddSavedFrame(QuicFrame(frame))) {
       QUIC_BUG << "Unable to add frame to an empty packet";
       delete frame;
@@ -148,6 +151,7 @@ class StatelessConnectionTerminator {
     collector_.SaveStatelessRejectFrameData(reject);
     while (offset < reject.length()) {
       QuicFrame frame;
+      creator_.SetLongHeaderType(RETRY);
       if (!creator_.ConsumeData(kCryptoStreamId, reject.length(), offset,
                                 offset,
                                 /*fin=*/false,

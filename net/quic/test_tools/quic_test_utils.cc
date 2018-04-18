@@ -23,6 +23,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
+#include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/spdy/core/spdy_frame_builder.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
@@ -426,6 +427,11 @@ MockQuicCryptoStream::MockQuicCryptoStream(QuicSession* session)
     : QuicCryptoStream(session), params_(new QuicCryptoNegotiatedParameters) {}
 
 MockQuicCryptoStream::~MockQuicCryptoStream() {}
+
+QuicLongHeaderType MockQuicCryptoStream::GetLongHeaderType(
+    QuicStreamOffset /*offset*/) const {
+  return HANDSHAKE;
+}
 
 bool MockQuicCryptoStream::encryption_established() const {
   return false;
@@ -846,6 +852,8 @@ QuicConfig DefaultQuicConfig() {
       kInitialStreamFlowControlWindowForTest);
   config.SetInitialSessionFlowControlWindowToSend(
       kInitialSessionFlowControlWindowForTest);
+  QuicConfigPeer::SetReceivedMaxIncomingDynamicStreams(
+      &config, kDefaultMaxStreamsPerConnection);
   return config;
 }
 

@@ -28,6 +28,43 @@ class QuartcCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
                             std::string* error_details) const override;
 };
 
+// Adapts |QuartcSessionVisitor|s to the |QuicConnectionDebugVisitor| interface.
+// Keeps a set of |QuartcSessionVisitor|s and forwards QUIC debug callbacks to
+// each visitor in the set.
+class QuartcSessionVisitorAdapter : public QuicConnectionDebugVisitor {
+ public:
+  QuartcSessionVisitorAdapter();
+  ~QuartcSessionVisitorAdapter() override;
+
+  void OnPacketSent(const SerializedPacket& serialized_packet,
+                    QuicPacketNumber original_packet_number,
+                    TransmissionType transmission_type,
+                    QuicTime sent_time) override;
+  void OnIncomingAck(const QuicAckFrame& ack_frame,
+                     QuicTime ack_receive_time,
+                     QuicPacketNumber largest_observed,
+                     bool rtt_updated,
+                     QuicPacketNumber least_unacked_sent_packet) override;
+  void OnPacketLoss(QuicPacketNumber lost_packet_number,
+                    TransmissionType transmission_type,
+                    QuicTime detection_time) override;
+  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
+                           const QuicTime& receive_time) override;
+  void OnSuccessfulVersionNegotiation(
+      const ParsedQuicVersion& version) override;
+
+  const std::set<QuartcSessionVisitor*>& visitors() const { return visitors_; }
+  std::set<QuartcSessionVisitor*>& mutable_visitors() { return visitors_; }
+
+  // Disallow copy and assign.
+  QuartcSessionVisitorAdapter(const QuartcSessionVisitorAdapter&) = delete;
+  QuartcSessionVisitorAdapter operator=(const QuartcSessionVisitorAdapter&) =
+      delete;
+
+ private:
+  std::set<QuartcSessionVisitor*> visitors_;
+};
+
 class QUIC_EXPORT_PRIVATE QuartcSession
     : public QuicSession,
       public QuartcSessionInterface,
@@ -80,12 +117,16 @@ class QUIC_EXPORT_PRIVATE QuartcSession
 
   void SetDelegate(QuartcSessionInterface::Delegate* session_delegate) override;
 
-  void SetSessionVisitor(QuartcSessionVisitor* debug_visitor) override;
+  void AddSessionVisitor(QuartcSessionVisitor* visitor) override;
+  void RemoveSessionVisitor(QuartcSessionVisitor* visitor) override;
 
   void OnTransportCanWrite() override;
 
   // Decrypts an incoming QUIC packet to a data stream.
   bool OnTransportReceived(const char* data, size_t data_len) override;
+
+  void BundleWrites() override;
+  void FlushWrites() override;
 
   // ProofHandler overrides.
   void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
@@ -135,6 +176,12 @@ class QUIC_EXPORT_PRIVATE QuartcSession
   std::unique_ptr<QuicCryptoClientConfig> quic_crypto_client_config_;
   // Config for QUIC crypto server stream, used by the server.
   std::unique_ptr<QuicCryptoServerConfig> quic_crypto_server_config_;
+
+  // Holds pointers to QuartcSessionVisitors and adapts them to the
+  // QuicConnectionDebugVisitor interface.
+  QuartcSessionVisitorAdapter session_visitor_adapter_;
+
+  std::unique_ptr<QuicConnection::ScopedPacketFlusher> packet_flusher_;
 
   DISALLOW_COPY_AND_ASSIGN(QuartcSession);
 };

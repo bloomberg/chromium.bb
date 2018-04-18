@@ -87,7 +87,16 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   template <class QuicCrypter>
   static void SetKeyAndIV(const EVP_MD* prf,
                           const std::vector<uint8_t>& pp_secret,
-                          QuicCrypter* crypter);
+                          QuicCrypter* crypter) {
+    std::vector<uint8_t> key =
+        CryptoUtils::QhkdfExpand(prf, pp_secret, "key", crypter->GetKeySize());
+    std::vector<uint8_t> iv =
+        CryptoUtils::QhkdfExpand(prf, pp_secret, "iv", crypter->GetIVSize());
+    crypter->SetKey(
+        QuicStringPiece(reinterpret_cast<char*>(key.data()), key.size()));
+    crypter->SetIV(
+        QuicStringPiece(reinterpret_cast<char*>(iv.data()), iv.size()));
+  }
 
   // QUIC encrypts TLS handshake messages with a version-specific key (to
   // prevent network observers that are not aware of that QUIC version from
