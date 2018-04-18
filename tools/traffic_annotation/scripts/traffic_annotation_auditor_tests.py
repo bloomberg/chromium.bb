@@ -91,11 +91,14 @@ class TrafficAnnotationTestsChecker():
     _, stderr_text, return_code = self.tools.RunAuditor(
         args + ["--annotations-file=%s" % temp_filename])
 
-    annotations = None if (return_code or stderr_text) \
-                       else open(temp_filename).read()
-    os.remove(temp_filename)
+    if os.path.exists(temp_filename):
+      annotations = None if (return_code or stderr_text) \
+                         else open(temp_filename).read()
+      os.remove(temp_filename)
+    else:
+      annotations = None
 
-    if not return_code:
+    if annotations:
       print("Test PASSED.")
     else:
       print("Test FAILED.\n%s" % stderr_text)
