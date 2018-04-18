@@ -38,10 +38,12 @@ import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
+import org.chromium.content.browser.test.util.TestWebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests related to displaying contextual suggestions in a bottom sheet.
@@ -175,17 +177,25 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
-    public void testOpenSuggestion() {
+    public void testOpenSuggestion() throws InterruptedException, TimeoutException {
         forceShowSuggestions();
         openSheet();
 
         SnippetArticleViewHolder holder = getFirstSuggestionViewHolder();
         String expectedUrl = holder.getUrl();
 
+        TestWebContentsObserver webContentsObserver = new TestWebContentsObserver(
+                mActivityTestRule.getActivity().getActivityTab().getWebContents());
+
+        int callCount = webContentsObserver.getOnPageStartedHelper().getCallCount();
+
         ThreadUtils.runOnUiThreadBlocking(() -> {
             holder.itemView.performClick();
-            mBottomSheet.endAnimations();
         });
+
+        webContentsObserver.getOnPageStartedHelper().waitForCallback(callCount);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mBottomSheet.endAnimations());
 
         assertEquals("Tab URL should match snippet URL", expectedUrl,
                 mActivityTestRule.getActivity().getActivityTab().getUrl());

@@ -20,7 +20,9 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.FadingBackgroundView.FadingViewObserver;
@@ -108,6 +110,22 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
                 clearRequestsAndHide();
             }
         };
+
+        tabModelSelector.addObserver(new TabModelSelectorObserver() {
+            @Override
+            public void onChange() {}
+
+            @Override
+            public void onNewTabCreated(Tab tab) {}
+
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                clearRequestsAndHide();
+            }
+
+            @Override
+            public void onTabStateInitialized() {}
+        });
 
         // If the layout changes (to tab switcher, toolbar swipe, etc.) hide the sheet.
         mLayoutManager.addSceneChangeObserver(new SceneChangeObserver() {
