@@ -723,8 +723,13 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   if (!GetDrawingBuffer())
     return nullptr;
-  return ImageBitmap::Create(
-      GetDrawingBuffer()->TransferToStaticBitmapImage(nullptr));
+  std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
+  scoped_refptr<StaticBitmapImage> image =
+      GetDrawingBuffer()->TransferToStaticBitmapImage(&image_release_callback);
+  GetDrawingBuffer()->SwapPreviousFrameCallback(
+      std::move(image_release_callback));
+
+  return ImageBitmap::Create(image);
 }
 
 ScriptPromise WebGLRenderingContextBase::commit(
