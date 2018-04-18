@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Laissez libre cours à votre créativité avec votre webcam.",
+    "message": "Prenez des photos et enregistrez des vidéos avec votre appareil photo.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Impossible d'enregistrer la vidéo.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "Aucune donnée enregistrée.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -130,7 +134,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "Votre ordinateur est peut-être équipé d'une carte graphique incompatible ou de pilotes obsolètes.",
+    "message": "Votre ordinateur est peut-être équipé d'une carte graphique non compatible ou de pilotes obsolètes.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -173,9 +177,13 @@
     "message": "Prendre une photo",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Enregistrer une vidéo",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Commencer l'enregistrement",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Arrêter l'enregistrement",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Activer/Désactiver le minuteur",

@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Kumuha ng mga nakatutuwang larawan gamit ang iyong web camera.",
+    "message": "Kumuha ng mga larawan at mag-record ng mga video gamit ang iyong camera.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -12,7 +12,7 @@
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
-    "message": "Big Eyes",
+    "message": "Malalaking Mata",
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Hindi makapag-record ng video.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "Walang na-record.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -173,9 +177,13 @@
     "message": "Kumuha ng larawan",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Mag-record ng video",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Magsimulang mag-record",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Ihinto ang pag-record",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "I-toggle ang timer",
@@ -186,7 +194,7 @@
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
-    "message": "I-toggle ang Kamera",
+    "message": "I-toggle ang camera",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "toggleRecordOnButton": {

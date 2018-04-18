@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Chụp những bức ảnh tuyệt đẹp bằng webcam.",
+    "message": "Chụp ảnh và quay video bằng máy ảnh của bạn.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Rạp chiếu phim",
+    "message": "Điện ảnh",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Không thể quay video.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "Chưa ghi dữ liệu nào.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -138,7 +142,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Chuyển đổi bộ lọc",
+    "message": "Bật/tắt bộ lọc",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -173,16 +177,20 @@
     "message": "Chụp ảnh",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Quay video",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Bắt đầu ghi",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Dừng ghi",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
-    "message": "Chuyển đổi bộ hẹn giờ",
+    "message": "Bật/tắt bộ tính giờ",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Chuyển đổi tính năng chụp nhiều ảnh",
+    "message": "Bật/tắt chế độ chụp nhiều ảnh",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
@@ -198,39 +206,39 @@
     "description": "Label for the button to switch to take picture mode."
   },
   "recordVideoActiveMessage": {
-    "message": "Quay video đang hoạt động",
+    "message": "Đang bật chế độ quay video",
     "description": "Message shown when activating the video recording feature."
   },
   "takePictureActiveMessage": {
-    "message": "Chụp ảnh đang hoạt động",
+    "message": "Đang bật chế độ chụp ảnh",
     "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
-    "message": "Chuyển đổi phản chiếu",
+    "message": "Bật/tắt phản chiếu",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Bộ hẹn giờ đang hoạt động",
+    "message": "Đang bật bộ hẹn giờ",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Bộ hẹn giờ không hoạt động",
+    "message": "Đã tắt bộ hẹn giờ",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Tính năng chụp nhiều ảnh đang hoạt động",
+    "message": "Đang bật chế độ chụp nhiều ảnh",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Tính năng chụp nhiều ảnh không hoạt động",
+    "message": "Đã tắt chế độ chụp nhiều ảnh",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Phản chiếu đang hoạt động",
+    "message": "Đang bật chế độ phản chiếu",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Phản chiếu không hoạt động",
+    "message": "Đã tắt chế độ phản chiếu",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {

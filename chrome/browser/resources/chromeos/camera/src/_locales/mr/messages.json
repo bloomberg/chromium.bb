@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "तुमच्‍या वेब कॅमेऱ्यासह विलक्षण फोटो घ्या.",
+    "message": "तुमच्‍या कॅमेर्‍याने फोटो घ्‍या आणि व्हिडिओ रेकॉर्ड करा.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "व्हिडिओ रेकॉर्ड करता आला नाही.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "काहीही रेकॉर्ड केले नाही.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -130,7 +134,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "तुमच्‍या कॉंप्‍युटरमध्‍ये विसंगत ग्राफिक कार्ड किंवा जुने ड्राइव्हर असू शकतात.",
+    "message": "तुमच्‍या कॉंप्‍युटरमध्‍ये विसंगत ग्राफिक कार्ड किंवा जुने ड्रायव्हर असू शकतात.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -173,9 +177,13 @@
     "message": "एक फोटो घ्या",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "व्हिडिओ रेकॉर्ड करा",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "रेकॉर्डिंग सुरू करा",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "रेकॉर्डिंग थांबवा",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "टाइमर टॉगल करा",
@@ -198,11 +206,11 @@
     "description": "Label for the button to switch to take picture mode."
   },
   "recordVideoActiveMessage": {
-    "message": "व्हिडिओ रेकॉर्ड करणे सक्रिय करा",
+    "message": "व्हिडिओ रेकॉर्ड करणे चालू करा",
     "description": "Message shown when activating the video recording feature."
   },
   "takePictureActiveMessage": {
-    "message": "फोटो घेणे सक्रिय करा",
+    "message": "फोटो घेणे चालू करा",
     "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
@@ -210,27 +218,27 @@
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "टाइमर सक्रिय करा",
+    "message": "टाइमर चालू करा",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "टाइमर निष्क्रिय करा",
+    "message": "टायमर बंद करा",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "मल्टि-शॉट सक्रिय करा",
+    "message": "मल्टि-शॉट चालू करा",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "मल्टि-शॉट निष्क्रिय करा",
+    "message": "मल्टि-शॉट बंद करा",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "मिररिंग सक्रिय करा",
+    "message": "मिररिंग चालू करा",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "मिररिंग निष्क्रिय करा",
+    "message": "मिररिंग बंद करा",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {

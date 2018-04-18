@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Ota hassuja kuvia web-kamerallasi.",
+    "message": "Ota kuvia ja kuvaa videoita kameralla.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,8 +121,12 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Videon kuvaaminen epäonnistui.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
-    "message": "Mitään ei tallennettu.",
+    "message": "Mitään ei kuvattu.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
@@ -173,9 +177,13 @@
     "message": "Ota kuva",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Kuvaa video",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Aloita kuvaaminen",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Lopeta kuvaaminen",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Ajastin päälle/pois",

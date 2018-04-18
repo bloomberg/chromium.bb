@@ -1,10 +1,10 @@
 {
   "name": {
-    "message": "Žiniatinklio kamera",
+    "message": "Fotoaparatas",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Fotografuokite šaunias nuotraukas naudodami žiniatinklio kamerą.",
+    "message": "Fotografuokite ir filmuokite naudodami fotoaparatą.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Kino teatras",
+    "message": "Kinas",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Nepavyko įrašyti vaizdo įrašo.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "Nieko neįrašyta.",
@@ -173,9 +177,13 @@
     "message": "Fotografuoti",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Įrašyti Video",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Pradėti įrašymą",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Sustabdyti įrašymą",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Perjungti laikmatį",
@@ -186,7 +194,7 @@
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
-    "message": "Kaitalioti „Kamera“",
+    "message": "Perjungti fotoaparatą",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "toggleRecordOnButton": {

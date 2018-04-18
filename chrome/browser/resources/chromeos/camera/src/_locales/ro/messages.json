@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Faceți fotografii trăsnite utilizând camera web.",
+    "message": "Fotografiază și înregistrează videoclipuri cu camera foto.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Vintage",
+    "message": "Aspect vechi",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Nu se poate înregistra videoclipul.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "Nu există nicio înregistrare.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -134,7 +138,7 @@
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
-    "message": "Deschideți galeria",
+    "message": "Accesați galeria",
     "description": "Label for the gallery button."
   },
   "filtersButton": {
@@ -173,9 +177,13 @@
     "message": "Fotografiați",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Înregistrați un videoclip",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Porniți înregistrarea",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Opriți înregistrarea",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Activați/dezactivați temporizatorul",
@@ -210,11 +218,11 @@
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Cronometru activ",
+    "message": "Temporizator activ",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Cronometru inactiv",
+    "message": "Temporizator inactiv",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {

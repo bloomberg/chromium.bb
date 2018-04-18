@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Ta galna bilder med webbkameran.",
+    "message": "Ta bilder och spela in video med kameran.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Biograf",
+    "message": "Bio",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -112,7 +112,7 @@
     "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Det går inte att spara $file$.",
+    "message": "Det gick inte att spara $file$.",
     "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Det gick inte att spela in video.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "Inget har spelats in.",
@@ -173,9 +177,13 @@
     "message": "Ta en bild",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Spela in video",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Börja spela in",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Sluta spela in",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Aktivera och inaktivera timer",

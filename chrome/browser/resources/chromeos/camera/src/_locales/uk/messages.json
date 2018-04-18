@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Робіть неймовірні фотографії за допомогою своєї веб-камери.",
+    "message": "Фотографуйте й записуйте відео камерою.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Не вдалося записати відео.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "Нічого не записано.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -173,9 +177,13 @@
     "message": "Сфотографувати",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Записати відео",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Почати запис",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Припинити запис",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Увімкнути/вимкнути таймер",

@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Rakam gambar aksi gila-gila dengan kamera web anda.",
+    "message": "Ambil gambar dan rakam video dengan kamera anda.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -92,7 +92,7 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Hantu",
+    "message": "Bebayang",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Tidak dapat merakam video.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "Tiada apa-apa yang direkodkan.",
@@ -173,9 +177,13 @@
     "message": "Ambil gambar",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Rakam video",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Mula merakam",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Hentikan rakaman",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Togol pemasa",

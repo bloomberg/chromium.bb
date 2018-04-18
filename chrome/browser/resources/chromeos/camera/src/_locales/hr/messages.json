@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Snimajte lude slike svojom web-kamerom.",
+    "message": "Snimajte slike i videozapise svojim fotoaparatom.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Snimanje videozapisa nije uspjelo.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "Nije snimljeno ništa.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -130,7 +134,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "Vaše računalo možda ima nekompatibilnu grafičku karticu ili stare upravljačke programe.",
+    "message": "Grafička kartica na vašem računalu možda nije kompatibilna ili su upravljački programi zastarjeli.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -173,9 +177,13 @@
     "message": "Snimi sliku",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Snimi videozapis",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Započni snimanje",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Zaustavi snimanje",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Prikaži/sakrij odbrojavanje",
@@ -218,11 +226,11 @@
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Višestruko je snimanje aktivno",
+    "message": "Uzastopno je snimanje aktivno",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Višestruko snimanje nije aktivno",
+    "message": "Uzastopno snimanje nije aktivno",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {

@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Ta sprø bilder med nettkameraet ditt.",
+    "message": "Ta bilder og ta opp videoer med kameraet ditt.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Kan ikke ta opp video.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "Ingenting er spilt inn.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -173,9 +177,13 @@
     "message": "Ta et bilde",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Spill inn video",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Start opptak",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Stopp opptak",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Slå tidtakeren av eller på",

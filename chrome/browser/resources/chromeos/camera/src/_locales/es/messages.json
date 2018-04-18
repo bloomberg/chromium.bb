@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Haz fotos alocadas con tu cámara web.",
+    "message": "Haz fotos y graba vídeos con la cámara.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "No se ha podido grabar el vídeo.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "No se ha grabado nada.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -173,20 +177,24 @@
     "message": "Hacer una foto",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Grabar un vídeo",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Iniciar grabación",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Detener grabación",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
-    "message": "Alternar el temporizador",
+    "message": "Activar o desactivar el temporizador",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Alternar la opción de disparo múltiple",
+    "message": "Activar o desactivar opción de disparo múltiple",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
-    "message": "Alternar cámara",
+    "message": "Cambiar de cámara",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "toggleRecordOnButton": {
@@ -206,7 +214,7 @@
     "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
-    "message": "Alternar proyección",
+    "message": "Activar o desactivar proyección",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {

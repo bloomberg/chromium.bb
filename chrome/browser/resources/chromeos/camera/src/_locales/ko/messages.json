@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "웹 카메라로 멋진 사진을 찍으세요.",
+    "message": "카메라로 사진을 찍고 동영상을 녹화하세요.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "동영상을 녹화할 수 없습니다.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "녹화된 동영상이 없습니다.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -173,9 +177,13 @@
     "message": "사진 촬영",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "동영상 녹화",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "녹화 시작",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "녹화 중지",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "타이머 전환",

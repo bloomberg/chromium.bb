@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Web kameranızla çılgın fotoğraflar çekin.",
+    "message": "Kameranızla fotoğraf çekin ve video kaydedin.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Tilt-shift",
+    "message": "Minyatürleştirme",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Video kaydedilemedi.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "Hiçbir şey kaydedilemedi.",
@@ -173,9 +177,13 @@
     "message": "Resim çek",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Video kaydet",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Kaydı başlat",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Kaydı durdur",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Zamanlayıcıyı aç/kapat",

@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "ওয়েব ক্যামেরা ব্যবহার করে মজাদার ছবি তুলুন।",
+    "message": "আপানর ক্যামেরা ব্যবহার করে ছবি তুলুন এবং ভিডিও রেকর্ড করুন।",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -100,7 +100,7 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "ক্যামেরা সঠিকভাবে কানেক্ট আছে কিনা তা পরীক্ষা করুন।",
+    "message": "ক্যামেরা সঠিকভাবে কানেক্ট করা আছে কিনা পরীক্ষা করুন।",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGalleryLoadFailed": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "ভিডিও রেকর্ড করা যায়নি।",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "কিছুই রেকর্ড করা হয়নি।",
@@ -173,9 +177,13 @@
     "message": "একটি ছবি তুলুন",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "ভিডিও রেকর্ড করুন",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "রেকর্ডিং শুরু করুন",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "রেকর্ডিং বন্ধ করুন",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "টাইমার টগল করুন",

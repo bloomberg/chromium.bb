@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Nehmen Sie witzige und ausgefallene Bilder mit Ihrer Webcam auf.",
+    "message": "Nehmen Sie Fotos und Videos mit Ihrer Kamera auf.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -92,7 +92,7 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Gespenst",
+    "message": "Geist",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Video kann nicht aufgenommen werden.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "Keine Aufzeichnung.",
@@ -173,9 +177,13 @@
     "message": "Foto aufnehmen",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
+  "recordVideoStartButton": {
     "message": "Video aufnehmen",
-    "description": "Label for the red video recording button."
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Videoaufnahme beenden",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Timer an/aus",

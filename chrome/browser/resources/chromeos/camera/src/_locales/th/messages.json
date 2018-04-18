@@ -1,10 +1,10 @@
 {
   "name": {
-    "message": "กล้องถ่ายรูป",
+    "message": "กล้อง",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "ถ่ายภาพสนุกๆ ด้วยเว็บแคมของคุณ",
+    "message": "ถ่ายภาพและบันทึกวิดีโอด้วยกล้อง",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "โรงภาพยนตร์",
+    "message": "ภาพยนตร์",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -96,7 +96,7 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "กล้องของคุณยังใช้งานไม่ได้ในขณะนี้",
+    "message": "กล้องยังใช้งานไม่ได้ในขณะนี้",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "บันทึกวิดีโอไม่ได้",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "ไม่ได้บันทึกรายการใดๆ",
@@ -173,9 +177,13 @@
     "message": "ถ่ายภาพ",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "บันทึกวิดีโอ",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "เริ่มบันทึก",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "หยุดบันทึก",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "สลับเปิด/ปิดตัวจับเวลา",
