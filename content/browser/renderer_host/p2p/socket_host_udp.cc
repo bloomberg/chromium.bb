@@ -317,7 +317,7 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
       static_cast<net::DiffServCodePoint>(packet.packet_options.dscp);
   if (dscp != net::DSCP_NO_CHANGE && last_dscp_ != dscp &&
       last_dscp_ != net::DSCP_NO_CHANGE) {
-    int result = socket_->SetDiffServCodePoint(dscp);
+    int result = SetSocketDiffServCodePointInternal(dscp);
     if (result == net::OK) {
       last_dscp_ = dscp;
     } else if (!IsTransientError(result) && last_dscp_ != net::DSCP_CS0) {
@@ -422,19 +422,29 @@ bool P2PSocketHostUdp::SetOption(P2PSocketOption option, int value) {
     DCHECK_EQ(state_, STATE_ERROR);
     return false;
   }
-
   switch (option) {
     case P2P_SOCKET_OPT_RCVBUF:
       return socket_->SetReceiveBufferSize(value) == net::OK;
     case P2P_SOCKET_OPT_SNDBUF:
       return socket_->SetSendBufferSize(value) == net::OK;
     case P2P_SOCKET_OPT_DSCP:
-      return (net::OK == socket_->SetDiffServCodePoint(
-          static_cast<net::DiffServCodePoint>(value))) ? true : false;
+      return net::OK == SetSocketDiffServCodePointInternal(
+                            static_cast<net::DiffServCodePoint>(value));
     default:
       NOTREACHED();
       return false;
   }
+}
+
+// TODO(crbug.com/812137): We don't call SetDiffServCodePoint for the Windows
+// UDP socket, because this is known to cause a hanging thread.
+int P2PSocketHostUdp::SetSocketDiffServCodePointInternal(
+    net::DiffServCodePoint dscp) {
+#if defined(OS_WIN)
+  return net::OK;
+#else
+  return socket_->SetDiffServCodePoint(dscp);
+#endif
 }
 
 // static
