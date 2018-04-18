@@ -98,13 +98,27 @@ config("libgvr_config") {
   include_dirs = [ "src/libraries/headers/" ]
 }
 
-source_set("gvr_shim") {
+component("gvr_shim") {
+  libs = [
+    "android",
+    "log",
+  ]
   if (enable_chrome_android_internal && !is_official_build) {
     deps = [
       "//clank/third_party/gvr_shim",
     ]
   } else {
-    libs =
+    libs +=
         [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
+
+    if (is_component_build) {
+      ldflags = [
+        "-Wl,--whole-archive",
+        rebase_path(
+            "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
+            root_build_dir),
+        "-Wl,--no-whole-archive",
+      ]
+    }
   }
 }
