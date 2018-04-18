@@ -181,6 +181,11 @@ void NotificationManager::DidDisplayPersistentNotification(
   NOTREACHED();
 }
 
+void NotificationManager::ClosePersistentNotification(
+    const WebString& notification_id) {
+  GetNotificationService()->ClosePersistentNotification(notification_id);
+}
+
 void NotificationManager::GetNotifications(
     WebServiceWorkerRegistration* service_worker_registration,
     const WebString& filter_tag,

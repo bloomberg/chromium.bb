@@ -66,6 +66,9 @@ class NotificationManager final
       std::unique_ptr<blink::WebNotificationResources> notification_resources,
       ScriptPromiseResolver* resolver);
 
+  // Closes a persistent notification identified by its notification id.
+  void ClosePersistentNotification(const WebString& notification_id);
+
   // Asynchronously gets the persistent notifications belonging to the Service
   // Worker Registration. If |filter_tag| is not an empty string, only the
   // notification with the given tag will be considered. Will take ownership of

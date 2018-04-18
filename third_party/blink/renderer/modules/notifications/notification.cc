@@ -232,7 +232,8 @@ void Notification::close() {
   state_ = State::kClosed;
 
   if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-    // TODO(https://crbug.com/796991): Implement this via mojo.
+    NotificationManager::From(GetExecutionContext())
+        ->ClosePersistentNotification(notification_id_);
     return;
   }
 
