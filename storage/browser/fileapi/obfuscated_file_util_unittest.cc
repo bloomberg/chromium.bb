@@ -248,9 +248,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
   std::unique_ptr<ObfuscatedFileUtil> CreateObfuscatedFileUtil(
       storage::SpecialStoragePolicy* storage_policy) {
     return std::unique_ptr<ObfuscatedFileUtil>(
-        ObfuscatedFileUtil::CreateForTesting(
-            storage_policy, data_dir_path(), NULL,
-            base::ThreadTaskRunnerHandle::Get().get()));
+        ObfuscatedFileUtil::CreateForTesting(storage_policy, data_dir_path(),
+                                             NULL));
   }
 
   ObfuscatedFileUtil* ofu() {
