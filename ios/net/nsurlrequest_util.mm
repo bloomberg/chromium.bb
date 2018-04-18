@@ -5,6 +5,7 @@
 #include "ios/net/nsurlrequest_util.h"
 
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,9 +19,11 @@ std::string FormatUrlRequestForLogging(NSURLRequest* request) {
       request.mainDocumentURL.absoluteString;
   return base::StringPrintf(
       "request: %s request.mainDocURL: %s",
-      urlAbsoluteString ? urlAbsoluteString.UTF8String : "[nil]",
-      mainDocumentURLAbsoluteString ?
-          mainDocumentURLAbsoluteString.UTF8String : "[nil]");
+      urlAbsoluteString ? base::SysNSStringToUTF8(urlAbsoluteString).c_str()
+                        : "[nil]",
+      mainDocumentURLAbsoluteString
+          ? base::SysNSStringToUTF8(mainDocumentURLAbsoluteString).c_str()
+          : "[nil]");
 }
 
 }  // namespace net
