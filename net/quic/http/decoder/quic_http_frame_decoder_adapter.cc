@@ -453,11 +453,7 @@ void QuicHttpDecoderAdapter::OnSetting(
   }
   // TODO(quic): Consider whether to add support for handling unknown SETTINGS
   //     IDs, which currently cause a connection close.
-  if (GetQuicRestartFlag(http2_propagate_unknown_settings)) {
-    visitor()->OnSetting(setting_id, setting_fields.value);
-  } else {
-    visitor()->OnSettingOld(setting_id, setting_fields.value);
-  }
+  visitor()->OnSetting(setting_id, setting_fields.value);
 }
 
 void QuicHttpDecoderAdapter::OnSettingsEnd() {

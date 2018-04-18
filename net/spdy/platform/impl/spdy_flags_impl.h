@@ -9,8 +9,6 @@
 
 namespace net {
 
-NET_EXPORT_PRIVATE extern bool http2_propagate_unknown_settings;
-
 inline bool GetSpdyReloadableFlagImpl(bool flag) {
   return flag;
 }

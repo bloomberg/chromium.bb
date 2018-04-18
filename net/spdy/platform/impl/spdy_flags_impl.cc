@@ -6,9 +6,4 @@
 
 namespace net {
 
-// If true, Http2FrameDecoderAdapter will pass decoded HTTP/2 SETTINGS through
-// the SpdyFramerVisitorInterface callback OnSetting(), which will also accept
-// unknown SETTINGS IDs.
-bool http2_propagate_unknown_settings = true;
-
 }  // namespace net

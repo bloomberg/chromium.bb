@@ -158,7 +158,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
       SpdyStreamId stream_id) override;
   void OnHeaderFrameEnd(SpdyStreamId stream_id) override;
   void OnSettings() override;
-  void OnSettingOld(SpdyKnownSettingsId id, uint32_t value) override;
   void OnSetting(SpdySettingsId id, uint32_t value) override;
   void OnSettingsAck() override;
   void OnSettingsEnd() override;
