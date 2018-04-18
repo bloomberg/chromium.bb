@@ -16,9 +16,9 @@
 #include <vector>
 
 #include "base/callback_list.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "components/google/core/browser/google_url_tracker.h"
@@ -178,9 +178,16 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURL* GetTemplateURLForHost(const std::string& host);
   const TemplateURL* GetTemplateURLForHost(const std::string& host) const;
 
-  // Adds |template_url| to this model.  Returns a raw pointer to |template_url|
-  // if the addition succeeded, or null on failure.  (Many callers need still
-  // need a raw pointer to the TemplateURL so they can access it later.)
+  // Adds a new TemplateURL to this model.
+  //
+  // This function guarantees that on return the model will not have two non-
+  // extension TemplateURLs with the same keyword.  If that means that it cannot
+  // add the provided argument, it will return null.  Otherwise it will return
+  // the raw pointer to the TemplateURL.
+  //
+  // Returns a raw pointer to |template_url| if the addition succeeded, or null
+  // on failure.  (Many callers need still need a raw pointer to the TemplateURL
+  // so they can access it later.)
   TemplateURL* Add(std::unique_ptr<TemplateURL> template_url);
 
   // Like Add(), but overwrites the |template_url|'s values with the provided
@@ -427,6 +434,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   FRIEND_TEST_ALL_PREFIXES(ToolbarModelTest, GoogleBaseURL);
 
   friend class InstantUnitTestBase;
+  friend class Scoper;
   friend class TemplateURLServiceTestUtil;
   friend class TemplateUrlServiceAndroid;
 
@@ -479,6 +487,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Helper functor for FindMatchingKeywords(), for finding the range of
   // keywords which begin with a prefix.
   class LessWithPrefix;
+
+  // Used to defer notifications until the last Scoper is destroyed by leaving
+  // the scope of a code block.
+  class Scoper;
 
   void Init(const Initializer* initializers, int num_initializers);
 
@@ -547,17 +559,11 @@ class TemplateURLService : public WebDataServiceConsumer,
       const base::string16& keyword);
 
   // Updates the information in |existing_turl| using the information from
-  // |new_values|, but the ID for |existing_turl| is retained.  Notifying
-  // observers is the responsibility of the caller.  Returns whether
+  // |new_values|, but the ID for |existing_turl| is retained. Returns whether
   // |existing_turl| was found in |template_urls_| and thus could be updated.
   //
   // NOTE: This should not be called with an extension keyword as there are no
   // updates needed in that case.
-  bool UpdateNoNotify(TemplateURL* existing_turl,
-                      const TemplateURL& new_values);
-
-  // Calls UpdateNoNotify() and NotifyObservers() if update succeeds.
-  // Returns the result of UpdateNoNotify().
   bool Update(TemplateURL* existing_turl, const TemplateURL& new_values);
 
   // If the TemplateURL comes from a prepopulated URL available in the current
@@ -600,26 +606,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   // This function guarantees that on return the model will not have two non-
   // extension TemplateURLs with the same keyword.  If that means that it cannot
   // add the provided argument, it will return null.  Otherwise it will return
-  // the raw pointer to the TemplateURL.  The caller is responsible for
-  // notifying observers if this function succeeds.
-  TemplateURL* AddNoNotify(std::unique_ptr<TemplateURL> template_url,
-                           bool newly_adding);
-
-  // Removes the keyword from the model. This deletes the supplied TemplateURL.
-  // This fails if the supplied template_url is the default search provider.
-  // Caller is responsible for notifying observers.
-  void RemoveNoNotify(const TemplateURL* template_url);
-
-  // Like ResetTemplateURL(), but instead of notifying observers, returns
-  // whether anything has changed.
-  bool ResetTemplateURLNoNotify(TemplateURL* url,
-                                const base::string16& title,
-                                const base::string16& keyword,
-                                const std::string& search_url);
-
-  // Notify the observers that the model has changed.  This is done only if the
-  // model is loaded.
-  void NotifyObservers();
+  // the raw pointer to the TemplateURL.
+  //
+  // Returns a raw pointer to |template_url| if the addition succeeded, or null
+  // on failure.  (Many callers need still need a raw pointer to the TemplateURL
+  // so they can access it later.)
+  TemplateURL* Add(std::unique_ptr<TemplateURL> template_url,
+                   bool newly_adding);
 
   // Updates |template_urls| so that the only "created by policy" entry is
   // |default_from_prefs|. |default_from_prefs| may be NULL if there is no
@@ -629,10 +622,8 @@ class TemplateURLService : public WebDataServiceConsumer,
       const TemplateURLData* default_from_prefs);
 
   // Resets the sync GUID of the specified TemplateURL and persists the change
-  // to the database. This does not notify observers, but returns if a change
-  // was made. It is the caller's responsibility to call NotifyObservers().
-  bool ResetTemplateURLGUID(TemplateURL* url,
-                            const std::string& guid) WARN_UNUSED_RESULT;
+  // to the database. This does not notify observers.
+  void ResetTemplateURLGUID(TemplateURL* url, const std::string& guid);
 
   // Attempts to generate a unique keyword for |turl| based on its original
   // keyword. If its keyword is already unique, that is returned. Otherwise, it
@@ -663,13 +654,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   // or applied as an update to an existing TemplateURL.
   // Since both entries are known to Sync and one of their keywords will change,
   // an ACTION_UPDATE will be appended to |change_list| to reflect this change.
-  // Note that |applied_sync_turl| must not be an extension keyword. This does
-  // not notify observers, but returns if a change was made. It is the caller's
-  // responsibility to call NotifyObservers().
-  bool ResolveSyncKeywordConflict(TemplateURL* unapplied_sync_turl,
+  // Note that |applied_sync_turl| must not be an extension keyword.
+  void ResolveSyncKeywordConflict(TemplateURL* unapplied_sync_turl,
                                   TemplateURL* applied_sync_turl,
-                                  syncer::SyncChangeList* change_list)
-      WARN_UNUSED_RESULT;
+                                  syncer::SyncChangeList* change_list);
 
   // Adds |sync_turl| into the local model, possibly removing or updating a
   // local TemplateURL to make room for it. This expects |sync_turl| to be a new
@@ -684,18 +672,12 @@ class TemplateURLService : public WebDataServiceConsumer,
   // sent up to Sync.
   // |merge_result| tracks the changes made to the local model. Added/modified/
   // deleted are updated depending on how the |sync_turl| is merged in.
-  // This should only be called from MergeDataAndStartSyncing. Some of the
-  // changes performed in this method skip notifying observers, and return
-  // whether the caller needs to invoke NotifyObservers(). Note that some
-  // changes caused by this method may still call NotifyObservers() itself,
-  // particularly when dealing with the default search engine, but these will
-  // not effect the returned bool.
-  bool MergeInSyncTemplateURL(TemplateURL* sync_turl,
+  // This should only be called from MergeDataAndStartSyncing.
+  void MergeInSyncTemplateURL(TemplateURL* sync_turl,
                               const SyncDataMap& sync_data,
                               syncer::SyncChangeList* change_list,
                               SyncDataMap* local_data,
-                              syncer::SyncMergeResult* merge_result)
-      WARN_UNUSED_RESULT;
+                              syncer::SyncMergeResult* merge_result);
 
   // Goes through a vector of TemplateURLs and ensure that both the in-memory
   // and database copies have valid sync_guids. This is to fix crbug.com/102038,
@@ -852,6 +834,16 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   std::unique_ptr<GoogleURLTracker::Subscription>
       google_url_updated_subscription_;
+
+  // This tracks how many Scoper handles exist. When the number of handles drops
+  // to zero, a notification is made to observers if
+  // |model_mutated_notification_pending_| is true.
+  int outstanding_scoper_handles_;
+
+  // Used to track if a notification is necessary due to the model being
+  // mutated. The outermost Scoper handles, can be used to defer notifications,
+  // but if no model mutation occurs, the deferred notification can be skipped.
+  bool model_mutated_notification_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };
