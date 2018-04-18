@@ -353,26 +353,4 @@ public class MemoryPressureMonitorTest {
 
         pressureSupplier.assertNotCalled();
     }
-
-    @Test
-    @SmallTest
-    public void testNotifyPressureFromNonUiThread() throws InterruptedException {
-        TestPressureCallback callback = new TestPressureCallback();
-        mMonitor.setReportingCallbackForTesting(callback);
-
-        Thread nonUiThread =
-                new Thread(() -> { mMonitor.notifyPressure(MemoryPressureLevel.MODERATE); });
-        nonUiThread.start();
-        nonUiThread.join();
-
-        // When notifyPressure() is called from other thread, it posts a task
-        // to UiThread and returns (i.e. doesn't wait). So at this point callback
-        // shouldn't be called.
-        callback.assertNotCalled();
-
-        // Run posted tasks, one of which should invoke the callback.
-        runUiThreadFor(0);
-
-        callback.assertCalledWith(MemoryPressureLevel.MODERATE);
-    }
 }

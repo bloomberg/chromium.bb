@@ -71,7 +71,11 @@ public class SharedStatics {
 
     public void freeMemoryForTests() {
         if (ActivityManager.isRunningInTestHarness()) {
-            MemoryPressureMonitor.INSTANCE.notifyPressure(MemoryPressureLevel.CRITICAL);
+            ThreadUtils.postOnUiThread(() -> {
+                // This variable is needed to prevent weird formatting by "git cl format".
+                MemoryPressureMonitor pressureMonitor = MemoryPressureMonitor.INSTANCE;
+                pressureMonitor.notifyPressure(MemoryPressureLevel.CRITICAL);
+            });
         }
     }
 
