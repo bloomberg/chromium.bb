@@ -70,7 +70,7 @@ void PictureInPictureWindowControllerImpl::Close() {
           ->media_web_contents_observer();
   base::Optional<content::WebContentsObserver::MediaPlayerId> player_id =
       observer->GetPictureInPictureVideoMediaPlayerId();
-  DCHECK(!player_id.has_value());
+  DCHECK(player_id.has_value());
 
   if (observer->IsPlayerActive(*player_id))
     player_id->first->Send(new MediaPlayerDelegateMsg_EndPictureInPictureMode(
