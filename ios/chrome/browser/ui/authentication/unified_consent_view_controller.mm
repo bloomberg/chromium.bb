@@ -161,6 +161,7 @@ const char* kSettingsSyncURL = "internal://settings-sync";
   _consentStringIds.push_back(IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE);
   title.textColor = [UIColor colorWithWhite:0 alpha:kTitleColorAlpha];
   title.font = [UIFont systemFontOfSize:kTitleFontSize];
+  title.numberOfLines = 0;
 
   [container addSubview:title];
   // Identity picker view.
