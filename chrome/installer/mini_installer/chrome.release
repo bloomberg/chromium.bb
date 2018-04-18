@@ -53,12 +53,20 @@ locales\*.pak: %(VersionDir)s\Locales
 # %(VersionDir)\VisualElements.
 Logo.png: %(VersionDir)s\VisualElements\
 LogoBeta.png: %(VersionDir)s\VisualElements\
+LogoBetaLight.png: %(VersionDir)s\VisualElements\
 LogoCanary.png: %(VersionDir)s\VisualElements\
+LogoCanaryLight.png: %(VersionDir)s\VisualElements\
 LogoDev.png: %(VersionDir)s\VisualElements\
+LogoDevLight.png: %(VersionDir)s\VisualElements\
+LogoLight.png: %(VersionDir)s\VisualElements\
 SmallLogo.png: %(VersionDir)s\VisualElements\
 SmallLogoBeta.png: %(VersionDir)s\VisualElements\
+SmallLogoBetaLight.png: %(VersionDir)s\VisualElements\
 SmallLogoCanary.png: %(VersionDir)s\VisualElements\
+SmallLogoCanaryLight.png: %(VersionDir)s\VisualElements\
 SmallLogoDev.png: %(VersionDir)s\VisualElements\
+SmallLogoDevLight.png: %(VersionDir)s\VisualElements\
+SmallLogoLight.png: %(VersionDir)s\VisualElements\
 
 #
 # SwiftShader sub-dir
