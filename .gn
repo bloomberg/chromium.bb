@@ -150,6 +150,7 @@ check_targets = [
 
   #"//third_party/*",  # May not ever want this.
   #"//third_party/breakpad/*",  # Small errors.
+  "//third_party/boringssl/*",
   "//third_party/brotli/*",
   "//third_party/hunspell/*",
   "//third_party/leveldatabase/*",
