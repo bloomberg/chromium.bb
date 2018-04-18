@@ -1,8 +1,6 @@
 This is a testharness.js-based test.
-PASS composedPath() must exist on Event
 PASS composedPath() must return an empty array when the event has not been dispatched
 PASS composedPath() must return an empty array when the event is no longer dispatched
-PASS composed must exist on Event
 PASS composed on EventInit must default to false
 PASS composed on EventInit must set the composed flag
 FAIL The event must propagate out of open mode shadow boundaries when the composed flag is set assert_array_equals: value is 5, expected array
