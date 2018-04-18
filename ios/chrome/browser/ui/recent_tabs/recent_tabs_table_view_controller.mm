@@ -31,6 +31,7 @@
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
@@ -65,7 +66,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeOtherDevicesSyncOff,
   ItemTypeOtherDevicesNoSessions,
   ItemTypeOtherDevicesSigninPromo,
-  ItemTypeOtherDevicesSyncInProgress,
+  ItemTypeOtherDevicesSyncInProgressHeader,
   ItemTypeSessionHeader,
   ItemTypeSessionTabData,
   ItemTypeShowFullHistory,
@@ -385,13 +386,28 @@ const int kRelativeTimeMaxHours = 4;
   [model addSectionWithIdentifier:SectionIdentifierOtherDevices];
   [model setSectionIdentifier:SectionIdentifierOtherDevices
                  collapsedKey:kOtherDeviceCollapsedKey];
-  TableViewDisclosureHeaderFooterItem* header =
-      [[TableViewDisclosureHeaderFooterItem alloc]
-          initWithType:ItemTypeRecentlyClosedHeader];
-  header.text = l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
-  header.collapsed = [model sectionIsCollapsed:SectionIdentifierOtherDevices];
-  [model setHeader:header
-      forSectionWithIdentifier:SectionIdentifierOtherDevices];
+  // If user is not signed in, show disclosure view section header so that they
+  // know they can collapse the signin prompt section
+  if (state == SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS) {
+    TableViewActivityIndicatorHeaderFooterItem* header =
+        [[TableViewActivityIndicatorHeaderFooterItem alloc]
+            initWithType:ItemTypeOtherDevicesSyncInProgressHeader];
+    header.text = l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
+    header.subtitleText =
+        l10n_util::GetNSString(IDS_IOS_RECENT_TABS_SYNC_IN_PROGRESS);
+    [model setHeader:header
+        forSectionWithIdentifier:SectionIdentifierOtherDevices];
+    return;
+  } else {
+    TableViewDisclosureHeaderFooterItem* header =
+        [[TableViewDisclosureHeaderFooterItem alloc]
+            initWithType:ItemTypeRecentlyClosedHeader];
+    header.text = l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
+    [model setHeader:header
+        forSectionWithIdentifier:SectionIdentifierOtherDevices];
+    header.collapsed = [self.tableViewModel
+        sectionIsCollapsed:SectionIdentifierRecentlyClosedTabs];
+  }
 
   // Adds Other Devices item for |state|.
   TableViewTextItem* dummyCell = nil;
@@ -415,9 +431,10 @@ const int kRelativeTimeMaxHours = 4;
       [self addSigninPromoViewItem];
       return;
     case SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS:
-      dummyCell = [[TableViewTextItem alloc]
-          initWithType:ItemTypeOtherDevicesSyncInProgress];
-      dummyCell.text = @"Sync in progress";
+      // Informational text in section header. No need for a cell in the
+      // section.
+      NOTREACHED();
+      return;
   }
   [self.tableViewModel addItem:dummyCell
        toSectionWithIdentifier:SectionIdentifierOtherDevices];
@@ -588,7 +605,6 @@ const int kRelativeTimeMaxHours = 4;
     case ItemTypeOtherDevicesSyncOff:
     case ItemTypeOtherDevicesNoSessions:
     case ItemTypeOtherDevicesSigninPromo:
-    case ItemTypeOtherDevicesSyncInProgress:
       break;
   }
 }
