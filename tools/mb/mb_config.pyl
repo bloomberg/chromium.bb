@@ -318,6 +318,9 @@
       'codesearch-gen-chromium-linux': {
         'linux': 'codesearch_gen_chromium_linux_bot',
       },
+      'codesearch-gen-chromium-win': {
+        'win': 'codesearch_gen_chromium_win_bot',
+      },
     },
 
     'chromium.linux': {
@@ -1188,6 +1191,10 @@
     ],
 
     'codesearch_gen_chromium_linux_bot': [
+      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64',
+    ],
+
+    'codesearch_gen_chromium_win_bot': [
       'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64',
     ],
 
