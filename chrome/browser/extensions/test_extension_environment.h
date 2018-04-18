@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "content/public/test/mock_render_process_host.h"
 #include "extensions/common/extension.h"
 
 #if defined(OS_WIN)
@@ -108,14 +107,6 @@ class TestExtensionEnvironment {
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
 #endif
-
-  // This makes sure that creating a renderer during a test will created a
-  // MockRenderProcessHost instead of a RenderProcessHostImpl.  It is important
-  // that the factory is created and registered before |profile_| and destroyed
-  // after |profile_|.
-  // TODO(lukasza): https://crbug.com/832100: Move the factory into
-  // TestingProfile, so individual tests don't need to worry about it.
-  content::ScopedMockRenderProcessHostFactory process_factory_;
 
   std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_ = nullptr;

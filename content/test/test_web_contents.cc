@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/no_destructor.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -15,6 +16,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
@@ -35,11 +37,29 @@
 
 namespace content {
 
+namespace {
+
+const RenderProcessHostFactory* GetMockProcessFactory() {
+  static base::NoDestructor<MockRenderProcessHostFactory> factory;
+  return factory.get();
+}
+
+}  // namespace
+
 TestWebContents::TestWebContents(BrowserContext* browser_context)
     : WebContentsImpl(browser_context),
       delegate_view_override_(nullptr),
       expect_set_history_offset_and_length_(false),
-      expect_set_history_offset_and_length_history_length_(0) {}
+      expect_set_history_offset_and_length_history_length_(0) {
+  if (!RenderProcessHostImpl::get_render_process_host_factory_for_testing()) {
+    // Most unit tests should prefer to create a generic MockRenderProcessHost
+    // (instead of a real RenderProcessHostImpl).  Tests that need to use a
+    // specific, custom RenderProcessHostFactory should set it before creating
+    // the first TestWebContents.
+    RenderProcessHostImpl::set_render_process_host_factory_for_testing(
+        GetMockProcessFactory());
+  }
+}
 
 TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
                                          scoped_refptr<SiteInstance> instance) {

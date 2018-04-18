@@ -55,7 +55,7 @@ class WebViewTestViewsDelegate : public views::TestViewsDelegate {
 // OnVisibilityChanged/WebContentsDestroyed.
 class WebViewTestWebContentsObserver : public content::WebContentsObserver {
  public:
-  WebViewTestWebContentsObserver(content::WebContents* web_contents)
+  explicit WebViewTestWebContentsObserver(content::WebContents* web_contents)
       : web_contents_(web_contents),
         was_shown_(false),
         shown_count_(0),
@@ -192,10 +192,6 @@ class WebViewUnitTest : public views::test::WidgetTest {
   }
 
  private:
-  // TODO(lukasza): https://crbug.com/832100: Move the factory into
-  // TestingProfile, so individual tests don't need to worry about it.
-  content::ScopedMockRenderProcessHostFactory process_factory_;
-
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<content::TestBrowserContext> browser_context_;
   content::TestContentBrowserClient test_browser_client_;

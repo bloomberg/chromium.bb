@@ -899,7 +899,7 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
     std::map<ProcessID, Count>& counts_per_process = result->second;
 
     --counts_per_process[render_process_host_id];
-    DCHECK(counts_per_process[render_process_host_id] >= 0);
+    DCHECK_GE(counts_per_process[render_process_host_id], 0);
 
     if (counts_per_process[render_process_host_id] == 0)
       counts_per_process.erase(render_process_host_id);
@@ -2444,9 +2444,15 @@ void RenderProcessHostImpl::OnMediaStreamRemoved() {
 }
 
 // static
-void RenderProcessHostImpl::set_render_process_host_factory(
+void RenderProcessHostImpl::set_render_process_host_factory_for_testing(
     const RenderProcessHostFactory* rph_factory) {
   g_render_process_host_factory_ = rph_factory;
+}
+
+// static
+const RenderProcessHostFactory*
+RenderProcessHostImpl::get_render_process_host_factory_for_testing() {
+  return g_render_process_host_factory_;
 }
 
 // static

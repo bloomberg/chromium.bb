@@ -107,7 +107,8 @@ class SiteInstanceTest : public testing::Test {
     url::AddStandardScheme(kPrivilegedScheme, url::SCHEME_WITH_HOST);
     url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITH_HOST);
 
-    RenderProcessHostImpl::set_render_process_host_factory(&rph_factory_);
+    RenderProcessHostImpl::set_render_process_host_factory_for_testing(
+        &rph_factory_);
   }
 
   void TearDown() override {
@@ -115,7 +116,7 @@ class SiteInstanceTest : public testing::Test {
     EXPECT_TRUE(RenderProcessHost::AllHostsIterator().IsAtEnd());
 
     SetBrowserClientForTesting(old_browser_client_);
-    RenderProcessHostImpl::set_render_process_host_factory(nullptr);
+    RenderProcessHostImpl::set_render_process_host_factory_for_testing(nullptr);
 
     // http://crbug.com/143565 found SiteInstanceTest leaking an
     // AppCacheDatabase. This happens because some part of the test indirectly

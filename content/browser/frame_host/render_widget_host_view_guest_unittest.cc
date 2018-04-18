@@ -199,7 +199,6 @@ class RenderWidgetHostViewGuestSurfaceTest
   }
 
  protected:
-  ScopedMockRenderProcessHostFactory rph_factory_;
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;

@@ -498,12 +498,4 @@ MockRenderProcessHost::GetSharedBitmapAllocationNotifier() {
   return &shared_bitmap_allocation_notifier_impl_;
 }
 
-ScopedMockRenderProcessHostFactory::ScopedMockRenderProcessHostFactory() {
-  RenderProcessHostImpl::set_render_process_host_factory(this);
-}
-
-ScopedMockRenderProcessHostFactory::~ScopedMockRenderProcessHostFactory() {
-  RenderProcessHostImpl::set_render_process_host_factory(nullptr);
-}
-
 }  // namespace content

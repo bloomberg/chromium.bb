@@ -35,13 +35,12 @@
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
-class StoragePartition;
-class SiteInstance;
-
 namespace content {
 
 class MockRenderProcessHostFactory;
 class RenderWidgetHost;
+class SiteInstance;
+class StoragePartition;
 
 // A mock render process host that has no corresponding renderer process.  All
 // IPC messages are sent into the message sink for inspection by tests.
@@ -249,17 +248,6 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   mutable std::vector<std::unique_ptr<MockRenderProcessHost>> processes_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHostFactory);
-};
-
-// Like MockRenderProcessHostFactory, but automatically registers itself as the
-// default factory via RenderProcessHostImpl::set_render_process_host_factory.
-class ScopedMockRenderProcessHostFactory : public MockRenderProcessHostFactory {
- public:
-  ScopedMockRenderProcessHostFactory();
-  ~ScopedMockRenderProcessHostFactory() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedMockRenderProcessHostFactory);
 };
 
 }  // namespace content
