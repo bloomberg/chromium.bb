@@ -152,8 +152,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDownloads"),
-        // Flaky https://crbug.com/833049
-        // TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDrive"),
         TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
