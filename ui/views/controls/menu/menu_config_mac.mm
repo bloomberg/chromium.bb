@@ -28,6 +28,9 @@ void InitMaterialMenuConfig(views::MenuConfig* config) {
   config->check_height = 16;
   config->arrow_width = 8;
   config->separator_height = 17;
+  config->separator_lower_height = 9;
+  config->separator_upper_height = 9;
+  config->separator_spacing_height = 9;
   config->separator_thickness = 1;
   config->label_to_minor_text_padding = 8;
   config->align_arrow_and_shortcut = true;
