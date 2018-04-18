@@ -71,6 +71,12 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
         std::move(client), traffic_annotation);
   }
 
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    if (!factory_getter_)
+      return;
+    factory_getter_->GetURLLoaderFactory()->Clone(std::move(request));
+  }
+
   // SharedURLLoaderFactory implementation:
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
     NOTREACHED() << "This isn't supported. If you need a SharedURLLoaderFactory"

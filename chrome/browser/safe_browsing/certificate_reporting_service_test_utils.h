@@ -194,7 +194,6 @@ class CertificateReportingServiceTestHelper
   void SendResponse(network::mojom::URLLoaderClientPtr client, bool fail);
 
   // network::SharedURLLoaderFactory
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
@@ -203,6 +202,8 @@ class CertificateReportingServiceTestHelper
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
   ReportSendingResult expected_report_result_;
 

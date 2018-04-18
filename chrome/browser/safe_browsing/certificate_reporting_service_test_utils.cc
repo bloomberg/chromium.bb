@@ -369,12 +369,6 @@ void CertificateReportingServiceTestHelper::SendResponse(
   client->OnComplete(network::URLLoaderCompletionStatus());
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-CertificateReportingServiceTestHelper::Clone() {
-  NOTREACHED();
-  return nullptr;
-}
-
 void CertificateReportingServiceTestHelper::CreateLoaderAndStart(
     network::mojom::URLLoaderRequest request,
     int32_t routing_id,
@@ -406,6 +400,17 @@ void CertificateReportingServiceTestHelper::CreateLoaderAndStart(
   SendResponse(std::move(client), false);
   request_destroyed_observer_.OnRequest(serialized_report,
                                         expected_report_result_);
+}
+
+void CertificateReportingServiceTestHelper::Clone(
+    network::mojom::URLLoaderFactoryRequest request) {
+  NOTREACHED();
+}
+
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+CertificateReportingServiceTestHelper::Clone() {
+  NOTREACHED();
+  return nullptr;
 }
 
 EventHistogramTester::EventHistogramTester() {}

@@ -78,6 +78,11 @@ void URLLoaderFactoryBundle::CreateLoaderAndStart(
                                     traffic_annotation);
 }
 
+void URLLoaderFactoryBundle::Clone(
+    network::mojom::URLLoaderFactoryRequest request) {
+  NOTREACHED();
+}
+
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 URLLoaderFactoryBundle::Clone() {
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;

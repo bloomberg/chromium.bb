@@ -300,6 +300,7 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
       : storage_partition_(storage_partition) {}
 
   // mojom::URLLoaderFactory implementation:
+
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
@@ -315,6 +316,13 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
         ->CreateLoaderAndStart(std::move(request), routing_id, request_id,
                                options, url_request, std::move(client),
                                traffic_annotation);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    if (!storage_partition_)
+      return;
+    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()->Clone(
+        std::move(request));
   }
 
   // SharedURLLoaderFactory implementation:

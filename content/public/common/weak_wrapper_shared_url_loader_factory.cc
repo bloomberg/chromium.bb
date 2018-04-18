@@ -32,6 +32,13 @@ void WeakWrapperSharedURLLoaderFactory::CreateLoaderAndStart(
                                      traffic_annotation);
 }
 
+void WeakWrapperSharedURLLoaderFactory::Clone(
+    network::mojom::URLLoaderFactoryRequest request) {
+  if (!factory_ptr_)
+    return;
+  factory_ptr_->Clone(std::move(request));
+}
+
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 WeakWrapperSharedURLLoaderFactory::Clone() {
   network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info;

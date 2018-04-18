@@ -81,7 +81,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundle
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
   // The |info| contains replacement factories for a subset of the existing
