@@ -10,9 +10,13 @@
 #include <GLES3/gl3.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
+#include <limits>
+#include <set>
 #include <sstream>
 #include <string>
+
 #include "base/atomic_sequence_num.h"
 #include "base/bits.h"
 #include "base/compiler_specific.h"
@@ -23,6 +27,12 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/paint/color_space_transfer_cache_entry.h"
+#include "cc/paint/decode_stashing_image_provider.h"
+#include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_op_buffer_serializer.h"
+#include "cc/paint/transfer_cache_entry.h"
+#include "cc/paint/transfer_cache_serialize_helper.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/raster_cmd_helper.h"
@@ -72,6 +82,117 @@ using gpu::gles2::GLES2Util;
 
 namespace gpu {
 namespace raster {
+
+namespace {
+
+// Helper to copy data to the GPU service over the transfer cache.
+class TransferCacheSerializeHelperImpl
+    : public cc::TransferCacheSerializeHelper {
+ public:
+  explicit TransferCacheSerializeHelperImpl(ContextSupport* support)
+      : support_(support) {}
+  ~TransferCacheSerializeHelperImpl() final = default;
+
+ private:
+  bool LockEntryInternal(const EntryKey& key) final {
+    return support_->ThreadsafeLockTransferCacheEntry(
+        static_cast<uint32_t>(key.first), key.second);
+  }
+
+  void CreateEntryInternal(const cc::ClientTransferCacheEntry& entry) final {
+    size_t size = entry.SerializedSize();
+    void* data = support_->MapTransferCacheEntry(size);
+    // TODO(piman): handle error (failed to allocate/map shm)
+    DCHECK(data);
+    bool succeeded = entry.Serialize(
+        base::make_span(reinterpret_cast<uint8_t*>(data), size));
+    DCHECK(succeeded);
+    support_->UnmapAndCreateTransferCacheEntry(entry.UnsafeType(), entry.Id());
+  }
+
+  void FlushEntriesInternal(std::set<EntryKey> entries) final {
+    std::vector<std::pair<uint32_t, uint32_t>> transformed;
+    transformed.reserve(entries.size());
+    for (const auto& e : entries)
+      transformed.emplace_back(static_cast<uint32_t>(e.first), e.second);
+    support_->UnlockTransferCacheEntries(transformed);
+  }
+
+  ContextSupport* const support_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransferCacheSerializeHelperImpl);
+};
+
+// Helper to copy PaintOps to the GPU service over the transfer buffer.
+class PaintOpSerializer {
+ public:
+  PaintOpSerializer(size_t initial_size,
+                    RasterImplementation* ri,
+                    cc::DecodeStashingImageProvider* stashing_image_provider,
+                    cc::TransferCacheSerializeHelper* transfer_cache_helper)
+      : ri_(ri),
+        buffer_(static_cast<char*>(ri_->MapRasterCHROMIUM(initial_size))),
+        stashing_image_provider_(stashing_image_provider),
+        transfer_cache_helper_(transfer_cache_helper),
+        free_bytes_(buffer_ ? initial_size : 0) {}
+
+  ~PaintOpSerializer() {
+    // Need to call SendSerializedData;
+    DCHECK(!written_bytes_);
+  }
+
+  size_t Serialize(const cc::PaintOp* op,
+                   const cc::PaintOp::SerializeOptions& options) {
+    if (!valid())
+      return 0;
+    size_t size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options);
+    if (!size) {
+      SendSerializedData();
+      buffer_ = static_cast<char*>(ri_->MapRasterCHROMIUM(kBlockAlloc));
+      if (!buffer_) {
+        free_bytes_ = 0;
+        return 0;
+      }
+      free_bytes_ = kBlockAlloc;
+      size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options);
+    }
+    DCHECK_LE(size, free_bytes_);
+
+    written_bytes_ += size;
+    free_bytes_ -= size;
+    return size;
+  }
+
+  void SendSerializedData() {
+    if (!valid())
+      return;
+
+    ri_->UnmapRasterCHROMIUM(written_bytes_);
+    // Now that we've issued the RasterCHROMIUM referencing the stashed
+    // images, Reset the |stashing_image_provider_|, causing us to issue
+    // unlock commands for these images.
+    stashing_image_provider_->Reset();
+    transfer_cache_helper_->FlushEntries();
+    written_bytes_ = 0;
+  }
+
+  bool valid() const { return !!buffer_; }
+
+ private:
+  static constexpr GLsizeiptr kBlockAlloc = 512 * 1024;
+
+  RasterImplementation* const ri_;
+  char* buffer_;
+  cc::DecodeStashingImageProvider* const stashing_image_provider_;
+  cc::TransferCacheSerializeHelper* const transfer_cache_helper_;
+
+  size_t written_bytes_ = 0;
+  size_t free_bytes_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintOpSerializer);
+};
+
+}  // namespace
 
 RasterImplementation::SingleThreadChecker::SingleThreadChecker(
     RasterImplementation* raster_implementation)
@@ -948,10 +1069,26 @@ void RasterImplementation::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLint pixel_config,
+    GLint color_type,
     const cc::RasterColorSpace& raster_color_space) {
-  NOTIMPLEMENTED();
+  TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(this);
+  if (!transfer_cache_serialize_helper.LockEntry(
+          cc::TransferCacheEntryType::kColorSpace,
+          raster_color_space.color_space_id)) {
+    transfer_cache_serialize_helper.CreateEntry(
+        cc::ClientColorSpaceTransferCacheEntry(raster_color_space));
+  }
+  transfer_cache_serialize_helper.AssertLocked(
+      cc::TransferCacheEntryType::kColorSpace,
+      raster_color_space.color_space_id);
+
+  helper_->BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
+                               can_use_lcd_text, color_type,
+                               raster_color_space.color_space_id);
+  transfer_cache_serialize_helper.FlushEntries();
+  background_color_ = sk_color;
 }
+
 void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
                                           cc::ImageProvider* provider,
                                           const gfx::Size& content_size,
@@ -960,8 +1097,48 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
                                           const gfx::Vector2dF& post_translate,
                                           GLfloat post_scale,
                                           bool requires_clear) {
-  NOTIMPLEMENTED();
+  if (std::abs(post_scale) < std::numeric_limits<float>::epsilon())
+    return;
+
+  gfx::Rect query_rect =
+      gfx::ScaleToEnclosingRect(playback_rect, 1.f / post_scale);
+  std::vector<size_t> offsets = list->rtree_.Search(query_rect);
+  if (offsets.empty())
+    return;
+
+  // TODO(enne): Tune these numbers
+  // TODO(enne): Convert these types here and in transfer buffer to be size_t.
+  static constexpr unsigned int kMinAlloc = 16 * 1024;
+  unsigned int free_size = std::max(GetTransferBufferFreeSize(), kMinAlloc);
+
+  // This section duplicates RasterSource::PlaybackToCanvas setup preamble.
+  cc::PaintOpBufferSerializer::Preamble preamble;
+  preamble.content_size = content_size;
+  preamble.full_raster_rect = full_raster_rect;
+  preamble.playback_rect = playback_rect;
+  preamble.post_translation = post_translate;
+  preamble.post_scale = gfx::SizeF(post_scale, post_scale);
+  preamble.requires_clear = requires_clear;
+  preamble.background_color = background_color_;
+
+  // Wrap the provided provider in a stashing provider so that we can delay
+  // unrefing images until we have serialized dependent commands.
+  cc::DecodeStashingImageProvider stashing_image_provider(provider);
+
+  // TODO(enne): Don't access private members of DisplayItemList.
+  TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(this);
+  PaintOpSerializer op_serializer(free_size, this, &stashing_image_provider,
+                                  &transfer_cache_serialize_helper);
+  cc::PaintOpBufferSerializer::SerializeCallback serialize_cb =
+      base::BindRepeating(&PaintOpSerializer::Serialize,
+                          base::Unretained(&op_serializer));
+  cc::PaintOpBufferSerializer serializer(serialize_cb, &stashing_image_provider,
+                                         &transfer_cache_serialize_helper);
+  serializer.Serialize(&list->paint_op_buffer_, &offsets, preamble);
+  // TODO(piman): raise error if !serializer.valid()?
+  op_serializer.SendSerializedData();
 }
+
 void RasterImplementation::BeginGpuRaster() {
   NOTIMPLEMENTED();
 }

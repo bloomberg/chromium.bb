@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/color_space_transfer_cache_entry.h"
@@ -51,8 +52,15 @@
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkSurfaceProps.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
@@ -527,11 +535,10 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                              GLuint sk_color,
                              GLuint msaa_sample_count,
                              GLboolean can_use_lcd_text,
-                             GLint color_type) {
-    NOTIMPLEMENTED();
-  }
-  void DoRasterCHROMIUM(GLsizeiptr size, const void* list) { NOTIMPLEMENTED(); }
-  void DoEndRasterCHROMIUM() { NOTIMPLEMENTED(); }
+                             GLint color_type,
+                             GLuint color_space_transfer_cache_id);
+  void DoRasterCHROMIUM(GLsizeiptr size, const void* list);
+  void DoEndRasterCHROMIUM();
   void DoCreateTransferCacheEntryINTERNAL(GLuint entry_type,
                                           GLuint entry_id,
                                           GLuint handle_shm_id,
@@ -663,6 +670,8 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   // Raster helpers.
   sk_sp<GrContext> gr_context_;
+  sk_sp<SkSurface> sk_surface_;
+  std::unique_ptr<SkCanvas> raster_canvas_;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
 
@@ -2457,6 +2466,239 @@ bool RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded(Texture* texture,
     }
   }
   return false;
+}
+
+namespace {
+
+// Helper to read client data from transfer cache.
+class TransferCacheDeserializeHelperImpl
+    : public cc::TransferCacheDeserializeHelper {
+ public:
+  explicit TransferCacheDeserializeHelperImpl(
+      ServiceTransferCache* transfer_cache)
+      : transfer_cache_(transfer_cache) {
+    DCHECK(transfer_cache_);
+  }
+  ~TransferCacheDeserializeHelperImpl() final = default;
+
+ private:
+  cc::ServiceTransferCacheEntry* GetEntryInternal(
+      cc::TransferCacheEntryType entry_type,
+      uint32_t entry_id) final {
+    return transfer_cache_->GetEntry(entry_type, entry_id);
+  }
+  ServiceTransferCache* const transfer_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransferCacheDeserializeHelperImpl);
+};
+
+}  // namespace
+
+void RasterDecoderImpl::DoBeginRasterCHROMIUM(
+    GLuint texture_id,
+    GLuint sk_color,
+    GLuint msaa_sample_count,
+    GLboolean can_use_lcd_text,
+    GLint color_type,
+    GLuint color_space_transfer_cache_id) {
+  if (!gr_context_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "chromium_raster_transport not enabled via attribs");
+    return;
+  }
+  if (sk_surface_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "BeginRasterCHROMIUM without EndRasterCHROMIUM");
+    return;
+  }
+
+  DCHECK(!raster_canvas_);
+  gr_context_->resetContext();
+
+  // This function should look identical to
+  // ResourceProvider::ScopedSkSurfaceProvider.
+  GrGLTextureInfo texture_info;
+  auto* texture_ref = GetTexture(texture_id);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "unknown texture id");
+    return;
+  }
+  auto* texture = texture_ref->texture();
+  int width;
+  int height;
+  int depth;
+  if (!texture->GetLevelSize(texture->target(), 0, &width, &height, &depth)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "missing texture size info");
+    return;
+  }
+  GLenum type;
+  GLenum internal_format;
+  if (!texture->GetLevelType(texture->target(), 0, &type, &internal_format)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "missing texture type info");
+    return;
+  }
+  texture_info.fID = texture_ref->service_id();
+  texture_info.fTarget = texture->target();
+
+  if (texture->target() != GL_TEXTURE_2D &&
+      texture->target() != GL_TEXTURE_RECTANGLE_ARB) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "invalid texture target");
+    return;
+  }
+
+  // GetInternalFormat may return a base internal format but Skia requires a
+  // sized internal format. So this may be adjusted below.
+  texture_info.fFormat = GetInternalFormat(&gl_version_info(), internal_format);
+  switch (color_type) {
+    case kARGB_4444_SkColorType:
+      if (internal_format != GL_RGBA4 && internal_format != GL_RGBA) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                           "color type mismatch");
+        return;
+      }
+      if (texture_info.fFormat == GL_RGBA)
+        texture_info.fFormat = GL_RGBA4;
+      break;
+    case kRGBA_8888_SkColorType:
+      if (internal_format != GL_RGBA8_OES && internal_format != GL_RGBA) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                           "color type mismatch");
+        return;
+      }
+      if (texture_info.fFormat == GL_RGBA)
+        texture_info.fFormat = GL_RGBA8_OES;
+      break;
+    case kBGRA_8888_SkColorType:
+      if (internal_format != GL_BGRA_EXT && internal_format != GL_BGRA8_EXT) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                           "color type mismatch");
+        return;
+      }
+      if (texture_info.fFormat == GL_BGRA_EXT)
+        texture_info.fFormat = GL_BGRA8_EXT;
+      if (texture_info.fFormat == GL_RGBA)
+        texture_info.fFormat = GL_RGBA8_OES;
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                         "unsupported color type");
+      return;
+  }
+
+  GrBackendTexture gr_texture(width, height, GrMipMapped::kNo, texture_info);
+
+  uint32_t flags = 0;
+
+  // Use unknown pixel geometry to disable LCD text.
+  SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
+  if (can_use_lcd_text) {
+    // LegacyFontHost will get LCD text and skia figures out what type to use.
+    surface_props =
+        SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
+  }
+
+  SkColorType sk_color_type = static_cast<SkColorType>(color_type);
+  // If we can't match requested MSAA samples, don't use MSAA.
+  int final_msaa_count = std::max(static_cast<int>(msaa_sample_count), 0);
+  if (final_msaa_count >
+      gr_context_->maxSurfaceSampleCountForColorType(sk_color_type))
+    final_msaa_count = 0;
+  sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+      gr_context_.get(), gr_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
+      sk_color_type, nullptr, &surface_props);
+
+  if (!sk_surface_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "failed to create surface");
+    return;
+  }
+
+  TransferCacheDeserializeHelperImpl transfer_cache_deserializer(
+      transfer_cache_.get());
+  auto* color_space_entry =
+      transfer_cache_deserializer
+          .GetEntryAs<cc::ServiceColorSpaceTransferCacheEntry>(
+              color_space_transfer_cache_id);
+  if (!color_space_entry || !color_space_entry->color_space().IsValid()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "failed to find valid color space");
+    return;
+  }
+  raster_canvas_ = SkCreateColorSpaceXformCanvas(
+      sk_surface_->getCanvas(),
+      color_space_entry->color_space().ToSkColorSpace());
+
+  // All or nothing clearing, as no way to validate the client's input on what
+  // is the "used" part of the texture.
+  if (texture->IsLevelCleared(texture->target(), 0))
+    return;
+
+  // TODO(enne): This doesn't handle the case where the background color
+  // changes and so any extra pixels outside the raster area that get
+  // sampled may be incorrect.
+  raster_canvas_->drawColor(sk_color);
+  texture_manager()->SetLevelCleared(texture_ref, texture->target(), 0, true);
+}
+
+void RasterDecoderImpl::DoRasterCHROMIUM(GLsizeiptr size, const void* list) {
+  if (!sk_surface_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM",
+                       "RasterCHROMIUM without BeginRasterCHROMIUM");
+    return;
+  }
+  DCHECK(transfer_cache_);
+
+  alignas(
+      cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
+  const char* buffer = static_cast<const char*>(list);
+
+  SkCanvas* canvas = raster_canvas_.get();
+  SkMatrix original_ctm;
+  cc::PlaybackParams playback_params(nullptr, original_ctm);
+  cc::PaintOp::DeserializeOptions options;
+  TransferCacheDeserializeHelperImpl impl(transfer_cache_.get());
+  options.transfer_cache = &impl;
+
+  int op_idx = 0;
+  while (size > 4) {
+    size_t skip = 0;
+    cc::PaintOp* deserialized_op = cc::PaintOp::Deserialize(
+        buffer, size, &data[0], sizeof(cc::LargestPaintOp), &skip, options);
+    if (!deserialized_op) {
+      std::string msg =
+          base::StringPrintf("RasterCHROMIUM: bad op: %i", op_idx);
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM", msg.c_str());
+      return;
+    }
+
+    deserialized_op->Raster(canvas, playback_params);
+    deserialized_op->DestroyThis();
+
+    size -= skip;
+    buffer += skip;
+    op_idx++;
+  }
+}
+
+void RasterDecoderImpl::DoEndRasterCHROMIUM() {
+  if (!sk_surface_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "EndRasterCHROMIUM without BeginRasterCHROMIUM");
+    return;
+  }
+
+  raster_canvas_.reset();
+  sk_surface_->prepareForExternalIO();
+  sk_surface_.reset();
+
+  // It is important to reset state after each RasterCHROMIUM since skia can
+  // change the GL state which can invalidate the tracking done in this
+  // decoder.
+  RestoreState(nullptr);
 }
 
 void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(

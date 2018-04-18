@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -28,6 +29,7 @@ class SkCanvas;
 
 namespace gpu {
 namespace raster {
+class RasterImplementation;
 class RasterImplementationGLES;
 }  // namespace raster
 }  // namespace gpu
@@ -192,6 +194,7 @@ class CC_PAINT_EXPORT DisplayItemList
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoOps);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithOps);
+  friend gpu::raster::RasterImplementation;
   friend gpu::raster::RasterImplementationGLES;
 
   ~DisplayItemList();

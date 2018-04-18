@@ -164,12 +164,13 @@ void BeginRasterCHROMIUM(GLuint texture_id,
                          GLuint sk_color,
                          GLuint msaa_sample_count,
                          GLboolean can_use_lcd_text,
-                         GLint color_type) {
+                         GLint color_type,
+                         GLuint color_space_transfer_cache_id) {
   raster::cmds::BeginRasterCHROMIUM* c =
       GetCmdSpace<raster::cmds::BeginRasterCHROMIUM>();
   if (c) {
     c->Init(texture_id, sk_color, msaa_sample_count, can_use_lcd_text,
-            color_type);
+            color_type, color_space_transfer_cache_id);
   }
 }
 

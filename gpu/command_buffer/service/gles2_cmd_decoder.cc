@@ -20152,6 +20152,8 @@ error::Error GLES2DecoderImpl::HandleLockDiscardableTextureCHROMIUM(
   return error::kNoError;
 }
 
+namespace {
+
 class TransferCacheDeserializeHelperImpl
     : public cc::TransferCacheDeserializeHelper {
  public:
@@ -20170,6 +20172,8 @@ class TransferCacheDeserializeHelperImpl
   }
   ServiceTransferCache* transfer_cache_;
 };
+
+}  // namespace
 
 void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
     GLuint texture_id,
