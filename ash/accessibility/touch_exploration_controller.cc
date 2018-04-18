@@ -893,6 +893,9 @@ void TouchExplorationController::OnGestureEvent(ui::GestureConsumer* consumer,
 void TouchExplorationController::ProcessGestureEvents() {
   std::vector<std::unique_ptr<ui::GestureEvent>> gestures =
       gesture_provider_->GetAndResetPendingGestures();
+  bool resolved_gesture = false;
+  max_gesture_touch_points_ =
+      std::max(max_gesture_touch_points_, current_touch_ids_.size());
   for (const auto& gesture : gestures) {
     if (gesture->type() == ui::ET_GESTURE_SWIPE &&
         state_ == GESTURE_IN_PROGRESS) {
@@ -905,7 +908,25 @@ void TouchExplorationController::ProcessGestureEvents() {
     }
     if (state_ == SLIDE_GESTURE && gesture->IsScrollGestureEvent()) {
       SideSlideControl(gesture.get());
+      resolved_gesture = true;
     }
+  }
+
+  if (resolved_gesture)
+    return;
+
+  if (current_touch_ids_.size() == 0) {
+    switch (max_gesture_touch_points_) {
+      case 3:
+        delegate_->HandleAccessibilityGesture(ax::mojom::Gesture::kTap3);
+        break;
+      case 4:
+        delegate_->HandleAccessibilityGesture(ax::mojom::Gesture::kTap4);
+        break;
+      default:
+        break;
+    }
+    max_gesture_touch_points_ = 0;
   }
 }
 
@@ -1143,6 +1164,7 @@ void TouchExplorationController::SetState(State new_state,
     case WAIT_FOR_NO_FINGERS:
       if (gesture_provider_.get())
         gesture_provider_.reset(NULL);
+      max_gesture_touch_points_ = 0;
       break;
     case NO_FINGERS_DOWN:
       gesture_provider_ = std::make_unique<ui::GestureProviderAura>(this, this);

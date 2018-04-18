@@ -782,6 +782,8 @@ enum Gesture {
   kSwipeRight4,
   kSwipeDown4,
   kTap2,
+  kTap3,
+  kTap4,
 };
 
 enum TextAffinity {
