@@ -23,6 +23,10 @@ namespace autofill {
 enum FieldPropertiesFlags {
   NO_FLAGS = 0u,
   USER_TYPED = 1u << 0,
+  // AUTOFILLED means that at least one character of the field value comes from
+  // being autofilled. This is different from
+  // WebFormControlElement::IsAutofilled(). It is meant to be used for password
+  // fields, to determine whether viewing the value needs user reauthentication.
   AUTOFILLED = 1u << 1,
   HAD_FOCUS = 1u << 2,
   // Use this flag, if some error occurred in flags processing.
