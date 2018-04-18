@@ -760,6 +760,12 @@ void PersonalDataManagerAndroid::CancelPendingGetSubKeys(
   subkey_requester_.CancelPendingGetSubKeys();
 }
 
+void PersonalDataManagerAndroid::SetSyncServiceForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  personal_data_manager_->SetSyncingForTest(true);
+}
+
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileGUIDs(
     JNIEnv* env,
     const std::vector<AutofillProfile*>& profiles) {

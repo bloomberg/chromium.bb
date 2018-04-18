@@ -304,6 +304,8 @@ static_library("test_support") {
     "test_personal_data_manager.h",
     "test_region_data_loader.cc",
     "test_region_data_loader.h",
+    "test_sync_service.cc",
+    "test_sync_service.h",
   ]
 
   if (!is_android) {
@@ -326,6 +328,8 @@ static_library("test_support") {
     "//components/os_crypt:test_support",
     "//components/pref_registry",
     "//components/prefs:test_support",
+    "//components/sync",
+    "//components/sync:test_support_driver",
     "//components/ukm",
     "//components/ukm:test_support",
     "//google_apis:test_support",

@@ -83,8 +83,13 @@ class TestAutofillClient : public AutofillClient {
 
   void set_form_origin(const GURL& url) { form_origin_ = url; }
 
+  void set_sync_service(syncer::SyncService* test_sync_service) {
+    test_sync_service_ = test_sync_service;
+  }
+
  private:
   identity::IdentityTestEnvironment identity_test_env_;
+  syncer::SyncService* test_sync_service_ = nullptr;
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;

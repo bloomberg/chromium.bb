@@ -30,6 +30,7 @@
 #include "components/autofill/core/browser/test_autofill_manager.h"
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/browser/test_sync_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -237,6 +238,7 @@ class AutofillMetricsTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   MockAutofillClient autofill_client_;
+  TestSyncService sync_service_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestPersonalDataManager> personal_data_;
@@ -259,6 +261,7 @@ void AutofillMetricsTest::SetUp() {
   personal_data_ = std::make_unique<TestPersonalDataManager>();
   personal_data_->set_database(autofill_client_.GetDatabase());
   personal_data_->SetPrefService(autofill_client_.GetPrefs());
+  personal_data_->SetSyncServiceForTest(&sync_service_);
   autofill_driver_ = std::make_unique<TestAutofillDriver>();
   autofill_manager_ = std::make_unique<TestAutofillManager>(
       autofill_driver_.get(), &autofill_client_, personal_data_.get());
@@ -2456,7 +2459,9 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(true);
   personal_data_->Init(autofill_client_.GetDatabase(),
-                       autofill_client_.GetPrefs(), nullptr, false);
+                       autofill_client_.GetPrefs(),
+                       /*identity_manager=*/nullptr,
+                       /*is_off_the_record=*/false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", true, 1);
 }
 
@@ -2465,7 +2470,9 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(false);
   personal_data_->Init(autofill_client_.GetDatabase(),
-                       autofill_client_.GetPrefs(), nullptr, false);
+                       autofill_client_.GetPrefs(),
+                       /*identity_manager=*/nullptr,
+                       /*is_off_the_record=*/false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", false, 1);
 }
 

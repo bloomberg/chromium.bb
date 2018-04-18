@@ -106,6 +106,9 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   registry_.AddInterface<payments::mojom::PaymentRequest>(
       base::Bind(&PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
                  base::Unretained(this)));
+
+  // Set a test sync service so that all types of cards work.
+  GetDataManager()->SetSyncServiceForTest(&sync_service_);
 }
 
 void PaymentRequestBrowserTestBase::NavigateTo(const std::string& file_path) {

@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/variations/variations_associated_data.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -235,24 +236,14 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     return false;
   }
 
-  // Check if sync is not in a permanent error state.
-  syncer::SyncService::SyncTokenStatus token_status =
-      sync_service->GetSyncTokenStatus();
-  if ((token_status.connection_status ==
-           syncer::ConnectionStatus::CONNECTION_AUTH_ERROR ||
-       token_status.connection_status ==
-           syncer::ConnectionStatus::CONNECTION_SERVER_ERROR) &&
-      token_status.last_get_token_error.IsPersistentError()) {
-    return false;
-  }
-
-  // Users who have enabled a passphrase have chosen to not make their sync
-  // information accessible to Google. Since upload makes credit card data
-  // available to other Google systems, disable it for passphrase users.
-  // We can't determine the passphrase state until the sync engine is
-  // initialized so disable upload if sync is not yet available.
-  if (!sync_service->IsEngineInitialized() ||
-      sync_service->IsUsingSecondaryPassphrase()) {
+  // Check if the upload to Google state is active. This also returns false for
+  // users that have a secondary passphrase. Users who have enabled a passphrase
+  // have chosen to not make their sync information accessible to Google. Since
+  // upload makes credit card data available to other Google systems, disable it
+  // for passphrase users.
+  if (syncer::GetUploadToGoogleState(sync_service,
+                                     syncer::ModelType::AUTOFILL_WALLET_DATA) !=
+      syncer::UploadState::ACTIVE) {
     return false;
   }
 

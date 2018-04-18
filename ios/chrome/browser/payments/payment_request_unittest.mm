@@ -41,7 +41,11 @@ using ::testing::_;
 
 class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
  public:
-  MockTestPersonalDataManager() : TestPersonalDataManager() {}
+  MockTestPersonalDataManager() : TestPersonalDataManager() {
+    SetAutofillCreditCardEnabled(true);
+    SetAutofillWalletImportEnabled(true);
+  }
+
   MOCK_METHOD1(RecordUseOf, void(const autofill::AutofillDataModel&));
   MOCK_METHOD1(UpdateCreditCard, void(const autofill::CreditCard&));
   MOCK_METHOD1(UpdateServerCardMetadata, void(const autofill::CreditCard&));
@@ -67,7 +71,10 @@ namespace payments {
 class PaymentRequestTest : public PlatformTest {
  protected:
   PaymentRequestTest()
-      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
+      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
+    test_personal_data_manager_.SetAutofillCreditCardEnabled(true);
+    test_personal_data_manager_.SetAutofillWalletImportEnabled(true);
+  }
 
   // Returns PaymentDetails with one shipping option that's selected.
   PaymentDetails CreateDetailsWithShippingOption() {
@@ -96,6 +103,7 @@ class PaymentRequestTest : public PlatformTest {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
+  autofill::TestPersonalDataManager test_personal_data_manager_;
   web::TestWebState web_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
@@ -104,13 +112,12 @@ class PaymentRequestTest : public PlatformTest {
 // currency code and currency system.
 TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   web_payment_request.details.total = std::make_unique<PaymentItem>();
   web_payment_request.details.total->amount->currency = "USD";
   TestPaymentRequest payment_request1(web_payment_request,
                                       chrome_browser_state_.get(), &web_state_,
-                                      &personal_data_manager);
+                                      &test_personal_data_manager_);
   ASSERT_EQ("en", payment_request1.GetApplicationLocale());
   CurrencyFormatter* currency_formatter =
       payment_request1.GetOrCreateCurrencyFormatter();
@@ -120,7 +127,7 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
   web_payment_request.details.total->amount->currency = "JPY";
   TestPaymentRequest payment_request2(web_payment_request,
                                       chrome_browser_state_.get(), &web_state_,
-                                      &personal_data_manager);
+                                      &test_personal_data_manager_);
   ASSERT_EQ("en", payment_request2.GetApplicationLocale());
   currency_formatter = payment_request2.GetOrCreateCurrencyFormatter();
   EXPECT_EQ(base::UTF8ToUTF16("¥55"), currency_formatter->Format("55.00"));
@@ -130,7 +137,7 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
   web_payment_request.details.total->amount->currency = "USD";
   TestPaymentRequest payment_request3(web_payment_request,
                                       chrome_browser_state_.get(), &web_state_,
-                                      &personal_data_manager);
+                                      &test_personal_data_manager_);
   ASSERT_EQ("en", payment_request3.GetApplicationLocale());
   currency_formatter = payment_request3.GetOrCreateCurrencyFormatter();
   EXPECT_EQ(base::UTF8ToUTF16("55.00"), currency_formatter->Format("55.00"));
@@ -140,7 +147,6 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
 // Tests that the accepted card networks are identified correctly.
 TEST_F(PaymentRequestTest, AcceptedPaymentNetworks) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentMethodData method_datum1;
   method_datum1.supported_methods.push_back("visa");
@@ -151,7 +157,7 @@ TEST_F(PaymentRequestTest, AcceptedPaymentNetworks) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   ASSERT_EQ(2U, payment_request.supported_card_networks().size());
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
   EXPECT_EQ("mastercard", payment_request.supported_card_networks()[1]);
@@ -161,7 +167,6 @@ TEST_F(PaymentRequestTest, AcceptedPaymentNetworks) {
 // works as expected.
 TEST_F(PaymentRequestTest, SupportedMethods) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kWebPaymentsNativeApps);
@@ -178,7 +183,7 @@ TEST_F(PaymentRequestTest, SupportedMethods) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   payment_request.ResetParsedPaymentMethodData();
   ASSERT_EQ(2U, payment_request.supported_card_networks().size());
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
@@ -192,7 +197,6 @@ TEST_F(PaymentRequestTest, SupportedMethods) {
 // invalid values and duplicates) works as expected.
 TEST_F(PaymentRequestTest, SupportedMethods_MultipleEntries) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kWebPaymentsNativeApps);
@@ -215,7 +219,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_MultipleEntries) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   payment_request.ResetParsedPaymentMethodData();
   ASSERT_EQ(2U, payment_request.supported_card_networks().size());
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
@@ -228,7 +232,6 @@ TEST_F(PaymentRequestTest, SupportedMethods_MultipleEntries) {
 // Test that only specifying basic-card means that all are supported.
 TEST_F(PaymentRequestTest, SupportedMethods_OnlyBasicCard) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentMethodData method_datum1;
   method_datum1.supported_methods.push_back("basic-card");
@@ -236,7 +239,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_OnlyBasicCard) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
 
   // All of the basic card networks are supported.
   ASSERT_EQ(8U, payment_request.supported_card_networks().size());
@@ -256,7 +259,6 @@ TEST_F(PaymentRequestTest, SupportedMethods_OnlyBasicCard) {
 // but with the method as first.
 TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSpecificMethod) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentMethodData method_datum1;
   method_datum1.supported_methods.push_back("jcb");
@@ -265,7 +267,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSpecificMethod) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
 
   // All of the basic card networks are supported, but JCB is first because it
   // was specified first.
@@ -284,7 +286,6 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSpecificMethod) {
 // supported methods) will work as expected
 TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_Overlap) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentMethodData method_datum1;
   method_datum1.supported_methods.push_back("mastercard");
@@ -299,7 +300,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_Overlap) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
 
   EXPECT_EQ(3u, payment_request.supported_card_networks().size());
   EXPECT_EQ("mastercard", payment_request.supported_card_networks()[0]);
@@ -311,7 +312,6 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_Overlap) {
 // some methods
 TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSupportedNetworks) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentMethodData method_datum1;
   method_datum1.supported_methods.push_back("basic-card");
@@ -321,7 +321,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSupportedNetworks) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
 
   // Only the specified networks are supported.
   EXPECT_EQ(2u, payment_request.supported_card_networks().size());
@@ -338,10 +338,9 @@ TEST_F(PaymentRequestTest, CreateAndAddAutofillPaymentInstrument) {
   method_datum.supported_networks.push_back("visa");
   web_payment_request.method_data.push_back(method_datum);
 
-  autofill::TestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(0U, payment_request.payment_methods().size());
 
   autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
@@ -351,7 +350,7 @@ TEST_F(PaymentRequestTest, CreateAndAddAutofillPaymentInstrument) {
 
   EXPECT_EQ(1U, payment_request.payment_methods().size());
   // The card is expected to have been added to the PersonalDataManager.
-  EXPECT_EQ(1U, personal_data_manager.GetCreditCards().size());
+  EXPECT_EQ(1U, test_personal_data_manager_.GetCreditCards().size());
 }
 
 // Tests that an autofill payment instrumnt e.g., credit cards can be added
@@ -363,10 +362,9 @@ TEST_F(PaymentRequestTest, CreateAndAddAutofillPaymentInstrumentIncognito) {
   method_datum.supported_networks.push_back("visa");
   web_payment_request.method_data.push_back(method_datum);
 
-  autofill::TestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(0U, payment_request.payment_methods().size());
 
   payment_request.set_is_incognito(true);
@@ -378,7 +376,7 @@ TEST_F(PaymentRequestTest, CreateAndAddAutofillPaymentInstrumentIncognito) {
 
   EXPECT_EQ(1U, payment_request.payment_methods().size());
   // The card should not get added to the PersonalDataManager.
-  EXPECT_EQ(0U, personal_data_manager.GetCreditCards().size());
+  EXPECT_EQ(0U, test_personal_data_manager_.GetCreditCards().size());
 }
 
 // Tests updating local and server autofill payment instruments.
@@ -447,10 +445,9 @@ TEST_F(PaymentRequestTest, AddAutofillProfile) {
       /*request_payer_name=*/true, /*request_payer_phone=*/true,
       /*request_payer_email=*/true, /*request_shipping=*/true);
 
-  autofill::TestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(0U, payment_request.shipping_profiles().size());
   EXPECT_EQ(0U, payment_request.contact_profiles().size());
 
@@ -462,7 +459,7 @@ TEST_F(PaymentRequestTest, AddAutofillProfile) {
   EXPECT_EQ(1U, payment_request.shipping_profiles().size());
   EXPECT_EQ(1U, payment_request.contact_profiles().size());
   // The autofill profile should have been added to the PersonalDataManager.
-  EXPECT_EQ(1U, personal_data_manager.GetProfiles().size());
+  EXPECT_EQ(1U, test_personal_data_manager_.GetProfiles().size());
 }
 
 // Tests that a profile can be added to the list of available profiles in
@@ -473,10 +470,9 @@ TEST_F(PaymentRequestTest, AddAutofillProfileIncognito) {
       /*request_payer_name=*/true, /*request_payer_phone=*/true,
       /*request_payer_email=*/true, /*request_shipping=*/true);
 
-  autofill::TestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(0U, payment_request.shipping_profiles().size());
   EXPECT_EQ(0U, payment_request.contact_profiles().size());
 
@@ -490,7 +486,7 @@ TEST_F(PaymentRequestTest, AddAutofillProfileIncognito) {
   EXPECT_EQ(1U, payment_request.shipping_profiles().size());
   EXPECT_EQ(1U, payment_request.contact_profiles().size());
   // The autofill profile should not get added to the PersonalDataManager.
-  EXPECT_EQ(0U, personal_data_manager.GetProfiles().size());
+  EXPECT_EQ(0U, test_personal_data_manager_.GetProfiles().size());
 }
 
 // Tests updating an autofill profile.
@@ -548,7 +544,6 @@ TEST_F(PaymentRequestTest, UpdateAutofillProfileIncognito) {
 // Test that parsing shipping options works as expected.
 TEST_F(PaymentRequestTest, SelectedShippingOptions) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentDetails details;
   details.total = std::make_unique<PaymentItem>();
@@ -570,7 +565,7 @@ TEST_F(PaymentRequestTest, SelectedShippingOptions) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   // The last one marked "selected" should be selected.
   EXPECT_EQ("option:3", payment_request.selected_shipping_option()->id);
 
@@ -584,7 +579,6 @@ TEST_F(PaymentRequestTest, SelectedShippingOptions) {
 // Tests that updating the payment details updates the total amount.
 TEST_F(PaymentRequestTest, UpdatePaymentDetailsNewTotal) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentDetails details;
   details.total = std::make_unique<PaymentItem>();
@@ -594,7 +588,7 @@ TEST_F(PaymentRequestTest, UpdatePaymentDetailsNewTotal) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
 
   // Simulate an update with a new total amount.
   PaymentDetails new_details;
@@ -610,7 +604,6 @@ TEST_F(PaymentRequestTest, UpdatePaymentDetailsNewTotal) {
 // is missing the total amount, maintains the old total amount.
 TEST_F(PaymentRequestTest, UpdatePaymentDetailsNoTotal) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentDetails details;
   details.total = std::make_unique<PaymentItem>();
@@ -620,7 +613,7 @@ TEST_F(PaymentRequestTest, UpdatePaymentDetailsNoTotal) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
 
   // Simulate an update with the total amount missing.
   PaymentDetails new_details;
@@ -631,7 +624,6 @@ TEST_F(PaymentRequestTest, UpdatePaymentDetailsNoTotal) {
 
 // Test that loading profiles when none are available works as expected.
 TEST_F(PaymentRequestTest, SelectedProfiles_NoProfiles) {
-  autofill::TestPersonalDataManager personal_data_manager;
   WebPaymentRequest web_payment_request;
   web_payment_request.details = CreateDetailsWithShippingOption();
   web_payment_request.options = CreatePaymentOptions(
@@ -641,20 +633,19 @@ TEST_F(PaymentRequestTest, SelectedProfiles_NoProfiles) {
   // No profiles are selected because none are available!
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
   EXPECT_EQ(nullptr, payment_request.selected_contact_profile());
 }
 
 // Test that loading complete shipping and contact profiles works as expected.
 TEST_F(PaymentRequestTest, SelectedProfiles_Complete) {
-  autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   address.set_use_count(5U);
-  personal_data_manager.AddProfile(address);
+  test_personal_data_manager_.AddProfile(address);
   autofill::AutofillProfile address2 = autofill::test::GetFullProfile2();
   address2.set_use_count(15U);
-  personal_data_manager.AddProfile(address2);
+  test_personal_data_manager_.AddProfile(address2);
 
   WebPaymentRequest web_payment_request;
   web_payment_request.details = CreateDetailsWithShippingOption();
@@ -665,7 +656,7 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Complete) {
   // address2 is selected because it has the most use count (Frecency model).
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(address2.guid(),
             payment_request.selected_shipping_profile()->guid());
   EXPECT_EQ(address2.guid(),
@@ -675,10 +666,9 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Complete) {
 // Test that loading complete shipping and contact profiles, when there are no
 // shipping options available, works as expected.
 TEST_F(PaymentRequestTest, SelectedProfiles_Complete_NoShippingOption) {
-  autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   address.set_use_count(5U);
-  personal_data_manager.AddProfile(address);
+  test_personal_data_manager_.AddProfile(address);
 
   WebPaymentRequest web_payment_request;
   // No shipping options.
@@ -691,24 +681,23 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Complete_NoShippingOption) {
   // shipping option. However there is a suitable contact profile.
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
   EXPECT_EQ(address.guid(), payment_request.selected_contact_profile()->guid());
 }
 
 // Test that loading incomplete shipping and contact profiles works as expected.
 TEST_F(PaymentRequestTest, SelectedProfiles_Incomplete) {
-  autofill::TestPersonalDataManager personal_data_manager;
   // Add a profile with no phone (incomplete).
   autofill::AutofillProfile address1 = autofill::test::GetFullProfile();
   address1.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                    base::string16(), "en-US");
   address1.set_use_count(5U);
-  personal_data_manager.AddProfile(address1);
+  test_personal_data_manager_.AddProfile(address1);
   // Add a complete profile, with fewer use counts.
   autofill::AutofillProfile address2 = autofill::test::GetFullProfile2();
   address2.set_use_count(3U);
-  personal_data_manager.AddProfile(address2);
+  test_personal_data_manager_.AddProfile(address2);
 
   WebPaymentRequest web_payment_request;
   web_payment_request.details = CreateDetailsWithShippingOption();
@@ -720,7 +709,7 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Incomplete) {
   // is complete.
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(address2.guid(),
             payment_request.selected_shipping_profile()->guid());
   EXPECT_EQ(address2.guid(),
@@ -732,17 +721,16 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Incomplete) {
 // shipping profile is selected.
 TEST_F(PaymentRequestTest,
        SelectedProfiles_IncompleteContact_NoRequestPayerPhone) {
-  autofill::TestPersonalDataManager personal_data_manager;
   // Add a profile with no phone (incomplete).
   autofill::AutofillProfile address1 = autofill::test::GetFullProfile();
   address1.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                    base::string16(), "en-US");
   address1.set_use_count(5U);
-  personal_data_manager.AddProfile(address1);
+  test_personal_data_manager_.AddProfile(address1);
   // Add a complete profile, with fewer use counts.
   autofill::AutofillProfile address2 = autofill::test::GetFullProfile();
   address2.set_use_count(3U);
-  personal_data_manager.AddProfile(address2);
+  test_personal_data_manager_.AddProfile(address2);
 
   WebPaymentRequest web_payment_request;
   web_payment_request.details = CreateDetailsWithShippingOption();
@@ -757,7 +745,7 @@ TEST_F(PaymentRequestTest,
   // complete for shipping.
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(address2.guid(),
             payment_request.selected_shipping_profile()->guid());
   EXPECT_EQ(address1.guid(),
@@ -766,26 +754,24 @@ TEST_F(PaymentRequestTest,
 
 // Test that loading payment methods when none are available works as expected.
 TEST_F(PaymentRequestTest, SelectedPaymentMethod_NoPaymentMethods) {
-  autofill::TestPersonalDataManager personal_data_manager;
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
 
   // No payment methods are selected because none are available!
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(nullptr, payment_request.selected_payment_method());
 }
 
 // Test that loading expired credit cards works as expected.
 TEST_F(PaymentRequestTest, SelectedPaymentMethod_ExpiredCard) {
-  autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
-  personal_data_manager.AddProfile(billing_address);
+  test_personal_data_manager_.AddProfile(billing_address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
   credit_card.SetExpirationYear(2016);  // Expired.
   credit_card.set_billing_address_id(billing_address.guid());
-  personal_data_manager.AddCreditCard(credit_card);
+  test_personal_data_manager_.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -793,7 +779,7 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_ExpiredCard) {
   // credit_card is selected because expired cards are valid for payment.
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   EXPECT_EQ(payment_request.selected_payment_method()->type(),
             PaymentInstrument::Type::AUTOFILL);
   AutofillPaymentInstrument* payment_instrument =
@@ -804,17 +790,16 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_ExpiredCard) {
 
 // Test that loading complete payment methods works as expected.
 TEST_F(PaymentRequestTest, SelectedPaymentMethod_Complete) {
-  autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
-  personal_data_manager.AddProfile(billing_address);
+  test_personal_data_manager_.AddProfile(billing_address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
   credit_card.set_use_count(5U);
   credit_card.set_billing_address_id(billing_address.guid());
-  personal_data_manager.AddCreditCard(credit_card);
+  test_personal_data_manager_.AddCreditCard(credit_card);
   autofill::CreditCard credit_card2 = autofill::test::GetCreditCard2();
   credit_card2.set_use_count(15U);
   credit_card2.set_billing_address_id(billing_address.guid());
-  personal_data_manager.AddCreditCard(credit_card2);
+  test_personal_data_manager_.AddCreditCard(credit_card2);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -823,7 +808,7 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_Complete) {
   // model).
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   AutofillPaymentInstrument* payment_instrument =
       static_cast<AutofillPaymentInstrument*>(
           payment_request.selected_payment_method());
@@ -832,16 +817,15 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_Complete) {
 
 // Test that loading incomplete payment methods works as expected.
 TEST_F(PaymentRequestTest, SelectedPaymentMethod_Incomplete) {
-  autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
-  personal_data_manager.AddProfile(billing_address);
+  test_personal_data_manager_.AddProfile(billing_address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
   credit_card.set_use_count(5U);
   credit_card.set_billing_address_id(billing_address.guid());
-  personal_data_manager.AddCreditCard(credit_card);
+  test_personal_data_manager_.AddCreditCard(credit_card);
   autofill::CreditCard credit_card2 = autofill::test::GetCreditCard2();
   credit_card2.set_use_count(15U);
-  personal_data_manager.AddCreditCard(credit_card2);
+  test_personal_data_manager_.AddCreditCard(credit_card2);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -850,7 +834,7 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_Incomplete) {
   // because it is complete.
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   AutofillPaymentInstrument* payment_instrument =
       static_cast<AutofillPaymentInstrument*>(
           payment_request.selected_payment_method());
@@ -1046,11 +1030,10 @@ TEST_F(PaymentRequestTest, RecordUseStats_NoShippingOrContactInfoRequested) {
 // Tests that the modifier should not get applied when the card network is not
 // supported.
 TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMismatch) {
-  autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddProfile(address);
+  test_personal_data_manager_.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();  // Visa.
-  personal_data_manager.AddCreditCard(credit_card);
+  test_personal_data_manager_.AddCreditCard(credit_card);
   credit_card.set_billing_address_id(address.guid());
 
   WebPaymentRequest web_payment_request =
@@ -1071,7 +1054,7 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMismatch) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   AutofillPaymentInstrument* selected_payment_method =
       static_cast<AutofillPaymentInstrument*>(
           payment_request.selected_payment_method());
@@ -1084,12 +1067,11 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMismatch) {
 
 // Tests that the modifier should get applied when the card network is a match.
 TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMatch) {
-  autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddProfile(address);
+  test_personal_data_manager_.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard2();  // Amex.
   credit_card.set_billing_address_id(address.guid());
-  personal_data_manager.AddCreditCard(credit_card);
+  test_personal_data_manager_.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -1109,7 +1091,7 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMatch) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   AutofillPaymentInstrument* selected_payment_method =
       static_cast<AutofillPaymentInstrument*>(
           payment_request.selected_payment_method());
@@ -1132,11 +1114,10 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMatch) {
 // Tests that the modifier should not get applied when the card type is not
 // supported.
 TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_TypeMismatch) {
-  autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddProfile(address);
+  test_personal_data_manager_.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard2();  // Amex.
-  personal_data_manager.AddCreditCard(credit_card);
+  test_personal_data_manager_.AddCreditCard(credit_card);
   credit_card.set_billing_address_id(address.guid());
 
   WebPaymentRequest web_payment_request =
@@ -1159,7 +1140,7 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_TypeMismatch) {
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   AutofillPaymentInstrument* selected_payment_method =
       static_cast<AutofillPaymentInstrument*>(
           payment_request.selected_payment_method());
@@ -1174,13 +1155,12 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_TypeMismatch) {
 // are both a match.
 TEST_F(PaymentRequestTest,
        PaymentDetailsModifier_BasicCard_NetworkAndTypeMatch) {
-  autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddProfile(address);
+  test_personal_data_manager_.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetMaskedServerCardAmex();
   credit_card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
   credit_card.set_billing_address_id(address.guid());
-  personal_data_manager.AddCreditCard(credit_card);
+  test_personal_data_manager_.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -1202,7 +1182,7 @@ TEST_F(PaymentRequestTest,
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
   AutofillPaymentInstrument* selected_payment_method =
       static_cast<AutofillPaymentInstrument*>(
           payment_request.selected_payment_method());
@@ -1225,8 +1205,6 @@ TEST_F(PaymentRequestTest,
 // Tests that payment_request_util::RequestContactInfo returns true if payer's
 // name, phone number, or email address are requested and false otherwise.
 TEST_F(PaymentRequestTest, RequestContactInfo) {
-  autofill::TestPersonalDataManager personal_data_manager;
-
   payments::WebPaymentRequest web_payment_request;
 
   web_payment_request.options.request_payer_name = true;
@@ -1234,32 +1212,30 @@ TEST_F(PaymentRequestTest, RequestContactInfo) {
   web_payment_request.options.request_payer_email = true;
   payments::TestPaymentRequest payment_request1(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_TRUE(payment_request1.RequestContactInfo());
 
   web_payment_request.options.request_payer_name = false;
   payments::TestPaymentRequest payment_request2(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_TRUE(payment_request2.RequestContactInfo());
 
   web_payment_request.options.request_payer_phone = false;
   payments::TestPaymentRequest payment_request3(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_TRUE(payment_request3.RequestContactInfo());
 
   web_payment_request.options.request_payer_email = false;
   payments::TestPaymentRequest payment_request4(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_FALSE(payment_request4.RequestContactInfo());
 }
 
 // Tests the return value of payment_request_util::CanPay.
 TEST_F(PaymentRequestTest, CanPay) {
-  autofill::TestPersonalDataManager personal_data_manager;
-
   payments::WebPaymentRequest web_payment_request;
   payments::PaymentMethodData method_datum;
   method_datum.supported_methods.push_back("basic-card");
@@ -1269,7 +1245,7 @@ TEST_F(PaymentRequestTest, CanPay) {
   // No selected payment method.
   payments::TestPaymentRequest payment_request1(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_FALSE(payment_request1.IsAbleToPay());
 
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
@@ -1279,39 +1255,39 @@ TEST_F(PaymentRequestTest, CanPay) {
                   "en-US");
   profile.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                   base::string16(), "en-US");
-  personal_data_manager.AddProfile(profile);
+  test_personal_data_manager_.AddProfile(profile);
   autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
   card.set_billing_address_id(profile.guid());
-  personal_data_manager.AddCreditCard(card);
+  test_personal_data_manager_.AddCreditCard(card);
 
   // Has a selected payment method.
   payments::TestPaymentRequest payment_request2(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_TRUE(payment_request2.IsAbleToPay());
 
   // No selected contact info.
   web_payment_request.options.request_payer_phone = true;
   payments::TestPaymentRequest payment_request3(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_FALSE(payment_request3.IsAbleToPay());
 
-  personal_data_manager.GetProfiles()[0]->SetInfo(
+  test_personal_data_manager_.GetProfiles()[0]->SetInfo(
       autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
       base::ASCIIToUTF16("16502111111"), "en-US");
 
   // Has a selected contact info.
   payments::TestPaymentRequest payment_request4(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_TRUE(payment_request4.IsAbleToPay());
 
   // No selected shipping address.
   web_payment_request.options.request_shipping = true;
   payments::TestPaymentRequest payment_request5(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_FALSE(payment_request5.IsAbleToPay());
 
   profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
@@ -1320,7 +1296,7 @@ TEST_F(PaymentRequestTest, CanPay) {
   // Has a selected shipping address, but no selected shipping option.
   payments::TestPaymentRequest payment_request6(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_FALSE(payment_request6.IsAbleToPay());
 
   std::vector<payments::PaymentShippingOption> shipping_options;
@@ -1333,7 +1309,7 @@ TEST_F(PaymentRequestTest, CanPay) {
   // Has a selected shipping address and a selected shipping option.
   payments::TestPaymentRequest payment_request7(
       web_payment_request, chrome_browser_state_.get(), &web_state_,
-      &personal_data_manager);
+      &test_personal_data_manager_);
   EXPECT_TRUE(payment_request7.IsAbleToPay());
 }
 
