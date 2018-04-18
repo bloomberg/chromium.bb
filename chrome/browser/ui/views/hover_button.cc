@@ -225,13 +225,17 @@ void HoverButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 bool HoverButton::IsTriggerableEventType(const ui::Event& event) {
-  // HoverButton should only be triggered on mouse released, like normal
-  // buttons. To make sure that the button listener is only notified when the
-  // mouse was released, the event type must be explicitly checked here, since
-  // Button::IsTriggerableEvent() returns true even it was just a press.
-  if (event.IsMouseEvent())
-    return event.type() == ui::ET_MOUSE_RELEASED;
-  return Button::IsTriggerableEvent(event);
+  // Override MenuButton::IsTriggerableEventType so the HoverButton only
+  // triggers on mouse-button release, like normal buttons.
+  if (event.IsMouseEvent()) {
+    // The button listener must only be notified when the mouse was released.
+    // The event type must be explicitly checked here, since
+    // Button::IsTriggerableEvent() returns true on the mouse-down event.
+    return Button::IsTriggerableEvent(event) &&
+           event.type() == ui::ET_MOUSE_RELEASED;
+  }
+
+  return MenuButton::IsTriggerableEventType(event);
 }
 
 void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
