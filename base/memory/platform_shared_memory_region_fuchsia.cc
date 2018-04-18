@@ -9,11 +9,16 @@
 #include <zircon/syscalls.h>
 
 #include "base/bits.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/process/process_metrics.h"
 
 namespace base {
 namespace subtle {
+
+static constexpr int kNoWriteOrExec =
+    ZX_DEFAULT_VMO_RIGHTS &
+    ~(ZX_RIGHT_WRITE | ZX_RIGHT_EXECUTE | ZX_RIGHT_SET_PROPERTY);
 
 // static
 PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
@@ -55,8 +60,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Duplicate() const {
   zx_status_t status = zx_handle_duplicate(handle_.get(), ZX_RIGHT_SAME_RIGHTS,
                                            duped_handle.receive());
   if (status != ZX_OK) {
-    DLOG(ERROR) << "zx_handle_duplicate failed: "
-                << zx_status_get_string(status);
+    ZX_DLOG(ERROR, status) << "zx_handle_duplicate";
     return {};
   }
 
@@ -73,13 +77,10 @@ bool PlatformSharedMemoryRegion::ConvertToReadOnly() {
 
   ScopedZxHandle old_handle(handle_.release());
   ScopedZxHandle new_handle;
-  const int kNoWriteOrExec =
-      ZX_DEFAULT_VMO_RIGHTS &
-      ~(ZX_RIGHT_WRITE | ZX_RIGHT_EXECUTE | ZX_RIGHT_SET_PROPERTY);
   zx_status_t status =
       zx_handle_replace(old_handle.get(), kNoWriteOrExec, new_handle.receive());
   if (status != ZX_OK) {
-    DLOG(ERROR) << "zx_handle_replace failed: " << zx_status_get_string(status);
+    ZX_DLOG(ERROR, status) << "zx_handle_replace";
     return false;
   }
   ignore_result(old_handle.release());
@@ -108,7 +109,7 @@ bool PlatformSharedMemoryRegion::MapAt(off_t offset,
       ZX_VM_FLAG_PERM_READ | (write_allowed ? ZX_VM_FLAG_PERM_WRITE : 0),
       &addr);
   if (status != ZX_OK) {
-    DLOG(ERROR) << "zx_vmar_map failed: " << zx_status_get_string(status);
+    ZX_DLOG(ERROR, status) << "zx_vmar_map";
     return false;
   }
 
@@ -135,7 +136,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   ScopedZxHandle vmo;
   zx_status_t status = zx_vmo_create(rounded_size, 0, vmo.receive());
   if (status != ZX_OK) {
-    DLOG(ERROR) << "zx_vmo_create failed: " << zx_status_get_string(status);
+    ZX_DLOG(ERROR, status) << "zx_vmo_create";
     return {};
   }
 
@@ -143,7 +144,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   ScopedZxHandle old_vmo(std::move(vmo));
   status = zx_handle_replace(old_vmo.get(), kNoExecFlags, vmo.receive());
   if (status != ZX_OK) {
-    DLOG(ERROR) << "zx_handle_replace failed: " << zx_status_get_string(status);
+    ZX_DLOG(ERROR, status) << "zx_handle_replace";
     return {};
   }
   ignore_result(old_vmo.release());
@@ -157,7 +158,24 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
     PlatformHandle handle,
     Mode mode,
     size_t size) {
-  // TODO(https://crbug.com/825177): implement this.
+  zx_info_handle_basic_t basic = {};
+  zx_status_t status = zx_object_get_info(handle, ZX_INFO_HANDLE_BASIC, &basic,
+                                          sizeof(basic), nullptr, nullptr);
+  if (status != ZX_OK) {
+    ZX_DLOG(ERROR, status) << "zx_object_get_info";
+    return false;
+  }
+
+  bool is_read_only = (basic.rights & kNoWriteOrExec) == basic.rights;
+  bool expected_read_only = mode == Mode::kReadOnly;
+
+  if (is_read_only != expected_read_only) {
+    DLOG(ERROR) << "VMO object has wrong access rights: it is"
+                << (is_read_only ? " " : " not ") << "read-only but it should"
+                << (expected_read_only ? " " : " not ") << "be";
+    return false;
+  }
+
   return true;
 }
 
