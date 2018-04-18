@@ -30,24 +30,13 @@ struct RenderProcessInfo {
   std::unique_ptr<base::ProcessMetrics> metrics;
 };
 
-using RenderProcessInfoMap = std::map<base::ProcessHandle, RenderProcessInfo>;
-
-// A delegate class for handling metrics collected after each
-// |ResourceCoordinatorRenderProcessProbe| gather cycle.
-class RenderProcessMetricsHandler {
- public:
-  RenderProcessMetricsHandler();
-  virtual ~RenderProcessMetricsHandler();
-  // Handle collected metrics. Returns |true| if the
-  // |ResourceCoordinatorRenderProcessProbe| should initiate another
-  // metrics collection gather cycle.
-  virtual bool HandleMetrics(
-      const RenderProcessInfoMap& render_process_info_map) = 0;
-};
+using RenderProcessInfoMap = std::map<int, RenderProcessInfo>;
 
 // |ResourceCoordinatorRenderProcessProbe| collects measurements about render
 // processes and propagates them to the |resource_coordinator| service.
 // Currently this is only supported for Chrome Metrics experiments.
+// The measurements are initiated and results are dispatched from the UI
+// thread, while acquiring the measurements is done on the IO thread.
 class ResourceCoordinatorRenderProcessProbe {
  public:
   // Returns the current |ResourceCoordinatorRenderProcessProbe| instance
@@ -56,9 +45,18 @@ class ResourceCoordinatorRenderProcessProbe {
 
   static bool IsEnabled();
 
-  // Render process metrics collection cycle:
-  // (0) Initialize and begin render process metrics collection.
+  // Starts the automatic, timed process metrics collection cycle.
+  // Can only be invoked from the UI thread.
   void StartGatherCycle();
+
+ protected:
+  // Internal state protected for testing.
+  friend struct base::LazyInstanceTraitsBase<
+      ResourceCoordinatorRenderProcessProbe>;
+
+  ResourceCoordinatorRenderProcessProbe();
+  virtual ~ResourceCoordinatorRenderProcessProbe();
+
   // (1) Identify all of the render processes that are active to measure.
   // Child render processes can only be discovered in the browser's UI thread.
   void RegisterAliveRenderProcessesOnUIThread();
@@ -70,19 +68,15 @@ class ResourceCoordinatorRenderProcessProbe {
   // consists of a delayed call to perform (1) via a timer.
   void HandleRenderProcessMetricsOnUIThread();
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(ResourceCoordinatorRenderProcessProbeBrowserTest,
-                           TrackAndMeasureActiveRenderProcesses);
-  friend struct base::LazyInstanceTraitsBase<
-      ResourceCoordinatorRenderProcessProbe>;
+  // Handle collected metrics. Returns |true| another metrics collection gather
+  // cycle should be initiated. Virtual for testing.
+  // Default implementation sends collected metrics back to the resource
+  // coordinator service and initiates another render process metrics gather
+  // cycle.
+  virtual bool HandleMetrics(
+      const RenderProcessInfoMap& render_process_info_map);
 
-  ResourceCoordinatorRenderProcessProbe();
-  ~ResourceCoordinatorRenderProcessProbe();
-
-  // Delegate for handling metrics collected after each gather cycle.
-  std::unique_ptr<RenderProcessMetricsHandler> metrics_handler_;
-
-  // A map of currently running ProcessHandles to Process.
+  // A map of currently running render process host IDs to Process.
   RenderProcessInfoMap render_process_info_map_;
 
   // Time duration between measurements.
@@ -95,24 +89,11 @@ class ResourceCoordinatorRenderProcessProbe {
   // Number of measurements collected so far.
   size_t current_gather_cycle_ = 0u;
 
+  // True while a gathering cycle is underways on a background thread.
+  bool is_gathering_ = false;
+
   // Allows FieldTrial parameters to override defaults.
   void UpdateWithFieldTrialParams();
-
-  // Settings/getters for testing.
-  void set_render_process_metrics_handler_for_testing(
-      std::unique_ptr<RenderProcessMetricsHandler> metrics_handler) {
-    metrics_handler_ = std::move(metrics_handler);
-  }
-  const RenderProcessInfoMap& render_process_info_map_for_testing() const {
-    return render_process_info_map_;
-  }
-  size_t current_gather_cycle_for_testing() const {
-    return current_gather_cycle_;
-  }
-
-  // Returns |true| if all of the elements in |render_process_info_map_|
-  // are up-to-date with the |current_gather_cycle_|.
-  bool AllRenderProcessMeasurementsAreCurrentForTesting() const;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorRenderProcessProbe);
 };

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <string>
 
 #include "base/feature_list.h"
@@ -22,20 +23,51 @@
 
 namespace resource_coordinator {
 
-class MockResourceCoordinatorRenderProcessMetricsHandler
-    : public RenderProcessMetricsHandler {
+class TestingResourceCoordinatorRenderProcessProbe
+    : public ResourceCoordinatorRenderProcessProbe {
  public:
-  MockResourceCoordinatorRenderProcessMetricsHandler() = default;
-  ~MockResourceCoordinatorRenderProcessMetricsHandler() override = default;
+  TestingResourceCoordinatorRenderProcessProbe() = default;
+  ~TestingResourceCoordinatorRenderProcessProbe() override = default;
 
   bool HandleMetrics(
       const RenderProcessInfoMap& render_process_info_map) override {
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    current_run_loop_->QuitWhenIdle();
     return false;
   }
 
+  // Returns |true| if all of the elements in |*render_process_info_map_|
+  // are up-to-date with |current_gather_cycle_|.
+  bool AllMeasurementsAreAtCurrentCycle() const {
+    for (auto& render_process_info_map_entry : render_process_info_map_) {
+      auto& render_process_info = render_process_info_map_entry.second;
+      if (render_process_info.last_gather_cycle_active !=
+              current_gather_cycle_ ||
+          render_process_info.cpu_usage < 0.0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  size_t current_gather_cycle() const { return current_gather_cycle_; }
+  const RenderProcessInfoMap& render_process_info_map() const {
+    return render_process_info_map_;
+  }
+
+  void StartGatherCycleAndWait() {
+    base::RunLoop run_loop;
+    current_run_loop_ = &run_loop;
+
+    StartGatherCycle();
+    run_loop.Run();
+
+    current_run_loop_ = nullptr;
+  }
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockResourceCoordinatorRenderProcessMetricsHandler);
+  base::RunLoop* current_run_loop_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingResourceCoordinatorRenderProcessProbe);
 };
 
 class ResourceCoordinatorRenderProcessProbeBrowserTest
@@ -44,20 +76,7 @@ class ResourceCoordinatorRenderProcessProbeBrowserTest
   ResourceCoordinatorRenderProcessProbeBrowserTest() = default;
   ~ResourceCoordinatorRenderProcessProbeBrowserTest() override = default;
 
-  void StartGatherCycleAndWait() {
-    base::RunLoop run_loop;
-    probe_->StartGatherCycle();
-    run_loop.Run();
-  }
-
-  void set_probe(
-      resource_coordinator::ResourceCoordinatorRenderProcessProbe* probe) {
-    probe_ = probe;
-  }
-
  private:
-  resource_coordinator::ResourceCoordinatorRenderProcessProbe* probe_;
-
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorRenderProcessProbeBrowserTest);
 };
 
@@ -69,21 +88,18 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
                                  features::kGRCRenderProcessCPUProfiling},
                                 {});
 
-  resource_coordinator::ResourceCoordinatorRenderProcessProbe probe;
-  probe.set_render_process_metrics_handler_for_testing(
-      std::make_unique<MockResourceCoordinatorRenderProcessMetricsHandler>());
-  set_probe(&probe);
+  TestingResourceCoordinatorRenderProcessProbe probe;
 
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0u, probe.current_gather_cycle_for_testing());
+  EXPECT_EQ(0u, probe.current_gather_cycle());
 
   // A tab is already open when the test begins.
-  StartGatherCycleAndWait();
-  EXPECT_EQ(1u, probe.current_gather_cycle_for_testing());
-  size_t initial_size = probe.render_process_info_map_for_testing().size();
+  probe.StartGatherCycleAndWait();
+  EXPECT_EQ(1u, probe.current_gather_cycle());
+  size_t initial_size = probe.render_process_info_map().size();
   EXPECT_LE(1u, initial_size);
   EXPECT_GE(2u, initial_size);  // If a spare RenderProcessHost is present.
-  EXPECT_TRUE(probe.AllRenderProcessMeasurementsAreCurrentForTesting());
+  EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
 
   // Open a second tab and complete a navigation.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -91,11 +107,31 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  StartGatherCycleAndWait();
-  EXPECT_EQ(2u, probe.current_gather_cycle_for_testing());
-  EXPECT_EQ(initial_size + 1u,
-            probe.render_process_info_map_for_testing().size());
-  EXPECT_TRUE(probe.AllRenderProcessMeasurementsAreCurrentForTesting());
+  probe.StartGatherCycleAndWait();
+  EXPECT_EQ(2u, probe.current_gather_cycle());
+  EXPECT_EQ(initial_size + 1u, probe.render_process_info_map().size());
+  EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
+
+  // Verify that the elements in the map are reused across multiple
+  // measurement cycles.
+  std::map<int, const RenderProcessInfo*> info_map;
+  for (const auto& entry : probe.render_process_info_map()) {
+    const int key = entry.first;
+    const RenderProcessInfo& info = entry.second;
+    EXPECT_EQ(key, info.render_process_host_id);
+    EXPECT_TRUE(info_map.insert(std::make_pair(entry.first, &info)).second);
+  }
+
+  size_t info_map_size = info_map.size();
+  probe.StartGatherCycleAndWait();
+
+  EXPECT_EQ(info_map_size, info_map.size());
+  for (const auto& entry : probe.render_process_info_map()) {
+    const int key = entry.first;
+    const RenderProcessInfo& info = entry.second;
+
+    EXPECT_EQ(&info, info_map[key]);
+  }
 
   // Kill one of the two open tabs.
   EXPECT_TRUE(browser()
@@ -104,10 +140,10 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
                   ->GetMainFrame()
                   ->GetProcess()
                   ->FastShutdownIfPossible());
-  StartGatherCycleAndWait();
-  EXPECT_EQ(3u, probe.current_gather_cycle_for_testing());
-  EXPECT_EQ(initial_size, probe.render_process_info_map_for_testing().size());
-  EXPECT_TRUE(probe.AllRenderProcessMeasurementsAreCurrentForTesting());
+  probe.StartGatherCycleAndWait();
+  EXPECT_EQ(4u, probe.current_gather_cycle());
+  EXPECT_EQ(initial_size, probe.render_process_info_map().size());
+  EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
 }
 
 }  // namespace resource_coordinator
