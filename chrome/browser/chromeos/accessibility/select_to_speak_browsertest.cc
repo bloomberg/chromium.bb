@@ -274,4 +274,30 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, ContinuesReadingDuringResize) {
       base::MatchPattern(speech_monitor_.GetNextUtterance(), "*when*resized*"));
 }
 
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, WorksWithStickyKeys) {
+  AccessibilityManager::Get()->EnableStickyKeys(true);
+
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html;charset=utf-8,<p>This is some text</p>"));
+  gfx::Rect bounds = browser()->window()->GetBounds();
+
+  // Tap Search and click a few pixels into the window bounds.
+  generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
+  generator_->ReleaseKey(ui::VKEY_LWIN, 0 /* flags */);
+
+  // Sticky keys should remember the 'search' key was clicked, so STS is
+  // actually in a capturing mode now.
+  generator_->MoveMouseTo(bounds.x() + 8, bounds.y() + 50);
+  generator_->PressLeftButton();
+  generator_->MoveMouseTo(bounds.x() + bounds.width() - 8,
+                          bounds.y() + bounds.height() - 8);
+  generator_->ReleaseLeftButton();
+
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
+                                 "This is some text*"));
+
+  // Reset state.
+  AccessibilityManager::Get()->EnableStickyKeys(false);
+}
+
 }  // namespace chromeos
