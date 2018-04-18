@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
 
 class Profile;
@@ -28,7 +29,7 @@ class SyncedPrintersManager;
 
 // Top level manager of available CUPS printers in ChromeOS.  All functions
 // in this class must be called from a sequenced context.
-class CupsPrintersManager {
+class CupsPrintersManager : public KeyedService {
  public:
   // Classes of printers tracked.  See doc/cups_printers_management.md for
   // details on what these mean.
@@ -64,7 +65,7 @@ class CupsPrintersManager {
   // Register the printing preferences with the |registry|.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  virtual ~CupsPrintersManager() = default;
+  ~CupsPrintersManager() override = default;
 
   // Get the known printers in the given class.
   virtual std::vector<Printer> GetPrinters(
