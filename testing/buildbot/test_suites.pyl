@@ -1817,7 +1817,13 @@
 
   'win_specific_isolated_scripts': {
     'mini_installer_tests': {
-      'experiment_percentage': 10,
+      'swarming': {
+        'dimension_sets': [
+          {
+            'integrity': 'high',
+          }
+        ],
+      },
     },
   },
 
