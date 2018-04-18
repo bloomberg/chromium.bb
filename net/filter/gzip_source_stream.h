@@ -56,8 +56,11 @@ class NET_EXPORT_PRIVATE GzipSourceStream : public FilterSourceStream {
     STATE_COMPRESSED_BODY,
     // Gzip footer of the input stream is being processed.
     STATE_GZIP_FOOTER,
-    // The input stream is being passed through undecoded.
-    STATE_UNCOMPRESSED_BODY,
+    // The end of the gzipped body has been reached. If any extra bytes are
+    // received, just silently ignore them. Doing this, rather than failing the
+    // request or passing the extra bytes alone with the rest of the response
+    // body, matches the behavior of other browsers.
+    STATE_IGNORING_EXTRA_BYTES,
   };
 
   GzipSourceStream(std::unique_ptr<SourceStream> previous,

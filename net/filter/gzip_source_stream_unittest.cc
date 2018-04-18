@@ -220,14 +220,16 @@ TEST_P(GzipSourceStreamTest, DeflateTwoReads) {
   EXPECT_EQ("DEFLATE", stream()->Description());
 }
 
-TEST_P(GzipSourceStreamTest, PassThroughAfterEOF) {
+// Check that any extra bytes after the end of the gzipped data are silently
+// ignored.
+TEST_P(GzipSourceStreamTest, IgnoreDataAfterEof) {
   Init(SourceStream::TYPE_DEFLATE);
-  char test_data[] = "Hello, World!";
+  const char kExtraData[] = "Hello, World!";
   std::string encoded_data_with_trailing_data(encoded_data(),
                                               encoded_data_len());
-  encoded_data_with_trailing_data.append(test_data, sizeof(test_data));
+  encoded_data_with_trailing_data.append(kExtraData, sizeof(kExtraData));
   source()->AddReadResult(encoded_data_with_trailing_data.c_str(),
-                          encoded_data_len() + sizeof(test_data), OK,
+                          encoded_data_with_trailing_data.length(), OK,
                           GetParam().mode);
   source()->AddReadResult(nullptr, 0, OK, GetParam().mode);
   // Compressed and uncompressed data get returned as separate Read() results,
@@ -235,7 +237,6 @@ TEST_P(GzipSourceStreamTest, PassThroughAfterEOF) {
   std::string actual_output;
   int rv = ReadStream(&actual_output);
   std::string expected_output(source_data(), source_data_len());
-  expected_output.append(test_data, sizeof(test_data));
   EXPECT_EQ(static_cast<int>(expected_output.size()), rv);
   EXPECT_EQ(expected_output, actual_output);
   EXPECT_EQ("DEFLATE", stream()->Description());
