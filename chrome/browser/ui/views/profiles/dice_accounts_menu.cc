@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -24,17 +24,13 @@ constexpr int kUseAnotherAccountCmdId = std::numeric_limits<int>::max();
 // Anchor inset used to position the accounts menu.
 constexpr int kAnchorInset = 8;
 
-// TODO(tangltom): Calculate these values considering the existing menu config.
-constexpr int kVerticalImagePadding = 9;
-constexpr int kHorizontalImagePadding = 6;
+constexpr int kVerticalItemMargins = 12;
+constexpr int kHorizontalIconSpacing = 16;
 
-gfx::Image SizeAndCircleIcon(const gfx::Image& icon) {
+gfx::ImageSkia SizeAndCircleIcon(const gfx::Image& icon) {
   gfx::Image circled_icon = profiles::GetSizedAvatarIcon(
       icon, true, kAvatarIconSize, kAvatarIconSize, profiles::SHAPE_CIRCLE);
-
-  return gfx::Image(gfx::CanvasImageSource::CreatePadded(
-      *circled_icon.ToImageSkia(),
-      gfx::Insets(kVerticalImagePadding, kHorizontalImagePadding)));
+  return *circled_icon.ToImageSkia();
 }
 
 }  // namespace
@@ -42,35 +38,17 @@ gfx::Image SizeAndCircleIcon(const gfx::Image& icon) {
 DiceAccountsMenu::DiceAccountsMenu(const std::vector<AccountInfo>& accounts,
                                    const std::vector<gfx::Image>& icons,
                                    Callback account_selected_callback)
-    : menu_(this),
-      accounts_(accounts),
+    : accounts_(accounts),
+      icons_(icons),
       account_selected_callback_(std::move(account_selected_callback)) {
   DCHECK_EQ(accounts.size(), icons.size());
-  gfx::Image default_icon =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          profiles::GetPlaceholderAvatarIconResourceID());
-  // Add a menu item for each account.
-  menu_.AddSeparator(ui::SPACING_SEPARATOR);
-  for (size_t idx = 0; idx < accounts.size(); idx++) {
-    menu_.AddItem(idx, base::UTF8ToUTF16(accounts[idx].email));
-    menu_.SetIcon(
-        menu_.GetIndexOfCommandId(idx),
-        SizeAndCircleIcon(icons[idx].IsEmpty() ? default_icon : icons[idx]));
-  }
-  // Add the "Use another account" button at the bottom.
-  menu_.AddItem(
-      kUseAnotherAccountCmdId,
-      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_USE_ANOTHER_ACCOUNT_BUTTON));
-  menu_.SetIcon(menu_.GetIndexOfCommandId(kUseAnotherAccountCmdId),
-                SizeAndCircleIcon(default_icon));
-  menu_.AddSeparator(ui::SPACING_SEPARATOR);
 }
 
 void DiceAccountsMenu::Show(views::View* anchor_view,
                             views::MenuButton* menu_button) {
   DCHECK(!runner_);
-  runner_ =
-      std::make_unique<views::MenuRunner>(&menu_, views::MenuRunner::COMBOBOX);
+  runner_ = std::make_unique<views::MenuRunner>(BuildMenu(),
+                                                views::MenuRunner::COMBOBOX);
   // Calculate custom anchor bounds to position the menu.
   // The menu is aligned along the right edge (left edge in RTL mode) of the
   // anchor, slightly shifted inside by |kAnchorInset| and overlapping
@@ -90,19 +68,58 @@ void DiceAccountsMenu::Show(views::View* anchor_view,
 
 DiceAccountsMenu::~DiceAccountsMenu() {}
 
-bool DiceAccountsMenu::IsCommandIdChecked(int command_id) const {
-  return false;
+views::MenuItemView* DiceAccountsMenu::BuildMenu() {
+  views::MenuItemView* menu = new views::MenuItemView(this);
+  gfx::Image default_icon =
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          profiles::GetPlaceholderAvatarIconResourceID());
+  // Add spacing at top.
+  menu->AppendMenuItemImpl(
+      0, base::string16(), base::string16(), base::string16(), nullptr,
+      gfx::ImageSkia(), views::MenuItemView::SEPARATOR, ui::SPACING_SEPARATOR);
+  // Add a menu item for each account.
+  for (size_t idx = 0; idx < accounts_.size(); idx++) {
+    views::MenuItemView* item = menu->AppendMenuItemWithIcon(
+        idx, base::UTF8ToUTF16(accounts_[idx].email),
+        SizeAndCircleIcon(icons_[idx].IsEmpty() ? default_icon : icons_[idx]));
+    item->SetMargins(kVerticalItemMargins, kVerticalItemMargins);
+  }
+  // Add the "Use another account" button at the bottom.
+  views::MenuItemView* item = menu->AppendMenuItemWithIcon(
+      kUseAnotherAccountCmdId,
+      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_USE_ANOTHER_ACCOUNT_BUTTON),
+      SizeAndCircleIcon(default_icon));
+  item->SetMargins(kVerticalItemMargins, kVerticalItemMargins);
+  // Add spacing at bottom.
+  menu->AppendMenuItemImpl(
+      0, base::string16(), base::string16(), base::string16(), nullptr,
+      gfx::ImageSkia(), views::MenuItemView::SEPARATOR, ui::SPACING_SEPARATOR);
+
+  menu->set_has_icons(true);
+  return menu;
 }
 
-bool DiceAccountsMenu::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-void DiceAccountsMenu::ExecuteCommand(int id, int event_flags) {
+void DiceAccountsMenu::ExecuteCommand(int id) {
   DCHECK((0 <= id && static_cast<size_t>(id) < accounts_.size()) ||
          id == kUseAnotherAccountCmdId);
   base::Optional<AccountInfo> account;
   if (id != kUseAnotherAccountCmdId)
     account = accounts_[id];
   std::move(account_selected_callback_).Run(account);
+}
+
+void DiceAccountsMenu::GetHorizontalIconMargins(int command_id,
+                                                int icon_size,
+                                                int* left_margin,
+                                                int* right_margin) const {
+  const views::MenuConfig& config = views::MenuConfig::instance();
+  *left_margin = kHorizontalIconSpacing - config.item_left_margin;
+  *right_margin = kHorizontalIconSpacing - config.icon_to_label_padding;
+}
+
+const gfx::FontList* DiceAccountsMenu::GetLabelFontList(int id) const {
+  const views::LayoutProvider* provider = views::LayoutProvider::Get();
+  // Match the font of the HoverButtons in the avatar bubble.
+  return &provider->GetTypographyProvider().GetFont(
+      views::style::CONTEXT_BUTTON, STYLE_SECONDARY);
 }
