@@ -553,6 +553,9 @@ class ASH_EXPORT TouchExplorationController
   // Whether or not we've seen a touch press event yet.
   bool seen_press_ = false;
 
+  // The maximum touch points seen in the current gesture.
+  size_t max_gesture_touch_points_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };
 

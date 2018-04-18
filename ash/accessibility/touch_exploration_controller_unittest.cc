@@ -97,6 +97,7 @@ class MockTouchExplorationControllerDelegate
     return num_times_touch_type_sound_played_;
   }
   ax::mojom::Gesture GetLastGesture() const { return last_gesture_; }
+  void ResetLastGesture() { last_gesture_ = ax::mojom::Gesture::kNone; }
 
   void ResetCountersToZero() {
     num_times_adjust_sound_played_ = 0;
@@ -2109,6 +2110,83 @@ TEST_F(TouchExplorationTest, AlreadyHeldFingersGetCanceled) {
   std::vector<ui::LocatedEvent*> events =
       GetCapturedLocatedEventsOfType(ui::ET_TOUCH_CANCELLED);
   ASSERT_EQ(1U, events.size());
+}
+
+// Ensure 3 or 4 finger tap gets recognized correctly.
+TEST_F(TouchExplorationTest, ThreeOrFourFingerTap) {
+  SwitchTouchExplorationMode(true);
+
+  ui::TouchEvent press_id_1(
+      ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent release_id_1(
+      ui::ET_TOUCH_RELEASED, gfx::Point(100, 200), Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent press_id_2(
+      ui::ET_TOUCH_PRESSED, gfx::Point(110, 200), Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+  ui::TouchEvent release_id_2(
+      ui::ET_TOUCH_RELEASED, gfx::Point(110, 200), Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+  ui::TouchEvent press_id_3(
+      ui::ET_TOUCH_PRESSED, gfx::Point(120, 200), Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 3));
+  ui::TouchEvent release_id_3(
+      ui::ET_TOUCH_RELEASED, gfx::Point(120, 200), Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 3));
+  ui::TouchEvent press_id_4(
+      ui::ET_TOUCH_PRESSED, gfx::Point(130, 200), Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 4));
+  ui::TouchEvent release_id_4(
+      ui::ET_TOUCH_RELEASED, gfx::Point(120, 200), Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 4));
+
+  // Three fingers down.
+  generator_->Dispatch(&press_id_1);
+  EXPECT_FALSE(IsInTwoFingerTapState());
+  generator_->Dispatch(&press_id_2);
+  EXPECT_TRUE(IsInTwoFingerTapState());
+  generator_->Dispatch(&press_id_3);
+  EXPECT_TRUE(IsInGestureInProgressState());
+
+  // Three fingers up.
+  generator_->Dispatch(&release_id_1);
+  EXPECT_TRUE(IsInGestureInProgressState());
+  generator_->Dispatch(&release_id_2);
+  EXPECT_TRUE(IsInGestureInProgressState());
+
+  ASSERT_EQ(ax::mojom::Gesture::kNone, delegate_.GetLastGesture());
+
+  generator_->Dispatch(&release_id_3);
+  EXPECT_TRUE(IsInNoFingersDownState());
+
+  ASSERT_EQ(ax::mojom::Gesture::kTap3, delegate_.GetLastGesture());
+  delegate_.ResetLastGesture();
+
+  // Four fingers down.
+  generator_->Dispatch(&press_id_1);
+  EXPECT_FALSE(IsInTwoFingerTapState());
+  generator_->Dispatch(&press_id_2);
+  EXPECT_TRUE(IsInTwoFingerTapState());
+  generator_->Dispatch(&press_id_3);
+  EXPECT_TRUE(IsInGestureInProgressState());
+  generator_->Dispatch(&press_id_4);
+  EXPECT_TRUE(IsInGestureInProgressState());
+
+  // Four fingers up.
+  generator_->Dispatch(&release_id_1);
+  EXPECT_TRUE(IsInGestureInProgressState());
+  generator_->Dispatch(&release_id_2);
+  EXPECT_TRUE(IsInGestureInProgressState());
+  generator_->Dispatch(&release_id_3);
+  EXPECT_TRUE(IsInGestureInProgressState());
+
+  ASSERT_EQ(ax::mojom::Gesture::kNone, delegate_.GetLastGesture());
+
+  generator_->Dispatch(&release_id_4);
+  EXPECT_TRUE(IsInNoFingersDownState());
+
+  ASSERT_EQ(ax::mojom::Gesture::kTap4, delegate_.GetLastGesture());
 }
 
 }  // namespace ash

@@ -2131,6 +2131,10 @@ const char* ToString(ax::mojom::Gesture gesture) {
       return "swipeDown4";
     case ax::mojom::Gesture::kTap2:
       return "tap2";
+    case ax::mojom::Gesture::kTap3:
+      return "tap3";
+    case ax::mojom::Gesture::kTap4:
+      return "tap4";
   }
 
   return "";
@@ -2175,6 +2179,10 @@ ax::mojom::Gesture ParseGesture(const char* gesture) {
     return ax::mojom::Gesture::kSwipeDown4;
   if (0 == strcmp(gesture, "tap2"))
     return ax::mojom::Gesture::kTap2;
+  if (0 == strcmp(gesture, "tap3"))
+    return ax::mojom::Gesture::kTap3;
+  if (0 == strcmp(gesture, "tap4"))
+    return ax::mojom::Gesture::kTap4;
   return ax::mojom::Gesture::kNone;
 }
 
