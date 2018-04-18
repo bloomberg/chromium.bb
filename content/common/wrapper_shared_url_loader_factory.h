@@ -46,7 +46,8 @@ class WrapperSharedURLLoaderFactoryBase
   explicit WrapperSharedURLLoaderFactoryBase(PtrInfoType factory_ptr_info)
       : factory_ptr_(std::move(factory_ptr_info)) {}
 
-  // SharedURLLoaderFactory implementation.
+  // SharedURLLoaderFactory implementation:
+
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
                             int32_t request_id,
@@ -60,6 +61,12 @@ class WrapperSharedURLLoaderFactoryBase
     factory_ptr_->CreateLoaderAndStart(std::move(loader), routing_id,
                                        request_id, options, request,
                                        std::move(client), traffic_annotation);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    if (!factory_ptr_)
+      return;
+    factory_ptr_->Clone(std::move(request));
   }
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {

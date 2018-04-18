@@ -32,8 +32,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactory
   static scoped_refptr<SharedURLLoaderFactory> Create(
       std::unique_ptr<SharedURLLoaderFactoryInfo> info);
 
-  // network::mojom::URLLoaderFactory
-  void Clone(network::mojom::URLLoaderFactoryRequest request) final;
+  // From network::mojom::URLLoaderFactory:
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override = 0;
 
   virtual std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() = 0;
 

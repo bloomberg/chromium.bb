@@ -41,12 +41,6 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
   }
 
  protected:
-  // network::SharedURLLoaderFactory implementation:
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
   // network::URLLoaderFactory implementation:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
@@ -60,6 +54,16 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     GetURLLoaderFactory()->CreateLoaderAndStart(
         std::move(loader), routing_id, request_id, options, request,
         std::move(client), traffic_annotation);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    GetURLLoaderFactory()->Clone(std::move(request));
+  }
+
+  // network::SharedURLLoaderFactory implementation:
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    NOTREACHED();
+    return nullptr;
   }
 
   network::mojom::URLLoaderFactory* GetURLLoaderFactory() {

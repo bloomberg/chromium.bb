@@ -88,6 +88,11 @@ void SingleRequestURLLoaderFactory::CreateLoaderAndStart(
   state_->HandleRequest(std::move(loader), std::move(client));
 }
 
+void SingleRequestURLLoaderFactory::Clone(
+    network::mojom::URLLoaderFactoryRequest request) {
+  NOTREACHED();
+}
+
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 SingleRequestURLLoaderFactory::Clone() {
   return std::make_unique<FactoryInfo>(state_);

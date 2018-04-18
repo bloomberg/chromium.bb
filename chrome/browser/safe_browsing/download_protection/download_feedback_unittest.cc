@@ -96,11 +96,6 @@ class SharedURLLoaderFactory : public network::SharedURLLoaderFactory {
       network::mojom::URLLoaderFactory* url_loader_factory)
       : url_loader_factory_(url_loader_factory) {}
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
   // network::URLLoaderFactory implementation:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
@@ -113,6 +108,16 @@ class SharedURLLoaderFactory : public network::SharedURLLoaderFactory {
     url_loader_factory_->CreateLoaderAndStart(
         std::move(loader), routing_id, request_id, options, std::move(request),
         std::move(client), traffic_annotation);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
+
+  // network::SharedURLLoaderFactoryInfo implementation
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    NOTREACHED();
+    return nullptr;
   }
 
  private:

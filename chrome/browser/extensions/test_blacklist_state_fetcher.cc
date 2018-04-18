@@ -33,11 +33,6 @@ class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
  public:
   DummySharedURLLoaderFactory() {}
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
   // network::URLLoaderFactory implementation:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
@@ -50,6 +45,16 @@ class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
     // Ensure the client pipe doesn't get closed to avoid SimpleURLLoader seeing
     // a connection error.
     clients_.push_back(std::move(client));
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
+
+  // network::SharedURLLoaderFactoryInfo implementation
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    NOTREACHED();
+    return nullptr;
   }
 
  private:

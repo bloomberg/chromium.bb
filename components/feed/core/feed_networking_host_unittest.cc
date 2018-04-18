@@ -61,6 +61,10 @@ class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
                                        std::move(client), traffic_annotation);
   }
 
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
+
   std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override {
     NOTREACHED();
     return nullptr;
