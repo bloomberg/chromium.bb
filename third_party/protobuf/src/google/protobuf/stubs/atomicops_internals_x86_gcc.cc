@@ -67,14 +67,12 @@ namespace internal {
 // Set the flags so that code will run correctly and conservatively, so even
 // if we haven't been initialized yet, we're probably single threaded, and our
 // default values should hopefully be pretty safe.
-struct AtomicOps_x86CPUFeatureStruct AtomicOps_Internalx86CPUFeatures = {
+AtomicOps_x86CPUFeatureStruct AtomicOps_x86CPUFeatures_Private = {
+  false,          // uninitialized
   false,          // bug can't exist before process spawns multiple threads
   false,          // no SSE2
 };
 
-namespace {
-
-// Initialize the AtomicOps_Internalx86CPUFeatures struct.
 void AtomicOps_Internalx86CPUFeaturesInit() {
   uint32_t eax;
   uint32_t ebx;
@@ -99,6 +97,13 @@ void AtomicOps_Internalx86CPUFeaturesInit() {
     model += ((eax >> 16) & 0xf) << 4;
   }
 
+  // Rarely, this function may be called from multiple threads at the same time.
+  // To prevent races, do the initialization in a temporary struct and do a
+  // lock-free assignment at the end.  The assignment will be atomic since the
+  // struct can fit into a single byte.
+  AtomicOps_x86CPUFeatureStruct New_AtomicOps_x86CPUFeatures_Private;
+  New_AtomicOps_x86CPUFeatures_Private.initialized = true;
+
   // Opteron Rev E has a bug in which on very rare occasions a locked
   // instruction doesn't act as a read-acquire barrier if followed by a
   // non-locked read-modify-write instruction.  Rev F has this bug in
@@ -107,26 +112,16 @@ void AtomicOps_Internalx86CPUFeaturesInit() {
   if (strcmp(vendor, "AuthenticAMD") == 0 &&       // AMD
       family == 15 &&
       32 <= model && model <= 63) {
-    AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = true;
+    New_AtomicOps_x86CPUFeatures_Private.has_amd_lock_mb_bug = true;
   } else {
-    AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = false;
+    New_AtomicOps_x86CPUFeatures_Private.has_amd_lock_mb_bug = false;
   }
 
   // edx bit 26 is SSE2 which we use to tell use whether we can use mfence
-  AtomicOps_Internalx86CPUFeatures.has_sse2 = ((edx >> 26) & 1);
+  New_AtomicOps_x86CPUFeatures_Private.has_sse2 = ((edx >> 26) & 1);
+
+  AtomicOps_x86CPUFeatures_Private = New_AtomicOps_x86CPUFeatures_Private;
 }
-
-class AtomicOpsx86Initializer {
- public:
-  AtomicOpsx86Initializer() {
-    AtomicOps_Internalx86CPUFeaturesInit();
-  }
-};
-
-// A global to get use initialized on startup via static initialization :/
-AtomicOpsx86Initializer g_initer;
-
-}  // namespace
 
 }  // namespace internal
 }  // namespace protobuf

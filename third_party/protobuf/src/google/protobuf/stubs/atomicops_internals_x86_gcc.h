@@ -33,20 +33,39 @@
 #ifndef GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_X86_GCC_H_
 #define GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_X86_GCC_H_
 
+#include <google/protobuf/stubs/port.h>
+
 namespace google {
 namespace protobuf {
 namespace internal {
 
-// This struct is not part of the public API of this module; clients may not
-// use it.
-// Features of this x86.  Values may not be correct before main() is run,
-// but are set conservatively.
+// This struct and its associated functions are not part of the public API of
+// this module; clients may not use it.
+//
+// Features of this x86.
 struct AtomicOps_x86CPUFeatureStruct {
-  bool has_amd_lock_mb_bug;  // Processor has AMD memory-barrier bug; do lfence
-                             // after acquire compare-and-swap.
-  bool has_sse2;             // Processor has SSE2.
+  // Whether AtomicOps_Internalx86CPUFeaturesInit was called.
+  bool initialized : 1;
+
+  // Processor has AMD memory-barrier bug; do lfence after acquire
+  // compare-and-swap.
+  bool has_amd_lock_mb_bug : 1;
+
+  // Processor has SSE2.
+  bool has_sse2 : 1;
 };
-extern struct AtomicOps_x86CPUFeatureStruct AtomicOps_Internalx86CPUFeatures;
+
+// Initialize |AtomicOps_Internalx86CPUFeatures_Private|.
+void AtomicOps_Internalx86CPUFeaturesInit();
+
+inline const AtomicOps_x86CPUFeatureStruct&
+Get_AtomicOps_Internalx86CPUFeatures() {
+  extern AtomicOps_x86CPUFeatureStruct AtomicOps_x86CPUFeatures_Private;
+  if (GOOGLE_PREDICT_FALSE(!AtomicOps_x86CPUFeatures_Private.initialized)) {
+    AtomicOps_Internalx86CPUFeaturesInit();
+  }
+  return AtomicOps_x86CPUFeatures_Private;
+}
 
 #define ATOMICOPS_COMPILER_BARRIER() __asm__ __volatile__("" : : : "memory")
 
@@ -89,7 +108,7 @@ inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
                        : "+r" (temp), "+m" (*ptr)
                        : : "memory");
   // temp now holds the old value of *ptr
-  if (AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug) {
+  if (Get_AtomicOps_Internalx86CPUFeatures().has_amd_lock_mb_bug) {
     __asm__ __volatile__("lfence" : : : "memory");
   }
   return temp + increment;
@@ -99,7 +118,7 @@ inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
   Atomic32 x = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
-  if (AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug) {
+  if (Get_AtomicOps_Internalx86CPUFeatures().has_amd_lock_mb_bug) {
     __asm__ __volatile__("lfence" : : : "memory");
   }
   return x;
@@ -131,7 +150,7 @@ inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
 #else
 
 inline void MemoryBarrierInternal() {
-  if (AtomicOps_Internalx86CPUFeatures.has_sse2) {
+  if (Get_AtomicOps_Internalx86CPUFeatures().has_sse2) {
     __asm__ __volatile__("mfence" : : : "memory");
   } else {  // mfence is faster but not present on PIII
     Atomic32 x = 0;
@@ -140,7 +159,7 @@ inline void MemoryBarrierInternal() {
 }
 
 inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
-  if (AtomicOps_Internalx86CPUFeatures.has_sse2) {
+  if (Get_AtomicOps_Internalx86CPUFeatures().has_sse2) {
     *ptr = value;
     __asm__ __volatile__("mfence" : : : "memory");
   } else {
@@ -213,7 +232,7 @@ inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64* ptr,
                        : "+r" (temp), "+m" (*ptr)
                        : : "memory");
   // temp now contains the previous value of *ptr
-  if (AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug) {
+  if (Get_AtomicOps_Internalx86CPUFeatures().has_amd_lock_mb_bug) {
     __asm__ __volatile__("lfence" : : : "memory");
   }
   return temp + increment;
@@ -270,7 +289,7 @@ inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64* ptr,
                                        Atomic64 old_value,
                                        Atomic64 new_value) {
   Atomic64 x = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
-  if (AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug) {
+  if (Get_AtomicOps_Internalx86CPUFeatures().has_amd_lock_mb_bug) {
     __asm__ __volatile__("lfence" : : : "memory");
   }
   return x;
