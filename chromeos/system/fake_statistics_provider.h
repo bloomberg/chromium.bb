@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/system/statistics_provider.h"
@@ -22,6 +23,7 @@ class CHROMEOS_EXPORT FakeStatisticsProvider : public StatisticsProvider {
   ~FakeStatisticsProvider() override;
 
   // StatisticsProvider implementation:
+  void ScheduleOnMachineStatisticsLoaded(base::OnceClosure callback) override;
   void StartLoadingMachineStatistics(bool load_oem_manifest) override;
   bool GetMachineStatistic(const std::string& name,
                            std::string* result) override;

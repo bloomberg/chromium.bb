@@ -4,6 +4,10 @@
 
 #include "chromeos/system/fake_statistics_provider.h"
 
+#include <utility>
+
+#include "base/threading/sequenced_task_runner_handle.h"
+
 namespace chromeos {
 namespace system {
 
@@ -13,6 +17,13 @@ FakeStatisticsProvider::~FakeStatisticsProvider() = default;
 
 void FakeStatisticsProvider::StartLoadingMachineStatistics(
     bool load_oem_manifest) {
+}
+
+void FakeStatisticsProvider::ScheduleOnMachineStatisticsLoaded(
+    base::OnceClosure callback) {
+  // No load is required for FakeStatisticsProvider.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                   std::move(callback));
 }
 
 bool FakeStatisticsProvider::GetMachineStatistic(const std::string& name,

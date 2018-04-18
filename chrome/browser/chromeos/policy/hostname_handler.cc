@@ -95,6 +95,16 @@ void HostnameHandler::OnDeviceHostnamePropertyChanged() {
   if (status != chromeos::CrosSettingsProvider::TRUSTED)
     return;
 
+  // Continue when machine statistics are loaded, to avoid blocking.
+  chromeos::system::StatisticsProvider::GetInstance()
+      ->ScheduleOnMachineStatisticsLoaded(base::BindOnce(
+          &HostnameHandler::
+              OnDeviceHostnamePropertyChangedAndMachineStatisticsLoaded,
+          weak_factory_.GetWeakPtr()));
+}
+
+void HostnameHandler::
+    OnDeviceHostnamePropertyChangedAndMachineStatisticsLoaded() {
   std::string hostname_template;
   cros_settings_->GetString(chromeos::kDeviceHostnameTemplate,
                             &hostname_template);
