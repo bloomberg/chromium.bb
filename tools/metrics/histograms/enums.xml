@@ -7340,6 +7340,67 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Could not open or initialize database"/>
 </enum>
 
+<enum name="CookieNetworkSecurity">
+  <int value="0" label="secure attribute (1st party)">
+    First party cookie with `Secure` attribute.
+  </int>
+  <int value="1" label="secure attribute (3rd party)">
+    Third party cookie with `Secure` attribute.
+  </int>
+  <int value="2" label="HSTS host cookie (1st party)">
+    First party host cookie which is covered by HSTS with lifetime exceeding
+    that of the cookie.
+  </int>
+  <int value="3" label="HSTS host cookie (3rd party)">
+    Third party host cookie which is covered by HSTS with lifetime exceeding
+    that of the cookie.
+  </int>
+  <int value="4" label="HSTS subdomains included (1st party)">
+    First party domain cookie which is covered by HSTS (including subdomains)
+    with lifetime exceeding that of the cookie.
+  </int>
+  <int value="5" label="HSTS subdomains included (3rd party)">
+    Third party domain cookie which is covered by HSTS (including subdomains)
+    with lifetime exceeding that of the cookie.
+  </int>
+  <int value="6" label="expiring HSTS host cookie (1st party)">
+    First party host cookie which is covered by HSTS with lifetime falling short
+    of that of the cookie.
+  </int>
+  <int value="7" label="expiring HSTS host cookie (3rd party)">
+    Third party host cookie which is covered by HSTS with lifetime falling short
+    of that of the cookie.
+  </int>
+  <int value="8" label="expiring HSTS subdomains included (1st party)">
+    First party domain cookie which is covered by HSTS (including subdomains)
+    with lifetime falling short of that of the cookie.
+  </int>
+  <int value="9" label="expiring HSTS subdomains included (3rd party)">
+    Third party domain cookie which is covered by HSTS (including subdomains)
+    with lifetime falling short of that of the cookie.
+  </int>
+  <int value="10" label="HSTS spoofable (1st party)">
+    First party domain cookie which is covered by HSTS but without including
+    subdomains.
+  </int>
+  <int value="11" label="HSTS spoofable (3rd party)">
+    Third party domain cookie which is covered by HSTS but without including
+    subdomains.
+  </int>
+  <int value="12" label="Secure connection (1st party)">
+    First party cookie not covered by HSTS, transmitted over secure connection.
+  </int>
+  <int value="13" label="Secure connection (3rd party)">
+    Third party cookie not covered by HSTS, transmitted over secure connection.
+  </int>
+  <int value="14" label="Nonsecure connection (1st party)">
+    First party cookie transmitted over nonsecure connection.
+  </int>
+  <int value="15" label="Nonsecure connection (3rd party)">
+    First party cookie transmitted over nonsecure connection.
+  </int>
+</enum>
+
 <enum name="CookieOrCacheDeletion">
   <int value="0" label="Neither"/>
   <int value="1" label="Only cookies"/>
