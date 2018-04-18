@@ -249,7 +249,11 @@ public class WindowAndroid {
         mNativeWindowAndroid = 0;
     }
 
-    protected AndroidPermissionDelegate getAndroidPermissionDelegate() {
+    /**
+     * @return the delegate to interact with the android permissions system, or null if not
+     *         available
+     */
+    public AndroidPermissionDelegate getAndroidPermissionDelegate() {
         return mPermissionDelegate;
     }
 
