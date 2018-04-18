@@ -67,6 +67,7 @@
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/version_info/version_info_values.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -434,7 +435,7 @@ SyncCredentials ProfileSyncService::GetCredentials() {
   if (credentials.sync_token.empty())
     credentials.sync_token = "credentials_lost";
 
-  credentials.scope_set.insert(signin_->GetSyncScopeToUse());
+  credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
   return credentials;
 }
@@ -1810,7 +1811,7 @@ void ProfileSyncService::RequestAccessToken() {
     return;
   request_access_token_retry_timer_.Stop();
   OAuth2TokenService::ScopeSet oauth2_scopes;
-  oauth2_scopes.insert(signin_->GetSyncScopeToUse());
+  oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
   // Invalidate previous token, otherwise token service will return the same
   // token again.
