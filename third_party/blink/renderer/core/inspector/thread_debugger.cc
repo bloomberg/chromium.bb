@@ -34,8 +34,7 @@ namespace blink {
 
 ThreadDebugger::ThreadDebugger(v8::Isolate* isolate)
     : isolate_(isolate),
-      v8_inspector_(v8_inspector::V8Inspector::create(isolate, this)),
-      v8_tracing_cpu_profiler_(v8::TracingCpuProfiler::Create(isolate)) {}
+      v8_inspector_(v8_inspector::V8Inspector::create(isolate, this)) {}
 
 ThreadDebugger::~ThreadDebugger() = default;
 
