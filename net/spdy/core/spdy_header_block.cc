@@ -274,6 +274,7 @@ SpdyString SpdyHeaderBlock::DebugString() const {
 void SpdyHeaderBlock::erase(SpdyStringPiece key) {
   auto iter = block_.find(key);
   if (iter != block_.end()) {
+    DVLOG(1) << "Erasing header with name: " << key;
     key_size_ -= key.size();
     value_size_ -= iter->second.SizeEstimate();
     block_.erase(iter);
