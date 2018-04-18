@@ -5,13 +5,14 @@
 
 """A tool to extract size information for chrome, executed by buildbot.
 
-  When this is run, the current directory (cwd) should be the outer build
-  directory (e.g., chrome-release/build/).
+When this is run, the current directory (cwd) should be the outer build
+directory (e.g., chrome-release/build/).
 
-  For a list of command-line options, call this script with '--help'.
+For a list of command-line options, call this script with '--help'.
 """
 
 import errno
+import glob
 import json
 import platform
 import optparse
@@ -301,9 +302,8 @@ def check_linux_binary(target_dir, binary_name, options):
     # In newer versions of gcc crtbegin.o inserts frame_dummy into .init_array
     # but we don't want to count this entry, since its alwasys present and not
     # related to our code.
-    assert(si_count > 0)
     si_count -= 1
-
+  si_count = max(si_count, 0)
   sizes.append((binary_name + '-si', 'initializers', '', si_count, 'files'))
 
   # For Release builds only, use dump-static-initializers.py to print the list
@@ -390,18 +390,28 @@ def main_linux(options, args, results_collector):
   return result
 
 
-def check_android_binaries(binaries, target_dir, options):
+def check_android_binaries(binaries, target_dir, options, results_collector,
+                           binaries_to_print=None):
   """Common method for printing size information for Android targets.
+
+  Prints size information for each element of binaries in target_dir.
+  If binaries_to_print is specified, the name of each binary from
+  binaries is replaced with corresponding element of binaries_to_print
+  in output. Returns the first non-zero exit status of any command it
+  executes, or zero on success.
   """
   result = 0
+  if not binaries_to_print:
+    binaries_to_print = binaries
 
-  for binary in binaries:
+  for (binary, binary_to_print) in zip(binaries, binaries_to_print):
     this_result, this_sizes = check_linux_binary(target_dir, binary, options)
     if result == 0:
       result = this_result
     for name, identifier, _, value, units in this_sizes:
-      print 'RESULT %s: %s= %s %s' % (name.replace('/', '_'), identifier, value,
-                                      units)
+      name = name.replace('/', '_').replace(binary, binary_to_print)
+      identifier = identifier.replace(binary, binary_to_print)
+      results_collector.add_result(name, identifier, value, units)
 
   return result
 
@@ -418,9 +428,11 @@ def main_android(options, args, results_collector):
   binaries = [
       'chrome_public_apk/libs/armeabi-v7a/libchrome.so',
       'lib/libchrome.so',
+      'libchrome.so',
   ]
 
-  return check_android_binaries(binaries, target_dir, options)
+  return check_android_binaries(binaries, target_dir, options,
+                                results_collector)
 
 
 def main_android_webview(options, args, results_collector):
@@ -432,9 +444,11 @@ def main_android_webview(options, args, results_collector):
   target_dir = os.path.join(build_directory.GetBuildOutputDirectory(SRC_DIR),
                             options.target)
 
-  binaries = ['lib/libwebviewchromium.so']
+  binaries = ['lib/libwebviewchromium.so',
+              'libwebviewchromium.so']
 
-  return check_android_binaries(binaries, target_dir, options)
+  return check_android_binaries(binaries, target_dir, options,
+                                results_collector)
 
 
 def main_android_cronet(options, args, results_collector):
@@ -445,15 +459,15 @@ def main_android_cronet(options, args, results_collector):
   """
   target_dir = os.path.join(build_directory.GetBuildOutputDirectory(SRC_DIR),
                             options.target)
+  # Use version in binary file name, but not in printed output.
+  binaries_with_paths = glob.glob(os.path.join(target_dir,'libcronet.*.so'))
+  num_binaries = len(binaries_with_paths)
+  assert num_binaries == 1, "Got %d binaries" % (num_binaries,)
+  binaries = [os.path.basename(binaries_with_paths[0])]
+  binaries_to_print = ['libcronet.so']
 
-  binaries = ['cronet_sample_apk/libs/arm64-v8a/libcronet.so',
-              'cronet_sample_apk/libs/armeabi-v7a/libcronet.so',
-              'cronet_sample_apk/libs/armeabi/libcronet.so',
-              'cronet_sample_apk/libs/mips/libcronet.so',
-              'cronet_sample_apk/libs/x86_64/libcronet.so',
-              'cronet_sample_apk/libs/x86/libcronet.so']
-
-  return check_android_binaries(binaries, target_dir, options)
+  return check_android_binaries(binaries, target_dir, options,
+                                results_collector, binaries_to_print)
 
 
 def main_win(options, args, results_collector):
@@ -462,30 +476,39 @@ def main_win(options, args, results_collector):
   Returns the first non-zero exit status of any command it executes,
   or zero on success.
   """
+  files = [
+    'chrome.dll',
+    'chrome.dll.pdb',
+    'chrome.exe',
+    'chrome_child.dll',
+    'chrome_child.dll.pdb',
+    'chrome_elf.dll',
+    'chrome_watcher.dll',
+    'libEGL.dll',
+    'libGLESv2.dll',
+    'mini_installer.exe',
+    'resources.pak',
+    'setup.exe',
+    'swiftshader\\libEGL.dll',
+    'swiftshader\\libGLESv2.dll',
+    'WidevineCdm\\_platform_specific\\win_x64\\widevinecdm.dll',
+    'WidevineCdm\\_platform_specific\\win_x64\\widevinecdmadapter.dll',
+    'WidevineCdm\\_platform_specific\\win_x86\\widevinecdm.dll',
+    'WidevineCdm\\_platform_specific\\win_x86\\widevinecdmadapter.dll',
+  ]
+
   build_dir = build_directory.GetBuildOutputDirectory(SRC_DIR)
   target_dir = os.path.join(build_dir, options.target)
-  chrome_dll = os.path.join(target_dir, 'chrome.dll')
-  chrome_child_dll = os.path.join(target_dir, 'chrome_child.dll')
-  chrome_exe = os.path.join(target_dir, 'chrome.exe')
-  mini_installer_exe = os.path.join(target_dir, 'mini_installer.exe')
-  setup_exe = os.path.join(target_dir, 'setup.exe')
 
   result = 0
 
-  print 'RESULT chrome.dll: chrome.dll= %s bytes' % get_size(chrome_dll)
-
-  if os.path.exists(chrome_child_dll):
-    fmt = 'RESULT chrome_child.dll: chrome_child.dll= %s bytes'
-    print fmt % get_size(chrome_child_dll)
-
-  print 'RESULT chrome.exe: chrome.exe= %s bytes' % get_size(chrome_exe)
-
-  if os.path.exists(mini_installer_exe):
-    fmt = 'RESULT mini_installer.exe: mini_installer.exe= %s bytes'
-    print fmt % get_size(mini_installer_exe)
-
-  if os.path.exists(setup_exe):
-    print 'RESULT setup.exe: setup.exe= %s bytes' % get_size(setup_exe)
+  for f in files:
+    p = os.path.join(target_dir, f)
+    if os.path.isfile(p):
+      this_result = get_size(p)
+      if result == 0:
+        result = this_result
+      results_collector.add_result(f, f, this_result, 'bytes')
 
   return result
 
