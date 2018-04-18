@@ -674,6 +674,8 @@ component("ash") {
     "system/power/power_button_display_controller.h",
     "system/power/power_button_menu_item_view.cc",
     "system/power/power_button_menu_item_view.h",
+    "system/power/power_button_menu_metrics_type.cc",
+    "system/power/power_button_menu_metrics_type.h",
     "system/power/power_button_menu_screen_view.cc",
     "system/power/power_button_menu_screen_view.h",
     "system/power/power_button_menu_view.cc",

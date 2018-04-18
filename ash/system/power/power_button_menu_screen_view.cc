@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/shell.h"
+#include "ash/system/power/power_button_menu_metrics_type.h"
 #include "ash/system/power/power_button_menu_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/compositor/layer.h"
@@ -132,12 +133,16 @@ bool PowerButtonMenuScreenView::OnMousePressed(const ui::MouseEvent& event) {
 
 void PowerButtonMenuScreenView::OnMouseReleased(const ui::MouseEvent& event) {
   ScheduleShowHideAnimation(false);
+  RecordMenuActionHistogram(PowerButtonMenuActionType::kDismissByMouse);
 }
 
 void PowerButtonMenuScreenView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() != ui::ET_GESTURE_TAP_DOWN)
+    return;
+
   // Dismisses the menu if tap anywhere on the background shield.
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN)
-    ScheduleShowHideAnimation(false);
+  ScheduleShowHideAnimation(false);
+  RecordMenuActionHistogram(PowerButtonMenuActionType::kDismissByTouch);
 }
 
 void PowerButtonMenuScreenView::OnDisplayMetricsChanged(
