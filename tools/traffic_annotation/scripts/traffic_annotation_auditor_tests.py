@@ -120,7 +120,7 @@ def main():
 
   args = parser.parse_args()
   checker = TrafficAnnotationTestsChecker(args.build_path)
-  return checker.RunAllTests()
+  return 1 if checker.RunAllTests() else 0
 
 
 if '__main__' == __name__:
