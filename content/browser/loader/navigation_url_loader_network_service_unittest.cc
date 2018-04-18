@@ -76,9 +76,9 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
                    network::mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;
     url_loader_ = std::make_unique<network::URLLoader>(
-        context_, nullptr, base::BindOnce([](network::URLLoader*) {
-          // Ignore self-deletion requests, for simplicity.
-        }),
+        context_, nullptr,
+        base::BindOnce(&TestNavigationLoaderInterceptor::DeleteURLLoader,
+                       base::Unretained(this)),
         std::move(request), 0 /* options */, resource_request,
         false /* report_raw_headers */, std::move(client),
         TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */, 0, /* request_id */
@@ -94,6 +94,11 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
   }
 
  private:
+  void DeleteURLLoader(network::URLLoader* url_loader) {
+    DCHECK_EQ(url_loader_.get(), url_loader);
+    url_loader_.reset();
+  }
+
   base::Optional<network::ResourceRequest>*
       most_recent_resource_request_;  // NOT OWNED.
   network::ResourceScheduler resource_scheduler_;

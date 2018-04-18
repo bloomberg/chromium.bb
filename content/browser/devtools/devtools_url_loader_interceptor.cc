@@ -1139,6 +1139,10 @@ void InterceptionJob::OnComplete(
     return;
   }
   response_metadata_->status = status;
+  // No need to listen to the channel any more, so just close it, so if the pipe
+  // is closed by the other end, |shutdown| isn't run.
+  client_binding_.Close();
+  loader_.reset();
 }
 
 void InterceptionJob::OnAuthRequest(
