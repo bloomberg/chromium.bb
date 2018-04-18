@@ -33,6 +33,8 @@ void SoftwareFeatureManagerImpl::Factory::SetInstanceForTesting(
   test_factory_instance_ = test_factory;
 }
 
+SoftwareFeatureManagerImpl::Factory::~Factory() = default;
+
 std::unique_ptr<SoftwareFeatureManager>
 SoftwareFeatureManagerImpl::Factory::BuildInstance(
     CryptAuthClientFactory* cryptauth_client_factory) {

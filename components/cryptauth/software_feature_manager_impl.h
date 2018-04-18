@@ -28,6 +28,7 @@ class SoftwareFeatureManagerImpl : public SoftwareFeatureManager {
     static void SetInstanceForTesting(Factory* test_factory);
 
    protected:
+    virtual ~Factory();
     virtual std::unique_ptr<SoftwareFeatureManager> BuildInstance(
         CryptAuthClientFactory* cryptauth_client_factory);
 
