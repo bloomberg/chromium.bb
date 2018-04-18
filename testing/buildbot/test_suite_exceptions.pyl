@@ -1281,12 +1281,6 @@
       },
     },
   },
-  'cronet_tests': {
-    'remove_from': [
-      # chromium.fyi
-      'Fuchsia (dbg)',
-    ],
-  },
   'crypto_unittests': {
     'remove_from': [
       # TODO(kbr): these tests aren't run on Android except on one bot

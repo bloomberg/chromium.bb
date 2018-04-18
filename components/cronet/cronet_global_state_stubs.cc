@@ -21,16 +21,14 @@ namespace cronet {
 namespace {
 
 scoped_refptr<base::SingleThreadTaskRunner> InitializeAndCreateTaskRunner() {
-// TODO(https://crbug.com/816705): Chromium Debug bots use component builds,
-// which result in //base and other process-global state being shared between
-// the library and the test suite. Since the Debug build is only used to run
-// the Debug cronet_tests, assume the suite will define things, for now.
-#if defined(NDEBUG)
+// TODO(https://crbug.com/816705): Component builds result in //base and other
+// process-global state being shared between the library and the test suite.
+// Since we only expect Cronet native library component build to be used to run
+// cronet_tests, we can assume that suite will define some things, for now.
+#if !defined(COMPONENT_BUILD)
   // TODO(wez): Remove this once AtExitManager dependencies are gone.
-  // This fails cronet_test in component builds, which are not supported.
-  // See https://crbug.com/816705.
   ignore_result(new base::AtExitManager);
-#endif  // defined(NDEBUG)
+#endif
 
   base::FeatureList::InitializeInstance(std::string(), std::string());
 
