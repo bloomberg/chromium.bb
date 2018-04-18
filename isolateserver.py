@@ -1101,10 +1101,19 @@ class CachePolicies(object):
                       0, it unconditionally fill the disk.
     - max_items: Maximum number of items to keep in the cache. If 0, do not
                  enforce a limit.
+    - max_age_secs: Maximum age an item is kept in the cache until it is
+                    automatically evicted. Having a lot of dead luggage slows
+                    everything down.
     """
     self.max_cache_size = max_cache_size
     self.min_free_space = min_free_space
     self.max_items = max_items
+    # 3 weeks. Make it configurable later if there is use case but for now it's
+    # fairly safe value. Think about lowering this value, likely to 1 week.
+    # In practice, a fair chunk of bots are already recycled on a daily schedule
+    # so this code doesn't have any effect to them, unless they are preloaded
+    # with a really old cache.
+    self.max_age_secs = 21*24*60*60
 
   def __str__(self):
     return (
@@ -1379,6 +1388,14 @@ class DiskCache(LocalCache):
   def _trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
     self._lock.assert_locked()
+
+    # Trim old items.
+    cutoff = self._lru.time_fn() - self.policies.max_age_secs
+    while self._lru:
+      oldest = self._lru.get_oldest()
+      if oldest[1][1] >= cutoff:
+        break
+      self._remove_lru_file(True)
 
     # Ensure maximum cache size.
     if self.policies.max_cache_size:

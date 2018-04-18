@@ -16,6 +16,8 @@ class LRUDict(object):
   (key, (value, timestamp)) pairs in order they are
   inserted and can effectively pop oldest items.
 
+  That is, the first item in self._items is the oldest item.
+
   Can also store its state as *.json file on disk.
   """
 
@@ -86,7 +88,8 @@ class LRUDict(object):
         raise ValueError(
             'Broken state file %s, expecting second item of the second item '
             'to be a number: %s' % (state_file, item))
-      lru._items[item[0]] = item[1]
+
+    lru._items = collections.OrderedDict(state_items)
 
     # Check for duplicate keys.
     if len(lru) != len(state_items):

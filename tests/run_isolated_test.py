@@ -15,6 +15,7 @@ import logging
 import os
 import sys
 import tempfile
+import time
 import unittest
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
@@ -742,7 +743,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
   def test_clean_caches(self):
     # Create an isolated cache and a named cache each with 2 items. Ensure that
     # one item from each is removed.
-    fake_time = 1
+    now = int(time.time())
+    fake_time = now + 1
     fake_free_space = [102400]
     np = os.path.join(self.tempdir, 'named_cache')
     ip = os.path.join(self.tempdir, 'isolated_cache')
@@ -766,14 +768,14 @@ class RunIsolatedTest(RunIsolatedTestBase):
     small_digest = unicode(ALGO(small).hexdigest())
     big_digest = unicode(ALGO(big).hexdigest())
     with isolate_cache:
-      fake_time = 1
+      fake_time = now + 1
       isolate_cache.write(big_digest, [big])
-      fake_time = 2
+      fake_time = now + 2
       isolate_cache.write(small_digest, [small])
     with named_cache_manager.open(time_fn=lambda: fake_time):
-      fake_time = 1
+      fake_time = now + 1
       put_to_named_cache(named_cache_manager, u'first', u'big', big)
-      fake_time = 3
+      fake_time = now + 3
       put_to_named_cache(named_cache_manager, u'second', u'small', small)
 
     # Ensures the cache contain the expected data.
@@ -787,16 +789,16 @@ class RunIsolatedTest(RunIsolatedTestBase):
       os.path.join(cache_small, u'small'): small,
       os.path.join(cache_big, u'big'): big,
       u'state.json':
-          '{"items":[["first",["%s",1]],["second",["%s",3]]],"version":2}' % (
-          cache_big, cache_small),
+          '{"items":[["first",["%s",%s]],["second",["%s",%s]]],"version":2}' % (
+          cache_big, now+1, cache_small, now+3),
     }
     self.assertEqual(expected, actual)
     expected = {
       big_digest: big,
       small_digest: small,
       u'state.json':
-          '{"items":[["%s",[10140,1]],["%s",[10,2]]],"version":2}' % (
-          big_digest, small_digest),
+          '{"items":[["%s",[10140,%s]],["%s",[10,%s]]],"version":2}' % (
+          big_digest, now+1, small_digest, now+2),
     }
     self.assertEqual(expected, genTree(ip))
 
@@ -811,6 +813,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolate_cache = isolateserver.process_cache_options(options, trim=False)
     named_cache_manager = named_cache.process_named_cache_options(
         parser, options)
+    # This function uses real time, hence the time.time() calls above.
     actual = run_isolated.clean_caches(
         options, isolate_cache, named_cache_manager)
     self.assertEqual(2, actual)
@@ -823,13 +826,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
     expected = {
       os.path.join(cache_small, u'small'): small,
       u'state.json':
-          '{"items":[["second",["%s",3]]],"version":2}' % cache_small,
+          '{"items":[["second",["%s",%s]]],"version":2}' %
+          (cache_small, now+3),
     }
     self.assertEqual(expected, actual)
     expected = {
       small_digest: small,
       u'state.json':
-          '{"items":[["%s",[10,2]]],"version":2}' % small_digest,
+          '{"items":[["%s",[10,%s]]],"version":2}' %
+          (small_digest, now+2),
     }
     self.assertEqual(expected, genTree(ip))
 

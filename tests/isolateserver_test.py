@@ -1269,9 +1269,9 @@ class DiskCacheTest(TestCase):
     # TODO(maruel): Test the following.
     #cache.touch()
 
-  def get_cache(self):
+  def get_cache(self, **kwargs):
     return isolateserver.DiskCache(
-        self.tempdir, self._policies, self._algo, trim=True)
+        self.tempdir, self._policies, self._algo, trim=True, **kwargs)
 
   def to_hash(self, content):
     return self._algo(content).hexdigest(), content
@@ -1393,6 +1393,21 @@ class DiskCacheTest(TestCase):
       self.assertEqual(1101, cache._free_disk)
       self.assertEqual(2, cache.initial_number_items)
       self.assertEqual(100, cache.initial_size)
+
+  def test_policies_trim_old(self):
+    # Add two items, one 3 weeks and one minute old, one recent, make sure the
+    # old one is trimmed.
+    self._policies = isolateserver.CachePolicies(
+        max_cache_size=1000, min_free_space=0, max_items=1000)
+    now = 100
+    c = self.get_cache(time_fn=lambda: now)
+    # Test the very limit of 3 weeks:
+    c.write(hashlib.sha1('old').hexdigest(), 'old')
+    now += 1
+    c.write(hashlib.sha1('recent').hexdigest(), 'recent')
+    now += 21*24*60*60
+    c.trim()
+    self.assertEqual(set([hashlib.sha1('recent').hexdigest()]), c.cached_set())
 
   def test_some_file_brutally_deleted(self):
     h_a = self.to_hash('a')[0]
