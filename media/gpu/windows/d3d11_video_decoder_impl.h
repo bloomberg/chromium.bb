@@ -15,6 +15,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/callback_registry.h"
 #include "media/base/video_decoder.h"
@@ -72,6 +73,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
 
   void OnMailboxReleased(scoped_refptr<D3D11PictureBuffer> buffer,
                          const gpu::SyncToken& sync_token);
+  void OnSyncTokenReleased(scoped_refptr<D3D11PictureBuffer> buffer);
 
   // Callback to notify that new usable key is available.
   void NotifyNewKey();
@@ -110,6 +112,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
 
   // Callback registration to keep the new key callback registered.
   std::unique_ptr<CallbackRegistration> new_key_callback_registration_;
+
+  // Wait sequence for sync points.
+  gpu::SequenceId wait_sequence_id_;
 
   base::WeakPtrFactory<D3D11VideoDecoderImpl> weak_factory_;
 
