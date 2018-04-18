@@ -5,20 +5,17 @@
 #include "chrome/browser/media/router/discovery/discovery_network_list_wifi.h"
 
 #include <CoreWLAN/CoreWLAN.h>
-#include <string.h>
 
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace media_router {
+namespace {
 
-bool MaybeGetWifiSSID(const std::string& if_name, std::string* ssid_out) {
-  DCHECK(ssid_out);
-
-  NSString* ns_ifname = base::SysUTF8ToNSString(if_name.data());
+bool GetWifiSSID(NSString* ns_ifname, std::string* ssid_out) {
   CWInterface* interface = [CWInterface interfaceWithName:ns_ifname];
   if (interface == nil) {
     return false;
@@ -29,6 +26,19 @@ bool MaybeGetWifiSSID(const std::string& if_name, std::string* ssid_out) {
   }
   ssid_out->assign(std::move(ssid));
   return true;
+}
+
+}  // namespace
+
+bool MaybeGetWifiSSID(const std::string& if_name, std::string* ssid_out) {
+  DCHECK(ssid_out);
+
+  NSString* ns_ifname = base::SysUTF8ToNSString(if_name.data());
+  NSSet* all_ifnames = [CWInterface interfaceNames];
+  for (NSString* ifname in all_ifnames)
+    if ([ifname isEqualToString:ns_ifname])
+      return GetWifiSSID(ns_ifname, ssid_out);
+  return false;
 }
 
 }  // namespace media_router
