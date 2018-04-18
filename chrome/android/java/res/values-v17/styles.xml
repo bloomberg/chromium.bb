@@ -696,10 +696,6 @@
     </style>
 
     <!-- Data Reduction -->
-    <style name="DataReductionPrefSecondaryStyle">
-        <item name="android:textColor">?android:attr/textColorSecondary</item>
-        <item name="android:textSize">12sp</item>
-    </style>
     <style name="DataUsageBreakdownColumnLabel">
         <item name="android:layout_height">wrap_content</item>
         <item name="android:paddingBottom">10dp</item>

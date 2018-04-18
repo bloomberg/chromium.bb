@@ -55,14 +55,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:singleLine="true"
-                    android:textAppearance="@style/DataReductionPrefSecondaryStyle" />
+                    android:textAppearance="@style/BlackBody" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingStart="3dp"
                     android:text="@string/data_reduction_usage_label"
-                    android:textAppearance="@style/DataReductionPrefSecondaryStyle" />
+                    android:textAppearance="@style/BlackBody" />
             </LinearLayout>
 
     </LinearLayout>
