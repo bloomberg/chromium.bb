@@ -172,7 +172,7 @@ junit_binary("cast_shell_junit_tests") {
   deps = [
     ":cast_intents_java",
     ":cast_shell_java",
-    "//base:base_java_test_support",
+    "//base:base_junit_test_support",
     "//content/public/android:content_java",
     "//third_party/android_tools:android_support_core_utils_java",
     "//third_party/hamcrest:hamcrest_java",
