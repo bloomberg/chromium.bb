@@ -479,9 +479,11 @@ public class DownloadUtils {
 
     static void publishOfflinePagesForSharing(OfflinePageBridge offlinePageBridge,
             List<OfflineItemWrapper> offlinePages, Callback<Map<String, String>> callback) {
-        // TODO(jianli): Check and request permission.
-        publishOfflinePageForSharing(
-                offlinePageBridge, offlinePages, 0, new HashMap<String, String>(), callback);
+        DownloadController.requestFileAccessPermission(granted -> {
+            if (!granted) return;
+            publishOfflinePageForSharing(
+                    offlinePageBridge, offlinePages, 0, new HashMap<String, String>(), callback);
+        });
     }
 
     static void publishOfflinePageForSharing(OfflinePageBridge offlinePageBridge,

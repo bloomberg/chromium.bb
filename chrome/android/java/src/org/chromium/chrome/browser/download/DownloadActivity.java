@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.os.Bundle;
 
@@ -16,7 +17,10 @@ import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
+import org.chromium.ui.base.AndroidPermissionDelegate;
 
+import java.lang.ref.WeakReference;
 import java.util.Deque;
 import java.util.LinkedList;
 
@@ -26,6 +30,7 @@ import java.util.LinkedList;
 public class DownloadActivity extends SnackbarActivity {
     private DownloadManagerUi mDownloadManagerUi;
     private boolean mIsOffTheRecord;
+    private AndroidPermissionDelegate mPermissionDelegate;
 
     /** Caches the stack of filters applied to let the user backtrack through their history. */
     private final Deque<String> mBackStack = new LinkedList<>();
@@ -52,6 +57,8 @@ public class DownloadActivity extends SnackbarActivity {
         boolean showPrefetchContent = DownloadUtils.shouldShowPrefetchContent(getIntent());
         ComponentName parentComponent = IntentUtils.safeGetParcelableExtra(
                 getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
+        mPermissionDelegate =
+                new ActivityAndroidPermissionDelegate(new WeakReference<Activity>(this));
         mDownloadManagerUi = new DownloadManagerUi(
                 this, isOffTheRecord, parentComponent, true, getSnackbarManager());
         setContentView(mDownloadManagerUi.getView());
@@ -93,5 +100,15 @@ public class DownloadActivity extends SnackbarActivity {
     @VisibleForTesting
     DownloadManagerUi getDownloadManagerUiForTests() {
         return mDownloadManagerUi;
+    }
+
+    public AndroidPermissionDelegate getAndroidPermissionDelegate() {
+        return mPermissionDelegate;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        mPermissionDelegate.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }
