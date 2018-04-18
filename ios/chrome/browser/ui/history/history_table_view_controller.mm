@@ -76,6 +76,8 @@ const int kMaxFetchCount = 100;
 @property(nonatomic, assign) BOOL filterQueryResult;
 // YES if there is a search happening.
 @property(nonatomic, assign, getter=isSearching) BOOL searching;
+// This ViewController's searchController;
+@property(nonatomic, strong) UISearchController* searchController;
 @end
 
 @implementation HistoryTableViewController
@@ -90,6 +92,7 @@ const int kMaxFetchCount = 100;
 @synthesize historyService = _historyService;
 @synthesize loader = _loader;
 @synthesize loading = _loading;
+@synthesize searchController = _searchController;
 @synthesize searching = _searching;
 @synthesize shouldShowNoticeAboutOtherFormsOfBrowsingHistory =
     _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
@@ -114,6 +117,52 @@ const int kMaxFetchCount = 100;
       initWithTarget:self
               action:@selector(displayContextMenuInvokedByGestureRecognizer:)];
   [self.tableView addGestureRecognizer:longPressRecognizer];
+
+  // If the NavigationBar is not translucent, set
+  // |self.extendedLayoutIncludesOpaqueBars| to YES in order to avoid a top
+  // margin inset on the |_tableViewController| subview.
+  self.extendedLayoutIncludesOpaqueBars = YES;
+
+  // Init the searchController with nil so the results are displayed on the same
+  // TableView.
+  self.searchController =
+      [[UISearchController alloc] initWithSearchResultsController:nil];
+  self.searchController.dimsBackgroundDuringPresentation = NO;
+
+  // Navigation controller configuration.
+  self.title = l10n_util::GetNSString(IDS_HISTORY_TITLE);
+
+  // For iOS 11 and later, place the search bar in the navigation bar. Otherwise
+  // place the search bar in the table view's header.
+  if (@available(iOS 11, *)) {
+    self.navigationItem.searchController = self.searchController;
+    self.navigationItem.hidesSearchBarWhenScrolling = NO;
+  } else {
+    self.tableView.tableHeaderView = self.searchController.searchBar;
+  }
+
+  // Set up the bottom toolbar buttons.
+  NSString* leadingButtonString = l10n_util::GetNSStringWithFixup(
+      IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
+  NSString* trailingButtonString =
+      l10n_util::GetNSString(IDS_HISTORY_START_EDITING_BUTTON);
+  UIBarButtonItem* leadingButton =
+      [[UIBarButtonItem alloc] initWithTitle:leadingButtonString
+                                       style:UIBarButtonItemStylePlain
+                                      target:nil
+                                      action:nil];
+  UIBarButtonItem* trailingButton =
+      [[UIBarButtonItem alloc] initWithTitle:trailingButtonString
+                                       style:UIBarButtonItemStylePlain
+                                      target:nil
+                                      action:nil];
+  UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+  leadingButton.tintColor = [UIColor redColor];
+  [self setToolbarItems:@[ leadingButton, spaceButton, trailingButton ]
+               animated:NO];
 }
 
 // TODO(crbug.com/805190): These methods are supposed to be public, though we

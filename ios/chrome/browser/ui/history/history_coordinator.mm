@@ -9,15 +9,13 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/browsing_history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/history/history_table_container_view_controller.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
-#import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/browser/ui/table_view/table_container_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -51,6 +49,14 @@
   historyTableViewController.browserState = self.browserState;
   historyTableViewController.loader = self.loader;
 
+  // Adds the "Done" button and hooks it up to |stop|.
+  UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                           target:self
+                           action:@selector(stop)];
+  [dismissButton setAccessibilityIdentifier:kTableContainerDismissButtonId];
+  historyTableViewController.navigationItem.rightBarButtonItem = dismissButton;
+
   // Initialize and configure HistoryServices.
   _browsingHistoryDriver = std::make_unique<IOSBrowsingHistoryDriver>(
       self.browserState, historyTableViewController);
@@ -63,34 +69,25 @@
   historyTableViewController.historyService = _browsingHistoryService.get();
 
   // Initialize and configure HistoryContainerViewController.
+
+  // Present HistoryContainerViewController.
   self.historyContainerViewController =
       [[HistoryTableContainerViewController alloc]
           initWithTable:historyTableViewController];
   self.historyContainerViewController.dispatcher = self.dispatcher;
-  self.historyContainerViewController.title =
-      l10n_util::GetNSString(IDS_HISTORY_TITLE);
-  // TODO(crbug.com/805192): Move this configuration code to
-  // HistoryContainerVC once its created, we will use a dispatcher then.
-  [self.historyContainerViewController.dismissButton setTarget:self];
-  [self.historyContainerViewController.dismissButton setAction:@selector(stop)];
-  self.historyContainerViewController.navigationItem.rightBarButtonItem =
-      self.historyContainerViewController.dismissButton;
+  self.historyContainerViewController.toolbarHidden = NO;
   historyTableViewController.delegate = self.historyContainerViewController;
 
-  // Present HistoryContainerViewController.
-  FormSheetNavigationController* navController =
-      [[FormSheetNavigationController alloc]
-          initWithRootViewController:self.historyContainerViewController];
   self.historyTransitioningDelegate =
       [[HistoryTransitioningDelegate alloc] init];
-  [navController.navigationBar setBackgroundImage:[UIImage new]
-                                    forBarMetrics:UIBarMetricsDefault];
-  navController.navigationBar.translucent = NO;
-  navController.transitioningDelegate = self.historyTransitioningDelegate;
-  [navController setModalPresentationStyle:UIModalPresentationCustom];
-  [self.baseViewController presentViewController:navController
-                                        animated:YES
-                                      completion:nil];
+  self.historyContainerViewController.transitioningDelegate =
+      self.historyTransitioningDelegate;
+  [self.historyContainerViewController
+      setModalPresentationStyle:UIModalPresentationCustom];
+  [self.baseViewController
+      presentViewController:self.historyContainerViewController
+                   animated:YES
+                 completion:nil];
 }
 
 - (void)stop {

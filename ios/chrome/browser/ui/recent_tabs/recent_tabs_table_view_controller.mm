@@ -154,6 +154,12 @@ const int kRelativeTimeMaxHours = 4;
                                               action:@selector(handleTap:)];
   tapGesture.delegate = self;
   [self.tableView addGestureRecognizer:tapGesture];
+
+  // If the NavigationBar is not translucent, set
+  // |self.extendedLayoutIncludesOpaqueBars| to YES in order to avoid a top
+  // margin inset on the |_tableViewController| subview.
+  self.extendedLayoutIncludesOpaqueBars = YES;
+  self.title = l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
 }
 
 #pragma mark - TableViewModel

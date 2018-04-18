@@ -7,8 +7,6 @@ source_set("table_view") {
   sources = [
     "chrome_table_view_controller.h",
     "chrome_table_view_controller.mm",
-    "table_container_bottom_toolbar.h",
-    "table_container_bottom_toolbar.mm",
     "table_container_constants.h",
     "table_container_constants.mm",
     "table_container_view_controller.h",
@@ -19,9 +17,7 @@ source_set("table_view") {
   deps = [
     ":styler",
     "//base",
-    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/list_model",
-    "//ui/base",
   ]
   public_deps = [
     "//ios/chrome/browser/ui/table_view/cells",
@@ -57,7 +53,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "chrome_table_view_controller_unittest.mm",
-    "table_container_bottom_toolbar_unittest.mm",
     "table_view_model_unittest.mm",
   ]
   deps = [
