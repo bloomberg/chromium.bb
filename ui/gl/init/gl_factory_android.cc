@@ -99,6 +99,9 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
     case kGLImplementationOSMesaGL:
       return InitializeGLContext(new GLContextOSMesa(share_group),
                                  compatible_surface, attribs);
+    case kGLImplementationDisabled:
+      NOTREACHED();
+      return nullptr;
     default:
       if (compatible_surface->GetHandle() ||
           compatible_surface->IsSurfaceless()) {
