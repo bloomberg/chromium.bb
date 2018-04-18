@@ -60,59 +60,38 @@ class LRUDict(object):
       state = json.load(open(state_file, 'r'))
     except (IOError, ValueError) as e:
       raise ValueError('Broken state file %s: %s' % (state_file, e))
-
-    if isinstance(state, list):  # Old format.
-      # Items are stored oldest to newest. Put them back in the same order.
-      lru = cls()
-      for pair in state:
-        if not isinstance(pair, (list, tuple)) or len(pair) != 2:
-          raise ValueError(
-              'Broken state file %s, expecting pairs: %s' % (state_file, pair))
-        lru._items[pair[0]] = (pair[1], 0)
-
-      # Check for duplicate keys.
-      if len(lru) != len(state):
-        raise ValueError(
-            'Broken state file %s, found duplicate keys' % (state_file,))
-
-    elif isinstance(state, dict):  # New format.
-      state_ver = state.get('version')
-      if not isinstance(state_ver, int):
-        raise ValueError(
-            'Broken state file %s, version %r is not an integer' % (
-              state_file, state_ver))
-      if state_ver > 2:
-        raise ValueError(
-            'Unsupported state file %s, version is %d. '
-            'Latest supported is 2' % (state_file, state_ver))
-      state_items = state.get('items')
-      if not isinstance(state_items, list):
-        raise ValueError(
-            'Broken state file %s, items should be json list' % (state_file,))
-      lru = cls()
-      # Items are stored oldest to newest. Put them back in the same order.
-      for item in state_items:
-        if not isinstance(item, (list, tuple)) or len(item) != 2:
-          raise ValueError(
-              'Broken state file %s, expecting pairs: %s' % (state_file, item))
-        if not isinstance(item[1], (list, tuple)) or len(item[1]) != 2:
-          raise ValueError(
-              'Broken state file %s, expecting second item to be a item: %s' % (
-                state_file, item))
-        if not isinstance(item[1][1], (int, float)):
-          raise ValueError(
-              'Broken state file %s, expecting second item of the second item '
-              'to be a number: %s' % (state_file, item))
-        lru._items[item[0]] = item[1]
-
-      # Check for duplicate keys.
-      if len(lru) != len(state_items):
-        raise ValueError(
-            'Broken state file %s, found duplicate keys' % (state_file,))
-
-    else:
+    if not isinstance(state, dict):
       raise ValueError(
           'Broken state file %s, should be json object or list' % (state_file,))
+    state_ver = state.get('version')
+    if state_ver != 2:
+      raise ValueError(
+          'Unsupported state file %s, version is %s. '
+          'Latest supported is 2' % (state_file, state_ver))
+    state_items = state.get('items')
+    if not isinstance(state_items, list):
+      raise ValueError(
+          'Broken state file %s, items should be json list' % (state_file,))
+    lru = cls()
+    # Items are stored oldest to newest. Put them back in the same order.
+    for item in state_items:
+      if not isinstance(item, list) or len(item) != 2:
+        raise ValueError(
+            'Broken state file %s, expecting pairs: %s' % (state_file, item))
+      if not isinstance(item[1], list) or len(item[1]) != 2:
+        raise ValueError(
+            'Broken state file %s, expecting second item to be a item: %s' % (
+              state_file, item))
+      if not isinstance(item[1][1], (int, float)):
+        raise ValueError(
+            'Broken state file %s, expecting second item of the second item '
+            'to be a number: %s' % (state_file, item))
+      lru._items[item[0]] = item[1]
+
+    # Check for duplicate keys.
+    if len(lru) != len(state_items):
+      raise ValueError(
+          'Broken state file %s, found duplicate keys' % (state_file,))
 
     # Now state from the file corresponds to state in the memory.
     lru._dirty = False

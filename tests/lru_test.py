@@ -138,25 +138,12 @@ class LRUDictTest(unittest.TestCase):
     self.assert_order(lru_dict, data + [4])
 
   def test_load_save(self):
-    def pairs(d):
-      return [(k, d[k]) for k in d]
-
     def save_and_load(lru_dict):
       handle, tmp_name = tempfile.mkstemp(prefix=u'lru_test')
       os.close(handle)
-
       try:
-        # Old format.
-        with open(tmp_name, 'w') as f:
-          json.dump(pairs(lru_dict), f)
-        loaded_old_format = lru_dict.load(tmp_name)
-
-        # Current format.
         lru_dict.save(tmp_name)
-        loaded = lru_dict.load(tmp_name)
-
-        self.assertEqual(pairs(loaded), pairs(loaded_old_format))
-        return loaded
+        return lru_dict.load(tmp_name)
       finally:
         try:
           os.unlink(tmp_name)
@@ -203,10 +190,16 @@ class LRUDictTest(unittest.TestCase):
         os.unlink(tmp_name)
 
     # Loads correct state just fine.
-    self.assertIsNotNone(load_from_state(json.dumps([
-        ['key1', 'value1'],
-        ['key2', 'value2'],
-    ])))
+    s = load_from_state(json.dumps(
+      {
+        'version': 2,
+        'items': [
+          ['key1', ['value1', 1]],
+          ['key2', ['value2', 2]],
+        ],
+      }))
+    self.assertIsNotNone(s)
+    self.assertEqual(2, len(s))
 
     # Not a json.
     with self.assertRaises(ValueError):
