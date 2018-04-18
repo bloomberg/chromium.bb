@@ -21,6 +21,14 @@ enum HostedRendererType {
   // are better off using the native Android MediaPlayer.
   [EnableIf=is_android]
   kMediaPlayer,
+
+  // content::FlingingRenderer: Used to control a CastSession, in the context
+  // of RemotePlayback. The CastSession must have already been started via the
+  // PresentationService. This renderer does not actually render anything on the
+  // local device, but instead serves as a link to/from media content playing on
+  // a cast device.
+  [EnableIf=is_android]
+  kFlinging,
 };
 
 // A factory for creating media mojo interfaces. Renderers can only access
@@ -39,6 +47,9 @@ interface InterfaceFactory {
   //   media/audio/audio_device_description.h.
   //   If |type_specific_id| is empty, kDefaultDeviceId will be used.
   // - kMediaPlayer: unused.
+  // - kFlinging: represents a PresentationID for a session that has already
+  //   been started. If the ID cannot be found (e.g. the session has already
+  //   ended), CreateRenderer will be a no-op.
   CreateRenderer(HostedRendererType type, string type_specific_id,
                  Renderer& renderer);
 

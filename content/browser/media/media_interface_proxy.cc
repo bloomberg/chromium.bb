@@ -46,6 +46,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/media/android/media_player_renderer.h"
+#include "content/browser/media/flinging_renderer.h"
 #include "media/mojo/services/mojo_renderer_service.h"  // nogncheck
 #endif
 
@@ -159,6 +160,17 @@ void MediaInterfaceProxy::CreateRenderer(
 #if defined(OS_ANDROID)
   if (type == media::mojom::HostedRendererType::kMediaPlayer) {
     CreateMediaPlayerRenderer(std::move(request));
+    return;
+  }
+
+  if (type == media::mojom::HostedRendererType::kFlinging) {
+    std::unique_ptr<FlingingRenderer> renderer =
+        FlingingRenderer::Create(render_frame_host_, type_specific_id);
+
+    media::MojoRendererService::Create(
+        std::move(renderer),
+        media::MojoRendererService::InitiateSurfaceRequestCB(),
+        std::move(request));
     return;
   }
 #endif
