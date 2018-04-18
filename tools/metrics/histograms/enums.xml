@@ -36159,6 +36159,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Brightness Absolute"/>
 </enum>
 
+<enum name="PowerButtonMenuActionType">
+  <int value="0" label="Sign out"/>
+  <int value="1" label="Power off"/>
+  <int value="2" label="Escape to dismiss"/>
+  <int value="3" label="Mouse click to dismiss"/>
+  <int value="4" label="Touch to dismiss"/>
+</enum>
+
 <enum name="PowerChargerType">
   <obsolete>
     Deprecated 11/2014 in issue 427057.

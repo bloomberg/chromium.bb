@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/power_button_menu_item_view.h"
+#include "ash/system/power/power_button_menu_metrics_type.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -199,6 +200,7 @@ gfx::Size PowerButtonMenuView::CalculatePreferredSize() const {
 bool PowerButtonMenuView::OnKeyPressed(const ui::KeyEvent& event) {
   const ui::KeyboardCode key = event.key_code();
   if (key == ui::VKEY_ESCAPE) {
+    RecordMenuActionHistogram(PowerButtonMenuActionType::kDismissByEsc);
     Shell::Get()->power_button_controller()->DismissMenu();
   } else if (sign_out_item_ && (key == ui::VKEY_TAB || key == ui::VKEY_LEFT ||
                                 key == ui::VKEY_RIGHT || key == ui::VKEY_UP ||
@@ -214,9 +216,11 @@ void PowerButtonMenuView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   DCHECK(sender);
   if (sender == power_off_item_) {
+    RecordMenuActionHistogram(PowerButtonMenuActionType::kPowerOff);
     Shell::Get()->lock_state_controller()->StartShutdownAnimation(
         ShutdownReason::POWER_BUTTON);
   } else if (sender == sign_out_item_) {
+    RecordMenuActionHistogram(PowerButtonMenuActionType::kSignOut);
     Shell::Get()->session_controller()->RequestSignOut();
   } else {
     NOTREACHED() << "Invalid sender";
