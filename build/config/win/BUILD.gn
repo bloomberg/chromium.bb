@@ -96,7 +96,7 @@ config("compiler") {
     lib_dirs = [ "$clang_base_path/lib/clang/$clang_version/lib/windows" ]
   }
 
-  if (use_lld && !use_thin_lto) {
+  if (use_lld && !use_thin_lto && (is_clang || !use_goma)) {
     # /Brepro lets the compiler not write the mtime field in the .obj output.
     # link.exe /incremental relies on this field to work correctly, but lld
     # never looks at this timestamp, so it's safe to pass this flag with
