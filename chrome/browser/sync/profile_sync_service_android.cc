@@ -20,14 +20,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
@@ -100,8 +99,7 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
 
   sync_prefs_ = std::make_unique<syncer::SyncPrefs>(profile_->GetPrefs());
 
-  sync_service_ =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  sync_service_ = ProfileSyncServiceFactory::GetForProfile(profile_);
 }
 
 bool ProfileSyncServiceAndroid::Init() {
@@ -452,9 +450,7 @@ ProfileSyncServiceAndroid::GetCurrentSignedInAccountText(
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string& sync_username =
-      SigninManagerFactory::GetForProfile(profile_)
-          ->GetAuthenticatedAccountInfo()
-          .email;
+      sync_service_->GetAuthenticatedAccountInfo().email;
   return base::android::ConvertUTF16ToJavaString(
       env, l10n_util::GetStringFUTF16(IDS_SYNC_ACCOUNT_INFO,
                                       base::ASCIIToUTF16(sync_username)));
