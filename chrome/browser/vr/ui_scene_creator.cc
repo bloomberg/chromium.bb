@@ -1854,6 +1854,21 @@ void UiSceneCreator::CreateKeyboard() {
             keyboard->OnTouchStateUpdated(value.first, value.second);
           },
           base::Unretained(keyboard.get()))));
+  keyboard->AddBinding(std::make_unique<Binding<bool>>(
+      VR_BIND_LAMBDA([](Model* m) { return m->editing_web_input; },
+                     base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](UiElement* e, const bool& enabled) {
+            if (enabled) {
+              e->SetTranslate(
+                  0.0, kKeyboardVerticalOffsetDMM * kKeyboardWebInputOffset,
+                  0.0);
+            } else {
+              e->SetTranslate(0.0, kKeyboardVerticalOffsetDMM, 0.0);
+            }
+          },
+          base::Unretained(keyboard.get()))));
+
   VR_BIND_VISIBILITY(keyboard,
                      model->editing_input || model->editing_web_input);
   scene_->AddPerFrameCallback(base::BindRepeating(

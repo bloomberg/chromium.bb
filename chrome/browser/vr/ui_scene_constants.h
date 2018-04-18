@@ -206,6 +206,7 @@ static constexpr float kModalPromptFadeOpacity = 0.5f;
 
 static constexpr float kKeyboardDistance = 2.2f;
 static constexpr float kKeyboardVerticalOffsetDMM = -0.45f;
+static constexpr float kKeyboardWebInputOffset = 1.2f;
 
 static constexpr float kSnackbarDistance = 1.5f;
 static constexpr float kSnackbarAngle = -gfx::DegToRad(34.0f);
