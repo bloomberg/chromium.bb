@@ -15,6 +15,7 @@ class CoordinationUnitManager;
 class FrameCoordinationUnitImpl;
 class PageCoordinationUnitImpl;
 class ProcessCoordinationUnitImpl;
+class SystemCoordinationUnitImpl;
 
 // An observer API for the coordination unit graph maintained by GRC.
 //
@@ -69,6 +70,12 @@ class CoordinationUnitGraphObserver {
       const mojom::PropertyType property_type,
       int64_t value) {}
 
+  // Called whenever a property of the SystemCoordinationUnit is changed.
+  virtual void OnSystemPropertyChanged(
+      const SystemCoordinationUnitImpl* system_cu,
+      const mojom::PropertyType property_type,
+      int64_t value) {}
+
   // Called whenever an event is received in |coordination_unit| if the
   // |coordination_unit| doesn't implement its own EventReceived handler.
   virtual void OnEventReceived(const CoordinationUnitBase* coordination_unit,
@@ -79,6 +86,9 @@ class CoordinationUnitGraphObserver {
                                    const mojom::Event event) {}
   virtual void OnProcessEventReceived(
       const ProcessCoordinationUnitImpl* process_cu,
+      const mojom::Event event) {}
+  virtual void OnSystemEventReceived(
+      const SystemCoordinationUnitImpl* system_cu,
       const mojom::Event event) {}
 
   void set_coordination_unit_manager(

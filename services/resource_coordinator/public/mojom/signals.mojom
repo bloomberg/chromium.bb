@@ -14,6 +14,9 @@ enum Event {
   // ServiceWorker are persistent and compatible with LifeCycle.
   kNonPersistentNotificationCreated,
   kTitleUpdated,
+  // This signal is sent to a SystemCU when all ProcessCU CPU usage estimates
+  // have been updated and are coherent.
+  kProcessCPUUsageReady,
 };
 
 // Defines the Storage property keys that can be get/set on the

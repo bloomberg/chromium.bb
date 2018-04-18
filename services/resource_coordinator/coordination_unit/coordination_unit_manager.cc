@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
+#include "services/resource_coordinator/coordination_unit/system_coordination_unit_impl.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -37,11 +38,18 @@ void CoordinationUnitManager::OnStart(
     service_manager::BinderRegistryWithArgs<
         const service_manager::BindSourceInfo&>* registry,
     service_manager::ServiceContextRefFactory* service_ref_factory) {
+  // Create the singleton CoordinationUnitProvider.
   provider_ =
       std::make_unique<CoordinationUnitProviderImpl>(service_ref_factory, this);
+  registry->AddInterface(base::BindRepeating(
+      &CoordinationUnitProviderImpl::Bind, base::Unretained(provider_.get())));
 
-  registry->AddInterface(base::Bind(&CoordinationUnitProviderImpl::Bind,
-                                    base::Unretained(provider_.get())));
+  // Create a singleton SystemCU instance. Ownership is taken by
+  // CoordinationUnitBase. This interface is not directly registered to the
+  // service, but rather clients can access it via CoordinationUnitProvider.
+  CoordinationUnitID system_cu_id(CoordinationUnitType::kSystem, std::string());
+  system_cu_ = SystemCoordinationUnitImpl::Create(
+      system_cu_id, service_ref_factory->CreateRef());
 }
 
 void CoordinationUnitManager::RegisterObserver(

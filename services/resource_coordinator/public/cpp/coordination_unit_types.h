@@ -9,13 +9,13 @@
 namespace resource_coordinator {
 
 // Any new type here needs to be mirrored between coordination_unit_types.h and
-// coordination_unit.mojom, and have mappings between the two defined in
-// coordination_unit_struct_traits.h/.cc
+// coordination_unit.mojom.
 enum class CoordinationUnitType : uint8_t {
   kInvalidType,
   kFrame,
   kPage,
   kProcess,
+  kSystem,
 };
 
 }  // resource_coordinator

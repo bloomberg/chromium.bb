@@ -7,7 +7,11 @@ module resource_coordinator.mojom;
 import "services/resource_coordinator/public/mojom/coordination_unit.mojom";
 
 interface CoordinationUnitProvider {
+  // CU factory functions.
   CreateFrameCoordinationUnit(FrameCoordinationUnit& request, CoordinationUnitID id);
   CreatePageCoordinationUnit(PageCoordinationUnit& request, CoordinationUnitID id);
   CreateProcessCoordinationUnit(ProcessCoordinationUnit& request, CoordinationUnitID id);
+
+  // Retrieves the always existing singleton SystemCU.
+  GetSystemCoordinationUnit(SystemCoordinationUnit& request);
 };

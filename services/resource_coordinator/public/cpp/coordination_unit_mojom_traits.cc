@@ -18,6 +18,8 @@ EnumTraits<resource_coordinator::mojom::CoordinationUnitType,
       return resource_coordinator::mojom::CoordinationUnitType::kFrame;
     case resource_coordinator::CoordinationUnitType::kProcess:
       return resource_coordinator::mojom::CoordinationUnitType::kProcess;
+    case resource_coordinator::CoordinationUnitType::kSystem:
+      return resource_coordinator::mojom::CoordinationUnitType::kSystem;
     default:
       NOTREACHED() << "Invalid type: " << static_cast<uint8_t>(type);
       // This should not be reached. Just return a random value.
@@ -39,6 +41,9 @@ bool EnumTraits<resource_coordinator::mojom::CoordinationUnitType,
       break;
     case resource_coordinator::mojom::CoordinationUnitType::kProcess:
       *out = resource_coordinator::CoordinationUnitType::kProcess;
+      break;
+    case resource_coordinator::mojom::CoordinationUnitType::kSystem:
+      *out = resource_coordinator::CoordinationUnitType::kSystem;
       break;
     default:
       NOTREACHED() << "Invalid type: " << static_cast<uint8_t>(input);
