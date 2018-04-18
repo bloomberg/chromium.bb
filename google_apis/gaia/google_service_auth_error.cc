@@ -62,10 +62,11 @@ bool GoogleServiceAuthError::SecondFactor::operator==(
 
 bool GoogleServiceAuthError::operator==(
     const GoogleServiceAuthError& b) const {
-  return (state_ == b.state_ &&
-          network_error_ == b.network_error_ &&
-          captcha_ == b.captcha_ &&
-          second_factor_ == b.second_factor_);
+  return (state_ == b.state_) && (network_error_ == b.network_error_) &&
+         (captcha_ == b.captcha_) && (second_factor_ == b.second_factor_) &&
+         (error_message_ == b.error_message_) &&
+         (invalid_gaia_credentials_reason_ ==
+          b.invalid_gaia_credentials_reason_);
 }
 
 bool GoogleServiceAuthError::operator!=(
