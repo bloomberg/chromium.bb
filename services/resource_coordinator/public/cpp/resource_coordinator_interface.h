@@ -28,8 +28,20 @@ class ResourceCoordinatorInterface {
     service_->AddBinding(std::move(request));
   }
 
+  // Returns the ID. Note that this is meaningless for a singleton CU.
   CoordinationUnitID id() const { return cu_id_; }
+
+  // Returns the remote endpoint interface.
   const CoordinationUnitMojoPtr& service() const { return service_; }
+
+  // Expose the GetID function for testing.
+  using CoordinationUnitMojo = typename CoordinationUnitMojoPtr::InterfaceType;
+  using GetIDCallback = typename CoordinationUnitMojo::GetIDCallback;
+  void GetID(GetIDCallback callback) {
+    if (!service_)
+      std::move(callback).Run(cu_id_);
+    service_->GetID(std::move(callback));
+  }
 
  protected:
   virtual void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,

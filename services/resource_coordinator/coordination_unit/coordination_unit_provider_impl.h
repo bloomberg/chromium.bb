@@ -44,6 +44,9 @@ class CoordinationUnitProviderImpl : public mojom::CoordinationUnitProvider {
   void CreateProcessCoordinationUnit(
       resource_coordinator::mojom::ProcessCoordinationUnitRequest request,
       const CoordinationUnitID& id) override;
+  void GetSystemCoordinationUnit(
+      resource_coordinator::mojom::SystemCoordinationUnitRequest request)
+      override;
 
  private:
   service_manager::ServiceContextRefFactory* service_ref_factory_;

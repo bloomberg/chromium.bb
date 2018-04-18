@@ -26,6 +26,7 @@ namespace resource_coordinator {
 class CoordinationUnitBase;
 class CoordinationUnitGraphObserver;
 class CoordinationUnitProviderImpl;
+class SystemCoordinationUnitImpl;
 
 // The CoordinationUnitManager is a singleton that encapsulates all
 // aspects of Coordination Units within the resource_coordinator service.
@@ -50,6 +51,9 @@ class CoordinationUnitManager {
   void OnBeforeCoordinationUnitDestroyed(
       CoordinationUnitBase* coordination_unit);
 
+  // Returns the singleton SystemCU.
+  SystemCoordinationUnitImpl* system_cu() const { return system_cu_; }
+
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>>&
   observers_for_testing() {
     return observers_;
@@ -59,6 +63,9 @@ class CoordinationUnitManager {
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
   std::unique_ptr<CoordinationUnitProviderImpl> provider_;
+
+  // The singleton SystemCU associated with this manager.
+  SystemCoordinationUnitImpl* system_cu_ = nullptr;
 
   static void Create(
       service_manager::ServiceContextRefFactory* service_ref_factory);

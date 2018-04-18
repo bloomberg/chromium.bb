@@ -11,6 +11,7 @@
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/system_coordination_unit_impl.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
@@ -77,6 +78,12 @@ void CoordinationUnitProviderImpl::CreateProcessCoordinationUnit(
   process_cu_binding.set_connection_error_handler(
       base::BindOnce(&CoordinationUnitProviderImpl::OnConnectionError,
                      base::Unretained(this), process_cu));
+}
+
+void CoordinationUnitProviderImpl::GetSystemCoordinationUnit(
+    resource_coordinator::mojom::SystemCoordinationUnitRequest request) {
+  // Simply fetch the existing SystemCU and add an additional binding to it.
+  coordination_unit_manager_->system_cu()->AddBinding(std::move(request));
 }
 
 void CoordinationUnitProviderImpl::Bind(

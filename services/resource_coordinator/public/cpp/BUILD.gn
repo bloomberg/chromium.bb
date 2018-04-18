@@ -42,6 +42,8 @@ component("resource_coordinator_cpp") {
     "resource_coordinator_features.cc",
     "resource_coordinator_features.h",
     "resource_coordinator_interface.h",
+    "system_resource_coordinator.cc",
+    "system_resource_coordinator.h",
   ]
 
   if (is_android) {
