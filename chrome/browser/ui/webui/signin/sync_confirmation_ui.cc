@@ -58,6 +58,30 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     AddStringResource(source, "syncConfirmationSyncSettingsDescription",
                       IDS_SYNC_CONFIRMATION_DICE_SYNC_SETTINGS_DESCRIPTION);
 
+    AddStringResource(source, "syncConfirmationMoreOptionsLabel",
+                      IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_BUTTON_LABEL);
+    AddStringResource(source, "syncConfirmationOptionsTitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_TITLE);
+    AddStringResource(source, "syncConfirmationOptionsSubtitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_SUBTITLE);
+    AddStringResource(
+        source, "syncConfirmationOptionsReviewSettingsTitle",
+        IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_REVIEW_SETTINGS_TITLE);
+    AddStringResource(
+        source, "syncConfirmationOptionsMakeNoChangesTitle",
+        IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_MAKE_NO_CHANGES_TITLE);
+    AddStringResource(
+        source, "syncConfirmationOptionsMakeNoChangesSubtitle",
+        IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_MAKE_NO_CHANGES_SUBTITLE);
+    AddStringResource(source, "syncConfirmationOptionsUseDefaultTitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_TITLE);
+    AddStringResource(source, "syncConfirmationOptionsUseDefaultSubtitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_SUBTITLE);
+    AddStringResource(source, "syncConfirmationOptionsConfirmLabel",
+                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_CONFIRM_BUTTON_LABEL);
+    AddStringResource(source, "syncConfirmationOptionsBackLabel",
+                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_BACK_BUTTON_LABEL);
+
     title_ids = IDS_SYNC_CONFIRMATION_UNITY_TITLE;
     confirm_button_ids = IDS_SYNC_CONFIRMATION_DICE_CONFIRM_BUTTON_LABEL;
     undo_button_ids = IDS_SYNC_CONFIRMATION_DICE_UNDO_BUTTON_LABEL;

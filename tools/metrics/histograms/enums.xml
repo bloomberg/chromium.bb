@@ -9318,6 +9318,7 @@ Called by update_net_error_codes.py.-->
   <int value="82" label="Relaunch Recommended Bubble"/>
   <int value="83" label="Crostini Installer"/>
   <int value="84" label="Relaunch Required Dialog"/>
+  <int value="85" label="Unity Sync Consent Bump"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
