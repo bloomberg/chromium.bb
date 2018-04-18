@@ -172,7 +172,7 @@ class FakeChromeUserManager : public ChromeUserManager {
 
   // ChromeUserManager override.
   void SetUserAffiliation(
-      const std::string& user_email,
+      const AccountId& account_id,
       const AffiliationIDSet& user_affiliation_ids) override;
   bool ShouldReportUser(const std::string& user_id) const override;
 
