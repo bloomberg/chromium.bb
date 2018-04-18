@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_table_info.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -139,6 +140,7 @@ AXTree::AXTree(const AXTreeUpdate& initial_state) {
 AXTree::~AXTree() {
   if (root_)
     DestroyNodeAndSubtree(root_, nullptr);
+  ClearTables();
 }
 
 void AXTree::SetDelegate(AXTreeDelegate* delegate) {
@@ -318,6 +320,7 @@ std::set<int32_t> AXTree::GetReverseRelations(ax::mojom::IntListAttribute attr,
 }
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
+  ClearTables();
   AXTreeUpdateState update_state;
   int32_t old_root_id = root_ ? root_->id() : 0;
 
@@ -429,6 +432,20 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   }
 
   return true;
+}
+
+AXTableInfo* AXTree::GetTableInfo(AXNode* table_node) {
+  DCHECK(table_node);
+  const auto& cached = table_info_map_.find(table_node->id());
+  if (cached != table_info_map_.end())
+    return cached->second;
+
+  AXTableInfo* table_info = AXTableInfo::Create(this, table_node);
+  if (!table_info)
+    return nullptr;
+
+  table_info_map_[table_node->id()] = table_info;
+  return table_info;
 }
 
 std::string AXTree::ToString() const {
@@ -726,6 +743,12 @@ bool AXTree::CreateNewChildVector(AXNode* node,
   }
 
   return success;
+}
+
+void AXTree::ClearTables() {
+  for (auto& entry : table_info_map_)
+    delete entry.second;
+  table_info_map_.clear();
 }
 
 }  // namespace ui
