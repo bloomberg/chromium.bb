@@ -101,10 +101,18 @@ bool Intersects(const NGLayoutOpportunity& opportunity,
 bool Intersects(const NGExclusionSpace::NGShelf& shelf,
                 const NGBfcOffset& offset,
                 const LayoutUnit inline_size) {
-  return (shelf.line_right == LayoutUnit::Max() ||
-          shelf.line_right >= offset.line_offset) &&
-         (shelf.line_left == LayoutUnit::Min() ||
-          shelf.line_left <= offset.line_offset + inline_size);
+  if (shelf.line_right >= offset.line_offset &&
+      shelf.line_left <= offset.line_offset + inline_size)
+    return true;
+  // Negative available space creates a zero-width opportunity at the inline-end
+  // of the shelf. Consider such shelf intersects.
+  // TODO(kojii): This is correct to find layout opportunities for zero-width
+  // in-flow inline or block objects (e.g., <br>,) but not correct for
+  // zero-width floats.
+  if (UNLIKELY(shelf.line_left > offset.line_offset ||
+               shelf.line_right < offset.line_offset + inline_size))
+    return true;
+  return false;
 }
 
 // Creates a new layout opportunity. The given layout opportunity *must*
@@ -136,8 +144,11 @@ NGLayoutOpportunity CreateLayoutOpportunity(
   NGBfcOffset start_offset(std::max(shelf.line_left, offset.line_offset),
                            std::max(shelf.block_offset, offset.block_offset));
 
+  // Max with |start_offset.line_offset| in case the shelf has a negative
+  // inline-size.
   NGBfcOffset end_offset(
-      std::min(shelf.line_right, offset.line_offset + inline_size),
+      std::max(std::min(shelf.line_right, offset.line_offset + inline_size),
+               start_offset.line_offset),
       LayoutUnit::Max());
 
   return NGLayoutOpportunity(NGBfcRect(start_offset, end_offset));
@@ -333,6 +344,9 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
           }
         }
 
+        // Just in case the shelf has a negative inline-size.
+        shelf.line_right = std::max(shelf.line_left, shelf.line_right);
+
         // We can end up in a situation where a shelf is the same as the
         // previous one. For example:
         //
@@ -351,12 +365,7 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
         bool is_same_as_previous =
             (i > 0) && shelf.line_left == shelves_[i - 1].line_left &&
             shelf.line_right == shelves_[i - 1].line_right;
-
-        // The shelf also may now be non-existent. Note that zero inline size is
-        // allowed, since subsequent zero-size content may still fit there.
-        bool shelf_disappearing = shelf.line_right < shelf.line_left;
-
-        if (is_same_as_previous || shelf_disappearing) {
+        if (is_same_as_previous) {
           shelves_.EraseAt(i);
           removed_shelf = true;
         }
