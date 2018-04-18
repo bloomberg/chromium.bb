@@ -18,12 +18,15 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/match_compare.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_switches.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_fixer.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // static
 size_t AutocompleteResult::GetMaxMatches() {
@@ -209,6 +212,44 @@ void AutocompleteResult::SortAndCull(
       GURL() : ComputeAlternateNavUrl(input, *default_match_);
 }
 
+void AutocompleteResult::ConvertOpenTabMatches(
+    AutocompleteProviderClient* client,
+    const AutocompleteInput* input) {
+  for (auto& match : matches_) {
+    // If already converted this match, don't re-search through open tabs and
+    // possibly re-change the description.
+    if (match.has_tab_match)
+      continue;
+    // If URL is not in a tab, there's nothing to do.
+    if (!client->IsTabOpenWithURL(match.destination_url, input))
+      continue;
+    match.has_tab_match = true;
+    // If we display a button for tab switching, don't change the description.
+    if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial())
+      continue;
+    const base::string16 switch_tab_message =
+        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT) +
+        base::UTF8ToUTF16(match.description.empty() ? "" : " - ");
+    match.description = switch_tab_message + match.description;
+    // Add classfication for the prefix.
+    if (match.description_class.empty()) {
+      match.description_class.push_back(
+          ACMatchClassification(0, ACMatchClassification::NONE));
+    } else {
+      if (match.description_class[0].style != ACMatchClassification::NONE) {
+        match.description_class.insert(
+            match.description_class.begin(),
+            ACMatchClassification(0, ACMatchClassification::NONE));
+      }
+      // Shift the rest.
+      for (auto& classification : match.description_class) {
+        if (classification.offset != 0 ||
+            classification.style != ACMatchClassification::NONE)
+          classification.offset += switch_tab_message.size();
+      }
+    }
+  }
+}
 bool AutocompleteResult::HasCopiedMatches() const {
   for (ACMatches::const_iterator i(begin()); i != end(); ++i) {
     if (i->from_previous)

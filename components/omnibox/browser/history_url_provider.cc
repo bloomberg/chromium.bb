@@ -939,8 +939,6 @@ void HistoryURLProvider::QueryComplete(
       }
       matches_.push_back(HistoryMatchToACMatch(*params, i, relevance));
     }
-    if (OmniboxFieldTrial::InTabSwitchSuggestionTrial())
-      ConvertOpenTabMatches(&params->input);
   }
 
   done_ = true;
