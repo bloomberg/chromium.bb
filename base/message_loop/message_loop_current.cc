@@ -157,8 +157,7 @@ bool MessageLoopCurrentForUI::IsSet() {
 #endif  // defined(OS_ANDROID)
 }
 
-#if (defined(USE_OZONE) && !defined(OS_FUCHSIA)) || \
-    (defined(USE_X11) && !defined(USE_GLIB))
+#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
 bool MessageLoopCurrentForUI::WatchFileDescriptor(
     int fd,
     bool persistent,
