@@ -168,7 +168,8 @@ void UserEventSyncBridge::OnSyncStarting(
   }
 }
 
-void UserEventSyncBridge::ApplyDisableSyncChanges(
+ModelTypeSyncBridge::DisableSyncResponse
+UserEventSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // Sync can only be disabled after initialization.
   DCHECK(deferred_user_events_while_initializing_.empty());
@@ -181,6 +182,7 @@ void UserEventSyncBridge::ApplyDisableSyncChanges(
   store_->ReadAllData(base::BindOnce(
       &UserEventSyncBridge::OnReadAllDataToDelete, base::AsWeakPtr(this),
       std::move(delete_metadata_change_list)));
+  return DisableSyncResponse::kModelStillReadyToSync;
 }
 
 void UserEventSyncBridge::OnReadAllDataToDelete(

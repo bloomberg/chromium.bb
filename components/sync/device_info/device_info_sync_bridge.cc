@@ -236,7 +236,8 @@ std::string DeviceInfoSyncBridge::GetStorageKey(const EntityData& entity_data) {
   return entity_data.specifics.device_info().cache_guid();
 }
 
-void DeviceInfoSyncBridge::ApplyDisableSyncChanges(
+ModelTypeSyncBridge::DisableSyncResponse
+DeviceInfoSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // TODO(skym, crbug.com/659263): Would it be reasonable to pulse_timer_.Stop()
   // or subscription_.reset() here?
@@ -248,6 +249,7 @@ void DeviceInfoSyncBridge::ApplyDisableSyncChanges(
     all_data_.clear();
     NotifyObservers();
   }
+  return DisableSyncResponse::kModelStillReadyToSync;
 }
 
 bool DeviceInfoSyncBridge::IsSyncing() const {

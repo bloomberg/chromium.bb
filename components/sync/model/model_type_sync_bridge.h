@@ -37,6 +37,11 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;
 
+  enum class DisableSyncResponse {
+    kModelStillReadyToSync,
+    kModelNoLongerReadyToSync
+  };
+
   ModelTypeSyncBridge(
       std::unique_ptr<ModelTypeChangeProcessor> change_processor);
 
@@ -140,7 +145,7 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // is in the process of being disabled. |delete_metadata_change_list| contains
   // a change list to remove all metadata that the processor knows about, but
   // the bridge may decide to implement deletion by other means.
-  virtual void ApplyDisableSyncChanges(
+  virtual DisableSyncResponse ApplyDisableSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list);
 
   // Needs to be informed about any model change occurring via Delete() and

@@ -46,7 +46,7 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
   void OnSyncStarting(
       const ModelErrorHandler& error_handler,
       ModelTypeChangeProcessor::StartCallback callback) override;
-  void ApplyDisableSyncChanges(
+  DisableSyncResponse ApplyDisableSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;
 
   void RecordUserEvent(std::unique_ptr<sync_pb::UserEventSpecifics> specifics);

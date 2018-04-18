@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
-#include "components/sync/base/hash_util.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/time.h"
 #include "components/sync/device_info/device_info.h"
@@ -307,25 +306,26 @@ std::string SessionStore::WriteBatch::PutAndUpdateTracker(
   return PutWithoutUpdatingTracker(specifics);
 }
 
-std::string SessionStore::WriteBatch::DeleteForeignEntityAndUpdateTracker(
-    const sync_pb::SessionSpecifics& specifics) {
-  DCHECK(AreValidSpecifics(specifics));
-  DCHECK_NE(specifics.session_tag(), session_tracker_->GetLocalSessionTag());
+void SessionStore::WriteBatch::DeleteForeignEntityAndUpdateTracker(
+    const std::string& storage_key) {
+  std::string session_tag;
+  int tab_node_id;
+  bool success = DecodeStorageKey(storage_key, &session_tag, &tab_node_id);
+  DCHECK(success);
+  DCHECK_NE(session_tag, session_tracker_->GetLocalSessionTag());
 
-  if (specifics.has_header()) {
+  if (tab_node_id == TabNodePool::kInvalidTabNodeID) {
+    // Removal of a foreign header entity.
     // TODO(mastiz): This cascades with the removal of tabs too. Should we
     // reflect this as batch_->DeleteData()? The old code didn't, presumably
     // because we expect the rest of the removals to follow.
-    session_tracker_->DeleteForeignSession(specifics.session_tag());
-
+    session_tracker_->DeleteForeignSession(session_tag);
   } else {
-    session_tracker_->DeleteForeignTab(specifics.session_tag(),
-                                       specifics.tab_node_id());
+    // Removal of a foreign tab entity.
+    session_tracker_->DeleteForeignTab(session_tag, tab_node_id);
   }
 
-  const std::string storage_key = GetStorageKey(specifics);
   batch_->DeleteData(storage_key);
-  return storage_key;
 }
 
 std::string SessionStore::WriteBatch::PutWithoutUpdatingTracker(
@@ -362,12 +362,23 @@ bool SessionStore::AreValidSpecifics(const SessionSpecifics& specifics) {
   if (specifics.session_tag().empty()) {
     return false;
   }
-  if (specifics.has_header()) {
-    return !specifics.has_tab() &&
-           specifics.tab_node_id() == TabNodePool::kInvalidTabNodeID;
-  }
   if (specifics.has_tab()) {
     return specifics.tab_node_id() >= 0 && specifics.tab().tab_id() > 0;
+  }
+  if (specifics.has_header()) {
+    // Verify that tab IDs appear only once within a header. Intended to prevent
+    // http://crbug.com/360822.
+    std::set<int> session_tab_ids;
+    for (const sync_pb::SessionWindow& window : specifics.header().window()) {
+      for (int tab_id : window.tab()) {
+        bool success = session_tab_ids.insert(tab_id).second;
+        if (!success) {
+          return false;
+        }
+      }
+    }
+    return !specifics.has_tab() &&
+           specifics.tab_node_id() == TabNodePool::kInvalidTabNodeID;
   }
   return false;
 }
@@ -390,6 +401,15 @@ std::string SessionStore::GetStorageKey(const SessionSpecifics& specifics) {
   return EncodeStorageKey(specifics.session_tag(), specifics.tab_node_id());
 }
 
+bool SessionStore::StorageKeyMatchesLocalSession(
+    const std::string& storage_key) const {
+  std::string session_tag;
+  int tab_node_id;
+  bool success = DecodeStorageKey(storage_key, &session_tag, &tab_node_id);
+  DCHECK(success);
+  return session_tag == local_session_info_.session_tag;
+}
+
 // static
 std::string SessionStore::GetHeaderStorageKeyForTest(
     const std::string& session_tag) {
@@ -402,6 +422,12 @@ std::string SessionStore::GetTabStorageKeyForTest(
     int tab_node_id) {
   DCHECK_GE(tab_node_id, 0);
   return EncodeStorageKey(session_tag, tab_node_id);
+}
+
+// static
+std::string SessionStore::GetTabClientTagForTest(const std::string& session_tag,
+                                                 int tab_node_id) {
+  return TabNodeIdToClientTag(session_tag, tab_node_id);
 }
 
 SessionStore::SessionStore(
@@ -543,7 +569,13 @@ std::unique_ptr<syncer::DataBatch> SessionStore::GetLocalSessionDataForKeys(
     int tab_node_id;
     bool success = DecodeStorageKey(storage_key, &session_tag, &tab_node_id);
     DCHECK(success);
-    DCHECK_EQ(session_tag, local_session->session_tag);
+
+    // During custom passphrase encryption, the processor can ask us about
+    // foreign entities too. We just drop those, and assume that the browser
+    // that owns them will take care of encryption.
+    if (session_tag != local_session->session_tag) {
+      continue;
+    }
 
     // Header entity.
     if (tab_node_id == TabNodePool::kInvalidTabNodeID) {
@@ -602,7 +634,8 @@ std::unique_ptr<syncer::DataBatch> SessionStore::GetAllLocalSessionData()
       tab_pb.set_tab_node_id(tab_node_id);
       *tab_pb.mutable_tab() = tab->ToSyncData();
       tab_pb.set_session_tag(session->session_tag);
-      batch->Put(GetStorageKey(tab_pb),
+      const std::string tab_storage_key = GetStorageKey(tab_pb);
+      batch->Put(tab_storage_key,
                  MoveToEntityData(session->session_name, &tab_pb));
     }
   }

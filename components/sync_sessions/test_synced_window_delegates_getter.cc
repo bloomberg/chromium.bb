@@ -253,13 +253,19 @@ SessionID PlaceholderTabDelegate::GetSourceTabID() const {
 TestSyncedWindowDelegate::TestSyncedWindowDelegate(
     SessionID window_id,
     sync_pb::SessionWindow_BrowserType type)
-    : window_id_(window_id), window_type_(type) {}
+    : window_id_(window_id),
+      window_type_(type),
+      is_session_restore_in_progress_(false) {}
 
 TestSyncedWindowDelegate::~TestSyncedWindowDelegate() = default;
 
 void TestSyncedWindowDelegate::OverrideTabAt(int index,
                                              SyncedTabDelegate* delegate) {
   tab_delegates_[index] = delegate;
+}
+
+void TestSyncedWindowDelegate::SetIsSessionRestoreInProgress(bool value) {
+  is_session_restore_in_progress_ = value;
 }
 
 bool TestSyncedWindowDelegate::HasWindow() const {
@@ -309,7 +315,7 @@ SessionID TestSyncedWindowDelegate::GetTabIdAt(int index) const {
 }
 
 bool TestSyncedWindowDelegate::IsSessionRestoreInProgress() const {
-  return false;
+  return is_session_restore_in_progress_;
 }
 
 bool TestSyncedWindowDelegate::ShouldSync() const {
