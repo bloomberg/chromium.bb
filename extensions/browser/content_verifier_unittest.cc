@@ -17,6 +17,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
+#include "extensions/common/scoped_testing_manifest_handler_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -78,8 +79,7 @@ class ContentVerifierTest
 
     // Manually register handlers since the |ContentScriptsHandler| is not
     // usually registered in extensions_unittests.
-    ManifestHandlerRegistry registry;
-    ManifestHandlerRegistry::SetForTesting(&registry);
+    ScopedTestingManifestHandlerRegistry registry;
     (new BackgroundManifestHandler)->Register();
     (new ContentScriptsHandler)->Register();
     ManifestHandler::FinalizeRegistration();
