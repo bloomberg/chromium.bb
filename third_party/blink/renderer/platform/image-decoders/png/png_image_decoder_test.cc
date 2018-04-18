@@ -1081,4 +1081,16 @@ TEST(PNGTests, truncated) {
   }
 }
 
+TEST(PNGTests, crbug827754) {
+  const char* png_file = "/images/resources/crbug827754.png";
+  scoped_refptr<SharedBuffer> data = ReadFile(png_file);
+  ASSERT_TRUE(data);
+
+  auto decoder = CreatePNGDecoder();
+  decoder->SetData(data.get(), true);
+  auto* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  ASSERT_FALSE(decoder->Failed());
+}
+
 };  // namespace blink
