@@ -15,7 +15,7 @@
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
-#include "third_party/libaom/av1_features.h"
+#include "third_party/libaom/av1_buildflags.h"
 #include "ui/display/display_switches.h"
 
 #if defined(OS_ANDROID)

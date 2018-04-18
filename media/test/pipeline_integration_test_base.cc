@@ -23,7 +23,7 @@
 #include "media/renderers/renderer_impl.h"
 #include "media/test/fake_encrypted_media.h"
 #include "media/test/mock_media_source.h"
-#include "third_party/libaom/av1_features.h"
+#include "third_party/libaom/av1_buildflags.h"
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 #include "media/filters/aom_video_decoder.h"

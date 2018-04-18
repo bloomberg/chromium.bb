@@ -922,7 +922,7 @@ test("content_browsertests") {
     "//testing/gtest",
     "//third_party/blink/public:blink",
     "//third_party/leveldatabase",
-    "//third_party/libaom:av1_features",
+    "//third_party/libaom:av1_buildflags",
     "//third_party/mesa:osmesa",
     "//third_party/zlib",
     "//ui/accessibility",

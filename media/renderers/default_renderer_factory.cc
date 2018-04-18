@@ -22,7 +22,7 @@
 #include "media/renderers/video_renderer_impl.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "third_party/libaom/av1_features.h"
+#include "third_party/libaom/av1_buildflags.h"
 
 #if !defined(OS_ANDROID)
 #include "media/filters/decrypting_audio_decoder.h"
