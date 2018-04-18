@@ -21,8 +21,13 @@ bool MaybeGetWifiSSID(const std::string& if_name, std::string* ssid_out) {
   DCHECK(ssid_out);
 
   base::ScopedFD ioctl_socket(socket(AF_INET, SOCK_DGRAM, 0));
-  if (!ioctl_socket.is_valid())
-    return false;
+  if (!ioctl_socket.is_valid()) {
+    // AF_INET is for IPv4, so it may fail for IPv6-only hosts even when there
+    // are interfaces up.
+    ioctl_socket.reset(socket(AF_INET6, SOCK_DGRAM, 0));
+    if (!ioctl_socket.is_valid())
+      return false;
+  }
   struct iwreq wreq = {};
   strncpy(wreq.ifr_name, if_name.data(), IFNAMSIZ - 1);
 
