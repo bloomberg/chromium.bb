@@ -16,7 +16,6 @@ import android.widget.EditText;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
-import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
@@ -37,9 +36,7 @@ public class HomepageEditor extends Fragment implements TextWatcher {
         View v = inflater.inflate(R.layout.homepage_editor, container, false);
 
         mHomepageUrlEdit = (EditText) v.findViewById(R.id.homepage_url_edit);
-        mHomepageUrlEdit.setText((mHomepageManager.getPrefHomepageUseDefaultUri()
-                ? PartnerBrowserCustomizations.getHomePageUrl()
-                : mHomepageManager.getPrefHomepageCustomUri()));
+        mHomepageUrlEdit.setText(HomepageManager.getHomepageUri());
         mHomepageUrlEdit.addTextChangedListener(this);
         mHomepageUrlEdit.requestFocus();
 
