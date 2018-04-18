@@ -109,8 +109,6 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   ExtensionWebstorePrivateApiTest() {}
   ~ExtensionWebstorePrivateApiTest() override {}
 
-  bool ShouldAllowLegacyExtensionManifests() override { return true; }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
