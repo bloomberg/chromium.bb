@@ -153,77 +153,113 @@ VALID_TEST_TYPES = ['gtest', 'instrumentation', 'junit', 'linker', 'monkey',
 VALID_DEVICE_TYPES = ['Android', 'iOS']
 
 
-def GetBuildType():
-  try:
-    return os.environ['BUILDTYPE']
-  except KeyError:
-    raise EnvironmentError(
-        'The BUILDTYPE environment variable has not been set')
-
-
 def SetBuildType(build_type):
+  """Set the BUILDTYPE environment variable.
+
+  NOTE: Using this function is deprecated, in favor of SetOutputDirectory(),
+        it is still maintained for a few scripts that typically call it
+        to implement their --release and --debug command-line options.
+
+        When writing a new script, consider supporting an --output-dir or
+        --chromium-output-dir option instead, and calling SetOutputDirectory()
+        instead.
+
+  NOTE: If CHROMIUM_OUTPUT_DIR if defined, or if SetOutputDirectory() was
+  called previously, this will be completely ignored.
+  """
+  chromium_output_dir = os.environ.get('CHROMIUM_OUTPUT_DIR')
+  if chromium_output_dir:
+    logging.warning(
+        'SetBuildType("%s") ignored since CHROMIUM_OUTPUT_DIR is already '
+        'defined as (%s)', build_type, chromium_output_dir)
   os.environ['BUILDTYPE'] = build_type
 
 
-def SetBuildDirectory(build_directory):
-  os.environ['CHROMIUM_OUT_DIR'] = build_directory
-
-
 def SetOutputDirectory(output_directory):
+  """Set the Chromium output directory.
+
+  This must be called early by scripts that rely on GetOutDirectory() or
+  CheckOutputDirectory(). Typically by providing an --output-dir or
+  --chromium-output-dir option.
+  """
   os.environ['CHROMIUM_OUTPUT_DIR'] = output_directory
 
 
-def GetOutDirectory(build_type=None):
-  """Returns the out directory where the output binaries are built.
+# The message that is printed when the Chromium output directory cannot
+# be found. Note that CHROMIUM_OUT_DIR and BUILDTYPE are not mentioned
+# intentionally to encourage the use of CHROMIUM_OUTPUT_DIR instead.
+_MISSING_OUTPUT_DIR_MESSAGE = '\
+The Chromium output directory could not be found. Please use an option such as \
+--output-directory to provide it (see --help for details). Otherwise, \
+define the CHROMIUM_OUTPUT_DIR environment variable.'
 
-  Args:
-    build_type: Build type, generally 'Debug' or 'Release'. Defaults to the
-      globally set build type environment variable BUILDTYPE.
+
+def GetOutDirectory():
+  """Returns the Chromium build output directory.
+
+  NOTE: This is determined in the following way:
+    - From a previous call to SetOutputDirectory()
+    - Otherwise, from the CHROMIUM_OUTPUT_DIR env variable, if it is defined.
+    - Otherwise, from the current Chromium source directory, and a previous
+      call to SetBuildType() or the BUILDTYPE env variable, in combination
+      with the optional CHROMIUM_OUT_DIR env variable.
   """
   if 'CHROMIUM_OUTPUT_DIR' in os.environ:
     return os.path.abspath(os.path.join(
         DIR_SOURCE_ROOT, os.environ.get('CHROMIUM_OUTPUT_DIR')))
 
+  build_type = os.environ.get('BUILDTYPE')
+  if not build_type:
+    raise EnvironmentError(_MISSING_OUTPUT_DIR_MESSAGE)
+
   return os.path.abspath(os.path.join(
       DIR_SOURCE_ROOT, os.environ.get('CHROMIUM_OUT_DIR', 'out'),
-      GetBuildType() if build_type is None else build_type))
+      build_type))
 
 
 def CheckOutputDirectory():
-  """Checks that CHROMIUM_OUT_DIR or CHROMIUM_OUTPUT_DIR is set.
+  """Checks that the Chromium output directory is set, or can be found.
 
-  If neither are set, but the current working directory is a build directory,
-  then CHROMIUM_OUTPUT_DIR is set to the current working directory.
+  If it is not already set, this will also perform a little auto-detection:
+
+    - If the current directory contains a build.ninja file, use it as
+      the output directory.
+
+    - If CHROME_HEADLESS is defined in the environment (e.g. on a bot),
+      look if there is a single output directory under DIR_SOURCE_ROOT/out/,
+      and if so, use it as the output directory.
 
   Raises:
     Exception: If no output directory is detected.
   """
   output_dir = os.environ.get('CHROMIUM_OUTPUT_DIR')
-  out_dir = os.environ.get('CHROMIUM_OUT_DIR')
-  if not output_dir and not out_dir:
-    # If CWD is an output directory, then assume it's the desired one.
-    if os.path.exists('build.ninja'):
-      output_dir = os.getcwd()
-      SetOutputDirectory(output_dir)
-    elif os.environ.get('CHROME_HEADLESS'):
-      # When running on bots, see if the output directory is obvious.
-      dirs = glob.glob(os.path.join(DIR_SOURCE_ROOT, 'out', '*', 'build.ninja'))
-      if len(dirs) == 1:
-        SetOutputDirectory(dirs[0])
-      else:
-        raise Exception('Neither CHROMIUM_OUTPUT_DIR nor CHROMIUM_OUT_DIR '
-                        'has been set. CHROME_HEADLESS detected, but multiple '
-                        'out dirs exist: %r' % dirs)
-    else:
-      raise Exception('Neither CHROMIUM_OUTPUT_DIR nor CHROMIUM_OUT_DIR '
-                      'has been set')
+  if output_dir:
+    return
 
+  build_type = os.environ.get('BUILDTYPE')
+  if build_type and len(build_type) > 1:
+    return
 
-# TODO(jbudorick): Convert existing callers to AdbWrapper.GetAdbPath() and
-# remove this.
-def GetAdbPath():
-  from devil.android.sdk import adb_wrapper
-  return adb_wrapper.AdbWrapper.GetAdbPath()
+  # If CWD is an output directory, then assume it's the desired one.
+  if os.path.exists('build.ninja'):
+    output_dir = os.getcwd()
+    SetOutputDirectory(output_dir)
+    return
+
+  # When running on bots, see if the output directory is obvious.
+  # TODO(http://crbug.com/833808): Get rid of this by ensuring bots always set
+  # CHROMIUM_OUTPUT_DIR correctly.
+  if os.environ.get('CHROME_HEADLESS'):
+    dirs = glob.glob(os.path.join(DIR_SOURCE_ROOT, 'out', '*', 'build.ninja'))
+    if len(dirs) == 1:
+      SetOutputDirectory(dirs[0])
+      return
+
+    raise Exception(
+        'Chromium output directory not set, and CHROME_HEADLESS detected. ' +
+        'However, multiple out dirs exist: %r' % dirs)
+
+  raise Exception(_MISSING_OUTPUT_DIR_MESSAGE)
 
 
 # Exit codes

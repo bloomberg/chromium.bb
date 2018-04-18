@@ -41,7 +41,8 @@ from pylib.symbols import elf_symbolizer
 SYMBOLS_DIR = constants.DIR_SOURCE_ROOT
 CHROME_SYMBOLS_DIR = None
 ARCH = "arm"
-SECONDARY_ABI_OUTPUT_PATH = None
+
+_SECONDARY_ABI_OUTPUT_PATH = None
 
 # See:
 # http://bugs.python.org/issue14315
@@ -99,14 +100,6 @@ def _PathListJoin(prefix_list, suffix_list):
        for suffix in suffix_list for prefix in prefix_list ]
 
 
-def _GetChromeOutputDirCandidates():
-  """Returns a list of output directories to look in."""
-  if os.environ.get('CHROMIUM_OUTPUT_DIR') or os.environ.get('BUILDTYPE'):
-    return [constants.GetOutDirectory()]
-  return [constants.GetOutDirectory(build_type='Debug'),
-          constants.GetOutDirectory(build_type='Release')]
-
-
 def GetCandidates(dirs, filepart, candidate_fun):
   """Returns a list of candidate filenames, sorted by modification time.
 
@@ -142,8 +135,8 @@ def _GetCandidateApks():
   if _cached_candidate_apks is not None:
     return _cached_candidate_apks
 
-  dirs = _PathListJoin(_GetChromeOutputDirCandidates(), ['apks'])
-  candidates = GetCandidates(dirs, '*.apk', glob.glob)
+  apk_dir = os.path.join(constants.GetOutDirectory(), 'apks')
+  candidates = GetCandidates([apk_dir], '*.apk', glob.glob)
   _cached_candidate_apks = candidates
   return candidates
 
@@ -201,14 +194,16 @@ def MapDeviceApkToLibrary(device_apk_name):
 
 
 def GetLibrarySearchPaths():
-  if SECONDARY_ABI_OUTPUT_PATH:
-    return _PathListJoin([SECONDARY_ABI_OUTPUT_PATH], ['lib.unstripped', 'lib', '.'])
+  """Return a list of directories where to find native shared libraries."""
+  if _SECONDARY_ABI_OUTPUT_PATH:
+    return _PathListJoin([_SECONDARY_ABI_OUTPUT_PATH], ['lib.unstripped', '.'])
   if CHROME_SYMBOLS_DIR:
     return [CHROME_SYMBOLS_DIR]
-  dirs = _GetChromeOutputDirCandidates()
-  # GYP places unstripped libraries under out/$BUILDTYPE/lib
-  # GN places them under out/$BUILDTYPE/lib.unstripped
-  return _PathListJoin(dirs, ['lib.unstripped', 'lib', '.'])
+  output_dir = constants.GetOutDirectory()
+  # GN places stripped libraries under $CHROMIUM_OUTPUT_DIR and unstripped ones
+  # under $CHROMIUM_OUTPUT_OUT/lib.unstripped. Place the unstripped path before
+  # to get symbols from them when they exist.
+  return _PathListJoin([output_dir], ['lib.unstripped', '.'])
 
 
 def GetCandidateLibraries(library_name):
@@ -276,13 +271,15 @@ def _FormatSymbolWithOffset(symbol, offset):
     return symbol
   return "%s+%d" % (symbol, offset)
 
+
 def SetSecondaryAbiOutputPath(path):
-   global SECONDARY_ABI_OUTPUT_PATH
-   if SECONDARY_ABI_OUTPUT_PATH and SECONDARY_ABI_OUTPUT_PATH != path:
-     raise Exception ("Assign SECONDARY_ABI_OUTPUT_PATH to different value " +
-                      " origin: %s new: %s" % ("", path))
+   global _SECONDARY_ABI_OUTPUT_PATH
+   if _SECONDARY_ABI_OUTPUT_PATH and _SECONDARY_ABI_OUTPUT_PATH != path:
+     raise Exception ('SetSecondaryAbiOutputPath() was already called with a ' +
+                      'different value, previous: %s new: %s' % (
+                        _SECONDARY_ABI_OUTPUT_PATH, path))
    else:
-     SECONDARY_ABI_OUTPUT_PATH = path
+     _SECONDARY_ABI_OUTPUT_PATH = path
 
 
 def SymbolInformationForSet(lib, unique_addrs, get_detailed_info,
