@@ -108,7 +108,11 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
 
   ~CustomFrameView() override {}
 
-  // Overridden from ash::CustomFrameViewAshBase:
+  // Overridden from ash::CustomFrameViewAsh:
+  base::string16 GetFrameTitle() const override {
+    return static_cast<ShellSurfaceBase*>(GetWidget()->widget_delegate())
+        ->frame_title();
+  }
   void SetShouldPaintHeader(bool paint) override {
     if (visible()) {
       CustomFrameViewAsh::SetShouldPaintHeader(paint);

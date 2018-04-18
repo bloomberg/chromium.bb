@@ -227,11 +227,26 @@ TEST_F(ShellSurfaceTest, SetFullscreen) {
 }
 
 TEST_F(ShellSurfaceTest, SetTitle) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   shell_surface->SetTitle(base::string16(base::ASCIIToUTF16("test")));
+  surface->Attach(buffer.get());
   surface->Commit();
+
+  // NativeWindow's title is used within the overview mode, so it should
+  // have the specified title.
+  EXPECT_EQ(base::ASCIIToUTF16("test"),
+            shell_surface->GetWidget()->GetNativeWindow()->GetTitle());
+  const ash::CustomFrameViewAsh* frame =
+      static_cast<const ash::CustomFrameViewAsh*>(
+          shell_surface->GetWidget()->non_client_view()->frame_view());
+  // Frame's title is the string to be shown in the title bar. This should be
+  // empty.
+  EXPECT_EQ(base::string16(), frame->GetFrameTitle());
 }
 
 TEST_F(ShellSurfaceTest, SetApplicationId) {

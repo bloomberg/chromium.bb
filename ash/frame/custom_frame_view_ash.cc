@@ -390,6 +390,10 @@ gfx::Rect CustomFrameViewAsh::GetClientBoundsForWindowBounds(
   return client_bounds;
 }
 
+base::string16 CustomFrameViewAsh::GetFrameTitle() const {
+  return frame_->widget_delegate()->GetWindowTitle();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, views::NonClientFrameView overrides:
 
@@ -424,6 +428,7 @@ void CustomFrameViewAsh::ResetWindowControls() {
 void CustomFrameViewAsh::UpdateWindowIcon() {}
 
 void CustomFrameViewAsh::UpdateWindowTitle() {
+  header_view_->set_title(GetFrameTitle());
   header_view_->SchedulePaintForTitle();
 }
 

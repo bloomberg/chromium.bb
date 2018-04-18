@@ -1062,17 +1062,27 @@ TEST_F(ClientControlledShellSurfaceTest, SetExtraTitle) {
   surface->Attach(buffer.get());
   surface->Commit();
 
-  shell_surface->SetExtraTitle(base::string16(base::ASCIIToUTF16("extra")));
-  EXPECT_EQ(base::string16(base::ASCIIToUTF16("extra")),
-            shell_surface->GetWindowTitle());
+  // NativeWindow's title is used within the overview mode. It should be the
+  // specified title, as ShellSurface does. On the other hand, the frame's
+  // GetWindowTitle() should return the extra -- showing the debugging info
+  // in the title bar but otherwise it should have empty string.
+  // See https://crbug.com/831383.
+  const aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  const ash::CustomFrameViewAsh* frame =
+      static_cast<const ash::CustomFrameViewAsh*>(
+          shell_surface->GetWidget()->non_client_view()->frame_view());
 
-  shell_surface->SetTitle(base::string16(base::ASCIIToUTF16("title")));
-  EXPECT_EQ(base::string16(base::ASCIIToUTF16("title extra")),
-            shell_surface->GetWindowTitle());
+  shell_surface->SetExtraTitle(base::ASCIIToUTF16("extra"));
+  EXPECT_EQ(base::string16(), window->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16("extra"), frame->GetFrameTitle());
 
-  shell_surface->SetExtraTitle(base::string16(base::ASCIIToUTF16("")));
-  EXPECT_EQ(base::string16(base::ASCIIToUTF16("title")),
-            shell_surface->GetWindowTitle());
+  shell_surface->SetTitle(base::ASCIIToUTF16("title"));
+  EXPECT_EQ(base::ASCIIToUTF16("title"), window->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16("extra"), frame->GetFrameTitle());
+
+  shell_surface->SetExtraTitle(base::string16());
+  EXPECT_EQ(base::ASCIIToUTF16("title"), window->GetTitle());
+  EXPECT_EQ(base::string16(), frame->GetFrameTitle());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
