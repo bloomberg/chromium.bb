@@ -2011,6 +2011,9 @@ hooks = [
       '--download-vm',
       '--board={cros_board}',
       '--cache-dir=src/build/cros_cache/',
+      # TODO(crbug.com/834134): Remove the cache clobber when the sdk is smart
+      # enough to eject old toolchains from the cache.
+      '--clear-sdk-cache',
       '--log-level=error',
       'exit',
     ],
