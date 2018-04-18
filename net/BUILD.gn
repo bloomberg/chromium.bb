@@ -2438,9 +2438,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/diginotar_public_ca_2025.pem",
     "data/ssl/certificates/diginotar_root_ca.pem",
     "data/ssl/certificates/diginotar_services_1024_ca.pem",
-    "data/ssl/certificates/dod_ca_13_cert.der",
-    "data/ssl/certificates/dod_ca_17_cert.der",
-    "data/ssl/certificates/dod_root_ca_2_cert.der",
     "data/ssl/certificates/duplicate_cn_1.p12",
     "data/ssl/certificates/duplicate_cn_1.pem",
     "data/ssl/certificates/duplicate_cn_2.p12",
@@ -2550,7 +2547,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/websocket_cacert.pem",
     "data/ssl/certificates/websocket_client_cert.p12",
     "data/ssl/certificates/wildcard.pem",
-    "data/ssl/certificates/www_us_army_mil_cert.der",
     "data/ssl/certificates/x509_verify_results.chain.pem",
   ]
   outputs = [

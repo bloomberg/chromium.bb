@@ -21,11 +21,6 @@ unit tests.
 - foaf.me.chromium-test-cert.der : A client certificate for a FOAF.ME identity
      created for testing.
 
-- www_us_army_mil_cert.der
-- dod_ca_17_cert.der
-- dod_root_ca_2_cert.der :
-     A certificate chain used for testing certificate imports
-
 - unosoft_hu_cert : Certificate used by X509CertificateTest.UnoSoftCertParsing.
 
 - google_diginotar.pem

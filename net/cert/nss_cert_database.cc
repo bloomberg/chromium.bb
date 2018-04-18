@@ -186,10 +186,15 @@ CERTCertificate* NSSCertDatabase::FindRootInList(
   CERTCertificate* certn_2 = certificates[certificates.size() - 2].get();
   CERTCertificate* certn_1 = certificates[certificates.size() - 1].get();
 
-  if (CERT_CompareName(&cert1->issuer, &cert0->subject) == SECEqual)
+  // Using CERT_CompareName is an alternative, except that it is broken until
+  // NSS 3.32 (see https://bugzilla.mozilla.org/show_bug.cgi?id=1361197 ).
+  if (SECITEM_CompareItem(&cert1->derIssuer, &cert0->derSubject) == SECEqual)
     return cert0;
-  if (CERT_CompareName(&certn_2->issuer, &certn_1->subject) == SECEqual)
+
+  if (SECITEM_CompareItem(&certn_2->derIssuer, &certn_1->derSubject) ==
+      SECEqual) {
     return certn_1;
+  }
 
   LOG(WARNING) << "certificate list is not a hierarchy";
   return cert0;
@@ -225,6 +230,7 @@ bool NSSCertDatabase::ImportCACerts(
     ImportCertFailureList* not_imported) {
   crypto::ScopedPK11Slot slot(GetPublicSlot());
   CERTCertificate* root = FindRootInList(certificates);
+
   bool success = psm::ImportCACerts(slot.get(), certificates, root, trust_bits,
                                     not_imported);
   if (success)
@@ -332,7 +338,7 @@ bool NSSCertDatabase::IsUntrusted(const CERTCertificate* cert) const {
   // Self-signed certificates that don't have any trust bits set are untrusted.
   // Other certificates that don't have any trust bits set may still be trusted
   // if they chain up to a trust anchor.
-  if (CERT_CompareName(&cert->issuer, &cert->subject) == SECEqual) {
+  if (SECITEM_CompareItem(&cert->derIssuer, &cert->derSubject) == SECEqual) {
     return (nsstrust.sslFlags & kTrusted) == 0 &&
            (nsstrust.emailFlags & kTrusted) == 0 &&
            (nsstrust.objectSigningFlags & kTrusted) == 0;
