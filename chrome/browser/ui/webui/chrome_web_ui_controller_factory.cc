@@ -128,6 +128,7 @@
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
 #include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/page_not_available_for_guest/page_not_available_for_guest_ui.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
 #include "chrome/browser/ui/webui/system_info_ui.h"
 #endif
@@ -227,6 +228,14 @@ template<class T>
 WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
   return new T(web_ui);
 }
+
+#if !defined(OS_ANDROID)
+template <>
+WebUIController* NewWebUI<PageNotAvailableForGuestUI>(WebUI* web_ui,
+                                                      const GURL& url) {
+  return new PageNotAvailableForGuestUI(web_ui, url.host());
+}
+#endif
 
 // Special case for older about: handlers.
 template<>
@@ -399,6 +408,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif  // defined(OS_CHROMEOS)
 
+  if (profile->IsGuestSession() &&
+      (url.host_piece() == chrome::kChromeUIBookmarksHost ||
+       url.host_piece() == chrome::kChromeUIHistoryHost)) {
+    return &NewWebUI<PageNotAvailableForGuestUI>;
+  }
   // Bookmarks are part of NTP on Android.
   if (url.host_piece() == chrome::kChromeUIBookmarksHost) {
     return MdBookmarksUI::IsEnabled() ? &NewWebUI<MdBookmarksUI>

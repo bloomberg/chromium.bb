@@ -4093,4 +4093,8 @@
       Done! No incompatible applications found.
     </message>
   </if>
+
+  <message name="IDS_PAGE_NOT_AVAILABLE_FOR_GUEST_HEADING" desc="This is the heading for the page not available for guest.">
+    <ph name="PAGE_NAME">$1<ex>Bookmarks</ex></ph> is not available to Guest users.
+  </message>
 </grit-part>
