@@ -94,12 +94,8 @@
         flex-direction: column;
       }
 
-      :host #invitationPromo .invitation-text {
-        padding-bottom: 12px;
-      }
-
-      :host #invitationPromo .invitation-reject-button {
-        -webkit-margin-start: 10px;
+      :host #invitationPromo .invitation-buttons {
+        padding: 12px 0;
       }
     </style>
     <cr-dialog id="dialog" on-close="onCloseOrCancel_">
@@ -154,20 +150,15 @@
           <div class="close-button"></div>
         </div>
         <div class="promo" id="invitationPromo" hidden="[[!invitation_]]">
-          <div class="invitation-text"
-              inner-h-t-m-l="[[getInvitationText_(invitation_)]]">
-          </div>
+          <div inner-h-t-m-l="[[getInvitationText_(invitation_)]]"></div>
           <div class="invitation-buttons">
-            <button class="invitation-accept-button"
-                on-click="onInvitationAcceptClick_">
+            <button on-click="onInvitationAcceptClick_">
               [[getAcceptButtonText_(invitation_)]]
             </button>
-            <button class="invitation-reject-button"
-                on-click="onInvitationRejectClick_">
-              $i18n{reject}
-            </button>
+            <button on-click="onInvitationRejectClick_">$i18n{reject}</button>
             <div id="invitation-process-throbber" class="throbber" hidden></div>
           </div>
+          <div>$i18nRaw{registerPrinterInformationMessage}</div>
         </div>
       </div>
     </cr-dialog>
