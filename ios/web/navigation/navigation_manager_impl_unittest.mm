@@ -10,13 +10,10 @@
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
-#import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/features.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -117,14 +114,11 @@ class NavigationManagerTest
  protected:
   NavigationManagerTest() {
     if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
-      feature_list_.InitAndDisableFeature(
-          web::features::kSlimNavigationManager);
       manager_.reset(new LegacyNavigationManagerImpl);
       controller_ =
           [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
       delegate_.SetSessionController(session_controller());
     } else {
-      feature_list_.InitAndEnableFeature(web::features::kSlimNavigationManager);
       manager_.reset(new WKBasedNavigationManagerImpl);
       mock_web_view_ = OCMClassMock([WKWebView class]);
       mock_wk_list_ = [[CRWFakeBackForwardList alloc] init];
@@ -162,7 +156,6 @@ class NavigationManagerTest
 
   CRWFakeBackForwardList* mock_wk_list_;
   WKWebView* mock_web_view_;
-  base::test::ScopedFeatureList feature_list_;
 
  private:
   TestBrowserState browser_state_;
@@ -1749,8 +1742,6 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentType) {
       url, Referrer(), ui::PAGE_TRANSITION_TYPED,
       NavigationInitiationType::USER_INITIATED,
       NavigationManager::UserAgentOverrideOption::MOBILE);
-  GURL virtual_url("http://www.1.com/virtual");
-  navigation_manager()->GetPendingItem()->SetVirtualURL(virtual_url);
   [mock_wk_list_ setCurrentURL:@"http://www.1.com"];
   navigation_manager()->CommitPendingItem();
 
@@ -1762,15 +1753,7 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentType) {
   navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
 
   NavigationItem* pending_item = navigation_manager()->GetPendingItem();
-  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
-    EXPECT_EQ(url, pending_item->GetURL());
-  } else {
-    GURL reload_target_url;
-    ASSERT_TRUE(wk_navigation_util::ExtractTargetURL(pending_item->GetURL(),
-                                                     &reload_target_url));
-    EXPECT_EQ(url, reload_target_url);
-  }
-  EXPECT_EQ(virtual_url, pending_item->GetVirtualURL());
+  EXPECT_EQ(url, pending_item->GetURL());
   EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
 }
 
