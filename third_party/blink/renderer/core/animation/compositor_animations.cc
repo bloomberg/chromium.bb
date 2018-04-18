@@ -410,7 +410,7 @@ void CompositorAnimations::StartAnimationOnCompositor(
 
 void CompositorAnimations::CancelAnimationOnCompositor(
     const Element& element,
-    const Animation& animation,
+    CompositorAnimation* compositor_animation,
     int id) {
   if (!CheckCanStartElementOnCompositor(element).Ok()) {
     // When an element is being detached, we cancel any associated
@@ -420,8 +420,6 @@ void CompositorAnimations::CancelAnimationOnCompositor(
     // compositing update.
     return;
   }
-  CompositorAnimation* compositor_animation =
-      animation.GetCompositorAnimation();
   if (compositor_animation)
     compositor_animation->RemoveKeyframeModel(id);
 }

@@ -110,7 +110,7 @@ class CORE_EXPORT CompositorAnimations {
                                          Vector<int>& started_animation_ids,
                                          double animation_playback_rate);
   static void CancelAnimationOnCompositor(const Element&,
-                                          const Animation&,
+                                          CompositorAnimation*,
                                           int id);
   static void PauseAnimationForTestingOnCompositor(const Element&,
                                                    const Animation&,

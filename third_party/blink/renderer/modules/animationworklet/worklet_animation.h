@@ -81,6 +81,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
                    const HeapVector<Member<KeyframeEffect>>&,
                    DocumentTimelineOrScrollTimeline,
                    scoped_refptr<SerializedScriptValue>);
+  void DestroyCompositorAnimation();
 
   const String animator_name_;
   Animation::AnimationPlayState play_state_;
