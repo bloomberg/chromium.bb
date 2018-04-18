@@ -628,12 +628,15 @@ void ResourceLoader::DidStartLoadingResponseBody(
   mojom::blink::ProgressClientAssociatedPtrInfo progress_client_ptr;
   progress_binding_.Bind(MakeRequest(&progress_client_ptr));
 
+  // Callback is bound to a WeakPersistent, as ResourceLoader is kept alive by
+  // ResourceFetcher as long as we still care about the result of the load.
   mojom::blink::BlobRegistry* blob_registry = BlobDataHandle::GetBlobRegistry();
   blob_registry->RegisterFromStream(
       mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
       std::max(0ll, response.ExpectedContentLength()), std::move(body),
       std::move(progress_client_ptr),
-      WTF::Bind(&ResourceLoader::FinishedCreatingBlob, WrapPersistent(this)));
+      WTF::Bind(&ResourceLoader::FinishedCreatingBlob,
+                WrapWeakPersistent(this)));
 }
 
 void ResourceLoader::DidDownloadData(int length, int encoded_data_length) {
