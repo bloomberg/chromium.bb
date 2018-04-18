@@ -766,28 +766,16 @@ TransportSecurityState::TransportSecurityState()
 // Both HSTS and HPKP cause fatal SSL errors, so return true if a
 // host has either.
 bool TransportSecurityState::ShouldSSLErrorsBeFatal(const std::string& host) {
-  STSState sts_state;
-  PKPState pkp_state;
-  if (GetStaticDomainState(host, &sts_state, &pkp_state))
-    return true;
-  if (GetDynamicSTSState(host, &sts_state))
-    return true;
-  return GetDynamicPKPState(host, &pkp_state);
+  STSState unused_sts;
+  PKPState unused_pkp;
+  return GetStaticDomainState(host, &unused_sts, &unused_pkp) ||
+         GetDynamicSTSState(host, &unused_sts) ||
+         GetDynamicPKPState(host, &unused_pkp);
 }
 
 bool TransportSecurityState::ShouldUpgradeToSSL(const std::string& host) {
-  STSState dynamic_sts_state;
-  if (GetDynamicSTSState(host, &dynamic_sts_state))
-    return dynamic_sts_state.ShouldUpgradeToSSL();
-
-  STSState static_sts_state;
-  PKPState unused;
-  if (GetStaticDomainState(host, &static_sts_state, &unused) &&
-      static_sts_state.ShouldUpgradeToSSL()) {
-    return true;
-  }
-
-  return false;
+  STSState sts_state;
+  return GetSTSState(host, &sts_state) && sts_state.ShouldUpgradeToSSL();
 }
 
 TransportSecurityState::PKPStatus TransportSecurityState::CheckPublicKeyPins(
@@ -857,18 +845,8 @@ void TransportSecurityState::CheckExpectStaple(
 }
 
 bool TransportSecurityState::HasPublicKeyPins(const std::string& host) {
-  PKPState dynamic_state;
-  if (GetDynamicPKPState(host, &dynamic_state))
-    return dynamic_state.HasPublicKeyPins();
-
-  STSState unused;
-  PKPState static_pkp_state;
-  if (GetStaticDomainState(host, &unused, &static_pkp_state)) {
-    if (static_pkp_state.HasPublicKeyPins())
-      return true;
-  }
-
-  return false;
+  PKPState pkp_state;
+  return GetPKPState(host, &pkp_state) && pkp_state.HasPublicKeyPins();
 }
 
 TransportSecurityState::CTRequirementsStatus
@@ -1598,11 +1576,7 @@ TransportSecurityState::CheckPublicKeyPinsImpl(
     const PublicKeyPinReportStatus report_status,
     std::string* failure_log) {
   PKPState pkp_state;
-  STSState unused;
-
-  bool found_state =
-      GetDynamicPKPState(host_port_pair.host(), &pkp_state) ||
-      GetStaticDomainState(host_port_pair.host(), &unused, &pkp_state);
+  bool found_state = GetPKPState(host_port_pair.host(), &pkp_state);
 
   // HasPublicKeyPins should have returned true in order for this method to have
   // been called.
@@ -1662,6 +1636,20 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
   }
 
   return true;
+}
+
+bool TransportSecurityState::GetSTSState(const std::string& host,
+                                         STSState* result) {
+  PKPState unused;
+  return GetDynamicSTSState(host, result) ||
+         GetStaticDomainState(host, result, &unused);
+}
+
+bool TransportSecurityState::GetPKPState(const std::string& host,
+                                         PKPState* result) {
+  STSState unused;
+  return GetDynamicPKPState(host, result) ||
+         GetStaticDomainState(host, &unused, result);
 }
 
 bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
