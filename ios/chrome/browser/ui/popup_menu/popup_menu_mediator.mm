@@ -556,9 +556,9 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
                          kToolsMenuCloseAllIncognitoTabsId)];
   }
 
-  [items addObject:CreateTableViewItem(IDS_IOS_TOOLS_MENU_CLOSE_TAB,
-                                       PopupMenuActionCloseTab, nil,
-                                       kToolsMenuCloseTabId)];
+  [items addObject:CreateTableViewItem(
+                       IDS_IOS_TOOLS_MENU_CLOSE_TAB, PopupMenuActionCloseTab,
+                       @"popup_menu_close_tab", kToolsMenuCloseTabId)];
 
   self.items = @[ items ];
 }
