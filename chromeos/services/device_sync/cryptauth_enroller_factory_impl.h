@@ -5,18 +5,11 @@
 #ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLER_FACTORY_IMPL_H_
 #define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLER_FACTORY_IMPL_H_
 
-#include "base/memory/ref_counted.h"
 #include "components/cryptauth/cryptauth_enroller.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "net/url_request/url_request_context_getter.h"
 
-namespace identity {
-class IdentityManager;
-}  // namespace identity
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace cryptauth {
+class CryptAuthClientFactory;
+}  // namespace cryptauth
 
 namespace chromeos {
 
@@ -27,18 +20,14 @@ class CryptAuthEnrollerFactoryImpl
     : public cryptauth::CryptAuthEnrollerFactory {
  public:
   CryptAuthEnrollerFactoryImpl(
-      identity::IdentityManager* identity_manager,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context,
-      const cryptauth::DeviceClassifier& device_classifier);
+      cryptauth::CryptAuthClientFactory* cryptauth_client_factory);
   ~CryptAuthEnrollerFactoryImpl() override;
 
   // cryptauth::CryptAuthEnrollerFactory:
   std::unique_ptr<cryptauth::CryptAuthEnroller> CreateInstance() override;
 
  private:
-  identity::IdentityManager* identity_manager_;
-  const scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-  const cryptauth::DeviceClassifier device_classifier_;
+  cryptauth::CryptAuthClientFactory* cryptauth_client_factory_;
 };
 
 }  // namespace device_sync

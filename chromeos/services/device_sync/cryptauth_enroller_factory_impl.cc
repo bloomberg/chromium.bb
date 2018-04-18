@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "chromeos/services/device_sync/cryptauth_client_factory_impl.h"
 #include "components/cryptauth/cryptauth_enroller_impl.h"
 #include "components/cryptauth/secure_message_delegate_impl.h"
 
@@ -15,20 +14,15 @@ namespace chromeos {
 namespace device_sync {
 
 CryptAuthEnrollerFactoryImpl::CryptAuthEnrollerFactoryImpl(
-    identity::IdentityManager* identity_manager,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context,
-    const cryptauth::DeviceClassifier& device_classifier)
-    : identity_manager_(identity_manager),
-      url_request_context_(url_request_context),
-      device_classifier_(device_classifier) {}
+    cryptauth::CryptAuthClientFactory* cryptauth_client_factory)
+    : cryptauth_client_factory_(cryptauth_client_factory) {}
 
-CryptAuthEnrollerFactoryImpl::~CryptAuthEnrollerFactoryImpl() {}
+CryptAuthEnrollerFactoryImpl::~CryptAuthEnrollerFactoryImpl() = default;
 
 std::unique_ptr<cryptauth::CryptAuthEnroller>
 CryptAuthEnrollerFactoryImpl::CreateInstance() {
   return std::make_unique<cryptauth::CryptAuthEnrollerImpl>(
-      std::make_unique<CryptAuthClientFactoryImpl>(
-          identity_manager_, url_request_context_, device_classifier_),
+      cryptauth_client_factory_,
       cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
 }
 
