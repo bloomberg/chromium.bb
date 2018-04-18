@@ -76,7 +76,6 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD2(OnRstStream,
                void(SpdyStreamId stream_id, SpdyErrorCode error_code));
   MOCK_METHOD0(OnSettings, void());
-  MOCK_METHOD2(OnSettingOld, void(SpdyKnownSettingsId id, uint32_t value));
   MOCK_METHOD2(OnSetting, void(SpdySettingsId id, uint32_t value));
   MOCK_METHOD0(OnSettingsAck, void());
   MOCK_METHOD0(OnSettingsEnd, void());

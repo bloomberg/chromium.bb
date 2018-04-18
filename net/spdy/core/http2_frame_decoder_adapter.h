@@ -394,12 +394,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Called when a SETTINGS frame is received.
   virtual void OnSettings() {}
 
-  // Called when a complete setting within a SETTINGS frame has been parsed and
-  // validated.
-  // TODO(diannahu): Remove with deprecation of
-  //     GetSpdyRestartFlag(http2_propagate_unknown_settings).
-  virtual void OnSettingOld(SpdyKnownSettingsId id, uint32_t value) = 0;
-
   // Called when a complete setting within a SETTINGS frame has been parsed.
   // Note that |id| may or may not be a SETTINGS ID defined in the HTTP/2 spec.
   virtual void OnSetting(SpdySettingsId id, uint32_t value) = 0;

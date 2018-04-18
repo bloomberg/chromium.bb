@@ -333,11 +333,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     ++fin_frame_count_;
   }
 
-  void OnSettingOld(SpdyKnownSettingsId id, uint32_t value) override {
-    VLOG(1) << "OnSetting(" << id << ", " << std::hex << value << ")";
-    ++setting_count_;
-  }
-
   void OnSetting(SpdySettingsId id, uint32_t value) override {
     VLOG(1) << "OnSetting(" << id << ", " << std::hex << value << ")";
     ++setting_count_;
@@ -3014,11 +3009,7 @@ TEST_P(SpdyFramerTest, ReadUnknownSettingsId) {
 
   // In HTTP/2, we ignore unknown settings because of extensions. However, we
   // pass the SETTINGS to the visitor, which can decide how to handle them.
-  if (GetSpdyRestartFlag(http2_propagate_unknown_settings)) {
-    EXPECT_EQ(1, visitor.setting_count_);
-  } else {
-    EXPECT_EQ(0, visitor.setting_count_);
-  }
+  EXPECT_EQ(1, visitor.setting_count_);
   EXPECT_EQ(0, visitor.error_count_);
 }
 
@@ -3043,24 +3034,14 @@ TEST_P(SpdyFramerTest, ReadKnownAndUnknownSettingsWithExtension) {
 
   // In HTTP/2, we ignore unknown settings because of extensions. However, we
   // pass the SETTINGS to the visitor, which can decide how to handle them.
-  if (GetSpdyRestartFlag(http2_propagate_unknown_settings)) {
-    EXPECT_EQ(3, visitor.setting_count_);
-  } else {
-    EXPECT_EQ(1, visitor.setting_count_);
-  }
+  EXPECT_EQ(3, visitor.setting_count_);
   EXPECT_EQ(0, visitor.error_count_);
 
-  if (GetSpdyRestartFlag(http2_propagate_unknown_settings)) {
-    // The extension receives all SETTINGS, including the non-standard SETTINGS.
-    EXPECT_THAT(
-        extension.settings_received_,
-        testing::ElementsAre(testing::Pair(16, 2), testing::Pair(95, 65538),
-                             testing::Pair(2, 1)));
-  } else {
-    EXPECT_THAT(
-        extension.settings_received_,
-        testing::ElementsAre(testing::Pair(16, 2), testing::Pair(95, 65538)));
-  }
+  // The extension receives all SETTINGS, including the non-standard SETTINGS.
+  EXPECT_THAT(
+      extension.settings_received_,
+      testing::ElementsAre(testing::Pair(16, 2), testing::Pair(95, 65538),
+                           testing::Pair(2, 1)));
 }
 
 // Tests handling of SETTINGS frame with entries out of order.
@@ -3912,11 +3893,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       EXPECT_CALL(visitor, OnSettings());
-      if (GetSpdyRestartFlag(http2_propagate_unknown_settings)) {
-        EXPECT_CALL(visitor, OnSetting(SETTINGS_INITIAL_WINDOW_SIZE, 16));
-      } else {
-        EXPECT_CALL(visitor, OnSettingOld(SETTINGS_INITIAL_WINDOW_SIZE, 16));
-      }
+      EXPECT_CALL(visitor, OnSetting(SETTINGS_INITIAL_WINDOW_SIZE, 16));
       EXPECT_CALL(visitor, OnSettingsEnd());
     }
 

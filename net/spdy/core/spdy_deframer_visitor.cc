@@ -170,7 +170,6 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
                      SpdyStreamId promised_stream_id,
                      bool end) override;
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override;
-  void OnSettingOld(SpdyKnownSettingsId id, uint32_t value) override;
   void OnSetting(SpdySettingsId id, uint32_t value) override;
   void OnSettings() override;
   void OnSettingsAck() override;
@@ -607,18 +606,6 @@ void SpdyTestDeframerImpl::OnRstStream(SpdyStreamId stream_id,
 
   listener_->OnRstStream(
       SpdyMakeUnique<SpdyRstStreamIR>(stream_id, error_code));
-}
-
-// Called for an individual setting. There is no negotiation; the sender is
-// stating the value that the sender is using.
-void SpdyTestDeframerImpl::OnSettingOld(SpdyKnownSettingsId id,
-                                        uint32_t value) {
-  DVLOG(1) << "OnSettingOld id: " << id << std::hex << "    value: " << value;
-  CHECK_EQ(frame_type_, SETTINGS) << "   frame_type_="
-                                  << Http2FrameTypeToString(frame_type_);
-  CHECK(settings_);
-  settings_->push_back(std::make_pair(id, value));
-  settings_ir_->AddSetting(id, value);
 }
 
 // Called for an individual setting. There is no negotiation; the sender is
