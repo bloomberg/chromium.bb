@@ -1309,6 +1309,10 @@ void GraphicsLayer::SetScrollableArea(ScrollableArea* scrollable_area) {
   scrollable_area_ = scrollable_area;
 }
 
+void GraphicsLayer::ScrollableAreaDisposed() {
+  scrollable_area_.Clear();
+}
+
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 GraphicsLayer::TakeDebugInfo(cc::Layer* layer) {
   std::unique_ptr<base::trace_event::TracedValue> traced_value(
