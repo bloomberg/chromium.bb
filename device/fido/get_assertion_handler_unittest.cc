@@ -24,7 +24,7 @@ namespace device {
 namespace {
 
 constexpr uint8_t kClientDataHash[] = {0x01, 0x02, 0x03};
-constexpr char kRpId[] = "google.com";
+constexpr char kRpId[] = "acme.com";
 
 using TestGetAssertionRequestCallback = test::StatusAndValueCallbackReceiver<
     FidoReturnCode,

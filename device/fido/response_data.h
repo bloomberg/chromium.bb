@@ -15,10 +15,21 @@
 
 namespace device {
 
-// Base class for RegisterResponseData and SignResponseData.
+// Base class for AuthenticatorMakeCredentialResponse and
+// AuthenticatorGetAssertionResponse.
 class COMPONENT_EXPORT(DEVICE_FIDO) ResponseData {
  public:
+  virtual ~ResponseData();
+
+  virtual const std::vector<uint8_t>& GetRpIdHash() const = 0;
+
   std::string GetId() const;
+
+  // Checks that the SHA256 hash of the relying party id obtained from the
+  // request parameter matches the application parameter returned from the
+  // authenticator.
+  bool CheckRpIdHash(const std::string& rp_id) const;
+
   const std::vector<uint8_t>& raw_credential_id() const {
     return raw_credential_id_;
   }
@@ -30,8 +41,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ResponseData {
   // Moveable.
   ResponseData(ResponseData&& other);
   ResponseData& operator=(ResponseData&& other);
-
-  ~ResponseData();
 
   std::vector<uint8_t> raw_credential_id_;
 

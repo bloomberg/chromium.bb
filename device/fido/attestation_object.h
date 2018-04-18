@@ -50,6 +50,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationObject {
   //  "attStmt": attestation statement bytes }
   std::vector<uint8_t> SerializeToCBOREncodedBytes() const;
 
+  const std::vector<uint8_t>& rp_id_hash() const {
+    return authenticator_data_.application_parameter();
+  }
+
  private:
   AuthenticatorData authenticator_data_;
   std::unique_ptr<AttestationStatement> attestation_statement_;

@@ -28,7 +28,7 @@ namespace device {
 namespace {
 
 constexpr uint8_t kClientDataHash[] = {0x01, 0x02, 0x03};
-constexpr char kRpId[] = "google.com";
+constexpr char kRpId[] = "acme.com";
 
 using TestGetAssertionTaskCallbackReceiver =
     ::device::test::StatusAndValueCallbackReceiver<
@@ -112,6 +112,30 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAsserionIncorrectUserEntity) {
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetAssertion,
       test_data::kTestGetAssertionResponse);
+
+  auto task = std::make_unique<GetAssertionTask>(
+      device.get(),
+      CtapGetAssertionRequest(kRpId,
+                              u2f_parsing_utils::Materialize(kClientDataHash)),
+      get_assertion_callback_receiver().callback());
+
+  get_assertion_callback_receiver().WaitForCallback();
+  EXPECT_EQ(device->supported_protocol(), ProtocolVersion::kCtap);
+  EXPECT_TRUE(device->device_info());
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
+            get_assertion_callback_receiver().status());
+  EXPECT_FALSE(get_assertion_callback_receiver().value());
+}
+
+TEST_F(FidoGetAssertionTaskTest, TestGetAsserionIncorrectRpIdHash) {
+  auto device = std::make_unique<MockFidoDevice>();
+
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetAssertion,
+      test_data::kTestGetAssertionResponseWithIncorrectRpIdHash);
 
   auto task = std::make_unique<GetAssertionTask>(
       device.get(),

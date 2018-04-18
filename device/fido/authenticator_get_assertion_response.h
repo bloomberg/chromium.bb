@@ -36,7 +36,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse
   AuthenticatorGetAssertionResponse(AuthenticatorGetAssertionResponse&& that);
   AuthenticatorGetAssertionResponse& operator=(
       AuthenticatorGetAssertionResponse&& other);
-  ~AuthenticatorGetAssertionResponse();
+  ~AuthenticatorGetAssertionResponse() override;
+
+  // ResponseData:
+  const std::vector<uint8_t>& GetRpIdHash() const override;
 
   AuthenticatorGetAssertionResponse& SetCredential(
       PublicKeyCredentialDescriptor credential);

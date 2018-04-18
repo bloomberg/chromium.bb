@@ -121,7 +121,7 @@ void GetAssertionTask::OnCtapGetAssertionResponseReceived(
   }
 
   auto parsed_response = ReadCTAPGetAssertionResponse(*device_response);
-  if (!parsed_response ||
+  if (!parsed_response || !parsed_response->CheckRpIdHash(request_.rp_id()) ||
       !CheckRequirementsOnReturnedCredentialId(*parsed_response) ||
       !CheckRequirementsOnReturnedUserEntities(*parsed_response)) {
     std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
