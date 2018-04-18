@@ -249,8 +249,8 @@ class _CoverageReportHtmlGenerator(object):
       if summary_dict[feature]['total'] == 0:
         percentage = 0.0
       else:
-        percentage = float(summary_dict[feature]['covered']) / summary_dict[
-            feature]['total'] * 100
+        percentage = float(summary_dict[feature]
+                           ['covered']) / summary_dict[feature]['total'] * 100
 
       color_class = self._GetColorClass(percentage)
       entry[feature] = {
@@ -412,7 +412,7 @@ def DownloadCoverageToolsIfNeeded():
 
 
 def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
-                                             filters):
+                                             filters, ignore_filename_regex):
   """Generates per file line-by-line coverage in html using 'llvm-cov show'.
 
   For a file with absolute path /a/b/x.cc, a html report is generated as:
@@ -439,6 +439,9 @@ def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
   _AddArchArgumentForIOSIfNeeded(subprocess_cmd, len(binary_paths))
   subprocess_cmd.extend(filters)
+  if ignore_filename_regex:
+    subprocess_cmd.append('-ignore-filename-regex=%s' % ignore_filename_regex)
+
   subprocess.check_call(subprocess_cmd)
   logging.debug('Finished running "llvm-cov show" command')
 
@@ -944,7 +947,8 @@ def _CreateCoverageProfileDataFromProfRawData(profraw_file_paths):
   return profdata_file_path
 
 
-def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
+def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters,
+                                    ignore_filename_regex):
   """Generates per file coverage summary using "llvm-cov export" command."""
   # llvm-cov export [options] -instr-profile PROFILE BIN [-object BIN,...]
   # [[-object BIN]] [SOURCES].
@@ -960,6 +964,8 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
   _AddArchArgumentForIOSIfNeeded(subprocess_cmd, len(binary_paths))
   subprocess_cmd.extend(filters)
+  if ignore_filename_regex:
+    subprocess_cmd.append('-ignore-filename-regex=%s' % ignore_filename_regex)
 
   json_output = json.loads(subprocess.check_output(subprocess_cmd))
   assert len(json_output['data']) == 1
@@ -1181,6 +1187,14 @@ def _ParseCommandArguments():
       'the directories are included recursively.')
 
   arg_parser.add_argument(
+      '-i',
+      '--ignore-filename-regex',
+      type=str,
+      help='Skip source code files with file paths that match the given '
+      'regular expression. For example, use -i=\'.*/out/.*|.*/third_party/.*\' '
+      'to exclude files in third_party/ and out/ folders from the report.')
+
+  arg_parser.add_argument(
       '-j',
       '--jobs',
       type=int,
@@ -1249,9 +1263,11 @@ def Main():
   logging.info('Generating code coverage report in html (this can take a while '
                'depending on size of target!)')
   per_file_coverage_summary = _GeneratePerFileCoverageSummary(
-      binary_paths, profdata_file_path, absolute_filter_paths)
+      binary_paths, profdata_file_path, absolute_filter_paths,
+      args.ignore_filename_regex)
   _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
-                                           absolute_filter_paths)
+                                           absolute_filter_paths,
+                                           args.ignore_filename_regex)
   _GenerateFileViewHtmlIndexFile(per_file_coverage_summary)
 
   per_directory_coverage_summary = _CalculatePerDirectoryCoverageSummary(
