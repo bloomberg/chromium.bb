@@ -167,6 +167,16 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         waitUntilIdle();
     }
 
+    public static void assertToolbarShowState(
+            final ChromeActivity activity, final boolean showState) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertEquals(showState, activity.getActivityTab().canShowBrowserControls());
+            }
+        });
+    }
+
     /**
      * Waits until any loads in progress of the activity under test have completed.
      */

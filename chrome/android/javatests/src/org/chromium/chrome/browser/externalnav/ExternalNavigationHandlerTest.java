@@ -1281,7 +1281,7 @@ public class ExternalNavigationHandlerTest {
 
     /**
      * Test that when a webapp with "STRICT scope policy" is navigated outside of the webapp's scope
-     * by "tapping a link" that a Chrome Custom Tab is launched.
+     * by "tapping a link" that a Chrome Custom Tab is not launched.
      */
     @Test
     @SmallTest
@@ -1293,8 +1293,7 @@ public class ExternalNavigationHandlerTest {
         mDelegate.setReferrerWebappPackageName(twaPackageName);
 
         checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
-                .expecting(
-                        OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPP_CCT);
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
     /**
@@ -1568,11 +1567,6 @@ public class ExternalNavigationHandlerTest {
         @Override
         public void startFileIntent(Intent intent, String referrerUrl, boolean needsToCloseTab) {
             startFileIntentCalled = true;
-        }
-
-        @Override
-        public void launchCctForWebappUrl(String url, boolean launchInNewTask) {
-            startWebappCctIntentCalled = true;
         }
 
         @Override
