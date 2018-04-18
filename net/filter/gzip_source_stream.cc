@@ -237,15 +237,11 @@ int GzipSourceStream::FilterData(IOBuffer* output_buffer,
         input_data_size -= to_read;
         input_data += to_read;
         if (gzip_footer_bytes_left_ == 0)
-          input_state_ = STATE_UNCOMPRESSED_BODY;
+          input_state_ = STATE_IGNORING_EXTRA_BYTES;
         break;
       }
-      case STATE_UNCOMPRESSED_BODY: {
-        int to_copy = std::min(input_data_size, output_buffer_size - bytes_out);
-        memcpy(output_buffer->data() + bytes_out, input_data, to_copy);
-        input_data_size -= to_copy;
-        input_data += to_copy;
-        bytes_out += to_copy;
+      case STATE_IGNORING_EXTRA_BYTES: {
+        input_data_size = 0;
         break;
       }
     }
