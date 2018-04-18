@@ -89,6 +89,12 @@ bool FakePepperPluginInstance::CanEditText() {
   return false;
 }
 
+bool FakePepperPluginInstance::HasEditableText() {
+  return false;
+}
+
 void FakePepperPluginInstance::ReplaceSelection(const std::string& text) {}
+
+void FakePepperPluginInstance::SelectAll() {}
 
 }  // namespace content

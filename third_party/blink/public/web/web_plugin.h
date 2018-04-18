@@ -161,6 +161,7 @@ class WebPlugin {
   virtual WebString SelectionAsMarkup() const { return WebString(); }
 
   virtual bool CanEditText() const { return false; }
+  virtual bool HasEditableText() const { return false; }
 
   virtual bool ExecuteEditCommand(const WebString& name) { return false; }
   virtual bool ExecuteEditCommand(const WebString& name,
@@ -254,4 +255,4 @@ class WebPlugin {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_H_

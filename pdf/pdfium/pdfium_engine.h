@@ -74,6 +74,7 @@ class PDFiumEngine : public PDFEngine,
   void RotateCounterclockwise() override;
   std::string GetSelectedText() override;
   bool CanEditText() override;
+  bool HasEditableText() override;
   void ReplaceSelection(const std::string& text) override;
   std::string GetLinkAtPosition(const pp::Point& point) override;
   bool HasPermission(DocumentPermission permission) const override;

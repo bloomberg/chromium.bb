@@ -817,6 +817,9 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPPPdf_SetSelectionBounds,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPdf_CanEditText,
                            PP_Instance /* instance */,
                            PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPdf_HasEditableText,
+                           PP_Instance /* instance */,
+                           PP_Bool /* result */)
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPPdf_ReplaceSelection,
                     PP_Instance /* instance */,
                     std::string /* text */)

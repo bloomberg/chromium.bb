@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
@@ -138,9 +140,16 @@ class PepperPluginInstance {
   // Returns true if the plugin text can be edited.
   virtual bool CanEditText() = 0;
 
+  // Returns true if the plugin has editable text. i.e. The editable text field
+  // is non-empty. Assumes CanEditText() returns true.
+  virtual bool HasEditableText() = 0;
+
   // Replaces the plugin's selected text, if any, with |text|. Assumes
   // CanEditText() returns true.
   virtual void ReplaceSelection(const std::string& text) = 0;
+
+  // Issues a select all command.
+  virtual void SelectAll() = 0;
 };
 
 }  // namespace content

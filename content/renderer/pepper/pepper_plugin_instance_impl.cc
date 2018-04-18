@@ -125,6 +125,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/web_input_event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -1517,13 +1518,44 @@ void PepperPluginInstanceImpl::SetSelectionBounds(const gfx::PointF& base,
 bool PepperPluginInstanceImpl::CanEditText() {
   if (!LoadPdfInterface())
     return false;
+  // No reference to |this| on the stack. Do not do any more work after this.
+  // See NOTE above.
   return PP_ToBool(plugin_pdf_interface_->CanEditText(pp_instance()));
+}
+
+bool PepperPluginInstanceImpl::HasEditableText() {
+  if (!LoadPdfInterface())
+    return false;
+  // No reference to |this| on the stack. Do not do any more work after this.
+  // See NOTE above.
+  return PP_ToBool(plugin_pdf_interface_->HasEditableText(pp_instance()));
 }
 
 void PepperPluginInstanceImpl::ReplaceSelection(const std::string& text) {
   if (!LoadPdfInterface())
     return;
+  // No reference to |this| on the stack. Do not do any more work after this.
+  // See NOTE above.
   plugin_pdf_interface_->ReplaceSelection(pp_instance(), text.c_str());
+}
+
+void PepperPluginInstanceImpl::SelectAll() {
+  if (!LoadPdfInterface())
+    return;
+
+#if defined(OS_MACOSX)
+  static const ui::EventFlags kPlatformModifier = ui::EF_COMMAND_DOWN;
+#else
+  static const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
+#endif
+  // Synthesize a ctrl + a key event to send to the plugin and let it sort out
+  // the event. See also https://crbug.com/739529.
+  ui::KeyEvent event(L'A', ui::VKEY_A, kPlatformModifier);
+  WebCursorInfo dummy_cursor_info;
+
+  // No reference to |this| on the stack. Do not do any more work after this.
+  // See NOTE above.
+  HandleInputEvent(MakeWebKeyboardEvent(event), &dummy_cursor_info);
 }
 
 void PepperPluginInstanceImpl::RequestSurroundingText(
