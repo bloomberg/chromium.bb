@@ -81,8 +81,8 @@ namespace autofill {
 
 namespace {
 
-// Time to wait, in ms, after a select option change before taking action to
-// wait for other option changes.
+// Time to wait, in ms, o ensure that only a single select change will be acted
+// upon, instead of multiple in close succession (debounce time).
 size_t kWaitTimeForSelectOptionsChangesMs = 50;
 
 // Whether the "single click" autofill feature is enabled, through command-line
@@ -803,29 +803,32 @@ void AutofillAgent::SelectFieldOptionsChanged(
   if (!was_last_action_fill_ || element_.IsNull())
     return;
 
+  // Since a change of a select options often come in batches, use a timer
+  // to wait for other changes. Stop the timer if it was already running. It
+  // will be started again for this change.
+  if (on_select_update_timer_.IsRunning())
+    on_select_update_timer_.AbandonAndStop();
+
+  // Start the timer to notify the driver that the select field was updated
+  // after the options have finished changing,
+  on_select_update_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kWaitTimeForSelectOptionsChangesMs),
+      base::BindRepeating(&AutofillAgent::SelectWasUpdated,
+                          weak_ptr_factory_.GetWeakPtr(), element));
+}
+
+void AutofillAgent::SelectWasUpdated(
+    const blink::WebFormControlElement& element) {
+  // Look for the form and field associated with the select element. If they are
+  // found, notify the driver that the the form was modified dynamically.
   FormData form;
   FormFieldData field;
   if (form_util::FindFormAndFieldForFormControlElement(element, &form,
                                                        &field) &&
       !field.option_values.empty()) {
-    // Since a change of a select options often come in batches, start a timer
-    // to wait for other changed. Restart the timer if it was already running.
-    if (on_select_update_timer_.IsRunning()) {
-      on_select_update_timer_.AbandonAndStop();
-    }
-
-    // After the options have finished changing, notify the driver that the
-    // select field was updated.
-    on_select_update_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kWaitTimeForSelectOptionsChangesMs),
-        base::BindRepeating(&AutofillAgent::SelectWasUpdated,
-                            weak_ptr_factory_.GetWeakPtr(), form));
+    GetAutofillDriver()->SelectFieldOptionsDidChange(form);
   }
-}
-
-void AutofillAgent::SelectWasUpdated(FormData form) {
-  GetAutofillDriver()->SelectFieldOptionsDidChange(form);
 }
 
 void AutofillAgent::FormControlElementClicked(

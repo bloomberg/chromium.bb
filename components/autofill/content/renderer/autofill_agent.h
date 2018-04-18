@@ -110,7 +110,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   FormTracker* form_tracker_for_testing() { return &form_tracker_; }
 
-  void SelectWasUpdated(FormData form);
+  void SelectWasUpdated(const blink::WebFormControlElement& element);
 
  protected:
   // blink::WebAutofillClient:
