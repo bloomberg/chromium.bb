@@ -20,7 +20,10 @@ using EntityMetadataMap = std::map<std::string, sync_pb::EntityMetadata>;
 class MetadataBatch {
  public:
   MetadataBatch();
+  MetadataBatch(MetadataBatch&&);
   ~MetadataBatch();
+
+  MetadataBatch(const MetadataBatch&) = delete;
 
   // Read-only access to the entire metadata map.
   const EntityMetadataMap& GetAllMetadata() const;

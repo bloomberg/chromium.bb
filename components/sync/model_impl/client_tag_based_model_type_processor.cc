@@ -163,14 +163,25 @@ void ClientTagBasedModelTypeProcessor::DisableSync() {
     change_list->ClearMetadata(kv.second->storage_key());
   }
   change_list->ClearModelTypeState();
-  bridge_->ApplyDisableSyncChanges(std::move(change_list));
+
+  const ModelTypeSyncBridge::DisableSyncResponse response =
+      bridge_->ApplyDisableSyncChanges(std::move(change_list));
 
   // Reset all the internal state of the processor.
   ResetState();
 
-  // The model is still ready to sync (with the same |bridge_|) - replay the
-  // initialization.
-  ModelReadyToSync(bridge_, std::make_unique<MetadataBatch>());
+  switch (response) {
+    case ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync:
+      // The model is still ready to sync (with the same |bridge_|) - replay the
+      // initialization.
+      ModelReadyToSync(bridge_, std::make_unique<MetadataBatch>());
+      break;
+    case ModelTypeSyncBridge::DisableSyncResponse::kModelNoLongerReadyToSync:
+      // Model not ready to sync, so wait until the bridge calls
+      // ModelReadyToSync().
+      bridge_ = nullptr;
+      break;
+  }
 }
 
 bool ClientTagBasedModelTypeProcessor::IsTrackingMetadata() {
@@ -324,17 +335,18 @@ void ClientTagBasedModelTypeProcessor::NudgeForCommitIfNeeded() {
     return;
 
   // Nudge worker if there are any entities with local changes.0
-  bool has_local_changes = false;
+  if (HasLocalChanges())
+    worker_->NudgeForCommit();
+}
+
+bool ClientTagBasedModelTypeProcessor::HasLocalChanges() const {
   for (const auto& kv : entities_) {
     ProcessorEntityTracker* entity = kv.second.get();
     if (entity->RequiresCommitRequest()) {
-      has_local_changes = true;
-      break;
+      return true;
     }
   }
-
-  if (has_local_changes)
-    worker_->NudgeForCommit();
+  return false;
 }
 
 void ClientTagBasedModelTypeProcessor::GetLocalChanges(
@@ -431,6 +443,8 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     OnInitialUpdateReceived(model_type_state, updates);
     return;
   }
+
+  DCHECK(model_type_state.initial_sync_done());
 
   std::unique_ptr<MetadataChangeList> metadata_changes =
       bridge_->CreateMetadataChangeList();
@@ -824,6 +838,10 @@ size_t ClientTagBasedModelTypeProcessor::EstimateMemoryUsage() const {
   return memory_usage;
 }
 
+bool ClientTagBasedModelTypeProcessor::HasLocalChangesForTest() const {
+  return HasLocalChanges();
+}
+
 void ClientTagBasedModelTypeProcessor::ExpireEntriesIfNeeded(
     const sync_pb::DataTypeProgressMarker& progress_marker) {
   if (!progress_marker.has_gc_directive())
@@ -957,8 +975,8 @@ void ClientTagBasedModelTypeProcessor::RemoveEntity(
 }
 
 void ClientTagBasedModelTypeProcessor::ResetState() {
-  // This should reset all mutable fields (except for |bridge_| that is not
-  // const only because the pointer cannot be passed in the ctor).
+  // This should reset all mutable fields (except for |bridge_| while is null
+  // while the bridge is not ready to sync).
   worker_.reset();
   model_error_.reset();
   entities_.clear();

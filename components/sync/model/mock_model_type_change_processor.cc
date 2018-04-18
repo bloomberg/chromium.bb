@@ -13,6 +13,9 @@
 namespace syncer {
 namespace {
 
+using testing::Invoke;
+using testing::_;
+
 class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
  public:
   // |other| must not be nullptr and must outlive this object.
@@ -92,6 +95,46 @@ std::unique_ptr<ModelTypeChangeProcessor>
 MockModelTypeChangeProcessor::CreateForwardingProcessor() {
   return base::WrapUnique<ModelTypeChangeProcessor>(
       new ForwardingModelTypeChangeProcessor(this));
+}
+
+void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
+    ModelTypeChangeProcessor* delegate) {
+  DCHECK(delegate);
+
+  ON_CALL(*this, DoPut(_, _, _))
+      .WillByDefault(Invoke(
+          [delegate](const std::string& storage_key, EntityData* entity_data,
+                     MetadataChangeList* metadata_change_list) {
+            delegate->Put(storage_key,
+                          std::make_unique<EntityData>(std::move(*entity_data)),
+                          metadata_change_list);
+          }));
+  ON_CALL(*this, Delete(_, _))
+      .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::Delete));
+  ON_CALL(*this, UpdateStorageKey(_, _, _))
+      .WillByDefault(
+          Invoke(delegate, &ModelTypeChangeProcessor::UpdateStorageKey));
+  ON_CALL(*this, UntrackEntity(_))
+      .WillByDefault(
+          Invoke(delegate, &ModelTypeChangeProcessor::UntrackEntity));
+  ON_CALL(*this, DoModelReadyToSync(_, _))
+      .WillByDefault(
+          Invoke([delegate](ModelTypeSyncBridge* bridge, MetadataBatch* batch) {
+            delegate->ModelReadyToSync(
+                bridge, std::make_unique<MetadataBatch>(std::move(*batch)));
+          }));
+  ON_CALL(*this, DoOnSyncStarting(_, _))
+      .WillByDefault(Invoke([delegate](const ModelErrorHandler& error_handler,
+                                       StartCallback* callback) {
+        delegate->OnSyncStarting(error_handler, std::move(*callback));
+      }));
+  ON_CALL(*this, DisableSync())
+      .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::DisableSync));
+  ON_CALL(*this, IsTrackingMetadata())
+      .WillByDefault(
+          Invoke(delegate, &ModelTypeChangeProcessor::IsTrackingMetadata));
+  ON_CALL(*this, ReportError(_))
+      .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::ReportError));
 }
 
 }  //  namespace syncer

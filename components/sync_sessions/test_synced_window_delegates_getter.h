@@ -128,6 +128,8 @@ class TestSyncedWindowDelegate : public SyncedWindowDelegate {
   // |delegate| must not be nullptr and must outlive this object.
   void OverrideTabAt(int index, SyncedTabDelegate* delegate);
 
+  void SetIsSessionRestoreInProgress(bool value);
+
   // SyncedWindowDelegate overrides.
   bool HasWindow() const override;
   SessionID GetSessionId() const override;
@@ -149,6 +151,7 @@ class TestSyncedWindowDelegate : public SyncedWindowDelegate {
   std::map<int, SyncedTabDelegate*> tab_delegates_;
   std::map<int, SyncedTabDelegate*> tab_overrides_;
   std::map<int, SessionID> tab_id_overrides_;
+  bool is_session_restore_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncedWindowDelegate);
 };

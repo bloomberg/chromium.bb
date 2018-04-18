@@ -68,11 +68,16 @@ class SessionStore {
   static std::string GetClientTag(const sync_pb::SessionSpecifics& specifics);
   // |specifics| must be valid, see AreValidSpecifics().
   static std::string GetStorageKey(const sync_pb::SessionSpecifics& specifics);
+  // Verifies if |storage_key| corresponds to an entity in the local session,
+  // identified by the session tag.
+  bool StorageKeyMatchesLocalSession(const std::string& storage_key) const;
 
-  // Various overloads for testing.
+  // Various equivalents for testing.
   static std::string GetHeaderStorageKeyForTest(const std::string& session_tag);
   static std::string GetTabStorageKeyForTest(const std::string& session_tag,
                                              int tab_node_id);
+  static std::string GetTabClientTagForTest(const std::string& session_tag,
+                                            int tab_node_id);
 
   // Similar to ModelTypeStore::WriteBatch but enforces a consistent state. In
   // the current implementation, some functions do *NOT* update the tracker, so
@@ -93,11 +98,10 @@ class SessionStore {
                SyncedSessionTracker* session_tracker);
     ~WriteBatch();
 
-    // Mutations return a storage key.
+    // Most mutations below return a storage key.
     std::string PutAndUpdateTracker(const sync_pb::SessionSpecifics& specifics,
                                     base::Time modification_time);
-    std::string DeleteForeignEntityAndUpdateTracker(
-        const sync_pb::SessionSpecifics& specifics);
+    void DeleteForeignEntityAndUpdateTracker(const std::string& storage_key);
     // The functions below do not update SyncedSessionTracker and hence it is
     // the caller's responsibility to do so *before* calling these functions.
     std::string PutWithoutUpdatingTracker(
@@ -131,8 +135,7 @@ class SessionStore {
   const SessionInfo& local_session_info() const { return local_session_info_; }
 
   // Converts the in-memory model (SyncedSessionTracker) of the local session to
-  // sync protos. |storage_keys| must correspond to valid local session
-  // entities.
+  // sync protos.
   std::unique_ptr<syncer::DataBatch> GetLocalSessionDataForKeys(
       const std::vector<std::string>& storage_keys) const;
 

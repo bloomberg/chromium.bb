@@ -86,6 +86,8 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
+  bool HasLocalChangesForTest() const;
+
  private:
   friend class ModelTypeDebugInfo;
   friend class ClientTagBasedModelTypeProcessorTest;
@@ -130,6 +132,9 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   // Nudges worker if there are any local entities to be committed.
   void NudgeForCommitIfNeeded();
+
+  // Returns true if there are any local entities to be committed.
+  bool HasLocalChanges() const;
 
   // Computes the client tag hash for the given client |tag|.
   std::string GetHashForTag(const std::string& tag);

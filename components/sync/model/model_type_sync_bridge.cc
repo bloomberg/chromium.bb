@@ -46,10 +46,12 @@ void ModelTypeSyncBridge::DisableSync() {
   change_processor_->DisableSync();
 }
 
-void ModelTypeSyncBridge::ApplyDisableSyncChanges(
+ModelTypeSyncBridge::DisableSyncResponse
+ModelTypeSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // Nothing to do if this fails, so just ignore the error it might return.
   ApplySyncChanges(std::move(delete_metadata_change_list), EntityChangeList());
+  return DisableSyncResponse::kModelStillReadyToSync;
 }
 
 ModelTypeChangeProcessor* ModelTypeSyncBridge::change_processor() const {
