@@ -2307,8 +2307,9 @@
       },
       # chromium.clang
       'ToTLinuxASan': {
+        # TODO(crbug.com/794372): net_unittests is slow under ASan.
         'swarming': {
-          'shards': 4,
+          'shards': 16,
         },
       },
       # chromium.memory
