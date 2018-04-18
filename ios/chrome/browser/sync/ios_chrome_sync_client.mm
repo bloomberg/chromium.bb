@@ -38,6 +38,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_router.h"
+#include "components/sync_sessions/session_sync_bridge.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "ios/chrome/browser/application_context.h"
@@ -337,6 +338,11 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
     case syncer::USER_EVENTS:
       return IOSUserEventServiceFactory::GetForBrowserState(browser_state_)
           ->GetSyncBridge()
+          ->AsWeakPtr();
+    case syncer::SESSIONS:
+      return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+                 browser_state_)
+          ->GetSessionSyncBridge()
           ->AsWeakPtr();
     default:
       NOTREACHED();

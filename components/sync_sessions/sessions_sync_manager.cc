@@ -136,7 +136,7 @@ class SyncChangeListWriteBatch
 // lifetime of SessionSyncManager.
 SessionsSyncManager::SessionsSyncManager(
     sync_sessions::SyncSessionsClient* sessions_client,
-    syncer::SyncPrefs* sync_prefs,
+    syncer::SessionSyncPrefs* sync_prefs,
     LocalDeviceInfoProvider* local_device,
     const base::RepeatingClosure& sessions_updated_callback)
     : sessions_client_(sessions_client),
@@ -164,6 +164,25 @@ static std::string BuildMachineTag(const std::string& cache_guid) {
   std::string machine_tag = "session_sync";
   machine_tag.append(cache_guid);
   return machine_tag;
+}
+
+void SessionsSyncManager::ScheduleGarbageCollection() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&SessionsSyncManager::DoGarbageCollection,
+                                base::AsWeakPtr(this)));
+}
+
+void SessionsSyncManager::OnSessionRestoreComplete() {
+  // Do nothing. The very same event is plumbed manually to
+  // SessionDataTypeController by ProfileSyncComponentsFactoryImpl.
+}
+
+syncer::SyncableService* SessionsSyncManager::GetSyncableService() {
+  return this;
+}
+
+syncer::ModelTypeSyncBridge* SessionsSyncManager::GetModelTypeSyncBridge() {
+  return nullptr;
 }
 
 syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(

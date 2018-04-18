@@ -26,6 +26,7 @@ extern const base::Feature kSyncUserConsentEvents;
 extern const base::Feature kSyncUserLanguageDetectionEvents;
 extern const base::Feature kSyncUserTranslationEvents;
 extern const base::Feature kSyncUSSBookmarks;
+extern const base::Feature kSyncUSSSessions;
 
 }  // namespace switches
 

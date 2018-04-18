@@ -54,9 +54,9 @@ class MessageLoop;
 }
 
 namespace sync_sessions {
+class AbstractSessionsSyncManager;
 class FaviconCache;
 class OpenTabsUIDelegate;
-class SessionsSyncManager;
 }  // namespace sync_sessions
 
 namespace syncer {
@@ -327,8 +327,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   void RegisterAuthNotifications();
   void UnregisterAuthNotifications();
 
-  // Returns the SyncableService for syncer::SESSIONS.
+  // Returns the SyncableService or USS bridge for syncer::SESSIONS.
   virtual syncer::SyncableService* GetSessionsSyncableService();
+  virtual syncer::ModelTypeSyncBridge* GetSessionSyncBridge();
 
   // Returns the ModelTypeSyncBridge for syncer::DEVICE_INFO.
   virtual syncer::ModelTypeSyncBridge* GetDeviceInfoSyncBridge();
@@ -850,8 +851,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
 
-  // Locally owned SyncableService and ModelTypeSyncBridge implementations.
-  std::unique_ptr<sync_sessions::SessionsSyncManager> sessions_sync_manager_;
+  // Locally owned SyncableService or ModelTypeSyncBridge implementations.
+  std::unique_ptr<sync_sessions::AbstractSessionsSyncManager>
+      sessions_sync_manager_;
   std::unique_ptr<syncer::DeviceInfoSyncBridge> device_info_sync_bridge_;
 
   std::unique_ptr<syncer::NetworkResources> network_resources_;
