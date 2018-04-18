@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "使用您的摄像头拍摄绝佳的照片。",
+    "message": "使用您的相机拍照和录制视频。",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -88,11 +88,11 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "仿旧",
+    "message": "复古",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "鬼",
+    "message": "魅影",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "无法录制视频。",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "未记录任何数据。",
@@ -173,9 +177,13 @@
     "message": "拍照",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "录制视频",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "开始录制",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "停止录制",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "切换计时器",

@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "നിങ്ങളുടെ വെബ് ക്യാമറ ഉപയോഗിച്ച് രസകരമായ ചിത്രങ്ങളെടുക്കുക.",
+    "message": "നിങ്ങളുടെ ക്യാമറ ഉപയോഗിച്ച് ചിത്രങ്ങൾ എടുക്കുക, വീഡിയോകൾ റെക്കോർഡ് ചെയ്യുക.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -104,11 +104,11 @@
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "ഗാലറി ലോഡ് ചെയ്യാനായില്ല.",
+    "message": "ഗാലറി ലോഡ് ചെയ്യാനാവില്ല",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "ഗാലറിയിലേക്ക് ചേർക്കാനായില്ല.",
+    "message": "ഗാലറിയിലേക്ക് ചേർക്കാനാവില്ല.",
     "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യാനാവില്ല.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "ഒന്നും റെക്കോർഡ് ചെയ്‌തില്ല.",
@@ -173,9 +177,13 @@
     "message": "ഒരു ചിത്രമെടുക്കുക",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യുക",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "റെക്കോര്‍ഡിംഗ് ആരംഭിക്കുക",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "റെക്കോർഡിംഗ് നിർത്തുക",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "ടൈമർ മാറ്റുക",
@@ -190,11 +198,11 @@
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "toggleRecordOnButton": {
-    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യുന്നതിലേക്ക് മാറുക",
+    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യുന്നതിലേക്ക് സ്വിച്ച് ചെയ്യുക",
     "description": "Label for the button to switch to record video mode."
   },
   "toggleRecordOffButton": {
-    "message": "ചിത്രമെടുക്കുന്നതിലേക്ക് മാറുക",
+    "message": "ചിത്രമെടുക്കുന്നതിലേക്ക് സ്വിച്ച് ചെയ്യുക",
     "description": "Label for the button to switch to take picture mode."
   },
   "recordVideoActiveMessage": {
@@ -234,7 +242,7 @@
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
-    "message": "ഉവ്വ്",
+    "message": "വേണം",
     "description": "Label for the accepting button in the confirmation dialog."
   },
   "dialogNoButton": {

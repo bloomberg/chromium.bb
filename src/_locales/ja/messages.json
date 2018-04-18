@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "ウェブカメラでさまざまな効果を使用した写真を撮ることができます。",
+    "message": "カメラを使って写真や動画を撮影できます。",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "動画を撮影できません。",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "何も記録されていません。",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -173,9 +177,13 @@
     "message": "写真を撮る",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "動画を撮る",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "録画開始",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "録画を停止",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "タイマーを切り替える",

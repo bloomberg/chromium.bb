@@ -4,11 +4,11 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Feu fotos esbojarrades amb la càmera web.",
+    "message": "Fes fotos i grava vídeos amb la càmera.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Warhol",
+    "message": "Andy",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
@@ -100,7 +100,7 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Comproveu que la càmera estigui ben connectada.",
+    "message": "Comprova que la càmera estigui ben connectada.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGalleryLoadFailed": {
@@ -112,7 +112,7 @@
     "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "El fitxer $file$ no es pot desar.",
+    "message": "No es pot desar el fitxer $file$.",
     "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "No es pot gravar el vídeo.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "No s'ha gravat res.",
@@ -173,9 +177,13 @@
     "message": "Fes una foto",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Grava vídeo",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Comença a gravar",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Atura la gravació",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Activa o desactiva el temporitzador",
@@ -246,7 +254,7 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Confirmeu que voleu suprimir el fitxer $file$?",
+    "message": "Confirmes que vols suprimir el fitxer $file$?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -256,7 +264,7 @@
     }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Confirmeu que voleu suprimir $count$ elements?",
+    "message": "Confirmes que vols suprimir $count$ elements?",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
       "count": {

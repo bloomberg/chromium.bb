@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Τραβήξτε καταπληκτικές φωτογραφίες με την webcam σας.",
+    "message": "Τραβήξτε φωτογραφίες και βίντεο με την κάμερά σας.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Παλιομοδίτικο",
+    "message": "Vintage",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Δεν είναι δυνατή η εγγραφή βίντεο.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "Καμία εγγραφή.",
@@ -173,9 +177,13 @@
     "message": "Λήψη φωτογραφίας",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Εγγραφή βίντεο",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Έναρξη εγγραφής",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Διακοπή εγγραφής",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Εναλλαγή χρονομέτρου",
@@ -186,7 +194,7 @@
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
-    "message": "Εναλλαγή Κάμερα",
+    "message": "Εναλλαγή κάμερας",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "toggleRecordOnButton": {

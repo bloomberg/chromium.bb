@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "عکس‌هایی جالب و خنده‌دار با دوربین وبتان بگیرید.",
+    "message": "با دوربینتان عکس بگیرید و فیلم‌برداری کنید.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "سالن سینما",
+    "message": "سینمایی",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "فیلم‌برداری امکان‌پذیر نیست.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "چیزی ضبط نشد.",
@@ -173,9 +177,13 @@
     "message": "عکس گرفتن",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "فیلم‌برداری",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "شروع ضبط",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "توقف ضبط",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "روشن/خاموش کردن تایمر",

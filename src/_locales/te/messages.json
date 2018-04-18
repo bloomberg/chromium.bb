@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "మీ వెబ్ కెమెరాతో విచిత్రమైన చిత్రాలను తీయండి.",
+    "message": "మీ కెమెరాతో చిత్రాలను తీయండి మరియు వీడియోలను రికార్డ్ చేయండి.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "వీడియోని రికార్డ్ చేయడం సాధ్యపడలేదు.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "ఏదీ రికార్డ్ చేయబడలేదు.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -170,12 +174,16 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "చిత్రాన్ని తీయండి",
+    "message": "చిత్రాన్ని తీయి",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "వీడియోను రికార్డ్ చేయి",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "రికార్డింగ్‌ను ప్రారంభించు",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "రికార్డింగ్ ఆపివేయి",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "టైమర్‌ను టోగుల్ చేయి",

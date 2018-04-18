@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Készítsen őrült képeket webkamerájával.",
+    "message": "Fényképeket és videókat készíthet a kamerával.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -64,7 +64,7 @@
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "A '60-as évek retró stílusa",
+    "message": "60-as évek retró stílusa",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
@@ -92,7 +92,7 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Kísértet",
+    "message": "Szellem",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Nem lehet videót készíteni.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "A rendszer semmit nem rögzített.",
@@ -170,12 +174,16 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Kép készítése",
+    "message": "Képkészítés",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Videó rögzítése",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Rögzítés megkezdése",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Felvétel leállítása",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Időzítő állítása",

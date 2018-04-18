@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Tire fotos malucas com sua webcam.",
+    "message": "Tire fotos e grave vídeos com sua câmera.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Não foi possível gravar o vídeo.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "Nenhum dado gravado.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -173,12 +177,16 @@
     "message": "Tirar uma foto",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Gravar vídeo",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Começar a gravar",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Interromper gravação",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
-    "message": "Alternar temporizador",
+    "message": "Alternar timer",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {

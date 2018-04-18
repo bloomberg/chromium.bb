@@ -4,11 +4,11 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Uzņemiet trakus attēlus, izmantojot tīmekļa kameru!",
+    "message": "Uzņemiet attēlus un ierakstiet videoklipus, izmantojot savu kameru.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Endijs Vorhols",
+    "message": "Andy",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Nevar ierakstīt videoklipu.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "Nekas nav ierakstīts.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -173,12 +177,16 @@
     "message": "Uzņemt attēlu",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Ierakstīt videoklipu",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Sākt ierakstīšanu",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Apturēt ierakstīšanu",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
-    "message": "Ieslēgt/izslēgt funkciju Taimeris",
+    "message": "Pārslēgt uz taimeri",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
@@ -186,7 +194,7 @@
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
-    "message": "Ieslēgt/izslēgt funkciju Kamera",
+    "message": "Pārslēgt kameru",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "toggleRecordOnButton": {

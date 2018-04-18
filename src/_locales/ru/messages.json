@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Делайте веселые снимки с помощью веб-камеры",
+    "message": "Съемка фото и видео при помощи камеры.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -88,11 +88,11 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Миллезим",
+    "message": "Винтаж",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Привидение",
+    "message": "Призрак",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
@@ -120,6 +120,10 @@
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "Не удалось записать видео.",
+    "description": "Error message shown when switching to record video mode failed."
   },
   "errorMsgEmptyRecording": {
     "message": "Ничего не записано.",
@@ -166,16 +170,20 @@
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "Образ галереи",
+    "message": "Изображения в галерее",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
     "message": "Сделать снимок",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "Записать видео",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "Начать запись",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Остановить запись",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Таймер",

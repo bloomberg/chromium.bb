@@ -4,11 +4,11 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "உங்கள் வெப் கேமரா மூலம் வேடிக்கையான படங்களை எடுக்கலாம்.",
+    "message": "உங்கள் கேமராவைப் பயன்படுத்தி படம் எடுக்கவும், வீடியோக்களைப் பதிவுசெய்யவும்.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "ஆண்டி",
+    "message": "ஆன்டி",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgToggleRecordOnFailed": {
+    "message": "வீடியோவைப் பதிவுசெய்ய முடியவில்லை.",
+    "description": "Error message shown when switching to record video mode failed."
+  },
   "errorMsgEmptyRecording": {
     "message": "எதுவும் பதிவு செய்யப்படவில்லை.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
@@ -154,7 +158,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "பின் செல்",
+    "message": "முந்தையது",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -170,12 +174,16 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "படமெடுக்கவும்",
+    "message": "படமெடு",
     "description": "Label for the red picture taking button."
   },
-  "recordVideoButton": {
-    "message": "வீடியோவைப் பதிவுசெய்",
-    "description": "Label for the red video recording button."
+  "recordVideoStartButton": {
+    "message": "பதிவுசெய்யத் தொடங்கு",
+    "description": "Label for the red video recording button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "பதிவுசெய்வதை நிறுத்து",
+    "description": "Label for the red video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "டைமரை நிலைமாற்று",
