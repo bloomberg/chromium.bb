@@ -9,7 +9,6 @@
 #include "base/sequenced_task_runner.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
-#include "storage/browser/fileapi/timed_task_helper.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -51,10 +50,8 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url, int64_t delta) {
     return;
 
   pending_update_notification_[usage_file_path] += delta;
-  if (!delayed_cache_update_helper_) {
-    delayed_cache_update_helper_.reset(
-        new TimedTaskHelper(update_notify_runner_.get()));
-    delayed_cache_update_helper_->Start(
+  if (!delayed_cache_update_helper_.IsRunning()) {
+    delayed_cache_update_helper_.Start(
         FROM_HERE,
         base::TimeDelta(),  // No delay.
         base::Bind(&SandboxQuotaObserver::ApplyPendingUsageUpdate,
@@ -114,7 +111,7 @@ base::FilePath SandboxQuotaObserver::GetUsageCachePath(
 }
 
 void SandboxQuotaObserver::ApplyPendingUsageUpdate() {
-  delayed_cache_update_helper_.reset();
+  delayed_cache_update_helper_.Stop();
   for (PendingUpdateNotificationMap::iterator itr =
            pending_update_notification_.begin();
        itr != pending_update_notification_.end();
