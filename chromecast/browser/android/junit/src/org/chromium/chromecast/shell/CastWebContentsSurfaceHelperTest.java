@@ -30,6 +30,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chromecast.base.Consumer;
 import org.chromium.chromecast.base.Scope;
 import org.chromium.chromecast.base.ScopeFactory;
@@ -37,7 +38,6 @@ import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.ContentVideoVi
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.StartParams;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * Tests for CastWebContentsSurfaceHelper.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class CastWebContentsSurfaceHelperTest {
     private @Mock Activity mActivity;
