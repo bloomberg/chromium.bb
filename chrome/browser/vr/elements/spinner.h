@@ -26,6 +26,7 @@ class Spinner : public TexturedElement {
   UiTexture* GetTexture() const override;
 
  private:
+  bool TextureDependsOnMeasurement() const override;
   gfx::Size MeasureTextureSize() override;
 
   void NotifyClientFloatAnimated(float value,

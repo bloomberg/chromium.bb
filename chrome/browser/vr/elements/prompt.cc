@@ -104,6 +104,10 @@ UiTexture* Prompt::GetTexture() const {
   return texture_.get();
 }
 
+bool Prompt::TextureDependsOnMeasurement() const {
+  return false;
+}
+
 gfx::Size Prompt::MeasureTextureSize() {
   return texture_->GetPreferredTextureSize(preferred_width_);
 }

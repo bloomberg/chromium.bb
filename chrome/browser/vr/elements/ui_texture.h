@@ -43,6 +43,7 @@ class UiTexture {
 
   virtual bool LocalHitTest(const gfx::PointF& point) const;
 
+  bool measured() const { return measured_; }
   bool dirty() const { return dirty_; }
 
   void OnInitialized();
@@ -136,13 +137,19 @@ class UiTexture {
   static void SetForceFontFallbackFailureForTesting(bool force);
 
   void set_dirty() {
+    measured_ = false;
     dirty_ = true;
   }
+
+  // Textures that depend on measurement to draw must call this when they
+  // complete measurement work.
+  void set_measured() { measured_ = true; }
 
   SkColor foreground_color() const;
   SkColor background_color() const;
 
  private:
+  bool measured_ = false;
   bool dirty_ = true;
   base::Optional<SkColor> foreground_color_;
   base::Optional<SkColor> background_color_;

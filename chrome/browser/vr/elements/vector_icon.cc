@@ -74,6 +74,10 @@ UiTexture* VectorIcon::GetTexture() const {
   return texture_.get();
 }
 
+bool VectorIcon::TextureDependsOnMeasurement() const {
+  return false;
+}
+
 gfx::Size VectorIcon::MeasureTextureSize() {
   return gfx::Size(texture_width_, texture_width_);
 }

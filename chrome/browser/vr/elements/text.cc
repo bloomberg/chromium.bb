@@ -313,6 +313,10 @@ UiTexture* Text::GetTexture() const {
   return texture_.get();
 }
 
+bool Text::TextureDependsOnMeasurement() const {
+  return true;
+}
+
 gfx::Size Text::MeasureTextureSize() {
   text_texture_size_ = texture_->LayOutText();
 
@@ -392,6 +396,8 @@ gfx::Size TextTexture::LayOutText() {
     texture_offset_ = gfx::Vector2d(gfx::ToFlooredInt(parameters.shadow_size),
                                     gfx::ToFlooredInt(parameters.shadow_size));
   }
+
+  set_measured();
 
   return text_bounds.size();
 }
