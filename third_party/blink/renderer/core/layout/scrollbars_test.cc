@@ -18,9 +18,11 @@
 #include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme_overlay_mock.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -1867,6 +1869,49 @@ TEST_P(ScrollbarsTest,
   scrollable_div->SetScrollbarsHiddenIfOverlay(true);
 
   EXPECT_FALSE(scrollable_div->ScrollbarsHiddenIfOverlay());
+}
+
+TEST_P(ScrollbarsTest, PLSADisposeShouldClearPointerInLayers) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  WebView().Resize(WebSize(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    /* transform keeps the graphics layer */
+    #div { width: 100px; height: 100px; will-change: transform; }
+    .scroller{ overflow: scroll; }
+    .big{ height: 2000px; }
+    /* positioned so we still keep the PaintLayer */
+    .hide { overflow: visible; position: absolute; }
+    </style>
+    <div id='div' class='scroller' style='z-index:1'>
+      <div class='big'>
+      </div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+  Element* div = document.getElementById("div");
+  PaintLayerScrollableArea* scrollable_div =
+      ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
+
+  ASSERT_TRUE(scrollable_div);
+
+  PaintLayer* paint_layer = scrollable_div->Layer();
+  ASSERT_TRUE(paint_layer);
+
+  GraphicsLayer* graphics_layer = scrollable_div->LayerForScrolling();
+  ASSERT_TRUE(graphics_layer);
+
+  div->setAttribute(HTMLNames::classAttr, "hide");
+  document.UpdateStyleAndLayout();
+
+  EXPECT_FALSE(paint_layer->GetScrollableArea());
+  EXPECT_FALSE(graphics_layer->GetScrollableArea());
 }
 
 TEST_P(ScrollbarsTest, OverlayScrollbarHitTest) {

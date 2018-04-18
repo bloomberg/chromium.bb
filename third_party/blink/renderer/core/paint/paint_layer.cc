@@ -926,6 +926,7 @@ bool PaintLayer::UpdateSize() {
 void PaintLayer::UpdateSizeAndScrollingAfterLayout() {
   bool did_resize = UpdateSize();
   if (RequiresScrollableArea()) {
+    DCHECK(scrollable_area_);
     scrollable_area_->UpdateAfterLayout();
     if (did_resize)
       scrollable_area_->VisibleSizeChanged();
@@ -3052,8 +3053,10 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
         kCompositingUpdateAfterGeometryChange);
   }
 
-  if (RequiresScrollableArea())
+  if (RequiresScrollableArea()) {
+    DCHECK(scrollable_area_);
     scrollable_area_->UpdateAfterStyleChange(old_style);
+  }
 
   return true;
 }
@@ -3066,8 +3069,10 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 
   stacking_node_->StyleDidChange(old_style);
 
-  if (RequiresScrollableArea())
+  if (RequiresScrollableArea()) {
+    DCHECK(scrollable_area_);
     scrollable_area_->UpdateAfterStyleChange(old_style);
+  }
 
   // Overlay scrollbars can make this layer self-painting so we need
   // to recompute the bit once scrollbars have been updated.

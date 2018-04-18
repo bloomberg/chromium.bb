@@ -248,6 +248,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetScrollableArea(ScrollableArea*);
   ScrollableArea* GetScrollableArea() const { return scrollable_area_; }
 
+  void ScrollableAreaDisposed();
+
   WebContentLayer* ContentLayer() const { return layer_.get(); }
 
   static void RegisterContentsLayer(WebLayer*);
