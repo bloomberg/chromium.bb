@@ -18,8 +18,7 @@
 #include "components/search_engines/template_url_service.h"
 
 FakeAutocompleteProviderClient::FakeAutocompleteProviderClient(
-    bool create_history_db)
-    : is_tab_open_with_url_(false) {
+    bool create_history_db) {
   set_template_url_service(std::make_unique<TemplateURLService>(nullptr, 0));
 
   bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
@@ -84,5 +83,6 @@ FakeAutocompleteProviderClient::GetShortcutsBackendIfExists() {
 bool FakeAutocompleteProviderClient::IsTabOpenWithURL(
     const GURL& url,
     const AutocompleteInput* input) {
-  return is_tab_open_with_url_;
+  return !substring_to_match_.empty() &&
+         url.spec().find(substring_to_match_) != std::string::npos;
 }

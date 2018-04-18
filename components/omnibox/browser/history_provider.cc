@@ -7,16 +7,11 @@
 #include <string>
 
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/strings/grit/components_strings.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "url/url_util.h"
 
 using bookmarks::BookmarkModel;
 
@@ -104,36 +99,4 @@ ACMatchClassifications HistoryProvider::SpansFromTermMatch(
   }
 
   return spans;
-}
-
-void HistoryProvider::ConvertOpenTabMatches(const AutocompleteInput* input) {
-  for (auto& match : matches_) {
-    // If url is in a tab, change type, update classification.
-    if (client()->IsTabOpenWithURL(match.destination_url, input)) {
-      match.has_tab_match = true;
-      if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial())
-        continue;
-      const base::string16 switch_tab_message =
-          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT) +
-          base::UTF8ToUTF16(match.description.empty() ? "" : " - ");
-      match.description = switch_tab_message + match.description;
-      // Add classfication for the prefix.
-      if (match.description_class.empty()) {
-        match.description_class.push_back(
-            ACMatchClassification(0, ACMatchClassification::NONE));
-      } else {
-        if (match.description_class[0].style != ACMatchClassification::NONE) {
-          match.description_class.insert(
-              match.description_class.begin(),
-              ACMatchClassification(0, ACMatchClassification::NONE));
-        }
-        // Shift the rest.
-        for (auto& classification : match.description_class) {
-          if (classification.offset != 0 ||
-              classification.style != ACMatchClassification::NONE)
-            classification.offset += switch_tab_message.size();
-        }
-      }
-    }
-  }
 }

@@ -17,6 +17,7 @@
 
 class AutocompleteInput;
 class AutocompleteProvider;
+class AutocompleteProviderClient;
 class TemplateURLService;
 
 // All matches from all providers for a particular query.  This also tracks
@@ -53,6 +54,13 @@ class AutocompleteResult {
   // suggestions.
   void SortAndCull(const AutocompleteInput& input,
                    TemplateURLService* template_url_service);
+
+  // Sets |has_tab_match| in matches whose URL matches an open tab's URL.
+  // Also, fixes up the description if not using another UI element to
+  // annotate (e.g. tab switch button). |input| can be null; if provided,
+  // the match can be more precise (e.g. scheme presence).
+  void ConvertOpenTabMatches(AutocompleteProviderClient* client,
+                             const AutocompleteInput* input);
 
   // Returns true if at least one match was copied from the last result.
   bool HasCopiedMatches() const;
@@ -121,6 +129,7 @@ class AutocompleteResult {
 
  private:
   friend class AutocompleteProviderTest;
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 

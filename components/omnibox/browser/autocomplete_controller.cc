@@ -492,6 +492,9 @@ void AutocompleteController::UpdateResult(
   // Sort the matches and trim to a small number of "best" matches.
   result_.SortAndCull(input_, template_url_service_);
 
+  if (OmniboxFieldTrial::InTabSwitchSuggestionTrial())
+    result_.ConvertOpenTabMatches(provider_client_.get(), &input_);
+
   // Need to validate before invoking CopyOldMatches as the old matches are not
   // valid against the current input.
 #if DCHECK_IS_ON()

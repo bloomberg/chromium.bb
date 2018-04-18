@@ -97,8 +97,6 @@ void HistoryQuickProvider::DoAutocomplete() {
     // Mark this max_match_score as being used.
     max_match_score--;
   }
-  if (OmniboxFieldTrial::InTabSwitchSuggestionTrial())
-    ConvertOpenTabMatches(&autocomplete_input_);
 }
 
 int HistoryQuickProvider::FindMaxMatchScore(
