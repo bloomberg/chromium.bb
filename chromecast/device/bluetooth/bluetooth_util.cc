@@ -15,6 +15,7 @@ namespace {
 const int kMacAddrStrLen = 17;
 const int kUuid16bitLen = 4;
 const int kUuidHexNumChars = 32;
+const int kUuidNumDashes = 4;
 
 const char kFmtUuid[] =
     "%02hhx%02hhx%02hhx%02hhx-%02hhx%02hhx-%02hhx%02hhx"
@@ -59,16 +60,25 @@ std::string UuidToString(const bluetooth_v2_shlib::Uuid& uuid) {
 }
 
 bool ParseUuid(const std::string& str, bluetooth_v2_shlib::Uuid* uuid) {
-  // sscanf will incorrectly succeed if all characters except the last one are
-  // hex digits.
-  if (str.empty() || !std::isxdigit(str.back())) {
+  if (str.empty()) {
     return false;
+  }
+
+  for (const auto& c : str) {
+    if (c != '-' && !std::isxdigit(c)) {
+      return false;
+    }
   }
 
   // Check for 16-bit UUID
   if (str.size() == kUuid16bitLen) {
     *uuid = kUuidBase;
     return sscanf(str.c_str(), "%02hhx%02hhx", &(*uuid)[2], &(*uuid)[3]) == 2;
+  }
+
+  if (str.size() > kUuidHexNumChars &&
+      str.size() != kUuidHexNumChars + kUuidNumDashes) {
+    return false;
   }
 
   std::string no_dashes = str;
