@@ -106,6 +106,8 @@ bool PathIsFile(const char* path) {
 
 }  // namespace crazy
 
+#if !defined(CRAZY_LINKER_ENABLE_FUZZING)
+
 // Custom implementation of new and malloc, this prevents dragging
 // the libc++ implementation, which drags exception-related machine
 // code that is not needed here. This helps reduce the size of the
@@ -179,5 +181,7 @@ void operator delete(void* ptr) {
 void operator delete[](void* ptr) {
   ::free(ptr);
 }
+
+#endif  // !CRAZY_LINKER_ENABLE_FUZZING
 
 #endif  // !UNIT_TESTS
