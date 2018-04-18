@@ -591,6 +591,7 @@ typedef struct macroblockd {
   // SEG_LVL_ALT_LF_V   = 4;
   int prev_delta_lf[FRAME_LF_COUNT];
   int curr_delta_lf[FRAME_LF_COUNT];
+  int cdef_preset[4];
 
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
 
