@@ -85,8 +85,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
 
   // Primes the FIFO for the given callback buffer size. This is to prevent
   // first FIFO pulls from causing "underflow" errors.
-  unsigned priming_render_quanta =
-      ceil(callback_buffer_size_/(float)AudioUtilities::kRenderQuantumFrames);
+  const unsigned priming_render_quanta =
+      ceil(callback_buffer_size_ /
+           static_cast<float>(AudioUtilities::kRenderQuantumFrames));
   for (unsigned i = 0; i < priming_render_quanta; ++i) {
     fifo_->Push(render_bus_.get());
   }
