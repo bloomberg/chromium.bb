@@ -56,7 +56,8 @@ class NoBackgroundTasksTest : public InProcessBrowserTest {
 //
 // TODO(fdoray): Enable on ChromeOS once all dependencies on background tasks to
 // produce the first non-empty paint have been removed. https://crbug.com/831835
-#if defined(OS_CHROMEOS)
+// This test is flaky on Mac: https://crbug.com/833989
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
 #define MAYBE_FirstNonEmptyPaintWithoutBackgroundTasks \
   DISABLED_FirstNonEmptyPaintWithoutBackgroundTasks
 #else
