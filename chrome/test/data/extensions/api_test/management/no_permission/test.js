@@ -4,8 +4,13 @@
 
 var tests = [
   function permissionWarnings() {
-    var manifest_str = "{ \"name\": \"Clipboard!\", \"version\": \"1.0\", " +
-                       "\"permissions\": [\"clipboardRead\"] }";
+    var manifest_str =
+        `{
+           "name": "Clipboard!",
+           "version": "1.0",
+           "manifest_version": 2,
+           "permissions": ["clipboardRead"]
+         }`;
 
     chrome.management.getPermissionWarningsByManifest(
         manifest_str, chrome.test.callback(function(warnings) {
