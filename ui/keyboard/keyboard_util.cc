@@ -194,6 +194,11 @@ bool IsFloatingVirtualKeyboardEnabled() {
   return base::FeatureList::IsEnabled(features::kEnableFloatingVirtualKeyboard);
 }
 
+bool IsFullscreenHandwritingVirtualKeyboardEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kEnableFullscreenHandwritingVirtualKeyboard);
+}
+
 bool IsGestureTypingEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGestureTyping);
