@@ -48,26 +48,26 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   Properties* GetProperties(const dbus::ObjectPath& object_path) override;
   void StartDiscovery(const dbus::ObjectPath& object_path,
                       const base::Closure& callback,
-                      const ErrorCallback& error_callback) override;
+                      ErrorCallback error_callback) override;
   void StopDiscovery(const dbus::ObjectPath& object_path,
                      const base::Closure& callback,
-                     const ErrorCallback& error_callback) override;
+                     ErrorCallback error_callback) override;
   void RemoveDevice(const dbus::ObjectPath& object_path,
                     const dbus::ObjectPath& device_path,
                     const base::Closure& callback,
-                    const ErrorCallback& error_callback) override;
+                    ErrorCallback error_callback) override;
   void SetDiscoveryFilter(const dbus::ObjectPath& object_path,
                           const DiscoveryFilter& discovery_filter,
                           const base::Closure& callback,
-                          const ErrorCallback& error_callback) override;
+                          ErrorCallback error_callback) override;
   void CreateServiceRecord(const dbus::ObjectPath& object_path,
                            const bluez::BluetoothServiceRecordBlueZ& record,
                            const ServiceRecordCallback& callback,
-                           const ErrorCallback& error_callback) override;
+                           ErrorCallback error_callback) override;
   void RemoveServiceRecord(const dbus::ObjectPath& object_path,
                            uint32_t handle,
                            const base::Closure& callback,
-                           const ErrorCallback& error_callback) override;
+                           ErrorCallback error_callback) override;
 
   // Sets the current simulation timeout interval.
   void SetSimulationIntervalMs(int interval_ms);
@@ -104,7 +104,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
 
   // Posts the delayed task represented by |callback| onto the current
   // message loop to be executed after |simulation_interval_ms_| milliseconds.
-  void PostDelayedTask(const base::Closure& callback);
+  void PostDelayedTask(base::OnceClosure callback);
 
   // List of observers interested in event notifications from us.
   base::ObserverList<Observer> observers_;

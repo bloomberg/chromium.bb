@@ -556,7 +556,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   using PairingDelegatePair =
       std::pair<BluetoothDevice::PairingDelegate*, PairingDelegatePriority>;
   using DiscoverySessionErrorCallback =
-      base::Callback<void(UMABluetoothDiscoverySessionOutcome)>;
+      base::OnceCallback<void(UMABluetoothDiscoverySessionOutcome)>;
 
   // Implementations on Android and macOS need to store pending SetPowered()
   // callbacks until an appropriate event is received, due to a lack of blocking
@@ -620,18 +620,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   virtual void AddDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) = 0;
+      DiscoverySessionErrorCallback error_callback) = 0;
   virtual void RemoveDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) = 0;
+      DiscoverySessionErrorCallback error_callback) = 0;
 
   // Used to set and update the discovery filter used by the underlying
   // Bluetooth controller.
   virtual void SetDiscoveryFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,
-      const DiscoverySessionErrorCallback& error_callback) = 0;
+      DiscoverySessionErrorCallback error_callback) = 0;
 
   // Called by RemovePairingDelegate() in order to perform any class-specific
   // internal functionality necessary to remove the pairing delegate, such as

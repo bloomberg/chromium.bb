@@ -545,12 +545,12 @@ bool FakeCentral::SetPoweredImpl(bool powered) {
 void FakeCentral::AddDiscoverySession(
     device::BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   if (!IsPresent()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            error_callback,
+            std::move(error_callback),
             device::UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT));
     return;
   }
@@ -567,12 +567,12 @@ void FakeCentral::AddDiscoverySession(
 void FakeCentral::RemoveDiscoverySession(
     device::BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   if (!IsPresent()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            error_callback,
+            std::move(error_callback),
             device::UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT));
     return;
   }
@@ -589,7 +589,7 @@ void FakeCentral::RemoveDiscoverySession(
 void FakeCentral::SetDiscoveryFilter(
     std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
-    const DiscoverySessionErrorCallback& error_callback) {
+    DiscoverySessionErrorCallback error_callback) {
   NOTREACHED();
 }
 
