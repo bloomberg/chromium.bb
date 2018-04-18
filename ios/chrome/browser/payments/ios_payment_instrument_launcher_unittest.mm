@@ -74,7 +74,10 @@ class FakePaymentInstrumentDelegate : public PaymentInstrument::Delegate {
 class PaymentRequestIOSPaymentInstrumentLauncherTest : public PlatformTest {
  protected:
   PaymentRequestIOSPaymentInstrumentLauncherTest()
-      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
+      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
+    test_personal_data_manager_.SetAutofillCreditCardEnabled(true);
+    test_personal_data_manager_.SetAutofillWalletImportEnabled(true);
+  }
 
   std::unique_ptr<base::DictionaryValue> SerializeMethodDataWrapper(
       const std::map<std::string, std::set<std::string>>&
@@ -89,6 +92,7 @@ class PaymentRequestIOSPaymentInstrumentLauncherTest : public PlatformTest {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
+  autofill::TestPersonalDataManager test_personal_data_manager_;
   web::TestWebState web_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
@@ -98,10 +102,9 @@ class PaymentRequestIOSPaymentInstrumentLauncherTest : public PlatformTest {
 TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        EmptyStringifiedMethodDataDictionary) {
   WebPaymentRequest web_payment_request;
-  autofill::TestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
 
   base::DictionaryValue expected_dict;
 
@@ -136,10 +139,9 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
   method_datum4.supported_methods.push_back("https://bobpay.com");
   web_payment_request.method_data.push_back(method_datum4);
 
-  autofill::TestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
 
   base::DictionaryValue expected_dict;
   base::ListValue jef_data_list;
@@ -174,10 +176,9 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
-  autofill::TestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
-                                     &personal_data_manager);
+                                     &test_personal_data_manager_);
 
   FakePaymentInstrumentDelegate instrument_delegate;
   IOSPaymentInstrumentLauncher launcher;

@@ -369,7 +369,8 @@ class ProfileSyncServiceAutofillTest
 
     personal_data_manager_->Init(web_data_service_,
                                  profile_sync_service_bundle()->pref_service(),
-                                 nullptr, false);
+                                 /*identity_manager=*/nullptr,
+                                 /*is_off_the_record=*/false);
 
     web_data_service_->StartSyncableService();
 

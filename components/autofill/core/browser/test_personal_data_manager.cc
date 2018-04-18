@@ -85,21 +85,6 @@ std::vector<AutofillProfile*> TestPersonalDataManager::GetProfiles() const {
   return result;
 }
 
-std::vector<CreditCard*> TestPersonalDataManager::GetCreditCards() const {
-  // TODO(crbug.com/778436): The real PersonalDataManager relies on its
-  // |pref_service_| to decide what to return. Since the lack of a pref_service_
-  // makes this fake class crash, it might be useful to refactor the real
-  // GetCreditCards()'s logic into overrideable methods and then remove this
-  // function.
-  std::vector<CreditCard*> result;
-  result.reserve(local_credit_cards_.size() + server_credit_cards_.size());
-  for (const auto& card : local_credit_cards_)
-    result.push_back(card.get());
-  for (const auto& card : server_credit_cards_)
-    result.push_back(card.get());
-  return result;
-}
-
 const std::string& TestPersonalDataManager::GetDefaultCountryCodeForNewAddress()
     const {
   if (default_country_code_.empty())
@@ -167,7 +152,25 @@ void TestPersonalDataManager::LoadCreditCards() {
 bool TestPersonalDataManager::IsAutofillEnabled() const {
   // Return the value of autofill_enabled_ if it has been set, otherwise fall
   // back to the normal behavior of checking the pref_service.
-  return autofill_enabled_.value_or(PersonalDataManager::IsAutofillEnabled());
+  if (autofill_enabled_.has_value())
+    return autofill_enabled_.value();
+  return PersonalDataManager::IsAutofillEnabled();
+}
+
+bool TestPersonalDataManager::IsAutofillCreditCardEnabled() const {
+  // Return the value of autofill_credit_card_enabled_ if it has been set,
+  // otherwise fall back to the normal behavior of checking the pref_service.
+  if (autofill_credit_card_enabled_.has_value())
+    return autofill_credit_card_enabled_.value();
+  return PersonalDataManager::IsAutofillCreditCardEnabled();
+}
+
+bool TestPersonalDataManager::IsAutofillWalletImportEnabled() const {
+  // Return the value of autofill_wallet_import_enabled_ if it has been set,
+  // otherwise fall back to the normal behavior of checking the pref_service.
+  if (autofill_wallet_import_enabled_.has_value())
+    return autofill_wallet_import_enabled_.value();
+  return PersonalDataManager::IsAutofillWalletImportEnabled();
 }
 
 std::string TestPersonalDataManager::CountryCodeForCurrentTimezone()

@@ -23,11 +23,17 @@ public class AutofillTestHelper {
     public AutofillTestHelper() {
         registerDataObserver();
         setRequestTimeoutForTesting();
+        setSyncServiceForTesting();
     }
 
     void setRequestTimeoutForTesting() {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().setRequestTimeoutForTesting(0));
+    }
+
+    void setSyncServiceForTesting() {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> PersonalDataManager.getInstance().setSyncServiceForTesting());
     }
 
     AutofillProfile getProfile(final String guid) throws ExecutionException {

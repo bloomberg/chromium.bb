@@ -113,7 +113,10 @@ class PaymentRequestCreditCardEditCoordinatorTest
     : public PaymentRequestUnitTestBase,
       public PlatformTest {
  protected:
-  PaymentRequestCreditCardEditCoordinatorTest() {}
+  PaymentRequestCreditCardEditCoordinatorTest() {
+    personal_data_manager_.SetAutofillCreditCardEnabled(true);
+    personal_data_manager_.SetAutofillWalletImportEnabled(true);
+  }
 
   void SetUp() override {
     PaymentRequestUnitTestBase::SetUp();
