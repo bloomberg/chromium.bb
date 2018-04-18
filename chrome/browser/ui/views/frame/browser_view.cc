@@ -2023,18 +2023,6 @@ void BrowserView::ViewHierarchyChanged(
     InitViews();
     initialized_ = true;
   }
-
-#if defined(USE_AURA)
-  if (init) {
-    if (FullscreenControlHost::IsFullscreenExitUIEnabled()) {
-      widget->GetNativeView()->AddPreTargetHandler(GetFullscreenControlHost());
-    }
-  } else if (fullscreen_control_host_) {
-    auto* native_view = widget->GetNativeView();
-    if (native_view)
-      native_view->RemovePreTargetHandler(fullscreen_control_host_.get());
-  }
-#endif
 }
 
 void BrowserView::PaintChildren(const views::PaintInfo& paint_info) {
@@ -2411,12 +2399,26 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     // Look for focus in the location bar itself or any child view.
     if (GetLocationBarView()->Contains(focus_manager->GetFocusedView()))
       focus_manager->ClearFocus();
+
+#if defined(USE_AURA)
+    if (FullscreenControlHost::IsFullscreenExitUIEnabled()) {
+      frame_->GetNativeView()->AddPreTargetHandler(
+          GetFullscreenControlHost(), ui::EventTarget::Priority::kSystem);
+    }
+#endif
   } else {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
     exclusive_access_bubble_.reset();
-    if (fullscreen_control_host_)
+
+    if (fullscreen_control_host_) {
       fullscreen_control_host_->Hide(false);
+#if defined(USE_AURA)
+      auto* native_view = frame_->GetNativeView();
+      if (native_view)
+        native_view->RemovePreTargetHandler(fullscreen_control_host_.get());
+#endif
+    }
   }
 
   // Toggle fullscreen mode.
