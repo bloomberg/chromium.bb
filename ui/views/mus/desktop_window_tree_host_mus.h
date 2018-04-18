@@ -140,7 +140,8 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // aura::WindowTreeHostMus:
   void ShowImpl() override;
   void HideImpl() override;
-  void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels,
+                         const viz::LocalSurfaceId& local_surface_id) override;
 
   // Accessor for DesktopNativeWidgetAura::content_window().
   aura::Window* content_window();

@@ -85,8 +85,10 @@ void AshWindowTreeHostMusUnified::RegisterMirroringHost(
   mirroring_ash_host->AsWindowTreeHost()->window()->AddObserver(this);
 }
 
-void AshWindowTreeHostMusUnified::SetBoundsInPixels(const gfx::Rect& bounds) {
-  AshWindowTreeHostMus::SetBoundsInPixels(bounds);
+void AshWindowTreeHostMusUnified::SetBoundsInPixels(
+    const gfx::Rect& bounds,
+    const viz::LocalSurfaceId& local_surface_id) {
+  AshWindowTreeHostMus::SetBoundsInPixels(bounds, local_surface_id);
   OnHostResizedInPixels(bounds.size());
 }
 

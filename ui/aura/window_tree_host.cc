@@ -49,6 +49,32 @@ bool ShouldAllocateLocalSurfaceId() {
   return Env::GetInstance()->mode() == Env::Mode::LOCAL;
 }
 
+#if DCHECK_IS_ON()
+class ScopedLocalSurfaceIdValidator {
+ public:
+  explicit ScopedLocalSurfaceIdValidator(Window* window)
+      : window_(window),
+        local_surface_id_(window ? window->GetLocalSurfaceId()
+                                 : viz::LocalSurfaceId()) {}
+  ~ScopedLocalSurfaceIdValidator() {
+    if (ShouldAllocateLocalSurfaceId() && window_) {
+      DCHECK_EQ(local_surface_id_, window_->GetLocalSurfaceId());
+    }
+  }
+
+ private:
+  Window* const window_;
+  const viz::LocalSurfaceId local_surface_id_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedLocalSurfaceIdValidator);
+};
+#else
+class ScopedLocalSurfaceIdValidator {
+ public:
+  explicit ScopedLocalSurfaceIdValidator(Window* window) {}
+  ~ScopedLocalSurfaceIdValidator() {}
+};
+#endif
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,20 +154,13 @@ gfx::Transform WindowTreeHost::GetInverseRootTransformForLocalEventCoordinates()
 }
 
 void WindowTreeHost::UpdateRootWindowSizeInPixels() {
-#if DCHECK_IS_ON()
-  // Validate that the LocalSurfaceId does not change
+  // Validate that the LocalSurfaceId does not change.
   bool compositor_inited = !!compositor()->root_layer();
-  auto store_local_surface_id =
-      compositor_inited ? window()->GetLocalSurfaceId() : viz::LocalSurfaceId();
-#endif
+  ScopedLocalSurfaceIdValidator lsi_validator(compositor_inited ? window()
+                                                                : nullptr);
   gfx::Rect transformed_bounds_in_pixels =
       GetTransformedRootWindowBoundsInPixels(GetBoundsInPixels().size());
   window()->SetBounds(transformed_bounds_in_pixels);
-#if DCHECK_IS_ON()
-  if (compositor_inited && ShouldAllocateLocalSurfaceId()) {
-    DCHECK_EQ(store_local_surface_id, window()->GetLocalSurfaceId());
-  }
-#endif
 }
 
 void WindowTreeHost::ConvertDIPToScreenInPixels(gfx::Point* point) const {
@@ -354,19 +373,22 @@ void WindowTreeHost::OnHostMovedInPixels(
 }
 
 void WindowTreeHost::OnHostResizedInPixels(
-    const gfx::Size& new_size_in_pixels) {
+    const gfx::Size& new_size_in_pixels,
+    const viz::LocalSurfaceId& new_local_surface_id) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();
-
-  // Update the state of the root window.
   UpdateRootWindowSizeInPixels();
 
   // Allocate a new LocalSurfaceId for the new state.
-  if (ShouldAllocateLocalSurfaceId())
+  auto local_surface_id = new_local_surface_id;
+  if (ShouldAllocateLocalSurfaceId() && !new_local_surface_id.is_valid()) {
     window_->AllocateLocalSurfaceId();
+    local_surface_id = window_->GetLocalSurfaceId();
+  }
+  ScopedLocalSurfaceIdValidator lsi_validator(window());
   compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
-                               window()->GetLocalSurfaceId());
+                               local_surface_id);
 
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostResized(this);
