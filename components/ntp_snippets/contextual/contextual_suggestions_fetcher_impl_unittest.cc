@@ -352,6 +352,33 @@ TEST_F(ContextualSuggestionsFetcherTest, FlatResponse) {
                        std::move(expected_clusters));
 }
 
+TEST_F(ContextualSuggestionsFetcherTest, HtmlEntitiesAreUnescaped) {
+  ClusterBuilder cluster_builder("Category 1");
+  cluster_builder.AddSuggestion(SuggestionBuilder(GURL("http://www.test.com"))
+                                    .Title("&quot;foobar&quot;")
+                                    .PublisherName("test.com")
+                                    .Snippet("&#39;barbaz&#39;")
+                                    .ImageId("abc")
+                                    .Build());
+  ClusterBuilder builder_copy = cluster_builder;
+  SetFakeResponse(
+      SerializedResponseProto("Peek Text", cluster_builder.Build()));
+  MockClustersCallback callback;
+  SendAndAwaitResponse(GURL("http://www.article.com/"), &callback);
+
+  EXPECT_TRUE(callback.has_run);
+  std::vector<Cluster> expected_clusters;
+  expected_clusters.emplace_back(builder_copy.Build());
+  // Clear the title since it's a flat response.
+  expected_clusters[0].title = "";
+  // Adjust the expected title and snippet to manually unescape the html
+  // entities we added.
+  expected_clusters[0].suggestions[0].title = "\"foobar\"";
+  expected_clusters[0].suggestions[0].snippet = "\'barbaz\'";
+  ExpectResponsesMatch(std::move(callback), "Peek Text",
+                       std::move(expected_clusters));
+}
+
 TEST_F(ContextualSuggestionsFetcherTest, RequestHeaderSetCorrectly) {
   net::HttpRequestHeaders headers;
   base::RunLoop interceptor_run_loop;
