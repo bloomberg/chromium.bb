@@ -21,9 +21,14 @@ enum class DialAppState {
   kStopped
 };
 
+std::string DialAppStateToString(DialAppState app_state);
+
 struct ParsedDialAppInfo {
   ParsedDialAppInfo();
+  ParsedDialAppInfo(const ParsedDialAppInfo& other);
   ~ParsedDialAppInfo();
+
+  bool operator==(const ParsedDialAppInfo& other) const;
 
   // Identifies the DIAL protocol version associated with the response.
   std::string dial_version;

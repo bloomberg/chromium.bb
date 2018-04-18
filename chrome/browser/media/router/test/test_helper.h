@@ -146,13 +146,38 @@ class MockCastMediaSinkService : public CastMediaSinkService {
   MOCK_METHOD0(StartMdnsDiscovery, void());
 };
 
+class MockDialAppDiscoveryService : public DialAppDiscoveryService {
+ public:
+  MockDialAppDiscoveryService();
+  ~MockDialAppDiscoveryService() override;
+
+  void FetchDialAppInfo(const MediaSinkInternal& sink,
+                        const std::string& app_name,
+                        DialAppInfoCallback app_info_cb) override;
+  MOCK_METHOD2(DoFetchDialAppInfo,
+               void(const MediaSink::Id& sink_id, const std::string& app_name));
+
+  DialAppInfoCallback PassCallback();
+
+ private:
+  DialAppInfoCallback app_info_cb_;
+};
+
 class TestDialURLFetcher : public DialURLFetcher {
  public:
-  TestDialURLFetcher(const GURL& url,
-                     base::OnceCallback<void(const std::string&)> success_cb,
-                     base::OnceCallback<void(int, const std::string&)> error_cb,
+  TestDialURLFetcher(SuccessCallback success_cb,
+                     ErrorCallback error_cb,
                      network::TestURLLoaderFactory* factory);
   ~TestDialURLFetcher() override;
+  void Start(const GURL& url,
+             const std::string& method,
+             const base::Optional<std::string>& post_data,
+             int max_retries) override;
+  MOCK_METHOD4(DoStart,
+               void(const GURL&,
+                    const std::string&,
+                    const base::Optional<std::string>&,
+                    int));
   void StartDownload() override;
 
  private:
@@ -180,6 +205,13 @@ MediaSinkInternal CreateDialSink(int num);
 // Helper function to create a Cast sink.
 MediaSinkInternal CreateCastSink(int num);
 
+// Creates a minimal ParsedDialAppInfo with given values.
+ParsedDialAppInfo CreateParsedDialAppInfo(const std::string& name,
+                                          DialAppState app_state);
+
+std::unique_ptr<ParsedDialAppInfo> CreateParsedDialAppInfoPtr(
+    const std::string& name,
+    DialAppState app_state);
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace media_router

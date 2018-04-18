@@ -35,6 +35,9 @@ class DialRegistry;
 class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
                                  public DialRegistry::Observer {
  public:
+  // Represents DIAL app status on receiver device.
+  enum SinkAppStatus { kUnknown = 0, kAvailable, kUnavailable };
+
   // |connector|: connector to the ServiceManager suitable to use on
   // |task_runner|.
   // |on_sinks_discovered_cb|: Callback for MediaSinkServiceBase.
@@ -83,40 +86,32 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
  private:
   friend class DialMediaSinkServiceImplTest;
   friend class MockDialMediaSinkServiceImpl;
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestStart);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDeviceDescriptionRestartsTimer);
+                           OnDeviceDescriptionRestartsTimer);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDialDeviceEventRestartsTimer);
+                           OnDialDeviceEventRestartsTimer);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDeviceDescriptionAvailable);
+                           OnDeviceDescriptionAvailable);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDeviceDescriptionAvailableIPAddressChanged);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestRestartAfterStop);
+                           OnDeviceDescriptionAvailableIPAddressChanged);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
                            OnDialSinkAddedCallback);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           DialMediaSinkServiceObserver);
+                           StartStopMonitoringAvailableSinksForApp);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestStartStopMonitoringAvailableSinksForApp);
+                           OnDialAppInfoAvailableNoStartMonitoring);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDialAppInfoAvailableNoStartMonitoring);
+                           OnDialAppInfoAvailableNoSink);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDialAppInfoAvailableStopsMonitoring);
+                           OnDialAppInfoAvailableSinksAdded);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDialAppInfoAvailableNoSink);
+                           OnDialAppInfoAvailableSinksRemoved);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDialAppInfoAvailableSinksAdded);
+                           OnDialAppInfoAvailableWithAlreadyAvailableSinks);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDialAppInfoAvailableSinksRemoved);
+                           StartAfterStopMonitoringForApp);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestOnDialAppInfoAvailableWithAlreadyAvailableSinks);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestFetchDialAppInfoWithCachedAppInfo);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestStartAfterStopMonitoringForApp);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           TestFetchDialAppInfoWithDiscoveryOnlySink);
+                           FetchDialAppInfoWithDiscoveryOnlySink);
 
   // DialRegistry::Observer implementation
   void OnDialDeviceEvent(const DialRegistry::DeviceList& devices) override;
@@ -136,7 +131,7 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // XML.
   void OnAppInfoParseCompleted(const std::string& sink_id,
                                const std::string& app_name,
-                               SinkAppStatus app_status);
+                               DialAppInfoResult result);
 
   // Invokes |available_sinks_updated_callback_| with |app_name| and current
   // available sinks for |app_name|.

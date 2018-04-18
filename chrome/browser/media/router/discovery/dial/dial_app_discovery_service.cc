@@ -7,27 +7,10 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
-#include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
-#include "chrome/browser/media/router/discovery/dial/safe_dial_app_info_parser.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
 namespace {
-
-media_router::SinkAppStatus GetAppStatusFromAppInfo(
-    const media_router::ParsedDialAppInfo& app_info) {
-  if (app_info.state == media_router::DialAppState::kRunning ||
-      app_info.state == media_router::DialAppState::kStopped) {
-    return media_router::SinkAppStatus::kAvailable;
-  }
-
-  return media_router::SinkAppStatus::kUnavailable;
-}
-
-std::string GetRequestId(const std::string& sink_id,
-                         const std::string& app_name) {
-  return sink_id + ':' + app_name;
-}
 
 GURL GetAppUrl(const media_router::MediaSinkInternal& sink,
                const std::string& app_name) {
@@ -41,34 +24,34 @@ GURL GetAppUrl(const media_router::MediaSinkInternal& sink,
 
 namespace media_router {
 
+DialAppInfoResult::DialAppInfoResult(
+    std::unique_ptr<ParsedDialAppInfo> app_info,
+    DialAppInfoResultCode result_code)
+    : app_info(std::move(app_info)), result_code(result_code) {}
+
+DialAppInfoResult::DialAppInfoResult(DialAppInfoResult&& other) = default;
+
+DialAppInfoResult::~DialAppInfoResult() = default;
+
 DialAppDiscoveryService::DialAppDiscoveryService(
-    service_manager::Connector* connector,
-    const DialAppInfoParseCompletedCallback& parse_completed_cb)
-    : parse_completed_cb_(parse_completed_cb),
-      parser_(std::make_unique<SafeDialAppInfoParser>(connector)) {}
+    service_manager::Connector* connector)
+    : parser_(std::make_unique<SafeDialAppInfoParser>(connector)) {}
 
 DialAppDiscoveryService::~DialAppDiscoveryService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 // Always query the device to get current app status.
-void DialAppDiscoveryService::FetchDialAppInfo(const MediaSinkInternal& sink,
-                                               const std::string& app_name) {
+void DialAppDiscoveryService::FetchDialAppInfo(
+    const MediaSinkInternal& sink,
+    const std::string& app_name,
+    DialAppInfoCallback app_info_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::string sink_id = sink.sink().id();
-  std::string request_id = GetRequestId(sink_id, app_name);
-  GURL app_url = GetAppUrl(sink, app_name);
-  DVLOG(2) << "Fetch DIAL app info from: " << app_url.spec();
-
-  std::unique_ptr<DialURLFetcher> fetcher = std::make_unique<DialURLFetcher>(
-      app_url,
-      base::BindOnce(&DialAppDiscoveryService::OnDialAppInfoFetchComplete,
-                     base::Unretained(this), sink_id, app_name),
-      base::BindOnce(&DialAppDiscoveryService::OnDialAppInfoFetchError,
-                     base::Unretained(this), sink_id, app_name));
-  fetcher->Start();
-  pending_fetcher_map_.emplace(request_id, std::move(fetcher));
+  pending_requests_.push_back(
+      std::make_unique<DialAppDiscoveryService::PendingRequest>(
+          sink, app_name, std::move(app_info_cb), this));
+  pending_requests_.back()->Start();
 }
 
 void DialAppDiscoveryService::SetParserForTest(
@@ -76,58 +59,92 @@ void DialAppDiscoveryService::SetParserForTest(
   parser_ = std::move(parser);
 }
 
-void DialAppDiscoveryService::OnDialAppInfoParsed(
-    const std::string& sink_id,
-    const std::string& app_name,
-    std::unique_ptr<ParsedDialAppInfo> parsed_app_info,
-    SafeDialAppInfoParser::ParsingResult parsing_result) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::string request_id = GetRequestId(sink_id, app_name);
-  pending_fetcher_map_.erase(request_id);
-
-  if (!parsed_app_info) {
-    DVLOG(2) << "Failed to parse app info XML in utility process, error: "
-             << parsing_result;
-    parse_completed_cb_.Run(sink_id, app_name, SinkAppStatus::kUnavailable);
-    return;
-  }
-
-  SinkAppStatus app_status = GetAppStatusFromAppInfo(*parsed_app_info);
-  DVLOG(2) << "Get parsed DIAL app info from utility process, [sink_id]: "
-           << sink_id << " [name]: " << app_name << " [status]: " << app_status;
-  parse_completed_cb_.Run(sink_id, app_name, app_status);
+void DialAppDiscoveryService::RemovePendingRequest(
+    DialAppDiscoveryService::PendingRequest* request) {
+  base::EraseIf(pending_requests_, [&request](const auto& entry) {
+    return entry.get() == request;
+  });
 }
 
-void DialAppDiscoveryService::OnDialAppInfoFetchComplete(
-    const std::string& sink_id,
+DialAppDiscoveryService::PendingRequest::PendingRequest(
+    const MediaSinkInternal& sink,
     const std::string& app_name,
+    DialAppInfoCallback app_info_cb,
+    DialAppDiscoveryService* const service)
+    : sink_id_(sink.sink().id()),
+      app_name_(app_name),
+      app_url_(GetAppUrl(sink, app_name)),
+      // |base::Unretained(this)| since |fetcher_| is owned by |this|.
+      fetcher_(
+          base::BindOnce(&DialAppDiscoveryService::PendingRequest::
+                             OnDialAppInfoFetchComplete,
+                         base::Unretained(this)),
+          base::BindOnce(
+              &DialAppDiscoveryService::PendingRequest::OnDialAppInfoFetchError,
+              base::Unretained(this))),
+      app_info_cb_(std::move(app_info_cb)),
+      service_(service),
+      weak_ptr_factory_(this) {}
+
+DialAppDiscoveryService::PendingRequest::~PendingRequest() {
+  DCHECK(app_info_cb_.is_null());
+}
+
+void DialAppDiscoveryService::PendingRequest::Start() {
+  fetcher_.Get(app_url_);
+}
+
+void DialAppDiscoveryService::PendingRequest::OnDialAppInfoFetchComplete(
     const std::string& app_info_xml) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  parser_->Parse(app_info_xml,
-                 base::BindOnce(&DialAppDiscoveryService::OnDialAppInfoParsed,
-                                base::Unretained(this), sink_id, app_name));
+  service_->parser_->Parse(
+      app_info_xml,
+      base::BindOnce(
+          &DialAppDiscoveryService::PendingRequest::OnDialAppInfoParsed,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DialAppDiscoveryService::OnDialAppInfoFetchError(
-    const std::string& sink_id,
-    const std::string& app_name,
+void DialAppDiscoveryService::PendingRequest::OnDialAppInfoFetchError(
     int response_code,
     const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DVLOG(2) << "Fail to fetch app info XML for: " << sink_id
+  DVLOG(2) << "Fail to fetch app info XML for: " << sink_id_
            << " due to error: " << error_message
            << " response code: " << response_code;
 
   if (response_code == net::HTTP_NOT_FOUND ||
       response_code >= net::HTTP_INTERNAL_SERVER_ERROR ||
       response_code == net::HTTP_OK) {
-    parse_completed_cb_.Run(sink_id, app_name, SinkAppStatus::kUnavailable);
+    std::move(app_info_cb_)
+        .Run(sink_id_, app_name_,
+             DialAppInfoResult(nullptr, DialAppInfoResultCode::kNotFound));
+  } else {
+    std::move(app_info_cb_)
+        .Run(sink_id_, app_name_,
+             DialAppInfoResult(nullptr, DialAppInfoResultCode::kNetworkError));
   }
+  service_->RemovePendingRequest(this);
+}
 
-  std::string request_id = GetRequestId(sink_id, app_name);
-  pending_fetcher_map_.erase(request_id);
+void DialAppDiscoveryService::PendingRequest::OnDialAppInfoParsed(
+    std::unique_ptr<ParsedDialAppInfo> parsed_app_info,
+    SafeDialAppInfoParser::ParsingResult parsing_result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!parsed_app_info) {
+    DVLOG(2) << "Failed to parse app info XML in utility process, error: "
+             << parsing_result;
+    std::move(app_info_cb_)
+        .Run(sink_id_, app_name_,
+             DialAppInfoResult(nullptr, DialAppInfoResultCode::kParsingError));
+  } else {
+    std::move(app_info_cb_)
+        .Run(sink_id_, app_name_,
+             DialAppInfoResult(std::move(parsed_app_info),
+                               DialAppInfoResultCode::kOk));
+  }
+  service_->RemovePendingRequest(this);
 }
 
 }  // namespace media_router

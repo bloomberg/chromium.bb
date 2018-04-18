@@ -8,6 +8,7 @@
 #include "base/json/string_escape.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/media_router/media_source.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 #if !defined(OS_ANDROID)
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -60,14 +61,38 @@ MockDialMediaSinkService::~MockDialMediaSinkService() = default;
 MockCastMediaSinkService::MockCastMediaSinkService() : CastMediaSinkService() {}
 MockCastMediaSinkService::~MockCastMediaSinkService() = default;
 
+MockDialAppDiscoveryService::MockDialAppDiscoveryService()
+    : DialAppDiscoveryService(/*connector=*/nullptr) {}
+MockDialAppDiscoveryService::~MockDialAppDiscoveryService() = default;
+
+void MockDialAppDiscoveryService::FetchDialAppInfo(
+    const MediaSinkInternal& sink,
+    const std::string& app_name,
+    DialAppInfoCallback app_info_cb) {
+  DoFetchDialAppInfo(sink.sink().id(), app_name);
+  app_info_cb_ = std::move(app_info_cb);
+}
+
+DialAppDiscoveryService::DialAppInfoCallback
+MockDialAppDiscoveryService::PassCallback() {
+  return std::move(app_info_cb_);
+}
+
 TestDialURLFetcher::TestDialURLFetcher(
-    const GURL& url,
-    base::OnceCallback<void(const std::string&)> success_cb,
-    base::OnceCallback<void(int, const std::string&)> error_cb,
+    DialURLFetcher::SuccessCallback success_cb,
+    DialURLFetcher::ErrorCallback error_cb,
     network::TestURLLoaderFactory* factory)
-    : DialURLFetcher(url, std::move(success_cb), std::move(error_cb)),
+    : DialURLFetcher(std::move(success_cb), std::move(error_cb)),
       factory_(factory) {}
 TestDialURLFetcher::~TestDialURLFetcher() = default;
+
+void TestDialURLFetcher::Start(const GURL& url,
+                               const std::string& method,
+                               const base::Optional<std::string>& post_data,
+                               int max_retries) {
+  DoStart(url, method, post_data, max_retries);
+  DialURLFetcher::Start(url, method, post_data, max_retries);
+}
 
 void TestDialURLFetcher::StartDownload() {
   loader_->DownloadToString(
@@ -113,6 +138,21 @@ MediaSinkInternal CreateCastSink(int num) {
   extra_data.capabilities = cast_channel::CastDeviceCapability::AUDIO_OUT |
                             cast_channel::CastDeviceCapability::VIDEO_OUT;
   return MediaSinkInternal(sink, extra_data);
+}
+
+ParsedDialAppInfo CreateParsedDialAppInfo(const std::string& name,
+                                          DialAppState app_state) {
+  ParsedDialAppInfo app_info;
+  app_info.name = name;
+  app_info.state = app_state;
+  return app_info;
+}
+
+std::unique_ptr<ParsedDialAppInfo> CreateParsedDialAppInfoPtr(
+    const std::string& name,
+    DialAppState app_state) {
+  return std::make_unique<ParsedDialAppInfo>(
+      CreateParsedDialAppInfo(name, app_state));
 }
 
 #endif  // !defined(OS_ANDROID)

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
@@ -29,24 +30,26 @@ namespace media_router {
 // This class is not sequence safe.
 class DialURLFetcher {
  public:
-  // Constructor.
-  // |url|: HTTP request URL
+  using SuccessCallback = base::OnceCallback<void(const std::string&)>;
+  using ErrorCallback = base::OnceCallback<void(int, const std::string&)>;
+
   // |success_cb|: Invoked when HTTP request to |url| succeeds
   //   |arg 0|: response text of the HTTP request
   // |error_cb|: Invoked when HTTP request to |url| fails
   //   |arg 0|: HTTP response code
   //   |arg 1|: error message
-  DialURLFetcher(const GURL& url,
-                 base::OnceCallback<void(const std::string&)> success_cb,
-                 base::OnceCallback<void(int, const std::string&)> error_cb);
+  DialURLFetcher(SuccessCallback success_cb, ErrorCallback error_cb);
 
   virtual ~DialURLFetcher();
 
-  const GURL& url() { return url_; }
+  // Starts a HTTP GET request.
+  void Get(const GURL& url);
 
-  // Starts the fetch. |ProcessResponse| will be invoked on completion.
-  // |ReportRedirectError| will be invoked when a redirect occurrs.
-  void Start();
+  // Starts a HTTP DELETE request.
+  void Delete(const GURL& url);
+
+  // Starts a HTTP POST request.
+  void Post(const GURL& url, const base::Optional<std::string>& post_data);
 
   // Returns the response header of an HTTP request. The response header is
   // owned by underlying |loader_| object and is reset per HTTP request. Returns
@@ -56,6 +59,17 @@ class DialURLFetcher {
 
  private:
   friend class TestDialURLFetcher;
+
+  // Starts the fetch with |method|. |ProcessResponse| will be invoked on
+  // completion. |ReportRedirectError| will be invoked when a redirect occurrs.
+  // |method|: the request method, e.g. GET, POST, etc.
+  // |post_data|: optional request body (may be empty).
+  // |max_retries|: the maximum number of times to retry the request, not
+  // counting the initial request.
+  virtual void Start(const GURL& url,
+                     const std::string& method,
+                     const base::Optional<std::string>& post_data,
+                     int max_retries);
 
   // Starts the download on |loader_|.
   virtual void StartDownload();
@@ -70,10 +84,12 @@ class DialURLFetcher {
   // Runs |error_cb_| with |message| and clears it.
   void ReportError(int response_code, const std::string& message);
 
-  const GURL url_;
-  base::OnceCallback<void(const std::string&)> success_cb_;
-  base::OnceCallback<void(int, const std::string&)> error_cb_;
+  SuccessCallback success_cb_;
+  ErrorCallback error_cb_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
+
+  // The HTTP method that was started on the fetcher (e.g., "GET").
+  std::string method_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(DialURLFetcher);

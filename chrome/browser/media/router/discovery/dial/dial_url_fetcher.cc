@@ -16,7 +16,9 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-constexpr int kMaxRetries = 3;
+// The maximum number of retries allowed for GET requests.
+constexpr int kMaxRetries = 2;
+
 // DIAL devices are unlikely to expose uPnP functions other than DIAL, so 256kb
 // should be more than sufficient.
 constexpr int kMaxResponseSizeBytes = 262144;
@@ -65,15 +67,9 @@ void BindURLLoaderFactoryRequestOnUIThread(
 
 }  // namespace
 
-DialURLFetcher::DialURLFetcher(
-    const GURL& url,
-    base::OnceCallback<void(const std::string&)> success_cb,
-    base::OnceCallback<void(int, const std::string&)> error_cb)
-    : url_(url),
-      success_cb_(std::move(success_cb)),
-      error_cb_(std::move(error_cb)) {
-  DCHECK(url_.is_valid());
-}
+DialURLFetcher::DialURLFetcher(DialURLFetcher::SuccessCallback success_cb,
+                               DialURLFetcher::ErrorCallback error_cb)
+    : success_cb_(std::move(success_cb)), error_cb_(std::move(error_cb)) {}
 
 DialURLFetcher::~DialURLFetcher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -84,12 +80,33 @@ const network::ResourceResponseHead* DialURLFetcher::GetResponseHead() const {
   return loader_ ? loader_->ResponseInfo() : nullptr;
 }
 
-void DialURLFetcher::Start() {
+void DialURLFetcher::Get(const GURL& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  Start(url, "GET", base::nullopt, kMaxRetries);
+}
+
+void DialURLFetcher::Delete(const GURL& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  Start(url, "DELETE", base::nullopt, 0);
+}
+
+void DialURLFetcher::Post(const GURL& url,
+                          const base::Optional<std::string>& post_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  Start(url, "POST", post_data, 0);
+}
+
+void DialURLFetcher::Start(const GURL& url,
+                           const std::string& method,
+                           const base::Optional<std::string>& post_data,
+                           int max_retries) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!loader_);
 
   auto request = std::make_unique<network::ResourceRequest>();
-  request->url = url_;
+  request->url = url;
+  request->method = method;
+  method_ = method;
 
   // net::LOAD_BYPASS_PROXY: Proxies almost certainly hurt more cases than they
   //     help.
@@ -105,16 +122,21 @@ void DialURLFetcher::Start() {
                                              kDialUrlFetcherTrafficAnnotation);
 
   // Allow the fetcher to retry on 5XX responses and ERR_NETWORK_CHANGED.
-  loader_->SetRetryOptions(
-      kMaxRetries,
-      network::SimpleURLLoader::RetryMode::RETRY_ON_5XX |
-          network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
+  if (max_retries > 0) {
+    loader_->SetRetryOptions(
+        max_retries,
+        network::SimpleURLLoader::RetryMode::RETRY_ON_5XX |
+            network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
+  }
 
   // Section 5.4 of the DIAL spec prohibits redirects.
   // In practice, the callback will only get called once, since |loader_| will
   // be deleted.
   loader_->SetOnRedirectCallback(base::BindRepeating(
       &DialURLFetcher::ReportRedirectError, base::Unretained(this)));
+
+  if (post_data)
+    loader_->AttachStringForUpload(*post_data, "text/plain");
 
   StartDownload();
 }
@@ -162,12 +184,12 @@ void DialURLFetcher::ProcessResponse(std::unique_ptr<std::string> response) {
   int response_code = loader_->NetError();
   if (response_code != net::Error::OK) {
     ReportError(response_code,
-                base::StringPrintf("HTTP %d: Unable to fetch DIAL app info",
-                                   response_code));
+                base::StringPrintf("HTTP response error: %d", response_code));
     return;
   }
 
-  if (!response || response->empty()) {
+  // Response for POST and DELETE may be empty.
+  if (!response || (method_ == "GET" && response->empty())) {
     ReportError(response_code, "Missing or empty response");
     return;
   }

@@ -37,13 +37,12 @@ class TestDeviceDescriptionFetcher : public DeviceDescriptionFetcher {
 
   void Start() override {
     fetcher_ = std::make_unique<TestDialURLFetcher>(
-        device_description_url_,
         base::BindOnce(&DeviceDescriptionFetcher::ProcessResponse,
                        base::Unretained(this)),
         base::BindOnce(&DeviceDescriptionFetcher::ReportError,
                        base::Unretained(this)),
         factory_);
-    fetcher_->Start();
+    fetcher_->Get(device_description_url_);
   }
 
  private:
@@ -102,7 +101,9 @@ class DeviceDescriptionFetcherTest : public testing::Test {
   }
 
   void OnError(const std::string& message) {
-    EXPECT_TRUE(message.find(expected_error_) == 0);
+    EXPECT_TRUE(message.find(expected_error_) != std::string::npos)
+        << "[" << expected_error_ << "] not found in message [" << message
+        << "]";
     DoOnError();
     description_fetcher_.reset();
   }
@@ -135,7 +136,7 @@ TEST_F(DeviceDescriptionFetcherTest, FetchSuccessfulAppUrlWithTrailingSlash) {
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnMissingDescription) {
-  ExpectError("HTTP 404:");
+  ExpectError("404");
   loader_factory_.AddResponse(
       url_, network::ResourceResponseHead(), "",
       network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
