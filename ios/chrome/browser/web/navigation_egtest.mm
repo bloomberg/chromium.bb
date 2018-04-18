@@ -5,6 +5,7 @@
 #import <XCTest/XCTest.h>
 
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
@@ -308,13 +309,12 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
       assertWithMatcher:grey_notNil()];
 
   // Verify that the forward button is not enabled.
-  if (IsCompactWidth()) {
-    // In horizontally compact environments, the forward button is not visible.
+  if (!IsUIRefreshPhase1Enabled() && IsCompactWidth()) {
+    // The forward button is not visible.
     [[EarlGrey selectElementWithMatcher:ForwardButton()]
         assertWithMatcher:grey_nil()];
   } else {
-    // In horizontally regular environments, the forward button is visible and
-    // disabled.
+    // The forward button is visible and disabled.
     id<GREYMatcher> disabledForwardButton = grey_allOf(
         ForwardButton(),
         grey_accessibilityTrait(UIAccessibilityTraitNotEnabled), nil);
