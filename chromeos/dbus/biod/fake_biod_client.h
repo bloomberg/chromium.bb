@@ -62,7 +62,7 @@ class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
                           const std::string& label,
                           const ObjectPathCallback& callback) override;
   void GetRecordsForUser(const std::string& user_id,
-                         const UserRecordsCallback& callback) override;
+                         UserRecordsCallback callback) override;
   void DestroyAllRecords(VoidDBusMethodCallback callback) override;
   void StartAuthSession(const ObjectPathCallback& callback) override;
   void RequestType(const BiometricTypeCallback& callback) override;
@@ -74,7 +74,7 @@ class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
   void RemoveRecord(const dbus::ObjectPath& record_path,
                     VoidDBusMethodCallback callback) override;
   void RequestRecordLabel(const dbus::ObjectPath& record_path,
-                          const LabelCallback& callback) override;
+                          LabelCallback callback) override;
 
  private:
   struct FakeRecord;

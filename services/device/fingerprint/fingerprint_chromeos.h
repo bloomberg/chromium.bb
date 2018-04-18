@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "dbus/object_path.h"
@@ -69,8 +70,7 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
   void OnStartAuthSession(const dbus::ObjectPath& auth_path);
   void OnGetRecordsForUser(GetRecordsForUserCallback callback,
                            const std::vector<dbus::ObjectPath>& record_paths);
-  void OnGetLabelFromRecordPath(GetRecordsForUserCallback callback,
-                                size_t num_records,
+  void OnGetLabelFromRecordPath(size_t num_records,
                                 const dbus::ObjectPath& record_path,
                                 const std::string& label);
 
@@ -82,8 +82,26 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
                            const std::string& label);
   void ScheduleStartAuth();
 
+  void RunGetRecordsForUser(const std::string& user_id,
+                            GetRecordsForUserCallback callback);
+
+  // Start next request of GetRecordsForUser.
+  void StartNextRequest();
+
   std::vector<mojom::FingerprintObserverPtr> observers_;
+
+  // Saves record object path to label mapping for current GetRecordsForUser
+  // request, and reset after the request is done.
   std::unordered_map<std::string, std::string> records_path_to_label_;
+
+  // Callback for current GetRecordsForUser request.
+  GetRecordsForUserCallback on_get_records_;
+
+  // Pending requests of GetRecordsForUser.
+  base::queue<base::OnceClosure> get_records_pending_requests_;
+
+  // Whether a GetRecordsForUser request is in process.
+  bool is_request_running_ = false;
 
   // Session opened by current service.
   FingerprintSession opened_session_ = FingerprintSession::NONE;
