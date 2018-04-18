@@ -248,9 +248,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       "rectory")));
 
 // Fails on official build. http://crbug.com/429294
-// Disabled: too often flakey on chromium trys. http://crbug.com/829310
+#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
+#define MAYBE_DriveSpecific DISABLED_DriveSpecific
+#else
+#define MAYBE_DriveSpecific DriveSpecific
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_DriveSpecific,
+    MAYBE_DriveSpecific,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "openSidebarOffline"),
