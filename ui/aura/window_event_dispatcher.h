@@ -147,6 +147,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   Window* window();
   const Window* window() const;
 
+  // Converts a point from screen coordinates to the coordinate space used by
+  // the Window returned from window().
+  void ConvertPointFromScreen(gfx::Point* screen_point) const;
+
   // Updates the event with the appropriate transform for the device scale
   // factor. The WindowEventDispatcher dispatches events in the physical pixel
   // coordinate. But the event processing from WindowEventDispatcher onwards
