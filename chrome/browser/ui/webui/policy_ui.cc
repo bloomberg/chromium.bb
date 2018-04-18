@@ -32,6 +32,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
   source->AddLocalizedString("labelEnterpriseDisplayDomain",
                              IDS_POLICY_LABEL_ENTERPRISE_DISPLAY_DOMAIN);
   source->AddLocalizedString("labelUsername", IDS_POLICY_LABEL_USERNAME);
+  source->AddLocalizedString("labelGaiaId", IDS_POLICY_LABEL_GAIA_ID);
   source->AddLocalizedString("labelClientId", IDS_POLICY_LABEL_CLIENT_ID);
   source->AddLocalizedString("labelAssetId", IDS_POLICY_LABEL_ASSET_ID);
   source->AddLocalizedString("labelLocation", IDS_POLICY_LABEL_LOCATION);
