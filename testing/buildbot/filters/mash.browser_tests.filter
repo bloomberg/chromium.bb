@@ -200,9 +200,6 @@
 -NetworkingConfigTest.*
 -NetworkPortalDetectorImplBrowserTest.*
 
-# Crash in autofill::SaveCardBubbleViews::ShouldShowCloseButton().
--SaveCardBubbleControllerImplTest.*
-
 # ash::Shell access in test for display configuration.
 # http://crbug.com/831826
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus*
