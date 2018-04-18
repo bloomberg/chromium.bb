@@ -60,7 +60,6 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate, ServiceQuitsWhenClientDisconnects) {
     this->connector()->BindInterface(mojom::kServiceName, &info);
     wait_loop.Run();
   }
-
   {
     base::RunLoop wait_loop;
     EXPECT_CALL(*this->service_observer_, ServiceStopped())
@@ -80,7 +79,6 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate,
     this->connector()->BindInterface(mojom::kServiceName, &info);
     wait_loop.Run();
   }
-
   {
     base::RunLoop wait_loop;
     EXPECT_CALL(*this->service_observer_, ServiceStopped())
@@ -90,8 +88,11 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate,
 
     mojom::SystemInfoPtr info2;
     this->connector()->BindInterface(mojom::kServiceName, &info2);
+    info2.FlushForTesting();
+
     mojom::SystemInfoPtr info3;
     this->connector()->BindInterface(mojom::kServiceName, &info3);
+    info3.FlushForTesting();
 
     info.reset();
     info2.reset();
@@ -109,7 +110,6 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate, ServiceRestartsWhenClientReconnects) {
     this->connector()->BindInterface(mojom::kServiceName, &info);
     wait_loop.Run();
   }
-
   {
     base::RunLoop wait_loop;
     EXPECT_CALL(*this->service_observer_, ServiceStopped())
@@ -117,7 +117,6 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate, ServiceRestartsWhenClientReconnects) {
     info.reset();
     wait_loop.Run();
   }
-
   {
     base::RunLoop wait_loop;
     EXPECT_CALL(*this->service_observer_, ServiceStarted())
@@ -125,7 +124,6 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate, ServiceRestartsWhenClientReconnects) {
     this->connector()->BindInterface(mojom::kServiceName, &info);
     wait_loop.Run();
   }
-
   {
     base::RunLoop wait_loop;
     EXPECT_CALL(*this->service_observer_, ServiceStopped())

@@ -7,7 +7,12 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "services/audio/service.h"
+
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
 
 namespace media {
 class AudioLogFactory;
@@ -35,6 +40,10 @@ class OwningAudioManagerAccessor : public Service::AudioManagerAccessor {
   void Shutdown() final;
 
  private:
+#if defined(OS_WIN)
+  // Required to access CoreAudio.
+  base::win::ScopedCOMInitializer com_initializer_;
+#endif
   AudioManagerFactoryCallback audio_manager_factory_cb_;
   std::unique_ptr<media::AudioManager> audio_manager_;
   THREAD_CHECKER(thread_checker_);
