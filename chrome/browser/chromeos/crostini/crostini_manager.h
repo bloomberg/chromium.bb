@@ -61,6 +61,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // The type of the callback for CrostiniManager::LaunchContainerApplication.
   using LaunchContainerApplicationCallback =
       base::OnceCallback<void(ConciergeClientResult result)>;
+  // The type of the callback for CrostiniManager::RestartCrostini.
+  using RestartCrostiniCallback =
+      base::OnceCallback<void(ConciergeClientResult result)>;
+
+  // Checks if the cros-termina component is installed.
+  static bool IsCrosTerminaInstalled();
 
   // Starts the Concierge service. |callback| is called after the method call
   // finishes.
@@ -119,8 +125,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
                       StartContainerCallback callback);
 
   // Asynchronously launches an app as specified by its desktop file id.
-  // |callback| is called with SUCCESS when the relevant process is started or
-  // LAUNCH_CONTAINER_APPLICATION_FAILED if there was an error somewhere.
+  // |callback| is called with SUCCESS when the relevant process is started
+  // or LAUNCH_CONTAINER_APPLICATION_FAILED if there was an error somewhere.
   //
   // TODO(nverne): Start the VM and Container if not already running.
   void LaunchContainerApplication(std::string vm_name,
@@ -132,8 +138,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // container on a VM.
   void LaunchContainerTerminal(Profile* profile,
                                const std::string& vm_name,
-                               const std::string& container_name,
-                               const std::string& container_username);
+                               const std::string& container_name);
+
+  void RestartCrostini(Profile* profile,
+                       std::string vm_name,
+                       std::string container_name,
+                       RestartCrostiniCallback callback);
 
   // ConciergeClient::Observer:
   void OnContainerStarted(

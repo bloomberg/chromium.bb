@@ -8,15 +8,21 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/component_updater/cros_component_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_util.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "content/public/browser/browser_thread.h"
 #include "dbus/message.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/base/escape.h"
+
+namespace crostini {
 
 namespace {
 
@@ -28,9 +34,122 @@ chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
-}  // namespace
+std::string ContainerUserNameForProfile(Profile* profile) {
+  // Get rid of the @domain.name in the profile user name (an email address).
+  std::string container_username = profile->GetProfileUserName();
+  return container_username.substr(0, container_username.find('@'));
+}
 
-namespace crostini {
+class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
+ public:
+  CrostiniRestarter(std::string vm_name,
+                    std::string cryptohome_id,
+                    std::string container_name,
+                    std::string container_username,
+                    CrostiniManager::RestartCrostiniCallback callback)
+      : vm_name_(std::move(vm_name)),
+        cryptohome_id_(std::move(cryptohome_id)),
+        container_name_(std::move(container_name)),
+        container_username_(std::move(container_username)),
+        callback_(std::move(callback)) {}
+
+  void Restart() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    g_browser_process->platform_part()->cros_component_manager()->Load(
+        "cros-termina",
+        component_updater::CrOSComponentManager::MountPolicy::kMount,
+        base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinished,
+                       base::WrapRefCounted(this)));
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<CrostiniRestarter>;
+
+  ~CrostiniRestarter() {
+    if (callback_) {
+      LOG(ERROR) << "Destroying without having called the callback.";
+    }
+  }
+
+  static void InstallImageLoaderFinished(
+      scoped_refptr<CrostiniRestarter> restarter,
+      component_updater::CrOSComponentManager::Error error,
+      const base::FilePath& result) {
+    DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinishedOnUIThread,
+                       restarter, error, result));
+  }
+
+  void InstallImageLoaderFinishedOnUIThread(
+      component_updater::CrOSComponentManager::Error error,
+      const base::FilePath& result) {
+    if (error != component_updater::CrOSComponentManager::Error::NONE) {
+      LOG(ERROR)
+          << "Failed to install the cros-termina component with error code: "
+          << static_cast<int>(error);
+      std::move(callback_).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+      return;
+    }
+    CrostiniManager::GetInstance()->StartVmConcierge(
+        base::BindOnce(&CrostiniRestarter::ConciergeStarted, this));
+  }
+
+  void ConciergeStarted(bool is_started) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!is_started) {
+      LOG(ERROR) << "Failed to start Concierge service.";
+      std::move(callback_).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+      return;
+    }
+    CrostiniManager::GetInstance()->CreateDiskImage(
+        cryptohome_id_, base::FilePath(vm_name_),
+        vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
+        base::BindOnce(&CrostiniRestarter::CreateDiskImageFinished, this));
+  }
+
+  void CreateDiskImageFinished(ConciergeClientResult result,
+                               const base::FilePath& result_path) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (result != ConciergeClientResult::SUCCESS) {
+      LOG(ERROR) << "Failed to create disk image.";
+      std::move(callback_).Run(result);
+      return;
+    }
+    CrostiniManager::GetInstance()->StartTerminaVm(
+        vm_name_, result_path,
+        base::BindOnce(&CrostiniRestarter::StartTerminaVmFinished, this));
+  }
+
+  void StartTerminaVmFinished(ConciergeClientResult result) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (result != ConciergeClientResult::SUCCESS) {
+      LOG(ERROR) << "Failed to Start Termina VM.";
+      std::move(callback_).Run(result);
+      return;
+    }
+    CrostiniManager::GetInstance()->StartContainer(
+        vm_name_, container_name_, container_username_,
+        base::BindOnce(&CrostiniRestarter::StartContainerFinished, this));
+  }
+
+  void StartContainerFinished(ConciergeClientResult result) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (result != ConciergeClientResult::SUCCESS) {
+      LOG(ERROR) << "Failed to start container.";
+    }
+    std::move(callback_).Run(result);
+  }
+
+  std::string vm_name_;
+  std::string cryptohome_id_;
+  std::string container_name_;
+  std::string container_username_;
+  CrostiniManager::RestartCrostiniCallback callback_;
+};
+
+}  // namespace
 
 // static
 CrostiniManager* CrostiniManager::GetInstance() {
@@ -45,6 +164,14 @@ CrostiniManager::CrostiniManager() : weak_ptr_factory_(this) {
 }
 
 CrostiniManager::~CrostiniManager() {}
+
+// static
+bool CrostiniManager::IsCrosTerminaInstalled() {
+  return !g_browser_process->platform_part()
+              ->cros_component_manager()
+              ->GetCompatiblePath("cros-termina")
+              .empty();
+}
 
 void CrostiniManager::StartVmConcierge(StartVmConciergeCallback callback) {
   VLOG(1) << "Starting VmConcierge service";
@@ -276,8 +403,8 @@ void CrostiniManager::LaunchContainerApplication(
 void CrostiniManager::LaunchContainerTerminal(
     Profile* profile,
     const std::string& vm_name,
-    const std::string& container_name,
-    const std::string& container_username) {
+    const std::string& container_name) {
+  std::string container_username = ContainerUserNameForProfile(profile);
   std::string vsh_crosh = base::StringPrintf(
       "chrome-extension://%s/html/crosh.html?command=vmshell",
       kCrostiniCroshBuiltinAppId);
@@ -310,6 +437,22 @@ void CrostiniManager::LaunchContainerTerminal(
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_APP_LAUNCHER);
 
   OpenApplicationWindow(launch_params, vsh_in_crosh_url);
+}
+
+void CrostiniManager::RestartCrostini(Profile* profile,
+                                      std::string vm_name,
+                                      std::string container_name,
+                                      RestartCrostiniCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  std::string cryptohome_id = chromeos::ProfileHelper::Get()
+                                  ->GetUserByProfile(profile)
+                                  ->username_hash();
+  std::string container_username = ContainerUserNameForProfile(profile);
+
+  auto crostini_restarter = base::MakeRefCounted<CrostiniRestarter>(
+      std::move(vm_name), std::move(cryptohome_id), std::move(container_name),
+      std::move(container_username), std::move(callback));
+  crostini_restarter->Restart();
 }
 
 void CrostiniManager::OnCreateDiskImage(
