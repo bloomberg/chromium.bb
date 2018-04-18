@@ -953,8 +953,7 @@ TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeBelowLimit) {
   EXPECT_EQ(std::string(kResponseSize, 'a'), *test_helper->response_body());
 }
 
-// Disabled: See https://crbug.com/832600
-TEST_P(SimpleURLLoaderTest, DISABLED_ResponseBodyWithSizeAboveLimit) {
+TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimit) {
   // Download to stream doesn't support response sizes.
   if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
     return;
@@ -972,9 +971,7 @@ TEST_P(SimpleURLLoaderTest, DISABLED_ResponseBodyWithSizeAboveLimit) {
 }
 
 // Same as above, but with setting allow_partial_results to true.
-// Disabled: See https://crbug.com/832600
-TEST_P(SimpleURLLoaderTest,
-       DISABLED_ResponseBodyWithSizeAboveLimitPartialResponse) {
+TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimitPartialResponse) {
   // Download to stream doesn't support response sizes.
   if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
     return;
@@ -1034,8 +1031,7 @@ TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeBelowLimit) {
   EXPECT_EQ(std::string(kResponseSize, 'a'), *test_helper->response_body());
 }
 
-// Disabled: See https://crbug.com/832600
-TEST_P(SimpleURLLoaderTest, DISABLED_BigResponseBodyWithSizeAboveLimit) {
+TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeAboveLimit) {
   // Download to stream doesn't support response sizes.
   if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
     return;
@@ -1052,9 +1048,7 @@ TEST_P(SimpleURLLoaderTest, DISABLED_BigResponseBodyWithSizeAboveLimit) {
   EXPECT_FALSE(test_helper->response_body());
 }
 
-// Disabled: See https://crbug.com/832600
-TEST_P(SimpleURLLoaderTest,
-       DISABLED_BigResponseBodyWithSizeAboveLimitPartialResponse) {
+TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeAboveLimitPartialResponse) {
   // Download to stream doesn't support response sizes.
   if (GetParam() == SimpleLoaderTestHelper::DownloadType::AS_STREAM)
     return;

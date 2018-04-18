@@ -58,14 +58,29 @@ namespace network {
 
 namespace {
 
-URLLoader::DeleteCallback WaitForDeleteCallback(base::RunLoop* run_loop) {
-  return base::BindOnce([](base::RunLoop* run_loop,
-                           URLLoader* /* url_loader*/) { run_loop->Quit(); },
-                        run_loop);
+// Returns a URLLoader::DeleteCallback that destroys |url_loader| and quits
+// |run_loop| when invoked. Tests must wait on the RunLoop to ensure nothing is
+// leaked. Takes a std::unique_ptr<URLLoader>* instead of a unique_ptr because
+// the callback must be created before the URLLoader is actually created.
+URLLoader::DeleteCallback DeleteLoaderCallback(
+    base::RunLoop* run_loop,
+    std::unique_ptr<URLLoader>* url_loader) {
+  return base::BindOnce(
+      [](base::RunLoop* run_loop, std::unique_ptr<URLLoader>* url_loader,
+         URLLoader* url_loader_ptr) {
+        DCHECK_EQ(url_loader->get(), url_loader_ptr);
+        url_loader->reset();
+        run_loop->Quit();
+      },
+      run_loop, url_loader);
 }
 
-URLLoader::DeleteCallback DoNothingOnDeleteCallback() {
-  return base::BindOnce([](URLLoader* /* url_loader*/) {});
+// Returns a URLLoader::DeleteCallback that does nothing, but calls NOTREACHED.
+// Tests that use a URLLoader that actually tries to delete itself shouldn't use
+// this methods, as URLLoaders don't expect to be alive after theyinvoke their
+// delete callback.
+URLLoader::DeleteCallback NeverInvokedDeleteLoaderCallback() {
+  return base::BindOnce([](URLLoader* /* url_loader*/) { NOTREACHED(); });
 }
 
 constexpr char kBodyReadFromNetBeforePausedHistogram[] =
@@ -169,6 +184,54 @@ class MultipleWritesInterceptor : public net::URLRequestInterceptor {
   DISALLOW_COPY_AND_ASSIGN(MultipleWritesInterceptor);
 };
 
+// Every read completes synchronously, returning a single byte.
+class URLRequestEternalSyncReadsJob : public net::URLRequestJob {
+ public:
+  URLRequestEternalSyncReadsJob(net::URLRequest* request,
+                                net::NetworkDelegate* network_delegate)
+      : URLRequestJob(request, network_delegate), weak_factory_(this) {}
+
+  // net::URLRequestJob implementation:
+  void Start() override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&URLRequestEternalSyncReadsJob::StartAsync,
+                                  weak_factory_.GetWeakPtr()));
+  }
+
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
+    DCHECK_GT(buf_size, 0);
+    buf->data()[0] = 'a';
+    return 1;
+  }
+
+ private:
+  ~URLRequestEternalSyncReadsJob() override {}
+
+  void StartAsync() { NotifyHeadersComplete(); }
+
+  base::WeakPtrFactory<URLRequestEternalSyncReadsJob> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestEternalSyncReadsJob);
+};
+
+class EternalSyncReadsInterceptor : public net::URLRequestInterceptor {
+ public:
+  EternalSyncReadsInterceptor() {}
+  ~EternalSyncReadsInterceptor() override {}
+
+  static GURL GetURL() { return GURL("http://eternal"); }
+
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return new URLRequestEternalSyncReadsJob(request, network_delegate);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EternalSyncReadsInterceptor);
+};
+
 class RequestInterceptor : public net::URLRequestInterceptor {
  public:
   using InterceptCallback = base::Callback<void(net::URLRequest*)>;
@@ -254,7 +317,6 @@ class URLLoaderTest : public testing::Test {
   // block on trying to write the body buffer.
   int Load(const GURL& url, std::string* body = nullptr) WARN_UNUSED_RESULT {
     DCHECK(!ran_);
-    mojom::URLLoaderPtr loader;
 
     ResourceRequest request =
         CreateResourceRequest(!request_body_ ? "GET" : "POST", url);
@@ -269,12 +331,16 @@ class URLLoaderTest : public testing::Test {
     if (request_body_)
       request.request_body = request_body_;
 
-    URLLoader loader_impl(context(), nullptr, DoNothingOnDeleteCallback(),
-                          mojo::MakeRequest(&loader), options, request, false,
-                          client_.CreateInterfacePtr(),
-                          TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */,
-                          0 /* request_id */, resource_scheduler_client(),
-                          nullptr);
+    base::RunLoop delete_run_loop;
+    mojom::URLLoaderPtr loader;
+    std::unique_ptr<URLLoader> url_loader;
+    url_loader = std::make_unique<URLLoader>(
+        context(), nullptr /* network_service_client */,
+        DeleteLoaderCallback(&delete_run_loop, &url_loader),
+        mojo::MakeRequest(&loader), options, request, false,
+        client_.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
+        nullptr);
 
     ran_ = true;
 
@@ -294,6 +360,8 @@ class URLLoaderTest : public testing::Test {
                 static_cast<size_t>(
                     client()->completion_status().decoded_body_length));
     }
+
+    delete_run_loop.Run();
 
     return client_.completion_status().error_code;
   }
@@ -340,6 +408,15 @@ class URLLoaderTest : public testing::Test {
         std::unique_ptr<net::URLRequestInterceptor>(
             new MultipleWritesInterceptor(std::move(packets), net_error,
                                           async_reads)));
+  }
+
+  // Adds an EternalSyncReadsInterceptor for
+  // EternalSyncReadsInterceptor::GetURL(), which creates URLRequestJobs where
+  // all reads return a sync byte that's read synchronously.
+  void AddEternalSyncReadsInterceptor() {
+    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+        EternalSyncReadsInterceptor::GetURL(),
+        std::make_unique<EternalSyncReadsInterceptor>());
   }
 
   // If |second| is empty, then it's ignored.
@@ -765,8 +842,10 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
-  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
-      context(), nullptr, WaitForDeleteCallback(&delete_run_loop),
+  std::unique_ptr<URLLoader> url_loader;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
       0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
@@ -792,7 +871,6 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
   // Spin the message loop until the delete callback is invoked, and then delete
   // the URLLoader.
   delete_run_loop.Run();
-  url_loader.reset();
 
   // The client is disconnected only when the other side observes that both the
   // URLLoaderPtr and the response body pipe are disconnected.
@@ -817,13 +895,16 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeResponseHeaders) {
 
   ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
+  base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
-  URLLoader url_loader(context(), nullptr, DoNothingOnDeleteCallback(),
-                       mojo::MakeRequest(&loader), 0, request, false,
-                       client()->CreateInterfacePtr(),
-                       TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */,
-                       0 /* request_id */, resource_scheduler_client(),
-                       nullptr);
+  std::unique_ptr<URLLoader> url_loader;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
+      nullptr);
 
   // Pausing reading response body from network stops future reads from the
   // underlying URLRequest. So no data should be sent using the response body
@@ -863,7 +944,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeResponseHeaders) {
   available_data = ReadBody();
   EXPECT_EQ(kBodyContents, available_data);
 
-  loader.reset();
+  delete_run_loop.Run();
   client()->Unbind();
   histogram_run_loop.Run();
   EXPECT_EQ(0, output_sample);
@@ -887,13 +968,16 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
 
   ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
+  base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
-  URLLoader url_loader(context(), nullptr, DoNothingOnDeleteCallback(),
-                       mojo::MakeRequest(&loader), 0, request, false,
-                       client()->CreateInterfacePtr(),
-                       TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */,
-                       0 /* request_id */, resource_scheduler_client(),
-                       nullptr);
+  std::unique_ptr<URLLoader> url_loader;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
+      nullptr);
 
   response_controller.WaitForRequest();
   response_controller.Send(
@@ -923,7 +1007,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
                 std::string(kBodyContentsSecondHalf),
             ReadBody());
 
-  loader.reset();
+  delete_run_loop.Run();
   client()->Unbind();
   histogram_run_loop.Run();
   EXPECT_LE(0, output_sample);
@@ -946,13 +1030,16 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
 
   ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
+  base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
-  URLLoader url_loader(context(), nullptr, DoNothingOnDeleteCallback(),
-                       mojo::MakeRequest(&loader), 0, request, false,
-                       client()->CreateInterfacePtr(),
-                       TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */,
-                       0 /* request_id */, resource_scheduler_client(),
-                       nullptr);
+  std::unique_ptr<URLLoader> url_loader;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
+      nullptr);
 
   loader->PauseReadingBodyFromNet();
   loader.FlushForTesting();
@@ -977,6 +1064,7 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
 
   loader.reset();
   client()->Unbind();
+  delete_run_loop.Run();
   histogram_run_loop.Run();
   EXPECT_EQ(0, output_sample);
   StopMonitorBodyReadFromNetBeforePausedHistogram();
@@ -999,13 +1087,16 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
 
   ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
+  base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
-  URLLoader url_loader(context(), nullptr, DoNothingOnDeleteCallback(),
-                       mojo::MakeRequest(&loader), 0, request, false,
-                       client()->CreateInterfacePtr(),
-                       TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */,
-                       0 /* request_id */, resource_scheduler_client(),
-                       nullptr);
+  std::unique_ptr<URLLoader> url_loader;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
+      nullptr);
 
   // It is okay to call ResumeReadingBodyFromNet() even if there is no prior
   // PauseReadingBodyFromNet().
@@ -1035,6 +1126,7 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   // multiple PauseReadingBodyFromNet() calls before it.
   loader->ResumeReadingBodyFromNet();
 
+  delete_run_loop.Run();
   client()->RunUntilComplete();
 
   EXPECT_EQ(std::string(kBodyContentsFirstHalf) +
@@ -1255,12 +1347,15 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
   request.request_body->SetToChunkedDataPipe(
       data_pipe_getter.GetDataPipeGetterPtr());
 
+  base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
-  URLLoader url_loader(
+  std::unique_ptr<URLLoader> url_loader;
+  url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
-      DoNothingOnDeleteCallback(), mojo::MakeRequest(&loader), 0, request,
-      false /* report_raw_headers */, client()->CreateInterfacePtr(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */, 0 /* request_id */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false /* report_raw_headers */,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      0 /* process_id */, 0 /* request_id */,
       nullptr /* resource_scheduler_client */,
       nullptr /* keepalive_statistics_reporter */);
 
@@ -1269,6 +1364,7 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
   mojo::BlockingCopyFromString(kRequestBody,
                                data_pipe_getter.WaitForStartReading());
   std::move(get_size_callback).Run(net::OK, kRequestBody.size());
+  delete_run_loop.Run();
   client()->RunUntilComplete();
 
   EXPECT_EQ(kRequestBody, ReadBody());
@@ -1396,7 +1492,8 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
     mojom::URLLoaderPtr loaderInterfacePtr;
 
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
-        context(), nullptr, DoNothingOnDeleteCallback(),
+        context(), nullptr /* network_service_client */,
+        NeverInvokedDeleteLoaderCallback(),
         mojo::MakeRequest(&loaderInterfacePtr), 0, request, false,
         client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
         0 /* request_id */, resource_scheduler_client(), nullptr);
@@ -1415,7 +1512,8 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
 
   mojom::URLLoaderPtr loader_interface_ptr;
   std::unique_ptr<URLLoader> loader = std::make_unique<URLLoader>(
-      context(), nullptr, DoNothingOnDeleteCallback(),
+      context(), nullptr /* network_service_client */,
+      NeverInvokedDeleteLoaderCallback(),
       mojo::MakeRequest(&loader_interface_ptr), 0, request, false,
       client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
       0 /* request_id */, resource_scheduler_client(), nullptr);
@@ -1431,6 +1529,30 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
   // Make sure that the ResourceScheduler stops throtting.
   EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET,
             loader->GetLoadStateForTesting());
+}
+
+// This tests that case where a read pipe is closed while there's a post task to
+// invoke ReadMore.
+TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
+  AddEternalSyncReadsInterceptor();
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", EternalSyncReadsInterceptor::GetURL());
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
+      nullptr);
+
+  client()->RunUntilResponseBodyArrived();
+  client()->response_body_release();
+  delete_run_loop.Run();
 }
 
 }  // namespace network

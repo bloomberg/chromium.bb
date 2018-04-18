@@ -283,7 +283,6 @@ URLLoader::URLLoader(
       process_id_(process_id),
       render_frame_id_(request.render_frame_id),
       request_id_(request_id),
-      connected_(true),
       keepalive_(request.keepalive),
       binding_(this, std::move(url_loader_request)),
       url_loader_client_(std::move(url_loader_client)),
@@ -591,7 +590,7 @@ void URLLoader::ReadMore() {
     if (result != MOJO_RESULT_OK && result != MOJO_RESULT_SHOULD_WAIT) {
       // The response body stream is in a bad state. Bail.
       // TODO: How should this be communicated to our client?
-      CloseResponseBodyStreamProducer();
+      DeleteSelf();
       return;
     }
 
@@ -666,9 +665,7 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
   if (!url_request_->status().is_success() || num_bytes == 0) {
     CompletePendingWrite();
     NotifyCompleted(url_request_->status().ToNetError());
-
-    CloseResponseBodyStreamProducer();
-    // |this| may have been deleted.
+    // |this| will have been deleted.
     return;
   }
 
@@ -729,49 +726,28 @@ void URLLoader::NotifyCompleted(int error_code) {
   }
 
   url_loader_client_->OnComplete(status);
-  DeleteIfNeeded();
+  DeleteSelf();
 }
 
 void URLLoader::OnConnectionError() {
-  connected_ = false;
-  DeleteIfNeeded();
+  DeleteSelf();
 }
 
 void URLLoader::OnResponseBodyStreamConsumerClosed(MojoResult result) {
-  CloseResponseBodyStreamProducer();
+  NotifyCompleted(net::ERR_FAILED);
 }
 
 void URLLoader::OnResponseBodyStreamReady(MojoResult result) {
   if (result != MOJO_RESULT_OK) {
-    CloseResponseBodyStreamProducer();
+    DeleteSelf();
     return;
   }
 
   ReadMore();
 }
 
-void URLLoader::CloseResponseBodyStreamProducer() {
-  RecordBodyReadFromNetBeforePausedIfNeeded();
-
-  resource_scheduler_request_handle_.reset();
-  url_request_.reset();
-  peer_closed_handle_watcher_.Cancel();
-  writable_handle_watcher_.Cancel();
-  response_body_stream_.reset();
-
-  pending_write_buffer_offset_ = 0;
-  pending_write_ = nullptr;
-
-  // Make sure if a ResumeReadingBodyFromNet() call is received later, we don't
-  // try to do ReadMore().
-  paused_reading_body_ = false;
-
-  DeleteIfNeeded();
-}
-
-void URLLoader::DeleteIfNeeded() {
-  if (!connected_ && !HasDataPipe())
-    std::move(delete_callback_).Run(this);
+void URLLoader::DeleteSelf() {
+  std::move(delete_callback_).Run(this);
 }
 
 void URLLoader::SendResponseToClient() {
