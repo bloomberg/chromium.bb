@@ -942,10 +942,12 @@ void BlinkTestController::OnTestFinished() {
 
 void BlinkTestController::OnCleanupFinished() {
   if (main_window_) {
+    main_window_->web_contents()->Stop();
     RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
     rvh->Send(new ShellViewMsg_Reset(rvh->GetRoutingID()));
   }
   if (secondary_window_) {
+    secondary_window_->web_contents()->Stop();
     RenderViewHost* rvh =
         secondary_window_->web_contents()->GetRenderViewHost();
     rvh->Send(new ShellViewMsg_Reset(rvh->GetRoutingID()));
