@@ -63,6 +63,7 @@ public class ChildProcessLauncherHelper {
 
     // Allocator used for sandboxed services.
     private static ChildConnectionAllocator sSandboxedChildConnectionAllocator;
+    private static ChildProcessRanking sSandboxedChildConnectionRanking;
 
     // Map from PID to ChildProcessLauncherHelper.
     private static final Map<Integer, ChildProcessLauncherHelper> sLauncherByPid = new HashMap<>();
@@ -80,8 +81,10 @@ public class ChildProcessLauncherHelper {
     // Whether the main application is currently brought to the foreground.
     private static boolean sApplicationInForeground = true;
 
+    // TODO(boliu): Generalize these so they work for all connections, not just sandboxed.
     // Whether the connection is managed by the BindingManager.
     private final boolean mUseBindingManager;
+    private final ChildProcessRanking mRanking;
 
     // Whether the created process should be sandboxed.
     private final boolean mSandboxed;
@@ -127,6 +130,10 @@ public class ChildProcessLauncherHelper {
                     assert pid > 0;
 
                     sLauncherByPid.put(pid, ChildProcessLauncherHelper.this);
+                    if (mRanking != null) {
+                        mRanking.addConnection(connection, false /* foreground */,
+                                1 /* frameDepth */, ChildProcessImportance.MODERATE);
+                    }
 
                     // If the connection fails and pid == 0, the Java-side cleanup was already
                     // handled by DeathCallback. We still have to call back to native for cleanup
@@ -145,6 +152,9 @@ public class ChildProcessLauncherHelper {
                     BindingManager manager = getBindingManager();
                     if (mUseBindingManager && manager != null) {
                         manager.dropRecency(connection);
+                    }
+                    if (mRanking != null) {
+                        mRanking.removeConnection(connection);
                     }
                 }
             };
@@ -353,6 +363,8 @@ public class ChildProcessLauncherHelper {
                         sSandboxedServiceFactoryForTesting);
             }
             sSandboxedChildConnectionAllocator = connectionAllocator;
+            sSandboxedChildConnectionRanking = new ChildProcessRanking(
+                    sSandboxedChildConnectionAllocator.getNumberOfServices());
 
             final ChildConnectionAllocator finalConnectionAllocator = connectionAllocator;
             connectionAllocator.addListener(new ChildConnectionAllocator.Listener() {
@@ -391,6 +403,12 @@ public class ChildProcessLauncherHelper {
                 binderCallback == null ? null : Arrays.asList(binderCallback));
         mProcessType =
                 ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
+
+        if (sandboxed) {
+            mRanking = sSandboxedChildConnectionRanking;
+        } else {
+            mRanking = null;
+        }
     }
 
     /**
@@ -427,6 +445,10 @@ public class ChildProcessLauncherHelper {
             boolean boostForPendingViews, @ChildProcessImportance int importance) {
         assert LauncherThread.runningOnLauncherThread();
         assert mLauncher.getPid() == pid;
+        if (getByPid(pid) == null) {
+            // Child already disconnected. Ignore any trailing calls.
+            return;
+        }
 
         ChildProcessConnection connection = mLauncher.getConnection();
         if (ChildProcessCreationParams.getIgnoreVisibilityForImportance()) {
@@ -466,6 +488,11 @@ public class ChildProcessLauncherHelper {
         if (mBoostPriorityForPendingViews && !boostForPendingViews) {
             connection.removeInitialBinding();
         }
+
+        if (mRanking != null) {
+            mRanking.updateConnection(connection, foreground, frameDepth, importance);
+        }
+
         if (mImportance != importance) {
             switch (mImportance) {
                 case ChildProcessImportance.NORMAL:
