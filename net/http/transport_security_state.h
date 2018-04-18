@@ -485,7 +485,18 @@ class NET_EXPORT TransportSecurityState {
   // the Delegate (if any).
   bool DeleteDynamicDataForHost(const std::string& host);
 
-  // Returns true and updates |*sts_result| and/or |*pkp_result| if there is a
+  // Returns true and updates |*result| if |host| has dynamic or static
+  // HSTS/HPKP (respectively) state. If multiple entries match |host|, dynamic
+  // state is preferred over static state and other than that the most specific
+  // match determines the return value (both is in deviation of RFC6797, cf.
+  // https://crbug.com/821811).
+  //
+  // Note that these methods are not const because they opportunistically remove
+  // entries that have expired.
+  bool GetSTSState(const std::string& host, STSState* result);
+  bool GetPKPState(const std::string& host, PKPState* result);
+
+  // Returns true and updates |*sts_result| and/or |*pkp_result| if there is
   // static (built-in) state for |host|. If multiple entries match |host|,
   // the most specific match determines the return value.
   bool GetStaticDomainState(const std::string& host,

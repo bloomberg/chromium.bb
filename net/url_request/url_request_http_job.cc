@@ -66,6 +66,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
+#include "net/url_request/url_request_http_job_histogram.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -229,6 +230,52 @@ void LogChannelIDAndCookieStores(const GURL& url,
                             EPHEMERALITY_MAX);
 }
 
+net::CookieNetworkSecurity HistogramEntryForCookie(
+    const net::CanonicalCookie& cookie,
+    const net::URLRequest& request,
+    const net::HttpRequestInfo& request_info) {
+  if (!request_info.url.SchemeIsCryptographic()) {
+    return net::CookieNetworkSecurity::k1pNonsecureConnection;
+  }
+
+  if (cookie.IsSecure()) {
+    return net::CookieNetworkSecurity::k1pSecureAttribute;
+  }
+
+  net::TransportSecurityState* transport_security_state =
+      request.context()->transport_security_state();
+  net::TransportSecurityState::STSState sts_state;
+  const std::string cookie_domain =
+      cookie.IsHostCookie() ? request.url().host() : cookie.Domain().substr(1);
+  const bool hsts =
+      transport_security_state->GetSTSState(cookie_domain, &sts_state) &&
+      sts_state.ShouldUpgradeToSSL();
+  if (!hsts) {
+    return net::CookieNetworkSecurity::k1pSecureConnection;
+  }
+
+  if (cookie.IsHostCookie()) {
+    if (cookie.IsPersistent() && sts_state.expiry >= cookie.ExpiryDate()) {
+      return net::CookieNetworkSecurity::k1pHSTSHostCookie;
+    } else {
+      // Session cookies are assumed to live forever.
+      return net::CookieNetworkSecurity::k1pExpiringHSTSHostCookie;
+    }
+  }
+
+  // Domain cookies require HSTS to include subdomains to prevent spoofing.
+  if (sts_state.include_subdomains) {
+    if (cookie.IsPersistent() && sts_state.expiry >= cookie.ExpiryDate()) {
+      return net::CookieNetworkSecurity::k1pHSTSSubdomainsIncluded;
+    } else {
+      // Session cookies are assumed to live forever.
+      return net::CookieNetworkSecurity::k1pExpiringHSTSSubdomainsIncluded;
+    }
+  }
+
+  return net::CookieNetworkSecurity::k1pHSTSSpoofable;
+}
+
 void LogCookieUMA(const net::CookieList& cookie_list,
                   const net::URLRequest& request,
                   const net::HttpRequestInfo& request_info) {
@@ -246,8 +293,16 @@ void LogCookieUMA(const net::CookieList& cookie_list,
         (same_site ? "SameSite" : "CrossSite") + "Request";
     const int age_in_days = (now - cookie.CreationDate()).InDays();
     base::UmaHistogramCounts1000(histogram_name, age_in_days);
-
     oldest = std::min(cookie.CreationDate(), oldest);
+
+    net::CookieNetworkSecurity entry =
+        HistogramEntryForCookie(cookie, request, request_info);
+    if (!same_site) {
+      entry =
+          static_cast<net::CookieNetworkSecurity>(static_cast<int>(entry) | 1);
+    }
+    UMA_HISTOGRAM_ENUMERATION("Cookie.NetworkSecurity", entry,
+                              net::CookieNetworkSecurity::kCount);
   }
 
   const std::string histogram_name =
