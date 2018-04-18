@@ -555,7 +555,7 @@
     },
     {
       name: "IdleTimeColdModeSpellChecking",
-      status: "stable",
+      status: "test",
     },
     {
       name: "ImageDecodingAttribute",
