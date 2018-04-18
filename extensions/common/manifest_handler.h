@@ -127,7 +127,6 @@ class ManifestHandlerRegistry {
  private:
   friend class ManifestHandler;
   friend class ScopedTestingManifestHandlerRegistry;
-  friend class ContentVerifierTest;
   friend struct base::LazyInstanceTraitsBase<ManifestHandlerRegistry>;
 
   ManifestHandlerRegistry();

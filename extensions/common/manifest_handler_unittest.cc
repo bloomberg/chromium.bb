@@ -16,6 +16,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/install_warning.h"
+#include "extensions/common/scoped_testing_manifest_handler_registry.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,20 +29,6 @@ std::vector<std::string> SingleKey(const std::string& key) {
 }
 
 }  // namespace
-
-class ScopedTestingManifestHandlerRegistry {
- public:
-  ScopedTestingManifestHandlerRegistry() {
-    old_registry_ = ManifestHandlerRegistry::SetForTesting(&registry_);
-  }
-
-  ~ScopedTestingManifestHandlerRegistry() {
-    ManifestHandlerRegistry::SetForTesting(old_registry_);
-  }
-
-  ManifestHandlerRegistry registry_;
-  ManifestHandlerRegistry* old_registry_;
-};
 
 class ManifestHandlerTest : public testing::Test {
  public:
