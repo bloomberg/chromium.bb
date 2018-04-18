@@ -17,6 +17,7 @@ include_rules = [
   "+components/crash/content/browser",
   "+components/crash/core",
   "+components/download/public/common",
+  "+components/heap_profiling",
   "+components/navigation_interception",
   "+components/policy/core/browser",
   "+components/policy/core/common",
