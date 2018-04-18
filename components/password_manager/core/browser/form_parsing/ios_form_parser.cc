@@ -67,13 +67,22 @@ bool HasAutocompleteAttributeValue(const FormFieldData& field,
                       }) != tokens.end();
 }
 
-// Returns fields that do not have credit card related autocomplete attributes.
-FieldPointersVector GetNonCreditCardFields(
-    const std::vector<FormFieldData>& fields) {
+// Returns text fields from |fields|.
+FieldPointersVector GetTextFields(const std::vector<FormFieldData>& fields) {
   FieldPointersVector result;
   for (const auto& field : fields) {
-    if (!HasCreditCardAutocompleteAttributes(field))
+    if (field.IsTextField())
       result.push_back(&field);
+  }
+  return result;
+}
+
+// Returns fields that do not have credit card related autocomplete attributes.
+FieldPointersVector GetNonCreditCardFields(const FieldPointersVector& fields) {
+  FieldPointersVector result;
+  for (const auto* field : fields) {
+    if (!HasCreditCardAutocompleteAttributes(*field))
+      result.push_back(field);
   }
   return result;
 }
@@ -309,7 +318,8 @@ void SetFields(const ParseResult& parse_result, PasswordForm* password_form) {
 
 std::unique_ptr<PasswordForm> ParseFormData(const FormData& form_data,
                                             FormParsingMode mode) {
-  FieldPointersVector fields = GetNonCreditCardFields(form_data.fields);
+  FieldPointersVector fields = GetTextFields(form_data.fields);
+  fields = GetNonCreditCardFields(fields);
 
   // Skip forms without password fields.
   if (!HasPasswordField(fields))
