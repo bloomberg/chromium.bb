@@ -82,6 +82,12 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         if (mNativeGestureListenerManager != 0) nativeReset(mNativeGestureListenerManager);
     }
 
+    public void resetGestureDetection() {
+        if (mNativeGestureListenerManager != 0) {
+            nativeResetGestureDetection(mNativeGestureListenerManager);
+        }
+    }
+
     public void setScrollDelegate(InternalAccessDelegate scrollDelegate) {
         mScrollDelegate = scrollDelegate;
     }
@@ -348,4 +354,5 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     private native long nativeInit(WebContentsImpl webContents);
     private native void nativeReset(long nativeGestureListenerManager);
+    private native void nativeResetGestureDetection(long nativeGestureListenerManager);
 }

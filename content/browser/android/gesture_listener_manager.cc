@@ -119,6 +119,13 @@ void GestureListenerManager::Reset(JNIEnv* env,
   java_ref_.reset();
 }
 
+void GestureListenerManager::ResetGestureDetection(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  if (rwhva_)
+    rwhva_->ResetGestureDetection();
+}
+
 void GestureListenerManager::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
@@ -244,6 +251,7 @@ void GestureListenerManager::UpdateRenderProcessConnection(
   if (new_rwhva) {
     new_rwhva->set_gesture_listener_manager(this);
   }
+  rwhva_ = new_rwhva;
 }
 
 void GestureListenerManager::OnNavigationFinished(

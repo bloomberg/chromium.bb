@@ -327,11 +327,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         getSelectionPopupController().hidePopupsAndPreserveSelection();
     }
 
-    private void resetGestureDetection() {
-        if (mNativeContentViewCore == 0) return;
-        nativeResetGestureDetection(mNativeContentViewCore);
-    }
-
     @SuppressWarnings("javadoc")
     @Override
     public void onAttachedToWindow() {
@@ -382,7 +377,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
-        if (!hasWindowFocus) resetGestureDetection();
+        if (!hasWindowFocus) getGestureListenerManager().resetGestureDetection();
         for (WindowEventObserver observer : mWindowEventObservers) {
             observer.onWindowFocusChanged(hasWindowFocus);
         }
@@ -627,7 +622,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             long nativeContentViewCore);
     private native void nativeSendOrientationChangeEvent(
             long nativeContentViewCore, int orientation);
-    private native void nativeResetGestureDetection(long nativeContentViewCore);
     private native void nativeSetDoubleTapSupportEnabled(
             long nativeContentViewCore, boolean enabled);
     private native void nativeSetMultiTouchZoomSupportEnabled(

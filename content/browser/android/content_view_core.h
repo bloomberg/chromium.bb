@@ -53,8 +53,6 @@ class ContentViewCore : public WebContentsObserver {
       const base::android::JavaParamRef<jobject>& obj,
       jint orientation);
 
-  void ResetGestureDetection(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj);
   void SetDoubleTapSupportEnabled(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

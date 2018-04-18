@@ -199,13 +199,6 @@ void ContentViewCore::SendOrientationChangeEvent(
   }
 }
 
-void ContentViewCore::ResetGestureDetection(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->ResetGestureDetection();
-}
-
 void ContentViewCore::SetDoubleTapSupportEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
