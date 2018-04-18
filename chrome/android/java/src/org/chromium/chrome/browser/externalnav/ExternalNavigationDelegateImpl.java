@@ -19,7 +19,6 @@ import android.os.Build;
 import android.os.StrictMode;
 import android.provider.Browser;
 import android.provider.Telephony;
-import android.support.customtabs.CustomTabsIntent;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.WindowManager.BadTokenException;
@@ -521,17 +520,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             loadUrlParams.setReferrer(referrer);
         }
         tab.loadUrl(loadUrlParams);
-    }
-
-    @Override
-    public void launchCctForWebappUrl(String url, boolean launchInNewTask) {
-        Context context = getAvailableContext();
-        if (!(context instanceof WebappActivity)) return;
-
-        CustomTabsIntent customTabIntent =
-                ((WebappActivity) context).buildCustomTabIntentForURL(url);
-        if (launchInNewTask) customTabIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        customTabIntent.launchUrl(context, Uri.parse(url));
     }
 
     @Override

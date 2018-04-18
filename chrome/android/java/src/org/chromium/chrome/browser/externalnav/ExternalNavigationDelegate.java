@@ -103,13 +103,6 @@ interface ExternalNavigationDelegate {
     void startFileIntent(Intent intent, String referrerUrl, boolean needsToCloseTab);
 
     /**
-     * Launches a Chrome Custom Tab to be shown on top of a WebappActivity.
-     * @param url
-     * @param launchInNewTask Whether the CCT should be launched in a new task.
-     */
-    void launchCctForWebappUrl(String url, boolean launchInNewTask);
-
-    /**
      * Clobber the current tab and try not to pass an intent when it should be handled by Chrome
      * so that we can deliver HTTP referrer information safely.
      *

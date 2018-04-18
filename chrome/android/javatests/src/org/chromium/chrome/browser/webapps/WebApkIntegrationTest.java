@@ -23,9 +23,6 @@ import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -134,7 +131,7 @@ public class WebApkIntegrationTest {
         startWebApkActivity("org.chromium.webapk", "https://pwa.rocks/");
         waitUntilSplashscreenHides();
 
-        // We navigate outside origin and expect Custom Tab to open on top of WebApkActivity.
+        // We navigate outside origin and expect CCT toolbar to show on top of WebApkActivity.
         mActivityTestRule.runJavaScriptCodeInCurrentTab(
                 "window.top.location = 'https://www.google.com/'");
 
@@ -142,22 +139,16 @@ public class WebApkIntegrationTest {
             @Override
             public boolean isSatisfied() {
                 Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-                if (!(activity instanceof CustomTabActivity)) {
-                    return false;
-                }
-                CustomTabActivity customTab = (CustomTabActivity) activity;
-                return customTab.getActivityTab() != null
+                WebappActivity webAppActivity = (WebappActivity) activity;
+                return webAppActivity.getActivityTab() != null
                         // Dropping the TLD as Google can redirect to a local site.
-                        && customTab.getActivityTab().getUrl().startsWith("https://www.google.");
+                        && webAppActivity.getActivityTab().getUrl().startsWith(
+                                   "https://www.google.");
             }
         });
 
-        CustomTabActivity customTab =
-                (CustomTabActivity) ApplicationStatus.getLastTrackedFocusedActivity();
-        Assert.assertTrue(
-                "Sending to external handlers needs to be enabled for redirect back (e.g. OAuth).",
-                IntentUtils.safeGetBooleanExtra(customTab.getIntent(),
-                        CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, false));
+        WebappActivityTestRule.assertToolbarShowState(
+                (WebappActivity) ApplicationStatus.getLastTrackedFocusedActivity(), true);
     }
 
     /**
