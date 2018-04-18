@@ -76,7 +76,7 @@ class BiodClientImpl : public BiodClient {
   }
 
   void GetRecordsForUser(const std::string& user_id,
-                         const UserRecordsCallback& callback) override {
+                         UserRecordsCallback callback) override {
     dbus::MethodCall method_call(
         biod::kBiometricsManagerInterface,
         biod::kBiometricsManagerGetRecordsForUserMethod);
@@ -86,7 +86,7 @@ class BiodClientImpl : public BiodClient {
     biod_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BiodClientImpl::OnGetRecordsForUser,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void DestroyAllRecords(VoidDBusMethodCallback callback) override {
@@ -191,7 +191,7 @@ class BiodClientImpl : public BiodClient {
   }
 
   void RequestRecordLabel(const dbus::ObjectPath& record_path,
-                          const LabelCallback& callback) override {
+                          LabelCallback callback) override {
     dbus::MethodCall method_call(dbus::kDBusPropertiesInterface,
                                  dbus::kDBusPropertiesGet);
     dbus::MessageWriter writer(&method_call);
@@ -203,7 +203,7 @@ class BiodClientImpl : public BiodClient {
     record_proxy->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BiodClientImpl::OnRequestRecordLabel,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  protected:
@@ -260,7 +260,7 @@ class BiodClientImpl : public BiodClient {
     callback.Run(result);
   }
 
-  void OnGetRecordsForUser(const UserRecordsCallback& callback,
+  void OnGetRecordsForUser(UserRecordsCallback callback,
                            dbus::Response* response) {
     std::vector<dbus::ObjectPath> result;
     if (response) {
@@ -271,7 +271,7 @@ class BiodClientImpl : public BiodClient {
       }
     }
 
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   void OnStartAuthSession(const ObjectPathCallback& callback,
@@ -305,8 +305,7 @@ class BiodClientImpl : public BiodClient {
     callback.Run(result);
   }
 
-  void OnRequestRecordLabel(const LabelCallback& callback,
-                            dbus::Response* response) {
+  void OnRequestRecordLabel(LabelCallback callback, dbus::Response* response) {
     std::string result;
     if (response) {
       dbus::MessageReader reader(response);
@@ -314,7 +313,7 @@ class BiodClientImpl : public BiodClient {
         LOG(ERROR) << biod::kRecordLabelProperty << " had incorrect response.";
     }
 
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   // Called when the biometrics signal is initially connected.

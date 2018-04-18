@@ -31,7 +31,7 @@ namespace settings {
 namespace {
 
 // The max number of fingerprints that can be stored.
-const int kMaxAllowedFingerprints = 5;
+constexpr int kMaxAllowedFingerprints = 3;
 
 std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
     const std::vector<std::string>& fingerprints_list) {

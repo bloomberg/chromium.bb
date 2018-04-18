@@ -87,6 +87,37 @@ class FingerprintChromeOSTest : public testing::Test {
 
   void onStartSession(const dbus::ObjectPath& path) {}
 
+  void SimulateRequestRunning(bool is_running) {
+    fingerprint_->is_request_running_ = is_running;
+    if (!is_running)
+      fingerprint_->StartNextRequest();
+  }
+
+  bool RequestDataIsReset() {
+    return fingerprint_->records_path_to_label_.empty() &&
+           !fingerprint_->on_get_records_;
+  }
+
+  void GenerateGetRecordsForUserRequest(int num_of_request) {
+    for (int i = 0; i < num_of_request; i++) {
+      fingerprint_->GetRecordsForUser(
+          "" /*user_id*/, base::BindOnce(&FingerprintChromeOSTest::OnGetRecords,
+                                         base::Unretained(this)));
+    }
+  }
+
+  void OnGetRecords(const std::unordered_map<std::string, std::string>&
+                        fingerprints_list_mapping) {
+    ++get_records_results_;
+  }
+
+  int GetPendingRequests() {
+    return fingerprint_->get_records_pending_requests_.size();
+  }
+
+  bool IsRequestRunning() { return fingerprint_->is_request_running_; }
+  int get_records_results() { return get_records_results_; }
+
  protected:
   // Ownership is passed on to chromeos::DBusThreadManager.
   chromeos::FakeBiodClient* fake_biod_client_;
@@ -94,6 +125,7 @@ class FingerprintChromeOSTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   std::unique_ptr<FingerprintChromeOS> fingerprint_;
+  int get_records_results_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintChromeOSTest);
 };
@@ -128,6 +160,30 @@ TEST_F(FingerprintChromeOSTest, FingerprintObserverTest) {
   GenerateSessionFailedSignal();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.session_failures(), 1);
+}
+
+TEST_F(FingerprintChromeOSTest, SimultaneousGetRecordsRequests) {
+  EXPECT_EQ(GetPendingRequests(), 0);
+  EXPECT_FALSE(IsRequestRunning());
+
+  // Single request.
+  GenerateGetRecordsForUserRequest(1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(get_records_results(), 1);
+  EXPECT_FALSE(IsRequestRunning());
+  EXPECT_EQ(GetPendingRequests(), 0);
+  EXPECT_TRUE(RequestDataIsReset());
+
+  // Multiple requests at the same time.
+  SimulateRequestRunning(true);
+  GenerateGetRecordsForUserRequest(5);
+  EXPECT_EQ(GetPendingRequests(), 5);
+  SimulateRequestRunning(false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(get_records_results(), 6);
+  EXPECT_FALSE(IsRequestRunning());
+  EXPECT_EQ(GetPendingRequests(), 0);
+  EXPECT_TRUE(RequestDataIsReset());
 }
 
 }  // namespace device
