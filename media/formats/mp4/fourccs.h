@@ -8,7 +8,7 @@
 #include <string>
 
 #include "media/media_buildflags.h"
-#include "third_party/libaom/av1_features.h"
+#include "third_party/libaom/av1_buildflags.h"
 
 namespace media {
 namespace mp4 {

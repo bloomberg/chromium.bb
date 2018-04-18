@@ -10,8 +10,8 @@ import("//third_party/libaom/options.gni")
 import("//third_party/libaom/libaom_srcs.gni")
 import("//third_party/yasm/yasm_assemble.gni")
 
-buildflag_header("av1_features") {
-  header = "av1_features.h"
+buildflag_header("av1_buildflags") {
+  header = "av1_buildflags.h"
 
   flags = [ "ENABLE_AV1_DECODER=$enable_av1_decoder" ]
 }

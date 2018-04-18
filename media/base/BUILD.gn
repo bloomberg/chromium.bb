@@ -288,7 +288,7 @@ source_set("base") {
     "//base/allocator:buildflags",
     "//gpu/command_buffer/common",
     "//skia",
-    "//third_party/libaom:av1_features",
+    "//third_party/libaom:av1_buildflags",
     "//third_party/libyuv",
     "//third_party/widevine/cdm:headers",
     "//ui/display:display",

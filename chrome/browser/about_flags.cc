@@ -115,7 +115,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "third_party/libaom/av1_features.h"
+#include "third_party/libaom/av1_buildflags.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
