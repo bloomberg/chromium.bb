@@ -611,10 +611,11 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
         if (mResponseInfo != null) {
             mResponseInfo.setReceivedByteCount(receivedByteCount);
         }
-        if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED) {
+        if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED
+                || errorCode == NetworkException.ERROR_NETWORK_CHANGED) {
             failWithException(
                     new QuicExceptionImpl("Exception in BidirectionalStream: " + errorString,
-                            nativeError, nativeQuicError));
+                            errorCode, nativeError, nativeQuicError));
         } else {
             failWithException(new BidirectionalStreamNetworkException(
                     "Exception in BidirectionalStream: " + errorString, errorCode, nativeError));
