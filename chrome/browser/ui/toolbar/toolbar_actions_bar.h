@@ -85,8 +85,11 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   // Registers profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Returns the size of the area where the action icon resides.
+  static gfx::Size GetIconAreaSize();
+
   // Returns the size of ToolbarActionView.
-  virtual gfx::Size GetViewSize() const;
+  gfx::Size GetViewSize() const;
 
   // Returns the default/full size for the toolbar; this does *not* reflect any
   // animations that may be running.
@@ -251,6 +254,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
       int time_in_seconds);
 
  private:
+  // Returns the insets by which the icon area bounds (See GetIconAreaRect())
+  // are insetted. This defines the amount of paddings around the icon area.
+  virtual gfx::Insets GetIconAreaInsets() const;
+
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ToolbarItem& item,
                             int index) override;

@@ -134,15 +134,20 @@ void ToolbarActionsBar::RegisterProfilePrefs(
                               0);
 }
 
-gfx::Size ToolbarActionsBar::GetViewSize() const {
+// static
+gfx::Size ToolbarActionsBar::GetIconAreaSize() {
 #if defined(OS_MACOSX)
   // On the Mac, the spec is a 24x24 button in a 28x28 space.
-  constexpr gfx::Size kSize(24, 24);
+  constexpr gfx::Size kIconAreaSize(24, 24);
 #else
-  constexpr gfx::Size kSize(28, 28);
+  constexpr gfx::Size kIconAreaSize(28, 28);
 #endif
-  gfx::Rect rect(kSize);
-  rect.Inset(-GetLayoutInsets(TOOLBAR_ACTION_VIEW));
+  return kIconAreaSize;
+}
+
+gfx::Size ToolbarActionsBar::GetViewSize() const {
+  gfx::Rect rect(GetIconAreaSize());
+  rect.Inset(-GetIconAreaInsets());
   return rect.size();
 }
 
@@ -578,6 +583,10 @@ void ToolbarActionsBar::MaybeShowExtensionBubble() {
 void ToolbarActionsBar::set_extension_bubble_appearance_wait_time_for_testing(
     int time_in_seconds) {
   g_extension_bubble_appearance_wait_time_in_seconds = time_in_seconds;
+}
+
+gfx::Insets ToolbarActionsBar::GetIconAreaInsets() const {
+  return GetLayoutInsets(TOOLBAR_ACTION_VIEW);
 }
 
 void ToolbarActionsBar::OnToolbarActionAdded(
