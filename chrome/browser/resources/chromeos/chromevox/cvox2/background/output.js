@@ -679,6 +679,15 @@ Output.prototype = {
     return false;
   },
 
+  /**
+   * @return {boolean} True if there is only whitespace in this output.
+   */
+  get isOnlyWhitespace() {
+    return this.speechBuffer_.every(function(buff) {
+      return !/\S+/.test(buff.toString());
+    });
+  },
+
   /** @return {Spannable} */
   get braille() {
     return this.mergeBraille_(this.brailleBuffer_);
