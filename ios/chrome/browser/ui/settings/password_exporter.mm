@@ -57,7 +57,7 @@ enum class ReauthenticationStatus {
 
 @implementation PasswordFileWriter
 
-- (void)writeData:(NSString*)data
+- (void)writeData:(NSData*)data
             toURL:(NSURL*)fileURL
           handler:(void (^)(WriteToURLStatus))handler {
   WriteToURLStatus (^writeToFile)() = ^() {
@@ -74,10 +74,11 @@ enum class ReauthenticationStatus {
       return WriteToURLStatus::UNKNOWN_ERROR;
     }
 
-    BOOL success = [data writeToURL:fileURL
-                         atomically:YES
-                           encoding:NSUTF8StringEncoding
-                              error:&error];
+    BOOL success = [data
+        writeToURL:fileURL
+           options:(NSDataWritingAtomic | NSDataWritingFileProtectionComplete)
+             error:&error];
+
     if (!success) {
       if (error.code == NSFileWriteOutOfSpaceError) {
         return WriteToURLStatus::OUT_OF_DISK_SPACE_ERROR;
@@ -319,12 +320,13 @@ enum class ReauthenticationStatus {
     }
   };
 
-  NSString* serializedPasswords = self.serializedPasswords;
-  // |serializedPasswords| is not needed by |self| anymore. Resetting
-  // it here ensures that it is not referenced from two different threads later.
+  NSData* serializedPasswordsData =
+      [self.serializedPasswords dataUsingEncoding:NSUTF8StringEncoding];
+
+  // Drop |serializedPasswords| as it is no longer needed.
   self.serializedPasswords = nil;
 
-  [_passwordFileWriter writeData:serializedPasswords
+  [_passwordFileWriter writeData:serializedPasswordsData
                            toURL:passwordsTempFileURL
                          handler:onFileWritten];
 }

@@ -77,7 +77,7 @@
   return self;
 }
 
-- (void)writeData:(NSString*)data
+- (void)writeData:(NSData*)data
             toURL:(NSURL*)fileURL
           handler:(void (^)(WriteToURLStatus))handler {
   _writeAttempted = YES;
