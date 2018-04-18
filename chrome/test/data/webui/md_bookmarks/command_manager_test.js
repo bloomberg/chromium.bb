@@ -583,6 +583,25 @@ suite('<bookmarks-item> CommandManager integration', function() {
     chrome.bookmarkManagerPrivate.copy = bmpCopyFunction;
     chrome.bookmarkManagerPrivate.cut = bmpCutFunction;
   });
+
+  test('context menu disappears immediately on right click', function() {
+    customClick(items[0], {button: 1}, 'contextmenu');
+    assertDeepEquals(['11'], normalizeIterable(store.data.selection.items));
+    let dropdown = commandManager.$.dropdown.getIfExists();
+    let dialog = dropdown.getDialog();
+    assertTrue(dropdown.open);
+
+    let x = dialog.offsetLeft + dialog.offsetWidth + 5;
+    let y = dialog.offsetHeight;
+
+    // Ensure the dialog is the target even when clicking outside it, and send
+    // a context menu event which should immediately dismiss the dialog,
+    // allowing subsequent events to bubble through to elements below.
+    assertEquals(dropdown, commandManager.root.elementFromPoint(x, y));
+    assertEquals(dialog, dropdown.root.elementFromPoint(x, y));
+    customClick(dialog, {clientX: x, clientY: y, button: 1}, 'contextmenu');
+    assertFalse(dropdown.open);
+  });
 });
 
 suite('<bookmarks-command-manager> whole page integration', function() {
