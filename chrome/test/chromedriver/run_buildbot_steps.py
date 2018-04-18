@@ -324,7 +324,7 @@ def _MaybeUpdateLatestRelease(version):
     return
 
   # Check if chromedriver was released on all supported platforms.
-  supported_platforms = ['linux64', 'mac32', 'win32']
+  supported_platforms = ['linux64', 'mac64', 'win32']
   for platform in supported_platforms:
     if not _WasReleased(version, platform):
       return
