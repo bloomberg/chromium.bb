@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_LOADER_CROSS_SITE_DOCUMENT_RESOURCE_HANDLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -97,14 +98,6 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   void OnResponseCompleted(
       const net::URLRequestStatus& status,
       std::unique_ptr<ResourceController> controller) override;
-
-  // Returns explicitly named headers from
-  // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
-  //
-  // Note that XSDB doesn't block responses allowed through CORS - this means
-  // that the list of allowed headers below doesn't have to consider header
-  // names listed in the Access-Control-Expose-Headers header.
-  static std::vector<std::string> GetCorsSafelistedHeadersForTesting();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CrossSiteDocumentResourceHandlerTest,

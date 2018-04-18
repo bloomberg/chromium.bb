@@ -586,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockHeaders) {
   // Make sure the test covers all the safelisted headers known to the product
   // code.
   for (const std::string& safelisted_header :
-       CrossSiteDocumentResourceHandler::GetCorsSafelistedHeadersForTesting()) {
+       network::CrossOriginReadBlocking::GetCorsSafelistedHeadersForTesting()) {
     EXPECT_TRUE(
         interceptor.response_head().headers->HasHeader(safelisted_header));
 
