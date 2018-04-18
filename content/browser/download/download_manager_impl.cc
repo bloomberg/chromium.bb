@@ -41,6 +41,7 @@
 #include "components/download/public/common/url_download_handler_factory.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/blob_download_url_loader_factory_getter.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -304,6 +305,27 @@ base::FilePath GetTemporaryDownloadDirectory() {
   return base::nix::GetXDGDirectory(env.get(), "XDG_DATA_HOME", ".local/share");
 }
 #endif
+
+scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
+                                     RenderFrameHost* rfh) {
+  network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info;
+  network::mojom::URLLoaderFactoryRequest proxy_factory_request;
+  if (rfh) {
+    network::mojom::URLLoaderFactoryPtrInfo devtools_factory_ptr_info;
+    network::mojom::URLLoaderFactoryRequest devtools_factory_request =
+        MakeRequest(&devtools_factory_ptr_info);
+    if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+            static_cast<RenderFrameHostImpl*>(rfh), true,
+            &devtools_factory_request)) {
+      proxy_factory_ptr_info = std::move(devtools_factory_ptr_info);
+      proxy_factory_request = std::move(devtools_factory_request);
+    }
+  }
+  return base::MakeRefCounted<NetworkDownloadURLLoaderFactoryGetter>(
+      storage_partition->url_loader_factory_getter(),
+      std::move(proxy_factory_ptr_info), std::move(proxy_factory_request));
+}
 
 }  // namespace
 
@@ -1223,9 +1245,10 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
   int render_process_id = -1;
   int render_frame_id = -1;
   GURL site_url, tab_url, tab_referrer_url;
+  RenderFrameHost* render_frame_host = nullptr;
   WebContents* web_contents = std::move(web_contents_getter).Run();
   if (web_contents) {
-    RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
+    render_frame_host = web_contents->GetMainFrame();
     if (render_frame_host) {
       render_process_id = render_frame_host->GetProcess()->GetID();
       render_frame_id = render_frame_host->GetRoutingID();
@@ -1240,16 +1263,15 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
       GetStoragePartition(browser_context_, render_process_id, render_frame_id);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &DownloadManagerImpl::CreateDownloadHandlerForNavigation,
-          weak_factory_.GetWeakPtr(), std::move(resource_request),
-          render_process_id, render_frame_id, site_url, tab_url,
-          tab_referrer_url, std::move(url_chain), suggested_filename,
-          std::move(response), std::move(cert_status),
-          std::move(url_loader_client_endpoints),
-          base::MakeRefCounted<NetworkDownloadURLLoaderFactoryGetter>(
-              storage_partition->url_loader_factory_getter()),
-          base::MessageLoop::current()->task_runner()));
+      base::BindOnce(&DownloadManagerImpl::CreateDownloadHandlerForNavigation,
+                     weak_factory_.GetWeakPtr(), std::move(resource_request),
+                     render_process_id, render_frame_id, site_url, tab_url,
+                     tab_referrer_url, std::move(url_chain), suggested_filename,
+                     std::move(response), std::move(cert_status),
+                     std::move(url_loader_client_endpoints),
+                     CreateDownloadURLLoaderFactoryGetter(storage_partition,
+                                                          render_frame_host),
+                     base::MessageLoop::current()->task_runner()));
 }
 
 // static
@@ -1326,8 +1348,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
               params->url(), std::move(blob_data_handle));
     } else {
       url_loader_factory_getter =
-          base::MakeRefCounted<NetworkDownloadURLLoaderFactoryGetter>(
-              storage_partition->url_loader_factory_getter());
+          CreateDownloadURLLoaderFactoryGetter(storage_partition, rfh);
     }
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
