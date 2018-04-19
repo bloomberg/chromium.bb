@@ -76,7 +76,6 @@ space  \s 0
 sign \x000a 0 newline
 sign \x000d 0 carriage return
 sign \x00a0 0 space
-
 sign \x5416 35
 sign \x963F 35
 sign \x554A 35
