@@ -54,8 +54,8 @@ def _RunBindingsTests(input_api, output_api):
 
     pardir = input_api.os_path.pardir
     run_bindings_tests_path = input_api.os_path.join(
-        input_api.PresubmitLocalPath(), pardir, pardir, pardir, 'WebKit', 'Tools', 'Scripts', 'run-bindings-tests')
-    cmd_name = 'run-bindings-tests'
+        input_api.PresubmitLocalPath(), pardir, pardir, 'tools', 'run_bindings_tests.py')
+    cmd_name = 'run_bindings_tests.py'
     if input_api.platform == 'win32':
         # Windows needs some help.
         cmd = [input_api.python_executable, run_bindings_tests_path]

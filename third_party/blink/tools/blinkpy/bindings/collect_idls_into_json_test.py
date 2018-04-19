@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from webkitpy.bindings import collect_idls_into_json
+from blinkpy.bindings import collect_idls_into_json
 import utilities
 
 from blink_idl_parser import parse_file, BlinkIDLParser

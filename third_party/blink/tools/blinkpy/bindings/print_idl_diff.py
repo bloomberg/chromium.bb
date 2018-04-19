@@ -18,11 +18,11 @@ Usage: print_idl_diff.py diff_file.json order
 from collections import OrderedDict
 import sys
 
-from webkitpy.bindings.generate_idl_diff import load_json_file
-from webkitpy.bindings.generate_idl_diff import EXTATTRIBUTES_AND_MEMBER_TYPES
-from webkitpy.bindings.generate_idl_diff import DIFF_TAG
-from webkitpy.bindings.generate_idl_diff import DIFF_TAG_ADDED
-from webkitpy.bindings.generate_idl_diff import DIFF_TAG_DELETED
+from blinkpy.bindings.generate_idl_diff import load_json_file
+from blinkpy.bindings.generate_idl_diff import EXTATTRIBUTES_AND_MEMBER_TYPES
+from blinkpy.bindings.generate_idl_diff import DIFF_TAG
+from blinkpy.bindings.generate_idl_diff import DIFF_TAG_ADDED
+from blinkpy.bindings.generate_idl_diff import DIFF_TAG_DELETED
 
 
 # pylint: disable=W0105

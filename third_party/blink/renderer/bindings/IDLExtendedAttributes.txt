@@ -6,7 +6,7 @@
 #     (1) add the extended attribute or value to this file
 #     (2) add an explanation to the Blink IDL extended attributes document:
 #         IDLExtendedAttributes.md (in this directory)
-#     (3) add appropriate test cases to run-bindings-tests
+#     (3) add appropriate test cases to run_bindings_tests.py
 #
 # The syntax of this file is as follows:
 #     - One extended attribute per one line: Name and (optionally) Values.
