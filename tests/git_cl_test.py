@@ -663,6 +663,8 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gerrit_util, 'SetReview',
               lambda h, i, msg=None, labels=None, notify=None:
                   self._mocked_call('SetReview', h, i, msg, labels, notify))
+    self.mock(git_cl.gerrit_util.LuciContextAuthenticator, 'is_luci',
+              staticmethod(lambda: False))
     self.mock(git_cl.gerrit_util.GceAuthenticator, 'is_gce',
               classmethod(lambda _: False))
     self.mock(git_cl, 'DieWithError',

@@ -24,10 +24,9 @@ from third_party import mock
 import auth
 
 
-class TestGetLuciContextAccessToken(auto_stub.TestCase):
-  mock_env = {'LUCI_CONTEXT': 'default/test/path'}
-
+class TestLuciContext(auto_stub.TestCase):
   def _mock_local_auth(self, account_id, secret, rpc_port):
+    self.mock(os, 'environ', {'LUCI_CONTEXT': 'default/test/path'})
     self.mock(auth, '_load_luci_context', mock.Mock())
     auth._load_luci_context.return_value = {
       'local_auth': {
@@ -43,8 +42,10 @@ class TestGetLuciContextAccessToken(auto_stub.TestCase):
     self.mock(httplib2.Http, 'request', mock.Mock())
     httplib2.Http.request.return_value = (mock_resp, content)
 
-  def test_correct_local_auth_format(self):
-    self._mock_local_auth('dead', 'beef', 10)
+  def test_all_good(self):
+    self._mock_local_auth('account', 'secret', 8080)
+    self.assertTrue(auth.has_luci_context_local_auth())
+
     expiry_time = datetime.datetime.min + datetime.timedelta(hours=1)
     resp_content = {
       'error_code': None,
@@ -54,23 +55,23 @@ class TestGetLuciContextAccessToken(auto_stub.TestCase):
                  - datetime.datetime.utcfromtimestamp(0)).total_seconds(),
     }
     self._mock_loc_server_resp(200, json.dumps(resp_content))
-    token = auth._get_luci_context_access_token(
-        self.mock_env, datetime.datetime.min)
+    params = auth._get_luci_context_local_auth_params(os.environ)
+    token = auth._get_luci_context_access_token(params, datetime.datetime.min)
     self.assertEquals(token.token, 'token')
 
-  def test_incorrect_port_format(self):
-    self._mock_local_auth('foo', 'bar', 'bar')
-    with self.assertRaises(auth.LuciContextAuthError):
-      auth._get_luci_context_access_token(self.mock_env, datetime.datetime.min)
-
   def test_no_account_id(self):
-    self._mock_local_auth(None, 'bar', 10)
-    token = auth._get_luci_context_access_token(
-        self.mock_env, datetime.datetime.min)
-    self.assertIsNone(token)
+    self._mock_local_auth(None, 'secret', 8080)
+    self.assertFalse(auth.has_luci_context_local_auth())
+    self.assertIsNone(auth.get_luci_context_access_token())
+
+  def test_incorrect_port_format(self):
+    self._mock_local_auth('account', 'secret', 'port')
+    self.assertFalse(auth.has_luci_context_local_auth())
+    with self.assertRaises(auth.LuciContextAuthError):
+      auth.get_luci_context_access_token()
 
   def test_expired_token(self):
-    self._mock_local_auth('dead', 'beef', 10)
+    params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
     resp_content = {
       'error_code': None,
       'error_message': None,
@@ -80,10 +81,10 @@ class TestGetLuciContextAccessToken(auto_stub.TestCase):
     self._mock_loc_server_resp(200, json.dumps(resp_content))
     with self.assertRaises(auth.LuciContextAuthError):
       auth._get_luci_context_access_token(
-          self.mock_env, datetime.datetime.utcfromtimestamp(1))
+          params, datetime.datetime.utcfromtimestamp(1))
 
   def test_incorrect_expiry_format(self):
-    self._mock_local_auth('dead', 'beef', 10)
+    params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
     resp_content = {
       'error_code': None,
       'error_message': None,
@@ -92,13 +93,13 @@ class TestGetLuciContextAccessToken(auto_stub.TestCase):
     }
     self._mock_loc_server_resp(200, json.dumps(resp_content))
     with self.assertRaises(auth.LuciContextAuthError):
-      auth._get_luci_context_access_token(self.mock_env, datetime.datetime.min)
+      auth._get_luci_context_access_token(params, datetime.datetime.min)
 
   def test_incorrect_response_content_format(self):
-    self._mock_local_auth('dead', 'beef', 10)
+    params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
     self._mock_loc_server_resp(200, '5')
     with self.assertRaises(auth.LuciContextAuthError):
-      auth._get_luci_context_access_token(self.mock_env, datetime.datetime.min)
+      auth._get_luci_context_access_token(params, datetime.datetime.min)
 
 
 if __name__ == '__main__':
