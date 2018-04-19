@@ -33,9 +33,10 @@ class UpdateClient;
 
 namespace extensions {
 
+class ExtensionUpdateClientBaseTest;
+struct ExtensionUpdateCheckParams;
 class UpdateDataProvider;
 class UpdateServiceFactory;
-struct ExtensionUpdateCheckParams;
 
 // This service manages the autoupdate of extensions.  It should eventually
 // replace ExtensionUpdater in Chrome.
@@ -62,10 +63,11 @@ class UpdateService : public KeyedService,
   // |extension_id|.
   bool CanUpdate(const std::string& extension_id) const;
 
-  // Overriden from update_client::UpdateClient::Observer.
+  // Overriden from |update_client::UpdateClient::Observer|.
   void OnEvent(Events event, const std::string& id) override;
 
  private:
+  friend class ExtensionUpdateClientBaseTest;
   friend class UpdateServiceFactory;
   friend std::unique_ptr<UpdateService>::deleter_type;
 
@@ -91,6 +93,13 @@ class UpdateService : public KeyedService,
     std::set<std::string> pending_extension_ids;
   };
 
+  // Adds/Removes observer to/from |update_client::UpdateClient|.
+  // Mainly used for browser tests.
+  void AddUpdateClientObserver(update_client::UpdateClient::Observer* observer);
+  void RemoveUpdateClientObserver(
+      update_client::UpdateClient::Observer* observer);
+
+ private:
   content::BrowserContext* browser_context_;
 
   scoped_refptr<update_client::UpdateClient> update_client_;

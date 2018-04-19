@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/no_destructor.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/google/google_brand.h"
@@ -25,6 +26,14 @@
 namespace extensions {
 
 namespace {
+
+using FactoryCallback = ChromeUpdateClientConfig::FactoryCallback;
+
+// static
+static FactoryCallback& GetFactoryCallback() {
+  static base::NoDestructor<FactoryCallback> factory;
+  return *factory;
+}
 
 class ExtensionActivityDataService final
     : public update_client::ActivityDataService {
@@ -105,7 +114,7 @@ int ChromeUpdateClientConfig::OnDemandDelay() const {
 }
 
 int ChromeUpdateClientConfig::UpdateDelay() const {
-  return 0;
+  return impl_.UpdateDelay();
 }
 
 std::vector<GURL> ChromeUpdateClientConfig::UpdateUrl() const {
@@ -199,5 +208,21 @@ std::vector<uint8_t> ChromeUpdateClientConfig::GetRunActionKeyHash() const {
 }
 
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}
+
+// static
+scoped_refptr<ChromeUpdateClientConfig> ChromeUpdateClientConfig::Create(
+    content::BrowserContext* context) {
+  FactoryCallback& factory = GetFactoryCallback();
+  return factory.is_null() ? scoped_refptr<ChromeUpdateClientConfig>(
+                                 new ChromeUpdateClientConfig(context))
+                           : factory.Run(context);
+}
+
+// static
+void ChromeUpdateClientConfig::SetChromeUpdateClientConfigFactoryForTesting(
+    FactoryCallback factory) {
+  DCHECK(!factory.is_null());
+  GetFactoryCallback() = factory;
+}
 
 }  // namespace extensions

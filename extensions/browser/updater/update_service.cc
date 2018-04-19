@@ -54,7 +54,7 @@ void UpdateService::Shutdown() {
     update_data_provider_->Shutdown();
     update_data_provider_ = nullptr;
   }
-  update_client_->RemoveObserver(this);
+  RemoveUpdateClientObserver(this);
   update_client_ = nullptr;
   browser_context_ = nullptr;
 }
@@ -162,7 +162,7 @@ UpdateService::UpdateService(
   DCHECK(update_client_);
   update_data_provider_ =
       base::MakeRefCounted<UpdateDataProvider>(browser_context_);
-  update_client->AddObserver(this);
+  AddUpdateClientObserver(this);
 }
 
 UpdateService::~UpdateService() {
@@ -253,6 +253,18 @@ void UpdateService::UpdateCheckComplete(update_client::Error error) {
                        return true;
                      }),
       in_progress_updates_.end());
+}
+
+void UpdateService::AddUpdateClientObserver(
+    update_client::UpdateClient::Observer* observer) {
+  if (update_client_)
+    update_client_->AddObserver(observer);
+}
+
+void UpdateService::RemoveUpdateClientObserver(
+    update_client::UpdateClient::Observer* observer) {
+  if (update_client_)
+    update_client_->RemoveObserver(observer);
 }
 
 }  // namespace extensions
