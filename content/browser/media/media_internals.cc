@@ -469,7 +469,8 @@ std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
     uma_name += "DDS.";
   }
 
-  if (player_info.video_decoder == media::GpuVideoDecoder::kDecoderName) {
+  if (player_info.video_decoder == media::GpuVideoDecoder::kDecoderName ||
+      player_info.video_decoder == "MojoVideoDecoder") {
     uma_name += "HW";
   } else {
     uma_name += "SW";
