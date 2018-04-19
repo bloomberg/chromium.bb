@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.view.View;
 import android.widget.FrameLayout.LayoutParams;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -31,13 +32,19 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
     private String mUrl;
 
     public BasicNativePage(Activity activity, NativePageHost host) {
+        this(activity, host, false);
+    }
+
+    public BasicNativePage(Activity activity, NativePageHost host, boolean isIncognito) {
         initialize(activity, host);
         mActivity = activity;
         mHost = host;
-        int defaultColor = ColorUtils.getDefaultThemeColor(
-                activity.getResources(), FeatureUtilities.isChromeModernDesignEnabled(), false);
-        mBackgroundColor = defaultColor;
-        mThemeColor = defaultColor;
+
+        mThemeColor = ColorUtils.getDefaultThemeColor(activity.getResources(),
+                FeatureUtilities.isChromeModernDesignEnabled(), isIncognito);
+        mBackgroundColor = isIncognito
+                ? ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg_incognito)
+                : mThemeColor;
 
         Resources res = mActivity.getResources();
 
