@@ -3902,6 +3902,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'nami-release': {
           'sign_types': ['recovery', 'factory'],
       },
+
+      'meowth-release': {
+          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
+      },
       # --- end from here ---
 
       'betty-release':
