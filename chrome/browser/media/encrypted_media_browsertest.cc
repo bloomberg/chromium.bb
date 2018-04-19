@@ -727,7 +727,8 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
 
 // When CDM crashes, we should still get a decode error and all sessions should
 // be closed.
-IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
+// Flaky: crbug.com/832800
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, DISABLED_CDMCrashDuringDecode) {
   IgnorePluginCrash();
   TestNonPlaybackCases(kExternalClearKeyCrashKeySystem,
                        kEmeSessionClosedAndError);
