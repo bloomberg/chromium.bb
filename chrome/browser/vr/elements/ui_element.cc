@@ -319,13 +319,21 @@ gfx::SizeF UiElement::size() const {
 void UiElement::SetLayoutOffset(float x, float y) {
   if (x_centering() == LEFT) {
     x += size_.width() / 2;
+    if (!bounds_contain_padding_)
+      x -= left_padding_;
   } else if (x_centering() == RIGHT) {
     x -= size_.width() / 2;
+    if (!bounds_contain_padding_)
+      x += right_padding_;
   }
   if (y_centering() == TOP) {
     y -= size_.height() / 2;
+    if (!bounds_contain_padding_)
+      y += top_padding_;
   } else if (y_centering() == BOTTOM) {
     y += size_.height() / 2;
+    if (!bounds_contain_padding_)
+      y -= bottom_padding_;
   }
 
   if (x == layout_offset_.at(0).translate.x &&
@@ -851,14 +859,22 @@ void UiElement::LayOutChildren() {
     float x_offset = 0.0f;
     if (child->x_anchoring() == LEFT) {
       x_offset = -0.5f * size().width();
+      if (!child->bounds_contain_padding())
+        x_offset += left_padding_;
     } else if (child->x_anchoring() == RIGHT) {
       x_offset = 0.5f * size().width();
+      if (!child->bounds_contain_padding())
+        x_offset -= right_padding_;
     }
     float y_offset = 0.0f;
     if (child->y_anchoring() == TOP) {
       y_offset = 0.5f * size().height();
+      if (!child->bounds_contain_padding())
+        y_offset -= top_padding_;
     } else if (child->y_anchoring() == BOTTOM) {
       y_offset = -0.5f * size().height();
+      if (!child->bounds_contain_padding())
+        y_offset += bottom_padding_;
     }
     child->SetLayoutOffset(x_offset, y_offset);
   }

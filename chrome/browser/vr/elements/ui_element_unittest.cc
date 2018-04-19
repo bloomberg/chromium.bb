@@ -123,6 +123,84 @@ TEST(UiElement, IgnoringAsymmetricPadding) {
   EXPECT_VECTOR3DF_EQ(gfx::Point3F(), p);
 }
 
+TEST(UiElement, BoundsContainPaddingWithAnchoring) {
+  // If an element's bounds do not contain padding, then padding should be
+  // discounted when doing anchoring.
+  auto parent = std::make_unique<UiElement>();
+  parent->SetSize(1.0, 1.0);
+
+  auto child = std::make_unique<UiElement>();
+  child->SetSize(0.5, 0.5);
+  child->set_padding(2.0, 2.0);
+  child->set_bounds_contain_padding(false);
+
+  auto* child_ptr = child.get();
+
+  parent->AddChild(std::move(child));
+
+  struct {
+    LayoutAlignment x_anchoring;
+    LayoutAlignment y_anchoring;
+    gfx::Point3F expected_position;
+  } test_cases[] = {
+      {LEFT, NONE, {-0.5, 0, 0}},
+      {RIGHT, NONE, {0.5, 0, 0}},
+      {NONE, TOP, {0, 0.5, 0}},
+      {NONE, BOTTOM, {0, -0.5, 0}},
+  };
+
+  for (auto test_case : test_cases) {
+    child_ptr->set_x_anchoring(test_case.x_anchoring);
+    child_ptr->set_y_anchoring(test_case.y_anchoring);
+    parent->DoLayOutChildren();
+    gfx::Point3F p;
+    child_ptr->LocalTransform().TransformPoint(&p);
+    EXPECT_VECTOR3DF_EQ(test_case.expected_position, p);
+  }
+}
+
+TEST(UiElement, BoundsContainPaddingWithCentering) {
+  // If an element's bounds do not contain padding, then padding should be
+  // discounted when doing centering.
+  auto parent = std::make_unique<UiElement>();
+  parent->SetSize(1.0, 1.0);
+
+  auto child = std::make_unique<UiElement>();
+  child->set_padding(2.0, 2.0);
+  child->set_bounds_contain_padding(false);
+  child->set_bounds_contain_children(true);
+
+  auto grandchild = std::make_unique<UiElement>();
+  grandchild->SetSize(0.5, 0.5);
+
+  child->AddChild(std::move(grandchild));
+
+  auto* child_ptr = child.get();
+
+  parent->AddChild(std::move(child));
+
+  struct {
+    LayoutAlignment x_centering;
+    LayoutAlignment y_centering;
+    gfx::Point3F expected_position;
+  } test_cases[] = {
+      {LEFT, NONE, {0.25, 0, 0}},
+      {RIGHT, NONE, {-0.25, 0, 0}},
+      {NONE, TOP, {0, -0.25, 0}},
+      {NONE, BOTTOM, {0, 0.25, 0}},
+  };
+
+  for (auto test_case : test_cases) {
+    child_ptr->set_x_centering(test_case.x_centering);
+    child_ptr->set_y_centering(test_case.y_centering);
+    child_ptr->DoLayOutChildren();
+    parent->DoLayOutChildren();
+    gfx::Point3F p;
+    child_ptr->LocalTransform().TransformPoint(&p);
+    EXPECT_VECTOR3DF_EQ(test_case.expected_position, p);
+  }
+}
+
 TEST(UiElement, BoundsContainScaledChildren) {
   auto a = std::make_unique<UiElement>();
   a->SetSize(0.4, 0.3);
