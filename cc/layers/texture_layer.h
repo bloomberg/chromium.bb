@@ -84,7 +84,13 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
 
     // These members are only accessed on the main thread, or on the impl thread
     // during commit where the main thread is blocked.
-    unsigned internal_references_;
+    int internal_references_ = 0;
+#if DCHECK_IS_ON()
+    // The number of derefs posted from the impl thread, and a lock for
+    // accessing it.
+    base::Lock posted_internal_derefs_lock_;
+    int posted_internal_derefs_ = 0;
+#endif
     viz::TransferableResource resource_;
     std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
 
@@ -94,7 +100,7 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
     // ReturnAndReleaseOnImplThread() defines their values.
     base::Lock arguments_lock_;
     gpu::SyncToken sync_token_;
-    bool is_lost_;
+    bool is_lost_ = false;
     base::ThreadChecker main_thread_checker_;
     DISALLOW_COPY_AND_ASSIGN(TransferableResourceHolder);
   };
