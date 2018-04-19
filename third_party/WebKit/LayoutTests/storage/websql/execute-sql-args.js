@@ -32,9 +32,15 @@ var expectNoException = [
     '"", null, null',
     '"", null, undefined',
     '"", null, function(){}',
+    // SQLStatementCallback will not be invoked at all.
+    '"", null, function(){ throw "exception"; }',
+    '"", null, { }',
     '"", null, null, null',
     '"", null, null, undefined',
     '"", null, null, function(){}',
+    // SQLStatementErrorCallback will not be invoked at all.
+    '"", null, null, function(){ throw "exception"; }',
+    '"", null, null, { }',
 ];
 
 var expectException = [
@@ -50,10 +56,8 @@ var expectException = [
     '"", { length: 1, 0: "arg0" }',
     '"", null, 0',
     '"", null, ""',
-    '"", null, { }',
     '"", null, null, 0',
     '"", null, null, ""',
-    '"", null, null, { }',
 ];
 
 function tryExecuteSql(transaction, parameterList)
