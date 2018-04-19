@@ -22,7 +22,6 @@ class CONTENT_EXPORT FileURLLoaderObserver
   ~FileURLLoaderObserver() override {}
 
   virtual void OnStart() {}
-  virtual void OnOpenComplete(int result) {}
   virtual void OnSeekComplete(int64_t result) {}
 
  private:

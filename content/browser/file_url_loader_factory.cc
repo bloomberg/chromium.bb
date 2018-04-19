@@ -454,12 +454,12 @@ class FileURLLoader : public network::mojom::URLLoader {
       observer->OnStart();
 
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-    net::Error net_error = net::FileErrorToNetError(file.error_details());
-    if (observer)
-      observer->OnOpenComplete(net_error);
     if (!file.IsValid()) {
-      if (observer)
+      if (observer) {
+        observer->OnBytesRead(nullptr, 0u, file.error_details());
         observer->OnDoneReading();
+      }
+      net::Error net_error = net::FileErrorToNetError(file.error_details());
       client->OnComplete(network::URLLoaderCompletionStatus(net_error));
       MaybeDeleteSelf();
       return;
@@ -471,10 +471,13 @@ class FileURLLoader : public network::mojom::URLLoader {
       base::File::Error read_error = base::File::GetLastFileError();
       DCHECK_NE(base::File::FILE_OK, read_error);
       if (observer) {
+        // This can happen when the file is unreadable (which can happen during
+        // corruption). We need to be sure to inform
+        // the observer that we've finished reading so that it can proceed.
         observer->OnBytesRead(nullptr, 0u, read_error);
         observer->OnDoneReading();
       }
-      net_error = net::FileErrorToNetError(read_error);
+      net::Error net_error = net::FileErrorToNetError(read_error);
       client->OnComplete(network::URLLoaderCompletionStatus(net_error));
       return;
     } else if (observer) {
