@@ -43,6 +43,8 @@ ExtensionsAPIPermissions::GetAllPermissions() const {
       {APIPermission::kAudioCapture, "audioCapture"},
       {APIPermission::kBluetoothPrivate, "bluetoothPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kCecPrivate, "cecPrivate",
+       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kClipboard, "clipboard"},
       {APIPermission::kClipboardRead, "clipboardRead",
        APIPermissionInfo::kFlagSupportsContentCapabilities},

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
@@ -52,6 +53,8 @@ DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
                        : FAKE_DBUS_CLIENT_IMPLEMENTATION;
 
   biod_client_.reset(BiodClient::Create(client_impl_type));
+
+  cec_service_client_ = CecServiceClient::Create(client_impl_type);
 
   if (use_real_clients)
     cras_audio_client_.reset(CrasAudioClient::Create());
@@ -135,6 +138,7 @@ void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());
 
   biod_client_->Init(system_bus);
+  cec_service_client_->Init(system_bus);
   cras_audio_client_->Init(system_bus);
   cryptohome_client_->Init(system_bus);
   gsm_sms_client_->Init(system_bus);

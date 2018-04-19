@@ -15198,6 +15198,8 @@ Called by update_net_error_codes.py.-->
   <int value="1240" label="FILEMANAGERPRIVATE_OPENSETTINGSSUBPAGE"/>
   <int value="1241"
       label="ENTERPRISEREPORTINGPRIVATE_UPLOADCHROMEDESKTOPREPORT"/>
+  <int value="1242" label="CECPRIVATE_SENDSTANDBY"/>
+  <int value="1243" label="CECPRIVATE_SENDWAKEUP"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -15481,7 +15483,7 @@ Called by update_net_error_codes.py.-->
   <int value="57" label="kEmbeddedExtensionOptions"/>
   <int value="58" label="kEnterprisePlatformKeys"/>
   <int value="59" label="kEnterprisePlatformKeysPrivate"/>
-  <int value="60" label="kExperienceSamplingPrivate"/>
+  <int value="60" label="kDeleted_ExperienceSamplingPrivate"/>
   <int value="61" label="kExperimental"/>
   <int value="62" label="kExtensionView"/>
   <int value="63" label="kExternallyConnectableAllUrls"/>
@@ -15632,6 +15634,7 @@ Called by update_net_error_codes.py.-->
   <int value="208" label="kLockWindowFullscreenPrivate"/>
   <int value="209" label="kWebrtcLoggingPrivateAudioDebug"/>
   <int value="210" label="kEnterpriseReportingPrivate"/>
+  <int value="211" label="kCecPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">

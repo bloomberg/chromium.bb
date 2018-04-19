@@ -29,6 +29,7 @@ class ArcObbMounterClient;
 class ArcOemCryptoClient;
 class AuthPolicyClient;
 class BiodClient;
+class CecServiceClient;
 class ConciergeClient;
 class CrasAudioClient;
 class CrosDisksClient;
@@ -134,6 +135,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   ArcOemCryptoClient* GetArcOemCryptoClient();
   AuthPolicyClient* GetAuthPolicyClient();
   BiodClient* GetBiodClient();
+  CecServiceClient* GetCecServiceClient();
   ConciergeClient* GetConciergeClient();
   CrasAudioClient* GetCrasAudioClient();
   CrosDisksClient* GetCrosDisksClient();
