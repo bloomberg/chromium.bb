@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.preferences.password;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -15,13 +18,14 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.SearchView;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -33,10 +37,8 @@ import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.TextMessagePreference;
 import org.chromium.ui.text.SpanApplier;
 
@@ -83,7 +85,6 @@ public class SavePasswordsPreferences
     private boolean mNoPasswordExceptions;
 
     private MenuItem mHelpItem;
-    private MenuItem mSearchItem;
 
     private String mSearchQuery;
     private Preference mLinkPref;
@@ -91,7 +92,7 @@ public class SavePasswordsPreferences
     private ChromeBaseCheckBoxPreference mAutoSignInSwitch;
     private TextMessagePreference mEmptyView;
     private boolean mSearchRecorded;
-    private Menu mMenu;
+    private Menu mMenuForTesting;
 
     /**
      * For controlling the UX flow of exporting passwords.
@@ -138,20 +139,54 @@ public class SavePasswordsPreferences
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
-        mMenu = menu;
+        mMenuForTesting = menu;
         inflater.inflate(R.menu.save_password_preferences_action_bar_menu, menu);
         menu.findItem(R.id.export_passwords).setVisible(ExportFlow.providesPasswordExport());
         menu.findItem(R.id.export_passwords).setEnabled(false);
-        mSearchItem = menu.findItem(R.id.menu_id_search);
-        mSearchItem.setVisible(providesPasswordSearch());
+        MenuItem searchItem = menu.findItem(R.id.menu_id_search);
+        searchItem.setVisible(providesPasswordSearch());
         if (providesPasswordSearch()) {
             mHelpItem = menu.findItem(R.id.menu_id_general_help);
-            mSearchItem.setIcon(PreferenceUtils.convertToPlainWhite(mSearchItem.getIcon()));
-            SearchUtils.initializeSearchView(mSearchItem, mSearchQuery, (query) -> {
-                maybeRecordTriggeredPasswordSearch(true);
-                filterPasswords(query);
-            });
+            setUpSearchAction(searchItem);
         }
+    }
+
+    /**
+     * Prepares the searchItem's icon and searchView. Sets up listeners to clicks and interactions
+     * with the searchItem or its searchView.
+     * @param searchItem the item containing the SearchView. Must not be null.
+     */
+    private void setUpSearchAction(MenuItem searchItem) {
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setImeOptions(EditorInfo.IME_FLAG_NO_FULLSCREEN);
+        searchItem.setIcon(convertToPlainWhite(searchItem.getIcon()));
+        if (mSearchQuery != null) { // If a query was recovered, restore the search view.
+            searchItem.expandActionView();
+            searchView.setIconified(false);
+            searchView.setQuery(mSearchQuery, false);
+        }
+        searchItem.setOnMenuItemClickListener((MenuItem m) -> {
+            filterPasswords("");
+            return false; // Continue with the default action.
+        });
+        searchView.findViewById(R.id.search_close_btn).setOnClickListener((View v) -> {
+            searchView.setQuery(null, false);
+            searchView.setIconified(true);
+            filterPasswords(null); // Reset filter to bring back all preferences.
+        });
+        searchView.setOnSearchClickListener(view -> filterPasswords(""));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return true; // Continue with default action - nothing.
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                maybeRecordTriggeredPasswordSearch(true);
+                return filterPasswords(query);
+            }
+        });
     }
 
     /**
@@ -180,23 +215,16 @@ public class SavePasswordsPreferences
             mExportFlow.startExporting();
             return true;
         }
-        if (SearchUtils.handleSearchNavigation(item, mSearchItem, mSearchQuery)) {
-            filterPasswords(null);
-            return true;
-        }
         return super.onOptionsItemSelected(item);
     }
 
-    private void filterPasswords(String query) {
+    private boolean filterPasswords(String query) {
         mSearchQuery = query;
-        if (mSearchQuery == null) {
-            mHelpItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-            PreferenceUtils.setOverflowMenuVisibility(getActivity(), View.VISIBLE);
-        } else {
-            mHelpItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-            PreferenceUtils.setOverflowMenuVisibility(getActivity(), View.GONE);
-        }
+        // Hide the help option. It's not useful during search but might be clicked by accident.
+        mHelpItem.setShowAsAction(mSearchQuery != null ? MenuItem.SHOW_AS_ACTION_NEVER
+                                                       : MenuItem.SHOW_AS_ACTION_IF_ROOM);
         rebuildPasswordLists();
+        return false; // Query has been handled. Don't trigger default action of SearchView.
     }
 
     /**
@@ -403,6 +431,19 @@ public class SavePasswordsPreferences
         return true;
     }
 
+    /**
+     * Convert a given icon to a plain white version by applying the MATRIX_TRANSFORM_TO_WHITE color
+     * filter. The resulting drawable will be brighter than a usual grayscale conversion.
+     *
+     * For grayscale conversion, use the function ColorMatrix#setSaturation(0) instead.
+     * @param icon The drawable to be converted.
+     * @return Returns the bright white version of the passed drawable.
+     */
+    private static Drawable convertToPlainWhite(Drawable icon) {
+        icon.mutate().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+        return icon;
+    }
+
     private void createSavePasswordsSwitch() {
         if (mSearchQuery != null) {
             return; // Don't create this option when the preferences are filtered for passwords.
@@ -498,11 +539,6 @@ public class SavePasswordsPreferences
 
     @VisibleForTesting
     Menu getMenuForTesting() {
-        return mMenu;
-    }
-
-    @VisibleForTesting
-    Toolbar getToolbarForTesting() {
-        return getActivity().findViewById(R.id.action_bar);
+        return mMenuForTesting;
     }
 }
