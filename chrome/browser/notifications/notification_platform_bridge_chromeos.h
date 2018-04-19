@@ -13,6 +13,8 @@
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/profile_notification.h"
 
+class ChromeAshMessageCenterClient;
+
 // The interface that a NotificationPlatformBridge uses to pass back information
 // and interactions from the native notification system. TODO(estade): this
 // should be hoisted into its own file, implemented by
@@ -77,7 +79,7 @@ class NotificationPlatformBridgeChromeOs
   ProfileNotification* GetProfileNotification(
       const std::string& profile_notification_id);
 
-  std::unique_ptr<NotificationPlatformBridge> impl_;
+  std::unique_ptr<ChromeAshMessageCenterClient> impl_;
 
   // A container for all active notifications, where IDs are permuted to
   // uniquely identify both the notification and its source profile. The key is

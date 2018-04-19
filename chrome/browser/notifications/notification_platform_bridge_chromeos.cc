@@ -36,8 +36,7 @@ void NotificationPlatformBridgeChromeOs::Display(
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   auto active_notification = std::make_unique<ProfileNotification>(
       profile, notification, notification_type);
-  impl_->Display(NotificationHandler::Type::MAX, nullptr /* profile */,
-                 active_notification->notification(), std::move(metadata));
+  impl_->Display(active_notification->notification());
 
   std::string profile_notification_id =
       active_notification->notification().id();
@@ -48,23 +47,27 @@ void NotificationPlatformBridgeChromeOs::Display(
 void NotificationPlatformBridgeChromeOs::Close(
     Profile* profile,
     const std::string& notification_id) {
-  // TODO(estade): we need |is_incognito| here.
   const std::string profile_notification_id =
       ProfileNotification::GetProfileNotificationId(
           notification_id, NotificationUIManager::GetProfileID(profile));
 
-  impl_->Close(nullptr, profile_notification_id);
+  impl_->Close(profile_notification_id);
 }
 
 void NotificationPlatformBridgeChromeOs::GetDisplayed(
     Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
-  impl_->GetDisplayed(profile, std::move(callback));
+  // Right now, this is only used to get web notifications that were created by
+  // and have outlived a previous browser process. Ash itself doesn't outlive
+  // the browser process, so there's no need to implement.
+  std::move(callback).Run(std::make_unique<std::set<std::string>>(), false);
 }
 
 void NotificationPlatformBridgeChromeOs::SetReadyCallback(
     NotificationBridgeReadyCallback callback) {
-  impl_->SetReadyCallback(std::move(callback));
+  // We don't handle the absence of Ash or a failure to open a Mojo connection,
+  // so just assume the client is ready.
+  std::move(callback).Run(true);
 }
 
 void NotificationPlatformBridgeChromeOs::HandleNotificationClosed(
