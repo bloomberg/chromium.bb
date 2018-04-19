@@ -910,7 +910,7 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
     target_frame->Navigate(request);
     Page* page = target_frame->GetPage();
     if (!was_in_same_page && page)
-      page->GetChromeClient().Focus(nullptr);
+      page->GetChromeClient().Focus(frame_);
     return;
   }
 

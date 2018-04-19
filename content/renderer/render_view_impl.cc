@@ -1579,13 +1579,7 @@ void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
   // TODO(jcivelli): when https://bugs.webkit.org/show_bug.cgi?id=33389 is fixed
   //                 we won't have to test for user gesture anymore and we can
   //                 move that code back to render_widget.cc
-  WebFrame* main_frame = webview() ? webview()->MainFrame() : nullptr;
-  bool is_processing_user_gesture =
-      WebUserGestureIndicator::IsProcessingUserGesture(
-          main_frame && main_frame->IsWebLocalFrame()
-              ? main_frame->ToWebLocalFrame()
-              : nullptr);
-  if (is_processing_user_gesture &&
+  if (WebUserGestureIndicator::IsProcessingUserGesture(calling_frame) &&
       !RenderThreadImpl::current()->layout_test_mode()) {
     Send(new ViewHostMsg_Focus(GetRoutingID()));
 
