@@ -24,40 +24,57 @@ void MockExternalProvider::UpdateOrAddExtension(const ExtensionId& id,
   auto info = std::make_unique<ExternalInstallInfoFile>(
       id, base::Version(version_str), path, location_, Extension::NO_FLAGS,
       false, false);
-  extension_map_[id] = std::move(info);
+  UpdateOrAddExtension(std::move(info));
 }
 
 void MockExternalProvider::UpdateOrAddExtension(
     std::unique_ptr<ExternalInstallInfoFile> info) {
-  std::string id = info->extension_id;
-  extension_map_[id] = std::move(info);
+  const std::string& id = info->extension_id;
+  CHECK(url_extension_map_.find(id) == url_extension_map_.end());
+  file_extension_map_[id] = std::move(info);
+}
+
+void MockExternalProvider::UpdateOrAddExtension(
+    std::unique_ptr<ExternalInstallInfoUpdateUrl> info) {
+  const std::string& id = info->extension_id;
+  CHECK(file_extension_map_.find(id) == file_extension_map_.end());
+  url_extension_map_[id] = std::move(info);
 }
 
 void MockExternalProvider::RemoveExtension(const ExtensionId& id) {
-  extension_map_.erase(id);
+  file_extension_map_.erase(id);
+  url_extension_map_.erase(id);
 }
 
 void MockExternalProvider::VisitRegisteredExtension() {
   visit_count_++;
-  for (const auto& extension_kv : extension_map_)
+  for (const auto& extension_kv : file_extension_map_)
     visitor_->OnExternalExtensionFileFound(*extension_kv.second);
+  for (const auto& extension_kv : url_extension_map_)
+    visitor_->OnExternalExtensionUpdateUrlFound(*extension_kv.second,
+                                                true /* is_initial_load */);
   visitor_->OnExternalProviderReady(this);
 }
 
 bool MockExternalProvider::HasExtension(const std::string& id) const {
-  return extension_map_.find(id) != extension_map_.end();
+  return file_extension_map_.find(id) != file_extension_map_.end() ||
+         url_extension_map_.find(id) != url_extension_map_.end();
 }
 
 bool MockExternalProvider::GetExtensionDetails(
     const std::string& id,
     Manifest::Location* location,
     std::unique_ptr<base::Version>* version) const {
-  DataMap::const_iterator it = extension_map_.find(id);
-  if (it == extension_map_.end())
+  FileDataMap::const_iterator it1 = file_extension_map_.find(id);
+  UrlDataMap::const_iterator it2 = url_extension_map_.find(id);
+
+  // |id| can't be on both |file_extension_map_| and |url_extension_map_|.
+  if (it1 == file_extension_map_.end() && it2 == url_extension_map_.end())
     return false;
 
-  if (version)
-    version->reset(new base::Version(it->second->version));
+  // Only ExternalInstallInfoFile has version.
+  if (version && it1 != file_extension_map_.end())
+    version->reset(new base::Version(it1->second->version));
 
   if (location)
     *location = location_;

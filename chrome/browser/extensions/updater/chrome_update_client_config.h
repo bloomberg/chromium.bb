@@ -26,9 +26,16 @@ class ActivityDataService;
 
 namespace extensions {
 
+class ExtensionUpdateClientBaseTest;
+
 class ChromeUpdateClientConfig : public update_client::Configurator {
  public:
-  explicit ChromeUpdateClientConfig(content::BrowserContext* context);
+  using FactoryCallback =
+      base::RepeatingCallback<scoped_refptr<ChromeUpdateClientConfig>(
+          content::BrowserContext* context)>;
+
+  static scoped_refptr<ChromeUpdateClientConfig> Create(
+      content::BrowserContext* context);
 
   int InitialDelay() const override;
   int NextCheckDelay() const override;
@@ -58,7 +65,15 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
 
  protected:
   friend class base::RefCountedThreadSafe<ChromeUpdateClientConfig>;
+  friend class ExtensionUpdateClientBaseTest;
+
+  explicit ChromeUpdateClientConfig(content::BrowserContext* context);
   ~ChromeUpdateClientConfig() override;
+
+  // Injects a new client config by changing the creation factory.
+  // Should be used for tests only.
+  static void SetChromeUpdateClientConfigFactoryForTesting(
+      FactoryCallback factory);
 
  private:
   content::BrowserContext* context_ = nullptr;

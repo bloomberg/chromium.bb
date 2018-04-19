@@ -11,10 +11,12 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/strings/string_split.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
+#include "chrome/browser/extensions/content_verifier_test_utils.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -31,149 +33,16 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/external_install_info.h"
-#include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/mock_external_provider.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/extension_downloader_test_delegate.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_urls.h"
 
 namespace extensions {
-
-namespace {
-
-// This lets us intercept requests for update checks of extensions, and
-// substitute a local file as a simulated response.
-class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
- public:
-  DownloaderTestDelegate() {}
-
-  // This makes it so that update check requests for |extension_id| will return
-  // a downloaded file of |crx_path| that is claimed to have version
-  // |version_string|.
-  void AddResponse(const ExtensionId& extension_id,
-                   const std::string& version_string,
-                   const base::FilePath& crx_path) {
-    responses_[extension_id] = std::make_pair(version_string, crx_path);
-  }
-
-  const std::vector<std::unique_ptr<ManifestFetchData>>& requests() {
-    return requests_;
-  }
-
-  // ExtensionDownloaderTestDelegate:
-  void StartUpdateCheck(
-      ExtensionDownloader* downloader,
-      ExtensionDownloaderDelegate* delegate,
-      std::unique_ptr<ManifestFetchData> fetch_data) override {
-    requests_.push_back(std::move(fetch_data));
-    const ManifestFetchData* data = requests_.back().get();
-
-    for (const auto& id : data->extension_ids()) {
-      if (ContainsKey(responses_, id)) {
-        // We use PostTask here instead of calling OnExtensionDownloadFinished
-        // immeditately, because the calling code isn't expecting a synchronous
-        // response (in non-test situations there are at least 2 network
-        // requests needed before a file could be returned).
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(
-                &ExtensionDownloaderDelegate::OnExtensionDownloadFinished,
-                base::Unretained(delegate),
-                CRXFileInfo(id, responses_[id].second),
-                false /* pass_file_ownership */, GURL(), responses_[id].first,
-                ExtensionDownloaderDelegate::PingResult(), data->request_ids(),
-                ExtensionDownloaderDelegate::InstallCallback()));
-      }
-    }
-  }
-
- private:
-  // The requests we've received.
-  std::vector<std::unique_ptr<ManifestFetchData>> requests_;
-
-  // The prepared responses - this maps an extension id to a (version string,
-  // crx file path) pair.
-  std::map<std::string, std::pair<ExtensionId, base::FilePath>> responses_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloaderTestDelegate);
-};
-
-// This lets us simulate the behavior of an enterprise policy that wants
-// a given extension to be installed via the webstore.
-class TestExternalProvider : public ExternalProviderInterface {
- public:
-  TestExternalProvider(VisitorInterface* visitor,
-                       const ExtensionId& extension_id)
-      : visitor_(visitor), extension_id_(extension_id) {}
-
-  ~TestExternalProvider() override {}
-
-  // ExternalProviderInterface:
-  void ServiceShutdown() override {}
-
-  void VisitRegisteredExtension() override {
-    visitor_->OnExternalExtensionUpdateUrlFound(
-        ExternalInstallInfoUpdateUrl(
-            extension_id_, std::string() /* install_parameter */,
-            extension_urls::GetWebstoreUpdateUrl(),
-            Manifest::EXTERNAL_POLICY_DOWNLOAD, 0 /* creation_flags */,
-            true /* mark_acknowledged */),
-        true /* is_initial_load */);
-    visitor_->OnExternalProviderReady(this);
-  }
-
-  bool HasExtension(const ExtensionId& id) const override {
-    return id == std::string("npnbmohejbjohgpjnmjagbafnjhkmgko");
-  }
-
-  bool GetExtensionDetails(
-      const ExtensionId& id,
-      Manifest::Location* location,
-      std::unique_ptr<base::Version>* version) const override {
-    ADD_FAILURE() << "Unexpected GetExtensionDetails call; id:" << id;
-    return false;
-  }
-
-  bool IsReady() const override { return true; }
-
- private:
-  VisitorInterface* visitor_;
-  ExtensionId extension_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestExternalProvider);
-};
-
-// This lets us simulate a policy-installed extension being "force" installed;
-// ie a user is not allowed to manually uninstall/disable it.
-class ForceInstallProvider : public ManagementPolicy::Provider {
- public:
-  explicit ForceInstallProvider(const ExtensionId& id) : id_(id) {}
-  ~ForceInstallProvider() override {}
-
-  std::string GetDebugPolicyProviderName() const override {
-    return "ForceInstallProvider";
-  }
-
-  // MananagementPolicy::Provider:
-  bool UserMayModifySettings(const Extension* extension,
-                             base::string16* error) const override {
-    return extension->id() != id_;
-  }
-  bool MustRemainEnabled(const Extension* extension,
-                         base::string16* error) const override {
-    return extension->id() == id_;
-  }
-
- private:
-  // The extension id we want to disallow uninstall/disable for.
-  ExtensionId id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ForceInstallProvider);
-};
-
-}  // namespace
 
 class ContentVerifierTest : public ExtensionBrowserTest {
  public:
@@ -181,6 +50,8 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   ~ContentVerifierTest() override {}
 
   void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kNewExtensionUpdaterService);
     // Override content verification mode before ExtensionSystemImpl initializes
     // ChromeContentVerifierDelegate.
     ChromeContentVerifierDelegate::SetDefaultModeForTesting(
@@ -242,6 +113,9 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     EnableExtension(id);
     EXPECT_TRUE(job_observer.WaitForExpectedJobs());
   }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
@@ -323,12 +197,19 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, PolicyCorrupted) {
   ExtensionId kExtensionId("npnbmohejbjohgpjnmjagbafnjhkmgko");
 
   // Setup fake policy and update check objects.
-  ForceInstallProvider policy(kExtensionId);
-  DownloaderTestDelegate downloader;
+  content_verifier_test::ForceInstallProvider policy(kExtensionId);
+  content_verifier_test::DownloaderTestDelegate downloader;
   system->management_policy()->RegisterProvider(&policy);
   ExtensionDownloader::set_test_delegate(&downloader);
-  service->AddProviderForTesting(
-      std::make_unique<TestExternalProvider>(service, kExtensionId));
+  auto external_provider = std::make_unique<MockExternalProvider>(
+      service, Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  external_provider->UpdateOrAddExtension(
+      std::make_unique<ExternalInstallInfoUpdateUrl>(
+          kExtensionId, std::string() /* install_parameter */,
+          extension_urls::GetWebstoreUpdateUrl(),
+          Manifest::EXTERNAL_POLICY_DOWNLOAD, 0 /* creation_flags */,
+          true /* mark_acknowldged */));
+  service->AddProviderForTesting(std::move(external_provider));
 
   base::FilePath crx_path =
       test_data_dir_.AppendASCII("content_verifier/v1.crx");
@@ -442,7 +323,7 @@ class ContentVerifierPolicyTest : public ContentVerifierTest {
 
  private:
   policy::MockConfigurationPolicyProvider policy_provider_;
-  DownloaderTestDelegate downloader_;
+  content_verifier_test::DownloaderTestDelegate downloader_;
 };
 
 // We want to test what happens at startup with a corroption-disabled policy
@@ -487,49 +368,6 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, PolicyCorruptedOnStartup) {
   EXPECT_TRUE(registry->enabled_extensions().Contains(id_));
 }
 
-namespace {
-
-// A helper for intercepting the normal action that
-// ChromeContentVerifierDelegate would take on discovering corruption, letting
-// us track the delay for each consecutive reinstall.
-class DelayTracker {
- public:
-  DelayTracker()
-      : action_(base::Bind(&DelayTracker::ReinstallAction,
-                           base::Unretained(this))) {
-    PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(&action_);
-  }
-
-  ~DelayTracker() {
-    PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(nullptr);
-  }
-
-  const std::vector<base::TimeDelta>& calls() { return calls_; }
-
-  void ReinstallAction(const base::Closure& callback, base::TimeDelta delay) {
-    saved_callback_ = callback;
-    calls_.push_back(delay);
-  }
-
-  void Proceed() {
-    ASSERT_TRUE(saved_callback_);
-    ASSERT_TRUE(!saved_callback_->is_null());
-    // Run() will set |saved_callback_| again, so use a temporary: |callback|.
-    base::Closure callback = saved_callback_.value();
-    saved_callback_.reset();
-    callback.Run();
-  }
-
- private:
-  std::vector<base::TimeDelta> calls_;
-  base::Optional<base::Closure> saved_callback_;
-  PolicyExtensionReinstaller::ReinstallCallback action_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayTracker);
-};
-
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, Backoff) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   ExtensionSystem* system = ExtensionSystem::Get(profile());
@@ -544,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, Backoff) {
 
   // Setup to intercept reinstall action, so we can see what the delay would
   // have been for the real action.
-  DelayTracker delay_tracker;
+  content_verifier_test::DelayTracker delay_tracker;
 
   // Do 4 iterations of disabling followed by reinstall.
   const size_t iterations = 4;
@@ -590,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, FailedUpdateRetries) {
     EXPECT_TRUE(registry_observer.WaitForExtensionInstalled());
   }
 
-  DelayTracker delay_tracker;
+  content_verifier_test::DelayTracker delay_tracker;
   service->set_external_updates_disabled_for_test(true);
   TestExtensionRegistryObserver registry_observer(registry, id_);
   verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
