@@ -1705,7 +1705,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
     pending_surface_browser_snapshots_.insert(std::make_pair(id, callback));
     ui::LatencyInfo latency_info;
     latency_info.AddLatencyNumber(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                                  0, id);
+                                  GetLatencyComponentId(), id);
     Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
     return;
   }
@@ -1719,8 +1719,8 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
 #endif
   pending_browser_snapshots_.insert(std::make_pair(id, callback));
   ui::LatencyInfo latency_info;
-  latency_info.AddLatencyNumber(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT, 0,
-                                id);
+  latency_info.AddLatencyNumber(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+                                GetLatencyComponentId(), id);
   Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
 }
 
@@ -2020,6 +2020,9 @@ void RenderWidgetHostImpl::ClearDisplayedGraphics() {
 
 void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
     const ui::LatencyInfo& latency_info) {
+  // Note that a compromised renderer can send LatencyInfo to a
+  // RenderWidgetHostImpl other than its own. Be mindful of security
+  // implications of the code you add here.
   ui::LatencyInfo::LatencyComponent window_snapshot_component;
   if (latency_info.FindLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
                                GetLatencyComponentId(),
@@ -2966,8 +2969,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
   frame.metadata.begin_frame_ack.has_damage = true;
 
   last_frame_metadata_ = frame.metadata.Clone();
-
-  latency_tracker_.OnSwapCompositorFrame(&frame.metadata.latency_info);
 
   bool is_mobile_optimized = IsMobileOptimizedFrame(frame.metadata);
   input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);

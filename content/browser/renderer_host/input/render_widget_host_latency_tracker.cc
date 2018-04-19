@@ -33,37 +33,6 @@ ukm::SourceId GenerateUkmSourceId() {
   return ukm_recorder ? ukm_recorder->GetNewSourceID() : ukm::kInvalidSourceId;
 }
 
-// LatencyComponents generated in the renderer must have component IDs
-// provided to them by the browser process. This function adds the correct
-// component ID where necessary.
-void AddLatencyInfoComponentIds(LatencyInfo* latency,
-                                int64_t latency_component_id) {
-  std::vector<std::pair<ui::LatencyComponentType, int64_t>> new_components_key;
-  std::vector<LatencyInfo::LatencyComponent> new_components_value;
-  for (const auto& lc : latency->latency_components()) {
-    ui::LatencyComponentType component_type = lc.first.first;
-    if (component_type == ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
-      // Generate a new component entry with the correct component ID
-      new_components_key.push_back(std::make_pair(component_type,
-                                                  latency_component_id));
-      new_components_value.push_back(lc.second);
-    }
-  }
-
-  // Remove the entries with invalid component IDs.
-  latency->RemoveLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT);
-
-  // Add newly generated components into the latency info
-  for (size_t i = 0; i < new_components_key.size(); i++) {
-    latency->AddLatencyNumberWithTimestamp(
-        new_components_key[i].first,
-        new_components_key[i].second,
-        new_components_value[i].sequence_number,
-        new_components_value[i].event_time,
-        new_components_value[i].event_count);
-  }
-}
-
 void RecordEQTAccuracy(base::TimeDelta queueing_time,
                        base::TimeDelta expected_queueing_time) {
   float queueing_time_ms = queueing_time.InMillisecondsF();
@@ -334,14 +303,6 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
 
   ComputeInputLatencyHistograms(event.GetType(), latency_component_id_,
                                 *latency, ack_result);
-}
-
-void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
-    std::vector<LatencyInfo>* latencies) {
-  DCHECK(latencies);
-  for (LatencyInfo& latency : *latencies) {
-    AddLatencyInfoComponentIds(&latency, latency_component_id_);
-  }
 }
 
 }  // namespace content
