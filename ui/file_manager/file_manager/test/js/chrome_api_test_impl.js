@@ -95,6 +95,11 @@ chrome = {
     },
   },
 
+  power: {
+    requestKeepAwake: (level) => {},
+    releaseKeepAwake: () => {},
+  },
+
   runtime: {
     getBackgroundPage: (callback) => {
       setTimeout(callback, 0, window);

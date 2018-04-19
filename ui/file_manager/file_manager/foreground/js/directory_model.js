@@ -116,7 +116,7 @@ DirectoryModel.prototype.getEmptyFileList = function() {
 };
 
 /**
- * @return {!cr.ui.ListSelectionModel|!cr.ui.ListSingleSelectionModel} Selection
+ * @return {!FileListSelectionModel|!FileListSingleSelectionModel} Selection
  * in the fileList.
  */
 DirectoryModel.prototype.getFileListSelection = function() {

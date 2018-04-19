@@ -196,28 +196,6 @@ CommandUtil.forceDefaultHandler = function(node, commandId) {
 };
 
 /**
- * Default command.
- * @type {Command}
- */
-CommandUtil.defaultCommand = /** @type {Command} */ ({
-  /**
-   * @param {!Event} event Command event.
-   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
-   */
-  execute: function(event, fileManager) {
-    fileManager.document.execCommand(event.command.id);
-  },
-  /**
-   * @param {!Event} event Command event.
-   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
-   */
-  canExecute: function(event, fileManager) {
-    event.canExecute = fileManager.document.queryCommandEnabled(
-        event.command.id);
-  }
-});
-
-/**
  * Creates the volume switch command with index.
  * @param {number} index Volume index from 1 to 9.
  * @return {Command} Volume switch command.
@@ -1030,8 +1008,34 @@ CommandHandler.COMMANDS_['paste-into-folder'] = /** @type {Command} */ ({
   }
 });
 
-CommandHandler.COMMANDS_['cut'] = CommandUtil.defaultCommand;
-CommandHandler.COMMANDS_['copy'] = CommandUtil.defaultCommand;
+/**
+ * Cut/Copy command.
+ * @type {Command}
+ * @private
+ */
+CommandHandler.cutCopyCommand_ = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    // Cancel check-select-mode on cut/copy.  Any further selection of a dir
+    // should start a new selection rather than add to the existing selection.
+    fileManager.directoryModel.getFileListSelection().setCheckSelectMode(false);
+    fileManager.document.execCommand(event.command.id);
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: function(event, fileManager) {
+    event.canExecute =
+        fileManager.document.queryCommandEnabled(event.command.id);
+  }
+});
+
+CommandHandler.COMMANDS_['cut'] = CommandHandler.cutCopyCommand_;
+CommandHandler.COMMANDS_['copy'] = CommandHandler.cutCopyCommand_;
 
 /**
  * Initiates file renaming.
