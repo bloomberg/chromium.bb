@@ -4893,6 +4893,9 @@ domain Page
   # Crashes renderer on the IO thread, generates minidumps.
   experimental command crash
 
+  # Tries to close page, running its beforeunload hooks, if any.
+  experimental command close
+
   # Stops sending each frame in the `screencastFrame`.
   experimental command stopScreencast
 

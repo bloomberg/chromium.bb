@@ -395,6 +395,14 @@ Response PageHandler::Crash() {
   return Response::FallThrough();
 }
 
+Response PageHandler::Close() {
+  WebContentsImpl* web_contents = GetWebContents();
+  if (!web_contents)
+    return Response::Error("Not attached to a page");
+  web_contents->DispatchBeforeUnload();
+  return Response::OK();
+}
+
 Response PageHandler::Reload(Maybe<bool> bypassCache,
                              Maybe<std::string> script_to_evaluate_on_load) {
   WebContentsImpl* web_contents = GetWebContents();
