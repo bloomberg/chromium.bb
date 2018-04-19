@@ -543,7 +543,7 @@ class WebMediaPlayerMSTest
   void StopUsingProvider() override;
   void StartRendering() override;
   void StopRendering() override;
-  void DidReceiveFrame() override {}
+  void DidReceiveFrame() override;
 
   // For test use
   void SetBackgroundRendering(bool background_rendering) {
@@ -558,6 +558,7 @@ class WebMediaPlayerMSTest
  protected:
   MOCK_METHOD0(DoStartRendering, void());
   MOCK_METHOD0(DoStopRendering, void());
+  MOCK_METHOD0(DoDidReceiveFrame, void());
 
   MOCK_METHOD1(DoSetWebLayer, void(bool));
   MOCK_METHOD1(DoNetworkStateChanged,
@@ -662,6 +663,11 @@ void WebMediaPlayerMSTest::StartRendering() {
 void WebMediaPlayerMSTest::StopRendering() {
   rendering_ = false;
   DoStopRendering();
+}
+
+void WebMediaPlayerMSTest::DidReceiveFrame() {
+  if (background_rendering_)
+    DoDidReceiveFrame();
 }
 
 void WebMediaPlayerMSTest::RenderFrame() {
@@ -1017,7 +1023,9 @@ TEST_F(WebMediaPlayerMSTest, BackgroundRendering) {
       media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  // Switch to background rendering, expect rendering to continue.
+  // Switch to background rendering, expect rendering to continue for all the
+  // frames between kTestBrake frames.
+  EXPECT_CALL(*this, DoDidReceiveFrame()).Times(testing::AtLeast(1));
   SetBackgroundRendering(true);
   auto prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   message_loop_controller_.RunAndWaitForStatus(
