@@ -115,19 +115,21 @@ void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
     const base::LaunchOptions& options) {
 }
 
-base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
+ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
     const ChildProcessLauncherHelper::Process& process,
-    bool known_dead,
-    int* exit_code) {
+    bool known_dead) {
+  ChildProcessTerminationInfo info;
   if (process.zygote) {
-    return process.zygote->GetTerminationStatus(
-        process.process.Handle(), known_dead, exit_code);
+    info.status = process.zygote->GetTerminationStatus(
+        process.process.Handle(), known_dead, &info.exit_code);
+  } else if (known_dead) {
+    info.status = base::GetKnownDeadTerminationStatus(process.process.Handle(),
+                                                      &info.exit_code);
+  } else {
+    info.status =
+        base::GetTerminationStatus(process.process.Handle(), &info.exit_code);
   }
-  if (known_dead) {
-    return base::GetKnownDeadTerminationStatus(
-        process.process.Handle(), exit_code);
-  }
-  return base::GetTerminationStatus(process.process.Handle(), exit_code);
+  return info;
 }
 
 // static

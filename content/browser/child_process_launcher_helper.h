@@ -47,6 +47,7 @@ namespace content {
 class ChildProcessLauncher;
 class SandboxedProcessLauncherDelegate;
 struct ChildProcessLauncherPriority;
+struct ChildProcessTerminationInfo;
 
 #if defined(OS_POSIX)
 class PosixFileDescriptorInfo;
@@ -146,12 +147,10 @@ class ChildProcessLauncherHelper :
 
   int client_thread_id() const { return client_thread_id_; }
 
-  // Returns the termination status and sets |exit_code| if non null.
-  // See ChildProcessLauncher::GetChildTerminationStatus for more info.
-  base::TerminationStatus GetTerminationStatus(
+  // See ChildProcessLauncher::GetChildTerminationInfo for more info.
+  ChildProcessTerminationInfo GetTerminationInfo(
       const ChildProcessLauncherHelper::Process& process,
-      bool known_dead,
-      int* exit_code);
+      bool known_dead);
 
   // Terminates |process|.
   // Returns true if the process was stopped, false if the process had not been

@@ -631,23 +631,21 @@ GpuProcessHost::~GpuProcessHost() {
   std::string message;
   bool block_offscreen_contexts = true;
   if (!in_process_ && process_launched_) {
-    int exit_code;
-    base::TerminationStatus status = process_->GetTerminationStatus(
-        false /* known_dead */, &exit_code);
-    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
-                              status,
+    ChildProcessTerminationInfo info =
+        process_->GetTerminationInfo(false /* known_dead */);
+    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus", info.status,
                               base::TERMINATION_STATUS_MAX_ENUM);
 
-    if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
-        status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
-        status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
+    if (info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
+        info.status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
+        info.status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
       // Windows always returns PROCESS_CRASHED on abnormal termination, as it
       // doesn't have a way to distinguish the two.
       base::UmaHistogramSparse("GPU.GPUProcessExitCode",
-                               std::max(0, std::min(100, exit_code)));
+                               std::max(0, std::min(100, info.exit_code)));
     }
 
-    switch (status) {
+    switch (info.status) {
       case base::TERMINATION_STATUS_NORMAL_TERMINATION:
         // Don't block offscreen contexts (and force page reload for webgl)
         // if this was an intentional shutdown or the OOM killer on Android
@@ -660,9 +658,8 @@ GpuProcessHost::~GpuProcessHost() {
         message = "The GPU process exited normally. Everything is okay.";
         break;
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
-        message = base::StringPrintf(
-            "The GPU process exited with code %d.",
-            exit_code);
+        message = base::StringPrintf("The GPU process exited with code %d.",
+                                     info.exit_code);
         break;
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
         message = "You killed the GPU process! Why?";
@@ -1025,8 +1022,10 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
   }
   SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
   RecordProcessCrash();
-  GpuDataManagerImpl::GetInstance()->ProcessCrashed(
-      process_->GetTerminationStatus(true /* known_dead */, nullptr));
+
+  ChildProcessTerminationInfo info =
+      process_->GetTerminationInfo(true /* known_dead */);
+  GpuDataManagerImpl::GetInstance()->ProcessCrashed(info.status);
 }
 
 void GpuProcessHost::DidInitialize(

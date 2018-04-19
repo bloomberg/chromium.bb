@@ -75,8 +75,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
               bool terminate_on_shutdown) override;
   const ChildProcessData& GetData() const override;
   ChildProcessHost* GetHost() const override;
-  base::TerminationStatus GetTerminationStatus(bool known_dead,
-                                               int* exit_code) override;
+  ChildProcessTerminationInfo GetTerminationInfo(bool known_dead) override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   void SetName(const base::string16& name) override;
