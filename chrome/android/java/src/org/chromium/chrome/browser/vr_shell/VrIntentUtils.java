@@ -16,7 +16,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.vr.VrMainActivity;
 
 /**
  * Utilities dealing with extracting information about VR intents.
@@ -139,16 +138,6 @@ public class VrIntentUtils {
         intent.putExtra(VR_FRE_CALLER_INTENT_EXTRA, new Intent(freCallerIntent));
         intent.putExtra(VR_FRE_INTENT_EXTRA, new Intent(freIntent));
         return intent;
-    }
-
-    /*
-     * Remove deeplink-specific extras from the given intent so that we don't auto-present
-     * WebVR content after FRE completion.
-     */
-    public static void updateFreCallerIntent(Context context, Intent intent) {
-        intent.setClassName(context, VrMainActivity.class.getName());
-        IntentHandler.removeTrustedIntentExtras(intent);
-        intent.removeExtra(AUTOPRESENT_WEVBVR_EXTRA);
     }
 
     /**
