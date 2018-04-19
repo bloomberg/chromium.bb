@@ -69,8 +69,7 @@ class ArcAppListPrefs : public KeyedService,
             bool ready,
             bool showInLauncher,
             bool shortcut,
-            bool launchable,
-            arc::mojom::OrientationLockDeprecated orientation_lock);
+            bool launchable);
     ~AppInfo();
 
     std::string name;
@@ -86,7 +85,6 @@ class ArcAppListPrefs : public KeyedService,
     bool showInLauncher;
     bool shortcut;
     bool launchable;
-    arc::mojom::OrientationLockDeprecated orientation_lock;
   };
 
   struct PackageInfo {
@@ -357,18 +355,16 @@ class ArcAppListPrefs : public KeyedService,
                                                 bool installed) const;
 
   void AddApp(const arc::mojom::AppInfo& app_info);
-  void AddAppAndShortcut(
-      bool app_ready,
-      const std::string& name,
-      const std::string& package_name,
-      const std::string& activity,
-      const std::string& intent_uri,
-      const std::string& icon_resource_id,
-      const bool sticky,
-      const bool notifications_enabled,
-      const bool shortcut,
-      const bool launchable,
-      arc::mojom::OrientationLockDeprecated orientation_lock);
+  void AddAppAndShortcut(bool app_ready,
+                         const std::string& name,
+                         const std::string& package_name,
+                         const std::string& activity,
+                         const std::string& intent_uri,
+                         const std::string& icon_resource_id,
+                         const bool sticky,
+                         const bool notifications_enabled,
+                         const bool shortcut,
+                         const bool launchable);
   // Adds or updates local pref for given package.
   void AddOrUpdatePackagePrefs(PrefService* prefs,
                                const arc::mojom::ArcPackageInfo& package);

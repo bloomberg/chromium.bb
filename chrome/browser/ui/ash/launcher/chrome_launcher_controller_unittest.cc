@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "ash/display/display_configuration_controller.h"
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -121,7 +120,6 @@ using base::ASCIIToUTF16;
 using extensions::Extension;
 using extensions::Manifest;
 using extensions::UnloadedExtensionReason;
-using arc::mojom::OrientationLockDeprecated;
 
 namespace {
 constexpr char kOfflineGmailUrl[] = "https://mail.google.com/mail/mu/u";
@@ -923,13 +921,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void EnableTabletMode(bool enable) {
-    // TODO(oshima|xutan): Remove this once orientation code is moved to
-    // exo. https://crbug.com/823634.
-    ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-        enable);
-  }
-
   void ValidateArcState(bool arc_enabled,
                         bool arc_managed,
                         arc::ArcSessionManager::State state,
@@ -958,13 +949,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   arc::mojom::AppInfo CreateAppInfo(const std::string& name,
                                     const std::string& activity,
-                                    const std::string& package_name,
-                                    OrientationLockDeprecated lock) {
+                                    const std::string& package_name) {
     arc::mojom::AppInfo appinfo;
     appinfo.name = name;
     appinfo.package_name = package_name;
     appinfo.activity = activity;
-    appinfo.orientation_lock_deprecated = lock;
     return appinfo;
   }
 
@@ -976,7 +965,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         app_info.activity, std::string() /* intent_uri */,
         std::string() /* icon_resource_id */, false /* sticky */,
         true /* notifications_enabled */, false /* shortcut */,
-        true /* launchable */, app_info.orientation_lock_deprecated);
+        true /* launchable */);
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
     EXPECT_TRUE(prefs->GetApp(app_id));
@@ -988,12 +977,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
     prefs->OnTaskCreated(task_id, appinfo.package_name, appinfo.activity,
                          appinfo.name, std::string());
-  }
-
-  void NotifyOnTaskOrientationLockRequested(int32_t task_id,
-                                            OrientationLockDeprecated lock) {
-    ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
-    prefs->OnTaskOrientationLockRequestedDeprecated(task_id, lock);
   }
 
   // Needed for extension service & friends to work.
@@ -2170,9 +2153,8 @@ TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
   InitLauncherController();
 
   SendListOfArcApps();
-  arc::mojom::AppInfo app_info =
-      CreateAppInfo("Play Store", arc::kPlayStoreActivity,
-                    arc::kPlayStorePackage, OrientationLockDeprecated::NONE);
+  arc::mojom::AppInfo app_info = CreateAppInfo(
+      "Play Store", arc::kPlayStoreActivity, arc::kPlayStorePackage);
   EXPECT_EQ(arc::kPlayStoreAppId, AddArcAppAndShortcut(app_info));
 
   std::string window_app_id("org.chromium.arc.1");
@@ -3793,8 +3775,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
 TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
   InitLauncherControllerWithBrowser();
   arc::mojom::AppInfo appinfo =
-      CreateAppInfo("Some App", "SomeActivity", "com.example.app",
-                    OrientationLockDeprecated::NONE);
+      CreateAppInfo("Some App", "SomeActivity", "com.example.app");
   const std::string app_id = AddArcAppAndShortcut(appinfo);
 
   // Set policy, that makes pins ARC app. Unlike native extension, for ARC app
@@ -3876,8 +3857,8 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcManaged) {
 TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
   InitLauncherControllerWithBrowser();
 
-  arc::mojom::AppInfo appinfo = CreateAppInfo(
-      "Test1", "test", "com.example.app", OrientationLockDeprecated::NONE);
+  arc::mojom::AppInfo appinfo =
+      CreateAppInfo("Test1", "test", "com.example.app");
   AddArcAppAndShortcut(appinfo);
 
   // Widgets will be deleted by the system.
@@ -3931,86 +3912,6 @@ TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
 }
 
 namespace {
-
-class ChromeLauncherControllerOrientationTest
-    : public ChromeLauncherControllerWithArcTest {
- public:
-  ChromeLauncherControllerOrientationTest() {}
-  ~ChromeLauncherControllerOrientationTest() override {}
-
- protected:
-  void InitApps() {
-    appinfo_none_ = CreateAppInfo("None", "None", "com.example.app",
-                                  OrientationLockDeprecated::NONE);
-    appinfo_landscape_ =
-        CreateAppInfo("Landscape", "Landscape", "com.example.app",
-                      OrientationLockDeprecated::LANDSCAPE);
-    appinfo_portrait_ = CreateAppInfo("Portrait", "Portrait", "com.example.app",
-                                      OrientationLockDeprecated::PORTRAIT);
-    appinfo_current_ =
-        CreateAppInfo("LockCurrent", "current", "com.example.app",
-                      OrientationLockDeprecated::CURRENT);
-
-    AddArcAppAndShortcut(appinfo_none_);
-    AddArcAppAndShortcut(appinfo_landscape_);
-    AddArcAppAndShortcut(appinfo_portrait_);
-    AddArcAppAndShortcut(appinfo_current_);
-
-    ash::ScreenOrientationController* controller =
-        ash::Shell::Get()->screen_orientation_controller();
-
-    // Creating a window with NONE orientation will not lock the screen.
-    window_none_ = CreateArcWindow(window_app_id_none_);
-    NotifyOnTaskCreated(appinfo_none_, task_id_none_);
-    EXPECT_FALSE(controller->rotation_locked());
-    EXPECT_EQ(display::Display::ROTATE_0,
-              display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-    // Create a arc window with PORTRAIT orientation locks the screen to 270.
-    window_portrait_ = CreateArcWindow(window_app_id_portrait_);
-    NotifyOnTaskCreated(appinfo_portrait_, task_id_portrait_);
-    EXPECT_TRUE(controller->rotation_locked());
-    EXPECT_EQ(display::Display::ROTATE_270,
-              display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-    // Create a arc window with LANDSCAPE orientation locks the screen to 0.
-    window_landscape_ = CreateArcWindow(window_app_id_landscape_);
-    NotifyOnTaskCreated(appinfo_landscape_, task_id_landscape_);
-    EXPECT_TRUE(controller->rotation_locked());
-    EXPECT_EQ(display::Display::ROTATE_0,
-              display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-  }
-
-  int32_t task_id_none_ = 1;
-  int32_t task_id_landscape_ = 2;
-  int32_t task_id_portrait_ = 3;
-  int32_t task_id_current_ = 4;
-
-  // This needs to be kept on the instance because window's property has
-  // refeference to this.
-  std::string window_app_id_none_ = {"org.chromium.arc.1"};
-  std::string window_app_id_landscape_ = {"org.chromium.arc.2"};
-  std::string window_app_id_portrait_ = {"org.chromium.arc.3"};
-  std::string window_app_id_current_ = {"org.chromium.arc.4"};
-
-  arc::mojom::AppInfo appinfo_none_;
-  arc::mojom::AppInfo appinfo_landscape_;
-  arc::mojom::AppInfo appinfo_portrait_;
-  arc::mojom::AppInfo appinfo_current_;
-
-  views::Widget* window_none_ = nullptr;
-  views::Widget* window_landscape_ = nullptr;
-  views::Widget* window_portrait_ = nullptr;
-  views::Widget* window_current_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerOrientationTest);
-};
-
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerOrientationTest,
-                        ::testing::Bool());
-
 class ChromeLauncherControllerArcDefaultAppsTest
     : public ChromeLauncherControllerTest,
       public ::testing::WithParamInterface<bool> {
@@ -4058,156 +3959,6 @@ INSTANTIATE_TEST_CASE_P(,
                         ::testing::Bool());
 
 }  // namespace
-
-TEST_P(ChromeLauncherControllerOrientationTest,
-       ArcOrientationLockBeforeWindowReady) {
-  ASSERT_TRUE(display::Display::HasInternalDisplay());
-
-  extension_service_->AddExtension(arc_support_host_.get());
-  EnablePlayStore(true);
-
-  InitLauncherController();
-
-  ash::ScreenOrientationController* controller =
-      ash::Shell::Get()->screen_orientation_controller();
-
-  std::string app_id1("org.chromium.arc.1");
-  int task_id1 = 1;
-  arc::mojom::AppInfo appinfo1 = CreateAppInfo(
-      "Test1", "test", "com.example.app", OrientationLockDeprecated::NONE);
-
-  AddArcAppAndShortcut(appinfo1);
-  NotifyOnTaskCreated(appinfo1, task_id1);
-  NotifyOnTaskOrientationLockRequested(task_id1,
-                                       OrientationLockDeprecated::PORTRAIT);
-
-  // Widgets will be deleted by the system.
-  CreateArcWindow(app_id1);
-
-  EXPECT_FALSE(controller->rotation_locked());
-
-  EnableTabletMode(true);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_270,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  std::string app_id2("org.chromium.arc.2");
-  int task_id2 = 2;
-  arc::mojom::AppInfo appinfo2 = CreateAppInfo(
-      "Test2", "test", "com.example.app", OrientationLockDeprecated::NONE);
-  // Create in tablet mode.
-  AddArcAppAndShortcut(appinfo2);
-  NotifyOnTaskCreated(appinfo2, task_id2);
-  NotifyOnTaskOrientationLockRequested(task_id2,
-                                       OrientationLockDeprecated::LANDSCAPE);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_270,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // The screen will be locked when the window is created.
-  CreateArcWindow(app_id2);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-}
-
-TEST_P(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
-  ASSERT_TRUE(display::Display::HasInternalDisplay());
-
-  extension_service_->AddExtension(arc_support_host_.get());
-  EnablePlayStore(true);
-  EnableTabletMode(true);
-
-  InitLauncherController();
-
-  InitApps();
-  ash::ScreenOrientationController* controller =
-      ash::Shell::Get()->screen_orientation_controller();
-
-  // Activating a window with NON orientation unlocks the screen.
-  window_none_->Activate();
-  EXPECT_FALSE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Activating a window with PORTRAIT orientation locks the screen to 270.
-  window_portrait_->Activate();
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_270,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Disable Tablet mode, and make sure the screen is unlocked.
-  EnableTabletMode(false);
-  EXPECT_FALSE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Re-enable Tablet mode, and make sure the screen is locked to 270.
-  EnableTabletMode(true);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_270,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  window_portrait_->Activate();
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_270,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  window_landscape_->Activate();
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // OnTaskOrientationLockRequested can overwrite the current lock.
-  NotifyOnTaskOrientationLockRequested(task_id_landscape_,
-                                       OrientationLockDeprecated::NONE);
-  EXPECT_FALSE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  NotifyOnTaskOrientationLockRequested(task_id_landscape_,
-                                       OrientationLockDeprecated::PORTRAIT);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_270,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Non active window won't change the lock.
-  NotifyOnTaskOrientationLockRequested(task_id_none_,
-                                       OrientationLockDeprecated::LANDSCAPE);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_270,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // But activating it will change the locked orinetation.
-  window_none_->Activate();
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // OnTaskOrientationLockRequested will not lock the screen in non Tablet mode.
-  EnableTabletMode(false);
-  EXPECT_FALSE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  NotifyOnTaskOrientationLockRequested(task_id_none_,
-                                       OrientationLockDeprecated::PORTRAIT);
-  EXPECT_FALSE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // But it remembers the orientation lock and use it when Tablet mode is
-  // enabled.
-  EnableTabletMode(true);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_270,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Manually unlock first.
-  NotifyOnTaskOrientationLockRequested(task_id_none_,
-                                       OrientationLockDeprecated::NONE);
-  EXPECT_FALSE(controller->rotation_locked());
-}
 
 TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
