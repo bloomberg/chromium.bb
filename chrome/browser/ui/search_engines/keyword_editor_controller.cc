@@ -80,8 +80,8 @@ const TemplateURL* KeywordEditorController::GetDefaultSearchProvider() {
   return url_model_->GetDefaultSearchProvider();
 }
 
-int KeywordEditorController::MakeDefaultTemplateURL(int index) {
-  return table_model_->MakeDefaultTemplateURL(index);
+void KeywordEditorController::MakeDefaultTemplateURL(int index) {
+  table_model_->MakeDefaultTemplateURL(index);
 }
 
 bool KeywordEditorController::loaded() const {

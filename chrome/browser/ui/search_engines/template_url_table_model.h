@@ -70,17 +70,9 @@ class TemplateURLTableModel : public ui::TableModel,
   // found.
   int IndexOfTemplateURL(const TemplateURL* template_url);
 
-  // Moves the keyword at the specified index to be at the end of the main
-  // group. Returns the new index.  If the entry is already in the main group,
-  // no action is taken, and the current index is returned.
-  int MoveToMainGroup(int index);
-
   // Make the TemplateURL at |index| the default.  Returns the new index, or -1
   // if the index is invalid or it is already the default.
-  int MakeDefaultTemplateURL(int index);
-
-  // If there is an observer, it's notified the selected row has changed.
-  void NotifyChanged(int index);
+  void MakeDefaultTemplateURL(int index);
 
   // Returns the index of the last entry shown in the search engines group.
   int last_search_engine_index() const { return last_search_engine_index_; }
@@ -92,12 +84,6 @@ class TemplateURLTableModel : public ui::TableModel,
  private:
   // TemplateURLServiceObserver notification.
   void OnTemplateURLServiceChanged() override;
-
-  // Removes the entry at |index| from |entries_| and returns the removed item.
-  TemplateURL* RemoveEntry(int index);
-
-  // Adds |entry| to |entries_| at |index|.
-  void AddEntry(int index, TemplateURL* entry);
 
   ui::TableModelObserver* observer_;
 
