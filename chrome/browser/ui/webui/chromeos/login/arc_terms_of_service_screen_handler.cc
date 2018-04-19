@@ -221,7 +221,7 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   // ARC is enabled (prefs::kArcEnabled = true) on showing Terms of Service. If
   // user accepts ToS then prefs::kArcEnabled is left activated. If user skips
   // ToS then prefs::kArcEnabled is automatically reset in ArcSessionManager.
-  profile->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, true);
+  arc::SetArcPlayStoreEnabledForProfile(profile, true);
 
   action_taken_ = false;
 
