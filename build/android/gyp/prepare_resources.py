@@ -91,6 +91,7 @@ def _ZipResources(resource_dirs, zip_path, ignore_pattern):
   # ignore_pattern is a string of ':' delimited list of globs used to ignore
   # files that should not be part of the final resource zip.
   files_to_zip = dict()
+  files_to_zip_without_generated = dict()
   globs = _GenerateGlobs(ignore_pattern)
   for d in resource_dirs:
     for root, _, files in os.walk(d):
@@ -102,7 +103,13 @@ def _ZipResources(resource_dirs, zip_path, ignore_pattern):
         path = os.path.join(root, f)
         if build_utils.MatchesGlob(archive_path, globs):
           continue
+        # We want the original resource dirs in the .info file rather than the
+        # generated overridden path.
+        if not path.startswith('/tmp'):
+          files_to_zip_without_generated[archive_path] = path
         files_to_zip[archive_path] = path
+  resource_utils.CreateResourceInfoFile(files_to_zip_without_generated,
+                                        zip_path)
   build_utils.DoZip(files_to_zip.iteritems(), zip_path)
 
 

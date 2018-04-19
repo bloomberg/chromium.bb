@@ -45,7 +45,8 @@ _TEST_APK_PATH = os.path.join(_TEST_OUTPUT_DIR, 'test.apk')
 _TEST_APK_SO_PATH = 'test.so'
 _TEST_APK_SMALL_SO_PATH = 'smalltest.so'
 _TEST_APK_DEX_PATH = 'test.dex'
-_TEST_APK_OTHER_FILE_PATH = 'icudtl.dat'
+_TEST_APK_OTHER_FILE_PATH = 'assets/icudtl.dat'
+_TEST_APK_RES_FILE_PATH = 'res/drawable-v13/test.xml'
 
 update_goldens = False
 
@@ -141,6 +142,9 @@ class IntegrationTest(unittest.TestCase):
       # Exactly 1MB of data (2^20).
       apk_file.writestr(
           _TEST_APK_OTHER_FILE_PATH, IntegrationTest._CreateBlankData(20))
+      # Exactly 1KB of data (2^10).
+      apk_file.writestr(
+          _TEST_APK_RES_FILE_PATH, IntegrationTest._CreateBlankData(10))
       pak_rel_path = os.path.relpath(_TEST_APK_PAK_PATH, _TEST_APK_ROOT_DIR)
       apk_file.write(_TEST_APK_PAK_PATH, pak_rel_path)
       # Exactly 8MB of data (2^23).

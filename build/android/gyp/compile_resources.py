@@ -160,6 +160,9 @@ def _ParseArgs(args):
   output_opts.add_argument('--apk-path', required=True,
                            help='Path to output (partial) apk.')
 
+  output_opts.add_argument('--apk-info-path', required=True,
+                           help='Path to output info file for the partial apk.')
+
   output_opts.add_argument('--srcjar-out',
                            help='Path to srcjar to contain generated R.java.')
 
@@ -224,6 +227,7 @@ def _SortZip(original_path, sorted_path):
 
 def _DuplicateZhResources(resource_dirs):
   """Duplicate Taiwanese resources into Hong-Kong specific directory."""
+  renamed_paths = dict()
   for resource_dir in resource_dirs:
     # We use zh-TW resources for zh-HK (if we have zh-TW resources).
     for path in build_utils.IterFiles(resource_dir):
@@ -231,6 +235,9 @@ def _DuplicateZhResources(resource_dirs):
         hk_path = path.replace('zh-rTW', 'zh-rHK')
         build_utils.MakeDirectory(os.path.dirname(hk_path))
         shutil.copyfile(path, hk_path)
+        renamed_paths[os.path.relpath(hk_path, resource_dir)] = os.path.relpath(
+            path, resource_dir)
+  return renamed_paths
 
 
 def _ToAaptLocales(locale_whitelist, support_zh_hk):
@@ -261,6 +268,7 @@ def _MoveImagesToNonMdpiFolders(res_root):
 
   Why? http://crbug.com/289843
   """
+  renamed_paths = dict()
   for src_dir_name in os.listdir(res_root):
     src_components = src_dir_name.split('-')
     if src_components[0] != 'drawable' or 'mdpi' not in src_components:
@@ -280,6 +288,9 @@ def _MoveImagesToNonMdpiFolders(res_root):
       dst_file = os.path.join(dst_dir, src_file_name)
       assert not os.path.lexists(dst_file)
       shutil.move(src_file, dst_file)
+      renamed_paths[os.path.relpath(dst_file, res_root)] = os.path.relpath(
+          src_file, res_root)
+  return renamed_paths
 
 
 def _CreateLinkApkArgs(options):
@@ -412,19 +423,24 @@ def _CreateKeepPredicate(resource_dirs, exclude_xxxhdpi, xxxhdpi_whitelist):
 
 
 def _ConvertToWebP(webp_binary, png_files):
+  renamed_paths = dict()
   pool = multiprocessing.pool.ThreadPool(10)
-  def convert_image(png_path):
+  def convert_image(png_path_tuple):
+    png_path, original_dir = png_path_tuple
     root = os.path.splitext(png_path)[0]
     webp_path = root + '.webp'
     args = [webp_binary, png_path, '-mt', '-quiet', '-m', '6', '-q', '100',
         '-lossless', '-o', webp_path]
     subprocess.check_call(args)
     os.remove(png_path)
+    renamed_paths[os.path.relpath(webp_path, original_dir)] = os.path.relpath(
+        png_path, original_dir)
 
   pool.map(convert_image, [f for f in png_files
-                           if not _PNG_WEBP_BLACKLIST_PATTERN.match(f)])
+                           if not _PNG_WEBP_BLACKLIST_PATTERN.match(f[0])])
   pool.close()
   pool.join()
+  return renamed_paths
 
 
 def _CompileDeps(aapt_path, dep_subdirs, temp_dir):
@@ -457,6 +473,20 @@ def _CompileDeps(aapt_path, dep_subdirs, temp_dir):
   return partials
 
 
+def _CreateResourceInfoFile(
+    renamed_paths, apk_info_path, dependencies_res_zips):
+  lines = set()
+  for zip_file in dependencies_res_zips:
+    zip_info_file_path = zip_file + '.info'
+    if os.path.exists(zip_info_file_path):
+      with open(zip_info_file_path, 'r') as zip_info_file:
+        lines.update(zip_info_file.readlines())
+  for dest, source in renamed_paths.iteritems():
+    lines.add('Rename:{},{}\n'.format(dest, source))
+  with open(apk_info_path, 'w') as info_file:
+    info_file.writelines(sorted(lines))
+
+
 def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   """Compile resources with aapt2 and generate intermediate .ap_ file.
 
@@ -470,7 +500,8 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
       generated.
     r_txt_path: The path where the R.txt file will written to.
   """
-  _DuplicateZhResources(dep_subdirs)
+  renamed_paths = dict()
+  renamed_paths.update(_DuplicateZhResources(dep_subdirs))
 
   keep_predicate = _CreateKeepPredicate(
       dep_subdirs, options.exclude_xxxhdpi, options.xxxhdpi_whitelist)
@@ -480,11 +511,11 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
       if not keep_predicate(f):
         os.remove(f)
       elif f.endswith('.png'):
-        png_paths.append(f)
+        png_paths.append((f, directory))
   if png_paths and options.png_to_webp:
-    _ConvertToWebP(options.webp_binary, png_paths)
+    renamed_paths.update(_ConvertToWebP(options.webp_binary, png_paths))
   for directory in dep_subdirs:
-    _MoveImagesToNonMdpiFolders(directory)
+    renamed_paths.update(_MoveImagesToNonMdpiFolders(directory))
 
   link_command = _CreateLinkApkArgs(options)
   link_command += ['--output-text-symbols', r_txt_path]
@@ -502,6 +533,8 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   # Also creates R.txt
   build_utils.CheckOutput(
       link_command, print_stdout=False, print_stderr=False)
+  _CreateResourceInfoFile(
+      renamed_paths, options.apk_info_path, options.dependencies_res_zips)
 
 
 def _WriteFinalRTxtFile(options, aapt_r_txt_path):
@@ -586,6 +619,7 @@ def main(args):
   # appears first in the depfile.
   possible_output_paths = [
     options.apk_path,
+    options.apk_path + '.info',
     options.r_text_out,
     options.srcjar_out,
     options.proguard_file,

@@ -30,6 +30,22 @@ _TextSymbolEntry = collections.namedtuple('RTextEntry',
     ('java_type', 'resource_type', 'name', 'value'))
 
 
+def CreateResourceInfoFile(files_to_zip, zip_path):
+  """Given a mapping of archive paths to their source, write an info file.
+
+  The info file contains lines of '{archive_path},{source_path}' for ease of
+  parsing. Assumes that there is no comma in the file names.
+
+  Args:
+    files_to_zip: Dict mapping path in the zip archive to original source.
+    zip_path: Path where the zip file ends up, this is where the info file goes.
+  """
+  info_file_path = zip_path + '.info'
+  with open(info_file_path, 'w') as info_file:
+    for archive_path, source_path in files_to_zip.iteritems():
+      info_file.write('{},{}\n'.format(archive_path, source_path))
+
+
 def _ParseTextSymbolsFile(path, fix_package_ids=False):
   """Given an R.txt file, returns a list of _TextSymbolEntry.
 

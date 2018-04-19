@@ -70,11 +70,25 @@ class SectionSizeKnobs(object):
 
     # File name: Source file.
     self.apk_other_files = {
-      'icudtl.dat': 'third_party/icu/android/icudtl.dat',
-      'snapshot_blob_32.bin': 'v8/snapshot_blob_32.bin',
-      'snapshot_blob_64.bin': 'v8/snapshot_blob_64.bin',
-      'natives_blob.bin': 'v8/natives_blob.bin',
+      'assets/icudtl.dat': '../../third_party/icu/android/icudtl.dat',
+      'assets/snapshot_blob_32.bin': '../../v8/snapshot_blob_32.bin',
+      'assets/snapshot_blob_64.bin': '../../v8/snapshot_blob_64.bin',
+      'assets/natives_blob.bin': '../../v8/natives_blob.bin',
+      'assets/unwind_cfi_32': '../../base/trace_event/cfi_backtrace_android.cc',
+      'assets/webapk_dex_version.txt': (
+          '../../chrome/android/webapk/libs/runtime_library_version.gni'),
     }
+
+    self.apk_expected_other_files = set([
+      # From Monochrome.apk
+      'AndroidManifest.xml',
+      'resources.arsc',
+      'assets/AndroidManifest.xml',
+      'assets/metaresources.arsc',
+      'META-INF/CHROMIUM.SF',
+      'META-INF/CHROMIUM.RSA',
+      'META-INF/MANIFEST.MF',
+    ])
 
 
 def _OpenMaybeGz(path):
@@ -124,7 +138,7 @@ def _NormalizeNames(raw_symbols):
 
     # See comment in _CalculatePadding() about when this can happen. Don't
     # process names for non-native sections.
-    if full_name.startswith('*') or symbol.IsOverhead():
+    if full_name.startswith('*') or symbol.IsOverhead() or symbol.IsOther():
       symbol.template_name = full_name
       symbol.name = full_name
     elif symbol.IsDex():
@@ -227,12 +241,10 @@ def _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper):
     logging.info('Looking up source paths from ninja files')
     for symbol in raw_symbols:
       object_path = symbol.object_path
-      if symbol.IsDex():
-        symbol.generated_source, symbol.source_path = _NormalizeSourcePath(
-            symbol.source_path)
-      elif symbol.IsOther():
-        # TODO(wnwen): Add source mapping for other symbols.
-        pass
+      if symbol.IsDex() or symbol.IsOther():
+        if symbol.source_path:
+          symbol.generated_source, symbol.source_path = _NormalizeSourcePath(
+              symbol.source_path)
       elif object_path:
         # We don't have source info for prebuilt .a files.
         if not os.path.isabs(object_path) and not object_path.startswith('..'):
@@ -771,6 +783,63 @@ def _ComputePakFileSymbols(
     symbols_by_id[resource_id].size += size
 
 
+class _ResourceSourceMapper(object):
+  def __init__(self, apk_path, output_directory, knobs):
+    self._knobs = knobs
+    self._res_info = self._LoadResInfo(apk_path, output_directory)
+    self._pattern_dollar_underscore = re.compile(r'\$(.*?)__\d+')
+    self._pattern_version_suffix = re.compile(r'-v\d+/')
+
+  @staticmethod
+  def _ParseResInfoFile(res_info_path):
+    with open(res_info_path, 'r') as info_file:
+      res_info = {}
+      renames = {}
+      for line in info_file.readlines():
+        dest, source = line.strip().split(',')
+        # Allow one level of indirection due to renames.
+        if dest.startswith('Rename:'):
+          dest = dest.split(':', 1)[1]
+          renames[dest] = source
+        else:
+          res_info[dest] = source
+      for dest, renamed_dest in renames.iteritems():
+        actual_source = res_info.get(renamed_dest);
+        if actual_source:
+          res_info[dest] = actual_source
+    return res_info
+
+  def _LoadResInfo(self, apk_path, output_directory):
+    apk_name = os.path.basename(apk_path)
+    apk_res_info_name = apk_name + '.res.info'
+    apk_res_info_path = os.path.join(
+        output_directory, 'size-info', apk_res_info_name)
+    res_info_without_root = self._ParseResInfoFile(apk_res_info_path)
+    # We package resources in the res/ folder only in the apk.
+    res_info = {
+        os.path.join('res', dest): source
+        for dest, source in res_info_without_root.iteritems()
+    }
+    res_info.update(self._knobs.apk_other_files)
+    return res_info
+
+  def FindSourceForPath(self, path):
+    original_path = path
+    # Sometimes android adds $ in front and __# before extension.
+    path = self._pattern_dollar_underscore.sub(r'\1', path)
+    ret = self._res_info.get(path)
+    if ret:
+      return ret
+    # Android build tools may append extra -v flags for the root dir.
+    path = self._pattern_version_suffix.sub('/', path)
+    ret = self._res_info.get(path)
+    if ret:
+      return ret
+    if original_path not in self._knobs.apk_expected_other_files:
+      logging.warning('Unexpected file in apk: %s', original_path)
+    return None
+
+
 def _ParsePakInfoFile(pak_info_path):
   with open(pak_info_path, 'r') as info_file:
     res_info = {}
@@ -852,8 +921,9 @@ def _ParseDexSymbols(section_sizes, apk_path, output_directory):
   return symbols
 
 
-def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path, knobs):
-  apk_name = os.path.basename(apk_path)
+def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
+                          output_directory, knobs):
+  res_source_mapper = _ResourceSourceMapper(apk_path, output_directory, knobs)
   apk_symbols = []
   zip_info_total = 0
   with zipfile.ZipFile(apk_path) as z:
@@ -864,12 +934,13 @@ def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path, knobs):
           or zip_info.filename.endswith('.dex')
           or zip_info.filename.endswith('.pak')):
         continue
-      file_name = os.path.basename(zip_info.filename)
-      path = knobs.apk_other_files.get(
-          file_name, os.path.join(apk_name, 'other', zip_info.filename))
+      source_path = res_source_mapper.FindSourceForPath(zip_info.filename)
+      if source_path is None:
+        source_path = os.path.join(models.APK_PREFIX_PATH, zip_info.filename)
       apk_symbols.append(models.Symbol(
             models.SECTION_OTHER, zip_info.compress_size,
-            object_path=path, full_name=os.path.basename(zip_info.filename)))
+            source_path=source_path,
+            full_name=os.path.basename(zip_info.filename)))
   overhead_size = os.path.getsize(apk_path) - zip_info_total
   assert overhead_size >= 0, 'Apk overhead must be non-negative'
   zip_overhead_symbol = models.Symbol(
@@ -1004,7 +1075,8 @@ def CreateSectionSizesAndSymbols(
     raw_symbols.extend(
         _ParseDexSymbols(section_sizes, apk_path, output_directory))
     raw_symbols.extend(
-        _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path, knobs))
+        _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
+                              output_directory, knobs))
   elif pak_files and pak_info_file:
     pak_symbols_by_id = _FindPakSymbolsFromFiles(
         pak_files, pak_info_file, output_directory)
