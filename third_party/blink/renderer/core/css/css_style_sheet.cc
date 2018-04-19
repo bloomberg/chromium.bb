@@ -238,6 +238,23 @@ void CSSStyleSheet::DidMutate() {
         ownerNode()->GetTreeScope());
 }
 
+void CSSStyleSheet::EnableRuleAccessForInspector() {
+  enable_rule_access_for_inspector_ = true;
+}
+void CSSStyleSheet::DisableRuleAccessForInspector() {
+  enable_rule_access_for_inspector_ = false;
+}
+
+CSSStyleSheet::InspectorMutationScope::InspectorMutationScope(
+    CSSStyleSheet* sheet)
+    : style_sheet_(sheet) {
+  style_sheet_->EnableRuleAccessForInspector();
+}
+
+CSSStyleSheet::InspectorMutationScope::~InspectorMutationScope() {
+  style_sheet_->DisableRuleAccessForInspector();
+}
+
 void CSSStyleSheet::ReattachChildRuleCSSOMWrappers() {
   for (unsigned i = 0; i < child_rule_cssom_wrappers_.size(); ++i) {
     if (!child_rule_cssom_wrappers_[i])
@@ -299,6 +316,8 @@ void CSSStyleSheet::ClearOwnerNode() {
 }
 
 bool CSSStyleSheet::CanAccessRules() const {
+  if (enable_rule_access_for_inspector_)
+    return true;
   if (is_inline_stylesheet_)
     return true;
   KURL base_url = contents_->BaseURL();
@@ -306,8 +325,6 @@ bool CSSStyleSheet::CanAccessRules() const {
     return true;
   Document* document = OwnerDocument();
   if (!document)
-    return true;
-  if (document->GetStyleEngine().InspectorStyleSheet() == this)
     return true;
   if (document->GetSecurityOrigin()->CanReadContent(base_url))
     return true;
