@@ -5,6 +5,7 @@
 #include "cc/test/test_in_process_context_provider.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -17,6 +18,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/gl_in_process_context.h"
+#include "gpu/ipc/raster_in_process_context.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -61,20 +63,44 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
 
 TestInProcessContextProvider::TestInProcessContextProvider(
     TestInProcessContextProvider* shared_context,
-    bool enable_oop_rasterization) {
-  // TODO(enne): make this always support oop rasterization.  Some tests
-  // fail to create the context when oop rasterization is turned on.
-  context_ = CreateTestInProcessContext(
-      &gpu_memory_buffer_manager_, &image_factory_,
-      (shared_context ? shared_context->context_.get() : nullptr),
-      base::ThreadTaskRunnerHandle::Get(), enable_oop_rasterization);
-  cache_controller_.reset(new viz::ContextCacheController(
-      context_->GetImplementation(), base::ThreadTaskRunnerHandle::Get()));
+    bool enable_oop_rasterization,
+    bool support_gles2_interface) {
+  if (support_gles2_interface) {
+    // TODO(enne): make this always support oop rasterization.  Some tests
+    // fail to create the context when oop rasterization is turned on.
+    gles2_context_ = CreateTestInProcessContext(
+        &gpu_memory_buffer_manager_, &image_factory_,
+        (shared_context ? shared_context->gles2_context_.get() : nullptr),
+        base::ThreadTaskRunnerHandle::Get(), enable_oop_rasterization);
+    cache_controller_.reset(
+        new viz::ContextCacheController(gles2_context_->GetImplementation(),
+                                        base::ThreadTaskRunnerHandle::Get()));
 
-  raster_implementation_ =
-      std::make_unique<gpu::raster::RasterImplementationGLES>(
-          context_->GetImplementation(), context_->GetImplementation(),
-          context_->GetCapabilities());
+    raster_implementation_gles2_ =
+        std::make_unique<gpu::raster::RasterImplementationGLES>(
+            gles2_context_->GetImplementation(),
+            gles2_context_->GetImplementation(),
+            gles2_context_->GetCapabilities());
+  } else {
+    gpu::ContextCreationAttribs attribs;
+    attribs.bind_generates_resource = false;
+    attribs.enable_oop_rasterization = enable_oop_rasterization;
+    attribs.enable_raster_interface = true;
+    attribs.enable_gles2_interface = false;
+    attribs.enable_raster_decoder = true;
+
+    raster_context_.reset(new gpu::RasterInProcessContext);
+    auto result = raster_context_->Initialize(
+        /*service=*/nullptr, attribs, gpu::SharedMemoryLimits(),
+        &gpu_memory_buffer_manager_, &image_factory_,
+        /*gpu_channel_manager_delegate=*/nullptr,
+        base::ThreadTaskRunnerHandle::Get());
+    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
+
+    cache_controller_.reset(
+        new viz::ContextCacheController(raster_context_->GetContextSupport(),
+                                        base::ThreadTaskRunnerHandle::Get()));
+  }
 }
 
 TestInProcessContextProvider::~TestInProcessContextProvider() = default;
@@ -92,20 +118,32 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
 }
 
 gpu::gles2::GLES2Interface* TestInProcessContextProvider::ContextGL() {
-  return context_->GetImplementation();
+  return gles2_context_->GetImplementation();
 }
 
 gpu::raster::RasterInterface* TestInProcessContextProvider::RasterInterface() {
-  return raster_implementation_.get();
+  if (raster_context_) {
+    return raster_context_->GetImplementation();
+  } else {
+    return raster_implementation_gles2_.get();
+  }
 }
 
 gpu::ContextSupport* TestInProcessContextProvider::ContextSupport() {
-  return context_->GetImplementation();
+  if (gles2_context_) {
+    return gles2_context_->GetImplementation();
+  } else {
+    return raster_context_->GetContextSupport();
+  }
 }
 
 class GrContext* TestInProcessContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_->get();
+
+  if (!gles2_context_) {
+    return nullptr;
+  }
 
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
@@ -128,7 +166,11 @@ base::Lock* TestInProcessContextProvider::GetLock() {
 
 const gpu::Capabilities& TestInProcessContextProvider::ContextCapabilities()
     const {
-  return context_->GetCapabilities();
+  if (gles2_context_) {
+    return gles2_context_->GetCapabilities();
+  } else {
+    return raster_context_->GetCapabilities();
+  }
 }
 
 const gpu::GpuFeatureInfo& TestInProcessContextProvider::GetGpuFeatureInfo()

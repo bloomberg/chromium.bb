@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
 #include <vector>
 
 #include "base/command_line.h"
@@ -47,8 +48,10 @@ scoped_refptr<DisplayItemList> MakeNoopDisplayItemList() {
   return display_item_list;
 }
 
-class OopPixelTest : public testing::Test {
+class OopPixelTestBase : public testing::Test {
  public:
+  virtual bool UseRasterDecoder() = 0;
+
   void SetUp() override {
     // Add an OOP rasterization command line flag so that we set
     // |chromium_raster_transport| features flag.
@@ -59,16 +62,23 @@ class OopPixelTest : public testing::Test {
           switches::kEnableOOPRasterization);
     }
 
-    context_provider_ =
-        base::MakeRefCounted<TestInProcessContextProvider>(nullptr, true);
+    raster_context_provider_ =
+        base::MakeRefCounted<TestInProcessContextProvider>(
+            nullptr, /*enable_oop_rasterization=*/true,
+            /*enable_gles2_interface=*/!UseRasterDecoder());
     int max_texture_size =
-        context_provider_->ContextCapabilities().max_texture_size;
+        raster_context_provider_->ContextCapabilities().max_texture_size;
     oop_image_cache_.reset(new GpuImageDecodeCache(
-        context_provider_.get(), true, kRGBA_8888_SkColorType, kWorkingSetSize,
-        max_texture_size));
+        raster_context_provider_.get(), true, kRGBA_8888_SkColorType,
+        kWorkingSetSize, max_texture_size));
+
+    gles2_context_provider_ =
+        base::MakeRefCounted<TestInProcessContextProvider>(
+            nullptr, /*enable_oop_rasterization=*/false,
+            /*enable_gles2_interface=*/true);
     gpu_image_cache_.reset(new GpuImageDecodeCache(
-        context_provider_.get(), false, kRGBA_8888_SkColorType, kWorkingSetSize,
-        max_texture_size));
+        gles2_context_provider_.get(), false, kRGBA_8888_SkColorType,
+        kWorkingSetSize, max_texture_size));
   }
 
   class RasterOptions {
@@ -107,24 +117,25 @@ class OopPixelTest : public testing::Test {
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
                   const RasterOptions& options) {
     TestInProcessContextProvider::ScopedRasterContextLock lock(
-        context_provider_.get());
+        raster_context_provider_.get());
 
     PlaybackImageProvider image_provider(oop_image_cache_.get(),
                                          options.color_space,
                                          PlaybackImageProvider::Settings());
 
-    gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+    gpu::gles2::GLES2Interface* gl = gles2_context_provider_->ContextGL();
     int width = options.resource_size.width();
     int height = options.resource_size.height();
 
     // Create and allocate a texture on the raster interface.
     GLuint raster_texture_id;
-    auto* raster_implementation = context_provider_->RasterInterface();
+
+    auto* raster_implementation = raster_context_provider_->RasterInterface();
     raster_texture_id = raster_implementation->CreateTexture(
         false, gfx::BufferUsage::GPU_READ, viz::ResourceFormat::RGBA_8888);
     raster_implementation->TexStorage2D(raster_texture_id, 1, width, height);
     raster_implementation->TexParameteri(raster_texture_id,
-                                         GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                                         GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     EXPECT_EQ(raster_implementation->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
@@ -211,8 +222,8 @@ class OopPixelTest : public testing::Test {
       scoped_refptr<DisplayItemList> display_item_list,
       const RasterOptions& options) {
     TestInProcessContextProvider::ScopedRasterContextLock lock(
-        context_provider_.get());
-    context_provider_->GrContext()->resetContext();
+        gles2_context_provider_.get());
+    gles2_context_provider_->GrContext()->resetContext();
 
     // Generate bitmap via the "in process" raster path.  This verifies
     // that the preamble setup in RasterSource::PlaybackToCanvas matches
@@ -244,8 +255,8 @@ class OopPixelTest : public testing::Test {
     }
     SkImageInfo image_info = SkImageInfo::MakeN32Premul(
         options.resource_size.width(), options.resource_size.height());
-    auto surface = SkSurface::MakeRenderTarget(context_provider_->GrContext(),
-                                               SkBudgeted::kYes, image_info);
+    auto surface = SkSurface::MakeRenderTarget(
+        gles2_context_provider_->GrContext(), SkBudgeted::kYes, image_info);
     SkCanvas* canvas = surface->getCanvas();
     if (options.preclear)
       canvas->drawColor(options.preclear_color);
@@ -259,7 +270,7 @@ class OopPixelTest : public testing::Test {
         options.full_raster_rect, options.playback_rect, raster_transform,
         settings);
     surface->prepareForExternalIO();
-    EXPECT_EQ(context_provider_->ContextGL()->GetError(),
+    EXPECT_EQ(gles2_context_provider_->ContextGL()->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
 
     SkBitmap bitmap;
@@ -269,7 +280,7 @@ class OopPixelTest : public testing::Test {
     bitmap.allocPixels(info, options.resource_size.width() * 4);
     bool success = surface->readPixels(bitmap, 0, 0);
     CHECK(success);
-    EXPECT_EQ(context_provider_->ContextGL()->GetError(),
+    EXPECT_EQ(gles2_context_provider_->ContextGL()->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
     return bitmap;
   }
@@ -293,7 +304,8 @@ class OopPixelTest : public testing::Test {
 
  protected:
   enum { kWorkingSetSize = 64 * 1024 * 1024 };
-  scoped_refptr<TestInProcessContextProvider> context_provider_;
+  scoped_refptr<TestInProcessContextProvider> raster_context_provider_;
+  scoped_refptr<TestInProcessContextProvider> gles2_context_provider_;
   std::unique_ptr<GpuImageDecodeCache> gpu_image_cache_;
   std::unique_ptr<GpuImageDecodeCache> oop_image_cache_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
@@ -301,18 +313,26 @@ class OopPixelTest : public testing::Test {
   int color_space_id_ = 0;
 };
 
-class OopImagePixelTest : public OopPixelTest,
-                          public ::testing::WithParamInterface<bool> {
+class OopPixelTest : public OopPixelTestBase,
+                     public ::testing::WithParamInterface<bool> {
  public:
-  bool UseTooLargeImage() { return GetParam(); }
+  bool UseRasterDecoder() final { return GetParam(); }
+};
+
+class OopImagePixelTest
+    : public OopPixelTestBase,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  bool UseRasterDecoder() final { return std::get<0>(GetParam()); }
+  bool UseTooLargeImage() { return std::get<1>(GetParam()); }
   gfx::Size GetImageSize() {
     const int kMaxSize = 20000;
-    DCHECK_GT(kMaxSize, context_provider_->GrContext()->maxTextureSize());
+    DCHECK_GT(kMaxSize, gles2_context_provider_->GrContext()->maxTextureSize());
     return UseTooLargeImage() ? gfx::Size(10, kMaxSize) : gfx::Size(10, 10);
   }
 };
 
-TEST_F(OopPixelTest, DrawColor) {
+TEST_P(OopPixelTest, DrawColor) {
   gfx::Rect rect(10, 10);
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
@@ -334,7 +354,7 @@ TEST_F(OopPixelTest, DrawColor) {
   ExpectEquals(actual_gpu, expected, "gpu");
 }
 
-TEST_F(OopPixelTest, DrawColorWithTargetColorSpace) {
+TEST_P(OopPixelTest, DrawColorWithTargetColorSpace) {
   gfx::Rect rect(10, 10);
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
@@ -355,7 +375,7 @@ TEST_F(OopPixelTest, DrawColorWithTargetColorSpace) {
   EXPECT_EQ(SkColorSetARGB(255, 38, 15, 221), expected.getColor(0, 0));
 }
 
-TEST_F(OopPixelTest, DrawRect) {
+TEST_P(OopPixelTest, DrawRect) {
   gfx::Rect rect(10, 10);
   auto color_paint = [](int r, int g, int b) {
     PaintFlags flags;
@@ -550,7 +570,7 @@ TEST_P(OopImagePixelTest, DrawImageWithSourceAndTargetColorSpace) {
   ExpectEquals(actual, expected);
 }
 
-TEST_F(OopPixelTest, Preclear) {
+TEST_P(OopPixelTest, Preclear) {
   gfx::Rect rect(10, 10);
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->Finalize();
@@ -571,7 +591,7 @@ TEST_F(OopPixelTest, Preclear) {
   ExpectEquals(actual, expected);
 }
 
-TEST_F(OopPixelTest, ClearingOpaqueCorner) {
+TEST_P(OopPixelTest, ClearingOpaqueCorner) {
   // Verify that clears work properly for both the right and bottom sides
   // of an opaque corner tile.
 
@@ -613,7 +633,7 @@ TEST_F(OopPixelTest, ClearingOpaqueCorner) {
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingOpaqueCornerExactEdge) {
+TEST_P(OopPixelTest, ClearingOpaqueCornerExactEdge) {
   // Verify that clears work properly for both the right and bottom sides
   // of an opaque corner tile whose content rect exactly lines up with
   // the edge of the resource.
@@ -656,7 +676,7 @@ TEST_F(OopPixelTest, ClearingOpaqueCornerExactEdge) {
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingOpaqueCornerPartialRaster) {
+TEST_P(OopPixelTest, ClearingOpaqueCornerPartialRaster) {
   // Verify that clears do nothing on an opaque corner tile whose
   // partial raster rect doesn't intersect the edge of the content.
 
@@ -693,7 +713,7 @@ TEST_F(OopPixelTest, ClearingOpaqueCornerPartialRaster) {
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingOpaqueRightEdge) {
+TEST_P(OopPixelTest, ClearingOpaqueRightEdge) {
   // Verify that a tile that intersects the right edge of content
   // but not the bottom only clears the right pixels.
 
@@ -732,7 +752,7 @@ TEST_F(OopPixelTest, ClearingOpaqueRightEdge) {
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingOpaqueBottomEdge) {
+TEST_P(OopPixelTest, ClearingOpaqueBottomEdge) {
   // Verify that a tile that intersects the bottom edge of content
   // but not the right only clears the bottom pixels.
 
@@ -773,7 +793,7 @@ TEST_F(OopPixelTest, ClearingOpaqueBottomEdge) {
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingOpaqueInternal) {
+TEST_P(OopPixelTest, ClearingOpaqueInternal) {
   // Verify that an internal opaque tile does no clearing.
 
   RasterOptions options;
@@ -811,7 +831,7 @@ TEST_F(OopPixelTest, ClearingOpaqueInternal) {
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingTransparentCorner) {
+TEST_P(OopPixelTest, ClearingTransparentCorner) {
   RasterOptions options;
   gfx::Point arbitrary_offset(5, 8);
   options.resource_size = gfx::Size(10, 10);
@@ -847,7 +867,7 @@ TEST_F(OopPixelTest, ClearingTransparentCorner) {
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingTransparentInternalTile) {
+TEST_P(OopPixelTest, ClearingTransparentInternalTile) {
   // Content rect much larger than full raster rect or playback rect.
   // This should still clear the tile.
   RasterOptions options;
@@ -884,7 +904,7 @@ TEST_F(OopPixelTest, ClearingTransparentInternalTile) {
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingTransparentCornerPartialRaster) {
+TEST_P(OopPixelTest, ClearingTransparentCornerPartialRaster) {
   RasterOptions options;
   options.resource_size = gfx::Size(10, 10);
   gfx::Point arbitrary_offset(30, 12);
@@ -927,7 +947,7 @@ TEST_F(OopPixelTest, ClearingTransparentCornerPartialRaster) {
 // Test various bitmap and playback rects in the raster options, to verify
 // that in process (RasterSource) and out of process (GLES2Implementation)
 // raster behave identically.
-TEST_F(OopPixelTest, DrawRectBasicRasterOptions) {
+TEST_P(OopPixelTest, DrawRectBasicRasterOptions) {
   PaintFlags flags;
   flags.setColor(SkColorSetARGB(255, 250, 10, 20));
   gfx::Rect draw_rect(3, 1, 8, 9);
@@ -960,7 +980,7 @@ TEST_F(OopPixelTest, DrawRectBasicRasterOptions) {
   }
 }
 
-TEST_F(OopPixelTest, DrawRectScaleTransformOptions) {
+TEST_P(OopPixelTest, DrawRectScaleTransformOptions) {
   PaintFlags flags;
   // Use powers of two here to make floating point blending consistent.
   flags.setColor(SkColorSetARGB(128, 64, 128, 32));
@@ -991,7 +1011,7 @@ TEST_F(OopPixelTest, DrawRectScaleTransformOptions) {
   ExpectEquals(actual, expected);
 }
 
-TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
+TEST_P(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   std::vector<SkColor> colors = {
       SkColorSetARGB(255, 0, 0, 255),    SkColorSetARGB(255, 0, 255, 0),
@@ -1024,7 +1044,7 @@ TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
   ExpectEquals(actual, expected);
 }
 
-TEST_F(OopPixelTest, DrawRectColorSpace) {
+TEST_P(OopPixelTest, DrawRectColorSpace) {
   RasterOptions options;
   options.resource_size = gfx::Size(100, 100);
   options.content_size = options.resource_size;
@@ -1047,7 +1067,12 @@ TEST_F(OopPixelTest, DrawRectColorSpace) {
   ExpectEquals(actual, expected);
 }
 
-INSTANTIATE_TEST_CASE_P(P, OopImagePixelTest, ::testing::Values(false, true));
+INSTANTIATE_TEST_CASE_P(P, OopPixelTest, ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(P,
+                        OopImagePixelTest,
+                        ::testing::Combine(::testing::Bool(),
+                                           ::testing::Bool()));
 
 }  // namespace
 }  // namespace cc

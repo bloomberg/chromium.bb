@@ -1990,7 +1990,7 @@ void RasterDecoderImpl::TexStorage2D(TextureRef* texture_ref,
                              texture_metadata.target());
 
   unsigned int internal_format =
-      viz::GLInternalFormat(texture_metadata.format());
+      viz::TextureStorageFormat(texture_metadata.format());
   GLenum format =
       TextureManager::ExtractFormatFromStorageFormat(internal_format);
   GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
