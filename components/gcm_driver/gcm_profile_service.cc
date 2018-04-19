@@ -22,13 +22,13 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "components/gcm_driver/account_tracker.h"
 #include "components/gcm_driver/gcm_account_tracker.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 #endif
@@ -107,8 +107,8 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
   if (gcm_account_tracker_)
     return;
 
-  std::unique_ptr<gaia::AccountTracker> gaia_account_tracker(
-      new gaia::AccountTracker(identity_provider_, request_context));
+  std::unique_ptr<AccountTracker> gaia_account_tracker(
+      new AccountTracker(identity_provider_, request_context));
 
   gcm_account_tracker_.reset(
       new GCMAccountTracker(std::move(gaia_account_tracker), driver_));

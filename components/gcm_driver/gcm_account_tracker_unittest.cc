@@ -198,10 +198,9 @@ GCMAccountTrackerTest::GCMAccountTrackerTest() {
   fake_identity_provider_.reset(
       new FakeIdentityProvider(fake_token_service_.get()));
 
-  std::unique_ptr<gaia::AccountTracker> gaia_account_tracker(
-      new gaia::AccountTracker(
-          fake_identity_provider_.get(),
-          new net::TestURLRequestContextGetter(message_loop_.task_runner())));
+  std::unique_ptr<AccountTracker> gaia_account_tracker(new AccountTracker(
+      fake_identity_provider_.get(),
+      new net::TestURLRequestContextGetter(message_loop_.task_runner())));
 
   tracker_.reset(
       new GCMAccountTracker(std::move(gaia_account_tracker), &driver_));

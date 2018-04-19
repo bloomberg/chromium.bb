@@ -84,8 +84,6 @@ config("key_defines") {
 template("google_apis_tmpl") {
   source_set(target_name) {
     sources = [
-      "gaia/account_tracker.cc",
-      "gaia/account_tracker.h",
       "gaia/gaia_auth_consumer.cc",
       "gaia/gaia_auth_consumer.h",
       "gaia/gaia_auth_fetcher.cc",
@@ -233,7 +231,6 @@ static_library("test_support") {
 
 test("google_apis_unittests") {
   sources = [
-    "gaia/account_tracker_unittest.cc",
     "gaia/gaia_auth_fetcher_unittest.cc",
     "gaia/gaia_auth_util_unittest.cc",
     "gaia/gaia_oauth_client_unittest.cc",

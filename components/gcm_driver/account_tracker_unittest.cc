@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gaia/account_tracker.h"
+#include "components/gcm_driver/account_tracker.h"
 
 #include <algorithm>
 #include <vector>
@@ -87,7 +87,7 @@ std::string Str(const std::vector<TrackingEvent>& events) {
 
 }  // namespace
 
-namespace gaia {
+namespace gcm {
 
 class AccountTrackerObserver : public AccountTracker::Observer {
  public:
@@ -709,4 +709,4 @@ TEST_F(IdentityAccountTrackerTest,
   EXPECT_EQ(0ul, ids.size());
 }
 
-}  // namespace gaia
+}  // namespace gcm
