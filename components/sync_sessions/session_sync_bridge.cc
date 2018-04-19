@@ -114,12 +114,13 @@ SessionSyncBridge::SessionSyncBridge(
     syncer::SessionSyncPrefs* sync_prefs,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
     const syncer::RepeatingModelTypeStoreFactory& store_factory,
-    const base::RepeatingClosure& sessions_updated_callback,
+    const base::RepeatingClosure& foreign_sessions_updated_callback,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)),
       sessions_client_(sessions_client),
       local_session_event_router_(
           sessions_client->GetLocalSessionEventRouter()),
+      foreign_sessions_updated_callback_(foreign_sessions_updated_callback),
       favicon_cache_(sessions_client->GetFaviconService(),
                      sessions_client->GetHistoryService(),
                      kMaxSyncFavicons),
@@ -134,6 +135,7 @@ SessionSyncBridge::SessionSyncBridge(
           IsSessionRestoreInProgress(sessions_client)) {
   DCHECK(sessions_client_);
   DCHECK(local_session_event_router_);
+  DCHECK(foreign_sessions_updated_callback_);
 }
 
 SessionSyncBridge::~SessionSyncBridge() {
@@ -289,6 +291,10 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
   static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
       ->TransferChangesTo(batch->GetMetadataChangeList());
   SessionStore::WriteBatch::Commit(std::move(batch));
+
+  // This might overtrigger because we don't check if the batch is empty, but
+  // observers should handle these events well so we don't bother detecting.
+  foreign_sessions_updated_callback_.Run();
   return base::nullopt;
 }
 
@@ -393,10 +399,14 @@ void SessionSyncBridge::OnStoreInitialized(
 }
 
 void SessionSyncBridge::DeleteForeignSessionFromUI(const std::string& tag) {
+  // TODO(crbug.com/681921): Implement logic and also run
+  // foreign_sessions_updated_callback_ if needed.
   NOTIMPLEMENTED();
 }
 
 void SessionSyncBridge::DoGarbageCollection() {
+  // TODO(crbug.com/681921): Implement logic and also run
+  // foreign_sessions_updated_callback_ if needed.
   NOTIMPLEMENTED();
 }
 

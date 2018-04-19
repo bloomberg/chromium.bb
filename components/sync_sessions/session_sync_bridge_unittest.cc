@@ -146,7 +146,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
         &mock_device_info_provider_,
         /*store_factory=*/
         syncer::ModelTypeStoreTestUtil::FactoryForForwardingStore(store_.get()),
-        mock_sessions_updated_callback_.Get(),
+        mock_foreign_sessions_updated_callback_.Get(),
         mock_processor_.CreateForwardingProcessor());
     real_processor_ =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
@@ -258,6 +258,11 @@ class SessionSyncBridgeTest : public ::testing::Test {
     return real_processor_.get();
   }
 
+  base::MockCallback<base::RepeatingClosure>&
+  mock_foreign_sessions_updated_callback() {
+    return mock_foreign_sessions_updated_callback_;
+  }
+
  private:
   base::MessageLoop message_loop_;
   const std::unique_ptr<syncer::ModelTypeStore> store_;
@@ -267,7 +272,8 @@ class SessionSyncBridgeTest : public ::testing::Test {
   testing::NiceMock<MockSessionSyncPrefs> mock_sync_prefs_;
   syncer::LocalDeviceInfoProviderMock mock_device_info_provider_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
-  base::MockCallback<base::RepeatingClosure> mock_sessions_updated_callback_;
+  testing::NiceMock<base::MockCallback<base::RepeatingClosure>>
+      mock_foreign_sessions_updated_callback_;
   TestSyncedWindowDelegatesGetter window_getter_;
   FaviconCache favicon_cache_;
 
@@ -402,6 +408,7 @@ TEST_F(SessionSyncBridgeTest, ShouldReportLocalTabCreation) {
   StartSyncing();
 
   ASSERT_THAT(GetAllData(), SizeIs(2));
+  EXPECT_CALL(mock_foreign_sessions_updated_callback(), Run()).Times(0);
 
   // Expectations for the processor.
   std::string header_storage_key;
@@ -593,7 +600,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
 
 // Starting sync with no local data should just store the foreign entities in
 // the store and expose them via OpenTabsUIDelegate.
-TEST_F(SessionSyncBridgeTest, MergeWithoutLocal) {
+TEST_F(SessionSyncBridgeTest, ShouldMergForeignSession) {
   const std::string kForeignSessionTag = "foreignsessiontag";
   const std::string kForeignClientName = "Foreign Client Name";
   const int kForeignWindowId = 2000001;
@@ -628,6 +635,7 @@ TEST_F(SessionSyncBridgeTest, MergeWithoutLocal) {
       mock_processor(),
       DoPut(_, EntityDataHasSpecifics(MatchesHeader(kLocalSessionTag, _, _)),
             _));
+  EXPECT_CALL(mock_foreign_sessions_updated_callback(), Run());
 
   StartSyncing({foreign_header, foreign_tab});
 
@@ -691,6 +699,8 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
   syncer::UpdateResponseData deletion;
   deletion.entity = CreateTombstone(SessionStore::GetClientTag(foreign_header));
   deletion.response_version = 2;
+
+  EXPECT_CALL(mock_foreign_sessions_updated_callback(), Run());
   real_processor()->OnUpdateReceived(state, {deletion});
 
   foreign_session_tab = nullptr;
