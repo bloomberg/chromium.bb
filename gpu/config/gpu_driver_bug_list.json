@@ -2924,6 +2924,18 @@
       "features": [
         "max_msaa_sample_count_4"
       ]
+    },
+    {
+      "id": 269,
+      "cr_bugs": [833975],
+      "description": "Workaround for broken EGL_IMAGE_EXTERNAL_FLUSH_EXT implementation on NVIDIA",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "force_gl_flush_on_swap_buffers"
+      ]
     }
   ]
 }
