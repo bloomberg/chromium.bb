@@ -265,6 +265,21 @@ std::unique_ptr<TickClock> ScopedTaskEnvironment::DeprecatedGetMockTickClock() {
   return mock_time_task_runner_->DeprecatedGetMockTickClock();
 }
 
+bool ScopedTaskEnvironment::MainThreadHasPendingTask() const {
+  DCHECK(mock_time_task_runner_);
+  return mock_time_task_runner_->HasPendingTask();
+}
+
+size_t ScopedTaskEnvironment::GetPendingMainThreadTaskCount() const {
+  DCHECK(mock_time_task_runner_);
+  return mock_time_task_runner_->GetPendingTaskCount();
+}
+
+TimeDelta ScopedTaskEnvironment::NextMainThreadPendingTaskDelay() const {
+  DCHECK(mock_time_task_runner_);
+  return mock_time_task_runner_->NextPendingTaskDelay();
+}
+
 ScopedTaskEnvironment::TestTaskTracker::TestTaskTracker()
     : internal::TaskSchedulerImpl::TaskTrackerImpl("ScopedTaskEnvironment"),
       can_run_tasks_cv_(&lock_),
