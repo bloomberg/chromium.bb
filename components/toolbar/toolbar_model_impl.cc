@@ -16,8 +16,6 @@
 #include "components/toolbar/buildflags.h"
 #include "components/toolbar/toolbar_field_trial.h"
 #include "components/toolbar/toolbar_model_delegate.h"
-#include "components/url_formatter/elide_url.h"
-#include "components/url_formatter/url_formatter.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -42,23 +40,7 @@ ToolbarModelImpl::~ToolbarModelImpl() {
 
 // ToolbarModelImpl Implementation.
 base::string16 ToolbarModelImpl::GetFormattedFullURL() const {
-  GURL url(GetURL());
-  // Note that we can't unescape spaces here, because if the user copies this
-  // and pastes it into another program, that program may think the URL ends at
-  // the space.
-  const base::string16 formatted_text =
-      delegate_->FormattedStringWithEquivalentMeaning(
-          url, url_formatter::FormatUrl(
-                   url, url_formatter::kFormatUrlOmitDefaults,
-                   net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
-
-  // Truncating the URL breaks editing and then pressing enter, but hopefully
-  // people won't try to do much with such enormous URLs anyway. If this becomes
-  // a real problem, we could perhaps try to keep some sort of different "elided
-  // visible URL" where editing affects and reloads the "real underlying URL",
-  // but this seems very tricky for little gain.
-  return gfx::TruncateString(formatted_text, max_url_display_chars_,
-                             gfx::CHARACTER_BREAK);
+  return GetFormattedURL(url_formatter::kFormatUrlOmitDefaults);
 }
 
 base::string16 ToolbarModelImpl::GetURLForDisplay() const {
@@ -69,11 +51,27 @@ base::string16 ToolbarModelImpl::GetURLForDisplay() const {
       url_formatter::kFormatUrlOmitDefaults |
       url_formatter::kFormatUrlOmitHTTPS |
       url_formatter::kFormatUrlOmitTrivialSubdomains;
-  base::string16 result = url_formatter::FormatUrl(GetURL(), format_types,
-                                                   net::UnescapeRule::NORMAL,
-                                                   nullptr, nullptr, nullptr);
+  return GetFormattedURL(format_types);
+}
 
-  return gfx::TruncateString(result, max_url_display_chars_,
+base::string16 ToolbarModelImpl::GetFormattedURL(
+    url_formatter::FormatUrlTypes format_types) const {
+  GURL url(GetURL());
+  // Note that we can't unescape spaces here, because if the user copies this
+  // and pastes it into another program, that program may think the URL ends at
+  // the space.
+  const base::string16 formatted_text =
+      delegate_->FormattedStringWithEquivalentMeaning(
+          url,
+          url_formatter::FormatUrl(url, format_types, net::UnescapeRule::NORMAL,
+                                   nullptr, nullptr, nullptr));
+
+  // Truncating the URL breaks editing and then pressing enter, but hopefully
+  // people won't try to do much with such enormous URLs anyway. If this becomes
+  // a real problem, we could perhaps try to keep some sort of different "elided
+  // visible URL" where editing affects and reloads the "real underlying URL",
+  // but this seems very tricky for little gain.
+  return gfx::TruncateString(formatted_text, max_url_display_chars_,
                              gfx::CHARACTER_BREAK);
 }
 

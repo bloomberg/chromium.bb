@@ -38,27 +38,27 @@ class ToolbarModelDelegate {
 
   // Returns whether the URL for the current navigation entry should be
   // in the location bar.
-  virtual bool ShouldDisplayURL() const = 0;
+  virtual bool ShouldDisplayURL() const;
 
   // Returns the underlying security level of the page without regard to any
   // user edits that may be in progress.
-  virtual SecurityLevel GetSecurityLevel() const = 0;
+  virtual SecurityLevel GetSecurityLevel() const;
 
   // Returns the certificate for the current navigation entry.
-  virtual scoped_refptr<net::X509Certificate> GetCertificate() const = 0;
+  virtual scoped_refptr<net::X509Certificate> GetCertificate() const;
 
   // Returns true if the current page fails the malware check.
-  virtual bool FailsMalwareCheck() const = 0;
+  virtual bool FailsMalwareCheck() const;
 
   // Returns the id of the icon to show to the left of the address, or nullptr
   // if the icon should be selected by the caller. This is useful for
   // associating particular URLs with particular schemes without importing
   // knowledge of those schemes into this component.
-  virtual const gfx::VectorIcon* GetVectorIconOverride() const = 0;
+  virtual const gfx::VectorIcon* GetVectorIconOverride() const;
 
   // Returns whether the page is an offline page, sourced from a cache of
   // previously-downloaded content.
-  virtual bool IsOfflinePage() const = 0;
+  virtual bool IsOfflinePage() const;
 
  protected:
   virtual ~ToolbarModelDelegate() {}
