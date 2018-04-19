@@ -36,17 +36,6 @@
 #endif
 
 namespace exo {
-namespace {
-#if defined(USE_OZONE)
-// TODO(dcastagna): Remove these formats, since they currently list all the
-// formats that exo uses.
-const gfx::BufferFormat kOverlayFormats[] = {
-    gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
-    gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::BGRA_8888,
-    gfx::BufferFormat::BGR_565,   gfx::BufferFormat::YUV_420_BIPLANAR};
-#endif
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // Display, public:
@@ -59,7 +48,6 @@ Display::Display(NotificationSurfaceManager* notification_surface_manager,
       file_helper_(std::move(file_helper))
 #if defined(USE_OZONE)
       ,
-      overlay_formats_(std::begin(kOverlayFormats), std::end(kOverlayFormats)),
       client_native_pixmap_factory_(
           gfx::CreateClientNativePixmapFactoryDmabuf())
 #endif
@@ -115,9 +103,7 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
   // Using zero-copy for optimal performance.
   bool use_zero_copy = true;
 
-  bool is_overlay_candidate =
-      std::find(overlay_formats_.begin(), overlay_formats_.end(), format) !=
-      overlay_formats_.end();
+  bool is_overlay_candidate = true;
 
   return std::make_unique<Buffer>(
       std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,

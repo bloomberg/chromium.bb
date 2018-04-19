@@ -105,7 +105,6 @@ class Display {
   Seat seat_;
 
 #if defined(USE_OZONE)
-  std::vector<gfx::BufferFormat> overlay_formats_;
   std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
