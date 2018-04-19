@@ -25,10 +25,10 @@ index 11bc05a37471..8d425e02c30b 100644
 
      _ariaDescribedByChanged: function(ariaDescribedBy) {
 diff --git a/components-chromium/iron-list/iron-list-extracted.js b/components-chromium/iron-list/iron-list-extracted.js
-index c9e0a9fd5330..bb2f6aad64e8 100644
+index 43c59653a39b..26652936735c 100644
 --- a/components-chromium/iron-list/iron-list-extracted.js
 +++ b/components-chromium/iron-list/iron-list-extracted.js
-@@ -126,6 +126,14 @@
+@@ -128,6 +128,14 @@
        scrollOffset: {
          type: Number,
          value: 0
@@ -42,15 +42,15 @@ index c9e0a9fd5330..bb2f6aad64e8 100644
 +        value: false
        }
      },
- 
-@@ -895,6 +903,15 @@
+
+@@ -791,6 +799,15 @@
       * to `items`, splices or updates to a single item.
       */
      _itemsChanged: function(change) {
 +      var rendering = /^items(\.splices){0,1}$/.test(change.path);
 +      var lastFocusedIndex, focusedElement;
 +      if (rendering && this.preserveFocus) {
-+        lastFocusedIndex = this._focusedIndex;
++        lastFocusedIndex = this._focusedVirtualIndex;
 +        focusedElement = this.querySelector('* /deep/ *:focus');
 +      }
 +
@@ -59,7 +59,7 @@ index c9e0a9fd5330..bb2f6aad64e8 100644
        if (change.path === 'items') {
          this._virtualStart = 0;
          this._physicalTop = 0;
-@@ -907,12 +924,11 @@
+@@ -804,7 +821,7 @@
          this._physicalItems = this._physicalItems || [];
          this._physicalSizes = this._physicalSizes || [];
          this._physicalStart = 0;
@@ -68,14 +68,9 @@ index c9e0a9fd5330..bb2f6aad64e8 100644
            this._resetScrollPosition(0);
          }
          this._removeFocusedItem();
-         this._debounceTemplate(this._render);
--
-       } else if (change.path === 'items.splices') {
-         this._adjustVirtualIndex(change.value.indexSplices);
-         this._virtualCount = this.items ? this.items.length : 0;
-@@ -921,6 +937,17 @@
-       } else {
-         this._forwardItemPath(change.path.split('.').slice(1).join('.'), change.value);
+@@ -826,6 +843,17 @@
+       } else if (change.path !== 'items.length') {
+         this._forwardItemPath(change.path, change.value);
        }
 +
 +      // If the list was in focus when updated, preserve the focus on item.
@@ -84,21 +79,10 @@ index c9e0a9fd5330..bb2f6aad64e8 100644
 +        focusedElement.blur(); // paper- elements breaks when focused twice.
 +        this._focusPhysicalItem(
 +            Math.min(this.items.length - 1, lastFocusedIndex));
-+        if (!this._isIndexVisible(this._focusedIndex)) {
-+          this.scrollToIndex(this._focusedIndex);
++        if (!this._isIndexVisible(this._focusedVirtualIndex)) {
++          this.scrollToIndex(this._focusedVirtualIndex);
 +        }
 +      }
      },
- 
-     /**
-@@ -1466,6 +1493,10 @@
-       return this._physicalIndexForKey[this._collection.getKey(this._getNormalizedItem(idx))];
-     },
- 
-+    focusItem: function(idx) {
-+      this._focusPhysicalItem(idx);
-+    },
-+
-     _focusPhysicalItem: function(idx) {
-       if (idx < 0 || idx >= this._virtualCount) {
-         return;
+
+     _forwardItemPath: function(path, value) {

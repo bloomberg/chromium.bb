@@ -248,8 +248,10 @@ cr.define('downloads', function() {
                            type: 'splice',
                            removed: [],
                          }]);
-      const list = /** @type {!IronListElement} */ (this.$['downloads-list']);
-      list.updateSizeForItem(index);
+      this.async(() => {
+        const list = /** @type {!IronListElement} */ (this.$['downloads-list']);
+        list.updateSizeForIndex(index);
+      });
     },
   });
 
