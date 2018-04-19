@@ -21,39 +21,45 @@
 class PreviewsBrowserTest : public InProcessBrowserTest {
  public:
   PreviewsBrowserTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        http_server_(net::EmbeddedTestServer::TYPE_HTTP),
-        noscript_css_requested_(false),
-        noscript_js_requested_(false) {
-    // Set up https server with resource monitor.
-    https_server_.ServeFilesFromSourceDirectory("chrome/test/data/previews");
-    https_server_.RegisterRequestMonitor(base::Bind(
-        &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
-    EXPECT_TRUE(https_server_.Start());
-
-    https_url_ = https_server_.GetURL("/noscript_test.html");
-    EXPECT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
-
-    https_no_transform_url_ =
-        https_server_.GetURL("/noscript_test_with_no_transform_header.html");
-    EXPECT_TRUE(https_no_transform_url_.SchemeIs(url::kHttpsScheme));
-
-    // Set up http server with resource monitor and redirect handler.
-    http_server_.ServeFilesFromSourceDirectory("chrome/test/data/previews");
-    http_server_.RegisterRequestMonitor(base::Bind(
-        &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
-    http_server_.RegisterRequestHandler(base::Bind(
-        &PreviewsBrowserTest::HandleRedirectRequest, base::Unretained(this)));
-    EXPECT_TRUE(http_server_.Start());
-
-    http_url_ = http_server_.GetURL("/noscript_test.html");
-    EXPECT_TRUE(http_url_.SchemeIs(url::kHttpScheme));
-
-    redirect_url_ = http_server_.GetURL("/redirect.html");
-    EXPECT_TRUE(redirect_url_.SchemeIs(url::kHttpScheme));
-  }
+      : noscript_css_requested_(false), noscript_js_requested_(false) {}
 
   ~PreviewsBrowserTest() override {}
+
+  void SetUpOnMainThread() override {
+    noscript_css_requested_ = false;
+    noscript_js_requested_ = false;
+
+    // Set up https server with resource monitor.
+    https_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    https_server_->RegisterRequestMonitor(base::BindRepeating(
+        &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
+    ASSERT_TRUE(https_server_->Start());
+
+    https_url_ = https_server_->GetURL("/noscript_test.html");
+    ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+
+    https_no_transform_url_ =
+        https_server_->GetURL("/noscript_test_with_no_transform_header.html");
+    ASSERT_TRUE(https_no_transform_url_.SchemeIs(url::kHttpsScheme));
+
+    // Set up http server with resource monitor and redirect handler.
+    http_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTP));
+    http_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    http_server_->RegisterRequestMonitor(base::BindRepeating(
+        &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
+    http_server_->RegisterRequestHandler(base::BindRepeating(
+        &PreviewsBrowserTest::HandleRedirectRequest, base::Unretained(this)));
+    ASSERT_TRUE(http_server_->Start());
+
+    http_url_ = http_server_->GetURL("/noscript_test.html");
+    ASSERT_TRUE(http_url_.SchemeIs(url::kHttpScheme));
+
+    redirect_url_ = http_server_->GetURL("/redirect.html");
+    ASSERT_TRUE(redirect_url_.SchemeIs(url::kHttpScheme));
+  }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
@@ -90,8 +96,8 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     return std::move(response);
   }
 
-  net::EmbeddedTestServer https_server_;
-  net::EmbeddedTestServer http_server_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<net::EmbeddedTestServer> http_server_;
   GURL https_url_;
   GURL https_no_transform_url_;
   GURL http_url_;
@@ -118,14 +124,17 @@ IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
 // This test class enables NoScriptPreviews but without OptimizationHints.
 class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
  public:
-  PreviewsNoScriptBrowserTest() {
+  PreviewsNoScriptBrowserTest() {}
+
+  ~PreviewsNoScriptBrowserTest() override {}
+
+  void SetUp() override {
     // Explicitly disable server hints.
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews, previews::features::kNoScriptPreviews},
         {previews::features::kOptimizationHints});
+    PreviewsBrowserTest::SetUp();
   }
-
-  ~PreviewsNoScriptBrowserTest() override {}
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -206,14 +215,17 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 // This test class enables NoScriptPreviews with OptimizationHints.
 class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
  public:
-  PreviewsOptimizationGuideBrowserTest() {
+  PreviewsOptimizationGuideBrowserTest() {}
+
+  ~PreviewsOptimizationGuideBrowserTest() override {}
+
+  void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews, previews::features::kOptimizationHints,
          previews::features::kNoScriptPreviews},
         {});
+    PreviewsBrowserTest::SetUp();
   }
-
-  ~PreviewsOptimizationGuideBrowserTest() override {}
 
   void SetNoScriptWhitelist(
       std::vector<std::string> whitelisted_noscript_sites) {
