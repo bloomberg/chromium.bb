@@ -293,23 +293,6 @@
 
 namespace {
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-// Deprecated 2/2017.
-constexpr char kToolbarMigratedComponentActionStatus[] =
-    "toolbar_migrated_component_action_status";
-#endif
-
-#if BUILDFLAG(ENABLE_RLZ)
-// Migrated out of kDistroDict as of 2/2017.
-constexpr char kDistroRlzPingDelay[] = "ping_delay";
-#endif  // BUILDFLAG(ENABLE_RLZ)
-
-// master_preferences used to be mapped as-is to Preferences on first run but
-// the "distribution" dictionary was never used beyond first run. It is now
-// stripped in first_run.cc prior to applying this mapping. Cleanup for existing
-// Preferences files added here 2/2017.
-constexpr char kDistroDict[] = "distribution";
-
 #if defined(OS_ANDROID)
 // Deprecated 8/2017.
 const char kStabilityForegroundActivityType[] =
@@ -337,11 +320,6 @@ const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  registry->RegisterDictionaryPref(kToolbarMigratedComponentActionStatus);
-#endif
-
-  registry->RegisterDictionaryPref(kDistroDict);
   registry->RegisterStringPref(kInstantUIZeroSuggestUrlPrefix, std::string());
 
 #if defined(OS_CHROMEOS)
@@ -729,39 +707,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Added 2/2017.
-  // NOTE(takumif): When removing this code, also remove the following tests:
-  //  - MediaRouterUIBrowserTest.MigrateToolbarIconShownPref
-  //  - MediaRouterUIBrowserTest.MigrateToolbarIconUnshownPref
-  {
-    bool show_cast_icon = false;
-    const base::DictionaryValue* action_migration_dict =
-        profile_prefs->GetDictionary(kToolbarMigratedComponentActionStatus);
-    if (action_migration_dict &&
-        action_migration_dict->GetBoolean(
-            ComponentToolbarActionsFactory::kMediaRouterActionId,
-            &show_cast_icon)) {
-      profile_prefs->SetBoolean(prefs::kShowCastIconInToolbar, show_cast_icon);
-    }
-    profile_prefs->ClearPref(kToolbarMigratedComponentActionStatus);
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-  // Added 2/2017.
-  {
-#if BUILDFLAG(ENABLE_RLZ)
-    const base::DictionaryValue* distro_dict =
-        profile_prefs->GetDictionary(kDistroDict);
-    int rlz_ping_delay = 0;
-    if (distro_dict &&
-        distro_dict->GetInteger(kDistroRlzPingDelay, &rlz_ping_delay)) {
-      profile_prefs->SetInteger(prefs::kRlzPingDelaySeconds, rlz_ping_delay);
-    }
-#endif  // BUILDFLAG(ENABLE_RLZ)
-    profile_prefs->ClearPref(kDistroDict);
-  }
 
   // Added 11/2017.
   profile_prefs->ClearPref(kInstantUIZeroSuggestUrlPrefix);

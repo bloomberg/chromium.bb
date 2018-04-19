@@ -30,11 +30,6 @@
 #include "content/public/test/test_utils.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-constexpr char kToolbarMigratedComponentActionStatus[] =
-    "toolbar_migrated_component_action_status";
-}
-
 namespace media_router {
 
 class MediaRouterUIBrowserTest : public InProcessBrowserTest {
@@ -103,18 +98,6 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   void SetAlwaysShowActionPref(bool always_show) {
     MediaRouterActionController::SetAlwaysShowActionPref(browser()->profile(),
                                                          always_show);
-  }
-
-  // Sets the old preference to show the toolbar action icon to |always_show|,
-  // and migrates the preference.
-  void MigrateToolbarIconPref(bool always_show) {
-    {
-      DictionaryPrefUpdate update(browser()->profile()->GetPrefs(),
-                                  kToolbarMigratedComponentActionStatus);
-      update->SetBoolean(ComponentToolbarActionsFactory::kMediaRouterActionId,
-                         always_show);
-    }
-    MigrateObsoleteProfilePrefs(browser()->profile());
   }
 
  protected:
@@ -350,19 +333,6 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, UpdateActionLocation) {
   // The action should be back on the main bar.
   EXPECT_TRUE(
       toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
-}
-
-IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, MigrateToolbarIconShownPref) {
-  MigrateToolbarIconPref(true);
-  EXPECT_TRUE(MediaRouterActionController::GetAlwaysShowActionPref(
-      browser()->profile()));
-}
-
-IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
-                       MigrateToolbarIconUnshownPref) {
-  MigrateToolbarIconPref(false);
-  EXPECT_FALSE(MediaRouterActionController::GetAlwaysShowActionPref(
-      browser()->profile()));
 }
 
 }  // namespace media_router
