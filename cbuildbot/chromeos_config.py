@@ -2287,19 +2287,19 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
+  _pi_no_hwtest_boards = frozenset([])
+  _pi_no_hwtest_experimental_boards = frozenset([
+      'eve-arcnext',
+  ])
   _pi_hwtest_boards = frozenset([
       'caroline-arcnext',
       'kevin-arcnext',
   ])
-  _pi_no_hwtest_boards = frozenset([
+  _pi_hwtest_experimental_boards = frozenset([])
+  _pi_vmtest_boards = frozenset([])
+  _pi_vmtest_experimental_boards = frozenset([
       'betty-arcnext',
   ])
-  _pi_no_hwtest_experimental_boards = frozenset([
-      'eve-arcnext',
-  ])
-  _pi_hwtest_experimental_boards = frozenset([
-  ])
-  _pi_vmtest_boards = frozenset([])
 
   # Android NYC master.
   nyc_master_config = site_config.Add(
@@ -2398,6 +2398,18 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           _pi_vmtest_boards,
           board_configs,
           site_config.templates.pi_android_pfq,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
+          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                            test_suite='smoke'),
+                    config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+      ) +
+      site_config.AddForBoards(
+          'pi-android-pfq',
+          _pi_vmtest_experimental_boards,
+          board_configs,
+          site_config.templates.pi_android_pfq,
+          important=False,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                             test_suite='smoke'),
                     config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
