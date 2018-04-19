@@ -710,22 +710,22 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
     rph->RemoveObserver(this);
 }
 
-class MediaStopObserver : public WebContentsObserver {
+class AudioStartObserver : public WebContentsDelegate {
  public:
-  MediaStopObserver(WebContents* web_contents, base::Closure quit_closure)
-      : WebContentsObserver(web_contents),
-        quit_closure_(std::move(quit_closure)) {}
-  ~MediaStopObserver() override {}
+  AudioStartObserver(WebContents* web_contents,
+                     base::OnceClosure audible_closure)
+      : audible_closure_(std::move(audible_closure)) {
+    web_contents->SetDelegate(this);
+  }
+  ~AudioStartObserver() override {}
 
-  void MediaStoppedPlaying(
-      const WebContentsObserver::MediaPlayerInfo& media_info,
-      const WebContentsObserver::MediaPlayerId& id,
-      WebContentsObserver::MediaStoppedReason reason) override {
-    quit_closure_.Run();
+  void OnAudioStateChanged(WebContents* web_contents, bool audible) override {
+    if (audible && audible_closure_)
+      std::move(audible_closure_).Run();
   }
 
  private:
-  base::Closure quit_closure_;
+  base::OnceClosure audible_closure_;
 };
 
 // Tests that audio stream counts (used for process priority calculations) are
@@ -737,26 +737,27 @@ class MediaStopObserver : public WebContentsObserver {
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
 #define KillProcessZerosAudioStreams DISABLED_KillProcessZerosAudioStreams
 #endif
-// Flaky test: http://crbug.com/833185
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
-                       DISABLED_KillProcessZerosAudioStreams) {
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
   // TODO(maxmorin): This test only uses an output stream. There should be a
   // similar test for input streams.
   embedded_test_server()->ServeFilesFromSourceDirectory(
       media::GetTestDataPath());
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/sfx_s16le.wav"));
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/webaudio_oscillator.html"));
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
 
   {
-    // Wait for media playback to complete. We use the stop signal instead of
-    // the start signal here since the start signal does not mean the audio
-    // has actually started playing yet. Whereas the stop signal is sent before
-    // the audio device is actually torn down.
+    // Start audio and wait for it to become audible.
     base::RunLoop run_loop;
-    MediaStopObserver stop_observer(shell()->web_contents(),
-                                    run_loop.QuitClosure());
+    AudioStartObserver observer(shell()->web_contents(),
+                                run_loop.QuitClosure());
+
+    std::string result;
+    EXPECT_TRUE(
+        ExecuteScriptAndExtractString(shell(), "StartOscillator();", &result))
+        << "Failed to execute javascript.";
     run_loop.Run();
 
     // No point in running the rest of the test if this is wrong.
