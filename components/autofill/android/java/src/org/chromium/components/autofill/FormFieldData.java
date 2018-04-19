@@ -37,14 +37,15 @@ public class FormFieldData {
     public final String[] mOptionValues;
     public final String[] mOptionContents;
     public final @ControlType int mControlType;
+    public final int mMaxLength;
 
     private boolean mIsChecked;
     private String mValue;
 
     private FormFieldData(String name, String label, String value, String autocompleteAttr,
             boolean shouldAutocomplete, String placeholder, String type, String id,
-            String[] optionValues, String[] optionContents, boolean isCheckField,
-            boolean isChecked) {
+            String[] optionValues, String[] optionContents, boolean isCheckField, boolean isChecked,
+            int maxLength) {
         mName = name;
         mLabel = label;
         mValue = value;
@@ -63,6 +64,7 @@ public class FormFieldData {
         } else {
             mControlType = TYPE_TEXT;
         }
+        mMaxLength = maxLength;
     }
 
     public @ControlType int getControlType() {
@@ -95,8 +97,9 @@ public class FormFieldData {
     private static FormFieldData createFormFieldData(String name, String label, String value,
             String autocompleteAttr, boolean shouldAutocomplete, String placeholder, String type,
             String id, String[] optionValues, String[] optionContents, boolean isCheckField,
-            boolean isChecked) {
+            boolean isChecked, int maxLength) {
         return new FormFieldData(name, label, value, autocompleteAttr, shouldAutocomplete,
-                placeholder, type, id, optionValues, optionContents, isCheckField, isChecked);
+                placeholder, type, id, optionValues, optionContents, isCheckField, isChecked,
+                maxLength);
     }
 }

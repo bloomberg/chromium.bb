@@ -82,12 +82,13 @@ public class AwAutofillProvider extends AutofillProvider {
                     child.setAutofillHints(field.mAutocompleteAttr.split(" +"));
                 }
                 child.setHint(field.mPlaceholder);
-                child.setHtmlInfo(child.newHtmlInfoBuilder("input")
-                                          .addAttribute("name", field.mName)
-                                          .addAttribute("type", field.mType)
-                                          .addAttribute("label", field.mLabel)
-                                          .addAttribute("id", field.mId)
-                                          .build());
+                ViewStructure.HtmlInfo.Builder builder =
+                        child.newHtmlInfoBuilder("input")
+                                .addAttribute("name", field.mName)
+                                .addAttribute("type", field.mType)
+                                .addAttribute("label", field.mLabel)
+                                .addAttribute("id", field.mId);
+
                 switch (field.getControlType()) {
                     case FormFieldData.TYPE_LIST:
                         child.setAutofillType(View.AUTOFILL_TYPE_LIST);
@@ -104,10 +105,14 @@ public class AwAutofillProvider extends AutofillProvider {
                     case FormFieldData.TYPE_TEXT:
                         child.setAutofillType(View.AUTOFILL_TYPE_TEXT);
                         child.setAutofillValue(AutofillValue.forText(field.getValue()));
+                        if (field.mMaxLength != 0) {
+                            builder.addAttribute("maxlength", String.valueOf(field.mMaxLength));
+                        }
                         break;
                     default:
                         break;
                 }
+                child.setHtmlInfo(builder.build());
             }
         }
 
