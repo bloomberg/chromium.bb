@@ -208,6 +208,7 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "aaaaaaaahttp://tets.comaaaaaaa\n"  // URL.
       "aaaaaemail@example.comaaa\n"       // Email address.
       "example@@1234\n"           // No PII, it is not valid email address.
+      "255.255.155.2\n"           // IP address.
       "255.255.155.255\n"         // IP address.
       "aaaa123.123.45.4aaa\n"     // IP address.
       "11:11;11::11\n"            // IP address.
@@ -219,8 +220,9 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "aaaaaaaa<URL: 1>\n"
       "<email: 1>\n"
       "example@@1234\n"
-      "<IPv4: 1>55\n"
-      "aaaa<IPv4: 2>aaa\n"
+      "<IPv4: 1>\n"
+      "<IPv4: 2>\n"
+      "aaaa<IPv4: 3>aaa\n"
       "11:11;<IPv6: 1>\n"
       "<IPv6: 1>\n"
       "11:11:abcdef:0:0:0:0:0\n"
