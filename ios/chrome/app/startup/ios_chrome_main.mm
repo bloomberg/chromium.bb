@@ -28,9 +28,6 @@ IOSChromeMain::IOSChromeMain() {
   web_main_runner_.reset(web::WebMainRunner::Create());
 
   web::WebMainParams main_params(&main_delegate_);
-// Copy NSProcessInfo arguments into WebMainParams in debug only, since
-// command line should be meaningless outside of developer builds.
-#if !defined(NDEBUG)
   NSArray* arguments = [[NSProcessInfo processInfo] arguments];
   main_params.argc = [arguments count];
   const char* argv[main_params.argc];
@@ -48,7 +45,6 @@ IOSChromeMain::IOSChromeMain() {
     argv[i] = argv_store[i].c_str();
   }
   main_params.argv = argv;
-#endif
 
   main_params.get_task_scheduler_init_params_callback = base::BindOnce(
       &task_scheduler_util::GetTaskSchedulerInitParamsForBrowser);
