@@ -24,11 +24,9 @@ namespace blink {
 
 VideoFrameResourceProvider::VideoFrameResourceProvider(
     WebContextProviderCallback context_provider_callback,
-    viz::SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const cc::LayerTreeSettings& settings)
     : context_provider_callback_(std::move(context_provider_callback)),
-      shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
       weak_ptr_factory_(this) {}
@@ -53,7 +51,7 @@ void VideoFrameResourceProvider::Initialize(
   context_provider_ = media_context_provider;
 
   resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
-      media_context_provider, shared_bitmap_manager_,
+      media_context_provider, /*shared_bitmap_manager=*/nullptr,
       gpu_memory_buffer_manager_, true, settings_.resource_settings);
 
   // TODO(kylechar): VideoResourceUpdater needs something it can notify about

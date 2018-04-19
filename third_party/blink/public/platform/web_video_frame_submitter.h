@@ -20,7 +20,6 @@ class GpuMemoryBufferManager;
 namespace viz {
 class ContextProvider;
 class FrameSinkId;
-class SharedBitmapManager;
 }  // namespace viz
 
 namespace blink {
@@ -37,7 +36,6 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
  public:
   static std::unique_ptr<WebVideoFrameSubmitter> Create(
       WebContextProviderCallback,
-      viz::SharedBitmapManager*,
       gpu::GpuMemoryBufferManager*,
       const cc::LayerTreeSettings&);
   virtual ~WebVideoFrameSubmitter() = default;

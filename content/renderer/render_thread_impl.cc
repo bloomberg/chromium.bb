@@ -1386,10 +1386,6 @@ RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
   return ChildThreadImpl::AllocateSharedMemory(size);
 }
 
-viz::SharedBitmapManager* RenderThreadImpl::GetSharedBitmapManager() {
-  return shared_bitmap_manager();
-}
-
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
   WebScriptController::RegisterExtension(extension);
 }

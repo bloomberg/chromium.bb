@@ -41,7 +41,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -569,12 +568,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   CreateSharedOffscreenGraphicsContext3DProvider();
 
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() {
-    return nullptr;
-  }
-
-  virtual std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
-      const WebSize& size,
-      viz::ResourceFormat format) {
     return nullptr;
   }
 

@@ -19,7 +19,6 @@ class GpuMemoryBufferManager;
 
 namespace viz {
 class RenderPass;
-class SharedBitmapManager;
 }
 
 namespace blink {
@@ -32,7 +31,6 @@ namespace blink {
 class PLATFORM_EXPORT VideoFrameResourceProvider {
  public:
   explicit VideoFrameResourceProvider(WebContextProviderCallback,
-                                      viz::SharedBitmapManager*,
                                       gpu::GpuMemoryBufferManager*,
                                       const cc::LayerTreeSettings&);
 
@@ -53,7 +51,6 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
 
  private:
   WebContextProviderCallback context_provider_callback_;
-  viz::SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   cc::LayerTreeSettings settings_;
   std::unique_ptr<cc::VideoResourceUpdater> resource_updater_;

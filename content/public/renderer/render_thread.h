@@ -38,10 +38,6 @@ namespace v8 {
 class Extension;
 }
 
-namespace viz {
-class SharedBitmapManager;
-}
-
 namespace content {
 
 class RenderThreadObserver;
@@ -82,8 +78,6 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   // The shared memory allocated by the host is returned back.
   virtual std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) = 0;
-
-  virtual viz::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
   // Registers the given V8 extension with WebKit.
   virtual void RegisterExtension(v8::Extension* extension) = 0;

@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -161,7 +160,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   main_thread_scheduler_ =
       blink::scheduler::CreateWebMainThreadSchedulerForTests();
   web_thread_ = main_thread_scheduler_->CreateMainThread();
-  shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
 
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
@@ -235,13 +233,6 @@ TestBlinkWebUnitTestSupport::CreateDataConsumerHandle(
 
 blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {
   return blink::WebString::FromUTF8("test_runner/0.0.0.0");
-}
-
-std::unique_ptr<viz::SharedBitmap>
-TestBlinkWebUnitTestSupport::AllocateSharedBitmap(const blink::WebSize& size,
-                                                  viz::ResourceFormat format) {
-  return shared_bitmap_manager_->AllocateSharedBitmap(
-      gfx::Size(size.width, size.height), format);
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
