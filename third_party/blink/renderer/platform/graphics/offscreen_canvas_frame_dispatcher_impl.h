@@ -82,9 +82,6 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
 
   void SetNeedsBeginFrameInternal();
 
-  std::unique_ptr<OffscreenCanvasResourceProvider>
-      offscreen_canvas_resource_provider_;
-
   bool VerifyImageSize(const IntSize);
   void PostImageToPlaceholderIfNotBlocked(scoped_refptr<StaticBitmapImage>,
                                           unsigned resource_id);
@@ -94,6 +91,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
 
   viz::mojom::blink::CompositorFrameSinkPtr sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
+  std::unique_ptr<OffscreenCanvasResourceProvider>
+      offscreen_canvas_resource_provider_;
 
   int placeholder_canvas_id_;
 

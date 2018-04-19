@@ -5,16 +5,32 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_RESOURCE_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_RESOURCE_PROVIDER_H_
 
-#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+
+namespace base {
+class SharedMemory;
+}
+
+namespace viz {
+namespace mojom {
+namespace blink {
+class CompositorFrameSink;
+}
+}  // namespace mojom
+}  // namespace viz
 
 namespace blink {
 
 class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
  public:
-  OffscreenCanvasResourceProvider(int width, int height);
+  // The CompositorFrameSink given here must be kept alive as long as this
+  // class is, as it is used to free the software-backed resources in the
+  // display compositor.
+  OffscreenCanvasResourceProvider(int width,
+                                  int height,
+                                  viz::mojom::blink::CompositorFrameSink*);
 
   ~OffscreenCanvasResourceProvider();
 
@@ -33,31 +49,46 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
   void Reshape(int width, int height) {
     width_ = width;
     height_ = height;
+    // TODO(junov): Prevent recycling resources of the wrong size.
   }
 
  private:
-  int width_;
-  int height_;
-  unsigned next_resource_id_;
-
   struct FrameResource {
-    scoped_refptr<StaticBitmapImage> image_;
-    std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
-
-    bool spare_lock_ = true;
-    gpu::Mailbox mailbox_;
-
     FrameResource() = default;
     ~FrameResource();
+
+    // TODO(junov):  What does this do?
+    bool spare_lock = true;
+
+    // Holds the backing for a gpu-backed resource. The Mailbox() of the image
+    // is given to the display compositor to present it.
+    scoped_refptr<StaticBitmapImage> image;
+
+    // Holds the backing for a software-backed resource.
+    std::unique_ptr<base::SharedMemory> shared_memory;
+    // The id given to  the display compositor to display a software-backed
+    // resource.
+    viz::SharedBitmapId shared_bitmap_id;
+
+    // Back-pointer to the OffscreenCanvasResourceProvider. FrameResource does
+    // not outlive the provider.
+    OffscreenCanvasResourceProvider* provider = nullptr;
   };
 
-  std::unique_ptr<FrameResource> recyclable_resource_;
-  std::unique_ptr<FrameResource> CreateOrRecycleFrameResource();
+  using ResourceMap = HashMap<unsigned, std::unique_ptr<FrameResource>>;
 
   void SetNeedsBeginFrameInternal();
-
-  typedef HashMap<unsigned, std::unique_ptr<FrameResource>> ResourceMap;
+  std::unique_ptr<FrameResource> CreateOrRecycleFrameResource();
   void ReclaimResourceInternal(const ResourceMap::iterator&);
+
+  // Holds a pointer to the FrameSink where SharedBitmapIds are reported on
+  // allocation and destruction, in order to later give those ids to the display
+  // compositor in a DrawQuad to present the resource.
+  viz::mojom::blink::CompositorFrameSink* const sink_;
+  int width_;
+  int height_;
+  unsigned next_resource_id_ = 0;
+  std::unique_ptr<FrameResource> recyclable_resource_;
   ResourceMap resources_;
 };
 
