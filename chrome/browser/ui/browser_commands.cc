@@ -740,10 +740,10 @@ void MuteSite(Browser* browser) {
 void ConvertPopupToTabbedBrowser(Browser* browser) {
   base::RecordAction(UserMetricsAction("ShowAsTab"));
   TabStripModel* tab_strip = browser->tab_strip_model();
-  WebContents* contents =
+  std::unique_ptr<content::WebContents> contents =
       tab_strip->DetachWebContentsAt(tab_strip->active_index());
   Browser* b = new Browser(Browser::CreateParams(browser->profile(), true));
-  b->tab_strip_model()->AppendWebContents(contents, true);
+  b->tab_strip_model()->AppendWebContents(contents.release(), true);
   b->window()->Show();
 }
 
@@ -1203,7 +1203,8 @@ void OpenInChrome(Browser* browser) {
 
   TabStripModel* source_tabstrip = browser->tab_strip_model();
   target_browser->tab_strip_model()->AppendWebContents(
-      source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index()),
+      source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index())
+          .release(),
       true);
   target_browser->window()->Show();
 }

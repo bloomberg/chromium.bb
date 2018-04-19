@@ -270,7 +270,7 @@ TEST_F(TabDesktopMediaListTest, RemoveTab) {
 
   TabStripModel* tab_strip_model = browser_->tab_strip_model();
   ASSERT_TRUE(tab_strip_model);
-  tab_strip_model->DetachWebContentsAt(kDefaultSourceCount - 1);
+  tab_strip_model->DetachWebContentsAt(kDefaultSourceCount - 1).release();
 
   EXPECT_CALL(observer_, OnSourceRemoved(list_.get(), 0))
       .WillOnce(

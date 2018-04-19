@@ -17,7 +17,6 @@
 
 class Browser;
 class TabStripModel;
-class UnloadControllerWebContentsDelegate;
 
 namespace content {
 class NotificationSource;
