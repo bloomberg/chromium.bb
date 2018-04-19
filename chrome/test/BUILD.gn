@@ -1236,6 +1236,8 @@ test("browser_tests") {
         "../browser/extensions/background_scripts_apitest.cc",
         "../browser/extensions/background_xhr_browsertest.cc",
         "../browser/extensions/bookmark_app_helper_browsertest.cc",
+        "../browser/extensions/bookmark_app_navigation_browsertest.cc",
+        "../browser/extensions/bookmark_app_navigation_browsertest.h",
         "../browser/extensions/bookmark_app_navigation_throttle_browsertest.cc",
         "../browser/extensions/browsertest_util.cc",
         "../browser/extensions/browsertest_util.h",
