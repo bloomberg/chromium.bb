@@ -5,10 +5,10 @@
 #import "ios/chrome/browser/ui/activity_services/bookmark_activity.h"
 
 #include "base/logging.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,8 +21,8 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 }  // namespace
 
 @interface BookmarkActivity ()
-// The bookmarks model to know if the page is bookmarked.
-@property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
+// Whether or not the page is bookmarked.
+@property(nonatomic, assign) BOOL bookmarked;
 // The URL for the activity.
 @property(nonatomic, assign) GURL URL;
 // The dispatcher that handles when the activity is performed.
@@ -31,17 +31,17 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 
 @implementation BookmarkActivity
 
-@synthesize bookmarkModel = _bookmarkModel;
+@synthesize bookmarked = _bookmarked;
 @synthesize dispatcher = _dispatcher;
 @synthesize URL = _URL;
 
 - (instancetype)initWithURL:(const GURL&)URL
-              bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                 bookmarked:(BOOL)bookmarked
                  dispatcher:(id<BrowserCommands>)dispatcher {
   self = [super init];
   if (self) {
     _URL = URL;
-    _bookmarkModel = bookmarkModel;
+    _bookmarked = bookmarked;
     _dispatcher = dispatcher;
   }
   return self;
@@ -58,7 +58,7 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 }
 
 - (NSString*)activityTitle {
-  if (self.bookmarkModel && self.bookmarkModel->IsBookmarked(self.URL))
+  if (self.bookmarked)
     return l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK);
   return l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS);
 }

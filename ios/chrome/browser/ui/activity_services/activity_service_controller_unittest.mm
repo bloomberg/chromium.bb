@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -554,8 +555,15 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_];
-  ASSERT_EQ(2U, [items count]);
-  EXPECT_EQ([PrintActivity class], [[items objectAtIndex:1] class]);
+  ASSERT_EQ(IsUIRefreshPhase1Enabled() ? 3U : 2U, [items count]);
+  BOOL foundPrintActivity = NO;
+  for (id item in items) {
+    if ([item class] == [PrintActivity class]) {
+      foundPrintActivity = YES;
+      break;
+    }
+  }
+  EXPECT_TRUE(foundPrintActivity);
 
   // Verify non-printable data.
   data = [[ShareToData alloc]
@@ -568,7 +576,15 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_];
-  EXPECT_EQ(1U, [items count]);
+  EXPECT_EQ(IsUIRefreshPhase1Enabled() ? 2U : 1U, [items count]);
+  foundPrintActivity = NO;
+  for (id item in items) {
+    if ([item class] == [PrintActivity class]) {
+      foundPrintActivity = YES;
+      break;
+    }
+  }
+  EXPECT_FALSE(foundPrintActivity);
 }
 
 // Verifies that the Bookmark Activity and Read Later activities are only here
@@ -657,7 +673,7 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
   EXPECT_EQ([BookmarkActivity class], [activity class]);
   NSString* editBookmark =
       l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK);
-  EXPECT_TRUE([editBookmark isEqualToString:activity.activityTitle]);
+  EXPECT_NSEQ(editBookmark, activity.activityTitle);
 
   bookmark_model_->RemoveAllUserBookmarks();
 }

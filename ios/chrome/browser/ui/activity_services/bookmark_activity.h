@@ -7,9 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-namespace bookmarks {
-class BookmarkModel;
-}
 @protocol BrowserCommands;
 class GURL;
 
@@ -20,7 +17,7 @@ class GURL;
 // is already bookmarked in the |bookmarkModel|. The |dispatcher| is used to add
 // the page to the bookmarks.
 - (instancetype)initWithURL:(const GURL&)URL
-              bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                 bookmarked:(BOOL)bookmarked
                  dispatcher:(id<BrowserCommands>)dispatcher;
 - (instancetype)init NS_UNAVAILABLE;
 
