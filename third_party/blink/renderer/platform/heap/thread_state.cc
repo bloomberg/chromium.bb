@@ -165,7 +165,7 @@ ThreadState::ThreadState()
       trace_dom_wrappers_(nullptr),
       invalidate_dead_objects_in_wrappers_marking_deque_(nullptr),
       perform_cleanup_(nullptr),
-      wrapper_tracing_in_progress_(false),
+      wrapper_tracing_(false),
       incremental_marking_(false),
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
@@ -1237,6 +1237,9 @@ void ThreadState::InvokePreFinalizers() {
 // static
 base::subtle::AtomicWord ThreadState::incremental_marking_counter_ = 0;
 
+// static
+base::subtle::AtomicWord ThreadState::wrapper_tracing_counter_ = 0;
+
 void ThreadState::EnableIncrementalMarkingBarrier() {
   CHECK(!IsIncrementalMarking());
   base::subtle::Barrier_AtomicIncrement(&incremental_marking_counter_, 1);
@@ -1247,6 +1250,18 @@ void ThreadState::DisableIncrementalMarkingBarrier() {
   CHECK(IsIncrementalMarking());
   base::subtle::Barrier_AtomicIncrement(&incremental_marking_counter_, -1);
   SetIncrementalMarking(false);
+}
+
+void ThreadState::EnableWrapperTracingBarrier() {
+  CHECK(!IsWrapperTracing());
+  base::subtle::Barrier_AtomicIncrement(&wrapper_tracing_counter_, 1);
+  SetWrapperTracing(true);
+}
+
+void ThreadState::DisableWrapperTracingBarrier() {
+  CHECK(IsWrapperTracing());
+  base::subtle::Barrier_AtomicIncrement(&wrapper_tracing_counter_, -1);
+  SetWrapperTracing(false);
 }
 
 void ThreadState::IncrementalMarkingStart() {

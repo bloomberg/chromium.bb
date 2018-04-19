@@ -225,6 +225,13 @@ class PLATFORM_EXPORT ThreadState {
     return base::subtle::NoBarrier_Load(&incremental_marking_counter_) > 0;
   }
 
+  // Returns true if any thread is currently incremental marking its heap and
+  // false otherwise. For an exact check use ThreadState::IsWrapperTracing().
+  static bool IsAnyWrapperTracing() {
+    // Stores use full barrier to allow using the simplest relaxed load here.
+    return base::subtle::NoBarrier_Load(&wrapper_tracing_counter_) > 0;
+  }
+
   static void AttachMainThread();
 
   // Associate ThreadState object with the current thread. After this
@@ -276,6 +283,9 @@ class PLATFORM_EXPORT ThreadState {
   void SetGCPhase(GCPhase);
   bool IsMarkingInProgress() const { return gc_phase_ == GCPhase::kMarking; }
   bool IsSweepingInProgress() const { return gc_phase_ == GCPhase::kSweeping; }
+
+  void EnableWrapperTracingBarrier();
+  void DisableWrapperTracingBarrier();
 
   // Incremental GC.
 
@@ -364,10 +374,8 @@ class PLATFORM_EXPORT ThreadState {
     return in_atomic_pause() && IsSweepingInProgress();
   }
 
-  bool WrapperTracingInProgress() const { return wrapper_tracing_in_progress_; }
-  void SetWrapperTracingInProgress(bool value) {
-    wrapper_tracing_in_progress_ = value;
-  }
+  bool IsWrapperTracing() const { return wrapper_tracing_; }
+  void SetWrapperTracing(bool value) { wrapper_tracing_ = value; }
 
   bool IsIncrementalMarking() const { return incremental_marking_; }
   void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
@@ -594,6 +602,9 @@ class PLATFORM_EXPORT ThreadState {
   // marking and decremented upon finishing.
   static base::subtle::AtomicWord incremental_marking_counter_;
 
+  // Same semantic as |incremental_marking_counter_|.
+  static base::subtle::AtomicWord wrapper_tracing_counter_;
+
   ThreadState();
   ~ThreadState();
 
@@ -708,7 +719,7 @@ class PLATFORM_EXPORT ThreadState {
   void (*trace_dom_wrappers_)(v8::Isolate*, Visitor*);
   void (*invalidate_dead_objects_in_wrappers_marking_deque_)(v8::Isolate*);
   void (*perform_cleanup_)(v8::Isolate*);
-  bool wrapper_tracing_in_progress_;
+  bool wrapper_tracing_;
   bool incremental_marking_;
 
 #if defined(ADDRESS_SANITIZER)

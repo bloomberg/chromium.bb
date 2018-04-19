@@ -77,7 +77,8 @@ void swap(HeapVector<TraceWrapperMember<T>>& a,
   HeapVector<Member<T>>& a_ = reinterpret_cast<HeapVector<Member<T>>&>(a);
   HeapVector<Member<T>>& b_ = reinterpret_cast<HeapVector<Member<T>>&>(b);
   a_.swap(b_);
-  if (ThreadState::Current()->WrapperTracingInProgress()) {
+  if (ThreadState::IsAnyWrapperTracing() &&
+      ThreadState::Current()->IsWrapperTracing()) {
     // If incremental marking is enabled we need to emit the write barrier since
     // the swap was performed on HeapVector<Member<T>>.
     for (auto item : a) {
@@ -106,7 +107,8 @@ void swap(HeapVector<TraceWrapperMember<T>>& a, HeapVector<Member<T>>& b) {
   // TraceWrapperMember and Member match in vector backings.
   HeapVector<Member<T>>& a_ = reinterpret_cast<HeapVector<Member<T>>&>(a);
   a_.swap(b);
-  if (ThreadState::Current()->WrapperTracingInProgress()) {
+  if (ThreadState::IsAnyWrapperTracing() &&
+      ThreadState::Current()->IsWrapperTracing()) {
     // If incremental marking is enabled we need to emit the write barrier since
     // the swap was performed on HeapVector<Member<T>>.
     for (auto item : a) {
