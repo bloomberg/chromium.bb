@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 
+#include "base/base64.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 
@@ -68,7 +69,10 @@ bool ParseOfflineHeaderValue(const std::string& header_value,
     } else if (key == kOfflinePageHeaderIDKey) {
       *id = value;
     } else if (key == kOfflinePageHeaderIntentUrlKey) {
-      GURL url = GURL(value);
+      std::string decoded_url;
+      if (!base::Base64Decode(value, &decoded_url))
+        return false;
+      GURL url = GURL(decoded_url);
       if (!url.is_valid())
         return false;
       *intent_url = url;
@@ -143,11 +147,17 @@ std::string OfflinePageHeader::GetCompleteHeaderString() const {
     value += id;
   }
 
+  // Base64-encode the intent URL value because unlike http/https URLs, the
+  // content:// URL can include any arbitrary unescaped characters in its path,
+  // i.e., derived from filename or title which may contain SPACE, QUOTE,
+  // BACKSLASH or other unsafe characters.
   if (!intent_url.is_empty()) {
     value += " ";
     value += kOfflinePageHeaderIntentUrlKey;
     value += "=";
-    value += intent_url.spec();
+    std::string encoded_intent_url;
+    base::Base64Encode(intent_url.spec(), &encoded_intent_url);
+    value += encoded_intent_url;
   }
 
   return value;
