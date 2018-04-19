@@ -32,6 +32,9 @@ FocusRing* FocusRing::Install(View* parent,
   if (!ring) {
     ring = new FocusRing(color, corner_radius);
     parent->AddChildView(ring);
+  } else {
+    ring->color_ = color;
+    ring->corner_radius_ = corner_radius;
   }
   ring->Layout();
   ring->SchedulePaint();
