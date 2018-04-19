@@ -48,8 +48,8 @@ static INLINE void quantize(const __m256i *qp, __m256i *c,
                             const int16_t *iscan_ptr, int log_scale,
                             tran_low_t *qcoeff, tran_low_t *dqcoeff,
                             __m256i *eob) {
-  const __m256i abs = _mm256_abs_epi32(*c);
-  __m256i q = _mm256_add_epi32(abs, qp[0]);
+  const __m256i abs_coeff = _mm256_abs_epi32(*c);
+  __m256i q = _mm256_add_epi32(abs_coeff, qp[0]);
 
   __m256i q_lo = _mm256_mul_epi32(q, qp[1]);
   __m256i q_hi = _mm256_srli_epi64(q, 32);
@@ -59,7 +59,7 @@ static INLINE void quantize(const __m256i *qp, __m256i *c,
   q_hi = _mm256_srli_epi64(q_hi, 16 - log_scale);
   q_hi = _mm256_slli_epi64(q_hi, 32);
   q = _mm256_or_si256(q_lo, q_hi);
-  const __m256i abs_s = _mm256_slli_epi32(abs, 1 + log_scale);
+  const __m256i abs_s = _mm256_slli_epi32(abs_coeff, 1 + log_scale);
   const __m256i mask = _mm256_cmpgt_epi32(qp[2], abs_s);
   q = _mm256_andnot_si256(mask, q);
 

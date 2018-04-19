@@ -106,13 +106,13 @@ static INLINE uint16_t quant_gather_eob(__m256i eob) {
 static INLINE void quantize(const __m256i *thr, const __m256i *qp, __m256i *c,
                             const int16_t *iscan_ptr, tran_low_t *qcoeff,
                             tran_low_t *dqcoeff, __m256i *eob) {
-  const __m256i abs = _mm256_abs_epi16(*c);
-  __m256i mask = _mm256_cmpgt_epi16(abs, *thr);
-  mask = _mm256_or_si256(mask, _mm256_cmpeq_epi16(abs, *thr));
+  const __m256i abs_coeff = _mm256_abs_epi16(*c);
+  __m256i mask = _mm256_cmpgt_epi16(abs_coeff, *thr);
+  mask = _mm256_or_si256(mask, _mm256_cmpeq_epi16(abs_coeff, *thr));
   const int nzflag = _mm256_movemask_epi8(mask);
 
   if (nzflag) {
-    __m256i q = _mm256_adds_epi16(abs, qp[0]);
+    __m256i q = _mm256_adds_epi16(abs_coeff, qp[0]);
     q = _mm256_mulhi_epi16(q, qp[1]);
     q = _mm256_sign_epi16(q, *c);
     const __m256i dq = _mm256_mullo_epi16(q, qp[2]);
@@ -189,13 +189,13 @@ static INLINE void quantize_32x32(const __m256i *thr, const __m256i *qp,
                                   __m256i *c, const int16_t *iscan_ptr,
                                   tran_low_t *qcoeff, tran_low_t *dqcoeff,
                                   __m256i *eob) {
-  const __m256i abs = _mm256_abs_epi16(*c);
-  __m256i mask = _mm256_cmpgt_epi16(abs, *thr);
-  mask = _mm256_or_si256(mask, _mm256_cmpeq_epi16(abs, *thr));
+  const __m256i abs_coeff = _mm256_abs_epi16(*c);
+  __m256i mask = _mm256_cmpgt_epi16(abs_coeff, *thr);
+  mask = _mm256_or_si256(mask, _mm256_cmpeq_epi16(abs_coeff, *thr));
   const int nzflag = _mm256_movemask_epi8(mask);
 
   if (nzflag) {
-    __m256i q = _mm256_adds_epi16(abs, qp[0]);
+    __m256i q = _mm256_adds_epi16(abs_coeff, qp[0]);
     q = _mm256_mulhi_epu16(q, qp[1]);
 
     __m256i dq = _mm256_mullo_epi16(q, qp[2]);
@@ -276,13 +276,13 @@ static INLINE void quantize_64x64(const __m256i *thr, const __m256i *qp,
                                   __m256i *c, const int16_t *iscan_ptr,
                                   tran_low_t *qcoeff, tran_low_t *dqcoeff,
                                   __m256i *eob) {
-  const __m256i abs = _mm256_abs_epi16(*c);
-  __m256i mask = _mm256_cmpgt_epi16(abs, *thr);
-  mask = _mm256_or_si256(mask, _mm256_cmpeq_epi16(abs, *thr));
+  const __m256i abs_coeff = _mm256_abs_epi16(*c);
+  __m256i mask = _mm256_cmpgt_epi16(abs_coeff, *thr);
+  mask = _mm256_or_si256(mask, _mm256_cmpeq_epi16(abs_coeff, *thr));
   const int nzflag = _mm256_movemask_epi8(mask);
 
   if (nzflag) {
-    __m256i q = _mm256_adds_epi16(abs, qp[0]);
+    __m256i q = _mm256_adds_epi16(abs_coeff, qp[0]);
     __m256i qh = _mm256_mulhi_epi16(q, qp[1]);
     __m256i ql = _mm256_mullo_epi16(q, qp[1]);
     qh = _mm256_slli_epi16(qh, 2);
