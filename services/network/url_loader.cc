@@ -21,7 +21,6 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/loader_util.h"
@@ -261,7 +260,7 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
 }  // namespace
 
 URLLoader::URLLoader(
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+    net::URLRequestContext* url_request_context,
     mojom::NetworkServiceClient* network_service_client,
     DeleteCallback delete_callback,
     mojom::URLLoaderRequest url_loader_request,
@@ -274,7 +273,7 @@ URLLoader::URLLoader(
     uint32_t request_id,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder)
-    : url_request_context_getter_(url_request_context_getter),
+    : url_request_context_(url_request_context),
       network_service_client_(network_service_client),
       delete_callback_(std::move(delete_callback)),
       options_(options),
@@ -314,9 +313,8 @@ URLLoader::URLLoader(
   binding_.set_connection_error_handler(
       base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
 
-  url_request_ =
-      url_request_context_getter_->GetURLRequestContext()->CreateRequest(
-          GURL(request.url), request.priority, this, traffic_annotation);
+  url_request_ = url_request_context_->CreateRequest(
+      GURL(request.url), request.priority, this, traffic_annotation);
   url_request_->set_method(request.method);
   url_request_->set_site_for_cookies(request.site_for_cookies);
   url_request_->set_attach_same_site_cookies(request.attach_same_site_cookies);

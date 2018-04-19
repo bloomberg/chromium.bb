@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/network/network_context.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -93,6 +94,7 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     void Reset() {
       DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
       network_context_impl_.reset();
+      request_context_getter_ = nullptr;
     }
 
    private:
@@ -102,10 +104,13 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     void InitOnIO(
         scoped_refptr<net::URLRequestContextGetter> request_context_getter,
         network::mojom::NetworkContextRequest network_context_request) {
+      request_context_getter_ = std::move(request_context_getter);
       network_context_impl_ = std::make_unique<network::NetworkContext>(
-          nullptr, std::move(network_context_request), request_context_getter);
+          nullptr, std::move(network_context_request),
+          request_context_getter_->GetURLRequestContext());
     }
 
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
     std::unique_ptr<network::NetworkContext> network_context_impl_;
 
     DISALLOW_COPY_AND_ASSIGN(InternalState);

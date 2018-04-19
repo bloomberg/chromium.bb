@@ -75,7 +75,7 @@ class HttpCacheDataRemoverTest : public testing::Test {
   void SetUp() override {
     InitNetworkContext();
 
-    net::HttpCache* cache = network_context_->GetURLRequestContext()
+    net::HttpCache* cache = network_context_->url_request_context()
                                 ->http_transaction_factory()
                                 ->GetCache();
     ASSERT_TRUE(cache);
@@ -110,9 +110,8 @@ class HttpCacheDataRemoverTest : public testing::Test {
     base::RunLoop run_loop;
     std::unique_ptr<HttpCacheDataRemover> data_remover =
         HttpCacheDataRemover::CreateAndStart(
-            network_context_->url_request_context_getter()
-                ->GetURLRequestContext(),
-            std::move(filter), start_time, end_time,
+            network_context_->url_request_context(), std::move(filter),
+            start_time, end_time,
             MakeHttpCacheDataRemoverCallback(run_loop.QuitClosure()));
     run_loop.Run();
   }
@@ -303,8 +302,7 @@ TEST_F(HttpCacheDataRemoverTest, DeleteHttpRemover) {
   bool callback_invoked = false;
   std::unique_ptr<HttpCacheDataRemover> data_remover =
       HttpCacheDataRemover::CreateAndStart(
-          network_context_->url_request_context_getter()
-              ->GetURLRequestContext(),
+          network_context_->url_request_context(),
           /*url_filter=*/nullptr, base::Time(), base::Time(),
           MakeHttpCacheDataRemoverCallback(base::BindOnce(
               [](bool* callback_invoked) { *callback_invoked = true; },
@@ -323,8 +321,7 @@ TEST_F(HttpCacheDataRemoverTest, TestDelayedBackend) {
   // call to clear the cache does it.
   InitNetworkContext();
 
-  net::HttpCache* http_cache = network_context_->url_request_context_getter()
-                                   ->GetURLRequestContext()
+  net::HttpCache* http_cache = network_context_->url_request_context()
                                    ->http_transaction_factory()
                                    ->GetCache();
   ASSERT_TRUE(http_cache);

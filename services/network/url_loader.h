@@ -30,7 +30,7 @@
 
 namespace net {
 class HttpResponseHeaders;
-class URLRequestContextGetter;
+class URLRequestContext;
 }
 
 namespace network {
@@ -46,8 +46,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   using DeleteCallback = base::OnceCallback<void(URLLoader* url_loader)>;
 
   // |delete_callback| tells the URLLoader's owner to destroy the URLLoader.
+  // The URLLoader must be destroyed before the |url_request_context|.
   URLLoader(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      net::URLRequestContext* url_request_context,
       mojom::NetworkServiceClient* network_service_client,
       DeleteCallback delete_callback,
       mojom::URLLoaderRequest url_loader_request,
@@ -112,7 +113,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void RecordBodyReadFromNetBeforePausedIfNeeded();
   void ResumeStart();
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  net::URLRequestContext* url_request_context_;
   mojom::NetworkServiceClient* network_service_client_;
   DeleteCallback delete_callback_;
 

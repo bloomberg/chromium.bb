@@ -39,7 +39,7 @@ class NetworkContextManagerTest : public testing::Test {
 
     // Create |manager_| on the main thread.
     manager_.reset(NetworkContextManager::CreateForTest(
-        url_request_context_getter_.get(),
+        url_request_context_getter_,
         network::NetworkService::CreateForTesting()));
   }
 

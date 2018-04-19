@@ -47,20 +47,18 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
     net::URLRequestContextBuilder context_builder;
     context_builder.set_proxy_resolution_service(
         net::ProxyResolutionService::CreateDirect());
-    context_ =
-        new network::NetworkURLRequestContextGetter(context_builder.Build());
+    context_ = context_builder.Build();
     constexpr int child_id = 4;
     constexpr int route_id = 8;
     resource_scheduler_client_ =
         base::MakeRefCounted<network::ResourceSchedulerClient>(
             child_id, route_id, &resource_scheduler_,
-            context_->GetURLRequestContext()->network_quality_estimator());
+            context_->network_quality_estimator());
   }
 
   ~TestNavigationLoaderInterceptor() override {
     url_loader_ = nullptr;
     resource_scheduler_client_ = nullptr;
-    context_->NotifyContextShuttingDown();
   }
 
   void MaybeCreateLoader(const network::ResourceRequest& resource_request,
@@ -76,7 +74,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
                    network::mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;
     url_loader_ = std::make_unique<network::URLLoader>(
-        context_, nullptr,
+        context_.get(), nullptr,
         base::BindOnce(&TestNavigationLoaderInterceptor::DeleteURLLoader,
                        base::Unretained(this)),
         std::move(request), 0 /* options */, resource_request,
@@ -102,7 +100,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
   base::Optional<network::ResourceRequest>*
       most_recent_resource_request_;  // NOT OWNED.
   network::ResourceScheduler resource_scheduler_;
-  scoped_refptr<network::NetworkURLRequestContextGetter> context_;
+  std::unique_ptr<net::URLRequestContext> context_;
   scoped_refptr<network::ResourceSchedulerClient> resource_scheduler_client_;
   std::unique_ptr<network::URLLoader> url_loader_;
 };

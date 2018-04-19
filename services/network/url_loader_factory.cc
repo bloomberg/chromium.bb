@@ -103,7 +103,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
   }
 
   url_loaders_.insert(std::make_unique<URLLoader>(
-      context_->url_request_context_getter(), network_service_client,
+      context_->url_request_context(), network_service_client,
       base::BindOnce(&URLLoaderFactory::DestroyURLLoader,
                      base::Unretained(this)),
       std::move(request), options, url_request, report_raw_headers,

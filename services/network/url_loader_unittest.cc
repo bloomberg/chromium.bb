@@ -290,11 +290,10 @@ class URLLoaderTest : public testing::Test {
     net::URLRequestContextBuilder context_builder;
     context_builder.set_proxy_resolution_service(
         net::ProxyResolutionService::CreateDirect());
-    context_ =
-        new network::NetworkURLRequestContextGetter(context_builder.Build());
+    context_ = context_builder.Build();
     resource_scheduler_client_ = base::MakeRefCounted<ResourceSchedulerClient>(
         kProcessId, kRouteId, &resource_scheduler_,
-        context_->GetURLRequestContext()->network_quality_estimator());
+        context_->network_quality_estimator());
     net::URLRequestFailedJob::AddUrlHandler();
   }
   ~URLLoaderTest() override {
@@ -447,11 +446,11 @@ class URLLoaderTest : public testing::Test {
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
-  net::URLRequestContextGetter* context() { return context_.get(); }
+  net::URLRequestContext* context() { return context_.get(); }
   TestURLLoaderClient* client() { return &client_; }
   void DestroyContext() {
     resource_scheduler_client_ = nullptr;
-    context_->NotifyContextShuttingDown();
+    context_.reset();
   }
 
   // Returns the path of the requested file in the test data directory.
@@ -587,7 +586,7 @@ class URLLoaderTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::EmbeddedTestServer test_server_;
-  scoped_refptr<NetworkURLRequestContextGetter> context_;
+  std::unique_ptr<net::URLRequestContext> context_;
   ResourceScheduler resource_scheduler_;
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 

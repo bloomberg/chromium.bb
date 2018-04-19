@@ -1213,8 +1213,7 @@ void ProfileIOData::Init(
         io_thread_globals->quic_disabled, io_thread->net_log(),
         io_thread_globals->deprecated_network_quality_estimator.get());
     main_request_context_ =
-        main_request_context_owner_.url_request_context_getter
-            ->GetURLRequestContext();
+        main_request_context_owner_.url_request_context.get();
   } else {
     main_network_context_ =
         content::GetNetworkServiceImpl()->CreateNetworkContextWithBuilder(

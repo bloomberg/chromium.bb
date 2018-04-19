@@ -10,52 +10,25 @@
 
 namespace network {
 
-NetworkURLRequestContextGetter::NetworkURLRequestContextGetter(
-    std::unique_ptr<net::URLRequestContext> url_request_context)
-    : url_request_context_(std::move(url_request_context)),
-      network_task_runner_(base::MessageLoop::current()->task_runner()) {}
-
-// net::URLRequestContextGetter implementation:
-net::URLRequestContext* NetworkURLRequestContextGetter::GetURLRequestContext() {
-  return shutdown_ ? nullptr : url_request_context_.get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-NetworkURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return network_task_runner_;
-}
-
-void NetworkURLRequestContextGetter::NotifyContextShuttingDown() {
-  shutdown_ = true;
-  URLRequestContextGetter::NotifyContextShuttingDown();
-  url_request_context_.reset();
-}
-
-NetworkURLRequestContextGetter::~NetworkURLRequestContextGetter() {}
-
 URLRequestContextOwner::URLRequestContextOwner() = default;
 
 URLRequestContextOwner::URLRequestContextOwner(
     std::unique_ptr<PrefService> pref_service_in,
-    std::unique_ptr<net::URLRequestContext> url_request_context_in) {
-  pref_service = std::move(pref_service_in);
-  url_request_context_getter =
-      new NetworkURLRequestContextGetter(std::move(url_request_context_in));
-}
+    std::unique_ptr<net::URLRequestContext> url_request_context_in)
+    : pref_service(std::move(pref_service_in)),
+      url_request_context(std::move(url_request_context_in)) {}
 
 URLRequestContextOwner::~URLRequestContextOwner() {
-  if (url_request_context_getter)
-    url_request_context_getter.get()->NotifyContextShuttingDown();
 }
 
 URLRequestContextOwner::URLRequestContextOwner(URLRequestContextOwner&& other)
     : pref_service(std::move(other.pref_service)),
-      url_request_context_getter(std::move(other.url_request_context_getter)) {}
+      url_request_context(std::move(other.url_request_context)) {}
 
 URLRequestContextOwner& URLRequestContextOwner::operator=(
     URLRequestContextOwner&& other) {
   pref_service = std::move(other.pref_service);
-  url_request_context_getter = std::move(other.url_request_context_getter);
+  url_request_context = std::move(other.url_request_context);
   return *this;
 }
 
