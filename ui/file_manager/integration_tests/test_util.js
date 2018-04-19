@@ -124,6 +124,7 @@ function pending(caller, message, var_args) {
   // (%s, %d and %j) within message with the remaining |arguments|.
   var index = 2;
   var args = arguments;
+  message = String(message);
   var formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
     var arg = args[index++];
     switch(pattern) {
