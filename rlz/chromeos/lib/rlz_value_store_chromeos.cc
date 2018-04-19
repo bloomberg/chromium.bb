@@ -231,8 +231,16 @@ bool RlzValueStoreChromeOS::ReadProductEvents(
   events->clear();
   for (size_t i = 0; i < events_list->GetSize(); ++i) {
     std::string event;
-    if (events_list->GetString(i, &event))
+    if (events_list->GetString(i, &event)) {
+      if (event == "CAF" && IsStatefulEvent(product, event.c_str())) {
+        base::Value event_value(event);
+        size_t index;
+        events_list->Remove(event_value, &index);
+        --i;
+        continue;
+      }
       events->push_back(event);
+    }
   }
   return true;
 }
