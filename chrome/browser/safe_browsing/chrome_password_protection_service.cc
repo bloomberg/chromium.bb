@@ -301,7 +301,6 @@ void ChromePasswordProtectionService::ShowModalWarning(
   MaybeStartThreatDetailsCollection(web_contents, verdict_token);
 }
 
-// TODO(jialiul): Handle user actions in separate functions.
 void ChromePasswordProtectionService::OnUserAction(
     content::WebContents* web_contents,
     PasswordProtectionService::WarningUIType ui_type,

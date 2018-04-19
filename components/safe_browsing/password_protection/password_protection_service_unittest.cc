@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
@@ -56,22 +57,15 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
-class TestPasswordProtectionService : public PasswordProtectionService {
+class TestPasswordProtectionService : public MockPasswordProtectionService {
  public:
   TestPasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<HostContentSettingsMap> content_setting_map)
-      : PasswordProtectionService(database_manager,
-                                  url_loader_factory,
-                                  nullptr,
-                                  content_setting_map.get()),
-        is_extended_reporting_(true),
-        is_incognito_(false),
-        latest_request_(nullptr),
-        password_protection_trigger_(PASSWORD_PROTECTION_OFF),
-        sync_account_type_(
-            LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN) {}
+      : MockPasswordProtectionService(database_manager,
+                                      url_loader_factory,
+                                      content_setting_map.get()) {}
 
   void RequestFinished(
       PasswordProtectionRequest* request,
@@ -80,38 +74,6 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     latest_request_ = request;
     latest_response_ = std::move(response);
     run_loop_.Quit();
-  }
-
-  bool IsExtendedReporting() override { return is_extended_reporting_; }
-
-  bool IsIncognito() override { return is_incognito_; }
-
-  void set_extended_reporting(bool enabled) {
-    is_extended_reporting_ = enabled;
-  }
-
-  void set_incognito(bool enabled) { is_incognito_ = enabled; }
-
-  bool IsPingingEnabled(LoginReputationClientRequest::TriggerType trigger_type,
-                        RequestOutcome* reason) override {
-    return true;
-  }
-
-  void MaybeLogPasswordReuseLookupEvent(
-      content::WebContents* web_contents,
-      PasswordProtectionService::RequestOutcome,
-      const LoginReputationClientResponse*) override {}
-
-  bool IsHistorySyncEnabled() override { return false; }
-
-  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-  GetSyncAccountType() const override {
-    return sync_account_type_;
-  }
-
-  void set_sync_account_type(
-      LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType type) {
-    sync_account_type_ = type;
   }
 
   LoginReputationClientResponse* latest_response() {
@@ -128,44 +90,10 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     return latest_request_ ? latest_request_->request_proto() : nullptr;
   }
 
-  void set_password_protection_trigger(PasswordProtectionTrigger trigger) {
-    password_protection_trigger_ = trigger;
-  }
-
-  PasswordProtectionTrigger GetPasswordProtectionTriggerPref(
-      const std::string& pref_name_unused) const override {
-    return password_protection_trigger_;
-  }
-
-  bool IsURLWhitelistedForPasswordEntry(const GURL& url,
-                                        RequestOutcome* reason) const override {
-    return false;
-  }
-
-  MOCK_METHOD3(FillReferrerChain,
-               void(const GURL&,
-                    SessionID,
-                    LoginReputationClientRequest::Frame*));
-  MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
-  MOCK_METHOD2(ShowModalWarning,
-               void(content::WebContents*, const std::string&));
-  MOCK_METHOD3(OnUserAction,
-               void(content::WebContents*, WarningUIType, WarningAction));
-  MOCK_METHOD2(UpdateSecurityState,
-               void(safe_browsing::SBThreatType, content::WebContents*));
-  MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
-  MOCK_METHOD2(RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
-               void(bool, const history::URLRows&));
-
  private:
-  bool is_extended_reporting_;
-  bool is_incognito_;
   PasswordProtectionRequest* latest_request_;
   base::RunLoop run_loop_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
-  PasswordProtectionTrigger password_protection_trigger_;
-  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-      sync_account_type_;
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
 
@@ -199,8 +127,19 @@ class PasswordProtectionServiceTest
             content_setting_map_);
 
     ASSERT_EQ(2ul, GetParam().size());
-    password_protection_service_->set_extended_reporting(GetParam()[0]);
-    password_protection_service_->set_incognito(GetParam()[1]);
+    EXPECT_CALL(*password_protection_service_.get(), IsExtendedReporting())
+        .WillRepeatedly(Return(GetParam()[0]));
+    EXPECT_CALL(*password_protection_service_.get(), IsIncognito())
+        .WillRepeatedly(Return(GetParam()[1]));
+    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+        .WillRepeatedly(Return(
+            LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN));
+    EXPECT_CALL(*password_protection_service_.get(),
+                IsURLWhitelistedForPasswordEntry(_, _))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*password_protection_service_.get(),
+                GetPasswordProtectionTriggerPref(_))
+        .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
     url_ = PasswordProtectionService::GetPasswordProtectionRequestUrl();
   }
 
@@ -1032,10 +971,12 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
     scoped_feature_list2.InitAndEnableFeatureWithParameters(
         safe_browsing::kGoogleBrandedPhishingWarning,
         {{"softer_warning", "true"}, {"warn_on_low_reputation", "false"}});
-    password_protection_service_->set_sync_account_type(
-        LoginReputationClientRequest::PasswordReuseEvent::GMAIL);
-    password_protection_service_->set_password_protection_trigger(
-        PHISHING_REUSE);
+    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+        .WillRepeatedly(
+            Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
+    EXPECT_CALL(*password_protection_service_.get(),
+                GetPasswordProtectionTriggerPref(_))
+        .WillRepeatedly(Return(PHISHING_REUSE));
 
     // Don't show modal warning if it is not a password reuse ping.
     EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
@@ -1056,10 +997,12 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
         LoginReputationClientResponse::PHISHING));
 
     // For a GSUITE account, don't show warning if password protection is off.
-    password_protection_service_->set_sync_account_type(
-        LoginReputationClientRequest::PasswordReuseEvent::GSUITE);
-    password_protection_service_->set_password_protection_trigger(
-        PASSWORD_PROTECTION_OFF);
+    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+        .WillRepeatedly(
+            Return(LoginReputationClientRequest::PasswordReuseEvent::GSUITE));
+    EXPECT_CALL(*password_protection_service_.get(),
+                GetPasswordProtectionTriggerPref(_))
+        .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
     EXPECT_EQ(PASSWORD_PROTECTION_OFF,
               password_protection_service_->GetPasswordProtectionTriggerPref(
                   prefs::kPasswordProtectionWarningTrigger));
@@ -1070,8 +1013,9 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
 
     // For a GSUITE account, show warning if password protection is set to
     // PHISHING_REUSE.
-    password_protection_service_->set_password_protection_trigger(
-        PHISHING_REUSE);
+    EXPECT_CALL(*password_protection_service_.get(),
+                GetPasswordProtectionTriggerPref(_))
+        .WillRepeatedly(Return(PHISHING_REUSE));
     EXPECT_EQ(PHISHING_REUSE,
               password_protection_service_->GetPasswordProtectionTriggerPref(
                   prefs::kPasswordProtectionWarningTrigger));
@@ -1082,8 +1026,9 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
 
     // When "warn_on_low_reputation" is set to false, don't show modal warning
     // on LOW_REPUTATION verdict, only show on PHISHING verdict.
-    password_protection_service_->set_sync_account_type(
-        LoginReputationClientRequest::PasswordReuseEvent::GMAIL);
+    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+        .WillRepeatedly(
+            Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
     EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
         /*matches_sync_password=*/true,
@@ -1131,30 +1076,35 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
 
     // Event logging should be enable for all signed-in users, if
     // password protection trigger is set to PHISHING_REUSE.
-    password_protection_service_->set_sync_account_type(
-        LoginReputationClientRequest::PasswordReuseEvent::GMAIL);
-    password_protection_service_->set_password_protection_trigger(
-        PHISHING_REUSE);
+    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+        .WillRepeatedly(
+            Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
+    EXPECT_CALL(*password_protection_service_.get(),
+                GetPasswordProtectionTriggerPref(_))
+        .WillRepeatedly(Return(PHISHING_REUSE));
     EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GMAIL,
               password_protection_service_->GetSyncAccountType());
     EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
 
-    password_protection_service_->set_sync_account_type(
-        LoginReputationClientRequest::PasswordReuseEvent::GSUITE);
+    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+        .WillRepeatedly(
+            Return(LoginReputationClientRequest::PasswordReuseEvent::GSUITE));
     EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GSUITE,
               password_protection_service_->GetSyncAccountType());
     EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
 
     // If password protection trigger is sent to off, then event logging
     // should be disabled.
-    password_protection_service_->set_password_protection_trigger(
-        PASSWORD_PROTECTION_OFF);
+    EXPECT_CALL(*password_protection_service_.get(),
+                GetPasswordProtectionTriggerPref(_))
+        .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
     EXPECT_EQ(PASSWORD_PROTECTION_OFF,
               password_protection_service_->GetPasswordProtectionTriggerPref(
                   prefs::kPasswordProtectionRiskTrigger));
     EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
-    password_protection_service_->set_sync_account_type(
-        LoginReputationClientRequest::PasswordReuseEvent::GMAIL);
+    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+        .WillRepeatedly(
+            Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
     EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
 
     // TODO(jialiul): update test when we start to introduce PASSWORD_REUSE
