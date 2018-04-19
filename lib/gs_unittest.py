@@ -1495,6 +1495,25 @@ class CatTest(cros_test_lib.TempDirTestCase):
       with self.assertRaises(gs.GSNoSuchKey):
         ctx.Cat(tempuri)
 
+  @cros_test_lib.NetworkTest()
+  def testStreamingRemoteFile(self):
+    """Test streaming a remote file."""
+    ctx = gs.GSContext()
+    with gs.TemporaryURL('chromite.cat') as url:
+      # The default chunksize is 0x100000 (1MB).
+      first_chunk = 'a' * 0x100000
+      second_chunk = 'aaaaaaaaabbbbbbccc'
+      ctx.CreateWithContents(url, first_chunk + second_chunk)
+
+      result = ctx.StreamingCat(url)
+      # Get the 1st chunk.
+      self.assertEquals(next(result), first_chunk)
+      # Then the second chunk.
+      self.assertEquals(next(result), second_chunk)
+      # At last, no more.
+      with self.assertRaises(StopIteration):
+        next(result)
+
 
 class DryRunTest(cros_build_lib_unittest.RunCommandTestCase):
   """Verify dry_run works for all of GSContext."""
@@ -1575,6 +1594,13 @@ class DryRunTest(cros_build_lib_unittest.RunCommandTestCase):
     result = self.ctx.Stat('gs://foo/bar')
     self.assertEqual(result.content_length, 0)
     self.assertNotEqual(result.creation_time, None)
+
+  def testStreamingCat(self):
+    """Test StreamingCat in dry_run mode."""
+    result = self.ctx.StreamingCat('gs://foo/bar')
+    self.assertEqual(next(result), '')
+    with self.assertRaises(StopIteration):
+      next(result)
 
   def testVersion(self):
     """Test gsutil_version in dry_run mode."""

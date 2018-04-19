@@ -18,6 +18,7 @@ import hashlib
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import urlparse
 
@@ -667,6 +668,44 @@ class GSContext(object):
       return ''
     else:
       return self.DoCommand(['cat', path], **kwargs).output
+
+  def StreamingCat(self, path, chunksize=0x100000):
+    """Returns the content of a GS file as a stream.
+
+    Unlike Cat or Copy, this function doesn't support any internal retry or
+    validation by computing checksum of downloaded data. Users should perform
+    their own validation, or use Cat() instead.
+
+    Args:
+      path: Full gs:// path of the src file.
+      chunksize: At most how much data read from upstream and yield to callers
+        at a time. The default value is 1 MB.
+
+    Yields:
+      The file content, chunk by chunk.
+    """
+    assert PathIsGs(path)
+
+    if self.dry_run:
+      return (lambda: (yield ''))()
+
+    cmd = [self.gsutil_bin] + self.gsutil_flags + ['cat', path]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+
+    def read_content():
+      while True:
+        data = proc.stdout.read(chunksize)
+        if not data and proc.poll() is not None:
+          break
+        if data:
+          yield data
+
+      rc = proc.wait()
+      if rc:
+        raise GSCommandError(
+            'Cannot stream cat %s from Google Storage!' % path, rc, None)
+
+    return read_content()
 
   def CopyInto(self, local_path, remote_dir, filename=None, **kwargs):
     """Upload a local file into a directory in google storage.
