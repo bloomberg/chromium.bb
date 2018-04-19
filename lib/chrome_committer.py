@@ -58,7 +58,7 @@ class ChromeCommitter(object):
       sparse_checkout: List of file paths to fetch.
     """
     assert isinstance(sparse_checkout, list)
-    sparse_checkout += ['codereview.settings']
+    sparse_checkout += ['codereview.settings', 'WATCHLISTS']
     git.ShallowFetch(self._checkout_dir, constants.CHROMIUM_GOB_URL,
                      sparse_checkout=sparse_checkout)
     git.CreateBranch(self._checkout_dir, 'auto-commit-branch',
