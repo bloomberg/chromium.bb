@@ -1128,7 +1128,11 @@ bool IsTabDetachingInFullscreenEnabled() {
 // put into a different tab strip, such as during a drop on another window.
 - (void)detachTabView:(NSView*)view {
   int index = [tabStripController_ modelIndexForTabView:view];
-  browser_->tab_strip_model()->DetachWebContentsAt(index);
+
+  // TODO(erikchen): While it might be nice to fix ownership semantics here,
+  // realistically the code is going to be deleted in the not-too-distant
+  // future.
+  browser_->tab_strip_model()->DetachWebContentsAt(index).release();
 }
 
 - (NSArray*)tabViews {
@@ -1229,6 +1233,10 @@ bool IsTabDetachingInFullscreenEnabled() {
     // deleting the tab contents. This needs to come before creating the new
     // Browser because it clears the WebContents' delegate, which gets hooked
     // up during creation of the new window.
+
+    // TODO(erikchen): While it might be nice to fix ownership semantics here,
+    // realistically the code is going to be deleted in the not-too-distant
+    // future.
     model->DetachWebContentsAt(index);
   }
 

@@ -1804,13 +1804,13 @@ void BrowserView::OnWidgetDestroying(views::Widget* widget) {
   // Destroy any remaining WebContents early on. Doing so may result in
   // calling back to one of the Views/LayoutManagers or supporting classes of
   // BrowserView. By destroying here we ensure all said classes are valid.
-  std::vector<content::WebContents*> contents;
+  std::vector<std::unique_ptr<content::WebContents>> contents;
   while (browser()->tab_strip_model()->count())
     contents.push_back(browser()->tab_strip_model()->DetachWebContentsAt(0));
   // Note: The BrowserViewTest tests rely on the contents being destroyed in the
   // order that they were present in the tab strip.
-  for (auto* content : contents)
-    delete content;
+  for (auto& content : contents)
+    content.reset();
 }
 
 void BrowserView::OnWidgetActivationChanged(views::Widget* widget,

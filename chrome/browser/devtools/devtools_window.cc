@@ -912,17 +912,18 @@ void DevToolsWindow::OnPageCloseCanceled(WebContents* contents) {
 
 DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
                                Profile* profile,
-                               WebContents* main_web_contents,
+                               std::unique_ptr<WebContents> main_web_contents,
                                DevToolsUIBindings* bindings,
                                WebContents* inspected_web_contents,
                                bool can_dock)
     : frontend_type_(frontend_type),
       profile_(profile),
-      main_web_contents_(main_web_contents),
+      main_web_contents_(main_web_contents.get()),
       toolbox_web_contents_(nullptr),
       bindings_(bindings),
       browser_(nullptr),
       is_docked_(true),
+      owned_main_web_contents_(std::move(main_web_contents)),
       can_dock_(can_dock),
       close_on_detach_(true),
       // This initialization allows external front-end to work without changes.
@@ -1021,8 +1022,9 @@ DevToolsWindow* DevToolsWindow::Create(
     return nullptr;
   if (!settings.empty())
     SetPreferencesFromJson(profile, settings);
-  return new DevToolsWindow(frontend_type, profile, main_web_contents.release(),
-                            bindings, inspected_web_contents, can_dock);
+  return new DevToolsWindow(frontend_type, profile,
+                            std::move(main_web_contents), bindings,
+                            inspected_web_contents, can_dock);
 }
 
 // static
@@ -1199,7 +1201,8 @@ void DevToolsWindow::CloseContents(WebContents* source) {
   // In case of docked main_web_contents_, we own it so delete here.
   // Embedding DevTools window will be deleted as a result of
   // DevToolsUIBindings destruction.
-  delete main_web_contents_;
+  CHECK(owned_main_web_contents_);
+  owned_main_web_contents_.reset();
 }
 
 void DevToolsWindow::ContentsZoomChange(bool zoom_in) {
@@ -1339,9 +1342,15 @@ void DevToolsWindow::SetIsDocked(bool dock_requested) {
     // Detach window from the external devtools browser. It will lead to
     // the browser object's close and delete. Remove observer first.
     TabStripModel* tab_strip_model = browser_->tab_strip_model();
-    tab_strip_model->DetachWebContentsAt(
-        tab_strip_model->GetIndexOfWebContents(main_web_contents_));
+    DCHECK(!owned_main_web_contents_);
+
+    // Removing the only WebContents from the tab strip of browser_ will
+    // eventually lead to the destruction of browser_ as well, which is why it's
+    // okay to just null the raw pointer here.
     browser_ = NULL;
+
+    owned_main_web_contents_ = tab_strip_model->DetachWebContentsAt(
+        tab_strip_model->GetIndexOfWebContents(main_web_contents_));
   } else if (!dock_requested && was_docked) {
     UpdateBrowserWindow();
   }
@@ -1536,7 +1545,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
 
   browser_ = new Browser(Browser::CreateParams::CreateForDevTools(profile_));
   browser_->tab_strip_model()->AddWebContents(
-      main_web_contents_, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      owned_main_web_contents_.release(), -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       TabStripModel::ADD_ACTIVE);
   main_web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }

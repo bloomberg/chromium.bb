@@ -1527,8 +1527,6 @@ split_static_library("ui") {
       "uma_browsing_activity_observer.h",
       "unload_controller.cc",
       "unload_controller.h",
-      "unload_controller_web_contents_delegate.cc",
-      "unload_controller_web_contents_delegate.h",
       "webui/app_launcher_login_handler.cc",
       "webui/app_launcher_login_handler.h",
       "webui/bookmarks_ui.cc",
