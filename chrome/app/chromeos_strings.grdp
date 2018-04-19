@@ -4884,6 +4884,11 @@
     Settings
   </message>
 
+  <!-- Launcher Settings shortcuts -->
+  <message name="IDS_LAUNCHER_SHORTCUTS_BLUETOOTH" desc="The name of bluetooth shortcut.">
+    Bluetooth
+  </message>
+
   <message name="IDS_CROSTINI_INSTALLER_TITLE" desc="Title of the Crostini installer, a dialog for installing the 'Terminal'.">
     <ph name="APP_NAME">$1<ex>Terminal</ex></ph> for <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>
   </message>

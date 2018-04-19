@@ -3540,6 +3540,12 @@ split_static_library("ui") {
       "app_list/search/search_util.h",
       "app_list/search/search_webstore_result.cc",
       "app_list/search/search_webstore_result.h",
+      "app_list/search/settings_shortcut/settings_shortcut_metadata.cc",
+      "app_list/search/settings_shortcut/settings_shortcut_metadata.h",
+      "app_list/search/settings_shortcut/settings_shortcut_provider.cc",
+      "app_list/search/settings_shortcut/settings_shortcut_provider.h",
+      "app_list/search/settings_shortcut/settings_shortcut_result.cc",
+      "app_list/search/settings_shortcut/settings_shortcut_result.h",
       "app_list/search/webstore/webstore_installer.cc",
       "app_list/search/webstore/webstore_installer.h",
       "app_list/search/webstore/webstore_provider.cc",
@@ -3548,6 +3554,9 @@ split_static_library("ui") {
       "app_list/search/webstore/webstore_result.h",
     ]
     deps += [
+      # TODO(wutao): Put new icons resources to ash/public/cpp/vector_icons/
+      # when UX provides them.
+      "//ash/resources/vector_icons",
       "//ui/app_list",
       "//ui/app_list/vector_icons",
       "//ui/views/mus/remote_view:remote_view_provider",

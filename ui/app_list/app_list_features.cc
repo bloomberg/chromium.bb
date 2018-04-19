@@ -19,6 +19,8 @@ const base::Feature kEnablePlayStoreAppSearch{"EnablePlayStoreAppSearch",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableHomeLauncher{"EnableHomeLauncher",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableSettingsShortcutSearch{
+    "EnableSettingsShortcutSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -38,6 +40,10 @@ bool IsPlayStoreAppSearchEnabled() {
 
 bool IsHomeLauncherEnabled() {
   return base::FeatureList::IsEnabled(kEnableHomeLauncher);
+}
+
+bool IsSettingsShortcutSearchEnabled() {
+  return base::FeatureList::IsEnabled(kEnableSettingsShortcutSearch);
 }
 
 std::string AnswerServerUrl() {
