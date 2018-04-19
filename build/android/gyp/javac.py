@@ -22,6 +22,14 @@ import colorama
 
 
 ERRORPRONE_WARNINGS_TO_TURN_OFF = [
+  # TODO(crbug.com/834807): Follow steps in bug
+  'DoubleBraceInitialization',
+  # TODO(crbug.com/834801): Follow steps in bug.
+  'ParcelableCreator',
+  # TODO(crbug.com/834796): Follow steps in bug.
+  'OrphanedFormatString',
+  # TODO(crbug.com/834790): Follow steps in bug.
+  'CatchAndPrintStackTrace',
   # TODO(crbug.com/801210): Follow steps in bug.
   'SynchronizeOnNonFinalField',
   # TODO(crbug.com/802073): Follow steps in bug.
@@ -45,8 +53,6 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'OperatorPrecedence',
   # Just false positives in our code.
   'ThreadJoinLoop',
-  # Alias of ParameterName warning.
-  'NamedParameters',
   # Low priority corner cases with String.split.
   # Linking Guava and using Splitter was rejected
   # in the https://chromium-review.googlesource.com/c/chromium/src/+/871630.
