@@ -4,5 +4,5 @@
   "average_rating": 5,
   "rating_count": 0,
   "verified_site": "app.com",
-  "manifest": "{\"name\":\"Install Failure Test Extension\",\"version\":\"0.1\"}"
+  "manifest": "{\"name\":\"Install Failure Test Extension\",\"version\":\"0.1\",\"manifest_version\":2}"
 }
