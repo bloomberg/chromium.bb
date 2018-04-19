@@ -68,7 +68,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
       public BlockingObserver {
  public:
   // |outer| owns the worker for which this delegate is constructed.
-  SchedulerWorkerDelegateImpl(SchedulerWorkerPoolImpl* outer);
+  SchedulerWorkerDelegateImpl(TrackedRef<SchedulerWorkerPoolImpl> outer);
   ~SchedulerWorkerDelegateImpl() override;
 
   // SchedulerWorker::Delegate:
@@ -122,7 +122,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // Called in GetWork() when a worker becomes idle.
   void OnWorkerBecomesIdleLockRequired(SchedulerWorker* worker);
 
-  SchedulerWorkerPoolImpl* const outer_;
+  const TrackedRef<SchedulerWorkerPoolImpl> outer_;
 
   // Time of the last detach.
   TimeTicks last_detach_time_;
@@ -172,8 +172,6 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
       priority_hint_(priority_hint),
       lock_(shared_priority_queue_.container_lock()),
       idle_workers_stack_cv_for_testing_(lock_.CreateConditionVariable()),
-      join_for_testing_returned_(WaitableEvent::ResetPolicy::MANUAL,
-                                 WaitableEvent::InitialState::NOT_SIGNALED),
       // Mimics the UMA_HISTOGRAM_LONG_TIMES macro.
       detach_duration_histogram_(Histogram::FactoryTimeGet(
           JoinString({kDetachDurationHistogramPrefix, histogram_label,
@@ -205,7 +203,8 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
           1,
           100,
           50,
-          HistogramBase::kUmaTargetedHistogramFlag)) {
+          HistogramBase::kUmaTargetedHistogramFlag)),
+      tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
   DCHECK(!pool_label_.empty());
 }
@@ -256,12 +255,11 @@ void SchedulerWorkerPoolImpl::Start(
 }
 
 SchedulerWorkerPoolImpl::~SchedulerWorkerPoolImpl() {
-  // SchedulerWorkerPool should never be deleted in production unless its
-  // initialization failed.
-#if DCHECK_IS_ON()
-  AutoSchedulerLock auto_lock(lock_);
-  DCHECK(join_for_testing_returned_.IsSignaled() || workers_.empty());
-#endif
+  // SchedulerWorkerPool should only ever be deleted:
+  //  1) In tests, after JoinForTesting().
+  //  2) In production, iff initialization failed.
+  // In both cases |workers_| should be empty.
+  DCHECK(workers_.empty());
 }
 
 void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
@@ -344,23 +342,10 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   for (const auto& worker : workers_copy)
     worker->JoinForTesting();
 
-#if DCHECK_IS_ON()
-  {
-    AutoSchedulerLock auto_lock(lock_);
-    DCHECK(workers_ == workers_copy);
-  }
-#endif
-
-  // Make sure recently cleaned up workers (ref.
-  // SchedulerWorkerDelegateImpl::CleanupLockRequired()) had time to exit as
-  // they have a raw reference to |this| (and to TaskTracker) which can
-  // otherwise result in racy use-after-frees per no longer being part of
-  // |workers_| and hence not being explicitly joined above :
-  // https://crbug.com/810464.
-  no_workers_remaining_for_testing_.Wait();
-
-  DCHECK(!join_for_testing_returned_.IsSignaled());
-  join_for_testing_returned_.Signal();
+  AutoSchedulerLock auto_lock(lock_);
+  DCHECK(workers_ == workers_copy);
+  // Release |workers_| to clear their TrackedRef against |this|.
+  workers_.clear();
 }
 
 size_t SchedulerWorkerPoolImpl::NumberOfWorkersForTesting() const {
@@ -383,12 +368,10 @@ void SchedulerWorkerPoolImpl::MaximizeMayBlockThresholdForTesting() {
 }
 
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
-    SchedulerWorkerDelegateImpl(SchedulerWorkerPoolImpl* outer)
-    : outer_(outer) {
+    SchedulerWorkerDelegateImpl(TrackedRef<SchedulerWorkerPoolImpl> outer)
+    : outer_(std::move(outer)) {
   // Bound in OnMainEntry().
   DETACH_FROM_THREAD(worker_thread_checker_);
-
-  outer_->live_workers_count_for_testing_.Increment();
 }
 
 // OnMainExit() handles the thread-affine cleanup; SchedulerWorkerDelegateImpl
@@ -599,11 +582,6 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainExit(
 #if defined(OS_WIN)
   win_thread_environment_.reset();
 #endif  // defined(OS_WIN)
-
-  if (!outer_->live_workers_count_for_testing_.Decrement()) {
-    DCHECK(!outer_->no_workers_remaining_for_testing_.IsSignaled());
-    outer_->no_workers_remaining_for_testing_.Signal();
-  }
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
@@ -864,7 +842,9 @@ SchedulerWorkerPoolImpl::CreateRegisterAndStartSchedulerWorkerLockRequired() {
   // because in WakeUpOneWorker, |lock_| is first acquired and then
   // the thread lock is acquired when WakeUp is called on the worker.
   scoped_refptr<SchedulerWorker> worker = MakeRefCounted<SchedulerWorker>(
-      priority_hint_, std::make_unique<SchedulerWorkerDelegateImpl>(this),
+      priority_hint_,
+      std::make_unique<SchedulerWorkerDelegateImpl>(
+          tracked_ref_factory_.GetTrackedRef()),
       task_tracker_, &lock_, backward_compatibility_);
 
   if (!worker->Start())
