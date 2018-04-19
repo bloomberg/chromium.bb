@@ -126,7 +126,7 @@ raster::RasterInterface* RasterInProcessContext::GetImplementation() {
   return raster_implementation_.get();
 }
 
-ContextSupport* RasterInProcessContext::ContextSupport() {
+ContextSupport* RasterInProcessContext::GetContextSupport() {
   if (gles2_implementation_) {
     return gles2_implementation_.get();
   } else {
