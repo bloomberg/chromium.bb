@@ -152,6 +152,21 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void DidMutateRules();
   void DidMutate();
 
+  class InspectorMutationScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit InspectorMutationScope(CSSStyleSheet*);
+    ~InspectorMutationScope();
+
+   private:
+    Member<CSSStyleSheet> style_sheet_;
+    DISALLOW_COPY_AND_ASSIGN(InspectorMutationScope);
+  };
+
+  void EnableRuleAccessForInspector();
+  void DisableRuleAccessForInspector();
+
   StyleSheetContents* Contents() const { return contents_.Get(); }
 
   bool IsInline() const { return is_inline_stylesheet_; }
@@ -199,6 +214,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   // This alternate variable is only used for constructed CSSStyleSheet.
   // For other CSSStyleSheet, consult the alternate attribute.
   bool alternate_from_constructor_ = false;
+  bool enable_rule_access_for_inspector_ = false;
   String title_;
   scoped_refptr<MediaQuerySet> media_queries_;
   MediaQueryResultList viewport_dependent_media_query_results_;
@@ -219,8 +235,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
 inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSStyleSheet* sheet)
     : style_sheet_(sheet) {
-  if (style_sheet_)
-    style_sheet_->WillMutateRules();
+  style_sheet_->WillMutateRules();
 }
 
 inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSRule* rule)

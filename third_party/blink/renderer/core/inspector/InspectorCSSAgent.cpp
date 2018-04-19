@@ -622,10 +622,12 @@ class InspectorCSSAgent::AddRuleAction final
   }
 
   bool Undo(ExceptionState& exception_state) override {
+    CSSStyleSheet::InspectorMutationScope scope(style_sheet_->PageStyleSheet());
     return style_sheet_->DeleteRule(added_range_, exception_state);
   }
 
   bool Redo(ExceptionState& exception_state) override {
+    CSSStyleSheet::InspectorMutationScope scope(style_sheet_->PageStyleSheet());
     css_rule_ = style_sheet_->AddRule(rule_text_, location_, &added_range_,
                                       exception_state);
     if (exception_state.HadException())
