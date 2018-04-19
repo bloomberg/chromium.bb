@@ -934,9 +934,7 @@ void WizardController::OnVoiceInteractionValuePropSkipped() {
 }
 
 void WizardController::OnVoiceInteractionValuePropAccepted() {
-  const Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (is_in_session_oobe_ && !arc::IsArcPlayStoreEnabledForProfile(profile) &&
-      arc::IsPlayStoreAvailable()) {
+  if (is_in_session_oobe_ && arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
     ShowArcTermsOfServiceScreen();
     return;
   }

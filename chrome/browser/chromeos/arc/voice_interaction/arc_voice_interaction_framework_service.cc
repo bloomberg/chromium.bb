@@ -535,8 +535,9 @@ bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction(
     bool is_toggle) {
   VLOG(1) << "Start voice interaction.";
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted)) {
-    VLOG(1) << "Voice interaction feature not accepted.";
+  if (!prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted) ||
+      arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
+    VLOG(1) << "Voice interaction feature or ARC not accepted.";
     should_start_runtime_flow_ = true;
     // If voice interaction value prop has not been accepted, show the value
     // prop OOBE page again.
