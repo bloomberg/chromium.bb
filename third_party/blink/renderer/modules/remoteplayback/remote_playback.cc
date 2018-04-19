@@ -413,6 +413,10 @@ void RemotePlayback::SourceChanged(const WebURL& source,
   MaybeStartListeningForAvailability();
 }
 
+WebString RemotePlayback::GetPresentationId() {
+  return presentation_id_;
+}
+
 bool RemotePlayback::RemotePlaybackAvailable() const {
   if (IsBackgroundAvailabilityMonitoringDisabled() &&
       RuntimeEnabledFeatures::RemotePlaybackBackendEnabled() &&

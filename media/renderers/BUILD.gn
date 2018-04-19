@@ -17,6 +17,7 @@ source_set("renderers") {
     "default_renderer_factory.h",
     "paint_canvas_video_renderer.cc",
     "paint_canvas_video_renderer.h",
+    "remote_playback_client_wrapper.h",
     "renderer_impl.cc",
     "renderer_impl.h",
     "video_overlay_factory.cc",
