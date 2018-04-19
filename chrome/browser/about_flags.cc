@@ -3053,6 +3053,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kLeftToRightUrls)},
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+    {"omnibox-new-answer-layout",
+     flag_descriptions::kOmniboxNewAnswerLayoutName,
+     flag_descriptions::kOmniboxNewAnswerLayoutDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxNewAnswerLayout)},
     {"omnibox-rich-entity-suggestions",
      flag_descriptions::kOmniboxRichEntitySuggestionsName,
      flag_descriptions::kOmniboxRichEntitySuggestionsDescription, kOsDesktop,

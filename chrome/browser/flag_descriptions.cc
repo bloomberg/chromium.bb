@@ -2392,6 +2392,10 @@ const char kOmniboxRichEntitySuggestionsDescription[] =
     "Display entity suggestions using images and an enhanced layout; showing "
     "more context and descriptive text about the entity";
 
+const char kOmniboxNewAnswerLayoutName[] = "Omnibox new answer layout";
+const char kOmniboxNewAnswerLayoutDescription[] =
+    "Display answers using an enhanced layout with larger images";
+
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
