@@ -143,16 +143,16 @@ class Target(object):
     assert self.IsStarted()
 
   def _WaitUntilReady(self, retries=_ATTACH_MAX_RETRIES):
-    logging.debug('Connecting to Fuchsia using SSH.')
+    logging.info('Connecting to Fuchsia using SSH.')
     for _ in xrange(retries+1):
       host, port = self._GetEndpoint()
       if remote_cmd.RunSsh(self._GetSshConfigPath(), host, port, ['true'],
                            True) == 0:
-        logging.debug('Connected!')
+        logging.info('Connected!')
         self._started = True
         return True
       time.sleep(_ATTACH_RETRY_INTERVAL)
-    sys.stderr.write(' timeout limit reached.\n')
+    logging.error('Timeout limit reached.')
     raise FuchsiaTargetException('Couldn\'t connect using SSH.')
 
   def _GetSshConfigPath(self, path):
