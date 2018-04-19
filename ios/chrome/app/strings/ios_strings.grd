@@ -916,6 +916,15 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_OPTIONS_WEB_SERVICES_LABEL" desc="Title for group of web services items in Privacy settings table, including Show Suggestions, Preload Webpages, and Send Usage Data. [Length: 10em] [iOS only]">
         Web Services
       </message>
+      <message name="IDS_IOS_OVERSCROLL_ADD_TAB_LABEL" desc="The text to use for the tooltip for the overscroll add tab action. [Length: 20em] [iOS only]">
+        Add Tab
+      </message>
+      <message name="IDS_IOS_OVERSCROLL_CLOSE_TAB_LABEL" desc="The text to use for the tooltip for the overscroll close tab action. [Length: 20em] [iOS only]">
+        Close Tab
+      </message>
+      <message name="IDS_IOS_OVERSCROLL_REFRESH_LABEL" desc="The text to use for the tooltip for the overscroll refresh action. [Length: 20em] [iOS only]">
+        Refresh
+      </message>
       <message name="IDS_IOS_PAGE_INFO_OFFLINE_PAGE" desc="Message to display in the page info bubble when the page you are on is an offline page.">
         This page has been saved to your Reading List.
       </message>
