@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
@@ -17,11 +18,36 @@
 namespace blink {
 
 class GraphicsContext;
+class PaintChunkSubset;
 class WebDisplayItemList;
 
-// The output of painting, consisting of a series of drawings in paint order,
-// partitioned into discontiguous chunks with a common set of paint properties
-// (i.e. associated with the same transform, clip, effects, etc.).
+using ChunkRasterInvalidationRects = Vector<FloatRect, 2>;
+using ChunkRasterInvalidationTracking = Vector<RasterInvalidationInfo>;
+
+struct PaintChunksAndRasterInvalidations {
+  void Clear() {
+    chunks.clear();
+    raster_invalidation_rects.clear();
+    raster_invalidation_trackings.clear();
+  }
+
+  Vector<PaintChunk> chunks;
+  Vector<ChunkRasterInvalidationRects> raster_invalidation_rects;
+  Vector<ChunkRasterInvalidationTracking> raster_invalidation_trackings;
+};
+
+// The output of painting, consisting of
+// - display item list (in DisplayItemList),
+// - paint chunks and their paint invalidations (in
+// PaintChunksAndRasterInvalidations).
+//
+// Display item list and paint chunks not only represent the output of the
+// current painting, but also serve as cache of individual display items and
+// paint chunks for later paintings as long as the display items and chunks are
+// valid.
+//
+// Raster invalidations are consumed by CompositedLayerRasterInvalidator and
+// will be cleared after a cycle is complete via |FinishCycle()|.
 //
 // It represents a particular state of the world, and should be immutable
 // (const) to most of its users.
@@ -37,7 +63,7 @@ class PLATFORM_EXPORT PaintArtifact final {
 
  public:
   PaintArtifact();
-  PaintArtifact(DisplayItemList, Vector<PaintChunk>);
+  PaintArtifact(DisplayItemList, PaintChunksAndRasterInvalidations);
   PaintArtifact(PaintArtifact&&);
   ~PaintArtifact();
 
@@ -50,17 +76,19 @@ class PLATFORM_EXPORT PaintArtifact final {
     return display_item_list_;
   }
 
-  Vector<PaintChunk>& PaintChunks() { return paint_chunks_; }
-  const Vector<PaintChunk>& PaintChunks() const { return paint_chunks_; }
+  Vector<PaintChunk>& PaintChunks() { return chunks_and_invalidations_.chunks; }
+  const Vector<PaintChunk>& PaintChunks() const {
+    return chunks_and_invalidations_.chunks;
+  }
 
   PaintChunkSubset GetPaintChunkSubset(
       const Vector<size_t>& subset_indices) const {
-    return PaintChunkSubset(paint_chunks_, subset_indices);
+    return PaintChunkSubset(PaintChunks(), subset_indices);
   }
 
   Vector<PaintChunk>::const_iterator FindChunkByDisplayItemIndex(
       size_t index) const {
-    return FindChunkInVectorByDisplayItemIndex(paint_chunks_, index);
+    return FindChunkInVectorByDisplayItemIndex(PaintChunks(), index);
   }
 
   // Resets to an empty paint artifact.
@@ -86,9 +114,44 @@ class PLATFORM_EXPORT PaintArtifact final {
   void AppendToWebDisplayItemList(const FloatSize& visual_rect_offset,
                                   WebDisplayItemList*) const;
 
+  const ChunkRasterInvalidationRects* GetRasterInvalidationRects(
+      size_t chunk_index) const {
+    return chunk_index <
+                   chunks_and_invalidations_.raster_invalidation_rects.size()
+               ? &chunks_and_invalidations_
+                      .raster_invalidation_rects[chunk_index]
+               : nullptr;
+  }
+
+  const ChunkRasterInvalidationRects* GetRasterInvalidationRects(
+      const PaintChunk& chunk) const {
+    return GetRasterInvalidationRects(
+        &chunk - &chunks_and_invalidations_.chunks.front());
+  }
+
+  const ChunkRasterInvalidationTracking* GetRasterInvalidationTracking(
+      size_t chunk_index) const {
+    return chunk_index < chunks_and_invalidations_.raster_invalidation_trackings
+                             .size()
+               ? &chunks_and_invalidations_
+                      .raster_invalidation_trackings[chunk_index]
+               : nullptr;
+  }
+
+  const ChunkRasterInvalidationTracking* GetRasterInvalidationTracking(
+      const PaintChunk& chunk) const {
+    return GetRasterInvalidationTracking(
+        &chunk - &chunks_and_invalidations_.chunks.front());
+  }
+
+  // Called when the caller finishes updating a full document life cycle.
+  // Will cleanup data (e.g. raster invalidations) that will no longer be used
+  // for the next cycle, and update status to be ready for the next cycle.
+  void FinishCycle();
+
  private:
   DisplayItemList display_item_list_;
-  Vector<PaintChunk> paint_chunks_;
+  PaintChunksAndRasterInvalidations chunks_and_invalidations_;
 };
 
 }  // namespace blink

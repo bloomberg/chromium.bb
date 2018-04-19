@@ -16,9 +16,9 @@
 
 namespace blink {
 
-class DisplayItemList;
 class JSONArray;
 class JSONObject;
+class PaintArtifact;
 class PaintChunkSubset;
 
 class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
@@ -68,9 +68,9 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
   std::unique_ptr<JSONObject> LayerAsJSON(LayerAsJSONContext&) const;
 
   scoped_refptr<cc::PictureLayer> UpdateCcPictureLayer(
-      const DisplayItemList&,
-      const gfx::Rect& layer_bounds,
+      const PaintArtifact&,
       const PaintChunkSubset&,
+      const gfx::Rect& layer_bounds,
       const PropertyTreeState&);
 
  private:

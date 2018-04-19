@@ -159,6 +159,11 @@ class PLATFORM_EXPORT PaintController {
   // Must be called when a painting is finished.
   void CommitNewDisplayItems();
 
+  // Called when the caller finishes updating a full document life cycle.
+  // The PaintController will cleanup data that will no longer be used for the
+  // next cycle, and update status to be ready for the next cycle.
+  void FinishCycle();
+
   // Returns the approximate memory usage, excluding memory likely to be
   // shared with the embedder after copying to WebPaintController.
   // Should only be called after a full document life cycle update.

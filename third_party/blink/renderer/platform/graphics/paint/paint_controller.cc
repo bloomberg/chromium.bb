@@ -29,9 +29,6 @@ void PaintController::SetTracksRasterInvalidations(bool value) {
   } else if (!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     raster_invalidation_tracking_info_ = nullptr;
   }
-
-  for (auto& chunk : current_paint_artifact_.PaintChunks())
-    chunk.raster_invalidation_tracking.clear();
 }
 
 void PaintController::EnsureRasterInvalidationTracking() {
@@ -634,9 +631,8 @@ void PaintController::CommitNewDisplayItems() {
   // The new list will not be appended to again so we can release unused memory.
   new_display_item_list_.ShrinkToFit();
 
-  current_paint_artifact_ =
-      PaintArtifact(std::move(new_display_item_list_),
-                    new_paint_chunks_.ReleasePaintChunks());
+  current_paint_artifact_ = PaintArtifact(std::move(new_display_item_list_),
+                                          new_paint_chunks_.ReleaseData());
 
   ResetCurrentListIndices();
   out_of_order_item_indices_.clear();
@@ -674,6 +670,13 @@ void PaintController::CommitNewDisplayItems() {
       ShowDebugData();
   }
 #endif
+}
+
+void PaintController::FinishCycle() {
+  DCHECK(new_display_item_list_.IsEmpty());
+  DCHECK(new_paint_chunks_.IsInInitialState());
+
+  current_paint_artifact_.FinishCycle();
 }
 
 size_t PaintController::ApproximateUnsharedMemoryUsage() const {
@@ -784,7 +787,7 @@ void PaintController::AddRasterInvalidation(const DisplayItemClient& client,
                                             PaintChunk& chunk,
                                             const FloatRect& rect,
                                             PaintInvalidationReason reason) {
-  chunk.raster_invalidation_rects.push_back(rect);
+  new_paint_chunks_.AddRasterInvalidation(chunk, rect);
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     EnsureRasterInvalidationTracking();
   if (raster_invalidation_tracking_info_)
@@ -814,7 +817,7 @@ void PaintController::TrackRasterInvalidation(const DisplayItemClient& client,
     info.client_debug_name = client.DebugName();
   }
 
-  chunk.raster_invalidation_tracking.push_back(info);
+  new_paint_chunks_.TrackRasterInvalidation(chunk, info);
 }
 
 void PaintController::GenerateRasterInvalidationsComparingChunks(

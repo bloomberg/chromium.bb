@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
@@ -150,12 +150,13 @@ static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {
 }
 
 scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
-    const DisplayItemList& display_item_list,
-    const gfx::Rect& layer_bounds,
+    const PaintArtifact& paint_artifact,
     const PaintChunkSubset& paint_chunks,
+    const gfx::Rect& layer_bounds,
     const PropertyTreeState& layer_state) {
   // TODO(wangxianzhu): Avoid calling DebugName() in official release build.
   debug_name_ = paint_chunks[0].id.client.DebugName();
+  const auto& display_item_list = paint_artifact.GetDisplayItemList();
 
 #if DCHECK_IS_ON()
   paint_chunk_debug_data_ = JSONArray::Create();
@@ -163,7 +164,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     auto json = JSONObject::Create();
     json->SetString("data", chunk.ToString());
     json->SetArray("displayItems",
-                   display_item_list.SubsequenceAsJSON(
+                   paint_artifact.GetDisplayItemList().SubsequenceAsJSON(
                        chunk.begin_index, chunk.end_index,
                        DisplayItemList::kSkipNonDrawings |
                            DisplayItemList::kShownOnlyDisplayItemTypes));
@@ -173,7 +174,8 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   }
 #endif
 
-  raster_invalidator_.Generate(layer_bounds, paint_chunks, layer_state);
+  raster_invalidator_.Generate(paint_artifact, paint_chunks, layer_bounds,
+                               layer_state);
   layer_state_ = layer_state;
 
   cc_picture_layer_->SetBounds(layer_bounds.size());

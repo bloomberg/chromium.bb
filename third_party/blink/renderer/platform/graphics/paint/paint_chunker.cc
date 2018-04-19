@@ -52,10 +52,10 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   }
 
   size_t new_chunk_begin_index;
-  if (chunks_.IsEmpty()) {
+  if (data_.chunks.IsEmpty()) {
     new_chunk_begin_index = 0;
   } else {
-    auto& last_chunk = chunks_.back();
+    auto& last_chunk = LastChunk();
     if (!force_new_chunk_ && current_properties_ == last_chunk.properties &&
         (!current_chunk_id_ || current_chunk_id_ == last_chunk.id)) {
       // Continue the current chunk.
@@ -70,7 +70,7 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   PaintChunk new_chunk(new_chunk_begin_index, new_chunk_begin_index + 1,
                        current_chunk_id_ ? *current_chunk_id_ : item.GetId(),
                        current_properties_, cacheable);
-  chunks_.push_back(new_chunk);
+  data_.chunks.push_back(new_chunk);
 
   // When forcing a new chunk, we still need to force new chunk for the next
   // display item. Otherwise reset force_new_chunk_ to false.
@@ -80,18 +80,27 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   return true;
 }
 
+void PaintChunker::TrackRasterInvalidation(const PaintChunk& chunk,
+                                           const RasterInvalidationInfo& info) {
+  size_t index = ChunkIndex(chunk);
+  auto& trackings = data_.raster_invalidation_trackings;
+  if (trackings.size() <= index)
+    trackings.resize(index + 1);
+  trackings[index].push_back(info);
+}
+
 void PaintChunker::Clear() {
-  chunks_.clear();
+  data_.Clear();
   current_chunk_id_ = WTF::nullopt;
   current_properties_ = PaintChunkProperties();
 }
 
-Vector<PaintChunk> PaintChunker::ReleasePaintChunks() {
-  Vector<PaintChunk> chunks;
-  chunks.swap(chunks_);
+PaintChunksAndRasterInvalidations PaintChunker::ReleaseData() {
   current_chunk_id_ = WTF::nullopt;
   current_properties_ = PaintChunkProperties();
-  return chunks;
+  data_.chunks.ShrinkToFit();
+  data_.raster_invalidation_rects.ShrinkToFit();
+  return std::move(data_);
 }
 
 }  // namespace blink

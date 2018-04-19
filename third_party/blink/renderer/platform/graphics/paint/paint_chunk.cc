@@ -8,13 +8,26 @@
 
 namespace blink {
 
+struct SameSizeAsPaintChunk {
+  size_t begin;
+  size_t end;
+  PaintChunk::Id id;
+  PaintChunkProperties properties;
+  unsigned bools;
+  float extend;
+  FloatRect bounds;
+};
+
+static_assert(sizeof(PaintChunk) == sizeof(SameSizeAsPaintChunk),
+              "PaintChunk should stay small");
+
 String PaintChunk::ToString() const {
   return String::Format(
       "PaintChunk(begin=%zu, end=%zu, id=%s cacheable=%d props=(%s) bounds=%s "
-      "known_to_be_opaque=%d raster_invalidation_rects=%zu)",
+      "known_to_be_opaque=%d)",
       begin_index, end_index, id.ToString().Ascii().data(), is_cacheable,
       properties.ToString().Ascii().data(), bounds.ToString().Ascii().data(),
-      known_to_be_opaque, raster_invalidation_rects.size());
+      known_to_be_opaque);
 }
 
 std::ostream& operator<<(std::ostream& os, const PaintChunk& chunk) {

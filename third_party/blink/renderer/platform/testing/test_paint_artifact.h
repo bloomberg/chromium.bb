@@ -90,7 +90,7 @@ class TestPaintArtifact {
 
   // Exists if m_built is false.
   DisplayItemList display_item_list_;
-  Vector<PaintChunk> paint_chunks_;
+  PaintChunksAndRasterInvalidations paint_chunks_data_;
 
   // Exists if m_built is true.
   PaintArtifact paint_artifact_;
