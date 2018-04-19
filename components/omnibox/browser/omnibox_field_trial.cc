@@ -37,6 +37,10 @@ namespace omnibox {
 const base::Feature kOmniboxRichEntitySuggestions{
     "OmniboxRichEntitySuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable enhanced presentation showing larger images.
+const base::Feature kOmniboxNewAnswerLayout{"OmniboxNewAnswerLayout",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to force on the experiment of transmission of tail suggestions
 // from GWS to this client, currently testing for desktop.
 const base::Feature kOmniboxTailSuggestions{

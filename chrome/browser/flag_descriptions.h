@@ -1455,6 +1455,9 @@ extern const char kEnableNewAppMenuIconDescription[];
 extern const char kOmniboxRichEntitySuggestionsName[];
 extern const char kOmniboxRichEntitySuggestionsDescription[];
 
+extern const char kOmniboxNewAnswerLayoutName[];
+extern const char kOmniboxNewAnswerLayoutDescription[];
+
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
