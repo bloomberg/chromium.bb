@@ -14,10 +14,14 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/net/sth_distributor_provider.h"
 #include "components/certificate_transparency/sth_distributor.h"
 #include "components/certificate_transparency/sth_observer.h"
@@ -38,6 +42,101 @@ base::FilePath GetInstalledPath(const base::FilePath& base) {
       .Append(kSTHsDirName);
 }
 
+// Lives and dies on the UI thread, but proxies notifications to the IO
+// thread to notify the chrome_browser_net::GetGlobalSTHDistributor(), as
+// it always lives on the IO thread.
+class IOThreadSTHObserver : public certificate_transparency::STHObserver {
+ public:
+  ~IOThreadSTHObserver() override = default;
+
+  void NewSTHObserved(const net::ct::SignedTreeHead& sth) override {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            [](const net::ct::SignedTreeHead& sth) {
+              certificate_transparency::STHObserver* observer =
+                  chrome_browser_net::GetGlobalSTHDistributor();
+              if (observer)
+                observer->NewSTHObserved(sth);
+            },
+            sth));
+  }
+};
+
+// Loads the STHs from |sths_path|, which contains a series of files that
+// are the in the form "[log_id].sth", where [log_id] is the hex-encoded ID
+// of the log, and the contents are JSON STH. Parsed STHs will be posted to
+// |callback| on |origin_task_runner|.
+void LoadSTHsFromDisk(
+    const base::FilePath& sths_path,
+    scoped_refptr<base::SequencedTaskRunner> origin_task_runner,
+    base::RepeatingCallback<void(const net::ct::SignedTreeHead&)> callback) {
+  base::FileEnumerator sth_file_enumerator(sths_path, false,
+                                           base::FileEnumerator::FILES,
+                                           FILE_PATH_LITERAL("*.sth"));
+  base::FilePath sth_file_path;
+
+  while (!(sth_file_path = sth_file_enumerator.Next()).empty()) {
+    DVLOG(1) << "Reading STH from file: " << sth_file_path.value();
+
+    const std::string log_id_hex =
+        sth_file_path.BaseName().RemoveExtension().MaybeAsASCII();
+    if (log_id_hex.empty()) {
+      DVLOG(1) << "Error extracting log_id from: "
+               << sth_file_path.BaseName().LossyDisplayName();
+      continue;
+    }
+
+    std::vector<uint8_t> decoding_output;
+    if (!base::HexStringToBytes(log_id_hex, &decoding_output)) {
+      DVLOG(1) << "Failed to decode Log ID: " << log_id_hex;
+      continue;
+    }
+
+    const std::string log_id(
+        reinterpret_cast<const char*>(decoding_output.data()),
+        decoding_output.size());
+
+    std::string json_sth;
+    {
+      base::ScopedBlockingCall scoped_blocking_call(
+          base::BlockingType::MAY_BLOCK);
+      if (!base::ReadFileToString(sth_file_path, &json_sth)) {
+        DVLOG(1) << "Failed reading from " << sth_file_path.value();
+        continue;
+      }
+    }
+
+    DVLOG(1) << "STH: Successfully read: " << json_sth;
+
+    int error_code = 0;
+    std::string error_message;
+    std::unique_ptr<base::Value> parsed_json =
+        base::JSONReader::ReadAndReturnError(json_sth, base::JSON_PARSE_RFC,
+                                             &error_code, &error_message);
+
+    if (!parsed_json || error_code != base::JSONReader::JSON_NO_ERROR) {
+      DVLOG(1) << "STH loading failed: " << error_message << " for log: "
+               << base::HexEncode(log_id.data(), log_id.length());
+      continue;
+    }
+
+    DVLOG(1) << "STH parsing success for log: "
+             << base::HexEncode(log_id.data(), log_id.length());
+
+    net::ct::SignedTreeHead signed_tree_head;
+    if (!net::ct::FillSignedTreeHead(*parsed_json, &signed_tree_head)) {
+      LOG(ERROR) << "Failed to fill in signed tree head.";
+      continue;
+    }
+
+    // The log id is not a part of the response, fill in manually.
+    signed_tree_head.log_id = log_id;
+    origin_task_runner->PostTask(FROM_HERE,
+                                 base::BindOnce(callback, signed_tree_head));
+  }
+}
+
 }  // namespace
 
 namespace component_updater {
@@ -52,10 +151,15 @@ const uint8_t kSthSetPublicKeySHA256[32] = {
 const char kSTHSetFetcherManifestName[] = "Signed Tree Heads";
 
 STHSetComponentInstallerPolicy::STHSetComponentInstallerPolicy(
-    certificate_transparency::STHObserver* sth_observer)
-    : sth_observer_(sth_observer), weak_ptr_factory_(this) {}
+    std::unique_ptr<certificate_transparency::STHObserver> sth_observer)
+    : sth_observer_(std::move(sth_observer)), weak_ptr_factory_(this) {}
 
-STHSetComponentInstallerPolicy::~STHSetComponentInstallerPolicy() {}
+STHSetComponentInstallerPolicy::~STHSetComponentInstallerPolicy() = default;
+
+void STHSetComponentInstallerPolicy::NewSTHObserved(
+    const net::ct::SignedTreeHead& sth) {
+  sth_observer_->NewSTHObserved(sth);
+}
 
 bool STHSetComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
@@ -80,11 +184,19 @@ void STHSetComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-      base::BindOnce(&STHSetComponentInstallerPolicy::LoadSTHsFromDisk,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     GetInstalledPath(install_dir), version));
+  // Load and parse the STH JSON on a background task runner, then
+  // dispatch back to the current task runner with all of the successfully
+  // parsed results.
+  auto background_runner = base::MakeRefCounted<AfterStartupTaskUtils::Runner>(
+      base::CreateTaskRunnerWithTraits(
+          {base::TaskPriority::BACKGROUND, base::MayBlock()}));
+  background_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &LoadSTHsFromDisk, GetInstalledPath(install_dir),
+          base::SequencedTaskRunnerHandle::Get(),
+          base::BindRepeating(&STHSetComponentInstallerPolicy::NewSTHObserved,
+                              weak_ptr_factory_.GetWeakPtr())));
 }
 
 // Called during startup and installation before ComponentReady().
@@ -116,97 +228,13 @@ std::vector<std::string> STHSetComponentInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
-void STHSetComponentInstallerPolicy::LoadSTHsFromDisk(
-    const base::FilePath& sths_path,
-    const base::Version& version) {
-  if (sths_path.empty())
-    return;
-
-  base::FileEnumerator sth_file_enumerator(sths_path, false,
-                                           base::FileEnumerator::FILES,
-                                           FILE_PATH_LITERAL("*.sth"));
-  base::FilePath sth_file_path;
-
-  while (!(sth_file_path = sth_file_enumerator.Next()).empty()) {
-    DVLOG(1) << "Reading STH from file: " << sth_file_path.value();
-
-    const std::string log_id_hex =
-        sth_file_path.BaseName().RemoveExtension().MaybeAsASCII();
-    if (log_id_hex.empty()) {
-      DVLOG(1) << "Error extracting log_id from: "
-               << sth_file_path.BaseName().LossyDisplayName();
-      continue;
-    }
-
-    std::vector<uint8_t> decoding_output;
-    if (!base::HexStringToBytes(log_id_hex, &decoding_output)) {
-      DVLOG(1) << "Failed to decode Log ID: " << log_id_hex;
-      continue;
-    }
-
-    const std::string log_id(reinterpret_cast<const char*>(&decoding_output[0]),
-                             decoding_output.size());
-
-    std::string json_sth;
-    if (!base::ReadFileToString(sth_file_path, &json_sth)) {
-      DVLOG(1) << "Failed reading from " << sth_file_path.value();
-      continue;
-    }
-
-    DVLOG(1) << "STH: Successfully read: " << json_sth;
-
-    int error_code = 0;
-    std::string error_message;
-    std::unique_ptr<base::Value> parsed_json =
-        base::JSONReader::ReadAndReturnError(json_sth, base::JSON_PARSE_RFC,
-                                             &error_code, &error_message);
-
-    if (error_code == base::JSONReader::JSON_NO_ERROR) {
-      OnJsonParseSuccess(log_id, std::move(parsed_json));
-    } else {
-      OnJsonParseError(log_id, error_message);
-    }
-  }
-}
-
-void STHSetComponentInstallerPolicy::OnJsonParseSuccess(
-    const std::string& log_id,
-    std::unique_ptr<base::Value> parsed_json) {
-  net::ct::SignedTreeHead signed_tree_head;
-  DVLOG(1) << "STH parsing success for log: "
-           << base::HexEncode(log_id.data(), log_id.length());
-  if (!net::ct::FillSignedTreeHead(*(parsed_json.get()), &signed_tree_head)) {
-    LOG(ERROR) << "Failed to fill in signed tree head.";
-    return;
-  }
-
-  // The log id is not a part of the response, fill in manually.
-  signed_tree_head.log_id = log_id;
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&certificate_transparency::STHObserver::NewSTHObserved,
-                         base::Unretained(sth_observer_), signed_tree_head));
-}
-
-void STHSetComponentInstallerPolicy::OnJsonParseError(
-    const std::string& log_id,
-    const std::string& error) {
-  DVLOG(1) << "STH loading failed: " << error
-           << " for log: " << base::HexEncode(log_id.data(), log_id.length());
-}
-
 void RegisterSTHSetComponent(ComponentUpdateService* cus,
                              const base::FilePath& user_data_dir) {
   DVLOG(1) << "Registering STH Set fetcher component.";
 
-  certificate_transparency::STHDistributor* distributor =
-      chrome_browser_net::GetGlobalSTHDistributor();
-  // The global STHDistributor should have been created by this point.
-  DCHECK(distributor);
-
   auto installer = base::MakeRefCounted<ComponentInstaller>(
-      std::make_unique<STHSetComponentInstallerPolicy>(distributor));
+      std::make_unique<STHSetComponentInstallerPolicy>(
+          std::make_unique<IOThreadSTHObserver>()));
   installer->Register(cus, base::Closure());
 }
 
