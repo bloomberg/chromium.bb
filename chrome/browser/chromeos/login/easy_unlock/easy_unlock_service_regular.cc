@@ -82,7 +82,11 @@ const char kKeyDevices[] = "devices";
 // The result of a SmartLock operation.
 enum class SmartLockResult { FAILURE = false, SUCCESS = true };
 
-const bool kSmartLockFeatureToggleDisable = false;
+enum class SmartLockToggleFeature { DISABLE = false, ENABLE = true };
+
+void LogToggleFeature(SmartLockToggleFeature toggle) {
+  UMA_HISTOGRAM_BOOLEAN("SmartLock.ToggleFeature", static_cast<bool>(toggle));
+}
 
 void LogToggleFeatureDisableResult(SmartLockResult result) {
   UMA_HISTOGRAM_BOOLEAN("SmartLock.ToggleFeature.Disable.Result",
@@ -249,6 +253,9 @@ AccountId EasyUnlockServiceRegular::GetAccountId() const {
 
 void EasyUnlockServiceRegular::LaunchSetup() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  LogToggleFeature(SmartLockToggleFeature::ENABLE);
+
   // TODO(tengs): To keep login working for existing EasyUnlock users, we need
   // to explicitly disable login here for new users who set up EasyUnlock.
   // After a sufficient number of releases, we should make the default value
@@ -391,8 +398,7 @@ void EasyUnlockServiceRegular::RunTurnOffFlow() {
     return;
   DCHECK(!cryptauth_client_);
 
-  UMA_HISTOGRAM_BOOLEAN("SmartLock.ToggleFeature",
-                        kSmartLockFeatureToggleDisable);
+  LogToggleFeature(SmartLockToggleFeature::DISABLE);
 
   SetTurnOffFlowStatus(PENDING);
 
