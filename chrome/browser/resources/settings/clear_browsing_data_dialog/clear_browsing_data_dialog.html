@@ -123,13 +123,14 @@
       <div slot="header">
         <paper-tabs noink on-selected-changed="recordTabChange_"
             selected="{{prefs.browser.last_clear_browsing_data_tab.value}}">
-          <paper-tab>$i18n{basicPageTitle}</paper-tab>
-          <paper-tab>$i18n{advancedPageTitle}</paper-tab>
+          <paper-tab id="basicTabTitle">$i18n{basicPageTitle}</paper-tab>
+          <paper-tab id="advancedTabTitle">$i18n{advancedPageTitle}</paper-tab>
         </paper-tabs>
       </div>
       <div slot="body">
         <iron-pages id="tabs"
-            selected="[[prefs.browser.last_clear_browsing_data_tab.value]]">
+            selected="[[prefs.browser.last_clear_browsing_data_tab.value]]"
+            on-selected-item-changed="updateClearButtonState_">
           <div id="basic-tab">
             <div class="row time-range-row">
               <span class="time-range-label">
@@ -254,8 +255,9 @@
         <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
             on-click="onCancelTap_">$i18n{cancel}</paper-button>
         <paper-button id="clearBrowsingDataConfirm"
-            class="action-button" disabled="[[clearingInProgress_]]"
-            on-click="onClearBrowsingDataTap_">
+            class="action-button" on-click="onClearBrowsingDataTap_"
+            disabled="[[isClearButtonDisabled_(clearingInProgress_,
+                                               clearButtonDisabled_)]]">
             $i18n{clearData}
         </paper-button>
       </div>
