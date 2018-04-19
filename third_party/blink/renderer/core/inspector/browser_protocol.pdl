@@ -3977,6 +3977,9 @@ domain Network
       Page.ResourceType resourceType
       # Whether this is a navigation request, which can abort the navigation completely.
       boolean isNavigationRequest
+      # Set if the request is a navigation that will result in a download.
+      # Only present after response is received from the server (i.e. HeadersReceived stage).
+      optional boolean isDownload
       # Redirect location, only sent if a redirect was intercepted.
       optional string redirectUrl
       # Details of the Authorization Challenge encountered. If this is set then

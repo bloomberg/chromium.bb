@@ -10,6 +10,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/loader/navigation_loader_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -169,6 +170,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
                   const base::UnguessableToken& frame_token,
                   int32_t process_id,
                   std::unique_ptr<CreateLoaderParameters> create_loader_params,
+                  bool has_suggested_download_filename,
                   network::mojom::URLLoaderRequest loader_request,
                   network::mojom::URLLoaderClientPtr client,
                   network::mojom::URLLoaderFactoryPtr target_factory);
@@ -255,6 +257,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   InterceptionStage stage_;
 
   std::unique_ptr<CreateLoaderParameters> create_loader_params_;
+  const bool has_suggested_download_filename_;
 
   mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
   mojo::Binding<network::mojom::URLLoader> loader_binding_;
@@ -299,6 +302,7 @@ class DevToolsURLLoaderInterceptor::Impl
   void CreateJob(const base::UnguessableToken& frame_token,
                  int32_t process_id,
                  std::unique_ptr<CreateLoaderParameters> create_params,
+                 bool has_suggested_download_filename,
                  network::mojom::URLLoaderRequest loader_request,
                  network::mojom::URLLoaderClientPtr client,
                  network::mojom::URLLoaderFactoryPtr target_factory) {
@@ -307,10 +311,10 @@ class DevToolsURLLoaderInterceptor::Impl
     static int last_id = 0;
 
     std::string id = base::StringPrintf("interception-job-%d", ++last_id);
-    InterceptionJob* job =
-        new InterceptionJob(this, id, frame_token, process_id,
-                            std::move(create_params), std::move(loader_request),
-                            std::move(client), std::move(target_factory));
+    InterceptionJob* job = new InterceptionJob(
+        this, id, frame_token, process_id, std::move(create_params),
+        has_suggested_download_filename, std::move(loader_request),
+        std::move(client), std::move(target_factory));
     jobs_.emplace(std::move(id), job);
   }
 
@@ -377,6 +381,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
   DevToolsURLLoaderFactoryProxy(
       const base::UnguessableToken& frame_token,
       int32_t process_id,
+      bool has_suggested_download_filename,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor);
@@ -401,6 +406,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
 
   const base::UnguessableToken frame_token_;
   const int32_t process_id_;
+  const bool has_suggested_download_filename_;
 
   network::mojom::URLLoaderFactoryPtr target_factory_;
   base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor_;
@@ -412,11 +418,13 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
 DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
     const base::UnguessableToken& frame_token,
     int32_t process_id,
+    bool has_suggested_download_filename,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor)
     : frame_token_(frame_token),
       process_id_(process_id),
+      has_suggested_download_filename_(has_suggested_download_filename),
       interceptor_(std::move(interceptor)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   BrowserThread::PostTask(
@@ -450,8 +458,8 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
   network::mojom::URLLoaderFactoryPtr factory_clone;
   target_factory_->Clone(MakeRequest(&factory_clone));
   interceptor->CreateJob(frame_token_, process_id_, std::move(creation_params),
-                         std::move(loader), std::move(client),
-                         std::move(factory_clone));
+                         has_suggested_download_filename_, std::move(loader),
+                         std::move(client), std::move(factory_clone));
 }
 
 void DevToolsURLLoaderFactoryProxy::StartOnIO(
@@ -475,7 +483,6 @@ void DevToolsURLLoaderFactoryProxy::Clone(
 }
 
 void DevToolsURLLoaderFactoryProxy::OnTargetFactoryError() {
-  DCHECK(!target_factory_.is_bound());
   delete this;
 }
 
@@ -562,6 +569,7 @@ void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
 bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
     const base::UnguessableToken frame_token,
     int process_id,
+    bool has_suggested_download_filename,
     network::mojom::URLLoaderFactoryRequest* request) const {
   if (!enabled_)
     return false;
@@ -570,9 +578,9 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
   network::mojom::URLLoaderFactoryPtrInfo target_ptr_info;
   *request = MakeRequest(&target_ptr_info);
 
-  new DevToolsURLLoaderFactoryProxy(frame_token, process_id,
-                                    std::move(original_request),
-                                    std::move(target_ptr_info), weak_impl_);
+  new DevToolsURLLoaderFactoryProxy(
+      frame_token, process_id, has_suggested_download_filename,
+      std::move(original_request), std::move(target_ptr_info), weak_impl_);
   return true;
 }
 
@@ -582,6 +590,7 @@ InterceptionJob::InterceptionJob(
     const base::UnguessableToken& frame_token,
     int process_id,
     std::unique_ptr<CreateLoaderParameters> create_loader_params,
+    bool has_suggested_download_filename,
     network::mojom::URLLoaderRequest loader_request,
     network::mojom::URLLoaderClientPtr client,
     network::mojom::URLLoaderFactoryPtr target_factory)
@@ -596,6 +605,7 @@ InterceptionJob::InterceptionJob(
       report_upload_(!!create_loader_params->request.request_body),
       interceptor_(interceptor),
       create_loader_params_(std::move(create_loader_params)),
+      has_suggested_download_filename_(has_suggested_download_filename),
       client_binding_(this),
       loader_binding_(this),
       client_(std::move(client)),
@@ -693,9 +703,9 @@ Response InterceptionJob::InnerContinueRequest(
       return Response::InvalidParams("authChallengeResponse required.");
     return ProcessAuthResponse(
         modifications->auth_challenge_response.fromJust());
-  } else if (modifications->auth_challenge_response.isJust()) {
-    return Response::InvalidParams("authChallengeResponse not expected.");
   }
+  if (modifications->auth_challenge_response.isJust())
+    return Response::InvalidParams("authChallengeResponse not expected.");
 
   if (modifications->mark_as_canceled || modifications->error_reason) {
     int error = modifications->error_reason
@@ -1070,7 +1080,16 @@ void InterceptionJob::OnReceiveResponse(
   response_metadata_ = std::make_unique<ResponseMetadata>(head);
   response_metadata_->downloaded_file = std::move(downloaded_file);
 
-  NotifyClient(BuildRequestInfo(&head));
+  auto request_info = BuildRequestInfo(&head);
+  const network::ResourceRequest& request = create_loader_params_->request;
+  bool is_cross_origin = navigation_loader_util::IsCrossOriginRequest(
+      request.url, request.request_initiator);
+  request_info->is_download =
+      request_info->is_navigation && request.allow_download &&
+      navigation_loader_util::IsDownload(
+          request.url, head.headers.get(), head.mime_type,
+          has_suggested_download_filename_, is_cross_origin);
+  NotifyClient(std::move(request_info));
 }
 
 void InterceptionJob::OnReceiveRedirect(

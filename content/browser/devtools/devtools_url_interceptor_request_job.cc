@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page.h"
+#include "content/browser/loader/navigation_loader_util.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/completion_once_callback.h"
@@ -531,6 +532,25 @@ void SetDevToolsStatus(net::URLRequest* request,
   resource_request_info->set_devtools_status(devtools_status);
 }
 
+bool IsDownload(net::URLRequest* orig_request, net::URLRequest* subrequest) {
+  auto* req_info = ResourceRequestInfoImpl::ForRequest(orig_request);
+  // Only happens to downloads that are initiated by the download manager.
+  if (req_info->IsDownload())
+    return true;
+
+  // Note this will not correctly identify a download for the MIME types
+  // inferred with content sniffing. The new interception implementation
+  // should not have this problem, as it's on top of MIME sniffer.
+  std::string mime_type;
+  subrequest->GetMimeType(&mime_type);
+  bool is_cross_origin = navigation_loader_util::IsCrossOriginRequest(
+      orig_request->url(), orig_request->initiator());
+  return req_info->allow_download() &&
+         navigation_loader_util::IsDownload(
+             orig_request->url(), subrequest->response_headers(), mime_type,
+             req_info->suggested_filename().has_value(), is_cross_origin);
+}
+
 }  // namespace
 
 DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
@@ -839,6 +859,7 @@ void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseStarted(
         sub_request_->request()->GetResponseCode();
     request_info->response_headers =
         protocol::Object::fromValue(headers_dict.get(), nullptr);
+    request_info->is_download = IsDownload(request(), sub_request_->request());
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(callback_, std::move(request_info)));

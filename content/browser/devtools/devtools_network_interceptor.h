@@ -24,6 +24,7 @@ struct InterceptedRequestInfo {
   base::UnguessableToken frame_id;
   ResourceType resource_type;
   bool is_navigation;
+  protocol::Maybe<bool> is_download;
   protocol::Maybe<protocol::Object> redirect_headers;
   protocol::Maybe<int> redirect_status_code;
   protocol::Maybe<protocol::String> redirect_url;

@@ -965,6 +965,8 @@ jumbo_source_set("browser") {
     "loader/mojo_async_resource_handler.h",
     "loader/navigation_loader_interceptor.cc",
     "loader/navigation_loader_interceptor.h",
+    "loader/navigation_loader_util.cc",
+    "loader/navigation_loader_util.h",
     "loader/navigation_metrics.cc",
     "loader/navigation_metrics.h",
     "loader/navigation_resource_handler.cc",

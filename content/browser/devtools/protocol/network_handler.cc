@@ -1868,10 +1868,12 @@ bool NetworkHandler::ShouldCancelNavigation(
 bool NetworkHandler::MaybeCreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     int process_id,
+    bool has_suggested_download_filename,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
   return url_loader_interceptor_ &&
          url_loader_interceptor_->CreateProxyForInterception(
-             frame_token, process_id, target_factory_request);
+             frame_token, process_id, has_suggested_download_filename,
+             target_factory_request);
 }
 
 void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,
@@ -1941,9 +1943,9 @@ void NetworkHandler::RequestIntercepted(
   frontend_->RequestIntercepted(
       info->interception_id, std::move(info->network_request),
       info->frame_id.ToString(), ResourceTypeToString(info->resource_type),
-      info->is_navigation, std::move(info->redirect_url),
-      std::move(info->auth_challenge), std::move(error_reason),
-      std::move(info->http_response_status_code),
+      info->is_navigation, std::move(info->is_download),
+      std::move(info->redirect_url), std::move(info->auth_challenge),
+      std::move(error_reason), std::move(info->http_response_status_code),
       std::move(info->response_headers));
 }
 
