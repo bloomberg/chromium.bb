@@ -6,7 +6,6 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -88,7 +87,7 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
   if (cursor_client)
     cursor_client->SetCursor(ui::CursorType::kPointer);
 
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
 
   wm::WmToplevelWindowEventHandler::DragResult result =
       wm::WmToplevelWindowEventHandler::DragResult::SUCCESS;
@@ -102,8 +101,6 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
   in_move_loop_ = true;
   base::WeakPtr<ToplevelWindowEventHandler> weak_ptr(
       weak_factory_.GetWeakPtr());
-  base::MessageLoop* loop = base::MessageLoop::current();
-  base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
 
   // Disable window position auto management while dragging and restore it
   // aftrewards.
