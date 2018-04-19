@@ -129,8 +129,8 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
 
 VaapiPicture* VaapiVideoDecodeAccelerator::PictureById(
     int32_t picture_buffer_id) {
-  PictureMap::iterator it = picture_map_.find(picture_buffer_id);
-  if (it == picture_map_.end()) {
+  Pictures::iterator it = pictures_.find(picture_buffer_id);
+  if (it == pictures_.end()) {
     VLOGF(4) << "Picture id " << picture_buffer_id << " does not exist";
     return NULL;
   }
@@ -245,22 +245,22 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   }
 }
 
-void VaapiVideoDecodeAccelerator::TryOutputPicture() {
+void VaapiVideoDecodeAccelerator::TryOutputSurface() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Handle Destroy() arriving while pictures are queued for output.
   if (!client_)
     return;
 
-  if (pending_output_cbs_.empty() || available_picture_buffers_.empty())
+  if (pending_output_cbs_.empty() || output_buffers_.empty())
     return;
 
   OutputCB output_cb = pending_output_cbs_.front();
   pending_output_cbs_.pop();
 
-  VaapiPicture* picture = PictureById(available_picture_buffers_.front());
+  VaapiPicture* picture = PictureById(output_buffers_.front());
   DCHECK(picture);
-  available_picture_buffers_.pop();
+  output_buffers_.pop();
 
   output_cb.Run(picture);
 
@@ -409,9 +409,9 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange(
     return;
 
   if (!pending_output_cbs_.empty() ||
-      picture_map_.size() != available_va_surfaces_.size()) {
+      pictures_.size() != available_va_surfaces_.size()) {
     // Either: Not all |pending_output_cbs_| have been executed yet
-    // (i.e. they're waiting for resources in TryOutputPicture()), or |client_|
+    // (i.e. they're waiting for resources in TryOutputSurface()), or |client_|
     // hasn't returned all the |available_va_surfaces_| (via
     // RecycleVASurfaceID), In any case, give some time for both to happen.
     DVLOGF(2) << "Awaiting pending output/surface release callbacks to finish";
@@ -427,16 +427,16 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange(
 
   // All surfaces released, destroy them and dismiss all PictureBuffers.
   awaiting_va_surfaces_recycle_ = false;
-  available_va_surfaces_ = {};
+  available_va_surfaces_.clear();
   vaapi_wrapper_->DestroySurfaces();
 
-  for (PictureMap::iterator iter = picture_map_.begin();
-       iter != picture_map_.end(); ++iter) {
+  for (Pictures::iterator iter = pictures_.begin(); iter != pictures_.end();
+       ++iter) {
     VLOGF(2) << "Dismissing picture id: " << iter->first;
     if (client_)
       client_->DismissPictureBuffer(iter->first);
   }
-  picture_map_.clear();
+  pictures_.clear();
 
   // And ask for a new set as requested.
   VLOGF(2) << "Requesting " << requested_num_pics_
@@ -482,7 +482,7 @@ void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
 
-  available_va_surfaces_.push(va_surface_id);
+  available_va_surfaces_.push_back(va_surface_id);
   decoder_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoDecodeAccelerator::DecodeTask,
                                 base::Unretained(this)));
@@ -492,9 +492,10 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<PictureBuffer>& buffers) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
-  DCHECK(picture_map_.empty());
+  DCHECK(pictures_.empty());
 
-  available_picture_buffers_ = {};
+  while (!output_buffers_.empty())
+    output_buffers_.pop();
 
   RETURN_AND_NOTIFY_ON_FAILURE(
       buffers.size() >= requested_num_pics_,
@@ -509,8 +510,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
                                      buffers.size(), &va_surface_ids),
       "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   DCHECK_EQ(va_surface_ids.size(), buffers.size());
-  for (const auto id : va_surface_ids)
-    available_va_surfaces_.push(id);
+  available_va_surfaces_.assign(va_surface_ids.begin(), va_surface_ids.end());
 
   for (size_t i = 0; i < buffers.size(); ++i) {
     uint32_t client_id = !buffers[i].client_texture_ids().empty()
@@ -534,11 +534,12 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
       RETURN_AND_NOTIFY_ON_FAILURE(
           picture->Allocate(vaapi_picture_factory_->GetBufferFormat()),
           "Failed to allocate memory for a VaapiPicture", PLATFORM_FAILURE, );
-      available_picture_buffers_.push(buffers[i].id());
+      output_buffers_.push(buffers[i].id());
     }
-    const auto result = picture_map_.emplace(
-        std::make_pair(buffers[i].id(), std::move(picture)));
-    DCHECK(result.second);
+    bool inserted =
+        pictures_.insert(std::make_pair(buffers[i].id(), std::move(picture)))
+            .second;
+    DCHECK(inserted);
   }
 
   // Resume DecodeTask if it is still in decoding state.
@@ -611,8 +612,8 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   --num_frames_at_client_;
   TRACE_COUNTER1("media,gpu", "Vaapi frames at client", num_frames_at_client_);
 
-  available_picture_buffers_.push(picture_buffer_id);
-  TryOutputPicture();
+  output_buffers_.push(picture_buffer_id);
+  TryOutputSurface();
 }
 
 void VaapiVideoDecodeAccelerator::FlushTask() {
@@ -829,7 +830,7 @@ void VaapiVideoDecodeAccelerator::VASurfaceReady(
       base::Bind(&VaapiVideoDecodeAccelerator::OutputPicture, weak_this_,
                  va_surface, bitstream_id, visible_rect));
 
-  TryOutputPicture();
+  TryOutputSurface();
 }
 
 scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateVASurface() {
@@ -843,7 +844,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateVASurface() {
   scoped_refptr<VASurface> va_surface(new VASurface(
       available_va_surfaces_.front(), requested_pic_size_,
       vaapi_wrapper_->va_surface_format(), va_surface_release_cb_));
-  available_va_surfaces_.pop();
+  available_va_surfaces_.pop_front();
 
   return va_surface;
 }
