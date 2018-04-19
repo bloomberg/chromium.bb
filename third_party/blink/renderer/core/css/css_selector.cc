@@ -686,8 +686,9 @@ static void SerializeIdentifierOrAny(const AtomicString& identifier,
 
 static void SerializeNamespacePrefixIfNeeded(const AtomicString& prefix,
                                              const AtomicString& any,
-                                             StringBuilder& builder) {
-  if (prefix.IsNull())
+                                             StringBuilder& builder,
+                                             bool is_attribute_selector) {
+  if (prefix.IsNull() || (prefix.IsEmpty() && is_attribute_selector))
     return;
   SerializeIdentifierOrAny(prefix, any, builder);
   builder.Append('|');
@@ -696,7 +697,8 @@ static void SerializeNamespacePrefixIfNeeded(const AtomicString& prefix,
 const CSSSelector* CSSSelector::SerializeCompound(
     StringBuilder& builder) const {
   if (match_ == kTag && !tag_is_implicit_) {
-    SerializeNamespacePrefixIfNeeded(TagQName().Prefix(), g_star_atom, builder);
+    SerializeNamespacePrefixIfNeeded(TagQName().Prefix(), g_star_atom, builder,
+                                     IsAttributeSelector());
     SerializeIdentifierOrAny(TagQName().LocalName(), UniversalSelectorAtom(),
                              builder);
   }
@@ -774,7 +776,8 @@ const CSSSelector* CSSSelector::SerializeCompound(
     } else if (simple_selector->IsAttributeSelector()) {
       builder.Append('[');
       SerializeNamespacePrefixIfNeeded(simple_selector->Attribute().Prefix(),
-                                       g_star_atom, builder);
+                                       g_star_atom, builder,
+                                       simple_selector->IsAttributeSelector());
       SerializeIdentifier(simple_selector->Attribute().LocalName(), builder);
       switch (simple_selector->match_) {
         case kAttributeExact:
