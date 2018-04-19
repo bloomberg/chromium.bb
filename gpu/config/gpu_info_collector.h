@@ -40,7 +40,7 @@ GPU_EXPORT bool CollectContextGraphicsInfo(GPUInfo* gpu_info);
 // Collect the DirectX Disagnostics information about the attached displays.
 GPU_EXPORT bool GetDxDiagnostics(DxDiagNode* output);
 GPU_EXPORT void RecordGpuSupportedRuntimeVersionHistograms(GPUInfo* gpu_info);
-GPU_EXPORT void GetGpuSupportedD3DVersion(GPUInfo* gpu_info);
+GPU_EXPORT void GetGpuSupportedD3D12Version(GPUInfo* gpu_info);
 GPU_EXPORT void GetGpuSupportedVulkanVersion(GPUInfo* gpu_info);
 #endif  // OS_WIN
 

@@ -534,7 +534,7 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process());
 
-  gpu::GetGpuSupportedD3DVersion(&gpu_info_);
+  gpu::GetGpuSupportedD3D12Version(&gpu_info_);
   gpu::GetGpuSupportedVulkanVersion(&gpu_info_);
 
   // We can continue on shutdown here because we're not writing any critical

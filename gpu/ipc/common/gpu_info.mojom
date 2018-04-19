@@ -107,6 +107,10 @@ struct GpuInfo {
   bool supports_dx12;
   [EnableIf=is_win]
   bool supports_vulkan;
+  [EnableIf=is_win]
+  uint32 d3d12_feature_level;
+  [EnableIf=is_win]
+  uint32 vulkan_version;
   VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
   array<VideoEncodeAcceleratorSupportedProfile>
     video_encode_accelerator_supported_profiles;

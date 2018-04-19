@@ -8387,6 +8387,12 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="D3D11CreateDevice returned DXGI_ERROR_DEVICE_HUNG"/>
 </enum>
 
+<enum name="D3D12FeatureLevel">
+  <int value="0" label="D3D_FEATURE_LEVEL_UNKNOWN"/>
+  <int value="1" label="D3D_FEATURE_LEVEL_12_0"/>
+  <int value="2" label="D3D_FEATURE_LEVEL_12_1"/>
+</enum>
+
 <enum name="D3D9InitializeResult">
   <int value="0" label="Success"/>
   <int value="1" label="Error initializing compiler"/>
@@ -46518,6 +46524,12 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Unsupported Stream Parameters"/>
   <int value="4" label="Decode Error"/>
   <int value="5" label="Unsupported Stream"/>
+</enum>
+
+<enum name="VulkanVersion">
+  <int value="0" label="VULKAN_API_VERSION_UNKNOWN"/>
+  <int value="1" label="VULKAN_API_VERSION_1_0_0"/>
+  <int value="2" label="VULKAN_API_VERSION_1_1_0"/>
 </enum>
 
 <enum name="WaitForVBlankErrorCode">
