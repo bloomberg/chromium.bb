@@ -95,6 +95,15 @@ bool HitTestQuery::TransformLocationForTarget(
       active_hit_test_list_, transformed_location);
 }
 
+bool HitTestQuery::GetTransformToTarget(const FrameSinkId& target,
+                                        gfx::Transform* transform) const {
+  if (!active_hit_test_list_size_)
+    return false;
+
+  return GetTransformToTargetRecursively(target, active_hit_test_list_,
+                                         transform);
+}
+
 bool HitTestQuery::FindTargetInRegionForLocation(
     EventSource event_source,
     const gfx::PointF& location_in_parent,
@@ -105,11 +114,9 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   if (!gfx::RectF(region->rect).Contains(location_transformed))
     return false;
 
-  if (region->child_count < 0 ||
-      region->child_count >
-          (active_hit_test_list_ + active_hit_test_list_size_ - region - 1)) {
+  if (!CheckChildCount(region))
     return false;
-  }
+
   AggregatedHitTestRegion* child_region = region + 1;
   AggregatedHitTestRegion* child_region_end =
       child_region + region->child_count;
@@ -163,11 +170,9 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
   if (!target_ancestor)
     return true;
 
-  if (region->child_count < 0 ||
-      region->child_count >
-          (active_hit_test_list_ + active_hit_test_list_size_ - region - 1)) {
+  if (!CheckChildCount(region))
     return false;
-  }
+
   AggregatedHitTestRegion* child_region = region + 1;
   AggregatedHitTestRegion* child_region_end =
       child_region + region->child_count;
@@ -188,9 +193,53 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
   return false;
 }
 
+bool HitTestQuery::GetTransformToTargetRecursively(
+    const FrameSinkId& target,
+    AggregatedHitTestRegion* region,
+    gfx::Transform* transform) const {
+  // TODO(riajiang): Cache the matrix product such that the transform can be
+  // found immediately.
+  if (region->frame_sink_id == target) {
+    *transform = region->transform();
+    transform->Translate(-region->rect.x(), -region->rect.y());
+    return true;
+  }
+
+  if (!CheckChildCount(region))
+    return false;
+
+  AggregatedHitTestRegion* child_region = region + 1;
+  AggregatedHitTestRegion* child_region_end =
+      child_region + region->child_count;
+  while (child_region < child_region_end) {
+    gfx::Transform transform_to_child;
+    if (GetTransformToTargetRecursively(target, child_region,
+                                        &transform_to_child)) {
+      gfx::Transform region_transform(region->transform());
+      region_transform.Translate(-region->rect.x(), -region->rect.y());
+      *transform = transform_to_child * region_transform;
+      return true;
+    }
+
+    if (child_region->child_count < 0 ||
+        child_region->child_count >= region->child_count) {
+      return false;
+    }
+    child_region = child_region + child_region->child_count + 1;
+  }
+
+  return false;
+}
+
 void HitTestQuery::ReceivedBadMessageFromGpuProcess() const {
   if (!bad_message_gpu_callback_.is_null())
     bad_message_gpu_callback_.Run();
+}
+
+bool HitTestQuery::CheckChildCount(AggregatedHitTestRegion* region) const {
+  return (region->child_count >= 0) &&
+         (region->child_count <=
+          (active_hit_test_list_ + active_hit_test_list_size_ - region - 1));
 }
 
 }  // namespace viz
