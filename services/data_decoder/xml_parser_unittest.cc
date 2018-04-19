@@ -18,11 +18,9 @@ namespace {
 
 void TestParseXmlCallback(std::unique_ptr<base::Value>* value_out,
                           base::Optional<std::string>* error_out,
-                          base::Optional<base::Value> value,
+                          std::unique_ptr<base::Value> value,
                           const base::Optional<std::string>& error) {
-  std::unique_ptr<base::Value> value_ptr =
-      value ? base::Value::ToUniquePtrValue(std::move(value.value())) : nullptr;
-  *value_out = std::move(value_ptr);
+  *value_out = std::move(value);
   *error_out = error;
 }
 
