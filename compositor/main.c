@@ -1,9 +1,10 @@
 /*
  * Copyright © 2010-2011 Intel Corporation
  * Copyright © 2008-2011 Kristian Høgsberg
- * Copyright © 2012-2015 Collabora, Ltd.
+ * Copyright © 2012-2018 Collabora, Ltd.
  * Copyright © 2010-2011 Benjamin Franzke
  * Copyright © 2013 Jason Ekstrand
+ * Copyright © 2017, 2018 General Electric Company
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
