@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
+import org.chromium.components.signin.ChildAccountStatus;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -88,7 +89,7 @@ public class AccountSigninActivity extends AppCompatActivity
             Context context, @AccessPoint int accessPoint, boolean isFromPersonalizedPromo) {
         Intent intent = new Intent(context, AccountSigninActivity.class);
         Bundle viewArguments = AccountSigninView.createArgumentsForDefaultFlow(
-                accessPoint, false /* isChildAccount */);
+                accessPoint, ChildAccountStatus.NOT_CHILD);
         intent.putExtras(viewArguments);
         intent.putExtra(INTENT_IS_FROM_PERSONALIZED_PROMO, isFromPersonalizedPromo);
         return intent;
@@ -109,7 +110,7 @@ public class AccountSigninActivity extends AppCompatActivity
             boolean isFromPersonalizedPromo) {
         Intent intent = new Intent(context, AccountSigninActivity.class);
         Bundle viewArguments = AccountSigninView.createArgumentsForConfirmationFlow(accessPoint,
-                false /* isChildAccount */, selectAccount, isDefaultAccount,
+                ChildAccountStatus.NOT_CHILD, selectAccount, isDefaultAccount,
                 AccountSigninView.UNDO_ABORT);
         intent.putExtras(viewArguments);
         intent.putExtra(INTENT_IS_FROM_PERSONALIZED_PROMO, isFromPersonalizedPromo);

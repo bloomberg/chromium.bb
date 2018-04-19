@@ -519,34 +519,26 @@ public class AccountManagerFacade {
     }
 
     @MainThread
-    public void checkChildAccount(Account account, Callback<Boolean> callback) {
-        hasAnyOfFeatures(account,
-                new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY, FEATURE_IS_USM_ACCOUNT_KEY}, callback);
-    }
-
-    private boolean hasFeature(Account account, String feature) {
-        return mDelegate.hasFeatures(account, new String[] {feature});
-    }
-
-    private void hasAnyOfFeatures(
-            final Account account, final String[] features, final Callback<Boolean> callback) {
+    public void checkChildAccountStatus(Account account, Callback<Integer> callback) {
         ThreadUtils.assertOnUiThread();
-        new AsyncTask<Void, Void, Boolean>() {
+        new AsyncTask<Void, Void, Integer>() {
             @Override
-            public Boolean doInBackground(Void... params) {
-                for (String feature : features) {
-                    if (hasFeature(account, feature)) {
-                        return true;
-                    }
+            public @ChildAccountStatus.Status Integer doInBackground(Void... params) {
+                if (hasFeature(account, FEATURE_IS_CHILD_ACCOUNT_KEY)) {
+                    return ChildAccountStatus.REGULAR_CHILD;
                 }
-                return false;
+                if (hasFeature(account, FEATURE_IS_USM_ACCOUNT_KEY)) {
+                    return ChildAccountStatus.USM_CHILD;
+                }
+                return ChildAccountStatus.NOT_CHILD;
             }
 
             @Override
-            public void onPostExecute(Boolean value) {
+            public void onPostExecute(@ChildAccountStatus.Status Integer value) {
                 callback.onResult(value);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -592,6 +584,10 @@ public class AccountManagerFacade {
     public boolean isUpdatePending() {
         ThreadUtils.assertOnUiThread();
         return mUpdateTasksCounter > 0;
+    }
+
+    private boolean hasFeature(Account account, String feature) {
+        return mDelegate.hasFeatures(account, new String[] {feature});
     }
 
     private void updateAccounts() {

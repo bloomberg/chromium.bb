@@ -26,6 +26,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -231,10 +232,10 @@ public class AccountManagerFacadeTest {
                 AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY,
                 AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
 
-        assertChildAccountStatus(testAccount, false);
-        assertChildAccountStatus(ucaAccount, true);
-        assertChildAccountStatus(usmAccount, true);
-        assertChildAccountStatus(bothAccount, true);
+        assertChildAccountStatus(testAccount, ChildAccountStatus.NOT_CHILD);
+        assertChildAccountStatus(ucaAccount, ChildAccountStatus.REGULAR_CHILD);
+        assertChildAccountStatus(usmAccount, ChildAccountStatus.USM_CHILD);
+        assertChildAccountStatus(bothAccount, ChildAccountStatus.REGULAR_CHILD);
     }
 
     private Account addTestAccount(String accountName, String... features) {
@@ -252,11 +253,12 @@ public class AccountManagerFacadeTest {
         mDelegate.removeAccountHolderExplicitly(AccountHolder.builder(account).build());
     }
 
-    private void assertChildAccountStatus(Account account, boolean status) {
+    private void assertChildAccountStatus(
+            Account account, @ChildAccountStatus.Status Integer status) {
         final AtomicInteger callCount = new AtomicInteger();
-        AccountManagerFacade.get().checkChildAccount(account, new Callback<Boolean>() {
+        AccountManagerFacade.get().checkChildAccountStatus(account, new Callback<Integer>() {
             @Override
-            public void onResult(Boolean result) {
+            public void onResult(@ChildAccountStatus.Status Integer result) {
                 callCount.incrementAndGet();
                 Assert.assertEquals(result, status);
             }

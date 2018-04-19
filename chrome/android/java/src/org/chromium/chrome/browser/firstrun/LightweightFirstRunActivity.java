@@ -15,6 +15,7 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -44,8 +45,10 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
                     return;
                 }
 
-                onChildAccountKnown(
-                        freProperties.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
+                @ChildAccountStatus.Status
+                int childAccountStatus = freProperties.getInt(
+                        AccountFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
+                onChildAccountKnown(ChildAccountStatus.isChild(childAccountStatus));
             }
         };
         mFirstRunFlowSequencer.start();
