@@ -4,7 +4,10 @@
 
 #include "ui/app_list/views/assistant_bubble_view.h"
 
+#include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/unguessable_token.h"
+#include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/app_list/assistant_controller.h"
 #include "ui/app_list/assistant_interaction_model.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
@@ -30,8 +33,6 @@ constexpr SkColor kTextColorPrimary = SkColorSetA(SK_ColorBLACK, 0xDE);
 
 // TODO(dmblack): Remove after removing placeholders.
 // Placeholder.
-constexpr int kPlaceholderCardPreferredHeightDip = 200;
-constexpr int kPlaceholderCardCornerRadiusDip = 4;
 constexpr SkColor kPlaceholderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 constexpr int kPlaceholderIconSizeDip = 32;
 
@@ -162,6 +163,39 @@ class TextContainer : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TextContainer);
 };
 
+// CardContainer ---------------------------------------------------------------
+
+class CardContainer : public views::View {
+ public:
+  CardContainer() { InitLayout(); }
+
+  ~CardContainer() override = default;
+
+  // views::View:
+  void ChildPreferredSizeChanged(views::View* child) override {
+    PreferredSizeChanged();
+  }
+
+  void EmbedCard(const base::UnguessableToken& embed_token) {
+    // When the card has been rendered in the same process, its view is
+    // available in the AnswerCardContentsRegistry's token-to-view map.
+    if (AnswerCardContentsRegistry::Get()) {
+      AddChildView(AnswerCardContentsRegistry::Get()->GetView(embed_token));
+    }
+    // TODO(dmblack): Handle Mash case.
+  }
+
+  void UnembedCard() { RemoveAllChildViews(true); }
+
+ private:
+  void InitLayout() {
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(CardContainer);
+};
+
 // TODO(dmblack): Container should wrap chips in a horizontal scroll view.
 // SuggestionsContainer --------------------------------------------------------
 
@@ -242,8 +276,9 @@ AssistantBubbleView::AssistantBubbleView(
     : assistant_controller_(assistant_controller),
       interaction_container_(new InteractionContainer()),
       text_container_(new TextContainer()),
-      card_container_(new views::View()),
-      suggestions_container_(new SuggestionsContainer(this)) {
+      card_container_(new CardContainer()),
+      suggestions_container_(new SuggestionsContainer(this)),
+      weak_factory_(this) {
   InitLayout();
 
   // Observe changes to interaction model.
@@ -253,6 +288,7 @@ AssistantBubbleView::AssistantBubbleView(
 
 AssistantBubbleView::~AssistantBubbleView() {
   assistant_controller_->RemoveInteractionModelObserver(this);
+  OnReleaseCard();
 }
 
 gfx::Size AssistantBubbleView::CalculatePreferredSize() const {
@@ -286,12 +322,6 @@ void AssistantBubbleView::InitLayout() {
 
   // Card container.
   card_container_->SetVisible(false);
-  card_container_->SetBackground(std::make_unique<RoundRectBackground>(
-      kPlaceholderColor, kPlaceholderCardCornerRadiusDip));
-  card_container_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(0, kPaddingDip)));
-  card_container_->SetPreferredSize(
-      gfx::Size(INT_MAX, kPlaceholderCardPreferredHeightDip));
   AddChildView(card_container_);
 
   // Suggestions container.
@@ -300,12 +330,47 @@ void AssistantBubbleView::InitLayout() {
 }
 
 void AssistantBubbleView::OnCardChanged(const std::string& html) {
-  // TODO(dmblack): Handle HTML.
+  // Clear the previous card.
+  OnCardCleared();
+
+  // Generate a unique identifier for the card. This will be used to clean up
+  // card resources when it is no longer needed.
+  id_token_ = base::UnguessableToken::Create();
+
+  // Configure parameters for the card.
+  ash::mojom::AssistantCardParamsPtr params(
+      ash::mojom::AssistantCardParams::New());
+  params->html = html;
+  params->min_width_dip = kPreferredWidthDip;
+  params->max_width_dip = kPreferredWidthDip;
+
+  // The card will be rendered by AssistantCardRenderer, running the specified
+  // callback when the card is ready for embedding.
+  assistant_controller_->RenderCard(
+      id_token_.value(), std::move(params),
+      base::BindOnce(&AssistantBubbleView::OnCardReady,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void AssistantBubbleView::OnCardReady(
+    const base::UnguessableToken& embed_token) {
+  card_container_->EmbedCard(embed_token);
   card_container_->SetVisible(true);
 }
 
 void AssistantBubbleView::OnCardCleared() {
   card_container_->SetVisible(false);
+  card_container_->UnembedCard();
+  OnReleaseCard();
+}
+
+void AssistantBubbleView::OnReleaseCard() {
+  if (id_token_) {
+    // Release any resources associated with the card identified by |id_token_|
+    // owned by AssistantCardRenderer.
+    assistant_controller_->ReleaseCard(id_token_.value());
+    id_token_.reset();
+  }
 }
 
 void AssistantBubbleView::OnQueryChanged(const Query& query) {

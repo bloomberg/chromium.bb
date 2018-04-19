@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ASSISTANT_ASSISTANT_CLIENT_H_
 #define CHROME_BROWSER_CHROMEOS_ASSISTANT_ASSISTANT_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/chromeos/assistant/platform_audio_input_host.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -16,6 +18,8 @@ class Connector;
 
 namespace chromeos {
 namespace assistant {
+
+class AssistantCardRenderer;
 
 // Class to handle all assistant in-browser-process functionalities.
 class AssistantClient : mojom::Client {
@@ -38,6 +42,8 @@ class AssistantClient : mojom::Client {
 
   PlatformAudioInputHost audio_input_;
   bool running_ = false;
+
+  std::unique_ptr<AssistantCardRenderer> assistant_card_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantClient);
 };

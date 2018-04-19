@@ -19,6 +19,7 @@ mojom("interfaces_internal") {
     "ash_assistant_controller.mojom",
     "ash_display_controller.mojom",
     "ash_message_center_controller.mojom",
+    "assistant_card_renderer.mojom",
     "cast_config.mojom",
     "constants.mojom",
     "docked_magnifier_controller.mojom",

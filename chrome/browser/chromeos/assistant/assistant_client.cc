@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "chrome/browser/chromeos/assistant/assistant_card_renderer.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -44,6 +45,8 @@ void AssistantClient::Start(service_manager::Connector* connector) {
 
   assistant_connection_->Init(std::move(client_ptr),
                               std::move(audio_input_ptr));
+
+  assistant_card_renderer_.reset(new AssistantCardRenderer(connector));
 }
 
 void AssistantClient::OnAssistantStatusChanged(bool running) {
