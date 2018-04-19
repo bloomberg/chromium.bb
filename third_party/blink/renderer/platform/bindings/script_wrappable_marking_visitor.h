@@ -55,14 +55,14 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   // alive in the current GC cycle.
   template <typename T>
   static void WriteBarrier(const T* dst_object) {
-    if (!dst_object)
+    if (!ThreadState::IsAnyWrapperTracing() || !dst_object)
       return;
 
     const ThreadState* thread_state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
     DCHECK(thread_state);
     // Bail out if tracing is not in progress.
-    if (!thread_state->WrapperTracingInProgress())
+    if (!thread_state->IsWrapperTracing())
       return;
 
     // If the wrapper is already marked we can bail out here.

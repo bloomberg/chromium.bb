@@ -39,7 +39,7 @@ void ScriptWrappableMarkingVisitor::TracePrologue() {
   CHECK(marking_deque_.IsEmpty());
   CHECK(verifier_deque_.IsEmpty());
   tracing_in_progress_ = true;
-  ThreadState::Current()->SetWrapperTracingInProgress(true);
+  ThreadState::Current()->EnableWrapperTracingBarrier();
 }
 
 void ScriptWrappableMarkingVisitor::EnterFinalPause() {
@@ -62,7 +62,7 @@ void ScriptWrappableMarkingVisitor::TraceEpilogue() {
 
   should_cleanup_ = true;
   tracing_in_progress_ = false;
-  ThreadState::Current()->SetWrapperTracingInProgress(false);
+  ThreadState::Current()->DisableWrapperTracingBarrier();
   ScheduleIdleLazyCleanup();
 }
 
@@ -70,7 +70,7 @@ void ScriptWrappableMarkingVisitor::AbortTracing() {
   CHECK(ThreadState::Current());
   should_cleanup_ = true;
   tracing_in_progress_ = false;
-  ThreadState::Current()->SetWrapperTracingInProgress(false);
+  ThreadState::Current()->DisableWrapperTracingBarrier();
   PerformCleanup();
 }
 
