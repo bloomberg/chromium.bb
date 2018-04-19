@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"

@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ssl/captive_portal_metrics_tab_helper.h"
 
-#include "base/mac/bind_objc_block.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"

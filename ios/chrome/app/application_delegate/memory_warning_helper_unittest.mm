@@ -4,7 +4,7 @@
 
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
 
-#include "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

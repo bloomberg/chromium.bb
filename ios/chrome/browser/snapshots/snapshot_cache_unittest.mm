@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
