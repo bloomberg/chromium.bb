@@ -7,7 +7,6 @@
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 -DomainReliabilityBrowserTest.Upload
--DownloadTest.DownloadDangerousBlobData
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
