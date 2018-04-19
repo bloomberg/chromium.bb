@@ -205,6 +205,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     base::TimeTicks request_start;
     base::TimeTicks response_start;
     base::TimeTicks completion_time;
+    net::LoadTimingInfo load_timing_info;
     linked_ptr<base::SharedMemory> buffer;
     int buffer_size;
     net::IPAddress parsed_ip;
