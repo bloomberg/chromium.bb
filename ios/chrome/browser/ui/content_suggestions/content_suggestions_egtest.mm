@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_header_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 #include "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -488,14 +489,27 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // Test that the omnibox is visible and taking full width, before any scroll
   // happen on iPhone.
   if (!content_suggestions::IsRegularXRegularSizeClass()) {
-    CGFloat collectionWidth = ntp_home::CollectionView().bounds.size.width;
-    [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(
-                                     ntp_home::FakeOmniboxAccessibilityID())]
-        assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                     ntp_home::OmniboxWidthBetween(
-                                         collectionWidth + 1, 1),
-                                     nil)];
+    if (!IsUIRefreshPhase1Enabled()) {
+      CGFloat collectionWidth = ntp_home::CollectionView().bounds.size.width;
+      [[EarlGrey
+          selectElementWithMatcher:grey_accessibilityID(
+                                       ntp_home::FakeOmniboxAccessibilityID())]
+          assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                       ntp_home::OmniboxWidthBetween(
+                                           collectionWidth + 1, 1),
+                                       nil)];
+    }
+
+    // Test that the omnibox is still pinned to the top of the screen and
+    // under the safe area.
+    CGFloat safeAreaTop = IsUIRefreshPhase1Enabled() ? StatusBarHeight() : 0;
+    CGFloat contentOffset = ntp_home::CollectionView().contentOffset.y;
+    CGFloat fakeOmniboxOrigin = ntp_home::FakeOmnibox().frame.origin.y;
+    CGFloat pinnedOffset = contentOffset - (fakeOmniboxOrigin - safeAreaTop);
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            [ContentSuggestionsHeaderItem
+                                                accessibilityIdentifier])]
+        assertWithMatcher:ntp_home::HeaderPinnedOffset(pinnedOffset)];
   }
 
   // Check that the first items are visible as the collection should be

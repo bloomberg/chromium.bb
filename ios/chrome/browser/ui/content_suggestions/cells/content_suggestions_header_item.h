@@ -14,6 +14,9 @@
 // The view to be displayed.
 @property(nonatomic, strong) UIView* view;
 
+// Accessibility identifier of the ContentSuggestionsHeaderCell.
++ (NSString*)accessibilityIdentifier;
+
 @end
 
 // Corresponding cell.

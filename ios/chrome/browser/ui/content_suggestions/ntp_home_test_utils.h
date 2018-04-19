@@ -14,7 +14,7 @@
 namespace ntp_home {
 // Returns the view corresponding to the ContentSuggestionsViewController.
 // Returns nil if it is not in the view hierarchy.
-UIView* CollectionView();
+UICollectionView* CollectionView();
 
 // Returns the view corresponding to the fake omnibox. Returns nil if it is not
 // in the view hierarchy.
@@ -26,6 +26,10 @@ id<GREYMatcher> OmniboxWidth(CGFloat width);
 // Returns a matcher, which is true if the view has its width equals to |width|
 // plus or minus |margin|.
 id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin);
+
+// Returns a matcher, which is true if the view's frame.origin.y is equal to
+// |offset|.
+id<GREYMatcher> HeaderPinnedOffset(CGFloat offset);
 
 // Returns a vector of 10 suggestions.
 std::vector<ntp_snippets::ContentSuggestion> Suggestions();

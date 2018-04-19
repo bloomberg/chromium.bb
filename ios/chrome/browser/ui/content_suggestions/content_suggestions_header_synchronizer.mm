@@ -164,11 +164,9 @@ initWithCollectionController:
   if (self.shouldAnimateHeader) {
     UIEdgeInsets insets = SafeAreaInsetsForView(self.collectionView);
     if (IsUIRefreshPhase1Enabled() && !base::ios::IsRunningOnIOS11OrLater()) {
-      UIViewController* collectionController =
-          base::mac::ObjCCastStrict<UIViewController>(
-              self.collectionController);
-      insets =
-          UIEdgeInsetsMake(collectionController.topLayoutGuide.length, 0, 0, 0);
+      // TODO(crbug.com/826369) Replace this when the NTP is contained by the
+      // BVC with |self.collectionController.topLayoutGuide.length|.
+      insets = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
     }
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
