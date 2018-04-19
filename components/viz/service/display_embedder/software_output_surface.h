@@ -9,6 +9,8 @@
 #include "base/single_thread_task_runner.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/viz_service_export.h"
+#include "ui/latency/latency_info.h"
+#include "ui/latency/latency_tracker.h"
 
 namespace viz {
 class SoftwareOutputDevice;
@@ -50,6 +52,8 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::TimeDelta refresh_interval_;
   uint64_t swap_id_ = 0;
+  std::vector<ui::LatencyInfo> stored_latency_info_;
+  ui::LatencyTracker latency_tracker_;
   base::WeakPtrFactory<SoftwareOutputSurface> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputSurface);

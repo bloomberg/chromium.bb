@@ -26,6 +26,7 @@ SoftwareOutputSurface::SoftwareOutputSurface(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : OutputSurface(std::move(software_device)),
       task_runner_(std::move(task_runner)),
+      latency_tracker_(true /* metric_sampling */),
       weak_factory_(this) {}
 
 SoftwareOutputSurface::~SoftwareOutputSurface() = default;
@@ -71,9 +72,11 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
         swap_time, 1);
   }
-  // TODO(danakj): Send frame.latency_info somewhere like
-  // RenderWidgetHostImpl::OnGpuSwapBuffersCompleted. It should go to the
-  // ui::LatencyTracker in the viz process.
+
+  DCHECK(stored_latency_info_.empty())
+      << "A second frame is not expected to "
+      << "arrive before the previous latency info is processed.";
+  stored_latency_info_ = std::move(frame.latency_info);
 
   // TODO(danakj): Update vsync params.
   // gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
@@ -122,6 +125,9 @@ uint32_t SoftwareOutputSurface::GetFramebufferCopyTextureFormat() {
 }
 
 void SoftwareOutputSurface::SwapBuffersCallback(uint64_t swap_id) {
+  for (const auto& latency : stored_latency_info_)
+    latency_tracker_.OnGpuSwapBuffersCompleted(latency);
+  std::vector<ui::LatencyInfo>().swap(stored_latency_info_);
   client_->DidReceiveSwapBuffersAck(swap_id);
   client_->DidReceivePresentationFeedback(
       swap_id,
