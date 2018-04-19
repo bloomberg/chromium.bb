@@ -583,14 +583,18 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillInteractiveTest);
 };
 
-// Test that basic form fill is working.
-// Flakily times out on ChromeOS http://crbug.com/585885
+// To be used for disabling tests on ChromeOS due to flakiness caused by
+// https://crbug.com/834369. More details on why those tests are flaky can
+// be found at https://crbug.com/834768.
 #if defined(OS_CHROMEOS)
-#define MAYBE_BasicFormFill DISABLED_BasicFormFill
+#define DISABLED_ON_CHROMEOS(name) DISABLED_##name
 #else
-#define MAYBE_BasicFormFill BasicFormFill
+#define DISABLED_ON_CHROMEOS(name) name
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_BasicFormFill) {
+
+// Test that basic form fill is working.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(BasicFormFill)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -601,14 +605,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_BasicFormFill) {
   TryBasicFormFill();
 }
 
-// Flaky. See http://crbug.com/516052.
-#if defined(OS_CHROMEOS)
-#define MAYBE_AutofillViaDownArrow DISABLED_AutofillViaDownArrow
-#else
-#define MAYBE_AutofillViaDownArrow AutofillViaDownArrow
-#endif
 // Test that form filling can be initiated by pressing the down arrow.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaDownArrow) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(AutofillViaDownArrow)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -633,13 +632,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaDownArrow) {
   ExpectFilledTestForm();
 }
 
-// crbug.com/516052
-#if defined(OS_CHROMEOS)
-#define MAYBE_AutofillSelectViaTab DISABLED_AutofillSelectViaTab
-#else
-#define MAYBE_AutofillSelectViaTab AutofillSelectViaTab
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(AutofillSelectViaTab)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -664,13 +658,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
   ExpectFilledTestForm();
 }
 
-// crbug.com/516052
-#if defined(OS_CHROMEOS)
-#define MAYBE_AutofillViaClick DISABLED_AutofillViaClick
-#else
-#define MAYBE_AutofillViaClick AutofillViaClick
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(AutofillViaClick)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -712,7 +701,7 @@ class AutofillSingleClickTest : public AutofillInteractiveTest,
 // Depending on whether or not AutofillSingleClick is enabled, makes sure that
 // the first click does or does not activate the autofill popup on the initial
 // click within a fillable field.
-IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
+IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, DISABLED_ON_CHROMEOS(Click)) {
   // Get the test parameters.
   const bool single_click_enabled = GetParam();
 
@@ -755,7 +744,8 @@ INSTANTIATE_TEST_CASE_P(AutofillInteractiveTest,
 
 // Makes sure that clicking outside the focused field doesn't activate
 // the popup.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(DontAutofillForOutsideClick)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -779,14 +769,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
 
 // Test that a field is still autofillable after the previously autofilled
 // value is deleted.
-// TODO(crbug.com/603488) Test is timing out flakily on CrOS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_OnDeleteValueAfterAutofill DISABLED_OnDeleteValueAfterAutofill
-#else
-#define MAYBE_OnDeleteValueAfterAutofill OnDeleteValueAfterAutofill
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_OnDeleteValueAfterAutofill) {
+                       DISABLED_ON_CHROMEOS(OnDeleteValueAfterAutofill)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -855,13 +839,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 }
 
 // Test that a JavaScript oninput event is fired after auto-filling a form.
-// Flakily times out on ChromeOS http://crbug.com/585885
-#if defined(OS_CHROMEOS)
-#define MAYBE_OnInputAfterAutofill DISABLED_OnInputAfterAutofill
-#else
-#define MAYBE_OnInputAfterAutofill OnInputAfterAutofill
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnInputAfterAutofill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(OnInputAfterAutofill)) {
   CreateTestProfile();
 
   const char kOnInputScript[] =
@@ -934,13 +913,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnInputAfterAutofill) {
 }
 
 // Test that a JavaScript onchange event is fired after auto-filling a form.
-// Flaky on CrOS.  http://crbug.com/578095
-#if defined(OS_CHROMEOS)
-#define MAYBE_OnChangeAfterAutofill DISABLED_OnChangeAfterAutofill
-#else
-#define MAYBE_OnChangeAfterAutofill OnChangeAfterAutofill
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnChangeAfterAutofill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(OnChangeAfterAutofill)) {
   CreateTestProfile();
 
   const char kOnChangeScript[] =
@@ -1012,13 +986,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnChangeAfterAutofill) {
   EXPECT_FALSE(unchanged_select_fired);
 }
 
-// Flakily times out on ChromeOS http://crbug.com/585885
-#if defined(OS_CHROMEOS)
-#define MAYBE_InputFiresBeforeChange DISABLED_InputFiresBeforeChange
-#else
-#define MAYBE_InputFiresBeforeChange InputFiresBeforeChange
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_InputFiresBeforeChange) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(InputFiresBeforeChange)) {
   CreateTestProfile();
 
   const char kInputFiresBeforeChangeScript[] =
@@ -1098,15 +1067,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_InputFiresBeforeChange) {
 }
 
 // Test that we can autofill forms distinguished only by their |id| attribute.
-// Flaky on CrOS.  http://crbug.com/578095
-#if defined(OS_CHROMEOS)
-#define MAYBE_AutofillFormsDistinguishedById \
-  DISABLED_AutofillFormsDistinguishedById
-#else
-#define MAYBE_AutofillFormsDistinguishedById AutofillFormsDistinguishedById
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_AutofillFormsDistinguishedById) {
+                       DISABLED_ON_CHROMEOS(AutofillFormsDistinguishedById)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1131,15 +1093,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // In the wild, the repeated fields are typically either email fields
 // (duplicated for "confirmation"); or variants that are hot-swapped via
 // JavaScript, with only one actually visible at any given time.
-// Flakily times out on ChromeOS http://crbug.com/585885
-#if defined(OS_CHROMEOS)
-#define MAYBE_AutofillFormWithRepeatedField \
-  DISABLED_AutofillFormWithRepeatedField
-#else
-#define MAYBE_AutofillFormWithRepeatedField AutofillFormWithRepeatedField
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_AutofillFormWithRepeatedField) {
+                       DISABLED_ON_CHROMEOS(AutofillFormWithRepeatedField)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1183,17 +1138,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   ExpectFieldValue("state_freeform", std::string());
 }
 
-// TODO(crbug.com/603488) Test is timing out flakily on CrOS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_AutofillFormWithNonAutofillableField \
-  DISABLED_AutofillFormWithNonAutofillableField
-#else
-#define MAYBE_AutofillFormWithNonAutofillableField \
-  AutofillFormWithNonAutofillableField
-#endif
 // Test that we properly autofill forms with non-autofillable fields.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_AutofillFormWithNonAutofillableField) {
+IN_PROC_BROWSER_TEST_F(
+    AutofillInteractiveTest,
+    DISABLED_ON_CHROMEOS(AutofillFormWithNonAutofillableField)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1235,14 +1183,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   TryBasicFormFill();
 }
 
-// Flakily fails on ChromeOS (crbug.com/646576).
-#if defined(OS_CHROMEOS)
-#define MAYBE_DynamicFormFill DISABLED_DynamicFormFill
-#else
-#define MAYBE_DynamicFormFill DynamicFormFill
-#endif
 // Test that we can Autofill dynamically generated forms.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_DynamicFormFill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(DynamicFormFill)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1329,14 +1272,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_DynamicFormFill) {
   TryBasicFormFill();
 }
 
-// https://crbug.com/708861 tracks test flakiness.
-#if defined(OS_CHROMEOS)
-#define MAYBE_AutofillAfterReload DISABLED_AutofillAfterReload
-#else
-#define MAYBE_AutofillAfterReload AutofillAfterReload
-#endif
 // Test that form filling works after reloading the current page.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterReload) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(AutofillAfterReload)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1354,13 +1292,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterReload) {
 
 // Test that filling a form sends all the expected events to the different
 // fields being filled.
-// Flakily fails on ChromeOS (crbug.com/646576).
-#if defined(OS_CHROMEOS)
-#define MAYBE_AutofillEvents DISABLED_AutofillEvents
-#else
-#define MAYBE_AutofillEvents AutofillEvents
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillEvents) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(AutofillEvents)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1461,7 +1394,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillEvents) {
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_AutofillAfterTranslate DISABLED_AutofillAfterTranslate
 #else
-#define MAYBE_AutofillAfterTranslate AutofillAfterTranslate
+#define MAYBE_AutofillAfterTranslate \
+  DISABLED_ON_CHROMEOS(AutofillAfterTranslate)
 #endif  // ADDRESS_SANITIZER
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
   ASSERT_TRUE(TranslateService::IsTranslateBubbleEnabled());
@@ -1545,13 +1479,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
 // The high level key presses execute the following: Select the first text
 // field, invoke the autofill popup list, select the first profile within the
 // list, and commit to the profile to populate the form.
-// Flakily times out on CrOS (https://crbug.com/516052).
-#if defined(OS_CHROMEOS)
-#define MAYBE_ComparePhoneNumbers DISABLED_ComparePhoneNumbers
-#else
-#define MAYBE_ComparePhoneNumbers ComparePhoneNumbers
-#endif  // defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(ComparePhoneNumbers)) {
   AutofillProfile profile;
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bob"));
   profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
@@ -1600,11 +1529,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
 
 // Test that Autofill does not fill in read-only fields.
 // Flaky on the official cros-trunk. crbug.com/516052
-// Also flaky on ChromiumOS generally. crbug.com/585885
-#if defined(OFFICIAL_BUILD) || defined(OS_CHROMEOS)
+// TODO(crbug.com/834768): Check if this is also flaky on other platforms after
+//                         re-enabling it on ChromeOS.
+#if defined(OFFICIAL_BUILD)
 #define MAYBE_NoAutofillForReadOnlyFields DISABLED_NoAutofillForReadOnlyFields
 #else
-#define MAYBE_NoAutofillForReadOnlyFields NoAutofillForReadOnlyFields
+#define MAYBE_NoAutofillForReadOnlyFields \
+  DISABLED_ON_CHROMEOS(NoAutofillForReadOnlyFields)
 #endif  // defined(OFFICIAL_BUILD) || defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        MAYBE_NoAutofillForReadOnlyFields) {
@@ -1636,13 +1567,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 //   1. Fill form using a saved profile.
 //   2. Reset the form.
 //   3. Fill form using a saved profile.
-// Tests using PopulateForm() are flaky on CrOS; see https://crbug.com/516052.
-#if defined(OS_CHROMEOS)
-#define MAYBE_FormFillableOnReset DISABLED_FormFillableOnReset
-#else
-#define MAYBE_FormFillableOnReset FormFillableOnReset
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_FormFillableOnReset) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(FormFillableOnReset)) {
   CreateTestProfile();
 
   GURL url =
@@ -1667,16 +1593,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_FormFillableOnReset) {
 }
 
 // Test Autofill distinguishes a middle initial in a name.
-// Tests using PopulateForm() are flaky on CrOS; see https://crbug.com/516052.
-#if defined(OS_CHROMEOS)
-#define MAYBE_DistinguishMiddleInitialWithinName \
-  DISABLED_DistinguishMiddleInitialWithinName
-#else
-#define MAYBE_DistinguishMiddleInitialWithinName \
-  DistinguishMiddleInitialWithinName
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_DistinguishMiddleInitialWithinName) {
+IN_PROC_BROWSER_TEST_F(
+    AutofillInteractiveTest,
+    DISABLED_ON_CHROMEOS(DistinguishMiddleInitialWithinName)) {
   CreateTestProfile();
 
   GURL url =
@@ -1689,16 +1608,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test forms with multiple email addresses are filled properly.
 // Entire form should be filled with one user gesture.
-// Tests using PopulateForm() are flaky on CrOS; see https://crbug.com/516052.
-#if defined(OS_CHROMEOS)
-#define MAYBE_MultipleEmailFilledByOneUserGesture \
-  DISABLED_MultipleEmailFilledByOneUserGesture
-#else
-#define MAYBE_MultipleEmailFilledByOneUserGesture \
-  MultipleEmailFilledByOneUserGesture
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_MultipleEmailFilledByOneUserGesture) {
+IN_PROC_BROWSER_TEST_F(
+    AutofillInteractiveTest,
+    DISABLED_ON_CHROMEOS(MultipleEmailFilledByOneUserGesture)) {
   std::string email("bsmith@gmail.com");
 
   AutofillProfile profile;
@@ -1721,7 +1633,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // This test verifies when a profile is selected from the Autofill dictionary
 // that consists of thousands of profiles, the form does not hang after being
 // submitted.
-// Flakily times out: http://crbug.com/281527
+// Flakily times out on some platforms: http://crbug.com/281527
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        DISABLED_FormFillLatencyAfterSubmit) {
   std::vector<std::string> cities;
@@ -1737,7 +1649,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   streets.push_back("Ct");
 
   const int kNumProfiles = 1500;
-  base::Time start_time = base::Time::Now();
   std::vector<AutofillProfile> profiles;
   for (int i = 0; i < kNumProfiles; i++) {
     AutofillProfile profile;
@@ -1759,10 +1670,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
     profiles.push_back(profile);
   }
   SetTestProfiles(browser(), &profiles);
-  // TODO(isherman): once we're sure this test doesn't timeout on any bots, this
-  // can be removd.
-  LOG(INFO) << "Created " << kNumProfiles << " profiles in " <<
-               (base::Time::Now() - start_time).InSeconds() << " seconds.";
 
   GURL url = embedded_test_server()->GetURL(
       "/autofill/latency_after_submit_test.html");
@@ -1784,15 +1691,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // Test that Chrome doesn't crash when autocomplete is disabled while the user
 // is interacting with the form.  This is a regression test for
 // http://crbug.com/160476
-// Flakily times out on ChromeOS http://crbug.com/585885
-#if defined(OS_CHROMEOS)
-#define MAYBE_DisableAutocompleteWhileFilling \
-  DISABLED_DisableAutocompleteWhileFilling
-#else
-#define MAYBE_DisableAutocompleteWhileFilling DisableAutocompleteWhileFilling
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_DisableAutocompleteWhileFilling) {
+                       DISABLED_ON_CHROMEOS(DisableAutocompleteWhileFilling)) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1817,7 +1717,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 }
 
 // Test that dynamic forms don't get filled when the feature is disabled.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(DynamicChangingFormFill)) {
   // Explicitly disable the filling of dynamic forms.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
@@ -1849,7 +1750,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
 
 // Test that we can Autofill forms where some fields name change during the
 // fill.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FieldsChangeName) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_ON_CHROMEOS(FieldsChangeName)) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -1901,7 +1803,8 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
+                       DISABLED_ON_CHROMEOS(SimpleCrossSiteFill)) {
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.
@@ -1949,7 +1852,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
 #if defined(OS_WIN)
 #define MAYBE_CrossSitePaymentForms DISABLED_CrossSitePaymentForms
 #else
-#define MAYBE_CrossSitePaymentForms CrossSitePaymentForms
+#define MAYBE_CrossSitePaymentForms DISABLED_ON_CHROMEOS(CrossSitePaymentForms)
 #endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
   // Main frame is on a.com, iframe is on b.com.
@@ -1983,7 +1886,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
-                       DeletingFrameUnderSuggestion) {
+                       DISABLED_ON_CHROMEOS(DeletingFrameUnderSuggestion)) {
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.
@@ -2065,14 +1968,8 @@ class DynamicFormInteractiveTest : public AutofillInteractiveTest {
 };
 
 // Test that we can Autofill dynamically generated forms.
-// Flakily times out on ChromeOS http://crbug.com/827797
-#if defined(OS_CHROMEOS)
-#define MAYBE_DynamicChangingFormFill DISABLED_DynamicChangingFormFill
-#else
-#define MAYBE_DynamicChangingFormFill DynamicChangingFormFill
-#endif
 IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
-                       MAYBE_DynamicChangingFormFill) {
+                       DISABLED_ON_CHROMEOS(DynamicChangingFormFill)) {
   CreateTestProfile();
 
   GURL url =
@@ -2098,7 +1995,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
-                       TwoDynamicChangingFormsFill) {
+                       DISABLED_ON_CHROMEOS(TwoDynamicChangingFormsFill)) {
   // Setup that the test expects a re-fill to happen.
   test_delegate()->SetIsExpectingDynamicRefill(true);
 
@@ -2144,8 +2041,9 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 }
 
 // Test that forms that dynamically change a second time do not get filled.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
-                       DynamicChangingFormFill_SecondChange) {
+IN_PROC_BROWSER_TEST_F(
+    DynamicFormInteractiveTest,
+    DISABLED_ON_CHROMEOS(DynamicChangingFormFill_SecondChange)) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2171,8 +2069,9 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 }
 
 // Test that forms that dynamically change after a second do not get filled.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
-                       DynamicChangingFormFill_AfterDelay) {
+IN_PROC_BROWSER_TEST_F(
+    DynamicFormInteractiveTest,
+    DISABLED_ON_CHROMEOS(DynamicChangingFormFill_AfterDelay)) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2198,8 +2097,9 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 }
 
 // Test that only field of a type group that was filled initially get refilled.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
-                       DynamicChangingFormFill_AddsNewFieldTypeGroups) {
+IN_PROC_BROWSER_TEST_F(
+    DynamicFormInteractiveTest,
+    DISABLED_ON_CHROMEOS(DynamicChangingFormFill_AddsNewFieldTypeGroups)) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2231,8 +2131,9 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 }
 
 // Test that credit card fields are never re-filled.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
-                       DynamicChangingFormFill_NotForCreditCard) {
+IN_PROC_BROWSER_TEST_F(
+    DynamicFormInteractiveTest,
+    DISABLED_ON_CHROMEOS(DynamicChangingFormFill_NotForCreditCard)) {
   // Add a credit card.
   CreditCard card;
   test::SetCreditCardInfo(&card, "Milton Waddams", "4111111111111111", "09",
@@ -2267,8 +2168,9 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
-                       DynamicChangingFormFill_SelectUpdated) {
+IN_PROC_BROWSER_TEST_F(
+    DynamicFormInteractiveTest,
+    DISABLED_ON_CHROMEOS(DynamicChangingFormFill_SelectUpdated)) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2295,8 +2197,9 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed only once.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
-                       DynamicChangingFormFill_DoubleSelectUpdated) {
+IN_PROC_BROWSER_TEST_F(
+    DynamicFormInteractiveTest,
+    DISABLED_ON_CHROMEOS(DynamicChangingFormFill_DoubleSelectUpdated)) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
