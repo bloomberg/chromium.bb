@@ -533,6 +533,15 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/video/' +
         'tex-2d-luminance-luminance-unsigned_byte.html',
         ['android'], bug=733599)
+
+    # These video tests appear to be flaky.
+    self.Flaky('conformance/textures/video/' +
+        'tex-2d-rgb-rgb-unsigned_byte.html',
+        ['android', 'android-chromium'], bug=834933)
+    self.Flaky('conformance/textures/video/' +
+        'tex-2d-rgba-rgba-unsigned_byte.html',
+        ['android', 'android-chromium'], bug=834933)
+
     # This crashes in Android WebView on the Nexus 6, preventing the
     # suite from running further. Rather than add multiple
     # suppressions, skip it until it's passing at least in content
@@ -581,9 +590,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/bugs/' +
               'varying-arrays-should-not-be-reversed.html',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=709704)
-    self.Flaky('conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html',
-        ['android', 'android-chromium', ('qualcomm', 'Adreno (TM) 330')],
-        bug=752291)
 
     # Nexus 5X
     # The following two tests just started timing out randomly on the
