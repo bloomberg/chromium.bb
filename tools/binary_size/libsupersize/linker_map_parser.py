@@ -343,6 +343,8 @@ class MapFileParserLld(object):
         sym_maker.Flush()
         self._section_sizes[tok] = size
         cur_section = tok
+        # E.g., Want to convert "(.text._name)" -> "_name" later.
+        mangled_start_idx = len(cur_section) + 2
         cur_section_is_useful = (
             cur_section in (models.SECTION_BSS,
                             models.SECTION_RODATA,
@@ -351,15 +353,23 @@ class MapFileParserLld(object):
       elif cur_section_is_useful:
         if indent_size == 8:
           sym_maker.Flush()
-          cur_obj = tok.split(':')[0]
+          # e.g. path.o:(.text._name)
+          cur_obj, paren_value = tok.split(':')
+          # "(.text._name)" -> "_name".
+          mangled_name = paren_value[mangled_start_idx:-1]
           sym_maker.Create(cur_section, size, address=address)
           # As of 2017/11 LLD does not distinguish merged strings from other
           # merged data. Feature request is filed under:
           # https://bugs.llvm.org/show_bug.cgi?id=35248
           if cur_obj == '<internal>':
-            # Treat all literals as stirng literals.
-            # FIXME(huangs): Refine this. Checking align == 1 is insufficient.
-            sym_maker.cur_sym.full_name = '** lld merge strings'
+            if cur_section == '.rodata' and mangled_name == '':
+              # Treat all <internal> sections within .rodata as as string
+              # literals. Some may hold numeric constants or other data, but
+              # there is currently no way to distinguish them.
+              sym_maker.cur_sym.full_name = '** lld merge strings'
+            else:
+              # e.g. <internal>:(.text.thunk)
+              sym_maker.cur_sym.full_name = '** ' + mangled_name
           elif cur_obj == 'lto.tmp' or cur_obj.startswith('thinlto-cache'):
             pass
           else:
