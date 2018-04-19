@@ -66,6 +66,7 @@
 #include "components/version_info/version_info_values.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 using sync_sessions::SessionsSyncManager;
 using syncer::BackendMigrator;
@@ -90,6 +91,8 @@ using syncer::WeakHandle;
 namespace browser_sync {
 
 namespace {
+
+const char kSyncOAuthConsumerName[] = "sync";
 
 const char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
 
@@ -133,7 +136,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
                       init_params.channel,
                       init_params.base_directory,
                       init_params.debug_identifier),
-      OAuth2TokenService::Consumer("sync"),
       signin_scoped_device_id_callback_(
           init_params.signin_scoped_device_id_callback),
       last_auth_error_(GoogleServiceAuthError::AuthErrorNone()),
@@ -555,42 +557,37 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   ReportPreviousSessionMemoryWarningCount();
 }
 
-void ProfileSyncService::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+void ProfileSyncService::AccessTokenFetched(const GoogleServiceAuthError& error,
+                                            const std::string& access_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(access_token_request_.get(), request);
-  access_token_request_.reset();
+  DCHECK(ongoing_access_token_fetch_);
+
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> fetcher_deleter(
+      std::move(ongoing_access_token_fetch_));
+
   access_token_ = access_token;
-  token_status_.token_receive_time = base::Time::Now();
-  token_status_.last_get_token_error = GoogleServiceAuthError::AuthErrorNone();
-
-  if (sync_prefs_.SyncHasAuthError()) {
-    sync_prefs_.SetSyncAuthError(false);
-  }
-
-  if (HasSyncingEngine())
-    engine_->UpdateCredentials(GetCredentials());
-  else
-    startup_controller_->TryStart();
-
-  UpdateAuthErrorState(GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-}
-
-void ProfileSyncService::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(access_token_request_.get(), request);
-  DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
-  access_token_request_.reset();
   token_status_.last_get_token_error = error;
+
   switch (error.state()) {
+    case GoogleServiceAuthError::NONE:
+      token_status_.token_receive_time = base::Time::Now();
+
+      if (sync_prefs_.SyncHasAuthError()) {
+        sync_prefs_.SetSyncAuthError(false);
+      }
+
+      if (HasSyncingEngine()) {
+        engine_->UpdateCredentials(GetCredentials());
+      } else {
+        startup_controller_->TryStart();
+      }
+
+      UpdateAuthErrorState(error);
+      break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::REQUEST_CANCELED:
     case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE: {
+    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       // Transient error. Retry after some time.
       request_access_token_backoff_.InformOfRequest(false);
       token_status_.next_token_request_time =
@@ -602,22 +599,19 @@ void ProfileSyncService::OnGetTokenFailure(
                               sync_enabled_weak_factory_.GetWeakPtr()));
       NotifyObservers();
       break;
-    }
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS: {
+    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
       if (!sync_prefs_.SyncHasAuthError()) {
         sync_prefs_.SetSyncAuthError(true);
         UMA_HISTOGRAM_ENUMERATION("Sync.SyncAuthError", AUTH_ERROR_ENCOUNTERED,
                                   AUTH_ERROR_LIMIT);
       }
       FALLTHROUGH;
-    }
-    default: {
+    default:
       if (error.state() != GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
         LOG(ERROR) << "Unexpected persistent error: " << error.ToString();
       }
       // Show error to user.
       UpdateAuthErrorState(error);
-    }
   }
 }
 
@@ -1812,9 +1806,10 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
 
 void ProfileSyncService::RequestAccessToken() {
   // Only one active request at a time.
-  if (access_token_request_ != nullptr)
+  if (ongoing_access_token_fetch_ != nullptr)
     return;
   request_access_token_retry_timer_.Stop();
+
   OAuth2TokenService::ScopeSet oauth2_scopes;
   oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
@@ -1831,8 +1826,13 @@ void ProfileSyncService::RequestAccessToken() {
   token_status_.token_request_time = base::Time::Now();
   token_status_.token_receive_time = base::Time();
   token_status_.next_token_request_time = base::Time();
-  access_token_request_ =
-      oauth2_token_service_->StartRequest(account_id, oauth2_scopes, this);
+  ongoing_access_token_fetch_ =
+      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+          kSyncOAuthConsumerName, signin_->GetSigninManager(),
+          oauth2_token_service_, oauth2_scopes,
+          base::BindOnce(&ProfileSyncService::AccessTokenFetched,
+                         base::Unretained(this)),
+          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,

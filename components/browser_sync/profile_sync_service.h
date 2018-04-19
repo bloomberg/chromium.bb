@@ -53,6 +53,10 @@ namespace base {
 class MessageLoop;
 }
 
+namespace identity {
+class PrimaryAccountAccessTokenFetcher;
+}
+
 namespace sync_sessions {
 class AbstractSessionsSyncManager;
 class FaviconCache;
@@ -163,7 +167,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
                            public syncer::SyncPrefObserver,
                            public syncer::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
-                           public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
                            public SigninManagerBase::Observer,
                            public GaiaCookieManagerService::Observer {
@@ -516,13 +519,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // been cleared yet. Virtual for testing purposes.
   virtual bool waiting_for_auth() const;
 
-  // OAuth2TokenService::Consumer implementation.
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
-
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
@@ -652,6 +648,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // when sync server returns AUTH_ERROR which indicates it is time to refresh
   // token.
   void RequestAccessToken();
+
+  void AccessTokenFetched(const GoogleServiceAuthError& error,
+                          const std::string& access_token);
 
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
@@ -834,9 +833,10 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // with OAuth2TokenService.
   std::string access_token_;
 
-  // ProfileSyncService needs to hold reference to access_token_request_ for
-  // the duration of request in order to receive callbacks.
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  // Pending request for an access token. Non-null iff there is a request
+  // ongoing.
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      ongoing_access_token_fetch_;
 
   // If RequestAccessToken fails with transient error then retry requesting
   // access token with exponential backoff.
