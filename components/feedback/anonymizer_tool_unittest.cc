@@ -210,6 +210,8 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "example@@1234\n"           // No PII, it is not valid email address.
       "255.255.155.2\n"           // IP address.
       "255.255.155.255\n"         // IP address.
+      "255.255.259.255\n"         // Not an IP address.
+      "255.300.255.255\n"         // Not an IP address.
       "aaaa123.123.45.4aaa\n"     // IP address.
       "11:11;11::11\n"            // IP address.
       "11::11\n"                  // IP address.
@@ -222,6 +224,8 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "example@@1234\n"
       "<IPv4: 1>\n"
       "<IPv4: 2>\n"
+      "255.255.259.255\n"
+      "255.300.255.255\n"
       "aaaa<IPv4: 3>aaa\n"
       "11:11;<IPv6: 1>\n"
       "<IPv6: 1>\n"
