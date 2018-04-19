@@ -40,6 +40,26 @@ namespace {
 
 using Logger = autofill::SavePasswordProgressLogger;
 
+// Returns pairs of |PasswordForm| and corresponding |WebFormElement| for all
+// <form>s in the frame and for unowned <input>s. The method doesn't filter out
+// invalid |PasswordForm|s.
+std::vector<std::pair<std::unique_ptr<PasswordForm>, blink::WebFormElement>>
+GetAllPasswordFormsInFrame(PasswordAutofillAgent* password_agent,
+                           blink::WebLocalFrame* web_frame) {
+  blink::WebVector<blink::WebFormElement> web_forms;
+  web_frame->GetDocument().Forms(web_forms);
+  std::vector<std::pair<std::unique_ptr<PasswordForm>, blink::WebFormElement>>
+      all_forms;
+  for (const blink::WebFormElement& web_form : web_forms) {
+    all_forms.emplace_back(std::make_pair(
+        password_agent->GetPasswordFormFromWebForm(web_form), web_form));
+  }
+  all_forms.emplace_back(
+      std::make_pair(password_agent->GetPasswordFormFromUnownedInputElements(),
+                     blink::WebFormElement()));
+  return all_forms;
+}
+
 // Returns true if we think that this form is for account creation. Password
 // field(s) of the form are pushed back to |passwords|.
 bool GetAccountCreationPasswordFields(
@@ -288,17 +308,15 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
   if (generation_form_data_)
     return;
 
-  blink::WebVector<blink::WebFormElement> forms;
-  render_frame()->GetWebFrame()->GetDocument().Forms(forms);
-  for (size_t i = 0; i < forms.size(); ++i) {
-    if (forms[i].IsNull())
-      continue;
-
+  blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
+  std::vector<std::pair<std::unique_ptr<PasswordForm>, blink::WebFormElement>>
+      all_password_forms =
+          GetAllPasswordFormsInFrame(password_agent_, web_frame);
+  for (auto& form : all_password_forms) {
+    PasswordForm* password_form = form.first.get();
     // If we can't get a valid PasswordForm, we skip this form because the
     // the password won't get saved even if we generate it.
-    std::unique_ptr<PasswordForm> password_form(
-        password_agent_->GetPasswordFormFromWebForm(forms[i]));
-    if (!password_form.get()) {
+    if (!password_form) {
       LogMessage(Logger::STRING_GENERATION_RENDERER_INVALID_PASSWORD_FORM);
       continue;
     }
@@ -310,13 +328,17 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
       continue;
 
     std::vector<blink::WebInputElement> passwords;
+    const blink::WebFormElement& web_form = form.second;
     if (GetAccountCreationPasswordFields(
-            form_util::ExtractAutofillableElementsInForm(forms[i]),
+            web_form.IsNull()
+                ? form_util::GetUnownedFormFieldElements(
+                      web_frame->GetDocument().All(), nullptr)
+                : form_util::ExtractAutofillableElementsInForm(web_form),
             &passwords)) {
-      if (form_classifier_enabled_)
-        RunFormClassifierAndSaveVote(forms[i], *password_form);
+      if (form_classifier_enabled_ && !web_form.IsNull())
+        RunFormClassifierAndSaveVote(web_form, *password_form);
       possible_account_creation_forms_.emplace_back(
-          make_linked_ptr(password_form.release()), std::move(passwords));
+          make_linked_ptr(form.first.release()), std::move(passwords));
     }
   }
 
