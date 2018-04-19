@@ -18,13 +18,15 @@ Host *
   StrictHostKeyChecking no
   ForwardAgent no
   ForwardX11 no
-  GSSAPIDelegateCredentials no
   UserKnownHostsFile {known_hosts}
   User fuchsia
   IdentitiesOnly yes
   IdentityFile {identity}
   ServerAliveInterval 1
-  ServerAliveCountMax 1"""
+  ServerAliveCountMax 1
+  ControlMaster auto
+  ControlPersist 1m
+  ControlPath /tmp/ssh-%r@%h:%p"""
 
 
 def _TargetCpuToSdkBinPath(target_arch):

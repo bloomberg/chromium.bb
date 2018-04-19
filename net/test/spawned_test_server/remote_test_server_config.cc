@@ -16,6 +16,10 @@
 #include "build/build_config.h"
 #include "url/gurl.h"
 
+#if defined(OS_FUCHSIA)
+#include "base/base_paths_fuchsia.h"
+#endif
+
 namespace net {
 
 namespace {
@@ -25,7 +29,14 @@ base::FilePath GetTestServerConfigFilePath() {
 #if defined(OS_ANDROID)
   PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &dir);
 #elif defined(OS_FUCHSIA)
-  dir = base::FilePath("/system");
+  // TODO(https://crbug.com/805057): Remove conditional after bootfs turndown.
+  if (base::GetPackageRoot().empty()) {
+    // Bootfs runs.
+    dir = base::FilePath("/system");
+  } else {
+    // Packaged runs.
+    dir = base::FilePath("/data");
+  }
 #else
   PathService::Get(base::DIR_TEMP, &dir);
 #endif
