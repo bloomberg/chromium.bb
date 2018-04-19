@@ -1,0 +1,33 @@
+This is a testharness.js-based test.
+PASS Redirect 301 in error redirect and cors mode
+PASS Redirect 301 in error redirect and no-cors mode
+PASS Redirect 301 in manual redirect and cors mode
+FAIL Redirect 301 in manual redirect and no-cors mode assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL Redirect 301 in follow redirect and cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+FAIL Redirect 301 in follow redirect and no-cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to construct 'URL': Invalid URL"
+PASS Redirect 302 in error redirect and cors mode
+PASS Redirect 302 in error redirect and no-cors mode
+PASS Redirect 302 in manual redirect and cors mode
+FAIL Redirect 302 in manual redirect and no-cors mode assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL Redirect 302 in follow redirect and cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+FAIL Redirect 302 in follow redirect and no-cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to construct 'URL': Invalid URL"
+PASS Redirect 303 in error redirect and cors mode
+PASS Redirect 303 in error redirect and no-cors mode
+PASS Redirect 303 in manual redirect and cors mode
+FAIL Redirect 303 in manual redirect and no-cors mode assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL Redirect 303 in follow redirect and cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+FAIL Redirect 303 in follow redirect and no-cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to construct 'URL': Invalid URL"
+PASS Redirect 307 in error redirect and cors mode
+PASS Redirect 307 in error redirect and no-cors mode
+PASS Redirect 307 in manual redirect and cors mode
+FAIL Redirect 307 in manual redirect and no-cors mode assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL Redirect 307 in follow redirect and cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+FAIL Redirect 307 in follow redirect and no-cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to construct 'URL': Invalid URL"
+PASS Redirect 308 in error redirect and cors mode
+PASS Redirect 308 in error redirect and no-cors mode
+PASS Redirect 308 in manual redirect and cors mode
+FAIL Redirect 308 in manual redirect and no-cors mode assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL Redirect 308 in follow redirect and cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+FAIL Redirect 308 in follow redirect and no-cors mode promise_test: Unhandled rejection with value: object "TypeError: Failed to construct 'URL': Invalid URL"
+Harness: the test ran to completion.
+
