@@ -7,10 +7,6 @@
 #include <AppKit/AppKit.h>
 #include <gtest/gtest.h>
 
-#ifndef NSAppKitVersionNumber10_9
-#define NSAppKitVersionNumber10_9 1265
-#endif
-
 #ifndef NSAppKitVersionNumber10_10
 #define NSAppKitVersionNumber10_10 1343
 #endif
@@ -27,23 +23,14 @@
 // sanity check in unit tests, though we don't want to rely on it in production
 // code.
 TEST(VersionUtilMac, AppKitVersions) {
-  if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_9) {
-    EXPECT_TRUE(blink::IsOS10_9());
-    EXPECT_FALSE(blink::IsOS10_10());
-    EXPECT_FALSE(blink::IsOS10_11());
-    return;
-  }
-
   if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_10Max &&
       floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_10) {
-    EXPECT_FALSE(blink::IsOS10_9());
     EXPECT_TRUE(blink::IsOS10_10());
     EXPECT_FALSE(blink::IsOS10_11());
     return;
   }
 
   if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_11Max) {
-    EXPECT_FALSE(blink::IsOS10_9());
     EXPECT_FALSE(blink::IsOS10_10());
     EXPECT_TRUE(blink::IsOS10_11());
     return;

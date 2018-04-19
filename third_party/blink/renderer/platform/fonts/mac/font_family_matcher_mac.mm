@@ -137,39 +137,18 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
                           FontSelectionValue desired_weight,
                           float size) {
   DCHECK_NE(desired_family_string, FontCache::LegacySystemFontFamily());
-  if (desired_family_string == FontFamilyNames::system_ui) {
-    // On OSX 10.9, the default system font depends on the SDK version. When
-    // compiled against the OSX 10.10 SDK, the font is .LucidaGrandeUI. When
-    // compiled against the OSX 10.6 SDK, the font is Lucida Grande. Layout
-    // tests don't support different expectations based on the SDK version,
-    // so force layout tests to use "Lucida Grande". Once the 10.10 SDK
-    // switch is made, this should be changed to return .LucidaGrandeUI and
-    // the Layout Expectations should be updated. http://crbug.com/515836.
-    if (LayoutTestSupport::IsRunningLayoutTest() && IsOS10_9()) {
-      if (desired_weight >= BoldWeightValue())
-        return [NSFont fontWithName:@"Lucida Grande Bold" size:size];
-      else
-        return [NSFont fontWithName:@"Lucida Grande" size:size];
-    }
 
+  if (desired_family_string == FontFamilyNames::system_ui) {
     NSFont* font = nil;
-    if (IsOS10_9()) {
-      // On older OSX versions, only bold and regular are available.
-      if (desired_weight >= BoldWeightValue())
-        font = [NSFont boldSystemFontOfSize:size];
-      else
-        font = [NSFont systemFontOfSize:size];
-    } else {
 // Normally we'd use an availability macro here, but
 // systemFontOfSize:weight: is available but not visible on macOS 10.10,
 // so it's been forward declared earlier in this file.
 // On OSX 10.10+, the default system font has more weights.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
-      font = [NSFont systemFontOfSize:size
-                               weight:toYosemiteFontWeight(desired_weight)];
+    font = [NSFont systemFontOfSize:size
+                             weight:toYosemiteFontWeight(desired_weight)];
 #pragma clang diagnostic pop
-    }
 
     if (desired_traits & IMPORTANT_FONT_TRAITS)
       font = [[NSFontManager sharedFontManager] convertFont:font
