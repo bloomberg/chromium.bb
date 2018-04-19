@@ -29,6 +29,23 @@ component("cpp") {
     "simple_url_loader_stream_consumer.h",
   ]
 
+  if (!is_ios) {
+    sources += [
+      "server/http_connection.cc",
+      "server/http_connection.h",
+      "server/http_server.cc",
+      "server/http_server.h",
+      "server/http_server_request_info.cc",
+      "server/http_server_request_info.h",
+      "server/http_server_response_info.cc",
+      "server/http_server_response_info.h",
+      "server/web_socket.cc",
+      "server/web_socket.h",
+      "server/web_socket_encoder.cc",
+      "server/web_socket_encoder.h",
+    ]
+  }
+
   public_deps = [
     ":cpp_base",
     "//net",
@@ -115,6 +132,10 @@ source_set("tests") {
     "proxy_config_mojom_traits_unittest.cc",
     "simple_url_loader_unittest.cc",
   ]
+
+  if (!is_ios) {
+    sources += [ "server/http_server_unittest.cc" ]
+  }
   deps = [
     ":cpp",
     ":test_interfaces",

@@ -56,6 +56,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPServerSocket
   // TCPServerSocket implementation.
   void Accept(mojom::TCPConnectedSocketObserverPtr observer,
               AcceptCallback callback) override;
+  void GetLocalAddress(GetLocalAddressCallback callback) override;
 
   // Replaces the underlying socket implementation with |socket| in tests.
   void SetSocketForTest(std::unique_ptr<net::ServerSocket> socket);
