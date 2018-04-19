@@ -106,6 +106,8 @@ def _StripLinkerAddedSymbolPrefixes(raw_symbols):
     elif full_name.startswith('hot.'):
       symbol.flags |= models.FLAG_HOT
       symbol.full_name = full_name[4:]
+    elif full_name.startswith('.L.str'):
+      symbol.full_name = models.STRING_LITERAL_NAME
 
 
 def _NormalizeNames(raw_symbols):
@@ -340,6 +342,7 @@ def _AssignNmAliasPathsAndCreatePathAliases(raw_symbols, object_paths_by_name):
     ret.append(symbol)
     full_name = symbol.full_name
     if (symbol.IsBss() or
+        symbol.IsStringLiteral() or
         not full_name or
         full_name[0] in '*.' or  # e.g. ** merge symbols, .Lswitch.table
         full_name == 'startup'):
