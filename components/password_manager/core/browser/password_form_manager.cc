@@ -925,8 +925,10 @@ bool PasswordFormManager::UploadPasswordVote(
       } else {  // Saving.
         SetFieldLabelsOnSave(autofill_type, form_to_upload, &field_types);
       }
-      field_types[form_to_upload.confirmation_password_element] =
-          autofill::CONFIRMATION_PASSWORD;
+      if (autofill_type != autofill::ACCOUNT_CREATION_PASSWORD) {
+        field_types[submitted_form_->confirmation_password_element] =
+            autofill::CONFIRMATION_PASSWORD;
+      }
     }
     if (autofill_type != autofill::ACCOUNT_CREATION_PASSWORD) {
       if (generation_popup_was_shown_)
