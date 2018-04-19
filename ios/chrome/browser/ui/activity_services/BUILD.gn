@@ -103,6 +103,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
     "//ios/testing:ios_test_support",

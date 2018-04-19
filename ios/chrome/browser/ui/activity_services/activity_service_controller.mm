@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
@@ -255,12 +256,12 @@ NSString* const kActivityServicesSnackbarCategory =
                                       dispatcher:dispatcher];
     [applicationActivities addObject:readingListActivity];
 
-    if (IsUIRefreshPhase1Enabled()) {
-      // Initialize the bookmarkActivity with the visible URL as it is the URL
-      // used to determine if the page is already bookmarked or not.
+    if (IsUIRefreshPhase1Enabled() && bookmarkModel &&
+        bookmarkModel->loaded()) {
+      BOOL bookmarked = bookmarkModel->IsBookmarked(data.visibleURL);
       BookmarkActivity* bookmarkActivity =
           [[BookmarkActivity alloc] initWithURL:data.visibleURL
-                                  bookmarkModel:bookmarkModel
+                                     bookmarked:bookmarked
                                      dispatcher:dispatcher];
       [applicationActivities addObject:bookmarkActivity];
     }
