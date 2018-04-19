@@ -587,6 +587,8 @@ bool StructTraits<
   if (!data.ReadTextDirection(&out->text_direction))
     return false;
 
+  out->is_enabled = data.is_enabled();
+
   if (!data.ReadOptionValues(&out->option_values))
     return false;
   if (!data.ReadOptionContents(&out->option_contents))
