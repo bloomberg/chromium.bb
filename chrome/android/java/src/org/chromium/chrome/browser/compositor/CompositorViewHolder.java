@@ -568,14 +568,7 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     private void onViewportChanged() {
-        if (mLayoutManager == null) return;
-        mLayoutManager.onViewportChanged();
-        if (mTabVisible == null) return;
-        WebContents webContents = mTabVisible.getWebContents();
-        if (webContents == null) return;
-        mLayoutManager.getViewportPixel(mCacheViewport);
-        webContents.getEventForwarder().setCurrentTouchEventOffsets(
-                -mCacheViewport.left, -mCacheViewport.top);
+        if (mLayoutManager != null) mLayoutManager.onViewportChanged();
     }
 
     /**
