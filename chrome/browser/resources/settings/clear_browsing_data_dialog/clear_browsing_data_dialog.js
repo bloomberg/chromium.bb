@@ -57,6 +57,12 @@ Polymer({
     },
 
     /** @private */
+    clearButtonDisabled_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
     isSupervised_: {
       type: Boolean,
       value: function() {
@@ -120,6 +126,8 @@ Polymer({
     }
   },
 
+  listeners: {'settings-boolean-control-change': 'updateClearButtonState_'},
+
   /** @private {settings.ClearBrowsingDataBrowserProxy} */
   browserProxy_: null,
 
@@ -145,6 +153,30 @@ Polymer({
         this.importantSites_ = sites;
       });
     }
+  },
+
+  /**
+   * Returns true if either clearing is in progress or no data type is selected.
+   * @param {boolean} clearingInProgress
+   * @param {boolean} clearButtonDisabled
+   * @return {boolean}
+   * @private
+   */
+  isClearButtonDisabled_: function(clearingInProgress, clearButtonDisabled) {
+    return clearingInProgress || clearButtonDisabled;
+  },
+
+  /**
+   * Disables the Clear Data button if no data type is selected.
+   * @private
+   */
+  updateClearButtonState_: function() {
+    // on-select-item-changed gets called with undefined during a tab change.
+    // https://github.com/PolymerElements/iron-selector/issues/95
+    const tab = this.$.tabs.selectedItem;
+    if (!tab)
+      return;
+    this.clearButtonDisabled_ = this.getSelectedDataTypes_(tab).length == 0;
   },
 
   /**
@@ -271,20 +303,29 @@ Polymer({
   },
 
   /**
+   * Returns a list of selected data types.
+   * @param {!HTMLElement} tab
+   * @return {!Array<string>}
+   * @private
+   */
+  getSelectedDataTypes_: function(tab) {
+    const checkboxes = tab.querySelectorAll('settings-checkbox');
+    const dataTypes = [];
+    checkboxes.forEach((checkbox) => {
+      if (checkbox.checked && !checkbox.hidden)
+        dataTypes.push(checkbox.pref.key);
+    });
+    return dataTypes;
+  },
+
+  /**
    * Clears browsing data and maybe shows a history notice.
    * @private
    */
   clearBrowsingData_: function() {
     this.clearingInProgress_ = true;
     const tab = this.$.tabs.selectedItem;
-
-    const checkboxes = tab.querySelectorAll('settings-checkbox');
-    const dataTypes = [];
-    checkboxes.forEach((checkbox) => {
-      if (checkbox.checked)
-        dataTypes.push(checkbox.pref.key);
-    });
-
+    const dataTypes = this.getSelectedDataTypes_(tab);
     const timePeriod = tab.querySelector('.time-range-select').pref.value;
 
     if (tab.id == 'basic-tab') {
