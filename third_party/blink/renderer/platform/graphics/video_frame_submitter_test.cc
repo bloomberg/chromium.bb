@@ -96,7 +96,6 @@ class MockVideoFrameResourceProvider
             base::BindRepeating(
                 [](base::OnceCallback<void(viz::ContextProvider*)>) {}),
             nullptr,
-            nullptr,
             cc::LayerTreeSettings()) {
     blink::VideoFrameResourceProvider::Initialize(context_provider);
   }

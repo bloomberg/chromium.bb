@@ -275,7 +275,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
         base::BindRepeating(
             &PostMediaContextProviderToCallback,
             RenderThreadImpl::current()->GetCompositorMainThreadTaskRunner()),
-        RenderThreadImpl::current()->GetSharedBitmapManager(),
         RenderThreadImpl::current()->GetGpuMemoryBufferManager(), settings);
   } else {
     video_frame_compositor_task_runner =

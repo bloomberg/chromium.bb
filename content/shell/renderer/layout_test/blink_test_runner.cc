@@ -747,10 +747,6 @@ void BlinkTestRunner::ResetPermissions() {
   Send(new LayoutTestHostMsg_ResetPermissions(routing_id()));
 }
 
-viz::SharedBitmapManager* BlinkTestRunner::GetSharedBitmapManager() {
-  return RenderThread::Get()->GetSharedBitmapManager();
-}
-
 void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
     const base::Callback<void(bool)>& callback) {

@@ -213,10 +213,6 @@ MockRenderThread::HostAllocateSharedMemoryBuffer(size_t buffer_size) {
   return std::unique_ptr<base::SharedMemory>(shared_buf.release());
 }
 
-viz::SharedBitmapManager* MockRenderThread::GetSharedBitmapManager() {
-  return &shared_bitmap_manager_;
-}
-
 void MockRenderThread::RegisterExtension(v8::Extension* extension) {
   blink::WebScriptController::RegisterExtension(extension);
 }

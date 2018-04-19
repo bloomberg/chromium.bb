@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/blink/web_compositor_support_impl.h"
-#include "components/viz/client/client_shared_bitmap_manager.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/file_utilities.mojom.h"
@@ -197,9 +196,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateSharedOffscreenGraphicsContext3DProvider() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
-      const blink::WebSize& size,
-      viz::ResourceFormat format) override;
   blink::WebCompositorSupport* CompositorSupport() override;
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;
   service_manager::Connector* GetConnector() override;
@@ -323,7 +319,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  viz::ClientSharedBitmapManager* shared_bitmap_manager_;
 
   std::unique_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
 

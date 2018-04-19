@@ -94,7 +94,7 @@ class CC_EXPORT VideoResourceUpdater
 
   // For each CompositorFrame the following sequence is expected:
   // 1. ObtainFrameResources(): Import resources for the next video frame with
-  //    LayerTreeResourceProvider. This will reuse existing GPU or SharedBitmap
+  //    LayerTreeResourceProvider. This will reuse existing GPU or SharedMemory
   //    buffers if possible, otherwise it will allocate new ones.
   // 2. AppendQuads(): Add DrawQuads to CompositorFrame for video.
   // 3. ReleaseFrameResources(): After the CompositorFrame has been submitted,

@@ -25,10 +25,6 @@ class WebMainThreadScheduler;
 }
 }
 
-namespace viz {
-class TestSharedBitmapManager;
-}
-
 namespace content {
 
 // An implementation of BlinkPlatformImpl for tests.
@@ -68,10 +64,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   blink::WebThread* CurrentThread() override;
 
-  std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
-      const blink::WebSize& size,
-      viz::ResourceFormat format) override;
-
   void GetPluginList(bool refresh,
                      const blink::WebSecurityOrigin& mainFrameOrigin,
                      blink::WebPluginListBuilder* builder) override;
@@ -89,7 +81,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
       main_thread_scheduler_;
   std::unique_ptr<blink::WebThread> web_thread_;
-  std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
 
   base::WeakPtrFactory<TestBlinkWebUnitTestSupport> weak_factory_;
 

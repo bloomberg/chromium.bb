@@ -308,8 +308,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
                      ->Clone();
     sync_message_filter_ = RenderThreadImpl::current()->sync_message_filter();
     thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
-    shared_bitmap_manager_ =
-        RenderThreadImpl::current()->shared_bitmap_manager();
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
     web_idb_factory_.reset(new WebIDBFactoryImpl(
         sync_message_filter_,
@@ -336,7 +334,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
   WebFileSystemImpl::DeleteThreadSpecificInstance();
   main_thread_scheduler_->SetTopLevelBlameContext(nullptr);
-  shared_bitmap_manager_ = nullptr;
 }
 
 void RendererBlinkPlatformImpl::Shutdown() {
@@ -1192,15 +1189,6 @@ gpu::GpuMemoryBufferManager*
 RendererBlinkPlatformImpl::GetGpuMemoryBufferManager() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread ? thread->GetGpuMemoryBufferManager() : nullptr;
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<viz::SharedBitmap>
-RendererBlinkPlatformImpl::AllocateSharedBitmap(const blink::WebSize& size,
-                                                viz::ResourceFormat format) {
-  return shared_bitmap_manager_->AllocateSharedBitmap(
-      gfx::Size(size.width, size.height), format);
 }
 
 //------------------------------------------------------------------------------
