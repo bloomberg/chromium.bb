@@ -94,6 +94,14 @@ class VIZ_HOST_EXPORT HitTestQuery {
       const gfx::PointF& location_in_root,
       gfx::PointF* transformed_location) const;
 
+  // Gets the transform from root to |target| in physical pixels. Returns true
+  // and stores the result into |transform| if successful, returns false
+  // otherwise. This is potentially a little more expensive than
+  // TransformLocationForTarget(). So if the path from root to target is known,
+  // then that is the preferred API.
+  bool GetTransformToTarget(const FrameSinkId& target,
+                            gfx::Transform* transform) const;
+
  private:
   // Helper function to find |target| for |location_in_parent| in the |region|,
   // returns true if a target is found and false otherwise. |location_in_parent|
@@ -113,7 +121,13 @@ class VIZ_HOST_EXPORT HitTestQuery {
       AggregatedHitTestRegion* region,
       gfx::PointF* location_in_target) const;
 
+  bool GetTransformToTargetRecursively(const FrameSinkId& target,
+                                       AggregatedHitTestRegion* region,
+                                       gfx::Transform* transform) const;
+
   void ReceivedBadMessageFromGpuProcess() const;
+
+  bool CheckChildCount(AggregatedHitTestRegion* region) const;
 
   uint32_t handle_buffer_sizes_[2];
   mojo::ScopedSharedBufferMapping handle_buffers_[2];

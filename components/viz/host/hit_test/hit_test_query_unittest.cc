@@ -1002,5 +1002,74 @@ TEST_F(HitTestQueryTest, ChildHitTestAskFlag) {
   EXPECT_EQ(target3.flags, mojom::kHitTestAsk | mojom::kHitTestMouse);
 }
 
+// Tests getting the transform from root to a given target.
+TEST_F(HitTestQueryTest, GetTransformToTarget) {
+  FrameSinkId e_id = FrameSinkId(1, 1);
+  FrameSinkId c_id = FrameSinkId(2, 2);
+  FrameSinkId a_id = FrameSinkId(3, 3);
+  FrameSinkId b_id = FrameSinkId(4, 4);
+  FrameSinkId d_id = FrameSinkId(5, 5);
+  gfx::Rect e_bounds_in_e = gfx::Rect(0, 0, 600, 600);
+  gfx::Rect c_bounds_in_e = gfx::Rect(0, 50, 800, 800);
+  gfx::Rect a_bounds_in_c = gfx::Rect(0, 0, 200, 100);
+  gfx::Rect b_bounds_in_c = gfx::Rect(0, 100, 800, 600);
+  gfx::Rect d_bounds_in_e = gfx::Rect(0, 0, 800, 800);
+  gfx::Transform transform_e_to_e, transform_e_to_c, transform_c_to_a,
+      transform_c_to_b, transform_e_to_d;
+  transform_e_to_c.Translate(-200, -100);
+  transform_e_to_d.Translate(-400, -50);
+  transform_c_to_b.Skew(2, 3);
+  transform_c_to_b.Scale(.5f, .7f);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 4);  // e
+  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+      c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
+      transform_e_to_c, 2);  // c
+  aggregated_hit_test_region_list[2] =
+      AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              a_bounds_in_c, transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list[3] =
+      AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              b_bounds_in_c, transform_c_to_b, 0);  // b
+  aggregated_hit_test_region_list[4] =
+      AggregatedHitTestRegion(d_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              d_bounds_in_e, transform_e_to_d, 0);  // d
+
+  // Check that we can get the correct transform to all regions.
+  gfx::Transform transform_to_e;
+  EXPECT_TRUE(hit_test_query().GetTransformToTarget(e_id, &transform_to_e));
+  EXPECT_EQ(transform_to_e, gfx::Transform());
+
+  gfx::Transform transform_to_c;
+  gfx::Transform expected_transform_to_c;
+  expected_transform_to_c.Translate(-200, -150);
+  EXPECT_TRUE(hit_test_query().GetTransformToTarget(c_id, &transform_to_c));
+  EXPECT_EQ(transform_to_c, expected_transform_to_c);
+
+  gfx::Transform transform_to_a;
+  gfx::Transform expected_transform_to_a;
+  expected_transform_to_a.Translate(-200, -150);
+  EXPECT_TRUE(hit_test_query().GetTransformToTarget(a_id, &transform_to_a));
+  EXPECT_EQ(transform_to_a, expected_transform_to_a);
+
+  gfx::Transform transform_to_b;
+  gfx::Transform expected_transform_to_b;
+  expected_transform_to_b.Translate(-200, -150);
+  expected_transform_to_b.Translate(0, -100);
+  expected_transform_to_b.ConcatTransform(transform_c_to_b);
+  EXPECT_TRUE(hit_test_query().GetTransformToTarget(b_id, &transform_to_b));
+  // Use ToString so that we can compare float.
+  EXPECT_EQ(transform_to_b.ToString(), expected_transform_to_b.ToString());
+
+  gfx::Transform transform_to_d;
+  gfx::Transform expected_transform_to_d;
+  expected_transform_to_d.Translate(-400, -50);
+  EXPECT_TRUE(hit_test_query().GetTransformToTarget(d_id, &transform_to_d));
+  EXPECT_EQ(transform_to_d, expected_transform_to_d);
+}
+
 }  // namespace test
 }  // namespace viz
