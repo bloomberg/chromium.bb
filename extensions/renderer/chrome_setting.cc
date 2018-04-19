@@ -75,6 +75,10 @@ gin::ObjectTemplateBuilder ChromeSetting::GetObjectTemplateBuilder(
       .SetProperty("onChange", &ChromeSetting::GetOnChangeEvent);
 }
 
+const char* ChromeSetting::GetTypeName() {
+  return "ChromeSetting";
+}
+
 void ChromeSetting::Get(gin::Arguments* arguments) {
   HandleFunction("get", arguments);
 }

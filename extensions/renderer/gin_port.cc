@@ -60,6 +60,10 @@ gin::ObjectTemplateBuilder GinPort::GetObjectTemplateBuilder(
       .SetProperty("sender", &GinPort::GetSender);
 }
 
+const char* GinPort::GetTypeName() {
+  return "Port";
+}
+
 void GinPort::DispatchOnMessage(v8::Local<v8::Context> context,
                                 const Message& message) {
   DCHECK_EQ(kActive, state_);

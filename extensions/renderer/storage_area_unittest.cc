@@ -15,6 +15,37 @@ namespace extensions {
 
 using StorageAreaTest = NativeExtensionBindingsSystemUnittest;
 
+// Test that trying to use StorageArea.get without a StorageArea `this` fails
+// (with a helpful error message).
+TEST_F(StorageAreaTest, TestUnboundedUse) {
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder("foo").AddPermission("storage").Build();
+  RegisterExtension(extension);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  v8::Local<v8::Value> storage_get =
+      V8ValueFromScriptSource(context, "chrome.storage.local.get");
+  ASSERT_TRUE(storage_get->IsFunction());
+
+  constexpr char kRunStorageGet[] =
+      "(function(get) { get('foo', function() {}); })";
+  v8::Local<v8::Function> run_storage_get =
+      FunctionFromString(context, kRunStorageGet);
+  v8::Local<v8::Value> args[] = {storage_get};
+  RunFunctionAndExpectError(
+      run_storage_get, context, arraysize(args), args,
+      "Uncaught TypeError: Illegal invocation: Function must be called on "
+      "an object of type StorageArea");
+}
+
 TEST_F(StorageAreaTest, TestUseAfterInvalidation) {
   scoped_refptr<Extension> extension =
       ExtensionBuilder("foo").AddPermission("storage").Build();

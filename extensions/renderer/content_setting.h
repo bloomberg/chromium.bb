@@ -46,6 +46,7 @@ class ContentSetting final : public gin::Wrappable<ContentSetting> {
 
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
+  const char* GetTypeName() override;
 
  private:
   ContentSetting(APIRequestHandler* request_handler,

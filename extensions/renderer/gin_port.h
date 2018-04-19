@@ -60,6 +60,7 @@ class GinPort final : public gin::Wrappable<GinPort> {
   // gin::Wrappable:
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
+  const char* GetTypeName() override;
 
   // Dispatches an event to any listeners of the onMessage event.
   void DispatchOnMessage(v8::Local<v8::Context> context,

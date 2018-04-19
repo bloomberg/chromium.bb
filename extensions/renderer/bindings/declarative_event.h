@@ -36,6 +36,7 @@ class DeclarativeEvent final : public gin::Wrappable<DeclarativeEvent> {
   // gin::Wrappable:
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) final;
+  const char* GetTypeName() override;
 
  private:
   // Bound methods for the JS object.

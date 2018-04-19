@@ -45,6 +45,7 @@ class ChromeSetting final : public gin::Wrappable<ChromeSetting> {
 
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
+  const char* GetTypeName() override;
 
  private:
   ChromeSetting(APIRequestHandler* request_handler,

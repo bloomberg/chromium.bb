@@ -21,6 +21,7 @@ namespace extensions {
 namespace {
 
 #define DEFINE_STORAGE_AREA_HANDLERS()                            \
+  const char* GetTypeName() override { return "StorageArea"; }    \
   void Get(gin::Arguments* arguments) {                           \
     storage_area_.HandleFunctionCall("get", arguments);           \
   }                                                               \
