@@ -126,6 +126,7 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
@@ -566,8 +567,12 @@ public class ChromeTabbedActivity
             // Promo dialogs in multiwindow mode are broken on some devices: http://crbug.com/354696
             boolean isLegacyMultiWindow = MultiWindowUtils.getInstance().isLegacyMultiWindow(this);
             if (!isShowingPromo && !mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()
-                    && preferenceManager.getPromosSkippedOnFirstStart() && !VrShellDelegate.isInVr()
-                    && !isLegacyMultiWindow) {
+                    && preferenceManager.getPromosSkippedOnFirstStart()
+                    // VrShellDelegate.isInVr may not return true at this point even Chrome is about
+                    // to enter VR. So we use VrIntentUtils.isVrIntent to check if we are in VR or
+                    // about to enter VR. Although a VR intent doesn't ensure Chrome enters VR, it
+                    // is fine to delay the promo until the next time Chrome launches.
+                    && !VrIntentUtils.isVrIntent(getIntent()) && !isLegacyMultiWindow) {
                 // Data reduction promo should be temporarily suppressed if the sign in promo is
                 // shown to avoid nagging users too much.
                 isShowingPromo = SigninPromoUtil.launchSigninPromoIfNeeded(this)
