@@ -185,7 +185,9 @@ TEST_F(DownloadShelfControllerTest, AddAndRemoveDownload) {
 
 // Test that the shelf doesn't close automatically after a removal if there are
 // active download items still on the shelf.
-TEST_F(DownloadShelfControllerTest, AddAndRemoveWithActiveItem) {
+// Disabled due to flakiness. https://crbug.com/832389
+#define MAYBE_AddAndRemoveWithActiveItem DISABLED_AddAndRemoveWithActiveItem
+TEST_F(DownloadShelfControllerTest, MAYBE_AddAndRemoveWithActiveItem) {
   base::scoped_nsobject<DownloadItemController> item1(CreateItemController());
   base::scoped_nsobject<DownloadItemController> item2(CreateItemController());
   [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
