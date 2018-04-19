@@ -1300,6 +1300,15 @@ bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
   if (scroll_y_hint >= 0)
     return false;
 
+  // In overview mode, app list for tablet mode is hidden temporarily and will
+  // be shown automatically after overview mode ends. So prevent opening it
+  // here.
+  if (Shell::Get()
+          ->app_list_controller()
+          ->IsHomeLauncherEnabledInTabletMode()) {
+    return false;
+  }
+
   return true;
 }
 
