@@ -35,33 +35,7 @@ namespace {
 
 constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
 
-ash::OrientationLockType OrientationLockTypeFromMojo(
-    arc::mojom::OrientationLockDeprecated orientation_lock) {
-  switch (orientation_lock) {
-    case arc::mojom::OrientationLockDeprecated::NONE:
-      return ash::OrientationLockType::kAny;
-    case arc::mojom::OrientationLockDeprecated::CURRENT:
-      return ash::OrientationLockType::kCurrent;
-    case arc::mojom::OrientationLockDeprecated::PORTRAIT:
-      return ash::OrientationLockType::kPortrait;
-    case arc::mojom::OrientationLockDeprecated::LANDSCAPE:
-      return ash::OrientationLockType::kLandscape;
-    case arc::mojom::OrientationLockDeprecated::LANDSCAPE_PRIMARY:
-      return ash::OrientationLockType::kLandscapePrimary;
-    case arc::mojom::OrientationLockDeprecated::LANDSCAPE_SECONDARY:
-      return ash::OrientationLockType::kLandscapeSecondary;
-    case arc::mojom::OrientationLockDeprecated::PORTRAIT_PRIMARY:
-      return ash::OrientationLockType::kPortraitPrimary;
-    case arc::mojom::OrientationLockDeprecated::PORTRAIT_SECONDARY:
-      return ash::OrientationLockType::kPortraitSecondary;
-  }
-  NOTREACHED();
-  return ash::OrientationLockType::kAny;
-}
-
 }  // namespace
-
-using ash::ScreenOrientationController;
 
 // The information about the arc application window which has to be kept
 // even when its AppWindow is not present.
@@ -93,20 +67,6 @@ class ArcAppWindowLauncherController::AppWindowInfo {
 
   const arc::ArcAppShelfId& app_shelf_id() const { return app_shelf_id_; }
 
-  bool has_requested_orientation_lock() const {
-    return has_requested_orientation_lock_;
-  }
-
-  void set_requested_orientation_lock(
-      arc::mojom::OrientationLockDeprecated lock) {
-    has_requested_orientation_lock_ = true;
-    requested_orientation_lock_ = lock;
-  }
-
-  arc::mojom::OrientationLockDeprecated requested_orientation_lock() const {
-    return requested_orientation_lock_;
-  }
-
   ArcAppWindow* app_window() { return app_window_.get(); }
 
   const std::string& launch_intent() { return launch_intent_; }
@@ -118,10 +78,6 @@ class ArcAppWindowLauncherController::AppWindowInfo {
  private:
   const arc::ArcAppShelfId app_shelf_id_;
   const std::string launch_intent_;
-  bool has_requested_orientation_lock_ = false;
-
-  arc::mojom::OrientationLockDeprecated requested_orientation_lock_ =
-      arc::mojom::OrientationLockDeprecated::NONE;
   // Keeps overridden window title.
   std::string title_;
   // Keeps overridden window icon.
@@ -287,7 +243,6 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   DCHECK(info->app_window()->controller());
   const ash::ShelfID shelf_id(info->app_window()->shelf_id());
   window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
-  SetOrientationLockForAppWindow(info->app_window());
 }
 
 void ArcAppWindowLauncherController::OnAppReadyChanged(
@@ -376,21 +331,6 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
   }
 
   task_id_to_app_window_info_.erase(it);
-}
-
-void ArcAppWindowLauncherController::OnTaskOrientationLockRequestedDeprecated(
-    int32_t task_id,
-    const arc::mojom::OrientationLockDeprecated orientation_lock) {
-  // Don't save to AppInfo in prefs because this is requested in runtime.
-  AppWindowInfo* info = GetAppWindowInfoForTask(task_id);
-  DCHECK(info);
-  if (!info)
-    return;
-
-  info->set_requested_orientation_lock(orientation_lock);
-  ArcAppWindow* app_window = info->app_window();
-  if (app_window)
-    SetOrientationLockForAppWindow(app_window);
 }
 
 void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
@@ -577,28 +517,6 @@ void ArcAppWindowLauncherController::UnregisterApp(
     controller->RemoveWindow(app_window);
   app_window->SetController(nullptr);
   app_window_info->set_app_window(nullptr);
-}
-
-void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
-    ArcAppWindow* app_window) {
-  aura::Window* window = app_window->widget()->GetNativeWindow();
-  if (!window)
-    return;
-  AppWindowInfo* info = GetAppWindowInfoForTask(app_window->task_id());
-  ash::Shell* shell = ash::Shell::Get();
-  if (info->has_requested_orientation_lock()) {
-    shell->screen_orientation_controller()->LockOrientationForWindow(
-        window,
-        OrientationLockTypeFromMojo(info->requested_orientation_lock()));
-  } else {
-    ArcAppListPrefs* prefs = ArcAppListPrefs::Get(observed_profile_);
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        prefs->GetApp(info->app_shelf_id().app_id());
-    if (!app_info)
-      return;
-    shell->screen_orientation_controller()->LockOrientationForWindow(
-        window, OrientationLockTypeFromMojo(app_info->orientation_lock));
-  }
 }
 
 // static

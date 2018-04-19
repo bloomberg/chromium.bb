@@ -70,9 +70,6 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
       const std::string& label,
       const std::vector<uint8_t>& icon_png_data) override;
   void OnTaskDestroyed(int task_id) override;
-  void OnTaskOrientationLockRequestedDeprecated(
-      int32_t task_id,
-      const arc::mojom::OrientationLockDeprecated orientation_lock) override;
   void OnTaskSetActive(int32_t task_id) override;
 
   int active_task_id() const { return active_task_id_; }
@@ -101,8 +98,6 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   ArcAppWindowLauncherItemController* AttachControllerToTask(
       int taskId,
       const AppWindowInfo& app_window_info);
-
-  void SetOrientationLockForAppWindow(ArcAppWindow* app_window);
 
   std::vector<int> GetTaskIdsForApp(const std::string& arc_app_id) const;
 
