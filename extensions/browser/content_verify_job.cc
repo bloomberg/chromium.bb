@@ -90,6 +90,7 @@ void ContentVerifyJob::DidGetContentHashOnIO(
 
 void ContentVerifyJob::BytesRead(int count, const char* data) {
   base::AutoLock auto_lock(lock_);
+  DCHECK(!done_reading_);
   BytesReadImpl(count, data);
 }
 
@@ -100,6 +101,7 @@ void ContentVerifyJob::DoneReading() {
     return;
   if (g_ignore_verification_for_tests)
     return;
+  DCHECK(!done_reading_);
   done_reading_ = true;
   if (hashes_ready_) {
     if (!FinishBlock()) {
