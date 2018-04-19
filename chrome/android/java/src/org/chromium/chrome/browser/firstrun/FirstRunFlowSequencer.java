@@ -345,13 +345,6 @@ public abstract class FirstRunFlowSequencer  {
         Log.d(TAG, "Redirecting user through FRE.");
         if ((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
             boolean isVrIntent = VrIntentUtils.isVrIntent(intent);
-            Intent freCallerIntent = null;
-            if (isVrIntent) {
-                // Modify the caller intent to handle FRE completion correctly for VR.
-                freCallerIntent = new Intent(intent);
-                VrIntentUtils.updateFreCallerIntent(caller, intent);
-            }
-
             boolean isGenericFreActive = false;
             List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
             for (WeakReference<Activity> weakActivity : activities) {
@@ -384,7 +377,7 @@ public abstract class FirstRunFlowSequencer  {
 
             if (!(caller instanceof Activity)) freIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (isVrIntent) {
-                freIntent = VrIntentUtils.setupVrFreIntent(caller, freCallerIntent, freIntent);
+                freIntent = VrIntentUtils.setupVrFreIntent(caller, intent, freIntent);
             }
             IntentUtils.safeStartActivity(caller, freIntent);
         } else {
