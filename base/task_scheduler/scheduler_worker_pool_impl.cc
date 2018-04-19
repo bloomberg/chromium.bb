@@ -165,9 +165,9 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     StringPiece histogram_label,
     StringPiece pool_label,
     ThreadPriority priority_hint,
-    TaskTracker* task_tracker,
+    TrackedRef<TaskTracker> task_tracker,
     DelayedTaskManager* delayed_task_manager)
-    : SchedulerWorkerPool(task_tracker, delayed_task_manager),
+    : SchedulerWorkerPool(std::move(task_tracker), delayed_task_manager),
       pool_label_(pool_label.as_string()),
       priority_hint_(priority_hint),
       lock_(shared_priority_queue_.container_lock()),

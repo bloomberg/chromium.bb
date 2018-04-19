@@ -45,24 +45,25 @@ class TaskSchedulerWorkerStackTest : public testing::Test {
   void SetUp() override {
     worker_a_ = MakeRefCounted<SchedulerWorker>(
         ThreadPriority::NORMAL, WrapUnique(new MockSchedulerWorkerDelegate),
-        &task_tracker_);
+        task_tracker_.GetTrackedRef());
     ASSERT_TRUE(worker_a_);
     worker_b_ = MakeRefCounted<SchedulerWorker>(
         ThreadPriority::NORMAL, WrapUnique(new MockSchedulerWorkerDelegate),
-        &task_tracker_);
+        task_tracker_.GetTrackedRef());
     ASSERT_TRUE(worker_b_);
     worker_c_ = MakeRefCounted<SchedulerWorker>(
         ThreadPriority::NORMAL, WrapUnique(new MockSchedulerWorkerDelegate),
-        &task_tracker_);
+        task_tracker_.GetTrackedRef());
     ASSERT_TRUE(worker_c_);
   }
 
+ private:
+  TaskTracker task_tracker_ = {"Test"};
+
+ protected:
   scoped_refptr<SchedulerWorker> worker_a_;
   scoped_refptr<SchedulerWorker> worker_b_;
   scoped_refptr<SchedulerWorker> worker_c_;
-
- private:
-  TaskTracker task_tracker_ = {"Test"};
 };
 
 }  // namespace

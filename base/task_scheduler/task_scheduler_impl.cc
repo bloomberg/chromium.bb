@@ -29,7 +29,7 @@ TaskSchedulerImpl::TaskSchedulerImpl(
     std::unique_ptr<TaskTrackerImpl> task_tracker)
     : service_thread_("TaskSchedulerServiceThread"),
       task_tracker_(std::move(task_tracker)),
-      single_thread_task_runner_manager_(task_tracker_.get(),
+      single_thread_task_runner_manager_(task_tracker_->GetTrackedRef(),
                                          &delayed_task_manager_) {
   DCHECK(!histogram_label.empty());
 
@@ -46,8 +46,8 @@ TaskSchedulerImpl::TaskSchedulerImpl(
             {histogram_label, kEnvironmentParams[environment_type].name_suffix},
             "."),
         kEnvironmentParams[environment_type].name_suffix,
-        kEnvironmentParams[environment_type].priority_hint, task_tracker_.get(),
-        &delayed_task_manager_);
+        kEnvironmentParams[environment_type].priority_hint,
+        task_tracker_->GetTrackedRef(), &delayed_task_manager_);
   }
 }
 

@@ -29,7 +29,7 @@ namespace internal {
 // https://msdn.microsoft.com/magazine/hh580731.aspx
 class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
  public:
-  PlatformNativeWorkerPoolWin(TaskTracker* task_tracker,
+  PlatformNativeWorkerPoolWin(TrackedRef<TaskTracker> task_tracker,
                               DelayedTaskManager* delayed_task_manager);
 
   // Destroying a PlatformNativeWorkerPoolWin is not allowed in

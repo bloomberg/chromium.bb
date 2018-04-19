@@ -168,9 +168,10 @@ bool SchedulerWorkerPool::PostTaskWithSequence(
 }
 
 SchedulerWorkerPool::SchedulerWorkerPool(
-    TaskTracker* task_tracker,
+    TrackedRef<TaskTracker> task_tracker,
     DelayedTaskManager* delayed_task_manager)
-    : task_tracker_(task_tracker), delayed_task_manager_(delayed_task_manager) {
+    : task_tracker_(std::move(task_tracker)),
+      delayed_task_manager_(delayed_task_manager) {
   DCHECK(task_tracker_);
   DCHECK(delayed_task_manager_);
   ++g_active_pools_count;

@@ -71,7 +71,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   SchedulerWorkerPoolImpl(StringPiece histogram_label,
                           StringPiece pool_label,
                           ThreadPriority priority_hint,
-                          TaskTracker* task_tracker,
+                          TrackedRef<TaskTracker> task_tracker,
                           DelayedTaskManager* delayed_task_manager);
 
   // Creates workers following the |params| specification, allowing existing and

@@ -23,6 +23,7 @@
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "base/task_scheduler/tracked_ref.h"
 
 namespace base {
 
@@ -163,6 +164,10 @@ class BASE_EXPORT TaskTracker {
   // IsShutdownComplete() won't return true after this returns. Shutdown()
   // cannot be called after this.
   void SetHasShutdownStartedForTesting();
+
+  TrackedRef<TaskTracker> GetTrackedRef() {
+    return tracked_ref_factory_.GetTrackedRef();
+  }
 
  protected:
   // Runs and deletes |task| if |can_run_task| is true. Otherwise, just deletes
@@ -322,6 +327,11 @@ class BASE_EXPORT TaskTracker {
 
   // Number of BLOCK_SHUTDOWN tasks posted during shutdown.
   HistogramBase::Sample num_block_shutdown_tasks_posted_during_shutdown_ = 0;
+
+  // Ensures all state (e.g. dangling cleaned up workers) is coalesced before
+  // destroying the TaskTracker (e.g. in test environments).
+  // Ref. https://crbug.com/827615.
+  TrackedRefFactory<TaskTracker> tracked_ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskTracker);
 };
