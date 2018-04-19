@@ -584,7 +584,7 @@ public class AwAutofillTest {
         TestWebServer webServer = TestWebServer.start();
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<label>User Name:</label>"
-                + "<input type='text' id='text1' name='username'"
+                + "<input type='text' id='text1' name='username' maxlength='30'"
                 + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
                 + "<input type='checkbox' id='checkbox1' name='showpassword'>"
                 + "<select id='select1' name='month'>"
@@ -636,6 +636,7 @@ public class AwAutofillTest {
             assertEquals("text1", htmlInfo0.getAttribute("id"));
             assertEquals("username", htmlInfo0.getAttribute("name"));
             assertEquals("User Name:", htmlInfo0.getAttribute("label"));
+            assertEquals("30", htmlInfo0.getAttribute("maxlength"));
 
             // Verify checkbox control filled correctly in ViewStructure.
             TestViewStructure child1 = viewStructure.getChild(1);
@@ -647,6 +648,7 @@ public class AwAutofillTest {
             assertEquals("checkbox1", htmlInfo1.getAttribute("id"));
             assertEquals("showpassword", htmlInfo1.getAttribute("name"));
             assertEquals("", htmlInfo1.getAttribute("label"));
+            assertNull(htmlInfo1.getAttribute("maxlength"));
 
             // Verify select control filled correctly in ViewStructure.
             TestViewStructure child2 = viewStructure.getChild(2);
