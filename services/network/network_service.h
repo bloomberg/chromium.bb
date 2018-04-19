@@ -31,6 +31,7 @@ class URLRequestContext;
 namespace network {
 
 class NetworkContext;
+class MojoNetLog;
 class URLRequestContextBuilderMojo;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
@@ -108,8 +109,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   net::HostResolver* host_resolver() { return host_resolver_.get(); }
 
  private:
-  class MojoNetLog;
-
   // service_manager::Service implementation.
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,

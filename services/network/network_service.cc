@@ -11,19 +11,17 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
-#include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
-#include "net/log/net_log_util.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/mojo_net_log.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/url_request_context_builder_mojo.h"
@@ -75,38 +73,6 @@ std::unique_ptr<net::HostResolver> CreateHostResolver() {
 }
 
 }  // namespace
-
-class NetworkService::MojoNetLog : public net::NetLog {
- public:
-  MojoNetLog() {}
-
-  // If specified by the command line, stream network events (NetLog) to a
-  // file on disk. This will last for the duration of the process.
-  void ProcessCommandLine(const base::CommandLine& command_line) {
-    if (!command_line.HasSwitch(switches::kLogNetLog))
-      return;
-
-    base::FilePath log_path =
-        command_line.GetSwitchValuePath(switches::kLogNetLog);
-
-    // TODO(eroman): Should get capture mode from the command line.
-    net::NetLogCaptureMode capture_mode =
-        net::NetLogCaptureMode::IncludeCookiesAndCredentials();
-
-    file_net_log_observer_ =
-        net::FileNetLogObserver::CreateUnbounded(log_path, nullptr);
-    file_net_log_observer_->StartObserving(this, capture_mode);
-  }
-
-  ~MojoNetLog() override {
-    if (file_net_log_observer_)
-      file_net_log_observer_->StopObserving(nullptr, base::OnceClosure());
-  }
-
- private:
-  std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
-  DISALLOW_COPY_AND_ASSIGN(MojoNetLog);
-};
 
 NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
