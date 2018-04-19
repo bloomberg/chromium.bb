@@ -2337,21 +2337,21 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <!-- Strings for Streamlined Signin and Unified Consent. -->
       <!-- TODO(https://crbug.com/814728): Make translatable when strings are approved. -->
       <message name="IDS_SIGNIN_TITLE" desc="Title for the screen that asks users to sign-in and turn on Sync and personalization. [CHAR-LIMIT=27]" translateable="false">
-        Get even more from Chrome
+        Get Google smarts in Chrome
       </message>
       <message name="IDS_SIGNIN_SYNC_DESCRIPTION" desc="Description of Sync feature for the screen that asks users to sign-in and turn on Sync and personalization." translateable="false">
-        Sync your bookmarks, passwords, history, and more on all your devices
+        Your passwords, history &amp; more on all devices
       </message>
       <message name="IDS_SIGNIN_PERSONALIZATION_DESCRIPTION" desc="Description of personalization feature for the screen that asks users to sign-in and turn on Sync and personalization." translateable="false">
-        Get more personalized experiences, such as better content suggestions and smarter Translate
+        Personalized Google services like Google Pay
       </message>
       <message name="IDS_SIGNIN_GOOGLE_SERVICES_DESCRIPTION" desc="Description of Google Services for the screen that asks users to sign-in and turn on Sync and personalization." translateable="false">
-        Bring powerful Google services to Chrome, like Google Pay and tap to search
+        Improve Chrome and its security by sending system and usage data to Google
       </message>
       <message name="IDS_SIGNIN_DETAILS_DESCRIPTION" desc="Message explaining that user can customize Sync and personalization and explains what data is shared with Google. This message is shown in the screen that asks users to sign-in and turn on Sync and personalization." translateable="false">
-        You can customize what information Google collects in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> anytime.
+        Google may use content on sites you visit, browser interactions and activity to personalize Chrome and Google services like Translate, Search, and ads.
 
-Google may use your browsing activity, content on some sites you visit, and other browser interactions to personalize Chrome and other Google services like Translate, Search and ads.
+Customize this anytime in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>.
       </message>
       <message name="IDS_SIGNIN_ACCEPT_BUTTON" desc="Text for the confirmation button in the sign-in screen. By clicking this button users signs in and turns on Sync and personalization. [CHAR-LIMIT=20]" translateable="false">
         Yes, I'm in
