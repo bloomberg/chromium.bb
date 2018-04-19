@@ -104,10 +104,21 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
       const std::vector<base::TimeDelta>& timestamps,
       std::vector<base::TimeTicks>* wall_clock_times);
 
-  // For algorithm enabled case only: given the render interval, update
-  // current_frame_ and dropped_frame_count_.
-  void Render(base::TimeTicks deadline_min, base::TimeTicks deadline_max);
+  // For algorithm enabled case only: given the render interval, call
+  // SetCurrentFrame() if a new frame is available.
+  // |video_frame_provider_client_| gets notified about the new frame when it
+  // calls UpdateCurrentFrame().
+  void RenderUsingAlgorithm(base::TimeTicks deadline_min,
+                            base::TimeTicks deadline_max);
 
+  // For algorithm disabled case only: call SetCurrentFrame() with the current
+  // frame immediately. |video_frame_provider_client_| gets notified about the
+  // new frame with a DidReceiveFrame() call.
+  void RenderWithoutAlgorithm(const scoped_refptr<media::VideoFrame>& frame);
+  void RenderWithoutAlgorithmOnCompositor(
+      const scoped_refptr<media::VideoFrame>& frame);
+
+  // Update |current_frame_| and |dropped_frame_count_|
   void SetCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
 
   void StartRenderingInternal();
@@ -151,10 +162,11 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // selection method which returns the best frame for the render interval.
   std::unique_ptr<media::VideoRendererAlgorithm> rendering_frame_buffer_;
 
-  // |current_frame_used_by_compositor_| is updated on compositor thread only.
+  // |current_frame_rendered_| is updated on compositor thread only.
   // It's used to track whether |current_frame_| was painted for detecting
-  // when to increase |dropped_frame_count_|.
-  bool current_frame_used_by_compositor_;
+  // when to increase |dropped_frame_count_|. It is also used when checking if
+  // new frame for display is available in UpdateCurrentFrame().
+  bool current_frame_rendered_;
 
   // Historical data about last rendering. These are for detecting whether
   // rendering is paused (one reason is that the tab is not in the front), in
@@ -170,8 +182,8 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   std::map<base::TimeDelta, base::TimeTicks> timestamps_to_clock_times_;
 
-  // |current_frame_lock_| protects |current_frame_used_by_compositor_|,
-  // |current_frame_|, |rendering_frame_buffer_|, and |render_started_|.
+  // |current_frame_lock_| protects |current_frame_|, |rendering_frame_buffer_|,
+  // |dropped_frame_count_|, and |render_started_|.
   base::Lock current_frame_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMSCompositor);
