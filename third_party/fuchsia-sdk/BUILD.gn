@@ -4,26 +4,84 @@
 
 assert(is_fuchsia)
 
+import("fuchsia_sdk_pkg.gni")
+
 config("sdk_lib_dirs_config") {
   lib_dirs = [ "sdk/arch/${target_cpu}/lib" ]
 }
 
-config("async_pkg_config") {
-  visibility = [ ":async" ]
-
-  configs = [ ":sdk_lib_dirs_config" ]
-
-  include_dirs = [
-    "sdk/pkg/async/include",
-    "sdk/pkg/async-default/include",
+fuchsia_sdk_pkg("async") {
+  sources = [
+    "ops.c",
   ]
+}
 
+# async-default keep a per-thread dispatcher for async.
+fuchsia_sdk_pkg("async_default") {
+  name = "async-default"
   libs = [ "async.default" ]
 }
 
-static_library("async") {
-  public_configs = [ ":async_pkg_config" ]
+fuchsia_sdk_pkg("zx") {
   sources = [
-    "sdk/pkg/async/ops.c",
+    "channel.cpp",
+    "event.cpp",
+    "eventpair.cpp",
+    "fifo.cpp",
+    "guest.cpp",
+    "interrupt.cpp",
+    "job.cpp",
+    "log.cpp",
+    "port.cpp",
+    "process.cpp",
+    "resource.cpp",
+    "socket.cpp",
+    "thread.cpp",
+    "timer.cpp",
+    "vmar.cpp",
+    "vmo.cpp",
+  ]
+}
+
+fuchsia_sdk_pkg("fidl") {
+  # FIDL headers include async headers. These dependencies needs to be public
+  # to ensure that dependent targets get correct include paths.
+  public_deps = [
+    ":async",
+    ":async_default",
+  ]
+  sources = [
+    "builder.cpp",
+    "decoding.cpp",
+    "encoding.cpp",
+    "formatting.cpp",
+    "message.cpp",
+    "message_buffer.cpp",
+    "message_builder.cpp",
+    "validating.cpp",
+  ]
+}
+
+fuchsia_sdk_pkg("fidl_cpp") {
+  public_deps = [
+    ":fidl",
+    ":zx",
+  ]
+  sources = [
+    "clone.cc",
+    "coding_traits.cc",
+    "decoder.cc",
+    "encoder.cc",
+    "internal",
+    "internal/logging.cc",
+    "internal/message_handler.cc",
+    "internal/message_reader.cc",
+    "internal/pending_response.cc",
+    "internal/proxy_controller.cc",
+    "internal/stub.cc",
+    "internal/stub_controller.cc",
+    "internal/synchronous_proxy.cc",
+    "internal/weak_stub_controller.cc",
+    "string.cc",
   ]
 }

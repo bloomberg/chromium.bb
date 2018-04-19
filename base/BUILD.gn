@@ -1353,7 +1353,7 @@ jumbo_component("base") {
     libs = [ "launchpad" ]
 
     public_deps += [ "//third_party/fuchsia-sdk:async" ]
-    deps += [ "//third_party/fuchsia-sdk:async" ]
+    deps += [ "//third_party/fuchsia-sdk:async_default" ]
   }
 
   # NaCl.
@@ -2525,7 +2525,10 @@ test("base_unittests") {
     ]
 
     sources += [ "fuchsia/async_dispatcher_unittest.cc" ]
-    deps += [ "//third_party/fuchsia-sdk:async" ]
+    deps += [
+      "//third_party/fuchsia-sdk:async",
+      "//third_party/fuchsia-sdk:async_default",
+    ]
   }
 
   if (is_android) {

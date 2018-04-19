@@ -4,6 +4,7 @@
 
 #include "base/fuchsia/async_dispatcher.h"
 
+#include <lib/async/default.h>
 #include <lib/async/task.h>
 #include <lib/async/wait.h>
 #include <zircon/syscalls.h>

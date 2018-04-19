@@ -5,7 +5,6 @@
 #ifndef BASE_FUCHSIA_ASYNC_DISPATCHER_H_
 #define BASE_FUCHSIA_ASYNC_DISPATCHER_H_
 
-#include <lib/async/default.h>
 #include <lib/async/dispatcher.h>
 
 #include "base/containers/linked_list.h"
