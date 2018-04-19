@@ -516,10 +516,14 @@ void ShellSurfaceBase::UpdateSystemModal() {
 
 // static
 void ShellSurfaceBase::SetApplicationId(aura::Window* window,
-                                        const std::string& id) {
+                                        const base::Optional<std::string>& id) {
   TRACE_EVENT1("exo", "ShellSurfaceBase::SetApplicationId", "application_id",
-               id);
-  window->SetProperty(kApplicationIdKey, new std::string(id));
+               id ? *id : "null");
+
+  if (id)
+    window->SetProperty(kApplicationIdKey, new std::string(*id));
+  else
+    window->ClearProperty(kApplicationIdKey);
 }
 
 // static
@@ -528,18 +532,27 @@ const std::string* ShellSurfaceBase::GetApplicationId(
   return window->GetProperty(kApplicationIdKey);
 }
 
-void ShellSurfaceBase::SetApplicationId(const std::string& application_id) {
+void ShellSurfaceBase::SetApplicationId(const char* application_id) {
   // Store the value in |application_id_| in case the window does not exist yet.
-  application_id_ = application_id;
+  if (application_id)
+    application_id_ = std::string(application_id);
+  else
+    application_id_.reset();
+
   if (widget_ && widget_->GetNativeWindow())
-    SetApplicationId(widget_->GetNativeWindow(), application_id);
+    SetApplicationId(widget_->GetNativeWindow(), application_id_);
 }
 
 // static
 void ShellSurfaceBase::SetStartupId(aura::Window* window,
-                                    const std::string& id) {
-  TRACE_EVENT1("exo", "ShellSurfaceBase::SetStartupId", "startup_id", id);
-  window->SetProperty(kStartupIdKey, new std::string(id));
+                                    const base::Optional<std::string>& id) {
+  TRACE_EVENT1("exo", "ShellSurfaceBase::SetStartupId", "startup_id",
+               id ? *id : "null");
+
+  if (id)
+    window->SetProperty(kStartupIdKey, new std::string(*id));
+  else
+    window->ClearProperty(kStartupIdKey);
 }
 
 // static
@@ -549,9 +562,13 @@ const std::string* ShellSurfaceBase::GetStartupId(aura::Window* window) {
 
 void ShellSurfaceBase::SetStartupId(const char* startup_id) {
   // Store the value in |startup_id_| in case the window does not exist yet.
-  startup_id_ = std::string(startup_id);
+  if (startup_id)
+    startup_id_ = std::string(startup_id);
+  else
+    startup_id_.reset();
+
   if (widget_ && widget_->GetNativeWindow())
-    SetStartupId(widget_->GetNativeWindow(), startup_id);
+    SetStartupId(widget_->GetNativeWindow(), startup_id_);
 }
 
 void ShellSurfaceBase::Close() {
