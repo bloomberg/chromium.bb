@@ -1474,6 +1474,7 @@ void WebFormControlElementToFormField(
       field->text_direction = base::i18n::LEFT_TO_RIGHT;
     else if (element.AlignmentForFormData() == "right")
       field->text_direction = base::i18n::RIGHT_TO_LEFT;
+    field->is_enabled = element.IsEnabled();
   }
 
   if (IsAutofillableInputElement(input_element)) {

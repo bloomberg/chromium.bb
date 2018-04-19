@@ -190,6 +190,10 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.text_direction;
   }
 
+  static bool is_enabled(const autofill::FormFieldData& r) {
+    return r.is_enabled;
+  }
+
   static const std::vector<base::string16>& option_values(
       const autofill::FormFieldData& r) {
     return r.option_values;

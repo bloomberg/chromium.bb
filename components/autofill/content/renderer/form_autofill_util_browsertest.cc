@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/test/render_view_test.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -262,5 +263,44 @@ TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
         form_target, stop_words, &label, &label_source));
     EXPECT_EQ(base::UTF8ToUTF16(kLabelSourceExpectedLabel), label);
     EXPECT_EQ(test_case.label_source, label_source);
+  }
+}
+
+TEST_F(FormAutofillUtilsTest, IsEnabled) {
+  LoadHTML(
+      "<input type='text' id='name1'>"
+      "<input type='password' disabled id='name2'>"
+      "<input type='password' id='name3'>"
+      "<input type='text' id='name4' disabled>");
+
+  const std::vector<blink::WebElement> dummy_fieldsets;
+
+  WebLocalFrame* web_frame = GetMainFrame();
+  ASSERT_TRUE(web_frame);
+  std::vector<blink::WebFormControlElement> control_elements;
+  blink::WebElementCollection inputs =
+      web_frame->GetDocument().GetElementsByHTMLTagName("input");
+  for (blink::WebElement element = inputs.FirstItem(); !element.IsNull();
+       element = inputs.NextItem()) {
+    control_elements.push_back(element.To<blink::WebFormControlElement>());
+  }
+
+  autofill::FormData target;
+  EXPECT_TRUE(
+      autofill::form_util::UnownedPasswordFormElementsAndFieldSetsToFormData(
+          dummy_fieldsets, control_elements, nullptr, web_frame->GetDocument(),
+          nullptr, autofill::form_util::EXTRACT_NONE, &target, nullptr));
+  const struct {
+    const char* const name;
+    bool enabled;
+  } kExpectedFields[] = {
+      {"name1", true}, {"name2", false}, {"name3", true}, {"name4", false},
+  };
+  const size_t number_of_cases = arraysize(kExpectedFields);
+  ASSERT_EQ(number_of_cases, target.fields.size());
+  for (size_t i = 0; i < number_of_cases; ++i) {
+    EXPECT_EQ(base::UTF8ToUTF16(kExpectedFields[i].name),
+              target.fields[i].name);
+    EXPECT_EQ(kExpectedFields[i].enabled, target.fields[i].is_enabled);
   }
 }

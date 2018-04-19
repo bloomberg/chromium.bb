@@ -466,14 +466,13 @@ bool GetPasswordForm(
     const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache) {
-  bool form_has_password_field =
-      std::find_if(form.control_elements.begin(), form.control_elements.end(),
-                   [](WebFormControlElement e) {
-                     WebInputElement* input_element =
-                         GetEnabledTextInputFieldOrNull(&e);
-                     return input_element &&
-                            input_element->IsPasswordFieldForAutofill();
-                   }) != form.control_elements.end();
+  const bool form_has_password_field =
+      std::find_if(password_form->form_data.fields.begin(),
+                   password_form->form_data.fields.end(),
+                   [](const FormFieldData& field) {
+                     return field.is_enabled &&
+                            field.form_control_type == "password";
+                   }) != password_form->form_data.fields.end();
   if (!form_has_password_field)
     return false;
 

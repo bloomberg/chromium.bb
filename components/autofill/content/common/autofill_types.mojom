@@ -120,6 +120,7 @@ struct FormFieldData {
   bool should_autocomplete;
   RoleAttribute role;
   mojo_base.mojom.TextDirection text_direction;
+  bool is_enabled;
 
   array<mojo_base.mojom.String16> option_values;
   array<mojo_base.mojom.String16> option_contents;
