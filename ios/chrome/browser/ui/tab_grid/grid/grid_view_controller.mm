@@ -126,11 +126,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (BOOL)isSelectedCellVisible {
-  if (self.collectionView.indexPathsForSelectedItems.count == 0)
+  // The collection view's selected item may not have updated yet, so use the
+  // selected index.
+  NSUInteger selectedIndex = self.selectedIndex;
+  if (selectedIndex == NSNotFound)
     return NO;
+  NSIndexPath* selectedIndexPath = CreateIndexPath(selectedIndex);
   return [self.collectionView.indexPathsForVisibleItems
-      containsObject:self.collectionView.indexPathsForSelectedItems
-                         .firstObject];
+      containsObject:selectedIndexPath];
 }
 
 - (GridTransitionLayout*)transitionLayout {
