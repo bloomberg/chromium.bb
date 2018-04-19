@@ -127,6 +127,17 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
   }
 }
 
+VaapiPicture* VaapiVideoDecodeAccelerator::PictureById(
+    int32_t picture_buffer_id) {
+  PictureMap::iterator it = picture_map_.find(picture_buffer_id);
+  if (it == picture_map_.end()) {
+    VLOGF(4) << "Picture id " << picture_buffer_id << " does not exist";
+    return NULL;
+  }
+
+  return it->second.get();
+}
+
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb)
@@ -206,14 +217,11 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
 void VaapiVideoDecodeAccelerator::OutputPicture(
     const scoped_refptr<VASurface>& va_surface,
     int32_t input_id,
-    gfx::Rect visible_rect) {
+    gfx::Rect visible_rect,
+    VaapiPicture* picture) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  VaapiPicture* picture = PictureById(available_picture_buffers_.front());
-  DCHECK(picture);
-  available_picture_buffers_.pop();
-
-  const int32_t output_id = picture->picture_buffer_id();
+  int32_t output_id = picture->picture_buffer_id();
 
   VLOGF(4) << "Outputting VASurface " << va_surface->id()
            << " into pixmap bound to picture buffer id " << output_id;
@@ -247,9 +255,14 @@ void VaapiVideoDecodeAccelerator::TryOutputPicture() {
   if (pending_output_cbs_.empty() || available_picture_buffers_.empty())
     return;
 
-  auto output_cb = std::move(pending_output_cbs_.front());
+  OutputCB output_cb = pending_output_cbs_.front();
   pending_output_cbs_.pop();
-  std::move(output_cb).Run();
+
+  VaapiPicture* picture = PictureById(available_picture_buffers_.front());
+  DCHECK(picture);
+  available_picture_buffers_.pop();
+
+  output_cb.Run(picture);
 
   if (finish_flush_pending_ && pending_output_cbs_.empty())
     FinishFlush();
@@ -585,7 +598,7 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   TRACE_EVENT1("media,gpu", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
 
-  if (!base::ContainsKey(picture_map_, picture_buffer_id)) {
+  if (!PictureById(picture_buffer_id)) {
     // It's possible that we've already posted a DismissPictureBuffer for this
     // picture, but it has not yet executed when this ReusePictureBuffer
     // was posted to us by the client. In that case just ignore this (we've
@@ -839,17 +852,6 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateVASurface() {
 VideoDecodeAccelerator::SupportedProfiles
 VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
   return VaapiWrapper::GetSupportedDecodeProfiles();
-}
-
-VaapiPicture* VaapiVideoDecodeAccelerator::PictureById(
-    int32_t picture_buffer_id) {
-  PictureMap::iterator it = picture_map_.find(picture_buffer_id);
-  if (it == picture_map_.end()) {
-    VLOGF(4) << "Picture id " << picture_buffer_id << " does not exist";
-    return nullptr;
-  }
-
-  return it->second.get();
 }
 
 }  // namespace media
