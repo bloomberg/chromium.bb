@@ -43,6 +43,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   base::TimeDelta GetStandardUploadInterval() override;
   bool IsReportingPolicyManaged() override;
   EnableMetricsDefault GetMetricsReportingDefaultState() override;
+  std::string GetAppPackageName() override;
 
   const std::string& get_client_id() const { return client_id_; }
   // Returns a weak ref to the last created uploader.

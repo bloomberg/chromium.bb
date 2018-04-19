@@ -156,6 +156,7 @@ TEST_F(MetricsLogTest, BasicRecord) {
 #if defined(OS_ANDROID)
   system_profile->mutable_os()->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
+  system_profile->set_app_package_name("test app");
 #endif
 
   // Hard to mock.

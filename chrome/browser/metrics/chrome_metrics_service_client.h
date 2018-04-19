@@ -90,6 +90,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   bool IsHistorySyncEnabledOnAllProfiles() override;
   bool IsExtensionSyncEnabledOnAllProfiles() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
+  std::string GetAppPackageName() override;
   static void SetNotificationListenerSetupFailedForTesting(
       bool simulate_failure);
 
