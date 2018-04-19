@@ -219,6 +219,7 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   if (is_touch_ui) {
     fill = GetTouchOptimizedButtonPath(0 /* button_y */, scale,
+                                       false /* extend_to_top */,
                                        true /* for_fill */);
   } else {
     // Non-touch optimized fill.
@@ -377,7 +378,8 @@ void NewTabButton::GetBorderPath(float button_y,
                                  bool extend_to_top,
                                  SkPath* path) const {
   if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
-    *path = GetTouchOptimizedButtonPath(button_y, scale, false /* for_fill */);
+    *path = GetTouchOptimizedButtonPath(button_y, scale, extend_to_top,
+                                        false /* for_fill */);
     return;
   }
 
@@ -522,6 +524,7 @@ void NewTabButton::InitButtonIcons() {
 
 SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
                                                  float scale,
+                                                 bool extend_to_top,
                                                  bool for_fill) const {
   DCHECK(ui::MaterialDesignController::IsTouchOptimizedUiEnabled());
 
@@ -530,9 +533,9 @@ SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
       2 * radius +
       (is_incognito_ ? scale * (incognito_icon_.width() + kDistanceBetweenIcons)
                      : 0);
+
   const SkRect button_rect =
       SkRect::MakeXYWH(0, button_y, rect_width, 2 * radius);
-
   SkRRect rrect = SkRRect::MakeRectXY(button_rect, radius, radius);
   // Inset by 1px for a fill path to give room for the stroke to show up. The
   // stroke width is 1px regardless of the device scale factor.
@@ -541,6 +544,15 @@ SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
 
   SkPath path;
   path.addRRect(rrect, SkPath::kCW_Direction);
+
+  if (extend_to_top) {
+    SkPath extension_path;
+    extension_path.addRect(
+        SkRect::MakeXYWH(0, 0, rect_width, button_y + radius),
+        SkPath::kCW_Direction);
+    Op(path, extension_path, kUnion_SkPathOp, &path);
+  }
+
   path.close();
   return path;
 }
