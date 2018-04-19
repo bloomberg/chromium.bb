@@ -2747,6 +2747,7 @@ test("unit_tests") {
     "//components/safe_browsing:features",
     "//components/safe_browsing/db",
     "//components/safe_browsing/db:test_database_manager",
+    "//components/safe_browsing/password_protection:mock_password_protection",
     "//components/spellcheck:buildflags",
     "//components/strings",
     "//components/subresource_filter/core/browser:test_support",

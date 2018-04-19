@@ -44,6 +44,7 @@ source_set("password_protection_unittest") {
       "password_protection_service_unittest.cc",
     ]
     deps = [
+      ":mock_password_protection",
       ":password_protection",
       "//base",
       "//base/test:test_support",
@@ -59,6 +60,26 @@ source_set("password_protection_unittest") {
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/protobuf:protobuf_lite",
+    ]
+  }
+}
+
+source_set("mock_password_protection") {
+  testonly = true
+  if (!is_android && !is_ios) {
+    sources = [
+      "mock_password_protection_service.cc",
+      "mock_password_protection_service.h",
+    ]
+    deps = [
+      ":password_protection",
+      "//base",
+      "//components/content_settings/core/browser:browser",
+      "//components/safe_browsing/db:database_manager",
+      "//net:test_support",
+      "//services/network/public/cpp:cpp",
+      "//testing/gmock",
+      "//testing/gtest",
     ]
   }
 }

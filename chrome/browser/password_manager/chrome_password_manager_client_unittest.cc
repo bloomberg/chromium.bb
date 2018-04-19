@@ -58,8 +58,7 @@
 #endif
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
-#include "components/safe_browsing/db/database_manager.h"
-#include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #endif
 
 using autofill::PasswordForm;
@@ -73,69 +72,6 @@ using testing::Return;
 using testing::_;
 
 namespace {
-#if defined(SAFE_BROWSING_DB_LOCAL)
-class MockPasswordProtectionService
-    : public safe_browsing::PasswordProtectionService {
- public:
-  MockPasswordProtectionService()
-      : safe_browsing::PasswordProtectionService(nullptr,
-                                                 nullptr,
-                                                 nullptr,
-                                                 nullptr) {}
-
-  ~MockPasswordProtectionService() override {}
-
-  MOCK_METHOD3(FillReferrerChain,
-               void(const GURL&,
-                    SessionID,
-                    safe_browsing::LoginReputationClientRequest::Frame*));
-  MOCK_METHOD0(IsExtendedReporting, bool());
-  MOCK_METHOD0(IsIncognito, bool());
-  MOCK_METHOD2(IsPingingEnabled,
-               bool(safe_browsing::LoginReputationClientRequest::TriggerType,
-                    RequestOutcome*));
-  MOCK_METHOD0(IsHistorySyncEnabled, bool());
-  MOCK_METHOD3(MaybeLogPasswordReuseLookupEvent,
-               void(WebContents*,
-                    PasswordProtectionService::RequestOutcome,
-                    const safe_browsing::LoginReputationClientResponse*));
-  MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(WebContents*));
-  MOCK_METHOD4(MaybeStartPasswordFieldOnFocusRequest,
-               void(WebContents*, const GURL&, const GURL&, const GURL&));
-  MOCK_METHOD5(MaybeStartProtectedPasswordEntryRequest,
-               void(WebContents*,
-                    const GURL&,
-                    bool,
-                    const std::vector<std::string>&,
-                    bool));
-  MOCK_METHOD3(ShowPhishingInterstitial,
-               void(const GURL&, const std::string&, content::WebContents*));
-  MOCK_CONST_METHOD0(GetSyncAccountType,
-                     safe_browsing::LoginReputationClientRequest::
-                         PasswordReuseEvent::SyncAccountType());
-  MOCK_METHOD2(ShowModalWarning,
-               void(content::WebContents*, const std::string&));
-  MOCK_METHOD3(OnUserAction,
-               void(content::WebContents*, WarningUIType, WarningAction));
-  MOCK_METHOD2(UpdateSecurityState,
-               void(safe_browsing::SBThreatType, content::WebContents*));
-  MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
-  MOCK_METHOD2(RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
-               void(bool, const history::URLRows&));
-  MOCK_METHOD0(IsEventLoggingEnabled, bool());
-  MOCK_CONST_METHOD1(
-      GetPasswordProtectionTriggerPref,
-      safe_browsing::PasswordProtectionTrigger(const std::string& pref_name));
-  MOCK_CONST_METHOD1(GetPasswordProtectionLoginURLsPref,
-                     void(std::vector<GURL>*));
-  MOCK_CONST_METHOD2(IsURLWhitelistedForPasswordEntry,
-                     bool(const GURL&, RequestOutcome*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionService);
-};
-#endif
-
 // TODO(vabr): Get rid of the mocked client in the client's own test, see
 // http://crbug.com/474577.
 class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
@@ -147,7 +83,7 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
     ON_CALL(*this, GetMainFrameCertStatus()).WillByDefault(testing::Return(0));
 #if defined(SAFE_BROWSING_DB_LOCAL)
     password_protection_service_ =
-        std::make_unique<MockPasswordProtectionService>();
+        std::make_unique<safe_browsing::MockPasswordProtectionService>();
 #endif
   }
   ~MockChromePasswordManagerClient() override {}
@@ -158,14 +94,15 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
     return password_protection_service_.get();
   }
 
-  MockPasswordProtectionService* password_protection_service() {
+  safe_browsing::MockPasswordProtectionService* password_protection_service() {
     return password_protection_service_.get();
   }
 #endif
 
  private:
 #if defined(SAFE_BROWSING_DB_LOCAL)
-  std::unique_ptr<MockPasswordProtectionService> password_protection_service_;
+  std::unique_ptr<safe_browsing::MockPasswordProtectionService>
+      password_protection_service_;
 #endif
   DISALLOW_COPY_AND_ASSIGN(MockChromePasswordManagerClient);
 };

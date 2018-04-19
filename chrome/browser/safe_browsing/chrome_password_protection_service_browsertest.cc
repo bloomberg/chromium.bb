@@ -217,9 +217,9 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
   GetSecurityInfo(web_contents, &security_info);
-  ASSERT_EQ(security_state::DANGEROUS, security_info.security_level);
-  // TODO(jialiul): Check malicious content status here after crbug.com/762738
-  // closes.
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
+            security_info.malicious_content_status);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
