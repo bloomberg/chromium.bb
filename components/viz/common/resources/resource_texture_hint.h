@@ -12,9 +12,6 @@ namespace viz {
 struct ResourceTextureHint {
   enum {
     kDefault = 0,
-    kMipmap = 1 << 0,
-    kFramebuffer = 1 << 1,
-    kOverlay = 1 << 2,
   };
 
   ResourceTextureHint() : value_(kDefault) {}

@@ -1614,7 +1614,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   ResourceId mask = child_resource_provider_->CreateGpuTextureResource(
       gfx::Size(20, 12), ResourceTextureHint::kDefault,
       child_resource_provider_->best_texture_format(), gfx::ColorSpace());
-  child_resource_provider_->AllocateForTesting(mask);
 
   // Return the mapped resource id.
   cc::ResourceProvider::ResourceIdMap resource_map =

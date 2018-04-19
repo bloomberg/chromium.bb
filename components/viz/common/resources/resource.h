@@ -66,7 +66,6 @@ struct VIZ_COMMON_EXPORT Resource {
     // external resource for others to wait on.
     SYNCHRONIZED,
   };
-  enum MipmapState { INVALID, GENERATE, VALID };
 
   Resource(const gfx::Size& size,
            Origin origin,
@@ -103,12 +102,8 @@ struct VIZ_COMMON_EXPORT Resource {
   // SyncToken waited on in order to be synchronized for use.
   bool ShouldWaitSyncToken() const;
   int8_t* GetSyncTokenData();
-  void SetGenerateMipmap();
 
   // Bitfield flags. ======
-  // When true, the resource is currently being written to. Used to prevent
-  // misuse while the resource is being modified.
-  bool locked_for_write : 1;
   // When true, the resource is currently being used externally.
   bool locked_for_external_use : 1;
   // When true the resource can not be used and must only be deleted. This is
@@ -116,8 +111,6 @@ struct VIZ_COMMON_EXPORT Resource {
   bool lost : 1;
   // When the resource should be deleted until it is actually reaped.
   bool marked_for_deletion : 1;
-  // When false, the resource backing hasn't been allocated yet.
-  bool allocated : 1;
   // Tracks if a gpu fence needs to be used for reading a GpuMemoryBuffer-
   // backed or texture-backed resource.
   bool read_lock_fences_enabled : 1;
@@ -210,8 +203,6 @@ struct VIZ_COMMON_EXPORT Resource {
   // The color space for all resource types, to control how the resource should
   // be drawn to output device.
   gfx::ColorSpace color_space;
-  // Used to track generating mipmaps for texture-backed resources.
-  MipmapState mipmap_state = INVALID;
 
  private:
   // Tracks if a sync token needs to be waited on before using the resource.

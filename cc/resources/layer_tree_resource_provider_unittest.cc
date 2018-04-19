@@ -361,7 +361,6 @@ TEST_P(LayerTreeResourceProviderTest,
     norm_id = provider().CreateBitmapResource(
         gfx::Size(3, 4), gfx::ColorSpace(), viz::RGBA_8888);
   }
-  provider().AllocateForTesting(norm_id);
 
   // Export the resources.
   std::vector<viz::ResourceId> to_send = {tran_id, norm_id};

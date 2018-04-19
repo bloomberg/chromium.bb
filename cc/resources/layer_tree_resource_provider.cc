@@ -151,22 +151,6 @@ gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
   return sync_token;
 }
 
-gpu::SyncToken LayerTreeResourceProvider::GetSyncTokenForResources(
-    const ResourceIdArray& resource_ids) {
-  gpu::SyncToken latest_sync_token;
-  for (viz::ResourceId id : resource_ids) {
-    const gpu::SyncToken& sync_token = GetResource(id)->sync_token();
-    if (sync_token.release_count() > latest_sync_token.release_count())
-      latest_sync_token = sync_token;
-  }
-  return latest_sync_token;
-}
-
-gfx::ColorSpace LayerTreeResourceProvider::GetResourceColorSpaceForRaster(
-    const viz::internal::Resource* resource) const {
-  return resource->color_space;
-}
-
 void LayerTreeResourceProvider::PrepareSendToParent(
     const ResourceIdArray& export_ids,
     std::vector<viz::TransferableResource>* list) {
@@ -193,22 +177,18 @@ void LayerTreeResourceProvider::PrepareSendToParent(
   // Lazily create any mailboxes and verify all unverified sync tokens.
   std::vector<GLbyte*> unverified_sync_tokens;
   std::vector<viz::internal::Resource*> need_synchronization_resources;
-  for (auto& pair : resources) {
-    viz::internal::Resource* resource = pair.first;
-    if (!resource->is_gpu_resource_type())
-      continue;
+  if (settings_.delegated_sync_points_required) {
+    for (auto& pair : resources) {
+      viz::internal::Resource* resource = pair.first;
+      if (!resource->is_gpu_resource_type())
+        continue;
 
-    CreateMailbox(resource);
-
-    if (settings_.delegated_sync_points_required) {
       if (resource->needs_sync_token()) {
         need_synchronization_resources.push_back(resource);
       } else if (!resource->sync_token().verified_flush()) {
         unverified_sync_tokens.push_back(resource->GetSyncTokenData());
       }
     }
-  }
-  if (settings_.delegated_sync_points_required) {
     for (ImportedResource* imported : imports) {
       if (!imported->resource.is_software &&
           !imported->resource.mailbox_holder.sync_token.verified_flush()) {
@@ -349,24 +329,32 @@ viz::ResourceId LayerTreeResourceProvider::CreateGpuTextureResource(
   DCHECK_LE(size.height(), settings_.max_texture_size);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(IsTextureFormatSupported(format));
-
-  bool use_overlay = settings_.use_gpu_memory_buffer_resources ||
-                     (hint & viz::ResourceTextureHint::kOverlay);
-  DCHECK(!use_overlay || !(hint & viz::ResourceTextureHint::kMipmap));
+  DCHECK_NE(format, viz::ETC1);
 
   viz::ResourceId id = next_id_++;
   viz::internal::Resource* resource =
       InsertResource(id, viz::internal::Resource(
                              size, viz::internal::Resource::INTERNAL, hint,
                              viz::ResourceType::kTexture, format, color_space));
-  if (use_overlay && settings_.use_texture_storage_image &&
-      viz::IsGpuMemoryBufferFormatSupported(format)) {
-    resource->target = gpu::GetBufferTextureTarget(
-        gfx::BufferUsage::SCANOUT, BufferFormat(format),
-        compositor_context_provider_->ContextCapabilities());
-    resource->buffer_format = BufferFormat(format);
-    resource->is_overlay_candidate = true;
-  }
+  GLES2Interface* gl = ContextGL();
+  DCHECK(gl);
+
+  // Create and set texture properties. Allocation of the texture backing is
+  // delayed until needed.
+  gl->GenTextures(1, &resource->gl_id);
+  gl->BindTexture(resource->target, resource->gl_id);
+  gl->TexParameteri(resource->target, GL_TEXTURE_MIN_FILTER,
+                    resource->original_filter);
+  gl->TexParameteri(resource->target, GL_TEXTURE_MAG_FILTER,
+                    resource->original_filter);
+  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  gl->TexImage2D(resource->target, 0, GLInternalFormat(format), size.width(),
+                 size.height(), 0, GLDataFormat(format), GLDataType(format),
+                 nullptr);
+  gl->GenMailboxCHROMIUM(resource->mailbox.name);
+  gl->ProduceTextureDirectCHROMIUM(resource->gl_id, resource->mailbox.name);
+  resource->SetLocallyUsed();
   return id;
 }
 
@@ -403,7 +391,6 @@ void LayerTreeResourceProvider::DeleteResource(viz::ResourceId id) {
   viz::internal::Resource* resource = &it->second;
   DCHECK(!resource->marked_for_deletion);
   DCHECK_EQ(resource->imported_count, 0);
-  DCHECK(!resource->locked_for_write);
 
   if (resource->exported_count > 0) {
     resource->marked_for_deletion = true;
@@ -441,115 +428,34 @@ void LayerTreeResourceProvider::CopyToResource(viz::ResourceId id,
                                                const uint8_t* image,
                                                const gfx::Size& image_size) {
   viz::internal::Resource* resource = GetResource(id);
-  DCHECK(!resource->locked_for_write);
   DCHECK_EQ(resource->origin, viz::internal::Resource::INTERNAL);
-  DCHECK_NE(resource->synchronization_state(),
-            viz::internal::Resource::NEEDS_WAIT);
   DCHECK_EQ(resource->exported_count, 0);
-
+  DCHECK(!resource->lost);
+  DCHECK(!resource->ShouldWaitSyncToken());
   DCHECK_EQ(image_size.width(), resource->size.width());
   DCHECK_EQ(image_size.height(), resource->size.height());
 
   if (resource->type == viz::ResourceType::kBitmap) {
     DCHECK_EQ(viz::ResourceType::kBitmap, resource->type);
-    DCHECK(resource->allocated);
     DCHECK_EQ(viz::RGBA_8888, resource->format);
     SkImageInfo source_info =
         SkImageInfo::MakeN32Premul(image_size.width(), image_size.height());
     size_t image_stride = image_size.width() * 4;
 
-    ScopedWriteLockSoftware lock(this, id);
-    SkCanvas dest(lock.sk_bitmap());
+    SkBitmap sk_bitmap;
+    PopulateSkBitmapWithResource(&sk_bitmap, resource);
+    SkCanvas dest(sk_bitmap);
     dest.writePixels(source_info, image, image_stride, 0, 0);
   } else {
-    // No sync token needed because the lock will set synchronization state to
-    // LOCALLY_USED and a sync token will be generated in PrepareSendToParent.
-    ScopedWriteLockGL lock(this, id);
-    GLuint texture_id = lock.GetTexture();
+    GLuint texture_id = resource->gl_id;
     DCHECK(texture_id);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     gl->BindTexture(resource->target, texture_id);
-    if (resource->format == viz::ETC1) {
-      DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
-      int image_bytes =
-          viz::ResourceSizes::CheckedSizeInBytes<int>(image_size, viz::ETC1);
-      gl->CompressedTexImage2D(resource->target, 0, GLInternalFormat(viz::ETC1),
-                               image_size.width(), image_size.height(), 0,
-                               image_bytes, image);
-      lock.set_allocated();
-    } else {
-      gl->TexSubImage2D(resource->target, 0, 0, 0, image_size.width(),
-                        image_size.height(), GLDataFormat(resource->format),
-                        GLDataType(resource->format), image);
-    }
-  }
-  DCHECK(resource->allocated);
-}
-
-void LayerTreeResourceProvider::CreateForTesting(viz::ResourceId id) {
-  CreateTexture(GetResource(id));
-}
-
-void LayerTreeResourceProvider::CreateTexture(
-    viz::internal::Resource* resource) {
-  if (!resource->is_gpu_resource_type())
-    return;
-
-  if (resource->gl_id)
-    return;
-
-  DCHECK_EQ(resource->origin, viz::internal::Resource::INTERNAL);
-  DCHECK(resource->mailbox.IsZero());
-
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-
-  // Create and set texture properties. Allocation of the texture backing is
-  // delayed until needed.
-  gl->GenTextures(1, &resource->gl_id);
-  gl->BindTexture(resource->target, resource->gl_id);
-  gl->TexParameteri(resource->target, GL_TEXTURE_MIN_FILTER,
-                    resource->original_filter);
-  gl->TexParameteri(resource->target, GL_TEXTURE_MAG_FILTER,
-                    resource->original_filter);
-  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  if (settings_.use_texture_usage_hint &&
-      (resource->hint & viz::ResourceTextureHint::kFramebuffer)) {
-    gl->TexParameteri(resource->target, GL_TEXTURE_USAGE_ANGLE,
-                      GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
-  }
-}
-
-void LayerTreeResourceProvider::CreateMailbox(
-    viz::internal::Resource* resource) {
-  if (!resource->is_gpu_resource_type())
-    return;
-
-  if (!resource->mailbox.IsZero())
-    return;
-
-  CreateTexture(resource);
-
-  DCHECK(resource->gl_id);
-  DCHECK_EQ(resource->origin, viz::internal::Resource::INTERNAL);
-
-  gpu::gles2::GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-  gl->GenMailboxCHROMIUM(resource->mailbox.name);
-  gl->ProduceTextureDirectCHROMIUM(resource->gl_id, resource->mailbox.name);
-  resource->SetLocallyUsed();
-}
-
-void LayerTreeResourceProvider::AllocateForTesting(viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
-  if (!resource->allocated) {
-    // Software and external resources are marked allocated on creation.
-    DCHECK(resource->is_gpu_resource_type());
-    DCHECK_EQ(resource->origin, viz::internal::Resource::INTERNAL);
-    ScopedWriteLockGL resource_lock(this, id);
-    resource_lock.GetTexture();  // Allocates texture.
+    gl->TexSubImage2D(resource->target, 0, 0, 0, image_size.width(),
+                      image_size.height(), GLDataFormat(resource->format),
+                      GLDataType(resource->format), image);
+    resource->SetLocallyUsed();
   }
 }
 
@@ -557,15 +463,13 @@ void LayerTreeResourceProvider::TransferResource(
     viz::internal::Resource* source,
     viz::ResourceId id,
     viz::TransferableResource* resource) {
-  DCHECK(!source->locked_for_write);
-  DCHECK(source->allocated);
   resource->id = id;
   resource->format = source->format;
   resource->buffer_format = source->buffer_format;
   resource->filter = source->filter;
   resource->size = source->size;
   resource->read_lock_fences_enabled = source->read_lock_fences_enabled;
-  resource->is_overlay_candidate = source->is_overlay_candidate;
+  resource->is_overlay_candidate = false;
   resource->color_space = source->color_space;
 
   if (source->type == viz::ResourceType::kBitmap) {
@@ -582,32 +486,6 @@ void LayerTreeResourceProvider::TransferResource(
     resource->mailbox_holder.texture_target = source->target;
     resource->mailbox_holder.sync_token = source->sync_token();
   }
-}
-
-bool LayerTreeResourceProvider::CanLockForWrite(viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
-  return !resource->locked_for_write && !resource->exported_count &&
-         resource->origin == viz::internal::Resource::INTERNAL &&
-         !resource->lost;
-}
-
-viz::internal::Resource* LayerTreeResourceProvider::LockForWrite(
-    viz::ResourceId id) {
-  DCHECK(CanLockForWrite(id));
-  viz::internal::Resource* resource = GetResource(id);
-  WaitSyncTokenInternal(resource);
-  resource->SetLocallyUsed();
-  resource->locked_for_write = true;
-  resource->mipmap_state = viz::internal::Resource::INVALID;
-  return resource;
-}
-
-void LayerTreeResourceProvider::UnlockForWrite(
-    viz::internal::Resource* resource) {
-  DCHECK(resource->locked_for_write);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK(resource->origin == viz::internal::Resource::INTERNAL);
-  resource->locked_for_write = false;
 }
 
 void LayerTreeResourceProvider::FlushPendingDeletions() const {
@@ -688,11 +566,6 @@ viz::ResourceFormat LayerTreeResourceProvider::YuvResourceFormat(
   }
 }
 
-bool LayerTreeResourceProvider::IsLost(viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
-  return resource->lost;
-}
-
 void LayerTreeResourceProvider::LoseResourceForTesting(viz::ResourceId id) {
   auto it = imported_resources_.find(id);
   if (it != imported_resources_.end()) {
@@ -711,123 +584,6 @@ void LayerTreeResourceProvider::EnableReadLockFencesForTesting(
   viz::internal::Resource* resource = GetResource(id);
   DCHECK(resource);
   resource->read_lock_fences_enabled = true;
-}
-
-LayerTreeResourceProvider::ScopedWriteLockGpu::ScopedWriteLockGpu(
-    LayerTreeResourceProvider* resource_provider,
-    viz::ResourceId resource_id)
-    : resource_provider_(resource_provider), resource_id_(resource_id) {
-  viz::internal::Resource* resource =
-      resource_provider->LockForWrite(resource_id);
-  DCHECK_EQ(resource->type, viz::ResourceType::kTexture);
-  resource_provider->CreateTexture(resource);
-  size_ = resource->size;
-  format_ = resource->format;
-  color_space_ = resource_provider_->GetResourceColorSpaceForRaster(resource);
-  texture_id_ = resource->gl_id;
-  target_ = resource->target;
-  hint_ = resource->hint;
-  mailbox_ = resource->mailbox;
-  is_overlay_ = resource->is_overlay_candidate;
-  allocated_ = resource->allocated;
-}
-
-LayerTreeResourceProvider::ScopedWriteLockGpu::~ScopedWriteLockGpu() {
-  viz::internal::Resource* resource =
-      resource_provider_->GetResource(resource_id_);
-  DCHECK(resource->locked_for_write);
-  resource->allocated = allocated_;
-  resource->mailbox = mailbox_;
-  // Don't set empty sync token otherwise resource will be marked synchronized.
-  if (has_sync_token_)
-    resource->UpdateSyncToken(sync_token_);
-  if (synchronized_)
-    resource->SetSynchronized();
-  if (generate_mipmap_)
-    resource->SetGenerateMipmap();
-  resource_provider_->UnlockForWrite(resource);
-}
-
-SkColorType LayerTreeResourceProvider::ScopedWriteLockGpu::ColorType() const {
-  return ResourceFormatToClosestSkColorType(format_);
-}
-
-void LayerTreeResourceProvider::ScopedWriteLockGpu::CreateMailbox() {
-  if (!mailbox_.IsZero())
-    return;
-  gpu::gles2::GLES2Interface* gl = resource_provider_->ContextGL();
-  DCHECK(gl);
-  gl->GenMailboxCHROMIUM(mailbox_.name);
-  gl->ProduceTextureDirectCHROMIUM(texture_id_, mailbox_.name);
-}
-
-LayerTreeResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
-    LayerTreeResourceProvider* resource_provider,
-    viz::ResourceId resource_id)
-    : ScopedWriteLockGpu(resource_provider, resource_id) {}
-
-LayerTreeResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {}
-
-GLuint LayerTreeResourceProvider::ScopedWriteLockGL::GetTexture() {
-  LazyAllocate(resource_provider_->ContextGL(), texture_id_);
-  return texture_id_;
-}
-
-void LayerTreeResourceProvider::ScopedWriteLockGL::LazyAllocate(
-    gpu::gles2::GLES2Interface* gl,
-    GLuint texture_id) {
-  // ETC1 resources cannot be preallocated.
-  if (format_ == viz::ETC1)
-    return;
-
-  if (allocated_)
-    return;
-  allocated_ = true;
-
-  const Settings& settings = resource_provider_->settings_;
-
-  gl->BindTexture(target_, texture_id);
-
-  if (is_overlay_) {
-    DCHECK(settings.use_texture_storage_image);
-    gl->TexStorage2DImageCHROMIUM(target_, viz::TextureStorageFormat(format_),
-                                  GL_SCANOUT_CHROMIUM, size_.width(),
-                                  size_.height());
-    if (color_space_.IsValid()) {
-      gl->SetColorSpaceMetadataCHROMIUM(
-          texture_id, reinterpret_cast<GLColorSpace>(&color_space_));
-    }
-  } else if (settings.use_texture_storage) {
-    GLint levels = 1;
-    if (settings.use_texture_npot &&
-        (hint_ & viz::ResourceTextureHint::kMipmap)) {
-      levels += base::bits::Log2Floor(std::max(size_.width(), size_.height()));
-    }
-    gl->TexStorage2DEXT(target_, levels, viz::TextureStorageFormat(format_),
-                        size_.width(), size_.height());
-  } else {
-    gl->TexImage2D(target_, 0, GLInternalFormat(format_), size_.width(),
-                   size_.height(), 0, GLDataFormat(format_),
-                   GLDataType(format_), nullptr);
-  }
-}
-
-LayerTreeResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
-    LayerTreeResourceProvider* resource_provider,
-    viz::ResourceId resource_id)
-    : resource_provider_(resource_provider), resource_id_(resource_id) {
-  viz::internal::Resource* resource =
-      resource_provider->LockForWrite(resource_id);
-  resource_provider->PopulateSkBitmapWithResource(&sk_bitmap_, resource);
-  color_space_ = resource_provider->GetResourceColorSpaceForRaster(resource);
-  DCHECK(valid());
-}
-
-LayerTreeResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
-  viz::internal::Resource* resource =
-      resource_provider_->GetResource(resource_id_);
-  resource->SetSynchronized();
-  resource_provider_->UnlockForWrite(resource);
 }
 
 LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
