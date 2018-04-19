@@ -28,6 +28,7 @@ TEST_F(EntityDataTest, Swap) {
   EntityData data;
   AddDefaultFieldValue(BOOKMARKS, &data.specifics);
   data.id = "id";
+  data.server_defined_unique_tag = "server_defined_unique_tag";
   data.client_tag_hash = "client_tag_hash";
   data.non_unique_name = "non_unique_name";
   data.creation_time = base::Time::FromTimeT(10);
@@ -55,6 +56,7 @@ TEST_F(EntityDataTest, Swap) {
 
   // Compare other fields.
   EXPECT_EQ("id", ptr->id);
+  EXPECT_EQ("server_defined_unique_tag", ptr->server_defined_unique_tag);
   EXPECT_EQ("client_tag_hash", ptr->client_tag_hash);
   EXPECT_EQ("non_unique_name", ptr->non_unique_name);
   EXPECT_EQ("parent_id", ptr->parent_id);

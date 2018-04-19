@@ -15,6 +15,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
@@ -93,6 +94,10 @@ class MockModelTypeWorker : public CommitQueue {
   UpdateResponseData GenerateUpdateData(
       const std::string& tag_hash,
       const sync_pb::EntitySpecifics& specifics);
+
+  // Returns an UpdateResponseData representing an update received from
+  // the server for a type root node.
+  UpdateResponseData GenerateTypeRootUpdateData(const ModelType& model_type);
 
   // Triggers a server-side deletion of the entity with |tag_hash|; updates
   // server state accordingly.

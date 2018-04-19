@@ -48,9 +48,16 @@ struct EntityData {
   std::string id;
 
   // A hash based on the client tag and model type.
-  // Used for various map lookups. Should always be available.
-  // Sent to the server as SyncEntity::client_defined_unique_tag.
+  // Used for various map lookups. Should always be available for all data types
+  // except bookmarks. Sent to the server as
+  // SyncEntity::client_defined_unique_tag.
   std::string client_tag_hash;
+
+  // This tag identifies this item as being a uniquely instanced item.  An item
+  // can't have both a client_defined_unique_tag and a
+  // server_defined_unique_tag. Sent to the server as
+  // SyncEntity::server_defined_unique_tag.
+  std::string server_defined_unique_tag;
 
   // Entity name, used mostly for Debug purposes.
   std::string non_unique_name;

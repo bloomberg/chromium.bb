@@ -465,8 +465,11 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     ProcessorEntityTracker* entity = ProcessUpdate(update, &entity_changes);
 
     if (!entity) {
-      // The update is either tombstone of entity that didn't exist locally or
-      // reflection, thus should be ignored.
+      // The update is either of the following:
+      // 1. Tombstone of entity that didn't exist locally.
+      // 2. Reflection, thus should be ignored.
+      // 3. Update without a client tag hash (including permanent nodes, which
+      // have server tags instead).
       continue;
     }
     if (entity->storage_key().empty()) {
@@ -516,6 +519,13 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     EntityChangeList* entity_changes) {
   const EntityData& data = update.entity.value();
   const std::string& client_tag_hash = data.client_tag_hash;
+
+  // Filter out updates without a client tag hash (including permanent nodes,
+  // which have server tags instead).
+  if (client_tag_hash.empty()) {
+    return nullptr;
+  }
+
   ProcessorEntityTracker* entity = GetEntityForTagHash(client_tag_hash);
 
   // Handle corner cases first.
@@ -686,11 +696,16 @@ void ClientTagBasedModelTypeProcessor::OnInitialUpdateReceived(
   metadata_changes->UpdateModelTypeState(model_type_state_);
 
   for (const UpdateResponseData& update : updates) {
+    if (update.entity->client_tag_hash.empty()) {
+      // Ignore updates missing a client tag hash (e.g. permanent nodes).
+      continue;
+    }
     if (update.entity->is_deleted()) {
       DLOG(WARNING) << "Ignoring tombstone found during initial update: "
                     << "client_tag_hash = " << update.entity->client_tag_hash;
       continue;
     }
+
     ProcessorEntityTracker* entity = CreateEntity(update.entity.value());
     entity->RecordAcceptedUpdate(update);
     const std::string& storage_key = entity->storage_key();
