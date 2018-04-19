@@ -10,17 +10,15 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_network_session.h"
+#include "net/test/net_test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -30,7 +28,6 @@ namespace net {
 namespace {
 
 using base::StringPrintf;
-using base::TestMockTimeTaskRunner;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Invoke;
@@ -110,19 +107,22 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
   HttpServerPropertiesManagerTest() = default;
 
   void SetUp() override {
+    NetTestSuite::SetScopedTaskEnvironment(
+        base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+
     one_day_from_now_ = base::Time::Now() + base::TimeDelta::FromDays(1);
     advertised_versions_ = HttpNetworkSession::Params().quic_supported_versions;
     pref_delegate_ = new MockPrefDelegate;
 
-    net_test_task_runner_clock_ = test_task_runner_->GetMockTickClock();
     http_server_props_manager_ = std::make_unique<HttpServerPropertiesManager>(
         base::WrapUnique(pref_delegate_), /*net_log=*/nullptr,
-        net_test_task_runner_clock_);
+        NetTestSuite::GetScopedTaskEnvironment()->GetMockTickClock());
 
     EXPECT_FALSE(http_server_props_manager_->IsInitialized());
     pref_delegate_->SetPrefs(base::DictionaryValue());
     EXPECT_TRUE(http_server_props_manager_->IsInitialized());
-    EXPECT_FALSE(test_task_runner_->HasPendingTask());
+    EXPECT_FALSE(
+        NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
     EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   }
 
@@ -132,8 +132,10 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
     // mock clock and doesn't see timings as having expired, ref.
     // HttpServerPropertiesImpl::
     //     ScheduleBrokenAlternateProtocolMappingsExpiration()).
-    test_task_runner_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     http_server_props_manager_.reset();
+
+    NetTestSuite::ResetScopedTaskEnvironment();
   }
 
   bool HasAlternativeService(const url::SchemeHostPort& server) {
@@ -146,11 +148,6 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
   std::unique_ptr<HttpServerPropertiesManager> http_server_props_manager_;
   base::Time one_day_from_now_;
   QuicTransportVersionVector advertised_versions_;
-
-  // Overrides the main thread's message loop with a mock tick clock.
-  base::ScopedMockTimeMessageLoopTaskRunner test_task_runner_;
-
-  const base::TickClock* net_test_task_runner_clock_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpServerPropertiesManagerTest);
@@ -283,8 +280,9 @@ TEST_P(HttpServerPropertiesManagerTest,
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
   // Should be a delayed task to update the cache from the prefs file.
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
 
   // Verify SupportsSpdy.
   EXPECT_TRUE(
@@ -407,8 +405,9 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   // Prefs should have been overwritten, due to the bad data.
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -469,8 +468,9 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   // Prefs should have been overwritten, due to the bad data.
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -491,15 +491,17 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsSpdy) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   // Setting the value to the same thing again should not trigger another pref
   // update.
   http_server_props_manager_->SetSupportsSpdy(spdy_server, true);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
 
   EXPECT_TRUE(http_server_props_manager_->SupportsRequestPriority(spdy_server));
 }
@@ -517,10 +519,11 @@ TEST_P(HttpServerPropertiesManagerTest,
       http_server_props_manager_->SupportsRequestPriority(spdy_server));
   http_server_props_manager_->SetSupportsSpdy(spdy_server, true);
   // The pref update task should be scheduled.
-  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(1u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
 
   // Move forward the task runner short by 20ms.
-  test_task_runner_->FastForwardBy(
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
       HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting() -
       base::TimeDelta::FromMilliseconds(20));
 
@@ -528,13 +531,16 @@ TEST_P(HttpServerPropertiesManagerTest,
   // ScheduleUpdatePrefs. There should be no new update posted.
   url::SchemeHostPort spdy_server2("https", "drive.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server2, true);
-  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(1u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
 
   // Move forward the extra 20ms. The pref update should be executed.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(20));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(20));
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
 
   EXPECT_TRUE(http_server_props_manager_->SupportsRequestPriority(spdy_server));
   EXPECT_TRUE(
@@ -544,11 +550,12 @@ TEST_P(HttpServerPropertiesManagerTest,
   // previous one is completed.
   url::SchemeHostPort spdy_server3("https", "maps.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server3, true);
-  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(1u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
@@ -565,8 +572,9 @@ TEST_P(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector =
@@ -598,7 +606,7 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServices) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector2 =
@@ -618,7 +626,8 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
   http_server_props_manager_->SetAlternativeServices(
       spdy_server_mail, AlternativeServiceInfoVector());
 
-  EXPECT_FALSE(test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
@@ -639,7 +648,8 @@ TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
       alternative_service));
 
-  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(1u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
 
   http_server_props_manager_->MarkAlternativeServiceBroken(alternative_service);
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
@@ -649,7 +659,8 @@ TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
 
   // In addition to the pref update task, there's now a task to mark the
   // alternative service as no longer broken.
-  EXPECT_EQ(2u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(2u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
 
   http_server_props_manager_->ConfirmAlternativeService(alternative_service);
   EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
@@ -657,11 +668,13 @@ TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
       alternative_service));
 
-  EXPECT_EQ(2u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(2u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
 
   // Run the task.
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
@@ -681,8 +694,9 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_TRUE(http_server_props_manager_->GetSupportsQuic(&address));
@@ -691,7 +705,8 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
   // Another task should not be scheduled.
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, ServerNetworkStats) {
@@ -707,14 +722,16 @@ TEST_P(HttpServerPropertiesManagerTest, ServerNetworkStats) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   // Another task should not be scheduled.
   http_server_props_manager_->SetServerNetworkStats(mail_server, stats1);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
 
   const ServerNetworkStats* stats2 =
       http_server_props_manager_->GetServerNetworkStats(mail_server);
@@ -724,8 +741,9 @@ TEST_P(HttpServerPropertiesManagerTest, ServerNetworkStats) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_EQ(nullptr,
@@ -745,8 +763,9 @@ TEST_P(HttpServerPropertiesManagerTest, QuicServerInfo) {
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_EQ(quic_server_info1, *http_server_props_manager_->GetQuicServerInfo(
@@ -756,7 +775,8 @@ TEST_P(HttpServerPropertiesManagerTest, QuicServerInfo) {
   http_server_props_manager_->SetQuicServerInfo(mail_quic_server_id,
                                                 quic_server_info1);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, Clear) {
@@ -792,9 +812,10 @@ TEST_P(HttpServerPropertiesManagerTest, Clear) {
 
   // Advance time by just enough so that the prefs update task is executed but
   // not the task to expire the brokenness of |broken_alternative_service|.
-  test_task_runner_->FastForwardBy(
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
       HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
@@ -902,7 +923,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
 
   // Set up the pref.
   pref_delegate_->SetPrefs(http_server_properties_dict);
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
 
   // Verify alternative service.
   for (int i = 1; i <= 200; ++i) {
@@ -986,15 +1007,17 @@ TEST_P(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   base::Time time_before_prefs_update = base::Time::Now();
 
   // Update Prefs.
-  // |test_task_runner_| has a remaining pending task to expire
+  // The task runner has a remaining pending task to expire
   // |www_alternative_service2| in 5 minutes. Fast forward enough such
   // that the prefs update task is executed but not the task to expire
   // |broken_alternative_service|.
-  EXPECT_EQ(2u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(2u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  test_task_runner_->FastForwardBy(
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
       HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting());
-  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(1u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   base::Time time_after_prefs_update = base::Time::Now();
@@ -1077,33 +1100,39 @@ TEST_P(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
 
 TEST_P(HttpServerPropertiesManagerTest,
        SingleCacheUpdateForMultipleUpdatesScheduled) {
-  EXPECT_EQ(0u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(0u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
   // Update cache.
   http_server_props_manager_->ScheduleUpdateCacheForTesting();
-  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(1u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
 
   // Move forward the task runner short by 20ms.
-  test_task_runner_->FastForwardBy(
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
       HttpServerPropertiesManager::GetUpdateCacheDelayForTesting() -
       base::TimeDelta::FromMilliseconds(20));
   // Schedule a new cache update within the time window should be a no-op.
   http_server_props_manager_->ScheduleUpdateCacheForTesting();
-  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(1u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
 
   // Move forward the task runner the extra 20ms, now the cache update should be
   // executed.
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(20));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(20));
 
   // Since this test has no pref corruption, there shouldn't be any pref update.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_FALSE(test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
 
   // Schedule one more cache update. The task should be successfully scheduled
   // on the task runner.
   http_server_props_manager_->ScheduleUpdateCacheForTesting();
-  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(1u, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
 
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
@@ -1214,11 +1243,13 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
   // |broken_alternative_service| at |time_one_day_later|. Fast forward enough
   // such that the prefs update task is executed but not the task to expire
   // |broken_alternative_service|.
-  EXPECT_EQ(2U, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(2U, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  test_task_runner_->FastForwardBy(
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
       HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting());
-  EXPECT_EQ(1U, test_task_runner_->GetPendingTaskCount());
+  EXPECT_EQ(1U, NetTestSuite::GetScopedTaskEnvironment()
+                    ->GetPendingMainThreadTaskCount());
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   const base::DictionaryValue* pref_dict =
@@ -1354,8 +1385,9 @@ TEST_P(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   // Verify preferences with correct advertised version field.
@@ -1456,8 +1488,9 @@ TEST_P(HttpServerPropertiesManagerTest,
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   // Verify preferences with correct advertised version field.
@@ -1491,8 +1524,9 @@ TEST_P(HttpServerPropertiesManagerTest,
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   // Verify preferences updated with new advertised versions.
@@ -1520,7 +1554,8 @@ TEST_P(HttpServerPropertiesManagerTest,
       server_www, alternative_service_info_vector_3));
 
   // No Prefs update.
-  EXPECT_FALSE(test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
@@ -1538,12 +1573,14 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       cached_recently_broken_service);
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   // Run the prefs update task but not the expiration task for
   // |cached_broken_service|.
-  test_task_runner_->FastForwardBy(
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
       HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   // Load the |pref_delegate_| with some JSON to verify updating the cache from
@@ -1597,11 +1634,15 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
 
   pref_delegate_->SetPrefs(*server_dict);
 
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   // Run the cache update task but not the expiration task for
   // |cached_broken_service|.
-  test_task_runner_->FastForwardBy(test_task_runner_->NextPendingTaskDelay());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      NetTestSuite::GetScopedTaskEnvironment()
+          ->NextMainThreadPendingTaskDelay());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
 
   //
   // Verify alternative service info for https://www.google.com
@@ -1666,14 +1707,16 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // expiration time should still be 5 minutes due to being marked broken.
   // |prefs_broken_service|'s expiration time should be approximately 1 day from
   // now which comes from the prefs.
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(4));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMinutes(4));
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
       cached_broken_service));
   EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
       cached_broken_service2));
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
       prefs_broken_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromDays(1));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromDays(1));
   EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
       cached_broken_service));
   EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
@@ -1715,48 +1758,58 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   http_server_props_manager_->MarkAlternativeServiceBroken(
       prefs_broken_service);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(10) -
-                                   base::TimeDelta::FromInternalValue(1));
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMinutes(10) - base::TimeDelta::FromInternalValue(1));
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
       prefs_broken_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromInternalValue(1));
   EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
       prefs_broken_service));
   // Make sure |cached_recently_broken_service| has the right expiration delay
   // when marked broken.
   http_server_props_manager_->MarkAlternativeServiceBroken(
       cached_recently_broken_service);
-  EXPECT_TRUE(test_task_runner_->HasPendingTask());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(40) -
-                                   base::TimeDelta::FromInternalValue(1));
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMinutes(40) - base::TimeDelta::FromInternalValue(1));
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
       cached_recently_broken_service));
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromInternalValue(1));
   EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
       cached_recently_broken_service));
   // Make sure |cached_broken_service| has the right expiration delay when
   // marked broken.
     http_server_props_manager_->MarkAlternativeServiceBroken(
         cached_broken_service);
-    EXPECT_TRUE(test_task_runner_->HasPendingTask());
-    test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(20) -
-                                     base::TimeDelta::FromInternalValue(1));
+    EXPECT_TRUE(
+        NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+    NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+        base::TimeDelta::FromMinutes(20) -
+        base::TimeDelta::FromInternalValue(1));
     EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
         cached_broken_service));
-    test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+    NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+        base::TimeDelta::FromInternalValue(1));
     EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
         cached_broken_service));
     // Make sure |cached_broken_service2| has the right expiration delay when
     // marked broken.
     http_server_props_manager_->MarkAlternativeServiceBroken(
         cached_broken_service2);
-    EXPECT_TRUE(test_task_runner_->HasPendingTask());
-    test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(10) -
-                                     base::TimeDelta::FromInternalValue(1));
+    EXPECT_TRUE(
+        NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+    NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+        base::TimeDelta::FromMinutes(10) -
+        base::TimeDelta::FromInternalValue(1));
     EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
         cached_broken_service2));
-    test_task_runner_->FastForwardBy(base::TimeDelta::FromInternalValue(1));
+    NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+        base::TimeDelta::FromInternalValue(1));
     EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
         cached_broken_service2));
 

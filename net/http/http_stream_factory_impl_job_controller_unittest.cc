@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -1250,10 +1250,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, InvalidPortForQuic) {
 // Verifies that the main job is not resumed until after the alt job completes
 // host resolution.
 TEST_F(HttpStreamFactoryImplJobControllerTest, HostResolutionHang) {
-  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner(
-      new base::TestMockTimeTaskRunner());
-  base::TestMockTimeTaskRunner::ScopedContext test_task_runner_context(
-      test_task_runner.get());
+  NetTestSuite::SetScopedTaskEnvironment(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
 
   auto hanging_resolver = std::make_unique<MockHostResolver>();
   hanging_resolver->set_ondemand_mode(true);
@@ -1300,18 +1298,22 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, HostResolutionHang) {
   // Since the alt job has not finished host resolution, there should be no
   // delayed task posted to resume the main job.
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(50));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(50));
   EXPECT_TRUE(JobControllerPeer::main_job_is_blocked(job_controller_));
 
   // Allow alt job host resolution to complete.
   session_deps_.host_resolver->ResolveAllPending();
 
   // Task to resume main job in 15 microseconds should be posted.
-  EXPECT_TRUE(test_task_runner->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(14));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(14));
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(1));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(1));
 
   EXPECT_TRUE(job_controller_->main_job());
   EXPECT_TRUE(job_controller_->alternative_job());
@@ -1326,16 +1328,16 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, HostResolutionHang) {
   // won't call Resume() on the main job since it's been resumed already.
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   quic_data.GetSequencedSocketData()->Resume();
-  test_task_runner->FastForwardUntilNoTasksRemain();
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   // Alt job should be cleaned up
   EXPECT_FALSE(job_controller_->alternative_job());
+
+  NetTestSuite::ResetScopedTaskEnvironment();
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCP) {
-  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner(
-      new base::TestMockTimeTaskRunner());
-  base::TestMockTimeTaskRunner::ScopedContext test_task_runner_context(
-      test_task_runner.get());
+  NetTestSuite::SetScopedTaskEnvironment(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
 
   auto immediate_resolver = std::make_unique<MockHostResolver>();
   immediate_resolver->set_synchronous_mode(true);
@@ -1382,11 +1384,14 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCP) {
   EXPECT_FALSE(JobControllerPeer::main_job_is_resumed(job_controller_));
 
   // Task to resume main job in 15us should be posted.
-  EXPECT_TRUE(test_task_runner->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(14));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(14));
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(1));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(1));
 
   EXPECT_TRUE(job_controller_->main_job());
   EXPECT_TRUE(job_controller_->alternative_job());
@@ -1395,14 +1400,17 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCP) {
   // Unpause mock quic data and run all remaining tasks. Alt-job should fail
   // and be cleaned up.
   quic_data.GetSequencedSocketData()->Resume();
-  test_task_runner->FastForwardUntilNoTasksRemain();
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(job_controller_->alternative_job());
+
+  NetTestSuite::ResetScopedTaskEnvironment();
 }
 
 // Regression test for crbug.com/789560.
 TEST_F(HttpStreamFactoryImplJobControllerTest, ResumeMainJobLaterCanceled) {
   NetTestSuite::SetScopedTaskEnvironment(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ProxyResolutionService::CreateDirect();
   ProxyResolutionService* proxy_resolution_service_raw =
@@ -1475,6 +1483,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, ResumeMainJobLaterCanceled) {
 
   EXPECT_TRUE(job_controller_->main_job());
   request_.reset();
+
   // Reset task environment back to the default type.
   // TODO(xunjieli): Remove this temporary workaround once crbug.com/791831 is
   // fixed.
@@ -1486,10 +1495,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, ResumeMainJobLaterCanceled) {
 // which would potentially delay the main job for a extremely long time in
 // delayed tcp case.
 TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPWithLargeSrtt) {
-  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner(
-      new base::TestMockTimeTaskRunner());
-  base::TestMockTimeTaskRunner::ScopedContext test_task_runner_context(
-      test_task_runner.get());
+  NetTestSuite::SetScopedTaskEnvironment(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
 
   // The max delay time should be in sync with .cc file.
   base::TimeDelta kMaxDelayTimeForMainJob = base::TimeDelta::FromSeconds(3);
@@ -1538,12 +1545,14 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPWithLargeSrtt) {
   EXPECT_FALSE(JobControllerPeer::main_job_is_resumed(job_controller_));
 
   // Task to resume main job in 3 seconds should be posted.
-  EXPECT_TRUE(test_task_runner->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
-  test_task_runner->FastForwardBy(kMaxDelayTimeForMainJob -
-                                  base::TimeDelta::FromMicroseconds(1));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      kMaxDelayTimeForMainJob - base::TimeDelta::FromMicroseconds(1));
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(1));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(1));
 
   EXPECT_TRUE(job_controller_->main_job());
   EXPECT_TRUE(job_controller_->alternative_job());
@@ -1552,16 +1561,16 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPWithLargeSrtt) {
   // Unpause mock quic data and run all remaining tasks. Alt-job  should fail
   // and be cleaned up.
   quic_data.GetSequencedSocketData()->Resume();
-  test_task_runner->FastForwardUntilNoTasksRemain();
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(job_controller_->alternative_job());
+
+  NetTestSuite::ResetScopedTaskEnvironment();
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        ResumeMainJobImmediatelyOnStreamFailed) {
-  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner(
-      new base::TestMockTimeTaskRunner());
-  base::TestMockTimeTaskRunner::ScopedContext test_task_runner_context(
-      test_task_runner.get());
+  NetTestSuite::SetScopedTaskEnvironment(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
 
   auto immediate_resolver = std::make_unique<MockHostResolver>();
   immediate_resolver->set_synchronous_mode(true);
@@ -1608,16 +1617,18 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   EXPECT_FALSE(JobControllerPeer::main_job_is_resumed(job_controller_));
 
   // Task to resume main job in 15us should be posted.
-  EXPECT_TRUE(test_task_runner->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
 
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(1));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(1));
 
   // Now unpause the mock quic data to fail the alt job. This should immediately
   // resume the main job.
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
   quic_data.GetSequencedSocketData()->Resume();
-  test_task_runner->FastForwardBy(base::TimeDelta());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(base::TimeDelta());
 
   EXPECT_TRUE(job_controller_->main_job());
   EXPECT_FALSE(job_controller_->alternative_job());
@@ -1625,11 +1636,15 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   // Verify there is another task to resume main job with delay but should
   // not call Resume() on the main job as main job has been resumed.
-  EXPECT_TRUE(test_task_runner->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(15));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(15));
 
-  test_task_runner->FastForwardUntilNoTasksRemain();
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
+
+  NetTestSuite::ResetScopedTaskEnvironment();
 }
 
 // Verifies that the alternative proxy server job is not created if the URL
@@ -1682,10 +1697,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, HttpURLWithNoProxy) {
 // Verifies that the main job is resumed properly after a delay when the
 // alternative proxy server job hangs.
 TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPAlternativeProxy) {
-  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner(
-      new base::TestMockTimeTaskRunner());
-  base::TestMockTimeTaskRunner::ScopedContext test_task_runner_context(
-      test_task_runner.get());
+  NetTestSuite::SetScopedTaskEnvironment(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
 
   auto immediate_resolver = std::make_unique<MockHostResolver>();
   immediate_resolver->set_synchronous_mode(true);
@@ -1736,11 +1749,14 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPAlternativeProxy) {
   EXPECT_FALSE(JobControllerPeer::main_job_is_resumed(job_controller_));
 
   // Task to resume main job in 15us should be posted.
-  EXPECT_TRUE(test_task_runner->HasPendingTask());
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(14));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(14));
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(1));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(1));
 
   EXPECT_TRUE(job_controller_->main_job());
   EXPECT_TRUE(job_controller_->alternative_job());
@@ -1749,8 +1765,10 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPAlternativeProxy) {
   // Unpause mock quic data and run all remaining tasks. Alt-job should fail
   // and be cleaned up.
   quic_data.GetSequencedSocketData()->Resume();
-  test_task_runner->FastForwardUntilNoTasksRemain();
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(job_controller_->alternative_job());
+
+  NetTestSuite::ResetScopedTaskEnvironment();
 }
 
 // Verifies that if the alternative proxy server job fails immediately, the
@@ -2024,7 +2042,9 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
 }
 
 TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
-  base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
+  NetTestSuite::SetScopedTaskEnvironment(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+
   // First socket connect hang.
   SequencedSocketData hangdata(nullptr, 0, nullptr, 0);
   hangdata.set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
@@ -2084,9 +2104,11 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
     EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _));
   }
 
-  EXPECT_TRUE(test_task_runner->HasPendingTask());
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMilliseconds(
-      HttpStreamFactoryImpl::Job::kHTTP2ThrottleMs));
+  EXPECT_TRUE(
+      NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(
+          HttpStreamFactoryImpl::Job::kHTTP2ThrottleMs));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
@@ -2098,6 +2120,8 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
     EXPECT_TRUE(data.AllReadDataConsumed());
     EXPECT_TRUE(data.AllWriteDataConsumed());
   }
+
+  NetTestSuite::ResetScopedTaskEnvironment();
 }
 
 TEST_F(JobControllerLimitMultipleH2Requests,
