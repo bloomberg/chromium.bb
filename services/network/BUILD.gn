@@ -36,6 +36,8 @@ component("network_service") {
     "keepalive_statistics_recorder.h",
     "loader_util.cc",
     "loader_util.h",
+    "mojo_net_log.cc",
+    "mojo_net_log.h",
     "network_change_manager.cc",
     "network_change_manager.h",
     "network_context.cc",
