@@ -927,8 +927,16 @@ message DeviceNativePrintersWhitelistProto {
 
 // Settings to control the behavior of the TPM firmware update functionality.
 message TPMFirmwareUpdateSettingsProto {
-  // Whether the user can invoke the update via powerwash.
+  // Whether the user is allowed to invoke the update via powerwash. This flow
+  // performs a powerwash operation (which implies a TPM clear), followed by
+  // installation of the TPM firmware update. As a result of the powerwash, all
+  // writable data on the device will be cleared.
   optional bool allow_user_initiated_powerwash = 1;
+
+  // Whether the user is allowed to invoke a variant of the update flow that
+  // clears the TPM to install the firmware update, but preserves device-wide
+  // state (including enrollment). User data will not be preserved in this flow.
+  optional bool allow_user_initiated_preserve_device_state = 2;
 }
 
 // Settings to control the minimum version that is allowed to sign in / stay
