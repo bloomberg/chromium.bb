@@ -58,4 +58,8 @@ void MetricsServiceClient::UpdateRunningServices() {
     update_running_services_.Run();
 }
 
+std::string MetricsServiceClient::GetAppPackageName() {
+  return std::string();
+}
+
 }  // namespace metrics

@@ -82,4 +82,8 @@ TestMetricsServiceClient::GetMetricsReportingDefaultState() {
   return enable_default_;
 }
 
+std::string TestMetricsServiceClient::GetAppPackageName() {
+  return "test app";
+}
+
 }  // namespace metrics

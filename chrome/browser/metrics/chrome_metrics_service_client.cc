@@ -94,6 +94,7 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -1070,4 +1071,11 @@ bool ChromeMetricsServiceClient::
   if (g_notification_listeners_failed)
     return false;
   return notification_listeners_active_;
+}
+
+std::string ChromeMetricsServiceClient::GetAppPackageName() {
+#if defined(OS_ANDROID)
+  return base::android::BuildInfo::GetInstance()->package_name();
+#endif
+  return std::string();
 }
