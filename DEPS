@@ -70,6 +70,9 @@ vars = {
 
   # Define the default board to be targetted when building for CrOS.
   'cros_board': 'amd64-generic',
+  # Surround the board var in quotes so gclient doesn't try parsing the string
+  # as an expression.
+  'cros_download_vm': '"{cros_board}" == "amd64-generic"',
 
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
@@ -1996,12 +1999,13 @@ hooks = [
     ],
   },
 
-  # Download CrOS simplechrome artifacts.
+  # Download CrOS simplechrome artifacts. The first hooks is for boards that
+  # support VM images, the second hook for all other boards.
   {
-    'name': 'cros_simplechrome_artifacts',
+    'name': 'cros_simplechrome_artifacts_with_vm',
     'pattern': '.',
     # Building for CrOS is only supported on linux currently.
-    'condition': 'checkout_chromeos and host_os == "linux"',
+    'condition': '(checkout_chromeos and host_os == "linux") and cros_download_vm',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
@@ -2014,6 +2018,23 @@ hooks = [
       # TODO(crbug.com/834134): Remove the cache clobber when the sdk is smart
       # enough to eject old toolchains from the cache.
       '--clear-sdk-cache',
+      '--log-level=error',
+      'exit',
+    ],
+  },
+  {
+    'name': 'cros_simplechrome_artifacts_with_no_vm',
+    'pattern': '.',
+    # Building for CrOS is only supported on linux currently.
+    'condition': '(checkout_chromeos and host_os == "linux") and not cros_download_vm',
+    'action': [
+      'src/third_party/chromite/bin/cros',
+      'chrome-sdk',
+      '--nogoma',
+      '--use-external-config',
+      '--nogn-gen',
+      '--board={cros_board}',
+      '--cache-dir=src/build/cros_cache/',
       '--log-level=error',
       'exit',
     ],
