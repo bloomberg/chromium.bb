@@ -17,31 +17,6 @@
 #error "This file requires ARC support."
 #endif
 
-#pragma mark - MainController Testing Additions
-
-@interface MainController (TestingAdditions)
-- (id)initForTesting;
-@end
-
-@implementation MainController (TestingAdditions)
-- (id)initForTesting {
-  self = [self init];
-  if (self) {
-    [self setUpAsForegrounded];
-    id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
-    [[mainTabModel stub] resetSessionMetrics];
-    [[mainTabModel stub] browserStateDestroyed];
-    [[mainTabModel stub] addObserver:[OCMArg any]];
-    [[mainTabModel stub] removeObserver:[OCMArg any]];
-    [[self browserViewInformation] setMainTabModel:mainTabModel];
-  }
-  return self;
-}
-
-@end
-
-#pragma mark - MainController Test
-
 namespace {
 
 // A block that takes the arguments of
@@ -89,7 +64,7 @@ class TabOpenerTest : public PlatformTest {
 
   MainController* GetMainController() {
     if (!main_controller_) {
-      main_controller_ = [[MainController alloc] initForTesting];
+      main_controller_ = [[MainController alloc] init];
     }
     return main_controller_;
   }

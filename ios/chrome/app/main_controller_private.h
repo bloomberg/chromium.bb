@@ -19,6 +19,10 @@ class GURL;
 @class TabModel;
 @protocol TabSwitcher;
 
+namespace ios {
+class ChromeBrowserState;
+}
+
 // Private methods and protocols that are made visible here for tests.
 @interface MainController ()
 
@@ -53,7 +57,8 @@ class GURL;
 - (void)setStartupParametersWithURL:(const GURL&)launchURL;
 
 // Sets the internal state to indicate that the app has been foregrounded.
-- (void)setUpAsForegrounded;
+- (void)setUpAsForegroundedWithBrowserState:
+    (ios::ChromeBrowserState*)browserState;
 
 @end
 
