@@ -5,6 +5,7 @@
 #include "components/drive/file_system/operation_test_base.h"
 
 #include "base/task_scheduler/post_task.h"
+#include "components/drive/chromeos/about_resource_loader.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/fake_free_disk_space_getter.h"
 #include "components/drive/chromeos/file_cache.h"

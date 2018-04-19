@@ -98,6 +98,8 @@ static_library("test_support") {
 if (is_chromeos) {
   source_set("drive_chromeos") {
     sources = [
+      "chromeos/about_resource_loader.cc",
+      "chromeos/about_resource_loader.h",
       "chromeos/change_list_loader.cc",
       "chromeos/change_list_loader.h",
       "chromeos/change_list_loader_observer.h",
@@ -144,6 +146,8 @@ if (is_chromeos) {
       "chromeos/resource_metadata.h",
       "chromeos/search_metadata.cc",
       "chromeos/search_metadata.h",
+      "chromeos/start_page_token_loader.cc",
+      "chromeos/start_page_token_loader.h",
       "chromeos/sync/entry_revert_performer.cc",
       "chromeos/sync/entry_revert_performer.h",
       "chromeos/sync/entry_update_performer.cc",
