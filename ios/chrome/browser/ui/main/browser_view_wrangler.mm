@@ -124,6 +124,8 @@
     return;
 
   if (_mainTabModel) {
+    breakpad::StopMonitoringTabStateForTabModel(_mainTabModel);
+    breakpad::StopMonitoringURLsForTabModel(_mainTabModel);
     [_mainTabModel browserStateDestroyed];
     if (_tabModelObserver) {
       [_mainTabModel removeObserver:_tabModelObserver];
@@ -173,6 +175,7 @@
     return;
 
   if (_otrTabModel) {
+    breakpad::StopMonitoringTabStateForTabModel(_otrTabModel);
     [_otrTabModel browserStateDestroyed];
     if (_tabModelObserver) {
       [_otrTabModel removeObserver:_tabModelObserver];
@@ -303,6 +306,9 @@
 
   [_mainTabModel removeObserver:self];
   [_otrTabModel removeObserver:self];
+
+  // Disconnect the DeviceSharingManager.
+  [self cleanDeviceSharingManager];
 
   // Stop URL monitoring of the main tab model.
   breakpad::StopMonitoringURLsForTabModel(_mainTabModel);
