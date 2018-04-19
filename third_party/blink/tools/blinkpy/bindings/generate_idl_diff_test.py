@@ -6,10 +6,10 @@
 import os
 import unittest
 
-from webkitpy.bindings import generate_idl_diff
-from webkitpy.bindings.generate_idl_diff import DIFF_TAG
-from webkitpy.bindings.generate_idl_diff import DIFF_TAG_DELETED
-from webkitpy.bindings.generate_idl_diff import DIFF_TAG_ADDED
+from blinkpy.bindings import generate_idl_diff
+from blinkpy.bindings.generate_idl_diff import DIFF_TAG
+from blinkpy.bindings.generate_idl_diff import DIFF_TAG_DELETED
+from blinkpy.bindings.generate_idl_diff import DIFF_TAG_ADDED
 
 
 testdata_path = os.path.join(

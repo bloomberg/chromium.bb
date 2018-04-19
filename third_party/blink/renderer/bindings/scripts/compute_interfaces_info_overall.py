@@ -151,7 +151,7 @@ def compute_inheritance_info(interface_name):
     inherited_extended_attributes = inherited_extended_attributes_by_interface[interface_name]
     for ancestor in ancestors:
         # Ancestors may not be present, notably if an ancestor is a generated
-        # IDL file and we are running this script from run-bindings-tests,
+        # IDL file and we are running this script from run_bindings_tests.py,
         # where we don't generate these files.
         ancestor_extended_attributes = inherited_extended_attributes_by_interface.get(ancestor, {})
         inherited_extended_attributes.update(ancestor_extended_attributes)

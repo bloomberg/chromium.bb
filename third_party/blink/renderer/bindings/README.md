@@ -20,7 +20,7 @@ by the IDL compiler.
 code is generated.
 
 * `Source/bindings/tests/` is a set of tests for the IDL compiler.
-You can run the tests by `Tools/Scripts/run-bindings-tests`.
+You can run the tests by `tools/run_bindings_tests.py`.
 
 * `Source/platform/bindings/`, `Source/bindings/core/` and
 `Source/bindings/modules/` provide a bunch of utility classes that encapsulate
