@@ -52,7 +52,7 @@ void TestKeyboardRenderer::Draw(const CameraModel& model,
   renderer_->DrawTexturedQuad(
       texture_handle_, 0, UiElementRenderer::kTextureLocationLocal,
       model.view_proj_matrix * world_space_transform, gfx::RectF(0, 0, 1, 1), 1,
-      {drawn_size_.width(), drawn_size_.height()}, 0);
+      {drawn_size_.width(), drawn_size_.height()}, 0, true /* blend */);
 }
 
 }  // namespace vr

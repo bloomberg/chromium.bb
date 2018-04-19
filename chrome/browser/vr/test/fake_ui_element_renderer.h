@@ -25,7 +25,8 @@ class FakeUiElementRenderer : public UiElementRenderer {
                         const gfx::RectF& copy_rect,
                         float opacity,
                         const gfx::SizeF& element_size,
-                        float corner_radius) override;
+                        float corner_radius,
+                        bool blend) override;
 
   void DrawGradientQuad(const gfx::Transform& view_proj_matrix,
                         const SkColor edge_color,

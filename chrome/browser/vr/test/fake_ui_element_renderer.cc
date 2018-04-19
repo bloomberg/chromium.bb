@@ -19,7 +19,8 @@ void FakeUiElementRenderer::DrawTexturedQuad(
     const gfx::RectF& copy_rect,
     float opacity,
     const gfx::SizeF& element_size,
-    float corner_radius) {
+    float corner_radius,
+    bool blend) {
   opacity_ = opacity;
   called_ = true;
 }
