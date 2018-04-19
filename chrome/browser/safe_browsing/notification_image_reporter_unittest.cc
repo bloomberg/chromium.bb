@@ -34,8 +34,7 @@ namespace {
 
 class TestingNotificationImageReporter : public NotificationImageReporter {
  public:
-  explicit TestingNotificationImageReporter()
-      : NotificationImageReporter(nullptr) {}
+  TestingNotificationImageReporter() : NotificationImageReporter(nullptr) {}
 
   void WaitForReportSkipped() {
     base::RunLoop run_loop;
@@ -257,7 +256,9 @@ TEST_F(NotificationImageReporterTest, NoReportWithoutScout) {
   EXPECT_EQ(0, notification_image_reporter_->sent_report_count());
 }
 
-TEST_F(NotificationImageReporterTest, NoReportWithoutReportingEnabled) {
+// Disabled due to flakiness: crbug.com/831563
+TEST_F(NotificationImageReporterTest,
+       DISABLED_NoReportWithoutReportingEnabled) {
   SetExtendedReportingLevel(SBER_LEVEL_SCOUT);
   notification_image_reporter_->SetReportingChance(0.0);
 
