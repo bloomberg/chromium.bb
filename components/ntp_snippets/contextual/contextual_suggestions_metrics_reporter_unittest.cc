@@ -8,15 +8,31 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_ukm_entry.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using ukm::TestUkmRecorder;
+using ukm::builders::ContextualSuggestions;
 
 namespace contextual_suggestions {
 
 namespace {
+const char kEventsHistogramName[] = "ContextualSuggestions.Events";
 const char kTestNavigationUrl[] = "https://foo.com";
+const int kUninitialized = 0;
+const int kFetchDelayed = 1;
+const int kFetchRequested = 2;
+const int kFetchError = 3;
+const int kFetchServerBusy = 4;
+const int kFetchBelowThreshold = 5;
+const int kFetchEmpty = 6;
+const int kFetchCompleted = 7;
+const int kUiPeekReverseScroll = 8;
+const int kUiOpened = 9;
+const int kUiClosed = 10;
+const int kSuggestionDownloaded = 11;
+const int kSuggestionClicked = 12;
 }  // namespace
 
 class ContextualSuggestionsMetricsReporterTest : public ::testing::Test {
@@ -28,6 +44,9 @@ class ContextualSuggestionsMetricsReporterTest : public ::testing::Test {
   ukm::SourceId GetSourceId();
 
   ContextualSuggestionsMetricsReporter& GetReporter() { return reporter_; }
+
+ protected:
+  void ExpectMultipleEventsCountOnce(ContextualSuggestionsEvent event);
 
  private:
   // The reporter under test.
@@ -59,32 +78,111 @@ TEST_F(ContextualSuggestionsMetricsReporterTest, BaseTest) {
   GetReporter().RecordEvent(SUGGESTION_CLICKED);
   // Flush data to write to UKM.
   GetReporter().Flush();
-  // Check what we wrote.
+  // Check that we wrote something to UKM.  Details of UKM reporting are tested
+  // in a different test suite.
   TestUkmRecorder* test_ukm_recorder = GetTestUkmRecorder();
   std::vector<const ukm::mojom::UkmEntry*> entry_vector =
-      test_ukm_recorder->GetEntriesByName(kContextualSuggestionsUkmEntryName);
+      test_ukm_recorder->GetEntriesByName(ContextualSuggestions::kEntryName);
   EXPECT_EQ(1U, entry_vector.size());
   const ukm::mojom::UkmEntry* first_entry = entry_vector[0];
   EXPECT_TRUE(test_ukm_recorder->EntryHasMetric(
-      first_entry, kContextualSuggestionsFetchMetricName));
+      first_entry, ContextualSuggestions::kFetchStateName));
   EXPECT_EQ(static_cast<int64_t>(FetchState::COMPLETED),
             *(test_ukm_recorder->GetEntryMetric(
-                first_entry, kContextualSuggestionsFetchMetricName)));
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 0, 0);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 1, 0);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 2, 1);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 3, 0);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 4, 0);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 5, 0);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 6, 0);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 7, 1);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 8, 1);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 9, 1);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 10, 0);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 11, 1);
-  histogram_tester.ExpectBucketCount("ContextualSuggestions.Events", 12, 1);
+                first_entry, ContextualSuggestions::kFetchStateName)));
+  // Test that the expected histogram events were written.
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUninitialized, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchDelayed, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchRequested, 1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchError, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchServerBusy, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchBelowThreshold,
+                                     0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchEmpty, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kFetchCompleted, 1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiPeekReverseScroll,
+                                     1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiOpened, 1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiClosed, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName,
+                                     kSuggestionDownloaded, 1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kSuggestionClicked,
+                                     1);
 }
 
-// TODO(donnd): add more tests, and test UMA data!
+void ContextualSuggestionsMetricsReporterTest::ExpectMultipleEventsCountOnce(
+    ContextualSuggestionsEvent event) {
+  std::unique_ptr<base::HistogramTester> histogram_tester =
+      std::make_unique<base::HistogramTester>();
+  GetReporter().SetupForPage(GetSourceId());
+  // Always report a single FETCH_DELAYED event so we ensure there's a
+  // histogram (otherwise the ExpectBucketCount may crash).
+  GetReporter().RecordEvent(FETCH_DELAYED);
+  int event_index = static_cast<int>(event);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, event_index, 0);
+  // Peek the UI, which starts the timer, expected by all the other UI or
+  // suggestion events.
+  GetReporter().RecordEvent(UI_PEEK_REVERSE_SCROLL);
+  // Report the event that we want to test multiple times.
+  GetReporter().RecordEvent(event);
+  GetReporter().RecordEvent(event);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, event_index, 1);
+  GetReporter().Flush();
+}
+
+TEST_F(ContextualSuggestionsMetricsReporterTest, UiPeekReverseScrollTest) {
+  ExpectMultipleEventsCountOnce(UI_PEEK_REVERSE_SCROLL);
+}
+
+TEST_F(ContextualSuggestionsMetricsReporterTest, UiOpenedTest) {
+  ExpectMultipleEventsCountOnce(UI_OPENED);
+}
+
+TEST_F(ContextualSuggestionsMetricsReporterTest, UiClosedTest) {
+  ExpectMultipleEventsCountOnce(UI_CLOSED);
+}
+
+TEST_F(ContextualSuggestionsMetricsReporterTest, SuggestionDownloadedTest) {
+  ExpectMultipleEventsCountOnce(SUGGESTION_DOWNLOADED);
+}
+
+TEST_F(ContextualSuggestionsMetricsReporterTest, SuggestionClickedTest) {
+  ExpectMultipleEventsCountOnce(SUGGESTION_CLICKED);
+}
+
+TEST_F(ContextualSuggestionsMetricsReporterTest, MultipleEventsTest) {
+  std::unique_ptr<base::HistogramTester> histogram_tester =
+      std::make_unique<base::HistogramTester>();
+  GetReporter().SetupForPage(GetSourceId());
+  // Test multiple cycles of FETCH_REQUESTED, FETCH_COMPLETED.
+  GetReporter().RecordEvent(FETCH_REQUESTED);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchRequested, 1);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchCompleted, 0);
+  GetReporter().RecordEvent(FETCH_COMPLETED);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchRequested, 1);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchCompleted, 1);
+  GetReporter().RecordEvent(FETCH_REQUESTED);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchRequested, 2);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchCompleted, 1);
+  GetReporter().RecordEvent(FETCH_COMPLETED);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchRequested, 2);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchCompleted, 2);
+  GetReporter().Flush();
+}
+
+// Test that might catch enum reordering that's not done right.
+TEST_F(ContextualSuggestionsMetricsReporterTest, EnumNotReorderedTest) {
+  std::unique_ptr<base::HistogramTester> histogram_tester =
+      std::make_unique<base::HistogramTester>();
+  GetReporter().SetupForPage(GetSourceId());
+  // Peek the UI, which starts the timer, expected by all the other UI or
+  // suggestion events.
+  GetReporter().RecordEvent(UI_PEEK_REVERSE_SCROLL);
+  // The current last legal event.
+  GetReporter().RecordEvent(SUGGESTION_CLICKED);
+  histogram_tester->ExpectBucketCount(kEventsHistogramName, kSuggestionClicked,
+                                      1);
+  GetReporter().Flush();
+}
 
 }  // namespace contextual_suggestions

@@ -17,18 +17,6 @@ namespace contextual_suggestions {
 
 FORWARD_DECLARE_TEST(ContextualSuggestionsUkmEntryTest, BinaryOrderTest);
 
-// The name of the UKM entry written by this class.
-const char kContextualSuggestionsUkmEntryName[] = "ContextualSuggestions";
-
-// The names of individual UKM metrics written to our UKM entry.
-const char kContextualSuggestionsDownloadedMetricName[] = "AnyDownloaded";
-const char kContextualSuggestionsTakenMetricName[] = "AnySuggestionTaken";
-const char kContextualSuggestionsClosedMetricName[] = "ClosedFromPeek";
-const char kContextualSuggestionsOpenedMetricName[] = "EverOpened";
-const char kContextualSuggestionsFetchMetricName[] = "FetchState";
-const char kContextualSuggestionsDurationMetricName[] = "ShowDurationBucketMin";
-const char kContextualSuggestionsTriggerMetricName[] = "TriggerEvent";
-
 // The state of the Fetcher request.
 // This value is written to the "FetchState" UKM metric.
 enum class FetchState {

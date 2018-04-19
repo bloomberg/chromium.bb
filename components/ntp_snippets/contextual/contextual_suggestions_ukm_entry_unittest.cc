@@ -7,9 +7,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ukm::TestUkmRecorder;
+using ukm::builders::ContextualSuggestions;
 
 namespace contextual_suggestions {
 
@@ -48,7 +50,7 @@ void ContextualSuggestionsUkmEntryTest::SetUp() {
 const ukm::mojom::UkmEntry* ContextualSuggestionsUkmEntryTest::FirstEntry() {
   TestUkmRecorder* recorder = GetTestUkmRecorder();
   std::vector<const ukm::mojom::UkmEntry*> entry_vector =
-      recorder->GetEntriesByName(kContextualSuggestionsUkmEntryName);
+      recorder->GetEntriesByName(ContextualSuggestions::kEntryName);
   EXPECT_EQ(1U, entry_vector.size());
   return entry_vector[0];
 }
@@ -71,13 +73,14 @@ int ContextualSuggestionsUkmEntryTest::GetEntryMetric(const char* metric_name) {
 TEST_F(ContextualSuggestionsUkmEntryTest, BaseTest) {
   ukm_entry_->Flush();
   // Deleting the entry should write default values for everything.
-  EXPECT_EQ(0, GetEntryMetric(kContextualSuggestionsDownloadedMetricName));
-  EXPECT_EQ(0, GetEntryMetric(kContextualSuggestionsTakenMetricName));
-  EXPECT_EQ(0, GetEntryMetric(kContextualSuggestionsClosedMetricName));
-  EXPECT_EQ(0, GetEntryMetric(kContextualSuggestionsOpenedMetricName));
-  EXPECT_EQ(0, GetEntryMetric(kContextualSuggestionsFetchMetricName));
-  EXPECT_EQ(0, GetEntryMetric(kContextualSuggestionsDurationMetricName));
-  EXPECT_EQ(0, GetEntryMetric(kContextualSuggestionsTriggerMetricName));
+  EXPECT_EQ(0, GetEntryMetric(ContextualSuggestions::kAnyDownloadedName));
+  EXPECT_EQ(0, GetEntryMetric(ContextualSuggestions::kAnySuggestionTakenName));
+  EXPECT_EQ(0, GetEntryMetric(ContextualSuggestions::kClosedFromPeekName));
+  EXPECT_EQ(0, GetEntryMetric(ContextualSuggestions::kEverOpenedName));
+  EXPECT_EQ(0, GetEntryMetric(ContextualSuggestions::kFetchStateName));
+  EXPECT_EQ(0,
+            GetEntryMetric(ContextualSuggestions::kShowDurationBucketMinName));
+  EXPECT_EQ(0, GetEntryMetric(ContextualSuggestions::kTriggerEventName));
 }
 
 TEST_F(ContextualSuggestionsUkmEntryTest, ExpectedOperationTest) {
@@ -90,15 +93,15 @@ TEST_F(ContextualSuggestionsUkmEntryTest, ExpectedOperationTest) {
   ukm_entry_->RecordEventMetrics(SUGGESTION_DOWNLOADED);
   ukm_entry_->RecordEventMetrics(SUGGESTION_CLICKED);
   ukm_entry_->Flush();
-  EXPECT_EQ(1, GetEntryMetric(kContextualSuggestionsDownloadedMetricName));
-  EXPECT_EQ(1, GetEntryMetric(kContextualSuggestionsTakenMetricName));
-  EXPECT_EQ(0, GetEntryMetric(kContextualSuggestionsClosedMetricName));
-  EXPECT_EQ(1, GetEntryMetric(kContextualSuggestionsOpenedMetricName));
-  EXPECT_EQ(7, GetEntryMetric(kContextualSuggestionsFetchMetricName));
-  EXPECT_LT(0, GetEntryMetric(kContextualSuggestionsDurationMetricName));
-  EXPECT_EQ(1, GetEntryMetric(kContextualSuggestionsTriggerMetricName));
+  EXPECT_EQ(1, GetEntryMetric(ContextualSuggestions::kAnyDownloadedName));
+  EXPECT_EQ(1, GetEntryMetric(ContextualSuggestions::kAnySuggestionTakenName));
+  EXPECT_EQ(0, GetEntryMetric(ContextualSuggestions::kClosedFromPeekName));
+  EXPECT_EQ(1, GetEntryMetric(ContextualSuggestions::kEverOpenedName));
+  EXPECT_EQ(static_cast<int64_t>(FetchState::COMPLETED),
+            GetEntryMetric(ContextualSuggestions::kFetchStateName));
+  EXPECT_LT(0,
+            GetEntryMetric(ContextualSuggestions::kShowDurationBucketMinName));
+  EXPECT_EQ(1, GetEntryMetric(ContextualSuggestions::kTriggerEventName));
 }
-
-// TODO(donnd): add more tests!
 
 }  // namespace contextual_suggestions
