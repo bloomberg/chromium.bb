@@ -8,7 +8,6 @@
 
 #import "remoting/ios/persistence/remoting_preferences.h"
 
-#import "base/mac/bind_objc_block.h"
 #import "remoting/ios/domain/host_info.h"
 #import "remoting/ios/domain/host_settings.h"
 

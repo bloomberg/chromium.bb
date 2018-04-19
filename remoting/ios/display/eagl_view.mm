@@ -12,7 +12,6 @@
 
 #import <OpenGLES/ES2/gl.h>
 
-#import "base/mac/bind_objc_block.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

@@ -11,7 +11,6 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 
-#import "base/mac/bind_objc_block.h"
 #import "remoting/ios/domain/user_info.h"
 #import "remoting/ios/facade/ios_client_runtime_delegate.h"
 #import "remoting/ios/facade/remoting_authentication.h"
