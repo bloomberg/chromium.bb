@@ -8,8 +8,10 @@
 #include <limits>
 #include <memory>
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log.h"
 
@@ -64,6 +66,22 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
       const base::FilePath& log_path,
       std::unique_ptr<base::Value> constants);
 
+  // Creates a bounded log that writes to a pre-existing file (truncating
+  // it to start with, and closing it upon completion).  |inprogress_dir_path|
+  // will be used as a scratch directory, for temporary files (with predictable
+  // names).
+  static std::unique_ptr<FileNetLogObserver> CreateBoundedPreExisting(
+      const base::FilePath& inprogress_dir_path,
+      base::File output_file,
+      size_t max_total_size,
+      std::unique_ptr<base::Value> constants);
+
+  // Creates an unbounded log that writes to a pre-existing file (truncating
+  // it to start with, and closing it upon completion).
+  static std::unique_ptr<FileNetLogObserver> CreateUnboundedPreExisting(
+      base::File output_file,
+      std::unique_ptr<base::Value> constants);
+
   ~FileNetLogObserver() override;
 
   // Attaches this observer to |net_log| and begins observing events.
@@ -71,10 +89,11 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
 
   // Stops observing net_log() and closes the output file(s). Must be called
   // after StartObserving. Should be called before destruction of the
-  // FileNetLogObserver and the NetLog, or the NetLog files will be deleted when
-  // the observer is destroyed. Note that it is OK to destroy |this| immediately
-  // after calling StopObserving() - the callback will still be called once the
-  // file writing has completed.
+  // FileNetLogObserver and the NetLog, or the NetLog files (except for an
+  // externally provided output_file) will be deleted when the observer is
+  // destroyed. Note that it is OK to destroy |this| immediately after calling
+  // StopObserving() - the callback will still be called once the file writing
+  // has completed.
   //
   // |polled_data| is an optional argument used to add additional network stack
   // state to the log.
@@ -100,8 +119,10 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
   class WriteQueue;
   class FileWriter;
 
-  static std::unique_ptr<FileNetLogObserver> CreateBoundedInternal(
+  static std::unique_ptr<FileNetLogObserver> CreateInternal(
       const base::FilePath& log_path,
+      const base::FilePath& inprogress_dir_path,
+      base::Optional<base::File> pre_existing_out_file,
       size_t max_total_size,
       size_t total_num_event_files,
       std::unique_ptr<base::Value> constants);

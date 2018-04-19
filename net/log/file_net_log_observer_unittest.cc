@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -246,6 +247,28 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool> {
     logger_->StartObserving(&net_log_, NetLogCaptureMode::Default());
   }
 
+  void CreateAndStartObservingPreExisting(
+      std::unique_ptr<base::Value> constants) {
+    ASSERT_TRUE(scratch_dir_.CreateUniqueTempDir());
+
+    base::File file(log_path_,
+                    base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    EXPECT_TRUE(file.IsValid());
+    // Stick in some nonsense to make sure the file gets cleared properly
+    file.Write(0, "not json", 8);
+
+    if (IsBounded()) {
+      logger_ = FileNetLogObserver::CreateBoundedPreExisting(
+          scratch_dir_.GetPath(), std::move(file), kLargeFileSize,
+          std::move(constants));
+    } else {
+      logger_ = FileNetLogObserver::CreateUnboundedPreExisting(
+          std::move(file), std::move(constants));
+    }
+
+    logger_->StartObserving(&net_log_, NetLogCaptureMode::Default());
+  }
+
   bool LogFileExists() {
     // The log files are written by a sequenced task runner. Drain all the
     // scheduled tasks to ensure that the file writing ones have run before
@@ -258,6 +281,7 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool> {
   NetLog net_log_;
   std::unique_ptr<FileNetLogObserver> logger_;
   base::ScopedTempDir temp_dir_;
+  base::ScopedTempDir scratch_dir_;  // used for bounded + preexisting
   base::FilePath log_path_;
 };
 
@@ -326,6 +350,34 @@ TEST_P(FileNetLogObserverTest, ObserverDestroyedWithoutStopObserving) {
   // When the logger is re-set without having called StopObserving(), the
   // partially written log files are deleted.
   ASSERT_FALSE(LogFileExists());
+}
+
+// Same but with pre-existing file.
+TEST_P(FileNetLogObserverTest,
+       ObserverDestroyedWithoutStopObservingPreExisting) {
+  CreateAndStartObservingPreExisting(nullptr);
+
+  // Send dummy event
+  AddEntries(logger_.get(), 1, kDummyEventSize);
+
+  // The log files should have been started.
+  ASSERT_TRUE(LogFileExists());
+
+  // Should also have the scratch dir, if bounded. (Can be checked since
+  // LogFileExists flushed the task scheduler).
+  if (IsBounded()) {
+    ASSERT_TRUE(base::PathExists(scratch_dir_.GetPath()));
+  }
+
+  logger_.reset();
+
+  // Unlike in the non-preexisting case, the output file isn't deleted here,
+  // since the process running the observer likely won't have the sandbox
+  // permission to do so.
+  ASSERT_TRUE(LogFileExists());
+  if (IsBounded()) {
+    ASSERT_FALSE(base::PathExists(scratch_dir_.GetPath()));
+  }
 }
 
 // Tests calling StopObserving() with a null closure.
@@ -400,6 +452,45 @@ TEST_P(FileNetLogObserverTest, GeneratesValidJSONWithOneEvent) {
   std::unique_ptr<ParsedNetLog> log = ReadNetLogFromDisk(log_path_);
   ASSERT_TRUE(log);
   ASSERT_EQ(1u, log->events->GetSize());
+}
+
+TEST_P(FileNetLogObserverTest, GeneratesValidJSONWithOneEventPreExisting) {
+  TestClosure closure;
+
+  CreateAndStartObservingPreExisting(nullptr);
+
+  // Send dummy event.
+  AddEntries(logger_.get(), 1, kDummyEventSize);
+
+  logger_->StopObserving(nullptr, closure.closure());
+
+  closure.WaitForResult();
+
+  // Verify the written log.
+  std::unique_ptr<ParsedNetLog> log = ReadNetLogFromDisk(log_path_);
+  ASSERT_TRUE(log);
+  ASSERT_EQ(1u, log->events->GetSize());
+}
+
+TEST_P(FileNetLogObserverTest, PreExistingFileBroken) {
+  // Test that pre-existing output file not being successfully open is
+  // tolerated.
+  ASSERT_TRUE(scratch_dir_.CreateUniqueTempDir());
+  base::File file;
+  EXPECT_FALSE(file.IsValid());
+  if (IsBounded())
+    logger_ = FileNetLogObserver::CreateBoundedPreExisting(
+        scratch_dir_.GetPath(), std::move(file), kLargeFileSize, nullptr);
+  else
+    logger_ = FileNetLogObserver::CreateUnboundedPreExisting(std::move(file),
+                                                             nullptr);
+  logger_->StartObserving(&net_log_, NetLogCaptureMode::Default());
+
+  // Send dummy event.
+  AddEntries(logger_.get(), 1, kDummyEventSize);
+  TestClosure closure;
+  logger_->StopObserving(nullptr, closure.closure());
+  closure.WaitForResult();
 }
 
 TEST_P(FileNetLogObserverTest, CustomConstants) {
@@ -800,6 +891,37 @@ TEST_F(FileNetLogObserverBoundedTest, BlockEventsFile0) {
   std::unique_ptr<ParsedNetLog> log = ReadNetLogFromDisk(log_path_);
   ASSERT_TRUE(log);
   ASSERT_EQ(0u, log->events->GetSize());
+}
+
+// Make sure that when using bounded mode with a pre-existing output file,
+// a separate in-progress directory can be specified.
+TEST_F(FileNetLogObserverBoundedTest, PreExistingUsesSpecifiedDir) {
+  base::ScopedTempDir scratch_dir;
+  ASSERT_TRUE(scratch_dir.CreateUniqueTempDir());
+
+  base::File file(log_path_, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid());
+
+  // Stick in some nonsense to make sure the file gets cleared properly
+  file.Write(0, "not json", 8);
+
+  logger_ = FileNetLogObserver::CreateBoundedPreExisting(
+      scratch_dir.GetPath(), std::move(file), kLargeFileSize, nullptr);
+  logger_->StartObserving(&net_log_, NetLogCaptureMode::Default());
+
+  base::TaskScheduler::GetInstance()->FlushForTesting();
+  EXPECT_TRUE(base::PathExists(log_path_));
+  EXPECT_TRUE(
+      base::PathExists(scratch_dir.GetPath().AppendASCII("constants.json")));
+  EXPECT_FALSE(base::PathExists(GetInprogressDirectory()));
+
+  TestClosure closure;
+  logger_->StopObserving(nullptr, closure.closure());
+  closure.WaitForResult();
+
+  // Now the scratch dir should be gone, too.
+  EXPECT_FALSE(base::PathExists(scratch_dir.GetPath()));
+  EXPECT_FALSE(base::PathExists(GetInprogressDirectory()));
 }
 
 void AddEntriesViaNetLog(NetLog* net_log, int num_entries) {
