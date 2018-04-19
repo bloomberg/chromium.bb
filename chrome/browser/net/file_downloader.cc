@@ -11,9 +11,15 @@
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 using net::URLFetcher;
@@ -24,25 +30,27 @@ FileDownloader::FileDownloader(
     const GURL& url,
     const base::FilePath& path,
     bool overwrite,
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const DownloadFinishedCallback& callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
-    : callback_(callback),
-      fetcher_(
-          URLFetcher::Create(url, URLFetcher::GET, this, traffic_annotation)),
+    : url_loader_factory_(url_loader_factory),
+      callback_(callback),
       local_path_(path),
       weak_ptr_factory_(this) {
-  fetcher_->SetRequestContext(request_context);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetAutomaticallyRetryOnNetworkChanges(kNumFileDownloaderRetries);
-  fetcher_->SaveResponseToTemporaryFile(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
-
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  simple_url_loader_->SetRetryOptions(
+      kNumFileDownloaderRetries,
+      network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
   if (overwrite) {
-    fetcher_->Start();
+    simple_url_loader_->DownloadToTempFile(
+        url_loader_factory_.get(),
+        base::BindOnce(&FileDownloader::OnSimpleDownloadComplete,
+                       base::Unretained(this)));
   } else {
     base::PostTaskAndReplyWithResult(
         base::CreateTaskRunnerWithTraits(
@@ -57,28 +65,17 @@ FileDownloader::FileDownloader(
 
 FileDownloader::~FileDownloader() {}
 
-void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_EQ(fetcher_.get(), source);
-
-  const net::URLRequestStatus& status = source->GetStatus();
-  if (!status.is_success()) {
-    DLOG(WARNING) << "URLRequestStatus error " << status.error()
-        << " while trying to download " << source->GetURL().spec();
-    callback_.Run(FAILED);
-    return;
-  }
-
-  int response_code = source->GetResponseCode();
-  if (response_code != net::HTTP_OK) {
-    DLOG(WARNING) << "HTTP error " << response_code
-        << " while trying to download " << source->GetURL().spec();
-    callback_.Run(FAILED);
-    return;
-  }
-
-  base::FilePath response_path;
-  bool success = source->GetResponseAsFilePath(false, &response_path);
-  if (!success) {
+void FileDownloader::OnSimpleDownloadComplete(
+    const base::FilePath& response_path) {
+  if (response_path.empty()) {
+    if (simple_url_loader_->ResponseInfo() &&
+        simple_url_loader_->ResponseInfo()->headers) {
+      int response_code =
+          simple_url_loader_->ResponseInfo()->headers->response_code();
+      DLOG(WARNING) << "HTTP error " << response_code
+                    << " while trying to download "
+                    << simple_url_loader_->GetFinalURL().spec();
+    }
     callback_.Run(FAILED);
     return;
   }
@@ -94,10 +91,14 @@ void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void FileDownloader::OnFileExistsCheckDone(bool exists) {
-  if (exists)
+  if (exists) {
     callback_.Run(EXISTS);
-  else
-    fetcher_->Start();
+  } else {
+    simple_url_loader_->DownloadToTempFile(
+        url_loader_factory_.get(),
+        base::BindOnce(&FileDownloader::OnSimpleDownloadComplete,
+                       base::Unretained(this)));
+  }
 }
 
 void FileDownloader::OnFileMoveDone(bool success) {

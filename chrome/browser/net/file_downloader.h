@@ -12,12 +12,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 class GURL;
 
@@ -25,7 +24,7 @@ class GURL;
 // file. If |overwrite| is true, any existing file will be overwritten;
 // otherwise if the local file already exists, this will report success without
 // downloading anything.
-class FileDownloader : public net::URLFetcherDelegate {
+class FileDownloader {
  public:
   enum Result {
     // The file was successfully downloaded.
@@ -39,27 +38,29 @@ class FileDownloader : public net::URLFetcherDelegate {
 
   // Directly starts the download (if necessary) and runs |callback| when done.
   // If the instance is destroyed before it is finished, |callback| is not run.
-  FileDownloader(const GURL& url,
-                 const base::FilePath& path,
-                 bool overwrite,
-                 net::URLRequestContextGetter* request_context,
-                 const DownloadFinishedCallback& callback,
-                 const net::NetworkTrafficAnnotationTag& traffic_annotation);
-  ~FileDownloader() override;
+  FileDownloader(
+      const GURL& url,
+      const base::FilePath& path,
+      bool overwrite,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const DownloadFinishedCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+  ~FileDownloader();
 
   static bool IsSuccess(Result result) { return result != FAILED; }
 
  private:
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleDownloadComplete(const base::FilePath& response_path);
 
   void OnFileExistsCheckDone(bool exists);
 
   void OnFileMoveDone(bool success);
 
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
   DownloadFinishedCallback callback_;
 
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   base::FilePath local_path_;
 
