@@ -16,6 +16,11 @@
 
 namespace ukm {
 
+namespace internal {
+class SourceUrlRecorderWebContentsObserver;
+class SourceUrlRecorderWebStateObserver;
+}  // namespace internal
+
 /**
  * This is UkmRecorder which forwards its calls to some number of other
  * UkmRecorders. This primarily provides a way for TestUkmRecorders to
@@ -38,9 +43,19 @@ class METRICS_EXPORT DelegatingUkmRecorder : public UkmRecorder {
   void RemoveDelegate(UkmRecorder* delegate);
 
  private:
+  friend class internal::SourceUrlRecorderWebContentsObserver;
+  friend class internal::SourceUrlRecorderWebStateObserver;
+
   // UkmRecorder:
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
   void AddEntry(mojom::UkmEntryPtr entry) override;
+
+  void UpdateSourceURLImpl(SourceId source_id, const GURL& url);
+
+  // UpdateNavigationURL provides a variation of the UpdateSourceURL API for
+  // recording NAVIGATION_ID sources. This method should only be called by
+  // SourceUrlRecorderWebContentsObserver.
+  void UpdateNavigationURL(SourceId source_id, const GURL& url);
 
   class Delegate final {
    public:

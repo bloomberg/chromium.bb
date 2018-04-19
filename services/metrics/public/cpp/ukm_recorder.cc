@@ -20,6 +20,9 @@ UkmRecorder::~UkmRecorder() = default;
 
 // static
 UkmRecorder* UkmRecorder::Get() {
+  // Note that SourceUrlRecorderWebContentsObserver assumes that
+  // DelegatingUkmRecorder::Get() is the canonical UkmRecorder instance. If this
+  // changes, SourceUrlRecorderWebContentsObserver should be updated to match.
   return DelegatingUkmRecorder::Get();
 }
 

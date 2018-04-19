@@ -12,7 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
@@ -118,17 +118,17 @@ void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->IsSameDocument());
 
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  ukm::DelegatingUkmRecorder* ukm_recorder = ukm::DelegatingUkmRecorder::Get();
   if (!ukm_recorder)
     return;
 
   const ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
-  ukm_recorder->UpdateSourceURL(source_id, initial_url);
+  ukm_recorder->UpdateNavigationURL(source_id, initial_url);
 
   const GURL& final_url = navigation_handle->GetURL();
   if (final_url != initial_url)
-    ukm_recorder->UpdateSourceURL(source_id, final_url);
+    ukm_recorder->UpdateNavigationURL(source_id, final_url);
 }
 
 // static
