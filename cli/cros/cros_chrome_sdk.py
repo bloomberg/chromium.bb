@@ -206,6 +206,14 @@ class SDKFetcher(object):
       return None
     return path.strip('"')
 
+  def _GetFullVersionFromStorage(self, version_file):
+    try:
+      full_version = self.gs_ctx.Cat(version_file, retries=0)
+      assert full_version.startswith('R')
+      return full_version
+    except (gs.GSNoSuchKey, gs.GSCommandError):
+      return None
+
   def _GetFullVersionFromRecentLatest(self, version):
     """Gets the full version number from a recent LATEST- file.
 
@@ -229,15 +237,12 @@ class SDKFetcher(object):
     for v in xrange(version_base - 1, version_base_min, -1):
       version_file = '%s/LATEST-%d.0.0' % (self.gs_base, v)
       logging.info('Trying: %s', version_file)
-      try:
-        full_version = self.gs_ctx.Cat(version_file)
-        assert full_version.startswith('R')
+      full_version = self._GetFullVersionFromStorage(version_file)
+      if full_version is not None:
         logging.warning(
             'Using cros version from most recent LATEST file: %s -> %s',
             version_file, full_version)
         return full_version
-      except (gs.GSNoSuchKey, gs.GSCommandError):
-        pass
     logging.warning('No recent LATEST file found from %d.0.0 to %d.0.0: ',
                     version_base_min, version_base)
     return None
@@ -252,13 +257,11 @@ class SDKFetcher(object):
       Version number in the format 'R30-3929.0.0' or None.
     """
     version_file = '%s/LATEST-%s' % (self.gs_base, version)
-    try:
-      full_version = self.gs_ctx.Cat(version_file)
-      assert full_version.startswith('R')
-      return full_version
-    except (gs.GSNoSuchKey, gs.GSCommandError):
+    full_version = self._GetFullVersionFromStorage(version_file)
+    if full_version is None:
       logging.warning('No LATEST file matching SDK version %s', version)
       return self._GetFullVersionFromRecentLatest(version)
+    return full_version
 
   def GetDefaultVersion(self):
     """Get the default SDK version to use.
