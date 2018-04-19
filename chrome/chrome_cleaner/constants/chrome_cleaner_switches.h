@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CLEANER_CONSTANTS_CHROME_CLEANER_SWITCHES_H_
-#define CHROME_CLEANER_CONSTANTS_CHROME_CLEANER_SWITCHES_H_
+#ifndef CHROME_CHROME_CLEANER_CONSTANTS_CHROME_CLEANER_SWITCHES_H_
+#define CHROME_CHROME_CLEANER_CONSTANTS_CHROME_CLEANER_SWITCHES_H_
 
 namespace chrome_cleaner {
 
@@ -50,4 +50,4 @@ extern const char kAllowUnsecureDLLsSwitch[];
 
 }  // namespace chrome_cleaner
 
-#endif  // CHROME_CLEANER_CONSTANTS_CHROME_CLEANER_SWITCHES_H_
+#endif  // CHROME_CHROME_CLEANER_CONSTANTS_CHROME_CLEANER_SWITCHES_H_

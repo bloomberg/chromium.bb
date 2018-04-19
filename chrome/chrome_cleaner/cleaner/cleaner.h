@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CLEANER_CLEANER_CLEANER_H_
-#define CHROME_CLEANER_CLEANER_CLEANER_H_
+#ifndef CHROME_CHROME_CLEANER_CLEANER_CLEANER_H_
+#define CHROME_CHROME_CLEANER_CLEANER_CLEANER_H_
 
 #include <vector>
 
 #include "base/callback.h"
-#include "chrome_cleaner/constants/uws_id.h"
+#include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "components/chrome_cleaner/public/constants/result_codes.h"
 
 namespace chrome_cleaner {
@@ -45,4 +45,4 @@ class Cleaner {
 
 }  // namespace chrome_cleaner
 
-#endif  // CHROME_CLEANER_CLEANER_CLEANER_H_
+#endif  // CHROME_CHROME_CLEANER_CLEANER_CLEANER_H_

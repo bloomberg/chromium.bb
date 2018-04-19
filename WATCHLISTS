@@ -639,7 +639,7 @@
                   '|chrome/browser/safe_browsing/chrome_cleaner/'\
                   '|chrome/browser/ui/views/chrome_cleaner_'\
                   '|chrome/browser/ui/webui/settings/chrome_cleanup_'\
-                  '|chrome_cleaner/'\
+                  '|chrome/chrome_cleaner/'\
                   '|components/chrome_cleaner/',
     },
     'chrome_elf': {
