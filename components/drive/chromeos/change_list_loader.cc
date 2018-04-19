@@ -17,6 +17,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/drive/chromeos/about_resource_loader.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
 #include "components/drive/chromeos/resource_metadata.h"
@@ -265,83 +266,6 @@ void LoaderController::Unlock() {
     tasks[i].Run();
 }
 
-AboutResourceLoader::AboutResourceLoader(JobScheduler* scheduler)
-    : scheduler_(scheduler),
-      current_update_task_id_(-1),
-      weak_ptr_factory_(this) {
-}
-
-AboutResourceLoader::~AboutResourceLoader() {}
-
-void AboutResourceLoader::GetAboutResource(
-    const google_apis::AboutResourceCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  // If the latest UpdateAboutResource task is still running. Wait for it,
-  if (pending_callbacks_.count(current_update_task_id_)) {
-    pending_callbacks_[current_update_task_id_].push_back(callback);
-    return;
-  }
-
-  if (cached_about_resource_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            callback, google_apis::HTTP_NO_CONTENT,
-            std::unique_ptr<google_apis::AboutResource>(
-                new google_apis::AboutResource(*cached_about_resource_))));
-  } else {
-    UpdateAboutResource(callback);
-  }
-}
-
-void AboutResourceLoader::UpdateAboutResource(
-    const google_apis::AboutResourceCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  ++current_update_task_id_;
-  pending_callbacks_[current_update_task_id_].push_back(callback);
-
-  scheduler_->GetAboutResource(
-      base::Bind(&AboutResourceLoader::UpdateAboutResourceAfterGetAbout,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 current_update_task_id_));
-}
-
-void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
-    int task_id,
-    google_apis::DriveApiErrorCode status,
-    std::unique_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  FileError error = GDataToFileError(status);
-
-  const std::vector<google_apis::AboutResourceCallback> callbacks =
-      pending_callbacks_[task_id];
-  pending_callbacks_.erase(task_id);
-
-  if (error != FILE_ERROR_OK) {
-    for (size_t i = 0; i < callbacks.size(); ++i)
-      callbacks[i].Run(status, std::unique_ptr<google_apis::AboutResource>());
-    return;
-  }
-
-  // Updates the cache when the resource is successfully obtained.
-  if (cached_about_resource_ &&
-      cached_about_resource_->largest_change_id() >
-      about_resource->largest_change_id()) {
-    LOG(WARNING) << "Local cached about resource is fresher than server, "
-                 << "local = " << cached_about_resource_->largest_change_id()
-                 << ", server = " << about_resource->largest_change_id();
-  }
-  cached_about_resource_.reset(new google_apis::AboutResource(*about_resource));
-
-  for (size_t i = 0; i < callbacks.size(); ++i) {
-    callbacks[i].Run(
-        status, std::make_unique<google_apis::AboutResource>(*about_resource));
-  }
-}
 
 ChangeListLoader::ChangeListLoader(
     EventLogger* logger,

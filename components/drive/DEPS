@@ -36,7 +36,8 @@ specific_include_rules = {
 
   # The following test dependencies should be removed to fully componentize this
   # directory. crbug.com/498951
-  r"(change_list_loader_unittest\.cc"
+  r"(about_resource_loader_unittest\.cc"
+  r"|change_list_loader_unittest\.cc"
   r"|change_list_processor_unittest\.cc"
   r"|directory_loader_unittest\.cc"
   r"|fake_file_system_unittest\.cc"
@@ -50,6 +51,7 @@ specific_include_rules = {
   r"|resource_metadata_storage_unittest\.cc"
   r"|resource_metadata_unittest\.cc"
   r"|search_metadata_unittest\.cc"
+  r"|start_page_token_loader_unittest\.cc"
   r"|sync_client_unittest\.cc"
   r")": [
     "+content/public/test/test_browser_thread_bundle.h",

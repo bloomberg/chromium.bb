@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/drive/chromeos/about_resource_loader.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
