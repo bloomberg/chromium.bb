@@ -36,9 +36,6 @@ const std::string kHashPageB =
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionCrash25562) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAllowLegacyExtensionManifests);
-
   // This page action will not show an icon, since it doesn't specify one but
   // is included here to test for a crash (http://crbug.com/25562).
   ASSERT_TRUE(LoadExtension(
