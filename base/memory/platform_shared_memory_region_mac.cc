@@ -183,7 +183,31 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
     PlatformHandle handle,
     Mode mode,
     size_t size) {
-  // TODO(https://crbug.com/825177): implement this.
+  mach_vm_address_t temp_addr = 0;
+  kern_return_t kr =
+      mach_vm_map(mach_task_self(), &temp_addr, size, 0, VM_FLAGS_ANYWHERE,
+                  handle, 0, FALSE, VM_PROT_READ | VM_PROT_WRITE,
+                  VM_PROT_READ | VM_PROT_WRITE, VM_INHERIT_NONE);
+  if (kr == KERN_SUCCESS) {
+    kern_return_t kr_deallocate =
+        mach_vm_deallocate(mach_task_self(), temp_addr, size);
+    MACH_DLOG_IF(ERROR, kr_deallocate != KERN_SUCCESS, kr_deallocate)
+        << "mach_vm_deallocate";
+  } else if (kr != KERN_INVALID_RIGHT) {
+    MACH_DLOG(ERROR, kr) << "mach_vm_map";
+    return false;
+  }
+
+  bool is_read_only = kr == KERN_INVALID_RIGHT;
+  bool expected_read_only = mode == Mode::kReadOnly;
+
+  if (is_read_only != expected_read_only) {
+    DLOG(ERROR) << "VM region has a wrong protection mask: it is"
+                << (is_read_only ? " " : " not ") << "read-only but it should"
+                << (expected_read_only ? " " : " not ") << "be";
+    return false;
+  }
+
   return true;
 }
 
