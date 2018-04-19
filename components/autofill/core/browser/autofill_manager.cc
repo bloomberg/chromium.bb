@@ -23,6 +23,7 @@
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -1033,7 +1034,13 @@ void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
 
 void AutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
   FormStructure* form_structure = nullptr;
-  if (!ParseForm(form, /*cached_form=*/nullptr, &form_structure))
+
+  // Look for a cached version of the form. It will be a null pointer if none is
+  // found, which is fine.
+  FormStructure* cached_form = nullptr;
+  ignore_result(FindCachedForm(form, &cached_form));
+
+  if (!ParseForm(form, cached_form, &form_structure))
     return;
 
   if (ShouldTriggerRefill(*form_structure))
