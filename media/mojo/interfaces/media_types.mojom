@@ -65,6 +65,10 @@ enum VideoRotation;
 [Native]
 enum WatchTimeKey;
 
+// See media/base/decrypt_config.h for descriptions.
+[Native]
+enum EncryptionMode;
+
 // This defines a mojo transport format for media::EncryptionPattern
 // See media/base/encryption_pattern.h for description.
 struct EncryptionPattern {
@@ -157,9 +161,11 @@ struct SubsampleEntry;
 // This defines a mojo transport format for media::DecryptConfig.
 // See media/base/decrypt_config.h for descriptions.
 struct DecryptConfig {
+  EncryptionMode encryption_mode;
   string key_id;
   string iv;
   array<SubsampleEntry> subsamples;
+  EncryptionPattern? encryption_pattern;
 };
 
 // This defines a mojo transport format for media::DecoderBuffer.

@@ -24,7 +24,7 @@ DecoderBufferAdapter::DecoderBufferAdapter(
 
   const ::media::DecryptConfig* decrypt_config =
       buffer_->end_of_stream() ? nullptr : buffer_->decrypt_config();
-  if (decrypt_config && decrypt_config->is_encrypted()) {
+  if (decrypt_config) {
     std::vector<SubsampleEntry> subsamples;
     for (const auto& sample : decrypt_config->subsamples()) {
       subsamples.emplace_back(sample.clear_bytes, sample.cypher_bytes);

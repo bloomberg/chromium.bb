@@ -116,8 +116,9 @@ bool StructTraits<
       input.id(), memory_handle, input.size(),
       base::checked_cast<off_t>(input.offset()), timestamp);
   if (key_id.size()) {
-    bitstream_buffer.SetDecryptConfig(
-        media::DecryptConfig(key_id, iv, subsamples));
+    // Note that BitstreamBuffer currently ignores how each buffer is
+    // encrypted and uses the settings from the Audio/VideoDecoderConfig.
+    bitstream_buffer.SetDecryptionSettings(key_id, iv, subsamples);
   }
   *output = bitstream_buffer;
 

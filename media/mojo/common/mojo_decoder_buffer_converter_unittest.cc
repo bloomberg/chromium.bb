@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/decrypt_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -124,15 +125,22 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EncryptedBuffer) {
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   buffer->set_decrypt_config(
-      std::make_unique<DecryptConfig>(kKeyId, kIv, subsamples));
+      DecryptConfig::CreateCencConfig(kKeyId, kIv, subsamples));
   {
     MojoDecoderBufferConverter converter;
     converter.ConvertAndVerify(buffer);
   }
 
-  // Test empty IV. This is used for clear buffer in an encrypted stream.
-  buffer->set_decrypt_config(std::make_unique<DecryptConfig>(
-      kKeyId, "", std::vector<SubsampleEntry>()));
+  // Test 'cbcs'.
+  buffer->set_decrypt_config(DecryptConfig::CreateCbcsConfig(
+      kKeyId, kIv, subsamples, EncryptionPattern(5, 6)));
+  {
+    MojoDecoderBufferConverter converter;
+    converter.ConvertAndVerify(buffer);
+  }
+
+  // Test unencrypted. This is used for clear buffer in an encrypted stream.
+  buffer->set_decrypt_config(nullptr);
   {
     MojoDecoderBufferConverter converter;
     converter.ConvertAndVerify(buffer);

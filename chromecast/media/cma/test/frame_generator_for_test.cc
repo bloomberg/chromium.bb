@@ -97,9 +97,10 @@ scoped_refptr<DecoderBufferBase> FrameGeneratorForTest::Generate() {
       0x0, 0x2, 0x1, 0x3, 0x5, 0x4, 0x7, 0x6,
       0x9, 0x8, 0xb, 0xa, 0xd, 0xc, 0xf, 0xe };
 
-    std::unique_ptr<::media::DecryptConfig> decrypt_config(
-        new ::media::DecryptConfig(std::string(key_id, arraysize(key_id)),
-                                   std::string(iv, arraysize(iv)), subsamples));
+    std::unique_ptr<::media::DecryptConfig> decrypt_config =
+        ::media::DecryptConfig::CreateCencConfig(
+            std::string(key_id, arraysize(key_id)),
+            std::string(iv, arraysize(iv)), subsamples);
     buffer->set_decrypt_config(std::move(decrypt_config));
   }
 

@@ -6,15 +6,14 @@
 
 #include "base/logging.h"
 #include "media/base/bit_reader.h"
-#include "media/base/decrypt_config.h"
 #include "media/formats/mp2t/mp2t_common.h"
 
 namespace media {
 namespace mp2t {
 
 TsSectionCetsEcm::TsSectionCetsEcm(
-    const RegisterDecryptConfigCb& register_decrypt_config_cb)
-    : register_decrypt_config_cb_(register_decrypt_config_cb) {}
+    const RegisterNewKeyIdAndIvCB& register_new_key_id_and_iv_cb)
+    : register_new_key_id_and_iv_cb_(register_new_key_id_and_iv_cb) {}
 
 TsSectionCetsEcm::~TsSectionCetsEcm() {}
 
@@ -33,7 +32,6 @@ bool TsSectionCetsEcm::Parse(bool payload_unit_start_indicator,
   bool key_id_flag;
   int au_byte_offset_size;
   std::string iv;
-  std::vector<SubsampleEntry> subsamples_empty;
   // TODO(dougsteed). Currently we allow only a subset of the possible values.
   // When we flesh out this implementation to cover all of ISO/IEC 23001-9 we
   // will need to generalize this.
@@ -67,8 +65,7 @@ bool TsSectionCetsEcm::Parse(bool payload_unit_start_indicator,
   // The CETS-ECM is supposed to  use adaptation field stuffing to fill the TS
   // packet, so there should be no data left to read.
   RCHECK(bit_reader.bits_available() == 0);
-  DecryptConfig decrypt_config(key_id, iv, subsamples_empty);
-  register_decrypt_config_cb_.Run(decrypt_config);
+  register_new_key_id_and_iv_cb_.Run(key_id, iv);
   return true;
 }
 

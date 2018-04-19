@@ -125,8 +125,8 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   // be the case during an unencrypted portion of a live stream.
   void RegisterEncryptionScheme(const EncryptionScheme& scheme);
 
-  // Register the DecryptConfig (parsed from CENC-ECM).
-  void RegisterDecryptConfig(const DecryptConfig& config);
+  // Register the new KeyID and IV (parsed from CENC-ECM).
+  void RegisterNewKeyIdAndIv(const std::string& key_id, const std::string& iv);
 
   // Register the PSSH (parsed from CENC-PSSH).
   void RegisterPsshBoxes(const std::vector<uint8_t>& init_data);
@@ -173,6 +173,9 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
   EncryptionScheme initial_scheme_;
+
+  // TODO(jrummell): Rather than store the key_id and iv in a DecryptConfig,
+  // provide a better way to access the last values seen in a ECM packet.
   std::unique_ptr<DecryptConfig> decrypt_config_;
 #endif
 

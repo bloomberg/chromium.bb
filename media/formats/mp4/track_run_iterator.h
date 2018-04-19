@@ -95,6 +95,7 @@ class MEDIA_EXPORT TrackRunIterator {
  private:
   bool UpdateCts();
   bool ResetRun();
+  const ProtectionSchemeInfo& protection_scheme_info() const;
   const TrackEncryption& track_encryption() const;
 
   uint32_t GetGroupDescriptionIndex(uint32_t sample_index) const;

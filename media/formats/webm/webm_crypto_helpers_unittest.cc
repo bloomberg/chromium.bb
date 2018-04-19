@@ -37,7 +37,7 @@ TEST(WebMCryptoHelpersTest, ClearData) {
                                       sizeof(kKeyId), &decrypt_config,
                                       &data_offset));
   EXPECT_EQ(1, data_offset);
-  EXPECT_FALSE(decrypt_config->is_encrypted());
+  EXPECT_FALSE(decrypt_config);
 }
 
 TEST(WebMCryptoHelpersTest, EncryptedButNotEnoughBytes) {
@@ -68,7 +68,7 @@ TEST(WebMCryptoHelpersTest, EncryptedNotPartitioned) {
   ASSERT_TRUE(WebMCreateDecryptConfig(kData, sizeof(kData), kKeyId,
                                       sizeof(kKeyId), &decrypt_config,
                                       &data_offset));
-  EXPECT_TRUE(decrypt_config->is_encrypted());
+  EXPECT_TRUE(decrypt_config);
   EXPECT_EQ(std::string(kKeyId, kKeyId + sizeof(kKeyId)),
             decrypt_config->key_id());
   EXPECT_EQ(std::string(kExpectedIv, kExpectedIv + sizeof(kExpectedIv)),
@@ -191,7 +191,7 @@ TEST(WebMCryptoHelpersTest, EncryptedPartitionedEvenNumberOfPartitions) {
   ASSERT_TRUE(WebMCreateDecryptConfig(kData, sizeof(kData), kKeyId,
                                       sizeof(kKeyId), &decrypt_config,
                                       &data_offset));
-  EXPECT_TRUE(decrypt_config->is_encrypted());
+  EXPECT_TRUE(decrypt_config);
   EXPECT_EQ(std::string(kKeyId, kKeyId + sizeof(kKeyId)),
             decrypt_config->key_id());
   EXPECT_EQ(std::string(kExpectedIv, kExpectedIv + sizeof(kExpectedIv)),
@@ -224,7 +224,7 @@ TEST(WebMCryptoHelpersTest, EncryptedPartitionedOddNumberOfPartitions) {
   ASSERT_TRUE(WebMCreateDecryptConfig(kData, sizeof(kData), kKeyId,
                                       sizeof(kKeyId), &decrypt_config,
                                       &data_offset));
-  EXPECT_TRUE(decrypt_config->is_encrypted());
+  EXPECT_TRUE(decrypt_config);
   EXPECT_EQ(std::string(kKeyId, kKeyId + sizeof(kKeyId)),
             decrypt_config->key_id());
   EXPECT_EQ(std::string(kExpectedIv, kExpectedIv + sizeof(kExpectedIv)),
@@ -254,7 +254,7 @@ TEST(WebMCryptoHelpersTest, EncryptedPartitionedZeroNumberOfPartitions) {
   ASSERT_TRUE(WebMCreateDecryptConfig(kData, sizeof(kData), kKeyId,
                                       sizeof(kKeyId), &decrypt_config,
                                       &data_offset));
-  EXPECT_TRUE(decrypt_config->is_encrypted());
+  EXPECT_TRUE(decrypt_config);
   EXPECT_EQ(std::string(kKeyId, kKeyId + sizeof(kKeyId)),
             decrypt_config->key_id());
   EXPECT_EQ(std::string(kExpectedIv, kExpectedIv + sizeof(kExpectedIv)),

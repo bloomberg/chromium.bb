@@ -214,16 +214,21 @@ scoped_refptr<DecoderBuffer> CreateEncryptedBuffer(
     const std::vector<uint8_t>& iv,
     const std::vector<SubsampleEntry>& subsample_entries) {
   DCHECK(!data.empty());
+  DCHECK(!iv.empty());
   scoped_refptr<DecoderBuffer> encrypted_buffer(new DecoderBuffer(data.size()));
-  memcpy(encrypted_buffer->writable_data(), &data[0], data.size());
-  CHECK(encrypted_buffer.get());
-  std::string key_id_string(
-      reinterpret_cast<const char*>(key_id.empty() ? NULL : &key_id[0]),
-      key_id.size());
-  std::string iv_string(
-      reinterpret_cast<const char*>(iv.empty() ? NULL : &iv[0]), iv.size());
-  encrypted_buffer->set_decrypt_config(std::unique_ptr<DecryptConfig>(
-      new DecryptConfig(key_id_string, iv_string, subsample_entries)));
+  memcpy(encrypted_buffer->writable_data(), data.data(), data.size());
+  std::string key_id_string(key_id.begin(), key_id.end());
+  std::string iv_string(iv.begin(), iv.end());
+  encrypted_buffer->set_decrypt_config(DecryptConfig::CreateCencConfig(
+      key_id_string, iv_string, subsample_entries));
+  return encrypted_buffer;
+}
+
+scoped_refptr<DecoderBuffer> CreateClearBuffer(
+    const std::vector<uint8_t>& data) {
+  DCHECK(!data.empty());
+  scoped_refptr<DecoderBuffer> encrypted_buffer(new DecoderBuffer(data.size()));
+  memcpy(encrypted_buffer->writable_data(), data.data(), data.size());
   return encrypted_buffer;
 }
 
@@ -620,9 +625,9 @@ TEST_P(AesDecryptorTest, NormalDecryption) {
 
 TEST_P(AesDecryptorTest, UnencryptedFrame) {
   // An empty iv string signals that the frame is unencrypted.
-  scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
-      original_data_, key_id_, std::vector<uint8_t>(), no_subsample_entries_);
-  DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS);
+  scoped_refptr<DecoderBuffer> unencrypted_buffer =
+      CreateClearBuffer(original_data_);
+  DecryptAndExpect(unencrypted_buffer, original_data_, SUCCESS);
 }
 
 TEST_P(AesDecryptorTest, WrongKey) {
@@ -715,9 +720,9 @@ TEST_P(AesDecryptorTest, CorruptedData) {
 TEST_P(AesDecryptorTest, EncryptedAsUnencryptedFailure) {
   std::string session_id = CreateSession(key_id_);
   UpdateSessionAndExpect(session_id, kKeyAsJWK, RESOLVED, true);
-  scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
-      encrypted_data_, key_id_, std::vector<uint8_t>(), no_subsample_entries_);
-  DecryptAndExpect(encrypted_buffer, original_data_, DATA_MISMATCH);
+  scoped_refptr<DecoderBuffer> unencrypted_buffer =
+      CreateClearBuffer(encrypted_data_);
+  DecryptAndExpect(unencrypted_buffer, original_data_, DATA_MISMATCH);
 }
 
 TEST_P(AesDecryptorTest, SubsampleDecryption) {

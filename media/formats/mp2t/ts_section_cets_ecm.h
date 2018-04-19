@@ -7,24 +7,28 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "media/base/byte_queue.h"
 #include "media/formats/mp2t/ts_section.h"
 
 namespace media {
-
-class DecryptConfig;
 
 namespace mp2t {
 
 class TsSectionCetsEcm : public TsSection {
  public:
-  // RegisterDecryptConfigCb::Run(const DecryptConfig& decrypt_config);
-  using RegisterDecryptConfigCb =
-      base::Callback<void(const DecryptConfig& decrypt_config)>;
+  // RegisterNewKeyIdAndIvCB() may be called multiple times. From
+  // ISO/IEC 23001-9:2016, section 7.2: "Key/IV information for every
+  // encrypted PID should be carried in a separate ECM PID." So there may be
+  // ECM's for each audio and video stream (and more if key rotation is used).
+  using RegisterNewKeyIdAndIvCB =
+      base::RepeatingCallback<void(const std::string& key_id,
+                                   const std::string& iv)>;
+
   explicit TsSectionCetsEcm(
-      const RegisterDecryptConfigCb& register_decrypt_config_cb);
+      const RegisterNewKeyIdAndIvCB& register_new_key_id_and_iv_cb);
   ~TsSectionCetsEcm() override;
 
   // TsSection implementation.
@@ -35,7 +39,7 @@ class TsSectionCetsEcm : public TsSection {
   void Reset() override;
 
  private:
-  RegisterDecryptConfigCb register_decrypt_config_cb_;
+  RegisterNewKeyIdAndIvCB register_new_key_id_and_iv_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(TsSectionCetsEcm);
 };

@@ -15,6 +15,7 @@
 #include "media/base/channel_layout.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/decode_status.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
@@ -91,6 +92,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::DemuxerStream::Type,
                           media::DemuxerStream::TYPE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::EmeInitDataType, media::EmeInitDataType::MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionMode,
+                          media::EncryptionMode::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme::CipherMode,
                           media::EncryptionScheme::CipherMode::CIPHER_MODE_MAX)

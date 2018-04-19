@@ -442,8 +442,11 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                    shared_memory->handle(), size, 0,
                                    buffer->timestamp());
 
-  if (buffer->decrypt_config())
-    bitstream_buffer.SetDecryptConfig(*buffer->decrypt_config());
+  if (buffer->decrypt_config()) {
+    bitstream_buffer.SetDecryptionSettings(
+        buffer->decrypt_config()->key_id(), buffer->decrypt_config()->iv(),
+        buffer->decrypt_config()->subsamples());
+  }
 
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;

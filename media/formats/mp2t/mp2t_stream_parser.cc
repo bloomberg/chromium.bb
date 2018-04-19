@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/optional.h"
 #include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
@@ -843,8 +844,9 @@ void Mp2tStreamParser::UnregisterCat() {
 }
 
 void Mp2tStreamParser::RegisterCencPids(int ca_pid, int pssh_pid) {
-  std::unique_ptr<TsSectionCetsEcm> ecm_parser(new TsSectionCetsEcm(base::Bind(
-      &Mp2tStreamParser::RegisterDecryptConfig, base::Unretained(this))));
+  std::unique_ptr<TsSectionCetsEcm> ecm_parser(
+      new TsSectionCetsEcm(base::BindRepeating(
+          &Mp2tStreamParser::RegisterNewKeyIdAndIv, base::Unretained(this))));
   std::unique_ptr<PidState> ecm_pid_state(
       new PidState(ca_pid, PidState::kPidCetsEcm, std::move(ecm_parser)));
   ecm_pid_state->Enable();
@@ -883,12 +885,34 @@ void Mp2tStreamParser::RegisterEncryptionScheme(
   // Reset the DecryptConfig, so that unless and until a CENC-ECM (containing
   // key id and IV) is seen, media data will be considered unencrypted. This is
   // similar to the way clear leaders can occur in MP4 containers.
-  decrypt_config_.reset(nullptr);
+  decrypt_config_.reset();
 }
 
-void Mp2tStreamParser::RegisterDecryptConfig(const DecryptConfig& config) {
-  decrypt_config_.reset(
-      new DecryptConfig(config.key_id(), config.iv(), config.subsamples()));
+void Mp2tStreamParser::RegisterNewKeyIdAndIv(const std::string& key_id,
+                                             const std::string& iv) {
+  if (!iv.empty()) {
+    switch (initial_scheme_.mode()) {
+      case EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
+        decrypt_config_.reset();
+        break;
+      case EncryptionScheme::CIPHER_MODE_AES_CTR:
+        decrypt_config_ = DecryptConfig::CreateCencConfig(key_id, iv, {});
+        break;
+      case EncryptionScheme::CIPHER_MODE_AES_CBC:
+        // MP2 Transport Streams don't always specify the encryption pattern up
+        // front. Instead it is determined later by the stream type. So if the
+        // pattern is unknown, leave it out.
+        EncryptionPattern pattern = initial_scheme_.pattern();
+        if (pattern.IsInEffect()) {
+          decrypt_config_ =
+              DecryptConfig::CreateCbcsConfig(key_id, iv, {}, pattern);
+        } else {
+          decrypt_config_ =
+              DecryptConfig::CreateCbcsConfig(key_id, iv, {}, base::nullopt);
+        }
+        break;
+    }
+  }
 }
 
 void Mp2tStreamParser::RegisterPsshBoxes(

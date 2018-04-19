@@ -6,6 +6,7 @@
 
 #include "chromecast/public/media/cast_decrypt_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/decrypt_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -73,22 +74,10 @@ TEST(DecoderBufferAdapterTest, DecryptConfig) {
   const std::string kKeyId("foo-key");
   const std::string kIV("0123456789abcdef");
 
-  // NULL DecryptConfig.
+  // No DecryptConfig.
   {
-    scoped_refptr<DecoderBufferAdapter> buffer_adapter(
-        new DecoderBufferAdapter(MakeDecoderBuffer()));
-    EXPECT_EQ(nullptr, buffer_adapter->decrypt_config());
-  }
-
-  // Empty initialization vector.
-  {
-    std::vector<::media::SubsampleEntry> subsamples;
-    std::unique_ptr<::media::DecryptConfig> decrypt_config(
-        new ::media::DecryptConfig(kKeyId, "", subsamples));
-    EXPECT_FALSE(decrypt_config->is_encrypted());
-
     scoped_refptr<::media::DecoderBuffer> buffer = MakeDecoderBuffer();
-    buffer->set_decrypt_config(std::move(decrypt_config));
+    EXPECT_EQ(nullptr, buffer->decrypt_config());
     scoped_refptr<DecoderBufferAdapter> buffer_adapter(
         new DecoderBufferAdapter(buffer));
     // DecoderBufferAdapter ignores the decrypt config.
@@ -97,10 +86,9 @@ TEST(DecoderBufferAdapterTest, DecryptConfig) {
 
   // Empty subsamples.
   {
-    std::vector<::media::SubsampleEntry> subsamples;
-    std::unique_ptr<::media::DecryptConfig> decrypt_config(
-        new ::media::DecryptConfig(kKeyId, kIV, subsamples));
-    EXPECT_TRUE(decrypt_config->is_encrypted());
+    std::unique_ptr<::media::DecryptConfig> decrypt_config =
+        ::media::DecryptConfig::CreateCencConfig(kKeyId, kIV, {});
+    EXPECT_TRUE(decrypt_config);
 
     scoped_refptr<::media::DecoderBuffer> buffer = MakeDecoderBuffer();
     buffer->set_decrypt_config(std::move(decrypt_config));
@@ -126,9 +114,9 @@ TEST(DecoderBufferAdapterTest, DecryptConfig) {
     subsamples.emplace_back(kClearBytes[0], kCypherBytes[0]);
     subsamples.emplace_back(kClearBytes[1], kCypherBytes[1]);
 
-    std::unique_ptr<::media::DecryptConfig> decrypt_config(
-        new ::media::DecryptConfig(kKeyId, kIV, subsamples));
-    EXPECT_TRUE(decrypt_config->is_encrypted());
+    std::unique_ptr<::media::DecryptConfig> decrypt_config =
+        ::media::DecryptConfig::CreateCencConfig(kKeyId, kIV, subsamples);
+    EXPECT_TRUE(decrypt_config);
 
     scoped_refptr<::media::DecoderBuffer> buffer = MakeDecoderBuffer();
     buffer->set_decrypt_config(std::move(decrypt_config));

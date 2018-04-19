@@ -115,13 +115,14 @@ TEST(DecoderBufferTest, DecryptConfig) {
   subsamples.push_back(SubsampleEntry(10, 5));
   subsamples.push_back(SubsampleEntry(15, 7));
 
-  DecryptConfig decrypt_config(kKeyId, kIv, subsamples);
+  std::unique_ptr<DecryptConfig> decrypt_config =
+      DecryptConfig::CreateCencConfig(kKeyId, kIv, subsamples);
 
   buffer->set_decrypt_config(
-      std::make_unique<DecryptConfig>(kKeyId, kIv, subsamples));
+      DecryptConfig::CreateCencConfig(kKeyId, kIv, subsamples));
 
   EXPECT_TRUE(buffer->decrypt_config());
-  EXPECT_TRUE(buffer->decrypt_config()->Matches(decrypt_config));
+  EXPECT_TRUE(buffer->decrypt_config()->Matches(*decrypt_config));
 }
 
 TEST(DecoderBufferTest, IsKeyFrame) {

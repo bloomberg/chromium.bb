@@ -296,7 +296,9 @@ MediaCodecLoop::InputData MediaCodecAudioDecoder::ProvideInputData() {
     input_data.memory = static_cast<const uint8_t*>(decoder_buffer->data());
     input_data.length = decoder_buffer->data_size();
     const DecryptConfig* decrypt_config = decoder_buffer->decrypt_config();
-    if (decrypt_config && decrypt_config->is_encrypted()) {
+    if (decrypt_config) {
+      // TODO(crbug.com/813845): Use encryption scheme settings from
+      // DecryptConfig.
       input_data.key_id = decrypt_config->key_id();
       input_data.iv = decrypt_config->iv();
       input_data.subsamples = decrypt_config->subsamples();

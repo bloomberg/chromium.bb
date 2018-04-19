@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
@@ -189,7 +190,7 @@ void FakeDemuxerStream::DoRead() {
 
   // TODO(xhwang): Output out-of-order buffers if needed.
   if (is_encrypted_) {
-    buffer->set_decrypt_config(std::make_unique<DecryptConfig>(
+    buffer->set_decrypt_config(DecryptConfig::CreateCencConfig(
         std::string(kKeyId, kKeyId + arraysize(kKeyId)),
         std::string(kIv, kIv + arraysize(kIv)), std::vector<SubsampleEntry>()));
   }

@@ -466,9 +466,31 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
   stream_parser_buffer->set_timestamp(current_timing_desc.pts);
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
   if (use_hls_sample_aes_ && base_decrypt_config) {
-    std::unique_ptr<DecryptConfig> decrypt_config(new DecryptConfig(
-        base_decrypt_config->key_id(), base_decrypt_config->iv(), subsamples));
-    stream_parser_buffer->set_decrypt_config(std::move(decrypt_config));
+    switch (base_decrypt_config->encryption_mode()) {
+      case EncryptionMode::kUnencrypted:
+        // As |base_decrypt_config| is specified, the stream is encrypted,
+        // so this shouldn't happen.
+        NOTREACHED();
+        break;
+      case EncryptionMode::kCenc:
+        stream_parser_buffer->set_decrypt_config(
+            DecryptConfig::CreateCencConfig(base_decrypt_config->key_id(),
+                                            base_decrypt_config->iv(),
+                                            subsamples));
+        break;
+      case EncryptionMode::kCbcs:
+        // Note that for SampleAES the (encrypt,skip) pattern is constant.
+        // If not specified in |base_decrypt_config|, use default values.
+        stream_parser_buffer->set_decrypt_config(
+            DecryptConfig::CreateCbcsConfig(
+                base_decrypt_config->key_id(), base_decrypt_config->iv(),
+                subsamples,
+                base_decrypt_config->HasPattern()
+                    ? base_decrypt_config->encryption_pattern()
+                    : EncryptionPattern(kSampleAESEncryptBlocks,
+                                        kSampleAESSkipBlocks)));
+        break;
+    }
   }
 #endif
   return es_adapter_.OnNewBuffer(stream_parser_buffer);

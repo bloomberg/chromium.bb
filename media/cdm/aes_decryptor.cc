@@ -176,6 +176,12 @@ static scoped_refptr<DecoderBuffer> DecryptData(
   CHECK(input.decrypt_config());
   CHECK(key);
 
+  // Only support 'cenc' decryption.
+  if (input.decrypt_config()->encryption_mode() != EncryptionMode::kCenc) {
+    DVLOG(1) << "Only 'cenc' mode supported.";
+    return nullptr;
+  }
+
   crypto::Encryptor encryptor;
   if (!encryptor.Init(key, crypto::Encryptor::CTR, "")) {
     DVLOG(1) << "Could not initialize decryptor.";
@@ -585,28 +591,28 @@ void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
 void AesDecryptor::Decrypt(StreamType stream_type,
                            scoped_refptr<DecoderBuffer> encrypted,
                            const DecryptCB& decrypt_cb) {
-  CHECK(encrypted->decrypt_config());
+  if (!encrypted->decrypt_config()) {
+    // If there is no DecryptConfig, then the data is unencrypted so return it
+    // immediately.
+    decrypt_cb.Run(kSuccess, encrypted);
+    return;
+  }
 
-  scoped_refptr<DecoderBuffer> decrypted;
-  if (!encrypted->decrypt_config()->is_encrypted()) {
-    decrypted =
-        DecoderBuffer::CopyFrom(encrypted->data(), encrypted->data_size());
-  } else {
-    const std::string& key_id = encrypted->decrypt_config()->key_id();
-    base::AutoLock auto_lock(key_map_lock_);
-    DecryptionKey* key = GetKey_Locked(key_id);
-    if (!key) {
-      DVLOG(1) << "Could not find a matching key for the given key ID.";
-      decrypt_cb.Run(kNoKey, NULL);
-      return;
-    }
+  const std::string& key_id = encrypted->decrypt_config()->key_id();
+  base::AutoLock auto_lock(key_map_lock_);
+  DecryptionKey* key = GetKey_Locked(key_id);
+  if (!key) {
+    DVLOG(1) << "Could not find a matching key for the given key ID.";
+    decrypt_cb.Run(kNoKey, NULL);
+    return;
+  }
 
-    decrypted = DecryptData(*encrypted.get(), key->decryption_key());
-    if (!decrypted) {
-      DVLOG(1) << "Decryption failed.";
-      decrypt_cb.Run(kError, NULL);
-      return;
-    }
+  scoped_refptr<DecoderBuffer> decrypted =
+      DecryptData(*encrypted.get(), key->decryption_key());
+  if (!decrypted) {
+    DVLOG(1) << "Decryption failed.";
+    decrypt_cb.Run(kError, NULL);
+    return;
   }
 
   decrypted->set_timestamp(encrypted->timestamp());

@@ -238,6 +238,14 @@ message VideoDecoderConfig {
   optional bytes extra_data = 9;
 }
 
+// Proto version of media::EncryptionMode
+// NEVER change these numbers or re-use old ones; only add new ones.
+enum EncryptionMode {
+  kUnencrypted = 0;
+  kCenc = 1;
+  kCbcs = 2;
+}
+
 message DecryptConfig {
   message SubSample {
     optional uint32 clear_bytes = 1;
@@ -247,6 +255,9 @@ message DecryptConfig {
   optional bytes key_id = 1;
   optional bytes iv = 2;
   repeated SubSample sub_samples = 3;
+  optional EncryptionMode mode = 4;
+  optional uint32 crypt_byte_block = 5;
+  optional uint32 skip_byte_block = 6;
 }
 
 message PipelineStatistics {
