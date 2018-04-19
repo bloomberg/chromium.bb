@@ -1114,6 +1114,7 @@ constexpr char kOpenFileMethod[] = "OpenFile";
 }  // namespace virtual_file_provider
 
 namespace arc {
+
 namespace obb_mounter {
 // D-Bus service constants.
 constexpr char kArcObbMounterInterface[] =
@@ -1125,6 +1126,22 @@ constexpr char kArcObbMounterServiceName[] = "org.chromium.ArcObbMounter";
 constexpr char kMountObbMethod[] = "MountObb";
 constexpr char kUnmountObbMethod[] = "UnmountObb";
 }  // namespace obb_mounter
+
+namespace appfuse {
+// D-Bus service constants.
+constexpr char kArcAppfuseProviderInterface[] =
+    "org.chromium.ArcAppfuseProvider";
+constexpr char kArcAppfuseProviderServicePath[] =
+    "/org/chromium/ArcAppfuseProvider";
+constexpr char kArcAppfuseProviderServiceName[] =
+    "org.chromium.ArcAppfuseProvider";
+
+// Method names.
+constexpr char kMountMethod[] = "Mount";
+constexpr char kUnmountMethod[] = "Unmount";
+constexpr char kOpenFileMethod[] = "OpenFile";
+}  // namespace appfuse
+
 }  // namespace arc
 
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_
