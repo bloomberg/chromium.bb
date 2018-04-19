@@ -3648,6 +3648,8 @@
       'Win10 Tests x64 (dbg)': {
         'args': [
           '--debug',
+          '--target',
+          'Debug_x64',
         ],
       },
     },
