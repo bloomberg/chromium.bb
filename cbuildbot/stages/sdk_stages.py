@@ -287,7 +287,7 @@ class SDKTestStage(generic_stages.BuilderStage):
     new_pkgdir = os.path.join(self._build_root, new_chroot_dir, pkgdir)
     osutils.SafeMakedirs(new_pkgdir, sudo=True)
     cros_build_lib.SudoRunCommand(
-        ['cp', '-r'] + glob.glob(os.path.join(old_pkgdir, 'cross-*')) +
+        ['cp', '-r'] + glob.glob(os.path.join(old_pkgdir, '*')) +
         [new_pkgdir])
 
     # Now install those toolchains in the new chroot.  We skip the chroot
