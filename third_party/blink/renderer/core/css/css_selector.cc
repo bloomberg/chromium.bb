@@ -555,7 +555,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
         pseudo_type_ = kPseudoUnknown;
       break;
     case kPseudoShadow:
-      if (match_ != kPseudoElement || context.IsDynamicProfile())
+      if (match_ != kPseudoElement || context.IsLiveProfile())
         pseudo_type_ = kPseudoUnknown;
       break;
     case kPseudoBlinkInternalElement:

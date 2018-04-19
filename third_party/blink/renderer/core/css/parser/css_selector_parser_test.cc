@@ -315,12 +315,12 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
   }
 }
 
-TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInDynamicProfile) {
+TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInLiveProfile) {
   const char* test_cases[] = {"div >>>> span", "div >>> span", "div >> span"};
 
   CSSParserContext* context = CSSParserContext::Create(
       kHTMLStandardMode, SecureContextMode::kInsecureContext,
-      CSSParserContext::kDynamicProfile);
+      CSSParserContext::kLiveProfile);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
   for (auto test_case : test_cases) {
@@ -334,13 +334,13 @@ TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInDynamicProfile) {
   }
 }
 
-TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInStaticProfile) {
+TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInSnapshotProfile) {
   const char* test_cases[] = {"div >>>> span", "div >> span", "div >> > span",
                               "div > >> span", "div > > > span"};
 
   CSSParserContext* context = CSSParserContext::Create(
       kHTMLStandardMode, SecureContextMode::kInsecureContext,
-      CSSParserContext::kStaticProfile);
+      CSSParserContext::kSnapshotProfile);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
   for (auto test_case : test_cases) {
@@ -354,7 +354,7 @@ TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInStaticProfile) {
   }
 }
 
-TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInStaticProfile) {
+TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInSnapshotProfile) {
   const char* test_cases[][2] = {{"div >>> span", "div >>> span"},
                                  {"div >>/**/> span", "div >>> span"},
                                  {"div >/**/>> span", "div >>> span"},
@@ -362,7 +362,7 @@ TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInStaticProfile) {
 
   CSSParserContext* context = CSSParserContext::Create(
       kHTMLStandardMode, SecureContextMode::kInsecureContext,
-      CSSParserContext::kStaticProfile);
+      CSSParserContext::kSnapshotProfile);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
   for (auto test_case : test_cases) {
@@ -596,7 +596,7 @@ TEST(CSSSelectorParserTest, UseCountShadowPseudo) {
   Document* doc = &dummy_holder->GetDocument();
   CSSParserContext* context = CSSParserContext::Create(
       kHTMLStandardMode, SecureContextMode::kSecureContext,
-      CSSParserContext::kDynamicProfile, doc);
+      CSSParserContext::kLiveProfile, doc);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
   auto ExpectCount = [doc, context, sheet](const char* selector,

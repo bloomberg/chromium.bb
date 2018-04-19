@@ -114,7 +114,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
       DummyPageHolder::Create(IntSize(500, 500));
   CSSParserContext* context = CSSParserContext::Create(
       kHTMLStandardMode, SecureContextMode::kInsecureContext,
-      CSSParserContext::kDynamicProfile, &dummy_holder->GetDocument());
+      CSSParserContext::kLiveProfile, &dummy_holder->GetDocument());
   cached_contents_ = StyleSheetContents::Create(context);
   {
     CSSStyleSheet* sheet =
