@@ -4,7 +4,6 @@
 
 #import "ios/web/net/crw_cert_verification_controller.h"
 
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/message_loop/message_loop.h"
 #import "base/test/ios/wait_util.h"
