@@ -47,7 +47,7 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
       syncer::SessionSyncPrefs* sync_prefs,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
       const syncer::RepeatingModelTypeStoreFactory& store_factory,
-      const base::RepeatingClosure& sessions_updated_callback,
+      const base::RepeatingClosure& foreign_sessions_updated_callback,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~SessionSyncBridge() override;
 
@@ -100,6 +100,8 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
 
   SyncSessionsClient* const sessions_client_;
   LocalSessionEventRouter* const local_session_event_router_;
+  const base::RepeatingClosure foreign_sessions_updated_callback_;
+
   FaviconCache favicon_cache_;
   SessionsGlobalIdMapper global_id_mapper_;
   SessionStore::Factory session_store_factory_;
