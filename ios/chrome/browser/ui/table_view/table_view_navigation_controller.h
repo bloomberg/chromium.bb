@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_CONTAINER_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_CONTAINER_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_VIEW_NAVIGATION_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_VIEW_NAVIGATION_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
 @class ChromeTableViewController;
-@class TableContainerBottomToolbar;
 
-// TableContainerViewController encapsulates a ChromeTableViewController inside
+// TableViewNavigationController encapsulates a ChromeTableViewController inside
 // a UINavigationController.
-@interface TableContainerViewController : UINavigationController
+@interface TableViewNavigationController : UINavigationController
 
 - (instancetype)initWithTable:(ChromeTableViewController*)table
     NS_DESIGNATED_INITIALIZER;
@@ -27,4 +26,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_CONTAINER_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_VIEW_NAVIGATION_CONTROLLER_H_

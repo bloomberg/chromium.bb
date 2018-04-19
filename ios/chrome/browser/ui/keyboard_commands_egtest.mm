@@ -9,7 +9,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
-#import "ios/chrome/browser/ui/table_view/table_container_constants.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -172,7 +172,7 @@ using chrome_test_util::SettingsDoneButton;
   // a11y ID for the dismiss button depends on the UIRefresh experiment.
   id<GREYMatcher> exitMatcher = nil;
   if (IsUIRefreshPhase1Enabled()) {
-    exitMatcher = grey_accessibilityID(kTableContainerDismissButtonId);
+    exitMatcher = grey_accessibilityID(kTableViewNavigationDismissButtonId);
   } else {
     exitMatcher = grey_accessibilityID(@"Exit");
   }

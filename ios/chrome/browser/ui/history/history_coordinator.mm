@@ -11,17 +11,17 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/history/history_table_container_view_controller.h"
+#include "ios/chrome/browser/ui/history/history_local_commands.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
-#import "ios/chrome/browser/ui/table_view/table_container_constants.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface HistoryCoordinator () {
+@interface HistoryCoordinator ()<HistoryLocalCommands> {
   // Provides dependencies and funnels callbacks from BrowsingHistoryService.
   std::unique_ptr<IOSBrowsingHistoryDriver> _browsingHistoryDriver;
   // Abstraction to communicate with HistoryService and WebHistoryService.
@@ -29,7 +29,7 @@
 }
 // ViewController being managed by this Coordinator.
 @property(nonatomic, strong)
-    HistoryTableContainerViewController* historyContainerViewController;
+    TableViewNavigationController* historyNavigationController;
 
 // The transitioning delegate used by the history view controller.
 @property(nonatomic, strong)
@@ -38,7 +38,7 @@
 
 @implementation HistoryCoordinator
 @synthesize dispatcher = _dispatcher;
-@synthesize historyContainerViewController = _historyContainerViewController;
+@synthesize historyNavigationController = _historyNavigationController;
 @synthesize historyTransitioningDelegate = _historyTransitioningDelegate;
 @synthesize loader = _loader;
 
@@ -48,14 +48,6 @@
       [[HistoryTableViewController alloc] init];
   historyTableViewController.browserState = self.browserState;
   historyTableViewController.loader = self.loader;
-
-  // Adds the "Done" button and hooks it up to |stop|.
-  UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                           target:self
-                           action:@selector(stop)];
-  [dismissButton setAccessibilityIdentifier:kTableContainerDismissButtonId];
-  historyTableViewController.navigationItem.rightBarButtonItem = dismissButton;
 
   // Initialize and configure HistoryServices.
   _browsingHistoryDriver = std::make_unique<IOSBrowsingHistoryDriver>(
@@ -68,32 +60,38 @@
           self.browserState));
   historyTableViewController.historyService = _browsingHistoryService.get();
 
-  // Initialize and configure HistoryContainerViewController.
-
-  // Present HistoryContainerViewController.
-  self.historyContainerViewController =
-      [[HistoryTableContainerViewController alloc]
-          initWithTable:historyTableViewController];
-  self.historyContainerViewController.dispatcher = self.dispatcher;
-  self.historyContainerViewController.toolbarHidden = NO;
-  historyTableViewController.delegate = self.historyContainerViewController;
-
+  // Configure and present HistoryNavigationController.
+  self.historyNavigationController = [[TableViewNavigationController alloc]
+      initWithTable:historyTableViewController];
+  self.historyNavigationController.toolbarHidden = NO;
+  historyTableViewController.localDispatcher = self;
   self.historyTransitioningDelegate =
       [[HistoryTransitioningDelegate alloc] init];
-  self.historyContainerViewController.transitioningDelegate =
+  self.historyNavigationController.transitioningDelegate =
       self.historyTransitioningDelegate;
-  [self.historyContainerViewController
+  [self.historyNavigationController
       setModalPresentationStyle:UIModalPresentationCustom];
   [self.baseViewController
-      presentViewController:self.historyContainerViewController
+      presentViewController:self.historyNavigationController
                    animated:YES
                  completion:nil];
 }
 
 - (void)stop {
-  [self.historyContainerViewController dismissViewControllerAnimated:YES
-                                                          completion:nil];
-  self.historyContainerViewController = nil;
+  [self stopWithCompletion:nil];
+}
+
+- (void)stopWithCompletion:(ProceduralBlock)completionHandler {
+  [self.historyNavigationController
+      dismissViewControllerAnimated:YES
+                         completion:completionHandler];
+  self.historyNavigationController = nil;
+}
+
+#pragma mark - HistoryLocalCommands
+
+- (void)dismissHistoryWithCompletion:(ProceduralBlock)completionHandler {
+  [self stopWithCompletion:completionHandler];
 }
 
 @end

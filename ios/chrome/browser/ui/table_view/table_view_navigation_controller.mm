@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
@@ -11,7 +11,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation TableContainerViewController
+@implementation TableViewNavigationController
 @synthesize tableViewController = _tableViewController;
 
 #pragma mark - Public Interface
