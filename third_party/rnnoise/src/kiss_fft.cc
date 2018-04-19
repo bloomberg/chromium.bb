@@ -27,7 +27,7 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE.*/
 
-#include "third_party/rnnoise/kiss_fft.h"
+#include "third_party/rnnoise/src/kiss_fft.h"
 
 #include <cassert>
 #include <cmath>
@@ -52,7 +52,7 @@ void kf_bfly2(std::complex<float>* Fout, int m, int N) {
       std::complex<float>* Fout2 = Fout + 4;
       std::complex<float> t = Fout2[0];
 
-      Fout2[0] = Fout[0] - t;
+      *Fout2 = Fout[0] - t;
       Fout[0] += t;
 
       t.real((Fout2[1].real() + Fout2[1].imag()) * tw);
@@ -115,11 +115,11 @@ void kf_bfly4(std::complex<float>* Fout,
         scratch[1] = Fout[m2] * *tw2;
         scratch[2] = Fout[m3] * *tw3;
 
-        scratch[5] = *Fout - scratch[1];
+        scratch[5] = Fout[0] - scratch[1];
         Fout[0] += scratch[1];
         scratch[3] = scratch[0] + scratch[2];
         scratch[4] = scratch[0] - scratch[2];
-        Fout[m2] = *Fout - scratch[3];
+        Fout[m2] = Fout[0] - scratch[3];
 
         tw1 += fstride;
         tw2 += fstride * 2;

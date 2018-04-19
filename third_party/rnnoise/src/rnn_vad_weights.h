@@ -1,6 +1,8 @@
 #ifndef THIRD_PARTY_RNNOISE_SRC_RNN_VAD_WEIGHTS_H_
 #define THIRD_PARTY_RNNOISE_SRC_RNN_VAD_WEIGHTS_H_
 
+#include <cstdint>
+
 namespace rnnoise {
 
 extern const int8_t kInputDenseWeights[1008];

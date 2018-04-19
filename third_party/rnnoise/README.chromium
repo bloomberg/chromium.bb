@@ -19,5 +19,6 @@ Local Modifications:
  - rnn.c
  - rnn_data.c
  - tansig_table.h
-* KissFFT: non-floating point parts removed, code clean, from C to C++
+* KissFFT: non-floating point parts removed, code clean, from C to C++,
   class wrapper added
+* BUILD targets and KissFFT unit tests added
