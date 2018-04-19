@@ -52,11 +52,6 @@ OAUTH_SCOPE_GERRIT = 'https://www.googleapis.com/auth/gerritcodereview'
 # Deprecated. Use OAUTH_SCOPE_EMAIL instead.
 OAUTH_SCOPES = OAUTH_SCOPE_EMAIL
 
-# Additional OAuth scopes.
-ADDITIONAL_SCOPES = {
-  'code.google.com': 'https://www.googleapis.com/auth/projecthosting',
-}
-
 # Path to a file with cached OAuth2 credentials used by default relative to the
 # home dir (see _get_token_cache_path). It should be a safe location accessible
 # only to a current user: knowing content of this file is roughly equivalent to
@@ -389,13 +384,14 @@ def auth_config_to_command_options(auth_config):
   return opts
 
 
-def get_authenticator_for_host(hostname, config):
+def get_authenticator_for_host(hostname, config, scopes=OAUTH_SCOPE_EMAIL):
   """Returns Authenticator instance to access given host.
 
   Args:
     hostname: a naked hostname or http(s)://<hostname>[/] URL. Used to derive
         a cache key for token cache.
     config: AuthConfig instance.
+    scopes: space separated oauth scopes. Defaults to OAUTH_SCOPE_EMAIL.
 
   Returns:
     Authenticator object.
@@ -407,11 +403,7 @@ def get_authenticator_for_host(hostname, config):
   # Append some scheme, otherwise urlparse puts hostname into parsed.path.
   if '://' not in hostname:
     hostname = 'https://' + hostname
-  # TODO(tandrii): this is horrible.
-  scopes = OAUTH_SCOPES
   parsed = urlparse.urlparse(hostname)
-  if parsed.netloc in ADDITIONAL_SCOPES:
-    scopes = "%s %s" % (scopes, ADDITIONAL_SCOPES[parsed.netloc])
 
   if parsed.path or parsed.params or parsed.query or parsed.fragment:
     raise AuthenticationError(
