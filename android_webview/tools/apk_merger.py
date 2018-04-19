@@ -169,14 +169,14 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   expected_files = {'snapshot_blob_32.bin': False}
   if args.shared_library:
     expected_files[args.shared_library] = not args.uncompress_shared_libraries
+  if args.has_unwind_cfi:
+    expected_files['unwind_cfi_32'] = False
 
   # need to unpack APKs to compare their contents
   UnpackApk(args.apk_64bit, tmp_dir_64)
   UnpackApk(args.apk_32bit, tmp_dir_32)
 
-  # TODO(ssid): unwind file should be included in monochrome apk once all the
-  # official builds start including the file. https://crbug.com/819888.
-  ignores = ['META-INF', 'AndroidManifest.xml', 'unwind_cfi_32']
+  ignores = ['META-INF', 'AndroidManifest.xml']
   if args.ignore_classes_dex:
     ignores += ['classes.dex', 'classes2.dex']
   if args.debug:
@@ -222,6 +222,8 @@ def main():
   parser.add_argument('--debug', action='store_true')
   # This option shall only used in debug build, see http://crbug.com/631494.
   parser.add_argument('--ignore-classes-dex', action='store_true')
+  parser.add_argument('--has-unwind-cfi', action='store_true',
+                      help='Specifies if the 32-bit apk has unwind_cfi file')
   args = parser.parse_args()
 
   if (args.zipalign_path is not None and
