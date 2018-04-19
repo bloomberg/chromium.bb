@@ -20,6 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -154,6 +155,12 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   intent_picker_bubble_->SetArrowPaintType(
       views::BubbleBorder::PAINT_TRANSPARENT);
   intent_picker_bubble_->GetDialogClientView()->Layout();
+  // TODO(aleventhal) Should not need to be focusable as only descendant widgets
+  // are interactive; however, it does call RequestFocus(). If it is going to be
+  // focusable, it needs an accessible name so that it can pass accessibility
+  // checks. Use the same accessible name as the icon.
+  intent_picker_bubble_->GetViewAccessibility().OverrideName(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_INTENT_PICKER_ICON));
   intent_picker_bubble_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   intent_picker_bubble_->GetIntentPickerLabelButtonAt(0)->MarkAsSelected(
       nullptr);
