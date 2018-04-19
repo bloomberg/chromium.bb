@@ -265,13 +265,6 @@ void LayoutThemeMac::SystemFont(CSSValueID system_font_id,
   font_family = FontFamilyNames::system_ui;
 }
 
-bool LayoutThemeMac::NeedsHackForTextControlWithFontFamily(
-    const AtomicString& family) const {
-  // This hack is only applied on OSX 10.9.
-  // https://code.google.com/p/chromium/issues/detail?id=515989#c8
-  return IsOS10_9() && family == FontFamilyNames::system_ui;
-}
-
 static RGBA32 ConvertNSColorToColor(NSColor* color) {
   NSColor* color_in_color_space = ColorInColorSpace(color);
   if (color_in_color_space) {
@@ -493,10 +486,6 @@ bool LayoutThemeMac::IsControlStyled(const ComputedStyle& style) const {
         FontFamilyNames::system_ui)
       return true;
     if (!style.Height().IsIntrinsicOrAuto())
-      return true;
-    // NSPopUpButtonCell on macOS 10.9 doesn't support
-    // NSUserInterfaceLayoutDirectionRightToLeft.
-    if (IsOS10_9() && style.Direction() == TextDirection::kRtl)
       return true;
   }
   // Some other cells don't work well when scaled.
@@ -981,7 +970,7 @@ NSSearchFieldCell* LayoutThemeMac::Search() const {
     // this is achieved by calling |setCenteredLook| with NO. In OS10.11 and
     // later, instead call |setPlaceholderString| with an empty string.
     // See https://crbug.com/752362.
-    if (IsOS10_9() || IsOS10_10()) {
+    if (IsOS10_10()) {
       SEL sel = @selector(setCenteredLook:);
       if ([search_.Get() respondsToSelector:sel]) {
         BOOL bool_value = NO;

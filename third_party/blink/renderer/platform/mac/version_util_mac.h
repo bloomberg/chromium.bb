@@ -22,7 +22,6 @@ constexpr bool IsOS() {
 
 }  // namespace internal
 
-const auto IsOS10_9 = internal::IsOS<9, 1090>;
 const auto IsOS10_10 = internal::IsOS<10, 101000>;
 const auto IsOS10_11 = internal::IsOS<11, 101100>;
 const auto IsOS10_12 = internal::IsOS<12, 101200>;

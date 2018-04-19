@@ -69,9 +69,6 @@ class LayoutThemeMac final : public LayoutTheme {
                   float& font_size,
                   AtomicString& font_family) const override;
 
-  bool NeedsHackForTextControlWithFontFamily(
-      const AtomicString& family) const override;
-
   int MinimumMenuListSize(const ComputedStyle&) const override;
 
   void AdjustSliderThumbSize(ComputedStyle&) const override;
