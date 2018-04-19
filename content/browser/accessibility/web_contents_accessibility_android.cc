@@ -950,7 +950,9 @@ jint WebContentsAccessibilityAndroid::FindElementType(
                                : OneShotAccessibilityTreeSearch::BACKWARDS);
   tree_search.SetResultLimit(1);
   tree_search.SetImmediateDescendantsOnly(false);
-  tree_search.SetCanWrapToLastElement(true);
+  // SetCanWrapToLastElement needs to be set as true after talkback pushes its
+  // corresponding change for b/29103330.
+  tree_search.SetCanWrapToLastElement(false);
   tree_search.SetVisibleOnly(false);
   tree_search.AddPredicate(predicate);
 
