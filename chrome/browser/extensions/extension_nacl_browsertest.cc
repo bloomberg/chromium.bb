@@ -6,6 +6,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -115,6 +116,16 @@ class NaClExtensionTest : public ExtensionBrowserTest {
   bool IsNaClPluginLoaded() {
     base::FilePath path;
     if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
+      // Make sure plugins are loaded off disk first.
+      {
+        base::RunLoop run_loop;
+        PluginService::GetInstance()->GetPlugins(base::BindLambdaForTesting(
+            [&](const std::vector<content::WebPluginInfo>&) {
+              run_loop.Quit();
+            }));
+        run_loop.Run();
+      }
+
       content::WebPluginInfo info;
       return PluginService::GetInstance()->GetPluginInfoByPath(path, &info);
     }
@@ -199,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_NonExtensionScheme) {
 }
 
 // Test that NaCl plugin isn't blocked for hosted app URLs.
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, HostedApp) {
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_HostedApp) {
   GURL url =
       embedded_test_server()->GetURL("/extensions/native_client/test.html");
   GURL::Replacements replace_host;
