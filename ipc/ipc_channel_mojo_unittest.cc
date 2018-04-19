@@ -18,7 +18,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
@@ -27,6 +29,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_io_thread.h"
+#include "base/test/test_shared_memory_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1375,6 +1378,126 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendSharedMemoryClient) {
   Close();
 }
 
+template <class SharedMemoryRegionType>
+class IPCChannelMojoSharedMemoryRegionTypedTest : public IPCChannelMojoTest {};
+
+struct WritableRegionTraits {
+  using RegionType = base::WritableSharedMemoryRegion;
+  static const char kClientName[];
+};
+const char WritableRegionTraits::kClientName[] =
+    "IPCChannelMojoTestSendWritableSharedMemoryRegionClient";
+struct UnsafeRegionTraits {
+  using RegionType = base::UnsafeSharedMemoryRegion;
+  static const char kClientName[];
+};
+const char UnsafeRegionTraits::kClientName[] =
+    "IPCChannelMojoTestSendUnsafeSharedMemoryRegionClient";
+struct ReadOnlyRegionTraits {
+  using RegionType = base::ReadOnlySharedMemoryRegion;
+  static const char kClientName[];
+};
+const char ReadOnlyRegionTraits::kClientName[] =
+    "IPCChannelMojoTestSendReadOnlySharedMemoryRegionClient";
+
+typedef ::testing::
+    Types<WritableRegionTraits, UnsafeRegionTraits, ReadOnlyRegionTraits>
+        AllSharedMemoryRegionTraits;
+TYPED_TEST_CASE(IPCChannelMojoSharedMemoryRegionTypedTest,
+                AllSharedMemoryRegionTraits);
+
+template <class SharedMemoryRegionType>
+class ListenerThatExpectsSharedMemoryRegion : public TestListenerBase {
+ public:
+  ListenerThatExpectsSharedMemoryRegion(base::Closure quit_closure)
+      : TestListenerBase(std::move(quit_closure)) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    base::PickleIterator iter(message);
+
+    SharedMemoryRegionType region;
+    EXPECT_TRUE(IPC::ReadParam(&message, &iter, &region));
+    EXPECT_TRUE(region.IsValid());
+
+    // Verify the shared memory region has expected content.
+    typename SharedMemoryRegionType::MappingType mapping = region.Map();
+    std::string content = HandleSendingHelper::GetSendingFileContent();
+    EXPECT_EQ(0, memcmp(mapping.memory(), content.data(), content.size()));
+
+    ListenerThatExpectsOK::SendOK(sender());
+    return true;
+  }
+};
+
+TYPED_TEST(IPCChannelMojoSharedMemoryRegionTypedTest, Send) {
+  this->Init(TypeParam::kClientName);
+
+  const size_t size = 1004;
+  typename TypeParam::RegionType region;
+  base::WritableSharedMemoryMapping mapping;
+  std::tie(region, mapping) =
+      base::CreateMappedRegion<typename TypeParam::RegionType>(size);
+
+  std::string content = HandleSendingHelper::GetSendingFileContent();
+  memcpy(mapping.memory(), content.data(), content.size());
+
+  // Create a success listener, and launch the child process.
+  base::RunLoop run_loop;
+  ListenerThatExpectsOK listener(run_loop.QuitClosure());
+  this->CreateChannel(&listener);
+  ASSERT_TRUE(this->ConnectChannel());
+
+  // Send the child process an IPC with |shmem| attached, to verify
+  // that is is correctly wrapped, transferred and unwrapped.
+  IPC::Message* message = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::WriteParam(message, region);
+  ASSERT_TRUE(this->channel()->Send(message));
+
+  run_loop.Run();
+
+  this->channel()->Close();
+
+  EXPECT_TRUE(this->WaitForClientShutdown());
+  EXPECT_FALSE(region.IsValid());
+  this->DestroyChannel();
+}
+
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
+    IPCChannelMojoTestSendWritableSharedMemoryRegionClient) {
+  base::RunLoop run_loop;
+  ListenerThatExpectsSharedMemoryRegion<base::WritableSharedMemoryRegion>
+      listener(run_loop.QuitClosure());
+  Connect(&listener);
+  listener.set_sender(channel());
+
+  run_loop.Run();
+
+  Close();
+}
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
+    IPCChannelMojoTestSendUnsafeSharedMemoryRegionClient) {
+  base::RunLoop run_loop;
+  ListenerThatExpectsSharedMemoryRegion<base::UnsafeSharedMemoryRegion>
+      listener(run_loop.QuitClosure());
+  Connect(&listener);
+  listener.set_sender(channel());
+
+  run_loop.Run();
+
+  Close();
+}
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
+    IPCChannelMojoTestSendReadOnlySharedMemoryRegionClient) {
+  base::RunLoop run_loop;
+  ListenerThatExpectsSharedMemoryRegion<base::ReadOnlySharedMemoryRegion>
+      listener(run_loop.QuitClosure());
+  Connect(&listener);
+  listener.set_sender(channel());
+
+  run_loop.Run();
+
+  Close();
+}
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_POSIX)

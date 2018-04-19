@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
+#include "base/test/test_shared_memory_util.h"
 #include "base/unguessable_token.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
@@ -157,6 +158,52 @@ TEST(IPCMessageUtilsTest, SharedMemoryHandle) {
   EXPECT_TRUE(IPC::ReadParam(&message, &iter, &post_pickle));
   EXPECT_EQ(pre_pickle.GetGUID(), post_pickle.GetGUID());
   EXPECT_EQ(pre_pickle.GetSize(), post_pickle.GetSize());
+}
+
+template <typename SharedMemoryRegionType>
+class SharedMemoryRegionTypedTest : public ::testing::Test {};
+
+typedef ::testing::Types<base::WritableSharedMemoryRegion,
+                         base::UnsafeSharedMemoryRegion,
+                         base::ReadOnlySharedMemoryRegion>
+    AllSharedMemoryRegionTypes;
+TYPED_TEST_CASE(SharedMemoryRegionTypedTest, AllSharedMemoryRegionTypes);
+
+TYPED_TEST(SharedMemoryRegionTypedTest, WriteAndRead) {
+  const size_t size = 2314;
+  TypeParam pre_pickle;
+  base::WritableSharedMemoryMapping pre_mapping;
+  std::tie(pre_pickle, pre_mapping) = base::CreateMappedRegion<TypeParam>(size);
+  const size_t pre_size = pre_pickle.GetSize();
+
+  const std::string content = "Hello, world!";
+  memcpy(pre_mapping.memory(), content.data(), content.size());
+
+  IPC::Message message;
+  IPC::WriteParam(&message, pre_pickle);
+  EXPECT_FALSE(pre_pickle.IsValid());
+
+  TypeParam post_pickle;
+  base::PickleIterator iter(message);
+  EXPECT_TRUE(IPC::ReadParam(&message, &iter, &post_pickle));
+  EXPECT_EQ(pre_size, post_pickle.GetSize());
+  typename TypeParam::MappingType post_mapping = post_pickle.Map();
+  EXPECT_EQ(pre_mapping.guid(), post_mapping.guid());
+  EXPECT_EQ(0, memcmp(pre_mapping.memory(), post_mapping.memory(),
+                      post_pickle.GetSize()));
+}
+
+TYPED_TEST(SharedMemoryRegionTypedTest, InvalidRegion) {
+  TypeParam pre_pickle;
+  EXPECT_FALSE(pre_pickle.IsValid());
+
+  IPC::Message message;
+  IPC::WriteParam(&message, pre_pickle);
+
+  TypeParam post_pickle;
+  base::PickleIterator iter(message);
+  EXPECT_TRUE(IPC::ReadParam(&message, &iter, &post_pickle));
+  EXPECT_FALSE(post_pickle.IsValid());
 }
 
 TEST(IPCMessageUtilsTest, UnguessableTokenTest) {

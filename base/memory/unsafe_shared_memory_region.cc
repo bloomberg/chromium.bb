@@ -67,8 +67,10 @@ bool UnsafeSharedMemoryRegion::IsValid() const {
 UnsafeSharedMemoryRegion::UnsafeSharedMemoryRegion(
     subtle::PlatformSharedMemoryRegion handle)
     : handle_(std::move(handle)) {
-  CHECK_EQ(handle_.GetMode(),
-           subtle::PlatformSharedMemoryRegion::Mode::kUnsafe);
+  if (handle_.IsValid()) {
+    CHECK_EQ(handle_.GetMode(),
+             subtle::PlatformSharedMemoryRegion::Mode::kUnsafe);
+  }
 }
 
 }  // namespace base

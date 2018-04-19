@@ -6,7 +6,10 @@
 #define BASE_TEST_TEST_SHARED_MEMORY_UTIL_H_
 
 #include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_handle.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
@@ -18,6 +21,35 @@ bool CheckReadOnlySharedMemoryHandleForTesting(SharedMemoryHandle handle);
 
 bool CheckReadOnlyPlatformSharedMemoryRegionForTesting(
     subtle::PlatformSharedMemoryRegion region);
+
+// Creates a scoped mapping from a PlatformSharedMemoryRegion. It's useful for
+// PlatformSharedMemoryRegion testing to not leak mapped memory.
+// WritableSharedMemoryMapping is used for wrapping because it has max
+// capabilities but the actual permission depends on the |region|'s mode.
+// This must not be used in production where PlatformSharedMemoryRegion should
+// be wrapped with {Writable,Unsafe,ReadOnly}SharedMemoryRegion.
+WritableSharedMemoryMapping MapAtForTesting(
+    subtle::PlatformSharedMemoryRegion* region,
+    off_t offset,
+    size_t size);
+
+WritableSharedMemoryMapping MapForTesting(
+    subtle::PlatformSharedMemoryRegion* region);
+
+template <typename SharedMemoryRegionType>
+std::pair<SharedMemoryRegionType, WritableSharedMemoryMapping>
+CreateMappedRegion(size_t size) {
+  SharedMemoryRegionType region = SharedMemoryRegionType::Create(size);
+  WritableSharedMemoryMapping mapping = region.Map();
+  return {std::move(region), std::move(mapping)};
+}
+
+// Template specialization of CreateMappedRegion<>() for
+// the ReadOnlySharedMemoryRegion. We need this because
+// ReadOnlySharedMemoryRegion::Create() has a different return type.
+template <>
+std::pair<ReadOnlySharedMemoryRegion, WritableSharedMemoryMapping>
+CreateMappedRegion(size_t size);
 
 }  // namespace base
 
