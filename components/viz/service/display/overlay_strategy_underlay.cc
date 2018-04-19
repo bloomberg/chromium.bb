@@ -36,6 +36,7 @@ bool OverlayStrategyUnderlay::Attempt(
     cc::OverlayCandidateList new_candidate_list = *candidate_list;
     new_candidate_list.push_back(candidate);
     new_candidate_list.back().plane_z_order = -1;
+    new_candidate_list.front().is_opaque = false;
 
     // Check for support.
     capability_checker_->CheckOverlaySupport(&new_candidate_list);
