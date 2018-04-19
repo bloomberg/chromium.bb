@@ -8,6 +8,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -15,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -22,6 +28,8 @@
 #include "components/safe_browsing/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -92,9 +100,55 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
     helper->GetSecurityInfo(out_security_info);
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    will_create_browser_context_services_subscription_ =
+        BrowserContextDependencyManager::GetInstance()
+            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+                base::BindRepeating(
+                    &ChromePasswordProtectionServiceBrowserTest::
+                        OnWillCreateBrowserContextServices,
+                    base::Unretained(this)));
+  }
+
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+    // Replace the signin manager and account fetcher service with fakes.
+    SigninManagerFactory::GetInstance()->SetTestingFactory(
+        context, &BuildFakeSigninManagerBase);
+    AccountFetcherServiceFactory::GetInstance()->SetTestingFactory(
+        context, &FakeAccountFetcherServiceBuilder::BuildForTests);
+  }
+
+  // Makes user signed-in as |email| with |gaia_id| and |hosted_domain|.
+  void PrepareSyncAccount(const std::string& hosted_domain,
+                          const std::string& email,
+                          const std::string& gaia_id) {
+    FakeSigninManagerForTesting* signin_manager =
+        static_cast<FakeSigninManagerForTesting*>(
+            SigninManagerFactory::GetInstance()->GetForProfile(
+                browser()->profile()));
+#if !defined(OS_CHROMEOS)
+    signin_manager->SignIn(gaia_id, email, "password");
+#else
+    AccountTrackerService* account_tracker_service =
+        AccountTrackerServiceFactory::GetForProfile(browser()->profile());
+    signin_manager->SignIn(
+        account_tracker_service->PickAccountIdForAccount(gaia_id, email));
+#endif
+    FakeAccountFetcherService* account_fetcher_service =
+        static_cast<FakeAccountFetcherService*>(
+            AccountFetcherServiceFactory::GetForProfile(browser()->profile()));
+    account_fetcher_service->FakeUserInfoFetchSuccess(
+        signin_manager->GetAuthenticatedAccountId(), email, gaia_id,
+        hosted_domain, "full_name", "given_name", "locale",
+        "http://picture.example.com/picture.jpg");
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histograms_;
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
 };
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
@@ -391,6 +445,35 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           ->empty());
 }
 
-// TODO(jialiul): Add more tests where multiple browser windows are involved.
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       VerifyIsPasswordReuseProtectionConfigured) {
+  Profile* profile = browser()->profile();
+  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  // When kEnterprisePasswordProtectionV1 feature is off.
+  // |IsPasswordReuseProtectionConfigured(..)| returns false.
+  EXPECT_FALSE(
+      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
+          profile));
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
+  // If prefs::kPasswordProtectionWarningTrigger isn't set to PASSWORD_REUSE,
+  // |IsPasswordReuseProtectionConfigured(..)| returns false.
+  EXPECT_EQ(PASSWORD_PROTECTION_OFF,
+            service->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  EXPECT_FALSE(
+      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
+          profile));
+
+  PrepareSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
+                     "stub-user@example.com", "gaia_id");
+  profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
+                                  1 /*PASSWORD_REUSE*/);
+  // Otherwise, |IsPasswordReuseProtectionConfigured(..)| returns true.
+  EXPECT_TRUE(
+      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
+          profile));
+}
 
 }  // namespace safe_browsing

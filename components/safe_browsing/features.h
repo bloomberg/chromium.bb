@@ -52,8 +52,12 @@ extern const base::Feature kAppendRecentNavigationEvents;
 // unsafe.
 extern const base::Feature kInspectDownloadedRarFiles;
 
-// Control the Password Protection for Enterprise V1 feature;
+// Controls the Password Protection for Enterprise V1 feature;
 extern const base::Feature kEnterprisePasswordProtectionV1;
+
+// Forces the chrome://reset-password page to be shown for review or testing
+// purpose.
+extern const base::Feature kForceEnableResetPasswordWebUI;
 
 base::ListValue GetFeatureStatusList();
 
