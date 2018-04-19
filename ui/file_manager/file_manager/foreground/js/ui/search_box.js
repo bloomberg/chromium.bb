@@ -220,6 +220,8 @@ SearchBox.prototype.onBlur_ = function() {
   this.autocompleteList.detach();
   this.updateStyles_();
   this.searchButtonToggleRipple_.activated = false;
+  // When input has any text we keep it displayed with current search.
+  this.inputElement.hidden = this.inputElement.value.length == 0;
 };
 
 /**
@@ -277,6 +279,7 @@ SearchBox.prototype.updateStyles_ = function() {
  * @private
  */
 SearchBox.prototype.onSearchButtonClick_ = function() {
+  this.inputElement.hidden = false;
   this.inputElement.focus();
 };
 
