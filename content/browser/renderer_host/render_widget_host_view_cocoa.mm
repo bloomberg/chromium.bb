@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/debug/crash_logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/mac_util.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
