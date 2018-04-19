@@ -209,6 +209,8 @@ Polymer({
    * @private
    */
   onKeyDown_: function(e) {
+    e.stopPropagation();
+
     if (e.key == 'Tab' || e.key == 'Escape') {
       this.close();
       e.preventDefault();

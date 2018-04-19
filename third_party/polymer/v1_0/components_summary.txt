@@ -96,9 +96,9 @@ Tree link: https://github.com/PolymerElements/iron-input/tree/1.0.10
 
 Name: iron-list
 Repository: https://github.com/PolymerElements/iron-list.git
-Tree: v1.4.6
-Revision: c1c7301e66705f7d080187e7afe2caf148d203d4
-Tree link: https://github.com/PolymerElements/iron-list/tree/v1.4.6
+Tree: v2.0.14
+Revision: 2289099da9cbb9ed593350de0192b7b5e36aed9e
+Tree link: https://github.com/PolymerElements/iron-list/tree/v2.0.14
 
 Name: iron-location
 Repository: https://github.com/PolymerElements/iron-location.git
