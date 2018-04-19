@@ -826,6 +826,22 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
   return []
 
 
+def CheckOwnersFormat(input_api, output_api):
+  affected_files = set([
+      f.LocalPath()
+      for f in input_api.change.AffectedFiles()
+      if 'OWNERS' in f.LocalPath() and f.Action() != 'D'
+  ])
+  if not affected_files:
+    return []
+  try:
+    input_api.owners_db.load_data_needed_for(affected_files)
+    return []
+  except Exception as e:
+    return [output_api.PresubmitError(
+        'Error parsing OWNERS files:\n%s' % e)]
+
+
 def CheckOwners(input_api, output_api, source_file_filter=None):
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(file_filter=source_file_filter)])

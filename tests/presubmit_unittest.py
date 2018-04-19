@@ -1726,6 +1726,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckLongLines', 'CheckTreeIsOpen', 'PanProjectChecks',
       'CheckLicense',
       'CheckOwners',
+      'CheckOwnersFormat',
       'CheckPatchFormatted',
       'CheckGNFormatted',
       'CheckSingletonInHeaders',
@@ -2341,6 +2342,48 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
         presubmit.OutputApi.PresubmitNotifyResult)
+
+  def GetInputApiWithOWNERS(self, owners_content):
+    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
+    affected_file.LocalPath = lambda: 'OWNERS'
+    affected_file.Action = lambda: 'M'
+
+    change = self.mox.CreateMock(presubmit.Change)
+    change.AffectedFiles = lambda: [affected_file]
+
+    input_api = self.MockInputApi(None, False)
+    input_api.change = change
+
+    os.path.exists = lambda _: True
+
+    owners_file = presubmit.cStringIO.StringIO(owners_content)
+    fopen = lambda *args: owners_file
+
+    input_api.owners_db = owners.Database('', fopen, os.path)
+
+    return input_api
+
+  def testCheckOwnersFormatWorks(self):
+    input_api = self.GetInputApiWithOWNERS('\n'.join([
+        'set noparent',
+        'per-file lalala = lemur@chromium.org',
+    ]))
+    self.assertEqual(
+        [],
+        presubmit_canned_checks.CheckOwnersFormat(
+            input_api, presubmit.OutputApi)
+    )
+
+  def testCheckOwnersFormatFails(self):
+    input_api = self.GetInputApiWithOWNERS('\n'.join([
+        'set noparent',
+        'invalid format',
+    ]))
+    results = presubmit_canned_checks.CheckOwnersFormat(
+        input_api, presubmit.OutputApi)
+
+    self.assertEqual(1, len(results))
+    self.assertIsInstance(results[0], presubmit.OutputApi.PresubmitError)
 
   def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
       reviewers=None, is_committing=True,
