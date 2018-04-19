@@ -52,7 +52,9 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_switches.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -736,8 +738,10 @@ void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
           }
         })");
 
+  auto factory = content::BrowserContext::GetDefaultStoragePartition(profile_)
+                     ->GetURLLoaderFactoryForBrowserProcess();
   blacklist_downloader_.reset(new FileDownloader(
-      url, path, false, profile_->GetRequestContext(),
+      url, path, false, std::move(factory),
       base::Bind(&SupervisedUserService::OnBlacklistDownloadDone,
                  base::Unretained(this), path),
       traffic_annotation));

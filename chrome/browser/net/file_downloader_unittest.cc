@@ -9,10 +9,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/test_utils.h"
+#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -25,9 +26,9 @@ const char kFileContents2[] = "different contents";
 class FileDownloaderTest : public testing::Test {
  public:
   FileDownloaderTest()
-      : request_context_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
-            url_fetcher_factory_(nullptr) {}
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
 
   void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
@@ -41,26 +42,22 @@ class FileDownloaderTest : public testing::Test {
   const base::FilePath& path() const { return path_; }
 
   void SetValidResponse() {
-    url_fetcher_factory_.SetFakeResponse(
-        GURL(kURL), kFileContents1, net::HTTP_OK,
-        net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory_.AddResponse(kURL, kFileContents1);
   }
 
   void SetValidResponse2() {
-    url_fetcher_factory_.SetFakeResponse(
-        GURL(kURL), kFileContents2, net::HTTP_OK,
-        net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory_.AddResponse(kURL, kFileContents2);
   }
 
   void SetFailedResponse() {
-    url_fetcher_factory_.SetFakeResponse(
-        GURL(kURL), std::string(), net::HTTP_NOT_FOUND,
-        net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory_.AddResponse(
+        GURL(kURL), network::ResourceResponseHead(), std::string(),
+        network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
   }
 
   void Download(bool overwrite, FileDownloader::Result expected_result) {
     FileDownloader downloader(
-        GURL(kURL), path_, overwrite, request_context_.get(),
+        GURL(kURL), path_, overwrite, test_shared_loader_factory_,
         base::Bind(&FileDownloaderTest::OnDownloadFinished,
                    base::Unretained(this)),
         TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -74,8 +71,8 @@ class FileDownloaderTest : public testing::Test {
   base::FilePath path_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  net::FakeURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
 
 TEST_F(FileDownloaderTest, Success) {
