@@ -1331,8 +1331,9 @@ CommandHandler.COMMANDS_['search'] = /** @type {Command} */ ({
     // Cancel item selection.
     fileManager.directoryModel.clearSelection();
 
-    // Focus the search box.
+    // Focus and unhide the search box.
     var element = fileManager.document.querySelector('#search-box input');
+    element.hidden = false;
     element.focus();
     element.select();
   },
