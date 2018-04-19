@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
 
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -28,7 +29,8 @@ class PLATFORM_EXPORT PaintChunker final {
   ~PaintChunker();
 
   bool IsInInitialState() const {
-    return chunks_.IsEmpty() && current_properties_ == PaintChunkProperties();
+    return data_.chunks.IsEmpty() &&
+           current_properties_ == PaintChunkProperties();
   }
 
   const PaintChunkProperties& CurrentPaintChunkProperties() const {
@@ -42,28 +44,46 @@ class PLATFORM_EXPORT PaintChunker final {
   // Returns true if a new chunk is created.
   bool IncrementDisplayItemIndex(const DisplayItem&);
 
-  const Vector<PaintChunk>& PaintChunks() const { return chunks_; }
+  const Vector<PaintChunk>& PaintChunks() const { return data_.chunks; }
 
-  PaintChunk& PaintChunkAt(size_t i) { return chunks_[i]; }
+  PaintChunk& PaintChunkAt(size_t i) { return data_.chunks[i]; }
   size_t LastChunkIndex() const {
-    return chunks_.IsEmpty() ? kNotFound : chunks_.size() - 1;
+    return data_.chunks.IsEmpty() ? kNotFound : data_.chunks.size() - 1;
   }
-  PaintChunk& LastChunk() { return chunks_.back(); }
+  PaintChunk& LastChunk() { return data_.chunks.back(); }
 
   PaintChunk& FindChunkByDisplayItemIndex(size_t index) {
-    auto chunk = FindChunkInVectorByDisplayItemIndex(chunks_, index);
-    DCHECK(chunk != chunks_.end());
+    auto chunk = FindChunkInVectorByDisplayItemIndex(data_.chunks, index);
+    DCHECK(chunk != data_.chunks.end());
     return *chunk;
   }
 
+  void AddRasterInvalidation(const PaintChunk& chunk, const FloatRect& rect) {
+    size_t index = ChunkIndex(chunk);
+    auto& rects = data_.raster_invalidation_rects;
+    if (rects.size() <= index)
+      rects.resize(index + 1);
+    rects[index].push_back(rect);
+  }
+
+  void TrackRasterInvalidation(const PaintChunk&,
+                               const RasterInvalidationInfo&);
+
   void Clear();
 
-  // Releases the generated paint chunk list and resets the state of this
-  // object.
-  Vector<PaintChunk> ReleasePaintChunks();
+  // Releases the generated paint chunk list and raster invalidations and
+  // resets the state of this object.
+  PaintChunksAndRasterInvalidations ReleaseData();
 
  private:
-  Vector<PaintChunk> chunks_;
+  size_t ChunkIndex(const PaintChunk& chunk) const {
+    size_t index = &chunk - &data_.chunks.front();
+    DCHECK_LT(index, data_.chunks.size());
+    return index;
+  }
+
+  PaintChunksAndRasterInvalidations data_;
+
   // TODO(pdr): Refactor current_chunk_id_ so that it is always the equal to
   // the current chunk id. This is currently not true when there is a forced
   // chunk because the current_chunk_id_ is cleared for subsequent chunks, even

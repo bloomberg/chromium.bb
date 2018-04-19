@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class PaintArtifact;
 class PaintChunkSubset;
 class IntRect;
 
@@ -32,12 +33,18 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
 
   RasterInvalidationTracking& EnsureTracking();
 
-  void Generate(const gfx::Rect& layer_bounds,
+  // Generate raster invalidations for all of the paint chunks in the paint
+  // artifact.
+  void Generate(const PaintArtifact&,
+                const gfx::Rect& layer_bounds,
+                const PropertyTreeState& layer_state);
+
+  // Generate raster invalidations for a subset of the paint chunks in the
+  // paint artifact.
+  void Generate(const PaintArtifact&,
                 const PaintChunkSubset&,
-                const PropertyTreeState&,
-                // For SPv175 only. For SPv2 we can get it from the first chunk
-                // which always exists.
-                const DisplayItemClient* layer_display_item_client = nullptr);
+                const gfx::Rect& layer_bounds,
+                const PropertyTreeState& layer_state);
 
   bool Matches(const PaintChunk& paint_chunk) const {
     return paint_chunks_info_.size() && paint_chunks_info_[0].is_cacheable &&
@@ -76,11 +83,13 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
     SkMatrix chunk_to_layer_transform;
   };
 
-  void GenerateRasterInvalidations(const PaintChunkSubset& new_chunks,
+  void GenerateRasterInvalidations(const PaintArtifact&,
+                                   const PaintChunkSubset&,
                                    const PropertyTreeState& layer_state,
                                    Vector<PaintChunkInfo>& new_chunks_info);
   size_t MatchNewChunkToOldChunk(const PaintChunk& new_chunk, size_t old_index);
-  void AddDisplayItemRasterInvalidations(const PaintChunk&,
+  void AddDisplayItemRasterInvalidations(const PaintArtifact&,
+                                         const PaintChunk&,
                                          const ChunkToLayerMapper&);
   void IncrementallyInvalidateChunk(const PaintChunkInfo& old_chunk,
                                     const PaintChunkInfo& new_chunk);

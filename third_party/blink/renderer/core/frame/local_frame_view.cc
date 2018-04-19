@@ -3308,6 +3308,9 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
         DocumentAnimations::UpdateAnimations(GetLayoutView()->GetDocument(),
                                              DocumentLifecycle::kPaintClean,
                                              composited_element_ids);
+        // Notify the controller that the artifact has been pushed and some
+        // lifecycle state can be freed (such as raster invalidations).
+        paint_controller_->FinishCycle();
       }
 
       DCHECK(!frame_->Selection().NeedsLayoutSelectionUpdate());

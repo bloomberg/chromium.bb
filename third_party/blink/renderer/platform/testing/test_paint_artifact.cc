@@ -69,13 +69,14 @@ TestPaintArtifact& TestPaintArtifact::Chunk(
 TestPaintArtifact& TestPaintArtifact::Chunk(
     DisplayItemClient& client,
     const PaintChunkProperties& properties) {
-  if (!paint_chunks_.IsEmpty())
-    paint_chunks_.back().end_index = display_item_list_.size();
-  paint_chunks_.push_back(PaintChunk(
+  auto& chunks = paint_chunks_data_.chunks;
+  if (!chunks.IsEmpty())
+    chunks.back().end_index = display_item_list_.size();
+  chunks.push_back(PaintChunk(
       display_item_list_.size(), 0,
       PaintChunk::Id(client, DisplayItem::kDrawingFirst), properties));
   // Assume PaintController has processed this chunk.
-  paint_chunks_.back().client_is_just_created = false;
+  chunks.back().client_is_just_created = false;
   return *this;
 }
 
@@ -127,7 +128,7 @@ TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
 }
 
 TestPaintArtifact& TestPaintArtifact::KnownToBeOpaque() {
-  paint_chunks_.back().known_to_be_opaque = true;
+  paint_chunks_data_.chunks.back().known_to_be_opaque = true;
   return *this;
 }
 
@@ -135,10 +136,10 @@ const PaintArtifact& TestPaintArtifact::Build() {
   if (built_)
     return paint_artifact_;
 
-  if (!paint_chunks_.IsEmpty())
-    paint_chunks_.back().end_index = display_item_list_.size();
-  paint_artifact_ =
-      PaintArtifact(std::move(display_item_list_), std::move(paint_chunks_));
+  if (!paint_chunks_data_.chunks.IsEmpty())
+    paint_chunks_data_.chunks.back().end_index = display_item_list_.size();
+  paint_artifact_ = PaintArtifact(std::move(display_item_list_),
+                                  std::move(paint_chunks_data_));
   built_ = true;
   return paint_artifact_;
 }

@@ -30,11 +30,6 @@ struct RasterInvalidationInfo {
   PaintInvalidationReason reason = PaintInvalidationReason::kFull;
 };
 
-inline bool operator==(const RasterInvalidationInfo& a,
-                       const RasterInvalidationInfo& b) {
-  return a.rect == b.rect;
-}
-
 struct RasterUnderInvalidation {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   int x;

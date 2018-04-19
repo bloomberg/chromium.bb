@@ -296,12 +296,10 @@ void GraphicsLayer::PaintRecursively() {
   PaintRecursivelyInternal(repainted_layers);
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // Clear paint property change flags that are for this paint only.
-    for (auto* layer : repainted_layers) {
-      for (const auto& chunk :
-           layer->GetPaintController().GetPaintArtifact().PaintChunks())
-        chunk.properties.property_tree_state.ClearChangedToRoot();
-    }
+    // Notify the controllers that the artifact has been pushed and some
+    // lifecycle state can be freed (such as raster invalidations).
+    for (auto* layer : repainted_layers)
+      layer->GetPaintController().FinishCycle();
   }
 
 #if DCHECK_IS_ON()
@@ -353,9 +351,8 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     // Generate raster invalidations for SPv175 (but not SPv2).
     IntRect layer_bounds(layer_state_->offset, ExpandedIntSize(Size()));
-    EnsureRasterInvalidator().Generate(
-        layer_bounds, GetPaintController().GetPaintArtifact().PaintChunks(),
-        layer_state_->state, this);
+    EnsureRasterInvalidator().Generate(GetPaintController().GetPaintArtifact(),
+                                       layer_bounds, layer_state_->state);
   }
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
@@ -1425,8 +1422,7 @@ void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     PaintChunksToCcLayer::ConvertInto(
-        GetPaintController().GetPaintArtifact().PaintChunks(),
-        layer_state_->state,
+        GetPaintController().PaintChunks(), layer_state_->state,
         gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
         paint_controller.GetPaintArtifact().GetDisplayItemList(),
         *web_display_item_list->GetCcDisplayItemList());

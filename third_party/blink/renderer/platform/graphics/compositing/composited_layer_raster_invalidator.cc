@@ -10,7 +10,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 
 namespace blink {
 
@@ -103,6 +103,7 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
 // common cases that most of the chunks can be matched in-order, the complexity
 // is slightly larger than O(n).
 void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
+    const PaintArtifact& paint_artifact,
     const PaintChunkSubset& new_chunks,
     const PropertyTreeState& layer_state,
     Vector<PaintChunkInfo>& new_chunks_info) {
@@ -156,7 +157,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
         IncrementallyInvalidateChunk(old_chunk_info, new_chunk_info);
 
       // Add the raster invalidations found by PaintController within the chunk.
-      AddDisplayItemRasterInvalidations(new_chunk, mapper);
+      AddDisplayItemRasterInvalidations(paint_artifact, new_chunk, mapper);
     }
 
     old_index = matched_old_index + 1;
@@ -177,24 +178,24 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
 }
 
 void CompositedLayerRasterInvalidator::AddDisplayItemRasterInvalidations(
+    const PaintArtifact& paint_artifact,
     const PaintChunk& chunk,
     const ChunkToLayerMapper& mapper) {
-  DCHECK(chunk.raster_invalidation_tracking.IsEmpty() ||
-         chunk.raster_invalidation_rects.size() ==
-             chunk.raster_invalidation_tracking.size());
-
-  if (chunk.raster_invalidation_rects.IsEmpty())
+  const auto* rects = paint_artifact.GetRasterInvalidationRects(chunk);
+  if (!rects || rects->IsEmpty())
     return;
 
-  for (size_t i = 0; i < chunk.raster_invalidation_rects.size(); ++i) {
-    auto rect = ClipByLayerBounds(
-        mapper.MapVisualRect(chunk.raster_invalidation_rects[i]));
+  const auto* tracking = paint_artifact.GetRasterInvalidationTracking(chunk);
+  DCHECK(!tracking || tracking->IsEmpty() || tracking->size() == rects->size());
+
+  for (size_t i = 0; i < rects->size(); ++i) {
+    auto rect = ClipByLayerBounds(mapper.MapVisualRect((*rects)[i]));
     if (rect.IsEmpty())
       continue;
     raster_invalidation_function_(rect);
 
-    if (!chunk.raster_invalidation_tracking.IsEmpty()) {
-      const auto& info = chunk.raster_invalidation_tracking[i];
+    if (tracking && !tracking->IsEmpty()) {
+      const auto& info = (*tracking)[i];
       tracking_info_->tracking.AddInvalidation(
           info.client, info.client_debug_name, rect, info.reason);
     }
@@ -258,10 +259,18 @@ RasterInvalidationTracking& CompositedLayerRasterInvalidator::EnsureTracking() {
 }
 
 void CompositedLayerRasterInvalidator::Generate(
+    const PaintArtifact& paint_artifact,
     const gfx::Rect& layer_bounds,
+    const PropertyTreeState& layer_state) {
+  Generate(paint_artifact, paint_artifact.PaintChunks(), layer_bounds,
+           layer_state);
+}
+
+void CompositedLayerRasterInvalidator::Generate(
+    const PaintArtifact& paint_artifact,
     const PaintChunkSubset& paint_chunks,
-    const PropertyTreeState& layer_state,
-    const DisplayItemClient* layer_display_item_client) {
+    const gfx::Rect& layer_bounds,
+    const PropertyTreeState& layer_state) {
   if (RuntimeEnabledFeatures::DisableRasterInvalidationEnabled())
     return;
 
@@ -291,7 +300,8 @@ void CompositedLayerRasterInvalidator::Generate(
       new_chunks_info.emplace_back(*this, mapper, chunk);
     }
   } else {
-    GenerateRasterInvalidations(paint_chunks, layer_state, new_chunks_info);
+    GenerateRasterInvalidations(paint_artifact, paint_chunks, layer_state,
+                                new_chunks_info);
   }
 
   paint_chunks_info_ = std::move(new_chunks_info);
@@ -299,12 +309,6 @@ void CompositedLayerRasterInvalidator::Generate(
   if (tracking_info_) {
     tracking_info_->old_client_debug_names =
         std::move(tracking_info_->new_client_debug_names);
-  }
-
-  for (const auto& chunk : paint_chunks) {
-    chunk.client_is_just_created = false;
-    chunk.raster_invalidation_rects.clear();
-    chunk.raster_invalidation_tracking.clear();
   }
 }
 

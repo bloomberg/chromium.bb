@@ -104,16 +104,7 @@ struct PLATFORM_EXPORT PaintChunk {
 
   bool is_cacheable : 1;
 
-  // TODO(wangxianzhu): The following fields are 'mutable' for
-  // ContentLayerClientImpl to clear them, which will be unnecessary if we don't
-  // call PaintArtifactCompositor::Update() when paint artifact is unchanged.
-  mutable bool client_is_just_created : 1;
-
-  // Rectangles that need to be re-rasterized in this chunk, in the coordinate
-  // space of the containing transform node.
-  mutable Vector<FloatRect> raster_invalidation_rects;
-
-  mutable Vector<RasterInvalidationInfo> raster_invalidation_tracking;
+  bool client_is_just_created : 1;
 
   String ToString() const;
 };
@@ -122,8 +113,7 @@ inline bool operator==(const PaintChunk& a, const PaintChunk& b) {
   return a.begin_index == b.begin_index && a.end_index == b.end_index &&
          a.id == b.id && a.properties == b.properties && a.bounds == b.bounds &&
          a.known_to_be_opaque == b.known_to_be_opaque &&
-         a.is_cacheable == b.is_cacheable &&
-         a.raster_invalidation_rects == b.raster_invalidation_rects;
+         a.is_cacheable == b.is_cacheable;
 }
 
 inline bool operator!=(const PaintChunk& a, const PaintChunk& b) {

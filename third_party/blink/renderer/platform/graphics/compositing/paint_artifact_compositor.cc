@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
@@ -256,7 +257,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   layer_offset = cc_combined_bounds.OffsetFromOrigin();
 
   auto cc_layer = content_layer_client->UpdateCcPictureLayer(
-      paint_artifact.GetDisplayItemList(), cc_combined_bounds, paint_chunks,
+      paint_artifact, paint_chunks, cc_combined_bounds,
       pending_layer.property_tree_state);
   new_content_layer_clients.push_back(std::move(content_layer_client));
   if (extra_data_for_testing_enabled_)
@@ -798,10 +799,6 @@ void PaintArtifactCompositor::Update(
   host->property_trees()->ResetCachedData();
 
   g_s_property_tree_sequence_number++;
-
-  // Clear paint property change flags that are for this update only.
-  for (const auto& chunk : paint_artifact.PaintChunks())
-    chunk.properties.property_tree_state.ClearChangedToRoot();
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
