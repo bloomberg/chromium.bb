@@ -18,6 +18,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.DeferredStartupHandler;
@@ -126,6 +127,7 @@ public class WebApkIntegrationTest {
     @Test
     @LargeTest
     @Feature({"WebApk"})
+    @FlakyTest(message = "https://crbug.com/834466")
     public void testLaunchAndNavigateOffOrigin() throws Exception {
         startWebApkActivity("org.chromium.webapk", "https://pwa.rocks/");
         waitUntilSplashscreenHides();
