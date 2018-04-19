@@ -6,14 +6,14 @@
 
 int MaterialRefreshLayoutProvider::GetCornerRadiusMetric(
     ChromeEmphasisMetric emphasis_metric,
-    const gfx::Rect& bounds) const {
+    const gfx::Size& size) const {
   switch (emphasis_metric) {
     case EMPHASIS_LOW:
       return 4;
     case EMPHASIS_MEDIUM:
       return 8;
     case EMPHASIS_HIGH:
-      return std::min(bounds.width(), bounds.height()) / 2;
+      return std::min(size.width(), size.height()) / 2;
     default:
       NOTREACHED();
       return 0;

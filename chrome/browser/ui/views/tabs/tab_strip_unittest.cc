@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_switches.h"
@@ -23,7 +24,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
@@ -97,7 +97,7 @@ class TestTabStripObserver : public TabStripObserver {
   DISALLOW_COPY_AND_ASSIGN(TestTabStripObserver);
 };
 
-class TabStripTest : public views::ViewsTestBase,
+class TabStripTest : public ChromeViewsTestBase,
                      public testing::WithParamInterface<bool> {
  public:
   TabStripTest() {}
@@ -110,7 +110,7 @@ class TabStripTest : public views::ViewsTestBase,
           switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized);
     }
 
-    views::ViewsTestBase::SetUp();
+    ChromeViewsTestBase::SetUp();
 
     controller_ = new FakeBaseTabStripController;
     tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>(controller_));
@@ -132,7 +132,7 @@ class TabStripTest : public views::ViewsTestBase,
   void TearDown() override {
     TabStrip::ResetTabSizeInfoForTesting();
     widget_.reset();
-    views::ViewsTestBase::TearDown();
+    ChromeViewsTestBase::TearDown();
   }
 
  protected:

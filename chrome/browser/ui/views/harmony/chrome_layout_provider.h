@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 
@@ -115,9 +115,8 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   // same context. Delete this TODO in Q4 2018.
 
   // Returns the corner radius specific to the given emphasis metric.
-  virtual int GetCornerRadiusMetric(
-      ChromeEmphasisMetric emphasis_metric,
-      const gfx::Rect& bounds = gfx::Rect()) const;
+  virtual int GetCornerRadiusMetric(ChromeEmphasisMetric emphasis_metric,
+                                    const gfx::Size& size = gfx::Size()) const;
 
   // Returns the shadow elevation metric for the given emphasis.
   virtual int GetShadowElevationMetric(

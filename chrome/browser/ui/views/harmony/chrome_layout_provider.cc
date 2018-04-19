@@ -121,10 +121,10 @@ bool ChromeLayoutProvider::IsHarmonyMode() const {
 
 int ChromeLayoutProvider::GetCornerRadiusMetric(
     ChromeEmphasisMetric emphasis_metric,
-    const gfx::Rect& bounds) const {
+    const gfx::Size& size) const {
   // Use the current fixed value for non-EMPHASIS_HIGH.
   return emphasis_metric == EMPHASIS_HIGH
-             ? std::min(bounds.width(), bounds.height()) / 2
+             ? std::min(size.width(), size.height()) / 2
              : 4;
 }
 

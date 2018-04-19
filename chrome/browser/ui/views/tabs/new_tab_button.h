@@ -85,6 +85,9 @@ class NewTabButton : public views::ImageButton,
   // maximized window. Used for anchoring the NewTabPromo.
   gfx::Rect GetVisibleBounds() const;
 
+  // Returns the radius to use for the button corners (in newer material UI).
+  int GetCornerRadius() const;
+
   // Computes a path corresponding to the button's outer border for a given
   // |scale| and stores it in |path|.  |button_y| is used as the y-coordinate
   // for the top of the button.  If |extend_to_top| is true, the path is
@@ -116,6 +119,13 @@ class NewTabButton : public views::ImageButton,
                                      float scale,
                                      bool extend_to_top,
                                      bool for_fill) const;
+
+  // Similar, but for the non-touch-optimized button.
+  SkPath GetNonTouchOptimizedButtonPath(int button_y,
+                                        int button_height,
+                                        float scale,
+                                        bool extend_to_top,
+                                        bool for_fill) const;
 
   void UpdateInkDropBaseColor();
 
