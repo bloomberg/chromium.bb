@@ -117,15 +117,17 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Sets the application ID for the window. The application ID identifies the
   // general class of applications to which the window belongs.
-  static void SetApplicationId(aura::Window* window, const std::string& id);
+  static void SetApplicationId(aura::Window* window,
+                               const base::Optional<std::string>& id);
   static const std::string* GetApplicationId(const aura::Window* window);
 
   // Set the application ID for the surface.
-  void SetApplicationId(const std::string& application_id);
+  void SetApplicationId(const char* application_id);
 
   // Sets the startup ID for the window. The startup ID identifies the
   // application using startup notification protocol.
-  static void SetStartupId(aura::Window* window, const std::string& id);
+  static void SetStartupId(aura::Window* window,
+                           const base::Optional<std::string>& id);
   static const std::string* GetStartupId(aura::Window* window);
 
   // Set the startup ID for the surface.
@@ -358,8 +360,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   SkColor active_frame_color_ = SK_ColorBLACK;
   SkColor inactive_frame_color_ = SK_ColorBLACK;
   bool pending_show_widget_ = false;
-  std::string application_id_;
-  std::string startup_id_;
+  base::Optional<std::string> application_id_;
+  base::Optional<std::string> startup_id_;
   base::RepeatingClosure close_callback_;
   base::OnceClosure surface_destroyed_callback_;
   ScopedConfigure* scoped_configure_ = nullptr;
