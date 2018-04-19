@@ -206,9 +206,6 @@ class WebNavigationApiTest : public ExtensionApiTest {
 
     FrameNavigationState::set_allow_extension_scheme(true);
 
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAllowLegacyExtensionManifests);
-
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
