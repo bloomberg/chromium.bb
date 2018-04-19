@@ -223,19 +223,20 @@ TEST_F(PlatformSharedMemoryRegionTest,
       PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
   ASSERT_TRUE(region.IsValid());
   EXPECT_TRUE(check(region, Mode::kWritable));
+  EXPECT_FALSE(check(region, Mode::kReadOnly));
 
   // Check kReadOnly region.
   ASSERT_TRUE(region.ConvertToReadOnly());
   EXPECT_TRUE(check(region, Mode::kReadOnly));
+  EXPECT_FALSE(check(region, Mode::kWritable));
+  EXPECT_FALSE(check(region, Mode::kUnsafe));
 
   // Check kUnsafe region.
   PlatformSharedMemoryRegion region2 =
       PlatformSharedMemoryRegion::CreateUnsafe(kRegionSize);
   ASSERT_TRUE(region2.IsValid());
   EXPECT_TRUE(check(region2, Mode::kUnsafe));
-
-  // TODO(https://crbug.com/825177): add negative expectations once all
-  // platforms implement this check.
+  EXPECT_FALSE(check(region2, Mode::kReadOnly));
 }
 
 // Tests that it's impossible to create read-only platform shared memory region.
