@@ -88,8 +88,10 @@ bool ReadOnlySharedMemoryRegion::IsValid() const {
 ReadOnlySharedMemoryRegion::ReadOnlySharedMemoryRegion(
     subtle::PlatformSharedMemoryRegion handle)
     : handle_(std::move(handle)) {
-  CHECK_EQ(handle_.GetMode(),
-           subtle::PlatformSharedMemoryRegion::Mode::kReadOnly);
+  if (handle_.IsValid()) {
+    CHECK_EQ(handle_.GetMode(),
+             subtle::PlatformSharedMemoryRegion::Mode::kReadOnly);
+  }
 }
 
 }  // namespace base

@@ -75,8 +75,10 @@ bool WritableSharedMemoryRegion::IsValid() const {
 WritableSharedMemoryRegion::WritableSharedMemoryRegion(
     subtle::PlatformSharedMemoryRegion handle)
     : handle_(std::move(handle)) {
-  CHECK_EQ(handle_.GetMode(),
-           subtle::PlatformSharedMemoryRegion::Mode::kWritable);
+  if (handle_.IsValid()) {
+    CHECK_EQ(handle_.GetMode(),
+             subtle::PlatformSharedMemoryRegion::Mode::kWritable);
+  }
 }
 
 }  // namespace base

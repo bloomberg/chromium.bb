@@ -159,4 +159,29 @@ bool CheckReadOnlyPlatformSharedMemoryRegionForTesting(
 
 #endif  // !OS_NACL
 
+WritableSharedMemoryMapping MapForTesting(
+    subtle::PlatformSharedMemoryRegion* region) {
+  return MapAtForTesting(region, 0, region->GetSize());
+}
+
+WritableSharedMemoryMapping MapAtForTesting(
+    subtle::PlatformSharedMemoryRegion* region,
+    off_t offset,
+    size_t size) {
+  void* memory = nullptr;
+  size_t mapped_size = 0;
+  if (!region->MapAt(offset, size, &memory, &mapped_size))
+    return {};
+
+  return WritableSharedMemoryMapping(memory, size, mapped_size,
+                                     region->GetGUID());
+}
+
+template <>
+std::pair<ReadOnlySharedMemoryRegion, WritableSharedMemoryMapping>
+CreateMappedRegion(size_t size) {
+  MappedReadOnlyRegion mapped_region = ReadOnlySharedMemoryRegion::Create(size);
+  return {std::move(mapped_region.region), std::move(mapped_region.mapping)};
+}
+
 }  // namespace base

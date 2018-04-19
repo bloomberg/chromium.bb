@@ -14,7 +14,6 @@ namespace base {
 
 namespace subtle {
 class PlatformSharedMemoryRegion;
-class PlatformSharedMemoryRegionTest;
 }  // namespace subtle
 
 // Base class for scoped handles to a shared memory mapping created from a
@@ -70,7 +69,6 @@ class BASE_EXPORT SharedMemoryMapping {
   void* raw_memory_ptr() const { return memory_; }
 
  private:
-  friend class subtle::PlatformSharedMemoryRegionTest;
   friend class SharedMemoryTracker;
 
   void Unmap();
@@ -126,7 +124,10 @@ class BASE_EXPORT WritableSharedMemoryMapping : public SharedMemoryMapping {
   void* memory() const { return raw_memory_ptr(); }
 
  private:
-  friend class subtle::PlatformSharedMemoryRegion;
+  friend WritableSharedMemoryMapping MapAtForTesting(
+      subtle::PlatformSharedMemoryRegion* region,
+      off_t offset,
+      size_t size);
   friend class ReadOnlySharedMemoryRegion;
   friend class WritableSharedMemoryRegion;
   friend class UnsafeSharedMemoryRegion;

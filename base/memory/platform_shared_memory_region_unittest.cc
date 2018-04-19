@@ -21,30 +21,14 @@ namespace subtle {
 
 const size_t kRegionSize = 1024;
 
-class PlatformSharedMemoryRegionTest : public ::testing::Test {
- public:
-  SharedMemoryMapping MapAt(PlatformSharedMemoryRegion* region,
-                            off_t offset,
-                            size_t bytes) {
-    void* memory = nullptr;
-    size_t mapped_size = 0;
-    if (!region->MapAt(offset, bytes, &memory, &mapped_size))
-      return {};
-
-    return SharedMemoryMapping(memory, bytes, mapped_size, region->GetGUID());
-  }
-
-  void* GetMemory(SharedMemoryMapping* mapping) {
-    return mapping->raw_memory_ptr();
-  }
-};
+class PlatformSharedMemoryRegionTest : public ::testing::Test {};
 
 // Tests that a default constructed region is invalid and produces invalid
 // mappings.
 TEST_F(PlatformSharedMemoryRegionTest, DefaultConstructedRegionIsInvalid) {
   PlatformSharedMemoryRegion region;
   EXPECT_FALSE(region.IsValid());
-  SharedMemoryMapping mapping = MapAt(&region, 0, kRegionSize);
+  WritableSharedMemoryMapping mapping = MapForTesting(&region);
   EXPECT_FALSE(mapping.IsValid());
   PlatformSharedMemoryRegion duplicate = region.Duplicate();
   EXPECT_FALSE(duplicate.IsValid());
@@ -151,7 +135,8 @@ TEST_F(PlatformSharedMemoryRegionTest, MapAtOutOfTheRegionLimitsTest) {
   PlatformSharedMemoryRegion region =
       PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
   ASSERT_TRUE(region.IsValid());
-  SharedMemoryMapping mapping = MapAt(&region, 0, region.GetSize() + 1);
+  WritableSharedMemoryMapping mapping =
+      MapAtForTesting(&region, 0, region.GetSize() + 1);
   EXPECT_FALSE(mapping.IsValid());
 }
 
@@ -166,7 +151,7 @@ TEST_F(PlatformSharedMemoryRegionTest, MapAtWithOverflowTest) {
   // |size| + |offset| should be below the region size due to overflow but
   // mapping a region with these parameters should be invalid.
   EXPECT_LT(size + offset, region.GetSize());
-  SharedMemoryMapping mapping = MapAt(&region, offset, size);
+  WritableSharedMemoryMapping mapping = MapAtForTesting(&region, offset, size);
   EXPECT_FALSE(mapping.IsValid());
 }
 
@@ -192,12 +177,12 @@ TEST_F(PlatformSharedMemoryRegionTest, MapCurrentAndMaxProtectionSetCorrectly) {
       PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
   ASSERT_TRUE(region.IsValid());
   ASSERT_TRUE(region.ConvertToReadOnly());
-  SharedMemoryMapping ro_mapping = MapAt(&region, 0, kRegionSize);
+  WritableSharedMemoryMapping ro_mapping = MapForTesting(&region);
   ASSERT_TRUE(ro_mapping.IsValid());
 
   vm_region_basic_info_64 basic_info;
   mach_vm_size_t dummy_size = 0;
-  void* temp_addr = GetMemory(&ro_mapping);
+  void* temp_addr = ro_mapping.memory();
   MachVMRegionResult result = GetBasicInfo(
       mach_task_self(), &dummy_size,
       reinterpret_cast<mach_vm_address_t*>(&temp_addr), &basic_info);

@@ -88,6 +88,7 @@ class BASE_EXPORT PlatformSharedMemoryRegion {
     kReadOnly,  // ReadOnlySharedMemoryRegion
     kWritable,  // WritableSharedMemoryRegion
     kUnsafe,    // UnsafeSharedMemoryRegion
+    kMaxValue = kUnsafe
   };
 
 // Platform-specific shared memory type used by this class.
