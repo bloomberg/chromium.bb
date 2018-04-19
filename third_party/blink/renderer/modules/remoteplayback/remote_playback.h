@@ -117,6 +117,7 @@ class MODULES_EXPORT RemotePlayback final
   void PromptCancelled() override;
   bool RemotePlaybackAvailable() const override;
   void SourceChanged(const WebURL&, bool is_source_supported) override;
+  WebString GetPresentationId() override;
 
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
