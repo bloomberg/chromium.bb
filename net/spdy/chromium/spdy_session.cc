@@ -32,6 +32,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_util.h"
+#include "net/http/http_vary_data.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -1418,7 +1419,35 @@ bool SpdySession::ValidatePushedStream(SpdyStreamId stream_id,
     return false;
   }
 
-  return true;
+  if (stream_it->second->IsReservedRemote()) {
+    // Pushed response headers have not arrived yet, match stream to request.
+    // TODO(https://crbug.com/554220): This is incorrect.  Validate pushed
+    // response headers after they arrive.
+    // TODO(https://crbug.com/831536): Add histogram.
+    return true;
+  }
+
+  HttpRequestInfo pushed_request_info;
+  ConvertHeaderBlockToHttpRequestHeaders(stream_it->second->request_headers(),
+                                         &pushed_request_info.extra_headers);
+
+  HttpResponseInfo pushed_response_info;
+  if (!SpdyHeadersToHttpResponse(stream_it->second->response_headers(),
+                                 &pushed_response_info)) {
+    return false;
+  }
+
+  HttpVaryData vary_data;
+  if (!vary_data.Init(pushed_request_info,
+                      *pushed_response_info.headers.get())) {
+    // Pushed response did not contain non-empty Vary header.
+    // TODO(https://crbug.com/831536): Add histogram.
+    return true;
+  }
+
+  // TODO(https://crbug.com/831536): Add histogram.
+  return vary_data.MatchesRequest(request_info,
+                                  *pushed_response_info.headers.get());
 }
 
 base::WeakPtr<SpdySession> SpdySession::GetWeakPtrToSession() {

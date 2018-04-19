@@ -390,6 +390,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
   const SpdyHeaderBlock& request_headers() { return request_headers_; }
+  const SpdyHeaderBlock& response_headers() { return response_headers_; }
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
