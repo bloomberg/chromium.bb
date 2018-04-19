@@ -62,7 +62,8 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
                                         mojo::MakeRequest(&sink_));
   }
   offscreen_canvas_resource_provider_ =
-      std::make_unique<OffscreenCanvasResourceProvider>(width, height);
+      std::make_unique<OffscreenCanvasResourceProvider>(width, height,
+                                                        sink_.get());
 }
 
 OffscreenCanvasFrameDispatcherImpl::~OffscreenCanvasFrameDispatcherImpl() =
