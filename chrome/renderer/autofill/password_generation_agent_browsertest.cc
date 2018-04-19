@@ -333,6 +333,28 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   ExpectGenerationAvailable("first_password", false);
 }
 
+TEST_F(PasswordGenerationAgentTest, DetectionTestNoForm) {
+  LoadHTMLWithUserGesture(kAccountCreationNoForm);
+  SetNotBlacklistedMessage(password_generation_, kAccountCreationNoForm);
+  std::vector<blink::WebElement> fieldsets;
+  std::vector<blink::WebFormControlElement> control_elements =
+      form_util::GetUnownedFormFieldElements(
+          GetMainFrame()->GetDocument().All(), &fieldsets);
+  autofill::FormData form_data;
+  UnownedPasswordFormElementsAndFieldSetsToFormData(
+      fieldsets, control_elements, nullptr, GetMainFrame()->GetDocument(),
+      nullptr /* field_value_and_properties_map */, form_util::EXTRACT_NONE,
+      &form_data, nullptr /* FormFieldData */);
+  std::vector<autofill::PasswordFormGenerationData> forms;
+  forms.push_back(autofill::PasswordFormGenerationData{
+      CalculateFormSignature(form_data),
+      CalculateFieldSignatureForField(form_data.fields[1])});
+  password_generation_->FoundFormsEligibleForGeneration(forms);
+
+  ExpectGenerationAvailable("first_password", true);
+  ExpectGenerationAvailable("second_password", false);
+}
+
 TEST_F(PasswordGenerationAgentTest, FillTest) {
   // Add event listeners for password fields.
   std::vector<base::string16> variables_to_check;
