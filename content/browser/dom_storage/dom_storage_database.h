@@ -123,6 +123,8 @@ class CONTENT_EXPORT DOMStorageDatabase {
   bool failed_to_open_;
   bool tried_to_recreate_;
   bool known_to_be_empty_;
+
+  DISALLOW_COPY_AND_ASSIGN(DOMStorageDatabase);
 };
 
 }  // namespace content
