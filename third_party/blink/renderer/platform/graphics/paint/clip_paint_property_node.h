@@ -54,7 +54,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
       const FloatRoundedRect& clip_rect,
       const FloatRoundedRect* clip_rect_excluding_overlay_scrollbars = nullptr,
       scoped_refptr<const RefCountedPath> clip_path = nullptr) {
-    bool parent_changed = PaintPropertyNode::Update(std::move(parent));
+    bool parent_changed = SetParent(std::move(parent));
 
     if (local_transform_space == local_transform_space_ &&
         clip_rect == clip_rect_ &&

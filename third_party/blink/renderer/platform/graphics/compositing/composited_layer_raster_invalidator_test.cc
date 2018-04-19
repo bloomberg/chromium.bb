@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 
@@ -21,9 +22,7 @@ class CompositedLayerRasterInvalidatorTest
   CompositedLayerRasterInvalidatorTest() : ScopedSlimmingPaintV2ForTest(true) {}
 
   static PropertyTreeState DefaultPropertyTreeState() {
-    return PropertyTreeState(TransformPaintPropertyNode::Root(),
-                             ClipPaintPropertyNode::Root(),
-                             EffectPaintPropertyNode::Root());
+    return PropertyTreeState::Root();
   }
 
   static PaintChunk Chunk(
@@ -417,14 +416,12 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
   Vector<PaintChunk> chunks = {Chunk(0), Chunk(1)};
 
-  auto layer_transform = TransformPaintPropertyNode::Create(
-      TransformPaintPropertyNode::Root(), TransformationMatrix().Scale(5),
-      FloatPoint3D());
-  auto transform0 = TransformPaintPropertyNode::Create(
-      layer_transform, TransformationMatrix().Translate(10, 20),
-      FloatPoint3D());
-  auto transform1 = TransformPaintPropertyNode::Create(
-      transform0, TransformationMatrix().Translate(-50, -60), FloatPoint3D());
+  auto layer_transform = CreateTransform(TransformPaintPropertyNode::Root(),
+                                         TransformationMatrix().Scale(5));
+  auto transform0 = CreateTransform(layer_transform,
+                                    TransformationMatrix().Translate(10, 20));
+  auto transform1 =
+      CreateTransform(transform0, TransformationMatrix().Translate(-50, -60));
 
   PropertyTreeState layer_state(layer_transform.get(),
                                 ClipPaintPropertyNode::Root(),
@@ -443,8 +440,9 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
 
   // Change layer_transform should not cause raster invalidation in the layer.
   Vector<PaintChunk> new_chunks = {Chunk(0), Chunk(1)};
-  layer_transform->Update(layer_transform->Parent(),
-                          TransformationMatrix().Scale(10), FloatPoint3D());
+  layer_transform->Update(
+      layer_transform->Parent(),
+      TransformPaintPropertyNode::State{TransformationMatrix().Scale(10)});
   new_chunks[0].properties = chunks[0].properties;
   new_chunks[1].properties = chunks[1].properties;
 
@@ -457,13 +455,13 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   // raster invalidation in the layer. This simulates a composited layer is
   // scrolled from its original location.
   Vector<PaintChunk> new_chunks1 = {Chunk(0), Chunk(1)};
-  auto new_layer_transform = TransformPaintPropertyNode::Create(
-      layer_transform, TransformationMatrix().Translate(-100, -200),
-      FloatPoint3D());
+  auto new_layer_transform = CreateTransform(
+      layer_transform, TransformationMatrix().Translate(-100, -200));
   layer_state = PropertyTreeState(new_layer_transform.get(),
                                   ClipPaintPropertyNode::Root(),
                                   EffectPaintPropertyNode::Root());
-  transform0->Update(new_layer_transform, transform0->Matrix(), FloatPoint3D());
+  transform0->Update(new_layer_transform,
+                     TransformPaintPropertyNode::State{transform0->Matrix()});
   new_chunks1[0].properties = chunks[0].properties;
   new_chunks1[1].properties = chunks[1].properties;
 
@@ -475,8 +473,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   // invalidation in the layer.
   Vector<PaintChunk> new_chunks2 = {Chunk(0), Chunk(1)};
   layer_state = DefaultPropertyTreeState();
-  transform0->Update(layer_state.Transform(), transform0->Matrix(),
-                     FloatPoint3D());
+  transform0->Update(layer_state.Transform(),
+                     TransformPaintPropertyNode::State{transform0->Matrix()});
   new_chunks2[0].properties = chunks[0].properties;
   new_chunks2[1].properties = chunks[1].properties;
 
@@ -490,12 +488,12 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   Vector<PaintChunk> new_chunks3 = {Chunk(0), Chunk(1)};
   transform0->Update(
       layer_state.Transform(),
-      TransformationMatrix(transform0->Matrix()).Translate(20, 30),
-      FloatPoint3D());
+      TransformPaintPropertyNode::State{
+          TransformationMatrix(transform0->Matrix()).Translate(20, 30)});
   transform1->Update(
       transform0,
-      TransformationMatrix(transform1->Matrix()).Translate(-20, -30),
-      FloatPoint3D());
+      TransformPaintPropertyNode::State{
+          TransformationMatrix(transform1->Matrix()).Translate(-20, -30)});
   new_chunks3[0].properties = new_chunks2[0].properties;
   new_chunks3[1].properties = new_chunks2[1].properties;
 

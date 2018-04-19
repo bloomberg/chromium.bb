@@ -60,7 +60,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       CompositingReasons direct_compositing_reasons = CompositingReason::kNone,
       const CompositorElementId& compositor_element_id = CompositorElementId(),
       const FloatPoint& paint_offset = FloatPoint()) {
-    bool parent_changed = PaintPropertyNode::Update(std::move(parent));
+    bool parent_changed = SetParent(std::move(parent));
 
     if (local_transform_space == local_transform_space_ &&
         output_clip == output_clip_ && color_filter == color_filter_ &&

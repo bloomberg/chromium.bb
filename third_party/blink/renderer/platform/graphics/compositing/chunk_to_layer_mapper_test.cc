@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
@@ -28,9 +29,9 @@ class ChunkToLayerMapperTest : public testing::Test {
   PropertyTreeState LayerState() {
     DEFINE_STATIC_REF(
         TransformPaintPropertyNode, transform,
-        TransformPaintPropertyNode::Create(
-            TransformPaintPropertyNode::Root(),
-            TransformationMatrix().Translate(123, 456), FloatPoint3D(1, 2, 3)));
+        CreateTransform(TransformPaintPropertyNode::Root(),
+                        TransformationMatrix().Translate(123, 456),
+                        FloatPoint3D(1, 2, 3)));
     DEFINE_STATIC_REF(
         ClipPaintPropertyNode, clip,
         ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(), transform,
@@ -91,9 +92,8 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkUsingLayerState) {
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
   ChunkToLayerMapper mapper(LayerState(), gfx::Vector2dF(10, 20));
-  auto transform = TransformPaintPropertyNode::Create(
-      LayerState().Transform(), TransformationMatrix().Scale(2),
-      FloatPoint3D());
+  auto transform = CreateTransform(LayerState().Transform(),
+                                   TransformationMatrix().Scale(2));
   auto clip = ClipPaintPropertyNode::Create(LayerState().Clip(),
                                             LayerState().Transform(),
                                             FloatRoundedRect(10, 10, 100, 100));
@@ -124,17 +124,16 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkDifferentState) {
   ChunkToLayerMapper mapper(LayerState(), gfx::Vector2dF(10, 20));
-  auto transform1 = TransformPaintPropertyNode::Create(
-      LayerState().Transform(), TransformationMatrix().Scale(2),
-      FloatPoint3D());
+  auto transform1 = CreateTransform(LayerState().Transform(),
+                                    TransformationMatrix().Scale(2));
   auto clip1 = ClipPaintPropertyNode::Create(
       LayerState().Clip(), LayerState().Transform(),
       FloatRoundedRect(10, 10, 100, 100));
   auto effect = LayerState().Effect();
   auto chunk1 = Chunk(PropertyTreeState(transform1.get(), clip1.get(), effect));
 
-  auto transform2 = TransformPaintPropertyNode::Create(
-      transform1, TransformationMatrix().Translate(20, 30), FloatPoint3D());
+  auto transform2 =
+      CreateTransform(transform1, TransformationMatrix().Translate(20, 30));
   auto clip2 = ClipPaintPropertyNode::Create(LayerState().Clip(), transform2,
                                              FloatRoundedRect(0, 0, 20, 20));
   auto chunk2 = Chunk(PropertyTreeState(transform2.get(), clip2.get(), effect));

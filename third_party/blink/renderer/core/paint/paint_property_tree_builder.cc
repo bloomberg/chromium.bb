@@ -78,13 +78,14 @@ static bool UpdatePreTranslation(
     scoped_refptr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin) {
+  TransformPaintPropertyNode::State state{matrix, origin};
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   if (auto* existing_pre_translation = frame_view.PreTranslation()) {
-    existing_pre_translation->Update(std::move(parent), matrix, origin);
+    existing_pre_translation->Update(std::move(parent), state);
     return false;
   }
   frame_view.SetPreTranslation(
-      TransformPaintPropertyNode::Create(std::move(parent), matrix, origin));
+      TransformPaintPropertyNode::Create(std::move(parent), state));
   return true;
 }
 
@@ -160,15 +161,15 @@ static bool UpdateScrollTranslation(
     scoped_refptr<ScrollPaintPropertyNode> scroll) {
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   // TODO(pdr): Set the correct compositing reasons here.
+  TransformPaintPropertyNode::State state;
+  state.matrix = matrix;
+  state.scroll = std::move(scroll);
   if (auto* existing_scroll_translation = frame_view.ScrollTranslation()) {
-    existing_scroll_translation->Update(
-        std::move(parent), matrix, FloatPoint3D(), false, 0,
-        CompositingReason::kNone, CompositorElementId(), std::move(scroll));
+    existing_scroll_translation->Update(std::move(parent), state);
     return false;
   }
-  frame_view.SetScrollTranslation(TransformPaintPropertyNode::Create(
-      std::move(parent), matrix, FloatPoint3D(), false, 0,
-      CompositingReason::kNone, CompositorElementId(), std::move(scroll)));
+  frame_view.SetScrollTranslation(
+      TransformPaintPropertyNode::Create(std::move(parent), state));
   return true;
 }
 
@@ -524,12 +525,14 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
   DCHECK(properties_);
 
   if (paint_offset_translation) {
+    TransformPaintPropertyNode::State state;
+    state.matrix.Translate(paint_offset_translation->X(),
+                           paint_offset_translation->Y());
+    state.flattens_inherited_transform =
+        context_.current.should_flatten_inherited_transform;
+    state.rendering_context_id = context_.current.rendering_context_id;
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
-        context_.current.transform,
-        TransformationMatrix().Translate(paint_offset_translation->X(),
-                                         paint_offset_translation->Y()),
-        FloatPoint3D(), context_.current.should_flatten_inherited_transform,
-        context_.current.rendering_context_id));
+        context_.current.transform, state));
     context_.current.transform = properties_->PaintOffsetTranslation();
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
         object_.IsLayoutView()) {
@@ -565,9 +568,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForNonRootSVG() {
     AffineTransform transform = object_.LocalToSVGParentTransform();
     if (NeedsTransformForNonRootSVG(object_)) {
       // The origin is included in the local transform, so leave origin empty.
-      OnUpdate(properties_->UpdateTransform(context_.current.transform,
-                                            TransformationMatrix(transform),
-                                            FloatPoint3D()));
+      OnUpdate(properties_->UpdateTransform(
+          context_.current.transform,
+          TransformPaintPropertyNode::State{transform}));
     } else {
       OnClear(properties_->ClearTransform());
     }
@@ -643,12 +646,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
     if (NeedsTransform(object_)) {
       auto& box = ToLayoutBox(object_);
 
-      CompositingReasons compositing_reasons =
-          CompositingReasonsForTransform(box);
-
-      TransformationMatrix matrix;
+      TransformPaintPropertyNode::State state;
+      state.origin = TransformOrigin(box);
       style.ApplyTransform(
-          matrix, box.Size(), ComputedStyle::kExcludeTransformOrigin,
+          state.matrix, box.Size(), ComputedStyle::kExcludeTransformOrigin,
           ComputedStyle::kIncludeMotionPath,
           ComputedStyle::kIncludeIndependentTransformProperties);
 
@@ -656,16 +657,18 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
       // PaintLayer is created. If a node with transform-style: preserve-3d
       // does not exist in an existing rendering context, it establishes a new
       // one.
-      unsigned rendering_context_id = context_.current.rendering_context_id;
-      if (style.Preserves3D() && !rendering_context_id)
-        rendering_context_id = PtrHash<const LayoutObject>::GetHash(&object_);
+      state.rendering_context_id = context_.current.rendering_context_id;
+      if (style.Preserves3D() && !state.rendering_context_id) {
+        state.rendering_context_id =
+            PtrHash<const LayoutObject>::GetHash(&object_);
+      }
 
-      OnUpdate(properties_->UpdateTransform(
-          context_.current.transform, matrix, TransformOrigin(box),
-          context_.current.should_flatten_inherited_transform,
-          rendering_context_id, compositing_reasons,
-          CompositorElementIdFromUniqueObjectId(
-              object_.UniqueId(), CompositorElementIdNamespace::kPrimary)));
+      state.flattens_inherited_transform =
+          context_.current.should_flatten_inherited_transform;
+      state.direct_compositing_reasons = CompositingReasonsForTransform(box);
+      state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+          object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
+      OnUpdate(properties_->UpdateTransform(context_.current.transform, state));
     } else {
       OnClear(properties_->ClearTransform());
     }
@@ -1268,14 +1271,15 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
       // The perspective node must not flatten (else nothing will get
       // perspective), but it should still extend the rendering context as
       // most transform nodes do.
-      TransformationMatrix matrix =
-          TransformationMatrix().ApplyPerspective(style.Perspective());
-      FloatPoint3D origin = PerspectiveOrigin(ToLayoutBox(object_)) +
-                            ToLayoutSize(context_.current.paint_offset);
-      OnUpdate(properties_->UpdatePerspective(
-          context_.current.transform, matrix, origin,
-          context_.current.should_flatten_inherited_transform,
-          context_.current.rendering_context_id));
+      TransformPaintPropertyNode::State state;
+      state.matrix.ApplyPerspective(style.Perspective());
+      state.origin = PerspectiveOrigin(ToLayoutBox(object_)) +
+                     ToLayoutSize(context_.current.paint_offset);
+      state.flattens_inherited_transform =
+          context_.current.should_flatten_inherited_transform;
+      state.rendering_context_id = context_.current.rendering_context_id;
+      OnUpdate(
+          properties_->UpdatePerspective(context_.current.transform, state));
     } else {
       OnClear(properties_->ClearPerspective());
     }
@@ -1299,7 +1303,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateSvgLocalToBorderBoxTransform() {
     if (!transform_to_border_box.IsIdentity() &&
         NeedsSVGLocalToBorderBoxTransform(object_)) {
       OnUpdate(properties_->UpdateSvgLocalToBorderBoxTransform(
-          context_.current.transform, transform_to_border_box, FloatPoint3D()));
+          context_.current.transform,
+          TransformPaintPropertyNode::State{transform_to_border_box}));
     } else {
       OnClear(properties_->ClearSvgLocalToBorderBoxTransform());
     }
@@ -1383,16 +1388,16 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
     // hidden with scroll offset) or cases that scroll and have a scroll node.
     if (NeedsScrollOrScrollTranslation(object_)) {
       const LayoutBox& box = ToLayoutBox(object_);
+      TransformPaintPropertyNode::State state;
       IntSize scroll_offset = box.ScrolledContentOffset();
-      TransformationMatrix scroll_offset_matrix =
-          TransformationMatrix().Translate(-scroll_offset.Width(),
-                                           -scroll_offset.Height());
-      CompositingReasons compositing_reasons = CompositingReasonsForScroll(box);
-      OnUpdate(properties_->UpdateScrollTranslation(
-          context_.current.transform, scroll_offset_matrix, FloatPoint3D(),
-          context_.current.should_flatten_inherited_transform,
-          context_.current.rendering_context_id, compositing_reasons,
-          CompositorElementId(), properties_->Scroll()));
+      state.matrix.Translate(-scroll_offset.Width(), -scroll_offset.Height());
+      state.direct_compositing_reasons = CompositingReasonsForScroll(box);
+      state.flattens_inherited_transform =
+          context_.current.should_flatten_inherited_transform;
+      state.rendering_context_id = context_.current.rendering_context_id;
+      state.scroll = properties_->Scroll();
+      OnUpdate(properties_->UpdateScrollTranslation(context_.current.transform,
+                                                    state));
     } else {
       OnClear(properties_->ClearScrollTranslation());
     }

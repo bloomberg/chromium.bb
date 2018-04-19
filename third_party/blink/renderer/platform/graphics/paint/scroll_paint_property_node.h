@@ -59,7 +59,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
               bool user_scrollable_vertical,
               MainThreadScrollingReasons main_thread_scrolling_reasons,
               CompositorElementId compositor_element_id) {
-    bool parent_changed = PaintPropertyNode::Update(std::move(parent));
+    bool parent_changed = SetParent(std::move(parent));
 
     if (container_rect == container_rect_ && contents_rect == contents_rect_ &&
         user_scrollable_horizontal == user_scrollable_horizontal_ &&

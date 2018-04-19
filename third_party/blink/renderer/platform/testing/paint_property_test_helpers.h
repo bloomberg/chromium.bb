@@ -11,11 +11,11 @@
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 
 namespace blink {
-namespace test {
 
-static inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityOnlyEffect(
+inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
     scoped_refptr<const EffectPaintPropertyNode> parent,
-    float opacity) {
+    float opacity,
+    CompositingReasons compositing_reasons = CompositingReason::kNone) {
   scoped_refptr<TransformPaintPropertyNode> local_transform_space =
       const_cast<TransformPaintPropertyNode*>(parent->LocalTransformSpace());
   scoped_refptr<ClipPaintPropertyNode> output_clip =
@@ -23,16 +23,38 @@ static inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityOnlyEffect(
   return EffectPaintPropertyNode::Create(
       std::move(parent), std::move(local_transform_space),
       std::move(output_clip), kColorFilterNone, CompositorFilterOperations(),
-      opacity, SkBlendMode::kSrcOver);
+      opacity, SkBlendMode::kSrcOver, compositing_reasons);
 }
 
-static inline PaintChunkProperties DefaultPaintChunkProperties() {
-  PaintChunkProperties default_properties(PropertyTreeState::Root());
-
-  return default_properties;
+inline scoped_refptr<TransformPaintPropertyNode> CreateTransform(
+    scoped_refptr<const TransformPaintPropertyNode> parent,
+    const TransformationMatrix& matrix,
+    const FloatPoint3D& origin = FloatPoint3D(),
+    CompositingReasons compositing_reasons = CompositingReason::kNone) {
+  TransformPaintPropertyNode::State state;
+  state.matrix = matrix;
+  state.origin = origin;
+  state.direct_compositing_reasons = compositing_reasons;
+  return TransformPaintPropertyNode::Create(parent, state);
 }
 
-}  // namespace test
+inline scoped_refptr<TransformPaintPropertyNode> CreateScrollTranslation(
+    scoped_refptr<const TransformPaintPropertyNode> parent,
+    float offset_x,
+    float offset_y,
+    scoped_refptr<const ScrollPaintPropertyNode> scroll,
+    CompositingReasons compositing_reasons = CompositingReason::kNone) {
+  TransformPaintPropertyNode::State state;
+  state.matrix.Translate(offset_x, offset_y);
+  state.direct_compositing_reasons = compositing_reasons;
+  state.scroll = scroll;
+  return TransformPaintPropertyNode::Create(parent, state);
+}
+
+inline PaintChunkProperties DefaultPaintChunkProperties() {
+  return PaintChunkProperties(PropertyTreeState::Root());
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PAINT_PROPERTY_TEST_HELPERS_H_
