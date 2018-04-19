@@ -22,12 +22,13 @@
 
 namespace {
 class TileIndependenceTest
-    : public ::libaom_test::CodecTestWith2Params<int, int>,
+    : public ::libaom_test::CodecTestWith3Params<int, int, int>,
       public ::libaom_test::EncoderTest {
  protected:
   TileIndependenceTest()
       : EncoderTest(GET_PARAM(0)), md5_fw_order_(), md5_inv_order_(),
-        n_tile_cols_(GET_PARAM(1)), n_tile_rows_(GET_PARAM(2)) {
+        n_tile_cols_(GET_PARAM(1)), n_tile_rows_(GET_PARAM(2)),
+        n_tile_groups_(GET_PARAM(3)) {
     init_flags_ = AOM_CODEC_USE_PSNR;
     aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
     cfg.w = 704;
@@ -64,6 +65,8 @@ class TileIndependenceTest
       encoder->Control(AV1E_SET_TILE_COLUMNS, n_tile_cols_);
       encoder->Control(AV1E_SET_TILE_ROWS, n_tile_rows_);
       SetCpuUsed(encoder);
+    } else if (video->frame() == 3) {
+      encoder->Control(AV1E_SET_NUM_TG, n_tile_groups_);
     }
   }
 
@@ -111,6 +114,7 @@ class TileIndependenceTest
  private:
   int n_tile_cols_;
   int n_tile_rows_;
+  int n_tile_groups_;
 };
 
 // run an encode with 2 or 4 tiles, and do the decode both in normal and
@@ -138,9 +142,9 @@ TEST_P(TileIndependenceTestLarge, MD5Match) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(TileIndependenceTest, ::testing::Values(0, 1),
-                          ::testing::Values(0, 1));
+                          ::testing::Values(0, 1), ::testing::Values(1, 2, 4));
 AV1_INSTANTIATE_TEST_CASE(TileIndependenceTestLarge, ::testing::Values(0, 1),
-                          ::testing::Values(0, 1));
+                          ::testing::Values(0, 1), ::testing::Values(1, 2, 4));
 
 class TileIndependenceLSTest : public TileIndependenceTest {};
 
@@ -161,8 +165,8 @@ TEST_P(TileIndependenceLSTestLarge, MD5Match) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(TileIndependenceLSTest, ::testing::Values(1, 2, 32),
-                          ::testing::Values(1, 2, 32));
+                          ::testing::Values(1, 2, 32), ::testing::Values(1));
 AV1_INSTANTIATE_TEST_CASE(TileIndependenceLSTestLarge,
                           ::testing::Values(1, 2, 32),
-                          ::testing::Values(1, 2, 32));
+                          ::testing::Values(1, 2, 32), ::testing::Values(1));
 }  // namespace

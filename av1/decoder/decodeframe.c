@@ -1930,8 +1930,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       TileDataDec *const tile_data = pbi->tile_data + row * cm->tile_cols + col;
       const TileBufferDec *const tile_bs_buf = &tile_buffers[row][col];
 
-      if (tile_row * cm->tile_cols + tile_col < startTile ||
-          tile_row * cm->tile_cols + tile_col > endTile)
+      if (row * cm->tile_cols + col < startTile ||
+          row * cm->tile_cols + col > endTile)
         continue;
 
       td->xd = pbi->mb;
