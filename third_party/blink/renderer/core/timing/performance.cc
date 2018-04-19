@@ -280,21 +280,29 @@ bool Performance::PassesTimingAllowCheck(
       EqualIgnoringASCIICase(timing_allow_origin_string, "null"))
     return false;
 
+  // The condition below if only needed for use-counting purposes.
   if (timing_allow_origin_string == "*") {
     UseCounter::Count(context, WebFeature::kStarInTimingAllowOrigin);
     return true;
   }
 
+  // TODO(yoav): Use CommaDelimitedHeaderSet instead of this one-off parsing
+  // algorithm.
   const String& security_origin = initiator_security_origin.ToString();
   Vector<String> timing_allow_origins;
-  timing_allow_origin_string.GetString().Split(' ', timing_allow_origins);
-  if (timing_allow_origins.size() > 1)
+  timing_allow_origin_string.GetString().Split(',', timing_allow_origins);
+  if (timing_allow_origins.size() > 1) {
     UseCounter::Count(context, WebFeature::kMultipleOriginsInTimingAllowOrigin);
-  else if (timing_allow_origins.size() == 1)
+  } else if (timing_allow_origins.size() == 1 &&
+             timing_allow_origin_string != "*") {
     UseCounter::Count(context, WebFeature::kSingleOriginInTimingAllowOrigin);
+  }
   for (const String& allow_origin : timing_allow_origins) {
-    if (allow_origin == security_origin)
+    const String allow_origin_stripped = allow_origin.StripWhiteSpace();
+    if (allow_origin_stripped == security_origin ||
+        allow_origin_stripped == "*") {
       return true;
+    }
   }
 
   return false;

@@ -2140,12 +2140,6 @@ crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-o
 # Skip the non-virtualized CORS-RFC1918 tests:
 crbug.com/763830 http/tests/security/cors-rfc1918/ [ Skip ]
 
-# This test has a failure console message with specific performance
-# numbers so a consistent baseline cannot be added. This test could be
-# imported if the test passed or if the results for testharness tests
-# were matched on pass/fail but not exact error messages.
-crbug.com/626703 external/wpt/resource-timing/resource_TAO_space.htm [ Pass Failure ]
-
 crbug.com/822757 external/wpt/resource-timing/resource_initiator_types.html [ Pass Failure ]
 
 # Working on getting the CSP tests going:
