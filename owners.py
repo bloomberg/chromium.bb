@@ -11,11 +11,10 @@ so you may need approval from both an OWNER and a reviewer in many cases.
 
 The syntax of the OWNERS file is, roughly:
 
-lines     := (\s* line? \s* "\n")*
+lines     := (\s* line? \s* comment? \s* "\n")*
 
 line      := directive
           | "per-file" \s+ glob \s* "=" \s* directive
-          | comment
 
 directive := "set noparent"
           |  "file:" glob
@@ -276,6 +275,12 @@ class Database(object):
         previous_line_was_blank = True
         continue
 
+      # If the line ends with a comment, strip the comment and store it for this
+      # line only.
+      line, _, line_comment = line.partition('#')
+      line = line.strip()
+      line_comment = [line_comment.strip()] if line_comment else []
+
       previous_line_was_blank = False
       if line == 'set noparent':
         self._stop_looking.add(dirpath)
@@ -292,7 +297,7 @@ class Database(object):
               line)
         relative_glob_string = self.os_path.relpath(full_glob_string, self.root)
         self._add_entry(relative_glob_string, directive, owners_path,
-                        lineno, '\n'.join(comment))
+                        lineno, '\n'.join(comment + line_comment))
         if reset_comment_after_use:
           comment = []
         continue
@@ -302,7 +307,7 @@ class Database(object):
             'unknown option: "%s"' % line[4:].strip())
 
       self._add_entry(dirpath, line, owners_path, lineno,
-                      ' '.join(comment))
+                      ' '.join(comment + line_comment))
       if reset_comment_after_use:
         comment = []
 

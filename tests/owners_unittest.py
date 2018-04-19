@@ -349,7 +349,7 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.files['/OWNERS'] = '\n'.join([
         '# first comment',
         ben,
-        brett,
+        brett + '  # inline comment',
         '',
         darin,
         '',
@@ -367,7 +367,7 @@ class OwnersDatabaseTest(_BaseTestCase):
 
     self.assertEqual(db.comments, {
         ben: {'': 'first comment'},
-        brett: {'': 'first comment'},
+        brett: {'': 'first comment inline comment'},
         jochen: {'bar.*': 'comment preceeded by empty line'},
         john: {'': 'comment preceeded by empty line'},
         peter: {'': 'comment in the middle'}})
