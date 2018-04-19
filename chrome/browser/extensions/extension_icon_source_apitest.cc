@@ -16,14 +16,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "url/gurl.h"
 
-class ExtensionIconSourceTest : public ExtensionApiTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        extensions::switches::kAllowLegacyExtensionManifests);
-  }
-};
+using ExtensionIconSourceTest = ExtensionApiTest;
 
 // Times out on Mac and Win. http://crbug.com/238705
 #if defined(OS_WIN) || defined(OS_MACOSX)
