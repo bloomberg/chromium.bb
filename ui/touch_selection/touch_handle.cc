@@ -330,6 +330,10 @@ void TouchHandle::UpdateHandleLayout() {
   drawable_->SetOrigin(ComputeHandleOrigin());
 }
 
+void TouchHandle::SetTransparent() {
+  SetAlpha(0.f);
+}
+
 gfx::PointF TouchHandle::ComputeHandleOrigin() const {
   gfx::PointF focus = mirror_vertical_ ? focus_top_ : focus_bottom_;
   gfx::RectF drawable_bounds = drawable_->GetVisibleBounds();

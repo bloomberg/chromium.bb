@@ -66,6 +66,9 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
     // Controls whether drag selection after a longpress is enabled.
     // Defaults to false.
     bool enable_longpress_drag_selection;
+
+    // Should we hide the active handle.
+    bool hide_active_handle;
   };
 
   TouchSelectionController(TouchSelectionControllerClient* client,

@@ -120,6 +120,10 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle : public TouchSelectionDraggable {
   // for the same frame update due to more than one parameter updates.
   void UpdateHandleLayout();
 
+  // Set the handle to transparent. Handle will be set to opaque again in
+  // EndDrag() call.
+  void SetTransparent();
+
   const gfx::PointF& focus_bottom() const { return focus_bottom_; }
   TouchHandleOrientation orientation() const { return orientation_; }
   float alpha() const { return alpha_; }
