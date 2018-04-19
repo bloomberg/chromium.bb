@@ -311,11 +311,17 @@ TEST(DOMStorageDatabaseTest, TestSimpleRemoveOneValue) {
 TEST(DOMStorageDatabaseTest, TestCanOpenAndReadWebCoreDatabase) {
   base::FilePath dir_test_data;
   ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
-  base::FilePath webcore_database = dir_test_data.AppendASCII("dom_storage");
-  webcore_database =
-      webcore_database.AppendASCII("webcore_test_database.localstorage");
+  base::FilePath test_data = dir_test_data.AppendASCII("dom_storage");
+  test_data = test_data.AppendASCII("webcore_test_database.localstorage");
+  ASSERT_TRUE(base::PathExists(test_data));
 
-  ASSERT_TRUE(base::PathExists(webcore_database));
+  // Create a temporary copy of the WebCore test database, in case DIR_TEST_DATA
+  // is read-only.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath webcore_database =
+      temp_dir.GetPath().AppendASCII("dom_storage");
+  ASSERT_TRUE(base::CopyFile(test_data, webcore_database));
 
   DOMStorageDatabase db(webcore_database);
   DOMStorageValuesMap values;
