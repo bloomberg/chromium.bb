@@ -71,6 +71,8 @@ class BASE_EXPORT AsyncDispatcher : public async_t {
 
   LinkedList<WaitState> wait_list_;
 
+  async_ops_t ops_storage_;
+
   // |lock_| must be held when accessing |task_list_|.
   base::Lock lock_;
 
