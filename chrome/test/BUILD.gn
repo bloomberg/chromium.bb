@@ -2910,6 +2910,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/lifecycle_unit_base_unittest.cc",
       "../browser/resource_coordinator/lifecycle_unit_unittest.cc",
       "../browser/resource_coordinator/local_site_characteristics_data_impl_unittest.cc",
+      "../browser/resource_coordinator/local_site_characteristics_data_reader_unittest.cc",
       "../browser/resource_coordinator/tab_activity_watcher_unittest.cc",
       "../browser/resource_coordinator/tab_lifecycle_unit_source_unittest.cc",
       "../browser/resource_coordinator/tab_lifecycle_unit_unittest.cc",
