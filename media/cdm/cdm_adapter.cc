@@ -412,21 +412,9 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
     return nullptr;
 
   static_assert(
-      cdm::ContentDecryptionModule::Host::kVersion == cdm::Host_9::kVersion,
-      "update the code below");
+      CheckSupportedCdmHostVersions(9, 10),
+      "Mismatch between GetCdmHost() and IsSupportedCdmHostVersion()");
 
-  // Ensure IsSupportedCdmHostVersion matches implementation of this function.
-  // Always update this DCHECK when updating this function.
-  // If this check fails, update this function and DCHECK or update
-  // IsSupportedCdmHostVersion.
-
-  // TODO(xhwang): Static assert these at compile time.
-  const int kMinVersion = cdm::ContentDecryptionModule_9::kVersion;
-  const int kMaxVersion = cdm::ContentDecryptionModule_10::kVersion;
-  DCHECK(!IsSupportedCdmInterfaceVersion(kMinVersion - 1));
-  for (int version = kMinVersion; version <= kMaxVersion; ++version)
-    DCHECK(IsSupportedCdmInterfaceVersion(version));
-  DCHECK(!IsSupportedCdmInterfaceVersion(kMaxVersion + 1));
   DCHECK(IsSupportedCdmHostVersion(host_interface_version));
 
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
