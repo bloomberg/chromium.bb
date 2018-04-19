@@ -51,8 +51,9 @@
 
 namespace {
 
-// The vertical margin that should be used above and below each suggestion.
-static const int kVerticalMargin = 1;
+// The minimum vertical margin that should be used above and below each
+// suggestion.
+static const int kMinVerticalMargin = 1;
 
 // The vertical padding to provide each RenderText in addition to the height of
 // the font. Where possible, RenderText uses this additional space to vertically
@@ -93,8 +94,10 @@ int GetIconAlignmentOffset() {
   return offset;
 }
 
-// Returns the margin that should appear at the top and bottom of the result.
-int GetVerticalMargin(int text_height) {
+// Returns the margins that should appear at the top and bottom of the result.
+// |match_is_answer| indicates whether the vertical margin is for a omnibox
+// result displaying an answer to the query.
+gfx::Insets GetVerticalInsets(int text_height, bool match_is_answer) {
   // Regardless of the text size, we ensure a minimum size for the content line
   // here. This minimum is larger for hybrid mouse/touch devices to ensure an
   // adequately sized touch target.
@@ -103,17 +106,29 @@ int GetVerticalMargin(int text_height) {
       omnibox::kUIExperimentVerticalMargin,
       OmniboxFieldTrial::kUIVerticalMarginParam,
       Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
-  int min_height =
+  const int min_height_for_icon =
       GetLayoutConstant(LOCATION_BAR_ICON_SIZE) + (kIconVerticalPad * 2);
+  const int min_height_for_text = text_height + 2 * kMinVerticalMargin;
+  int min_height = std::max(min_height_for_icon, min_height_for_text);
 
   // Make sure the minimum height of an omnibox result matches the height of the
   // location bar view / non-results section of the omnibox popup in touch.
   if (Md::IsTouchOptimizedUiEnabled()) {
     min_height = std::max(
         min_height, RoundedOmniboxResultsFrame::GetNonResultSectionHeight());
+    if (match_is_answer) {
+      // Answer matches apply the normal margin at the top and the minimum
+      // allowable margin at the bottom.
+      const int top_margin = gfx::ToCeiledInt((min_height - text_height) / 2.f);
+      return gfx::Insets(top_margin, 0, kMinVerticalMargin, 0);
+    }
   }
 
-  return std::max(kVerticalMargin, (min_height - text_height) / 2);
+  const int total_margin = min_height - text_height;
+  // Ceiling the top margin to account for |total_margin| being an odd number.
+  const int top_margin = gfx::ToCeiledInt(total_margin / 2.f);
+  const int bottom_margin = total_margin - top_margin;
+  return gfx::Insets(top_margin, 0, bottom_margin, 0);
 }
 
 // Returns the padding width between elements.
@@ -203,7 +218,8 @@ OmniboxSuggestionView::OmniboxSuggestionView(OmniboxResultView* result_view,
 OmniboxSuggestionView::~OmniboxSuggestionView() = default;
 
 gfx::Size OmniboxSuggestionView::CalculatePreferredSize() const {
-  int height = text_height_ + (2 * GetVerticalMargin(text_height_));
+  int height =
+      text_height_ + GetVerticalInsets(text_height_, is_answer_).height();
   if (is_answer_)
     height += GetAnswerHeight();
   else if (IsTwoLineLayout())
@@ -259,11 +275,11 @@ void OmniboxSuggestionView::Layout() {
 void OmniboxSuggestionView::LayoutAnswer() {
   const int start_x = GetIconAlignmentOffset() + HorizontalPadding();
   int x = start_x + LocationBarView::GetBorderThicknessDip();
-  int y = GetVerticalMargin(text_height_);
+  int y = GetVerticalInsets(text_height_, is_answer_).top();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   int center_icon_within = IsTwoLineLayout() ? height() : text_height_;
   icon_view_->SetPosition(
-      gfx::Point(x, (center_icon_within - icon_view_->height()) / 2));
+      gfx::Point(x, y + (center_icon_within - icon_view_->height()) / 2));
   x += icon_view_->width() + HorizontalPadding();
   content_view_->SetBounds(x, y, width() - x, text_height_);
   y += text_height_;
@@ -287,7 +303,7 @@ void OmniboxSuggestionView::LayoutAnswer() {
 void OmniboxSuggestionView::LayoutEntity() {
   int x = GetIconAlignmentOffset() + HorizontalPadding() +
           LocationBarView::GetBorderThicknessDip();
-  int y = GetVerticalMargin(text_height_);
+  int y = GetVerticalInsets(text_height_, is_answer_).top();
   int image_edge_length = text_height_ + description_view_->GetLineHeight();
   image_view_->SetImageSize(gfx::Size(image_edge_length, image_edge_length));
   image_view_->SetBounds(x, y, image_edge_length, image_edge_length);
@@ -301,8 +317,9 @@ void OmniboxSuggestionView::LayoutSplit() {
   int x = GetIconAlignmentOffset() + HorizontalPadding() +
           LocationBarView::GetBorderThicknessDip();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
+  int y = GetVerticalInsets(text_height_, is_answer_).top();
   icon_view_->SetPosition(
-      gfx::Point(x, (text_height_ - icon_view_->height()) / 2));
+      gfx::Point(x, y + (text_height_ - icon_view_->height()) / 2));
   x += icon_view_->width() + HorizontalPadding();
   int content_width = content_view_->CalculatePreferredSize().width();
   int description_width = description_view_->CalculatePreferredSize().width();
@@ -310,7 +327,6 @@ void OmniboxSuggestionView::LayoutSplit() {
       content_width, separator_view_->width(), description_width, width(),
       /*description_on_separate_line=*/false, !is_search_type_, &content_width,
       &description_width);
-  int y = GetVerticalMargin(text_height_);
   content_view_->SetBounds(x, y, content_width, text_height_);
   if (description_width != 0) {
     x += content_view_->width();
@@ -326,7 +342,7 @@ void OmniboxSuggestionView::LayoutSplit() {
 void OmniboxSuggestionView::LayoutTwoLine() {
   int x = GetIconAlignmentOffset() + HorizontalPadding() +
           LocationBarView::GetBorderThicknessDip();
-  int y = GetVerticalMargin(text_height_);
+  int y = GetVerticalInsets(text_height_, is_answer_).top();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   icon_view_->SetPosition(gfx::Point(x, (height() - icon_view_->height()) / 2));
   x += icon_view_->width() + HorizontalPadding();
