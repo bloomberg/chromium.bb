@@ -37,11 +37,11 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
   Returns the exit code of the remote package process."""
 
 
-  logging.debug('Copying package to target.')
+  logging.info('Copying package to target.')
   tmp_path = os.path.join('/tmp', os.path.basename(package_path))
   target.PutFile(package_path, tmp_path)
 
-  logging.debug('Installing package.')
+  logging.info('Installing package.')
   p = target.RunCommandPiped(['pm', 'install', tmp_path],
                              stderr=subprocess.PIPE)
   output = p.stderr.readlines()
@@ -51,7 +51,7 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
     if len(output) != 1 or 'ErrAlreadyExists' not in output[0]:
       raise Exception('Error when installing package: %s' % '\n'.join(output))
 
-  logging.debug('Running package.')
+  logging.info('Running package.')
   command = ['run', package_name] + run_args
   process = target.RunCommandPiped(command,
                                    stdin=open(os.devnull, 'r'),
@@ -70,10 +70,12 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
     print next_line.strip()
 
   process.wait()
-  if process.returncode != 0:
+  if process.returncode == 0:
+    logging.info('Process exited normally with status code 0.')
+  else:
     # The test runner returns an error status code if *any* tests fail,
     # so we should proceed anyway.
-    logging.warning('Command exited with non-zero status code %d.' %
+    logging.warning('Process exited with status code %d.' %
                     process.returncode)
 
   return process.returncode
