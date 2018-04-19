@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.webkit.URLUtil;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -61,7 +62,6 @@ class FetchHelper {
          * @param url A new value for URL tracked by the tab state.
          */
         void updateUrl(String url) {
-            if (isContextTheSame(url)) return;
             mUrl = URLUtil.isNetworkUrl(url) ? url : null;
             mFetchTimeBaselineMillis = 0;
         }
@@ -117,6 +117,7 @@ class FetchHelper {
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private TabObserver mTabObserver;
     private final Map<Integer, TabFetchReadinessState> mObservedTabs = new HashMap<>();
+    private boolean mFetchRequestedForCurrentTab = false;
 
     @Nullable
     private Tab mCurrentTab;
@@ -142,7 +143,7 @@ class FetchHelper {
             public void onUpdateUrl(Tab tab, String url) {
                 assert !tab.isIncognito();
                 if (tab == mCurrentTab) {
-                    mDelegate.clearState();
+                    clearState();
                 }
                 getTabFetchReadinessState(tab).updateUrl(url);
             }
@@ -182,8 +183,10 @@ class FetchHelper {
 
             @Override
             public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
-                if (mCurrentTab != tab) {
-                    mDelegate.clearState();
+                if (tab == null) return;
+
+                if (mCurrentTab != null && mCurrentTab != tab) {
+                    clearState();
                 }
 
                 if (tab.isIncognito()) {
@@ -202,14 +205,16 @@ class FetchHelper {
             public void tabRemoved(Tab tab) {
                 stopObservingTab(tab);
                 if (tab == mCurrentTab) {
-                    mDelegate.clearState();
+                    clearState();
                     mCurrentTab = null;
                 }
             }
         };
 
-        mTabModelObserver.didSelectTab(
-                mTabModelSelector.getCurrentTab(), TabSelectionType.FROM_USER, 0);
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+        if (currentTab == null) return;
+
+        mTabModelObserver.didSelectTab(currentTab, TabSelectionType.FROM_USER, Tab.INVALID_TAB_ID);
         if (maybeSetFetchReadinessBaseline(mCurrentTab)) {
             maybeStartFetch(mCurrentTab);
         }
@@ -246,6 +251,9 @@ class FetchHelper {
 
         assert !tab.isIncognito();
 
+        // Skip additional requests for current tab, until clearState is called.
+        if (mFetchRequestedForCurrentTab) return;
+
         TabFetchReadinessState tabFetchReadinessState = getTabFetchReadinessState(mCurrentTab);
 
         // If we are not tracking a valid page, we can bail.
@@ -263,6 +271,7 @@ class FetchHelper {
             return;
         }
 
+        mFetchRequestedForCurrentTab = true;
         mDelegate.requestSuggestions(url);
     }
 
@@ -274,14 +283,22 @@ class FetchHelper {
                 // Make sure that the tab is currently selected.
                 if (tab != mCurrentTab) return;
 
+                if (mFetchRequestedForCurrentTab) return;
+
                 if (!isObservingTab(tab)) return;
 
                 // URL in tab changed since the task was originally posted.
                 if (!getTabFetchReadinessState(tab).isContextTheSame(url)) return;
 
+                mFetchRequestedForCurrentTab = true;
                 mDelegate.requestSuggestions(url);
             }
         }, delayMillis);
+    }
+
+    private void clearState() {
+        mDelegate.clearState();
+        mFetchRequestedForCurrentTab = false;
     }
 
     /**
@@ -307,7 +324,8 @@ class FetchHelper {
     }
 
     /** Whether the tab is currently observed. */
-    private boolean isObservingTab(Tab tab) {
+    @VisibleForTesting
+    boolean isObservingTab(Tab tab) {
         return tab != null && mObservedTabs.containsKey(tab.getId());
     }
 
