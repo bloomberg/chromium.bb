@@ -177,7 +177,7 @@ PasswordsPrivateImportPasswordsFunction::Run() {
   PasswordsPrivateDelegate* delegate =
       PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
                                                             true /* create */);
-  delegate->ImportPasswords(GetAssociatedWebContents());
+  delegate->ImportPasswords(GetAssociatedWebContentsDeprecated());
   return RespondNow(NoArguments());
 }
 
@@ -196,7 +196,7 @@ PasswordsPrivateExportPasswordsFunction::Run() {
       base::BindOnce(
           &PasswordsPrivateExportPasswordsFunction::ExportRequestCompleted,
           this),
-      GetAssociatedWebContents());
+      GetAssociatedWebContentsDeprecated());
   return RespondLater();
 }
 

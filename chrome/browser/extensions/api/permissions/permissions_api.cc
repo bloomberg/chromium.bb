@@ -230,7 +230,8 @@ bool PermissionsRequestFunction::RunAsync() {
     OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
   } else {
     CHECK_EQ(DO_NOT_SKIP, auto_confirm_for_tests);
-    install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
+    install_ui_.reset(
+        new ExtensionInstallPrompt(GetAssociatedWebContentsDeprecated()));
     install_ui_->ShowDialog(
         base::Bind(&PermissionsRequestFunction::OnInstallPromptDone, this),
         extension(), nullptr,

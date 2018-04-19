@@ -669,7 +669,7 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
   }
 
   prompt_ = ExtensionsAPIClient::Get()->CreateDevicePermissionsPrompt(
-      GetAssociatedWebContents());
+      GetAssociatedWebContentsDeprecated());
   if (!prompt_) {
     return RespondNow(Error(kErrorNotSupported));
   }

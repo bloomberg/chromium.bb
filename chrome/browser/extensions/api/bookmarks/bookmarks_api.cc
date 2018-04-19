@@ -733,7 +733,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
   AddRef();
 
-  WebContents* web_contents = GetAssociatedWebContents();
+  WebContents* web_contents = GetAssociatedWebContentsDeprecated();
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, std::make_unique<ChromeSelectFilePolicy>(web_contents));

@@ -30,7 +30,7 @@ class ChromeAsyncExtensionFunction : public UIThreadExtensionFunction {
   void SetError(const std::string& error);
 
   // ExtensionFunction:
-  content::WebContents* GetAssociatedWebContents() override;
+  content::WebContents* GetAssociatedWebContentsDeprecated() override;
   const std::string& GetError() const override;
 
  protected:

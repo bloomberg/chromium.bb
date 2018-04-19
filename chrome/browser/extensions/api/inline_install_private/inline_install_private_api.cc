@@ -106,7 +106,7 @@ InlineInstallPrivateInstallFunction::Run() {
     return RespondNow(CreateResponse("Must be called with a user gesture",
                                      webstore_install::NOT_PERMITTED));
 
-  content::WebContents* web_contents = GetAssociatedWebContents();
+  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
   if (!web_contents)
     return RespondNow(CreateResponse("Must be called from a foreground page",
                                      webstore_install::NOT_PERMITTED));
