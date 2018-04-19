@@ -98,6 +98,9 @@ bool SubresourceFilter::GetIsAssociatedWithAdSubframe() {
 bool SubresourceFilter::IsAdResource(
     const KURL& resource_url,
     WebURLRequest::RequestContext request_context) {
+  if (subresource_filter_->GetIsAssociatedWithAdSubframe())
+    return true;
+
   WebDocumentSubresourceFilter::LoadPolicy load_policy;
   if (last_resource_check_result_.first ==
       std::make_pair(resource_url, request_context)) {
@@ -107,10 +110,7 @@ bool SubresourceFilter::IsAdResource(
         subresource_filter_->GetLoadPolicy(resource_url, request_context);
   }
 
-  // If the subresource cannot be identified as an ad via load_policy, check if
-  // its frame is identified as an ad.
-  return load_policy != WebDocumentSubresourceFilter::kAllow ||
-         subresource_filter_->GetIsAssociatedWithAdSubframe();
+  return load_policy != WebDocumentSubresourceFilter::kAllow;
 }
 
 void SubresourceFilter::ReportLoad(
