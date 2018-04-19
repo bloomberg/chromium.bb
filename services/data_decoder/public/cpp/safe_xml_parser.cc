@@ -28,7 +28,7 @@ class SafeXmlParser {
   ~SafeXmlParser();
 
  private:
-  void ReportResults(base::Optional<base::Value> parsed_json,
+  void ReportResults(std::unique_ptr<base::Value> parsed_json,
                      const base::Optional<std::string>& error);
 
   XmlParserCallback callback_;
@@ -56,7 +56,7 @@ SafeXmlParser::SafeXmlParser(service_manager::Connector* connector,
   // Unretained(this) is safe as the xml_parser_ptr_ is owned by this class.
   xml_parser_ptr_.set_connection_error_handler(base::BindOnce(
       &SafeXmlParser::ReportResults, base::Unretained(this),
-      /*parsed_xml=*/base::nullopt,
+      /*parsed_xml=*/nullptr,
       base::make_optional(
           std::string("Connection error with the XML parser process."))));
   xml_parser_ptr_->Parse(
@@ -66,14 +66,11 @@ SafeXmlParser::SafeXmlParser(service_manager::Connector* connector,
 
 SafeXmlParser::~SafeXmlParser() = default;
 
-void SafeXmlParser::ReportResults(base::Optional<base::Value> parsed_xml,
+void SafeXmlParser::ReportResults(std::unique_ptr<base::Value> parsed_xml,
                                   const base::Optional<std::string>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::unique_ptr<base::Value> parsed_xml_ptr =
-      parsed_xml ? base::Value::ToUniquePtrValue(std::move(parsed_xml.value()))
-                 : nullptr;
-  std::move(callback_).Run(std::move(parsed_xml_ptr), error);
+  std::move(callback_).Run(std::move(parsed_xml), error);
 
   // This should be the last interaction with this instance, safely delete.
   delete this;
