@@ -10,8 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
 import android.util.LruCache;
 import android.view.ContextMenu;
@@ -35,6 +33,7 @@ import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SyncPromoView;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -656,13 +655,8 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         mDefaultFavicon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.default_favicon);
         mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
 
-        int cornerRadius = resources.getDimensionPixelSize(R.dimen.default_favicon_corner_radius);
-        int textSize = resources.getDimensionPixelSize(R.dimen.default_favicon_icon_text_size);
-        int iconColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
-        mIconGenerator = new RoundedIconGenerator(mFaviconSize, mFaviconSize,
-                FeatureUtilities.isChromeModernDesignEnabled() ? mFaviconSize / 2 : cornerRadius,
-                iconColor, textSize);
+        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(
+                FeatureUtilities.isChromeModernDesignEnabled());
 
         RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
                 OtherSessionsActions.MENU_INITIALIZED, OtherSessionsActions.LIMIT);
@@ -694,11 +688,9 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     private Drawable getRoundedFavicon(Bitmap image, int size) {
         // TODO(injae): Move shared code between Bookmarks/History/Downloads/here to ViewUtils.java.
         // Also applies to RoundedIconGenerator. crbug.com/829550
-        RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
-                mActivity.getResources(), Bitmap.createScaledBitmap(image, size, size, true));
-        roundedIcon.setCornerRadius(mActivity.getResources().getDimensionPixelSize(
-                R.dimen.default_favicon_corner_radius));
-        return roundedIcon;
+        return ViewUtils.createRoundedBitmapDrawable(
+                Bitmap.createScaledBitmap(image, size, size, true),
+                ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
     }
 
     private void loadSyncedFavicon(final ViewHolder viewHolder, final String url) {

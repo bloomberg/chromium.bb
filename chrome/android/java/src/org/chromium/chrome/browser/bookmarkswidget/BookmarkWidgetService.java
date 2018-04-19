@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -169,7 +170,6 @@ public class BookmarkWidgetService extends RemoteViewsService {
         private RoundedIconGenerator mIconGenerator;
         private int mMinIconSizeDp;
         private int mDisplayedIconSize;
-        private int mCornerRadius;
         private int mRemainingTaskCount;
 
         @UiThread
@@ -182,12 +182,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
                     Profile.getLastUsedProfile().getOriginalProfile());
             mMinIconSizeDp = (int) res.getDimension(R.dimen.default_favicon_min_size);
             mDisplayedIconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
-            mCornerRadius = res.getDimensionPixelSize(R.dimen.default_favicon_corner_radius);
-            int textSize = res.getDimensionPixelSize(R.dimen.default_favicon_icon_text_size);
-            int iconColor =
-                    ApiCompatibilityUtils.getColor(res, R.color.default_favicon_background_color);
-            mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize, mDisplayedIconSize,
-                    mCornerRadius, iconColor, textSize);
+            mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(false);
 
             mRemainingTaskCount = 1;
             mBookmarkModel = new BookmarkModel();

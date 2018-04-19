@@ -10,8 +10,6 @@ import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
@@ -28,6 +26,7 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.MaterialProgressBar;
@@ -83,7 +82,6 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private DownloadHistoryItemWrapper mItem;
     private int mIconResId;
     private int mIconSize;
-    private int mIconCornerRadius;
     private Bitmap mThumbnailBitmap;
 
     // Controls common to completed and in-progress downloads.
@@ -116,8 +114,6 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mIconBackgroundColorSelected =
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.google_grey_600);
         mIconSize = getResources().getDimensionPixelSize(R.dimen.list_item_start_icon_width);
-        mIconCornerRadius =
-                getResources().getDimensionPixelSize(R.dimen.list_item_start_icon_corner_radius);
         mCheckedIconForegroundColorList = DownloadUtils.getIconForegroundColorList(context);
 
         mIconBackgroundResId = R.drawable.list_item_icon_modern_bg;
@@ -369,11 +365,10 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             assert !mThumbnailBitmap.isRecycled();
             mIconView.setBackground(null);
             if (FeatureUtilities.isChromeModernDesignEnabled()) {
-                RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
-                        getResources(),
-                        Bitmap.createScaledBitmap(mThumbnailBitmap, mIconSize, mIconSize, false));
-                roundedIcon.setCornerRadius(mIconCornerRadius);
-                mIconView.setImageDrawable(roundedIcon);
+                mIconView.setImageDrawable(ViewUtils.createRoundedBitmapDrawable(
+                        Bitmap.createScaledBitmap(mThumbnailBitmap, mIconSize, mIconSize, false),
+                        getResources().getDimensionPixelSize(
+                                R.dimen.list_item_start_icon_corner_radius)));
             } else {
                 mIconView.setImageBitmap(mThumbnailBitmap);
             }
