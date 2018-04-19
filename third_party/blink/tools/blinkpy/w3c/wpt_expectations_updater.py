@@ -19,7 +19,7 @@ from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.log_utils import configure_logging
-from webkitpy.w3c.wpt_manifest import WPTManifest
+from blinkpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 

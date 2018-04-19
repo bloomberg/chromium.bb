@@ -8,9 +8,9 @@ import logging
 from urllib2 import HTTPError
 
 from webkitpy.common.net.network_transaction import NetworkTimeout
-from webkitpy.w3c.chromium_commit import ChromiumCommit
-from webkitpy.w3c.chromium_finder import absolute_chromium_dir
-from webkitpy.w3c.common import CHROMIUM_WPT_DIR, is_file_exportable
+from blinkpy.w3c.chromium_commit import ChromiumCommit
+from blinkpy.w3c.chromium_finder import absolute_chromium_dir
+from blinkpy.w3c.common import CHROMIUM_WPT_DIR, is_file_exportable
 
 _log = logging.getLogger(__name__)
 URL_BASE = 'https://chromium-review.googlesource.com'

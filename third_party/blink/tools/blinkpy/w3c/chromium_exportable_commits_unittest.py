@@ -6,16 +6,16 @@ import unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import mock_git_commands
-from webkitpy.w3c.chromium_commit import ChromiumCommit
-from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
-from webkitpy.w3c.chromium_exportable_commits import (
+from blinkpy.w3c.chromium_commit import ChromiumCommit
+from blinkpy.w3c.chromium_commit_mock import MockChromiumCommit
+from blinkpy.w3c.chromium_exportable_commits import (
     _exportable_commits_since,
     get_commit_export_state,
     CommitExportState
 )
-from webkitpy.w3c.local_wpt_mock import MockLocalWPT
-from webkitpy.w3c.wpt_github import PullRequest
-from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
+from blinkpy.w3c.local_wpt_mock import MockLocalWPT
+from blinkpy.w3c.wpt_github import PullRequest
+from blinkpy.w3c.wpt_github_mock import MockWPTGitHub
 
 
 class ChromiumExportableCommitsTest(unittest.TestCase):

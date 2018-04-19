@@ -15,7 +15,7 @@ from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port.factory_mock import MockPortFactory
-from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater, SimpleTestResult, MARKER_COMMENT
+from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater, SimpleTestResult, MARKER_COMMENT
 
 
 class WPTExpectationsUpdaterTest(LoggingTestCase):

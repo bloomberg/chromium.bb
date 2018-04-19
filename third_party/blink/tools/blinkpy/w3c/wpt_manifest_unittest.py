@@ -7,7 +7,7 @@ import unittest
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.executive_mock import MockExecutive
-from webkitpy.w3c.wpt_manifest import WPTManifest
+from blinkpy.w3c.wpt_manifest import WPTManifest
 
 
 class WPTManifestUnitTest(unittest.TestCase):

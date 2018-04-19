@@ -6,12 +6,12 @@ import json
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.log_testing import LoggingTestCase
-from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
-from webkitpy.w3c.gerrit import GerritError
-from webkitpy.w3c.gerrit_mock import MockGerritAPI, MockGerritCL
-from webkitpy.w3c.test_exporter import TestExporter
-from webkitpy.w3c.wpt_github import PullRequest
-from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
+from blinkpy.w3c.chromium_commit_mock import MockChromiumCommit
+from blinkpy.w3c.gerrit import GerritError
+from blinkpy.w3c.gerrit_mock import MockGerritAPI, MockGerritCL
+from blinkpy.w3c.test_exporter import TestExporter
+from blinkpy.w3c.wpt_github import PullRequest
+from blinkpy.w3c.wpt_github_mock import MockWPTGitHub
 
 
 class TestExporterTest(LoggingTestCase):

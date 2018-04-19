@@ -9,9 +9,9 @@ from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import mock_git_commands
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.w3c.local_wpt_mock import MockLocalWPT
-from webkitpy.w3c.import_notifier import ImportNotifier, TestFailure
-from webkitpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
+from blinkpy.w3c.local_wpt_mock import MockLocalWPT
+from blinkpy.w3c.import_notifier import ImportNotifier, TestFailure
+from blinkpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
 
 
 class ImportNotifierTest(unittest.TestCase):

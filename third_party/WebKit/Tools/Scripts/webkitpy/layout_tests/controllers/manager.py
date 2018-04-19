@@ -43,6 +43,7 @@ import random
 import sys
 import time
 
+from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
 from webkitpy.common import exit_codes
 from webkitpy.common.net.file_uploader import FileUploader
 from webkitpy.common.path_finder import PathFinder
@@ -55,7 +56,7 @@ from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_input import TestInput
 from webkitpy.tool import grammar
-from webkitpy.w3c.wpt_manifest import WPTManifest
+from blinkpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 

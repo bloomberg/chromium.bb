@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from webkitpy.w3c.gerrit import GerritCL
+from blinkpy.w3c.gerrit import GerritCL
 
 # Some unused arguments may be included to match the real class's API.
 # pylint: disable=unused-argument

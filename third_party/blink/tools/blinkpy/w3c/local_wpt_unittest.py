@@ -8,7 +8,7 @@ from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.executive_mock import MockExecutive, mock_git_commands
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.w3c.local_wpt import LocalWPT
+from blinkpy.w3c.local_wpt import LocalWPT
 
 
 class LocalWPTTest(unittest.TestCase):

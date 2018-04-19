@@ -7,7 +7,7 @@
 import logging
 
 from webkitpy.common.system.executive import ScriptError
-from webkitpy.w3c.common import WPT_GH_SSH_URL_TEMPLATE, WPT_MIRROR_URL, CHROMIUM_WPT_DIR
+from blinkpy.w3c.common import WPT_GH_SSH_URL_TEMPLATE, WPT_MIRROR_URL, CHROMIUM_WPT_DIR
 
 _log = logging.getLogger(__name__)
 

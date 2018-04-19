@@ -17,9 +17,9 @@ import logging
 import re
 
 from webkitpy.common.path_finder import PathFinder
-from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
-from webkitpy.w3c.monorail import MonorailAPI, MonorailIssue
-from webkitpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
+from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from blinkpy.w3c.monorail import MonorailAPI, MonorailIssue
+from blinkpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
 
 _log = logging.getLogger(__name__)
 

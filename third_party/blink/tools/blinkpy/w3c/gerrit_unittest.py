@@ -6,8 +6,8 @@ import unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import mock_git_commands
-from webkitpy.w3c.gerrit import GerritCL
-from webkitpy.w3c.gerrit_mock import MockGerritAPI
+from blinkpy.w3c.gerrit import GerritCL
+from blinkpy.w3c.gerrit_mock import MockGerritAPI
 
 
 class GerritCLTest(unittest.TestCase):

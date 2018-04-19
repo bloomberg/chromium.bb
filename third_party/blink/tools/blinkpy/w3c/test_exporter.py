@@ -7,18 +7,18 @@
 import argparse
 import logging
 
-from webkitpy.common.system.log_utils import configure_logging
-from webkitpy.w3c.local_wpt import LocalWPT
-from webkitpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
-from webkitpy.w3c.common import (
+from blinkpy.w3c.local_wpt import LocalWPT
+from blinkpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
+from blinkpy.w3c.common import (
     WPT_GH_URL,
     WPT_REVISION_FOOTER,
     EXPORT_PR_LABEL,
     PROVISIONAL_PR_LABEL,
     read_credentials
 )
-from webkitpy.w3c.gerrit import GerritAPI, GerritCL, GerritError
-from webkitpy.w3c.wpt_github import WPTGitHub, MergeError
+from blinkpy.w3c.gerrit import GerritAPI, GerritCL, GerritError
+from blinkpy.w3c.wpt_github import WPTGitHub, MergeError
+from webkitpy.common.system.log_utils import configure_logging
 
 _log = logging.getLogger(__name__)
 
