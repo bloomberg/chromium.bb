@@ -149,23 +149,17 @@ def main_mac(options, args, results_collector):
       print_dict['app_bundle_size'] = (int(du_s) * 1024)
 
       # Count the number of files with at least one static initializer.
-      pipes = [['otool', '-l', chromium_framework_executable],
-               ['grep', '__mod_init_func', '-C', '5'],
-               ['grep', 'size']]
-      last_stdout = None
-      for pipe in pipes:
-        p = subprocess.Popen(pipe, stdin=last_stdout, stdout=subprocess.PIPE)
-        last_stdout = p.stdout
-      stdout = p.communicate()[0]
-      initializers = re.search('0x([0-9a-f]+)', stdout)
-      if initializers:
-        initializers_s = initializers.group(1)
-        if result == 0:
-          result = p.returncode
-      else:
-        initializers_s = '0'
-      word_size = 4  # Assume 32 bit
-      si_count = int(initializers_s, 16) / word_size
+      si_count = 0
+      # Find the __DATA,__mod_init_func section.
+      result, stdout = run_process(result,
+          ['otool', '-l', chromium_framework_executable])
+      section_index = stdout.find('sectname __mod_init_func')
+      if section_index != -1:
+        # If the section exists, the "size" line must follow it.
+        initializers_s = re.search('size 0x([0-9a-f]+)',
+                                   stdout[section_index:]).group(1)
+        word_size = 8  # Assume 64 bit
+        si_count = int(initializers_s, 16) / word_size
       print_dict['initializers'] = si_count
 
       # For Release builds only, use dump-static-initializers.py to print the

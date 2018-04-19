@@ -11,10 +11,6 @@ no instructions for doing so, and the tools that you used to use don't work
 because they rely on data files that were last updated at the end of 2015. So
 here's what to do to reset the expected static initializer count value.
 
-First, there's a bug in that on the Mac, static initializers are counted twice,
-probably because it's expecting pointers to be 32 bits wide rather than 64. So
-double the value.
-
 The expected static initializer count value is in the "regress" field for the
 platform. In addition, each platform has a checksum in the "sha1" field to
 ensure that you properly used the magic tools. Since the magic tools don't work
