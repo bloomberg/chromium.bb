@@ -219,10 +219,6 @@ void ChromeCleanerControllerDelegate::StartRebootPromptFlow(
   ChromeCleanerRebootDialogControllerImpl::Create(controller);
 }
 
-bool ChromeCleanerControllerDelegate::UserInitiatedCleanupsFeatureEnabled() {
-  return UserInitiatedCleanupsEnabled();
-}
-
 // static
 ChromeCleanerControllerImpl* ChromeCleanerControllerImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -242,22 +238,6 @@ ChromeCleanerController* ChromeCleanerController::GetInstance() {
 ChromeCleanerController::ChromeCleanerController() = default;
 
 ChromeCleanerController::~ChromeCleanerController() = default;
-
-bool ChromeCleanerControllerImpl::ShouldShowCleanupInSettingsUI() {
-  // When user-initiated cleanups are enabled, the cleanup card is always shown,
-  // since it's not rendered at the top of chrome://settings.
-  if (delegate_->UserInitiatedCleanupsFeatureEnabled())
-    return true;
-
-  // When user-initiated cleanups are disabled, the cleanup card is only shown
-  // when the controller's current state provides useful information about a
-  // cleanup to the user.
-  return state_ == State::kInfected || state_ == State::kCleaning ||
-         state_ == State::kRebootRequired ||
-         (state_ == State::kIdle &&
-          (idle_reason_ == IdleReason::kCleaningFailed ||
-           idle_reason_ == IdleReason::kConnectionLost));
-}
 
 ChromeCleanerController::State ChromeCleanerControllerImpl::state() const {
   return state_;
@@ -331,8 +311,6 @@ void ChromeCleanerControllerImpl::OnReporterSequenceStarted() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   RecordReporterSequenceTypeHistogram(pending_invocation_type_);
-  if (!delegate_->UserInitiatedCleanupsFeatureEnabled())
-    return;
 
   if (state() == State::kIdle)
     SetStateAndNotifyObservers(State::kReporterRunning);
@@ -344,9 +322,6 @@ void ChromeCleanerControllerImpl::OnReporterSequenceDone(
   DCHECK_NE(SwReporterInvocationResult::kUnspecified, result);
 
   RecordReporterSequenceResultHistogram(pending_invocation_type_, result);
-
-  if (!delegate_->UserInitiatedCleanupsFeatureEnabled())
-    return;
 
   // Ignore if any interaction with cleaner runs is ongoing. This can happen
   // in two situations:

@@ -62,16 +62,14 @@
         </template>
 </if>
 <if expr="_google_chrome and is_win">
-        <template is="dom-if" if="[[userInitiatedCleanupsEnabled_]]" restamp>
-          <div class="settings-box" id="chromeCleanupSubpageTrigger"
-              on-click="onChromeCleanupTap_" actionable>
-            <div class="start">$i18n{resetCleanupComputerTrigger}</div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button id="chromeCleanupArrow"
-                  aria-label="$i18n{resetCleanupComputerTrigger}"></button>
-            </paper-icon-button-light>
-          </div>
-        </template>
+        <div class="settings-box" id="chromeCleanupSubpageTrigger"
+            on-click="onChromeCleanupTap_" actionable>
+          <div class="start">$i18n{resetCleanupComputerTrigger}</div>
+          <paper-icon-button-light class="subpage-arrow">
+            <button id="chromeCleanupArrow"
+                aria-label="$i18n{resetCleanupComputerTrigger}"></button>
+          </paper-icon-button-light>
+        </div>
         <template is="dom-if" if="[[showIncompatibleApplications_]]" restamp>
           <div class="settings-box"
               id="incompatibleApplicationsSubpageTrigger"
@@ -89,15 +87,13 @@
 </if>
       </neon-animatable>
 <if expr="_google_chrome and is_win">
-      <template is="dom-if" if="[[userInitiatedCleanupsEnabled_]]">
-        <template is="dom-if" route-path="/cleanup">
-          <settings-subpage id="chromeCleanupSubpage"
-              associated-control="[[$$('#chromeCleanupSubpageTrigger')]]"
-              page-title="$i18n{resetCleanupComputerTrigger}"
-              learn-more-url="$i18n{chromeCleanupLearnMoreUrl}">
-            <settings-chrome-cleanup-page></settings-chrome-cleanup-page>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/cleanup">
+        <settings-subpage id="chromeCleanupSubpage"
+            associated-control="[[$$('#chromeCleanupSubpageTrigger')]]"
+            page-title="$i18n{resetCleanupComputerTrigger}"
+            learn-more-url="$i18n{chromeCleanupLearnMoreUrl}">
+          <settings-chrome-cleanup-page></settings-chrome-cleanup-page>
+        </settings-subpage>
       </template>
       <template is="dom-if" if="[[showIncompatibleApplications_]]">
         <template is="dom-if" route-path="/incompatibleApplications">

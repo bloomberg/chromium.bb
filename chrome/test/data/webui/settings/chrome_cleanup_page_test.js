@@ -6,7 +6,6 @@
 class TestChromeCleanupProxy extends TestBrowserProxy {
   constructor() {
     super([
-      'dismissCleanupPage',
       'registerChromeCleanerObserver',
       'restartComputer',
       'setLogsUploadPermission',
@@ -17,11 +16,6 @@ class TestChromeCleanupProxy extends TestBrowserProxy {
       'getMoreItemsPluralString',
       'getItemsToRemovePluralString',
     ]);
-  }
-
-  /** @override */
-  dismissCleanupPage(source) {
-    this.methodCalled('dismissCleanupPage', source);
   }
 
   /** @override */
@@ -91,36 +85,15 @@ const defaultScannerResults = {
 };
 
 /**
- * @param {boolean} userInitiatedCleanupsEnabled Whether the user initiated
- *     cleanup feature is enabled.
- */
-function initParametrizedTest(userInitiatedCleanupsEnabled) {
-  chromeCleanupProxy = new TestChromeCleanupProxy();
-  settings.ChromeCleanupProxyImpl.instance_ = chromeCleanupProxy;
-
-  PolymerTest.clearBody();
-
-  loadTimeData.overrideValues({
-    userInitiatedCleanupsEnabled: userInitiatedCleanupsEnabled,
-  });
-
-  chromeCleanupPage = document.createElement('settings-chrome-cleanup-page');
-  document.body.appendChild(chromeCleanupPage);
-}
-
-/**
  * @param {!Array} originalItems
  * @param {!Array} visibleItems
- * @param {boolean} listCanBeShortened
  */
-function validateVisibleItemsList(
-    originalItems, visibleItems, listCanBeShortened) {
+function validateVisibleItemsList(originalItems, visibleItems) {
   let visibleItemsList =
       visibleItems.querySelectorAll('* /deep/ .visible-item');
   const moreItemsLink = visibleItems.$$('#more-items-link');
 
-  if (!listCanBeShortened ||
-      originalItems.length <= settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW) {
+  if (originalItems.length <= settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW) {
     assertEquals(visibleItemsList.length, originalItems.length);
     assertTrue(moreItemsLink.hidden);
   } else {
@@ -141,13 +114,10 @@ function validateVisibleItemsList(
 }
 
 /**
- * @param {boolean} userInitiatedCleanupsEnabled Whether the user initiated
- *     cleanup feature is enabled.
  * @param {!Array} files The list of files to be cleaned
  * @param {!Array} registryKeys The list of registry entires to be cleaned.
  */
-function startCleanupFromInfected(
-    userInitiatedCleanupsEnabled, files, registryKeys) {
+function startCleanupFromInfected(files, registryKeys) {
   const scannerResults = {'files': files, 'registryKeys': registryKeys};
 
   cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
@@ -162,24 +132,21 @@ function startCleanupFromInfected(
 
   const filesToRemoveList = chromeCleanupPage.$$('#files-to-remove-list');
   assertTrue(!!filesToRemoveList);
-  validateVisibleItemsList(
-      files, filesToRemoveList,
-      userInitiatedCleanupsEnabled /* listCanBeShortened */);
+  validateVisibleItemsList(files, filesToRemoveList);
 
   const registryKeysListContainer = chromeCleanupPage.$$('#registry-keys-list');
   assertTrue(!!registryKeysListContainer);
-  if (userInitiatedCleanupsEnabled && registryKeys.length > 0) {
+  if (registryKeys.length > 0) {
     assertFalse(registryKeysListContainer.hidden);
     assertTrue(!!registryKeysListContainer);
-    validateVisibleItemsList(
-        registryKeys, registryKeysListContainer, true /* listCanBeShortened */);
+    validateVisibleItemsList(registryKeys, registryKeysListContainer);
   } else {
     assertTrue(registryKeysListContainer.hidden);
   }
 
   const actionButton = chromeCleanupPage.$$('#action-button');
   assertTrue(!!actionButton);
-  MockInteractions.tap(actionButton);
+  actionButton.click();
   return chromeCleanupProxy.whenCalled('startCleanup')
       .then(function(logsUploadEnabled) {
         assertFalse(logsUploadEnabled);
@@ -191,63 +158,6 @@ function startCleanupFromInfected(
         const spinner = chromeCleanupPage.$$('#waiting-spinner');
         assertTrue(spinner.active);
       });
-}
-
-function rebootFromRebootRequired() {
-  cr.webUIListenerCallback('chrome-cleanup-on-reboot-required');
-  Polymer.dom.flush();
-
-  const actionButton = chromeCleanupPage.$$('#action-button');
-  assertTrue(!!actionButton);
-  MockInteractions.tap(actionButton);
-  return chromeCleanupProxy.whenCalled('restartComputer');
-}
-
-/**
- * @param {boolean} userInitiatedCleanupsEnabled Whether the user initiated
- *     cleanup feature is enabled.
- */
-function cleanupFailure(userInitiatedCleanupsEnabled) {
-  cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
-  cr.webUIListenerCallback(
-      'chrome-cleanup-on-cleaning', true /* isPoweredByPartner */,
-      defaultScannerResults);
-  cr.webUIListenerCallback(
-      'chrome-cleanup-on-idle',
-      settings.ChromeCleanupIdleReason.CLEANING_FAILED);
-  Polymer.dom.flush();
-
-  const actionButton = chromeCleanupPage.$$('#action-button');
-  if (userInitiatedCleanupsEnabled) {
-    assertFalse(!!actionButton);
-  } else {
-    assertTrue(!!actionButton);
-    MockInteractions.tap(actionButton);
-    return chromeCleanupProxy.whenCalled('dismissCleanupPage');
-  }
-}
-
-/**
- * @param {boolean} userInitiatedCleanupsEnabled Whether the user initiated
- *     cleanup feature is enabled.
- */
-function cleanupSuccess(userInitiatedCleanupsEnabled) {
-  cr.webUIListenerCallback(
-      'chrome-cleanup-on-cleaning', true /* isPoweredByPartner */,
-      defaultScannerResults);
-  cr.webUIListenerCallback(
-      'chrome-cleanup-on-idle',
-      settings.ChromeCleanupIdleReason.CLEANING_SUCCEEDED);
-  Polymer.dom.flush();
-
-  const actionButton = chromeCleanupPage.$$('#action-button');
-  if (userInitiatedCleanupsEnabled) {
-    assertFalse(!!actionButton);
-  } else {
-    assertTrue(!!actionButton);
-    MockInteractions.tap(actionButton);
-    return chromeCleanupProxy.whenCalled('dismissCleanupPage');
-  }
 }
 
 /**
@@ -301,122 +211,15 @@ function testPartnerLogoShown(onInfected, isPoweredByPartner) {
   assertNotEquals(poweredByContainerControl.hidden, isPoweredByPartner);
 }
 
-suite('ChromeCleanupHandler_UserInitiatedCleanupsDisabled', function() {
+suite('ChromeCleanupHandler', function() {
   setup(function() {
-    initParametrizedTest(false /* userInitiatedCleanupsEnabled */);
-  });
+    chromeCleanupProxy = new TestChromeCleanupProxy();
+    settings.ChromeCleanupProxyImpl.instance_ = chromeCleanupProxy;
 
-  test('startCleanupFromInfected_FewFilesNoRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, shortFileList, []);
-  });
+    PolymerTest.clearBody();
 
-  test('startCleanupFromInfected_FewFilesFewRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, shortFileList,
-        shortRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_FewFilesExactSizeRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, shortFileList,
-        exactSizeRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_FewFilesManyRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, shortFileList,
-        longRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_ExactSizeFilesNoRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, exactSizeFileList, []);
-  });
-
-  test('startCleanupFromInfected_ExactSizeFilesFewRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, exactSizeFileList,
-        shortRegistryKeysList);
-  });
-
-  test(
-      'startCleanupFromInfected_ExactSizeFilesExactSizeRegistryKeys',
-      function() {
-        return startCleanupFromInfected(
-            false /* userInitiatedCleanupsEnabled */, exactSizeFileList,
-            exactSizeRegistryKeysList);
-      });
-
-  test('startCleanupFromInfected_ExactSizeFilesManyRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, exactSizeFileList,
-        longRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_ManyFilesNoRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, longFileList, []);
-  });
-
-  test('startCleanupFromInfected_ManyFilesFewRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, longFileList,
-        shortRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_ManyFilesExactSizeRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, longFileList,
-        exactSizeRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_ManyFilesManyRegistryKeys', function() {
-    return startCleanupFromInfected(
-        false /* userInitiatedCleanupsEnabled */, longFileList,
-        longRegistryKeysList);
-  });
-
-  test('rebootFromRebootRequired', function() {
-    return rebootFromRebootRequired();
-  });
-
-  test('cleanupFailure', function() {
-    return cleanupFailure(false /* userInitiatedCleanupsEnabled */);
-  });
-
-  test('cleanupSuccess', function() {
-    return cleanupSuccess(false /* userInitiatedCleanupsEnabled */);
-  });
-
-  test('logsUploadingOnInfected', function() {
-    return testLogsUploading(false /* testingScanOffered */);
-  });
-
-  test('onInfectedResultsProvidedByPartner_True', function() {
-    return testPartnerLogoShown(
-        true /* onInfected */, true /* isPoweredByPartner */);
-  });
-
-  test('onInfectedResultsProvidedByPartner_False', function() {
-    return testPartnerLogoShown(
-        true /* onInfected */, false /* isPoweredByPartner */);
-  });
-
-  test('onCleaningResultsProvidedByPartner_True', function() {
-    return testPartnerLogoShown(
-        false /* onInfected */, true /* isPoweredByPartner */);
-  });
-
-  test('onCleaningResultsProvidedByPartner_False', function() {
-    return testPartnerLogoShown(
-        false /* onInfected */, false /* isPoweredByPartner */);
-  });
-});
-
-suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
-  setup(function() {
-    initParametrizedTest(true /* userInitiatedCleanupsEnabled */);
+    chromeCleanupPage = document.createElement('settings-chrome-cleanup-page');
+    document.body.appendChild(chromeCleanupPage);
   });
 
   function scanOfferedOnInitiallyIdle(idleReason) {
@@ -481,7 +284,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
 
     const actionButton = chromeCleanupPage.$$('#action-button');
     assertTrue(!!actionButton);
-    MockInteractions.tap(actionButton);
+    actionButton.click();
     return chromeCleanupProxy.whenCalled('startScanning');
   });
 
@@ -515,7 +318,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
 
     const actionButton = chromeCleanupPage.$$('#action-button');
     assertTrue(!!actionButton);
-    MockInteractions.tap(actionButton);
+    actionButton.click();
     return chromeCleanupProxy.whenCalled('startScanning')
         .then(function(logsUploadEnabled) {
           assertFalse(logsUploadEnabled);
@@ -550,86 +353,91 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
   });
 
   test('startCleanupFromInfected_FewFilesNoRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, shortFileList, []);
+    return startCleanupFromInfected(shortFileList, []);
   });
 
   test('startCleanupFromInfected_FewFilesFewRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, shortFileList,
-        shortRegistryKeysList);
+    return startCleanupFromInfected(shortFileList, shortRegistryKeysList);
   });
 
   test('startCleanupFromInfected_FewFilesExactSizeRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, shortFileList,
-        exactSizeRegistryKeysList);
+    return startCleanupFromInfected(shortFileList, exactSizeRegistryKeysList);
   });
 
   test('startCleanupFromInfected_FewFilesManyRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, shortFileList,
-        longRegistryKeysList);
+    return startCleanupFromInfected(shortFileList, longRegistryKeysList);
   });
 
   test('startCleanupFromInfected_ExactSizeFilesNoRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, exactSizeFileList, []);
+    return startCleanupFromInfected(exactSizeFileList, []);
   });
 
   test('startCleanupFromInfected_ExactSizeFilesFewRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, exactSizeFileList,
-        shortRegistryKeysList);
+    return startCleanupFromInfected(exactSizeFileList, shortRegistryKeysList);
   });
 
   test(
       'startCleanupFromInfected_ExactSizeFilesExactSizeRegistryKeys',
       function() {
         return startCleanupFromInfected(
-            true /* userInitiatedCleanupsEnabled */, exactSizeFileList,
-            exactSizeRegistryKeysList);
+            exactSizeFileList, exactSizeRegistryKeysList);
       });
 
   test('startCleanupFromInfected_ExactSizeFilesManyRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, exactSizeFileList,
-        longRegistryKeysList);
+    return startCleanupFromInfected(exactSizeFileList, longRegistryKeysList);
   });
 
   test('startCleanupFromInfected_ManyFilesNoRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, longFileList, []);
+    return startCleanupFromInfected(longFileList, []);
   });
 
   test('startCleanupFromInfected_ManyFilesFewRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, longFileList,
-        shortRegistryKeysList);
+    return startCleanupFromInfected(longFileList, shortRegistryKeysList);
   });
 
   test('startCleanupFromInfected_ManyFilesExactSizeRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, longFileList,
-        exactSizeRegistryKeysList);
+    return startCleanupFromInfected(longFileList, exactSizeRegistryKeysList);
   });
 
   test('startCleanupFromInfected_ManyFilesManyRegistryKeys', function() {
-    return startCleanupFromInfected(
-        true /* userInitiatedCleanupsEnabled */, longFileList,
-        longRegistryKeysList);
+    return startCleanupFromInfected(longFileList, longRegistryKeysList);
   });
 
   test('rebootFromRebootRequired', function() {
-    return rebootFromRebootRequired();
+    cr.webUIListenerCallback('chrome-cleanup-on-reboot-required');
+    Polymer.dom.flush();
+
+    const actionButton = chromeCleanupPage.$$('#action-button');
+    assertTrue(!!actionButton);
+    actionButton.click();
+    return chromeCleanupProxy.whenCalled('restartComputer');
   });
 
   test('cleanupFailure', function() {
-    return cleanupFailure(true /* userInitiatedCleanupsEnabled */);
+    cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
+    cr.webUIListenerCallback(
+        'chrome-cleanup-on-cleaning', true /* isPoweredByPartner */,
+        defaultScannerResults);
+    cr.webUIListenerCallback(
+        'chrome-cleanup-on-idle',
+        settings.ChromeCleanupIdleReason.CLEANING_FAILED);
+    Polymer.dom.flush();
+
+    const actionButton = chromeCleanupPage.$$('#action-button');
+    assertFalse(!!actionButton);
   });
 
   test('cleanupSuccess', function() {
-    return cleanupSuccess(true /* userInitiatedCleanupsEnabled */);
+    cr.webUIListenerCallback(
+        'chrome-cleanup-on-cleaning', true /* isPoweredByPartner */,
+        defaultScannerResults);
+    cr.webUIListenerCallback(
+        'chrome-cleanup-on-idle',
+        settings.ChromeCleanupIdleReason.CLEANING_SUCCEEDED);
+    Polymer.dom.flush();
+
+    const actionButton = chromeCleanupPage.$$('#action-button');
+    assertFalse(!!actionButton);
   });
 
   test('logsUploadingOnScanOffered', function() {

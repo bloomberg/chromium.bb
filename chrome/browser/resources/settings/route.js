@@ -402,10 +402,7 @@ cr.define('settings', function() {
             r.ADVANCED.createChild('/triggeredResetProfileSettings');
         r.TRIGGERED_RESET_DIALOG.isNavigableDialog = true;
         // <if expr="_google_chrome and is_win">
-        // This should only be added if the feature is enabled.
-        if (loadTimeData.getBoolean('userInitiatedCleanupsEnabled')) {
-          r.CHROME_CLEANUP = r.RESET.createChild('/cleanup');
-        }
+        r.CHROME_CLEANUP = r.RESET.createChild('/cleanup');
         if (loadTimeData.getBoolean('showIncompatibleApplications')) {
           r.INCOMPATIBLE_APPLICATIONS =
               r.RESET.createChild('/incompatibleApplications');

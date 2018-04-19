@@ -76,14 +76,12 @@ class Waiter {
 };
 
 // Parameters for this test:
-//  - bool user_initiated_runs_enabled_: identifies if feature
-//        UserInitiatedChromeCleanups is enabled.
 //  - SwReporterInvocationType invocation_type_: identifies the type of
 //        invocation being tested.
 //  - const char* old_seed_: The old "Seed" Finch parameter saved in prefs.
 //  - const char* incoming_seed_: The new "Seed" Finch parameter.
 using ReporterRunnerTestParams =
-    std::tuple<bool, SwReporterInvocationType, const char*, const char*>;
+    std::tuple<SwReporterInvocationType, const char*, const char*>;
 
 class ReporterRunnerTest
     : public InProcessBrowserTest,
@@ -91,8 +89,7 @@ class ReporterRunnerTest
       public ::testing::WithParamInterface<ReporterRunnerTestParams> {
  public:
   ReporterRunnerTest() {
-    std::tie(user_initiated_runs_enabled_, invocation_type_, old_seed_,
-             incoming_seed_) = GetParam();
+    std::tie(invocation_type_, old_seed_, incoming_seed_) = GetParam();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -106,14 +103,6 @@ class ReporterRunnerTest
   }
 
   void SetUpOnMainThread() override {
-    if (user_initiated_runs_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(
-          kUserInitiatedChromeCleanupsFeature);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          kUserInitiatedChromeCleanupsFeature);
-    }
-
     // SetDateInLocalState calculates a time as Now() minus an offset. Move the
     // simulated clock ahead far enough that this calculation won't underflow.
     FastForwardBy(
@@ -434,7 +423,6 @@ class ReporterRunnerTest
   base::Time now_;
 
   // Test parameters.
-  bool user_initiated_runs_enabled_;
   SwReporterInvocationType invocation_type_;
   std::string old_seed_;
   std::string incoming_seed_;
@@ -778,26 +766,13 @@ struct ReporterRunTestParamsToString {
       const ::testing::TestParamInfo<ReporterRunnerTestParams>& info) const {
     std::ostringstream param_name;
     param_name << std::get<0>(info.param) << "_";
-    param_name << std::get<1>(info.param) << "_";
-    const std::string old_seed(std::get<2>(info.param));
+    const std::string old_seed(std::get<1>(info.param));
     param_name << (old_seed.empty() ? "EmptySeed" : old_seed) << "_";
-    const std::string incoming_seed(std::get<3>(info.param));
+    const std::string incoming_seed(std::get<2>(info.param));
     param_name << (incoming_seed.empty() ? "EmptySeed" : incoming_seed);
     return param_name.str();
   }
 };
-
-// Tests for kUserInitiatedChromeCleanupsFeature disabled (only periodic runs
-// are possible).
-INSTANTIATE_TEST_CASE_P(
-    UserInitiatedRunsDisabled,
-    ReporterRunnerTest,
-    ::testing::Combine(
-        ::testing::Values(false),  // user_initiated_runs_enabled_
-        ::testing::Values(SwReporterInvocationType::kPeriodicRun),
-        ::testing::Values("", "Seed1"),            // old_seed_
-        ::testing::Values("", "Seed1", "Seed2")),  // incoming_seed_
-    ReporterRunTestParamsToString());
 
 // Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
 // are allowed).
@@ -805,7 +780,6 @@ INSTANTIATE_TEST_CASE_P(
     UserInitiatedRunsEnabled,
     ReporterRunnerTest,
     ::testing::Combine(
-        ::testing::Values(true),  // user_initiated_runs_enabled_
         ::testing::Values(
             SwReporterInvocationType::kPeriodicRun,
             SwReporterInvocationType::kUserInitiatedWithLogsDisallowed,

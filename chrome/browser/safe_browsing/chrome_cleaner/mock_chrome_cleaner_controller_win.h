@@ -20,7 +20,6 @@ class MockChromeCleanerController
   // relays the argument to OnSwReporterReady_.
   void OnSwReporterReady(SwReporterInvocationSequence&& sequence) override;
 
-  MOCK_METHOD0(ShouldShowCleanupInSettingsUI, bool());
   MOCK_CONST_METHOD0(state, State());
   MOCK_CONST_METHOD0(idle_reason, IdleReason());
   MOCK_METHOD1(SetLogsEnabled, void(bool));

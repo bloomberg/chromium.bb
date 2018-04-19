@@ -858,10 +858,7 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
       {"chromeCleanupTitleNothingFound",
        IDS_SETTINGS_RESET_CLEANUP_TITLE_NOTHING_FOUND},
       {"chromeCleanupTitleRemove", IDS_SETTINGS_RESET_CLEANUP_TITLE_REMOVE},
-      {"chromeCleanupTitleRemoved",
-       safe_browsing::UserInitiatedCleanupsEnabled()
-           ? IDS_SETTINGS_RESET_CLEANUP_TITLE_DONE
-           : IDS_SETTINGS_RESET_CLEANUP_TITLE_REMOVED},
+      {"chromeCleanupTitleRemoved", IDS_SETTINGS_RESET_CLEANUP_TITLE_DONE},
       {"chromeCleanupTitleRemoving", IDS_SETTINGS_RESET_CLEANUP_TITLE_REMOVING},
       {"chromeCleanupTitleRestart", IDS_SETTINGS_RESET_CLEANUP_TITLE_RESTART},
       {"chromeCleanupTitleScanning", IDS_SETTINGS_RESET_CLEANUP_TITLE_SCANNING},
@@ -936,9 +933,7 @@ void AddIncompatibleApplicationsStrings(content::WebUIDataSource* html_source) {
 void AddResetStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-    {"resetPageTitle", safe_browsing::UserInitiatedCleanupsEnabled()
-                           ? IDS_SETTINGS_RESET_AND_CLEANUP
-                           : IDS_SETTINGS_RESET},
+    {"resetPageTitle", IDS_SETTINGS_RESET_AND_CLEANUP},
 #else
     {"resetPageTitle", IDS_SETTINGS_RESET},
 #endif

@@ -44,9 +44,6 @@ class ChromeCleanerControllerDelegate {
 
   // Starts the reboot prompt flow if a cleanup requires a machine restart.
   virtual void StartRebootPromptFlow(ChromeCleanerController* controller);
-
-  // Returns true if the UserInitiatedCleanups feature is enabled.
-  virtual bool UserInitiatedCleanupsFeatureEnabled();
 };
 
 class ChromeCleanerControllerImpl : public ChromeCleanerController {
@@ -55,7 +52,6 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   static ChromeCleanerControllerImpl* GetInstance();
 
   // ChromeCleanerController overrides.
-  bool ShouldShowCleanupInSettingsUI() override;
   State state() const override;
   IdleReason idle_reason() const override;
   void SetLogsEnabled(bool logs_enabled) override;
