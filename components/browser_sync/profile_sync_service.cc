@@ -602,8 +602,6 @@ void ProfileSyncService::AccessTokenFetched(const GoogleServiceAuthError& error,
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
       if (!sync_prefs_.SyncHasAuthError()) {
         sync_prefs_.SetSyncAuthError(true);
-        UMA_HISTOGRAM_ENUMERATION("Sync.SyncAuthError", AUTH_ERROR_ENCOUNTERED,
-                                  AUTH_ERROR_LIMIT);
       }
       FALLTHROUGH;
     default:

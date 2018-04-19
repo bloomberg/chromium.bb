@@ -588,12 +588,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
     ERROR_REASON_LIMIT
   };
 
-  enum AuthErrorMetric {
-    AUTH_ERROR_ENCOUNTERED,
-    AUTH_ERROR_FIXED,
-    AUTH_ERROR_LIMIT
-  };
-
   // The initial state of sync, for the Sync.InitialState histogram. Even if
   // this value is CAN_START, sync startup might fail for reasons that we may
   // want to consider logging in the future, such as a passphrase needed for
