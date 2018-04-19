@@ -30,6 +30,7 @@
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
+#include "content/browser/android/content_feature_list.h"
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
@@ -114,6 +115,10 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
   config.enable_longpress_drag_selection =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLongpressDragSelection);
+  config.hide_active_handle =
+      base::FeatureList::IsEnabled(
+          content::android::kEnhancedSelectionInsertionHandle) &&
+      base::android::BuildInfo::GetInstance()->is_at_least_p();
   return std::make_unique<ui::TouchSelectionController>(client, config);
 }
 

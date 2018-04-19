@@ -34,6 +34,13 @@ float TouchSelectionControllerTestApi::GetEndAlpha() const {
   return 0.f;
 }
 
+float TouchSelectionControllerTestApi::GetInsertionHandleAlpha() const {
+  if (controller_->active_status_ == TouchSelectionController::INSERTION_ACTIVE)
+    return controller_->insertion_handle_->alpha();
+
+  return 0.f;
+}
+
 TouchHandleOrientation
 TouchSelectionControllerTestApi::GetStartHandleOrientation() const {
   if (controller_->active_status_ != TouchSelectionController::SELECTION_ACTIVE)

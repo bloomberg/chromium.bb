@@ -64,6 +64,7 @@ public class BuildInfo {
                 buildInfo.androidBuildFingerprint, buildInfo.gmsVersionCode,
                 buildInfo.installerPackageName, buildInfo.abiString, BuildConfig.FIREBASE_APP_ID,
                 buildInfo.customThemes, buildInfo.resourcesVersion, buildInfo.extractedFileSuffix,
+                isAtLeastP() ? "1" : "0",
         };
     }
 

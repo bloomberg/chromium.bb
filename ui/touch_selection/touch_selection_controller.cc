@@ -46,7 +46,8 @@ TouchSelectionController::Config::Config()
     : max_tap_duration(base::TimeDelta::FromMilliseconds(300)),
       tap_slop(8),
       enable_adaptive_handle_orientation(false),
-      enable_longpress_drag_selection(false) {}
+      enable_longpress_drag_selection(false),
+      hide_active_handle(false) {}
 
 TouchSelectionController::Config::~Config() {
 }
@@ -341,6 +342,8 @@ void TouchSelectionController::OnDragBegin(
     const gfx::PointF& drag_position) {
   if (&draggable == insertion_handle_.get()) {
     DCHECK_EQ(active_status_, INSERTION_ACTIVE);
+    if (config_.hide_active_handle)
+      insertion_handle_->SetTransparent();
     client_->OnSelectionEvent(INSERTION_HANDLE_DRAG_STARTED);
     anchor_drag_to_selection_start_ = true;
     return;
@@ -357,6 +360,14 @@ void TouchSelectionController::OnDragBegin(
     anchor_drag_to_selection_start_ =
         (drag_position - GetStartPosition()).LengthSquared() <
         (drag_position - GetEndPosition()).LengthSquared();
+  }
+
+  if (config_.hide_active_handle) {
+    if (&draggable == start_selection_handle_.get()) {
+      start_selection_handle_->SetTransparent();
+    } else if (&draggable == end_selection_handle_.get()) {
+      end_selection_handle_->SetTransparent();
+    }
   }
 
   gfx::PointF base = GetStartPosition() + GetStartLineOffset();
