@@ -60,7 +60,6 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     private final int mVerticalFadeDistance;
     private final int mNegativeSoftwareVerticalOffset;
     private final int[] mTempLocation;
-    private final boolean mTranslateMenuItemsOnShow;
 
     private PopupWindow mPopup;
     private ListView mListView;
@@ -80,11 +79,9 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      * @param itemDividerHeight Desired height for the divider between app menu items.
      * @param handler AppMenuHandler receives callbacks from AppMenu.
      * @param res Resources object used to get dimensions and style attributes.
-     * @param translateMenuItemsOnShow Whether menu items should be translated during the animation
-     *                                 that is run when the menu is shown.
      */
     AppMenu(Menu menu, int itemRowHeight, int itemDividerHeight, AppMenuHandler handler,
-            Resources res, boolean translateMenuItemsOnShow) {
+            Resources res) {
         mMenu = menu;
 
         mItemRowHeight = itemRowHeight;
@@ -100,7 +97,6 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         mVerticalFadeDistance = res.getDimensionPixelSize(R.dimen.menu_vertical_fade_distance);
 
         mTempLocation = new int[2];
-        mTranslateMenuItemsOnShow = translateMenuItemsOnShow;
     }
 
     /**
@@ -242,8 +238,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
 
         // A List adapter for visible items in the Menu. The first row is added as a header to the
         // list view.
-        mAdapter = new AppMenuAdapter(this, menuItems, LayoutInflater.from(context),
-                highlightedItemId, mTranslateMenuItemsOnShow);
+        mAdapter = new AppMenuAdapter(
+                this, menuItems, LayoutInflater.from(context), highlightedItemId);
 
         ViewGroup contentView =
                 (ViewGroup) LayoutInflater.from(context).inflate(R.layout.app_menu_layout, null);
