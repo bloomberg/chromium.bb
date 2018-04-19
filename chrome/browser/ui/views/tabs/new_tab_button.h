@@ -110,9 +110,11 @@ class NewTabButton : public views::ImageButton,
   // Returns the path for the touch-optimized new tab button for the given
   // |scale|. |button_y| is the button's top y-cordinate. If |for_fill| is true,
   // the path will be shrunk by 1px from all sides to allow room for the stroke
-  // to show up.
+  // to show up. If |extend_to_top| is true, the path is extended vertically to
+  // y = 0.
   SkPath GetTouchOptimizedButtonPath(float button_y,
                                      float scale,
+                                     bool extend_to_top,
                                      bool for_fill) const;
 
   void UpdateInkDropBaseColor();
