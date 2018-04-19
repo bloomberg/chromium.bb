@@ -313,7 +313,7 @@ EasyUnlockPrivateShowErrorBubbleFunction::
 
 ExtensionFunction::ResponseAction
 EasyUnlockPrivateShowErrorBubbleFunction::Run() {
-  content::WebContents* web_contents = GetAssociatedWebContents();
+  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
   if (!web_contents)
     return RespondNow(Error("A foreground app window is required."));
 

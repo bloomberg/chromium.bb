@@ -92,7 +92,7 @@ WebstoreWidgetPrivateInstallWebstoreItemFunction::Run() {
 
   scoped_refptr<webstore_widget::AppInstaller> installer(
       new webstore_widget::AppInstaller(
-          GetAssociatedWebContents(), params->item_id,
+          GetAssociatedWebContentsDeprecated(), params->item_id,
           Profile::FromBrowserContext(browser_context()),
           params->silent_installation, callback));
   // installer will be AddRef()'d in BeginInstall().

@@ -240,7 +240,7 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
     return;
   }
 
-  content::WebContents* web_contents = GetAssociatedWebContents();
+  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
   if (!web_contents) {
     error_ = "No web contents.";
     SendResponse(false);

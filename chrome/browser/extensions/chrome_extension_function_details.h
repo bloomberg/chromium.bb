@@ -50,9 +50,9 @@ class ChromeExtensionFunctionDetails {
   // use ExtensionFunction::GetSenderWebContents(). We should get rid of this.
   Browser* GetCurrentBrowser() const;
 
-  // Gets the "current" web contents if any. If there is no associated web
-  // contents then defaults to the foremost one.
-  content::WebContents* GetAssociatedWebContents();
+  // Do not use.
+  // See comments on ExtensionFunction::GetAssociatedWebContentsDeprecated().
+  content::WebContents* GetAssociatedWebContentsDeprecated();
 
   // Find a UI surface to display any UI (like a permission prompt) for the
   // extension calling this function. This will check, in order of preference,

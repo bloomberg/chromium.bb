@@ -29,8 +29,9 @@ void ChromeAsyncExtensionFunction::SetError(const std::string& error) {
   error_ = error;
 }
 
-content::WebContents* ChromeAsyncExtensionFunction::GetAssociatedWebContents() {
-  return chrome_details_.GetAssociatedWebContents();
+content::WebContents*
+ChromeAsyncExtensionFunction::GetAssociatedWebContentsDeprecated() {
+  return chrome_details_.GetAssociatedWebContentsDeprecated();
 }
 
 const std::string& ChromeAsyncExtensionFunction::GetError() const {

@@ -259,12 +259,13 @@ bool ChromeFileSystemDelegate::ShowSelectFileDialog(
     }
   } else {
     // TODO(michaelpg): As a workaround for crbug.com/736930, allow this to work
-    // from a background page by using the the extended GetAssociatedWebContents
-    // function provided by ChromeExtensionFunctionDetails. This is safe because
-    // only whitelisted extensions can access the chrome.fileSystem API;
-    // platform apps cannot open the file picker from a background page.
+    // from a background page by using the the extended
+    // GetAssociatedWebContentsDeprecated() function provided by
+    // ChromeExtensionFunctionDetails. This is safe because only whitelisted
+    // extensions can access the chrome.fileSystem API; platform apps cannot
+    // open the file picker from a background page.
     web_contents = ChromeExtensionFunctionDetails(extension_function.get())
-                       .GetAssociatedWebContents();
+                       .GetAssociatedWebContentsDeprecated();
   }
 
   if (!web_contents)

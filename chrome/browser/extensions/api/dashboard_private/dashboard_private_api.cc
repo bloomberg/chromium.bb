@@ -124,7 +124,7 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
     return;
   }
 
-  content::WebContents* web_contents = GetAssociatedWebContents();
+  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
   if (!web_contents) {
     // The browser window has gone away.
     Respond(BuildResponse(api::dashboard_private::RESULT_USER_CANCELLED,

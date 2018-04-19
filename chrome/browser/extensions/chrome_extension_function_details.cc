@@ -71,7 +71,7 @@ Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
 }
 
 content::WebContents*
-ChromeExtensionFunctionDetails::GetAssociatedWebContents() {
+ChromeExtensionFunctionDetails::GetAssociatedWebContentsDeprecated() {
   if (function_->dispatcher()) {
     content::WebContents* web_contents =
         function_->dispatcher()->GetAssociatedWebContents();

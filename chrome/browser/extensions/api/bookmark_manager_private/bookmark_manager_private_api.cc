@@ -566,7 +566,7 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
   if (!GetNodesFromVector(model, params->id_list, &nodes))
     return false;
 
-  content::WebContents* web_contents = GetAssociatedWebContents();
+  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
   CHECK(web_contents);
 
   ui::DragDropTypes::DragEventSource source =
@@ -605,7 +605,7 @@ bool BookmarkManagerPrivateDropFunction::RunOnReady() {
   else
     drop_index = drop_parent->child_count();
 
-  WebContents* web_contents = GetAssociatedWebContents();
+  WebContents* web_contents = GetAssociatedWebContentsDeprecated();
   CHECK(web_contents);
   BookmarkManagerPrivateDragEventRouter* router =
       BookmarkManagerPrivateDragEventRouter::FromWebContents(web_contents);

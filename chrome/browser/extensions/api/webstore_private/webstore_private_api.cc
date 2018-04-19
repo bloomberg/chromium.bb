@@ -299,7 +299,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     return;
   }
 
-  content::WebContents* web_contents = GetAssociatedWebContents();
+  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
   if (!web_contents) {
     // The browser window has gone away.
     Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
@@ -445,7 +445,7 @@ WebstorePrivateCompleteInstallFunction::Run() {
   // the whitelist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       chrome_details_.GetProfile(), this,
-      chrome_details_.GetAssociatedWebContents(), params->expected_id,
+      chrome_details_.GetAssociatedWebContentsDeprecated(), params->expected_id,
       std::move(approval_), WebstoreInstaller::INSTALL_SOURCE_OTHER);
   installer->Start();
 
