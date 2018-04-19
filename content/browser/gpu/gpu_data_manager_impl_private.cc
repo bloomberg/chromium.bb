@@ -423,6 +423,10 @@ void GpuDataManagerImplPrivate::UnblockDomainFrom3DAPIs(const GURL& url) {
 
 void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   bool sandboxed = gpu_info_.sandboxed;
+#if defined(OS_WIN)
+  uint32_t d3d12_feature_level = gpu_info_.d3d12_feature_level;
+  uint32_t vulkan_version = gpu_info_.vulkan_version;
+#endif
   gpu_info_ = gpu_info;
 #if defined(OS_WIN)
   // On Windows, complete GPUInfo is collected through an unsandboxed
@@ -430,6 +434,15 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   // not be overwritten.
   if (sandboxed)
     gpu_info_.sandboxed = true;
+
+  if (d3d12_feature_level) {
+    gpu_info_.d3d12_feature_level = d3d12_feature_level;
+    gpu_info_.supports_dx12 = true;
+  }
+  if (vulkan_version) {
+    gpu_info_.vulkan_version = vulkan_version;
+    gpu_info_.supports_vulkan = true;
+  }
 #else
   (void)sandboxed;
 #endif  // OS_WIN

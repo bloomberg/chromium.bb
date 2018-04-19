@@ -58,6 +58,54 @@ void DeviceIDToVendorAndDevice(const std::wstring& id,
   *device_id = device;
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// This should match enum D3DFeatureLevel in \tools\metrics\histograms\enums.xml
+enum class D3D12FeatureLevel {
+  kD3DFeatureLevelUnknown = 0,
+  kD3DFeatureLevel_12_0 = 1,
+  kD3DFeatureLevel_12_1 = 2,
+  kMaxValue = kD3DFeatureLevel_12_1,
+};
+
+inline D3D12FeatureLevel ConvertToHistogramFeatureLevel(
+    uint32_t d3d_feature_level) {
+  switch (d3d_feature_level) {
+    case 0:
+      return D3D12FeatureLevel::kD3DFeatureLevelUnknown;
+    case D3D_FEATURE_LEVEL_12_0:
+      return D3D12FeatureLevel::kD3DFeatureLevel_12_0;
+    case D3D_FEATURE_LEVEL_12_1:
+      return D3D12FeatureLevel::kD3DFeatureLevel_12_1;
+    default:
+      NOTREACHED();
+      return D3D12FeatureLevel::kD3DFeatureLevelUnknown;
+  }
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// This should match enum VulkanVersion in \tools\metrics\histograms\enums.xml
+enum class VulkanVersion {
+  kVulkanVersionUnknown = 0,
+  kVulkanVersion_1_0_0 = 1,
+  kVulkanVersion_1_1_0 = 2,
+  kMaxValue = kVulkanVersion_1_1_0,
+};
+
+inline VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
+  switch (vulkan_version) {
+    case 0:
+      return VulkanVersion::kVulkanVersionUnknown;
+    case VK_MAKE_VERSION(1, 0, 0):
+      return VulkanVersion::kVulkanVersion_1_0_0;
+    case VK_MAKE_VERSION(1, 1, 0):
+      return VulkanVersion::kVulkanVersion_1_1_0;
+    default:
+      NOTREACHED();
+      return VulkanVersion::kVulkanVersionUnknown;
+  }
+}
 }  // namespace anonymous
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
@@ -229,61 +277,77 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
   return found;
 }
 
-void GetGpuSupportedD3DVersion(GPUInfo* gpu_info) {
-  TRACE_EVENT0("gpu", "GetGpuSupportedD3DVersion");
-
+// DirectX 12 are included with Windows 10 and Server 2016.
+void GetGpuSupportedD3D12Version(GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "GetGpuSupportedD3D12Version");
   gpu_info->supports_dx12 = false;
+  gpu_info->d3d12_feature_level = 0;
 
   base::NativeLibrary d3d12_library =
       base::LoadNativeLibrary(base::FilePath(L"d3d12.dll"), nullptr);
+  if (!d3d12_library) {
+    return;
+  }
 
-  if (d3d12_library) {
-    PFN_D3D12_CREATE_DEVICE D3D12CreateDevice =
-        reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(
-            GetProcAddress(d3d12_library, "D3D12CreateDevice"));
+  // The order of feature levels to attempt to create in D3D CreateDevice
+  const D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_12_1,
+                                              D3D_FEATURE_LEVEL_12_0};
 
-    if (D3D12CreateDevice) {
-      // For the default adapter only. (*pAdapter == nullptr)
-      // Check to see if the adapter supports Direct3D 12, but don't create the
-      // actual device yet. (**ppDevice == nullptr)
-      if (SUCCEEDED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_0,
-                                      _uuidof(ID3D12Device), nullptr))) {
+  PFN_D3D12_CREATE_DEVICE D3D12CreateDevice =
+      reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(
+          GetProcAddress(d3d12_library, "D3D12CreateDevice"));
+  if (D3D12CreateDevice) {
+    // For the default adapter only. (*pAdapter == nullptr)
+    // Check to see if the adapter supports Direct3D 12, but don't create the
+    // actual device yet. (**ppDevice == nullptr)
+    for (auto level : feature_levels) {
+      if (SUCCEEDED(D3D12CreateDevice(nullptr, level, _uuidof(ID3D12Device),
+                                      nullptr))) {
+        gpu_info->d3d12_feature_level = level;
         gpu_info->supports_dx12 = true;
+        break;
       }
     }
-    base::UnloadNativeLibrary(d3d12_library);
   }
+
+  base::UnloadNativeLibrary(d3d12_library);
 }
 
 void GetGpuSupportedVulkanVersion(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "GetGpuSupportedVulkanVersion");
 
   gpu_info->supports_vulkan = false;
+  gpu_info->vulkan_version = 0;
 
   base::NativeLibrary vulkan_library =
       base::LoadNativeLibrary(base::FilePath(L"vulkan-1.dll"), nullptr);
 
-  if (vulkan_library) {
-    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
-        reinterpret_cast<PFN_vkGetInstanceProcAddr>(
-            GetProcAddress(vulkan_library, "vkGetInstanceProcAddr"));
+  if (!vulkan_library) {
+    return;
+  }
 
-    if (vkGetInstanceProcAddr) {
-      PFN_vkCreateInstance vkCreateInstance =
-          reinterpret_cast<PFN_vkCreateInstance>(
-              vkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
+  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+      reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+          GetProcAddress(vulkan_library, "vkGetInstanceProcAddr"));
 
-      if (vkCreateInstance) {
-        VkApplicationInfo app_info = {};
-        app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        app_info.apiVersion = VK_API_VERSION_1_0;
+  if (vkGetInstanceProcAddr) {
+    PFN_vkCreateInstance vkCreateInstance =
+        reinterpret_cast<PFN_vkCreateInstance>(
+            vkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
 
-        VkInstanceCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        createInfo.pApplicationInfo = &app_info;
+    if (vkCreateInstance) {
+      VkApplicationInfo app_info = {};
+      app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+
+      VkInstanceCreateInfo create_info = {};
+      create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+      create_info.pApplicationInfo = &app_info;
+
+      for (int minor_version = 1; minor_version >= 0; --minor_version) {
+        app_info.apiVersion = VK_MAKE_VERSION(1, minor_version, 0);
 
         VkInstance vk_instance;
-        VkResult result = vkCreateInstance(&createInfo, nullptr, &vk_instance);
+        VkResult result = vkCreateInstance(&create_info, nullptr, &vk_instance);
         if (result == VK_SUCCESS) {
           PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices =
               reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
@@ -296,21 +360,29 @@ void GetGpuSupportedVulkanVersion(GPUInfo* gpu_info) {
                 vk_instance, &physical_device_count, nullptr);
             if (result == VK_SUCCESS && physical_device_count > 0) {
               gpu_info->supports_vulkan = true;
+              gpu_info->vulkan_version = app_info.apiVersion;
+              break;
             }
           }
         }
       }
     }
-    base::UnloadNativeLibrary(vulkan_library);
   }
+  base::UnloadNativeLibrary(vulkan_library);
 }
 
 void RecordGpuSupportedRuntimeVersionHistograms(GPUInfo* gpu_info) {
-  GetGpuSupportedD3DVersion(gpu_info);
+  GetGpuSupportedD3D12Version(gpu_info);
   GetGpuSupportedVulkanVersion(gpu_info);
 
   UMA_HISTOGRAM_BOOLEAN("GPU.SupportsDX12", gpu_info->supports_dx12);
   UMA_HISTOGRAM_BOOLEAN("GPU.SupportsVulkan", gpu_info->supports_vulkan);
+  UMA_HISTOGRAM_ENUMERATION(
+      "GPU.D3D12FeatureLevel",
+      ConvertToHistogramFeatureLevel(gpu_info->d3d12_feature_level));
+  UMA_HISTOGRAM_ENUMERATION(
+      "GPU.VulkanVersion",
+      ConvertToHistogramVulkanVersion(gpu_info->vulkan_version));
 }
 
 bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {

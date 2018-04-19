@@ -228,8 +228,8 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
 #endif
 
 #if defined(OS_WIN)
-  out->supports_dx12 = data.supports_dx12();
-  out->supports_vulkan = data.supports_vulkan();
+  out->d3d12_feature_level = data.d3d12_feature_level();
+  out->vulkan_version = data.vulkan_version();
 #endif
 
   return data.ReadInitializationTime(&out->initialization_time) &&
