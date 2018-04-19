@@ -150,6 +150,13 @@ gin::ObjectTemplateBuilder DeclarativeEvent::GetObjectTemplateBuilder(
       .SetMethod("getRules", &DeclarativeEvent::GetRules);
 }
 
+const char* DeclarativeEvent::GetTypeName() {
+  // NOTE(devlin): Currently, our documentation does not differentiate between
+  // "normal" events and declarative events. Use "Event" here so that developers
+  // don't think there's separate documentation to look for.
+  return "Event";
+}
+
 void DeclarativeEvent::AddRules(gin::Arguments* arguments) {
   // When adding rules, we use the signature we built for this event (e.g.
   // declarativeContent.onPageChanged.addRules).

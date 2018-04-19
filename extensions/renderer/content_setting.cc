@@ -108,6 +108,10 @@ gin::ObjectTemplateBuilder ContentSetting::GetObjectTemplateBuilder(
                  &ContentSetting::GetResourceIdentifiers);
 }
 
+const char* ContentSetting::GetTypeName() {
+  return "ContentSetting";
+}
+
 void ContentSetting::Get(gin::Arguments* arguments) {
   HandleFunction("get", arguments);
 }
