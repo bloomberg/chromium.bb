@@ -297,7 +297,7 @@ void BrowserCompositorMac::UpdateForAutoResize(const gfx::Size& new_size_dip) {
   if (recyclable_compositor_)
     recyclable_compositor_->Suspend();
   GetDelegatedFrameHost()->WasResized(
-      dfh_local_surface_id_allocator_.GenerateId(), dfh_size_dip_,
+      dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(), dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
 }
 
@@ -538,9 +538,22 @@ bool BrowserCompositorMac::ShouldContinueToPauseForFrame() const {
       dfh_size_dip_);
 }
 
+bool BrowserCompositorMac::ForceNewSurfaceForTesting() {
+  display::Display new_display(dfh_display_);
+  new_display.set_device_scale_factor(new_display.device_scale_factor() * 2.0f);
+  return UpdateNSViewAndDisplay(dfh_size_dip_, new_display);
+}
+
 void BrowserCompositorMac::GetRendererScreenInfo(
     ScreenInfo* screen_info) const {
   DisplayUtil::DisplayToScreenInfo(screen_info, dfh_display_);
+}
+
+viz::ScopedSurfaceIdAllocator
+BrowserCompositorMac::GetScopedRendererSurfaceIdAllocator(
+    base::OnceCallback<void()> allocation_task) {
+  return viz::ScopedSurfaceIdAllocator(&dfh_local_surface_id_allocator_,
+                                       std::move(allocation_task));
 }
 
 const viz::LocalSurfaceId& BrowserCompositorMac::GetRendererLocalSurfaceId() {
@@ -548,6 +561,12 @@ const viz::LocalSurfaceId& BrowserCompositorMac::GetRendererLocalSurfaceId() {
     return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 
   return dfh_local_surface_id_allocator_.GenerateId();
+}
+
+void BrowserCompositorMac::UpdateRendererLocalSurfaceIdFromChild(
+    const viz::LocalSurfaceId& child_allocated_local_surface_id) {
+  dfh_local_surface_id_allocator_.UpdateFromChild(
+      child_allocated_local_surface_id);
 }
 
 }  // namespace content

@@ -21,6 +21,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -1940,6 +1941,75 @@ TEST_F(RenderWidgetHostViewMacTest, ClearCompositorFrame) {
   rwhv_mac_->ClearCompositorFrame();
   EXPECT_NE(browser_compositor->CompositorForTesting(), nullptr);
   EXPECT_FALSE(browser_compositor->CompositorForTesting()->IsLocked());
+}
+
+// This test verifies that in AutoResize mode a child-allocated
+// viz::LocalSurfaceId will be properly routed and stored in the parent.
+TEST_F(RenderWidgetHostViewMacTest, ChildAllocationAcceptedInParent) {
+  viz::LocalSurfaceId local_surface_id1(rwhv_mac_->GetLocalSurfaceId());
+  EXPECT_TRUE(local_surface_id1.is_valid());
+
+  host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
+
+  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
+  params.view_size = gfx::Size(75, 75);
+  params.sequence_number = 1;
+  viz::ChildLocalSurfaceIdAllocator child_allocator;
+  child_allocator.UpdateFromParent(local_surface_id1);
+  viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
+  params.child_allocated_local_surface_id = local_surface_id2;
+  host_->OnResizeOrRepaintACK(params);
+
+  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
+  // let it complete.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
+  run_loop.Run();
+
+  viz::LocalSurfaceId local_surface_id3(rwhv_mac_->GetLocalSurfaceId());
+  EXPECT_NE(local_surface_id1, local_surface_id3);
+  EXPECT_EQ(local_surface_id2, local_surface_id3);
+}
+
+// This test verifies that when the child and parent both allocate their own
+// viz::LocalSurfaceId the resulting conflict is resolved.
+TEST_F(RenderWidgetHostViewMacTest, ConflictingAllocationsResolve) {
+  viz::LocalSurfaceId local_surface_id1(rwhv_mac_->GetLocalSurfaceId());
+  EXPECT_TRUE(local_surface_id1.is_valid());
+
+  host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
+  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
+  params.view_size = gfx::Size(75, 75);
+  params.sequence_number = 1;
+  viz::ChildLocalSurfaceIdAllocator child_allocator;
+  child_allocator.UpdateFromParent(local_surface_id1);
+  viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
+  params.child_allocated_local_surface_id = local_surface_id2;
+  host_->OnResizeOrRepaintACK(params);
+
+  // Cause a conflicting viz::LocalSurfaceId allocation
+  BrowserCompositorMac* browser_compositor =
+      rwhv_mac_->BrowserCompositorForTesting();
+  EXPECT_TRUE(browser_compositor->ForceNewSurfaceForTesting());
+  viz::LocalSurfaceId local_surface_id3(rwhv_mac_->GetLocalSurfaceId());
+  EXPECT_NE(local_surface_id1, local_surface_id3);
+
+  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
+  // let it complete.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
+  run_loop.Run();
+
+  viz::LocalSurfaceId local_surface_id4(rwhv_mac_->GetLocalSurfaceId());
+  EXPECT_NE(local_surface_id1, local_surface_id4);
+  EXPECT_NE(local_surface_id2, local_surface_id4);
+  viz::LocalSurfaceId merged_local_surface_id(
+      local_surface_id2.parent_sequence_number() + 1,
+      local_surface_id2.child_sequence_number(),
+      local_surface_id2.embed_token());
+  EXPECT_EQ(local_surface_id4, merged_local_surface_id);
 }
 
 }  // namespace content
