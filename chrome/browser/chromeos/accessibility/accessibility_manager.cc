@@ -1089,6 +1089,10 @@ void AccessibilityManager::Observe(
       break;
     }
     case content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE: {
+      // Avoid unnecessary mojo IPC to ash when focus highlight feature is not
+      // enabled.
+      if (!IsFocusHighlightEnabled())
+        return;
       content::FocusedNodeDetails* node_details =
           content::Details<content::FocusedNodeDetails>(details).ptr();
       accessibility_controller_->SetFocusHighlightRect(

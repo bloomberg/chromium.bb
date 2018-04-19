@@ -49,7 +49,8 @@ interface AccessibilityController {
   // Called when braille display state is changed.
   BrailleDisplayStateChanged(bool connected);
 
-  // Sets the focus highlight rect using |bounds_in_screen|.
+  // Sets the focus highlight rect using |bounds_in_screen|. Called when focus
+  // changed in page and a11y focus highlight feature is enabled.
   SetFocusHighlightRect(gfx.mojom.Rect bounds_in_screen);
 
   // Sets whether the accessibility panel is filling the entire screen (e.g. to
