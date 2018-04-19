@@ -74,10 +74,14 @@ void SessionManagerOperation::StartLoading() {
 }
 
 void SessionManagerOperation::LoadImmediately() {
-  StorePublicKey(
-      base::Bind(&SessionManagerOperation::BlockingRetrieveDeviceSettings,
-                 weak_factory_.GetWeakPtr()),
-      LoadPublicKey(owner_key_util_, public_key_));
+  if (cloud_validations_) {
+    StorePublicKey(
+        base::Bind(&SessionManagerOperation::BlockingRetrieveDeviceSettings,
+                   weak_factory_.GetWeakPtr()),
+        LoadPublicKey(owner_key_util_, public_key_));
+  } else {
+    BlockingRetrieveDeviceSettings();
+  }
 }
 
 void SessionManagerOperation::ReportResult(
