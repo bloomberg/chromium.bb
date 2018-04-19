@@ -62,7 +62,7 @@ class PopupTrackerBrowserTest : public InProcessBrowserTest {
  protected:
   enum UserClosedPopup { kTrue, kFalse };
 
-  bool GetNumPopupUkmEntries() {
+  size_t GetNumPopupUkmEntries() const {
     return test_ukm_recorder_->GetEntriesByName(UkmEntry::kEntryName).size();
   }
 
