@@ -23,10 +23,23 @@ _BLACKLIST = [
   # Exists just to test the compile, not to be run.
   re.compile(r'.*jni_generator_tests'),
 
-  # v8's blobs get packaged into APKs.
+  # v8's blobs and icu data get packaged into APKs.
   re.compile(r'.*natives_blob.*\.bin'),
   re.compile(r'.*snapshot_blob.*\.bin'),
+  re.compile(r'.*icudtl.bin'),
+
+  # Scripts that are needed by swarming, but not on devices:
+  re.compile(r'.*llvm-symbolizer'),
+  re.compile(r'.*md5sum_bin'),
+  re.compile(os.path.join('.*', 'development', 'scripts', 'stack')),
 ]
+
+
+def _FilterDataDeps(abs_host_files):
+  blacklist = _BLACKLIST + [
+      re.compile(os.path.join(constants.GetOutDirectory(), 'bin'))]
+  return [p for p in abs_host_files
+          if not any(r.match(p) for r in blacklist)]
 
 
 def DevicePathComponentsFor(host_path, output_directory):
@@ -96,9 +109,7 @@ def GetDataDependencies(runtime_deps_path):
   abs_host_files = [
       os.path.abspath(os.path.join(output_directory, r))
       for r in rel_host_files]
-  filtered_abs_host_files = [
-      host_file for host_file in abs_host_files
-      if not any(blacklist_re.match(host_file) for blacklist_re in _BLACKLIST)]
+  filtered_abs_host_files = _FilterDataDeps(abs_host_files)
   # TODO(crbug.com/752610): Filter out host executables, and investigate
   # whether other files could be filtered as well.
   return [(f, DevicePathComponentsFor(f, output_directory))
