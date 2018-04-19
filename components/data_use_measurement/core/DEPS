@@ -3,4 +3,5 @@ include_rules = [
   "+components/metrics",
   "+components/domain_reliability",
   "+google_apis/gaia",
+  "+services/network/public/cpp",
 ]
