@@ -231,6 +231,8 @@
   self.NTPMediator = nil;
   self.contentSuggestionsMediator = nil;
   self.headerController = nil;
+  [self.primaryToolbarMediator disconnect];
+  self.primaryToolbarMediator = nil;
   _visible = NO;
 }
 

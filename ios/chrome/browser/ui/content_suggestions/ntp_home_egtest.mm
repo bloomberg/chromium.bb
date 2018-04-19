@@ -260,7 +260,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // it for all screen scale.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           FakeOmniboxAccessibilityID())]
-      assertWithMatcher:OmniboxWidthBetween(collectionWidth + 1, 1)];
+      assertWithMatcher:OmniboxWidthBetween(collectionWidth + 1, 2)];
 
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
                            errorOrNil:nil];
@@ -273,7 +273,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           FakeOmniboxAccessibilityID())]
       assertWithMatcher:OmniboxWidthBetween(collectionWidthAfterRotation + 1,
-                                            1)];
+                                            2)];
 }
 
 // Tests that the promo is correctly displayed and removed once tapped.
@@ -434,7 +434,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // It is important for ranking algorithm of omnibox that requests from the
 // search button and real omnibox are marked appropriately.
 - (void)testTapOmniboxSearchButtonLogsCorrectly {
-  if (!IsUIRefreshPhase1Enabled() ||
+  if (!IsUIRefreshPhase1Enabled() || !IsRefreshLocationBarEnabled() ||
       content_suggestions::IsRegularXRegularSizeClass()) {
     // This logging only happens on iPhone, since on iPad there's no secondary
     // toolbar.
