@@ -200,11 +200,14 @@ public class Tab
     /** {@link ContentViewCore} showing the current page, or {@code null} if the tab is frozen. */
     private ContentViewCore mContentViewCore;
 
+    /** {@link WebContents} showing the current page, or {@code null} if the tab is frozen. */
+    private WebContents mWebContents;
+
     /** Listens to gesture events fired by the ContentViewCore. */
     private GestureStateListener mGestureStateListener;
 
     /** The parent view of the ContentView and the InfoBarContainer. */
-    private View mContentView;
+    private ViewGroup mContentView;
 
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<>();
@@ -1109,7 +1112,7 @@ public class Tab
      */
     @Nullable
     public WebContents getWebContents() {
-        return mContentViewCore != null ? mContentViewCore.getWebContents() : null;
+        return mWebContents;
     }
 
     /**
@@ -1135,18 +1138,11 @@ public class Tab
     }
 
     /**
-     * @return The {@link ContentViewCore} associated with the current page.
-     */
-    public ContentViewCore getActiveContentViewCore() {
-        return mContentViewCore;
-    }
-
-    /**
      * @return The {@link ContentViewCore} associated with the current page, or {@code null} if
      *         there is no current page or the current page is displayed using a native view.
      */
     public ContentViewCore getContentViewCore() {
-        return mNativePage == null ? mContentViewCore : null;
+        return isNativePage() ? null : mContentViewCore;
     }
 
     /**
@@ -1448,7 +1444,7 @@ public class Tab
             if (contentViewCore == null) {
                 initContentViewCore(webContents);
             } else {
-                setContentViewCore(contentViewCore);
+                setContentViewCore(webContents, contentViewCore);
             }
 
             if (!creatingWebContents && webContents.isLoadingToDifferentDocument()) {
@@ -1656,13 +1652,12 @@ public class Tab
         return mDelegateFactory;
     }
 
-    public View getContentView() {
-        if (!isNativePage()) {
-            return getView();
-        } else if (mContentViewCore != null) {
-            return mContentViewCore.getContainerView();
-        }
-        return null;
+    /**
+     * @return Content view used for rendered web contents. Can be null
+     *    if web contents is null.
+     */
+    public ViewGroup getContentView() {
+        return mContentView;
     }
 
     /**
@@ -1800,7 +1795,7 @@ public class Tab
      *                    {@link ContentViewCore}.
      */
     protected void initContentViewCore(WebContents webContents) {
-        setContentViewCore(createContentViewCore(webContents));
+        setContentViewCore(webContents, createContentViewCore(webContents));
     }
 
     private ContentViewCore createContentViewCore(WebContents webContents) {
@@ -1824,32 +1819,34 @@ public class Tab
      * NOTE: If you attempt to pass a native WebContents that does not have the same incognito
      * state as this tab this call will fail.
      *
-     * @param cvc The content view core that needs to be set as active view for the tab.
+     * @param webContents The new web contents.
+     * @param cvc The new content view core.
      */
-    private void setContentViewCore(ContentViewCore cvc) {
+    private void setContentViewCore(WebContents webContents, ContentViewCore cvc) {
         try {
             TraceEvent.begin("ChromeTab.setContentViewCore");
             NativePage previousNativePage = mNativePage;
             mNativePage = null;
             destroyNativePageInternal(previousNativePage);
 
-            WebContents oldWebContents = getWebContents();
+            WebContents oldWebContents = mWebContents;
             if (oldWebContents != null) {
                 oldWebContents.setImportance(ChildProcessImportance.NORMAL);
                 getWebContentsAccessibility(oldWebContents).setObscuredByAnotherView(false);
             }
 
+            mWebContents = webContents;
             mContentViewCore = cvc;
-            mContentViewCore.getWebContents().setImportance(mImportance);
-            cvc.getContainerView().setOnHierarchyChangeListener(this);
-            cvc.getContainerView().setOnSystemUiVisibilityChangeListener(this);
+            mContentView = webContents.getViewAndroidDelegate().getContainerView();
 
-            mContentView = cvc.getContainerView();
+            mWebContents.setImportance(mImportance);
+            mContentView.setOnHierarchyChangeListener(this);
+            mContentView.setOnSystemUiVisibilityChangeListener(this);
+
             mContentView.addOnAttachStateChangeListener(mAttachStateChangeListener);
             updateInteractableState();
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
-            mWebContentsObserver =
-                    new TabWebContentsObserver(mContentViewCore.getWebContents(), this);
+            mWebContentsObserver = new TabWebContentsObserver(mWebContents, this);
             if (UmaUtils.isRunningApplicationStart()) {
                 mStartupPageLoadMetricsObserver = new StartupPageLoadMetricsObserver();
                 PageLoadMetrics.addObserver(mStartupPageLoadMetricsObserver);
@@ -1865,7 +1862,7 @@ public class Tab
                 }
             }
 
-            initWebContents(mContentViewCore.getWebContents(), parentWebContents);
+            initWebContents(mWebContents, parentWebContents);
 
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
@@ -1892,22 +1889,21 @@ public class Tab
             // web views.
             getWebContentsAccessibility(getWebContents()).setShouldFocusOnPageLoad(true);
 
-            ImeAdapter.fromWebContents(mContentViewCore.getWebContents())
-                    .addEventObserver(new ImeEventObserver() {
-                        @Override
-                        public void onImeEvent() {
-                            // Some text was set in the page. Don't reuse it if a tab is
-                            // open from the same external application, we might lose some
-                            // user data.
-                            mAppAssociatedWith = null;
-                        }
+            ImeAdapter.fromWebContents(mWebContents).addEventObserver(new ImeEventObserver() {
+                @Override
+                public void onImeEvent() {
+                    // Some text was set in the page. Don't reuse it if a tab is
+                    // open from the same external application, we might lose some
+                    // user data.
+                    mAppAssociatedWith = null;
+                }
 
-                        @Override
-                        public void onNodeAttributeUpdated(boolean editable, boolean password) {
-                            if (getFullscreenManager() == null) return;
-                            updateFullscreenEnabledState();
-                        }
-                    });
+                @Override
+                public void onNodeAttributeUpdated(boolean editable, boolean password) {
+                    if (getFullscreenManager() == null) return;
+                    updateFullscreenEnabledState();
+                }
+            });
 
             setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(
                     this));
@@ -2016,8 +2012,8 @@ public class Tab
                     suggestionAction, buttonAction, showSendFeedbackView, mIncognito);
             mSadTabSuccessiveRefreshCounter++;
             // Show the sad tab inside ContentView.
-            getContentViewCore().getContainerView().addView(
-                    mSadTabView, new FrameLayout.LayoutParams(
+            mContentView.addView(mSadTabView,
+                    new FrameLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
             notifyContentChanged();
         }
@@ -2029,7 +2025,7 @@ public class Tab
      */
     private void removeSadTabIfPresent() {
         if (isShowingSadTab()) {
-            getContentViewCore().getContainerView().removeView(mSadTabView);
+            mContentView.removeView(mSadTabView);
             notifyContentChanged();
         }
         mSadTabView = null;
@@ -2059,8 +2055,7 @@ public class Tab
      * @return Whether or not the sad tab is showing.
      */
     public boolean isShowingSadTab() {
-        return mSadTabView != null && getContentViewCore() != null
-                && mSadTabView.getParent() == getContentViewCore().getContainerView();
+        return mSadTabView != null && mSadTabView.getParent() == mContentView;
     }
 
     /**
@@ -2467,8 +2462,8 @@ public class Tab
     private final void destroyContentViewCore(boolean deleteNativeWebContents) {
         if (mContentViewCore == null) return;
 
-        mContentViewCore.getContainerView().setOnHierarchyChangeListener(null);
-        mContentViewCore.getContainerView().setOnSystemUiVisibilityChangeListener(null);
+        mContentView.setOnHierarchyChangeListener(null);
+        mContentView.setOnSystemUiVisibilityChangeListener(null);
 
         if (mInfoBarContainer != null && mInfoBarContainer.getParent() != null) {
             mInfoBarContainer.removeFromParentView();
@@ -2483,14 +2478,13 @@ public class Tab
         updateInteractableState();
 
         if (mGestureStateListener != null) {
-            GestureListenerManager manager =
-                    GestureListenerManager.fromWebContents(mContentViewCore.getWebContents());
+            GestureListenerManager manager = GestureListenerManager.fromWebContents(mWebContents);
             manager.removeListener(mGestureStateListener);
         }
 
         mContentViewCore.destroy();
         mContentViewCore = null;
-
+        mWebContents = null;
         mWebContentsDelegate = null;
 
         if (mWebContentsObserver != null) {
@@ -2583,39 +2577,23 @@ public class Tab
         return mNativeTabAndroid;
     }
 
+    private static Rect getEstimatedContentSize(Context context) {
+        return ExternalPrerenderHandler.estimateContentSize((Application) context, false);
+    }
+
     /** This is currently called when committing a pre-rendered page. */
     @VisibleForTesting
     @CalledByNative
     public void swapWebContents(
             WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
-        ContentViewCore cvc = createContentViewCore(webContents);
-        swapContentViewCore(cvc, false, didStartLoad, didFinishLoad);
-    }
+        ContentViewCore contentViewCore = createContentViewCore(webContents);
 
-    private static Rect getEstimatedContentSize(Context context) {
-        return ExternalPrerenderHandler.estimateContentSize((Application) context, false);
-    }
-
-    /**
-     * Called to swap out the current view with the one passed in.
-     *
-     * @param newContentViewCore The content view that should be swapped into the tab.
-     * @param deleteOldNativeWebContents Whether to delete the native web
-     *         contents of old view.
-     * @param didStartLoad Whether
-     *         WebContentsObserver::DidStartProvisionalLoadForFrame() has
-     *         already been called.
-     * @param didFinishLoad Whether WebContentsObserver::DidFinishLoad() has
-     *         already been called.
-     */
-    private void swapContentViewCore(ContentViewCore newContentViewCore,
-            boolean deleteOldNativeWebContents, boolean didStartLoad, boolean didFinishLoad) {
         int originalWidth = 0;
         int originalHeight = 0;
-        if (mContentViewCore != null) {
+        if (mContentView != null && mWebContents != null) {
             originalWidth = mContentView.getWidth();
             originalHeight = mContentView.getHeight();
-            mContentViewCore.getWebContents().onHide();
+            mWebContents.onHide();
         }
 
         Rect bounds = new Rect();
@@ -2625,21 +2603,22 @@ public class Tab
             originalHeight = bounds.bottom - bounds.top;
         }
 
-        destroyContentViewCore(deleteOldNativeWebContents);
+        destroyContentViewCore(false /* do not delete native web contents */);
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
+
         // Size of the new content is zero at this point. Set the view size in advance
         // so that next onShow() call won't send a resize message with zero size
         // to the renderer process. This prevents the size fluttering that may confuse
         // Blink and break rendered result (see http://crbug.com/340987).
-        newContentViewCore.getWebContents().setSize(originalWidth, originalHeight);
+        webContents.setSize(originalWidth, originalHeight);
 
         if (!bounds.isEmpty()) {
-            nativeOnPhysicalBackingSizeChanged(mNativeTabAndroid,
-                    newContentViewCore.getWebContents(), bounds.right, bounds.bottom);
+            nativeOnPhysicalBackingSizeChanged(mNativeTabAndroid, contentViewCore.getWebContents(),
+                    bounds.right, bounds.bottom);
         }
-        newContentViewCore.getWebContents().onShow();
-        setContentViewCore(newContentViewCore);
+        webContents.onShow();
+        setContentViewCore(webContents, contentViewCore);
 
         destroyNativePageInternal(previousNativePage);
         for (TabObserver observer : mObservers) {
@@ -3437,8 +3416,8 @@ public class Tab
                 return;
             }
 
-            mDownloadIPHBubble = new TextBubble(getApplicationContext(),
-                    mContentViewCore.getContainerView(), R.string.iph_media_download_text,
+            mDownloadIPHBubble = new TextBubble(getApplicationContext(), mContentView,
+                    R.string.iph_media_download_text,
                     R.string.iph_media_download_accessibility_text, rect);
             mDownloadIPHBubble.setDismissOnTouchInteraction(true);
             mDownloadIPHBubble.addOnDismissListener(new OnDismissListener() {

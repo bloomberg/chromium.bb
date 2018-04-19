@@ -88,8 +88,7 @@ public class VrShellControllerInputTest {
                 VrTestFramework.getHtmlTestFile("test_controller_scrolling"), PAGE_LOAD_TIMEOUT_S);
         final WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
         Coordinates coord = Coordinates.createFor(wc);
-        waitForPageToBeScrollable(
-                mVrTestRule.getActivity().getActivityTab().getActiveContentViewCore());
+        waitForPageToBeScrollable(mVrTestRule.getActivity().getActivityTab().getContentViewCore());
 
         // Test that scrolling down works
         int startScrollPoint = coord.getScrollYPixInt();
@@ -139,8 +138,7 @@ public class VrShellControllerInputTest {
                 VrTestFramework.getHtmlTestFile("test_controller_scrolling"), PAGE_LOAD_TIMEOUT_S);
         final WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
         Coordinates coord = Coordinates.createFor(wc);
-        waitForPageToBeScrollable(
-                mVrTestRule.getActivity().getActivityTab().getActiveContentViewCore());
+        waitForPageToBeScrollable(mVrTestRule.getActivity().getActivityTab().getContentViewCore());
 
         // Arbitrary, but valid values to trigger fling scrolling
         int scrollSteps = 2;
