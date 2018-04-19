@@ -11,7 +11,7 @@ source_set("cleaner_headers") {
 
   public_deps = [
     "//base",
-    "//chrome_cleaner/constants:uws_id",
+    "//chrome/chrome_cleaner/constants:uws_id",
     "//components/chrome_cleaner/public/constants:constants",
   ]
 }

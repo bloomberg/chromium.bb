@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CLEANER_CLEANER_NOOP_CLEANER_IMPL_H_
-#define CHROME_CLEANER_CLEANER_NOOP_CLEANER_IMPL_H_
+#ifndef CHROME_CHROME_CLEANER_CLEANER_NOOP_CLEANER_IMPL_H_
+#define CHROME_CHROME_CLEANER_CLEANER_NOOP_CLEANER_IMPL_H_
 
 #include <vector>
 
-#include "chrome_cleaner/cleaner/cleaner.h"
+#include "chrome/chrome_cleaner/cleaner/cleaner.h"
 
 namespace chrome_cleaner {
 
@@ -31,4 +31,4 @@ class NoopCleanerImpl : public Cleaner {
 
 }  // namespace chrome_cleaner
 
-#endif  // CHROME_CLEANER_CLEANER_NOOP_CLEANER_IMPL_H_
+#endif  // CHROME_CHROME_CLEANER_CLEANER_NOOP_CLEANER_IMPL_H_
