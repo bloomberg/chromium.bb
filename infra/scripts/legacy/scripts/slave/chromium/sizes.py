@@ -494,17 +494,12 @@ def main_win(options, args, results_collector):
   build_dir = build_directory.GetBuildOutputDirectory(SRC_DIR)
   target_dir = os.path.join(build_dir, options.target)
 
-  result = 0
-
   for f in files:
     p = os.path.join(target_dir, f)
     if os.path.isfile(p):
-      this_result = get_size(p)
-      if result == 0:
-        result = this_result
-      results_collector.add_result(f, f, this_result, 'bytes')
+      results_collector.add_result(f, f, get_size(p), 'bytes')
 
-  return result
+  return 0
 
 
 def main():
