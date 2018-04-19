@@ -228,17 +228,19 @@ HistogramBase* Histogram::Factory::Build() {
     }
   }
 
-  CHECK_EQ(histogram_type_, histogram->GetHistogramType()) << name_;
-  if (bucket_count_ != 0 &&
-      !histogram->HasConstructionArguments(minimum_, maximum_, bucket_count_)) {
+  if (histogram_type_ != histogram->GetHistogramType() ||
+      (bucket_count_ != 0 && !histogram->HasConstructionArguments(
+                                 minimum_, maximum_, bucket_count_))) {
     // The construction arguments do not match the existing histogram.  This can
     // come about if an extension updates in the middle of a chrome run and has
-    // changed one of them, or simply by bad code within Chrome itself.  We
-    // return NULL here with the expectation that bad code in Chrome will crash
-    // on dereference, but extension/Pepper APIs will guard against NULL and not
-    // crash.
-    DLOG(ERROR) << "Histogram " << name_ << " has bad construction arguments";
-    return nullptr;
+    // changed one of them, or simply by bad code within Chrome itself.  A NULL
+    // return would cause Chrome to crash; better to just record it for later
+    // analysis.
+    UmaHistogramSparse("Histogram.MismatchedConstructionArguments",
+                       static_cast<Sample>(HashMetricName(name_)));
+    DLOG(ERROR) << "Histogram " << name_
+                << " has mismatched construction arguments";
+    return DummyHistogram::GetInstance();
   }
   return histogram;
 }
