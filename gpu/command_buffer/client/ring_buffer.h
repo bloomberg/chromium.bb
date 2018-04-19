@@ -74,7 +74,10 @@ class GPU_EXPORT RingBuffer {
   // caller can wait. Allocating a block of this size will succeed, but may
   // block.
   unsigned int GetLargestFreeOrPendingSize() {
-    return size_;
+    // If size_ is not a multiple of alignment_, then trying to allocate it will
+    // cause us to try to allocate more than we actually can due to rounding up.
+    // So, round down here.
+    return size_ - size_ % alignment_;
   }
 
   // Gets a pointer to a memory block given the base memory and the offset.

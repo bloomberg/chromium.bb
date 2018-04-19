@@ -135,6 +135,20 @@ TEST_F(RingBufferTest, TestBasic) {
   allocator_->FreePendingToken(pointer, token);
 }
 
+// Checks that the value returned by GetLargestFreeOrPendingSize can actually be
+// allocated. This is a regression test for https://crbug.com/834444, where an
+// unaligned buffer could cause an alloc using the value returned by
+// GetLargestFreeOrPendingSize to try to allocate more memory than was allowed.
+TEST_F(RingBufferTest, TestCanAllocGetLargestFreeOrPendingSize) {
+  // Make sure we aren't actually aligned
+  buffer_.reset(new int8_t[kBufferSize + 2 + kBaseOffset]);
+  buffer_start_ = buffer_.get() + kBaseOffset;
+  allocator_.reset(new RingBuffer(kAlignment, kBaseOffset, kBufferSize + 2,
+                                  helper_.get(), buffer_start_));
+  void* pointer = allocator_->Alloc(allocator_->GetLargestFreeOrPendingSize());
+  allocator_->FreePendingToken(pointer, helper_->InsertToken());
+}
+
 // Checks the free-pending-token mechanism.
 TEST_F(RingBufferTest, TestFreePendingToken) {
   const unsigned int kSize = 16;
