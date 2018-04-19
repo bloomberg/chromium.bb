@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

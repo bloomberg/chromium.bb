@@ -15,7 +15,6 @@
 #include "base/ios/block_types.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"

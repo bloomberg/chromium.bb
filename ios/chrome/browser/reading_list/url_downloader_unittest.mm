@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/files/file_util.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #import "base/test/ios/wait_util.h"

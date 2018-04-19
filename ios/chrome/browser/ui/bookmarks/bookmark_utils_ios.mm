@@ -11,7 +11,6 @@
 
 #include "base/hash.h"
 #include "base/i18n/string_compare.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"

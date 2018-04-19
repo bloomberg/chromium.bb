@@ -4,7 +4,6 @@
 
 #import <XCTest/XCTest.h>
 
-#import "base/mac/bind_objc_block.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
