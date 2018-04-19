@@ -69,7 +69,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
   local_site_data->NotifySiteLoaded();
 
   // Initially the feature usage should be reported as unknown.
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_USAGE_UNKNOWN,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             local_site_data->UsesAudioInBackground());
 
   // Advance the clock by a time lower than the miniumum observation time for
@@ -80,12 +80,12 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
 
   // The audio feature usage is still unknown as the observation window hasn't
   // expired.
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_USAGE_UNKNOWN,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             local_site_data->UsesAudioInBackground());
 
   // Report that the audio feature has been used.
   local_site_data->NotifyUsesAudioInBackground();
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_IN_USE,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesAudioInBackground());
 
   // When a feature is in use it's expected that its recorded observation
@@ -105,14 +105,14 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
   test_clock_.Advance(
       TestLocalSiteCharacteristicsDataImpl::
           GetUsesNotificationsInBackgroundMinObservationWindow());
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_NOT_IN_USE,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureNotInUse,
             local_site_data->UsesNotificationsInBackground());
 
   // Observating that a feature has been used after its observation window has
   // expired should still be recorded, the feature should then be reported as
   // used.
   local_site_data->NotifyUsesNotificationsInBackground();
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_IN_USE,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesNotificationsInBackground());
 
   local_site_data->NotifySiteUnloaded();
@@ -159,9 +159,9 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
       TestLocalSiteCharacteristicsDataImpl::
           GetUsesNotificationsInBackgroundMinObservationWindow() -
       base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_IN_USE,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesAudioInBackground());
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_USAGE_UNKNOWN,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             local_site_data->UsesNotificationsInBackground());
 
   const base::TimeDelta observation_duration_before_unload =
@@ -172,9 +172,9 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
   local_site_data->NotifySiteUnloaded();
 
   // Once unloaded the feature observations should still be accessible.
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_IN_USE,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesAudioInBackground());
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_USAGE_UNKNOWN,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             local_site_data->UsesNotificationsInBackground());
 
   // Advancing the clock shouldn't affect the observation duration for this
@@ -184,16 +184,16 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
             local_site_data->FeatureObservationDuration(
                 local_site_data->site_characteristics_for_testing()
                     .uses_notifications_in_background()));
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_USAGE_UNKNOWN,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             local_site_data->UsesNotificationsInBackground());
 
   local_site_data->NotifySiteLoaded();
 
   test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_IN_USE,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesAudioInBackground());
-  EXPECT_EQ(SiteFeatureUsage::SITE_FEATURE_NOT_IN_USE,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureNotInUse,
             local_site_data->UsesNotificationsInBackground());
 
   local_site_data->NotifySiteUnloaded();
