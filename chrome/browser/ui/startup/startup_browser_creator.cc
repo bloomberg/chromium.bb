@@ -948,11 +948,9 @@ bool HasPendingUncleanExit(Profile* profile) {
 
 base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
                                      const base::CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kProfileDirectory)) {
-    return user_data_dir.Append(
-        command_line.GetSwitchValuePath(switches::kProfileDirectory));
-  }
-
+// If the browser is launched due to activation on Windows native notification,
+// the profile id encoded in the notification launch id should be chosen over
+// all others.
 #if defined(OS_WIN)
   if (command_line.HasSwitch(switches::kNotificationLaunchId)) {
     std::string profile_id =
@@ -964,6 +962,11 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
     }
   }
 #endif  // defined(OS_WIN)
+
+  if (command_line.HasSwitch(switches::kProfileDirectory)) {
+    return user_data_dir.Append(
+        command_line.GetSwitchValuePath(switches::kProfileDirectory));
+  }
 
   return g_browser_process->profile_manager()->GetLastUsedProfileDir(
       user_data_dir);
