@@ -51,4 +51,9 @@ interface TCPServerSocket {
           TCPConnectedSocket? connected_socket,
           handle<data_pipe_consumer>? send_stream,
           handle<data_pipe_producer>? receive_stream);
+
+  // Gets the local address of this server socket. On success, |net_error| is
+  // net::OK and |local_addr| contains the local address of the socket. On
+  // failure, |local_addr| is null and |net_error| is a net error code.
+  GetLocalAddress() => (int32 net_error, net.interfaces.IPEndPoint? local_addr);
 };
