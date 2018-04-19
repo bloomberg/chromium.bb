@@ -41,9 +41,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   static gpu::SyncToken GenerateSyncTokenHelper(
       gpu::raster::RasterInterface* ri);
 
-  // Gets the most recent sync token from the indicated resources.
-  gpu::SyncToken GetSyncTokenForResources(const ResourceIdArray& resource_ids);
-
   // Prepares resources to be transfered to the parent, moving them to
   // mailboxes and serializing meta-data into TransferableResources.
   // Resources are not removed from the ResourceProvider, but are marked as
@@ -82,22 +79,12 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
                       const uint8_t* image,
                       const gfx::Size& image_size);
 
-  // For tests only! This prevents detecting uninitialized reads.
-  // Use SetPixels or LockForWrite to allocate implicitly.
-  void AllocateForTesting(viz::ResourceId id);
-
-  // For tests only!
-  void CreateForTesting(viz::ResourceId id);
-
   // Verify that the ResourceId is valid and is known to this class, for debug
   // checks.
   void ValidateResource(viz::ResourceId id) const;
 
   // Checks whether a resource is in use by a consumer.
   bool InUseByConsumer(viz::ResourceId id);
-
-  // Indicates if we can currently lock this resource for write.
-  bool CanLockForWrite(viz::ResourceId id);
 
   // In the case of GPU resources, we may need to flush the GL context to ensure
   // that texture deletions are seen in a timely fashion. This function should
@@ -130,104 +117,8 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
     return gpu_memory_buffer_manager_;
   }
 
-  bool IsLost(viz::ResourceId id);
-
   void LoseResourceForTesting(viz::ResourceId id);
   void EnableReadLockFencesForTesting(viz::ResourceId id);
-
-  // The following lock classes are part of the ResourceProvider API and are
-  // needed to read and write the resource contents. The user must ensure
-  // that they only use GL locks on GL resources, etc, and this is enforced
-  // by assertions.
-  class CC_EXPORT ScopedWriteLockGpu {
-   public:
-    ScopedWriteLockGpu(LayerTreeResourceProvider* resource_provider,
-                       viz::ResourceId resource_id);
-    ~ScopedWriteLockGpu();
-
-    GLenum target() const { return target_; }
-    viz::ResourceFormat format() const { return format_; }
-    const gfx::Size& size() const { return size_; }
-    const gfx::ColorSpace& color_space_for_raster() const {
-      return color_space_;
-    }
-
-    SkColorType ColorType() const;
-
-    void set_allocated() { allocated_ = true; }
-
-    void set_sync_token(const gpu::SyncToken& sync_token) {
-      sync_token_ = sync_token;
-      has_sync_token_ = true;
-    }
-
-    void set_synchronized() { synchronized_ = true; }
-
-    void set_generate_mipmap() { generate_mipmap_ = true; }
-
-    // Creates mailbox on compositor context that can be consumed on another
-    // context.
-    void CreateMailbox();
-
-   protected:
-    LayerTreeResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
-
-    // The following are copied from the resource.
-    gfx::Size size_;
-    viz::ResourceFormat format_;
-    gfx::ColorSpace color_space_;
-    GLuint texture_id_;
-    GLenum target_;
-    viz::ResourceTextureHint hint_;
-    gpu::Mailbox mailbox_;
-    bool is_overlay_;
-    bool allocated_;
-
-    // Set by the user.
-    gpu::SyncToken sync_token_;
-    bool has_sync_token_ = false;
-    bool synchronized_ = false;
-    bool generate_mipmap_ = false;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpu);
-  };
-
-  class CC_EXPORT ScopedWriteLockGL : public ScopedWriteLockGpu {
-   public:
-    ScopedWriteLockGL(LayerTreeResourceProvider* resource_provider,
-                      viz::ResourceId resource_id);
-    ~ScopedWriteLockGL();
-
-    // Returns texture id on compositor context, allocating if necessary.
-    GLuint GetTexture();
-
-   private:
-    void LazyAllocate(gpu::gles2::GLES2Interface* gl, GLuint texture_id);
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
-  };
-
-  class CC_EXPORT ScopedWriteLockSoftware {
-   public:
-    ScopedWriteLockSoftware(LayerTreeResourceProvider* resource_provider,
-                            viz::ResourceId resource_id);
-    ~ScopedWriteLockSoftware();
-
-    SkBitmap& sk_bitmap() { return sk_bitmap_; }
-    bool valid() const { return !!sk_bitmap_.getPixels(); }
-    const gfx::ColorSpace& color_space_for_raster() const {
-      return color_space_;
-    }
-
-   private:
-    LayerTreeResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
-    gfx::ColorSpace color_space_;
-    SkBitmap sk_bitmap_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
-  };
 
   class CC_EXPORT ScopedSkSurface {
    public:
@@ -249,11 +140,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
 
     DISALLOW_COPY_AND_ASSIGN(ScopedSkSurface);
   };
-
- protected:
-  viz::internal::Resource* LockForWrite(viz::ResourceId id);
-  void UnlockForWrite(viz::internal::Resource* resource);
-  void CreateMailbox(viz::internal::Resource* resource);
 
  private:
   // Holds const settings for the ResourceProvider. Never changed after init.
@@ -282,10 +168,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  gfx::ColorSpace GetResourceColorSpaceForRaster(
-      const viz::internal::Resource* resource) const;
-
-  void CreateTexture(viz::internal::Resource* resource);
   void CreateAndBindImage(viz::internal::Resource* resource);
   void TransferResource(viz::internal::Resource* source,
                         viz::ResourceId id,

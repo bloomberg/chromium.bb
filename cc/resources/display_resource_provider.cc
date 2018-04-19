@@ -260,9 +260,6 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     CHECK(it != resources_.end());
     viz::internal::Resource& resource = it->second;
 
-    // TODO(xing.xu): remove locked_for_write.
-    DCHECK(!resource.locked_for_write);
-
     viz::ResourceId child_id = resource.id_in_child;
     DCHECK(child_info->child_to_parent_map.count(child_id));
 
@@ -424,8 +421,6 @@ void DisplayResourceProvider::ReceiveFromChild(
 #endif
     }
     resource->child_id = child;
-    // Don't allocate a texture for a child.
-    resource->allocated = true;
     resource->imported_count = 1;
     resource->id_in_child = it->id;
     child_info.child_to_parent_map[it->id] = local_id;
@@ -476,29 +471,11 @@ GLenum DisplayResourceProvider::BindForSampling(viz::ResourceId resource_id,
 
   viz::internal::Resource* resource = &it->second;
   DCHECK(resource->lock_for_read_count);
-  // TODO(xing.xu): remove locked_for_write.
-  DCHECK(!resource->locked_for_write);
 
   ScopedSetActiveTexture scoped_active_tex(gl, unit);
   GLenum target = resource->target;
   gl->BindTexture(target, resource->gl_id);
   GLenum min_filter = filter;
-  if (filter == GL_LINEAR) {
-    switch (resource->mipmap_state) {
-      case viz::internal::Resource::INVALID:
-        break;
-      case viz::internal::Resource::GENERATE:
-        DCHECK(compositor_context_provider_);
-        DCHECK(
-            compositor_context_provider_->ContextCapabilities().texture_npot);
-        gl->GenerateMipmap(target);
-        resource->mipmap_state = viz::internal::Resource::VALID;
-        FALLTHROUGH;
-      case viz::internal::Resource::VALID:
-        min_filter = GL_LINEAR_MIPMAP_LINEAR;
-        break;
-    }
-  }
   if (min_filter != resource->min_filter) {
     gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, min_filter);
     resource->min_filter = min_filter;
@@ -544,12 +521,7 @@ const viz::internal::Resource* DisplayResourceProvider::LockForRead(
   if (!resource)
     return nullptr;
 
-  // TODO(xing.xu): remove locked_for_write.
-  DCHECK(!resource->locked_for_write)
-      << "locked for write: " << resource->locked_for_write;
   DCHECK_EQ(resource->exported_count, 0);
-  // Uninitialized! Call SetPixels or LockForWrite first.
-  DCHECK(resource->allocated);
 
   // Mailbox sync_tokens must be processed by a call to WaitSyncToken() prior to
   // calling LockForRead().
@@ -612,12 +584,7 @@ viz::ResourceMetadata DisplayResourceProvider::LockForExternalUse(
 
   viz::internal::Resource* resource = &it->second;
   viz::ResourceMetadata metadata;
-  // TODO(xing.xu): remove locked_for_write.
-  DCHECK(!resource->locked_for_write)
-      << "locked for write: " << resource->locked_for_write;
   DCHECK_EQ(resource->exported_count, 0);
-  // Uninitialized! Call SetPixels or LockForWrite first.
-  DCHECK(resource->allocated);
   // Make sure there is no outstanding LockForExternalUse without calling
   // UnlockForExternalUse.
   DCHECK(!resource->locked_for_external_use);

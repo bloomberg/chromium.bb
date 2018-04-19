@@ -134,32 +134,22 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
   viz::ResourceId resource1 = resource_provider->CreateGpuTextureResource(
       gfx::Size(45, 5), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
-  resource_provider->AllocateForTesting(resource1);
   viz::ResourceId resource2 = resource_provider->CreateGpuTextureResource(
       gfx::Size(346, 61), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
-  resource_provider->AllocateForTesting(resource2);
   viz::ResourceId resource3 = resource_provider->CreateGpuTextureResource(
       gfx::Size(12, 134), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
-  resource_provider->AllocateForTesting(resource3);
   viz::ResourceId resource4 = resource_provider->CreateGpuTextureResource(
       gfx::Size(56, 12), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
-  resource_provider->AllocateForTesting(resource4);
   gfx::Size resource5_size(73, 26);
   viz::ResourceId resource5 = resource_provider->CreateGpuTextureResource(
       resource5_size, viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
-  resource_provider->AllocateForTesting(resource5);
   viz::ResourceId resource6 = resource_provider->CreateGpuTextureResource(
       gfx::Size(64, 92), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
-  resource_provider->AllocateForTesting(resource6);
-  viz::ResourceId resource7 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(9, 14), viz::ResourceTextureHint::kDefault,
-      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
-  resource_provider->AllocateForTesting(resource7);
 
   unsigned target = GL_TEXTURE_2D;
   gpu::Mailbox gpu_mailbox;
@@ -248,7 +238,6 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
         gfx::Size(20, 12), viz::ResourceTextureHint::kDefault,
         resource_provider->best_texture_format(),
         gfx::ColorSpace::CreateREC601());
-    resource_provider->AllocateForTesting(plane_resources[i]);
   }
 
   auto* yuv_quad = to_pass->CreateAndAppendDrawQuad<viz::YUVVideoDrawQuad>();
@@ -284,38 +273,31 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
       gfx::Size(45, 5), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
-  child_resource_provider->AllocateForTesting(resource1);
   viz::ResourceId resource2 = child_resource_provider->CreateGpuTextureResource(
       gfx::Size(346, 61), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
-  child_resource_provider->AllocateForTesting(resource2);
   viz::ResourceId resource3 = child_resource_provider->CreateGpuTextureResource(
       gfx::Size(12, 134), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
-  child_resource_provider->AllocateForTesting(resource3);
   viz::ResourceId resource4 = child_resource_provider->CreateGpuTextureResource(
       gfx::Size(56, 12), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
-  child_resource_provider->AllocateForTesting(resource4);
   gfx::Size resource5_size(73, 26);
   viz::ResourceId resource5 = child_resource_provider->CreateGpuTextureResource(
       resource5_size, viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
-  child_resource_provider->AllocateForTesting(resource5);
   viz::ResourceId resource6 = child_resource_provider->CreateGpuTextureResource(
       gfx::Size(64, 92), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
-  child_resource_provider->AllocateForTesting(resource6);
   viz::ResourceId resource7 = child_resource_provider->CreateGpuTextureResource(
       gfx::Size(9, 14), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
-  child_resource_provider->AllocateForTesting(resource7);
 
   unsigned target = GL_TEXTURE_2D;
   gpu::Mailbox gpu_mailbox;
@@ -344,7 +326,6 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
         gfx::Size(20, 12), viz::ResourceTextureHint::kDefault,
         child_resource_provider->best_texture_format(),
         gfx::ColorSpace::CreateREC601());
-    child_resource_provider->AllocateForTesting(plane_resources[i]);
     resource_ids_to_transfer.push_back(plane_resources[i]);
   }
 

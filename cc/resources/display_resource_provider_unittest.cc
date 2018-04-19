@@ -492,8 +492,6 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
 
   viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
       size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
-  uint8_t data1[4] = {1, 2, 3, 4};
-  child_resource_provider_->CopyToResource(id1, data1, size);
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));

@@ -8302,7 +8302,6 @@ class BlendStateCheckLayer : public LayerImpl {
       resource_id_ = resource_provider->CreateBitmapResource(
           gfx::Size(1, 1), gfx::ColorSpace(), viz::RGBA_8888);
     }
-    resource_provider->AllocateForTesting(resource_id_);
     SetBounds(gfx::Size(10, 10));
     SetDrawsContent(true);
   }
