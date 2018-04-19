@@ -273,20 +273,40 @@ TextureLayer::TransferableResourceHolder::MainThreadReference::
 
 TextureLayer::TransferableResourceHolder::MainThreadReference::
     ~MainThreadReference() {
+#if DCHECK_IS_ON()
+  {
+    base::AutoLock hold(holder_->posted_internal_derefs_lock_);
+    ++holder_->posted_internal_derefs_;
+  }
+#endif
   holder_->InternalRelease();
 }
 
 TextureLayer::TransferableResourceHolder::TransferableResourceHolder(
     const viz::TransferableResource& resource,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback)
-    : internal_references_(0),
-      resource_(resource),
+    : resource_(resource),
       release_callback_(std::move(release_callback)),
-      sync_token_(resource.mailbox_holder.sync_token),
-      is_lost_(false) {}
+      sync_token_(resource.mailbox_holder.sync_token) {}
 
 TextureLayer::TransferableResourceHolder::~TransferableResourceHolder() {
-  DCHECK_EQ(0u, internal_references_);
+#if DCHECK_IS_ON()
+  {
+    // If the MessageLoop is destroyed while a posted deref is waiting to run,
+    // this object will be destroyed with an internal_references_ still present.
+    // So we must also include the outstanding posted derefences.
+    base::AutoLock hold(posted_internal_derefs_lock_);
+    DCHECK_EQ(internal_references_, posted_internal_derefs_);
+  }
+#endif
+  if (release_callback_) {
+    // We land here if the dereferences are posted but not run and the
+    // MessageLoop is destroyed, destroying those tasks and this object with it.
+    // We run the ReleaseCallback in that case assuming the MessageLoop is being
+    // destroyed on the main thread.
+    DCHECK(main_thread_checker_.CalledOnValidThread());
+    release_callback_->Run(sync_token_, is_lost_);
+  }
 }
 
 std::unique_ptr<TextureLayer::TransferableResourceHolder::MainThreadReference>
@@ -310,7 +330,7 @@ TextureLayer::TransferableResourceHolder::GetCallbackForImplThread(
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
   // We can't call GetCallbackForImplThread if we released the main thread
   // reference.
-  DCHECK_GT(internal_references_, 0u);
+  DCHECK_GT(internal_references_, 0);
   InternalAddRef();
   return viz::SingleReleaseCallback::Create(
       base::Bind(&TransferableResourceHolder::ReturnAndReleaseOnImplThread,
@@ -323,6 +343,12 @@ void TextureLayer::TransferableResourceHolder::InternalAddRef() {
 
 void TextureLayer::TransferableResourceHolder::InternalRelease() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+#if DCHECK_IS_ON()
+  {
+    base::AutoLock hold(posted_internal_derefs_lock_);
+    --posted_internal_derefs_;
+  }
+#endif
   if (!--internal_references_) {
     release_callback_->Run(sync_token_, is_lost_);
     resource_ = viz::TransferableResource();
@@ -335,6 +361,12 @@ void TextureLayer::TransferableResourceHolder::ReturnAndReleaseOnImplThread(
     const gpu::SyncToken& sync_token,
     bool is_lost) {
   Return(sync_token, is_lost);
+#if DCHECK_IS_ON()
+  {
+    base::AutoLock hold(posted_internal_derefs_lock_);
+    ++posted_internal_derefs_;
+  }
+#endif
   main_thread_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&TransferableResourceHolder::InternalRelease, this));
