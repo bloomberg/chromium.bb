@@ -1,0 +1,183 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_fuchsia)
+
+template("fuchsia_sdk_pkg") {
+  pkg_name = target_name
+
+  pkg_name = target_name
+  if (defined(invoker.name)) {
+    pkg_name = invoker.name
+  }
+
+  have_fidl = defined(invoker.fidl_files)
+
+  if (have_fidl) {
+    response_file = "$target_gen_dir/$target_name.rsp"
+    json_representation = "$target_gen_dir/$pkg_name.fidl.json"
+    output_gen_base = "$target_gen_dir/fidl"
+    output_gen_dir = "$output_gen_base/fuchsia/cpp"
+
+    action("${target_name}_response_file") {
+      visibility = [ ":*" ]
+
+      script = "gen_fidl_response_file.py"
+
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "public_deps",
+                               "testonly",
+                             ])
+
+      sources = []
+      foreach(file, invoker.fidl_files) {
+        sources += [ "sdk/pkg/${pkg_name}/${file}" ]
+      }
+
+      libraries_file = "$target_gen_dir/$pkg_name.fidl_libraries"
+
+      outputs = [
+        response_file,
+        libraries_file,
+      ]
+
+      args = [
+               "--out-response-file",
+               rebase_path(response_file, root_build_dir),
+               "--out-libraries",
+               rebase_path(libraries_file, root_build_dir),
+               "--json",
+               rebase_path(json_representation, root_build_dir),
+               "--name",
+               pkg_name,
+               "--sources",
+             ] + rebase_path(sources, root_build_dir)
+
+      if (defined(invoker.fidl_deps)) {
+        dep_libraries = []
+        deps = []
+
+        foreach(dep, invoker.fidl_deps) {
+          gen_dir = get_label_info(dep, "target_gen_dir")
+          name = get_label_info(dep, "name")
+          dep_libraries += [ "$gen_dir/$name.fidl_libraries" ]
+          deps += [ "${dep}_response_file" ]
+        }
+
+        inputs = dep_libraries
+
+        args +=
+            [ "--dep-libraries" ] + rebase_path(dep_libraries, root_build_dir)
+      }
+    }
+
+    action("${target_name}_compile") {
+      forward_variables_from(invoker, [ "testonly" ])
+
+      visibility = [ ":*" ]
+
+      deps = [
+        ":${invoker.target_name}_response_file",
+      ]
+
+      script = "//build/gn_run_binary.py"
+
+      inputs = [
+        response_file,
+      ]
+
+      outputs = [
+        json_representation,
+      ]
+
+      rebased_response_file = rebase_path(response_file, root_build_dir)
+      args = [
+        rebase_path("sdk/tools/fidlc", root_build_dir),
+        "@$rebased_response_file",
+      ]
+    }
+
+    action("${target_name}_cpp_gen") {
+      visibility = [ ":*" ]
+
+      deps = [
+        ":${invoker.target_name}_compile",
+      ]
+
+      inputs = [
+        json_representation,
+      ]
+
+      outputs = [
+        "$output_gen_dir/$pkg_name.h",
+        "$output_gen_dir/$pkg_name.cc",
+      ]
+
+      script = "//build/gn_run_binary.py"
+      args = [
+        rebase_path("sdk/tools/fidlgen", root_build_dir),
+        "-generators",
+        "cpp",
+        "-json",
+        rebase_path("$json_representation"),
+        "-include-base",
+        rebase_path("$output_gen_base"),
+        "-output-base",
+        rebase_path("$output_gen_dir/$pkg_name"),
+      ]
+    }
+  }
+
+  config("${target_name}_config") {
+    visibility = [ ":${invoker.target_name}" ]
+    include_dirs = [ "sdk/pkg/${pkg_name}/include" ]
+    if (have_fidl) {
+      include_dirs += [ output_gen_base ]
+    }
+  }
+
+  static_library("${target_name}") {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "public_deps",
+                             "testonly",
+                             "visibility",
+                           ])
+
+    sources = []
+    if (defined(invoker.sources)) {
+      foreach(src, invoker.sources) {
+        sources += [ "sdk/pkg/${pkg_name}/${src}" ]
+      }
+    }
+
+    if (have_fidl) {
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += [ ":${invoker.target_name}_cpp_gen" ]
+
+      sources = [
+        "$output_gen_dir/$pkg_name.cc",
+        "$output_gen_dir/$pkg_name.h",
+      ]
+
+      assert(pkg_name != "fidl" && pkg_name != "fidl_cpp")
+      if (!defined(public_deps)) {
+        public_deps = []
+      }
+      public_deps += [ ":fidl_cpp" ]
+    }
+
+    public_configs = [ ":${invoker.target_name}_config" ]
+
+    if (defined(invoker.libs)) {
+      configs += [ ":sdk_lib_dirs_config" ]
+      libs = invoker.libs
+    }
+  }
+}
