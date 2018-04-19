@@ -165,7 +165,7 @@ if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->I
 {% elif argument.idl_type == 'NodeFilter' %}
 {{argument.name}} = V8NodeFilterCondition::CreateOrNull(info[{{argument.index}}], ScriptState::Current(info.GetIsolate()));
 {% else %}{# argument.idl_type == 'EventListener'/'NodeFilter' #}
-if (info[{{argument.index}}]->IsFunction()) {
+if (info[{{argument.index}}]->IsObject()) {
   {{argument.name}} = V8{{argument.idl_type}}::Create(info[{{argument.index}}].As<v8::Object>());
 {% if argument.is_optional %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
@@ -175,7 +175,7 @@ if (info[{{argument.index}}]->IsFunction()) {
   {{argument.name}} = nullptr;
 {% endif %}
 } else {
-  {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not a function.")}}
+  {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not an object.")}}
   return;
 }
 {% endif %}{# argument.idl_type == 'EventListener'/'NodeFilter' #}
