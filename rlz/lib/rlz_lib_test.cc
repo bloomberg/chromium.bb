@@ -1062,4 +1062,76 @@ TEST_F(RlzLibTest, SetRlzPingSent) {
   EXPECT_EQ(debug_daemon_client->num_set_rlz_ping_sent(),
             1 + rlz_lib::RlzValueStoreChromeOS::kMaxRetryCount);
 }
+
+TEST_F(RlzLibTest, NoRecordCAFEvent) {
+  // Setup as if a new machine where "should send RLZ" is true.
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey,
+      chromeos::system::kShouldSendRlzPingValueTrue);
+
+  // Record a first search event, make sure it is written correctly.
+  rlz_lib::RecordProductEvent(rlz_lib::CHROME, rlz_lib::CHROMEOS_OMNIBOX,
+                              rlz_lib::FIRST_SEARCH);
+  char cgi[256];
+  EXPECT_TRUE(
+      rlz_lib::GetProductEventsAsCgi(rlz_lib::CHROME, cgi, arraysize(cgi)));
+  EXPECT_NE(nullptr, strstr(cgi, "CAF"));
+
+  // Simulate another user on the machine sending the RLZ ping, so "should send
+  // RLZ" is now false.
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey,
+      chromeos::system::kShouldSendRlzPingValueFalse);
+
+  // The first search event should no longer appear, so there are no events
+  // to report.
+  EXPECT_FALSE(
+      rlz_lib::GetProductEventsAsCgi(rlz_lib::CHROME, cgi, arraysize(cgi)));
+
+  // The event should be permanently deleted, so setting the flag back to
+  // true should still not return the event.
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey,
+      chromeos::system::kShouldSendRlzPingValueTrue);
+  EXPECT_FALSE(
+      rlz_lib::GetProductEventsAsCgi(rlz_lib::CHROME, cgi, arraysize(cgi)));
+}
+
+TEST_F(RlzLibTest, NoRecordCAFEvent2) {
+  // Setup as if a new machine where "should send RLZ" is true.
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey,
+      chromeos::system::kShouldSendRlzPingValueTrue);
+
+  // Record install and first search events, make sure they are written.
+  rlz_lib::RecordProductEvent(rlz_lib::CHROME, rlz_lib::CHROMEOS_OMNIBOX,
+                              rlz_lib::INSTALL);
+  rlz_lib::RecordProductEvent(rlz_lib::CHROME, rlz_lib::CHROMEOS_OMNIBOX,
+                              rlz_lib::FIRST_SEARCH);
+  char cgi[256];
+  EXPECT_TRUE(
+      rlz_lib::GetProductEventsAsCgi(rlz_lib::CHROME, cgi, arraysize(cgi)));
+  EXPECT_NE(nullptr, strstr(cgi, "CAF"));
+  EXPECT_NE(nullptr, strstr(cgi, "CAI"));
+
+  // Simulate another user on the machine sending the RLZ ping, so "should send
+  // RLZ" is now false.
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey,
+      chromeos::system::kShouldSendRlzPingValueFalse);
+
+  // Only the "CAI" event should appear.
+  EXPECT_TRUE(
+      rlz_lib::GetProductEventsAsCgi(rlz_lib::CHROME, cgi, arraysize(cgi)));
+  EXPECT_NE(nullptr, strstr(cgi, "CAI"));
+
+  // The event should be permanently deleted, so setting the flag back to
+  // true should still not return the "CAF" event.
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kShouldSendRlzPingKey,
+      chromeos::system::kShouldSendRlzPingValueTrue);
+  EXPECT_TRUE(
+      rlz_lib::GetProductEventsAsCgi(rlz_lib::CHROME, cgi, arraysize(cgi)));
+  EXPECT_NE(nullptr, strstr(cgi, "CAI"));
+}
 #endif
