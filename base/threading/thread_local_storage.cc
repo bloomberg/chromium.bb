@@ -90,7 +90,7 @@ base::subtle::Atomic32 g_native_tls_key =
 //       kDestroyed.
 //    b) All calls to Slot::Get() DCHECK that the state is not kDestroyed, and
 //       any system which might potentially invoke Slot::Get() after destruction
-//       of TLS must check ThreadLOcalStorage::ThreadIsBeingDestroyed().
+//       of TLS must check ThreadLocalStorage::ThreadIsBeingDestroyed().
 //    c) After a full pass of the pthread_keys, on the next invocation of
 //       ConstructTlsVector(), we'll then set the key to nullptr.
 //    d) At this stage, the TLS system is back in its uninitialized state.
@@ -106,7 +106,7 @@ base::subtle::Atomic32 g_native_tls_key =
 void* const kUninitialized = nullptr;
 
 // A sentinel value to indicate that the TLS system has been destroyed.
-void* const kDestroyed = reinterpret_cast<void*>(-3);
+void* const kDestroyed = reinterpret_cast<void*>(1);
 
 // The maximum number of slots in our thread local storage stack.
 constexpr int kThreadLocalStorageSize = 256;
