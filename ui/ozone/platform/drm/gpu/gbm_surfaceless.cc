@@ -119,7 +119,9 @@ void GbmSurfaceless::SwapBuffersAsync(
 
   // TODO(dcastagna): remove glFlush since eglImageFlushExternalEXT called on
   // the image should be enough (crbug.com/720045).
-  glFlush();
+  if (requires_gl_flush_on_swap_buffers_)
+    glFlush();
+
   unsubmitted_frames_.back()->Flush();
 
   auto surface_swap_callback =
@@ -202,6 +204,10 @@ EGLConfig GbmSurfaceless::GetConfig() {
 
 void GbmSurfaceless::SetRelyOnImplicitSync() {
   rely_on_implicit_sync_ = true;
+}
+
+void GbmSurfaceless::SetForceGlFlushOnSwapBuffers() {
+  requires_gl_flush_on_swap_buffers_ = true;
 }
 
 GbmSurfaceless::~GbmSurfaceless() {
