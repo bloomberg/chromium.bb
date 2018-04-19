@@ -46,7 +46,7 @@ enum class OverscrollStyle {
 // The currently selected action.
 @property(nonatomic, assign, readonly) OverscrollAction selectedAction;
 // The view displayed has the background of the overscroll actions view.
-@property(nonatomic, retain, readonly) UIView* backgroundView;
+@property(nonatomic, strong, readonly) UIView* backgroundView;
 // Whether cropping is set on the selection circle (true by default).
 @property(nonatomic, assign) BOOL selectionCroppingEnabled;
 

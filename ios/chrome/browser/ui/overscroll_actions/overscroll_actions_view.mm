@@ -144,21 +144,21 @@ enum class OverscrollViewState {
 @property(nonatomic, assign, readwrite) OverscrollAction selectedAction;
 
 // Actions image views.
-@property(nonatomic, retain) UIImageView* addTabActionImageView;
-@property(nonatomic, retain) UIImageView* refreshActionImageView;
-@property(nonatomic, retain) UIImageView* closeTabActionImageView;
+@property(nonatomic, strong) UIImageView* addTabActionImageView;
+@property(nonatomic, strong) UIImageView* refreshActionImageView;
+@property(nonatomic, strong) UIImageView* closeTabActionImageView;
 
-@property(nonatomic, retain) CALayer* highlightMaskLayer;
+@property(nonatomic, strong) CALayer* highlightMaskLayer;
 
-@property(nonatomic, retain) UIImageView* addTabActionImageViewHighlighted;
-@property(nonatomic, retain) UIImageView* refreshActionImageViewHighlighted;
-@property(nonatomic, retain) UIImageView* closeTabActionImageViewHighlighted;
+@property(nonatomic, strong) UIImageView* addTabActionImageViewHighlighted;
+@property(nonatomic, strong) UIImageView* refreshActionImageViewHighlighted;
+@property(nonatomic, strong) UIImageView* closeTabActionImageViewHighlighted;
 
 // The layer displaying the selection circle.
-@property(nonatomic, retain) CAShapeLayer* selectionCircleLayer;
+@property(nonatomic, strong) CAShapeLayer* selectionCircleLayer;
 // Mask layer used to display highlighted states when the selection circle is
 // above them.
-@property(nonatomic, retain) CAShapeLayer* selectionCircleMaskLayer;
+@property(nonatomic, strong) CAShapeLayer* selectionCircleMaskLayer;
 
 // The current vertical offset.
 @property(nonatomic, assign) CGFloat verticalOffset;
@@ -167,13 +167,13 @@ enum class OverscrollViewState {
 // The internal state of the OverscrollActionsView.
 @property(nonatomic, assign) OverscrollViewState overscrollState;
 // A shadow image view displayed at the bottom.
-@property(nonatomic, retain) UIImageView* shadowView;
+@property(nonatomic, strong) UIImageView* shadowView;
 // Redefined to readwrite.
-@property(nonatomic, retain, readwrite) UIView* backgroundView;
+@property(nonatomic, strong, readwrite) UIView* backgroundView;
 // Snapshot view added on top of the background image view.
-@property(nonatomic, retain, readwrite) UIView* snapshotView;
+@property(nonatomic, strong, readwrite) UIView* snapshotView;
 // The parent layer on the selection circle used for cropping purpose.
-@property(nonatomic, retain, readwrite) CALayer* selectionCircleCroppingLayer;
+@property(nonatomic, strong, readwrite) CALayer* selectionCircleCroppingLayer;
 
 // An absolute horizontal offset that also takes into account snapping.
 - (CGFloat)absoluteHorizontalOffset;
