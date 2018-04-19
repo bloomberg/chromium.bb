@@ -18,8 +18,7 @@
 // and handles interactions with those notifications, plus it keeps track of
 // NotifierControllers to provide notifier settings information to Ash (visible
 // in NotifierSettingsView).
-class ChromeAshMessageCenterClient : public NotificationPlatformBridge,
-                                     public ash::mojom::AshMessageCenterClient,
+class ChromeAshMessageCenterClient : public ash::mojom::AshMessageCenterClient,
                                      public NotifierController::Observer {
  public:
   explicit ChromeAshMessageCenterClient(
@@ -27,15 +26,8 @@ class ChromeAshMessageCenterClient : public NotificationPlatformBridge,
 
   ~ChromeAshMessageCenterClient() override;
 
-  // NotificationPlatformBridge:
-  void Display(NotificationHandler::Type notification_type,
-               Profile* profile,
-               const message_center::Notification& notification,
-               std::unique_ptr<NotificationCommon::Metadata> metadata) override;
-  void Close(Profile* profile, const std::string& notification_id) override;
-  void GetDisplayed(Profile* profile,
-                    GetDisplayedNotificationsCallback callback) const override;
-  void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
+  void Display(const message_center::Notification& notification);
+  void Close(const std::string& notification_id);
 
   // ash::mojom::AshMessageCenterClient:
   void HandleNotificationClosed(const base::UnguessableToken& display_token,
