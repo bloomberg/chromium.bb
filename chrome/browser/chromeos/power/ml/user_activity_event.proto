@@ -54,6 +54,20 @@ message UserActivityEvent {
     // moment when the event type is known and we finish logging the complete
     // event.
     optional int32 log_duration_sec = 3;
+
+    // Whether screen dim/off occurred before final event was logged.
+    // Screen should be on (not dimmed not turned off) when an idle event is
+    // reported because we report idle event after a short period of inactivity,
+    // which isn't long enough for screen to be dimmed. However, in the unlikely
+    // event that screen is dimmed when an idle event is reported,
+    // |screen_dim_occurred| is true only if screen is subsequently turned on
+    // and dimmed again. In other words, if screen remains dimmed,
+    // |screen_dim_occurred| will be false. Similar logic for
+    // |screen_off_occurred|.
+    optional bool screen_dim_occurred = 4;
+    optional bool screen_off_occurred = 5;
+    // Whether screen lock occurred before final event was logged.
+    optional bool screen_lock_occurred = 6;
   }
 
   message Features {
@@ -143,7 +157,12 @@ message UserActivityEvent {
     optional int32 key_events_in_last_hour = 18;
     optional int32 mouse_events_in_last_hour = 19;
     optional int32 touch_events_in_last_hour = 20;
-  }  // next id = 22
+
+    // Whether screen was dimmed/turned off when an idle event was reported.
+    optional bool screen_dimmed_initially = 22;
+    optional bool screen_off_initially = 23;
+    optional bool screen_locked_initially = 24;
+  }  // next id = 25
 
   optional ModelParams params = 1;
   optional Event event = 2;

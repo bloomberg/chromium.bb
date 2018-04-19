@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/ui/browser.h"
@@ -106,41 +105,24 @@ void UserActivityManager::TabletModeEventReceived(
 
 void UserActivityManager::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& proto) {
-  if (proto.off()) {
-    screen_idle_timer_.Start(
-        FROM_HERE, kIdleDelay,
-        base::Bind(&UserActivityManager::MaybeLogEvent, base::Unretained(this),
-                   UserActivityEvent::Event::TIMEOUT,
-                   UserActivityEvent::Event::SCREEN_OFF));
+  if (!screen_dimmed_ && proto.dimmed()) {
+    screen_dim_occurred_ = true;
   }
+  screen_dimmed_ = proto.dimmed();
+
+  if (!screen_off_ && proto.off()) {
+    screen_off_occurred_ = true;
+  }
+  screen_off_ = proto.off();
 }
 
+// We log event when SuspendImminent is received. There is a chance that a
+// Suspend is cancelled, so that the corresponding SuspendDone has a short
+// sleep duration. However, we ignore these cases because it's infeasible to
+// to wait for a SuspendDone before deciding what to log.
 void UserActivityManager::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
-  suspend_reason_ = reason;
-}
-
-void UserActivityManager::SuspendDone(const base::TimeDelta& sleep_duration) {
-  if (!suspend_reason_)
-    return;
-
-  if (sleep_duration < kMinSuspendDuration) {
-    // 1. If reason_ is IDLE: user quickly woke up the computer hence
-    // it's not a TIMEOUT event but a REACTIVATE event.
-    // 2. If reason_ is LID_CLOSED: user closed the lid and then
-    // quickly opened it hence it's not an OFF event but a REACTIVATE event.
-    // 3. If reason_ is OTHER: user initiated a suspend and then cancelled
-    // it hence it's not an OFF event but a REACTIVATE event.
-    // In any case, when sleep duration is short, we treat the event as a
-    // REACTIVATE event.
-    MaybeLogEvent(UserActivityEvent::Event::REACTIVATE,
-                  UserActivityEvent::Event::USER_ACTIVITY);
-
-    suspend_reason_ = base::nullopt;
-    return;
-  }
-
-  switch (suspend_reason_.value()) {
+  switch (reason) {
     case power_manager::SuspendImminent_Reason_IDLE:
       MaybeLogEvent(UserActivityEvent::Event::TIMEOUT,
                     UserActivityEvent::Event::IDLE_SLEEP);
@@ -157,8 +139,6 @@ void UserActivityManager::SuspendDone(const base::TimeDelta& sleep_duration) {
       // We don't track other suspend reason.
       break;
   }
-
-  suspend_reason_ = base::nullopt;
 }
 
 void UserActivityManager::InactivityDelaysChanged(
@@ -174,6 +154,9 @@ void UserActivityManager::OnVideoActivityStarted() {
 void UserActivityManager::OnIdleEventObserved(
     const IdleEventNotifier::ActivityData& activity_data) {
   idle_event_start_since_boot_ = boot_clock_->GetTimeSinceBoot();
+  screen_dim_occurred_ = false;
+  screen_off_occurred_ = false;
+  screen_lock_occurred_ = false;
   ExtractFeatures(activity_data);
 }
 
@@ -182,16 +165,9 @@ void UserActivityManager::OnSessionStateChanged() {
   const bool was_locked = screen_is_locked_;
   screen_is_locked_ = session_manager_->IsScreenLocked();
   if (!was_locked && screen_is_locked_) {
-    MaybeLogEvent(UserActivityEvent::Event::OFF,
-                  UserActivityEvent::Event::SCREEN_LOCK);
+    screen_lock_occurred_ = true;
   }
 }
-
-// static
-constexpr base::TimeDelta UserActivityManager::kIdleDelay;
-
-// static
-constexpr base::TimeDelta UserActivityManager::kMinSuspendDuration;
 
 void UserActivityManager::OnReceiveSwitchStates(
     base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states) {
@@ -299,6 +275,10 @@ void UserActivityManager::ExtractFeatures(
         UserActivityEvent::Features::UNKNOWN_MANAGEMENT);
   }
 
+  features_.set_screen_dimmed_initially(screen_dimmed_);
+  features_.set_screen_off_initially(screen_off_);
+  features_.set_screen_locked_initially(screen_is_locked_);
+
   UpdateOpenTabsURLs();
 }
 
@@ -361,7 +341,6 @@ void UserActivityManager::MaybeLogEvent(
     UserActivityEvent::Event::Reason reason) {
   if (!idle_event_start_since_boot_)
     return;
-  screen_idle_timer_.Stop();
   UserActivityEvent activity_event;
 
   UserActivityEvent::Event* event = activity_event.mutable_event();
@@ -370,6 +349,9 @@ void UserActivityManager::MaybeLogEvent(
   event->set_log_duration_sec(
       (boot_clock_->GetTimeSinceBoot() - idle_event_start_since_boot_.value())
           .InSeconds());
+  event->set_screen_dim_occurred(screen_dim_occurred_);
+  event->set_screen_lock_occurred(screen_lock_occurred_);
+  event->set_screen_off_occurred(screen_off_occurred_);
 
   *activity_event.mutable_features() = features_;
 
@@ -381,7 +363,6 @@ void UserActivityManager::MaybeLogEvent(
 void UserActivityManager::SetTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     std::unique_ptr<BootClock> test_boot_clock) {
-  screen_idle_timer_.SetTaskRunner(task_runner);
   boot_clock_ = std::move(test_boot_clock);
 }
 

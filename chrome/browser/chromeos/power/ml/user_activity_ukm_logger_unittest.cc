@@ -29,6 +29,9 @@ class UserActivityUkmLoggerTest : public testing::Test {
     event->set_log_duration_sec(395);
     event->set_reason(UserActivityEvent::Event::USER_ACTIVITY);
     event->set_type(UserActivityEvent::Event::REACTIVATE);
+    event->set_screen_dim_occurred(true);
+    event->set_screen_off_occurred(true);
+    event->set_screen_lock_occurred(true);
 
     // In the order of metrics names in ukm.
     UserActivityEvent::Features* features =
@@ -45,6 +48,9 @@ class UserActivityUkmLoggerTest : public testing::Test {
     features->set_video_playing_time_sec(800);
     features->set_on_to_dim_sec(100);
     features->set_dim_to_screen_off_sec(200);
+    features->set_screen_dimmed_initially(false);
+    features->set_screen_locked_initially(false);
+    features->set_screen_off_initially(false);
     features->set_time_since_last_mouse_sec(100);
     features->set_time_since_last_touch_sec(311);
     features->set_time_since_video_ended_sec(400);
@@ -62,7 +68,7 @@ class UserActivityUkmLoggerTest : public testing::Test {
 
   void CheckUserActivityValues(const ukm::mojom::UkmEntry* entry) {
     recorder_.ExpectEntryMetric(entry, UserActivity::kEventLogDurationName,
-                                380);
+                                395);
     recorder_.ExpectEntryMetric(entry, UserActivity::kEventReasonName,
                                 UserActivityEvent::Event::USER_ACTIVITY);
     recorder_.ExpectEntryMetric(entry, UserActivity::kEventTypeName,
@@ -88,8 +94,21 @@ class UserActivityUkmLoggerTest : public testing::Test {
     recorder_.ExpectEntryMetric(entry,
                                 UserActivity::kRecentVideoPlayingTimeName, 600);
     recorder_.ExpectEntryMetric(entry, UserActivity::kScreenDimDelayName, 100);
+    recorder_.ExpectEntryMetric(entry, UserActivity::kScreenDimmedInitiallyName,
+                                false);
+    recorder_.ExpectEntryMetric(entry, UserActivity::kScreenDimOccurredName,
+                                true);
     recorder_.ExpectEntryMetric(entry, UserActivity::kScreenDimToOffDelayName,
                                 200);
+    recorder_.ExpectEntryMetric(entry, UserActivity::kScreenLockedInitiallyName,
+                                false);
+    recorder_.ExpectEntryMetric(entry, UserActivity::kScreenLockOccurredName,
+                                true);
+    recorder_.ExpectEntryMetric(entry, UserActivity::kScreenOffInitiallyName,
+                                false);
+    recorder_.ExpectEntryMetric(entry, UserActivity::kScreenOffOccurredName,
+                                true);
+
     recorder_.ExpectEntryMetric(entry, UserActivity::kSequenceIdName, 1);
     EXPECT_FALSE(
         recorder_.EntryHasMetric(entry, UserActivity::kTimeSinceLastKeyName));

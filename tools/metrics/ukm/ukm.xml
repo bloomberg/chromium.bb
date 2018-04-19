@@ -3383,11 +3383,41 @@ be describing additional metrics about the same event.
       Delay after which the screen will be dimmed in seconds.
     </summary>
   </metric>
+  <metric name="ScreenDimmedInitially">
+    <summary>
+      Whether screen was dimmed at the start of the event.
+    </summary>
+  </metric>
+  <metric name="ScreenDimOccurred">
+    <summary>
+      Whether screen dim occurred due to inactivity timeout.
+    </summary>
+  </metric>
   <metric name="ScreenDimToOffDelay">
     <summary>
       Delay after which the screen will be turned off in seconds, as measured
       from screen is dimmed. If dim is diabled, it is the delay from the start
       of inactivity.
+    </summary>
+  </metric>
+  <metric name="ScreenLockedInitially">
+    <summary>
+      Whether screen was locked at the start of the event.
+    </summary>
+  </metric>
+  <metric name="ScreenLockOccurred">
+    <summary>
+      Whether screen lock occurred.
+    </summary>
+  </metric>
+  <metric name="ScreenOffInitially">
+    <summary>
+      Whether screen was off at the start of the event.
+    </summary>
+  </metric>
+  <metric name="ScreenOffOccurred">
+    <summary>
+      Whether screen off occurred due to inactivity timeout.
     </summary>
   </metric>
   <metric name="SequenceId">
