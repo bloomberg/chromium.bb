@@ -6,7 +6,7 @@ import StringIO
 import unittest
 
 from webkitpy.common.system.system_host_mock import MockSystemHost
-from webkitpy.formatter.main import main
+from blinkpy.formatter.main import main
 
 
 ACTUAL_INPUT = '''

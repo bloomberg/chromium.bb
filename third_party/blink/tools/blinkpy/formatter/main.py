@@ -5,6 +5,7 @@
 import argparse
 import lib2to3.refactor
 
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 # Put blinkpy/third_party/ in the import path for autopep8 to import pep8.
 from webkitpy.common.path_finder import add_blinkpy_thirdparty_dir_to_sys_path
 add_blinkpy_thirdparty_dir_to_sys_path()
@@ -41,7 +42,7 @@ def main(host=None, args=None):
         options.quoting = None
 
     autopep8_options = _autopep8_options_for_style(options.style)
-    fixers = ['webkitpy.formatter.fix_docstrings']
+    fixers = ['blinkpy.formatter.fix_docstrings']
     fixers.extend(_fixers_for_quoting(options.quoting))
 
     if options.files == ['-']:
@@ -81,8 +82,8 @@ def _autopep8_options_for_style(style):
 def _fixers_for_quoting(quoting):
     return {
         None: [],
-        'double': ['webkitpy.formatter.fix_double_quote_strings'],
-        'single': ['webkitpy.formatter.fix_single_quote_strings'],
+        'double': ['blinkpy.formatter.fix_double_quote_strings'],
+        'single': ['blinkpy.formatter.fix_single_quote_strings'],
     }.get(quoting)
 
 
