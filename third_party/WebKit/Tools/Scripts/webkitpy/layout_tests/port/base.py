@@ -257,7 +257,7 @@ class Port(object):
             flags = flags[1:]
         if self.driver_name() == self.CONTENT_SHELL_NAME:
             # This is the fingerprint of wpt's certificate found in
-            # thirdparty/wpt/certs.  To regenerate, use:
+            # blinkpy/third_party/wpt/certs.  To regenerate, use:
             #
             #   openssl x509 -noout -pubkey -in 127.0.0.1.pem |
             #   openssl pkey -pubin -outform der |

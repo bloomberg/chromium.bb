@@ -44,10 +44,10 @@ def add_bindings_scripts_dir_to_sys_path():
         sys.path.append(path_to_bindings_scripts)
 
 
-def add_webkitpy_thirdparty_dir_to_sys_path():
-    path_to_bindings_scripts = get_webkitpy_thirdparty_dir()
-    if path_to_bindings_scripts not in sys.path:
-        sys.path.append(path_to_bindings_scripts)
+def add_blinkpy_thirdparty_dir_to_sys_path():
+    path = get_blinkpy_thirdparty_dir()
+    if path not in sys.path:
+        sys.path.append(path)
 
 
 def get_bindings_scripts_dir():
@@ -75,8 +75,8 @@ def get_typ_dir():
     return os.path.join(get_chromium_src_dir(), 'third_party', 'typ')
 
 
-def get_webkitpy_thirdparty_dir():
-    return os.path.join(get_scripts_dir(), 'webkitpy', 'thirdparty')
+def get_blinkpy_thirdparty_dir():
+    return os.path.join(get_blink_tools_dir(), 'blinkpy', 'third_party')
 
 
 def get_blink_tools_dir():
@@ -129,6 +129,9 @@ class PathFinder(object):
 
     def path_from_blink_source(self, *comps):
         return self._filesystem.join(self._blink_source_dir(), *comps)
+
+    def path_from_blink_tools(self, *comps):
+        return self._filesystem.join(self._filesystem.join(self.chromium_base(), 'third_party', 'blink', 'tools'), *comps)
 
     def path_from_tools_scripts(self, *comps):
         return self._filesystem.join(self._filesystem.join(self._webkit_base(), 'Tools', 'Scripts'), *comps)

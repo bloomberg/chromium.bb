@@ -22,7 +22,7 @@ class WPTManifest(object):
 
     def __init__(self, json_content):
         # TODO(tkent): Create a Manifest object by Manifest.from_json().
-        # See ../thirdparty/wpt/wpt/tools/manifest/manifest.py.
+        # See ../third_party/wpt/wpt/tools/manifest/manifest.py.
         self.raw_dict = json.loads(json_content)
         self.test_types = ('manual', 'reftest', 'testharness')
 
@@ -123,7 +123,7 @@ class WPTManifest(object):
     def generate_manifest(host, dest_path):
         """Generates MANIFEST.json on the specified directory."""
         finder = PathFinder(host.filesystem)
-        wpt_exec_path = finder.path_from_tools_scripts('webkitpy', 'thirdparty', 'wpt', 'wpt', 'wpt')
+        wpt_exec_path = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt', 'wpt', 'wpt')
         cmd = ['python', wpt_exec_path, 'manifest', '--work', '--tests-root', dest_path]
 
         # ScriptError will be raised if the command fails.

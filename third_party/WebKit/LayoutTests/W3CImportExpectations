@@ -157,7 +157,7 @@ external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-
 external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-percentage.html [ Skip ]
 
 # The wpt tools (including manifest and wptserve) are checked in to
-# webkitpy/thirdparty/wpt so that we can manually update them and keep
+# blinkpy/third_party/wpt so that we can manually update them and keep
 # a stable pinned version.
 external/wpt/tools [ Skip ]
 external/wpt/wpt [ Skip ]

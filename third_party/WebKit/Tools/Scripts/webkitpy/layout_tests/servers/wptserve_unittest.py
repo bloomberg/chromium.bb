@@ -22,10 +22,10 @@ class TestWPTServe(LoggingTestCase):
             [
                 'python',
                 '-u',
-                '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/wpt',
+                '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
                 'serve',
                 '--config',
-                '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json',
+                '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json',
                 '--doc_root',
                 '/test.checkout/LayoutTests/external/wpt'
             ])
