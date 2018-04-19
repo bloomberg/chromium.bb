@@ -291,12 +291,17 @@ bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
       if (should_send_rlz_ping_value ==
           chromeos::system::kShouldSendRlzPingValueFalse) {
         return true;
+      } else if (should_send_rlz_ping_value !=
+                 chromeos::system::kShouldSendRlzPingValueTrue) {
+        LOG(WARNING) << chromeos::system::kShouldSendRlzPingKey
+                     << " has an unexpected value: "
+                     << should_send_rlz_ping_value << ". Treat it as "
+                     << chromeos::system::kShouldSendRlzPingValueFalse
+                     << " to avoid sending duplicate rlz ping.";
+        return true;
       }
       if (!HasRlzEmbargoEndDatePassed())
         return true;
-
-      DCHECK_EQ(should_send_rlz_ping_value,
-                chromeos::system::kShouldSendRlzPingValueTrue);
     } else {
       // If |kShouldSendRlzPingKey| doesn't exist in RW_VPD, treat it in the
       // same way with the case of |kShouldSendRlzPingValueFalse|.
@@ -385,8 +390,8 @@ void RlzValueStoreChromeOS::OnSetRlzPingSent(bool success) {
     UMA_HISTOGRAM_BOOLEAN("Rlz.SetRlzPingSent", true);
   } else if (set_rlz_ping_sent_attempts_ >= kMaxRetryCount) {
     UMA_HISTOGRAM_BOOLEAN("Rlz.SetRlzPingSent", false);
-    LOG(ERROR) << "Setting |should_send_rlz_ping| to 0 failed after "
-               << kMaxRetryCount << " attempts";
+    LOG(ERROR) << "Setting " << chromeos::system::kShouldSendRlzPingKey
+               << " failed after " << kMaxRetryCount << " attempts.";
   } else {
     SetRlzPingSent();
   }
