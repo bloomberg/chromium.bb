@@ -148,9 +148,6 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     private Dialog mSheetDialog;
     private ModalDialogView mModalDialog;
 
-    // Whether or not the popup should appear at the bottom of the screen.
-    private final boolean mIsBottomPopup;
-
     // Animation which is currently running, if there is one.
     private Animator mCurrentAnimation;
 
@@ -206,7 +203,6 @@ public class PageInfoPopup implements ModalDialogView.Controller {
             String publisher) {
         mContext = activity;
         mTab = tab;
-        mIsBottomPopup = mTab.getActivity().getBottomSheet() != null;
         mOfflinePageState = offlinePageState;
         PageInfoViewParams viewParams = new PageInfoViewParams();
 
@@ -216,7 +212,6 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         mWindowAndroid = mTab.getWebContents().getTopLevelNativeWindow();
         mContentPublisher = publisher;
 
-        viewParams.alwaysShowFullUrl = mIsBottomPopup;
         viewParams.urlTitleClickCallback = () -> {
             // Expand/collapse the displayed URL title.
             mView.toggleUrlTruncation();
@@ -627,17 +622,8 @@ public class PageInfoPopup implements ModalDialogView.Controller {
             dialogView = new ScrollView(mContext) {
                 @Override
                 protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                    int dialogMaxHeight = mTab.getHeight();
-                    if (mIsBottomPopup) {
-                        // In Chrome Home, the full URL is showing at all times; give the scroll
-                        // view a max height so long URLs don't consume the entire screen.
-                        dialogMaxHeight = (int) (dialogMaxHeight
-                                - mContext.getResources().getDimension(
-                                          R.dimen.min_touch_target_size));
-                    }
-
                     heightMeasureSpec =
-                            MeasureSpec.makeMeasureSpec(dialogMaxHeight, MeasureSpec.AT_MOST);
+                            MeasureSpec.makeMeasureSpec(mTab.getHeight(), MeasureSpec.AT_MOST);
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 }
             };
@@ -717,7 +703,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
      * Create an animator to slide in the entire dialog from the top of the screen.
      */
     private Animator createDialogSlideAnimaton(boolean isEnter) {
-        final float animHeight = (mIsBottomPopup ? 1f : -1f) * mView.getHeight();
+        final float animHeight = -mView.getHeight();
         ObjectAnimator translateAnim;
         if (isEnter) {
             mView.setTranslationY(animHeight);
@@ -808,10 +794,6 @@ public class PageInfoPopup implements ModalDialogView.Controller {
                 PageInfoPopup.this.onDismiss();
             }
         });
-
-        if (mIsBottomPopup) {
-            mSheetDialog.getWindow().getAttributes().gravity = Gravity.BOTTOM | Gravity.END;
-        }
     }
 
     private void showConnectionInfoPopup() {
