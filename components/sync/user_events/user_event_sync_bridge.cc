@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
@@ -156,7 +157,9 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
 void UserEventSyncBridge::OnSyncStarting(
     const ModelErrorHandler& error_handler,
     ModelTypeChangeProcessor::StartCallback start_callback) {
+#if !defined(OS_IOS)  // https://crbug.com/834042
   DCHECK(!GetAuthenticatedAccountId().empty());
+#endif  // !defined(OS_IOS)
   change_processor()->OnSyncStarting(std::move(error_handler),
                                      std::move(start_callback));
 
