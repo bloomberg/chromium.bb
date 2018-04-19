@@ -1,11 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ANDROID_VIEW_CLIENT_H_
-#define UI_ANDROID_VIEW_CLIENT_H_
+#ifndef UI_EVENTS_ANDROID_EVENT_HANDLER_ANDROID_H_
+#define UI_EVENTS_ANDROID_EVENT_HANDLER_ANDROID_H_
 
-#include "ui/android/ui_android_export.h"
+#include "ui/events/events_export.h"
 
 namespace ui {
 
@@ -13,17 +13,18 @@ class DragEventAndroid;
 class GestureEventAndroid;
 class MotionEventAndroid;
 
-// Client interface used to forward events from Java to native views.
-// Calls are dispatched to its children along the hierarchy of ViewAndroid.
+// Dispatches events to appropriate targets. The default implementations of
+// all of the specific handlers do nothing. Implementations should set
+// themselves to the ViewAndroid in the view tree to get the calls routed.
 // Use bool return type to stop propagating the call i.e. overriden method
 // should return true to indicate that the event was handled and stop
 // the processing.
-class UI_ANDROID_EXPORT ViewClient {
+class EVENTS_EXPORT EventHandlerAndroid {
  public:
+  virtual bool OnDragEvent(const DragEventAndroid& event);
   virtual bool OnTouchEvent(const MotionEventAndroid& event);
   virtual bool OnMouseEvent(const MotionEventAndroid& event);
   virtual bool OnMouseWheelEvent(const MotionEventAndroid& event);
-  virtual bool OnDragEvent(const DragEventAndroid& event);
   virtual bool OnGestureEvent(const GestureEventAndroid& event);
   virtual void OnSizeChanged();
   virtual void OnPhysicalBackingSizeChanged();
@@ -31,4 +32,4 @@ class UI_ANDROID_EXPORT ViewClient {
 
 }  // namespace ui
 
-#endif  // UI_ANDROID_VIEW_CLIENT_H_
+#endif  // UI_EVENTS_ANDROID_EVENT_HANDLER_ANDROID_H_
