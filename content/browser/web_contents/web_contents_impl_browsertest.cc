@@ -658,9 +658,23 @@ class ResourceLoadObserver : public WebContentsObserver {
         ASSERT_TRUE(resource_load_info->ip);
         EXPECT_EQ(ip_address, resource_load_info->ip->ToString());
         EXPECT_EQ(was_cached, resource_load_info->was_cached);
-        // Simple sanity check of the request start time.
-        EXPECT_GT(resource_load_info->request_start, before_request);
-        EXPECT_GT(after_request, resource_load_info->request_start);
+        // Simple sanity check of the load timing info.
+        auto CheckTime = [before_request, after_request](auto actual) {
+          EXPECT_LE(before_request, actual);
+          EXPECT_GT(after_request, actual);
+        };
+        const net::LoadTimingInfo& timing =
+            resource_load_info->load_timing_info;
+        CheckTime(timing.request_start);
+        CheckTime(timing.receive_headers_end);
+        CheckTime(timing.send_start);
+        CheckTime(timing.send_end);
+        if (!was_cached) {
+          CheckTime(timing.connect_timing.dns_start);
+          CheckTime(timing.connect_timing.dns_end);
+          CheckTime(timing.connect_timing.connect_start);
+          CheckTime(timing.connect_timing.connect_end);
+        }
       }
     }
     EXPECT_TRUE(resource_load_info_found);

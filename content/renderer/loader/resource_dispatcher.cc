@@ -175,6 +175,13 @@ void ResourceDispatcher::OnReceivedResponse(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
+  request_info->response_start = base::TimeTicks::Now();
+  // Now that response_start has been set, we can properly set the TimeTicks in
+  // the ResourceResponseInfo.
+  network::ResourceResponseInfo renderer_response_info;
+  ToResourceResponseInfo(*request_info, initial_response_head,
+                         &renderer_response_info);
+  request_info->load_timing_info = renderer_response_info.load_timing;
 
   network::ResourceResponseHead response_head;
   std::unique_ptr<NavigationResponseOverrideParameters> response_override =
@@ -213,8 +220,6 @@ void ResourceDispatcher::OnReceivedResponse(
                              response_head.cert_status);
   }
 
-  network::ResourceResponseInfo renderer_response_info;
-  ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
   request_info->peer->OnReceivedResponse(renderer_response_info);
 }
 
@@ -328,9 +333,9 @@ void ResourceDispatcher::OnRequestComplete(
       request_info->network_accessed;
   resource_load_info->network_info->always_access_network =
       request_info->always_access_network;
+  resource_load_info->load_timing_info = request_info->load_timing_info;
   resource_load_info->was_cached = status.exists_in_cache;
   resource_load_info->net_error = status.error_code;
-  resource_load_info->request_start = request_info->request_start;
   resource_load_info->redirect_info_chain =
       std::move(request_info->redirect_info_chain);
 

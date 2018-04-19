@@ -4,8 +4,8 @@
 
 module content.mojom;
 
+import "content/public/common/load_timing_info.mojom";
 import "content/public/common/resource_type.mojom";
-import "mojo/public/mojom/base/time.mojom";
 import "net/interfaces/ip_address.mojom";
 import "url/mojom/url.mojom";
 
@@ -65,8 +65,8 @@ struct ResourceLoadInfo {
   // The network error code, net::OK if no error happened.
   int32 net_error;
 
-  // The time at which the request was started.
-  mojo_base.mojom.TimeTicks request_start;
+  // The timing info.
+  content.mojom.LoadTimingInfo load_timing_info;
 
   // The list of redirects that led to this resource load. Empty if there were
   // no redirects.
