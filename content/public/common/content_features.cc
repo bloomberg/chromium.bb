@@ -522,6 +522,11 @@ const base::Feature kWebRtcHWVP8Encoding {
 #endif
 };
 
+// Enables HW VP8 encoding using Intel Vaapi, if available.
+// TODO(crbug.com/794608): Enable by default when we trust quality.
+const base::Feature kWebRtcVaapiHWVP8Encoding{
+    "WebRtcVaapiHWVP8Encoding", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables negotiation of experimental multiplex codec in SDP.
 const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

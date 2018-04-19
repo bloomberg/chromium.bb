@@ -119,6 +119,7 @@ CONTENT_EXPORT extern const base::Feature kWebRtcAecClockDriftSetup;
 CONTENT_EXPORT extern const base::Feature kWebRtcEcdsaDefault;
 CONTENT_EXPORT extern const base::Feature kWebRtcHWH264Encoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcHWVP8Encoding;
+CONTENT_EXPORT extern const base::Feature kWebRtcVaapiHWVP8Encoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcMultiplexCodec;
 CONTENT_EXPORT extern const base::Feature kWebRtcScreenshareSwEncoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcUseEchoCanceller3;
