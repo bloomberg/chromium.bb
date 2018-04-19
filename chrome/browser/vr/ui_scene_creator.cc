@@ -601,7 +601,7 @@ std::unique_ptr<UiElement> CreateHostedUi(
   hosted_ui->set_requires_layout(false);
   hosted_ui->set_corner_radius(kContentCornerRadius);
   hosted_ui->SetTransitionedProperties({OPACITY});
-  hosted_ui->SetTranslate(0, 0, kHostedUiDepthOffset);
+  hosted_ui->SetTranslate(0, 0, kHostedUiShadowOffset);
   hosted_ui->AddBinding(VR_BIND_FUNC(
       ContentInputDelegatePtr, Model, model, model->hosted_platform_ui.delegate,
       ContentElement, hosted_ui.get(), SetDelegate));
@@ -619,32 +619,10 @@ std::unique_ptr<UiElement> CreateHostedUi(
             dialog->set_hit_testable(enabled);
           },
           base::Unretained(hosted_ui.get()))));
-  hosted_ui->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::PointF>>>(
-      base::BindRepeating(
-          [](Model* m) {
-            return std::pair<bool, gfx::PointF>(
-                m->hosted_platform_ui.floating,
-                gfx::PointF(m->hosted_platform_ui.rect.x(),
-                            m->hosted_platform_ui.rect.y()));
-          },
-          base::Unretained(model)),
-      base::BindRepeating(
-          [](ContentElement* dialog,
-             const std::pair<bool, gfx::PointF>& value) {
-            if (value.first) {
-              dialog->set_x_centering(LEFT);
-              dialog->set_y_centering(TOP);
-              dialog->SetTranslate((value.second.x() - 0.5) * kContentWidth,
-                                   (0.5 - value.second.y()) * kContentHeight,
-                                   kFloatingHostedUiDistance);
-            } else {
-              dialog->set_x_centering(NONE);
-              dialog->set_y_centering(NONE);
-              dialog->SetTranslate(0, 0, kHostedUiDepthOffset);
-            }
-          },
-          base::Unretained(hosted_ui.get()))));
-
+  hosted_ui->AddBinding(
+      VR_BIND(bool, Model, model, model->hosted_platform_ui.floating, UiElement,
+              hosted_ui.get(),
+              view->SetTranslate(0, 0, value ? 0 : kHostedUiShadowOffset)));
   hosted_ui->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::SizeF>>>(
       base::BindRepeating(
           [](Model* m) {
@@ -668,6 +646,38 @@ std::unique_ptr<UiElement> CreateHostedUi(
           },
           base::Unretained(hosted_ui.get()))));
 
+  auto shadow = Create<Shadow>(kNone, kPhaseForeground);
+  shadow->SetType(kTypePromptShadow);
+  shadow->SetTranslate(0, 0, kHostedUiDepthOffset - kHostedUiShadowOffset);
+  shadow->AddChild(std::move(hosted_ui));
+  shadow->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::PointF>>>(
+      base::BindRepeating(
+          [](Model* m) {
+            return std::pair<bool, gfx::PointF>(
+                m->hosted_platform_ui.floating,
+                gfx::PointF(m->hosted_platform_ui.rect.x(),
+                            m->hosted_platform_ui.rect.y()));
+          },
+          base::Unretained(model)),
+      base::BindRepeating(
+          [](Shadow* shadow, const std::pair<bool, gfx::PointF>& value) {
+            if (value.first /* floating */) {
+              shadow->set_x_centering(LEFT);
+              shadow->set_y_centering(TOP);
+              shadow->SetTranslate((value.second.x() - 0.5) * kContentWidth,
+                                   (0.5 - value.second.y()) * kContentHeight,
+                                   kFloatingHostedUiDistance);
+              shadow->set_intensity(0);
+            } else {
+              shadow->set_x_centering(NONE);
+              shadow->set_y_centering(NONE);
+              shadow->SetTranslate(
+                  0, 0, kHostedUiDepthOffset - kHostedUiShadowOffset);
+              shadow->set_intensity(1);
+            }
+          },
+          base::Unretained(shadow.get()))));
+
   auto backplane = Create<InvisibleHitTarget>(name, kPhaseForeground);
   backplane->SetType(kTypeHostedUiBackplane);
   backplane->SetSize(kSceneSize, kSceneSize);
@@ -682,7 +692,7 @@ std::unique_ptr<UiElement> CreateHostedUi(
       },
       base::Unretained(model), base::Unretained(browser));
   backplane->set_event_handlers(event_handlers);
-  backplane->AddChild(std::move(hosted_ui));
+  backplane->AddChild(std::move(shadow));
   backplane->AddBinding(VR_BIND_FUNC(
       bool, Model, model, model->hosted_platform_ui.hosted_ui_enabled,
       InvisibleHitTarget, backplane.get(), SetVisible));

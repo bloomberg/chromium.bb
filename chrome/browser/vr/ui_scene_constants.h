@@ -154,6 +154,7 @@ static constexpr float kTimeoutButtonTextVerticalOffsetDMM = 0.024f;
 static constexpr float kHostedUiHeightRatio = 0.6f;
 static constexpr float kHostedUiWidthRatio = 0.6f;
 static constexpr float kHostedUiDepthOffset = 0.3f;
+static constexpr float kHostedUiShadowOffset = 0.09f;
 static constexpr float kFloatingHostedUiDistance = 0.01f;
 
 static constexpr float kScreenDimmerOpacity = 0.9f;
