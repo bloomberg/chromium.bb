@@ -1726,6 +1726,18 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
   }
 
   void DidCommitAndDrawFrame() override {
+    // We run the next step in a clean stack, so that we don't cause side
+    // effects that will interfere with this current stack unwinding.
+    // Specifically, removing the LayerTreeFrameSink destroys the Display
+    // and the BeginFrameSource, but they can be on the stack (see
+    // https://crbug.com/829484).
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SoftwareTextureLayerLoseFrameSinkTest::NextStep,
+                       base::Unretained(this)));
+  }
+
+  void NextStep() {
     step_ = layer_tree_host()->SourceFrameNumber();
     switch (step_) {
       case 1:
@@ -1808,8 +1820,7 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
   void* first_frame_sink_;
 };
 
-// TODO(crbug.com/829923): Flaky with a heap-use-after-free.
-// SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerLoseFrameSinkTest);
+SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerLoseFrameSinkTest);
 
 class SoftwareTextureLayerUnregisterRegisterTest
     : public SoftwareTextureLayerTest {
