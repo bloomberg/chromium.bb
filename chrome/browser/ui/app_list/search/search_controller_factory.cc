@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
+#include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
@@ -45,6 +46,12 @@ constexpr size_t kMaxPlayStoreResults = 12;
 
 constexpr size_t kMaxAppDataResults = 6;
 
+// TODO(wutao): Need UX spec.
+constexpr size_t kMaxSettingsShortcutResults = 6;
+
+constexpr float kBoostOfSettingsShortcut = 10.0f;
+constexpr float kBoostOfApps = 8.0f;
+
 }  // namespace
 
 std::unique_ptr<SearchController> CreateSearchController(
@@ -60,11 +67,12 @@ std::unique_ptr<SearchController> CreateSearchController(
   // a query turns up very few results, the mixer may take more than this
   // maximum from a particular group.
 
-  // For fullscreen app list, apps should be at top, answer card in the middle
-  // and other search results in the bottom. So set boost 10.0, 5.0, 0.0
-  // respectively.
+  // For fullscreen app list, Settings shortcuts will show on the very top and
+  // apps and answer card in the middle and other search results in the bottom.
+  // So set boost 10.0, 8.0, 5.0, 0.0 respectively.
   size_t answer_card_group_id = controller->AddGroup(1, 1.0, 5.0);
-  size_t apps_group_id = controller->AddGroup(kMaxAppsGroupResults, 1.0, 10.0);
+  size_t apps_group_id =
+      controller->AddGroup(kMaxAppsGroupResults, 1.0, kBoostOfApps);
   size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
   size_t webstore_group_id =
       controller->AddGroup(kMaxWebstoreResults, 0.4, 0.0);
@@ -101,10 +109,10 @@ std::unique_ptr<SearchController> CreateSearchController(
   }
 
   if (features::IsPlayStoreAppSearchEnabled()) {
-    // Set same boost 10.0 as apps group since Play store results are placed
+    // Set same boost as apps group since Play store results are placed
     // with apps.
     size_t playstore_api_group_id =
-        controller->AddGroup(kMaxPlayStoreResults, 1.0, 10.0);
+        controller->AddGroup(kMaxPlayStoreResults, 1.0, kBoostOfApps);
     controller->AddProvider(
         playstore_api_group_id,
         std::make_unique<ArcPlayStoreSearchProvider>(kMaxPlayStoreResults,
@@ -112,10 +120,18 @@ std::unique_ptr<SearchController> CreateSearchController(
   }
 
   size_t app_data_api_group_id =
-      controller->AddGroup(kMaxAppDataResults, 1.0, 10.0);
+      controller->AddGroup(kMaxAppDataResults, 1.0, kBoostOfApps);
   controller->AddProvider(app_data_api_group_id,
                           std::make_unique<ArcAppDataSearchProvider>(
                               kMaxAppDataResults, profile, list_controller));
+
+  if (features::IsSettingsShortcutSearchEnabled()) {
+    size_t settings_shortcut_group_id = controller->AddGroup(
+        kMaxSettingsShortcutResults, 1.0, kBoostOfSettingsShortcut);
+    controller->AddProvider(
+        settings_shortcut_group_id,
+        std::make_unique<SettingsShortcutProvider>(profile));
+  }
 
   return controller;
 }
