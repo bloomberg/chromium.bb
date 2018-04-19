@@ -1616,7 +1616,10 @@ if (enable_java_templates) {
       }
 
       if (defined(invoker.zip_path)) {
-        outputs += [ invoker.zip_path ]
+        outputs += [
+          invoker.zip_path,
+          invoker.zip_path + ".info",
+        ]
         args += [
           "--resource-zip-out",
           rebase_path(invoker.zip_path, root_build_dir),
@@ -1817,10 +1820,16 @@ if (enable_java_templates) {
         ]
       }
       if (defined(_compiled_resources_path)) {
-        outputs += [ _compiled_resources_path ]
+        _info_path = invoker.output + ".info"
+        outputs += [
+          _compiled_resources_path,
+          _info_path,
+        ]
         args += [
           "--apk-path",
           rebase_path(_compiled_resources_path, root_build_dir),
+          "--apk-info-path",
+          rebase_path(_info_path, root_build_dir),
         ]
       }
 
@@ -2032,11 +2041,17 @@ if (enable_java_templates) {
         if (defined(invoker.apk_name)) {
           # The supersize tool will search in this directory for each apk.
           _apk_pak_info_path = "size-info/${invoker.apk_name}.apk.pak.info"
+          _apk_res_info_path = "size-info/${invoker.apk_name}.apk.res.info"
           args += [
             "--apk-pak-info-path",
             _apk_pak_info_path,
+            "--apk-res-info-path",
+            _apk_res_info_path,
           ]
-          outputs += [ "$root_build_dir/$_apk_pak_info_path" ]
+          outputs += [
+            "$root_build_dir/$_apk_pak_info_path",
+            "$root_build_dir/$_apk_res_info_path",
+          ]
         }
       }
       if (defined(invoker.write_asset_list) && invoker.write_asset_list) {

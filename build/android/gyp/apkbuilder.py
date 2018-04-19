@@ -48,6 +48,8 @@ def _ParseArgs(args):
                       required=True)
   parser.add_argument('--apk-pak-info-path',
                       help='Path to the *.apk.pak.info file')
+  parser.add_argument('--apk-res-info-path',
+                      help='Path to the *.apk.res.info file')
   parser.add_argument('--dex-file',
                       help='Path to the classes.dex to use')
   parser.add_argument('--native-libs',
@@ -186,6 +188,11 @@ def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress):
                                  compress=compress)
 
 
+def _MergeResInfoFiles(res_info_path, resource_apk):
+  resource_apk_info_path = resource_apk + '.info'
+  shutil.copy(resource_apk_info_path, res_info_path)
+
+
 def _MergePakInfoFiles(pak_info_path, asset_list):
   lines = set()
   for asset_details in asset_list:
@@ -238,6 +245,8 @@ def main(args):
   output_paths = [options.output_apk]
   if options.apk_pak_info_path:
     output_paths.append(options.apk_pak_info_path)
+  if options.apk_res_info_path:
+    output_paths.append(options.apk_res_info_path)
 
   def on_stale_md5():
     tmp_apk = options.output_apk + '.tmp'
@@ -320,6 +329,8 @@ def main(args):
         if options.apk_pak_info_path:
           _MergePakInfoFiles(options.apk_pak_info_path,
                              options.assets + options.uncompressed_assets)
+        if options.apk_res_info_path:
+          _MergeResInfoFiles(options.apk_res_info_path, options.resource_apk)
 
       shutil.move(tmp_apk, options.output_apk)
     finally:

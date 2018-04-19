@@ -59,6 +59,8 @@ SECTION_TEXT = '.text'
 # Used by SymbolGroup when they contain a mix of sections.
 SECTION_MULTIPLE = '.*'
 
+APK_PREFIX_PATH = '$APK'
+
 DEX_SECTIONS = (
     SECTION_DEX,
     SECTION_DEX_METHOD,

@@ -141,11 +141,10 @@ def CreateDexSymbols(apk_path, output_directory):
       object_path = package
     elif package == _TOTAL_NODE_NAME:
       name = '* Unattributed Dex'
-      object_path = os.path.join(apk_name, _DEX_PATH_COMPONENT)
+      object_path = ''  # Categorize in the anonymous section.
       node_size += id_metadata_overhead_size
     else:
-      object_path = os.path.join(
-          apk_name, _DEX_PATH_COMPONENT, *package.split('.'))
+      object_path = os.path.join(models.APK_PREFIX_PATH, *package.split('.'))
     if name.endswith(')'):
       section_name = models.SECTION_DEX_METHOD
     else:

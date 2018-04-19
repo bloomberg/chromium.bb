@@ -261,6 +261,7 @@ def ParseArgs():
   build_utils.CheckOptions(options, parser, required=required_options)
   return options
 
+
 def GenerateV14Resources(res_dir, res_v14_dir):
   for name in os.listdir(res_dir):
     if not os.path.isdir(os.path.join(res_dir, name)):
@@ -306,6 +307,7 @@ def GenerateV14Resources(res_dir, res_v14_dir):
       elif not api_level_qualifier:
         ErrorIfStyleResourceExistsInDir(input_dir)
 
+
 def main():
   options = ParseArgs()
 
@@ -318,6 +320,7 @@ def main():
 
   if options.stamp:
     build_utils.Touch(options.stamp)
+
 
 if __name__ == '__main__':
   sys.exit(main())
