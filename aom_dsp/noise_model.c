@@ -1176,5 +1176,6 @@ int aom_noise_model_get_grain_parameters(aom_noise_model_t *const noise_model,
 
   film_grain->chroma_scaling_from_luma = 0;
   film_grain->grain_scale_shift = 0;
+  film_grain->overlap_flag = 1;
   return 1;
 }
