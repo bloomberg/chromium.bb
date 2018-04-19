@@ -17,8 +17,12 @@
 // Autofill controller.
 @property(nonatomic, strong) CWVAutofillController* autofillController;
 
-// Returns a new alert controller for picking suggestions.
-- (UIAlertController*)newAlertController;
+// Presents |alertController| as a modal view controller.
+- (void)presentAlertController:(UIAlertController*)alertController;
+
+// Returns a new alert controller with |title| and |message|.
+- (UIAlertController*)newAlertControllerWithTitle:(NSString*)title
+                                          message:(NSString*)message;
 
 // Returns an action for a suggestion.
 - (UIAlertAction*)actionForSuggestion:(CWVAutofillSuggestion*)suggestion;
@@ -50,7 +54,8 @@
       return;
     }
 
-    UIAlertController* alertController = [self newAlertController];
+    UIAlertController* alertController =
+        [self newAlertControllerWithTitle:@"Pick a suggestion" message:nil];
     UIAlertAction* cancelAction =
         [UIAlertAction actionWithTitle:@"Cancel"
                                  style:UIAlertActionStyleCancel
@@ -68,11 +73,7 @@
                                }];
     [alertController addAction:clearAction];
 
-    [[UIApplication sharedApplication].keyWindow.rootViewController
-        presentViewController:alertController
-                     animated:YES
-                   completion:nil];
-    strongSelf.alertController = alertController;
+    [strongSelf presentAlertController:alertController];
   };
   [autofillController fetchSuggestionsForFormWithName:formName
                                             fieldName:fieldName
@@ -105,13 +106,51 @@
   // Not implemented.
 }
 
+- (void)autofillController:(CWVAutofillController*)autofillController
+    decidePolicyForLocalStorageOfCreditCard:(CWVAutofillCreditCard*)creditCard
+                            decisionHandler:
+                                (void (^)(CWVStoragePolicy))decisionHandler {
+  NSString* cardSummary = [NSString
+      stringWithFormat:@"%@ %@ %@/%@", creditCard.cardHolderFullName,
+                       creditCard.cardNumber, creditCard.expirationMonth,
+                       creditCard.expirationYear];
+  UIAlertController* alertController =
+      [self newAlertControllerWithTitle:@"Choose local store policy"
+                                message:cardSummary];
+  UIAlertAction* allowAction =
+      [UIAlertAction actionWithTitle:@"Allow"
+                               style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction* _Nonnull action) {
+                               decisionHandler(CWVStoragePolicyAllow);
+                             }];
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:@"Cancel"
+                               style:UIAlertActionStyleCancel
+                             handler:^(UIAlertAction* _Nonnull action) {
+                               decisionHandler(CWVStoragePolicyReject);
+                             }];
+  [alertController addAction:allowAction];
+  [alertController addAction:cancelAction];
+
+  [self presentAlertController:alertController];
+}
+
 #pragma mark - Private Methods
 
-- (UIAlertController*)newAlertController {
+- (UIAlertController*)newAlertControllerWithTitle:(NSString*)title
+                                          message:(NSString*)message {
   return [UIAlertController
-      alertControllerWithTitle:@"Pick a suggestion"
-                       message:nil
+      alertControllerWithTitle:title
+                       message:message
                 preferredStyle:UIAlertControllerStyleActionSheet];
+}
+
+- (void)presentAlertController:(UIAlertController*)alertController {
+  [[UIApplication sharedApplication].keyWindow.rootViewController
+      presentViewController:alertController
+                   animated:YES
+                 completion:nil];
+  self.alertController = alertController;
 }
 
 - (UIAlertAction*)actionForSuggestion:(CWVAutofillSuggestion*)suggestion {

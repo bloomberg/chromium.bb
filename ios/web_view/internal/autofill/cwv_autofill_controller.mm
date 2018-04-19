@@ -21,6 +21,8 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web_view/internal/app/application_context.h"
+#import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
+#import "ios/web_view/internal/autofill/cwv_autofill_credit_card_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
@@ -29,9 +31,9 @@
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
 
-@interface CWVAutofillController ()<AutofillClientIOSBridge,
-                                    AutofillDriverIOSBridge,
-                                    CRWWebStateObserver>
+@interface CWVAutofillController ()<AutofillDriverIOSBridge,
+                                    CRWWebStateObserver,
+                                    CWVAutofillClientIOSBridge>
 
 @end
 
@@ -213,7 +215,7 @@
           completionHandler];
 }
 
-#pragma mark - AutofillClientIOSBridge | AutofillDriverIOSBridge
+#pragma mark - CWVAutofillClientIOSBridge
 
 - (void)showAutofillPopup:(const std::vector<autofill::Suggestion>&)suggestions
             popupDelegate:
@@ -257,6 +259,29 @@
       onSuggestionsReady:@[]
            popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
 }
+
+- (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
+                            callback:(const base::RepeatingClosure&)callback {
+  if ([_delegate respondsToSelector:@selector
+                 (autofillController:decidePolicyForLocalStorageOfCreditCard
+                                       :decisionHandler:)]) {
+    CWVAutofillCreditCard* card =
+        [[CWVAutofillCreditCard alloc] initWithCreditCard:creditCard];
+    __block base::RepeatingClosure scopedCallback = callback;
+    [_delegate autofillController:self
+        decidePolicyForLocalStorageOfCreditCard:card
+                                decisionHandler:^(CWVStoragePolicy policy) {
+                                  if (policy == CWVStoragePolicyAllow) {
+                                    if (scopedCallback) {
+                                      scopedCallback.Run();
+                                      scopedCallback.Reset();
+                                    }
+                                  }
+                                }];
+  }
+}
+
+#pragma mark - AutofillDriverIOSBridge
 
 - (void)onFormDataFilled:(uint16_t)query_id
                   result:(const autofill::FormData&)result {
