@@ -1326,8 +1326,9 @@
         },
       },
       'Win cl.exe Goma Canary LocalOutputCache': {
+        # Build only chromium's subproject using cl.exe.
         'additional_compile_targets': [
-          'all',
+          'v8_all', 'webrtc', 'pdfium_all', 'angle',
         ],
         'test_suites': {
           'gtest_tests': 'goma_gtests',
@@ -1351,8 +1352,9 @@
         },
       },
       'WinMSVC64 Goma Canary': {
+        # Build only chromium's subproject using cl.exe.
         'additional_compile_targets': [
-          'all',
+          'v8_all', 'webrtc', 'pdfium_all', 'angle',
         ],
         'test_suites': {
           'gtest_tests': 'goma_gtests',
