@@ -29017,12 +29017,6 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Low and High confidence."/>
 </enum>
 
-<enum name="MeasuredServiceTypes">
-  <int value="0" label="Translate"/>
-  <int value="1" label="Data Reduction Proxy"/>
-  <int value="2" label="Unknown"/>
-</enum>
-
 <enum name="MediaCommand">
   <int value="0" label="Resume"/>
   <int value="1" label="Pause"/>
