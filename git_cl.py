@@ -4188,7 +4188,7 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
       return (cl, cl.GetStatus())
     except:
       # See http://crbug.com/629863.
-      logging.exception('failed to fetch status for %s:', cl)
+      logging.exception('failed to fetch status for cl %s:', cl.GetIssue())
       raise
 
   threads_count = len(changes)
