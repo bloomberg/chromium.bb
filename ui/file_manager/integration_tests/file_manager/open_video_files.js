@@ -12,6 +12,7 @@
  * @param {Promise} promise Promise to be fulfilled with a found window's ID.
  */
 function waitForPlaying(filename) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return videoPlayerApp.callRemoteTestUtil('isPlaying',
                                              null,
@@ -19,7 +20,8 @@ function waitForPlaying(filename) {
         then(function(result) {
           if (result)
             return true;
-          return pending('Window with the prefix %s is not found.', filename);
+          return pending(
+              caller, 'Window with the prefix %s is not found.', filename);
         });
   });
 }
