@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "base/containers/queue.h"
-#include "base/containers/small_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -160,7 +159,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
                      VaapiPicture* picture);
 
   // Try to OutputPicture() if we have both a ready surface and picture.
-  void TryOutputPicture();
+  void TryOutputSurface();
 
   // Called when a VASurface is no longer in use by the decoder or is not being
   // synced/waiting to be synced to a picture. Returns it to available surfaces
@@ -190,15 +189,19 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   State state_;
   Config::OutputMode output_mode_;
 
-  // Queue of InputBuffers (BitstreamBuffer id and data) to decode.
+  // Queue of input InputBuffers (PictureBuffer ids) to decode.
   base::queue<std::unique_ptr<InputBuffer>> input_buffers_;
   // Current InputBuffer at |decoder_|.
   // Only accessed on |decoder_thread_task_runner_| (needs no |lock_|)
   std::unique_ptr<InputBuffer> curr_input_buffer_;
 
-  // VASurfaceIDs available to use by |decoder_|, i.e. not assigned to a
-  // VASurface -- active between CreateVASurface() - VASurfaceReady().
-  base::queue<VASurfaceID> available_va_surfaces_;
+  // VA Surfaces no longer in use that can be passed back to the decoder for
+  // reuse, once it requests them.
+  std::list<VASurfaceID> available_va_surfaces_;
+
+  // Queue for incoming output buffers (texture ids).
+  using OutputBuffers = base::queue<int32_t>;
+  OutputBuffers output_buffers_;
 
   std::unique_ptr<VaapiPictureFactory> vaapi_picture_factory_;
 
@@ -206,16 +209,14 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
 
-  // Queue of PictureBuffer ids available to be sent to |client_| via
-  // OutputPicture() (|client_| returns them via ReusePictureBuffer()).
-  base::queue<int32_t> available_picture_buffers_;
-  // Available VaapiPictures allocated by |client_| in AssignPictureBuffers()
-  // (and/or TryFinishSurfaceSetChange()). These pictures are indexed by the
-  // |available_picture_buffers_|.
-  using PictureMap =
-      base::small_map<std::map<int32_t, std::unique_ptr<VaapiPicture>>>;
-  PictureMap picture_map_;
-  // Returns the VaapiPicture indexed by |picture_buffer_id|, or nullptr.
+  // All allocated Pictures, regardless of their current state. Pictures are
+  // allocated once using |create_vaapi_picture_callback_| and destroyed at the
+  // end of decode. Comes after |vaapi_wrapper_| to ensure all pictures are
+  // destroyed before said |vaapi_wrapper_| is destroyed.
+  using Pictures = std::map<int32_t, std::unique_ptr<VaapiPicture>>;
+  Pictures pictures_;
+
+  // Return a VaapiPicture associated with given client-provided id.
   VaapiPicture* PictureById(int32_t picture_buffer_id);
 
   // Pending output requests from the decoder. When it indicates that we should
