@@ -391,9 +391,6 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, DisableRecordingStoresMetadata) {
   std::string os_name;
   last_metadata()->GetString("os-name", &os_name);
   EXPECT_TRUE(os_name.length() > 0);
-  std::string cpu_brand;
-  last_metadata()->GetString("cpu-brand", &cpu_brand);
-  EXPECT_TRUE(cpu_brand.length() > 0);
   std::string command_line;
   last_metadata()->GetString("command_line", &command_line);
   EXPECT_TRUE(command_line.length() > 0);
@@ -408,10 +405,6 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   TestStartAndStopTracingStringWithFilter();
   // Check that a number of important keys exist in the metadata dictionary.
   EXPECT_TRUE(last_metadata() != nullptr);
-  std::string cpu_brand;
-  last_metadata()->GetString("cpu-brand", &cpu_brand);
-  EXPECT_TRUE(cpu_brand.length() > 0);
-  EXPECT_TRUE(cpu_brand != "__stripped__");
   std::string network_type;
   last_metadata()->GetString("network-type", &network_type);
   EXPECT_TRUE(network_type.length() > 0);
