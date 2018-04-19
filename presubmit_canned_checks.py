@@ -1013,6 +1013,10 @@ def PanProjectChecks(input_api, output_api,
         print "  %s took a long time: %dms" % (snapshot_memory[1], delta_ms)
     snapshot_memory[:] = (dt2, msg)
 
+  snapshot("checking owners files format")
+  results.extend(input_api.canned_checks.CheckOwnersFormat(
+      input_api, output_api))
+
   if owners_check:
     snapshot("checking owners")
     results.extend(input_api.canned_checks.CheckOwners(

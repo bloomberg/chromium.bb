@@ -56,6 +56,8 @@ def DepotToolsPylint(input_api, output_api):
 def CommonChecks(input_api, output_api, tests_to_black_list):
   results = []
   results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
+  results.extend(input_api.canned_checks.CheckOwnersFormat(
+      input_api, output_api))
   # TODO(maruel): Make sure at least one file is modified first.
   # TODO(maruel): If only tests are modified, only run them.
   tests = DepotToolsPylint(input_api, output_api)
