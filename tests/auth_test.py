@@ -25,6 +25,9 @@ import auth
 
 
 class TestLuciContext(auto_stub.TestCase):
+  def setUp(self):
+    auth._get_luci_context_local_auth_params.clear_cache()
+
   def _mock_local_auth(self, account_id, secret, rpc_port):
     self.mock(os, 'environ', {'LUCI_CONTEXT': 'default/test/path'})
     self.mock(auth, '_load_luci_context', mock.Mock())
@@ -55,7 +58,7 @@ class TestLuciContext(auto_stub.TestCase):
                  - datetime.datetime.utcfromtimestamp(0)).total_seconds(),
     }
     self._mock_loc_server_resp(200, json.dumps(resp_content))
-    params = auth._get_luci_context_local_auth_params(os.environ)
+    params = auth._get_luci_context_local_auth_params()
     token = auth._get_luci_context_access_token(params, datetime.datetime.min)
     self.assertEquals(token.token, 'token')
 

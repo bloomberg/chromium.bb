@@ -132,7 +132,7 @@ def has_luci_context_local_auth():
   """Returns whether LUCI_CONTEXT should be used for ambient authentication.
   """
   try:
-    params = _get_luci_context_local_auth_params(os.environ)
+    params = _get_luci_context_local_auth_params()
   except LuciContextAuthError:
     return False
   if params is None:
@@ -155,7 +155,7 @@ def get_luci_context_access_token(scopes=OAUTH_SCOPE_EMAIL):
     LuciContextAuthError if LUCI_CONTEXT is present, but there was a failure
     obtaining its access token.
   """
-  params = _get_luci_context_local_auth_params(os.environ)
+  params = _get_luci_context_local_auth_params()
   if params is None:
     return None
   return _get_luci_context_access_token(
@@ -170,12 +170,31 @@ _LuciContextLocalAuthParams = collections.namedtuple(
 ])
 
 
-def _get_luci_context_local_auth_params(env):
+def _cache_thread_safe(f):
+  """Decorator caching result of nullary function in thread-safe way."""
+  lock = threading.Lock()
+  cache = []
+
+  @functools.wraps(f)
+  def caching_wrapper():
+    if not cache:
+      with lock:
+        if not cache:
+          cache.append(f())
+    return cache[0]
+
+  # Allow easy way to clear cache, particularly useful in tests.
+  caching_wrapper.clear_cache = lambda: cache.pop() if cache else None
+  return caching_wrapper
+
+
+@_cache_thread_safe
+def _get_luci_context_local_auth_params():
   """Returns local auth parameters if local auth is configured else None.
 
   Raises LuciContextAuthError on unexpected failures.
   """
-  ctx_path = env.get('LUCI_CONTEXT')
+  ctx_path = os.environ.get('LUCI_CONTEXT')
   if not ctx_path:
     return None
   ctx_path = ctx_path.decode(sys.getfilesystemencoding())
