@@ -40,5 +40,11 @@
       "name": "testServiceWorkerClientInterceptCallback",
       "_bug_id": "crbug.com/675809"
     }
+  ],
+  "android.webkit.cts.WebChromeClientTest": [
+    {
+      "name": "testOnJsBeforeUnloadIsCalled",
+      "_bug_id": "crbug.com/757007"
+    }
   ]
 }
