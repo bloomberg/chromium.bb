@@ -52,11 +52,6 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
                        ui::LatencyInfo* latency,
                        InputEventAckState ack_result);
 
-  // Populates renderer-created LatencyInfo entries with the appropriate latency
-  // component id. Called when the RenderWidgetHost receives a compositor swap
-  // update from the renderer.
-  void OnSwapCompositorFrame(std::vector<ui::LatencyInfo>* latencies);
-
   void reset_delegate() { render_widget_host_delegate_ = nullptr; }
 
   // Returns the ID that uniquely describes this component to the latency
