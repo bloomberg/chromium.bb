@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.offlinepages;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.util.Base64;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -15,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -429,7 +431,10 @@ public class OfflinePageBridgeTest {
         String extraHeaders = loadUrlParams.getVerbatimHeaders();
         Assert.assertNotNull(extraHeaders);
         Assert.assertNotEquals(-1, extraHeaders.indexOf("reason=file_url_intent"));
-        Assert.assertNotEquals(-1, extraHeaders.indexOf("intent_url=" + fileUrl));
+        Assert.assertNotEquals("intent_url field not found in header: " + extraHeaders, -1,
+                extraHeaders.indexOf("intent_url="
+                        + Base64.encodeToString(
+                                  ApiCompatibilityUtils.getBytesUtf8(fileUrl), Base64.NO_WRAP)));
         Assert.assertNotEquals(
                 -1, extraHeaders.indexOf("id=" + Long.toString(offlinePage.getOfflineId())));
 
@@ -447,7 +452,9 @@ public class OfflinePageBridgeTest {
         Assert.assertNotEquals("reason field not found in header: " + extraHeaders, -1,
                 extraHeaders.indexOf("reason=file_url_intent"));
         Assert.assertNotEquals("intent_url field not found in header: " + extraHeaders, -1,
-                extraHeaders.indexOf("intent_url=" + tempFileUrl));
+                extraHeaders.indexOf("intent_url="
+                        + Base64.encodeToString(ApiCompatibilityUtils.getBytesUtf8(tempFileUrl),
+                                  Base64.NO_WRAP)));
         Assert.assertNotEquals("id field not found in header: " + extraHeaders, -1,
                 extraHeaders.indexOf("id=" + Long.toString(offlinePage.getOfflineId())));
 

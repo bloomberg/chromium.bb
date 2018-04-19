@@ -4,9 +4,18 @@
 
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 
+#include "base/base64.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
+
+namespace {
+std::string Base64EncodeString(const std::string value) {
+  std::string encoded_value;
+  base::Base64Encode(value, &encoded_value);
+  return encoded_value;
+}
+}  // namespace
 
 class OfflinePageHeaderTest : public testing::Test {
  public:
@@ -121,25 +130,43 @@ TEST_F(OfflinePageHeaderTest, Parse) {
   EXPECT_TRUE(intent_url.is_empty());
 
   // Parse intent_url field.
-  EXPECT_FALSE(ParseFromHeaderValue("intent_url=://foo/bar", &need_to_persist,
-                                    &reason, &id, &intent_url));
 
-  EXPECT_TRUE(ParseFromHeaderValue("intent_url=file://foo/Bar",
-                                   &need_to_persist, &reason, &id,
-                                   &intent_url));
+  // Failed to decode base64.
+  EXPECT_FALSE(ParseFromHeaderValue("intent_url=a@#", &need_to_persist, &reason,
+                                    &id, &intent_url));
+
+  // Invalid URL.
+  EXPECT_FALSE(
+      ParseFromHeaderValue("intent_url=" + Base64EncodeString("://foo/bar"),
+                           &need_to_persist, &reason, &id, &intent_url));
+
+  // Unsafe characters in file:// URL are escaped.
+  EXPECT_TRUE(ParseFromHeaderValue(
+      "intent_url=" + Base64EncodeString("file://foo/Bar%20Test"),
+      &need_to_persist, &reason, &id, &intent_url));
   EXPECT_FALSE(need_to_persist);
   EXPECT_EQ(OfflinePageHeader::Reason::NONE, reason);
   EXPECT_EQ("", id);
-  EXPECT_EQ(GURL("file://foo/Bar"), intent_url);
+  EXPECT_EQ(GURL("file://foo/Bar%20Test"), intent_url);
+
+  // Unsafe characters in content:// URL are NOT escaped.
+  EXPECT_TRUE(ParseFromHeaderValue(
+      "intent_url=" + Base64EncodeString("content://foo/Bar \"\'\\Test"),
+      &need_to_persist, &reason, &id, &intent_url));
+  EXPECT_FALSE(need_to_persist);
+  EXPECT_EQ(OfflinePageHeader::Reason::NONE, reason);
+  EXPECT_EQ("", id);
+  EXPECT_EQ(GURL("content://foo/Bar \"\'\\Test"), intent_url);
 
   // Parse multiple fields.
-  EXPECT_TRUE(ParseFromHeaderValue(
-      "persist=1 reason=download id=a1b2 intent_url=file://foo/Bar",
-      &need_to_persist, &reason, &id, &intent_url));
+  EXPECT_TRUE(
+      ParseFromHeaderValue("persist=1 reason=download id=a1b2 intent_url=" +
+                               Base64EncodeString("content://foo/Bar Test"),
+                           &need_to_persist, &reason, &id, &intent_url));
   EXPECT_TRUE(need_to_persist);
   EXPECT_EQ(OfflinePageHeader::Reason::DOWNLOAD, reason);
   EXPECT_EQ("a1b2", id);
-  EXPECT_EQ(GURL("file://foo/Bar"), intent_url);
+  EXPECT_EQ(GURL("content://foo/Bar Test"), intent_url);
 }
 
 TEST_F(OfflinePageHeaderTest, ToString) {
@@ -147,10 +174,11 @@ TEST_F(OfflinePageHeaderTest, ToString) {
   header.need_to_persist = true;
   header.reason = OfflinePageHeader::Reason::DOWNLOAD;
   header.id = "a1b2";
-  header.intent_url = GURL("file://foo/Bar");
+  header.intent_url = GURL("content://foo/Bar \"\'\\Test");
   EXPECT_EQ(
       "X-Chrome-offline: persist=1 reason=download id=a1b2 "
-      "intent_url=file://foo/Bar",
+      "intent_url=" +
+          Base64EncodeString("content://foo/Bar \"\'\\Test"),
       header.GetCompleteHeaderString());
 }
 
