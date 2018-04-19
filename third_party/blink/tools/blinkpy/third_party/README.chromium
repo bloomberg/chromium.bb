@@ -13,7 +13,7 @@ Version: 1.0.3
 License: MIT
 License File: NOT_SHIPPED
 Security Critical: no
-Description: Used to reformat python code via format-webkitpy
+Description: Used to reformat python code via format_blinkpy.py
 Local Modifications: None
 
 Name: pep8 - A Python style guide checker
@@ -24,9 +24,9 @@ License: MIT
 License File: NOT_SHIPPED
 Security Critical: no
 Description: Used during presubmit checks and via lint_blinkpy.py and
-    format-webkitpy. There is overlap between pep8 and pylint, but pep8 catches
-    a bunch of stylistic issues that pylint doesn't (e.g., warning about blank
-    lines, various whitespace issues, etc.).
+    format_blinkpy.py. There is overlap between pep8 and pylint, but pep8
+    catches a bunch of stylistic issues that pylint doesn't (e.g., warning
+    about blank lines, various whitespace issues, etc.).
 Local Modifications: None
 
 Name: web-platform-tests - Test Suites for Web Platform specifications
