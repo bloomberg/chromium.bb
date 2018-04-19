@@ -420,7 +420,7 @@ public class CompositorViewHolder extends FrameLayout
 
     private ContentViewCore getActiveContent() {
         Tab tab = getCurrentTab();
-        return tab != null ? tab.getActiveContentViewCore() : null;
+        return tab != null ? tab.getContentViewCore() : null;
     }
 
     private WebContents getActiveWebContents() {
@@ -922,8 +922,7 @@ public class CompositorViewHolder extends FrameLayout
             onPhysicalBackingSizeChanged(
                     webContents, mCompositorView.getWidth(), mCompositorView.getHeight());
         }
-        View view = tab.getContentView();
-        if (view == null || (tab.isNativePage() && view == tab.getView())) return;
+        if (tab.isNativePage() || tab.getView() == null) return;
         tab.setTopControlsHeight(getTopControlsHeightPixels(), controlsResizeView());
         tab.setBottomControlsHeight(getBottomControlsHeightPixels());
     }

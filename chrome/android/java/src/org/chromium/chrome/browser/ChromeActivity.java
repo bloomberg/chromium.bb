@@ -854,7 +854,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         for (TabModel model : getTabModelSelector().getModels()) {
             int count = model.getCount();
             for (int i = 0; i < count; ++i) {
-                ContentViewCore cvc = model.getTabAt(i).getActiveContentViewCore();
+                ContentViewCore cvc = model.getTabAt(i).getContentViewCore();
                 if (cvc != null) cvc.onResume();
             }
         }
@@ -892,7 +892,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         for (TabModel model : getTabModelSelector().getModels()) {
             int count = model.getCount();
             for (int i = 0; i < count; ++i) {
-                ContentViewCore cvc = model.getTabAt(i).getActiveContentViewCore();
+                ContentViewCore cvc = model.getTabAt(i).getContentViewCore();
                 if (cvc != null) cvc.onPause();
             }
         }
