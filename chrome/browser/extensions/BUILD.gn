@@ -638,6 +638,8 @@ static_library("extensions") {
     "external_registry_loader_win.h",
     "favicon_downloader.cc",
     "favicon_downloader.h",
+    "forced_extensions/installation_tracker.cc",
+    "forced_extensions/installation_tracker.h",
     "global_shortcut_listener.cc",
     "global_shortcut_listener.h",
     "global_shortcut_listener_mac.h",
