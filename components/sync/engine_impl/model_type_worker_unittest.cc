@@ -612,8 +612,8 @@ TEST_F(ModelTypeWorkerTest, SendInitialSyncDone) {
   // "initial sync done". This triggers a model thread update, too.
   EXPECT_EQ(1U, processor()->GetNumUpdateResponses());
 
-  // The update contains no entities.
-  EXPECT_EQ(0U, processor()->GetNthUpdateResponse(0).size());
+  // The update contains one entity for the root node.
+  EXPECT_EQ(1U, processor()->GetNthUpdateResponse(0).size());
 
   const ModelTypeState& state = processor()->GetNthUpdateState(0);
   EXPECT_FALSE(state.progress_marker().token().empty());

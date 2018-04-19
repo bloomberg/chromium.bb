@@ -34,6 +34,7 @@ EntityData::EntityData() = default;
 EntityData::EntityData(EntityData&& other)
     : id(std::move(other.id)),
       client_tag_hash(std::move(other.client_tag_hash)),
+      server_defined_unique_tag(std::move(other.server_defined_unique_tag)),
       non_unique_name(std::move(other.non_unique_name)),
       creation_time(other.creation_time),
       modification_time(other.modification_time),
@@ -50,6 +51,7 @@ EntityData::~EntityData() = default;
 EntityData& EntityData::operator=(EntityData&& other) {
   id = std::move(other.id);
   client_tag_hash = std::move(other.client_tag_hash);
+  server_defined_unique_tag = std::move(other.server_defined_unique_tag);
   non_unique_name = std::move(other.non_unique_name);
   creation_time = other.creation_time;
   modification_time = other.modification_time;
@@ -95,6 +97,7 @@ std::unique_ptr<base::DictionaryValue> EntityData::ToDictionaryValue() {
   dict->Set("SPECIFICS", EntitySpecificsToValue(specifics));
   ADD_TO_DICT(dict, id);
   ADD_TO_DICT(dict, client_tag_hash);
+  ADD_TO_DICT(dict, server_defined_unique_tag);
   ADD_TO_DICT(dict, non_unique_name);
   ADD_TO_DICT(dict, parent_id);
   ADD_TO_DICT_WITH_TRANSFORM(dict, creation_time, GetTimeDebugString);
@@ -112,6 +115,7 @@ size_t EntityData::EstimateMemoryUsage() const {
   size_t memory_usage = 0;
   memory_usage += EstimateMemoryUsage(id);
   memory_usage += EstimateMemoryUsage(client_tag_hash);
+  memory_usage += EstimateMemoryUsage(server_defined_unique_tag);
   memory_usage += EstimateMemoryUsage(non_unique_name);
   memory_usage += EstimateMemoryUsage(specifics);
   memory_usage += EstimateMemoryUsage(parent_id);
@@ -138,7 +142,9 @@ void PrintTo(const EntityData& entity_data, std::ostream* os) {
       *syncer::EntitySpecificsToValue(entity_data.specifics),
       base::JSONWriter::OPTIONS_PRETTY_PRINT, &specifics);
   *os << "{ id: '" << entity_data.id << "', client_tag_hash: '"
-      << entity_data.client_tag_hash << "', specifics: " << specifics << "}";
+      << entity_data.client_tag_hash << "', server_defined_unique_tag: '"
+      << entity_data.server_defined_unique_tag << "', specifics: " << specifics
+      << "}";
 }
 
 }  // namespace syncer

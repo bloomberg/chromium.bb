@@ -177,6 +177,25 @@ UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
                             model_type_state_.encryption_key_name());
 }
 
+UpdateResponseData MockModelTypeWorker::GenerateTypeRootUpdateData(
+    const ModelType& model_type) {
+  EntityData data;
+  data.id = syncer::ModelTypeToRootTag(model_type);
+  data.parent_id = "r";
+  data.server_defined_unique_tag = syncer::ModelTypeToRootTag(model_type);
+  syncer::AddDefaultFieldValue(model_type, &data.specifics);
+  // These elements should have no effect on behavior, but we set them anyway
+  // so we can test they are properly copied around the system if we want to.
+  data.creation_time = base::Time::UnixEpoch();
+  data.modification_time = base::Time::UnixEpoch();
+
+  UpdateResponseData response_data;
+  response_data.entity = data.PassToPtr();
+  // Similar to what's done in the loopback_server.
+  response_data.response_version = 0;
+  return response_data;
+}
+
 void MockModelTypeWorker::TombstoneFromServer(const std::string& tag_hash) {
   int64_t old_version = GetServerVersion(tag_hash);
   int64_t version = old_version + 1;

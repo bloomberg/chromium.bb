@@ -124,11 +124,6 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   counters->num_updates_received += applicable_updates.size();
 
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
-    // Skip updates for permanent folders.
-    // TODO(crbug.com/516866): might need to handle this for hierarchical types.
-    if (!update_entity->server_defined_unique_tag().empty())
-      continue;
-
     if (update_entity->deleted()) {
       status->increment_num_tombstone_updates_downloaded_by(1);
       ++counters->num_tombstone_updates_received;
