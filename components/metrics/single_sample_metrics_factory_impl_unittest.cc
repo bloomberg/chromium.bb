@@ -5,6 +5,7 @@
 #include "components/metrics/single_sample_metrics_factory_impl.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/dummy_histogram.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/histogram_tester.h"
@@ -124,12 +125,14 @@ TEST_F(SingleSampleMetricsFactoryImplTest, DefaultSingleSampleMetricWithValue) {
 
   // Verify construction implicitly by requesting a histogram with the same
   // parameters; this test relies on the fact that histogram objects are unique
-  // per name. Different parameters will result in a nullptr being returned.
-  EXPECT_FALSE(base::Histogram::FactoryGet(kMetricName, 1, 3, 3,
-                                           base::HistogramBase::kNoFlags));
-  EXPECT_TRUE(base::Histogram::FactoryGet(
-      kMetricName, kMin, kMax, kBucketCount,
-      base::HistogramBase::kUmaTargetedHistogramFlag));
+  // per name. Different parameters will result in a Dummy histogram returned.
+  EXPECT_EQ(base::DummyHistogram::GetInstance(),
+            base::Histogram::FactoryGet(kMetricName, 1, 3, 3,
+                                        base::HistogramBase::kNoFlags));
+  EXPECT_NE(base::DummyHistogram::GetInstance(),
+            base::Histogram::FactoryGet(
+                kMetricName, kMin, kMax, kBucketCount,
+                base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
 TEST_F(SingleSampleMetricsFactoryImplTest, MultithreadedMetrics) {
