@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -122,17 +123,39 @@ namespace {
 
 using AppControllerBrowserTest = InProcessBrowserTest;
 
+// Returns whether a window's pixels are actually on the screen, which is the
+// case when it and all of its parents are marked visible.
+bool IsReallyVisible(NSWindow* window) {
+  while (window) {
+    if (!window.visible)
+      return false;
+    window = [window parentWindow];
+  }
+  return true;
+}
+
 size_t CountVisibleWindows() {
   size_t count = 0;
   for (NSWindow* w in [NSApp windows])
-    count = count + ([w isVisible] ? 1 : 0);
+    count = count + (IsReallyVisible(w) ? 1 : 0);
   return count;
+}
+
+// Returns how many visible NSWindows are expected for a given count of browser
+// windows. On non-official builds in Views mode, there's an extra window
+// because of the "construction stripes" decoration.
+size_t ExpectedWindowCountForBrowserCount(size_t browsers) {
+#if !defined(GOOGLE_CHROME_BUILD)
+  if (!views_mode_controller::IsViewsBrowserCocoa())
+    return browsers * 2;
+#endif
+  return browsers;
 }
 
 // Test browser shutdown with a command in the message queue.
 IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest, CommandDuringShutdown) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(1u, CountVisibleWindows());
+  EXPECT_EQ(ExpectedWindowCountForBrowserCount(1), CountVisibleWindows());
 
   chrome::AttemptExit();  // Set chrome::IsTryingToQuit and close all windows.
 
@@ -143,12 +166,12 @@ IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest, CommandDuringShutdown) {
   // set). So, verify assumptions then process that autorelease.
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(0u, CountVisibleWindows());
+  EXPECT_EQ(ExpectedWindowCountForBrowserCount(0), CountVisibleWindows());
 
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(0u, CountVisibleWindows());
+  EXPECT_EQ(ExpectedWindowCountForBrowserCount(0), CountVisibleWindows());
 
   NSEvent* cmd_n = cocoa_test_event_utils::KeyEventWithKeyCode(
       'n', 'n', NSKeyDown, NSCommandKeyMask);
