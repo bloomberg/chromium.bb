@@ -190,13 +190,13 @@ SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
   // observed in a long time, https://crbug.com/826446.
   if (!InternalRepresentationToTimeDelta(feature_proto.use_timestamp())
            .is_zero()) {
-    return SiteFeatureUsage::SITE_FEATURE_IN_USE;
+    return SiteFeatureUsage::kSiteFeatureInUse;
   }
 
   if (FeatureObservationDuration(feature_proto) >= min_obs_time)
-    return SiteFeatureUsage::SITE_FEATURE_NOT_IN_USE;
+    return SiteFeatureUsage::kSiteFeatureNotInUse;
 
-  return SiteFeatureUsage::SITE_FEATURE_USAGE_UNKNOWN;
+  return SiteFeatureUsage::kSiteFeatureUsageUnknown;
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(

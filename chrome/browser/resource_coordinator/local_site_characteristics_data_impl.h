@@ -11,18 +11,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
 
 namespace resource_coordinator {
 namespace internal {
-
-// A tri-state return value for site feature usage. If a definitive decision
-// can't be made then an "unknown" result can be returned.
-enum class SiteFeatureUsage {
-  SITE_FEATURE_NOT_IN_USE,
-  SITE_FEATURE_IN_USE,
-  SITE_FEATURE_USAGE_UNKNOWN,
-};
 
 // Tracks observations for a given site. This class shouldn't be used
 // directly, it's meant to be used internally by the local site heuristic
