@@ -142,6 +142,8 @@ static unsigned int ComputePOTSize(unsigned int dimension) {
 void TransferBuffer::ReallocateRingBuffer(unsigned int size) {
   // What size buffer would we ask for if we needed a new one?
   unsigned int needed_buffer_size = ComputePOTSize(size + result_size_);
+  DCHECK_EQ(needed_buffer_size % alignment_, 0u)
+      << "Buffer size is not a multiple of alignment_";
   needed_buffer_size = std::max(needed_buffer_size, min_buffer_size_);
   needed_buffer_size = std::max(needed_buffer_size, default_buffer_size_);
   needed_buffer_size = std::min(needed_buffer_size, max_buffer_size_);

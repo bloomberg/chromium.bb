@@ -64,6 +64,8 @@ void* RingBuffer::Alloc(unsigned int size) {
   // Allocate rounded to alignment size so that the offsets are always
   // memory-aligned.
   size = RoundToAlignment(size);
+  DCHECK_LE(size, size_)
+      << "attempt to allocate more than maximum memory after rounding";
 
   // Wait until there is enough room.
   while (size > GetLargestFreeSizeNoWaitingInternal()) {
@@ -197,6 +199,8 @@ void RingBuffer::ShrinkLastBlock(unsigned int new_size) {
   // Allocate rounded to alignment size so that the offsets are always
   // memory-aligned.
   new_size = RoundToAlignment(new_size);
+  if (new_size == block.size)
+    return;
   free_offset_ = block.offset + new_size;
   block.size = new_size;
 }
