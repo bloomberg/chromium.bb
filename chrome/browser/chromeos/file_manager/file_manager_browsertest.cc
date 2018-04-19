@@ -259,13 +259,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "openSidebarOffline"),
         TestParameter(NOT_IN_GUEST_MODE, "openSidebarSharedWithMe"),
-        // http://crbug/834507
-        // TestParameter(NOT_IN_GUEST_MODE, "autocomplete"),
-        TestParameter(NOT_IN_GUEST_MODE, "pinFileOnMobileNetwork")));
-// http://crbug/834507
-// TestParameter(NOT_IN_GUEST_MODE, "clickFirstSearchResult"),
-// http://crbug/834507
-// TestParameter(NOT_IN_GUEST_MODE, "pressEnterToSearch")));
+        TestParameter(NOT_IN_GUEST_MODE, "autocomplete"),
+        TestParameter(NOT_IN_GUEST_MODE, "pinFileOnMobileNetwork"),
+        TestParameter(NOT_IN_GUEST_MODE, "clickFirstSearchResult"),
+        TestParameter(NOT_IN_GUEST_MODE, "pressEnterToSearch")));
 
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
