@@ -568,7 +568,7 @@
     Open Crosh window
   </message>
   <message name="IDS_KSV_DESCRIPTION_TOGGLE_DICTATION" desc="Description of the command in keyboard shortcut viewer.">
-    Starts or stops dictation (type what you speak)
+    Starts or stops typing what you speak
   </message>
   <message name="IDS_KSV_DESCRIPTION_EXIT" desc="Description of the command in keyboard shortcut viewer.">
     Sign out
