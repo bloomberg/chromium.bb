@@ -103,11 +103,5 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CSS3DBlueBox_NoGpuProcess',
               ['linux', 'mac', 'win'], bug=744658)
 
-    # TODO(hubbe): Temporary supressions for rebaseline
-    # TODO(hubbe): uncomment (or remove) above Pixel_Video_VP9
-    # suppression after rebaseline
-    self.Fail('Pixel_Video_VP9', bug=754986)
-    self.Fail('Pixel_DirectComposition_Video_VP9', bug=754986)
-
     # TODO(kbr): temporary suppression for new test.
     self.Fail('Pixel_WebGLSadCanvas', bug=575305)
