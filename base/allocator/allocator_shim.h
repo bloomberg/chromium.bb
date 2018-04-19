@@ -13,7 +13,7 @@
 namespace base {
 namespace allocator {
 
-// Allocator Shim API. Allows to to:
+// Allocator Shim API. Allows to:
 //  - Configure the behavior of the allocator (what to do on OOM failures).
 //  - Install new hooks (AllocatorDispatch) in the allocator chain.
 
