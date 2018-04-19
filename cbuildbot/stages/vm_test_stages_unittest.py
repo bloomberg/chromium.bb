@@ -163,17 +163,6 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._run.config['vm_test_report_to_dashboards'] = True
     self.RunStage()
 
-  def testForgivingVMTest(self):
-    """Test if a tests is asking for forgiveness it actual get forgived."""
-    self._run.config['vm_tests'] = [
-        config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                forgiving=True, test_suite='bvt-arc')
-    ]
-    self.PatchObject(vm_test_stages.VMTestStage, '_RunTest',
-                     autospec=True, side_effect=Exception())
-    self.RunStage()
-
-
 
 class MoblabVMTestStageTestCase(
     cros_build_lib_unittest.RunCommandTestCase,
