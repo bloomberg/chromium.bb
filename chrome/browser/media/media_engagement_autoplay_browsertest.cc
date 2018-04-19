@@ -215,9 +215,8 @@ IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
   ExpectAutoplayAllowedIfEnabled();
 }
 
-// Disabled because it's flaky: crbug.com/830003.
 IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
-                       DISABLED_DoNotBypassAutoplayLowEngagement) {
+                       DoNotBypassAutoplayLowEngagement) {
   SetScores(PrimaryOrigin(), 1, 1);
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayDenied();
