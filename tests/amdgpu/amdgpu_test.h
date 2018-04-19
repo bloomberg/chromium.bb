@@ -30,7 +30,7 @@
 /**
  * Define max. number of card in system which we are able to handle
  */
-#define MAX_CARDS_SUPPORTED     4
+#define MAX_CARDS_SUPPORTED     128
 
 /* Forward reference for array to keep "drm" handles */
 extern int drm_amdgpu[MAX_CARDS_SUPPORTED];
