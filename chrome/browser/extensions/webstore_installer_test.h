@@ -36,7 +36,6 @@ class WebstoreInstallerTest : public ExtensionBrowserTest {
                         const std::string& unverified_domain);
   ~WebstoreInstallerTest() override;
 
-  bool ShouldAllowLegacyExtensionManifests() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
