@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
@@ -135,18 +134,8 @@ public class WebApkIntegrationTest {
         mActivityTestRule.runJavaScriptCodeInCurrentTab(
                 "window.top.location = 'https://www.google.com/'");
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-                WebappActivity webAppActivity = (WebappActivity) activity;
-                return webAppActivity.getActivityTab() != null
-                        // Dropping the TLD as Google can redirect to a local site.
-                        && webAppActivity.getActivityTab().getUrl().startsWith(
-                                   "https://www.google.");
-            }
-        });
-
+        ChromeTabUtils.waitForTabPageLoaded(
+                mActivityTestRule.getActivity().getActivityTab(), "https://www.google.com/");
         WebappActivityTestRule.assertToolbarShowState(
                 (WebappActivity) ApplicationStatus.getLastTrackedFocusedActivity(), true);
     }
