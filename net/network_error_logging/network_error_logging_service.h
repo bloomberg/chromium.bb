@@ -20,6 +20,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace net {
 class ReportingService;
 }  // namespace net
@@ -119,6 +123,8 @@ class NET_EXPORT NetworkErrorLoggingService {
   // |tick_clock| must outlive the NetworkErrorLoggingService, and cannot be
   // nullptr.
   void SetTickClockForTesting(const base::TickClock* tick_clock);
+
+  virtual base::Value StatusAsValue() const;
 
  protected:
   NetworkErrorLoggingService();
