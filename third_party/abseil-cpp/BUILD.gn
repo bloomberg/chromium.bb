@@ -23,11 +23,7 @@ config("absl_include_config") {
 }
 
 config("absl_define_config") {
-  if (is_linux) {
-    cflags_cc = [ "-DABSL_ALLOCATOR_NOTHROW=1" ]
-  } else {
-    cflags_cc = [ "-DABSL_ALLOCATOR_NOTHROW=0" ]
-  }
+  defines = [ "ABSL_ALLOCATOR_NOTHROW=1" ]
 }
 
 config("absl_default_cflags_cc") {
