@@ -138,7 +138,8 @@ class BrowserState::NetworkContextOwner
     DCHECK(!network_context_);
 
     network_context_ = std::make_unique<network::NetworkContext>(
-        nullptr, std::move(network_context_request), request_context_);
+        nullptr, std::move(network_context_request),
+        request_context_->GetURLRequestContext());
     request_context_->AddObserver(this);
   }
 

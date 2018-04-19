@@ -21,7 +21,7 @@ class WebSocketFactory::Delegate final : public WebSocket::Delegate {
   ~Delegate() override {}
 
   net::URLRequestContext* GetURLRequestContext() override {
-    return factory_->context_->GetURLRequestContext();
+    return factory_->context_->url_request_context();
   }
 
   void OnLostConnectionToClient(WebSocket* impl) override {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -136,14 +138,13 @@ class DownloadFeedbackTest : public testing::Test {
             {base::MayBlock(), base::TaskPriority::BACKGROUND})),
         io_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO)),
-        url_request_context_getter_(
-            new net::TestURLRequestContextGetter(io_task_runner_)),
+        url_request_context_(std::make_unique<net::TestURLRequestContext>()),
         feedback_finish_called_(false) {
     EXPECT_NE(io_task_runner_, file_task_runner_);
     network::mojom::NetworkContextPtr network_context;
     network_context_ = std::make_unique<network::NetworkContext>(
         nullptr, mojo::MakeRequest(&network_context),
-        url_request_context_getter_);
+        url_request_context_.get());
     network_context_->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_), 0);
     shared_url_loader_factory_ =
@@ -179,7 +180,7 @@ class DownloadFeedbackTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   FakeUploaderFactory two_phase_uploader_factory_;
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
+  std::unique_ptr<net::TestURLRequestContext> url_request_context_;
   std::unique_ptr<network::NetworkContext> network_context_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
   scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory_;

@@ -15,14 +15,14 @@
 namespace chromecast {
 
 NetworkContextManager::NetworkContextManager(
-    net::URLRequestContextGetter* url_request_context_getter)
-    : NetworkContextManager(url_request_context_getter, nullptr) {}
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
+    : NetworkContextManager(std::move(url_request_context_getter), nullptr) {}
 
 NetworkContextManager::NetworkContextManager(
-    net::URLRequestContextGetter* url_request_context_getter,
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     std::unique_ptr<network::NetworkService> network_service)
-    : network_service_for_test_(std::move(network_service)),
-      url_request_context_getter_(url_request_context_getter),
+    : url_request_context_getter_(std::move(url_request_context_getter)),
+      network_service_for_test_(std::move(network_service)),
       weak_factory_(this) {
   DCHECK(url_request_context_getter_);
   // The NetworkContext must be initialized on the browser's IO thread. Posting
@@ -46,7 +46,7 @@ void NetworkContextManager::InitializeOnIoThread() {
                                 : content::GetNetworkServiceImpl();
   network_context_ = std::make_unique<network::NetworkContext>(
       network_service, mojo::MakeRequest(&network_context_ptr_),
-      url_request_context_getter_);
+      url_request_context_getter_->GetURLRequestContext());
 }
 
 void NetworkContextManager::BindRequestOnIOThread(
@@ -69,9 +69,9 @@ NetworkContextManager::GetURLLoaderFactory() {
 
 //  static
 NetworkContextManager* NetworkContextManager::CreateForTest(
-    net::URLRequestContextGetter* url_request_context_getter,
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     std::unique_ptr<network::NetworkService> network_service) {
-  return new NetworkContextManager(url_request_context_getter,
+  return new NetworkContextManager(std::move(url_request_context_getter),
                                    std::move(network_service));
 }
 

@@ -42,7 +42,7 @@ class NetworkContextManager {
   // May be constructed on and live on any thread. |url_request_context_getter|
   // will be called on the IO thread and must outlive |this|.
   explicit NetworkContextManager(
-      net::URLRequestContextGetter* url_request_context_getter);
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
   ~NetworkContextManager();
 
   // Returns an interface pointer to a URLLoaderFactory that is bound to the
@@ -59,14 +59,14 @@ class NetworkContextManager {
   // destroyed on the IO thread with content::BrowserThread::DeleteOnIOThead or
   // content::BrowserThread::DeleteSoon.
   static NetworkContextManager* CreateForTest(
-      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       std::unique_ptr<network::NetworkService> network_service);
 
  private:
   // Called internally by the public constructor and by CreateForTest(). Allows
   // a test NetworkService to be injected for tests.
   explicit NetworkContextManager(
-      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       std::unique_ptr<network::NetworkService> network_service);
 
   // Initializes the NetworkContext. Posted to the IO thread from the ctor.
@@ -75,6 +75,10 @@ class NetworkContextManager {
   // Posted to the IO thread whenever GetURLLoaderFactoryPtr() is called.
   // Guaranteed to be called after InitializeOnIoThread().
   void BindRequestOnIOThread(network::mojom::URLLoaderFactoryRequest request);
+
+  // The underlying URLRequestContextGetter. The reference may only be released
+  // after the NetworkContext has been destroyed.
+  const scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // An instance of NetworkService that can be hosted for testing purposes.
   // Lives on the IO thread. Must outlive |network_context_| when used.
@@ -85,8 +89,6 @@ class NetworkContextManager {
   std::unique_ptr<network::NetworkContext> network_context_;
   network::mojom::NetworkContextPtr network_context_ptr_;
 
-  // The underlying URLRequestContextGetter.
-  net::URLRequestContextGetter* const url_request_context_getter_;
   base::WeakPtrFactory<NetworkContextManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextManager);

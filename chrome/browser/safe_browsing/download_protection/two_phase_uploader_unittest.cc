@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task_scheduler/post_task.h"
@@ -15,7 +17,6 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -103,12 +104,11 @@ class TwoPhaseUploaderTest : public testing::Test {
  public:
   TwoPhaseUploaderTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        url_request_context_getter_(new net::TestURLRequestContextGetter(
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO))) {
+        url_request_context_(std::make_unique<net::TestURLRequestContext>()) {
     network::mojom::NetworkContextPtr network_context;
     network_context_ = std::make_unique<network::NetworkContext>(
         nullptr, mojo::MakeRequest(&network_context),
-        url_request_context_getter_);
+        url_request_context_.get());
     network_context_->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_), 0);
     shared_url_loader_factory_ =
@@ -118,7 +118,7 @@ class TwoPhaseUploaderTest : public testing::Test {
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
+  std::unique_ptr<net::TestURLRequestContext> url_request_context_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_ =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND});

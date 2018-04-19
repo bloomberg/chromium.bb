@@ -80,10 +80,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Creates a NetworkContext that wraps a consumer-provided URLRequestContext
   // that the NetworkContext does not own.
   // TODO(mmenke):  Remove this constructor when the network service ships.
-  NetworkContext(
-      NetworkService* network_service,
-      mojom::NetworkContextRequest request,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+  NetworkContext(NetworkService* network_service,
+                 mojom::NetworkContextRequest request,
+                 net::URLRequestContext* url_request_context);
 
   ~NetworkContext() override;
 
@@ -92,9 +91,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Sets a global CertVerifier to use when initializing all profiles.
   static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter() {
-    return url_request_context_getter_;
-  }
+  net::URLRequestContext* url_request_context() { return url_request_context_; }
 
   NetworkService* network_service() { return network_service_; }
 
@@ -154,8 +151,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                          bool include_subdomains,
                          AddHSTSForTestingCallback callback) override;
 
-  net::URLRequestContext* GetURLRequestContext();
-
   // Called when the associated NetworkService is going away. Guaranteed to
   // destroy NetworkContext's URLRequestContext.
   void Cleanup();
@@ -204,7 +199,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // URLRequestContext.
   URLRequestContextOwner url_request_context_owner_;
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  net::URLRequestContext* url_request_context_;
 
   mojom::NetworkContextParamsPtr params_;
 

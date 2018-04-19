@@ -109,13 +109,12 @@ NetworkContext::NetworkContext(NetworkService* network_service,
       params_(std::move(params)),
       binding_(this, std::move(request)) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
-  url_request_context_getter_ =
-      url_request_context_owner_.url_request_context_getter;
+  url_request_context_ = url_request_context_owner_.url_request_context.get();
   cookie_manager_ =
-      std::make_unique<CookieManager>(GetURLRequestContext()->cookie_store());
+      std::make_unique<CookieManager>(url_request_context_->cookie_store());
 
   socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
-                                                    GetURLRequestContext());
+                                                    url_request_context_);
   network_service_->RegisterNetworkContext(this);
   binding_.set_connection_error_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
@@ -138,29 +137,27 @@ NetworkContext::NetworkContext(
       builder.get(), params_.get(), network_service->quic_disabled(),
       network_service->net_log(), network_service->network_quality_estimator(),
       &user_agent_settings_);
-  url_request_context_getter_ =
-      url_request_context_owner_.url_request_context_getter;
+  url_request_context_ = url_request_context_owner_.url_request_context.get();
   network_service_->RegisterNetworkContext(this);
   cookie_manager_ =
-      std::make_unique<CookieManager>(GetURLRequestContext()->cookie_store());
+      std::make_unique<CookieManager>(url_request_context_->cookie_store());
   socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
-                                                    GetURLRequestContext());
+                                                    url_request_context_);
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 }
 
-NetworkContext::NetworkContext(
-    NetworkService* network_service,
-    mojom::NetworkContextRequest request,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
+NetworkContext::NetworkContext(NetworkService* network_service,
+                               mojom::NetworkContextRequest request,
+                               net::URLRequestContext* url_request_context)
     : network_service_(network_service),
-      url_request_context_getter_(std::move(url_request_context_getter)),
+      url_request_context_(url_request_context),
       binding_(this, std::move(request)),
-      cookie_manager_(std::make_unique<CookieManager>(
-          url_request_context_getter_->GetURLRequestContext()->cookie_store())),
+      cookie_manager_(
+          std::make_unique<CookieManager>(url_request_context->cookie_store())),
       socket_factory_(std::make_unique<SocketFactory>(
           network_service_ ? network_service_->net_log() : nullptr,
-          url_request_context_getter_->GetURLRequestContext())) {
+          url_request_context)) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
@@ -173,9 +170,9 @@ NetworkContext::~NetworkContext() {
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
 
-  if (GetURLRequestContext() &&
-      GetURLRequestContext()->transport_security_state()) {
-    GetURLRequestContext()->transport_security_state()->SetRequireCTDelegate(
+  if (url_request_context_ &&
+      url_request_context_->transport_security_state()) {
+    url_request_context_->transport_security_state()->SetRequireCTDelegate(
         nullptr);
   }
 }
@@ -209,7 +206,7 @@ void NetworkContext::CreateURLLoaderFactory(
     resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
         process_id, ++current_resource_scheduler_client_id_,
         resource_scheduler_.get(),
-        GetURLRequestContext()->network_quality_estimator());
+        url_request_context_->network_quality_estimator());
   }
   CreateURLLoaderFactory(std::move(request), process_id,
                          std::move(resource_scheduler_client));
@@ -227,20 +224,13 @@ void NetworkContext::GetRestrictedCookieManager(
   //     and NetworkContext should own the RestrictedCookieManager
   //     instances.
   mojo::MakeStrongBinding(std::make_unique<RestrictedCookieManager>(
-                              GetURLRequestContext()->cookie_store(),
+                              url_request_context_->cookie_store(),
                               render_process_id, render_frame_id),
                           std::move(request));
 }
 
 void NetworkContext::DisableQuic() {
-  GetURLRequestContext()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->DisableQuic();
-}
-
-net::URLRequestContext* NetworkContext::GetURLRequestContext() {
-  return url_request_context_getter_->GetURLRequestContext();
+  url_request_context_->http_transaction_factory()->GetSession()->DisableQuic();
 }
 
 void NetworkContext::Cleanup() {
@@ -252,8 +242,7 @@ void NetworkContext::Cleanup() {
 NetworkContext::NetworkContext(mojom::NetworkContextParamsPtr params)
     : network_service_(nullptr), params_(std::move(params)), binding_(this) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
-  url_request_context_getter_ =
-      url_request_context_owner_.url_request_context_getter;
+  url_request_context_ = url_request_context_owner_.url_request_context.get();
 
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
@@ -499,10 +488,10 @@ void NetworkContext::ClearNetworkingHistorySince(
   // exposes do.
 
   // Completes synchronously.
-  GetURLRequestContext()->transport_security_state()->DeleteAllDynamicDataSince(
+  url_request_context_->transport_security_state()->DeleteAllDynamicDataSince(
       time);
 
-  GetURLRequestContext()->http_server_properties()->Clear(
+  url_request_context_->http_server_properties()->Clear(
       std::move(completion_callback));
 }
 
@@ -513,8 +502,7 @@ void NetworkContext::ClearHttpCache(base::Time start_time,
   // It's safe to use Unretained below as the HttpCacheDataRemover is owner by
   // |this| and guarantees it won't call its callback if deleted.
   http_cache_data_removers_.push_back(HttpCacheDataRemover::CreateAndStart(
-      url_request_context_getter_->GetURLRequestContext(), std::move(filter),
-      start_time, end_time,
+      url_request_context_, std::move(filter), start_time, end_time,
       base::BindOnce(&NetworkContext::OnHttpCacheCleared,
                      base::Unretained(this), std::move(callback))));
 }
@@ -561,7 +549,7 @@ void NetworkContext::SetCTPolicy(
     const std::vector<std::string>& excluded_legacy_spkis) {
   if (!ct_policy_manager_) {
     ct_policy_manager_.reset(new certificate_transparency::CTPolicyManager());
-    GetURLRequestContext()->transport_security_state()->SetRequireCTDelegate(
+    url_request_context_->transport_security_state()->SetRequireCTDelegate(
         ct_policy_manager_->GetDelegate());
   }
   ct_policy_manager_->UpdateCTPolicies(required_hosts, excluded_hosts,
@@ -615,7 +603,7 @@ void NetworkContext::AddHSTSForTesting(const std::string& host,
                                        bool include_subdomains,
                                        AddHSTSForTestingCallback callback) {
   net::TransportSecurityState* state =
-      GetURLRequestContext()->transport_security_state();
+      url_request_context_->transport_security_state();
   state->AddHSTS(host, expiry, include_subdomains);
   std::move(callback).Run();
 }

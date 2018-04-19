@@ -8,34 +8,14 @@
 #include <memory>
 
 #include "base/component_export.h"
-#include "base/memory/scoped_refptr.h"
-#include "net/url_request/url_request_context_getter.h"
 
 class PrefService;
 
+namespace net {
+class URLRequestContext;
+}
+
 namespace network {
-
-class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkURLRequestContextGetter
-    : public net::URLRequestContextGetter {
- public:
-  explicit NetworkURLRequestContextGetter(
-      std::unique_ptr<net::URLRequestContext> url_request_context);
-
-  // net::URLRequestContextGetter implementation:
-  net::URLRequestContext* GetURLRequestContext() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override;
-
-  void NotifyContextShuttingDown();
-
- protected:
-  ~NetworkURLRequestContextGetter() override;
-
- private:
-  bool shutdown_ = false;
-  std::unique_ptr<net::URLRequestContext> url_request_context_;
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-};
 
 // This owns a net::URLRequestContext and other state that's used with it.
 struct COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextOwner {
@@ -50,7 +30,7 @@ struct COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextOwner {
   // This needs to be destroyed after the URLRequestContext.
   std::unique_ptr<PrefService> pref_service;
 
-  scoped_refptr<NetworkURLRequestContextGetter> url_request_context_getter;
+  std::unique_ptr<net::URLRequestContext> url_request_context;
 };
 
 }  // namespace network
