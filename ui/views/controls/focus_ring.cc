@@ -30,29 +30,15 @@ FocusRing* FocusRing::Install(View* parent,
                               float corner_radius) {
   FocusRing* ring = GetFocusRing(parent);
   if (!ring) {
-    ring = new FocusRing(color, corner_radius);
+    ring = new FocusRing(parent, color, corner_radius);
     parent->AddChildView(ring);
   } else {
+    // Update color and corner radius.
     ring->color_ = color;
     ring->corner_radius_ = corner_radius;
   }
   ring->Layout();
   ring->SchedulePaint();
-  return ring;
-}
-
-// static
-FocusRing* FocusRing::Install(View* parent,
-                              ui::NativeTheme::ColorId override_color_id) {
-  SkColor ring_color = parent->GetNativeTheme()->GetSystemColor(
-      override_color_id == ui::NativeTheme::kColorId_NumColors
-          ? ui::NativeTheme::kColorId_FocusedBorderColor
-          : override_color_id);
-  FocusRing* ring = Install(parent, ring_color);
-  DCHECK(ring);
-  ring->override_color_id_ = override_color_id;
-  if (!ring->view_observer_.IsObserving(parent))
-    ring->view_observer_.Add(parent);
   return ring;
 }
 
@@ -85,7 +71,7 @@ void FocusRing::Layout() {
 void FocusRing::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(SkColorSetA(color_, 0x66));
+  flags.setColor(SkColorSetA(GetColor(), 0x66));
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(PlatformStyle::kFocusHaloThickness);
   gfx::RectF rect(GetLocalBounds());
@@ -97,18 +83,18 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
       rect, corner_radius_ + PlatformStyle::kFocusHaloThickness / 2.f, flags);
 }
 
-void FocusRing::OnViewNativeThemeChanged(View* observed_view) {
-  if (override_color_id_) {
-    color_ = observed_view->GetNativeTheme()->GetSystemColor(
-        override_color_id_.value());
-  }
-}
-
-FocusRing::FocusRing(SkColor color, float corner_radius)
-    : color_(color), corner_radius_(corner_radius), view_observer_(this) {
+FocusRing::FocusRing(View* parent, SkColor color, float corner_radius)
+    : view_(parent), color_(color), corner_radius_(corner_radius) {
   InitFocusRing(this);
 }
 
 FocusRing::~FocusRing() {}
+
+SkColor FocusRing::GetColor() const {
+  if (color_ != kInvalidColor)
+    return color_;
+  return view_->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_FocusedBorderColor);
+}
 
 }  // namespace views

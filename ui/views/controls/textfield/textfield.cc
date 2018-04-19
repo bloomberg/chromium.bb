@@ -233,6 +233,16 @@ bool IsControlKeyModifier(int flags) {
 #endif
 }
 
+void InstallOrUpdateFocusRing(Textfield* textfield) {
+  if (textfield->invalid()) {
+    FocusRing::Install(textfield,
+                       textfield->GetNativeTheme()->GetSystemColor(
+                           ui::NativeTheme::kColorId_AlertSeverityHigh));
+  } else {
+    FocusRing::Install(textfield);
+  }
+}
+
 }  // namespace
 
 // static
@@ -596,11 +606,8 @@ void Textfield::SetInvalid(bool invalid) {
   invalid_ = invalid;
   UpdateBorder();
 
-  if (HasFocus() && use_focus_ring_) {
-    FocusRing::Install(this, invalid_
-                                 ? ui::NativeTheme::kColorId_AlertSeverityHigh
-                                 : ui::NativeTheme::kColorId_NumColors);
-  }
+  if (use_focus_ring_ && HasFocus())
+    InstallOrUpdateFocusRing(this);
 }
 
 void Textfield::ClearEditHistory() {
@@ -646,8 +653,7 @@ const char* Textfield::GetClassName() const {
 }
 
 void Textfield::SetBorder(std::unique_ptr<Border> b) {
-  if (use_focus_ring_ && HasFocus())
-    FocusRing::Uninstall(this);
+  FocusRing::Uninstall(this);
   use_focus_ring_ = false;
   View::SetBorder(std::move(b));
 }
@@ -1089,11 +1095,8 @@ void Textfield::OnFocus() {
   OnCaretBoundsChanged();
   if (ShouldBlinkCursor())
     StartBlinkingCursor();
-  if (use_focus_ring_) {
-    FocusRing::Install(this, invalid_
-                                 ? ui::NativeTheme::kColorId_AlertSeverityHigh
-                                 : ui::NativeTheme::kColorId_NumColors);
-  }
+  if (use_focus_ring_)
+    InstallOrUpdateFocusRing(this);
   SchedulePaint();
   View::OnFocus();
 }
@@ -1140,6 +1143,9 @@ void Textfield::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   render_text->set_selection_background_focused_color(
       GetSelectionBackgroundColor());
   cursor_view_.layer()->SetColor(GetTextColor());
+
+  if (use_focus_ring_ && HasFocus())
+    InstallOrUpdateFocusRing(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
