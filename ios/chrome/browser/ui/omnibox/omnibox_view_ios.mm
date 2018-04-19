@@ -678,6 +678,10 @@ UIColor* OmniboxViewIOS::GetSecureTextColor(
 }
 
 void OmniboxViewIOS::SetEmphasis(bool emphasize, const gfx::Range& range) {
+  if (IsRefreshLocationBarEnabled()) {
+    return;
+  }
+
   NSRange ns_range = range.IsValid()
                          ? range.ToNSRange()
                          : NSMakeRange(0, [attributing_display_string_ length]);
@@ -689,6 +693,10 @@ void OmniboxViewIOS::SetEmphasis(bool emphasize, const gfx::Range& range) {
 }
 
 void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
+  if (IsRefreshLocationBarEnabled()) {
+    return;
+  }
+
   if (!range.IsValid())
     return;
 
