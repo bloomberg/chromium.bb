@@ -15,14 +15,15 @@
 #include "base/memory/weak_ptr.h"
 #include "components/component_updater/component_installer.h"
 
-namespace base {
-class FilePath;
-class Value;
-}  // namespace base
-
 namespace certificate_transparency {
 class STHObserver;
 }  // namespace certificate_transparency
+
+namespace net {
+namespace ct {
+struct SignedTreeHead;
+}  // namespace ct
+}  // namespace net
 
 namespace component_updater {
 
@@ -35,17 +36,20 @@ class ComponentUpdateService;
 // hex-encoded Log ID of the log that produced this STH.
 //
 // Notifications of each of the new STHs are sent to the
-// certificate_transparency::STHObserver, so that it can take appropriate
-// steps, including possible persistence.
+// certificate_transparency::STHObserver, on the same task runner that this
+// object is created, so that it can take appropriate steps, including possible
+// persistence.
 class STHSetComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  // The |sth_distributor| will be notified each time a new STH is observed.
+  // The |sth_observer| will be notified each time a new STH is observed.
   explicit STHSetComponentInstallerPolicy(
-      certificate_transparency::STHObserver* sth_observer);
+      std::unique_ptr<certificate_transparency::STHObserver> sth_observer);
   ~STHSetComponentInstallerPolicy() override;
 
  private:
   friend class STHSetComponentInstallerTest;
+
+  void NewSTHObserved(const net::ct::SignedTreeHead& sth);
 
   // ComponentInstallerPolicy implementation.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
@@ -65,21 +69,7 @@ class STHSetComponentInstallerPolicy : public ComponentInstallerPolicy {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
-  // Reads and parses the on-disk json.
-  void LoadSTHsFromDisk(const base::FilePath& sths_file_path,
-                        const base::Version& version);
-
-  // Handle successful parsing of JSON by distributing the new STH.
-  void OnJsonParseSuccess(const std::string& log_id,
-                          std::unique_ptr<base::Value> parsed_json);
-
-  // STH parsing failed - do nothing.
-  void OnJsonParseError(const std::string& log_id, const std::string& error);
-
-  // The observer is not owned by this class, so the code creating an instance
-  // of this class is expected to ensure the STHObserver lives as long as
-  // this class does. Typically the observer provided will be a global.
-  certificate_transparency::STHObserver* sth_observer_;
+  std::unique_ptr<certificate_transparency::STHObserver> sth_observer_;
 
   base::WeakPtrFactory<STHSetComponentInstallerPolicy> weak_ptr_factory_;
 

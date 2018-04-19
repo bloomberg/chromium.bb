@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "components/certificate_transparency/sth_observer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/signed_tree_head.h"
@@ -38,14 +39,20 @@ class StoringSTHObserver : public certificate_transparency::STHObserver {
 
 class STHSetComponentInstallerTest : public PlatformTest {
  public:
-  STHSetComponentInstallerTest() {}
+  STHSetComponentInstallerTest() {
+    AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
+  }
+
   void SetUp() override {
     PlatformTest::SetUp();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    observer_.reset(new StoringSTHObserver());
-    policy_.reset(new STHSetComponentInstallerPolicy(observer_.get()));
+    std::unique_ptr<StoringSTHObserver> observer =
+        std::make_unique<StoringSTHObserver>();
+    observer_ = observer.get();
+    policy_ =
+        std::make_unique<STHSetComponentInstallerPolicy>(std::move(observer));
   }
 
   void WriteSTHToFile(const std::string& sth_json,
@@ -72,19 +79,18 @@ class STHSetComponentInstallerTest : public PlatformTest {
     ASSERT_TRUE(policy_->VerifyInstallation(manifest, temp_dir_.GetPath()));
 
     const base::Version v("1.0");
-    policy_->LoadSTHsFromDisk(sths_dir, v);
+    policy_->ComponentReady(v, temp_dir_.GetPath(), manifest.CreateDeepCopy());
     // Drain the RunLoop created by the TestBrowserThreadBundle
-    base::RunLoop().RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
   }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<StoringSTHObserver> observer_;
-  // |policy_| should be destroyed before the |observer_| as it holds a pointer
-  // to it.
   std::unique_ptr<STHSetComponentInstallerPolicy> policy_;
+  // Note that |observer_| is owned by |policy_|.
+  StoringSTHObserver* observer_ = nullptr;
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
 
  private:
