@@ -1618,8 +1618,7 @@ class SoftwareTextureLayerMultipleRegisterTest
   scoped_refptr<CrossThreadSharedBitmap> bitmap2_;
 };
 
-// Test is flaky; crbug.com/834613
-// SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerMultipleRegisterTest);
+SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerMultipleRegisterTest);
 
 class SoftwareTextureLayerRegisterUnregisterTest
     : public SoftwareTextureLayerTest {
