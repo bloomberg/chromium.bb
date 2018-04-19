@@ -10,7 +10,6 @@
 
 #import <CoreFoundation/CoreFoundation.h>
 
-#import "base/mac/bind_objc_block.h"
 #import "remoting/ios/domain/host_info.h"
 #import "remoting/ios/domain/user_info.h"
 #import "remoting/ios/facade/host_info.h"

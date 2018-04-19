@@ -8,7 +8,6 @@
 
 #import "remoting/ios/app/client_connection_view_controller.h"
 
-#import "base/mac/bind_objc_block.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MDCActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"

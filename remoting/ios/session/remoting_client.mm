@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#import "base/mac/bind_objc_block.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "remoting/ios/audio/audio_player_ios.h"
 #import "remoting/ios/display/gl_display_handler.h"
