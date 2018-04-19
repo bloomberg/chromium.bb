@@ -42,13 +42,12 @@ using libaom_test::ACMRandom;
       const int16_t *scan, const int16_t *iscan
 
 typedef void (*QuantizeFunc)(QUAN_PARAM_LIST);
-typedef void (*QuantizeFuncHbd)(QUAN_PARAM_LIST, int log_scale);
+typedef void (*QuantizeFuncHbd)(QUAN_PARAM_LIST_NO_SKIP, int log_scale);
 typedef void (*QuantizeFuncNoSkip)(QUAN_PARAM_LIST_NO_SKIP);
 
 #define HBD_QUAN_FUNC                                                      \
-  fn(coeff_ptr, n_coeffs, skip_block, zbin_ptr, round_ptr, quant_ptr,      \
-     quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr, eob_ptr, scan, \
-     iscan, log_scale)
+  fn(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr, quant_shift_ptr, \
+     qcoeff_ptr, dqcoeff_ptr, dequant_ptr, eob_ptr, scan, iscan, log_scale)
 
 #define LBD_QUAN_FUNC_NO_SKIP                                              \
   fn(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr, quant_shift_ptr, \
@@ -56,18 +55,21 @@ typedef void (*QuantizeFuncNoSkip)(QUAN_PARAM_LIST_NO_SKIP);
 
 template <QuantizeFuncHbd fn>
 void highbd_quan16x16_wrapper(QUAN_PARAM_LIST) {
+  (void)skip_block;
   const int log_scale = 0;
   HBD_QUAN_FUNC;
 }
 
 template <QuantizeFuncHbd fn>
 void highbd_quan32x32_wrapper(QUAN_PARAM_LIST) {
+  (void)skip_block;
   const int log_scale = 1;
   HBD_QUAN_FUNC;
 }
 
 template <QuantizeFuncHbd fn>
 void highbd_quan64x64_wrapper(QUAN_PARAM_LIST) {
+  (void)skip_block;
   const int log_scale = 2;
   HBD_QUAN_FUNC;
 }
@@ -80,8 +82,8 @@ void lowbd_quan_wrapper(QUAN_PARAM_LIST) {
 
 typedef enum { TYPE_B, TYPE_DC, TYPE_FP } QuantType;
 
-typedef ::testing::tuple<QuantizeFunc, QuantizeFunc, TX_SIZE, QuantType,
-                         aom_bit_depth_t>
+using ::testing::tuple;
+typedef tuple<QuantizeFunc, QuantizeFunc, TX_SIZE, QuantType, aom_bit_depth_t>
     QuantizeParam;
 
 typedef struct {

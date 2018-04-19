@@ -111,8 +111,8 @@ static INLINE uint16_t get_accumulated_eob(__m128i *eob) {
 }
 
 void av1_highbd_quantize_fp_sse4_1(
-    const tran_low_t *coeff_ptr, intptr_t count, int skip_block,
-    const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
+    const tran_low_t *coeff_ptr, intptr_t count, const int16_t *zbin_ptr,
+    const int16_t *round_ptr, const int16_t *quant_ptr,
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
     const int16_t *scan, const int16_t *iscan, int log_scale) {
@@ -124,7 +124,6 @@ void av1_highbd_quantize_fp_sse4_1(
   const int shift = 16 - log_scale;
   const int coeff_stride = 4;
   const int quan_stride = coeff_stride;
-  (void)skip_block;
   (void)zbin_ptr;
   (void)quant_shift_ptr;
   (void)scan;
@@ -132,31 +131,54 @@ void av1_highbd_quantize_fp_sse4_1(
   memset(quanAddr, 0, count * sizeof(quanAddr[0]));
   memset(dquanAddr, 0, count * sizeof(dquanAddr[0]));
 
-  if (!skip_block) {
+  coeff[0] = _mm_loadu_si128((__m128i const *)src);
+  const int round1 = ROUND_POWER_OF_TWO(round_ptr[1], log_scale);
+  const int round0 = ROUND_POWER_OF_TWO(round_ptr[0], log_scale);
+
+  qparam[0] = _mm_set_epi32(round1, round1, round1, round0);
+  qparam[1] = _mm_set_epi32(0, quant_ptr[1], 0, quant_ptr[0]);
+  qparam[2] = _mm_set_epi32(0, dequant_ptr[1], 0, dequant_ptr[0]);
+  qparam[3] = _mm_set_epi32(dequant_ptr[1], dequant_ptr[1], dequant_ptr[1],
+                            dequant_ptr[0]);
+
+  // DC and first 3 AC
+  quantize_coeff_phase1(&coeff[0], qparam, shift, log_scale, qcoeff, dequant,
+                        &coeff_sign);
+
+  // update round/quan/dquan for AC
+  qparam[0] = _mm_unpackhi_epi64(qparam[0], qparam[0]);
+  qparam[1] = _mm_set_epi32(0, quant_ptr[1], 0, quant_ptr[1]);
+  qparam[2] = _mm_set_epi32(0, dequant_ptr[1], 0, dequant_ptr[1]);
+  qparam[3] = _mm_set1_epi32(dequant_ptr[1]);
+  quantize_coeff_phase2(qcoeff, dequant, &coeff_sign, qparam, shift, log_scale,
+                        quanAddr, dquanAddr);
+
+  // next 4 AC
+  coeff[1] = _mm_loadu_si128((__m128i const *)(src + coeff_stride));
+  quantize_coeff_phase1(&coeff[1], qparam, shift, log_scale, qcoeff, dequant,
+                        &coeff_sign);
+  quantize_coeff_phase2(qcoeff, dequant, &coeff_sign, qparam, shift, log_scale,
+                        quanAddr + quan_stride, dquanAddr + quan_stride);
+
+  find_eob(quanAddr, iscan, &eob);
+
+  count -= 8;
+
+  // loop for the rest of AC
+  while (count > 0) {
+    src += coeff_stride << 1;
+    quanAddr += quan_stride << 1;
+    dquanAddr += quan_stride << 1;
+    iscan += quan_stride << 1;
+
     coeff[0] = _mm_loadu_si128((__m128i const *)src);
-    const int round1 = ROUND_POWER_OF_TWO(round_ptr[1], log_scale);
-    const int round0 = ROUND_POWER_OF_TWO(round_ptr[0], log_scale);
+    coeff[1] = _mm_loadu_si128((__m128i const *)(src + coeff_stride));
 
-    qparam[0] = _mm_set_epi32(round1, round1, round1, round0);
-    qparam[1] = _mm_set_epi32(0, quant_ptr[1], 0, quant_ptr[0]);
-    qparam[2] = _mm_set_epi32(0, dequant_ptr[1], 0, dequant_ptr[0]);
-    qparam[3] = _mm_set_epi32(dequant_ptr[1], dequant_ptr[1], dequant_ptr[1],
-                              dequant_ptr[0]);
-
-    // DC and first 3 AC
     quantize_coeff_phase1(&coeff[0], qparam, shift, log_scale, qcoeff, dequant,
                           &coeff_sign);
-
-    // update round/quan/dquan for AC
-    qparam[0] = _mm_unpackhi_epi64(qparam[0], qparam[0]);
-    qparam[1] = _mm_set_epi32(0, quant_ptr[1], 0, quant_ptr[1]);
-    qparam[2] = _mm_set_epi32(0, dequant_ptr[1], 0, dequant_ptr[1]);
-    qparam[3] = _mm_set1_epi32(dequant_ptr[1]);
     quantize_coeff_phase2(qcoeff, dequant, &coeff_sign, qparam, shift,
                           log_scale, quanAddr, dquanAddr);
 
-    // next 4 AC
-    coeff[1] = _mm_loadu_si128((__m128i const *)(src + coeff_stride));
     quantize_coeff_phase1(&coeff[1], qparam, shift, log_scale, qcoeff, dequant,
                           &coeff_sign);
     quantize_coeff_phase2(qcoeff, dequant, &coeff_sign, qparam, shift,
@@ -166,34 +188,6 @@ void av1_highbd_quantize_fp_sse4_1(
     find_eob(quanAddr, iscan, &eob);
 
     count -= 8;
-
-    // loop for the rest of AC
-    while (count > 0) {
-      src += coeff_stride << 1;
-      quanAddr += quan_stride << 1;
-      dquanAddr += quan_stride << 1;
-      iscan += quan_stride << 1;
-
-      coeff[0] = _mm_loadu_si128((__m128i const *)src);
-      coeff[1] = _mm_loadu_si128((__m128i const *)(src + coeff_stride));
-
-      quantize_coeff_phase1(&coeff[0], qparam, shift, log_scale, qcoeff,
-                            dequant, &coeff_sign);
-      quantize_coeff_phase2(qcoeff, dequant, &coeff_sign, qparam, shift,
-                            log_scale, quanAddr, dquanAddr);
-
-      quantize_coeff_phase1(&coeff[1], qparam, shift, log_scale, qcoeff,
-                            dequant, &coeff_sign);
-      quantize_coeff_phase2(qcoeff, dequant, &coeff_sign, qparam, shift,
-                            log_scale, quanAddr + quan_stride,
-                            dquanAddr + quan_stride);
-
-      find_eob(quanAddr, iscan, &eob);
-
-      count -= 8;
-    }
-    *eob_ptr = get_accumulated_eob(&eob);
-  } else {
-    *eob_ptr = 0;
   }
+  *eob_ptr = get_accumulated_eob(&eob);
 }

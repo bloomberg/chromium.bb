@@ -22,8 +22,8 @@
 namespace {
 
 typedef void (*QuantizeFpFunc)(
-    const tran_low_t *coeff_ptr, intptr_t count, int skip_block,
-    const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
+    const tran_low_t *coeff_ptr, intptr_t count, const int16_t *zbin_ptr,
+    const int16_t *round_ptr, const int16_t *quant_ptr,
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
     const int16_t *scan, const int16_t *iscan, int log_scale);
@@ -63,7 +63,6 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
     uint16_t ref_eob;
     int err_count_total = 0;
     int first_failure = -1;
-    int skip_block = 0;
     int count = params_.coeffCount;
     const TX_SIZE txSize = getTxSize(count);
     int log_scale = (txSize == TX_32X32);
@@ -93,12 +92,12 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
         quant_ptr[j] = quant_ptr[1];
         round_ptr[j] = round_ptr[1];
       }
-      quanFuncRef(coeff_ptr, count, skip_block, zbin_ptr, round_ptr, quant_ptr,
+      quanFuncRef(coeff_ptr, count, zbin_ptr, round_ptr, quant_ptr,
                   quant_shift_ptr, ref_qcoeff_ptr, ref_dqcoeff_ptr, dequant_ptr,
                   &ref_eob, scanOrder.scan, scanOrder.iscan, log_scale);
 
       ASM_REGISTER_STATE_CHECK(
-          quanFunc(coeff_ptr, count, skip_block, zbin_ptr, round_ptr, quant_ptr,
+          quanFunc(coeff_ptr, count, zbin_ptr, round_ptr, quant_ptr,
                    quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr, &eob,
                    scanOrder.scan, scanOrder.iscan, log_scale));
 
@@ -137,7 +136,6 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
     DECLARE_ALIGNED(16, int16_t, dequant_ptr[8]);
     uint16_t eob;
     uint16_t ref_eob;
-    int skip_block = 0;
     int count = params_.coeffCount;
     const TX_SIZE txSize = getTxSize(count);
     int log_scale = (txSize == TX_32X32);
@@ -171,12 +169,12 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
         round_ptr[j] = round_ptr[1];
       }
 
-      quanFuncRef(coeff_ptr, count, skip_block, zbin_ptr, round_ptr, quant_ptr,
+      quanFuncRef(coeff_ptr, count, zbin_ptr, round_ptr, quant_ptr,
                   quant_shift_ptr, ref_qcoeff_ptr, ref_dqcoeff_ptr, dequant_ptr,
                   &ref_eob, scanOrder.scan, scanOrder.iscan, log_scale);
 
       ASM_REGISTER_STATE_CHECK(
-          quanFunc(coeff_ptr, count, skip_block, zbin_ptr, round_ptr, quant_ptr,
+          quanFunc(coeff_ptr, count, zbin_ptr, round_ptr, quant_ptr,
                    quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr, &eob,
                    scanOrder.scan, scanOrder.iscan, log_scale));
       EXPECT_EQ(ref_eob, eob) << "eob error: "
