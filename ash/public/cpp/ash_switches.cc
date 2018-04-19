@@ -169,10 +169,9 @@ bool IsSidebarEnabled() {
 }
 
 bool IsUsingViewsLogin() {
-  // Only show views login if it is forced. If both switches are present use
-  // webui.
-  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  return !cl->HasSwitch(kShowWebUiLogin) && cl->HasSwitch(kShowViewsLogin);
+  // Only show webui login if it is forced. If both switches are present use
+  // views.
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLogin);
 }
 
 bool IsUsingViewsLock() {
