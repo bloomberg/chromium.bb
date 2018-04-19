@@ -14,7 +14,7 @@
 // of the launcher.
 namespace app_list {
 
-struct RecognizedSpeech;
+struct Query;
 
 // An observer which receives notification of changes to an Assistant
 // interaction.
@@ -26,12 +26,11 @@ class AssistantInteractionModelObserver {
   // Invoked when the card associated with the interaction is cleared.
   virtual void OnCardCleared() {}
 
-  // Invoked when recognized speech associated with the interaction is changed.
-  virtual void OnRecognizedSpeechChanged(
-      const RecognizedSpeech& recognized_speech) {}
+  // Invoked when the query associated with the interaction is changed.
+  virtual void OnQueryChanged(const Query& query) {}
 
-  // Invoked when recognized speech associated with the interaction is cleared.
-  virtual void OnRecognizedSpeechCleared() {}
+  // Invoked when the query associated with the interaction is cleared.
+  virtual void OnQueryCleared() {}
 
   // Invoked when the specified |suggestions| are added to the associated
   // interaction.
@@ -41,10 +40,10 @@ class AssistantInteractionModelObserver {
   // Invoked when all suggestions associated with the interaction are cleared.
   virtual void OnSuggestionsCleared() {}
 
-  // Invoked the specified |text| is added to the associated interaction.
+  // Invoked when the specified |text| is added to the associated interaction.
   virtual void OnTextAdded(const std::string& text) {}
 
-  // Invoked all text associated with the interaction is cleared.
+  // Invoked when all text associated with the interaction is cleared.
   virtual void OnTextCleared() {}
 
  protected:

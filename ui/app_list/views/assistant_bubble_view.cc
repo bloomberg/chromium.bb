@@ -5,6 +5,7 @@
 #include "ui/app_list/views/assistant_bubble_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/app_list/assistant_controller.h"
 #include "ui/app_list/assistant_interaction_model.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/gfx/canvas.h"
@@ -72,17 +73,16 @@ class InteractionContainer : public views::View {
 
   ~InteractionContainer() override = default;
 
-  void SetRecognizedSpeech(const RecognizedSpeech& recognized_speech) {
+  void SetQuery(const Query& query) {
     // TODO(dmblack): Represent high confidence and low confidence portions of
-    // the recognized speech with different colors.
-    interaction_label_->SetText(
-        base::UTF8ToUTF16(recognized_speech.high_confidence_text) +
-        base::UTF8ToUTF16(recognized_speech.low_confidence_text));
+    // the query with different colors.
+    interaction_label_->SetText(base::UTF8ToUTF16(query.high_confidence_text) +
+                                base::UTF8ToUTF16(query.low_confidence_text));
 
     PreferredSizeChanged();
   }
 
-  void ClearRecognizedSpeech() {
+  void ClearQuery() {
     interaction_label_->SetText(base::ASCIIToUTF16(kPlaceholderPrompt));
 
     PreferredSizeChanged();
@@ -167,7 +167,8 @@ class TextContainer : public views::View {
 
 class SuggestionsContainer : public views::View {
  public:
-  SuggestionsContainer() = default;
+  explicit SuggestionsContainer(SuggestionChipListener* listener)
+      : suggestion_chip_listener_(listener) {}
 
   ~SuggestionsContainer() override = default;
 
@@ -215,7 +216,8 @@ class SuggestionsContainer : public views::View {
 
   void AddSuggestions(const std::vector<std::string>& suggestions) {
     for (const std::string& suggestion : suggestions) {
-      AddChildView(new SuggestionChipView(base::UTF8ToUTF16(suggestion)));
+      AddChildView(new SuggestionChipView(base::UTF8ToUTF16(suggestion),
+                                          suggestion_chip_listener_));
     }
     PreferredSizeChanged();
   }
@@ -226,6 +228,8 @@ class SuggestionsContainer : public views::View {
   }
 
  private:
+  SuggestionChipListener* const suggestion_chip_listener_;
+
   DISALLOW_COPY_AND_ASSIGN(SuggestionsContainer);
 };
 
@@ -234,21 +238,21 @@ class SuggestionsContainer : public views::View {
 // AssistantBubbleView ---------------------------------------------------------
 
 AssistantBubbleView::AssistantBubbleView(
-    AssistantInteractionModel* assistant_interaction_model)
-    : assistant_interaction_model_(assistant_interaction_model),
+    AssistantController* assistant_controller)
+    : assistant_controller_(assistant_controller),
       interaction_container_(new InteractionContainer()),
       text_container_(new TextContainer()),
       card_container_(new views::View()),
-      suggestions_container_(new SuggestionsContainer()) {
+      suggestions_container_(new SuggestionsContainer(this)) {
   InitLayout();
 
   // Observe changes to interaction model.
-  DCHECK(assistant_interaction_model_);
-  assistant_interaction_model_->AddObserver(this);
+  DCHECK(assistant_controller_);
+  assistant_controller_->AddInteractionModelObserver(this);
 }
 
 AssistantBubbleView::~AssistantBubbleView() {
-  assistant_interaction_model_->RemoveObserver(this);
+  assistant_controller_->RemoveInteractionModelObserver(this);
 }
 
 gfx::Size AssistantBubbleView::CalculatePreferredSize() const {
@@ -304,13 +308,12 @@ void AssistantBubbleView::OnCardCleared() {
   card_container_->SetVisible(false);
 }
 
-void AssistantBubbleView::OnRecognizedSpeechChanged(
-    const RecognizedSpeech& recognized_speech) {
-  interaction_container_->SetRecognizedSpeech(recognized_speech);
+void AssistantBubbleView::OnQueryChanged(const Query& query) {
+  interaction_container_->SetQuery(query);
 }
 
-void AssistantBubbleView::OnRecognizedSpeechCleared() {
-  interaction_container_->ClearRecognizedSpeech();
+void AssistantBubbleView::OnQueryCleared() {
+  interaction_container_->ClearQuery();
 }
 
 void AssistantBubbleView::OnSuggestionsAdded(
@@ -322,6 +325,12 @@ void AssistantBubbleView::OnSuggestionsAdded(
 void AssistantBubbleView::OnSuggestionsCleared() {
   suggestions_container_->ClearSuggestions();
   suggestions_container_->SetVisible(false);
+}
+
+void AssistantBubbleView::OnSuggestionChipPressed(
+    SuggestionChipView* suggestion_chip_view) {
+  assistant_controller_->OnSuggestionChipPressed(
+      base::UTF16ToUTF8(suggestion_chip_view->GetText()));
 }
 
 void AssistantBubbleView::OnTextAdded(const std::string& text) {

@@ -20,7 +20,7 @@ constexpr int kPaddingDip = 16;
 AssistantContainerView::AssistantContainerView(ContentsView* contents_view)
     : contents_view_(contents_view),
       assistant_bubble_view_(new AssistantBubbleView(
-          contents_view->app_list_view()->assistant_interaction_model())) {
+          contents_view->app_list_view()->assistant_controller())) {
   AddChildView(assistant_bubble_view_);
 }
 

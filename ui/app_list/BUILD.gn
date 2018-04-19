@@ -23,6 +23,7 @@ component("app_list") {
     "app_list_util.cc",
     "app_list_util.h",
     "app_list_view_delegate.h",
+    "assistant_controller.h",
     "assistant_interaction_model.h",
     "assistant_interaction_model_observer.h",
     "pagination_controller.cc",

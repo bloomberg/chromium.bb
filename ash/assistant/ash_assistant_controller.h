@@ -11,9 +11,10 @@
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/app_list/assistant_controller.h"
 
 namespace app_list {
-class AssistantInteractionModel;
+class AssistantInteractionModelObserver;
 }  // namespace app_list
 
 namespace aura {
@@ -23,7 +24,8 @@ class Window;
 namespace ash {
 
 class AshAssistantController
-    : public mojom::AshAssistantController,
+    : public app_list::AssistantController,
+      public mojom::AshAssistantController,
       public chromeos::assistant::mojom::AssistantEventSubscriber,
       public ShellObserver {
  public:
@@ -31,6 +33,13 @@ class AshAssistantController
   ~AshAssistantController() override;
 
   void BindRequest(mojom::AshAssistantControllerRequest request);
+
+  // app_list::AssistantController:
+  void AddInteractionModelObserver(
+      app_list::AssistantInteractionModelObserver* observer) override;
+  void RemoveInteractionModelObserver(
+      app_list::AssistantInteractionModelObserver* observer) override;
+  void OnSuggestionChipPressed(const std::string& text) override;
 
   // chromeos::assistant::mojom::AssistantEventSubscriber:
   void OnInteractionStarted() override;
@@ -47,8 +56,6 @@ class AshAssistantController
       const std::string& low_confidence_text) override;
   void OnSpeechRecognitionEndOfUtterance() override;
   void OnSpeechRecognitionFinalResult(const std::string& final_result) override;
-
-  // Assistant got a speech level update in dB.
   void OnSpeechLevelUpdated(float speech_level) override;
 
   // mojom::AshAssistantController:
@@ -59,15 +66,14 @@ class AshAssistantController
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
 
-  app_list::AssistantInteractionModel* assistant_interaction_model() {
-    return &assistant_interaction_model_;
-  }
-
  private:
   mojo::Binding<mojom::AshAssistantController> assistant_controller_binding_;
   mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
       assistant_event_subscriber_binding_;
   AssistantInteractionModelImpl assistant_interaction_model_;
+
+  // Interface to Chrome OS Assistant service.
+  chromeos::assistant::mojom::AssistantPtr assistant_;
 
   // TODO(b/77637813): Remove when pulling Assistant out of launcher.
   bool is_app_list_shown_ = false;

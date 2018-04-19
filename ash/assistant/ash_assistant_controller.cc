@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ui/app_list/assistant_interaction_model_observer.h"
 
 namespace ash {
 
@@ -29,10 +30,22 @@ void AshAssistantController::BindRequest(
 
 void AshAssistantController::SetAssistant(
     chromeos::assistant::mojom::AssistantPtr assistant) {
+  assistant_ = std::move(assistant);
+
   // Subscribe to Assistant events.
   chromeos::assistant::mojom::AssistantEventSubscriberPtr ptr;
   assistant_event_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
-  assistant->AddAssistantEventSubscriber(std::move(ptr));
+  assistant_->AddAssistantEventSubscriber(std::move(ptr));
+}
+
+void AshAssistantController::AddInteractionModelObserver(
+    app_list::AssistantInteractionModelObserver* observer) {
+  assistant_interaction_model_.AddObserver(observer);
+}
+
+void AshAssistantController::RemoveInteractionModelObserver(
+    app_list::AssistantInteractionModelObserver* observer) {
+  assistant_interaction_model_.RemoveObserver(observer);
 }
 
 void AshAssistantController::OnInteractionStarted() {
@@ -51,6 +64,17 @@ void AshAssistantController::OnHtmlResponse(const std::string& response) {
     return;
 
   assistant_interaction_model_.SetCard(response);
+}
+
+void AshAssistantController::OnSuggestionChipPressed(const std::string& text) {
+  app_list::Query query;
+  query.high_confidence_text = text;
+
+  assistant_interaction_model_.ClearInteraction();
+  assistant_interaction_model_.SetQuery(query);
+
+  DCHECK(assistant_);
+  assistant_->SendTextQuery(text);
 }
 
 void AshAssistantController::OnSuggestionsResponse(
@@ -81,9 +105,8 @@ void AshAssistantController::OnSpeechRecognitionIntermediateResult(
   if (!is_app_list_shown_)
     return;
 
-  app_list::RecognizedSpeech recognized_speech{high_confidence_text,
-                                               low_confidence_text};
-  assistant_interaction_model_.SetRecognizedSpeech(recognized_speech);
+  assistant_interaction_model_.SetQuery(
+      {high_confidence_text, low_confidence_text});
 }
 
 void AshAssistantController::OnSpeechRecognitionEndOfUtterance() {
@@ -99,9 +122,9 @@ void AshAssistantController::OnSpeechRecognitionFinalResult(
   if (!is_app_list_shown_)
     return;
 
-  app_list::RecognizedSpeech recognized_speech;
-  recognized_speech.high_confidence_text = final_result;
-  assistant_interaction_model_.SetRecognizedSpeech(recognized_speech);
+  app_list::Query query;
+  query.high_confidence_text = final_result;
+  assistant_interaction_model_.SetQuery(query);
 }
 
 void AshAssistantController::OnSpeechLevelUpdated(float speech_level) {
