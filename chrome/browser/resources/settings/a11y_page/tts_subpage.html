@@ -29,16 +29,35 @@
     <h2>$i18n{textToSpeechProperties}</h2>
     <div class="settings-box first">
       <div class="start">$i18n{textToSpeechRate}</div>
+      <!-- Rate goes from 0.5 to 10 with a step of ~0.5.
+           TODO(katie): May want to make non-linear scale
+           in JS to describe this, rather than a linear scale. -->
       <settings-slider
           pref="{{prefs.settings.tts.speech_rate}}"
-          min="0.2" max="8.0">
+          min="1" max="20" scale="2"
+          label-min="$i18n{textToSpeechRateMinimumLabel}"
+          label-max="$i18n{textToSpeechRateMaximumLabel}">
       </settings-slider>
     </div>
     <div class="settings-box continuation">
       <div class="start">$i18n{textToSpeechPitch}</div>
+      <!-- Pitch goes from 0.1 to 2.0 with a step of ~0.1 -->
       <settings-slider
           pref="{{prefs.settings.tts.speech_pitch}}"
-          min="0.2" max="3.0">
+          min="1" max="20" scale="10"
+          label-min="$i18n{textToSpeechPitchMinimumLabel}"
+          label-max="$i18n{textToSpeechPitchMaximumLabel}">
+      </settings-slider>
+    </div>
+    <div class="settings-box continuation">
+      <div class="start">$i18n{textToSpeechVolume}</div>
+      <!-- Volume goes from 0.1 to 1.0 with a step of ~0.05.
+           TODO(katie): Does it make sense to include values lower than 0.5? -->
+      <settings-slider
+          pref="{{prefs.settings.tts.speech_volume}}"
+          min="1" max="20" scale="20"
+          label-min="$i18n{textToSpeechVolumeMinimumLabel}"
+          label-max="$i18n{textToSpeechVolumeMaximumLabel}">
       </settings-slider>
     </div>
     <h2>$i18n{textToSpeechPreviewHeading}</h2>
