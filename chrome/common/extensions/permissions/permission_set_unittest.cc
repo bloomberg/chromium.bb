@@ -808,6 +808,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kBrailleDisplayPrivate);
   skip.insert(APIPermission::kCast);
   skip.insert(APIPermission::kCastStreaming);
+  skip.insert(APIPermission::kCecPrivate);
   skip.insert(APIPermission::kChromeosInfoPrivate);
   skip.insert(APIPermission::kCloudPrintPrivate);
   skip.insert(APIPermission::kCommandLinePrivate);

@@ -1,0 +1,21 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Private API for HDMI CEC functionality.
+[platforms=("chromeos")]
+namespace cecPrivate {
+
+  interface Functions {
+    // Attempt to put all HDMI CEC compatible devices in stand-by.
+    //
+    // This is not guaranteed to have any effect on the connected displays.
+    // Displays that do not support HDMI CEC will not be affected.
+    static void sendStandBy();
+
+    // Attempt to announce this device as the active input source towards all
+    // HDMI CEC enabled displays connected, waking them from standby if
+    // necessary.
+    static void sendWakeUp();
+  };
+};

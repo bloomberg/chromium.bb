@@ -17,6 +17,7 @@
 #include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -136,6 +137,10 @@ AuthPolicyClient* DBusThreadManager::GetAuthPolicyClient() {
 
 BiodClient* DBusThreadManager::GetBiodClient() {
   return clients_common_->biod_client_.get();
+}
+
+CecServiceClient* DBusThreadManager::GetCecServiceClient() {
+  return clients_common_->cec_service_client_.get();
 }
 
 ConciergeClient* DBusThreadManager::GetConciergeClient() {

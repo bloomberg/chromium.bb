@@ -108,6 +108,10 @@
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]
   },
+  "cecPrivate": {
+    "dependencies": ["permission:cecPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "clipboard": {
     "dependencies": ["permission:clipboard"],
     "contexts": ["blessed_extension"]
