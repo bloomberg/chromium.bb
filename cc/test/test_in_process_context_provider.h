@@ -21,6 +21,7 @@ class GrContext;
 
 namespace gpu {
 class GLInProcessContext;
+class RasterInProcessContext;
 }
 
 namespace skia_bindings {
@@ -41,9 +42,11 @@ class TestInProcessContextProvider
       public viz::ContextProvider,
       public viz::RasterContextProvider {
  public:
-  explicit TestInProcessContextProvider(
-      TestInProcessContextProvider* shared_context,
-      bool enable_oop_rasterization);
+  // TODO(backer): Once we only support OOP-R on Raster{Implementation,Decoder},
+  // fold these two options into one.
+  TestInProcessContextProvider(TestInProcessContextProvider* shared_context,
+                               bool enable_oop_rasterization,
+                               bool support_gles2_interface);
 
   // viz::ContextProvider / viz::RasterContextProvider implementation.
   void AddRef() const override;
@@ -67,9 +70,15 @@ class TestInProcessContextProvider
  private:
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestImageFactory image_factory_;
-  std::unique_ptr<gpu::GLInProcessContext> context_;
-  std::unique_ptr<gpu::raster::RasterInterface> raster_implementation_;
+
+  // Used if support_gles2_interface.
+  std::unique_ptr<gpu::GLInProcessContext> gles2_context_;
+  std::unique_ptr<gpu::raster::RasterInterface> raster_implementation_gles2_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
+
+  // Used if !support_gles2_interface.
+  std::unique_ptr<gpu::RasterInProcessContext> raster_context_;
+
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
   base::Lock context_lock_;
   gpu::GpuFeatureInfo gpu_feature_info_;

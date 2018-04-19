@@ -94,6 +94,7 @@ ContextResult RasterInProcessContext::Initialize(
         GetCapabilities());
     helper_ = std::move(gles2_helper);
   } else {
+    DCHECK(attribs.enable_raster_decoder);
     // Create the RasterCmdHelper, which writes the command buffer protocol.
     auto raster_helper =
         std::make_unique<raster::RasterCmdHelper>(command_buffer_.get());
