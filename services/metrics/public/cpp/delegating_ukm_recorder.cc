@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 #include "base/lazy_instance.h"
 
@@ -37,6 +38,24 @@ void DelegatingUkmRecorder::RemoveDelegate(UkmRecorder* delegate) {
 
 void DelegatingUkmRecorder::UpdateSourceURL(SourceId source_id,
                                             const GURL& url) {
+  if (GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID) {
+    DLOG(FATAL) << "UpdateSourceURL invoked for NAVIGATION_ID SourceId";
+    return;
+  }
+  UpdateSourceURLImpl(source_id, url);
+}
+
+void DelegatingUkmRecorder::UpdateNavigationURL(SourceId source_id,
+                                                const GURL& url) {
+  if (GetSourceIdType(source_id) != SourceIdType::NAVIGATION_ID) {
+    DLOG(FATAL) << "UpdateNavigationURL invoked for non-NAVIGATION_ID SourceId";
+    return;
+  }
+  UpdateSourceURLImpl(source_id, url);
+}
+
+void DelegatingUkmRecorder::UpdateSourceURLImpl(SourceId source_id,
+                                                const GURL& url) {
   base::AutoLock auto_lock(lock_);
   for (auto& iterator : delegates_)
     iterator.second.UpdateSourceURL(source_id, url);
