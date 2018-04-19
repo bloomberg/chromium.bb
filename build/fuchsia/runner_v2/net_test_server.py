@@ -26,10 +26,12 @@ def _ConnectPortForwardingTask(target, local_port):
   """Establishes a port forwarding SSH task to a localhost TCP endpoint hosted
   at port |local_port|. Blocks until port forwarding is established.
 
-  Returns a tuple containing the remote port and the SSH task Popen object."""
+  Returns the remote port number."""
 
-  forwarding_flags = ['-NT',  # Don't execute command; don't allocate terminal.
-                      '-R', '0:localhost:%d' % local_port]
+  forwarding_flags = ['-O', 'forward',  # Send SSH mux control signal.
+                      '-R', '0:localhost:%d' % local_port,
+                      '-v',   # Get forwarded port info from stderr.
+                      '-NT']  # Don't execute command; don't allocate terminal.
   task = target.RunCommandPiped([],
                                 ssh_args=forwarding_flags,
                                 stderr=subprocess.PIPE)
@@ -50,13 +52,15 @@ def _ConnectPortForwardingTask(target, local_port):
         break
       line += next_char
       if line.endswith('\n'):
-        line.strip()
+        line = line[:-1]
+        logging.debug('ssh: ' + line)
         matched = PORT_MAP_RE.match(line)
         if matched:
           device_port = int(matched.group('port'))
           logging.debug('Port forwarding established (local=%d, device=%d)' %
                         (local_port, device_port))
-          return (device_port, task)
+          task.wait()
+          return device_port
         line = ''
 
   raise Exception('Could not establish a port forwarding connection.')
@@ -68,8 +72,7 @@ class SSHPortForwarder(chrome_test_server_spawner.PortForwarder):
   def __init__(self, target):
     self._target = target
 
-    # Maps the host (server) port to a tuple consisting of the device port
-    # number and a subprocess.Popen object for the forwarding SSH process.
+    # Maps the host (server) port to the device port number.
     self._port_mapping = {}
 
   def Map(self, port_pairs):
@@ -79,13 +82,22 @@ class SSHPortForwarder(chrome_test_server_spawner.PortForwarder):
           _ConnectPortForwardingTask(self._target, host_port)
 
   def GetDevicePortForHostPort(self, host_port):
-    return self._port_mapping[host_port][0]
+    return self._port_mapping[host_port]
 
   def Unmap(self, device_port):
     for host_port, entry in self._port_mapping.iteritems():
-      if entry[0] == device_port:
-        entry[1].terminate()
-        entry[1].wait()
+      if entry == device_port:
+        forwarding_args = [
+            '-NT', '-O', 'cancel', '-R',
+            '%d:localhost:%d' % (self._port_mapping[host_port], host_port)]
+        task = self._target.RunCommandPiped([],
+                                            ssh_args=forwarding_args,
+                                            stderr=subprocess.PIPE)
+        task.wait()
+        if task.returncode != 0:
+          raise Exception(
+              'Error %d when unmapping port %d' % (task.returncode,
+                                                   device_port))
         del self._port_mapping[host_port]
         return
 
@@ -95,13 +107,12 @@ class SSHPortForwarder(chrome_test_server_spawner.PortForwarder):
 def SetupTestServer(target, test_concurrency):
   """Provisions a forwarding test server and configures |target| to use it.
 
-  Returns a tuple with a Popen opbject for the test server process,
-  and a Popen object for the port forwarding connection."""
+  Returns a Popen object for the test server process."""
 
   logging.debug('Starting test server.')
   spawning_server = chrome_test_server_spawner.SpawningServer(
       0, SSHPortForwarder(target), test_concurrency)
-  forwarded_port, forwarding_process = _ConnectPortForwardingTask(
+  forwarded_port = _ConnectPortForwardingTask(
       target, spawning_server.server_port)
   spawning_server.Start()
 
@@ -119,6 +130,6 @@ def SetupTestServer(target, test_concurrency):
   }))
 
   config_file.flush()
-  target.PutFile(config_file.name, '/system/net-test-server-config')
+  target.PutFile(config_file.name, '/data/net-test-server-config')
 
-  return spawning_server, forwarding_process
+  return spawning_server
