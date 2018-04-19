@@ -318,7 +318,13 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+  [self correctMissingSafeArea];
   [self updateOverscrollActionsState];
+}
+
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  [self correctMissingSafeArea];
 }
 
 #pragma mark - UICollectionViewDelegate
@@ -688,6 +694,25 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 }
 
 #pragma mark - Private
+
+// TODO(crbug.com/826369) Remove this when the NTP is conatined by the BVC
+// and removed from native content.  As a part of native content, the NTP is
+// contained by a view controller that is inset from safeArea.top.  Even
+// though content suggestions appear under the top safe area, they are blocked
+// by the browser container view controller.
+- (void)correctMissingSafeArea {
+  if (IsUIRefreshPhase1Enabled()) {
+    if (@available(iOS 11, *)) {
+      UIEdgeInsets missingTop = UIEdgeInsetsZero;
+      // During the new tab animation the browser container view controller
+      // actually matches the browser view controller frame, so safe area does
+      // work, so be sure to check the parent view controller offset.
+      if (self.parentViewController.view.frame.origin.y == StatusBarHeight())
+        missingTop = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
+      self.additionalSafeAreaInsets = missingTop;
+    }
+  }
+}
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
   if (self.editor.editing ||

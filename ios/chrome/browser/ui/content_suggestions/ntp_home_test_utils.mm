@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/status.h"
@@ -84,10 +85,26 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                                               descriptionBlock:describe];
 }
 
-UIView* CollectionView() {
-  return SubviewWithAccessibilityIdentifier(
-      [ContentSuggestionsViewController collectionAccessibilityIdentifier],
-      [[UIApplication sharedApplication] keyWindow]);
+id<GREYMatcher> HeaderPinnedOffset(CGFloat offset) {
+  MatchesBlock matches = ^BOOL(UIView* view) {
+    return view.frame.origin.y == offset;
+  };
+  DescribeToBlock describe = ^void(id<GREYDescription> description) {
+    [description
+        appendText:[NSString
+                       stringWithFormat:@"CSHeader has correct offset: %g",
+                                        offset]];
+  };
+
+  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                              descriptionBlock:describe];
+}
+
+UICollectionView* CollectionView() {
+  return base::mac::ObjCCast<UICollectionView>(
+      SubviewWithAccessibilityIdentifier(
+          [ContentSuggestionsViewController collectionAccessibilityIdentifier],
+          [[UIApplication sharedApplication] keyWindow]));
 }
 
 UIView* FakeOmnibox() {

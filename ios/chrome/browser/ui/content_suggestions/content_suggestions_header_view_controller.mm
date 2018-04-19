@@ -209,8 +209,10 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
     CGFloat top = 0;
     if (@available(iOS 11, *)) {
       top = self.parentViewController.view.safeAreaInsets.top;
-    } else {
-      top = self.parentViewController.topLayoutGuide.length;
+    } else if (IsUIRefreshPhase1Enabled()) {
+      // TODO(crbug.com/826369) Replace this when the NTP is contained by the
+      // BVC with |self.parentViewController.topLayoutGuide.length|.
+      top = StatusBarHeight();
     }
     offsetY -= ntp_header::ToolbarHeight() + top;
   }
