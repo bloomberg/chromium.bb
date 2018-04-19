@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/atomic_ref_count.h"
 #include "base/base_export.h"
 #include "base/containers/stack.h"
 #include "base/logging.h"
@@ -29,6 +28,7 @@
 #include "base/task_scheduler/scheduler_worker_stack.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
+#include "base/task_scheduler/tracked_ref.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -152,10 +152,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   static constexpr TimeDelta kBlockedWorkersPollPeriod =
       TimeDelta::FromMilliseconds(50);
 
-  SchedulerWorkerPoolImpl(const SchedulerWorkerPoolParams& params,
-                          TaskTracker* task_tracker,
-                          DelayedTaskManager* delayed_task_manager);
-
   // SchedulerWorkerPool:
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
 
@@ -249,22 +245,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // All workers owned by this worker pool.
   std::vector<scoped_refptr<SchedulerWorker>> workers_;
 
-  // The number of live worker threads with a reference to this
-  // SchedulerWorkerPoolImpl. This is always greater-than-or-equal to
-  // |workers_.size()| as it includes those as well as reclaimed threads that
-  // haven't yet completed their exit. JoinForTesting() must wait for this count
-  // to reach 0 before returning.
-  AtomicRefCount live_workers_count_for_testing_{0};
-  // Signaled when |live_workers_count_| reaches 0 (which can only happen after
-  // initiating JoinForTesting() as the pool always keeps at least one idle
-  // worker otherwise). Note: a Semaphore would be a better suited construct
-  // than |live_workers_count_for_testing_| +
-  // |no_workers_remaining_for_testing_| but //base currently doesn't provide it
-  // and this use case doesn't justify it.
-  WaitableEvent no_workers_remaining_for_testing_{
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED};
-
   // Workers can be added as needed up until there are |worker_capacity_|
   // workers.
   size_t worker_capacity_ = 0;
@@ -317,9 +297,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // TimeDelta.
   AtomicFlag maximum_blocked_threshold_for_testing_;
 
-  // Signaled once JoinForTesting() has returned.
-  WaitableEvent join_for_testing_returned_;
-
 #if DCHECK_IS_ON()
   // Set at the start of JoinForTesting().
   AtomicFlag join_for_testing_started_;
@@ -338,6 +315,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   HistogramBase* const num_tasks_between_waits_histogram_;
 
   scoped_refptr<TaskRunner> service_thread_task_runner_;
+
+  // Ensures recently cleaned up workers (ref.
+  // SchedulerWorkerDelegateImpl::CleanupLockRequired()) had time to exit as
+  // they have a raw reference to |this| (and to TaskTracker) which can
+  // otherwise result in racy use-after-frees per no longer being part of
+  // |workers_| and hence not being explicitly joined in JoinForTesting() :
+  // https://crbug.com/810464.
+  TrackedRefFactory<SchedulerWorkerPoolImpl> tracked_ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPoolImpl);
 };
