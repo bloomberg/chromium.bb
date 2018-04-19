@@ -31,10 +31,11 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
         ViewGroup container = (ViewGroup) LayoutInflater.from(mActivity).inflate(
                 R.layout.modal_dialog_container, null);
         mDialog.setContentView(container);
+        ViewGroup viewContainer = (ViewGroup) container.findViewById(R.id.dialog_view_container);
         FrameLayout.LayoutParams params =
                 new FrameLayout.LayoutParams(ViewGroup.MarginLayoutParams.WRAP_CONTENT,
                         ViewGroup.MarginLayoutParams.WRAP_CONTENT, Gravity.CENTER);
-        container.addView(dialogView, params);
+        viewContainer.addView(dialogView, params);
         if (getModalDialog().getCancelOnTouchOutside()) {
             mDialog.setCanceledOnTouchOutside(true);
             // The dialog container covers the entire screen. To achieve the cancel on touch outside

@@ -59,6 +59,9 @@ public class TabModalPresenter
     /** The container view that a dialog to be shown will be attached to. */
     private ViewGroup mDialogContainer;
 
+    /** The view that is the direct parent of the dialog view. */
+    private ViewGroup mViewContainer;
+
     /** Whether the dialog container is brought to the front in its parent. */
     private boolean mContainerIsAtFront;
 
@@ -179,6 +182,7 @@ public class TabModalPresenter
 
         mDialogContainer = (ViewGroup) dialogContainerStub.inflate();
         mDialogContainer.setVisibility(View.GONE);
+        mViewContainer = (ViewGroup) mDialogContainer.findViewById(R.id.dialog_view_container);
         mContainerParent = (ViewGroup) mDialogContainer.getParent();
         // The default sibling view is the next view of the dialog container stub in main.xml and
         // should not be removed from its parent.
@@ -286,7 +290,7 @@ public class TabModalPresenter
         mDialogContainer.animate().cancel();
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 MarginLayoutParams.WRAP_CONTENT, MarginLayoutParams.WRAP_CONTENT, Gravity.CENTER);
-        mDialogContainer.addView(dialogView, params);
+        mViewContainer.addView(dialogView, params);
         mDialogContainer.setAlpha(0f);
         mDialogContainer.setVisibility(View.VISIBLE);
         mDialogContainer.animate()
@@ -316,7 +320,7 @@ public class TabModalPresenter
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         mDialogContainer.setVisibility(View.GONE);
-                        mDialogContainer.removeView(dialogView);
+                        mViewContainer.removeView(dialogView);
                     }
                 })
                 .start();

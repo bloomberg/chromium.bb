@@ -10,7 +10,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/menu_bg"
     chrome:maxWidth="@dimen/dialog_max_width">
 
     <android.support.v7.widget.DialogTitle
