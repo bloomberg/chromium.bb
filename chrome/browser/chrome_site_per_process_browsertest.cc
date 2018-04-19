@@ -294,7 +294,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PopupWindowFocus) {
   // later when it sends messages from its focus/blur events.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(ExecuteScript(web_contents, "window.name = 'main'"));
+  EXPECT_TRUE(
+      ExecuteScriptWithoutUserGesture(web_contents, "window.name = 'main'"));
 
   // Open a popup for a cross-site page.
   GURL popup_url =
@@ -316,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PopupWindowFocus) {
   web_contents->GetDelegate()->ActivateContents(web_contents);
   EXPECT_EQ(web_contents, browser()->tab_strip_model()->GetActiveWebContents());
 
-  // Focus the popup via window.focus().
+  // Focus the popup via window.focus(), this needs user gesture.
   content::DOMMessageQueue queue;
   ExecuteScriptAsync(web_contents, "focusPopup()");
 
@@ -1104,11 +1105,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Add a postMessage handler in the top frame.  The handler opens a new
   // popup.
   GURL popup_url(embedded_test_server()->GetURL("a.com", "/title2.html"));
-  EXPECT_TRUE(
-      ExecuteScript(web_contents,
-                    "window.addEventListener('message', function() {\n"
-                    "  window.w = window.open('" + popup_url.spec() + "');\n"
-                    "});"));
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      web_contents,
+      base::StringPrintf("window.addEventListener('message', function() {\n"
+                         "  window.w = window.open('%s');\n"
+                         "});",
+                         popup_url.spec().c_str())));
 
   // Send a postMessage from the child frame to its parent.  Note that by
   // default ExecuteScript runs with a user gesture, which should be
@@ -1130,7 +1132,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Check that the window handle returned from window.open() was valid.
   bool popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
       web_contents, "window.domAutomationController.send(!!window.w)",
       &popup_handle_is_valid));
   EXPECT_TRUE(popup_handle_is_valid);
@@ -1156,11 +1158,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
   content::RenderFrameHost* child =
       ChildFrameAt(web_contents->GetMainFrame(), 0);
-  EXPECT_TRUE(ExecuteScript(
-      child,
-      "window.addEventListener('message', function(event) {\n"
-      "  window.w = window.open('" + popup_url.spec() + "' + event.data);\n"
-      "});"));
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      child, base::StringPrintf(
+                 "window.addEventListener('message', function(event) {\n"
+                 "  window.w = window.open('%s' + event.data);\n"
+                 "});",
+                 popup_url.spec().c_str())));
 
   // Send two postMessages from parent frame to child frame as part of the same
   // user gesture.  Ensure that only one popup can be opened.
@@ -1183,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Ensure that only one popup can be opened.  The second window.open() call
   // should've failed and stored null into window.w.
   bool popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
       child, "window.domAutomationController.send(!!window.w)",
       &popup_handle_is_valid));
   EXPECT_FALSE(popup_handle_is_valid);
@@ -1213,8 +1216,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
       "window.addEventListener('message', function(event) {\n"
       "  window.w = window.open('" + popup_url.spec() + "' + event.data);\n"
       "});";
-  EXPECT_TRUE(ExecuteScript(child1, script));
-  EXPECT_TRUE(ExecuteScript(child2, script));
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(child1, script));
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(child2, script));
 
   // Send two postMessages from parent frame to both child frames as part of
   // the same user gesture.  Ensure that only one popup can be opened.  Note
@@ -1239,10 +1242,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Ensure that only one renderer process has a valid popup handle.
   bool child1_handle_is_valid = false;
   bool child2_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
       child1, "window.domAutomationController.send(!!window.w)",
       &child1_handle_is_valid));
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
       child2, "window.domAutomationController.send(!!window.w)",
       &child2_handle_is_valid));
   EXPECT_TRUE(child1_handle_is_valid != child2_handle_is_valid)
@@ -1276,20 +1279,22 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Add a postMessage handler to middle frame to send another postMessage to
   // bottom frame and then immediately attempt window.open().
   GURL popup1_url(embedded_test_server()->GetURL("popup.com", "/title1.html"));
-  EXPECT_TRUE(ExecuteScript(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
       child,
-      "window.addEventListener('message', function() {\n"
-      "  frames[0].postMessage('foo', '*');\n"
-      "  window.w = window.open('" + popup1_url.spec() + "');\n"
-      "});\n"));
+      base::StringPrintf("window.addEventListener('message', function() {\n"
+                         "  frames[0].postMessage('foo', '*');\n"
+                         "  window.w = window.open('%s');\n"
+                         "});\n",
+                         popup1_url.spec().c_str())));
 
   // Add a postMessage handler to bottom frame to attempt a window.open().
   GURL popup2_url(embedded_test_server()->GetURL("popup.com", "/title2.html"));
-  EXPECT_TRUE(ExecuteScript(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
       grandchild,
-      "window.addEventListener('message', function() {\n"
-      "  window.w = window.open('" + popup2_url.spec() + "');\n"
-      "});\n"));
+      base::StringPrintf("window.addEventListener('message', function() {\n"
+                         "  window.w = window.open('%s');\n"
+                         "});\n",
+                         popup2_url.spec().c_str())));
 
   // Send a postMessage from top frame to middle frame as part of the same user
   // gesture.  Ensure that only one popup can be opened.
@@ -1309,7 +1314,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Ensure that only one popup can be opened.  The second window.open() in
   // |grandchild| should've failed and stored null into window.w.
   bool popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
       grandchild, "window.domAutomationController.send(!!window.w)",
       &popup_handle_is_valid));
   EXPECT_FALSE(popup_handle_is_valid);
@@ -1341,11 +1346,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   content::RenderFrameHost* child =
       ChildFrameAt(web_contents->GetMainFrame(), 0);
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/title1.html"));
-  EXPECT_TRUE(ExecuteScript(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
       child,
-      "window.addEventListener('message', function() {\n"
-      "  window.w = window.open('" + popup_url.spec() + "');\n"
-      "});"));
+      base::StringPrintf("window.addEventListener('message', function() {\n"
+                         "  window.w = window.open('%s');\n"
+                         "});",
+                         popup_url.spec().c_str())));
 
   // Send a postMessage from parent frame to child frame and then immediately
   // consume the user gesture with window.open().
@@ -1367,11 +1373,11 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Ensure that only one popup was opened, from either the parent or the child
   // frame, but not both.
   bool parent_popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
       web_contents, "window.domAutomationController.send(!!window.w)",
       &parent_popup_handle_is_valid));
   bool child_popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
       child, "window.domAutomationController.send(!!window.w)",
       &child_popup_handle_is_valid));
   EXPECT_NE(parent_popup_handle_is_valid, child_popup_handle_is_valid)
