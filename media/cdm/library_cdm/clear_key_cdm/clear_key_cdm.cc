@@ -95,9 +95,9 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
   output_buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input_buffer.timestamp));
 
-  // TODO(xhwang): Unify how to check whether a buffer is encrypted.
-  // See http://crbug.com/675003
-  if (input_buffer.iv_size != 0) {
+  // TODO(crbug.com/658026): Support other schemes.
+  if (input_buffer.encryption_scheme == cdm::EncryptionScheme::kCenc) {
+    DCHECK_GT(input_buffer.iv_size, 0u);
     DCHECK_GT(input_buffer.key_id_size, 0u);
     std::vector<media::SubsampleEntry> subsamples;
     for (uint32_t i = 0; i < input_buffer.num_subsamples; ++i) {
@@ -106,15 +106,12 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
                                 input_buffer.subsamples[i].cipher_bytes));
     }
 
-    std::unique_ptr<media::DecryptConfig> decrypt_config(
-        new media::DecryptConfig(
-            std::string(reinterpret_cast<const char*>(input_buffer.key_id),
-                        input_buffer.key_id_size),
-            std::string(reinterpret_cast<const char*>(input_buffer.iv),
-                        input_buffer.iv_size),
-            subsamples));
-
-    output_buffer->set_decrypt_config(std::move(decrypt_config));
+    output_buffer->set_decrypt_config(media::DecryptConfig::CreateCencConfig(
+        std::string(reinterpret_cast<const char*>(input_buffer.key_id),
+                    input_buffer.key_id_size),
+        std::string(reinterpret_cast<const char*>(input_buffer.iv),
+                    input_buffer.iv_size),
+        subsamples));
   }
 
   return output_buffer;
@@ -892,10 +889,8 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
 
   scoped_refptr<DecoderBuffer> buffer = CopyDecoderBufferFrom(encrypted_buffer);
 
-  // TODO(xhwang): Unify how to check whether a buffer is encrypted.
-  // See http://crbug.com/675003
-  if (buffer->end_of_stream() || !buffer->decrypt_config() ||
-      !buffer->decrypt_config()->is_encrypted()) {
+  // EOS and unencrypted streams can be returned as-is.
+  if (buffer->end_of_stream() || !buffer->decrypt_config()) {
     *decrypted_buffer = std::move(buffer);
     return cdm::kSuccess;
   }

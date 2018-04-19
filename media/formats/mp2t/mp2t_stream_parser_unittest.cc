@@ -127,8 +127,7 @@ std::string DecryptBuffer(const StreamParserBuffer& buffer,
   EXPECT_TRUE(scheme.is_encrypted());
   EXPECT_TRUE(scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CBC);
   bool has_pattern = scheme.pattern().IsInEffect();
-  EXPECT_TRUE(!has_pattern ||
-              scheme.pattern().Matches(EncryptionPattern(1, 9)));
+  EXPECT_TRUE(!has_pattern || scheme.pattern() == EncryptionPattern(1, 9));
 
   std::string key;
   EXPECT_TRUE(

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/cdm_key_information.h"
@@ -18,6 +19,8 @@
 
 namespace mojo {
 
+// TODO(crbug.com/611224): Stop using TypeConverters.
+
 // static
 media::mojom::DecryptConfigPtr
 TypeConverter<media::mojom::DecryptConfigPtr, media::DecryptConfig>::Convert(
@@ -27,6 +30,8 @@ TypeConverter<media::mojom::DecryptConfigPtr, media::DecryptConfig>::Convert(
   mojo_decrypt_config->key_id = input.key_id();
   mojo_decrypt_config->iv = input.iv();
   mojo_decrypt_config->subsamples = input.subsamples();
+  mojo_decrypt_config->encryption_mode = input.encryption_mode();
+  mojo_decrypt_config->encryption_pattern = input.encryption_pattern();
 
   return mojo_decrypt_config;
 }
@@ -36,8 +41,9 @@ std::unique_ptr<media::DecryptConfig>
 TypeConverter<std::unique_ptr<media::DecryptConfig>,
               media::mojom::DecryptConfigPtr>::
     Convert(const media::mojom::DecryptConfigPtr& input) {
-  return std::make_unique<media::DecryptConfig>(input->key_id, input->iv,
-                                                input->subsamples);
+  return std::make_unique<media::DecryptConfig>(
+      input->encryption_mode, input->key_id, input->iv, input->subsamples,
+      input->encryption_pattern);
 }
 
 // static

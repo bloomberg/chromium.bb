@@ -604,5 +604,27 @@ ToProtoDemuxerStreamStatus(DemuxerStream::Status value) {
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
+base::Optional<EncryptionMode> ToMediaEncryptionMode(pb::EncryptionMode value) {
+  using OriginType = pb::EncryptionMode;
+  using OtherType = EncryptionMode;
+  switch (value) {
+    CASE_RETURN_OTHER(kUnencrypted);
+    CASE_RETURN_OTHER(kCenc);
+    CASE_RETURN_OTHER(kCbcs);
+  }
+  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
+}
+
+base::Optional<pb::EncryptionMode> ToProtoEncryptionMode(EncryptionMode value) {
+  using OriginType = EncryptionMode;
+  using OtherType = pb::EncryptionMode;
+  switch (value) {
+    CASE_RETURN_OTHER(kUnencrypted);
+    CASE_RETURN_OTHER(kCenc);
+    CASE_RETURN_OTHER(kCbcs);
+  }
+  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
+}
+
 }  // namespace remoting
 }  // namespace media

@@ -341,14 +341,23 @@ bool ProtectionSchemeInfo::Parse(BoxReader* reader) {
 }
 
 bool ProtectionSchemeInfo::HasSupportedScheme() const {
-  FourCC fourCC = type.type;
-  if (fourCC == FOURCC_CENC)
+  FourCC four_cc = type.type;
+  if (four_cc == FOURCC_CENC)
     return true;
 #if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
-  if (fourCC == FOURCC_CBCS)
+  if (four_cc == FOURCC_CBCS)
     return true;
 #endif
   return false;
+}
+
+bool ProtectionSchemeInfo::IsCbcsEncryptionScheme() const {
+#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
+  FourCC four_cc = type.type;
+  return (four_cc == FOURCC_CBCS);
+#else
+  return false;
+#endif
 }
 
 MovieHeader::MovieHeader()

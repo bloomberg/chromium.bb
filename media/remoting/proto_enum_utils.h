@@ -12,6 +12,7 @@
 #include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
 #include "media/base/content_decryption_module.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/sample_format.h"
@@ -101,6 +102,9 @@ base::Optional<DemuxerStream::Status> ToDemuxerStreamStatus(
     pb::DemuxerStreamReadUntilCallback::Status value);
 base::Optional<pb::DemuxerStreamReadUntilCallback::Status>
 ToProtoDemuxerStreamStatus(DemuxerStream::Status value);
+
+base::Optional<EncryptionMode> ToMediaEncryptionMode(pb::EncryptionMode value);
+base::Optional<pb::EncryptionMode> ToProtoEncryptionMode(EncryptionMode value);
 
 }  // namespace remoting
 }  // namespace media

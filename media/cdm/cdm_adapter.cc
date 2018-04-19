@@ -316,9 +316,22 @@ cdm::EncryptionScheme ToCdmEncryptionScheme(const EncryptionScheme& scheme) {
         return cdm::EncryptionScheme::kCenc;
       break;
     case EncryptionScheme::CIPHER_MODE_AES_CBC:
-      if (scheme.pattern().IsInEffect())
-        return cdm::EncryptionScheme::kCbcs;
-      break;
+      // Pattern should be required for 'cbcs' but is currently optional.
+      return cdm::EncryptionScheme::kCbcs;
+  }
+
+  NOTREACHED();
+  return cdm::EncryptionScheme::kUnencrypted;
+}
+
+cdm::EncryptionScheme ToCdmEncryptionScheme(const EncryptionMode& mode) {
+  switch (mode) {
+    case EncryptionMode::kUnencrypted:
+      return cdm::EncryptionScheme::kUnencrypted;
+    case EncryptionMode::kCenc:
+      return cdm::EncryptionScheme::kCenc;
+    case EncryptionMode::kCbcs:
+      return cdm::EncryptionScheme::kCbcs;
   }
 
   NOTREACHED();
@@ -385,11 +398,13 @@ void ToCdmInputBuffer(const DecoderBuffer& encrypted_buffer,
   input_buffer->subsamples = subsamples->data();
   input_buffer->num_subsamples = num_subsamples;
 
-  // TODO(crbug.com/658026): Add encryption scheme to DecoderBuffer.
-  input_buffer->encryption_scheme = (decrypt_config->is_encrypted())
-                                        ? cdm::EncryptionScheme::kCenc
-                                        : cdm::EncryptionScheme::kUnencrypted;
-  input_buffer->pattern = {0, 0};
+  input_buffer->encryption_scheme =
+      ToCdmEncryptionScheme(decrypt_config->encryption_mode());
+  if (decrypt_config->HasPattern()) {
+    input_buffer->pattern = {
+        decrypt_config->encryption_pattern()->crypt_byte_block(),
+        decrypt_config->encryption_pattern()->skip_byte_block()};
+  }
 }
 
 void* GetCdmHost(int host_interface_version, void* user_data) {

@@ -24,10 +24,13 @@ BitstreamBuffer::BitstreamBuffer(const BitstreamBuffer& other) = default;
 
 BitstreamBuffer::~BitstreamBuffer() = default;
 
-void BitstreamBuffer::SetDecryptConfig(const DecryptConfig& decrypt_config) {
-  key_id_ = decrypt_config.key_id();
-  iv_ = decrypt_config.iv();
-  subsamples_ = decrypt_config.subsamples();
+void BitstreamBuffer::SetDecryptionSettings(
+    const std::string& key_id,
+    const std::string& iv,
+    const std::vector<SubsampleEntry>& subsamples) {
+  key_id_ = key_id;
+  iv_ = iv;
+  subsamples_ = subsamples;
 }
 
 }  // namespace media

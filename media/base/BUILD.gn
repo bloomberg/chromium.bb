@@ -465,6 +465,7 @@ source_set("unit_tests") {
     "decode_capabilities_unittest.cc",
     "decoder_buffer_queue_unittest.cc",
     "decoder_buffer_unittest.cc",
+    "decrypt_config_unittest.cc",
     "djb2_unittest.cc",
     "fake_audio_worker_unittest.cc",
     "fake_demuxer_stream_unittest.cc",

@@ -78,7 +78,7 @@ TEST_F(MojoJpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
       kArbitraryBitstreamBufferId,
       base::SharedMemory::DuplicateHandle(shm.handle()),
       kInputBufferSizeInBytes);
-  bitstream_buffer.SetDecryptConfig(DecryptConfig(kKeyId, kIv, subsamples));
+  bitstream_buffer.SetDecryptionSettings(kKeyId, kIv, subsamples);
 
   jpeg_decoder->Decode(
       bitstream_buffer, kDummyFrameCodedSize, std::move(output_frame_handle),

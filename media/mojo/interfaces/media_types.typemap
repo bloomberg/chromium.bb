@@ -9,6 +9,8 @@ public_headers = [
   "//media/base/buffering_state.h",
   "//media/base/channel_layout.h",
   "//media/base/decode_status.h",
+  "//media/base/decrypt_config.h",
+  "//media/base/encryption_pattern.h",
   "//media/base/encryption_scheme.h",
   "//media/base/hdr_metadata.h",
   "//media/base/media_log_event.h",
@@ -38,6 +40,7 @@ type_mappings = [
   "media.mojom.ChannelLayout=media::ChannelLayout",
   "media.mojom.ColorSpace=media::ColorSpace",
   "media.mojom.DecodeStatus=media::DecodeStatus",
+  "media.mojom.EncryptionMode=media::EncryptionMode",
   "media.mojom.EncryptionScheme.CipherMode=media::EncryptionScheme::CipherMode",
   "media.mojom.MediaLogEvent=media::MediaLogEvent",
   "media.mojom.OutputDeviceStatus=media::OutputDeviceStatus",
@@ -49,4 +52,5 @@ type_mappings = [
   "media.mojom.VideoPixelFormat=media::VideoPixelFormat",
   "media.mojom.VideoRotation=media::VideoRotation",
   "media.mojom.WatchTimeKey=media::WatchTimeKey",
+  "media.mojom.EncryptionPattern=media::EncryptionPattern",
 ]

@@ -219,26 +219,10 @@ void DecryptingDemuxerStream::DecryptBuffer(
     return;
   }
 
-  // TODO(xhwang): Unify clear buffer handling in clear and encrypted stream.
-  // See http://crbug.com/675003
   if (!buffer->decrypt_config()) {
-    DVLOG(2) << "DoDecryptBuffer() - clear buffer in clear stream.";
+    DVLOG(2) << "DoDecryptBuffer() - clear buffer.";
     state_ = kIdle;
     base::ResetAndReturn(&read_cb_).Run(kOk, std::move(buffer));
-    return;
-  }
-
-  if (!buffer->decrypt_config()->is_encrypted()) {
-    DVLOG(2) << "DoDecryptBuffer() - clear buffer in encrypted stream.";
-    scoped_refptr<DecoderBuffer> decrypted = DecoderBuffer::CopyFrom(
-        buffer->data(), buffer->data_size());
-    decrypted->set_timestamp(buffer->timestamp());
-    decrypted->set_duration(buffer->duration());
-    if (buffer->is_key_frame())
-      decrypted->set_is_key_frame(true);
-
-    state_ = kIdle;
-    base::ResetAndReturn(&read_cb_).Run(kOk, std::move(decrypted));
     return;
   }
 
