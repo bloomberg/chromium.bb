@@ -18,7 +18,6 @@ import android.widget.PopupMenu;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 
 import java.util.ArrayList;
 
@@ -140,10 +139,8 @@ public class AppMenuHandler {
             Drawable itemDivider = a.getDrawable(1);
             int itemDividerHeight = itemDivider != null ? itemDivider.getIntrinsicHeight() : 0;
             a.recycle();
-            boolean translateMenuItemsOnShow = !(mActivity instanceof ChromeActivity)
-                    || ((ChromeActivity) mActivity).getBottomSheet() == null;
-            mAppMenu = new AppMenu(mMenu, itemRowHeight, itemDividerHeight, this,
-                    mActivity.getResources(), translateMenuItemsOnShow);
+            mAppMenu = new AppMenu(
+                    mMenu, itemRowHeight, itemDividerHeight, this, mActivity.getResources());
             mAppMenuDragHelper = new AppMenuDragHelper(mActivity, mAppMenu, itemRowHeight);
         }
 

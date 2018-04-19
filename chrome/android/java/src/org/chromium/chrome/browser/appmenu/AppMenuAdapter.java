@@ -99,16 +99,14 @@ class AppMenuAdapter extends BaseAdapter {
     private final int mNumMenuItems;
     private final Integer mHighlightedItemId;
     private final float mDpToPx;
-    private final boolean mTranslateMenuItemsOnShow;
 
     public AppMenuAdapter(AppMenu appMenu, List<MenuItem> menuItems, LayoutInflater inflater,
-            Integer highlightedItemId, boolean translateMenuItemsOnShow) {
+            Integer highlightedItemId) {
         mAppMenu = appMenu;
         mMenuItems = menuItems;
         mInflater = inflater;
         mHighlightedItemId = highlightedItemId;
         mNumMenuItems = menuItems.size();
-        mTranslateMenuItemsOnShow = translateMenuItemsOnShow;
         mDpToPx = inflater.getContext().getResources().getDisplayMetrics().density;
     }
 
@@ -364,17 +362,10 @@ class AppMenuAdapter extends BaseAdapter {
         final int startDelay = ENTER_ITEM_BASE_DELAY_MS + ENTER_ITEM_ADDL_DELAY_MS * position;
 
         AnimatorSet animation = new AnimatorSet();
-        if (mTranslateMenuItemsOnShow) {
-            final float offsetYPx = ENTER_STANDARD_ITEM_OFFSET_Y_DP * mDpToPx;
-            animation.playTogether(ObjectAnimator.ofFloat(view, View.ALPHA, 0.f, 1.f),
-                    ObjectAnimator.ofFloat(view, View.TRANSLATION_Y, offsetYPx, 0.f));
-            animation.setStartDelay(startDelay);
-        } else {
-            animation.playTogether(ObjectAnimator.ofFloat(view, View.ALPHA, 0.f, 1.f));
-            // Start delay is set to make sure disabling the animation in battery saver mode does
-            // not cause the view to stay at alpha 0 on Android O.
-            animation.setStartDelay(ENTER_ITEM_BASE_DELAY_MS);
-        }
+        final float offsetYPx = ENTER_STANDARD_ITEM_OFFSET_Y_DP * mDpToPx;
+        animation.playTogether(ObjectAnimator.ofFloat(view, View.ALPHA, 0.f, 1.f),
+                ObjectAnimator.ofFloat(view, View.TRANSLATION_Y, offsetYPx, 0.f));
+        animation.setStartDelay(startDelay);
         animation.setDuration(ENTER_ITEM_DURATION_MS);
         animation.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
 
