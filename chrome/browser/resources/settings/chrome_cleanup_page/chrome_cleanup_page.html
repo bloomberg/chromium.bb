@@ -2,7 +2,6 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -22,9 +21,6 @@
       #waiting-spinner {
         height: 20px;
         width: 20px;
-      }
-      #learn-more {
-        -webkit-margin-start: 0;
       }
 
       #powered-by-settings-box {
@@ -87,11 +83,6 @@
         <div role="status">[[title_]]</div>
         <div hidden="[[!showExplanation_]]">
           <span class="secondary">[[explanation_]]</span>
-          <a id="learn-more" href="$i18n{chromeCleanupLearnMoreUrl}"
-              on-click="learnMore_" target="_blank"
-              hidden="[[!showLearnMore_]]">
-            $i18n{learnMore}
-          </a>
         </div>
       </div>
       <template is="dom-if" if="[[showActionButton_]]">
@@ -106,9 +97,7 @@
         id="chromeCleanupLogsUploadControl"
         label="$i18n{chromeCleanupLogsUploadPermission}"
         pref="[[logsUploadPref_]]"
-        sub-label="[[getLogsPermissionSubLabel_(
-            '$i18nPolymer{chromeCleanupTitleLogsPermissionExplanation}',
-             userInitiatedCleanupsEnabled_)]]"
+        sub-label="$i18n{chromeCleanupTitleLogsPermissionExplanation}"
         on-settings-boolean-control-change="changeLogsPermission_">
     </settings-toggle-button>
     <div id="show-items-button" class="settings-box" actionable
@@ -123,9 +112,7 @@
       <items-to-remove-list
           id="files-to-remove-list"
           hidden="[[!hasFilesToShow_]]"
-          title-visible="[[userInitiatedCleanupsEnabled_]]"
           title="$i18n{chromeCleanupDetailsFilesAndPrograms}"
-          initially-expanded="[[!userInitiatedCleanupsEnabled_]]"
           items-to-show="[[scannerResults_.files]]">
       </items-to-remove-list>
       <items-to-remove-list

@@ -116,9 +116,6 @@ class ChromeCleanerController {
   // Returns the global controller object.
   static ChromeCleanerController* GetInstance();
 
-  // Returns whether the Cleanup card in settings should be displayed.
-  virtual bool ShouldShowCleanupInSettingsUI() = 0;
-
   virtual State state() const = 0;
   virtual IdleReason idle_reason() const = 0;
 

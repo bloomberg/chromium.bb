@@ -34,14 +34,6 @@ Polymer({
 
     // <if expr="_google_chrome and is_win">
     /** @private */
-    userInitiatedCleanupsEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('userInitiatedCleanupsEnabled');
-      },
-    },
-
-    /** @private */
     showIncompatibleApplications_: {
       type: Boolean,
       value: function() {

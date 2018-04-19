@@ -18,10 +18,7 @@ namespace chrome_cleaner_util {
 
 namespace {
 GURL GetCleanupPageURL() {
-  if (safe_browsing::UserInitiatedCleanupsEnabled())
-    return chrome::GetSettingsUrl(chrome::kCleanupSubPage);
-  else
-    return chrome::GetSettingsUrl("");
+  return chrome::GetSettingsUrl(chrome::kCleanupSubPage);
 }
 }  // namespace
 

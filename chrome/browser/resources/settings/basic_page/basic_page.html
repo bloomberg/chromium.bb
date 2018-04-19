@@ -27,10 +27,6 @@
 <link rel="import" href="../default_browser_page/default_browser_page.html">
 </if>
 
-<if expr="_google_chrome and is_win">
-<link rel="import" href="../chrome_cleanup_page/chrome_cleanup_page.html">
-</if>
-
 <!-- TODO(michaelpg): Rename to something better than "basic" now that this page
      includes both the basic and advanced settings. -->
 <dom-module id="settings-basic-page">
@@ -119,13 +115,6 @@
               section="bluetooth">
             <settings-bluetooth-page prefs="{{prefs}}">
             </settings-bluetooth-page>
-          </settings-section>
-        </template>
-</if>
-<if expr="_google_chrome and is_win">
-        <template is="dom-if" if="[[showChromeCleanup]]" restamp>
-          <settings-section section="chromeCleanup">
-            <settings-chrome-cleanup-page></settings-chrome-cleanup-page>
           </settings-section>
         </template>
 </if>

@@ -29,12 +29,6 @@ cr.define('settings', function() {
     restartComputer() {}
 
     /**
-     * Hides the Cleanup page from the settings menu.
-     * @param {number} source
-     */
-    dismissCleanupPage(source) {}
-
-    /**
      * Updates the cleanup logs upload permission status.
      * @param {boolean} enabled
      */
@@ -90,11 +84,6 @@ cr.define('settings', function() {
     /** @override */
     restartComputer() {
       chrome.send('restartComputer');
-    }
-
-    /** @override */
-    dismissCleanupPage(source) {
-      chrome.send('dismissCleanupPage', [source]);
     }
 
     /** @override */

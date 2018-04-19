@@ -17,14 +17,7 @@ settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
  * TODO(crbug.com/776538): Update the strings to say that some items are only
  *                         changed and not removed.
  *
- * Examples:
- *
- *    <!-- Items list initially expanded. -->
- *    <items-to-remove-list
- *        title="Files and programs:"
- *        initially-expanded="true"
- *        items-to-show="[[filesToShow]]">
- *    </items-to-remove-list>
+ * Example:
  *
  *    <!-- Items list initially shows |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|
  *         items. If there are more than |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|
@@ -39,26 +32,15 @@ Polymer({
   is: 'items-to-remove-list',
 
   properties: {
-    titleVisible: {
-      type: Boolean,
-      value: true,
-    },
-
     title: {
       type: String,
       value: '',
     },
 
     /** @type {!Array<string>} */
-    itemsToShow: Array,
-
-    /**
-     * If true, all items from |itemsToShow| will be presented on the card
-     * by default, and the "show more" link will be omitted.
-     */
-    initiallyExpanded: {
-      type: Boolean,
-      value: false,
+    itemsToShow: {
+      type: Array,
+      observer: 'updateVisibleState_',
     },
 
     /**
@@ -71,10 +53,8 @@ Polymer({
     },
 
     /**
-     * The items to be shown to the user the first time this component is
-     * rendered. If |initiallyExpanded| is true, then it includes all items
-     * from |itemsToShow|. Otherwise, it contains the first
-     * |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items.
+     * The first |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items of |itemsToShow|
+     * if the list is longer than |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|.
      * @private {?Array<string>}
      */
     initialItems_: Array,
@@ -98,8 +78,6 @@ Polymer({
     },
   },
 
-  observers: ['updateVisibleState_(itemsToShow, initiallyExpanded)'],
-
   /** @private */
   expandList_: function() {
     this.expanded_ = true;
@@ -110,24 +88,19 @@ Polymer({
    * Decides which elements will be visible in the card and if the "show more"
    * link will be rendered.
    *
-   * Cases handled:
-   *  1. If |initiallyExpanded|, then all items will be visible.
-   *  2. Otherwise:
-   *     (A) If size(itemsToShow) < CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW, then
-   *         all items will be visible.
-   *     (B) Otherwise, exactly |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1| will
-   *         be visible and the "show more" link will be rendered. The list
-   *         presented to the user will contain exactly
-   *         |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| elements, and the last one
-   *         will be the "show more" link.
+   * 1. If size(itemsToShow) < CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW, then all
+   *    items will be visible.
+   * 2. Otherwise, exactly |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1| will be
+   *    visible and the "show more" link will be rendered. The list presented to
+   *    the user will contain exactly |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|
+   *    elements, and the last one will be the "show more" link.
    *
    * @param {!Array<string>} itemsToShow
-   * @param {boolean} initiallyExpanded
    */
-  updateVisibleState_: function(itemsToShow, initiallyExpanded) {
+  updateVisibleState_: function(itemsToShow) {
     // Start expanded if there are less than
     // |settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items to show.
-    this.expanded_ = initiallyExpanded ||
+    this.expanded_ =
         itemsToShow.length <= settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW;
 
     if (this.expanded_) {

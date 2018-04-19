@@ -13,6 +13,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -210,15 +211,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
 
 #if defined(OS_WIN)
-  bool chromeCleanupEnabled = false;
-  bool userInitiatedCleanupsEnabled = false;
-
   AddSettingsPageUIHandler(std::make_unique<ChromeCleanupHandler>(profile));
-
-  safe_browsing::ChromeCleanerController* cleaner_controller =
-      safe_browsing::ChromeCleanerController::GetInstance();
-  chromeCleanupEnabled = cleaner_controller->ShouldShowCleanupInSettingsUI();
-  userInitiatedCleanupsEnabled = safe_browsing::UserInitiatedCleanupsEnabled();
 
 #if defined(GOOGLE_CHROME_BUILD)
   html_source->AddResourcePath("partner-logo.svg", IDR_CHROME_CLEANUP_PARTNER);
@@ -226,12 +219,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   exclude_from_gzip.push_back("partner-logo.svg");
 #endif
 #endif  // defined(GOOGLE_CHROME_BUILD)
-
-  html_source->AddBoolean("chromeCleanupEnabled", chromeCleanupEnabled);
-  // Don't need to save this variable in UpdateCleanupDataSource() because it
-  // should never change while Chrome is open.
-  html_source->AddBoolean("userInitiatedCleanupsEnabled",
-                          userInitiatedCleanupsEnabled);
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
@@ -348,14 +335,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source);
-
-#if defined(OS_WIN)
-  // This needs to be below content::WebUIDataSource::Add to make sure there
-  // is a WebUIDataSource to update if the observer is immediately notified.
-  cleanup_observer_.reset(
-      new safe_browsing::ChromeCleanerStateChangeObserver(base::Bind(
-          &MdSettingsUI::UpdateCleanupDataSource, base::Unretained(this))));
-#endif  // defined(OS_WIN)
 }
 
 MdSettingsUI::~MdSettingsUI() {
@@ -385,18 +364,5 @@ void MdSettingsUI::DocumentOnLoadCompletedInMainFrame() {
   UMA_HISTOGRAM_TIMES("Settings.LoadCompletedTime.MD",
                       base::Time::Now() - load_start_time_);
 }
-
-#if defined(OS_WIN)
-void MdSettingsUI::UpdateCleanupDataSource(bool cleanupEnabled) {
-  DCHECK(web_ui());
-  Profile* profile = Profile::FromWebUI(web_ui());
-
-  std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
-  update->SetBoolean("chromeCleanupEnabled", cleanupEnabled);
-
-  content::WebUIDataSource::Update(profile, chrome::kChromeUISettingsHost,
-                                   std::move(update));
-}
-#endif  // defined(OS_WIN)
 
 }  // namespace settings

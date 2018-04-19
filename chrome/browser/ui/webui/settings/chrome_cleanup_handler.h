@@ -45,10 +45,6 @@ class ChromeCleanupHandler
   void OnLogsEnabledChanged(bool logs_enabled) override;
 
  private:
-  // Callback for the "dismissCleanupPage" message to hide the Cleanup page
-  // from the settings.
-  void HandleDismiss(const base::ListValue* args);
-
   // Callback for the "registerChromeCleanerObserver" message. This registers
   // this object as an observer of the Chrome Cleanup global state and
   // and retrieves the current cleanup state.
