@@ -41,10 +41,10 @@ DEFINE_BINARY_PROTO_FUZZER(const Input& input) {
   blink::SecureContextMode secure_context_mode =
       secure_context_mode_map[input.secure_context_mode()];
   blink::CSSParserContext::SelectorProfile selector_profile;
-  if (input.is_dynamic_profile())
-    selector_profile = blink::CSSParserContext::kDynamicProfile;
+  if (input.is_live_profile())
+    selector_profile = blink::CSSParserContext::kLiveProfile;
   else
-    selector_profile = blink::CSSParserContext::kStaticProfile;
+    selector_profile = blink::CSSParserContext::kSnapshotProfile;
   blink::CSSParserContext* context = blink::CSSParserContext::Create(
       mode, secure_context_mode, selector_profile);
 

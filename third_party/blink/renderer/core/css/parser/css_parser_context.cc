@@ -28,7 +28,7 @@ CSSParserContext* CSSParserContext::Create(const ExecutionContext& context) {
 
   return new CSSParserContext(
       context.Url(), WTF::TextEncoding(), kHTMLStandardMode, kHTMLStandardMode,
-      kDynamicProfile, referrer, true, false, context.GetSecureContextMode(),
+      kLiveProfile, referrer, true, false, context.GetSecureContextMode(),
       policy_disposition,
       context.IsDocument() ? &ToDocument(context) : nullptr);
 }
@@ -93,7 +93,7 @@ CSSParserContext* CSSParserContext::Create(
 CSSParserContext* CSSParserContext::Create(const Document& document) {
   return CSSParserContext::Create(document, document.BaseURL(),
                                   document.GetReferrerPolicy(),
-                                  WTF::TextEncoding(), kDynamicProfile);
+                                  WTF::TextEncoding(), kLiveProfile);
 }
 
 // static
@@ -107,7 +107,7 @@ CSSParserContext* CSSParserContext::Create(
       document.InQuirksMode() ? kHTMLQuirksMode : kHTMLStandardMode;
   CSSParserMode match_mode;
   HTMLImportsController* imports_controller = document.ImportsController();
-  if (imports_controller && profile == kDynamicProfile) {
+  if (imports_controller && profile == kLiveProfile) {
     match_mode = imports_controller->Master()->InQuirksMode()
                      ? kHTMLQuirksMode
                      : kHTMLStandardMode;

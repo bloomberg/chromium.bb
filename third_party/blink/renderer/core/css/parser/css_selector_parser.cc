@@ -649,7 +649,7 @@ CSSSelector::RelationType CSSSelectorParser::ConsumeCombinator(
     case '>':
       if (!RuntimeEnabledFeatures::
               ShadowPiercingDescendantCombinatorEnabled() ||
-          context_->IsDynamicProfile() ||
+          context_->IsLiveProfile() ||
           range.Peek(1).GetType() != kDelimiterToken ||
           range.Peek(1).Delimiter() != '>') {
         range.ConsumeIncludingWhitespace();
@@ -677,8 +677,8 @@ CSSSelector::RelationType CSSSelectorParser::ConsumeCombinator(
       const CSSParserToken& slash = range.ConsumeIncludingWhitespace();
       if (slash.GetType() != kDelimiterToken || slash.Delimiter() != '/')
         failed_parsing_ = true;
-      return context_->IsDynamicProfile() ? CSSSelector::kShadowDeepAsDescendant
-                                          : CSSSelector::kShadowDeep;
+      return context_->IsLiveProfile() ? CSSSelector::kShadowDeepAsDescendant
+                                       : CSSSelector::kShadowDeep;
     }
 
     default:
