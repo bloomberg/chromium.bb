@@ -15,6 +15,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -77,6 +78,16 @@ const char kKeyPermitAccess[] = "permitAccess";
 
 // Key name of the remote device list in kEasyUnlockPairing.
 const char kKeyDevices[] = "devices";
+
+// The result of a SmartLock operation.
+enum class SmartLockResult { FAILURE = false, SUCCESS = true };
+
+const bool kSmartLockFeatureToggleDisable = false;
+
+void LogToggleFeatureDisableResult(SmartLockResult result) {
+  UMA_HISTOGRAM_BOOLEAN("SmartLock.ToggleFeature.Disable.Result",
+                        static_cast<bool>(result));
+}
 
 }  // namespace
 
@@ -380,6 +391,9 @@ void EasyUnlockServiceRegular::RunTurnOffFlow() {
     return;
   DCHECK(!cryptauth_client_);
 
+  UMA_HISTOGRAM_BOOLEAN("SmartLock.ToggleFeature",
+                        kSmartLockFeatureToggleDisable);
+
   SetTurnOffFlowStatus(PENDING);
 
   std::unique_ptr<cryptauth::CryptAuthClientFactory> factory =
@@ -625,6 +639,8 @@ void EasyUnlockServiceRegular::SetTurnOffFlowStatus(TurnOffFlowStatus status) {
 
 void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
     const cryptauth::ToggleEasyUnlockResponse& response) {
+  LogToggleFeatureDisableResult(SmartLockResult::SUCCESS);
+
   cryptauth_client_.reset();
 
   GetCryptAuthDeviceManager()->ForceSyncNow(
@@ -642,6 +658,7 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
 void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
     const std::string& error_message) {
   LOG(WARNING) << "Failed to turn off Smart Lock: " << error_message;
+  LogToggleFeatureDisableResult(SmartLockResult::FAILURE);
   SetTurnOffFlowStatus(FAIL);
 }
 
