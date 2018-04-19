@@ -57,7 +57,7 @@ void FuzzHeaderFieldValue(
   if (!header_field_value->empty()) {
     header_field_value->push_back(',');
   }
-  // TODO(wangyix): use struct of bools instead of int |i| to generate the
+  // TODO(b/77515496): use struct of bools instead of int |i| to generate the
   // header field value.
   bool is_ietf_format_quic = (i & 1 << 0) != 0;
   if (i & 1 << 0) {
