@@ -11,6 +11,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -97,7 +98,11 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
 
   const gfx::Size& GetRendererSize() const { return dfh_size_dip_; }
   void GetRendererScreenInfo(ScreenInfo* screen_info) const;
+  viz::ScopedSurfaceIdAllocator GetScopedRendererSurfaceIdAllocator(
+      base::OnceCallback<void()> allocation_task);
   const viz::LocalSurfaceId& GetRendererLocalSurfaceId();
+  void UpdateRendererLocalSurfaceIdFromChild(
+      const viz::LocalSurfaceId& child_allocated_local_surface_id);
 
   // Indicate that the recyclable compositor should be destroyed, and no future
   // compositors should be recycled.
@@ -128,6 +133,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   void BeginPauseForFrame(bool auto_resize_enabled);
   void EndPauseForFrame();
   bool ShouldContinueToPauseForFrame() const;
+
+  bool ForceNewSurfaceForTesting();
 
  private:
   // The state of |delegated_frame_host_| and |recyclable_compositor_| to

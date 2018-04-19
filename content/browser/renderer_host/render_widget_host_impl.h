@@ -761,6 +761,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            ChildAllocationAcceptedInParent);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            ConflictingAllocationsResolve);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
+                           ChildAllocationAcceptedInParent);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
+                           ConflictingAllocationsResolve);
   friend class MockRenderWidgetHost;
   friend class TestRenderViewHost;
 

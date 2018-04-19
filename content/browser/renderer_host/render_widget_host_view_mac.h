@@ -433,8 +433,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       blink::WebMouseWheelEvent wheel_event,
       bool should_route_event);
 
-  void OnResizeDueToAutoResizeComplete(const gfx::Size& new_size,
-                                       uint64_t sequence_number);
+  void OnResizeDueToAutoResizeComplete(
+      const gfx::Size& new_size,
+      uint64_t sequence_number,
+      const viz::LocalSurfaceId& child_allocated_local_surface_id);
 
   void OnGotStringForDictionaryOverlay(
       int32_t targetWidgetProcessId,

@@ -576,14 +576,12 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewMac::ResizeDueToAutoResize(
     const gfx::Size& new_size,
     uint64_t sequence_number,
     const viz::LocalSurfaceId& child_local_surface_id) {
-  // TODO(cblume): This doesn't currently suppress allocation.
-  // It maintains existing behavior while using the suppression style.
-  // This will be addressed in a follow-up patch.
-  // See https://crbug.com/805073
   base::OnceCallback<void()> allocation_task =
       base::BindOnce(&RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete,
-                     weak_factory_.GetWeakPtr(), new_size, sequence_number);
-  return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
+                     weak_factory_.GetWeakPtr(), new_size, sequence_number,
+                     child_local_surface_id);
+  return browser_compositor_->GetScopedRendererSurfaceIdAllocator(
+      std::move(allocation_task));
 }
 
 void RenderWidgetHostViewMac::DidNavigate() {
@@ -691,7 +689,10 @@ void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
 
 void RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete(
     const gfx::Size& new_size,
-    uint64_t sequence_number) {
+    uint64_t sequence_number,
+    const viz::LocalSurfaceId& child_allocated_local_surface_id) {
+  browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
+      child_allocated_local_surface_id);
   browser_compositor_->UpdateForAutoResize(new_size);
   host()->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
 }
