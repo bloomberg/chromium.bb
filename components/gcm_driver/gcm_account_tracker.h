@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/gcm_driver/account_tracker.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
-#include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace base {
@@ -33,7 +33,7 @@ class GCMDriver;
 // still logged into the profile, so that in the case that the user is not, we
 // can immediately report that to the GCM and stop messages addressed to that
 // user from ever reaching Chrome.
-class GCMAccountTracker : public gaia::AccountTracker::Observer,
+class GCMAccountTracker : public AccountTracker::Observer,
                           public OAuth2TokenService::Consumer,
                           public GCMConnectionObserver {
  public:
@@ -71,7 +71,7 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
 
   // |account_tracker| is used to deliver information about the accounts present
   // in the browser context to |driver|.
-  GCMAccountTracker(std::unique_ptr<gaia::AccountTracker> account_tracker,
+  GCMAccountTracker(std::unique_ptr<AccountTracker> account_tracker,
                     GCMDriver* driver);
   ~GCMAccountTracker() override;
 
@@ -96,7 +96,7 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   typedef std::map<std::string, AccountInfo> AccountInfos;
 
   // AccountTracker::Observer overrides.
-  void OnAccountSignInChanged(const gaia::AccountIds& ids,
+  void OnAccountSignInChanged(const AccountIds& ids,
                               bool is_signed_in) override;
 
   // OAuth2TokenService::Consumer overrides.
@@ -136,13 +136,13 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   void GetToken(AccountInfos::iterator& account_iter);
 
   // Handling of actual sign in and sign out for accounts.
-  void OnAccountSignedIn(const gaia::AccountIds& ids);
-  void OnAccountSignedOut(const gaia::AccountIds& ids);
+  void OnAccountSignedIn(const AccountIds& ids);
+  void OnAccountSignedOut(const AccountIds& ids);
 
   OAuth2TokenService* GetTokenService();
 
   // Account tracker.
-  std::unique_ptr<gaia::AccountTracker> account_tracker_;
+  std::unique_ptr<AccountTracker> account_tracker_;
 
   // GCM Driver. Not owned.
   GCMDriver* driver_;

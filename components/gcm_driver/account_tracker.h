@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GAIA_ACCOUNT_TRACKER_H_
-#define GOOGLE_APIS_GAIA_ACCOUNT_TRACKER_H_
+#ifndef COMPONENTS_GCM_DRIVER_ACCOUNT_TRACKER_H_
+#define COMPONENTS_GCM_DRIVER_ACCOUNT_TRACKER_H_
 
 #include <map>
 #include <memory>
@@ -21,7 +21,7 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace gaia {
+namespace gcm {
 
 struct AccountIds {
   std::string account_key;  // The account ID used by OAuth2TokenService.
@@ -148,6 +148,6 @@ class AccountIdFetcher : public OAuth2TokenService::Consumer,
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 };
 
-}  // namespace gaia
+}  // namespace gcm
 
-#endif  // GOOGLE_APIS_GAIA_ACCOUNT_TRACKER_H_
+#endif  // COMPONENTS_GCM_DRIVER_ACCOUNT_TRACKER_H_

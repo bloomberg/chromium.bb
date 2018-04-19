@@ -45,7 +45,7 @@ GCMAccountTracker::AccountInfo::~AccountInfo() {
 }
 
 GCMAccountTracker::GCMAccountTracker(
-    std::unique_ptr<gaia::AccountTracker> account_tracker,
+    std::unique_ptr<AccountTracker> account_tracker,
     GCMDriver* driver)
     : OAuth2TokenService::Consumer(kGCMAccountTrackerName),
       account_tracker_(account_tracker.release()),
@@ -69,10 +69,9 @@ void GCMAccountTracker::Start() {
   account_tracker_->AddObserver(this);
   driver_->AddConnectionObserver(this);
 
-  std::vector<gaia::AccountIds> accounts = account_tracker_->GetAccounts();
-  for (std::vector<gaia::AccountIds>::const_iterator iter = accounts.begin();
-       iter != accounts.end();
-       ++iter) {
+  std::vector<AccountIds> accounts = account_tracker_->GetAccounts();
+  for (std::vector<AccountIds>::const_iterator iter = accounts.begin();
+       iter != accounts.end(); ++iter) {
     if (!iter->email.empty()) {
       account_infos_.insert(std::make_pair(
           iter->account_key, AccountInfo(iter->email, TOKEN_NEEDED)));
@@ -101,7 +100,7 @@ void GCMAccountTracker::ScheduleReportTokens() {
       GetTimeToNextTokenReporting());
 }
 
-void GCMAccountTracker::OnAccountSignInChanged(const gaia::AccountIds& ids,
+void GCMAccountTracker::OnAccountSignInChanged(const AccountIds& ids,
                                                bool is_signed_in) {
   if (is_signed_in)
     OnAccountSignedIn(ids);
@@ -183,7 +182,7 @@ void GCMAccountTracker::ReportTokens() {
     return;
   }
 
-  // Wait for gaia::AccountTracker to be done with fetching the user info, as
+  // Wait for AccountTracker to be done with fetching the user info, as
   // well as all of the pending token requests from GCMAccountTracker to be done
   // before you report the results.
   if (!account_tracker_->IsAllUserInfoFetched() ||
@@ -337,7 +336,7 @@ void GCMAccountTracker::GetToken(AccountInfos::iterator& account_iter) {
   account_iter->second.state = GETTING_TOKEN;
 }
 
-void GCMAccountTracker::OnAccountSignedIn(const gaia::AccountIds& ids) {
+void GCMAccountTracker::OnAccountSignedIn(const AccountIds& ids) {
   DVLOG(1) << "Account signed in: " << ids.email;
   AccountInfos::iterator iter = account_infos_.find(ids.account_key);
   if (iter == account_infos_.end()) {
@@ -351,7 +350,7 @@ void GCMAccountTracker::OnAccountSignedIn(const gaia::AccountIds& ids) {
   GetAllNeededTokens();
 }
 
-void GCMAccountTracker::OnAccountSignedOut(const gaia::AccountIds& ids) {
+void GCMAccountTracker::OnAccountSignedOut(const AccountIds& ids) {
   DVLOG(1) << "Account signed out: " << ids.email;
   AccountInfos::iterator iter = account_infos_.find(ids.account_key);
   if (iter == account_infos_.end())
