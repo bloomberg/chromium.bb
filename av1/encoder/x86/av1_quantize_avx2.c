@@ -132,8 +132,8 @@ static INLINE void quantize(const __m256i *thr, const __m256i *qp, __m256i *c,
 }
 
 void av1_quantize_fp_avx2(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                          int skip_block, const int16_t *zbin_ptr,
-                          const int16_t *round_ptr, const int16_t *quant_ptr,
+                          const int16_t *zbin_ptr, const int16_t *round_ptr,
+                          const int16_t *quant_ptr,
                           const int16_t *quant_shift_ptr,
                           tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
                           const int16_t *dequant_ptr, uint16_t *eob_ptr,
@@ -143,15 +143,26 @@ void av1_quantize_fp_avx2(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   (void)quant_shift_ptr;
   const unsigned int step = 16;
 
-  if (LIKELY(!skip_block)) {
-    __m256i qp[3];
-    __m256i coeff, thr;
-    const int log_scale = 0;
+  __m256i qp[3];
+  __m256i coeff, thr;
+  const int log_scale = 0;
 
-    init_qp(round_ptr, quant_ptr, dequant_ptr, log_scale, &thr, qp);
+  init_qp(round_ptr, quant_ptr, dequant_ptr, log_scale, &thr, qp);
+  read_coeff(coeff_ptr, &coeff);
+
+  __m256i eob = _mm256_setzero_si256();
+  quantize(&thr, qp, &coeff, iscan_ptr, qcoeff_ptr, dqcoeff_ptr, &eob);
+
+  coeff_ptr += step;
+  qcoeff_ptr += step;
+  dqcoeff_ptr += step;
+  iscan_ptr += step;
+  n_coeffs -= step;
+
+  update_qp(log_scale, &thr, qp);
+
+  while (n_coeffs > 0) {
     read_coeff(coeff_ptr, &coeff);
-
-    __m256i eob = _mm256_setzero_si256();
     quantize(&thr, qp, &coeff, iscan_ptr, qcoeff_ptr, dqcoeff_ptr, &eob);
 
     coeff_ptr += step;
@@ -159,30 +170,8 @@ void av1_quantize_fp_avx2(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     dqcoeff_ptr += step;
     iscan_ptr += step;
     n_coeffs -= step;
-
-    update_qp(log_scale, &thr, qp);
-
-    while (n_coeffs > 0) {
-      read_coeff(coeff_ptr, &coeff);
-      quantize(&thr, qp, &coeff, iscan_ptr, qcoeff_ptr, dqcoeff_ptr, &eob);
-
-      coeff_ptr += step;
-      qcoeff_ptr += step;
-      dqcoeff_ptr += step;
-      iscan_ptr += step;
-      n_coeffs -= step;
-    }
-    *eob_ptr = quant_gather_eob(eob);
-  } else {
-    do {
-      write_zero(qcoeff_ptr);
-      write_zero(dqcoeff_ptr);
-      qcoeff_ptr += step;
-      dqcoeff_ptr += step;
-      n_coeffs -= step;
-    } while (n_coeffs > 0);
-    *eob_ptr = 0;
   }
+  *eob_ptr = quant_gather_eob(eob);
 }
 
 static INLINE void quantize_32x32(const __m256i *thr, const __m256i *qp,
@@ -219,8 +208,8 @@ static INLINE void quantize_32x32(const __m256i *thr, const __m256i *qp,
 }
 
 void av1_quantize_fp_32x32_avx2(
-    const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
-    const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
+    const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr,
+    const int16_t *round_ptr, const int16_t *quant_ptr,
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
     const int16_t *scan_ptr, const int16_t *iscan_ptr) {
@@ -229,15 +218,26 @@ void av1_quantize_fp_32x32_avx2(
   (void)quant_shift_ptr;
   const unsigned int step = 16;
 
-  if (LIKELY(!skip_block)) {
-    __m256i qp[3];
-    __m256i coeff, thr;
-    const int log_scale = 1;
+  __m256i qp[3];
+  __m256i coeff, thr;
+  const int log_scale = 1;
 
-    init_qp(round_ptr, quant_ptr, dequant_ptr, log_scale, &thr, qp);
+  init_qp(round_ptr, quant_ptr, dequant_ptr, log_scale, &thr, qp);
+  read_coeff(coeff_ptr, &coeff);
+
+  __m256i eob = _mm256_setzero_si256();
+  quantize_32x32(&thr, qp, &coeff, iscan_ptr, qcoeff_ptr, dqcoeff_ptr, &eob);
+
+  coeff_ptr += step;
+  qcoeff_ptr += step;
+  dqcoeff_ptr += step;
+  iscan_ptr += step;
+  n_coeffs -= step;
+
+  update_qp(log_scale, &thr, qp);
+
+  while (n_coeffs > 0) {
     read_coeff(coeff_ptr, &coeff);
-
-    __m256i eob = _mm256_setzero_si256();
     quantize_32x32(&thr, qp, &coeff, iscan_ptr, qcoeff_ptr, dqcoeff_ptr, &eob);
 
     coeff_ptr += step;
@@ -245,31 +245,8 @@ void av1_quantize_fp_32x32_avx2(
     dqcoeff_ptr += step;
     iscan_ptr += step;
     n_coeffs -= step;
-
-    update_qp(log_scale, &thr, qp);
-
-    while (n_coeffs > 0) {
-      read_coeff(coeff_ptr, &coeff);
-      quantize_32x32(&thr, qp, &coeff, iscan_ptr, qcoeff_ptr, dqcoeff_ptr,
-                     &eob);
-
-      coeff_ptr += step;
-      qcoeff_ptr += step;
-      dqcoeff_ptr += step;
-      iscan_ptr += step;
-      n_coeffs -= step;
-    }
-    *eob_ptr = quant_gather_eob(eob);
-  } else {
-    do {
-      write_zero(qcoeff_ptr);
-      write_zero(dqcoeff_ptr);
-      qcoeff_ptr += step;
-      dqcoeff_ptr += step;
-      n_coeffs -= step;
-    } while (n_coeffs > 0);
-    *eob_ptr = 0;
   }
+  *eob_ptr = quant_gather_eob(eob);
 }
 
 static INLINE void quantize_64x64(const __m256i *thr, const __m256i *qp,
@@ -310,8 +287,8 @@ static INLINE void quantize_64x64(const __m256i *thr, const __m256i *qp,
 }
 
 void av1_quantize_fp_64x64_avx2(
-    const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
-    const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
+    const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr,
+    const int16_t *round_ptr, const int16_t *quant_ptr,
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
     const int16_t *scan_ptr, const int16_t *iscan_ptr) {
@@ -320,15 +297,26 @@ void av1_quantize_fp_64x64_avx2(
   (void)quant_shift_ptr;
   const unsigned int step = 16;
 
-  if (LIKELY(!skip_block)) {
-    __m256i qp[3];
-    __m256i coeff, thr;
-    const int log_scale = 2;
+  __m256i qp[3];
+  __m256i coeff, thr;
+  const int log_scale = 2;
 
-    init_qp(round_ptr, quant_ptr, dequant_ptr, log_scale, &thr, qp);
+  init_qp(round_ptr, quant_ptr, dequant_ptr, log_scale, &thr, qp);
+  read_coeff(coeff_ptr, &coeff);
+
+  __m256i eob = _mm256_setzero_si256();
+  quantize_64x64(&thr, qp, &coeff, iscan_ptr, qcoeff_ptr, dqcoeff_ptr, &eob);
+
+  coeff_ptr += step;
+  qcoeff_ptr += step;
+  dqcoeff_ptr += step;
+  iscan_ptr += step;
+  n_coeffs -= step;
+
+  update_qp(log_scale, &thr, qp);
+
+  while (n_coeffs > 0) {
     read_coeff(coeff_ptr, &coeff);
-
-    __m256i eob = _mm256_setzero_si256();
     quantize_64x64(&thr, qp, &coeff, iscan_ptr, qcoeff_ptr, dqcoeff_ptr, &eob);
 
     coeff_ptr += step;
@@ -336,29 +324,6 @@ void av1_quantize_fp_64x64_avx2(
     dqcoeff_ptr += step;
     iscan_ptr += step;
     n_coeffs -= step;
-
-    update_qp(log_scale, &thr, qp);
-
-    while (n_coeffs > 0) {
-      read_coeff(coeff_ptr, &coeff);
-      quantize_64x64(&thr, qp, &coeff, iscan_ptr, qcoeff_ptr, dqcoeff_ptr,
-                     &eob);
-
-      coeff_ptr += step;
-      qcoeff_ptr += step;
-      dqcoeff_ptr += step;
-      iscan_ptr += step;
-      n_coeffs -= step;
-    }
-    *eob_ptr = quant_gather_eob(eob);
-  } else {
-    do {
-      write_zero(qcoeff_ptr);
-      write_zero(dqcoeff_ptr);
-      qcoeff_ptr += step;
-      dqcoeff_ptr += step;
-      n_coeffs -= step;
-    } while (n_coeffs > 0);
-    *eob_ptr = 0;
   }
+  *eob_ptr = quant_gather_eob(eob);
 }
