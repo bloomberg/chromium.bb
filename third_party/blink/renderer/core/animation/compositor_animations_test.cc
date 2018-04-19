@@ -1244,9 +1244,9 @@ namespace {
 
 void UpdateDummyTransformNode(ObjectPaintProperties& properties,
                               CompositingReasons reasons) {
-  properties.UpdateTransform(TransformPaintPropertyNode::Root(),
-                             TransformationMatrix(), FloatPoint3D(), false, 0,
-                             reasons);
+  TransformPaintPropertyNode::State state;
+  state.direct_compositing_reasons = reasons;
+  properties.UpdateTransform(TransformPaintPropertyNode::Root(), state);
 }
 
 void UpdateDummyEffectNode(ObjectPaintProperties& properties,

@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/testing/fake_graphics_layer.h"
 #include "third_party/blink/renderer/platform/testing/fake_graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
@@ -231,10 +232,10 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
 
   IntRect interest_rect(1, 2, 3, 4);
   auto transform_root = TransformPaintPropertyNode::Root();
-  auto transform1 = TransformPaintPropertyNode::Create(
-      transform_root, TransformationMatrix().Translate(10, 20), FloatPoint3D());
-  auto transform2 = TransformPaintPropertyNode::Create(
-      transform1, TransformationMatrix().Scale(2), FloatPoint3D());
+  auto transform1 =
+      CreateTransform(transform_root, TransformationMatrix().Translate(10, 20));
+  auto transform2 =
+      CreateTransform(transform1, TransformationMatrix().Scale(2));
 
   client_.SetPainter([&](const GraphicsLayer* layer, GraphicsContext& context,
                          GraphicsLayerPaintingPhase, const IntRect&) {
@@ -252,8 +253,9 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
     }
   });
 
-  transform1->Update(transform_root, TransformationMatrix().Translate(20, 30),
-                     FloatPoint3D());
+  transform1->Update(transform_root,
+                     TransformPaintPropertyNode::State{
+                         TransformationMatrix().Translate(20, 30)});
   EXPECT_TRUE(transform1->Changed(*transform_root));
   EXPECT_TRUE(transform2->Changed(*transform_root));
   client_.SetNeedsRepaint(true);
