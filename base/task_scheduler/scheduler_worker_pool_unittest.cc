@@ -111,13 +111,13 @@ class TaskSchedulerWorkerPoolTest
     switch (GetParam().pool_type) {
       case PoolType::GENERIC:
         worker_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
-            "TestWorkerPool", "A", ThreadPriority::NORMAL, &task_tracker_,
-            &delayed_task_manager_);
+            "TestWorkerPool", "A", ThreadPriority::NORMAL,
+            task_tracker_.GetTrackedRef(), &delayed_task_manager_);
         break;
 #if defined(OS_WIN)
       case PoolType::WINDOWS:
         worker_pool_ = std::make_unique<PlatformNativeWorkerPoolWin>(
-            &task_tracker_, &delayed_task_manager_);
+            task_tracker_.GetTrackedRef(), &delayed_task_manager_);
         break;
 #endif
     }
@@ -148,11 +148,11 @@ class TaskSchedulerWorkerPoolTest
     }
   }
 
-  std::unique_ptr<SchedulerWorkerPool> worker_pool_;
-
-  TaskTracker task_tracker_ = {"Test"};
   Thread service_thread_;
+  TaskTracker task_tracker_ = {"Test"};
   DelayedTaskManager delayed_task_manager_;
+
+  std::unique_ptr<SchedulerWorkerPool> worker_pool_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolTest);

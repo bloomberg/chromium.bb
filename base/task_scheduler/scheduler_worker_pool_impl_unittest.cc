@@ -84,8 +84,8 @@ class TaskSchedulerWorkerPoolImplTestBase {
     service_thread_.Start();
     delayed_task_manager_.Start(service_thread_.task_runner());
     worker_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
-        "TestWorkerPool", "A", ThreadPriority::NORMAL, &task_tracker_,
-        &delayed_task_manager_);
+        "TestWorkerPool", "A", ThreadPriority::NORMAL,
+        task_tracker_.GetTrackedRef(), &delayed_task_manager_);
     ASSERT_TRUE(worker_pool_);
   }
 
@@ -104,10 +104,10 @@ class TaskSchedulerWorkerPoolImplTestBase {
     StartWorkerPool(suggested_reclaim_time, num_workers);
   }
 
-  std::unique_ptr<SchedulerWorkerPoolImpl> worker_pool_;
-
-  TaskTracker task_tracker_ = {"Test"};
   Thread service_thread_;
+  TaskTracker task_tracker_ = {"Test"};
+
+  std::unique_ptr<SchedulerWorkerPoolImpl> worker_pool_;
 
  private:
   DelayedTaskManager delayed_task_manager_;
@@ -788,8 +788,8 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
       MakeRefCounted<TestSimpleTaskRunner>();
   delayed_task_manager.Start(service_thread_task_runner);
   auto worker_pool = std::make_unique<SchedulerWorkerPoolImpl>(
-      "OnePolicyWorkerPool", "A", ThreadPriority::NORMAL, &task_tracker,
-      &delayed_task_manager);
+      "OnePolicyWorkerPool", "A", ThreadPriority::NORMAL,
+      task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool->Start(SchedulerWorkerPoolParams(8U, TimeDelta::Max()),
                      service_thread_task_runner,
                      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
@@ -809,8 +809,8 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
       MakeRefCounted<TestSimpleTaskRunner>();
   delayed_task_manager.Start(service_thread_task_runner);
   auto worker_pool = std::make_unique<SchedulerWorkerPoolImpl>(
-      "StandbyThreadWorkerPool", "A", ThreadPriority::NORMAL, &task_tracker,
-      &delayed_task_manager);
+      "StandbyThreadWorkerPool", "A", ThreadPriority::NORMAL,
+      task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool->Start(
       SchedulerWorkerPoolParams(kWorkerCapacity, kReclaimTimeForCleanupTests),
       service_thread_task_runner,
@@ -1331,9 +1331,9 @@ TEST(TaskSchedulerWorkerPoolOverWorkerCapacityTest, VerifyCleanup) {
   scoped_refptr<TaskRunner> service_thread_task_runner =
       MakeRefCounted<TestSimpleTaskRunner>();
   delayed_task_manager.Start(service_thread_task_runner);
-  SchedulerWorkerPoolImpl worker_pool("OverWorkerCapacityTestWorkerPool", "A",
-                                      ThreadPriority::NORMAL, &task_tracker,
-                                      &delayed_task_manager);
+  SchedulerWorkerPoolImpl worker_pool(
+      "OverWorkerCapacityTestWorkerPool", "A", ThreadPriority::NORMAL,
+      task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool.Start(
       SchedulerWorkerPoolParams(kWorkerCapacity, kReclaimTimeForCleanupTests),
       service_thread_task_runner,
@@ -1551,9 +1551,9 @@ TEST(TaskSchedulerWorkerPoolTest, MAYBE_RacyCleanup) {
   scoped_refptr<TaskRunner> service_thread_task_runner =
       MakeRefCounted<TestSimpleTaskRunner>();
   delayed_task_manager.Start(service_thread_task_runner);
-  SchedulerWorkerPoolImpl worker_pool("RacyCleanupTestWorkerPool", "A",
-                                      ThreadPriority::NORMAL, &task_tracker,
-                                      &delayed_task_manager);
+  SchedulerWorkerPoolImpl worker_pool(
+      "RacyCleanupTestWorkerPool", "A", ThreadPriority::NORMAL,
+      task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool.Start(SchedulerWorkerPoolParams(kWorkerCapacity,
                                               kReclaimTimeForRacyCleanupTest),
                     service_thread_task_runner,

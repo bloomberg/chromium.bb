@@ -15,6 +15,7 @@
 #include "base/task_scheduler/environment_config.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/single_thread_task_runner_thread_mode.h"
+#include "base/task_scheduler/tracked_ref.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -49,7 +50,7 @@ class SchedulerWorkerDelegate;
 class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
  public:
   SchedulerSingleThreadTaskRunnerManager(
-      TaskTracker* task_tracker,
+      TrackedRef<TaskTracker> task_tracker,
       DelayedTaskManager* delayed_task_manager);
   ~SchedulerSingleThreadTaskRunnerManager();
 
@@ -111,7 +112,7 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
 
   void ReleaseSharedSchedulerWorkers();
 
-  TaskTracker* const task_tracker_;
+  const TrackedRef<TaskTracker> task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;
 
   // Synchronizes access to all members below.

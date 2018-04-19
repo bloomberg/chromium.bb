@@ -260,7 +260,8 @@ TaskTracker::TaskTracker(StringPiece histogram_label,
                                    "UserVisibleTaskPriority_MayBlock")},
           {GetTaskLatencyHistogram(histogram_label, "UserBlockingTaskPriority"),
            GetTaskLatencyHistogram(histogram_label,
-                                   "UserBlockingTaskPriority_MayBlock")}} {
+                                   "UserBlockingTaskPriority_MayBlock")}},
+      tracked_ref_factory_(this) {
   // Confirm that all |task_latency_histograms_| have been initialized above.
   DCHECK(*(&task_latency_histograms_[static_cast<int>(TaskPriority::HIGHEST) +
                                      1][0] -

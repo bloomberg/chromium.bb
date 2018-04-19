@@ -16,6 +16,7 @@
 #include "base/task_scheduler/task_scheduler_impl.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/sequence_local_storage_map.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 
@@ -154,6 +155,10 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
   TaskScheduler::GetInstance()->FlushForTesting();
   TaskScheduler::GetInstance()->Shutdown();
   TaskScheduler::GetInstance()->JoinForTesting();
+  // Destroying TaskScheduler state can result in waiting on worker threads.
+  // Make sure this is allowed to avoid flaking tests that have disallowed waits
+  // on their main thread.
+  ScopedAllowBaseSyncPrimitivesForTesting allow_waits_to_destroy_task_tracker;
   TaskScheduler::SetInstance(nullptr);
 }
 

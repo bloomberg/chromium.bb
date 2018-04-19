@@ -45,7 +45,7 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
     delayed_task_manager_.Start(service_thread_.task_runner());
     single_thread_task_runner_manager_ =
         std::make_unique<SchedulerSingleThreadTaskRunnerManager>(
-            &task_tracker_, &delayed_task_manager_);
+            task_tracker_.GetTrackedRef(), &delayed_task_manager_);
     StartSingleThreadTaskRunnerManagerFromSetUp();
   }
 
@@ -65,14 +65,13 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
     single_thread_task_runner_manager_.reset();
   }
 
+  Thread service_thread_;
+  TaskTracker task_tracker_ = {"Test"};
+  DelayedTaskManager delayed_task_manager_;
   std::unique_ptr<SchedulerSingleThreadTaskRunnerManager>
       single_thread_task_runner_manager_;
-  TaskTracker task_tracker_ = {"Test"};
 
  private:
-  Thread service_thread_;
-  DelayedTaskManager delayed_task_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerSingleThreadTaskRunnerManagerTest);
 };
 

@@ -171,8 +171,9 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
 class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
  public:
   SchedulerWorkerCOMDelegate(const std::string& thread_name,
-                             TaskTracker* task_tracker)
-      : SchedulerWorkerDelegate(thread_name), task_tracker_(task_tracker) {}
+                             TrackedRef<TaskTracker> task_tracker)
+      : SchedulerWorkerDelegate(thread_name),
+        task_tracker_(std::move(task_tracker)) {}
 
   ~SchedulerWorkerCOMDelegate() override { DCHECK(!scoped_com_initializer_); }
 
@@ -254,7 +255,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
 
   bool get_work_first_ = true;
   const scoped_refptr<Sequence> message_pump_sequence_ = new Sequence;
-  TaskTracker* const task_tracker_;
+  const TrackedRef<TaskTracker> task_tracker_;
   std::unique_ptr<win::ScopedCOMInitializer> scoped_com_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerCOMDelegate);
@@ -376,9 +377,10 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
 };
 
 SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunnerManager(
-    TaskTracker* task_tracker,
+    TrackedRef<TaskTracker> task_tracker,
     DelayedTaskManager* delayed_task_manager)
-    : task_tracker_(task_tracker), delayed_task_manager_(delayed_task_manager) {
+    : task_tracker_(std::move(task_tracker)),
+      delayed_task_manager_(delayed_task_manager) {
   DCHECK(task_tracker_);
   DCHECK(delayed_task_manager_);
 #if defined(OS_WIN)

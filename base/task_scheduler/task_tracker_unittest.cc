@@ -1250,7 +1250,7 @@ class WaitAllowedTestThread : public SimpleThread {
 
  private:
   void Run() override {
-    TaskTracker tracker("Test");
+    auto task_tracker = std::make_unique<TaskTracker>("Test");
 
     // Waiting is allowed by default. Expect TaskTracker to disallow it before
     // running a task without the WithBaseSyncPrimitives() trait.
@@ -1260,15 +1260,15 @@ class WaitAllowedTestThread : public SimpleThread {
           EXPECT_DCHECK_DEATH({ internal::AssertBaseSyncPrimitivesAllowed(); });
         }),
         TaskTraits(), TimeDelta());
-    EXPECT_TRUE(tracker.WillPostTask(task_without_sync_primitives));
+    EXPECT_TRUE(task_tracker->WillPostTask(task_without_sync_primitives));
     testing::StrictMock<MockCanScheduleSequenceObserver>
         never_notified_observer;
-    auto sequence_without_sync_primitives = tracker.WillScheduleSequence(
+    auto sequence_without_sync_primitives = task_tracker->WillScheduleSequence(
         test::CreateSequenceWithTask(std::move(task_without_sync_primitives)),
         &never_notified_observer);
     ASSERT_TRUE(sequence_without_sync_primitives);
-    tracker.RunAndPopNextTask(std::move(sequence_without_sync_primitives),
-                              &never_notified_observer);
+    task_tracker->RunAndPopNextTask(std::move(sequence_without_sync_primitives),
+                                    &never_notified_observer);
 
     // Disallow waiting. Expect TaskTracker to allow it before running a task
     // with the WithBaseSyncPrimitives() trait.
@@ -1279,13 +1279,17 @@ class WaitAllowedTestThread : public SimpleThread {
           internal::AssertBaseSyncPrimitivesAllowed();
         }),
         TaskTraits(WithBaseSyncPrimitives()), TimeDelta());
-    EXPECT_TRUE(tracker.WillPostTask(task_with_sync_primitives));
-    auto sequence_with_sync_primitives = tracker.WillScheduleSequence(
+    EXPECT_TRUE(task_tracker->WillPostTask(task_with_sync_primitives));
+    auto sequence_with_sync_primitives = task_tracker->WillScheduleSequence(
         test::CreateSequenceWithTask(std::move(task_with_sync_primitives)),
         &never_notified_observer);
     ASSERT_TRUE(sequence_with_sync_primitives);
-    tracker.RunAndPopNextTask(std::move(sequence_with_sync_primitives),
-                              &never_notified_observer);
+    task_tracker->RunAndPopNextTask(std::move(sequence_with_sync_primitives),
+                                    &never_notified_observer);
+
+    ScopedAllowBaseSyncPrimitivesForTesting
+        allow_wait_in_task_tracker_destructor;
+    task_tracker.reset();
   }
 
   DISALLOW_COPY_AND_ASSIGN(WaitAllowedTestThread);

@@ -16,6 +16,7 @@
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/scheduler_worker_params.h"
 #include "base/task_scheduler/sequence.h"
+#include "base/task_scheduler/tracked_ref.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -94,7 +95,7 @@ class BASE_EXPORT SchedulerWorker
   // Cleanup() must be called before releasing the last external reference.
   SchedulerWorker(ThreadPriority priority_hint,
                   std::unique_ptr<Delegate> delegate,
-                  TaskTracker* task_tracker,
+                  TrackedRef<TaskTracker> task_tracker,
                   const SchedulerLock* predecessor_lock = nullptr,
                   SchedulerBackwardCompatibility backward_compatibility =
                       SchedulerBackwardCompatibility::DISABLED);
@@ -157,7 +158,7 @@ class BASE_EXPORT SchedulerWorker
   const ThreadPriority priority_hint_;
 
   const std::unique_ptr<Delegate> delegate_;
-  TaskTracker* const task_tracker_;
+  const TrackedRef<TaskTracker> task_tracker_;
 
 #if defined(OS_WIN) && !defined(COM_INIT_CHECK_HOOK_ENABLED)
   const SchedulerBackwardCompatibility backward_compatibility_;
