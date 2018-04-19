@@ -42,6 +42,12 @@ var ReportingView = (function() {
   ReportingView.REPORTS_TABLE_ID = 'reporting-view-reports-table';
   ReportingView.REPORTS_TBODY_ID = 'reporting-view-reports-tbody';
 
+  ReportingView.NEL_POLICIES_DISABLED_ID =
+      'reporting-view-nel-policies-disabled';
+  ReportingView.NEL_POLICIES_EMPTY_ID = 'reporting-view-nel-policies-empty';
+  ReportingView.NEL_POLICIES_TABLE_ID = 'reporting-view-nel-policies-table';
+  ReportingView.NEL_POLICIES_TBODY_ID = 'reporting-view-nel-policies-tbody';
+
   cr.addSingletonGetter(ReportingView);
 
   ReportingView.prototype = {
@@ -64,6 +70,7 @@ var ReportingView = (function() {
 
       displayReportDetail_(ensureArray_(reportingInfo.reports));
       displayClientDetail_(ensureArray_(reportingInfo.clients));
+      displayNELPolicyDetail_(reportingInfo.networkErrorLogging);
       return true;
     },
   };
@@ -92,20 +99,18 @@ var ReportingView = (function() {
         timeutil.addNodeWithDate(queuedNode, queuedDate);
       }
 
-      addNodeWithText(tr, 'td', valueOrDefault_(report.url, '[unknown URL]'));
+      addNodeWithText(tr, 'td', report.url);
 
       var statusNode = addNode(tr, 'td');
-      addTextNode(
-          statusNode, valueOrDefault_(report.status, '[unknown status]'));
-      addTextNode(
-          statusNode, ' (' + valueOrDefault_(report.group, '[unknown group]'));
+      addTextNode(statusNode, report.status);
+      addTextNode(statusNode, ' (' + report.group);
       if (report.depth !== undefined && report.depth > 0)
         addTextNode(statusNode, ', depth: ' + report.depth);
       if (report.attempts !== undefined && report.attempts > 0)
         addTextNode(statusNode, ', attempts: ' + report.attempts);
       addTextNode(statusNode, ')');
 
-      addNodeWithText(tr, 'td', valueOrDefault_(report.type, '[unknown type]'));
+      addNodeWithText(tr, 'td', report.type);
 
       var contentNode = addNode(tr, 'td');
       if (report.type == 'network-error')
@@ -157,8 +162,7 @@ var ReportingView = (function() {
         addContentSections_(contentNode, 'Show raw report', 'Hide raw report');
 
     var body = ensureObject_(report.body);
-    addTextNode(
-        contentSections.summary, valueOrDefault_(body.type, '[unknown type]'));
+    addTextNode(contentSections.summary, body.type);
     // Only show the status code if it's present and not 0.
     if (body['status-code'])
       addTextNode(
@@ -194,7 +198,6 @@ var ReportingView = (function() {
     if (empty)
       return;
 
-    var now = new Date();
     for (var i = 0; i < clientList.length; ++i) {
       var client = ensureObject_(clientList[i]);
       var groups = ensureArray_(client.groups);
@@ -222,22 +225,26 @@ var ReportingView = (function() {
           if (j == 0 && k == 0) {
             var originNode = addNode(tr, 'td');
             originNode.setAttribute('rowspan', originHeight);
-            addTextNode(
-                originNode, valueOrDefault_(client.origin, '[unknown origin]'));
+            addTextNode(originNode, client.origin);
           }
 
           if (k == 0) {
             var groupNode = addNode(tr, 'td');
             groupNode.setAttribute('rowspan', group.endpoints.length);
+            addTextNode(groupNode, group.name);
+
+            var subdomainsNode = addNode(tr, 'td');
+            subdomainsNode.classList.add('reporting-centered');
+            subdomainsNode.setAttribute('rowspan', group.endpoints.length);
             addTextNode(
-                groupNode, valueOrDefault_(group.name, '[unknown group]'));
+                subdomainsNode, !!group.includeSubdomains ? 'yes' : 'no');
 
             var expiresNode = addNode(tr, 'td');
             expiresNode.setAttribute('rowspan', group.endpoints.length);
             if (group.expires !== undefined) {
               var expiresDate = timeutil.convertTimeTicksToDate(group.expires);
               timeutil.addNodeWithDate(expiresNode, expiresDate);
-              if (now > expiresDate) {
+              if (expired_(expiresDate)) {
                 var expiredSpan = addNode(expiresNode, 'span');
                 expiredSpan.classList.add('warning-text');
                 addTextNode(expiredSpan, ' [expired]');
@@ -246,9 +253,7 @@ var ReportingView = (function() {
           }
 
           var endpointNode = addNode(tr, 'td');
-          addTextNode(
-              endpointNode,
-              valueOrDefault_(endpoint.url, '[unknown endpoint]'));
+          addTextNode(endpointNode, endpoint.url);
 
           var priorityNode = addNode(tr, 'td');
           priorityNode.classList.add('reporting-centered');
@@ -279,6 +284,87 @@ var ReportingView = (function() {
     } else {
       addTextNode(node, uploads + ' (' + reports + ')');
     }
+  }
+
+  /**
+   * Displays information about each origin that has provided NEL headers.
+   */
+  function displayNELPolicyDetail_(nelInfo) {
+    // Clear the existing content.
+    $(ReportingView.NEL_POLICIES_TBODY_ID).innerHTML = '';
+
+    var disabled = (nelInfo === undefined);
+    setNodeDisplay($(ReportingView.NEL_POLICIES_DISABLED_ID), disabled);
+    if (disabled) {
+      setNodeDisplay($(ReportingView.NEL_POLICIES_EMPTY_ID), false);
+      setNodeDisplay($(ReportingView.NEL_POLICIES_TABLE_ID), false);
+      return;
+    }
+
+    nelInfo = ensureObject_(nelInfo);
+    var policies = ensureArray_(nelInfo.originPolicies);
+    var empty = policies.length == 0;
+    setNodeDisplay($(ReportingView.NEL_POLICIES_EMPTY_ID), empty);
+    setNodeDisplay($(ReportingView.NEL_POLICIES_TABLE_ID), !empty);
+    if (empty)
+      return;
+
+    for (var i = 0; i < policies.length; ++i) {
+      var policy = ensureObject_(policies[i]);
+      var tr = addNode($(ReportingView.NEL_POLICIES_TBODY_ID), 'tr');
+
+      addNodeWithText(tr, 'td', policy.origin);
+
+      var subdomainsNode = addNode(tr, 'td');
+      subdomainsNode.classList.add('reporting-centered');
+      addTextNode(subdomainsNode, !!policy.includeSubdomains ? 'yes' : 'no');
+
+      var expiresNode = addNode(tr, 'td');
+      if (policy.expires !== undefined) {
+        var expiresDate = timeutil.convertTimeTicksToDate(policy.expires);
+        timeutil.addNodeWithDate(expiresNode, expiresDate);
+        if (expired_(expiresDate)) {
+          var expiredSpan = addNode(expiresNode, 'span');
+          expiredSpan.classList.add('warning-text');
+          addTextNode(expiredSpan, ' [expired]');
+        }
+      }
+
+      addNodeWithText(tr, 'td', policy.reportTo);
+
+      var successFractionNode = addNode(tr, 'td');
+      successFractionNode.classList.add('reporting-right-justified');
+      addTextNode(successFractionNode, percent_(policy.successFraction));
+
+      var failureFractionNode = addNode(tr, 'td');
+      failureFractionNode.classList.add('reporting-right-justified');
+      addTextNode(failureFractionNode, percent_(policy.failureFraction));
+    }
+  }
+
+  /**
+   * Returns whether an expiry timestamp has expired.  If we're viewing live
+   * data, uses the actual current time to determine whether it's expired.  If
+   * we're viewing data from a saved log file, uses the timestamp when the file
+   * was recorded.
+   *
+   * @param {Date} expiry An expiry time
+   */
+  function expired_(expiry) {
+    var now;
+    if (MainView.isViewingLoadedLog()) {
+      now = new Date(ClientInfo.numericDate);
+    } else {
+      now = new Date();
+    }
+    return expiry < now;
+  }
+
+  /**
+   * Formats a float fraction as a percentage.
+   */
+  function percent_(fraction) {
+    return (valueOrDefault_(fraction, 0) * 100).toFixed(2) + '%';
   }
 
   function isObject_(value) {

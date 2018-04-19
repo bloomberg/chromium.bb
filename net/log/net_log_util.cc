@@ -43,6 +43,7 @@
 #include "net/url_request/url_request_context.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_service.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
@@ -458,14 +459,22 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
 #if BUILDFLAG(ENABLE_REPORTING)
     ReportingService* reporting_service = context->reporting_service();
     if (reporting_service) {
+      base::Value reporting_dict = reporting_service->StatusAsValue();
+      NetworkErrorLoggingService* network_error_logging_service =
+          context->network_error_logging_service();
+      if (network_error_logging_service) {
+        reporting_dict.SetKey("networkErrorLogging",
+                              network_error_logging_service->StatusAsValue());
+      }
       net_info_dict->SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
-                            reporting_service->StatusAsValue());
+                            std::move(reporting_dict));
     } else {
       base::Value reporting_dict(base::Value::Type::DICTIONARY);
       reporting_dict.SetKey("reportingEnabled", base::Value(false));
       net_info_dict->SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
                             std::move(reporting_dict));
     }
+
 #else   // BUILDFLAG(ENABLE_REPORTING)
     base::Value reporting_dict(base::Value::Type::DICTIONARY);
     reporting_dict.SetKey("reportingEnabled", base::Value(false));

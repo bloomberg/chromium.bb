@@ -2,6 +2,9 @@
 td.reporting-centered {
   text-align: center;
 }
+td.reporting-right-justified {
+  text-align: right;
+}
 td .reporting-content-summary {
 }
 td .reporting-content-expand-button {
@@ -42,6 +45,7 @@ td .reporting-content-detail {
         <tr>
           <th>Origin</th>
           <th>Group</th>
+          <th>Subdomains?</th>
           <th>Expires</th>
           <th>Endpoint</th>
           <th>Priority</th>
@@ -55,6 +59,28 @@ td .reporting-content-detail {
     </table>
     <div id=reporting-view-clients-empty>
       No origins have provided Reporting headers
+    </div>
+
+    <h4>Network Error Logging policies</h4>
+    <table id=reporting-view-nel-policies-table class="styled-table">
+      <thead>
+        <tr>
+          <th>Origin</th>
+          <th>Subdomains?</th>
+          <th>Expires</th>
+          <th>Group</th>
+          <th>Success %</th>
+          <th>Failure %</th>
+        </tr>
+      </thead>
+      <tbody id=reporting-view-nel-policies-tbody>
+      </tbody>
+    </table>
+    <div id=reporting-view-nel-policies-disabled>
+      NEL is disabled
+    </div>
+    <div id=reporting-view-nel-policies-empty>
+      No origins have provided NEL headers
     </div>
   </div>
 </div>

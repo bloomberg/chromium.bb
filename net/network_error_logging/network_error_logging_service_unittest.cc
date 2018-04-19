@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -541,6 +542,50 @@ TEST_F(NetworkErrorLoggingServiceTest, NestedTooDeep) {
   service()->OnRequest(details);
 
   EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
+  base::SimpleTestTickClock clock;
+  service()->SetTickClockForTesting(&clock);
+
+  static const std::string kHeaderSuccessFraction1 =
+      "{\"report-to\":\"group\",\"max-age\":86400,\"success-fraction\":1.0}";
+  service()->OnHeader(kOrigin_, kHeaderSuccessFraction1);
+  service()->OnHeader(kOriginDifferentHost_, kHeader_);
+  service()->OnHeader(kOriginSubdomain_, kHeaderIncludeSubdomains_);
+
+  base::Value actual = service()->StatusAsValue();
+  std::unique_ptr<base::Value> expected = base::test::ParseJson(R"json(
+      {
+        "originPolicies": [
+          {
+            "origin": "https://example.com",
+            "includeSubdomains": false,
+            "expires": "86400000",
+            "reportTo": "group",
+            "successFraction": 1.0,
+            "failureFraction": 1.0,
+          },
+          {
+            "origin": "https://example2.com",
+            "includeSubdomains": false,
+            "expires": "86400000",
+            "reportTo": "group",
+            "successFraction": 0.0,
+            "failureFraction": 1.0,
+          },
+          {
+            "origin": "https://subdomain.example.com",
+            "includeSubdomains": true,
+            "expires": "86400000",
+            "reportTo": "group",
+            "successFraction": 0.0,
+            "failureFraction": 1.0,
+          },
+        ]
+      }
+      )json");
+  EXPECT_EQ(*expected, actual);
 }
 
 }  // namespace

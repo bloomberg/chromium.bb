@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -18,6 +19,7 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log.h"
 #include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/reporting/reporting_service.h"
 #include "url/gurl.h"
@@ -294,6 +296,31 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     }
   }
 
+  base::Value StatusAsValue() const override {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    std::vector<base::Value> policy_list;
+    // We wanted sorted (or at least reproducible) output; luckily, policies_ is
+    // a std::map, and therefore already sorted.
+    for (const auto& origin_and_policy : policies_) {
+      const auto& origin = origin_and_policy.first;
+      const auto& policy = origin_and_policy.second;
+      base::Value policy_dict(base::Value::Type::DICTIONARY);
+      policy_dict.SetKey("origin", base::Value(origin.Serialize()));
+      policy_dict.SetKey("includeSubdomains",
+                         base::Value(policy.include_subdomains));
+      policy_dict.SetKey("reportTo", base::Value(policy.report_to));
+      policy_dict.SetKey(
+          "expires", base::Value(NetLog::TickCountToString(policy.expires)));
+      policy_dict.SetKey("successFraction",
+                         base::Value(policy.success_fraction));
+      policy_dict.SetKey("failureFraction",
+                         base::Value(policy.failure_fraction));
+      policy_list.push_back(std::move(policy_dict));
+    }
+    dict.SetKey("originPolicies", base::Value(std::move(policy_list)));
+    return dict;
+  }
+
  private:
   // NEL Policy set by an origin.
   struct OriginPolicy {
@@ -557,6 +584,11 @@ void NetworkErrorLoggingService::SetReportingService(
 void NetworkErrorLoggingService::SetTickClockForTesting(
     const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
+}
+
+base::Value NetworkErrorLoggingService::StatusAsValue() const {
+  NOTIMPLEMENTED();
+  return base::Value();
 }
 
 NetworkErrorLoggingService::NetworkErrorLoggingService()
