@@ -583,7 +583,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_ScrapedDynamic) {
 }
 
 // Tests the multiple password scraped flow.
-IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
+//
+// Disabled due to flakiness: crbug.com/834703
+IN_PROC_BROWSER_TEST_F(SamlTest, DISABLED_ScrapedMultiple) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
 
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
