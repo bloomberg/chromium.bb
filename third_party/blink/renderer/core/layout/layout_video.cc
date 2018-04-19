@@ -97,14 +97,6 @@ LayoutSize LayoutVideo::CalculateIntrinsicSize() {
       !ImageResource()->ErrorOccurred())
     return cached_image_size_;
 
-  // <video> in standalone media documents should not use the default 300x150
-  // size since they also have audio-only files. By setting the intrinsic
-  // size to 300x1 the video will resize itself in these cases, and audio will
-  // have the correct height (it needs to be > 0 for controls to layout
-  // properly).
-  if (video->ownerDocument() && video->ownerDocument()->IsMediaDocument())
-    return LayoutSize(DefaultSize().Width(), LayoutUnit(1));
-
   return DefaultSize();
 }
 
