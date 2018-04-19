@@ -18,6 +18,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -115,7 +116,10 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
 
         final CharSequence tosAndPrivacyText;
         Bundle freProperties = getPageDelegate().getProperties();
-        if (freProperties.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT)) {
+        @ChildAccountStatus.Status
+        int childAccountStatus = freProperties.getInt(
+                AccountFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
+        if (childAccountStatus == ChildAccountStatus.REGULAR_CHILD) {
             tosAndPrivacyText =
                     SpanApplier.applySpans(getString(R.string.fre_tos_and_privacy_child_account),
                             new SpanInfo("<LINK1>", "</LINK1>", clickableTermsSpan),
