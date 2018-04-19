@@ -78,7 +78,9 @@ class TransferCacheTest : public testing::TestWithParam<bool> {
 
   gpu::raster::RasterInterface* ri() { return context_->GetImplementation(); }
 
-  gpu::ContextSupport* ContextSupport() { return context_->ContextSupport(); }
+  gpu::ContextSupport* ContextSupport() {
+    return context_->GetContextSupport();
+  }
 
   const ClientRawMemoryTransferCacheEntry& test_client_entry() const {
     return test_client_entry_;

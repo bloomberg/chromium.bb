@@ -54,7 +54,7 @@ class RasterInProcessContext {
   // RasterInProcessContext can be used without making it current.
   raster::RasterInterface* GetImplementation();
 
-  ContextSupport* ContextSupport();
+  ContextSupport* GetContextSupport();
 
   // Test only functions.
   ServiceTransferCache* GetTransferCacheForTest() const;
