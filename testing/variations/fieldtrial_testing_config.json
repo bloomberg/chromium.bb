@@ -2970,10 +2970,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_bg_limit_3_1",
+                    "name": "Enabled_bg_limit_3_2",
                     "params": {
                         "bg_limit": "3",
-                        "bg_sub_limit": "1"
+                        "bg_sub_limit": "2"
                     },
                     "enable_features": [
                         "ResourceLoadScheduler"
