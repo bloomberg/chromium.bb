@@ -4446,6 +4446,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // discard pending navigation items.
   if ((!self.webStateImpl ||
        !self.webStateImpl->GetNavigationManagerImpl().GetVisibleItem()) &&
+      _stoppedWKNavigation &&
       [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
       error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
     // App is going to crash in this state (crbug.com/565457). Crash will occur
