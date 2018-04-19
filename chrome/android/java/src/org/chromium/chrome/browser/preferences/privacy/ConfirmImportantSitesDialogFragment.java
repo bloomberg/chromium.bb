@@ -16,8 +16,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,7 +26,6 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
@@ -37,6 +34,7 @@ import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 import java.util.ArrayList;
@@ -57,8 +55,6 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
     private class ClearBrowsingDataAdapter extends ArrayAdapter<String>
             implements AdapterView.OnItemClickListener {
         private final String[] mDomains;
-        private final String[] mFaviconURLs;
-        private final int mCornerRadius;
         private final int mFaviconSize;
         private RoundedIconGenerator mIconGenerator;
 
@@ -68,12 +64,7 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
             mDomains = domains;
             mFaviconURLs = faviconURLs;
             mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
-            mCornerRadius = resources.getDimensionPixelSize(R.dimen.default_favicon_corner_radius);
-            int textSize = resources.getDimensionPixelSize(R.dimen.default_favicon_icon_text_size);
-            int iconColor = ApiCompatibilityUtils.getColor(
-                    resources, R.color.default_favicon_background_color);
-            mIconGenerator = new RoundedIconGenerator(
-                    mFaviconSize, mFaviconSize, mCornerRadius, iconColor, textSize);
+            mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(false);
         }
 
         @Override
@@ -138,11 +129,9 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
                 icon = mIconGenerator.generateIconForUrl(url);
                 return new BitmapDrawable(getResources(), icon);
             } else {
-                RoundedBitmapDrawable roundedIcon =
-                        RoundedBitmapDrawableFactory.create(getResources(),
-                                Bitmap.createScaledBitmap(icon, mFaviconSize, mFaviconSize, false));
-                roundedIcon.setCornerRadius(mCornerRadius);
-                return roundedIcon;
+                return ViewUtils.createRoundedBitmapDrawable(
+                        Bitmap.createScaledBitmap(icon, mFaviconSize, mFaviconSize, false),
+                        ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
             }
         }
     }
