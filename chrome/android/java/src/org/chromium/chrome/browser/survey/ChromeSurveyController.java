@@ -18,6 +18,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
@@ -31,6 +32,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.lang.annotation.Retention;
@@ -135,7 +137,10 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
                 onSurveyAvailable(siteId);
             }
         };
-        surveyController.downloadSurvey(context, siteId, onSuccessRunnable, null);
+
+        String siteContext = String.format(
+                "Is Modern Design Enabled? %s", FeatureUtilities.isChromeModernDesignEnabled());
+        surveyController.downloadSurvey(context, siteId, onSuccessRunnable, siteContext);
     }
 
     private String getSiteId() {
@@ -312,6 +317,10 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
         }
 
         int maxNumber = getMaxNumber();
+        if (FeatureUtilities.isChromeModernDesignEnabled()) {
+            maxNumber = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.CHROME_MODERN_DESIGN, MAX_NUMBER, maxNumber);
+        }
         if (maxNumber == -1) {
             recordSurveyFilteringResult(FilteringResult.MAX_NUMBER_MISSING);
             return false;
