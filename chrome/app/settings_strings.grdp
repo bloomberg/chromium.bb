@@ -362,8 +362,29 @@
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_RATE" desc="The rate (speed) of speech in text-to-speech settings.">
       Rate
     </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_RATE_MINIMUM_LABEL" desc="A label for the minimum side of a slider allowing users to change their text-to-speech speech rate">
+      Slowest
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_RATE_MAXIMUM_LABEL" desc="A label for the maximum side of a slider allowing users to change their text-to-speech speech rate">
+      Fastest
+    </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PITCH" desc="The pitch of speech in text-to-speech settings.">
       Pitch
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PITCH_MINIMUM_LABEL" desc="A label for the minimum side of a slider allowing users to change their text-to-speech speech pitch">
+      Lowest
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PITCH_MAXIMUM_LABEL" desc="A label for the maximum side of a slider allowing users to change their text-to-speech speech pitch">
+      Highest
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_VOLUME" desc="The volume of speech compared to system volume in text-to-speech settings.">
+      Volume
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_VOLUME_MINIMUM_LABEL" desc="A label for the minimum side of a slider allowing users to change their text-to-speech speech volume">
+      Quietest
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_VOLUME_MAXIMUM_LABEL" desc="A label for the maximum side of a slider allowing users to change their text-to-speech speech volume">
+      Loudest
     </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_HEADING" desc="The heading for a section of the text-to-speech settings page where a user can preview text to speech">
       Preview

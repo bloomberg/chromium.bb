@@ -304,6 +304,16 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[ash::prefs::kAccessibilityMonoAudioEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Text to Speech.
+  (*s_whitelist)[::prefs::kTextToSpeechLangToVoiceName] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)[::prefs::kTextToSpeechRate] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kTextToSpeechPitch] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kTextToSpeechVolume] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+
   // Android Apps.
   (*s_whitelist)[arc::prefs::kArcEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

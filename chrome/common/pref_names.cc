@@ -820,6 +820,26 @@ const char kMinimumAllowedChromeVersion[] = "minimum_req.version";
 const char kShowSyncSettingsOnSessionStart[] =
     "start_sync_settings_on_session_start";
 
+// Dictionary preference that maps language to default voice name preferences
+// for the users's text-to-speech settings. For example, this might map
+// 'en-US' to 'Chrome OS US English'.
+const char kTextToSpeechLangToVoiceName[] = "settings.tts.lang_to_voice_name";
+
+// Double preference that controls the default text-to-speech voice rate,
+// where 1.0 is an unchanged rate, and for example, 0.5 is half as fast,
+// and 2.0 is twice as fast.
+const char kTextToSpeechRate[] = "settings.tts.speech_rate";
+
+// Double preference that controls the default text-to-speech voice pitch,
+// where 1.0 is unchanged, and for example 0.5 is lower, and 2.0 is
+// higher-pitched.
+const char kTextToSpeechPitch[] = "settings.tts.speech_pitch";
+
+// Double preference that controls the default text-to-speech voice volume
+// relative to the system volume, where lower than 1.0 is quieter than the
+// system volume, and higher than 1.0 is louder.
+const char kTextToSpeechVolume[] = "settings.tts.speech_volume";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

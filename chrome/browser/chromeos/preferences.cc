@@ -413,6 +413,20 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kCastReceiverEnabled, false);
   registry->RegisterBooleanPref(prefs::kShowSyncSettingsOnSessionStart, false);
+
+  // Text-to-speech prefs.
+  registry->RegisterDictionaryPref(
+      prefs::kTextToSpeechLangToVoiceName,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterDoublePref(
+      prefs::kTextToSpeechRate, 1.0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterDoublePref(
+      prefs::kTextToSpeechPitch, 1.0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterDoublePref(
+      prefs::kTextToSpeechVolume, 1.0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

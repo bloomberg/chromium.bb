@@ -271,6 +271,10 @@ extern const char kInstantTetheringBleAdvertisingSupported[];
 extern const char kCastReceiverEnabled[];
 extern const char kMinimumAllowedChromeVersion[];
 extern const char kShowSyncSettingsOnSessionStart[];
+extern const char kTextToSpeechLangToVoiceName[];
+extern const char kTextToSpeechRate[];
+extern const char kTextToSpeechPitch[];
+extern const char kTextToSpeechVolume[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
