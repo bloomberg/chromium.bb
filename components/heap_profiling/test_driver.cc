@@ -68,6 +68,9 @@ bool RenderersAreBeingProfiled(
   size_t renderer_count = 0;
   for (auto iter = content::RenderProcessHost::AllHostsIterator();
        !iter.IsAtEnd(); iter.Advance()) {
+    if (iter.GetCurrentValue()->GetProcess().Handle() ==
+        base::kNullProcessHandle)
+      continue;
     base::ProcessId pid = iter.GetCurrentValue()->GetProcess().Pid();
     if (std::find(profiled_pids.begin(), profiled_pids.end(), pid) ==
         profiled_pids.end()) {

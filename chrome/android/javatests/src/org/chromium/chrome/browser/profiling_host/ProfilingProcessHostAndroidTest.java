@@ -60,15 +60,13 @@ public class ProfilingProcessHostAndroidTest {
     // Non-browser processes must be profiled with a command line flag, since
     // otherwise, profiling will start after the relevant processes have been
     // created, thus that process will be not be profiled.
-    // TODO(erikchen): Re-enable after fixing flakiness.
-    // https://crbug.com/833590.
-    // @Test
-    // @MediumTest
-    // @CommandLineFlags.Add({"memlog=all-renderers", "memlog-stack-mode=pseudo"})
-    // public void testModeRendererPseudo() throws Exception {
-    //     HeapProfilingTestShim shim = new HeapProfilingTestShim();
-    //     Assert.assertTrue(shim.runTestForMode("all-renderers", false, "pseudo", false, false));
-    // }
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"memlog=all-renderers", "memlog-stack-mode=pseudo"})
+    public void testModeRendererPseudo() throws Exception {
+        HeapProfilingTestShim shim = new HeapProfilingTestShim();
+        Assert.assertTrue(shim.runTestForMode("all-renderers", false, "pseudo", false, false));
+    }
 
     @Test
     @MediumTest
