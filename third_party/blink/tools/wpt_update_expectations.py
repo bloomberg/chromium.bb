@@ -7,7 +7,7 @@ import sys
 
 from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 from webkitpy.common import host
-from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
+from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 
 
 if __name__ == "__main__":

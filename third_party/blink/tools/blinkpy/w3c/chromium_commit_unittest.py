@@ -7,7 +7,7 @@ import unittest
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.executive_mock import MockExecutive, mock_git_commands
-from webkitpy.w3c.chromium_commit import ChromiumCommit
+from blinkpy.w3c.chromium_commit import ChromiumCommit
 
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 

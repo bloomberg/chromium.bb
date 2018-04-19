@@ -28,7 +28,7 @@
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive, ScriptError
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.w3c.test_copier import TestCopier
+from blinkpy.w3c.test_copier import TestCopier
 from webkitpy.common.system.log_testing import LoggingTestCase
 
 

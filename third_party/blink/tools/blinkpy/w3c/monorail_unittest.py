@@ -4,7 +4,7 @@
 
 import unittest
 
-from webkitpy.w3c.monorail import MonorailAPI, MonorailIssue
+from blinkpy.w3c.monorail import MonorailAPI, MonorailIssue
 
 
 class MonorailIssueTest(unittest.TestCase):

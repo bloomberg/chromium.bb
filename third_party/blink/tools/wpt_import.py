@@ -8,13 +8,10 @@
 import os
 import sys
 
-# Without abspath(), PathFinder can't find chromium_base correctly.
-sys.path.append(os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..',
-                 'WebKit', 'Tools', 'Scripts')))
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 from webkitpy.common import exit_codes
 from webkitpy.common.host import Host
-from webkitpy.w3c.test_importer import TestImporter
+from blinkpy.w3c.test_importer import TestImporter
 
 
 def main():

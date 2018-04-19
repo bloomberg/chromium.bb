@@ -31,12 +31,13 @@ import logging
 import optparse
 import traceback
 
+from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
 from webkitpy.common import exit_codes
 from webkitpy.common.host import Host
 from webkitpy.common.system.log_utils import configure_logging
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.port.factory import platform_options
-from webkitpy.w3c.wpt_manifest import WPTManifest
+from blinkpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 

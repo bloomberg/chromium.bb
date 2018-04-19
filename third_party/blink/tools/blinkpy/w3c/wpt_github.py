@@ -10,7 +10,7 @@ import urllib2
 from collections import namedtuple
 
 from webkitpy.common.memoized import memoized
-from webkitpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME, EXPORT_PR_LABEL
+from blinkpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME, EXPORT_PR_LABEL
 
 _log = logging.getLogger(__name__)
 API_BASE = 'https://api.github.com'

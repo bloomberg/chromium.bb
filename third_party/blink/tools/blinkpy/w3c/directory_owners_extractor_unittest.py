@@ -5,7 +5,7 @@
 import unittest
 
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 
 
 ABS_WPT_BASE = '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'

@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from webkitpy.w3c.chromium_finder import absolute_chromium_dir, absolute_chromium_wpt_dir
-from webkitpy.w3c.common import is_file_exportable
+from blinkpy.w3c.chromium_finder import absolute_chromium_dir, absolute_chromium_wpt_dir
+from blinkpy.w3c.common import is_file_exportable
 from webkitpy.common.system.executive import ScriptError
 
 

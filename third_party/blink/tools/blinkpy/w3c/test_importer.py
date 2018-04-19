@@ -23,15 +23,15 @@ from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.log_utils import configure_logging
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
-from webkitpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable
-from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
-from webkitpy.w3c.import_notifier import ImportNotifier
-from webkitpy.w3c.local_wpt import LocalWPT
-from webkitpy.w3c.test_copier import TestCopier
-from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
-from webkitpy.w3c.wpt_github import WPTGitHub
-from webkitpy.w3c.wpt_manifest import WPTManifest
+from blinkpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
+from blinkpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable
+from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from blinkpy.w3c.import_notifier import ImportNotifier
+from blinkpy.w3c.local_wpt import LocalWPT
+from blinkpy.w3c.test_copier import TestCopier
+from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
+from blinkpy.w3c.wpt_github import WPTGitHub
+from blinkpy.w3c.wpt_manifest import WPTManifest
 
 # Settings for how often to check try job results and how long to wait.
 POLL_DELAY_SECONDS = 2 * 60

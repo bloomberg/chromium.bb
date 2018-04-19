@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from webkitpy.w3c.chromium_commit import ChromiumCommit
-from webkitpy.w3c.chromium_finder import absolute_chromium_dir
-from webkitpy.w3c.common import CHROMIUM_WPT_DIR
+from blinkpy.w3c.chromium_commit import ChromiumCommit
+from blinkpy.w3c.chromium_finder import absolute_chromium_dir
+from blinkpy.w3c.common import CHROMIUM_WPT_DIR
 
 
 DEFAULT_COMMIT_HISTORY_WINDOW = 5000

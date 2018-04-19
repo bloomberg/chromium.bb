@@ -7,9 +7,9 @@ import json
 import unittest
 
 from webkitpy.common.host_mock import MockHost
-from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
-from webkitpy.w3c.common import EXPORT_PR_LABEL
-from webkitpy.w3c.wpt_github import MAX_PR_HISTORY_WINDOW, GitHubError, MergeError, PullRequest, WPTGitHub
+from blinkpy.w3c.chromium_commit_mock import MockChromiumCommit
+from blinkpy.w3c.common import EXPORT_PR_LABEL
+from blinkpy.w3c.wpt_github import MAX_PR_HISTORY_WINDOW, GitHubError, MergeError, PullRequest, WPTGitHub
 
 
 class WPTGitHubTest(unittest.TestCase):

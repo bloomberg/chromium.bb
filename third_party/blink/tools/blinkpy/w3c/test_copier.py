@@ -35,7 +35,7 @@ import logging
 
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
-from webkitpy.w3c.common import is_basename_skipped
+from blinkpy.w3c.common import is_basename_skipped
 
 _log = logging.getLogger(__name__)
 

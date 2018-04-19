@@ -15,11 +15,11 @@ from webkitpy.common.system.executive_mock import MockCall
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
-from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
-from webkitpy.w3c.local_wpt import LocalWPT
-from webkitpy.w3c.local_wpt_mock import MockLocalWPT
-from webkitpy.w3c.test_importer import TestImporter, ROTATIONS_URL, TBR_FALLBACK
-from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
+from blinkpy.w3c.chromium_commit_mock import MockChromiumCommit
+from blinkpy.w3c.local_wpt import LocalWPT
+from blinkpy.w3c.local_wpt_mock import MockLocalWPT
+from blinkpy.w3c.test_importer import TestImporter, ROTATIONS_URL, TBR_FALLBACK
+from blinkpy.w3c.wpt_github_mock import MockWPTGitHub
 
 
 class TestImporterTest(LoggingTestCase):
