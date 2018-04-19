@@ -10351,6 +10351,9 @@
           'allow-user-initiated-powerwash': {
             'type': 'boolean',
           },
+          'allow-user-initiated-preserve-device-state': {
+            'type': 'boolean',
+          },
         },
       },
       'features': {
@@ -10358,7 +10361,8 @@
         'per_profile': False,
       },
       'example_value': {
-        'allow-user-initiated-powerwash': True
+        'allow-user-initiated-powerwash': True,
+        'allow-user-initiated-preserve-device-state': True,
       },
       'caption': '''Configure <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update behavior''',
       'tags': [],
@@ -10367,6 +10371,8 @@
       Individual settings can be specified in JSON properties:
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH">allow-user-initiated-powerwash</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE">true</ph>, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE">allow-user-initiated-preserve-device-state</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE">true</ph>, users will be able to invoke the <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update flow that preserves device-wide state (including enterprise enrollment), but loses user data. This update flow is available starting from version 68.
 
       If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update functionality will not be available.''',
     },
