@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.content.res.Resources.Theme;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -16,6 +17,7 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.text.BidiFormatter;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -176,7 +178,14 @@ public class SuggestionsBinder {
 
         // Temporarily set placeholder and then fetch the thumbnail from a provider.
         mThumbnailView.setBackground(null);
-        if (SuggestionsConfig.useModernLayout()
+        if (mSuggestion.isContextual()) {
+            Resources res = mThumbnailView.getResources();
+            Theme theme = mThumbnailView.getContext().getTheme();
+            mThumbnailView.setImageDrawable(VectorDrawableCompat.create(
+                    res, R.drawable.contextual_suggestions_placeholder, theme));
+            mThumbnailView.setBackgroundColor(ApiCompatibilityUtils.getColor(
+                    res, R.color.contextual_suggestions_thumbnail_bg_color));
+        } else if (SuggestionsConfig.useModernLayout()
                 && ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR)) {
             ColorDrawable colorDrawable =

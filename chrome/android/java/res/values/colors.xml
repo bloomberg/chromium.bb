@@ -201,5 +201,6 @@
     <color name="bottom_system_nav_color">@android:color/white</color>
     <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
     <color name="search_box_hint">@color/black_alpha_54</color>
+    <color name="contextual_suggestions_thumbnail_bg_color">#DADCE0</color>
 
 </resources>
