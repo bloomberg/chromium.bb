@@ -10,6 +10,8 @@
     $random = $_GET["random"];
     $cached = $_GET["cached"];
     $nosniff = $_GET["nosniff"];
+    $download = $_GET["download"];
+    $mime_type = $_GET["mime_type"];
 
     # Wait before sending response
     if ($wait)
@@ -49,6 +51,12 @@
 
     if ($nosniff)
         header("x-content-type-options: nosniff");
+
+    if ($download)
+        header("Content-Disposition: attachment; filename=hello.txt");
+
+    if ($mime_type)
+        header("Content-type: " . $mime_type);
 
     # Flush headers and sleep bofore sending response
     if ($send) {

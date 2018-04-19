@@ -10,7 +10,7 @@
 namespace content {
 
 InterceptedRequestInfo::InterceptedRequestInfo()
-    : response_error_code(net::OK) {}
+    : is_navigation(false), response_error_code(net::OK) {}
 
 InterceptedRequestInfo::~InterceptedRequestInfo() = default;
 

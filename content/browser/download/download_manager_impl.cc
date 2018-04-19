@@ -308,7 +308,8 @@ base::FilePath GetTemporaryDownloadDirectory() {
 
 scoped_refptr<download::DownloadURLLoaderFactoryGetter>
 CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
-                                     RenderFrameHost* rfh) {
+                                     RenderFrameHost* rfh,
+                                     bool has_suggested_filename) {
   network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info;
   network::mojom::URLLoaderFactoryRequest proxy_factory_request;
   if (rfh) {
@@ -317,7 +318,7 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
         MakeRequest(&devtools_factory_ptr_info);
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
             static_cast<RenderFrameHostImpl*>(rfh), true,
-            &devtools_factory_request)) {
+            has_suggested_filename, &devtools_factory_request)) {
       proxy_factory_ptr_info = std::move(devtools_factory_ptr_info);
       proxy_factory_request = std::move(devtools_factory_request);
     }
@@ -1269,8 +1270,9 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
                      tab_referrer_url, std::move(url_chain), suggested_filename,
                      std::move(response), std::move(cert_status),
                      std::move(url_loader_client_endpoints),
-                     CreateDownloadURLLoaderFactoryGetter(storage_partition,
-                                                          render_frame_host),
+                     CreateDownloadURLLoaderFactoryGetter(
+                         storage_partition, render_frame_host,
+                         suggested_filename.has_value()),
                      base::MessageLoop::current()->task_runner()));
 }
 
@@ -1347,8 +1349,8 @@ void DownloadManagerImpl::BeginDownloadInternal(
           base::MakeRefCounted<BlobDownloadURLLoaderFactoryGetter>(
               params->url(), std::move(blob_data_handle));
     } else {
-      url_loader_factory_getter =
-          CreateDownloadURLLoaderFactoryGetter(storage_partition, rfh);
+      url_loader_factory_getter = CreateDownloadURLLoaderFactoryGetter(
+          storage_partition, rfh, !params->suggested_name().empty());
     }
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

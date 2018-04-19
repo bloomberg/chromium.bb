@@ -21,6 +21,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/navigation_loader_util.h"
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -69,7 +70,6 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/common/mime_util/mime_util.h"
 
 namespace content {
 
@@ -144,58 +144,12 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
         "combination of both) limits the scope of these requests."
       )");
 
-// TODO(arthursonzogni): IsDownload can't be determined only by the response's
-// headers. The response's body might contain information to guess it.
-// See MimeSniffingResourceHandler.
-bool IsDownload(const network::ResourceResponse& response,
-                const GURL& url,
-                const std::vector<GURL>& url_chain,
-                const base::Optional<url::Origin>& initiator_origin,
-                const base::Optional<std::string>& suggested_filename) {
-  if (response.head.headers) {
-    GURL url_chain_back = url_chain.empty() ? url : url_chain.back();
-    bool is_cross_origin =
-        (initiator_origin.has_value() && !url_chain_back.SchemeIsBlob() &&
-         !url_chain_back.SchemeIsFileSystem() &&
-         !url_chain_back.SchemeIs(url::kAboutScheme) &&
-         !url_chain_back.SchemeIs(url::kDataScheme) &&
-         initiator_origin->GetURL() != url_chain_back.GetOrigin());
-
-    std::string disposition;
-    if (response.head.headers->GetNormalizedHeader("content-disposition",
-                                                   &disposition) &&
-        !disposition.empty() &&
-        net::HttpContentDisposition(disposition, std::string())
-            .is_attachment()) {
-      return true;
-    } else if (suggested_filename.has_value() && !is_cross_origin) {
-      return true;
-    } else if (GetContentClient()->browser()->ShouldForceDownloadResource(
-                   url, response.head.mime_type)) {
-      return true;
-    } else if (response.head.mime_type == "multipart/related" ||
-               response.head.mime_type == "message/rfc822") {
-      // TODO(https://crbug.com/790734): retrieve the new NavigationUIData from
-      // the request and and pass it to AllowRenderingMhtmlOverHttp().
-      return !GetContentClient()->browser()->AllowRenderingMhtmlOverHttp(
-          nullptr);
-    }
-    // TODO(qinmin): Check whether this is special-case user script that needs
-    // to be downloaded.
-  }
-
-  if (blink::IsSupportedMimeType(response.head.mime_type))
-    return false;
-
-  // TODO(qinmin): Check whether there is a plugin handler.
-
-  if (suggested_filename.has_value()) {
-    download::RecordDownloadCount(
-        download::CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
-  }
-
-  return (!response.head.headers ||
-          response.head.headers->response_code() / 100 == 2);
+bool HasContentDispositionAttachment(const net::HttpResponseHeaders& headers) {
+  std::string disposition;
+  return headers.GetNormalizedHeader("content-disposition", &disposition) &&
+         !disposition.empty() &&
+         net::HttpContentDisposition(disposition, std::string())
+             .is_attachment();
 }
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
@@ -848,9 +802,18 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     bool is_stream;
     std::unique_ptr<NavigationData> cloned_navigation_data;
     if (IsLoaderInterceptionEnabled()) {
+      DCHECK(url_chain_.empty() || url_ == url_chain_.back());
+      bool is_cross_origin =
+          navigation_loader_util::IsCrossOriginRequest(url_, initiator_origin_);
       is_download = !response_intercepted &&
-                    IsDownload(*response.get(), url_, url_chain_,
-                               initiator_origin_, suggested_filename_);
+                    navigation_loader_util::IsDownload(
+                        url_, head.headers.get(), head.mime_type,
+                        suggested_filename_.has_value(), is_cross_origin);
+      if (is_download && suggested_filename_.has_value() && is_cross_origin &&
+          (!head.headers || !HasContentDispositionAttachment(*head.headers))) {
+        download::RecordDownloadCount(
+            download::CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
+      }
       is_stream = false;
     } else {
       ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
@@ -1222,7 +1185,9 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
         frame_tree_node->current_frame_host(), true /* is_navigation */,
         &factory_request);
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
-            frame_tree_node->current_frame_host(), true, &factory_request)) {
+            frame_tree_node->current_frame_host(), true,
+            request_info->common_params.suggested_filename.has_value(),
+            &factory_request)) {
       use_proxy = true;
     }
     if (use_proxy) {
