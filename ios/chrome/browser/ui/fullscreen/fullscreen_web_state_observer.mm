@@ -13,6 +13,7 @@
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -88,8 +89,10 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   web_state->GetWebViewProxy().shouldUseViewContentInset =
       force_content_inset ||
       web_state->GetContentsMimeType() == "application/pdf";
-  // Reset the model so that the toolbar is visible for the new page.
-  model_->ResetForNavigation();
+  // Reset the model so that the toolbar is visible when navigating to a new
+  // document.
+  if (!navigation_context->IsSameDocument())
+    model_->ResetForNavigation();
   // Disable fullscreen if there is a problem with the SSL status.
   SetDisableFullscreenForSSL(ShouldDisableFullscreenForWebStateSSL(web_state));
 }

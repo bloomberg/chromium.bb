@@ -69,6 +69,19 @@ TEST_F(FullscreenWebStateObserverTest, ResetForNavigation) {
   EXPECT_EQ(model().progress(), 1.0);
 }
 
+// Tests that the FullscreenModel is not reset for a same-document navigation.
+TEST_F(FullscreenWebStateObserverTest, NoResetForSameDocument) {
+  // Simulate a scroll to 0.5 progress.
+  SimulateFullscreenUserScrollForProgress(&model(), 0.5);
+  EXPECT_EQ(model().progress(), 0.5);
+  // Simulate a same-document navigation and verify that the 0.5 progress hasn't
+  // been reset to 1.0.
+  web::FakeNavigationContext context;
+  context.SetIsSameDocument(true);
+  web_state().OnNavigationFinished(&context);
+  EXPECT_EQ(model().progress(), 0.5);
+}
+
 // Tests that the model is disabled when a load is occurring.
 TEST_F(FullscreenWebStateObserverTest, DisableDuringLoad) {
   EXPECT_TRUE(model().enabled());
