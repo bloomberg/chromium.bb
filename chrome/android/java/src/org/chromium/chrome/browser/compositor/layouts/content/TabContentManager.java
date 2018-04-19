@@ -184,7 +184,7 @@ public class TabContentManager {
 
         try {
             bitmap = Bitmap.createBitmap(
-                    (int) (viewToDraw.getWidth() + leftMargin * mThumbnailScale),
+                    (int) ((viewToDraw.getWidth() + leftMargin) * mThumbnailScale),
                     (int) ((viewToDraw.getHeight() + topMargin - overlayTranslateY)
                             * mThumbnailScale),
                     Bitmap.Config.ARGB_8888);
