@@ -40,7 +40,7 @@ class ApplicationDragAndDropHost;
 class AppListMainView;
 class AppListModel;
 class AppsGridView;
-class AssistantInteractionModel;
+class AssistantController;
 class HideViewAnimationObserver;
 class PaginationModel;
 class SearchBoxView;
@@ -89,8 +89,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
     // Whether the shelf alignment is on the side of the display. Used for
     // fullscreen style.
     bool is_side_shelf = false;
-    // Model for Assistant interaction. Owned by AshAssistantController.
-    AssistantInteractionModel* assistant_interaction_model = nullptr;
+    // Controller for Assistant. Owned by Shell.
+    AssistantController* assistant_controller = nullptr;
   };
 
   // Does not take ownership of |delegate|.
@@ -228,9 +228,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
   // TODO(b/77637813): Remove when pulling Assistant out of launcher.
-  AssistantInteractionModel* assistant_interaction_model() {
-    return assistant_interaction_model_;
-  }
+  AssistantController* assistant_controller() { return assistant_controller_; }
 
   // Returns true if the home launcher is enabled in tablet mode.
   bool IsHomeLauncherEnabledInTabletMode() const;
@@ -409,8 +407,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   std::unique_ptr<ui::ImplicitAnimationObserver> scroll_animation_observer_;
 
   // TODO(b/77637813): Remove when pulling Assistant out of the launcher.
-  // Owned by AshAssistantController.
-  AssistantInteractionModel* assistant_interaction_model_ = nullptr;
+  // Reference to AshAssistantController. Owned by Shell.
+  AssistantController* assistant_controller_ = nullptr;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_;
 

@@ -23,8 +23,9 @@ constexpr SkColor kTextColor = SkColorSetA(SK_ColorBLACK, 0xDE);
 
 }  // namespace
 
-SuggestionChipView::SuggestionChipView(const base::string16& text)
-    : views::View(), text_view_(new views::Label(text)) {
+SuggestionChipView::SuggestionChipView(const base::string16& text,
+                                       SuggestionChipListener* listener)
+    : text_view_(new views::Label(text)), listener_(listener) {
   InitLayout();
 }
 
@@ -47,6 +48,24 @@ void SuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setColor(kBackgroundColor);
   canvas->DrawRoundRect(GetContentsBounds(), kCornerRadiusDip, flags);
+}
+
+void SuggestionChipView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    if (listener_)
+      listener_->OnSuggestionChipPressed(this);
+    event->SetHandled();
+  }
+}
+
+bool SuggestionChipView::OnMousePressed(const ui::MouseEvent& event) {
+  if (listener_)
+    listener_->OnSuggestionChipPressed(this);
+  return true;
+}
+
+const base::string16& SuggestionChipView::GetText() const {
+  return text_view_->text();
 }
 
 }  // namespace app_list

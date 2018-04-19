@@ -32,9 +32,8 @@ class AssistantInteractionModelImpl
   void ClearInteraction() override;
   void SetCard(const std::string& html) override;
   void ClearCard() override;
-  void SetRecognizedSpeech(
-      const app_list::RecognizedSpeech& recognized_speech) override;
-  void ClearRecognizedSpeech() override;
+  void SetQuery(const app_list::Query& query) override;
+  void ClearQuery() override;
   void AddSuggestions(const std::vector<std::string>& suggestions) override;
   void ClearSuggestions() override;
   void AddText(const std::string& text) override;
@@ -43,15 +42,15 @@ class AssistantInteractionModelImpl
  private:
   void NotifyCardChanged();
   void NotifyCardCleared();
-  void NotifyRecognizedSpeechChanged();
-  void NotifyRecognizedSpeechCleared();
+  void NotifyQueryChanged();
+  void NotifyQueryCleared();
   void NotifySuggestionsAdded(const std::vector<std::string>& suggestions);
   void NotifySuggestionsCleared();
   void NotifyTextAdded(const std::string& text);
   void NotifyTextCleared();
 
   std::string card_;
-  app_list::RecognizedSpeech recognized_speech_;
+  app_list::Query query_;
   std::vector<std::string> suggestions_list_;
   std::vector<std::string> text_list_;
 

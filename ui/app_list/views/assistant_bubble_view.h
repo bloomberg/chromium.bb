@@ -10,11 +10,12 @@
 
 #include "base/macros.h"
 #include "ui/app_list/assistant_interaction_model_observer.h"
+#include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/views/view.h"
 
 namespace app_list {
 
-class AssistantInteractionModel;
+class AssistantController;
 
 namespace {
 class InteractionContainer;
@@ -23,10 +24,10 @@ class TextContainer;
 }  // namespace
 
 class AssistantBubbleView : public views::View,
-                            public AssistantInteractionModelObserver {
+                            public AssistantInteractionModelObserver,
+                            public SuggestionChipListener {
  public:
-  explicit AssistantBubbleView(
-      AssistantInteractionModel* assistant_interaction_model);
+  explicit AssistantBubbleView(AssistantController* assistant_controller);
   ~AssistantBubbleView() override;
 
   // views::View:
@@ -37,19 +38,21 @@ class AssistantBubbleView : public views::View,
   // AssistantInteractionModelObserver:
   void OnCardChanged(const std::string& html) override;
   void OnCardCleared() override;
-  void OnRecognizedSpeechChanged(
-      const RecognizedSpeech& recognized_speech) override;
-  void OnRecognizedSpeechCleared() override;
+  void OnQueryChanged(const Query& query) override;
+  void OnQueryCleared() override;
   void OnSuggestionsAdded(const std::vector<std::string>& suggestions) override;
   void OnSuggestionsCleared() override;
   void OnTextAdded(const std::string& text) override;
   void OnTextCleared() override;
 
+  // SuggestionChipListener:
+  void OnSuggestionChipPressed(
+      SuggestionChipView* suggestion_chip_view) override;
+
  private:
   void InitLayout();
 
-  // Owned by AshAssistantController.
-  AssistantInteractionModel* assistant_interaction_model_;
+  AssistantController* assistant_controller_;    // Owned by Shell.
   InteractionContainer* interaction_container_;  // Owned by view hierarchy.
   TextContainer* text_container_;                // Owned by view hierarchy.
   views::View* card_container_;                  // Owned by view hierarchy.

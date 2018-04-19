@@ -24,7 +24,7 @@ void AssistantInteractionModelImpl::RemoveObserver(
 
 void AssistantInteractionModelImpl::ClearInteraction() {
   ClearCard();
-  ClearRecognizedSpeech();
+  ClearQuery();
   ClearSuggestions();
   ClearText();
 }
@@ -39,15 +39,14 @@ void AssistantInteractionModelImpl::ClearCard() {
   NotifyCardCleared();
 }
 
-void AssistantInteractionModelImpl::SetRecognizedSpeech(
-    const app_list::RecognizedSpeech& recognized_speech) {
-  recognized_speech_ = recognized_speech;
-  NotifyRecognizedSpeechChanged();
+void AssistantInteractionModelImpl::SetQuery(const app_list::Query& query) {
+  query_ = query;
+  NotifyQueryChanged();
 }
 
-void AssistantInteractionModelImpl::ClearRecognizedSpeech() {
-  recognized_speech_ = {};
-  NotifyRecognizedSpeechCleared();
+void AssistantInteractionModelImpl::ClearQuery() {
+  query_ = {};
+  NotifyQueryCleared();
 }
 
 void AssistantInteractionModelImpl::AddSuggestions(
@@ -82,14 +81,14 @@ void AssistantInteractionModelImpl::NotifyCardCleared() {
     observer.OnCardCleared();
 }
 
-void AssistantInteractionModelImpl::NotifyRecognizedSpeechChanged() {
+void AssistantInteractionModelImpl::NotifyQueryChanged() {
   for (app_list::AssistantInteractionModelObserver& observer : observers_)
-    observer.OnRecognizedSpeechChanged(recognized_speech_);
+    observer.OnQueryChanged(query_);
 }
 
-void AssistantInteractionModelImpl::NotifyRecognizedSpeechCleared() {
+void AssistantInteractionModelImpl::NotifyQueryCleared() {
   for (app_list::AssistantInteractionModelObserver& observer : observers_)
-    observer.OnRecognizedSpeechCleared();
+    observer.OnQueryCleared();
 }
 
 void AssistantInteractionModelImpl::NotifySuggestionsAdded(

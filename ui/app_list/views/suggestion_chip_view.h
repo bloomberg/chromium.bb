@@ -14,18 +14,37 @@ class Label;
 
 namespace app_list {
 
+class SuggestionChipView;
+
+// Listener which receives notification of suggestion chip events.
+class SuggestionChipListener {
+ public:
+  // Invoked when the specified |sender| is pressed.
+  virtual void OnSuggestionChipPressed(SuggestionChipView* sender) = 0;
+
+ protected:
+  virtual ~SuggestionChipListener() = default;
+};
+
+// View representing a suggestion chip.
 class SuggestionChipView : public views::View {
  public:
-  explicit SuggestionChipView(const base::string16& text);
+  SuggestionChipView(const base::string16& text,
+                     SuggestionChipListener* listener = nullptr);
   ~SuggestionChipView() override = default;
 
   // views::View:
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
+
+  const base::string16& GetText() const;
 
  private:
   void InitLayout();
 
   views::Label* text_view_;  // Owned by view hierarchy.
+  SuggestionChipListener* listener_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionChipView);
 };

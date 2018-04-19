@@ -95,8 +95,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   params.is_side_shelf = IsSideShelf(root_window);
 
   if (chromeos::switches::IsAssistantEnabled()) {
-    params.assistant_interaction_model =
-        Shell::Get()->ash_assistant_controller()->assistant_interaction_model();
+    params.assistant_controller = Shell::Get()->ash_assistant_controller();
   }
 
   view->Initialize(params);

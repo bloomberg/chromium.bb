@@ -17,16 +17,17 @@ namespace app_list {
 
 class AssistantInteractionModelObserver;
 
-// Models the state of recognized speech. At start, both the high and low
-// confidence text portions will be empty. As recognition continues, the low
-// confidence portion will become non-empty. As recognition improves, both high
-// and low confidence portions of the recognized speech will be non-empty. When
-// speech is fully recognized, only the high confidence portion will be
-// non-empty.
-struct RecognizedSpeech {
-  // High confidence portion of recognized speech.
+// Models the state of the query. For a text query, only the high confidence
+// text portion will be populated. At start of a voice query, both the high and
+// low confidence text portions will be empty. As speech recognition continues,
+// the low confidence portion will become non-empty. As speech recognition
+// improves, both the high and low confidence portions of the query will be
+// non-empty. When speech is fully recognized, only the high confidence portion
+// will be populated.
+struct Query {
+  // High confidence portion of the query.
   std::string high_confidence_text;
-  // Low confidence portion of recognized speech.
+  // Low confidence portion of the query.
   std::string low_confidence_text;
 };
 
@@ -34,7 +35,7 @@ struct RecognizedSpeech {
 // recognition, as well as renderable card, suggestions, and text responses.
 class AssistantInteractionModel {
  public:
-  // Adds/removes the specified interaction |observer|.
+  // Adds/removes the specified interaction model |observer|.
   virtual void AddObserver(AssistantInteractionModelObserver* observer) = 0;
   virtual void RemoveObserver(AssistantInteractionModelObserver* observer) = 0;
 
@@ -47,12 +48,11 @@ class AssistantInteractionModel {
   // Clears the card for the interaction.
   virtual void ClearCard() = 0;
 
-  // Updates the recognized speech state for the interaction.
-  virtual void SetRecognizedSpeech(
-      const RecognizedSpeech& recognized_speech) = 0;
+  // Updates the query state for the interaction.
+  virtual void SetQuery(const Query& query) = 0;
 
-  // Clears recognized speech state.
-  virtual void ClearRecognizedSpeech() = 0;
+  // Clears query state for the interaction.
+  virtual void ClearQuery() = 0;
 
   // Adds the specified |suggestions| that should be rendered for the
   // interaction.
