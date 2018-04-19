@@ -39,7 +39,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 class Node;
 
 class CORE_EXPORT V8GCController {
@@ -59,7 +58,6 @@ class CORE_EXPORT V8GCController {
   static Node* OpaqueRootForGC(v8::Isolate*, Node*);
 
   static void TraceDOMWrappers(v8::Isolate*, Visitor*);
-  static bool HasPendingActivity(v8::Isolate*, ExecutionContext*);
 };
 
 }  // namespace blink
