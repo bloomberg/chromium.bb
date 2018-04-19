@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
