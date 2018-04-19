@@ -245,8 +245,6 @@ const string_map_t Converter::kFieldToFlattenableName = {
     {"picture_image_filter", "SkPictureImageFilter"},
     {"picture_shader", "SkPictureShader"},
     {"radial_gradient", "SkRadialGradient"},
-    {"r_rects_gaussian_edge_mask_filter_impl",
-     "SkRRectsGaussianEdgeMaskFilterImpl"},
     {"specular_lighting_image_filter", "SkSpecularLightingImageFilter"},
     {"sweep_gradient", "SkSweepGradient"},
     {"tile_image_filter", "SkTileImageFilter"},
