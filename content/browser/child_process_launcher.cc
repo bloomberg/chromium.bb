@@ -29,8 +29,6 @@ ChildProcessLauncher::ChildProcessLauncher(
     const mojo::edk::ProcessErrorCallback& process_error_callback,
     bool terminate_on_shutdown)
     : client_(client),
-      termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
-      exit_code_(RESULT_CODE_NORMAL_EXIT),
       starting_(true),
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
@@ -80,7 +78,7 @@ void ChildProcessLauncher::Notify(
   if (process_.process.IsValid()) {
     client_->OnProcessLaunched();
   } else {
-    termination_status_ = base::TERMINATION_STATUS_LAUNCH_FAILED;
+    termination_info_.status = base::TERMINATION_STATUS_LAUNCH_FAILED;
 
     // NOTE: May delete |this|.
     client_->OnProcessLaunchFailed(error_code);
@@ -99,40 +97,34 @@ const base::Process& ChildProcessLauncher::GetProcess() const {
   return process_.process;
 }
 
-base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
-    bool known_dead,
-    int* exit_code) {
+ChildProcessTerminationInfo ChildProcessLauncher::GetChildTerminationInfo(
+    bool known_dead) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!process_.process.IsValid()) {
     // Make sure to avoid using the default termination status if the process
     // hasn't even started yet.
     if (IsStarting())
-      termination_status_ = base::TERMINATION_STATUS_STILL_RUNNING;
+      termination_info_.status = base::TERMINATION_STATUS_STILL_RUNNING;
 
-    // Process doesn't exist, so return the cached termination status.
-    if (exit_code)
-      *exit_code = exit_code_;
-    return termination_status_;
+    // Process doesn't exist, so return the cached termination info.
+    return termination_info_;
   }
 
-  termination_status_ =
-      helper_->GetTerminationStatus(process_, known_dead, &exit_code_);
-  if (exit_code)
-    *exit_code = exit_code_;
+  termination_info_ = helper_->GetTerminationInfo(process_, known_dead);
 
   // POSIX: If the process crashed, then the kernel closed the socket for it and
   // so the child has already died by the time we get here. Since
-  // GetTerminationStatus called waitpid with WNOHANG, it'll reap the process.
-  // However, if GetTerminationStatus didn't reap the child (because it was
+  // GetTerminationInfo called waitpid with WNOHANG, it'll reap the process.
+  // However, if GetTerminationInfo didn't reap the child (because it was
   // still running), we'll need to Terminate via ProcessWatcher. So we can't
   // close the handle here.
-  if (termination_status_ != base::TERMINATION_STATUS_STILL_RUNNING) {
-    process_.process.Exited(exit_code_);
+  if (termination_info_.status != base::TERMINATION_STATUS_STILL_RUNNING) {
+    process_.process.Exited(termination_info_.exit_code);
     process_.process.Close();
   }
 
-  return termination_status_;
+  return termination_info_;
 }
 
 bool ChildProcessLauncher::Terminate(int exit_code) {

@@ -358,13 +358,16 @@ void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
                             PROCESS_TYPE_MAX);
 }
 
-base::TerminationStatus BrowserChildProcessHostImpl::GetTerminationStatus(
-    bool known_dead, int* exit_code) {
+ChildProcessTerminationInfo BrowserChildProcessHostImpl::GetTerminationInfo(
+    bool known_dead) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!child_process_)  // If the delegate doesn't use Launch() helper.
-    return base::GetTerminationStatus(data_.handle, exit_code);
-  return child_process_->GetChildTerminationStatus(known_dead,
-                                                   exit_code);
+  if (!child_process_) {
+    // If the delegate doesn't use Launch() helper.
+    ChildProcessTerminationInfo info;
+    info.status = base::GetTerminationStatus(data_.handle, &info.exit_code);
+    return info;
+  }
+  return child_process_->GetChildTerminationInfo(known_dead);
 }
 
 bool BrowserChildProcessHostImpl::OnMessageReceived(
@@ -439,16 +442,15 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
   early_exit_watcher_.StopWatching();
 #endif
   if (child_process_.get() || data_.handle) {
-    int exit_code;
-    base::TerminationStatus status = GetTerminationStatus(
-        true /* known_dead */, &exit_code);
-    switch (status) {
+    ChildProcessTerminationInfo info =
+        GetTerminationInfo(true /* known_dead */);
+    switch (info.status) {
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION: {
-        delegate_->OnProcessCrashed(exit_code);
+        delegate_->OnProcessCrashed(info.exit_code);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&NotifyProcessCrashed, data_, exit_code));
+            base::BindOnce(&NotifyProcessCrashed, data_, info.exit_code));
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed2",
                                   static_cast<ProcessType>(data_.process_type),
                                   PROCESS_TYPE_MAX);
@@ -461,10 +463,10 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
-        delegate_->OnProcessCrashed(exit_code);
+        delegate_->OnProcessCrashed(info.exit_code);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&NotifyProcessKilled, data_, exit_code));
+            base::BindOnce(&NotifyProcessKilled, data_, info.exit_code));
         // Report that this child process was killed.
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed2",
                                   static_cast<ProcessType>(data_.process_type),
@@ -484,7 +486,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
                               static_cast<ProcessType>(data_.process_type),
                               PROCESS_TYPE_MAX);
 #if defined(OS_CHROMEOS)
-    if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM) {
+    if (info.status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM) {
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed2.OOM",
                                 static_cast<ProcessType>(data_.process_type),
                                 PROCESS_TYPE_MAX);

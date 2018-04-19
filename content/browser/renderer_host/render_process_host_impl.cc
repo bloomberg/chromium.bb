@@ -3823,32 +3823,31 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   // child_process_launcher_ can be NULL in single process mode or if fast
   // termination happened.
-  base::TerminationStatus status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
-  int exit_code = 0;
+  ChildProcessTerminationInfo info;
+  info.exit_code = 0;
   if (known_details) {
-    status = known_details->status;
-    exit_code = known_details->exit_code;
+    info.status = known_details->status;
+    info.exit_code = known_details->exit_code;
   } else if (child_process_launcher_.get()) {
-    status = child_process_launcher_->GetChildTerminationStatus(already_dead,
-                                                                &exit_code);
-    if (already_dead && status == base::TERMINATION_STATUS_STILL_RUNNING) {
+    info = child_process_launcher_->GetChildTerminationInfo(already_dead);
+    if (already_dead && info.status == base::TERMINATION_STATUS_STILL_RUNNING) {
       // May be in case of IPC error, if it takes long time for renderer
       // to exit. Child process will be killed in any case during
       // child_process_launcher_.reset(). Make sure we will not broadcast
       // FrameHostMsg_RenderProcessGone with status
       // TERMINATION_STATUS_STILL_RUNNING, since this will break WebContentsImpl
       // logic.
-      status = base::TERMINATION_STATUS_PROCESS_CRASHED;
+      info.status = base::TERMINATION_STATUS_PROCESS_CRASHED;
 
 // TODO(siggi): Remove this once https://crbug.com/806661 is resolved.
 #if defined(OS_WIN)
-      if (exit_code == WAIT_TIMEOUT && g_analyze_hung_renderer)
+      if (info.exit_code == WAIT_TIMEOUT && g_analyze_hung_renderer)
         g_analyze_hung_renderer(child_process_launcher_->GetProcess());
 #endif
     }
   }
 
-  RendererClosedDetails details(status, exit_code);
+  RendererClosedDetails details(info.status, info.exit_code);
 
   child_process_launcher_.reset();
   is_dead_ = true;
@@ -3864,7 +3863,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
       Details<RendererClosedDetails>(&details));
   for (auto& observer : observers_)
-    observer.RenderProcessExited(this, status, exit_code);
+    observer.RenderProcessExited(this, info.status, info.exit_code);
   within_process_died_observer_ = false;
 
   RemoveUserData(kSessionStorageHolderKey);
@@ -3872,7 +3871,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   base::IDMap<IPC::Listener*>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
-        iter.GetCurrentKey(), static_cast<int>(status), exit_code));
+        iter.GetCurrentKey(), static_cast<int>(info.status), info.exit_code));
     iter.Advance();
   }
 

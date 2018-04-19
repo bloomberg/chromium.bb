@@ -89,11 +89,13 @@ void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
 }
 
-base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
+ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
     const ChildProcessLauncherHelper::Process& process,
-    bool known_dead,
-    int* exit_code) {
-  return base::GetTerminationStatus(process.process.Handle(), exit_code);
+    bool known_dead) {
+  ChildProcessTerminationInfo info;
+  info.status =
+      base::GetTerminationStatus(process.process.Handle(), &info.exit_code);
+  return info;
 }
 
 // static

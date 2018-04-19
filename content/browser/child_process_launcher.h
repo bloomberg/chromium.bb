@@ -18,6 +18,7 @@
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/common/result_codes.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -118,11 +119,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // process could be seen as running. With |known_dead| set to true, the
   // process will be killed if it was still running. See ZygoteHostImpl for
   // more discussion of Linux implementation details.
-  // |exit_code| is the exit code of the process if it exited (e.g. status from
-  // waitpid if on posix, from GetExitCodeProcess on Windows). |exit_code| may
-  // be NULL.
-  base::TerminationStatus GetChildTerminationStatus(bool known_dead,
-                                                    int* exit_code);
+  ChildProcessTerminationInfo GetChildTerminationInfo(bool known_dead);
 
   // Changes whether the process runs in the background or not.  Only call
   // this after the process has started.
@@ -172,8 +169,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // ChildProcessLauncherHelper once the process was started.
   internal::ChildProcessLauncherHelper::Process process_;
 
-  base::TerminationStatus termination_status_;
-  int exit_code_;
+  ChildProcessTerminationInfo termination_info_;
   bool starting_;
 
   // Controls whether the child process should be terminated on browser

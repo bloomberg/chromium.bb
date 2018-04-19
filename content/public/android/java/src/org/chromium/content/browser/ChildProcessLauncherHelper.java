@@ -426,7 +426,27 @@ public class ChildProcessLauncherHelper {
 
     // Called on client (UI or IO) thread.
     @CalledByNative
-    private boolean isOomProtected() {
+    private boolean hasOomProtectionBindings() {
+        ChildProcessConnection connection = mLauncher.getConnection();
+        // Here we are accessing the connection from a thread other than the launcher thread, but it
+        // does not change once it's been set. So it is safe to test whether it's null here and
+        // access it afterwards.
+        if (connection == null) {
+            return false;
+        }
+
+        return !connection.isWaivedBoundOnlyOrWasWhenDied();
+    }
+
+    // Called on client (UI or IO) thread.
+    @CalledByNative
+    private boolean isApplicationInForeground() {
+        return sApplicationInForeground;
+    }
+
+    // Called on client (UI or IO) thread.
+    @CalledByNative
+    private boolean isKilledByUs() {
         ChildProcessConnection connection = mLauncher.getConnection();
         // Here we are accessing the connection from a thread other than the launcher thread, but it
         // does not change once it's been set. So it is safe to test whether it's null here and
@@ -437,7 +457,7 @@ public class ChildProcessLauncherHelper {
 
         // We consider the process to be child protected if it has a strong or moderate binding and
         // the app is in the foreground.
-        return sApplicationInForeground && !connection.isWaivedBoundOnlyOrWasWhenDied();
+        return connection.isKilledByUs();
     }
 
     @CalledByNative
