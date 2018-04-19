@@ -219,7 +219,7 @@ void ExtensionMessageBubbleBrowserTest::TestUninstallDangerousExtension() {
 }
 
 void ExtensionMessageBubbleBrowserTest::PreBubbleShowsOnStartup() {
-  LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
+  LoadExtension(test_data_dir_.AppendASCII("simple_with_popup"));
 }
 
 void ExtensionMessageBubbleBrowserTest::TestBubbleShowsOnStartup() {
@@ -342,7 +342,7 @@ void ExtensionMessageBubbleBrowserTest::
 
 void ExtensionMessageBubbleBrowserTest::TestBubbleWithMultipleWindows() {
   CheckBubbleIsNotPresent(browser(), false, false);
-  LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
+  LoadExtension(test_data_dir_.AppendASCII("simple_with_popup"));
   Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
@@ -364,7 +364,7 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleWithMultipleWindows() {
 
 void ExtensionMessageBubbleBrowserTest::TestClickingLearnMoreButton() {
   CheckBubbleIsNotPresent(browser(), false, false);
-  LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
+  LoadExtension(test_data_dir_.AppendASCII("simple_with_popup"));
   Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
@@ -385,7 +385,7 @@ void ExtensionMessageBubbleBrowserTest::TestClickingLearnMoreButton() {
 void ExtensionMessageBubbleBrowserTest::TestClickingActionButton() {
   CheckBubbleIsNotPresent(browser(), false, false);
   const extensions::Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
+      LoadExtension(test_data_dir_.AppendASCII("simple_with_popup"));
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile());
   std::string id = extension->id();
@@ -405,7 +405,7 @@ void ExtensionMessageBubbleBrowserTest::TestClickingActionButton() {
 void ExtensionMessageBubbleBrowserTest::TestClickingDismissButton() {
   CheckBubbleIsNotPresent(browser(), false, false);
   const extensions::Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
+      LoadExtension(test_data_dir_.AppendASCII("simple_with_popup"));
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile());
   std::string id = extension->id();
