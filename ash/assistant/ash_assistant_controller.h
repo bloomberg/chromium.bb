@@ -5,8 +5,11 @@
 #ifndef ASH_ASSISTANT_ASH_ASSISTANT_CONTROLLER_H_
 #define ASH_ASSISTANT_ASH_ASSISTANT_CONTROLLER_H_
 
+#include <string>
+
 #include "ash/assistant/model/assistant_interaction_model_impl.h"
 #include "ash/public/interfaces/ash_assistant_controller.mojom.h"
+#include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -20,6 +23,10 @@ class AssistantInteractionModelObserver;
 namespace aura {
 class Window;
 }  // namespace aura
+
+namespace base {
+class UnguessableToken;
+}  // namespace base
 
 namespace ash {
 
@@ -39,6 +46,11 @@ class AshAssistantController
       app_list::AssistantInteractionModelObserver* observer) override;
   void RemoveInteractionModelObserver(
       app_list::AssistantInteractionModelObserver* observer) override;
+  void RenderCard(
+      const base::UnguessableToken& id_token,
+      mojom::AssistantCardParamsPtr params,
+      mojom::AssistantCardRenderer::RenderCallback callback) override;
+  void ReleaseCard(const base::UnguessableToken& id_token) override;
   void OnSuggestionChipPressed(const std::string& text) override;
 
   // chromeos::assistant::mojom::AssistantEventSubscriber:
@@ -61,6 +73,8 @@ class AshAssistantController
   // mojom::AshAssistantController:
   void SetAssistant(
       chromeos::assistant::mojom::AssistantPtr assistant) override;
+  void SetAssistantCardRenderer(
+      mojom::AssistantCardRendererPtr assistant_card_renderer) override;
 
   // ShellObserver:
   void OnAppListVisibilityChanged(bool shown,
@@ -72,8 +86,8 @@ class AshAssistantController
       assistant_event_subscriber_binding_;
   AssistantInteractionModelImpl assistant_interaction_model_;
 
-  // Interface to Chrome OS Assistant service.
   chromeos::assistant::mojom::AssistantPtr assistant_;
+  mojom::AssistantCardRendererPtr assistant_card_renderer_;
 
   // TODO(b/77637813): Remove when pulling Assistant out of launcher.
   bool is_app_list_shown_ = false;

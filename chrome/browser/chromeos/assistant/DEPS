@@ -2,6 +2,7 @@ include_rules = [
   # Add browser dependencies explicitly.
   "-chrome",
   "+chrome/browser/chromeos/assistant",
+  "+chrome/browser/chromeos/profiles/profile_helper.h",
   "-chromeos/services",
   "+chromeos/services/assistant/public",
 ]

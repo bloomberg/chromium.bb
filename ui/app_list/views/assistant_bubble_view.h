@@ -5,10 +5,12 @@
 #ifndef UI_APP_LIST_VIEWS_ASSISTANT_BUBBLE_VIEW_H_
 #define UI_APP_LIST_VIEWS_ASSISTANT_BUBBLE_VIEW_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/app_list/assistant_interaction_model_observer.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/views/view.h"
@@ -18,6 +20,7 @@ namespace app_list {
 class AssistantController;
 
 namespace {
+class CardContainer;
 class InteractionContainer;
 class SuggestionsContainer;
 class TextContainer;
@@ -52,11 +55,19 @@ class AssistantBubbleView : public views::View,
  private:
   void InitLayout();
 
+  void OnCardReady(const base::UnguessableToken& embed_token);
+  void OnReleaseCard();
+
   AssistantController* assistant_controller_;    // Owned by Shell.
   InteractionContainer* interaction_container_;  // Owned by view hierarchy.
   TextContainer* text_container_;                // Owned by view hierarchy.
-  views::View* card_container_;                  // Owned by view hierarchy.
+  CardContainer* card_container_;                // Owned by view hierarchy.
   SuggestionsContainer* suggestions_container_;  // Owned by view hierarchy.
+
+  // Uniquely identifies a card owned by AssistantCardRenderer.
+  base::Optional<base::UnguessableToken> id_token_;
+
+  base::WeakPtrFactory<AssistantBubbleView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantBubbleView);
 };

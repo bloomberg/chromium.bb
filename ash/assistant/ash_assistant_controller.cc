@@ -4,8 +4,10 @@
 
 #include "ash/assistant/ash_assistant_controller.h"
 
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "base/unguessable_token.h"
 #include "ui/app_list/assistant_interaction_model_observer.h"
 
 namespace ash {
@@ -36,6 +38,37 @@ void AshAssistantController::SetAssistant(
   chromeos::assistant::mojom::AssistantEventSubscriberPtr ptr;
   assistant_event_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
   assistant_->AddAssistantEventSubscriber(std::move(ptr));
+}
+
+void AshAssistantController::SetAssistantCardRenderer(
+    mojom::AssistantCardRendererPtr assistant_card_renderer) {
+  assistant_card_renderer_ = std::move(assistant_card_renderer);
+}
+
+void AshAssistantController::RenderCard(
+    const base::UnguessableToken& id_token,
+    mojom::AssistantCardParamsPtr params,
+    mojom::AssistantCardRenderer::RenderCallback callback) {
+  DCHECK(assistant_card_renderer_);
+
+  const mojom::UserSession* user_session =
+      Shell::Get()->session_controller()->GetUserSession(0);
+
+  if (!user_session) {
+    LOG(WARNING) << "Unable to retrieve active user session.";
+    return;
+  }
+
+  AccountId account_id = user_session->user_info->account_id;
+
+  assistant_card_renderer_->Render(account_id, id_token, std::move(params),
+                                   std::move(callback));
+}
+
+void AshAssistantController::ReleaseCard(
+    const base::UnguessableToken& id_token) {
+  DCHECK(assistant_card_renderer_);
+  assistant_card_renderer_->Release(id_token);
 }
 
 void AshAssistantController::AddInteractionModelObserver(
