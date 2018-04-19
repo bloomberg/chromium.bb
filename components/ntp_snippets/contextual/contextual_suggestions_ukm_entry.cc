@@ -9,8 +9,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
-#include "services/metrics/public/cpp/ukm_entry_builder.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 using ukm::UkmEntryBuilder;
 
@@ -96,23 +95,16 @@ void ContextualSuggestionsUkmEntry::Flush() {
   if (show_duration_timer_)
     StopTimerIfNeeded();
 
-  // When this variable goes out of scope the builder's destructor will write.
-  std::unique_ptr<UkmEntryBuilder> builder =
-      ukm::UkmRecorder::Get()->GetEntryBuilder(
-          source_id_, kContextualSuggestionsUkmEntryName);
-  // Keep these writes alphabetical by metric name (matching ukm.xml ordering).
-  builder->AddMetric(kContextualSuggestionsClosedMetricName, closed_from_peek_);
-  builder->AddMetric(kContextualSuggestionsDownloadedMetricName,
-                     any_suggestion_downloaded_);
-  builder->AddMetric(kContextualSuggestionsOpenedMetricName, was_sheet_opened_);
-  builder->AddMetric(kContextualSuggestionsFetchMetricName,
-                     static_cast<int64_t>(fetch_state_));
-  builder->AddMetric(kContextualSuggestionsDurationMetricName,
-                     show_duration_exponential_bucket_);
-  builder->AddMetric(kContextualSuggestionsTriggerMetricName,
-                     static_cast<int64_t>(trigger_event_));
-  builder->AddMetric(kContextualSuggestionsTakenMetricName,
-                     any_suggestion_taken_);
+  // Keep these writes alphabetical by setter name (matching ukm.xml ordering).
+  ukm::builders::ContextualSuggestions builder(source_id_);
+  builder.SetAnyDownloaded(any_suggestion_downloaded_)
+      .SetAnySuggestionTaken(any_suggestion_taken_)
+      .SetClosedFromPeek(closed_from_peek_)
+      .SetEverOpened(was_sheet_opened_)
+      .SetFetchState(static_cast<int64_t>(fetch_state_))
+      .SetShowDurationBucketMin(show_duration_exponential_bucket_)
+      .SetTriggerEvent(static_cast<int64_t>(trigger_event_))
+      .Record(ukm::UkmRecorder::Get());
 
   source_id_ = ukm::kInvalidSourceId;
 }
