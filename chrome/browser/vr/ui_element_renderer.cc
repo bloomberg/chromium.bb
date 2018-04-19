@@ -59,7 +59,8 @@ void UiElementRenderer::DrawTexturedQuad(
     const gfx::RectF& copy_rect,
     float opacity,
     const gfx::SizeF& element_size,
-    float corner_radius) {
+    float corner_radius,
+    bool blend) {
   TRACE_EVENT0("gpu", "UiElementRenderer::DrawTexturedQuad");
   // TODO(vollick): handle drawing this degenerate situation crbug.com/768922
   if (corner_radius * 2.0 > element_size.width() ||
@@ -72,7 +73,7 @@ void UiElementRenderer::DrawTexturedQuad(
   FlushIfNecessary(renderer);
   renderer->AddQuad(texture_data_handle, overlay_texture_data_handle,
                     model_view_proj_matrix, copy_rect, opacity, element_size,
-                    corner_radius);
+                    corner_radius, blend);
 }
 
 void UiElementRenderer::DrawGradientQuad(

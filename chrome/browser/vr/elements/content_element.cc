@@ -48,11 +48,19 @@ ContentElement::~ContentElement() = default;
 void ContentElement::Render(UiElementRenderer* renderer,
                             const CameraModel& model) const {
   gfx::RectF copy_rect(0, 0, 1, 1);
-  if (texture_id_ || (overlay_texture_non_empty_ && overlay_texture_id_)) {
+  int overlay_texture_id = overlay_texture_non_empty_ ? overlay_texture_id_ : 0;
+  int texture_id = texture_id_;
+  bool blend = true;
+  if (uses_quad_layer_) {
+    texture_id = overlay_texture_id_;
+    overlay_texture_id = 0;
+    blend = false;
+  }
+  if (uses_quad_layer_ || texture_id_ || overlay_texture_id) {
     renderer->DrawTexturedQuad(
-        texture_id_, overlay_texture_non_empty_ ? overlay_texture_id_ : 0,
-        texture_location_, model.view_proj_matrix * world_space_transform(),
-        copy_rect, computed_opacity(), size(), corner_radius());
+        texture_id, overlay_texture_id, texture_location_,
+        model.view_proj_matrix * world_space_transform(), copy_rect,
+        computed_opacity(), size(), corner_radius(), blend);
   }
 }
 
@@ -80,7 +88,6 @@ void ContentElement::OnHoverEnter(const gfx::PointF& position) {
 
 void ContentElement::OnHoverLeave() {
   if (delegate_)
-
     delegate_->OnContentLeave();
 }
 
@@ -235,6 +242,10 @@ bool ContentElement::OnBeginFrame(const gfx::Transform& head_pose) {
 
 void ContentElement::SetDelegate(ContentInputDelegate* delegate) {
   delegate_ = delegate;
+}
+
+void ContentElement::SetUsesQuadLayer(bool uses_quad_layer) {
+  uses_quad_layer_ = uses_quad_layer;
 }
 
 }  // namespace vr

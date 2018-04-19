@@ -66,7 +66,8 @@ class UiElementRenderer {
       const gfx::RectF& copy_rect,
       float opacity,
       const gfx::SizeF& element_size,
-      float corner_radius);
+      float corner_radius,
+      bool blend);
   VIRTUAL_FOR_MOCKS void DrawGradientQuad(
       const gfx::Transform& model_view_proj_matrix,
       const SkColor edge_color,

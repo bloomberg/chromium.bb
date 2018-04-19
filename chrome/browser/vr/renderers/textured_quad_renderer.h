@@ -29,7 +29,8 @@ class TexturedQuadRenderer : public BaseRenderer {
                const gfx::RectF& copy_rect,
                float opacity,
                const gfx::SizeF& element_size,
-               float corner_radius);
+               float corner_radius,
+               bool blend);
 
   void Flush() override;
 
@@ -51,6 +52,7 @@ class TexturedQuadRenderer : public BaseRenderer {
     float opacity;
     gfx::SizeF element_size;
     float corner_radius;
+    bool blend;
   };
 
   static GLuint vertex_buffer_;
@@ -68,6 +70,7 @@ class TexturedQuadRenderer : public BaseRenderer {
   // Attributes
   GLuint corner_position_handle_;
   GLuint offset_scale_handle_;
+  GLuint uses_overlay_handle_;
 
   base::queue<QuadData> quad_queue_;
 

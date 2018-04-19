@@ -179,6 +179,21 @@ struct WebXrFrame {
   DISALLOW_COPY_AND_ASSIGN(WebXrFrame);
 };
 
+struct Viewport {
+  gvr::BufferViewport left;
+  gvr::BufferViewport right;
+
+  void SetSourceBufferIndex(int index) {
+    left.SetSourceBufferIndex(index);
+    right.SetSourceBufferIndex(index);
+  }
+
+  void SetSourceUv(const gvr::Rectf& uv) {
+    left.SetSourceUv(uv);
+    right.SetSourceUv(uv);
+  }
+};
+
 class WebXrPresentationState {
  public:
   // WebXR frames use an arbitrary sequential ID to help catch logic errors
@@ -310,12 +325,13 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   device::mojom::VRDisplayFrameTransportOptionsPtr
       GetWebVrFrameTransportOptions(device::mojom::VRRequestPresentOptionsPtr);
   void InitializeRenderer();
+  void UpdateViewports();
   void OnGpuProcessConnectionReady();
   // Returns true if successfully resized.
   bool ResizeForWebVR(int16_t frame_index);
   void UpdateSamples();
   void UpdateEyeInfos(const gfx::Transform& head_pose,
-                      int viewport_offset,
+                      Viewport& viewport,
                       const gfx::Size& render_size,
                       RenderInfo* out_render_info);
   void DrawFrame(int16_t frame_index, base::TimeTicks current_time);
@@ -437,13 +453,12 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   std::unique_ptr<gl::ScopedJavaSurface> content_overlay_surface_;
 
   std::unique_ptr<gvr::GvrApi> gvr_api_;
-  std::unique_ptr<gvr::BufferViewportList> buffer_viewport_list_;
-  std::unique_ptr<gvr::BufferViewport> buffer_viewport_;
-  std::unique_ptr<gvr::BufferViewport> webvr_browser_ui_left_viewport_;
-  std::unique_ptr<gvr::BufferViewport> webvr_browser_ui_right_viewport_;
-  std::unique_ptr<gvr::BufferViewport> webvr_left_viewport_;
-  std::unique_ptr<gvr::BufferViewport> webvr_right_viewport_;
-  std::unique_ptr<gvr::SwapChain> swap_chain_;
+  gvr::BufferViewportList viewport_list_;
+  Viewport main_viewport_;
+  Viewport webvr_viewport_;
+  Viewport webvr_overlay_viewport_;
+  bool viewports_need_updating_;
+  gvr::SwapChain swap_chain_;
   gvr::Frame acquired_frame_;
   base::queue<std::pair<WebXrPresentationState::FrameIndexType, WebVrBounds>>
       pending_bounds_;

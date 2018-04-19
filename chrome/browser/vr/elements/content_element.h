@@ -53,6 +53,7 @@ class ContentElement : public UiElement {
   void SetProjectionMatrix(const gfx::Transform& matrix);
   void SetTextInputDelegate(TextInputDelegate* text_input_delegate);
   void SetDelegate(ContentInputDelegate* delegate);
+  void SetUsesQuadLayer(bool uses_quad_layer);
 
  private:
   ContentInputDelegate* delegate_ = nullptr;
@@ -69,6 +70,7 @@ class ContentElement : public UiElement {
   float last_content_aspect_ratio_ = 0.0f;
   gfx::Transform projection_matrix_;
   bool focused_ = false;
+  bool uses_quad_layer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ContentElement);
 };
