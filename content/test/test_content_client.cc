@@ -28,11 +28,11 @@ TestContentClient::TestContentClient() {
 
 #if defined(OS_ANDROID)
   // on Android all pak files are inside the paks folder.
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &content_shell_pack_path);
+  CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &content_shell_pack_path));
   content_shell_pack_path = content_shell_pack_path.Append(
       FILE_PATH_LITERAL("paks"));
 #else
-  PathService::Get(base::DIR_MODULE, &content_shell_pack_path);
+  CHECK(PathService::Get(base::DIR_ASSETS, &content_shell_pack_path));
 #endif  // defined(OS_ANDROID)
 
   // Add the content_shell main pak file.
