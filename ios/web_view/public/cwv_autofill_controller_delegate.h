@@ -12,7 +12,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class CWVAutofillController;
+@class CWVAutofillCreditCard;
 @class CWVAutofillFormSuggestion;
+
+// Storage policies for autofill data.
+typedef NS_ENUM(NSInteger, CWVStoragePolicy) {
+  CWVStoragePolicyReject = 0,  // Do not store.
+  CWVStoragePolicyAllow,       // Allow storage.
+};
 
 CWV_EXPORT
 // Protocol to receive callbacks related to autofill.
@@ -54,6 +61,15 @@ CWV_EXPORT
      didSubmitFormWithName:(NSString*)formName
              userInitiated:(BOOL)userInitiated
                isMainFrame:(BOOL)isMainFrame;
+
+// Called when user needs to decide on whether or not to save the card locally.
+// This can happen if user is signed out or sync is disabled.
+// Pass final decision to |decisionHandler|. Must only be called once.
+// If not implemented, assumes CWVStoragePolicyReject.
+- (void)autofillController:(CWVAutofillController*)autofillController
+    decidePolicyForLocalStorageOfCreditCard:(CWVAutofillCreditCard*)creditCard
+                            decisionHandler:(void (^)(CWVStoragePolicy policy))
+                                                decisionHandler;
 
 @end
 

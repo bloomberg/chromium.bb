@@ -21,7 +21,7 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
     PrefService* pref_service,
     PersonalDataManager* personal_data_manager,
     web::WebState* web_state,
-    id<AutofillClientIOSBridge> bridge,
+    id<CWVAutofillClientIOSBridge> bridge,
     identity::IdentityManager* identity_manager,
     scoped_refptr<AutofillWebDataService> autofill_web_data_service)
     : pref_service_(pref_service),
@@ -79,7 +79,9 @@ void WebViewAutofillClientIOS::OnUnmaskVerificationResult(
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
-    const base::Closure& callback) {}
+    const base::RepeatingClosure& callback) {
+  [bridge_ confirmSaveCreditCardLocally:card callback:callback];
+}
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,

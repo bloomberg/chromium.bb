@@ -15,10 +15,10 @@
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
 
 namespace autofill {
 
@@ -29,7 +29,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
       PrefService* pref_service,
       PersonalDataManager* personal_data_manager,
       web::WebState* web_state,
-      id<AutofillClientIOSBridge> bridge,
+      id<CWVAutofillClientIOSBridge> bridge,
       identity::IdentityManager* identity_manager,
       scoped_refptr<AutofillWebDataService> autofill_web_data_service);
   ~WebViewAutofillClientIOS() override;
@@ -86,7 +86,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   PrefService* pref_service_;
   PersonalDataManager* personal_data_manager_;
   web::WebState* web_state_;
-  __weak id<AutofillClientIOSBridge> bridge_;
+  __weak id<CWVAutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
 
