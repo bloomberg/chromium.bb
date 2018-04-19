@@ -90,8 +90,11 @@ const CGFloat kDirectTouchFrameExpansion = 20;
 // The vertical padding between the bottom of the action image view and its
 // corresponding label.
 const CGFloat kActionLabelVerticalPadding = 35.0;
-// The value to use as the R, B, and B components for the action label text.
-const CGFloat kActionLabelTextColor = 0.4;
+// The value to use as the R, B, and B components for the action label text and
+// selection layer animation.
+const CGFloat kSelectionColor = 0.4;
+// The values to use for the R, G, and B components for the
+const CGFloat kSelectionColorLegacy[] = {66.0 / 256, 133.0 / 256, 244.0 / 256};
 
 // This function maps a value from a range to another.
 CGFloat MapValueToRange(FloatRange from, FloatRange to, CGFloat value) {
@@ -320,7 +323,7 @@ enum class OverscrollViewState {
           [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
       _addTabLabel.adjustsFontForContentSizeCategory = NO;
       _addTabLabel.textColor =
-          [UIColor colorWithWhite:kActionLabelTextColor alpha:1.0];
+          [UIColor colorWithWhite:kSelectionColor alpha:1.0];
       _addTabLabel.text =
           l10n_util::GetNSString(IDS_IOS_OVERSCROLL_ADD_TAB_LABEL);
       [_addTabLabel sizeToFit];
@@ -331,7 +334,7 @@ enum class OverscrollViewState {
           [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
       _refreshLabel.adjustsFontForContentSizeCategory = NO;
       _refreshLabel.textColor =
-          [UIColor colorWithWhite:kActionLabelTextColor alpha:1.0];
+          [UIColor colorWithWhite:kSelectionColor alpha:1.0];
       _refreshLabel.text =
           l10n_util::GetNSString(IDS_IOS_OVERSCROLL_REFRESH_LABEL);
       [_refreshLabel sizeToFit];
@@ -342,7 +345,7 @@ enum class OverscrollViewState {
           [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
       _closeTabLabel.adjustsFontForContentSizeCategory = NO;
       _closeTabLabel.textColor =
-          [UIColor colorWithWhite:kActionLabelTextColor alpha:1.0];
+          [UIColor colorWithWhite:kSelectionColor alpha:1.0];
       _closeTabLabel.text =
           l10n_util::GetNSString(IDS_IOS_OVERSCROLL_CLOSE_TAB_LABEL);
       [_closeTabLabel sizeToFit];
@@ -971,7 +974,7 @@ enum class OverscrollViewState {
     [_closeTabActionImageView
         setImage:[UIImage imageNamed:kCloseActionActiveImage]];
     _selectionCircleLayer.fillColor =
-        [[UIColor colorWithRed:1 green:1 blue:1 alpha:0.2] CGColor];
+        [UIColor colorWithRed:1 green:1 blue:1 alpha:0.2].CGColor;
     _selectionCircleMaskLayer.fillColor = [[UIColor clearColor] CGColor];
   } else {
     [_addTabActionImageView setImage:[UIImage imageNamed:kNewTabActionImage]];
@@ -985,10 +988,14 @@ enum class OverscrollViewState {
     [_closeTabActionImageViewHighlighted
         setImage:[UIImage imageNamed:kCloseActionActiveImage]];
 
-    _selectionCircleLayer.fillColor = [[UIColor colorWithRed:66.0 / 256
-                                                       green:133.0 / 256
-                                                        blue:244.0 / 256
-                                                       alpha:1] CGColor];
+    _selectionCircleLayer.fillColor =
+        IsUIRefreshPhase1Enabled()
+            ? [UIColor colorWithWhite:kSelectionColor alpha:1.0].CGColor
+            : [UIColor colorWithRed:kSelectionColorLegacy[0]
+                              green:kSelectionColorLegacy[1]
+                               blue:kSelectionColorLegacy[2]
+                              alpha:1]
+                  .CGColor;
     _selectionCircleMaskLayer.fillColor = [[UIColor blackColor] CGColor];
   }
   [_addTabActionImageView sizeToFit];
