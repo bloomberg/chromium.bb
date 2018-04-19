@@ -20,9 +20,10 @@
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
-#import "ios/chrome/browser/ui/history/history_table_view_controller_delegate.h"
+#include "ios/chrome/browser/ui/history/history_local_commands.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
@@ -84,7 +85,6 @@ const int kMaxFetchCount = 100;
 @synthesize browserState = _browserState;
 @synthesize contextMenuCoordinator = _contextMenuCoordinator;
 @synthesize currentQuery = _currentQuery;
-@synthesize delegate = _delegate;
 @synthesize empty = _empty;
 @synthesize entryInserter = _entryInserter;
 @synthesize filterQueryResult = _filterQueryResult;
@@ -92,6 +92,7 @@ const int kMaxFetchCount = 100;
 @synthesize historyService = _historyService;
 @synthesize loader = _loader;
 @synthesize loading = _loading;
+@synthesize localDispatcher = _localDispatcher;
 @synthesize searchController = _searchController;
 @synthesize searching = _searching;
 @synthesize shouldShowNoticeAboutOtherFormsOfBrowsingHistory =
@@ -140,6 +141,15 @@ const int kMaxFetchCount = 100;
   } else {
     self.tableView.tableHeaderView = self.searchController.searchBar;
   }
+
+  // Adds the "Done" button and hooks it up to |stop|.
+  UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                           target:self
+                           action:@selector(dismissHistory)];
+  [dismissButton
+      setAccessibilityIdentifier:kTableViewNavigationDismissButtonId];
+  self.navigationItem.rightBarButtonItem = dismissButton;
 
   // Set up the bottom toolbar buttons.
   NSString* leadingButtonString = l10n_util::GetNSStringWithFixup(
@@ -225,7 +235,6 @@ const int kMaxFetchCount = 100;
   // history entries were found.
   if (results.empty() && self.empty) {
     [self updateEntriesStatusMessage];
-    [self.delegate historyTableViewControllerDidChangeEntries];
     return;
   }
 
@@ -255,7 +264,6 @@ const int kMaxFetchCount = 100;
       item.timestamp = entry.time;
       [resultsItems addObject:item];
     }
-    [self.delegate historyTableViewControllerDidChangeEntries];
     if (([self isSearching] && [searchQuery length] > 0 &&
          [self.currentQuery isEqualToString:searchQuery]) ||
         self.filterQueryResult) {
@@ -335,13 +343,18 @@ const int kMaxFetchCount = 100;
 // TODO(crbug.com/805190): Migrate once we decide how to handle favicons and the
 // a11y callback on HistoryEntryItem.
 
-#pragma mark HistoryTableUpdaterDelegate
+#pragma mark - History Data Updates
 
+// Search history for text |query| and display the results. |query| may be nil.
+// If query is empty, show all history items.
 - (void)showHistoryMatchingQuery:(NSString*)query {
   self.finishedLoading = NO;
   self.currentQuery = query;
   [self fetchHistoryForQuery:query continuation:false];
 }
+
+// Deletes selected items from browser history and removes them from the
+// tableView.
 - (void)deleteSelectedItems {
   // TODO(crbug.com/805190): Migrate.
 }
@@ -361,7 +374,6 @@ const int kMaxFetchCount = 100;
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(tableView, self.tableView);
   if (self.isEditing) {
-    [self.delegate historyTableViewControllerDidChangeEntrySelection];
   } else {
     HistoryEntryItem* item = base::mac::ObjCCastStrict<HistoryEntryItem>(
         [self.tableViewModel itemAtIndexPath:indexPath]);
@@ -547,7 +559,7 @@ const int kMaxFetchCount = 100;
 // Opens URL in a new non-incognito tab and dismisses the history view.
 - (void)openURLInNewTab:(const GURL&)URL {
   GURL copiedURL(URL);
-  [self.delegate dismissHistoryWithCompletion:^{
+  [self.localDispatcher dismissHistoryWithCompletion:^{
     [self.loader webPageOrderedOpen:copiedURL
                            referrer:web::Referrer()
                         inIncognito:NO
@@ -559,7 +571,7 @@ const int kMaxFetchCount = 100;
 // Opens URL in a new incognito tab and dismisses the history view.
 - (void)openURLInNewIncognitoTab:(const GURL&)URL {
   GURL copiedURL(URL);
-  [self.delegate dismissHistoryWithCompletion:^{
+  [self.localDispatcher dismissHistoryWithCompletion:^{
     [self.loader webPageOrderedOpen:copiedURL
                            referrer:web::Referrer()
                         inIncognito:YES
@@ -577,12 +589,17 @@ const int kMaxFetchCount = 100;
   GURL copiedURL(URL);
   new_tab_page_uma::RecordAction(_browserState,
                                  new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
-  [self.delegate dismissHistoryWithCompletion:^{
+  [self.localDispatcher dismissHistoryWithCompletion:^{
     [self.loader loadURL:copiedURL
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
         rendererInitiated:NO];
   }];
+}
+
+// Dismisses this ViewController.
+- (void)dismissHistory {
+  [self.localDispatcher dismissHistoryWithCompletion:nil];
 }
 
 @end

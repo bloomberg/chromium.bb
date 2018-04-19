@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_transitioning_delegate.h"
-#import "ios/chrome/browser/ui/table_view/table_container_constants.h"
-#import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,7 +27,7 @@
 @property(nonatomic, strong) RecentTabsMediator* mediator;
 // ViewController being managed by this Coordinator.
 @property(nonatomic, strong)
-    TableContainerViewController* recentTabsContainerViewController;
+    TableViewNavigationController* recentTabsNavigationController;
 @property(nonatomic, strong)
     RecentTabsTransitioningDelegate* recentTabsTransitioningDelegate;
 @end
@@ -37,8 +37,7 @@
 @synthesize dispatcher = _dispatcher;
 @synthesize loader = _loader;
 @synthesize mediator = _mediator;
-@synthesize recentTabsContainerViewController =
-    _recentTabsContainerViewController;
+@synthesize recentTabsNavigationController = _recentTabsNavigationController;
 @synthesize recentTabsTransitioningDelegate = _recentTabsTransitioningDelegate;
 
 - (void)start {
@@ -55,7 +54,8 @@
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
                            action:@selector(stop)];
-  [dismissButton setAccessibilityIdentifier:kTableContainerDismissButtonId];
+  [dismissButton
+      setAccessibilityIdentifier:kTableViewNavigationDismissButtonId];
   recentTabsTableViewController.navigationItem.rightBarButtonItem =
       dismissButton;
 
@@ -69,34 +69,33 @@
   [self.mediator initObservers];
   [self.mediator reloadSessions];
 
-  // Present RecentTabsViewController.
-  self.recentTabsContainerViewController = [[TableContainerViewController alloc]
+  // Present RecentTabsNavigationController.
+  self.recentTabsNavigationController = [[TableViewNavigationController alloc]
       initWithTable:recentTabsTableViewController];
-  self.recentTabsContainerViewController.toolbarHidden = YES;
-
+  self.recentTabsNavigationController.toolbarHidden = YES;
   self.recentTabsTransitioningDelegate =
       [[RecentTabsTransitioningDelegate alloc] init];
-  self.recentTabsContainerViewController.transitioningDelegate =
+  self.recentTabsNavigationController.transitioningDelegate =
       self.recentTabsTransitioningDelegate;
-  [self.recentTabsContainerViewController
+  [self.recentTabsNavigationController
       setModalPresentationStyle:UIModalPresentationCustom];
   [self.baseViewController
-      presentViewController:self.recentTabsContainerViewController
+      presentViewController:self.recentTabsNavigationController
                    animated:YES
                  completion:nil];
 }
 
 - (void)stop {
-  // TODO(crbug.com/805135): Move this dismissal code to RecentTabsContainerVC
-  // once its created. Remove "base/mac/foundation_util.h" import then.
+  // TODO(crbug.com/805135): Create RecentTabsLocalCommands?. Remove
+  // "base/mac/foundation_util.h" import then.
   RecentTabsTableViewController* recentTabsTableViewController =
       base::mac::ObjCCastStrict<RecentTabsTableViewController>(
-          self.recentTabsContainerViewController.tableViewController);
+          self.recentTabsNavigationController.tableViewController);
   [recentTabsTableViewController dismissModals];
-  [self.recentTabsContainerViewController
+  [self.recentTabsNavigationController
       dismissViewControllerAnimated:YES
                          completion:self.completion];
-  self.recentTabsContainerViewController = nil;
+  self.recentTabsNavigationController = nil;
   self.recentTabsTransitioningDelegate = nil;
   [self.mediator disconnect];
   self.mediator = nil;

@@ -12,7 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_constants.h"
-#import "ios/chrome/browser/ui/table_view/table_container_constants.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -77,8 +77,9 @@ id<GREYMatcher> TitleOfTestPage() {
 
 // Closes the recent tabs panel.
 - (void)closeRecentTabs {
-  NSString* exitID =
-      IsUIRefreshPhase1Enabled() ? kTableContainerDismissButtonId : @"Exit";
+  NSString* exitID = IsUIRefreshPhase1Enabled()
+                         ? kTableViewNavigationDismissButtonId
+                         : @"Exit";
   id<GREYMatcher> exitMatcher = grey_accessibilityID(exitID);
   [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
   // Wait until the recent tabs panel is dismissed.
