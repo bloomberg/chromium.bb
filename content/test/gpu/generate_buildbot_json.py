@@ -2298,7 +2298,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
          # the Debug bots, which is too long.
         'build_configs': ['Release'],
         'predicate': Predicates.FYI_ONLY,
-        # Only run on the NVIDIA Release and Intel Release Linux bots.
+        # Run on the NVIDIA Release Windows/Linux and Intel Release Linux bots
         'swarming_dimension_sets': [
           {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
@@ -2312,47 +2312,6 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
             'gpu': '8086:1912',
             'os': 'Ubuntu'
           },
-        ],
-        'disabled_instrumentation_types': ['tsan'],
-      },
-    ],
-    'disabled_tester_configs': [
-      {
-        'names': [
-          'Linux FYI Ozone (Intel)',
-        ],
-      },
-    ],
-    'target_name': 'webgl_conformance',
-    'extra_browser_args': [
-      '--use-gl=angle',
-      '--use-angle=gl',
-      '--use-cmd-decoder=passthrough',
-    ],
-    'args': [
-      '--webgl-conformance-version=2.0.1',
-      # The current working directory when run via isolate is
-      # out/Debug or out/Release. Reference this file relatively to
-      # it.
-      '--read-abbreviated-json-results-from=' + \
-      '../../content/test/data/gpu/webgl2_conformance_tests_output.json',
-    ],
-    'asan_args': ['--is-asan'],
-    'swarming': {
-      # These tests currently take about an hour and fifteen minutes
-      # to run serially.
-      'shards': 20,
-    },
-  },
-  'webgl2_conformance_gl_tests': {
-    'tester_configs': [
-      {
-         # The WebGL 2.0 conformance tests take over an hour to run on
-         # the Debug bots, which is too long.
-        'build_configs': ['Release'],
-        'predicate': Predicates.FYI_ONLY,
-        # Only run on the NVIDIA Release Windows bots.
-        'swarming_dimension_sets': [
           {
             'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
@@ -2370,8 +2329,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     ],
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
+      '--use-gl=angle',
       '--use-angle=gl',
-      '--use-cmd-decoder=validating',
+      '--use-cmd-decoder=passthrough',
     ],
     'args': [
       '--webgl-conformance-version=2.0.1',
