@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -158,7 +159,7 @@ class ArcSettingsServiceImpl
   void SyncLocale() const;
   void SyncLocationServiceEnabled() const;
   void SyncProxySettings() const;
-  void SyncReportingConsent() const;
+  void SyncReportingConsent(bool initial_sync) const;
   void SyncSelectToSpeakEnabled() const;
   void SyncSmsConnectEnabled() const;
   void SyncSpokenFeedbackEnabled() const;
@@ -317,7 +318,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   reporting_consent_subscription_ = CrosSettings::Get()->AddSettingsObserver(
       chromeos::kStatsReportingPref,
       base::Bind(&ArcSettingsServiceImpl::SyncReportingConsent,
-                 base::Unretained(this)));
+                 base::Unretained(this), /*initial_sync=*/false));
 
   // It's safe to use base::Unretained. This is unregistered when
   // default_zoom_level_subscription_ is destructed which is stored as
@@ -346,6 +347,7 @@ void ArcSettingsServiceImpl::SyncInitialSettings() const {
   // Keep these lines ordered lexicographically.
   SyncBackupEnabled();
   SyncLocationServiceEnabled();
+  SyncReportingConsent(/*initial_sync=*/true);
 }
 
 void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
@@ -356,7 +358,7 @@ void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
   SyncFontSize();
   SyncPageZoom();
   SyncProxySettings();
-  SyncReportingConsent();
+  SyncReportingConsent(/*initial_sync=*/false);
   SyncSelectToSpeakEnabled();
   SyncSmsConnectEnabled();
   SyncSpokenFeedbackEnabled();
@@ -519,12 +521,17 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_PROXY", extras);
 }
 
-void ArcSettingsServiceImpl::SyncReportingConsent() const {
+void ArcSettingsServiceImpl::SyncReportingConsent(bool initial_sync) const {
   bool consent = false;
   // Public session user never saw the consent even if the admin forced
   // the pref by a policy.
   if (!profiles::IsPublicSession())
     CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref, &consent);
+  if (consent && !initial_sync && policy_util::IsAccountManaged(profile_)) {
+    // Don't enable reporting for managed users who might not have seen the
+    // reporting notice during ARC setup.
+    return;
+  }
   base::DictionaryValue extras;
   extras.SetBoolean("reportingConsent", consent);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_REPORTING_CONSENT",
