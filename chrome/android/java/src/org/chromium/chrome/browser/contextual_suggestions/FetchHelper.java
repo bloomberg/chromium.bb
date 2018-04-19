@@ -110,7 +110,8 @@ class FetchHelper {
         }
     }
 
-    private final static long MINIMUM_FETCH_DELAY_MILLIS = 10 * 1000; // 10 seconds.
+    // TODO(fgorski): flip this to finch controlled setting.
+    private final static long MINIMUM_FETCH_DELAY_MILLIS = 2 * 1000; // 2 seconds.
     private final Delegate mDelegate;
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabModelObserver mTabModelObserver;
