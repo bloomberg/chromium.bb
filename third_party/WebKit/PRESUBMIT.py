@@ -24,12 +24,6 @@ except IOError:
     pass
 
 
-_EXCLUDED_PATHS = (
-    # This directory is created and updated via a script.
-    r'^third_party[\\\/]WebKit[\\\/]Tools[\\\/]Scripts[\\\/]webkitpy[\\\/]thirdparty[\\\/]wpt[\\\/]wpt[\\\/].*',
-)
-
-
 def _CommonChecks(input_api, output_api):
     """Checks common to both upload and commit."""
     # We should figure out what license checks we actually want to use.
@@ -37,8 +31,7 @@ def _CommonChecks(input_api, output_api):
 
     results = []
     results.extend(input_api.canned_checks.PanProjectChecks(
-        input_api, output_api, excluded_paths=_EXCLUDED_PATHS,
-        maxlen=800, license_header=license_header))
+        input_api, output_api, maxlen=800, license_header=license_header))
     return results
 
 

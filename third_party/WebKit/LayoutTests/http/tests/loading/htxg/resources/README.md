@@ -18,7 +18,7 @@ go get github.com/nyaxt/webpackage/go/signedexchange/cmd/gen-signedexchange
 
 # Generate the certificate message file of "127.0.0.1.pem".
 gen-certurl  \
-  ../../../../../../Tools/Scripts/webkitpy/thirdparty/wpt/certs/127.0.0.1.pem \
+  ../../../../../../../blink/tools/blinkpy/thirdparty/wpt/certs/127.0.0.1.pem \
   > 127.0.0.1.pem.msg
 
 # Generate the signed exchange file.
@@ -26,10 +26,10 @@ gen-signedexchange \
   -uri https://www.127.0.0.1/test.html \
   -status 200 \
   -content htxg-location.html \
-  -certificate ../../../../../../Tools/Scripts/webkitpy/thirdparty/wpt/certs/127.0.0.1.pem \
+  -certificate ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.pem \
   -certUrl http://localhost:8000/loading/htxg/resources/127.0.0.1.pem.msg \
   -validityUrl http://localhost:8000/loading/htxg/resources/resource.validity.msg \
-  -privateKey ../../../../../../Tools/Scripts/webkitpy/thirdparty/wpt/certs/127.0.0.1.key\
+  -privateKey ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.key\
   -date 2018-04-01T00:00:00Z \
   -expire 168h \
   -o htxg-location.htxg \

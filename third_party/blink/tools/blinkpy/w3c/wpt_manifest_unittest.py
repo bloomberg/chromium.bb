@@ -26,7 +26,7 @@ class WPTManifestUnitTest(unittest.TestCase):
             [
                 [
                     'python',
-                    webkit_base + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/wpt',
+                    '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
                     'manifest',
                     '--work',
                     '--tests-root',
@@ -51,7 +51,7 @@ class WPTManifestUnitTest(unittest.TestCase):
             [
                 [
                     'python',
-                    webkit_base + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/wpt',
+                    '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
                     'manifest',
                     '--work',
                     '--tests-root',

@@ -13,8 +13,8 @@ information about the lint tool.
 def _LintWPT(input_api, output_api):
     wpt_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'wpt')
     linter_path = input_api.os_path.join(
-        input_api.PresubmitLocalPath(), '..', '..', 'Tools', 'Scripts',
-        'webkitpy', 'thirdparty', 'wpt', 'wpt', 'wpt')
+        input_api.PresubmitLocalPath(), '..', '..', '..', 'blink', 'tools',
+        'blinkpy', 'third_party', 'wpt', 'wpt', 'wpt')
 
     paths_in_wpt = []
     for f in input_api.AffectedFiles():

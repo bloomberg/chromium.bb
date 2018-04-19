@@ -28,9 +28,11 @@ import sys
 
 
 from webkitpy.common.path_finder import PathFinder
+from webkitpy.common.path_finder import get_blink_tools_dir
+from webkitpy.common.path_finder import get_blinkpy_thirdparty_dir
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.executive import Executive
-from webkitpy.thirdparty import pep8
+from blinkpy.third_party import pep8
 
 
 class PythonChecker(object):
@@ -78,8 +80,8 @@ class PythonChecker(object):
         env['PYTHONPATH'] = os.pathsep.join([
             finder.path_from_tools_scripts(),
             finder.path_from_blink_source('build', 'scripts'),
-            finder.path_from_tools_scripts('webkitpy', 'thirdparty'),
-            finder.path_from_chromium_base('third_party', 'blink', 'tools'),
+            get_blinkpy_thirdparty_dir(),
+            get_blink_tools_dir(),
             finder.path_from_blink_source('bindings', 'scripts'),
             finder.path_from_chromium_base('build', 'android'),
             finder.path_from_chromium_base('third_party', 'catapult', 'devil'),

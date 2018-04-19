@@ -38,7 +38,7 @@ def _default_handlers(stream, logging_level, include_time):
     # Create the filter.
     def should_log(record):
         """Return whether a logging.LogRecord should be logged."""
-        if record.name.startswith('webkitpy.thirdparty'):
+        if record.name.startswith('blinkpy.third_party'):
             return False
         return True
 

@@ -120,7 +120,7 @@ _PATH_RULES_SPECIFIER = [
     #   No trailing white space: since this is easy to correct.
     #   No carriage-return line endings: since this is easy to correct.
     #
-    (['webkitpy/thirdparty/'],
+    (['blinkpy/third_party/'],
      ['-',
       '+pep8/W191',  # Tabs
       '+pep8/W291',  # Trailing white space

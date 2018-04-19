@@ -208,8 +208,8 @@ class GlobalVariablesTest(unittest.TestCase):
         assert_check("random_path.cpp",
                     "readability/naming")
 
-        # Third-party Python code: webkitpy/thirdparty
-        path = "Tools/Scripts/webkitpy/thirdparty/mock.py"
+        # Third-party Python code: blinkpy/third_party
+        path = "tools/blinkpy/third_party/mock.py"
         assert_no_check(path, "build/include")
         assert_no_check(path, "pep8/E401")  # A random pep8 category.
         assert_check(path, "pep8/W191")
