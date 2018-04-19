@@ -99,6 +99,9 @@ class ViewsTextServicesContextMenuMac
 
   // TextServicesContextMenu::Delegate:
   base::string16 GetSelectedText() const override {
+    if (client_->GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD)
+      return base::string16();
+
     return client_->GetSelectedText();
   }
 
