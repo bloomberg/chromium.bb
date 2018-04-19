@@ -40,7 +40,6 @@ class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
 
   // MediaResource interface.
   std::vector<DemuxerStream*> GetAllStreams() override;
-  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
   MediaUrlParams GetMediaUrlParams() const override;
   MediaResource::Type GetType() const override;
 
@@ -58,10 +57,11 @@ class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
   base::Time GetTimelineOffset() const override;
   int64_t GetMemoryUsage() const override;
   void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& track_ids,
-                                   base::TimeDelta curr_time) override;
-  void OnSelectedVideoTrackChanged(
-      base::Optional<MediaTrack::Id> selected_track_id,
-      base::TimeDelta curr_time) override;
+                                   base::TimeDelta curr_time,
+                                   TrackChangeCB change_completed_cb) override;
+  void OnSelectedVideoTrackChanged(const std::vector<MediaTrack::Id>& track_ids,
+                                   base::TimeDelta curr_time,
+                                   TrackChangeCB change_completed_cb) override;
 
  private:
   MediaUrlParams params_;

@@ -62,6 +62,12 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
   base::TimeDelta GetMediaTime() final;
+  void OnSelectedVideoTracksChanged(
+      const std::vector<DemuxerStream*>& enabled_tracks,
+      base::OnceClosure change_completed_cb) override;
+  void OnEnabledAudioTracksChanged(
+      const std::vector<DemuxerStream*>& enabled_tracks,
+      base::OnceClosure change_completed_cb) override;
 
   // Helper functions for testing purposes. Must be called before Initialize().
   void DisableUnderflowForTesting();
@@ -106,25 +112,24 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   void FlushVideoRenderer();
   void OnVideoRendererFlushDone();
 
-  // This function notifies the renderer that the status of the demuxer |stream|
-  // has been changed, the new status is |enabled| and the change occured while
-  // playback position was |time|.
-  void OnStreamStatusChanged(DemuxerStream* stream,
-                             bool enabled,
-                             base::TimeDelta time);
-
   // Reinitialize audio/video renderer during a demuxer stream switching. The
   // renderer must be flushed first, and when the re-init is completed the
   // corresponding callback will be invoked to restart playback.
   // The |stream| parameter specifies the new demuxer stream, and the |time|
   // parameter specifies the time on media timeline where the switch occured.
-  void ReinitializeAudioRenderer(DemuxerStream* stream, base::TimeDelta time);
+  void ReinitializeAudioRenderer(DemuxerStream* stream,
+                                 base::TimeDelta time,
+                                 base::OnceClosure reinitialize_completed_cb);
   void OnAudioRendererReinitialized(DemuxerStream* stream,
                                     base::TimeDelta time,
+                                    base::OnceClosure reinitialize_completed_cb,
                                     PipelineStatus status);
-  void ReinitializeVideoRenderer(DemuxerStream* stream, base::TimeDelta time);
+  void ReinitializeVideoRenderer(DemuxerStream* stream,
+                                 base::TimeDelta time,
+                                 base::OnceClosure restart_completed_cb);
   void OnVideoRendererReinitialized(DemuxerStream* stream,
                                     base::TimeDelta time,
+                                    base::OnceClosure restart_completed_cb,
                                     PipelineStatus status);
 
   // Restart audio/video renderer playback after a demuxer stream switch or
@@ -134,8 +139,18 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // needs to be restarted. It is necessary for demuxers with independent
   // streams (e.g. MSE / ChunkDemuxer) to synchronize data reading between those
   // streams.
-  void RestartAudioRenderer(DemuxerStream* stream, base::TimeDelta time);
-  void RestartVideoRenderer(DemuxerStream* stream, base::TimeDelta time);
+  void RestartAudioRenderer(DemuxerStream* stream,
+                            base::TimeDelta time,
+                            base::OnceClosure restart_completed_cb);
+  void RestartVideoRenderer(DemuxerStream* stream,
+                            base::TimeDelta time,
+                            base::OnceClosure restart_completed_cb);
+
+  // Fix state booleans after the stream switching is finished.
+  void CleanUpTrackChange(base::RepeatingClosure on_finished,
+                          bool* pending_change,
+                          bool* ended,
+                          bool* playing);
 
   // Callback executed by filters to update statistics.
   void OnStatisticsUpdate(const PipelineStatistics& stats);
@@ -217,6 +232,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // Whether we've received the audio/video ended events.
   bool audio_ended_;
   bool video_ended_;
+  bool audio_playing_;
+  bool video_playing_;
 
   CdmContext* cdm_context_;
 
@@ -238,21 +255,10 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // TODO(servolk): Get rid of the lock and replace restarting_audio_ with
   // std::atomic<bool> when atomics are unbanned in Chromium.
   base::Lock restarting_audio_lock_;
-  bool restarting_audio_ = false;
+  bool pending_audio_track_change_ = false;
   base::TimeDelta restarting_audio_time_ = kNoTimestamp;
 
-  bool restarting_video_ = false;
-
-  // Flush operations and media track status changes must be serialized to avoid
-  // interfering with each other. This list will hold a list of postponed
-  // actions that need to be completed after the current async operation is
-  // completed.
-  std::list<base::Closure> pending_actions_;
-
-  // Pending flush indicates that a track change is in the middle of a Flush and
-  // that another one can't be scheduled at this time. Instead it should be
-  // added to |pending_actions_|.
-  bool pending_flush_for_stream_change_ = false;
+  bool pending_video_track_change_ = false;
 
   base::WeakPtr<RendererImpl> weak_this_;
   base::WeakPtrFactory<RendererImpl> weak_factory_;

@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/pipeline.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -390,6 +391,74 @@ TEST_F(PipelineControllerTest, SeekToSeekTimeNotElided) {
   // Expect the second seek to trigger when the first seek completes.
   EXPECT_CALL(*pipeline_, Seek(seek_time, _));
   Complete(seek_cb_1);
+}
+
+TEST_F(PipelineControllerTest, VideoTrackChangeWhileSuspending) {
+  Complete(StartPipeline());
+  EXPECT_CALL(*pipeline_, Suspend(_));
+  EXPECT_CALL(*pipeline_, MockOnSelectedVideoTrackChanged(_, _)).Times(0);
+  pipeline_controller_.Suspend();
+  pipeline_controller_.OnSelectedVideoTrackChanged({});
+}
+
+TEST_F(PipelineControllerTest, AudioTrackChangeWhileSuspending) {
+  Complete(StartPipeline());
+  EXPECT_CALL(*pipeline_, Suspend(_));
+  EXPECT_CALL(*pipeline_, MockOnEnabledAudioTracksChanged(_, _)).Times(0);
+  pipeline_controller_.Suspend();
+  pipeline_controller_.OnEnabledAudioTracksChanged({});
+}
+
+TEST_F(PipelineControllerTest, AudioTrackChangeDuringVideoTrackChange) {
+  Complete(StartPipeline());
+
+  EXPECT_CALL(*pipeline_, MockOnSelectedVideoTrackChanged(_, _));
+  pipeline_controller_.OnSelectedVideoTrackChanged({});
+  pipeline_controller_.OnEnabledAudioTracksChanged({});
+  EXPECT_CALL(*pipeline_, MockOnEnabledAudioTracksChanged(_, _));
+
+  pipeline_controller_.FireOnTrackChangeCompleteForTesting(
+      PipelineController::State::PLAYING);
+
+  pipeline_controller_.FireOnTrackChangeCompleteForTesting(
+      PipelineController::State::PLAYING);
+}
+
+TEST_F(PipelineControllerTest, SuspendDuringVideoTrackChange) {
+  Complete(StartPipeline());
+  EXPECT_CALL(*pipeline_, MockOnSelectedVideoTrackChanged(_, _));
+  was_resumed_ = false;
+  pipeline_controller_.OnSelectedVideoTrackChanged({});
+  pipeline_controller_.Suspend();
+
+  base::RunLoop loop;
+  EXPECT_CALL(*pipeline_, Suspend(_))
+      .WillOnce(RunOnceClosure(loop.QuitClosure()));
+
+  pipeline_controller_.FireOnTrackChangeCompleteForTesting(
+      PipelineController::State::PLAYING);
+
+  loop.Run();
+  EXPECT_FALSE(was_resumed_);
+}
+
+TEST_F(PipelineControllerTest, SuspendDuringAudioTrackChange) {
+  Complete(StartPipeline());
+  EXPECT_CALL(*pipeline_, MockOnEnabledAudioTracksChanged(_, _));
+  was_resumed_ = false;
+
+  pipeline_controller_.OnEnabledAudioTracksChanged({});
+  pipeline_controller_.Suspend();
+
+  base::RunLoop loop;
+  EXPECT_CALL(*pipeline_, Suspend(_))
+      .WillOnce(RunOnceClosure(loop.QuitClosure()));
+
+  pipeline_controller_.FireOnTrackChangeCompleteForTesting(
+      PipelineController::State::PLAYING);
+
+  loop.Run();
+  EXPECT_FALSE(was_resumed_);
 }
 
 }  // namespace media

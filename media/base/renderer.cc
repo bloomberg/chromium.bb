@@ -10,4 +10,18 @@ Renderer::Renderer() = default;
 
 Renderer::~Renderer() = default;
 
+void Renderer::OnSelectedVideoTracksChanged(
+    const std::vector<DemuxerStream*>& enabled_tracks,
+    base::OnceClosure change_completed_cb) {
+  std::move(change_completed_cb).Run();
+  DLOG(WARNING) << "Track changes are not supported.";
+}
+
+void Renderer::OnEnabledAudioTracksChanged(
+    const std::vector<DemuxerStream*>& enabled_tracks,
+    base::OnceClosure change_completed_cb) {
+  std::move(change_completed_cb).Run();
+  DLOG(WARNING) << "Track changes are not supported.";
+}
+
 }  // namespace media
