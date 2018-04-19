@@ -113,7 +113,6 @@ class FakeMediaResource : public MediaResource {
 
   // MediaResource implementation.
   std::vector<DemuxerStream*> GetAllStreams() override;
-  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
  private:
   FakeDemuxerStream fake_video_stream_;

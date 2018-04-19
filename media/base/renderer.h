@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
 #include "media/base/cdm_context.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
@@ -56,6 +57,18 @@ class MEDIA_EXPORT Renderer {
 
   // Returns the current media time.
   virtual base::TimeDelta GetMediaTime() = 0;
+
+  // Provides a list of DemuxerStreams correlating to the tracks which should
+  // be played. An empty list would mean that any playing track of the same
+  // type should be flushed and disabled. Any provided Streams should be played
+  // by whatever mechanism the subclass of Renderer choses for managing it's AV
+  // playback.
+  virtual void OnSelectedVideoTracksChanged(
+      const std::vector<DemuxerStream*>& enabled_tracks,
+      base::OnceClosure change_completed_cb);
+  virtual void OnEnabledAudioTracksChanged(
+      const std::vector<DemuxerStream*>& enabled_tracks,
+      base::OnceClosure change_completed_cb);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Renderer);

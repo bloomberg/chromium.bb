@@ -105,10 +105,5 @@ std::vector<DemuxerStream*> FakeMediaResource::GetAllStreams() {
   return streams;
 }
 
-void FakeMediaResource::SetStreamStatusChangeCB(
-    const StreamStatusChangeCB& cb) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace remoting
 }  // namespace media

@@ -351,14 +351,6 @@ void ChunkDemuxerStream::SetEnabled(bool enabled, base::TimeDelta timestamp) {
     base::ResetAndReturn(&read_cb_).Run(kOk,
                                         StreamParserBuffer::CreateEOSBuffer());
   }
-  if (!stream_status_change_cb_.is_null())
-    stream_status_change_cb_.Run(this, is_enabled_, timestamp);
-}
-
-void ChunkDemuxerStream::SetStreamStatusChangeCB(
-    const StreamStatusChangeCB& cb) {
-  DCHECK(!cb.is_null());
-  stream_status_change_cb_ = BindToCurrentLoop(cb);
 }
 
 TextTrackConfig ChunkDemuxerStream::text_track_config() {
@@ -567,15 +559,6 @@ std::vector<DemuxerStream*> ChunkDemuxer::GetAllStreams() {
   return result;
 }
 
-void ChunkDemuxer::SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) {
-  base::AutoLock auto_lock(lock_);
-  DCHECK(!cb.is_null());
-  for (const auto& stream : audio_streams_)
-    stream->SetStreamStatusChangeCB(cb);
-  for (const auto& stream : video_streams_)
-    stream->SetStreamStatusChangeCB(cb);
-}
-
 TimeDelta ChunkDemuxer::GetStartTime() const {
   return TimeDelta();
 }
@@ -782,68 +765,59 @@ base::TimeDelta ChunkDemuxer::GetHighestPresentationTimestamp(
   return itr->second->GetHighestPresentationTimestamp();
 }
 
-void ChunkDemuxer::OnEnabledAudioTracksChanged(
+void ChunkDemuxer::FindAndEnableProperTracks(
     const std::vector<MediaTrack::Id>& track_ids,
-    base::TimeDelta curr_time) {
+    base::TimeDelta curr_time,
+    DemuxerStream::Type track_type,
+    TrackChangeCB change_completed_cb) {
   base::AutoLock auto_lock(lock_);
+
   std::set<ChunkDemuxerStream*> enabled_streams;
   for (const auto& id : track_ids) {
     auto it = track_id_to_demux_stream_map_.find(id);
     if (it == track_id_to_demux_stream_map_.end())
       continue;
     ChunkDemuxerStream* stream = it->second;
-    DCHECK_EQ(DemuxerStream::AUDIO, stream->type());
+    DCHECK(stream);
+    DCHECK_EQ(track_type, stream->type());
     // TODO(servolk): Remove after multiple enabled audio tracks are supported
     // by the media::RendererImpl.
     if (!enabled_streams.empty()) {
       MEDIA_LOG(INFO, media_log_)
-          << "Only one enabled audio track is supported, ignoring track " << id;
+          << "Only one enabled track is supported, ignoring track " << id;
       continue;
     }
     enabled_streams.insert(stream);
+    stream->SetEnabled(true, curr_time);
   }
 
-  // First disable all streams that need to be disabled and then enable streams
-  // that are enabled.
-  for (const auto& stream : audio_streams_) {
-    if (enabled_streams.find(stream.get()) == enabled_streams.end()) {
+  bool is_audio = track_type == DemuxerStream::AUDIO;
+  for (const auto& stream : is_audio ? audio_streams_ : video_streams_) {
+    if (stream && enabled_streams.find(stream.get()) == enabled_streams.end()) {
       DVLOG(1) << __func__ << ": disabling stream " << stream.get();
       stream->SetEnabled(false, curr_time);
     }
   }
-  for (auto* stream : enabled_streams) {
-    DVLOG(1) << __func__ << ": enabling stream " << stream;
-    stream->SetEnabled(true, curr_time);
-  }
+
+  std::vector<DemuxerStream*> streams(enabled_streams.begin(),
+                                      enabled_streams.end());
+  std::move(change_completed_cb).Run(track_type, streams);
+}
+
+void ChunkDemuxer::OnEnabledAudioTracksChanged(
+    const std::vector<MediaTrack::Id>& track_ids,
+    base::TimeDelta curr_time,
+    TrackChangeCB change_completed_cb) {
+  FindAndEnableProperTracks(track_ids, curr_time, DemuxerStream::AUDIO,
+                            std::move(change_completed_cb));
 }
 
 void ChunkDemuxer::OnSelectedVideoTrackChanged(
-    base::Optional<MediaTrack::Id> track_id,
-    base::TimeDelta curr_time) {
-  base::AutoLock auto_lock(lock_);
-  ChunkDemuxerStream* selected_stream = nullptr;
-  if (track_id) {
-    auto it = track_id_to_demux_stream_map_.find(*track_id);
-    if (it != track_id_to_demux_stream_map_.end()) {
-      selected_stream = it->second;
-      DCHECK(selected_stream);
-      DCHECK_EQ(DemuxerStream::VIDEO, selected_stream->type());
-    }
-  }
-
-  // First disable all streams that need to be disabled and then enable the
-  // stream that needs to be enabled (if any).
-  for (const auto& stream : video_streams_) {
-    if (stream.get() != selected_stream) {
-      DVLOG(1) << __func__ << ": disabling stream " << stream.get();
-      DCHECK_EQ(DemuxerStream::VIDEO, stream->type());
-      stream->SetEnabled(false, curr_time);
-    }
-  }
-  if (selected_stream) {
-    DVLOG(1) << __func__ << ": enabling stream " << selected_stream;
-    selected_stream->SetEnabled(true, curr_time);
-  }
+    const std::vector<MediaTrack::Id>& track_ids,
+    base::TimeDelta curr_time,
+    TrackChangeCB change_completed_cb) {
+  FindAndEnableProperTracks(track_ids, curr_time, DemuxerStream::VIDEO,
+                            std::move(change_completed_cb));
 }
 
 void ChunkDemuxer::OnMemoryPressure(

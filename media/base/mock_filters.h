@@ -88,10 +88,19 @@ class MockPipeline : public Pipeline {
                     base::TimeDelta,
                     const PipelineStatusCB&));
 
-  MOCK_METHOD1(OnEnabledAudioTracksChanged,
-               void(const std::vector<MediaTrack::Id>&));
-  MOCK_METHOD1(OnSelectedVideoTrackChanged,
-               void(base::Optional<MediaTrack::Id>));
+  void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& id,
+                                   base::OnceClosure callback) {
+    MockOnEnabledAudioTracksChanged(id, callback);
+  }
+  void OnSelectedVideoTrackChanged(base::Optional<MediaTrack::Id> id,
+                                   base::OnceClosure callback) {
+    MockOnSelectedVideoTrackChanged(id, callback);
+  }
+
+  MOCK_METHOD2(MockOnEnabledAudioTracksChanged,
+               void(const std::vector<MediaTrack::Id>&, base::OnceClosure&));
+  MOCK_METHOD2(MockOnSelectedVideoTrackChanged,
+               void(base::Optional<MediaTrack::Id>, base::OnceClosure&));
 
   // TODO(sandersd): This should automatically return true between Start() and
   // Stop(). (Or better, remove it from the interface entirely.)
@@ -143,15 +152,30 @@ class MockDemuxer : public Demuxer {
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(AbortPendingReads, void());
   MOCK_METHOD0(GetAllStreams, std::vector<DemuxerStream*>());
-  MOCK_METHOD1(SetStreamStatusChangeCB, void(const StreamStatusChangeCB& cb));
 
   MOCK_CONST_METHOD0(GetStartTime, base::TimeDelta());
   MOCK_CONST_METHOD0(GetTimelineOffset, base::Time());
   MOCK_CONST_METHOD0(GetMemoryUsage, int64_t());
-  MOCK_METHOD2(OnEnabledAudioTracksChanged,
-               void(const std::vector<MediaTrack::Id>&, base::TimeDelta));
-  MOCK_METHOD2(OnSelectedVideoTrackChanged,
-               void(base::Optional<MediaTrack::Id>, base::TimeDelta));
+
+  void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& id,
+                                   base::TimeDelta time,
+                                   TrackChangeCB cb) {
+    MockOnEnabledAudioTracksChanged(id, time, cb);
+  }
+  void OnSelectedVideoTrackChanged(const std::vector<MediaTrack::Id>& id,
+                                   base::TimeDelta time,
+                                   TrackChangeCB cb) {
+    MockOnSelectedVideoTrackChanged(id, time, cb);
+  }
+
+  MOCK_METHOD3(MockOnEnabledAudioTracksChanged,
+               void(const std::vector<MediaTrack::Id>&,
+                    base::TimeDelta,
+                    TrackChangeCB&));
+  MOCK_METHOD3(MockOnSelectedVideoTrackChanged,
+               void(const std::vector<MediaTrack::Id>&,
+                    base::TimeDelta,
+                    TrackChangeCB&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDemuxer);
@@ -314,6 +338,22 @@ class MockRenderer : public Renderer {
   MOCK_METHOD2(SetCdm,
                void(CdmContext* cdm_context,
                     const CdmAttachedCB& cdm_attached_cb));
+
+  void OnSelectedVideoTracksChanged(const std::vector<DemuxerStream*>& id,
+                                    base::OnceClosure cb) {
+    MockOnSelectedVideoTrackChanged(id, cb);
+  }
+
+  void OnSelectedAudioTracksChanged(const std::vector<DemuxerStream*>& id,
+                                    base::OnceClosure cb) {
+    MockOnSelectedAudioTracksChanged(id, cb);
+  }
+
+  MOCK_METHOD2(MockOnSelectedVideoTrackChanged,
+               void(std::vector<DemuxerStream*>, base::OnceClosure&));
+
+  MOCK_METHOD2(MockOnSelectedAudioTracksChanged,
+               void(std::vector<DemuxerStream*>, base::OnceClosure&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRenderer);

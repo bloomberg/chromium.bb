@@ -23,11 +23,6 @@ std::vector<DemuxerStream*> MediaUrlDemuxer::GetAllStreams() {
   return std::vector<DemuxerStream*>();
 }
 
-// Should never be called since MediaResource::Type is URL.
-void MediaUrlDemuxer::SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) {
-  NOTREACHED();
-}
-
 MediaUrlParams MediaUrlDemuxer::GetMediaUrlParams() const {
   return params_;
 }
@@ -75,9 +70,22 @@ int64_t MediaUrlDemuxer::GetMemoryUsage() const {
 
 void MediaUrlDemuxer::OnEnabledAudioTracksChanged(
     const std::vector<MediaTrack::Id>& track_ids,
-    base::TimeDelta curr_time) {}
+    base::TimeDelta curr_time,
+    TrackChangeCB change_completed_cb) {
+  // TODO(tmathmeyer): potentially support track changes for this renderer.
+  std::vector<DemuxerStream*> streams;
+  std::move(change_completed_cb).Run(DemuxerStream::AUDIO, streams);
+  DLOG(WARNING) << "Track changes are not supported.";
+}
+
 void MediaUrlDemuxer::OnSelectedVideoTrackChanged(
-    base::Optional<MediaTrack::Id> selected_track_id,
-    base::TimeDelta curr_time) {}
+    const std::vector<MediaTrack::Id>& track_ids,
+    base::TimeDelta curr_time,
+    TrackChangeCB change_completed_cb) {
+  // TODO(tmathmeyer): potentially support track changes for this renderer.
+  std::vector<DemuxerStream*> streams;
+  std::move(change_completed_cb).Run(DemuxerStream::VIDEO, streams);
+  DLOG(WARNING) << "Track changes are not supported.";
+}
 
 }  // namespace media

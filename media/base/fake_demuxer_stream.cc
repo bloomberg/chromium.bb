@@ -220,9 +220,4 @@ std::vector<DemuxerStream*> FakeMediaResource::GetAllStreams() {
   return result;
 }
 
-void FakeMediaResource::SetStreamStatusChangeCB(
-    const StreamStatusChangeCB& cb) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace media

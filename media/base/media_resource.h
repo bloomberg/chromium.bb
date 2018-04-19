@@ -17,14 +17,6 @@
 
 namespace media {
 
-// The callback that is used to notify clients about streams being enabled and
-// disabled. The first parameter is the DemuxerStream whose status changed. The
-// second parameter is a bool indicating whether the stream got enabled or
-// disabled. The third parameter specifies the media playback position at the
-// time the status change happened.
-using StreamStatusChangeCB =
-    base::RepeatingCallback<void(DemuxerStream*, bool, base::TimeDelta)>;
-
 // Abstract class that defines how to retrieve "media resources" in
 // DemuxerStream form (for most cases) or URL form (for the MediaPlayerRenderer
 // case).
@@ -57,10 +49,6 @@ class MEDIA_EXPORT MediaResource {
   // A helper function that return the first stream of the given |type| if one
   // exists or a null pointer if there is no streams of that type.
   DemuxerStream* GetFirstStream(DemuxerStream::Type type);
-
-  // The StreamStatusChangeCB allows clients to receive notifications about one
-  // of the streams being disabled or enabled.
-  virtual void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) = 0;
 
   // For Type::URL:
   //   Returns the URL parameters of the media to play. Empty URLs are legal,

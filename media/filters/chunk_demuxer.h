@@ -123,8 +123,6 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   bool IsEnabled() const;
   void SetEnabled(bool enabled, base::TimeDelta timestamp);
 
-  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb);
-
   // Returns the text track configuration.  It is an error to call this method
   // if type() != TEXT.
   TextTrackConfig text_track_config();
@@ -171,7 +169,6 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   ReadCB read_cb_;
   bool partial_append_window_trimming_enabled_;
   bool is_enabled_;
-  StreamStatusChangeCB stream_status_change_cb_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChunkDemuxerStream);
 };
@@ -210,7 +207,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
   base::Time GetTimelineOffset() const override;
   std::vector<DemuxerStream*> GetAllStreams() override;
-  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
   base::TimeDelta GetStartTime() const override;
   int64_t GetMemoryUsage() const override;
   void AbortPendingReads() override;
@@ -255,11 +251,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::TimeDelta GetHighestPresentationTimestamp(const std::string& id) const;
 
   void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& track_ids,
-                                   base::TimeDelta curr_time) override;
-  // |track_id| either contains the selected video track id or is null,
-  // indicating that all video tracks are deselected/disabled.
-  void OnSelectedVideoTrackChanged(base::Optional<MediaTrack::Id> track_id,
-                                   base::TimeDelta curr_time) override;
+                                   base::TimeDelta curr_time,
+                                   TrackChangeCB change_completed_cb) override;
+
+  void OnSelectedVideoTrackChanged(const std::vector<MediaTrack::Id>& track_ids,
+                                   base::TimeDelta curr_time,
+                                   TrackChangeCB change_completed_cb) override;
 
   // Appends media data to the source buffer associated with |id|, applying
   // and possibly updating |*timestamp_offset| during coded frame processing.
@@ -356,6 +353,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
     PARSE_ERROR,
     SHUTDOWN,
   };
+
+  // Helper for vide and audio track changing.
+  void FindAndEnableProperTracks(const std::vector<MediaTrack::Id>& track_ids,
+                                 base::TimeDelta curr_time,
+                                 DemuxerStream::Type track_type,
+                                 TrackChangeCB change_completed_cb);
 
   void ChangeState_Locked(State new_state);
 

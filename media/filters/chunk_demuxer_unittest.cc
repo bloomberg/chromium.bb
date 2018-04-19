@@ -4773,30 +4773,49 @@ TEST_P(ChunkDemuxerTest,
   CheckExpectedBuffers(video_stream, "71K 81");
 }
 
-void OnStreamStatusChanged(base::WaitableEvent* event,
-                           DemuxerStream* stream,
-                           bool enabled,
-                           base::TimeDelta) {
-  event->Signal();
+namespace {
+void QuitLoop(base::Closure quit_closure,
+              DemuxerStream::Type type,
+              const std::vector<DemuxerStream*>& streams) {
+  quit_closure.Run();
 }
 
-void CheckStreamStatusNotifications(MediaResource* media_resource,
-                                    ChunkDemuxerStream* stream) {
+void DisableAndEnableDemuxerTracks(
+    ChunkDemuxer* demuxer,
+    base::test::ScopedTaskEnvironment* scoped_task_environment) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
+  std::vector<MediaTrack::Id> audio_tracks;
+  std::vector<MediaTrack::Id> video_tracks;
 
-  ASSERT_TRUE(stream->IsEnabled());
-  media_resource->SetStreamStatusChangeCB(
-      base::Bind(&OnStreamStatusChanged, base::Unretained(&event)));
+  base::RunLoop disable_video;
+  demuxer->OnSelectedVideoTrackChanged(
+      video_tracks, base::TimeDelta(),
+      base::BindOnce(QuitLoop, base::Passed(disable_video.QuitClosure())));
+  disable_video.Run();
 
-  stream->SetEnabled(false, base::TimeDelta());
-  base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(event.IsSignaled());
+  base::RunLoop disable_audio;
+  demuxer->OnEnabledAudioTracksChanged(
+      audio_tracks, base::TimeDelta(),
+      base::BindOnce(QuitLoop, base::Passed(disable_audio.QuitClosure())));
+  disable_audio.Run();
 
-  event.Reset();
-  stream->SetEnabled(true, base::TimeDelta());
-  base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(event.IsSignaled());
+  base::RunLoop enable_video;
+  video_tracks.push_back(MediaTrack::Id("1"));
+  demuxer->OnSelectedVideoTrackChanged(
+      video_tracks, base::TimeDelta(),
+      base::BindOnce(QuitLoop, base::Passed(enable_video.QuitClosure())));
+  enable_video.Run();
+
+  base::RunLoop enable_audio;
+  audio_tracks.push_back(MediaTrack::Id("2"));
+  demuxer->OnEnabledAudioTracksChanged(
+      audio_tracks, base::TimeDelta(),
+      base::BindOnce(QuitLoop, base::Passed(enable_audio.QuitClosure())));
+  enable_audio.Run();
+
+  scoped_task_environment->RunUntilIdle();
+}
 }
 
 TEST_P(ChunkDemuxerTest, StreamStatusNotifications) {
@@ -4809,17 +4828,16 @@ TEST_P(ChunkDemuxerTest, StreamStatusNotifications) {
   EXPECT_NE(nullptr, video_stream);
 
   // Verify stream status changes without pending read.
-  CheckStreamStatusNotifications(demuxer_.get(), audio_stream);
-  CheckStreamStatusNotifications(demuxer_.get(), video_stream);
+  DisableAndEnableDemuxerTracks(demuxer_.get(), &scoped_task_environment_);
 
   // Verify stream status changes with pending read.
   bool read_done = false;
   audio_stream->Read(base::Bind(&OnReadDone_EOSExpected, &read_done));
-  CheckStreamStatusNotifications(demuxer_.get(), audio_stream);
+  DisableAndEnableDemuxerTracks(demuxer_.get(), &scoped_task_environment_);
   EXPECT_TRUE(read_done);
   read_done = false;
   video_stream->Read(base::Bind(&OnReadDone_EOSExpected, &read_done));
-  CheckStreamStatusNotifications(demuxer_.get(), video_stream);
+  DisableAndEnableDemuxerTracks(demuxer_.get(), &scoped_task_environment_);
   EXPECT_TRUE(read_done);
 }
 

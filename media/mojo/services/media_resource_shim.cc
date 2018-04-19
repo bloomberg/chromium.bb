@@ -39,10 +39,6 @@ std::vector<DemuxerStream*> MediaResourceShim::GetAllStreams() {
   return result;
 }
 
-void MediaResourceShim::SetStreamStatusChangeCB(
-    const StreamStatusChangeCB& cb) {
-}
-
 void MediaResourceShim::OnStreamReady() {
   if (++streams_ready_ == streams_.size())
     base::ResetAndReturn(&demuxer_ready_cb_).Run();

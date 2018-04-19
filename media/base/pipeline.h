@@ -106,14 +106,43 @@ class MEDIA_EXPORT Pipeline {
                      Client* client,
                      const PipelineStatusCB& seek_cb) = 0;
 
+  // Track switching works similarly for both audio and video. Callbacks are
+  // used to notify when it is time to procede to the next step, since many of
+  // the operations are asynchronous.
+  // ──────────────────── Track Switch Control Flow ───────────────────────
+  //  pipeline | demuxer | demuxer_stream | renderer | video/audio_renderer
+  //           |         |                |          |
+  //           |         |                |          |
+  //           |         |                |          |
+  //     switch track    |                |          |
+  //      --------->     |                |          |
+  //           | disable/enable stream    |          |
+  //           |      ----------->        |          |
+  //    active streams   |                |          |
+  //      <---------     |                |          |
+  //           |        switch track      |          |
+  //      -------------------------------------->    |
+  //           |         |                |    Flush/Restart/Reset
+  //           |         |                |     --------------->
+  //     Notify pipeline of completed track change (via callback)
+  //      <-----------------------------------------------------
+  // ──────────────────── Sometime in the future ──────────────────────────
+  //           |         |                | OnBufferingStateChange
+  //           |         |                |    <----------------
+  //           | OnBufferingStateChange   |          |
+  //     <--------------------------------------     |
+  //           |         |                |          |
+  //           |         |                |          |
   // |enabled_track_ids| contains track ids of enabled audio tracks.
   virtual void OnEnabledAudioTracksChanged(
-      const std::vector<MediaTrack::Id>& enabled_track_ids) = 0;
+      const std::vector<MediaTrack::Id>& enabled_track_ids,
+      base::OnceClosure change_completed_cb) = 0;
 
   // |selected_track_id| is either empty, which means no video track is
   // selected, or contains the selected video track id.
   virtual void OnSelectedVideoTrackChanged(
-      base::Optional<MediaTrack::Id> selected_track_id) = 0;
+      base::Optional<MediaTrack::Id> selected_track_id,
+      base::OnceClosure change_completed_cb) = 0;
 
   // Stops the pipeline. This is a blocking function.
   // If the pipeline is started, it must be stopped before destroying it.

@@ -26,7 +26,6 @@ class StreamProvider final : public MediaResource {
 
   // MediaResource implemenation.
   std::vector<DemuxerStream*> GetAllStreams() override;
-  void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override {}
 
   void Initialize(int remote_audio_handle,
                   int remote_video_handle,
