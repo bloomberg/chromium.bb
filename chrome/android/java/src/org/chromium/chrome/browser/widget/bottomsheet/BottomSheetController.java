@@ -20,7 +20,9 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -99,14 +101,15 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         // Watch for navigation and tab switching that close the sheet.
         new TabModelSelectorTabObserver(tabModelSelector) {
             @Override
-            public void onShown(Tab tab) {
+            public void onPageLoadStarted(Tab tab, String url) {
                 if (tab != tabModelSelector.getCurrentTab()) return;
                 clearRequestsAndHide();
             }
+        };
 
+        final TabModelObserver tabSelectionObserver = new EmptyTabModelObserver() {
             @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                if (tab != tabModelSelector.getCurrentTab()) return;
+            public void didSelectTab(Tab tab, TabModel.TabSelectionType type, int lastId) {
                 clearRequestsAndHide();
             }
         };
@@ -120,6 +123,8 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
 
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                if (oldModel != null) oldModel.removeObserver(tabSelectionObserver);
+                newModel.addObserver(tabSelectionObserver);
                 clearRequestsAndHide();
             }
 
