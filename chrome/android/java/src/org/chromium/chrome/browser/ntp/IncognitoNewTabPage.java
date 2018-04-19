@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
@@ -22,8 +21,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPageView.IncognitoNewTabPageManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 
 /**
@@ -34,8 +31,6 @@ public class IncognitoNewTabPage
     private Activity mActivity;
 
     private String mTitle;
-    private int mBackgroundColor;
-    private int mThemeColor;
     protected IncognitoNewTabPageView mIncognitoNewTabPageView;
 
     private boolean mIsLoaded;
@@ -53,7 +48,7 @@ public class IncognitoNewTabPage
      * @param activity The activity used to create the new tab page's View.
      */
     public IncognitoNewTabPage(Activity activity, NativePageHost host) {
-        super(activity, host);
+        super(activity, host, true);
     }
 
     @Override
@@ -81,10 +76,6 @@ public class IncognitoNewTabPage
         };
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
-        mBackgroundColor =
-                ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg_incognito);
-        mThemeColor = ColorUtils.getDefaultThemeColor(
-                activity.getResources(), FeatureUtilities.isChromeModernDesignEnabled(), true);
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mIncognitoNewTabPageView =
@@ -132,16 +123,6 @@ public class IncognitoNewTabPage
     @Override
     public String getTitle() {
         return mTitle;
-    }
-
-    @Override
-    public int getBackgroundColor() {
-        return mBackgroundColor;
-    }
-
-    @Override
-    public int getThemeColor() {
-        return mThemeColor;
     }
 
     @Override
