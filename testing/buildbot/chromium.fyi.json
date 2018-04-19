@@ -8096,7 +8096,10 @@
   },
   "Win cl.exe Goma Canary LocalOutputCache": {
     "additional_compile_targets": [
-      "all"
+      "v8_all",
+      "webrtc",
+      "pdfium_all",
+      "angle"
     ],
     "gtest_tests": [
       {
@@ -8154,7 +8157,10 @@
   },
   "WinMSVC64 Goma Canary": {
     "additional_compile_targets": [
-      "all"
+      "v8_all",
+      "webrtc",
+      "pdfium_all",
+      "angle"
     ],
     "gtest_tests": [
       {
