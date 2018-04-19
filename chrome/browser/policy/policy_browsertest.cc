@@ -306,8 +306,8 @@ const base::FilePath::CharType kGoodV1CrxManifestName[] =
     FILE_PATH_LITERAL("good_v1_update_manifest.xml");
 const base::FilePath::CharType kGoodV1CrxName[] =
     FILE_PATH_LITERAL("good_v1.crx");
-const base::FilePath::CharType kGoodUnpackedExt[] =
-    FILE_PATH_LITERAL("good_unpacked");
+const base::FilePath::CharType kSimpleWithPopupExt[] =
+    FILE_PATH_LITERAL("simple_with_popup");
 const base::FilePath::CharType kAppUnpackedExt[] =
     FILE_PATH_LITERAL("app");
 
@@ -1950,7 +1950,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   // The user is not allowed to load an unpacked extension with the
   // same ID as a force-installed extension.
   base::FilePath good_extension_path(ui_test_utils::GetTestFilePath(
-      base::FilePath(kTestExtensionsDir), base::FilePath(kGoodUnpackedExt)));
+      base::FilePath(kTestExtensionsDir), base::FilePath(kSimpleWithPopupExt)));
   content::WindowedNotificationObserver extension_load_error_observer(
       extensions::NOTIFICATION_EXTENSION_LOAD_ERROR,
       content::NotificationService::AllSources());

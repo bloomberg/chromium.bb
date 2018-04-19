@@ -59,7 +59,7 @@ void KeywordExtensionsDelegateImplTest::RunTest(bool incognito) {
   {
     base::FilePath path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
-    path = path.AppendASCII("extensions").AppendASCII("good_unpacked");
+    path = path.AppendASCII("extensions").AppendASCII("simple_with_popup");
 
     TestExtensionRegistryObserver load_observer(registry());
     scoped_refptr<UnpackedInstaller> installer(

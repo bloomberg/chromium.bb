@@ -248,7 +248,8 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     EXPECT_TRUE(temp_dir->CreateUniqueTempDir());
     EXPECT_TRUE(base::PathExists(temp_dir->GetPath()));
 
-    base::FilePath unpacked_path = test_data_dir_.AppendASCII("good_unpacked");
+    base::FilePath unpacked_path =
+        test_data_dir_.AppendASCII("simple_with_popup");
     EXPECT_TRUE(base::PathExists(unpacked_path));
     EXPECT_TRUE(base::CopyDirectory(unpacked_path, temp_dir->GetPath(), false));
 
@@ -785,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   EXPECT_TRUE(base::PathExists(temp_dir.GetPath()));
 
   const base::FilePath unpacked_path =
-      test_data_dir_.AppendASCII("good_unpacked");
+      test_data_dir_.AppendASCII("simple_with_popup");
   EXPECT_TRUE(base::PathExists(unpacked_path));
   EXPECT_TRUE(base::CopyDirectory(unpacked_path, temp_dir.GetPath(), false));
 
@@ -809,7 +810,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallUnpackedCrx_Success) {
   EXPECT_TRUE(base::PathExists(temp_dir.GetPath()));
 
   const base::FilePath unpacked_path =
-      test_data_dir_.AppendASCII("good_unpacked");
+      test_data_dir_.AppendASCII("simple_with_popup");
   EXPECT_TRUE(base::PathExists(unpacked_path));
   EXPECT_TRUE(base::CopyDirectory(unpacked_path, temp_dir.GetPath(), false));
 
