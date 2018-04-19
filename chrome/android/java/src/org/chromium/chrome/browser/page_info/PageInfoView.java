@@ -59,9 +59,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         // The maximum number of lines currently shown in the view
         private int mCurrentMaxLines = Integer.MAX_VALUE;
 
-        // Whether or not the full URL should always be shown.
-        private boolean mAlwaysShowFullUrl;
-
         /** Constructor for inflating from XML. */
         public ElidedUrlTextView(Context context, AttributeSet attrs) {
             super(context, attrs);
@@ -119,13 +116,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         }
 
         /**
-         * @param show Whether or not the full URL should always be shown on the page info dialog.
-         */
-        public void setAlwaysShowFullUrl(boolean show) {
-            mAlwaysShowFullUrl = show;
-        }
-
-        /**
          * Sets the URL and the length of the URL's origin.
          * Must be called before layout.
          *
@@ -149,7 +139,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
 
         private boolean updateMaxLines() {
             int maxLines = mFullLinesToDisplay;
-            if (mIsShowingTruncatedText && !mAlwaysShowFullUrl) {
+            if (mIsShowingTruncatedText) {
                 maxLines = mTruncatedUrlLinesToDisplay;
             }
             if (maxLines != mCurrentMaxLines) {
@@ -172,7 +162,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         public Runnable siteSettingsButtonClickCallback;
         public Runnable openOnlineButtonClickCallback;
 
-        public boolean alwaysShowFullUrl;
         public CharSequence url;
         public int urlOriginLength;
     }
@@ -220,7 +209,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         mSiteSettingsButton = (Button) findViewById(R.id.page_info_site_settings_button);
         mOpenOnlineButton = (Button) findViewById(R.id.page_info_open_online_button);
 
-        mUrlTitle.setAlwaysShowFullUrl(params.alwaysShowFullUrl);
         mUrlTitle.setUrl(params.url, params.urlOriginLength);
         mUrlTitleLongClickCallback = params.urlTitleLongClickCallback;
         if (params.urlTitleLongClickCallback != null) {
