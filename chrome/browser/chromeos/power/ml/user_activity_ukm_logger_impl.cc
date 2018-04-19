@@ -21,9 +21,9 @@ constexpr UserActivityUkmLoggerImpl::Bucket kBatteryPercentBuckets[] = {
     {100, 5}};
 
 constexpr UserActivityUkmLoggerImpl::Bucket kEventLogDurationBuckets[] = {
-    {60, 1},
-    {300, 10},
-    {600, 20}};
+    {600, 1},
+    {1200, 10},
+    {1800, 20}};
 
 constexpr UserActivityUkmLoggerImpl::Bucket kUserInputEventBuckets[] = {
     {100, 1},
@@ -81,7 +81,13 @@ void UserActivityUkmLoggerImpl::LogActivity(
       .SetRecentVideoPlayingTime(
           Bucketize(event.features().video_playing_time_sec(),
                     kRecentVideoPlayingTimeBuckets,
-                    arraysize(kRecentVideoPlayingTimeBuckets)));
+                    arraysize(kRecentVideoPlayingTimeBuckets)))
+      .SetScreenDimmedInitially(event.features().screen_dimmed_initially())
+      .SetScreenDimOccurred(event.event().screen_dim_occurred())
+      .SetScreenLockedInitially(event.features().screen_locked_initially())
+      .SetScreenLockOccurred(event.event().screen_lock_occurred())
+      .SetScreenOffInitially(event.features().screen_off_initially())
+      .SetScreenOffOccurred(event.event().screen_off_occurred());
 
   if (event.features().has_on_to_dim_sec()) {
     user_activity.SetScreenDimDelay(event.features().on_to_dim_sec());

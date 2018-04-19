@@ -47,6 +47,12 @@ void EqualEvent(const UserActivityEvent::Event& expected_event,
   EXPECT_EQ(expected_event.type(), result_event.type());
   EXPECT_EQ(expected_event.reason(), result_event.reason());
   EXPECT_EQ(expected_event.log_duration_sec(), result_event.log_duration_sec());
+  EXPECT_EQ(expected_event.screen_dim_occurred(),
+            result_event.screen_dim_occurred());
+  EXPECT_EQ(expected_event.screen_off_occurred(),
+            result_event.screen_off_occurred());
+  EXPECT_EQ(expected_event.screen_lock_occurred(),
+            result_event.screen_lock_occurred());
 }
 
 // Testing UKM logger.
@@ -119,9 +125,10 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
 
   void ReportVideoStart() { activity_logger_->OnVideoActivityStarted(); }
 
-  void ReportScreenIdle() {
+  void ReportScreenIdleState(bool screen_dim, bool screen_off) {
     power_manager::ScreenIdleState proto;
-    proto.set_off(true);
+    proto.set_dimmed(screen_dim);
+    proto.set_off(screen_off);
     fake_power_manager_client_.SendScreenIdleStateChanged(proto);
   }
 
@@ -132,6 +139,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
   void ReportSuspend(power_manager::SuspendImminent::Reason reason,
                      base::TimeDelta sleep_duration) {
     fake_power_manager_client_.SendSuspendImminent(reason);
+    GetTaskRunner()->FastForwardBy(sleep_duration);
     fake_power_manager_client_.SendSuspendDone(sleep_duration);
   }
 
@@ -271,6 +279,9 @@ TEST_F(UserActivityManagerTest, LogAfterIdleEvent) {
   expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
   expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
   expected_event.set_log_duration_sec(2);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
 }
 
@@ -301,6 +312,9 @@ TEST_F(UserActivityManagerTest, LogSecondEvent) {
   expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
   expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
   expected_event.set_log_duration_sec(0);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
 }
 
@@ -325,11 +339,17 @@ TEST_F(UserActivityManagerTest, LogMultipleEvents) {
   expected_event1.set_type(UserActivityEvent::Event::REACTIVATE);
   expected_event1.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
   expected_event1.set_log_duration_sec(0);
+  expected_event1.set_screen_dim_occurred(false);
+  expected_event1.set_screen_off_occurred(false);
+  expected_event1.set_screen_lock_occurred(false);
 
   UserActivityEvent::Event expected_event2;
   expected_event2.set_type(UserActivityEvent::Event::REACTIVATE);
   expected_event2.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
   expected_event2.set_log_duration_sec(2);
+  expected_event2.set_screen_dim_occurred(false);
+  expected_event2.set_screen_off_occurred(false);
+  expected_event2.set_screen_lock_occurred(false);
 
   EqualEvent(expected_event1, events[0].event());
   EqualEvent(expected_event2, events[1].event());
@@ -364,6 +384,9 @@ TEST_F(UserActivityManagerTest, PowerChangeActivity) {
   expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
   expected_event.set_reason(UserActivityEvent::Event::POWER_CHANGED);
   expected_event.set_log_duration_sec(0);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
 }
 
@@ -380,26 +403,52 @@ TEST_F(UserActivityManagerTest, VideoActivity) {
   expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
   expected_event.set_reason(UserActivityEvent::Event::VIDEO_ACTIVITY);
   expected_event.set_log_duration_sec(0);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityManagerTest, SystemIdle) {
+// System remains idle, screen is dimmed then turned off, and system is finally
+// suspended.
+TEST_F(UserActivityManagerTest, SystemIdleSuspend) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
-
-  ReportScreenIdle();
-  GetTaskRunner()->FastForwardUntilNoTasksRemain();
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
+  ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
+                base::TimeDelta::FromSeconds(10));
 
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
   expected_event.set_type(UserActivityEvent::Event::TIMEOUT);
-  expected_event.set_reason(UserActivityEvent::Event::SCREEN_OFF);
-  expected_event.set_log_duration_sec(
-      UserActivityManager::kIdleDelay.InSeconds());
+  expected_event.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  expected_event.set_log_duration_sec(50);
+  expected_event.set_screen_dim_occurred(true);
+  expected_event.set_screen_off_occurred(true);
+  expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
+}
+
+// System remains idle, screen is dimmed then turned off, but system is not
+// suspended.
+TEST_F(UserActivityManagerTest, SystemIdleNotSuspend) {
+  // Trigger an idle event.
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
+  GetTaskRunner()->FastForwardUntilNoTasksRemain();
+
+  const auto& events = delegate_.events();
+  ASSERT_EQ(0U, events.size());
 }
 
 // Test system idle interrupt by user activity.
@@ -409,9 +458,12 @@ TEST_F(UserActivityManagerTest, SystemIdleInterrupted) {
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
-  ReportScreenIdle();
-  // User interruptted after 1 second.
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
   GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
   ReportUserActivity(nullptr);
   GetTaskRunner()->FastForwardUntilNoTasksRemain();
 
@@ -421,56 +473,65 @@ TEST_F(UserActivityManagerTest, SystemIdleInterrupted) {
   UserActivityEvent::Event expected_event;
   expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
   expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
-  expected_event.set_log_duration_sec(1);
+  expected_event.set_log_duration_sec(51);
+  expected_event.set_screen_dim_occurred(true);
+  expected_event.set_screen_off_occurred(true);
+  expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityManagerTest, ScreenLock) {
+TEST_F(UserActivityManagerTest, ScreenLockNoSuspend) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
   ReportScreenLocked();
   const auto& events = delegate_.events();
-  ASSERT_EQ(1U, events.size());
-
-  UserActivityEvent::Event expected_event;
-  expected_event.set_type(UserActivityEvent::Event::OFF);
-  expected_event.set_reason(UserActivityEvent::Event::SCREEN_LOCK);
-  expected_event.set_log_duration_sec(0);
-  EqualEvent(expected_event, events[0].event());
+  ASSERT_EQ(0U, events.size());
 }
 
-TEST_F(UserActivityManagerTest, SuspendIdle) {
+TEST_F(UserActivityManagerTest, ScreenLockWithSuspend) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
+  ReportScreenLocked();
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
-                2 * UserActivityManager::kMinSuspendDuration);
+                base::TimeDelta::FromSeconds(1));
+
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
   expected_event.set_type(UserActivityEvent::Event::TIMEOUT);
   expected_event.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  expected_event.set_log_duration_sec(0);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(true);
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityManagerTest, SuspendIdleCancelled) {
+// As we log when SuspendImminent is received, sleep duration from SuspendDone
+// doesn't make any difference.
+TEST_F(UserActivityManagerTest, SuspendIdleShortSleepDuration) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
-                UserActivityManager::kMinSuspendDuration -
-                    base::TimeDelta::FromSeconds(2));
+                base::TimeDelta::FromSeconds(1));
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
-  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
-  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  expected_event.set_type(UserActivityEvent::Event::TIMEOUT);
+  expected_event.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  expected_event.set_log_duration_sec(20);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
 }
 
@@ -480,30 +541,17 @@ TEST_F(UserActivityManagerTest, SuspendLidClosed) {
   ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_LID_CLOSED,
-                2 * UserActivityManager::kMinSuspendDuration);
+                base::TimeDelta::FromSeconds(10));
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
   expected_event.set_type(UserActivityEvent::Event::OFF);
   expected_event.set_reason(UserActivityEvent::Event::LID_CLOSED);
-  EqualEvent(expected_event, events[0].event());
-}
-
-TEST_F(UserActivityManagerTest, SuspendLidClosedCancelled) {
-  // Trigger an idle event.
-  const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
-
-  ReportSuspend(power_manager::SuspendImminent_Reason_LID_CLOSED,
-                UserActivityManager::kMinSuspendDuration -
-                    base::TimeDelta::FromSeconds(2));
-  const auto& events = delegate_.events();
-  ASSERT_EQ(1U, events.size());
-
-  UserActivityEvent::Event expected_event;
-  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
-  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  expected_event.set_log_duration_sec(0);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
 }
 
@@ -513,30 +561,17 @@ TEST_F(UserActivityManagerTest, SuspendOther) {
   ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_OTHER,
-                UserActivityManager::kMinSuspendDuration);
+                base::TimeDelta::FromSeconds(10));
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
   expected_event.set_type(UserActivityEvent::Event::OFF);
   expected_event.set_reason(UserActivityEvent::Event::MANUAL_SLEEP);
-  EqualEvent(expected_event, events[0].event());
-}
-
-TEST_F(UserActivityManagerTest, SuspendOtherCancelled) {
-  // Trigger an idle event.
-  const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
-
-  ReportSuspend(power_manager::SuspendImminent_Reason_OTHER,
-                UserActivityManager::kMinSuspendDuration -
-                    base::TimeDelta::FromSeconds(2));
-  const auto& events = delegate_.events();
-  ASSERT_EQ(1U, events.size());
-
-  UserActivityEvent::Event expected_event;
-  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
-  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  expected_event.set_log_duration_sec(0);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
   EqualEvent(expected_event, events[0].event());
 }
 
@@ -583,6 +618,9 @@ TEST_F(UserActivityManagerTest, FeatureExtraction) {
   EXPECT_EQ(20, features.touch_events_in_last_hour());
   EXPECT_FALSE(features.has_last_user_activity_time_sec());
   EXPECT_FALSE(features.has_time_since_last_key_sec());
+  EXPECT_FALSE(features.screen_dimmed_initially());
+  EXPECT_FALSE(features.screen_off_initially());
+  EXPECT_FALSE(features.screen_locked_initially());
 }
 
 TEST_F(UserActivityManagerTest, ManagedDevice) {
@@ -645,6 +683,93 @@ TEST_F(UserActivityManagerTest, OffDelays) {
   const UserActivityEvent::Features& features = events[0].features();
   EXPECT_EQ(4, features.dim_to_screen_off_sec());
   EXPECT_TRUE(!features.has_on_to_dim_sec());
+}
+
+// Screen is off when idle event is reported. No subsequent change in screen
+// state.
+TEST_F(UserActivityManagerTest, InitialScreenOff) {
+  ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+
+  ReportScreenIdleState(false /* screen_dim */, true /* screen_off */);
+
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(7));
+  ReportUserActivity(nullptr);
+
+  const auto& events = delegate_.events();
+
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_TRUE(features.screen_dimmed_initially());
+  EXPECT_TRUE(features.screen_off_initially());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
+  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  expected_event.set_log_duration_sec(7);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
+  EqualEvent(expected_event, events[0].event());
+}
+
+// Screen is off when idle event is reported. No subsequent change in screen
+// state.
+TEST_F(UserActivityManagerTest, InitialScreenStateFlipped) {
+  ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+
+  ReportScreenIdleState(false /* screen_dim */, false /* screen_off */);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(7));
+  ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
+
+  ReportUserActivity(nullptr);
+
+  const auto& events = delegate_.events();
+
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_TRUE(features.screen_dimmed_initially());
+  EXPECT_FALSE(features.screen_off_initially());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
+  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  expected_event.set_log_duration_sec(7);
+  expected_event.set_screen_dim_occurred(true);
+  expected_event.set_screen_off_occurred(true);
+  expected_event.set_screen_lock_occurred(false);
+  EqualEvent(expected_event, events[0].event());
+}
+
+// Screen is off when idle event is reported. No subsequent change in screen
+// state.
+TEST_F(UserActivityManagerTest, ScreenOffStateChanged) {
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+
+  ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
+  ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
+  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(7));
+  ReportScreenIdleState(false /* screen_dim */, false /* screen_off */);
+  ReportUserActivity(nullptr);
+
+  const auto& events = delegate_.events();
+
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_FALSE(features.screen_dimmed_initially());
+  EXPECT_FALSE(features.screen_off_initially());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
+  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  expected_event.set_log_duration_sec(7);
+  expected_event.set_screen_dim_occurred(true);
+  expected_event.set_screen_off_occurred(true);
+  expected_event.set_screen_lock_occurred(false);
+  EqualEvent(expected_event, events[0].event());
 }
 
 TEST_F(UserActivityManagerTest, BasicTabs) {
