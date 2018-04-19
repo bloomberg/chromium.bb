@@ -89,6 +89,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   static bool ShouldShowChangePasswordSettingUI(Profile* profile);
 
+  // Called by ChromeWebUIControllerFactory class to determine if Chrome should
+  // show chrome://reset-password page.
+  static bool IsPasswordReuseProtectionConfigured(Profile* profile);
+
   void ShowModalWarning(content::WebContents* web_contents,
                         const std::string& verdict_token) override;
 
@@ -148,6 +152,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Gets the detailed warning text that should show in the modal warning dialog
   // and page info bubble.
   base::string16 GetWarningDetailText();
+
+  // If password protection trigger is configured via enterprise policy, gets
+  // the name of the organization that owns the enterprise policy. Otherwise,
+  // returns an empty string.
+  std::string GetOrganizationName();
 
  protected:
   // PasswordProtectionService overrides.
