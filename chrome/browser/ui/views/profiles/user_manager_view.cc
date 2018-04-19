@@ -194,6 +194,13 @@ bool UserManager::IsShowing() {
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa()) {
     return UserManager::IsShowingCocoa();
+  } else {
+    // Widget activation works differently on Mac: the UserManager is a child
+    // widget, so it is not active in the IsActive() sense even when showing
+    // and interactable. Test for IsVisible instead - this is what the Cocoa
+    // UserManager::IsShowing() does as well.
+    return g_user_manager_view ? g_user_manager_view->GetWidget()->IsVisible()
+                               : false;
   }
 #endif
 
