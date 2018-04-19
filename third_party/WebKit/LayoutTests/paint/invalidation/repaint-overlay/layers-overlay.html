@@ -57,6 +57,17 @@ var expected = {
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -138,7 +149,8 @@ var expected = {
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -20, 0, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     },
     {
       "id": 2,
@@ -189,6 +201,17 @@ var actual = {
   "layers": [
     {
       "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
@@ -270,7 +293,8 @@ var actual = {
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -20, 0, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     },
     {
       "id": 2,
