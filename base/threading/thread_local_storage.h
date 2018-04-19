@@ -19,7 +19,7 @@
 #endif
 
 namespace heap_profiling {
-class MemlogAllocatorShimInternal;
+class ScopedAllowLogging;
 }  // namespace heap_profiling
 
 namespace base {
@@ -156,7 +156,7 @@ class BASE_EXPORT ThreadLocalStorage {
   friend class base::SamplingHeapProfiler;
   friend class base::internal::ThreadLocalStorageTestInternal;
   friend class base::trace_event::MallocDumpProvider;
-  friend class heap_profiling::MemlogAllocatorShimInternal;
+  friend class heap_profiling::ScopedAllowLogging;
   static bool HasBeenDestroyed();
 
   DISALLOW_COPY_AND_ASSIGN(ThreadLocalStorage);
