@@ -184,7 +184,10 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->less_rectangular_check = 1;
     sf->mode_skip_start = 10;
     sf->adaptive_pred_interp_filter = 1;
-    sf->adaptive_motion_search = 1;
+    // adaptive_motion_search breaks encoder multi-thread tests.
+    // The values in x->pred_mv[] differ for single and multi-thread cases.
+    // See aomedia:1778.
+    // sf->adaptive_motion_search = 1;
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
     sf->use_transform_domain_distortion = 1;
     sf->use_accurate_subpel_search = 0;
@@ -328,7 +331,7 @@ static void set_dev_sf(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed) {
 
   if (speed & INTER_PRED_SF) {
     sf->selective_ref_frame = 2;
-    sf->adaptive_motion_search = 1;
+    // sf->adaptive_motion_search = 1;
     sf->mv.auto_mv_step_size = 1;
     sf->adaptive_rd_thresh = 1;
     sf->mv.subpel_iters_per_step = 1;
