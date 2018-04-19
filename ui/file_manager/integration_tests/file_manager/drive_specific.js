@@ -61,6 +61,7 @@ function getStepsForSearchResultsAutoComplete() {
     // Wait for the auto complete list getting the expected contents.
     function(result) {
       chrome.test.assertTrue(result);
+      var caller = getCaller();
       repeatUntil(function() {
         return remoteCall.callRemoteTestUtil('queryAllElements',
                                              appId,
@@ -70,7 +71,7 @@ function getStepsForSearchResultsAutoComplete() {
                   function(element) { return element.text; });
               return chrome.test.checkDeepEq(EXPECTED_AUTOCOMPLETE_LIST, list) ?
                   undefined :
-                  pending('Current auto complete list: %j.', list);
+                  pending(caller, 'Current auto complete list: %j.', list);
             });
         }).
         then(this.next);
@@ -251,6 +252,7 @@ testcase.pinFileOnMobileNetwork = function() {
   testPromise(setupAndWaitUntilReady(null, RootPath.DRIVE).then(
       function(results) {
         var windowId = results.windowId;
+        var caller = getCaller();
         return sendTestMessage(
             {name: 'useCellularNetwork'}).then(function(result) {
           return remoteCall.callRemoteTestUtil(
@@ -258,7 +260,8 @@ testcase.pinFileOnMobileNetwork = function() {
         }).then(function() {
           return repeatUntil(function() {
             return navigator.connection.type != 'cellular' ?
-                pending('Network state is not changed to cellular.') : null;
+                pending(caller, 'Network state is not changed to cellular.') :
+                null;
           });
         }).then(function() {
           return remoteCall.waitForElement(windowId, ['.table-row[selected]']);
@@ -290,7 +293,8 @@ testcase.pinFileOnMobileNetwork = function() {
             return remoteCall.callRemoteTestUtil(
                 'getNotificationIDs', null, []).then(function(idSet) {
               return !idSet['disabled-mobile-sync'] ?
-                  pending('Sync disable notification is not found.') : null;
+                  pending(caller, 'Sync disable notification is not found.') :
+                  null;
             });
           });
         }).then(function() {
@@ -305,7 +309,7 @@ testcase.pinFileOnMobileNetwork = function() {
             return remoteCall.callRemoteTestUtil(
                 'getPreferences', null, []).then(function(preferences) {
               return preferences.cellularDisabled ?
-                  pending('Drive sync is still disabled.') : null;
+                  pending(caller, 'Drive sync is still disabled.') : null;
             });
           });
         });
