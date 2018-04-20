@@ -515,7 +515,7 @@ aura::WindowTreeHost* DesktopWindowTreeHostX11::AsWindowTreeHost() {
 void DesktopWindowTreeHostX11::ShowWindowWithState(
     ui::WindowShowState show_state) {
   if (compositor())
-    SetVisible(show_state != ui::SHOW_STATE_MINIMIZED);
+    SetVisible(true);
   if (!IsVisible() || !window_mapped_in_server_)
     MapWindow(show_state);
 
