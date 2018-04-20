@@ -151,6 +151,11 @@ public class BottomSheetSwipeDetector extends GestureDetector.SimpleOnGestureLis
         }
 
         @Override
+        public void onLongPress(MotionEvent e) {
+            mIsScrolling = false;
+        }
+
+        @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             if (e1 == null || !mSheetDelegate.shouldGestureMoveSheet(e1, e2) || !mIsScrolling) {
                 return false;
@@ -176,7 +181,7 @@ public class BottomSheetSwipeDetector extends GestureDetector.SimpleOnGestureLis
      */
     public BottomSheetSwipeDetector(Context context, SwipeableBottomSheet delegate) {
         mGestureDetector = new GestureDetector(context, new SwipeGestureListener());
-        mGestureDetector.setIsLongpressEnabled(false);
+        mGestureDetector.setIsLongpressEnabled(true);
 
         mSheetDelegate = delegate;
         mVelocityTracker = VelocityTracker.obtain();
