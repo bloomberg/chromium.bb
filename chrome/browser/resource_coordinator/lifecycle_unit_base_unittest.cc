@@ -126,6 +126,7 @@ TEST(LifecycleUnitBaseTest, VisibilityChangeNotifiesObserversAndUpdatesTime) {
         EXPECT_EQ(NowTicks(), lifecycle_unit->GetLastVisibilityChangeTime());
       }));
 
+  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
   lifecycle_unit.OnLifecycleUnitVisibilityChanged(content::Visibility::HIDDEN);
   testing::Mock::VerifyAndClear(&observer);
 
@@ -136,6 +137,7 @@ TEST(LifecycleUnitBaseTest, VisibilityChangeNotifiesObserversAndUpdatesTime) {
         EXPECT_EQ(NowTicks(), lifecycle_unit->GetLastVisibilityChangeTime());
       }));
 
+  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
   lifecycle_unit.OnLifecycleUnitVisibilityChanged(
       content::Visibility::OCCLUDED);
   testing::Mock::VerifyAndClear(&observer);
@@ -147,6 +149,7 @@ TEST(LifecycleUnitBaseTest, VisibilityChangeNotifiesObserversAndUpdatesTime) {
         EXPECT_EQ(NowTicks(), lifecycle_unit->GetLastVisibilityChangeTime());
       }));
 
+  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
   lifecycle_unit.OnLifecycleUnitVisibilityChanged(content::Visibility::VISIBLE);
   testing::Mock::VerifyAndClear(&observer);
 
