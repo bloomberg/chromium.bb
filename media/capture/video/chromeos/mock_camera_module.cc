@@ -17,8 +17,8 @@ MockCameraModule::MockCameraModule()
 
 MockCameraModule::~MockCameraModule() {
   mock_module_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MockCameraModule::CloseBindingOnThread,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&MockCameraModule::CloseBindingOnThread,
+                                base::Unretained(this)));
   mock_module_thread_.Stop();
 }
 
@@ -64,8 +64,8 @@ cros::mojom::CameraModulePtrInfo MockCameraModule::GetInterfacePtrInfo() {
   cros::mojom::CameraModulePtrInfo ptr_info;
   mock_module_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&MockCameraModule::BindOnThread, base::Unretained(this),
-                 base::Unretained(&done), base::Unretained(&ptr_info)));
+      base::BindOnce(&MockCameraModule::BindOnThread, base::Unretained(this),
+                     base::Unretained(&done), base::Unretained(&ptr_info)));
   done.Wait();
   return ptr_info;
 }

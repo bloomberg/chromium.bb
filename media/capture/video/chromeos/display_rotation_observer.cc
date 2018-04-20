@@ -19,7 +19,8 @@ ScreenObserverDelegate::ScreenObserverDelegate(
       delegate_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   display_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ScreenObserverDelegate::AddObserverOnDisplayThread, this));
+      base::BindOnce(&ScreenObserverDelegate::AddObserverOnDisplayThread,
+                     this));
 }
 
 void ScreenObserverDelegate::RemoveObserver() {
@@ -27,7 +28,8 @@ void ScreenObserverDelegate::RemoveObserver() {
   observer_ = NULL;
   display_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ScreenObserverDelegate::RemoveObserverOnDisplayThread, this));
+      base::BindOnce(&ScreenObserverDelegate::RemoveObserverOnDisplayThread,
+                     this));
 }
 
 ScreenObserverDelegate::~ScreenObserverDelegate() {
@@ -72,8 +74,9 @@ void ScreenObserverDelegate::SendDisplayRotation(
   DCHECK(display_task_runner_->BelongsToCurrentThread());
   delegate_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ScreenObserverDelegate::SendDisplayRotationOnCaptureThread,
-                 this, display));
+      base::BindOnce(
+          &ScreenObserverDelegate::SendDisplayRotationOnCaptureThread, this,
+          display));
 }
 
 void ScreenObserverDelegate::SendDisplayRotationOnCaptureThread(

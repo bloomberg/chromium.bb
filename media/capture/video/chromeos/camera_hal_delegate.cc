@@ -67,14 +67,14 @@ void CameraHalDelegate::RegisterCameraClient() {
 void CameraHalDelegate::SetCameraModule(
     cros::mojom::CameraModulePtrInfo camera_module_ptr_info) {
   ipc_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&CameraHalDelegate::SetCameraModuleOnIpcThread,
-                            this, base::Passed(&camera_module_ptr_info)));
+      FROM_HERE, base::BindOnce(&CameraHalDelegate::SetCameraModuleOnIpcThread,
+                                this, base::Passed(&camera_module_ptr_info)));
 }
 
 void CameraHalDelegate::Reset() {
   ipc_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CameraHalDelegate::ResetMojoInterfaceOnIpcThread, this));
+      base::BindOnce(&CameraHalDelegate::ResetMojoInterfaceOnIpcThread, this));
 }
 
 std::unique_ptr<VideoCaptureDevice> CameraHalDelegate::CreateDevice(
@@ -198,20 +198,20 @@ void CameraHalDelegate::GetDeviceDescriptors(
 }
 
 void CameraHalDelegate::GetCameraInfo(int32_t camera_id,
-                                      const GetCameraInfoCallback& callback) {
+                                      GetCameraInfoCallback callback) {
   DCHECK(!ipc_task_runner_->BelongsToCurrentThread());
   // This method may be called on any thread except |ipc_task_runner_|.
   // Currently this method is used by CameraDeviceDelegate to query camera info.
   camera_module_has_been_set_.Wait();
   ipc_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&CameraHalDelegate::GetCameraInfoOnIpcThread, this,
-                            camera_id, callback));
+      FROM_HERE, base::BindOnce(&CameraHalDelegate::GetCameraInfoOnIpcThread,
+                                this, camera_id, std::move(callback)));
 }
 
 void CameraHalDelegate::OpenDevice(
     int32_t camera_id,
     cros::mojom::Camera3DeviceOpsRequest device_ops_request,
-    const OpenDeviceCallback& callback) {
+    OpenDeviceCallback callback) {
   DCHECK(!ipc_task_runner_->BelongsToCurrentThread());
   // This method may be called on any thread except |ipc_task_runner_|.
   // Currently this method is used by CameraDeviceDelegate to open a camera
@@ -219,8 +219,8 @@ void CameraHalDelegate::OpenDevice(
   camera_module_has_been_set_.Wait();
   ipc_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CameraHalDelegate::OpenDeviceOnIpcThread, this, camera_id,
-                 base::Passed(&device_ops_request), callback));
+      base::BindOnce(&CameraHalDelegate::OpenDeviceOnIpcThread, this, camera_id,
+                     base::Passed(&device_ops_request), std::move(callback)));
 }
 
 void CameraHalDelegate::SetCameraModuleOnIpcThread(
@@ -232,7 +232,7 @@ void CameraHalDelegate::SetCameraModuleOnIpcThread(
   }
   camera_module_ = mojo::MakeProxy(std::move(camera_module_ptr_info));
   camera_module_.set_connection_error_handler(
-      base::Bind(&CameraHalDelegate::ResetMojoInterfaceOnIpcThread, this));
+      base::BindOnce(&CameraHalDelegate::ResetMojoInterfaceOnIpcThread, this));
   camera_module_has_been_set_.Signal();
 }
 
@@ -258,7 +258,8 @@ bool CameraHalDelegate::UpdateBuiltInCameraInfo() {
   // v3 specification.  We only update the built-in camera info once.
   ipc_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CameraHalDelegate::UpdateBuiltInCameraInfoOnIpcThread, this));
+      base::BindOnce(&CameraHalDelegate::UpdateBuiltInCameraInfoOnIpcThread,
+                     this));
   if (!builtin_camera_info_updated_.TimedWait(kEventWaitTimeoutMs)) {
     LOG(ERROR) << "Timed out getting camera info";
     return false;
@@ -268,8 +269,8 @@ bool CameraHalDelegate::UpdateBuiltInCameraInfo() {
 
 void CameraHalDelegate::UpdateBuiltInCameraInfoOnIpcThread() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  camera_module_->GetNumberOfCameras(
-      base::Bind(&CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread, this));
+  camera_module_->GetNumberOfCameras(base::BindOnce(
+      &CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread, this));
 }
 
 void CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread(int32_t num_cameras) {
@@ -290,7 +291,7 @@ void CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread(int32_t num_cameras) {
   camera_module_callbacks_.Bind(std::move(camera_module_callbacks_request));
   camera_module_->SetCallbacks(
       std::move(camera_module_callbacks_ptr),
-      base::Bind(&CameraHalDelegate::OnSetCallbacksOnIpcThread, this));
+      base::BindOnce(&CameraHalDelegate::OnSetCallbacksOnIpcThread, this));
 }
 
 void CameraHalDelegate::OnSetCallbacksOnIpcThread(int32_t result) {
@@ -303,16 +304,17 @@ void CameraHalDelegate::OnSetCallbacksOnIpcThread(int32_t result) {
   }
   for (size_t camera_id = 0; camera_id < num_builtin_cameras_; ++camera_id) {
     GetCameraInfoOnIpcThread(
-        camera_id, base::Bind(&CameraHalDelegate::OnGotCameraInfoOnIpcThread,
-                              this, camera_id));
+        camera_id,
+        base::BindOnce(&CameraHalDelegate::OnGotCameraInfoOnIpcThread, this,
+                       camera_id));
   }
 }
 
 void CameraHalDelegate::GetCameraInfoOnIpcThread(
     int32_t camera_id,
-    const GetCameraInfoCallback& callback) {
+    GetCameraInfoCallback callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  camera_module_->GetCameraInfo(camera_id, callback);
+  camera_module_->GetCameraInfo(camera_id, std::move(callback));
 }
 
 void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
@@ -334,10 +336,10 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
 void CameraHalDelegate::OpenDeviceOnIpcThread(
     int32_t camera_id,
     cros::mojom::Camera3DeviceOpsRequest device_ops_request,
-    const OpenDeviceCallback& callback) {
+    OpenDeviceCallback callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   camera_module_->OpenDevice(camera_id, std::move(device_ops_request),
-                             callback);
+                             std::move(callback));
 }
 
 // CameraModuleCallbacks implementations.

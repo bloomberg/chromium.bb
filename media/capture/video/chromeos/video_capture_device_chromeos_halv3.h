@@ -58,7 +58,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceChromeOSHalv3 final
 
  private:
   void OpenDevice();
-  void CloseDevice(base::Closure callback);
+  void CloseDevice(base::OnceClosure callback);
 
   // DisplayRotationDelegate implementation.
   void SetDisplayRotation(const display::Display& display) final;

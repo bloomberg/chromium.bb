@@ -180,8 +180,8 @@ void StreamBufferManager::RegisterBuffer() {
       buffer_id, cros::mojom::Camera3DeviceOps::BufferType::GRALLOC, drm_format,
       hal_pixel_format, stream_context_->stream->width,
       stream_context_->stream->height, std::move(planes),
-      base::Bind(&StreamBufferManager::OnRegisteredBuffer,
-                 weak_ptr_factory_.GetWeakPtr(), buffer_id));
+      base::BindOnce(&StreamBufferManager::OnRegisteredBuffer,
+                     weak_ptr_factory_.GetWeakPtr(), buffer_id));
   VLOG(2) << "Registered buffer " << buffer_id;
 }
 
@@ -219,8 +219,8 @@ void StreamBufferManager::ProcessCaptureRequest(size_t buffer_id) {
 
   capture_interface_->ProcessCaptureRequest(
       std::move(request),
-      base::Bind(&StreamBufferManager::OnProcessedCaptureRequest,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&StreamBufferManager::OnProcessedCaptureRequest,
+                     weak_ptr_factory_.GetWeakPtr()));
   VLOG(2) << "Requested capture for frame " << frame_number_ << " with buffer "
           << buffer_id;
   frame_number_++;

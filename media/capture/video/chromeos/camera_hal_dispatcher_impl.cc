@@ -125,8 +125,8 @@ bool CameraHalDispatcherImpl::Start(
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   blocking_io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CameraHalDispatcherImpl::CreateSocket, base::Unretained(this),
-                 base::Unretained(&started)));
+      base::BindOnce(&CameraHalDispatcherImpl::CreateSocket,
+                     base::Unretained(this), base::Unretained(&started)));
   started.Wait();
   return IsStarted();
 }
@@ -155,8 +155,8 @@ CameraHalDispatcherImpl::~CameraHalDispatcherImpl() {
   VLOG(1) << "Stopping CameraHalDispatcherImpl...";
   if (proxy_thread_.IsRunning()) {
     proxy_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&CameraHalDispatcherImpl::StopOnProxyThread,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&CameraHalDispatcherImpl::StopOnProxyThread,
+                                  base::Unretained(this)));
     proxy_thread_.Stop();
   }
   blocking_io_thread_.Stop();
@@ -172,8 +172,8 @@ void CameraHalDispatcherImpl::RegisterServer(
     return;
   }
   camera_hal_server.set_connection_error_handler(
-      base::Bind(&CameraHalDispatcherImpl::OnCameraHalServerConnectionError,
-                 base::Unretained(this)));
+      base::BindOnce(&CameraHalDispatcherImpl::OnCameraHalServerConnectionError,
+                     base::Unretained(this)));
   camera_hal_server_ = std::move(camera_hal_server);
   VLOG(1) << "Camera HAL server registered";
 
@@ -189,7 +189,7 @@ void CameraHalDispatcherImpl::RegisterClient(
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
   auto client_observer =
       std::make_unique<MojoCameraClientObserver>(std::move(client));
-  client_observer->client().set_connection_error_handler(base::Bind(
+  client_observer->client().set_connection_error_handler(base::BindOnce(
       &CameraHalDispatcherImpl::OnCameraHalClientConnectionError,
       base::Unretained(this), base::Unretained(client_observer.get())));
   AddClientObserver(std::move(client_observer));
@@ -249,9 +249,10 @@ void CameraHalDispatcherImpl::CreateSocket(base::WaitableEvent* started) {
   }
 
   blocking_io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&CameraHalDispatcherImpl::StartServiceLoop,
-                            base::Unretained(this), base::Passed(&socket_fd),
-                            base::Unretained(started)));
+      FROM_HERE,
+      base::BindOnce(&CameraHalDispatcherImpl::StartServiceLoop,
+                     base::Unretained(this), base::Passed(&socket_fd),
+                     base::Unretained(started)));
 }
 
 void CameraHalDispatcherImpl::StartServiceLoop(
@@ -306,8 +307,9 @@ void CameraHalDispatcherImpl::StartServiceLoop(
         PLOG(ERROR) << "sendmsg()";
       } else {
         proxy_task_runner_->PostTask(
-            FROM_HERE, base::Bind(&CameraHalDispatcherImpl::OnPeerConnected,
-                                  base::Unretained(this), base::Passed(&pipe)));
+            FROM_HERE,
+            base::BindOnce(&CameraHalDispatcherImpl::OnPeerConnected,
+                           base::Unretained(this), base::Passed(&pipe)));
       }
     }
   }
