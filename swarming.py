@@ -1176,7 +1176,7 @@ class TaskOutputStdoutOption(optparse.Option):
 
 def add_collect_options(parser):
   parser.server_group.add_option(
-      '-t', '--timeout', type='float', default=0,
+      '-t', '--timeout', type='float', default=0.,
       help='Timeout to wait for result, set to -1 for no timeout and get '
            'current state; defaults to waiting until the task completes')
   parser.group_logging.add_option(
