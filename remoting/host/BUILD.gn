@@ -161,7 +161,6 @@ static_library("host") {
     "host_details.cc",
     "host_details.h",
     "host_event_logger.h",
-    "host_event_logger_posix.cc",
     "host_event_logger_win.cc",
     "host_exit_codes.cc",
     "host_exit_codes.h",
@@ -235,8 +234,6 @@ static_library("host") {
     "pin_hash.h",
     "policy_watcher.cc",
     "policy_watcher.h",
-    "posix/signal_handler.cc",
-    "posix/signal_handler.h",
     "process_stats_agent.h",
     "process_stats_sender.cc",
     "process_stats_sender.h",
@@ -319,6 +316,14 @@ static_library("host") {
   public_deps = [
     "//ipc",
   ]
+
+  if (is_posix) {
+    sources += [
+      "host_event_logger_posix.cc",
+      "posix/signal_handler.cc",
+      "posix/signal_handler.h",
+    ]
+  }
 
   if (!is_ios) {
     deps += [ "//components/policy:generated" ]
@@ -695,8 +700,6 @@ if (enable_remoting_host) {
 if (enable_me2me_host) {
   static_library("remoting_me2me_host_static") {
     sources = [
-      "pam_authorization_factory_posix.cc",
-      "pam_authorization_factory_posix.h",
       "remoting_me2me_host.cc",
     ]
     defines = []
@@ -717,6 +720,13 @@ if (enable_me2me_host) {
       "//remoting/proto",
       "//third_party/webrtc/modules/desktop_capture",
     ]
+
+    if (is_posix) {
+      sources += [
+        "pam_authorization_factory_posix.cc",
+        "pam_authorization_factory_posix.h",
+      ]
+    }
 
     if (!is_ios) {
       deps += [ "//components/policy:generated" ]
