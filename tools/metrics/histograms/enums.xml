@@ -47744,6 +47744,11 @@ Full version information for the fingerprint enum values:
   <int value="3" label="SHORTCUT_MISCONFIGURATION"/>
 </enum>
 
+<enum name="WindowsNotificationUserManagerShowupStatus">
+  <int value="0" label="Last opened profile is non-empty"/>
+  <int value="1" label="Cannot open last used profile"/>
+</enum>
+
 <enum name="WindowsVersion">
   <int value="0" label="Pre-XP"/>
   <int value="1" label="XP"/>
