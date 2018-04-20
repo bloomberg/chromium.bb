@@ -398,15 +398,51 @@ void SessionSyncBridge::OnStoreInitialized(
 }
 
 void SessionSyncBridge::DeleteForeignSessionFromUI(const std::string& tag) {
-  // TODO(crbug.com/681921): Implement logic and also run
-  // foreign_sessions_updated_callback_ if needed.
-  NOTIMPLEMENTED();
+  if (!syncing_) {
+    return;
+  }
+
+  std::unique_ptr<SessionStore::WriteBatch> batch =
+      CreateSessionStoreWriteBatch();
+  DeleteForeignSessionWithBatch(tag, batch.get());
+  SessionStore::WriteBatch::Commit(std::move(batch));
 }
 
 void SessionSyncBridge::DoGarbageCollection() {
   // TODO(crbug.com/681921): Implement logic and also run
   // foreign_sessions_updated_callback_ if needed.
   NOTIMPLEMENTED();
+}
+
+void SessionSyncBridge::DeleteForeignSessionWithBatch(
+    const std::string& session_tag,
+    SessionStore::WriteBatch* batch) {
+  DCHECK(syncing_);
+  DCHECK(change_processor()->IsTrackingMetadata());
+
+  if (session_tag == syncing_->store->local_session_info().session_tag) {
+    DLOG(ERROR) << "Attempting to delete local session. This is not currently "
+                << "supported.";
+    return;
+  }
+
+  // Delete tabs.
+  for (int tab_node_id :
+       syncing_->store->tracker()->LookupTabNodeIds(session_tag)) {
+    const std::string tab_storage_key =
+        SessionStore::GetTabStorageKey(session_tag, tab_node_id);
+    batch->DeleteForeignEntityAndUpdateTracker(tab_storage_key);
+    change_processor()->Delete(tab_storage_key, batch->GetMetadataChangeList());
+  }
+
+  // Delete header.
+  const std::string header_storage_key =
+      SessionStore::GetHeaderStorageKey(session_tag);
+  batch->DeleteForeignEntityAndUpdateTracker(header_storage_key);
+  change_processor()->Delete(header_storage_key,
+                             batch->GetMetadataChangeList());
+
+  foreign_sessions_updated_callback_.Run();
 }
 
 std::unique_ptr<SessionStore::WriteBatch>

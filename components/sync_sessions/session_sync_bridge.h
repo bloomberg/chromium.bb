@@ -96,6 +96,8 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   void DeleteForeignSessionFromUI(const std::string& tag);
   void DoGarbageCollection();
   std::unique_ptr<SessionStore::WriteBatch> CreateSessionStoreWriteBatch();
+  void DeleteForeignSessionWithBatch(const std::string& session_tag,
+                                     SessionStore::WriteBatch* batch);
   void ReportError(const syncer::ModelError& error);
 
   SyncSessionsClient* const sessions_client_;

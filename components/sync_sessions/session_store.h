@@ -68,14 +68,14 @@ class SessionStore {
   static std::string GetClientTag(const sync_pb::SessionSpecifics& specifics);
   // |specifics| must be valid, see AreValidSpecifics().
   static std::string GetStorageKey(const sync_pb::SessionSpecifics& specifics);
+  static std::string GetHeaderStorageKey(const std::string& session_tag);
+  static std::string GetTabStorageKey(const std::string& session_tag,
+                                      int tab_node_id);
   // Verifies if |storage_key| corresponds to an entity in the local session,
   // identified by the session tag.
   bool StorageKeyMatchesLocalSession(const std::string& storage_key) const;
 
   // Various equivalents for testing.
-  static std::string GetHeaderStorageKeyForTest(const std::string& session_tag);
-  static std::string GetTabStorageKeyForTest(const std::string& session_tag,
-                                             int tab_node_id);
   static std::string GetTabClientTagForTest(const std::string& session_tag,
                                             int tab_node_id);
 

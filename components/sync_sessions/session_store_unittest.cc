@@ -282,7 +282,7 @@ class SessionStoreTest : public SessionStoreFactoryTest {
 
 TEST_F(SessionStoreTest, ShouldCreateLocalSession) {
   const std::string header_storage_key =
-      SessionStore::GetHeaderStorageKeyForTest(kLocalSessionTag);
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
 
   EXPECT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
               ElementsAre(Pair(header_storage_key,
@@ -357,11 +357,11 @@ TEST_F(SessionStoreTest, ShouldUpdateTrackerWithForeignData) {
               IsEmpty());
 
   const std::string header_storage_key =
-      SessionStore::GetHeaderStorageKeyForTest(kForeignSessionTag);
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
   const std::string tab_storage_key1 =
-      SessionStore::GetTabStorageKeyForTest(kForeignSessionTag, kTabNodeId1);
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId1);
   const std::string tab_storage_key2 =
-      SessionStore::GetTabStorageKeyForTest(kForeignSessionTag, kTabNodeId2);
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId2);
   ASSERT_THAT(BatchToEntityDataMap(session_store()->GetSessionDataForKeys(
                   {header_storage_key, tab_storage_key1, tab_storage_key2})),
               IsEmpty());
@@ -426,7 +426,7 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
   EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_, _)).Times(0);
 
   const std::string local_header_storage_key =
-      SessionStore::GetHeaderStorageKeyForTest(kLocalSessionTag);
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
 
   ASSERT_THAT(session_store()->tracker()->LookupAllForeignSessions(
                   SyncedSessionTracker::RAW),
@@ -457,9 +457,9 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
   batch->PutAndUpdateTracker(tab1, base::Time::Now());
 
   const std::string header_storage_key =
-      SessionStore::GetHeaderStorageKeyForTest(kForeignSessionTag);
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
   const std::string tab_storage_key1 =
-      SessionStore::GetTabStorageKeyForTest(kForeignSessionTag, kTabNodeId1);
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId1);
 
   sync_pb::EntityMetadata header_metadata;
   header_metadata.set_server_id("someserverid1");
@@ -539,11 +539,11 @@ TEST_F(SessionStoreTest, ShouldReturnForeignUnmappedTabs) {
   const int kTabNodeId1 = 2;
 
   const std::string local_header_storage_key =
-      SessionStore::GetHeaderStorageKeyForTest(kLocalSessionTag);
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
   const std::string foreign_header_storage_key =
-      SessionStore::GetHeaderStorageKeyForTest(kForeignSessionTag);
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
   const std::string foreign_tab_storage_key =
-      SessionStore::GetTabStorageKeyForTest(kForeignSessionTag, kTabNodeId1);
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId1);
 
   // Local header entity is present initially.
   ASSERT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),

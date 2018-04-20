@@ -348,11 +348,11 @@ TEST_F(SessionSyncBridgeTest, ShouldExposeInitialLocalTabsToProcessor) {
   InitializeBridge();
 
   const std::string header_storage_key =
-      SessionStore::GetHeaderStorageKeyForTest(kLocalSessionTag);
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
   const std::string tab_storage_key1 =
-      SessionStore::GetTabStorageKeyForTest(kLocalSessionTag, 0);
+      SessionStore::GetTabStorageKey(kLocalSessionTag, 0);
   const std::string tab_storage_key2 =
-      SessionStore::GetTabStorageKeyForTest(kLocalSessionTag, 1);
+      SessionStore::GetTabStorageKey(kLocalSessionTag, 1);
 
   EXPECT_CALL(mock_processor(),
               DoPut(header_storage_key,
@@ -441,7 +441,7 @@ TEST_F(SessionSyncBridgeTest, ShouldReportLocalTabCreation) {
   AddTab(kWindowId, "http://bar.com/", kTabId2);
 
   ASSERT_THAT(header_storage_key,
-              Eq(SessionStore::GetHeaderStorageKeyForTest(kLocalSessionTag)));
+              Eq(SessionStore::GetHeaderStorageKey(kLocalSessionTag)));
   ASSERT_THAT(tab_storage_key, Not(IsEmpty()));
 
   // Verify the bridge's state exposed via the getters.
@@ -481,11 +481,11 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
   AddTab(kWindowId, "http://bar.com/", kTabIdBeforeRestore2);
 
   const std::string header_storage_key =
-      SessionStore::GetHeaderStorageKeyForTest(kLocalSessionTag);
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
   const std::string tab_storage_key1 =
-      SessionStore::GetTabStorageKeyForTest(kLocalSessionTag, kTabNodeId1);
+      SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId1);
   const std::string tab_storage_key2 =
-      SessionStore::GetTabStorageKeyForTest(kLocalSessionTag, kTabNodeId2);
+      SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId2);
 
   InitializeBridge();
   StartSyncing();
@@ -580,7 +580,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
   StartSyncing();
 
   const std::string header_storage_key =
-      SessionStore::GetHeaderStorageKeyForTest(kLocalSessionTag);
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
   ASSERT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(
                   MatchesHeader(kLocalSessionTag, {kWindowId}, {kTabId})));
@@ -765,6 +765,100 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreRemoteDeletionOfLocalTab) {
   StartSyncing();
 
   EXPECT_THAT(GetAllData(), SizeIs(2));
+}
+
+// Verifies that a foreign session can be deleted by the user from the history
+// UI (via OpenTabsUIDelegate).
+TEST_F(SessionSyncBridgeTest, ShouldDeleteForeignSessionFromUI) {
+  const std::string kForeignSessionTag = "foreignsessiontag";
+  const std::string kForeignClientName = "Foreign Client Name";
+  const int kForeignWindowId = 2000001;
+  const int kForeignTabId = 2000002;
+  const int kForeignTabNodeId = 2003;
+
+  InitializeBridge();
+
+  sync_pb::SessionSpecifics foreign_header;
+  foreign_header.set_session_tag(kForeignSessionTag);
+  foreign_header.mutable_header()->set_client_name(kForeignClientName);
+  foreign_header.mutable_header()->set_device_type(
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  sync_pb::SessionWindow* foreign_window =
+      foreign_header.mutable_header()->add_window();
+  foreign_window->set_browser_type(
+      sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
+  foreign_window->set_window_id(kForeignWindowId);
+  foreign_window->add_tab(kForeignTabId);
+
+  sync_pb::SessionSpecifics foreign_tab;
+  foreign_tab.set_session_tag(kForeignSessionTag);
+  foreign_tab.set_tab_node_id(kForeignTabNodeId);
+  foreign_tab.mutable_tab()->add_navigation()->set_virtual_url(
+      "http://baz.com/");
+  foreign_tab.mutable_tab()->set_window_id(kForeignWindowId);
+  foreign_tab.mutable_tab()->set_tab_id(kForeignTabId);
+
+  StartSyncing({foreign_header, foreign_tab});
+
+  const std::string foreign_header_storage_key =
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
+  const std::string foreign_tab_storage_key =
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kForeignTabNodeId);
+
+  // Test fixture expects the two foreign entities in the model as well as the
+  // underlying store.
+  ASSERT_THAT(GetData(foreign_header_storage_key), NotNull());
+  ASSERT_THAT(GetData(foreign_tab_storage_key), NotNull());
+
+  const sessions::SessionTab* foreign_session_tab = nullptr;
+  ASSERT_TRUE(bridge()->GetOpenTabsUIDelegate()->GetForeignTab(
+      kForeignSessionTag, SessionID::FromSerializedValue(kForeignTabId),
+      &foreign_session_tab));
+  ASSERT_THAT(foreign_session_tab, NotNull());
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_TRUE(bridge()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
+  ASSERT_THAT(foreign_sessions,
+              ElementsAre(MatchesSyncedSession(
+                  kForeignSessionTag,
+                  {{kForeignWindowId, std::vector<int>{kForeignTabId}}})));
+  ASSERT_TRUE(real_processor()->IsTrackingMetadata());
+
+  // Mimic the user requesting a session deletion from the UI.
+  EXPECT_CALL(mock_processor(), Delete(foreign_header_storage_key, _));
+  EXPECT_CALL(mock_processor(), Delete(foreign_tab_storage_key, _));
+  EXPECT_CALL(mock_foreign_sessions_updated_callback(), Run());
+  bridge()->GetOpenTabsUIDelegate()->DeleteForeignSession(kForeignSessionTag);
+
+  // Verify what gets exposed to the UI.
+  foreign_session_tab = nullptr;
+  EXPECT_FALSE(bridge()->GetOpenTabsUIDelegate()->GetForeignTab(
+      kForeignSessionTag, SessionID::FromSerializedValue(kForeignTabId),
+      &foreign_session_tab));
+  EXPECT_FALSE(bridge()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
+
+  // Verify store.
+  EXPECT_THAT(GetData(foreign_header_storage_key), IsNull());
+  EXPECT_THAT(GetData(foreign_tab_storage_key), IsNull());
+}
+
+// Verifies that attempts to delete the local session from the UI are ignored,
+// although the UI sholdn't really be offering that option.
+TEST_F(SessionSyncBridgeTest, ShouldIgnoreLocalSessionDeletionFromUI) {
+  InitializeBridge();
+  StartSyncing();
+
+  EXPECT_CALL(mock_foreign_sessions_updated_callback(), Run()).Times(0);
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+
+  bridge()->GetOpenTabsUIDelegate()->DeleteForeignSession(kLocalSessionTag);
+
+  const SyncedSession* session = nullptr;
+  EXPECT_TRUE(bridge()->GetOpenTabsUIDelegate()->GetLocalSession(&session));
+  EXPECT_THAT(session, NotNull());
+  EXPECT_THAT(GetData(SessionStore::GetHeaderStorageKey(kLocalSessionTag)),
+              NotNull());
 }
 
 }  // namespace
