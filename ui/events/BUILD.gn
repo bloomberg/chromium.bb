@@ -159,7 +159,6 @@ component("events") {
     "win/keyboard_hook_win.cc",
     "win/system_event_state_lookup.cc",
     "win/system_event_state_lookup.h",
-    "x/keyboard_hook_posix.cc",
   ]
 
   defines = [ "EVENTS_IMPLEMENTATION" ]
@@ -179,7 +178,10 @@ component("events") {
   ]
 
   if (use_x11) {
-    sources += [ "x/events_x.cc" ]
+    sources += [
+      "x/events_x.cc",
+      "x/keyboard_hook_posix.cc",
+    ]
     configs += [ "//build/config/linux:x11" ]
     deps += [
       "//ui/events/devices",
