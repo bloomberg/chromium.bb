@@ -733,18 +733,7 @@ message MaskFilterChild {
   oneof children {
     BlurMaskFilter blur_mask_filter_impl = 1;
     EmbossMaskFilter emboss_mask_filter = 2;
-    RRectsGaussianEdgeMaskFilterImpl r_rects_gaussian_edge_mask_filter_impl = 3;
   }
-}
-
-message RRectsGaussianEdgeMaskFilterImpl {
-  required Rectangle rect_1 = 1;
-  required float x_rad_1 = 2;
-  required float y_rad_1 = 3;
-  required Rectangle rect_2 = 4;
-  required float x_rad_2 = 5;
-  required float y_rad_2 = 6;
-  required float radius = 7;
 }
 
 message EmbossMaskFilterLight {
