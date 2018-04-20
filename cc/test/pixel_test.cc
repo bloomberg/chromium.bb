@@ -4,7 +4,10 @@
 
 #include "cc/test/pixel_test.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/shared_memory.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -20,6 +23,8 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/software_output_device.h"
@@ -156,6 +161,34 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
 
   return MatchesPNGFile(
       *result_bitmap_, test_data_dir.Append(ref_file), comparator);
+}
+
+std::unique_ptr<base::SharedMemory> PixelTest::AllocateSharedBitmapMemory(
+    const viz::SharedBitmapId& id,
+    const gfx::Size& size) {
+  std::unique_ptr<base::SharedMemory> shm =
+      viz::bitmap_allocation::AllocateMappedBitmap(size, viz::RGBA_8888);
+  this->shared_bitmap_manager_->ChildAllocatedSharedBitmap(
+      viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(shm.get(), size,
+                                                            viz::RGBA_8888),
+      id);
+  return shm;
+}
+
+viz::ResourceId PixelTest::AllocateAndFillSoftwareResource(
+    const gfx::Size& size,
+    const SkBitmap& source) {
+  viz::SharedBitmapId shared_bitmap_id = viz::SharedBitmap::GenerateId();
+  std::unique_ptr<base::SharedMemory> shm =
+      AllocateSharedBitmapMemory(shared_bitmap_id, size);
+
+  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
+  source.readPixels(info, shm->memory(), info.minRowBytes(), 0, 0);
+
+  return child_resource_provider_->ImportResource(
+      viz::TransferableResource::MakeSoftware(shared_bitmap_id, 0, size,
+                                              viz::RGBA_8888),
+      viz::SingleReleaseCallback::Create(base::DoNothing()));
 }
 
 void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {

@@ -60,9 +60,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
                                            viz::ResourceTextureHint hint,
                                            viz::ResourceFormat format,
                                            const gfx::ColorSpace& color_space);
-  viz::ResourceId CreateBitmapResource(const gfx::Size& size,
-                                       const gfx::ColorSpace& color_space,
-                                       viz::ResourceFormat format);
 
   void DeleteResource(viz::ResourceId id);
 
