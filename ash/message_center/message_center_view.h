@@ -21,6 +21,10 @@ namespace gfx {
 class SlideAnimation;
 }  // namespace gfx
 
+namespace arc {
+class ArcNotificationContentViewTest;
+}  // namespace arc
+
 namespace message_center {
 
 class MessageCenter;
@@ -109,6 +113,7 @@ class ASH_EXPORT MessageCenterView
   void OnViewPreferredSizeChanged(views::View* observed_view) override;
 
  private:
+  friend class arc::ArcNotificationContentViewTest;
   friend class MessageCenterViewTest;
 
   // NOTIFICATIONS: Normal notification list (MessageListView) is shown.

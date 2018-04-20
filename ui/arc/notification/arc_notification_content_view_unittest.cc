@@ -8,10 +8,15 @@
 #include <string>
 #include <utility>
 
+#include "ash/message_center/message_center_view.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_test_helper.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "components/exo/buffer.h"
 #include "components/exo/keyboard.h"
 #include "components/exo/keyboard_delegate.h"
@@ -83,6 +88,8 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
   void SetUp() override {
     ash::AshTestBase::SetUp();
 
+    ash::MessageCenterView::disable_animation_for_testing = true;
+
     wm_helper_ = std::make_unique<exo::WMHelper>();
     exo::WMHelper::SetInstance(wm_helper_.get());
     DCHECK(exo::WMHelper::HasInstance());
@@ -110,13 +117,14 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
     ash::AshTestBase::TearDown();
   }
 
-  void PressCloseButton() {
+  void PressCloseButton(ArcNotificationView* notification_view) {
     DummyEvent dummy_event;
     auto* control_buttons_view =
-        &GetArcNotificationContentView()->control_buttons_view_;
+        &notification_view->content_view_->control_buttons_view_;
     ASSERT_TRUE(control_buttons_view);
     views::Button* close_button = control_buttons_view->close_button();
     ASSERT_NE(nullptr, close_button);
+    close_button->RequestFocus();
     control_buttons_view->ButtonPressed(close_button, dummy_event);
   }
 
@@ -282,11 +290,66 @@ TEST_F(ArcNotificationContentViewTest, CloseButton) {
 
   EXPECT_TRUE(MessageCenter::Get()->FindVisibleNotificationById(
       notification_item->GetNotificationId()));
-  PressCloseButton();
+  PressCloseButton(notification_view());
   EXPECT_FALSE(MessageCenter::Get()->FindVisibleNotificationById(
       notification_item->GetNotificationId()));
 
   CloseNotificationView();
+}
+
+// Tests pressing close button when hosted in MessageCenterView.
+TEST_F(ArcNotificationContentViewTest, CloseButtonInMessageCenterView) {
+  std::string notification_key("notification id");
+
+  // Override MessageView factory to capture the created notification view in
+  // |notification_view|.
+  ArcNotificationView* notification_view = nullptr;
+  message_center::MessageViewFactory::SetCustomNotificationViewFactory(
+      base::BindLambdaForTesting(
+          [&notification_view](const message_center::Notification& notification)
+              -> std::unique_ptr<message_center::MessageView> {
+            auto* arc_delegate =
+                static_cast<ArcNotificationDelegate*>(notification.delegate());
+            std::unique_ptr<message_center::MessageView> created_view =
+                arc_delegate->CreateCustomMessageView(notification);
+            notification_view =
+                static_cast<ArcNotificationView*>(created_view.get());
+            return created_view;
+          }));
+
+  // Show MessageCenterView and activate its widget.
+  auto* notification_tray =
+      ash::StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+          ->web_notification_tray();
+  notification_tray->ShowBubble(false /* show_by_click */);
+  notification_tray->GetBubbleView()
+      ->GetWidget()
+      ->widget_delegate()
+      ->set_can_activate(true);
+  notification_tray->GetBubbleView()->GetWidget()->Activate();
+
+  auto notification_item =
+      std::make_unique<MockArcNotificationItem>(notification_key);
+  PrepareSurface(notification_key);
+  Notification notification = CreateNotification(notification_item.get());
+
+  // Sets a close callback so that the underlying item is destroyed when close
+  // button is pressed. This simulates ArcNotificationItemImpl behavior.
+  notification_item->SetCloseCallback(base::BindLambdaForTesting(
+      [&notification_item]() { notification_item.reset(); }));
+
+  MessageCenter::Get()->AddNotification(
+      std::make_unique<Notification>(notification));
+  ASSERT_TRUE(notification_view);
+
+  // Cache notification id because |notification_item| will be gone when the
+  // close button is pressed.
+  const std::string notification_id = notification_item->GetNotificationId();
+  EXPECT_TRUE(
+      MessageCenter::Get()->FindVisibleNotificationById(notification_id));
+  PressCloseButton(notification_view);
+  EXPECT_FALSE(
+      MessageCenter::Get()->FindVisibleNotificationById(notification_id));
 }
 
 TEST_F(ArcNotificationContentViewTest, ReuseSurfaceAfterClosing) {

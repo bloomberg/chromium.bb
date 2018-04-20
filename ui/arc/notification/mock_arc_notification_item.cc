@@ -4,6 +4,10 @@
 
 #include "ui/arc/notification/mock_arc_notification_item.h"
 
+#include <utility>
+
+#include "base/bind_helpers.h"
+
 namespace arc {
 
 namespace {
@@ -18,10 +22,21 @@ MockArcNotificationItem::MockArcNotificationItem(
       notification_id_(kNotificationIdPrefix + notification_key),
       weak_factory_(this) {}
 
-MockArcNotificationItem::~MockArcNotificationItem() = default;
+MockArcNotificationItem::~MockArcNotificationItem() {
+  for (auto& observer : observers_)
+    observer.OnItemDestroying();
+}
+
+void MockArcNotificationItem::SetCloseCallback(
+    base::OnceClosure close_callback) {
+  close_callback_ = std::move(close_callback);
+}
 
 void MockArcNotificationItem::Close(bool by_user) {
   count_close_++;
+
+  if (close_callback_)
+    base::ResetAndReturn(&close_callback_).Run();
 }
 
 const gfx::ImageSkia& MockArcNotificationItem::GetSnapshot() const {
@@ -34,6 +49,14 @@ const std::string& MockArcNotificationItem::GetNotificationKey() const {
 
 const std::string& MockArcNotificationItem::GetNotificationId() const {
   return notification_id_;
+}
+
+void MockArcNotificationItem::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MockArcNotificationItem::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 mojom::ArcNotificationType MockArcNotificationItem::GetNotificationType()
