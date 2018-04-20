@@ -105,10 +105,10 @@
     "name": "Getting Started Example",
     "version": "1.0",
     "description": "Build an Extension!",
-    <b>"background": {
-      "scripts": ["background.js"],
-      "persistent": false
-    },</b>
+    <b>"background": {</b>
+      <b>"scripts": ["background.js"],</b>
+      <b>"persistent": false</b>
+    <b>},</b>
     "manifest_version": 2
   }
 </pre>
@@ -212,9 +212,9 @@
       "scripts": ["background.js"],
       "persistent": false
     },
-    <b>"page_action": {
-      "default_popup": "popup.html",
-    },</b>
+    <b>"page_action": {</b>
+      <b>"default_popup": "popup.html",</b>
+    <b>},</b>
     "manifest_version": 2
   }
 </pre>
@@ -241,12 +241,12 @@
     },
     "page_action": {
       "default_popup": "popup.html",
-      <b>"default_icon": {
-        "16": "images/get_started16.png",
-        "32": "images/get_started32.png",
-        "48": "images/get_started48.png",
-        "128": "images/get_started128.png"
-      }</b>
+      <b>"default_icon": {</b>
+        <b>"16": "images/get_started16.png",</b>
+        <b>"32": "images/get_started32.png",</b>
+        <b>"48": "images/get_started48.png",</b>
+        <b>"128": "images/get_started128.png"</b>
+      <b>}</b>
     },
     "manifest_version": 2
   }
@@ -277,12 +277,12 @@
         "128": "images/get_started128.png"
       }
     },
-    <b>"icons": {
-      "16": "images/get_started16.png",
-      "32": "images/get_started32.png",
-      "48": "images/get_started48.png",
-      "128": "images/get_started128.png"
-    },</b>
+    <b>"icons": {</b>
+      <b>"16": "images/get_started16.png",</b>
+      <b>"32": "images/get_started32.png",</b>
+      <b>"48": "images/get_started48.png",</b>
+      <b>"128": "images/get_started128.png"</b>
+    <b>},</b>
     "manifest_version": 2
   }
 </pre>
@@ -305,15 +305,15 @@
     chrome.storage.sync.set({color: '#3aa757'}, function() {
       console.log('The color is green.');
     });
-    <b>chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
-      chrome.declarativeContent.onPageChanged.addRules([{
-        conditions: [new chrome.declarativeContent.PageStateMatcher({
-          pageUrl: {hostEquals: 'developer.chrome.com'},
-        })
-        ],
-            actions: [new chrome.declarativeContent.ShowPageAction()]
-      }]);
-    });</b>
+    <b>chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {</b>
+      <b>chrome.declarativeContent.onPageChanged.addRules([{</b>
+        <b>conditions: [new chrome.declarativeContent.PageStateMatcher({</b>
+          <b>pageUrl: {hostEquals: 'developer.chrome.com'},</b>
+        <b>})</b>
+        <b>],</b>
+            <b>actions: [new chrome.declarativeContent.ShowPageAction()]</b>
+      <b>}]);</b>
+    <b>});</b>
   });
 </pre>
 <p>
@@ -386,12 +386,14 @@
 <pre data-filename="popup.js">
   let changeColor = document.getElementById('changeColor');
   ...
-  <b>changeColor.onclick = function(element) {
-    let color = element.target.value;
-      chrome.tabs.executeScript(
-          tabs[0].id,
-          {code: 'document.body.style.backgroundColor = "' + color + '";'});
-  };</b>
+  <b>changeColor.onclick = function(element) {</b>
+    <b>let color = element.target.value;</b>
+    <b>chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {</b>
+      <b>chrome.tabs.executeScript(</b>
+          <b>tabs[0].id,</b>
+          <b>{code: 'document.body.style.backgroundColor = "' + color + '";'});</b>
+    <b>});
+  <b>};</b>
 </pre>
 <p>
   The updated code adds an onclick event the button,
