@@ -83,13 +83,16 @@ size_t OutputDeviceBacking::GetMaxByteSize() {
   return max_size;
 }
 
-SoftwareOutputDeviceWin::SoftwareOutputDeviceWin(OutputDeviceBacking* backing,
-                                                 gfx::AcceleratedWidget widget)
+SoftwareOutputDeviceWin::SoftwareOutputDeviceWin(
+    OutputDeviceBacking* backing,
+    gfx::AcceleratedWidget widget,
+    bool force_disable_hwnd_composited)
     : hwnd_(widget),
       is_hwnd_composited_(false),
       backing_(backing),
       in_paint_(false) {
-  is_hwnd_composited_ = !!::GetProp(hwnd_, ui::kWindowTranslucent);
+  is_hwnd_composited_ = !force_disable_hwnd_composited &&
+                        !!::GetProp(hwnd_, ui::kWindowTranslucent);
   // Layered windows must be completely updated every time, so they can't
   // share contents with other windows.
   if (is_hwnd_composited_)

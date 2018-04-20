@@ -48,8 +48,13 @@ class VIZ_SERVICE_EXPORT OutputDeviceBacking {
 
 class VIZ_SERVICE_EXPORT SoftwareOutputDeviceWin : public SoftwareOutputDevice {
  public:
+  // TODO(crbug.com/826633): Investigating if the layered window drawing
+  // path is necessary then remove |force_disable_hwnd_composited|. This is only
+  // used with --enable-features=VizDisplayCompositor where
+  // UpdateLayeredWindow() call is blocked by GPU sandbox.
   SoftwareOutputDeviceWin(OutputDeviceBacking* backing,
-                          gfx::AcceleratedWidget widget);
+                          gfx::AcceleratedWidget widget,
+                          bool force_disable_hwnd_composited = false);
   ~SoftwareOutputDeviceWin() override;
 
   void Resize(const gfx::Size& viewport_pixel_size,
