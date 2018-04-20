@@ -7,8 +7,8 @@ import("//build/config/locales.gni")
 config("config") {
   visibility = [ ":material_components_ios" ]
   include_dirs = [
-    "src/components/AppBar/src",
     "src/components/ActivityIndicator/src",
+    "src/components/AppBar/src",
     "src/components/ButtonBar/src",
     "src/components/Buttons/src",
     "src/components/CollectionCells/src",
@@ -18,18 +18,19 @@ config("config") {
     "src/components/FlexibleHeader/src",
     "src/components/HeaderStackView/src",
     "src/components/Ink/src",
-    "src/components/private/UIMetrics/src",
     "src/components/NavigationBar/src",
     "src/components/OverlayWindow/src",
     "src/components/Palettes/src",
     "src/components/ProgressView/src",
-    "src/components/schemes/Color/src",
-    "src/components/schemes/Typography/src",
     "src/components/ShadowElevations/src",
     "src/components/ShadowLayer/src",
     "src/components/Snackbar/src",
     "src/components/Themes/src",
     "src/components/Typography/src",
+    "src/components/private/Shapes/src/",
+    "src/components/private/UIMetrics/src",
+    "src/components/schemes/Color/src",
+    "src/components/schemes/Typography/src",
   ]
 }
 
@@ -264,6 +265,9 @@ source_set("material_components_ios") {
     "src/components/private/Overlay/src/private/MDCOverlayObserverTransition.m",
     "src/components/private/Overlay/src/private/MDCOverlayUtilities.h",
     "src/components/private/Overlay/src/private/MDCOverlayUtilities.m",
+    "src/components/private/Shapes/src/MDCShapedShadowLayer.h",
+    "src/components/private/Shapes/src/MDCShapedShadowLayer.m",
+    "src/components/private/Shapes/src/MaterialShapes.h",
     "src/components/private/ThumbTrack/src/MDCNumericValueLabel.h",
     "src/components/private/ThumbTrack/src/MDCNumericValueLabel.m",
     "src/components/private/ThumbTrack/src/MDCThumbTrack.h",
@@ -304,6 +308,7 @@ source_set("material_components_ios") {
     "src/components/private/Icons/icons/ic_reorder/src",
     "src/components/private/KeyboardWatcher/src",
     "src/components/private/Overlay/src",
+    "src/components/private/Shapes/src",
     "src/components/private/ThumbTrack/src",
   ]
 
