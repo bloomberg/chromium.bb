@@ -84,8 +84,8 @@ public class VrShellControllerInputTest {
     @Test
     @MediumTest
     public void testControllerScrolling() throws InterruptedException {
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("test_controller_scrolling"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
+                PAGE_LOAD_TIMEOUT_S);
         final WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
         Coordinates coord = Coordinates.createFor(wc);
         waitForPageToBeScrollable(mVrTestRule.getActivity().getActivityTab().getContentViewCore());
@@ -134,8 +134,8 @@ public class VrShellControllerInputTest {
     @Test
     @MediumTest
     public void testControllerFlingScrolling() throws InterruptedException {
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("test_controller_scrolling"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
+                PAGE_LOAD_TIMEOUT_S);
         final WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
         Coordinates coord = Coordinates.createFor(wc);
         waitForPageToBeScrollable(mVrTestRule.getActivity().getActivityTab().getContentViewCore());
@@ -204,13 +204,13 @@ public class VrShellControllerInputTest {
     @Test
     @MediumTest
     public void testControllerClicksRegisterOnWebpage() throws InterruptedException {
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("test_controller_clicks_register_on_webpage"),
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile(
+                                    "test_controller_clicks_register_on_webpage"),
                 PAGE_LOAD_TIMEOUT_S);
 
         mController.performControllerClick();
         ChromeTabUtils.waitForTabPageLoaded(mVrTestRule.getActivity().getActivityTab(),
-                VrTestFramework.getHtmlTestFile("test_navigation_2d_page"));
+                VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"));
     }
 
     /*
@@ -223,20 +223,20 @@ public class VrShellControllerInputTest {
         VrTransitionUtils.forceEnterVr();
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         // Fill history with enough items to scroll
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("test_navigation_2d_page"), PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("test_controller_scrolling"), PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("test_navigation_webvr_page"), PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("test_webvr_autopresent"), PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("generic_webxr_page"), PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("test_gamepad_button"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webvr_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_webvr_autopresent"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_gamepad_button"),
+                PAGE_LOAD_TIMEOUT_S);
 
         mVrTestRule.loadUrl("chrome://history", PAGE_LOAD_TIMEOUT_S);
 
@@ -272,7 +272,8 @@ public class VrShellControllerInputTest {
     @RetryOnFailure(message = "Very rarely, button press not registered (race condition?)")
     public void testAppButtonExitsFullscreen() throws InterruptedException, TimeoutException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getHtmlTestFile("test_navigation_2d_page"), PAGE_LOAD_TIMEOUT_S);
+                VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
+                PAGE_LOAD_TIMEOUT_S);
         // Enter fullscreen
         DOMUtils.clickNode(mVrTestFramework.getFirstTabCvc(), "fullscreen",
                 false /* goThroughRootAndroidView */);

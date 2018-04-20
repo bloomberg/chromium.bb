@@ -102,7 +102,7 @@ public class WebVrTransitionTest {
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testRequestPresentEntersVr() throws InterruptedException {
         testPresentationEntryImpl(
-                VrTestFramework.getHtmlTestFile("generic_webvr_page"), mVrTestFramework);
+                VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"), mVrTestFramework);
     }
 
     /**
@@ -115,7 +115,7 @@ public class WebVrTransitionTest {
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testRequestSessionEntersVr() throws InterruptedException {
         testPresentationEntryImpl(
-                XrTestFramework.getHtmlTestFile("generic_webxr_page"), mXrTestFramework);
+                XrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"), mXrTestFramework);
     }
 
     private void testPresentationEntryImpl(String url, TestFramework framework)
@@ -165,7 +165,7 @@ public class WebVrTransitionTest {
         // TODO(bsheedy): Remove this test once WebVR is on by default without
         // requiring an origin trial.
         apiDisabledWithoutFlagSetImpl(
-                VrTestFramework.getHtmlTestFile("test_webvr_disabled_without_flag_set"),
+                VrTestFramework.getFileUrlForHtmlTestFile("test_webvr_disabled_without_flag_set"),
                 mVrTestFramework);
     }
 
@@ -181,7 +181,7 @@ public class WebVrTransitionTest {
         // TODO(bsheedy): Remove this test once WebXR is on by default without
         // requiring an origin trial.
         apiDisabledWithoutFlagSetImpl(
-                XrTestFramework.getHtmlTestFile("test_webxr_disabled_without_flag_set"),
+                XrTestFramework.getFileUrlForHtmlTestFile("test_webxr_disabled_without_flag_set"),
                 mXrTestFramework);
     }
 
@@ -202,7 +202,7 @@ public class WebVrTransitionTest {
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
+                VrTestFramework.getFileUrlForHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
                 PAGE_LOAD_TIMEOUT_S);
         VrTestFramework.runJavaScriptOrFail(
                 "addListener()", POLL_TIMEOUT_LONG_MS, mVrTestFramework.getFirstTabWebContents());
@@ -226,7 +226,8 @@ public class WebVrTransitionTest {
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationPromiseUnresolvedDuringDon() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getHtmlTestFile("test_presentation_promise_unresolved_during_don"),
+                VrTestFramework.getFileUrlForHtmlTestFile(
+                        "test_presentation_promise_unresolved_during_don"),
                 PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
@@ -246,7 +247,7 @@ public class WebVrTransitionTest {
     public void testPresentationPromiseUnresolvedDuringDon_WebXr()
             throws InterruptedException {
         presentationPromiseUnresolvedDuringDonImpl(
-                XrTestFramework.getHtmlTestFile(
+                XrTestFramework.getFileUrlForHtmlTestFile(
                         "webxr_test_presentation_promise_unresolved_during_don"),
                 mXrTestFramework);
     }
@@ -268,7 +269,7 @@ public class WebVrTransitionTest {
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationPromiseRejectedIfDonCanceled() throws InterruptedException {
         presentationPromiseRejectedIfDonCanceledImpl(
-                VrTestFramework.getHtmlTestFile(
+                VrTestFramework.getFileUrlForHtmlTestFile(
                         "test_presentation_promise_rejected_if_don_canceled"),
                 mVrTestFramework);
     }
@@ -285,7 +286,7 @@ public class WebVrTransitionTest {
     public void testPresentationPromiseRejectedIfDonCanceled_WebXr()
             throws InterruptedException {
         presentationPromiseRejectedIfDonCanceledImpl(
-                XrTestFramework.getHtmlTestFile(
+                XrTestFramework.getFileUrlForHtmlTestFile(
                         "webxr_test_presentation_promise_rejected_if_don_canceled"),
                 mXrTestFramework);
     }
@@ -324,8 +325,8 @@ public class WebVrTransitionTest {
 
         // Send an autopresent intent, which will open the link in a CCT
         VrTransitionUtils.sendVrLaunchIntent(
-                VrTestFramework.getHtmlTestFile("test_webvr_autopresent"), mTestRule.getActivity(),
-                true /* autopresent */, true /* avoidRelaunch */);
+                VrTestFramework.getFileUrlForHtmlTestFile("test_webvr_autopresent"),
+                mTestRule.getActivity(), true /* autopresent */, true /* avoidRelaunch */);
 
         // Wait until a CCT is opened due to the intent
         final AtomicReference<CustomTabActivity> cct = new AtomicReference<CustomTabActivity>();
@@ -366,7 +367,7 @@ public class WebVrTransitionTest {
     @MediumTest
     public void testControlsVisibleAfterExitingVr() throws InterruptedException {
         controlsVisibleAfterExitingVrImpl(
-                VrTestFramework.getHtmlTestFile("generic_webvr_page"), mVrTestFramework);
+                VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"), mVrTestFramework);
     }
 
     /**
@@ -378,7 +379,7 @@ public class WebVrTransitionTest {
     @CommandLineFlags.Add({"enable-features=WebXR"})
     public void testControlsVisibleAfterExitingVr_WebXr() throws InterruptedException {
         controlsVisibleAfterExitingVrImpl(
-                XrTestFramework.getHtmlTestFile("generic_webxr_page"), mXrTestFramework);
+                XrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"), mXrTestFramework);
     }
 
     private void controlsVisibleAfterExitingVrImpl(String url, final TestFramework framework)
@@ -409,7 +410,8 @@ public class WebVrTransitionTest {
     @RetryOnFailure
     public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
-                VrTestFramework.getHtmlTestFile("test_window_raf_stops_firing_while_presenting"),
+                VrTestFramework.getFileUrlForHtmlTestFile(
+                        "test_window_raf_stops_firing_while_presenting"),
                 mVrTestFramework);
     }
 
@@ -425,7 +427,7 @@ public class WebVrTransitionTest {
     public void testWindowRafStopsFiringWhilePresenting_WebXr()
             throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
-                XrTestFramework.getHtmlTestFile(
+                XrTestFramework.getFileUrlForHtmlTestFile(
                         "webxr_test_window_raf_stops_firing_during_exclusive_session"),
                 mXrTestFramework);
     }
@@ -458,7 +460,7 @@ public class WebVrTransitionTest {
     public void testRendererKilledInWebVrStaysInVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         rendererKilledInVrStaysInVrImpl(
-                VrTestFramework.getHtmlTestFile("generic_webvr_page"), mVrTestFramework);
+                VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"), mVrTestFramework);
     }
 
     /**
@@ -472,7 +474,7 @@ public class WebVrTransitionTest {
     public void testRendererKilledInWebXrStaysInVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         rendererKilledInVrStaysInVrImpl(
-                XrTestFramework.getHtmlTestFile("generic_webxr_page"), mXrTestFramework);
+                XrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"), mXrTestFramework);
     }
 
     private void rendererKilledInVrStaysInVrImpl(String url, TestFramework framework)
@@ -493,7 +495,7 @@ public class WebVrTransitionTest {
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testWindowRafFiresDuringNonExclusiveSession() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
-                XrTestFramework.getHtmlTestFile(
+                XrTestFramework.getFileUrlForHtmlTestFile(
                         "test_window_raf_fires_during_non_exclusive_session"),
                 PAGE_LOAD_TIMEOUT_S);
         XrTestFramework.waitOnJavaScriptStep(mXrTestFramework.getFirstTabWebContents());
@@ -511,7 +513,8 @@ public class WebVrTransitionTest {
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testNonExclusiveStopsDuringExclusive() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
-                XrTestFramework.getHtmlTestFile("test_non_exclusive_stops_during_exclusive"),
+                XrTestFramework.getFileUrlForHtmlTestFile(
+                        "test_non_exclusive_stops_during_exclusive"),
                 PAGE_LOAD_TIMEOUT_S);
         XrTestFramework.executeStepAndWait(
                 "stepBeforeExclusive()", mXrTestFramework.getFirstTabWebContents());

@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.os.Build;
 import android.os.StrictMode;
 import android.util.DisplayMetrics;
@@ -1096,6 +1097,11 @@ public class VrShellImpl
         return mVrUiViewContainer.getChildCount() > 0;
     }
 
+    @VisibleForTesting
+    public VrViewContainer getVrViewContainerForTesting() {
+        return mVrUiViewContainer;
+    }
+
     @Override
     public void showSoftInput(boolean show) {
         assert mNativeVrShell != 0;
@@ -1121,7 +1127,7 @@ public class VrShellImpl
     }
 
     @Override
-    public void performUiActionForTesting(int elementName, int actionType, Point position) {
+    public void performUiActionForTesting(int elementName, int actionType, PointF position) {
         nativePerformUiActionForTesting(
                 mNativeVrShell, elementName, actionType, position.x, position.y);
     }

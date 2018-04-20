@@ -17,7 +17,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -2224,7 +2224,7 @@ public class VrShellDelegate
 
     protected void setExpectingIntent(boolean expectingIntent) {}
 
-    protected void performUiActionForTesting(int elementName, int actionType, Point position) {
+    protected void performUiActionForTesting(int elementName, int actionType, PointF position) {
         mVrShell.performUiActionForTesting(elementName, actionType, position);
     }
 

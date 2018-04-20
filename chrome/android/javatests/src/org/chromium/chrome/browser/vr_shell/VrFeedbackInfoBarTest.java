@@ -49,11 +49,11 @@ public class VrFeedbackInfoBarTest {
     private XrTestFramework mXrTestFramework;
 
     private static final String TEST_PAGE_2D_URL =
-            VrTestFramework.getHtmlTestFile("test_navigation_2d_page");
+            VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
     private static final String TEST_PAGE_WEBVR_URL =
-            VrTestFramework.getHtmlTestFile("generic_webvr_page");
+            VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page");
     private static final String TEST_PAGE_WEBXR_URL =
-            XrTestFramework.getHtmlTestFile("generic_webxr_page");
+            XrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page");
 
     @Before
     public void setUp() throws Exception {
