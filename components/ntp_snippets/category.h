@@ -29,7 +29,7 @@ enum class KnownCategories {
   BOOKMARKS,
 
   // Physical Web page available in the vicinity.
-  PHYSICAL_WEB_PAGES,
+  PHYSICAL_WEB_PAGES_DEPRECATED,
 
   // Pages recently browsed to on other devices.
   FOREIGN_TABS,

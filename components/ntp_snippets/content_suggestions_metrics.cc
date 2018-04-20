@@ -84,7 +84,7 @@ enum class HistogramCategories {
   RECENT_TABS,
   DOWNLOADS,
   BOOKMARKS,
-  PHYSICAL_WEB_PAGES,
+  PHYSICAL_WEB_PAGES_DEPRECATED,
   FOREIGN_TABS,
   ARTICLES,
   READING_LIST,
@@ -110,8 +110,6 @@ HistogramCategories GetHistogramCategory(Category category) {
       return HistogramCategories::DOWNLOADS;
     case KnownCategories::BOOKMARKS:
       return HistogramCategories::BOOKMARKS;
-    case KnownCategories::PHYSICAL_WEB_PAGES:
-      return HistogramCategories::PHYSICAL_WEB_PAGES;
     case KnownCategories::FOREIGN_TABS:
       return HistogramCategories::FOREIGN_TABS;
     case KnownCategories::ARTICLES:
@@ -120,6 +118,7 @@ HistogramCategories GetHistogramCategory(Category category) {
       return HistogramCategories::READING_LIST;
     case KnownCategories::CONTEXTUAL:
       return HistogramCategories::CONTEXTUAL;
+    case KnownCategories::PHYSICAL_WEB_PAGES_DEPRECATED:
     case KnownCategories::LOCAL_CATEGORIES_COUNT:
     case KnownCategories::REMOTE_CATEGORIES_OFFSET:
       NOTREACHED();
@@ -140,8 +139,6 @@ std::string GetCategorySuffix(Category category) {
       return "Downloads";
     case HistogramCategories::BOOKMARKS:
       return "Bookmarks";
-    case HistogramCategories::PHYSICAL_WEB_PAGES:
-      return "PhysicalWeb";
     case HistogramCategories::FOREIGN_TABS:
       return "ForeignTabs";
     case HistogramCategories::ARTICLES:
@@ -152,6 +149,7 @@ std::string GetCategorySuffix(Category category) {
       return "ReadingList";
     case HistogramCategories::CONTEXTUAL:
       return "Contextual";
+    case HistogramCategories::PHYSICAL_WEB_PAGES_DEPRECATED:
     case HistogramCategories::COUNT:
       NOTREACHED();
       break;

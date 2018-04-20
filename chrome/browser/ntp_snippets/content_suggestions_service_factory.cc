@@ -75,8 +75,6 @@
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
-#include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
-#include "components/physical_web/data_source/physical_web_data_source.h"
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -109,7 +107,6 @@ using ntp_snippets::GetFetchEndpoint;
 using ntp_snippets::IsBookmarkProviderEnabled;
 using ntp_snippets::IsDownloadsProviderEnabled;
 using ntp_snippets::IsForeignSessionsProviderEnabled;
-using ntp_snippets::IsPhysicalWebPageProviderEnabled;
 using ntp_snippets::IsRecentTabProviderEnabled;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::PrefetchedPagesTracker;
@@ -129,9 +126,7 @@ using ntp_snippets::AreNtpShortcutsEnabled;
 using ntp_snippets::BreakingNewsGCMAppHandler;
 using ntp_snippets::GetPushUpdatesSubscriptionEndpoint;
 using ntp_snippets::GetPushUpdatesUnsubscriptionEndpoint;
-using ntp_snippets::PhysicalWebPageSuggestionsProvider;
 using ntp_snippets::SubscriptionManagerImpl;
-using physical_web::PhysicalWebDataSource;
 #endif  // OS_ANDROID
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -227,24 +222,6 @@ void RegisterBookmarkProviderIfEnabled(ContentSuggestionsService* service,
       std::make_unique<BookmarkSuggestionsProvider>(service, bookmark_model);
   service->RegisterProvider(std::move(provider));
 }
-
-#if defined(OS_ANDROID)
-
-void RegisterPhysicalWebPageProviderIfEnabled(
-    ContentSuggestionsService* service,
-    Profile* profile) {
-  if (!IsPhysicalWebPageProviderEnabled()) {
-    return;
-  }
-
-  PhysicalWebDataSource* physical_web_data_source =
-      g_browser_process->GetPhysicalWebDataSource();
-  auto provider = std::make_unique<PhysicalWebPageSuggestionsProvider>(
-      service, physical_web_data_source, profile->GetPrefs());
-  service->RegisterProvider(std::move(provider));
-}
-
-#endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
 
@@ -517,7 +494,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
 #if defined(OS_ANDROID)
   RegisterDownloadsProviderIfEnabled(service, profile, offline_page_model);
-  RegisterPhysicalWebPageProviderIfEnabled(service, profile);
 #endif  // OS_ANDROID
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
