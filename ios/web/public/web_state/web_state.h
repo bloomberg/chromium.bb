@@ -162,10 +162,10 @@ class WebState : public base::SupportsUserData {
   // execution has failed due to an error.
   // NOTE: Integer values will be returned as Type::DOUBLE because of underlying
   // library limitation.
-  typedef base::Callback<void(const base::Value*)> JavaScriptResultCallback;
+  typedef base::OnceCallback<void(const base::Value*)> JavaScriptResultCallback;
   virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
   virtual void ExecuteJavaScript(const base::string16& javascript,
-                                 const JavaScriptResultCallback& callback) = 0;
+                                 JavaScriptResultCallback callback) = 0;
 
   // Asynchronously executes |javaScript| in the main frame's context,
   // registering user interaction.
