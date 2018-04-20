@@ -65,6 +65,9 @@ class TabStrip : public views::View,
   explicit TabStrip(std::unique_ptr<TabStripController> controller);
   ~TabStrip() override;
 
+  // Returns whether or not strokes should be drawn around and under the tabs.
+  static bool ShouldDrawStrokes();
+
   // Add and remove observers to changes within this TabStrip.
   void AddObserver(TabStripObserver* observer);
   void RemoveObserver(TabStripObserver* observer);
