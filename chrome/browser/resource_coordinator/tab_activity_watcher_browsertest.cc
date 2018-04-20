@@ -256,8 +256,7 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherTest, TabDrag) {
   // "Drag" the new tab out of its browser.
   content::WebContents* dragged_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
-  std::unique_ptr<content::WebContents> owned_dragged_contents =
-      browser()->tab_strip_model()->DetachWebContentsAt(1);
+  browser()->tab_strip_model()->DetachWebContentsAt(1);
   dragged_contents->WasHidden();
   // The other tab in the browser is now foregrounded.
   ExpectNewForegroundedEntry(kBrowserStartUrl);
@@ -265,8 +264,8 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherTest, TabDrag) {
   // "Drop" the tab into the other browser. This requires showing and
   // reactivating the tab, but to the user, it never leaves the foreground, so
   // we don't log a foregrounded event for it.
-  browser_2->tab_strip_model()->InsertWebContentsAt(
-      1, owned_dragged_contents.release(), TabStripModel::ADD_NONE);
+  browser_2->tab_strip_model()->InsertWebContentsAt(1, dragged_contents,
+                                                    TabStripModel::ADD_NONE);
   dragged_contents->WasShown();
   browser_2->tab_strip_model()->ActivateTabAt(1, kIsUserGesture);
   EXPECT_EQ(0, ukm_entry_checker_->NumNewEntriesRecorded(kFOCEntryName));

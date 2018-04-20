@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <set>
-#include <unordered_map>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -16,10 +15,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/web_contents_delegate.h"
 
 class Browser;
 class TabStripModel;
+class UnloadControllerWebContentsDelegate;
 
 namespace content {
 class NotificationSource;
@@ -55,8 +54,7 @@ class WebContents;
 //     the window is finally closed.
 //
 class FastUnloadController : public content::NotificationObserver,
-                             public TabStripModelObserver,
-                             public content::WebContentsDelegate {
+                             public TabStripModelObserver {
  public:
   explicit FastUnloadController(Browser* browser);
   ~FastUnloadController() override;
@@ -81,8 +79,7 @@ class FastUnloadController : public content::NotificationObserver,
   // |browser_| is being closed, Unload handlers for any particular WebContents
   // will not be run until every WebContents being closed has a chance to run
   // its BeforeUnloadHandler.
-  bool BeforeUnloadFiredForContents(content::WebContents* contents,
-                                    bool proceed);
+  bool BeforeUnloadFired(content::WebContents* contents, bool proceed);
 
   bool is_attempting_to_close_browser() const {
     return is_attempting_to_close_browser_;
@@ -119,10 +116,6 @@ class FastUnloadController : public content::NotificationObserver,
   void CancelWindowClose();
 
  private:
-  // Overridden from content::WebContentsDelegate
-  bool ShouldSuppressDialogs(content::WebContents* source) override;
-  void CloseContents(content::WebContents* source) override;
-
   // Overridden from content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -203,11 +196,8 @@ class FastUnloadController : public content::NotificationObserver,
   // are currently confirming that the browser is closable.
   base::Callback<void(bool)> on_close_confirmed_;
 
-  // This class must wait for a call to WebContentsDelegate::CloseContents
-  // before the WebContents can be deleted.
-  std::unordered_map<content::WebContents*,
-                     std::unique_ptr<content::WebContents>>
-      web_contents_waiting_for_deletion_;
+  // Manage tabs with beforeunload/unload handlers that close detached.
+  std::unique_ptr<UnloadControllerWebContentsDelegate> detached_delegate_;
 
   base::WeakPtrFactory<FastUnloadController> weak_factory_;
 

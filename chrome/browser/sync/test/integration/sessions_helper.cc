@@ -145,15 +145,14 @@ bool OpenTabFromSourceIndex(int index,
 }
 
 void MoveTab(int from_index, int to_index, int tab_index) {
-  std::unique_ptr<content::WebContents> detached_contents =
+  content::WebContents* detached_contents =
       test()
           ->GetBrowser(from_index)
           ->tab_strip_model()
           ->DetachWebContentsAt(tab_index);
 
   TabStripModel* target_strip = test()->GetBrowser(to_index)->tab_strip_model();
-  target_strip->InsertWebContentsAt(target_strip->count(),
-                                    detached_contents.release(),
+  target_strip->InsertWebContentsAt(target_strip->count(), detached_contents,
                                     TabStripModel::ADD_ACTIVE);
 }
 

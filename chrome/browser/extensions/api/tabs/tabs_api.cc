@@ -640,12 +640,11 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   // a tabbed window.
   if ((window_type == Browser::TYPE_POPUP && urls.empty()) ||
       window_type == Browser::TYPE_TABBED) {
-    if (source_tab_strip) {
-      std::unique_ptr<content::WebContents> detached_tab =
-          source_tab_strip->DetachWebContentsAt(tab_index);
-      contents = detached_tab.get();
+    if (source_tab_strip)
+      contents = source_tab_strip->DetachWebContentsAt(tab_index);
+    if (contents) {
       TabStripModel* target_tab_strip = new_window->tab_strip_model();
-      target_tab_strip->InsertWebContentsAt(urls.size(), detached_tab.release(),
+      target_tab_strip->InsertWebContentsAt(urls.size(), contents,
                                             TabStripModel::ADD_NONE);
     }
   }
@@ -1565,7 +1564,7 @@ bool TabsMoveFunction::MoveTab(int tab_id,
     if (ExtensionTabUtil::GetWindowId(target_browser) !=
         ExtensionTabUtil::GetWindowId(source_browser)) {
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();
-      std::unique_ptr<content::WebContents> web_contents =
+      WebContents* web_contents =
           source_tab_strip->DetachWebContentsAt(tab_index);
       if (!web_contents) {
         *error = ErrorUtils::FormatErrorMessage(keys::kTabNotFoundError,
@@ -1579,13 +1578,12 @@ bool TabsMoveFunction::MoveTab(int tab_id,
       if (*new_index > target_tab_strip->count() || *new_index < 0)
         *new_index = target_tab_strip->count();
 
-      content::WebContents* web_contents_raw = web_contents.get();
-      target_tab_strip->InsertWebContentsAt(*new_index, web_contents.release(),
-                                            TabStripModel::ADD_NONE);
+      target_tab_strip->InsertWebContentsAt(
+          *new_index, web_contents, TabStripModel::ADD_NONE);
 
       if (has_callback()) {
         tab_values->Append(ExtensionTabUtil::CreateTabObject(
-                               web_contents_raw, ExtensionTabUtil::kScrubTab,
+                               web_contents, ExtensionTabUtil::kScrubTab,
                                extension(), target_tab_strip, *new_index)
                                ->ToValue());
       }

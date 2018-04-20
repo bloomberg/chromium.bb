@@ -254,7 +254,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   DevToolsWindow(FrontendType frontend_type,
                  Profile* profile,
-                 std::unique_ptr<content::WebContents> main_web_contents,
+                 content::WebContents* main_web_contents,
                  DevToolsUIBindings* bindings,
                  content::WebContents* inspected_web_contents,
                  bool can_dock);
@@ -348,9 +348,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void ShowCertificateViewer(const std::string& cert_viewer) override;
 
   void ColorPickedInEyeDropper(int r, int g, int b, int a);
-
-  // This method create a new Browser object, and passes ownership of
-  // owned_main_web_contents_ to the tab strip of the Browser.
   void CreateDevToolsBrowser();
   BrowserWindow* GetInspectedBrowserWindow();
   void ScheduleShow(const DevToolsToggleAction& action);
@@ -368,13 +365,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   content::WebContents* toolbox_web_contents_;
   DevToolsUIBindings* bindings_;
   Browser* browser_;
-
-  // When DevToolsWindow is docked, it owns main_web_contents_. When it isn't
-  // docked, the tab strip model owns the main_web_contents_.
-  // TODO(erikchen): This needs more careful thinking about.
   bool is_docked_;
-  std::unique_ptr<content::WebContents> owned_main_web_contents_;
-
   const bool can_dock_;
   bool close_on_detach_;
   LifeStage life_stage_;
