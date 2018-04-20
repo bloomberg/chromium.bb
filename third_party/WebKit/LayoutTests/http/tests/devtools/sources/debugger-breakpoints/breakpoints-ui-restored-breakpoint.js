@@ -14,17 +14,17 @@
   SourcesTestRunner.toggleBreakpoint(originalSourceFrame, 9, false);
   SourcesTestRunner.createNewBreakpoint(originalSourceFrame, 10, 'a === 3', true);
   SourcesTestRunner.createNewBreakpoint(originalSourceFrame, 5, '', false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(originalSourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(originalSourceFrame);
   await SourcesTestRunner.waitUntilDebuggerPluginLoaded(originalSourceFrame);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(originalSourceFrame);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(originalSourceFrame);
 
   TestRunner.addResult('Reload page and add script again and dump breakpoints');
   await TestRunner.reloadPagePromise();
   await TestRunner.addScriptTag(TestRunner.url('resources/a.js'));
   let sourceFrameAfterReload = await SourcesTestRunner.showScriptSourcePromise('a.js');
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrameAfterReload);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrameAfterReload);
   await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrameAfterReload);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrameAfterReload);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrameAfterReload);
 
   // TODO(kozyatinskiy): as soon as we have script with the same url in different frames
   // everything looks compeltely broken, we should fix it.
@@ -36,7 +36,7 @@
     TestRunner.addResult('Show uiSourceCode and dump breakpoints');
     const sourceFrame = await SourcesTestRunner.showUISourceCodePromise(uiSourceCode);
     await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrame);
-    SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+    SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
   }
 
   TestRunner.addResult('Reload page and add script again and dump breakpoints');
@@ -44,7 +44,7 @@
   await TestRunner.addScriptTag(TestRunner.url('resources/a.js'));
   sourceFrameAfterReload = await SourcesTestRunner.showScriptSourcePromise('a.js');
   await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrameAfterReload);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrameAfterReload);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrameAfterReload);
 
   TestRunner.completeTest();
 

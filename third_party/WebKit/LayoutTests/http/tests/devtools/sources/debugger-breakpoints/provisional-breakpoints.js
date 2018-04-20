@@ -13,8 +13,8 @@
   let sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.html');
   TestRunner.addResult('Set breakpoint in inline script and dump it');
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 3, false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Navigate to the same page and dump stack on pause');
   TestRunner.navigate(TestRunner.url('resources/a.html'));
@@ -24,12 +24,12 @@
   TestRunner.addResult('Remove breakpoint, set another in not inline script and dump it');
   sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.html');
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 3, false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
 
   sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.js');
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Navigate to the same page and dump stack on pause');
   TestRunner.navigate(TestRunner.url('resources/a.html'));

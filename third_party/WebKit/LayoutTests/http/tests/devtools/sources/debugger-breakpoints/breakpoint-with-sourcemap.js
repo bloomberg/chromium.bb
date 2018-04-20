@@ -17,7 +17,7 @@ foo();
 
   let sourceFrame = await new Promise(resolve => SourcesTestRunner.showScriptSource('index.ts', resolve));
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 1, false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   TestRunner.evaluateInPageAnonymously('foo()');
   let callFrames = await SourcesTestRunner.waitUntilPausedPromise();
   SourcesTestRunner.captureStackTrace(callFrames);

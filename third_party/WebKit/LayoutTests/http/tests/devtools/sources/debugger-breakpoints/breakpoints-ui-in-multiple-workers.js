@@ -13,15 +13,15 @@
   SourcesTestRunner.toggleBreakpoint(workerSourceFrame, 1, false);
   SourcesTestRunner.createNewBreakpoint(workerSourceFrame, 2, 'a === 3', true);
   SourcesTestRunner.createNewBreakpoint(workerSourceFrame, 3, '', false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(workerSourceFrame);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(workerSourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(workerSourceFrame);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(workerSourceFrame);
 
   TestRunner.addResult('Reload page and add script again and dump breakpoints');
   await TestRunner.reloadPagePromise();
   await addWorker(TestRunner.url('resources/worker.js'));
   let sourceFrameAfterReload = await SourcesTestRunner.showScriptSourcePromise('worker.js');
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrameAfterReload);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrameAfterReload);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrameAfterReload);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrameAfterReload);
 
   TestRunner.addResult('Added two more workers');
   await addWorker(TestRunner.url('resources/worker.js'));
@@ -30,7 +30,7 @@
   for (const uiSourceCode of uiSourceCodes) {
     TestRunner.addResult('Show uiSourceCode and dump breakpoints');
     const sourceFrame = await SourcesTestRunner.showUISourceCodePromise(uiSourceCode);
-    SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+    SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
   }
 
   TestRunner.addResult('Test breakpoint in each worker');

@@ -27,7 +27,7 @@
       const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
       await TestRunner.addSnifferPromise(
           debuggerPlugin, '_breakpointDecorationsUpdatedForTest');
-      await SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+      await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
       next();
     },
 
@@ -44,7 +44,7 @@ var y = 'more new content';`);
       const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
       await TestRunner.addSnifferPromise(
           debuggerPlugin, '_breakpointDecorationsUpdatedForTest');
-      await SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+      await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
       next();
     }
   ]);

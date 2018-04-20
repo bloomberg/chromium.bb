@@ -27,14 +27,14 @@ function foo() {
   let sourceFrame = await new Promise(resolve => SourcesTestRunner.showScriptSource('arrow.ts', resolve));
   TestRunner.addResult('Setting breakpoint at second line..');
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 2, false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-  await SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Disabling first breakpoint and enable forth breakpoint at line..');
-  SourcesTestRunner.clickJavaScriptSourceFrameBreakpoint(sourceFrame, 2, 0);
-  SourcesTestRunner.clickJavaScriptSourceFrameBreakpoint(sourceFrame, 2, 3);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-  await SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  SourcesTestRunner.clickDebuggerPluginBreakpoint(sourceFrame, 2, 0);
+  SourcesTestRunner.clickDebuggerPluginBreakpoint(sourceFrame, 2, 3);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Calling function foo..');
   TestRunner.evaluateInPageAnonymously('foo()');
