@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -14,6 +16,7 @@
 #include "components/version_info/channel.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
@@ -42,7 +45,10 @@ constexpr float kExitHeightScaleFactor = 1.5f;
 constexpr float kShowFullscreenExitControlHeight = 3.f;
 
 // Time to wait to hide the popup when it is triggered by touch input.
-constexpr int kTouchPopupTimeoutMs = 5000;
+constexpr base::TimeDelta kTouchPopupTimeout = base::TimeDelta::FromSeconds(5);
+
+// Time to wait before showing the popup when the escape key is held.
+constexpr base::TimeDelta kKeyPressPopupDelay = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
@@ -69,6 +75,33 @@ bool FullscreenControlHost::IsFullscreenExitUIEnabled() {
          chrome::GetChannel() == version_info::Channel::DEV ||
          base::FeatureList::IsEnabled(features::kFullscreenExitUI);
 #endif
+}
+
+void FullscreenControlHost::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->key_code() != ui::VKEY_ESCAPE ||
+      (input_entry_method_ != InputEntryMethod::NOT_ACTIVE &&
+       input_entry_method_ != InputEntryMethod::KEYBOARD)) {
+    return;
+  }
+
+  // Note: This logic handles the UI feedback element used when holding down the
+  // esc key, however the logic for exiting fullscreen is handled by the
+  // KeyboardLockController class.
+  if (event->type() == ui::ET_KEY_PRESSED &&
+      !key_press_delay_timer_.IsRunning() &&
+      browser_view_->browser()
+          ->exclusive_access_manager()
+          ->keyboard_lock_controller()
+          ->RequiresPressAndHoldEscToExit()) {
+    key_press_delay_timer_.Start(
+        FROM_HERE, kKeyPressPopupDelay,
+        base::Bind(&FullscreenControlHost::ShowForInputEntryMethod,
+                   base::Unretained(this), InputEntryMethod::KEYBOARD));
+  } else if (event->type() == ui::ET_KEY_RELEASED) {
+    key_press_delay_timer_.Stop();
+    if (IsVisible() && input_entry_method_ == InputEntryMethod::KEYBOARD)
+      Hide(true);
+  }
 }
 
 void FullscreenControlHost::OnMouseEvent(ui::MouseEvent* event) {
@@ -108,7 +141,7 @@ void FullscreenControlHost::OnTouchEvent(ui::TouchEvent* event) {
     Hide(true);
   } else if (event->type() == ui::ET_TOUCH_RELEASED) {
     touch_timeout_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kTouchPopupTimeoutMs),
+        FROM_HERE, kTouchPopupTimeout,
         base::Bind(&FullscreenControlHost::OnTouchPopupTimeout,
                    base::Unretained(this)));
   }
@@ -141,6 +174,9 @@ void FullscreenControlHost::ShowForInputEntryMethod(
 void FullscreenControlHost::OnVisibilityChanged() {
   if (!IsVisible())
     input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
+
+  if (on_popup_visibility_changed_)
+    std::move(on_popup_visibility_changed_).Run();
 }
 
 void FullscreenControlHost::OnTouchPopupTimeout() {

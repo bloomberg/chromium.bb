@@ -16,8 +16,6 @@ struct NativeWebKeyboardEvent;
 class WebContents;
 }  // namespace content
 
-class FullscreenControllerTest;
-
 // This class implements keyboard lock behavior in the UI and decides whether
 // a KeyboardLock request from a WebContents instance should be allowed or
 // rejected.
@@ -57,6 +55,7 @@ class KeyboardLockController : public ExclusiveAccessControllerBase {
 
  private:
   friend class FullscreenControllerTest;
+  friend class FullscreenControlViewTest;
 
   enum class KeyboardLockState {
     kUnlocked,
