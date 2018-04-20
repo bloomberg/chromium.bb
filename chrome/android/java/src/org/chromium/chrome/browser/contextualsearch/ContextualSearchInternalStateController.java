@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
-
-import javax.annotation.Nullable;
 
 /**
  * Controls the internal state of the Contextual Search Manager.
@@ -232,11 +232,9 @@ class ContextualSearchInternalStateController {
                 assert reason != null;
                 mStateHandler.hideContextualSearchUi(reason);
                 break;
-
             case SHOWING_LONGPRESS_SEARCH:
                 mStateHandler.showContextualSearchLongpressUi();
                 break;
-
             case WAITING_FOR_POSSIBLE_TAP_NEAR_PREVIOUS:
                 mStateHandler.waitForPossibleTapNearPrevious();
                 break;

@@ -171,7 +171,6 @@ public class ContextualSearchManagerTest {
     private ContextualSearchPolicy mPolicy;
     private ContextualSearchSelectionController mSelectionController;
     private EmbeddedTestServer mTestServer;
-    private boolean mPollInstrumentationThread;
 
     private float mDpToPx;
 
@@ -802,11 +801,10 @@ public class ContextualSearchManagerTest {
 
     /**
      * Waits for the Search Panel to enter the given {@code PanelState} and assert.
-     * Waits on the UI thread unless mPollInstrumentationThread is set.
      * @param state The {@link PanelState} to wait for.
      */
     private void waitForPanelToEnterState(final PanelState state) {
-        final Criteria panelStateCriteria = new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (mPanel == null) return false;
@@ -814,12 +812,7 @@ public class ContextualSearchManagerTest {
                         + "Instead, the current state is " + mPanel.getPanelState() + ".");
                 return mPanel.getPanelState() == state && !mPanel.isHeightAnimationRunning();
             }
-        };
-        if (mPollInstrumentationThread) {
-            CriteriaHelper.pollInstrumentationThread(panelStateCriteria);
-        } else {
-            CriteriaHelper.pollUiThread(panelStateCriteria);
-        }
+        });
     }
 
     /**
@@ -861,24 +854,18 @@ public class ContextualSearchManagerTest {
 
     /**
      * Waits for the selection to be empty.
-     * Waits on the UI thread unless mPollInstrumentationThread is set.
      * Use this method any time a test repeatedly establishes and dissolves a selection to ensure
      * that the selection has been completely dissolved before simulating the next selection event.
      * This is needed because the renderer's notification of a selection going away is async,
      * and a subsequent tap may think there's a current selection until it has been dissolved.
      */
     private void waitForSelectionEmpty() {
-        final Criteria selectionEmptyCriteria = new Criteria("Selection never empty.") {
+        CriteriaHelper.pollUiThread(new Criteria("Selection never empty.") {
             @Override
             public boolean isSatisfied() {
                 return mSelectionController.isSelectionEmpty();
             }
-        };
-        if (mPollInstrumentationThread) {
-            CriteriaHelper.pollInstrumentationThread(selectionEmptyCriteria);
-        } else {
-            CriteriaHelper.pollUiThread(selectionEmptyCriteria);
-        }
+        });
     }
 
     /**
@@ -1571,7 +1558,6 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/818897")
     public void testLongPressGestureFollowedByTapDoesntSelect()
             throws InterruptedException, TimeoutException {
         longPressNode("intelligence");
@@ -2198,29 +2184,13 @@ public class ContextualSearchManagerTest {
      * of selection bounds, so this helps prevent a regression with that.
      */
     @Test
-    @DisabledTest(message = "crbug.com/828780")
     @LargeTest
     @Feature({"ContextualSearch"})
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/818897")
     public void testTapALot() throws InterruptedException, TimeoutException {
         for (int i = 0; i < 50; i++) {
             clickToTriggerPrefetch();
             assertSearchTermRequested();
         }
-    }
-
-    /**
-     * Tests a bunch of taps in a row, with the variation that we wait on the instrumentation
-     * thread instead of the UI thread for some wait sequences.
-     */
-    @Test
-    @DisabledTest(message = "crbug.com/828780")
-    @LargeTest
-    @Feature({"ContextualSearch"})
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/818897")
-    public void testTapALotInstrumentation() throws InterruptedException, TimeoutException {
-        mPollInstrumentationThread = true;
-        testTapALot();
     }
 
     /**
