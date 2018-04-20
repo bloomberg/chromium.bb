@@ -119,8 +119,6 @@ struct GPU_EXPORT GPUInfo {
   // The currently active gpu.
   const GPUDevice& active_gpu() const;
 
-  bool IsInitialized() const;
-
   // The amount of time taken to get from the process starting to the message
   // loop being pumped.
   base::TimeDelta initialization_time;

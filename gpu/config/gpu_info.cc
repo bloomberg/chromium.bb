@@ -99,10 +99,6 @@ const GPUInfo::GPUDevice& GPUInfo::active_gpu() const {
   return gpu;
 }
 
-bool GPUInfo::IsInitialized() const {
-  return gpu.vendor_id != 0 || !gl_vendor.empty();
-}
-
 void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   struct GPUInfoKnownFields {
     base::TimeDelta initialization_time;

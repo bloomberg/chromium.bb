@@ -143,9 +143,7 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
 
   gpu_service_ = std::make_unique<GpuServiceImpl>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(), io_task_runner(),
-      gpu_init_->gpu_feature_info(), gpu_init_->gpu_preferences(),
-      gpu_init_->gpu_info_for_hardware_gpu(),
-      gpu_init_->gpu_feature_info_for_hardware_gpu());
+      gpu_init_->gpu_feature_info(), gpu_init_->gpu_preferences());
 }
 
 VizMainImpl::~VizMainImpl() {
