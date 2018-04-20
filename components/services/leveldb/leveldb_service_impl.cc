@@ -74,14 +74,14 @@ void LevelDBServiceImpl::OpenWithOptions(
 void LevelDBServiceImpl::OpenInMemory(
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
+    const std::string& tracking_name,
     leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
     OpenCallback callback) {
   leveldb_env::Options options;
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum.
 
-  std::unique_ptr<leveldb::Env> env(
-      leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+  auto env = leveldb_chrome::NewMemEnv(tracking_name);
   options.env = env.get();
 
   std::unique_ptr<leveldb::DB> db;

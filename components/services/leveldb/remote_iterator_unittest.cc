@@ -52,7 +52,8 @@ class RemoteIteratorTest : public service_manager::test::ServiceTest {
 
     mojom::DatabaseError error;
     base::RunLoop run_loop;
-    leveldb()->OpenInMemory(base::nullopt, MakeRequest(&database_),
+    leveldb()->OpenInMemory(base::nullopt, "RemoteIteratorTest",
+                            MakeRequest(&database_),
                             Capture(&error, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);

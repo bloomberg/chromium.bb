@@ -68,7 +68,7 @@ std::unique_ptr<DatabaseContents> CreateTestDatabaseContents() {
 class MetadataDatabaseIndexTest : public testing::Test {
  public:
   void SetUp() override {
-    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_ = leveldb_chrome::NewMemEnv("MetadataDatabaseIndexTest");
     InitializeLevelDB();
 
     contents_ = CreateTestDatabaseContents();

@@ -31,7 +31,7 @@ class LevelDBWrapperTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
-    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_ = leveldb_chrome::NewMemEnv("LevelDBWrapperTest");
     InitializeLevelDB();
   }
 

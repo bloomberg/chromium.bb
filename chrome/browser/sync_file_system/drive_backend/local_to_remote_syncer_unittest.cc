@@ -59,7 +59,7 @@ class LocalToRemoteSyncerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
-    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_ = leveldb_chrome::NewMemEnv("LocalToRemoteSyncerTest");
 
     std::unique_ptr<FakeDriveServiceWrapper> fake_drive_service(
         new FakeDriveServiceWrapper);

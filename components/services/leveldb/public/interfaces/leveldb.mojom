@@ -91,8 +91,10 @@ interface LevelDBService {
                   associated LevelDBDatabase& database) => (DatabaseError status);
 
   // Opens a database stored purely in memory.
+  // "tracking_name" will be used for memory-infra reporting to associate memory
+  // use with its origin.
   OpenInMemory(mojo_base.mojom.MemoryAllocatorDumpCrossProcessUid?
-               memory_dump_id,
+               memory_dump_id, string tracking_name,
                associated LevelDBDatabase& database) => (DatabaseError status);
 
   // Destroys the contents of the specified database. Returns OK if the database

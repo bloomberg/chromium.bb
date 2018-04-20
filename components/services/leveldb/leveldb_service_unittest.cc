@@ -108,7 +108,7 @@ void LevelDBSyncOpenInMemory(mojom::LevelDBService* leveldb,
                              mojom::LevelDBDatabaseAssociatedRequest database,
                              mojom::DatabaseError* out_error) {
   base::RunLoop run_loop;
-  leveldb->OpenInMemory(base::nullopt, std::move(database),
+  leveldb->OpenInMemory(base::nullopt, "LevelDBSync", std::move(database),
                         Capture(out_error, run_loop.QuitClosure()));
   run_loop.Run();
 }

@@ -1126,7 +1126,7 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
             leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
             OpenCallback callback) override {
     open_requests_.push_back(
-        {false, dbname, std::move(request), std::move(callback)});
+        {false, dbname, "", std::move(request), std::move(callback)});
     if (on_open_callback_)
       on_open_callback_.Run();
   }
@@ -1140,7 +1140,7 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
       leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
       OpenCallback callback) override {
     open_requests_.push_back(
-        {false, dbname, std::move(request), std::move(callback)});
+        {false, dbname, "", std::move(request), std::move(callback)});
     if (on_open_callback_)
       on_open_callback_.Run();
   }
@@ -1148,10 +1148,11 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
   void OpenInMemory(
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
           memory_dump_id,
+      const std::string& tracking_name,
       leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
       OpenCallback callback) override {
     open_requests_.push_back(
-        {true, "", std::move(request), std::move(callback)});
+        {true, "", tracking_name, std::move(request), std::move(callback)});
     if (on_open_callback_)
       on_open_callback_.Run();
   }
@@ -1166,6 +1167,7 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
   struct OpenRequest {
     bool in_memory;
     std::string dbname;
+    std::string memenv_tracking_name;
     leveldb::mojom::LevelDBDatabaseAssociatedRequest request;
     OpenCallback callback;
   };

@@ -128,7 +128,7 @@ NotificationDatabase::Status NotificationDatabase::Open(
   options.filter_policy = filter_policy_.get();
   options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
   if (IsInMemoryDatabase()) {
-    env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    env_ = leveldb_chrome::NewMemEnv("notification");
     options.env = env_.get();
   }
 

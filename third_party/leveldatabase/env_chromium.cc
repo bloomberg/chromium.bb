@@ -1381,8 +1381,8 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
   DISALLOW_COPY_AND_ASSIGN(TrackedDBImpl);
 };
 
-// Reports live databases to memory-infra. For each live database the following
-// information is reported:
+// Reports live databases and in-memory env's to memory-infra. For each live
+// database the following information is reported:
 // 1. Instance pointer (to disambiguate databases).
 // 2. Memory taken by the database, with the shared cache being attributed
 // equally to each database sharing 3. The name of the database (when not in
@@ -1404,6 +1404,8 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
 //   block_cache              0 KiB           100 KiB
 //     browser                0 KiB           40 KiB
 //     web                    0 KiB           60 KiB
+//   memenv_0x7FE80F2040A0    4 KiB           4 KiB
+//   memenv_0x7FE80F3040A0    4 KiB           4 KiB
 //
 class DBTracker::MemoryDumpProvider
     : public base::trace_event::MemoryDumpProvider {
@@ -1453,6 +1455,7 @@ void DBTracker::MemoryDumpProvider::DumpAllDatabases(ProcessMemoryDump* pmd) {
   DBTracker::GetInstance()->VisitDatabases(
       base::BindRepeating(&DBTracker::MemoryDumpProvider::DumpVisitor,
                           base::Unretained(this), base::Unretained(pmd)));
+  leveldb_chrome::DumpAllTrackedEnvs(pmd);
 }
 
 void DBTracker::MemoryDumpProvider::DumpVisitor(ProcessMemoryDump* pmd,
@@ -1515,6 +1518,14 @@ MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
   // attributed to each database sharing it.
   GetInstance()->mdp_->DumpAllDatabases(pmd);
   return pmd->GetAllocatorDump(GetDumpNameForDB(tracked_db));
+}
+
+// static
+MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
+    ProcessMemoryDump* pmd,
+    leveldb::Env* tracked_memenv) {
+  GetInstance()->mdp_->DumpAllDatabases(pmd);
+  return leveldb_chrome::GetEnvAllocatorDump(pmd, tracked_memenv);
 }
 
 void DBTracker::UpdateHistograms() {

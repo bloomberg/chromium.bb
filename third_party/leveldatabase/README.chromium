@@ -27,4 +27,5 @@ Local Additions:
 * Unit tests for the Chromium environment.
 * db_bench is built as leveldb_db_bench in Chromium.
 * leveldb_chrome::NewMemEnv() to create memory Env instances that are tracked to
-  know if a database open request is in-memory.
+  know if a database open request is in-memory. These memory Env instances report
+  memory usage to memory-infra.

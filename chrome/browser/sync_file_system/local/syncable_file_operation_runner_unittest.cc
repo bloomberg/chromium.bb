@@ -55,7 +55,8 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   // operations in the tests.
   SyncableFileOperationRunnerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        in_memory_env_(leveldb_chrome::NewMemEnv(leveldb::Env::Default())),
+        in_memory_env_(
+            leveldb_chrome::NewMemEnv("SyncableFileOperationRunnerTest")),
         file_system_(GURL("http://example.com"),
                      in_memory_env_.get(),
                      base::ThreadTaskRunnerHandle::Get().get(),
