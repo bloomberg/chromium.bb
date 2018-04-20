@@ -28,7 +28,6 @@ class VirtualDeviceMojoAdapter : public mojom::VirtualDevice,
   // mojom::VirtualDevice implementation.
   void RequestFrameBuffer(const gfx::Size& dimension,
                           media::VideoPixelFormat pixel_format,
-                          media::VideoPixelStorage pixel_storage,
                           RequestFrameBufferCallback callback) override;
   void OnFrameReadyInBuffer(
       int32_t buffer_id,

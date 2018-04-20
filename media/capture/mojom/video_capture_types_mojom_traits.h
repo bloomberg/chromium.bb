@@ -13,15 +13,6 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<media::mojom::VideoPixelStorage, media::VideoPixelStorage> {
-  static media::mojom::VideoPixelStorage ToMojom(
-      media::VideoPixelStorage video_pixel_storage);
-
-  static bool FromMojom(media::mojom::VideoPixelStorage input,
-                        media::VideoPixelStorage* out);
-};
-
-template <>
 struct EnumTraits<media::mojom::ResolutionChangePolicy,
                   media::ResolutionChangePolicy> {
   static media::mojom::ResolutionChangePolicy ToMojom(
@@ -70,11 +61,6 @@ struct StructTraits<media::mojom::VideoCaptureFormatDataView,
   static media::VideoPixelFormat pixel_format(
       const media::VideoCaptureFormat& format) {
     return format.pixel_format;
-  }
-
-  static media::VideoPixelStorage pixel_storage(
-      const media::VideoCaptureFormat& format) {
-    return format.pixel_storage;
   }
 
   static bool Read(media::mojom::VideoCaptureFormatDataView data,

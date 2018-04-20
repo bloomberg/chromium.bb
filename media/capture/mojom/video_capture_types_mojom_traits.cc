@@ -11,23 +11,6 @@
 namespace mojo {
 
 // static
-media::mojom::VideoPixelStorage
-EnumTraits<media::mojom::VideoPixelStorage, media::VideoPixelStorage>::ToMojom(
-    media::VideoPixelStorage video_pixel_storage) {
-  DCHECK_EQ(media::VideoPixelStorage::CPU, video_pixel_storage);
-  return media::mojom::VideoPixelStorage::CPU;
-}
-
-// static
-bool EnumTraits<media::mojom::VideoPixelStorage, media::VideoPixelStorage>::
-    FromMojom(media::mojom::VideoPixelStorage input,
-              media::VideoPixelStorage* out) {
-  DCHECK_EQ(media::mojom::VideoPixelStorage::CPU, input);
-  *out = media::VideoPixelStorage::CPU;
-  return true;
-}
-
-// static
 media::mojom::ResolutionChangePolicy
 EnumTraits<media::mojom::ResolutionChangePolicy,
            media::ResolutionChangePolicy>::ToMojom(media::ResolutionChangePolicy
@@ -215,8 +198,6 @@ bool StructTraits<media::mojom::VideoCaptureFormatDataView,
     return false;
   out->frame_rate = data.frame_rate();
   if (!data.ReadPixelFormat(&out->pixel_format))
-    return false;
-  if (!data.ReadPixelStorage(&out->pixel_storage))
     return false;
   return true;
 }

@@ -180,7 +180,6 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
   Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
                              VideoPixelFormat format,
-                             VideoPixelStorage storage,
                              int frame_feedback_id) override {
     DoReserveOutputBuffer();
     NOTREACHED() << "This should never be called";
@@ -203,7 +202,6 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
   }
   Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
                                    VideoPixelFormat format,
-                                   VideoPixelStorage storage,
                                    int frame_feedback_id) {
     DoResurrectLastOutputBuffer();
     NOTREACHED() << "This should never be called";

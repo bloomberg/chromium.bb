@@ -159,7 +159,6 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // holds on to the contained |buffer_read_write_permission|.
     virtual Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
                                        VideoPixelFormat format,
-                                       VideoPixelStorage storage,
                                        int frame_feedback_id) = 0;
 
     // Provides VCD::Client with a populated Buffer containing the content of
@@ -189,7 +188,6 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // When this operation fails, nullptr will be returned.
     virtual Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
                                              VideoPixelFormat format,
-                                             VideoPixelStorage storage,
                                              int new_frame_feedback_id) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must

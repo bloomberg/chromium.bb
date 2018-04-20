@@ -22,7 +22,6 @@ void ParamTraits<VideoCaptureFormat>::Write(base::Pickle* m,
   WriteParam(m, p.frame_size);
   WriteParam(m, p.frame_rate);
   WriteParam(m, p.pixel_format);
-  WriteParam(m, p.pixel_storage);
 }
 
 bool ParamTraits<VideoCaptureFormat>::Read(const base::Pickle* m,
@@ -30,8 +29,7 @@ bool ParamTraits<VideoCaptureFormat>::Read(const base::Pickle* m,
                                            VideoCaptureFormat* r) {
   if (!ReadParam(m, iter, &r->frame_size) ||
       !ReadParam(m, iter, &r->frame_rate) ||
-      !ReadParam(m, iter, &r->pixel_format) ||
-      !ReadParam(m, iter, &r->pixel_storage)) {
+      !ReadParam(m, iter, &r->pixel_format)) {
     return false;
   }
   return r->IsValid();

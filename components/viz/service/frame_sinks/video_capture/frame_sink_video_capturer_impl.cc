@@ -658,7 +658,6 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   info->timestamp = frame->timestamp();
   info->metadata = frame->metadata()->GetInternalValues().Clone();
   info->pixel_format = frame->format();
-  info->storage_type = media::VideoPixelStorage::CPU;
   info->coded_size = frame->coded_size();
   info->visible_rect = frame->visible_rect();
   const gfx::Rect update_rect = frame->visible_rect();

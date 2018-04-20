@@ -101,8 +101,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                        base::bits::Align(visible_size.height(), 16));
 
     output_buffer = client_->ReserveOutputBuffer(
-        coded_size, params_.requested_format.pixel_format,
-        params_.requested_format.pixel_storage, frame_number);
+        coded_size, params_.requested_format.pixel_format, frame_number);
 
     // Get the current buffer pool utilization and attenuate it: The utilization
     // reported to the oracle is in terms of a maximum sustainable amount (not
@@ -137,8 +136,6 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
 
   std::unique_ptr<VideoCaptureBufferHandle> output_buffer_access =
       output_buffer.handle_provider->GetHandleForInProcessAccess();
-  DCHECK_EQ(media::VideoPixelStorage::CPU,
-            params_.requested_format.pixel_storage);
   *storage = VideoFrame::WrapExternalSharedMemory(
       params_.requested_format.pixel_format, coded_size,
       gfx::Rect(visible_size), visible_size, output_buffer_access->data(),
@@ -241,9 +238,9 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
   frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
                                   reference_time);
 
-  media::VideoCaptureFormat format(
-      frame->coded_size(), params_.requested_format.frame_rate, frame->format(),
-      media::VideoPixelStorage::CPU);
+  media::VideoCaptureFormat format(frame->coded_size(),
+                                   params_.requested_format.frame_rate,
+                                   frame->format());
   client_->OnIncomingCapturedBufferExt(
       std::move(capture->buffer), format, reference_time, frame->timestamp(),
       frame->visible_rect(), *frame->metadata());

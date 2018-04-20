@@ -21,9 +21,7 @@ class SharedMemoryBufferTracker final : public VideoCaptureBufferTracker {
   SharedMemoryBufferTracker();
   ~SharedMemoryBufferTracker() override;
 
-  bool Init(const gfx::Size& dimensions,
-            VideoPixelFormat format,
-            VideoPixelStorage storage_type) override;
+  bool Init(const gfx::Size& dimensions, VideoPixelFormat format) override;
 
   // Implementation of VideoCaptureBufferTracker:
   std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() override;

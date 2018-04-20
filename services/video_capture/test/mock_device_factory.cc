@@ -9,8 +9,7 @@ namespace {
 // Report a single hard-coded supported format to clients.
 media::VideoCaptureFormat kSupportedFormat(gfx::Size(640, 480),
                                            25.0f,
-                                           media::PIXEL_FORMAT_I420,
-                                           media::VideoPixelStorage::CPU);
+                                           media::PIXEL_FORMAT_I420);
 
 // Wraps a raw pointer to a media::VideoCaptureDevice and allows us to
 // create a std::unique_ptr<media::VideoCaptureDevice> that delegates to it.

@@ -568,14 +568,12 @@ void ClientBufferFrameDeliverer::PaintAndDeliverNextFrame(
   const int arbitrary_frame_feedback_id = 0;
   auto capture_buffer = client()->ReserveOutputBuffer(
       device_state()->format.frame_size, device_state()->format.pixel_format,
-      device_state()->format.pixel_storage, arbitrary_frame_feedback_id);
+      arbitrary_frame_feedback_id);
   DLOG_IF(ERROR, !capture_buffer.is_valid())
       << "Couldn't allocate Capture Buffer";
   auto buffer_access =
       capture_buffer.handle_provider->GetHandleForInProcessAccess();
   DCHECK(buffer_access->data()) << "Buffer has NO backing memory";
-
-  DCHECK_EQ(VideoPixelStorage::CPU, device_state()->format.pixel_storage);
 
   uint8_t* data_ptr = buffer_access->data();
   memset(data_ptr, 0, buffer_access->mapped_size());

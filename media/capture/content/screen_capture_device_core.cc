@@ -44,8 +44,7 @@ void ScreenCaptureDeviceCore::AllocateAndStart(
     return;
   }
 
-  if (params.requested_format.pixel_format != PIXEL_FORMAT_I420 ||
-      params.requested_format.pixel_storage != VideoPixelStorage::CPU) {
+  if (params.requested_format.pixel_format != PIXEL_FORMAT_I420) {
     client->OnError(
         FROM_HERE,
         base::StringPrintf(

@@ -114,8 +114,7 @@ class FakeVideoCaptureStack {
 
       const size_t mapped_size =
           media::VideoCaptureFormat(frame_info->coded_size, 0.0f,
-                                    frame_info->pixel_format,
-                                    frame_info->storage_type)
+                                    frame_info->pixel_format)
               .ImageAllocationSize();
       mojo::ScopedSharedBufferMapping mapping = buffer->Map(mapped_size);
       CHECK(mapping.get());
@@ -221,8 +220,7 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
 
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
-        capture_size, kMaxFramesPerSecond, media::PIXEL_FORMAT_I420,
-        media::VideoPixelStorage::CPU);
+        capture_size, kMaxFramesPerSecond, media::PIXEL_FORMAT_I420);
     params.resolution_change_policy =
         use_fixed_aspect_ratio()
             ? media::ResolutionChangePolicy::FIXED_ASPECT_RATIO

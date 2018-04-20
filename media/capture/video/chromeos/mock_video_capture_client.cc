@@ -56,7 +56,6 @@ void MockVideoCaptureClient::OnIncomingCapturedData(
 VideoCaptureDevice::Client::Buffer MockVideoCaptureClient::ReserveOutputBuffer(
     const gfx::Size& dimensions,
     VideoPixelFormat format,
-    VideoPixelStorage storage,
     int frame_feedback_id) {
   DoReserveOutputBuffer();
   NOTREACHED() << "This should never be called";
@@ -84,7 +83,6 @@ void MockVideoCaptureClient::OnIncomingCapturedBufferExt(
 VideoCaptureDevice::Client::Buffer
 MockVideoCaptureClient::ResurrectLastOutputBuffer(const gfx::Size& dimensions,
                                                   VideoPixelFormat format,
-                                                  VideoPixelStorage storage,
                                                   int frame_feedback_id) {
   DoResurrectLastOutputBuffer();
   NOTREACHED() << "This should never be called";
