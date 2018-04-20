@@ -5,5 +5,6 @@
   "description": "Chrome OS Mobile Activation Resources",
   "default_locale": "en",
   "incognito": "split",
-  "permissions": []
+  "permissions": [],
+  "manifest_version": 2
 }
