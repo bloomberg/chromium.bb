@@ -37,6 +37,7 @@ class DownloadFileFactory;
 class DownloadItemFactory;
 class DownloadItemImpl;
 class DownloadRequestHandleInterface;
+class InProgressDownloadManager;
 }
 
 namespace content {
@@ -221,7 +222,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   void OnFileExistenceChecked(uint32_t download_id, bool result);
 
   // Overridden from DownloadItemImplDelegate
-  // (Note that |GetBrowserContext| are present in both interfaces.)
   void DetermineDownloadTarget(download::DownloadItemImpl* item,
                                const DownloadTargetCallback& callback) override;
   bool ShouldCompleteDownload(download::DownloadItemImpl* item,
@@ -262,26 +262,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       bool is_download_allowed);
-
-  // Called when a navigation turns to be a download. Create a new
-  // DownloadHandler. It will be used to continue the loading instead of the
-  // regular document loader. Must be called on the IO thread.
-  static void CreateDownloadHandlerForNavigation(
-      base::WeakPtr<DownloadManagerImpl> download_manager,
-      std::unique_ptr<network::ResourceRequest> resource_request,
-      int render_process_id,
-      int render_frame_id,
-      const GURL& site_url,
-      const GURL& tab_url,
-      const GURL& tab_referrer_url,
-      std::vector<GURL> url_chain,
-      const base::Optional<std::string>& suggested_filename,
-      scoped_refptr<network::ResourceResponse> response,
-      net::CertStatus cert_status,
-      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Factory for creation of downloads items.
   std::unique_ptr<download::DownloadItemFactory> item_factory_;
@@ -327,8 +307,11 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   DownloadManagerDelegate* delegate_;
 
+  // TODO(qinmin): remove this once network service is enabled by default.
   std::vector<download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>
       url_download_handlers_;
+
+  std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;
 
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_;
 

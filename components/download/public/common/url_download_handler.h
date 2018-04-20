@@ -26,8 +26,7 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandler {
     virtual void OnUrlDownloadStarted(
         std::unique_ptr<DownloadCreateInfo> download_create_info,
         std::unique_ptr<InputStream> input_stream,
-        scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-            url_loader_factory_getter,
+        scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
         const DownloadUrlParameters::OnStartedCallback& callback) = 0;
 
     // Called after the connection is cancelled or finished.

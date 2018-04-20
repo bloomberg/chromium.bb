@@ -6,10 +6,10 @@
 
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
+#include "components/download/internal/common/resource_downloader.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/download_utils.h"
-#include "components/download/public/common/resource_downloader.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace download {
