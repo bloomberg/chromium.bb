@@ -54,13 +54,10 @@ Start by creating a fuzz target. This is what the .cc file will look like:
 ```c++
 // my_fuzzer.cc
 
-#include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
+#include "testing/libfuzzer/proto/lpm_interface.h"
 
 // Assuming the .proto file is path/to/your/proto_file/my_proto.proto.
 #include "path/to/your/proto_file/my_proto.pb.h"
-
-// Silence libprotobuf_mutator's logging.
-protobuf_mutator::protobuf::LogSilencer log_silencer;
 
 DEFINE_BINARY_PROTO_FUZZER(
   const my_proto::MyProtoMessage& my_proto_message) {
@@ -161,16 +158,15 @@ Create a new .cc and write a `DEFINE_BINARY_PROTO_FUZZER` function:
 // Needed since we use std::cout.
 #include <iostream>
 
-#include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
+#include "testing/libfuzzer/proto/lpm_interface.h"
 
 // Assuming the .proto file is path/to/your/proto_file/my_format.proto.
 #include "path/to/your/proto_file/my_format.pb.h"
 
-// Silence logging from the protobuf library.
-protobuf_mutator::protobuf::LogSilencer log_silencer;
-  // Put your conversion code here (if needed) and then pass the result to
-  // your fuzzing code (or just pass "my_format", if your target accepts
-  // protobufs).
+// Put your conversion code here (if needed) and then pass the result to
+// your fuzzing code (or just pass "my_format", if your target accepts
+// protobufs).
+
 DEFINE_BINARY_PROTO_FUZZER(const my_fuzzer::MyFormat& my_proto_format) {
     // Convert your protobuf to whatever format your targeted code accepts
     // if it doesn't accept protobufs.
@@ -268,7 +264,7 @@ message MyFormat {
 And here is the C++ code that converts it.
 
 ```c++
-std::string Convert(MyFormat& my_format) {
+std::string Convert(const MyFormat& my_format) {
   if (my_format.has_message_a())
     return ConvertMessageA(my_format.message_a());
   else if (my_format.has_message_b())
