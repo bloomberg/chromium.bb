@@ -147,7 +147,6 @@ using EnableIfSpanCompatibleContainer =
 //   std::byte
 //
 // Differences in constants and types:
-// - no element_type type alias
 // - no index_type type alias
 // - no different_type type alias
 // - no extent constant
@@ -168,6 +167,7 @@ using EnableIfSpanCompatibleContainer =
 template <typename T>
 class span {
  public:
+  using element_type = T;
   using value_type = std::remove_cv_t<T>;
   using pointer = T*;
   using reference = T&;
@@ -187,31 +187,31 @@ class span {
   }
   template <size_t N,
             typename = internal::EnableIfSpanCompatibleArray<T (&)[N], T>>
-  constexpr span(T (&array)[N]) noexcept : span(array, N) {}
+  constexpr span(T (&array)[N]) noexcept : span(base::data(array), N) {}
 
   template <
       size_t N,
       typename =
           internal::EnableIfSpanCompatibleArray<std::array<value_type, N>&, T>>
   constexpr span(std::array<value_type, N>& array) noexcept
-      : span(array.data(), array.size()) {}
+      : span(base::data(array), N) {}
   template <size_t N,
             typename = internal::EnableIfSpanCompatibleArray<
                 const std::array<value_type, N>&,
                 T>>
   constexpr span(const std::array<value_type, N>& array) noexcept
-      : span(array.data(), array.size()) {}
+      : span(base::data(array), N) {}
   // Conversion from a container that provides |T* data()| and |integral_type
   // size()|.
   template <typename Container,
             typename = internal::EnableIfSpanCompatibleContainer<Container&, T>>
   constexpr span(Container& container)
-      : span(base::data(container), container.size()) {}
+      : span(base::data(container), base::size(container)) {}
   template <
       typename Container,
       typename = internal::EnableIfSpanCompatibleContainer<const Container&, T>>
   span(const Container& container)
-      : span(base::data(container), container.size()) {}
+      : span(base::data(container), base::size(container)) {}
   constexpr span(const span& other) noexcept = default;
   // Conversions from spans of compatible types: this allows a span<T> to be
   // seamlessly used as a span<const T>, but not the other way around.
@@ -363,6 +363,11 @@ template <
     typename = internal::EnableIfSpanCompatibleContainer<const Container&, T>>
 constexpr span<T> make_span(const Container& container) {
   return span<T>(container);
+}
+
+template <typename T>
+constexpr span<T> make_span(span<T> span) noexcept {
+  return span;
 }
 
 }  // namespace base
