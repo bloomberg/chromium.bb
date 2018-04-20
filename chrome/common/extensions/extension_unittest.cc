@@ -333,8 +333,9 @@ TEST(ExtensionTest, MimeTypeSniffing) {
   // First, test an extension packed a long time ago (but in this galaxy).
   // Specifically, this package is using the crx2 format, whereas modern chrome
   // uses crx3.
-  EXPECT_EQ(Extension::kMimeType,
-            get_mime_type_from_crx(dir_path.AppendASCII("good.crx")));
+  EXPECT_EQ(
+      Extension::kMimeType,
+      get_mime_type_from_crx(dir_path.AppendASCII("legacy_crx_package.crx")));
 
   // Then, an extension whose crx has a bad magic number (it should be Cr24).
   EXPECT_EQ("application/octet-stream",
