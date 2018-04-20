@@ -1605,7 +1605,8 @@ void Browser::BeforeUnloadFired(WebContents* web_contents,
 
   if (IsFastTabUnloadEnabled()) {
     *proceed_to_fire_unload =
-        fast_unload_controller_->BeforeUnloadFired(web_contents, proceed);
+        fast_unload_controller_->BeforeUnloadFiredForContents(web_contents,
+                                                              proceed);
   } else {
     *proceed_to_fire_unload =
         unload_controller_->BeforeUnloadFired(web_contents, proceed);

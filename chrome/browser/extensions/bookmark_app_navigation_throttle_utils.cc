@@ -126,7 +126,8 @@ void ReparentIntoPopup(content::WebContents* source, bool has_user_gesture) {
   Browser* popup_browser = new Browser(browser_params);
   TabStripModel* source_tabstrip = source_browser->tab_strip_model();
   popup_browser->tab_strip_model()->AppendWebContents(
-      source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index()),
+      source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index())
+          .release(),
       true /* foreground */);
   popup_browser->window()->Show();
 }

@@ -516,9 +516,11 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   // Test DetachWebContentsAt
   {
     // Detach ...
-    WebContents* detached = tabstrip.DetachWebContentsAt(2);
+    std::unique_ptr<content::WebContents> detached_with_ownership =
+        tabstrip.DetachWebContentsAt(2);
+    WebContents* detached = detached_with_ownership.get();
     // ... and append again because we want this for later.
-    tabstrip.AppendWebContents(detached, true);
+    tabstrip.AppendWebContents(detached_with_ownership.release(), true);
     EXPECT_EQ(8, observer.GetStateCount());
     State s1(detached, 2, MockTabStripModelObserver::DETACH);
     EXPECT_TRUE(observer.StateEquals(0, s1));
@@ -998,11 +1000,11 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   InsertWebContentses(&tabstrip, contents1, contents2, contents3);
   EXPECT_EQ(0, tabstrip.active_index());
 
-  tabstrip.DetachWebContentsAt(1);
+  tabstrip.DetachWebContentsAt(1).release();
   EXPECT_EQ(0, tabstrip.active_index());
 
   for (int i = tabstrip.count() - 1; i >= 1; --i)
-    tabstrip.DetachWebContentsAt(i);
+    tabstrip.DetachWebContentsAt(i).release();
 
   // Now test that when a tab doesn't have an opener, selection shifts to the
   // right when the tab is closed.
@@ -1012,15 +1014,15 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   tabstrip.ForgetAllOpeners();
   tabstrip.ActivateTabAt(1, true);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.DetachWebContentsAt(1);
+  tabstrip.DetachWebContentsAt(1).release();
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.DetachWebContentsAt(1);
+  tabstrip.DetachWebContentsAt(1).release();
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.DetachWebContentsAt(1);
+  tabstrip.DetachWebContentsAt(1).release();
   EXPECT_EQ(0, tabstrip.active_index());
 
   for (int i = tabstrip.count() - 1; i >= 1; --i)
-    tabstrip.DetachWebContentsAt(i);
+    tabstrip.DetachWebContentsAt(i).release();
 
   // Now test that when a tab does have an opener, it selects the next tab
   // opened by the same opener scanning LTR when it is closed.
@@ -2460,11 +2462,12 @@ TEST_F(TabStripModelTest, TabBlockedState) {
   EXPECT_TRUE(strip_src.IsTabBlocked(1));
 
   // Detach the tab.
-  WebContents* moved_contents = strip_src.DetachWebContentsAt(1);
-  EXPECT_EQ(contents2, moved_contents);
+  std::unique_ptr<WebContents> moved_contents =
+      strip_src.DetachWebContentsAt(1);
+  EXPECT_EQ(contents2, moved_contents.get());
 
   // Attach the tab to the destination tab strip.
-  strip_dst.AppendWebContents(moved_contents, true);
+  strip_dst.AppendWebContents(moved_contents.release(), true);
   EXPECT_TRUE(strip_dst.IsTabBlocked(0));
 
   strip_dst.CloseAllTabs();
