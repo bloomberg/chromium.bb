@@ -9,7 +9,9 @@
 namespace content {
 
 CursorManager::CursorManager(RenderWidgetHostViewBase* root)
-    : view_under_cursor_(root), root_view_(root) {}
+    : view_under_cursor_(root),
+      root_view_(root),
+      tooltip_observer_for_testing_(nullptr) {}
 
 CursorManager::~CursorManager() {}
 
@@ -20,7 +22,27 @@ void CursorManager::UpdateCursor(RenderWidgetHostViewBase* view,
     root_view_->DisplayCursor(cursor);
 }
 
+void CursorManager::SetTooltipTextForView(const RenderWidgetHostViewBase* view,
+                                          const base::string16& tooltip_text) {
+  if (view == view_under_cursor_) {
+    root_view_->DisplayTooltipText(tooltip_text);
+    if (tooltip_observer_for_testing_ && view) {
+      tooltip_observer_for_testing_->OnSetTooltipTextForView(view,
+                                                             tooltip_text);
+    }
+  }
+}
+
 void CursorManager::UpdateViewUnderCursor(RenderWidgetHostViewBase* view) {
+  if (view == view_under_cursor_)
+    return;
+
+  // Whenever we switch from one view to another, clear the tooltip: as the
+  // mouse moves, the view now controlling the cursor will send a new tooltip,
+  // though this is only guaranteed if the view's tooltip is non-empty, so
+  // clearing here is important. Tooltips sent from the previous view will be
+  // ignored.
+  SetTooltipTextForView(view_under_cursor_, base::string16());
   view_under_cursor_ = view;
   WebCursor cursor;
 
@@ -48,6 +70,10 @@ bool CursorManager::GetCursorForTesting(RenderWidgetHostViewBase* view,
 
   cursor = cursor_map_[view];
   return true;
+}
+
+void CursorManager::SetTooltipObserverForTesting(TooltipObserver* observer) {
+  tooltip_observer_for_testing_ = observer;
 }
 
 }  // namespace content

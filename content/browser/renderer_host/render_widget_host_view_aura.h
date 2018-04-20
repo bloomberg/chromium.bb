@@ -138,6 +138,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
+  void DisplayTooltipText(const base::string16& tooltip_text) override;
   gfx::Size GetRequestedRendererSize() const override;
   bool IsSurfaceAvailableForCopy() const override;
   void CopyFromSurface(

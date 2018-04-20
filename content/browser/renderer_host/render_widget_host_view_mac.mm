@@ -569,6 +569,11 @@ void RenderWidgetHostViewMac::Destroy() {
 
 void RenderWidgetHostViewMac::SetTooltipText(
     const base::string16& tooltip_text) {
+  GetCursorManager()->SetTooltipTextForView(this, tooltip_text);
+}
+
+void RenderWidgetHostViewMac::DisplayTooltipText(
+    const base::string16& tooltip_text) {
   ns_view_bridge_->SetTooltipText(tooltip_text);
 }
 

@@ -449,6 +449,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // the page has changed.
   virtual void SetTooltipText(const base::string16& tooltip_text) = 0;
 
+  // Displays the requested tooltip on the screen.
+  virtual void DisplayTooltipText(const base::string16& tooltip_text) {}
+
   // Returns the offset of the view from the origin of the browser compositor's
   // surface. This is in DIP.
   virtual gfx::Vector2d GetOffsetFromRootSurface() = 0;

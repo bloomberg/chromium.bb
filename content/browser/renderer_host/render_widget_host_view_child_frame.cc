@@ -24,6 +24,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_child_frame.h"
@@ -425,7 +426,9 @@ void RenderWidgetHostViewChildFrame::Destroy() {
 
 void RenderWidgetHostViewChildFrame::SetTooltipText(
     const base::string16& tooltip_text) {
-  frame_connector_->GetRootRenderWidgetHostView()->SetTooltipText(tooltip_text);
+  frame_connector_->GetRootRenderWidgetHostView()
+      ->GetCursorManager()
+      ->SetTooltipTextForView(this, tooltip_text);
 }
 
 RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetParentView() {

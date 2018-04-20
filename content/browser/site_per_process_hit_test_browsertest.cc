@@ -1571,6 +1571,142 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 }
 
+// Tooltips aren't used on Android, so no need to compile/run this test in that
+// case.
+#if !defined(OS_ANDROID)
+class TooltipMonitor : public CursorManager::TooltipObserver {
+ public:
+  TooltipMonitor(CursorManager* cursor_manager) : run_loop_(new base::RunLoop) {
+    DCHECK(cursor_manager);
+    cursor_manager->SetTooltipObserverForTesting(this);
+  }
+  ~TooltipMonitor() override {}
+
+  void Reset() {
+    run_loop_.reset(new base::RunLoop);
+    tooltips_received_.clear();
+  }
+
+  void OnSetTooltipTextForView(const RenderWidgetHostViewBase* view,
+                               const base::string16& tooltip_text) override {
+    tooltips_received_.push_back(tooltip_text);
+    if (tooltip_text == tooltip_text_wanted_ && run_loop_->running())
+      run_loop_->Quit();
+  }
+
+  void WaitUntil(const base::string16& tooltip_text) {
+    tooltip_text_wanted_ = tooltip_text;
+    auto it = std::find(tooltips_received_.begin(), tooltips_received_.end(),
+                        tooltip_text);
+    if (it != tooltips_received_.end())
+      return;
+    run_loop_->Run();
+  }
+
+ private:
+  std::unique_ptr<base::RunLoop> run_loop_;
+  base::string16 tooltip_text_wanted_;
+  std::vector<base::string16> tooltips_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(TooltipMonitor);
+};  // class TooltipMonitor
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       CrossProcessTooltipTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* b_node = root->child_at(0);
+
+  RenderWidgetHostViewBase* rwhv_a = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_b = static_cast<RenderWidgetHostViewBase*>(
+      b_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  DCHECK(rwhv_a->GetCursorManager());
+
+  TooltipMonitor tooltip_monitor(rwhv_a->GetCursorManager());
+
+  WaitForChildFrameSurfaceReady(b_node->current_frame_host());
+
+  // Make sure the point_in_a_frame value is outside the default 8px margin
+  // for the body element.
+  gfx::Point point_in_a_frame(10, 10);
+  gfx::Point point_in_b_frame =
+      rwhv_b->TransformPointToRootCoordSpace(gfx::Point(25, 25));
+
+  // Create listeners for mouse events. These are used to verify that the
+  // RenderWidgetHostInputEventRouter is generating MouseLeave, etc for
+  // the right renderers.
+  RenderWidgetHostMouseEventMonitor a_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor b_frame_monitor(
+      b_node->current_frame_host()->GetRenderWidgetHost());
+
+  // Add tooltip text to both the body and the iframe in A.
+  std::string script =
+      "body = document.body.setAttribute('title', 'body_tooltip');\n"
+      "iframe = document.getElementsByTagName('iframe')[0];\n"
+      "iframe.setAttribute('title','iframe_for_b');";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+
+  // Send mouse events to both A and B.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  auto* router = web_contents()->GetInputEventRouter();
+
+  // Alternate mouse moves between main frame and the cross-process iframe to
+  // test that the tool tip in the iframe can override the one set by the main
+  // frame renderer, even on a second entry into the iframe.
+  gfx::Point current_point;
+  for (int iteration = 0; iteration < 2; ++iteration) {
+    // The following is a bit of a hack to prevent hitting the same
+    // position/node check in ChromeClient::SetToolTip().
+    current_point = point_in_a_frame;
+    current_point.Offset(iteration, iteration);
+    SetWebEventPositions(&mouse_event, current_point, rwhv_a);
+    RouteMouseEventAndWaitUntilDispatch(router, rwhv_a, rwhv_a, &mouse_event);
+    EXPECT_TRUE(a_frame_monitor.EventWasReceived());
+    a_frame_monitor.ResetEventReceived();
+    // B will receive a mouseLeave on all but the first iteration.
+    EXPECT_EQ(iteration != 0, b_frame_monitor.EventWasReceived());
+    b_frame_monitor.ResetEventReceived();
+
+    tooltip_monitor.WaitUntil(base::UTF8ToUTF16("body_tooltip"));
+    tooltip_monitor.Reset();
+
+    // Next send a MouseMove to B frame, and A should receive a MouseMove event.
+    current_point = point_in_b_frame;
+    current_point.Offset(iteration, iteration);
+    SetWebEventPositions(&mouse_event, current_point, rwhv_a);
+    RouteMouseEventAndWaitUntilDispatch(router, rwhv_a, rwhv_b, &mouse_event);
+    EXPECT_TRUE(a_frame_monitor.EventWasReceived());
+    EXPECT_EQ(a_frame_monitor.event().GetType(),
+              blink::WebInputEvent::kMouseMove);
+    a_frame_monitor.ResetEventReceived();
+    EXPECT_TRUE(b_frame_monitor.EventWasReceived());
+    b_frame_monitor.ResetEventReceived();
+    tooltip_monitor.WaitUntil(base::string16());
+    tooltip_monitor.Reset();
+  }
+
+  rwhv_a->GetCursorManager()->SetTooltipObserverForTesting(nullptr);
+}
+#endif  // !defined(OS_ANDROID)
+
 // This test verifies that MouseEnter and MouseLeave events fire correctly
 // when the mouse cursor moves between processes.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
