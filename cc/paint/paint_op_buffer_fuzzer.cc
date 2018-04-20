@@ -11,9 +11,19 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
+struct Environment {
+  Environment() {
+    // Disable noisy logging as per "libFuzzer in Chrome" documentation:
+    // testing/libfuzzer/getting_started.md#Disable-noisy-error-message-logging.
+    logging::SetMinLogLevel(logging::LOG_FATAL);
+  }
+};
+
 // Deserialize an arbitrary number of cc::PaintOps and raster them
 // using gpu raster into an SkCanvas.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static Environment* env = new Environment();
+  ALLOW_UNUSED_LOCAL(env);
   const size_t kMaxSerializedSize = 1000000;
   const size_t kRasterDimension = 32;
 
