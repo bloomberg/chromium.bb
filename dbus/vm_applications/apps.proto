@@ -29,6 +29,7 @@ message App {
   repeated string mime_types = 4;
   bool no_display = 5;
   string startup_wm_class = 6;
+  bool startup_notify = 7;
 }
 
 message ApplicationList {
