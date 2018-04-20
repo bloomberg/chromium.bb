@@ -200,6 +200,11 @@ chrome.test.getConfig(function(config) {
       connectToTabWithFrameId(undefined, ['from_main', 'from_0', 'from_1']);
     },
 
+    // connect with frameId null should trigger onConnect in every frame.
+    function sendMessageToAllFramesInTab() {
+      connectToTabWithFrameId(null, ['from_main', 'from_0', 'from_1']);
+    },
+
     // connect with a positive frameId should trigger onConnect in that specific
     // frame only.
     function sendMessageToFrameInTab() {

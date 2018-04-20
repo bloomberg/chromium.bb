@@ -21,7 +21,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     if (connectInfo) {
       name = connectInfo.name || name;
       frameId = connectInfo.frameId;
-      if (typeof frameId == 'undefined' || frameId < 0)
+      if (typeof frameId == 'undefined' || frameId === null || frameId < 0)
         frameId = -1;
     }
     var portId = OpenChannelToTab(tabId, frameId, extensionId, name);
