@@ -155,6 +155,34 @@ TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
   EXPECT_EQ("", ExecuteWithResult(&db(), kSelectChildren));
 }
 
+// Ensure that our SQLite version supports booleans.
+TEST_F(SQLiteFeaturesTest, BooleanSupport) {
+  ASSERT_TRUE(
+      db().Execute("CREATE TABLE flags ("
+                   "    id INTEGER PRIMARY KEY,"
+                   "    true_flag BOOL NOT NULL DEFAULT TRUE,"
+                   "    false_flag BOOL NOT NULL DEFAULT FALSE)"));
+  ASSERT_TRUE(db().Execute(
+      "ALTER TABLE flags ADD COLUMN true_flag2 BOOL NOT NULL DEFAULT TRUE"));
+  ASSERT_TRUE(db().Execute(
+      "ALTER TABLE flags ADD COLUMN false_flag2 BOOL NOT NULL DEFAULT FALSE"));
+  ASSERT_TRUE(db().Execute("INSERT INTO flags (id) VALUES (1)"));
+
+  sql::Statement s(db().GetUniqueStatement(
+      "SELECT true_flag, false_flag, true_flag2, false_flag2"
+      "    FROM flags WHERE id=1;"));
+  ASSERT_TRUE(s.Step());
+
+  // TODO(pwnall): Enable this check after upgrading to SQLite 3.23.
+  // EXPECT_TRUE(s.ColumnBool(0)) << " default TRUE at table creation time";
+  EXPECT_TRUE(!s.ColumnBool(1)) << " default FALSE at table creation time";
+
+  // TODO(pwnall): Enable this check after upgrading to SQLite 3.23.
+  // EXPECT_TRUE(s.ColumnBool(2))
+  //     << " default TRUE added by altering the table";
+  EXPECT_TRUE(!s.ColumnBool(3)) << " default FALSE added by altering the table";
+}
+
 #if defined(OS_FUCHSIA)
 // If the platform cannot support SQLite mmap'ed I/O, make sure SQLite isn't
 // offering to support it.
