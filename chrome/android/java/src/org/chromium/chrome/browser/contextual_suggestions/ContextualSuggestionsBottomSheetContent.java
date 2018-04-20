@@ -49,4 +49,9 @@ public class ContextualSuggestionsBottomSheetContent implements BottomSheetConte
     public @ContentPriority int getPriority() {
         return ContentPriority.LOW;
     }
+
+    @Override
+    public boolean swipeToDismissEnabled() {
+        return false;
+    }
 }
