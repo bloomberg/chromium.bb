@@ -163,8 +163,8 @@ if (is_android) {
   android_library("service_javatests") {
     testonly = true
     java_files = [
-      #"shape_detection/android/javatests/src/org/chromium/shape_detection/BarcodeDetectionImplTest.java",
-      #"shape_detection/android/javatests/src/org/chromium/shape_detection/FaceDetectionImplTest.java",
+      "shape_detection/android/javatests/src/org/chromium/shape_detection/BarcodeDetectionImplTest.java",
+      "shape_detection/android/javatests/src/org/chromium/shape_detection/FaceDetectionImplTest.java",
       "shape_detection/android/javatests/src/org/chromium/shape_detection/TestUtils.java",
       "shape_detection/android/javatests/src/org/chromium/shape_detection/TextDetectionImplTest.java",
     ]
