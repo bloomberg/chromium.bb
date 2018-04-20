@@ -829,5 +829,42 @@ TEST_F(PaintChunksToCcLayerTest, ChunksSamePropertyTreeState) {
                    cc::PaintOpType::Restore}));  // </c1></t1>
 }
 
+TEST_F(PaintChunksToCcLayerTest, NoOpForIdentityTransforms) {
+  auto t1 = CreateTransform(t0(), TransformationMatrix());
+  auto t2 = CreateTransform(t1.get(), TransformationMatrix());
+  auto t3 = CreateTransform(t2.get(), TransformationMatrix());
+  auto c1 =
+      ClipPaintPropertyNode::Create(c0(), t2, FloatRoundedRect(0, 0, 100, 100));
+  auto c2 =
+      ClipPaintPropertyNode::Create(c1, t3, FloatRoundedRect(0, 0, 200, 50));
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c0(), e0());
+  chunks.AddChunk(t1.get(), c0(), e0());
+  chunks.AddChunk(t0(), c0(), e0());
+  chunks.AddChunk(t1.get(), c0(), e0());
+  chunks.AddChunk(t2.get(), c0(), e0());
+  chunks.AddChunk(t1.get(), c0(), e0());
+  chunks.AddChunk(t1.get(), c2.get(), e0());
+
+  auto output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(t0(), c0(), e0()), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make(
+                  {cc::PaintOpType::DrawRecord,                       // <p0/>
+                   cc::PaintOpType::DrawRecord,                       // <p1/>
+                   cc::PaintOpType::DrawRecord,                       // <p2/>
+                   cc::PaintOpType::DrawRecord,                       // <p3/>
+                   cc::PaintOpType::DrawRecord,                       // <p4/>
+                   cc::PaintOpType::DrawRecord,                       // <p5/>
+                   cc::PaintOpType::Save, cc::PaintOpType::ClipRect,  // <c1+c2>
+                   cc::PaintOpType::DrawRecord,                       // <p6/>
+                   cc::PaintOpType::Restore}));  // </c1+c2>
+}
+
 }  // namespace
 }  // namespace blink

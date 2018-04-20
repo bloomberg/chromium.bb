@@ -132,7 +132,9 @@ class ConversionContext {
   void ApplyTransform(const TransformPaintPropertyNode* target_transform) {
     if (target_transform == current_transform_)
       return;
-    cc_list_.push<cc::ConcatOp>(GetSkMatrix(target_transform));
+    auto sk_matrix = GetSkMatrix(target_transform);
+    if (!sk_matrix.isIdentity())
+      cc_list_.push<cc::ConcatOp>(sk_matrix);
   }
 
   SkMatrix GetSkMatrix(
@@ -319,8 +321,12 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
     bool has_rounded_clip_or_clip_path =
         sub_clip->ClipRect().IsRounded() || sub_clip->ClipPath();
     if (!has_rounded_clip_or_clip_path && pending_combined_clip_rect &&
-        sub_clip->Parent()->LocalTransformSpace() ==
-            sub_clip->LocalTransformSpace()) {
+        (sub_clip->Parent()->LocalTransformSpace() ==
+             sub_clip->LocalTransformSpace() ||
+         GeometryMapper::SourceToDestinationProjection(
+             sub_clip->Parent()->LocalTransformSpace(),
+             sub_clip->LocalTransformSpace())
+             .IsIdentity())) {
       // Continue to combine rectangular clips in the same transform space.
       pending_combined_clip_rect->Intersect(sub_clip->ClipRect().Rect());
       lowest_combined_clip_node = sub_clip;
@@ -605,10 +611,16 @@ void ConversionContext::SwitchToTransform(
     return;
 
   EndTransform();
+  if (target_transform == current_transform_)
+    return;
+
+  auto sk_matrix = GetSkMatrix(target_transform);
+  if (sk_matrix.isIdentity())
+    return;
 
   cc_list_.StartPaint();
   cc_list_.push<cc::SaveOp>();
-  ApplyTransform(target_transform);
+  cc_list_.push<cc::ConcatOp>(sk_matrix);
   cc_list_.EndPaintOfPairedBegin();
   previous_transform_ = current_transform_;
   current_transform_ = target_transform;
