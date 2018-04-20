@@ -48,6 +48,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance/glsl/bugs/sampler-array-struct-function-arg.html',
         bug=757097)
 
+    # Flakes on any OpenGL configuration
+    self.Flaky('conformance2/transform_feedback/too-small-buffers.html',
+        ['opengl'], bug=832238)
+
     # Failing on Windows and Linux with NVIDIA GPUs and OpenGL driver.
     self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
         ['nvidia'], bug=772651)
@@ -227,8 +231,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['win', 'nvidia', 'opengl'], bug=830046)
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
-        ['win', 'nvidia', 'opengl', 'no_passthrough'], bug=832238)
-    self.Flaky('conformance2/transform_feedback/too-small-buffers.html',
         ['win', 'nvidia', 'opengl', 'no_passthrough'], bug=832238)
 
     self.Flaky('deqp/functional/gles3/transformfeedback/*',
@@ -425,8 +427,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # These Transform Feedback tests seem flaky on ANGLE/GL with passthrough.
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
-        ['passthrough', 'opengl'], bug=832238)
-    self.Fail('conformance2/transform_feedback/too-small-buffers.html',
         ['passthrough', 'opengl'], bug=832238)
 
     # Passthrough command decoder / OpenGL / Intel
@@ -754,8 +754,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'random_separate_triangles.html',
         ['sierra', 'amd'], bug=483282)
-    self.Fail('conformance2/transform_feedback/too-small-buffers.html',
-        ['sierra', 'amd', 'no_angle'], bug=832238)
 
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_00.html',
         ['mac', 'amd'], bug=751254)
