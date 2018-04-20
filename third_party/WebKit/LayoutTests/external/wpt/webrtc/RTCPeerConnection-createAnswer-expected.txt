@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL createAnswer() with null remoteDescription should reject with InvalidStateError assert_throws: function "function() { throw e }" threw object "OperationError: PeerConnection cannot create an answer in a state other than have-remote-offer or have-local-pranswer." that is not a DOMException InvalidStateError: property "code" is equal to 0, expected 11
+PASS createAnswer() with null remoteDescription should reject with InvalidStateError
 FAIL createAnswer() after setting remote description should succeed assert_false: Expect answer to not be instance of RTCSessionDescription expected false got true
 PASS createAnswer() when connection is closed reject with InvalidStateError
 Harness: the test ran to completion.

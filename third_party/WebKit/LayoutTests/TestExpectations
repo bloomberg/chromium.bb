@@ -4070,10 +4070,6 @@ crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass T
 # WebRTC with Unified Plan
 crbug.com/828866 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-tracks.https.html [ Timeout ]
 
-# Landing a WebRTC change
-crbug.com/819629 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-createAnswer.html [ Pass Failure ]
-crbug.com/819629 external/wpt/webrtc/RTCPeerConnection-createAnswer.html [ Pass Failure ]
-
 # Sheriff 2018-04-06
 crbug.com/829921 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
 
