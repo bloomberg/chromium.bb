@@ -244,7 +244,7 @@ TEST_F(OmniboxPerfTest, TestTextFieldDidBeginEditing) {
                   ^base::TimeDelta(int index) {
                     return EnableKeyboard(textField);
                   },
-                  ^() {
+                  ^{
                     DisableKeyboard(textField);
                   });
 }
@@ -259,7 +259,7 @@ TEST_F(OmniboxPerfTest, TestTypeOneCharInTextField) {
                     EnableKeyboard(textField);
                     return TimeInsertText(textField, @"G");
                   },
-                  ^() {
+                  ^{
                     [textField setText:@""];
                     DisableKeyboard(textField);
                   });
@@ -290,7 +290,7 @@ TEST_F(OmniboxPerfTest, DISABLED_TestTypingInTextField) {
         NSLog(@"%2d: %@", index, logMessage);
         return elapsed;
       },
-      ^() {
+      ^{
         [textField setText:@""];
         DisableKeyboard(textField);
       });

@@ -2626,7 +2626,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // the feature engagement tracker will remain pointing to invalid memory if
   // its owner (the ChromeBrowserState) is deallocated.
   __weak BrowserViewController* weakSelf = self;
-  void (^dismissalCallback)(void) = ^() {
+  void (^dismissalCallback)(void) = ^{
     BrowserViewController* strongSelf = weakSelf;
     if (strongSelf) {
       feature_engagement::TrackerFactory::GetForBrowserState(
@@ -5023,7 +5023,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       // This callback is called before webState is activated (on
       // kTabModelNewTabWillOpenNotification notification). Dispatch the
       // callback asynchronously to be sure the activation is complete.
-      dispatch_async(dispatch_get_main_queue(), ^() {
+      dispatch_async(dispatch_get_main_queue(), ^{
         // Test existence again as the block may have been deleted.
         if (self.foregroundTabWasAddedCompletionBlock) {
           self.foregroundTabWasAddedCompletionBlock();

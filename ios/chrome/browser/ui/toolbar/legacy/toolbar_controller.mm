@@ -731,7 +731,7 @@ using ios::material::TimingFunction;
 
 - (void)addFullscreenAnimationsToAnimator:(FullscreenAnimator*)animator {
   CGFloat finalProgress = animator.finalProgress;
-  [animator addAnimations:^() {
+  [animator addAnimations:^{
     [self updateForFullscreenProgress:finalProgress];
   }];
 }

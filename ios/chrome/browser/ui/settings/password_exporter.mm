@@ -60,7 +60,7 @@ enum class ReauthenticationStatus {
 - (void)writeData:(NSData*)data
             toURL:(NSURL*)fileURL
           handler:(void (^)(WriteToURLStatus))handler {
-  WriteToURLStatus (^writeToFile)() = ^() {
+  WriteToURLStatus (^writeToFile)() = ^{
     base::AssertBlockingAllowed();
     NSError* error = nil;
 
@@ -336,7 +336,7 @@ enum class ReauthenticationStatus {
       [passwordsTempFileURL URLByDeletingLastPathComponent];
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindBlockArc(^() {
+      base::BindBlockArc(^{
         base::AssertBlockingAllowed();
         NSFileManager* fileManager = [NSFileManager defaultManager];
         [fileManager removeItemAtURL:uniqueDirectoryURL error:nil];

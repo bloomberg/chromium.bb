@@ -946,7 +946,7 @@ initWithActivityItems:(NSArray*)activityItems
       !preparingPasswordsAlert_.beingDismissed) {
     __weak SavePasswordsCollectionViewController* weakSelf = self;
     [self dismissViewControllerAnimated:YES
-                             completion:^() {
+                             completion:^{
                                [weakSelf presentViewController:viewController
                                                       animated:YES
                                                     completion:nil];

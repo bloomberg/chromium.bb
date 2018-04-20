@@ -28,11 +28,11 @@ TEST_F(DeferredInitializationRunnerTest, TestRunBlockSequentially) {
   __block bool secondFlag = NO;
   DeferredInitializationRunner* runner =
       [DeferredInitializationRunner sharedInstance];
-  ProceduralBlock firstBlock = ^() {
+  ProceduralBlock firstBlock = ^{
     EXPECT_FALSE(firstFlag);
     firstFlag = YES;
   };
-  ProceduralBlock secondBlock = ^() {
+  ProceduralBlock secondBlock = ^{
     EXPECT_FALSE(secondFlag);
     secondFlag = YES;
   };
@@ -66,7 +66,7 @@ TEST_F(DeferredInitializationRunnerTest, TestRunBlock) {
   __block bool slowFlag = NO;
   DeferredInitializationRunner* runner =
       [DeferredInitializationRunner sharedInstance];
-  ProceduralBlock quickBlock = ^() {
+  ProceduralBlock quickBlock = ^{
     EXPECT_FALSE(quickFlag);
     quickFlag = YES;
     // Make sure we have time to go back to this test before running the second
@@ -76,7 +76,7 @@ TEST_F(DeferredInitializationRunnerTest, TestRunBlock) {
   ConditionBlock quickBlockRun = ^bool {
     return quickFlag;
   };
-  ProceduralBlock slowBlock = ^() {
+  ProceduralBlock slowBlock = ^{
     EXPECT_FALSE(slowFlag);
     slowFlag = YES;
   };
@@ -109,7 +109,7 @@ TEST_F(DeferredInitializationRunnerTest, TestCancelBlock) {
   runner.delayBetweenBlocks = 0.01;
 
   [runner enqueueBlockNamed:@"cancel me"
-                      block:^() {
+                      block:^{
                         blockFinished = YES;
                       }];
   ASSERT_EQ(1U, [runner numberOfBlocksRemaining]);
@@ -132,7 +132,7 @@ TEST_F(DeferredInitializationRunnerTest, TestCancelledBlockDoNothing) {
   runner.delayBetweenBlocks = 0.01;
 
   [runner enqueueBlockNamed:@"cancel me"
-                      block:^() {
+                      block:^{
                         blockFinished = YES;
                       }];
 
@@ -150,7 +150,7 @@ TEST_F(DeferredInitializationRunnerTest, TestCancelledBlockDoNothing) {
 TEST_F(DeferredInitializationRunnerTest, TestSecondBlockInvalidatesFirst) {
   // Setup.
   __block int blockRunCount = 0;
-  ProceduralBlock runBlock = ^() {
+  ProceduralBlock runBlock = ^{
     ++blockRunCount;
   };
   DeferredInitializationRunner* runner =

@@ -35,7 +35,7 @@ class BubbleViewControllerPresenterTest : public PlatformTest {
                  initWithText:@"Text"
                arrowDirection:BubbleArrowDirectionUp
                     alignment:BubbleAlignmentCenter
-            dismissalCallback:^() {
+            dismissalCallback:^{
               dismissalCallbackCount_++;
             }]),
         window_([[UIWindow alloc]

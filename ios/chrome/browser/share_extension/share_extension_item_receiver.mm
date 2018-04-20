@@ -144,7 +144,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
              object:nil];
 
     __weak ShareExtensionItemReceiver* weakSelf = self;
-    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^{
                             [weakSelf createReadingListFolder];
                           }));
   }
@@ -175,8 +175,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   }
 
   __weak ShareExtensionItemReceiver* weakSelf = self;
-  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                           base::BindBlockArc(^() {
+  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
                              [weakSelf readingListFolderCreated];
                            }));
 }
@@ -243,7 +242,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
                             SHARE_EXTENSION_SOURCE_COUNT);
 
   // Entry is valid. Add it to the reading list model.
-  ProceduralBlock processEntryBlock = ^() {
+  ProceduralBlock processEntryBlock = ^{
     if (!_readingListModel || !_bookmarkModel) {
       // Models may have been deleted after the file
       // processing started.
@@ -268,7 +267,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
     }
 
     if (completion && _taskRunner) {
-      _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+      _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^{
                               completion();
                             }));
     }
@@ -340,7 +339,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   // There may already be files. Process them.
   if (_taskRunner) {
     __weak ShareExtensionItemReceiver* weakSelf = self;
-    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^{
                             [weakSelf processExistingFiles];
                           }));
   }
@@ -367,7 +366,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   if ([files count]) {
     __weak ShareExtensionItemReceiver* weakSelf = self;
     web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                             base::BindBlockArc(^() {
+                             base::BindBlockArc(^{
                                [weakSelf entriesReceived:files];
                              }));
   }
@@ -383,12 +382,12 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   for (NSURL* fileURL : files) {
     __block std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
         batchToken(_readingListModel->BeginBatchUpdates());
-    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^{
                             [weakSelf handleFileAtURL:fileURL
                                        withCompletion:^{
                                          web::WebThread::PostTask(
                                              web::WebThread::UI, FROM_HERE,
-                                             base::BindBlockArc(^() {
+                                             base::BindBlockArc(^{
                                                batchToken.reset();
                                              }));
                                        }];
@@ -409,7 +408,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 - (void)presentedSubitemDidChangeAtURL:(NSURL*)url {
   if (_taskRunner) {
     __weak ShareExtensionItemReceiver* weakSelf = self;
-    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^{
                             [weakSelf handleFileAtURL:url withCompletion:nil];
                           }));
   }
