@@ -413,7 +413,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
 
   static_assert(
       CheckSupportedCdmHostVersions(cdm::Host_9::kVersion,
-                                    cdm::Host_10::kVersion),
+                                    cdm::Host_11::kVersion),
       "Mismatch between GetCdmHost() and IsSupportedCdmHostVersion()");
 
   DCHECK(IsSupportedCdmHostVersion(host_interface_version));
@@ -425,6 +425,8 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
       return static_cast<cdm::Host_9*>(cdm_adapter);
     case cdm::Host_10::kVersion:
       return static_cast<cdm::Host_10*>(cdm_adapter);
+    case cdm::Host_11::kVersion:
+      return static_cast<cdm::Host_11*>(cdm_adapter);
     default:
       NOTREACHED() << "Unexpected host interface version "
                    << host_interface_version;

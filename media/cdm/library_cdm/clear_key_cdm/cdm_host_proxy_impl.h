@@ -138,6 +138,15 @@ cdm::CdmProxy* CdmHostProxyImpl<cdm::Host_9>::RequestCdmProxy(
   return nullptr;
 }
 
+// Specialization for cdm::Host_10 methods.
+
+template <>
+cdm::CdmProxy* CdmHostProxyImpl<cdm::Host_10>::RequestCdmProxy(
+    cdm::CdmProxyClient* /* client */) {
+  NOTREACHED() << "cdm::ContentDecryptionModule_10 CDM should never call this.";
+  return nullptr;
+}
+
 }  // namespace media
 
 #endif  // MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_HOST_PROXY_IMPL_H_

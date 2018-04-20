@@ -391,7 +391,7 @@ CdmWrapper* CdmWrapper::Create(CreateCdmFunc create_cdm_func,
                                uint32_t key_system_size,
                                GetCdmHostFunc get_cdm_host_func,
                                void* user_data) {
-  static_assert(CheckSupportedCdmInterfaceVersions(9, 10),
+  static_assert(CheckSupportedCdmInterfaceVersions(9, 11),
                 "Mismatch between CdmWrapper::Create() and "
                 "IsSupportedCdmInterfaceVersion()");
 
@@ -400,14 +400,22 @@ CdmWrapper* CdmWrapper::Create(CreateCdmFunc create_cdm_func,
   CdmWrapper* cdm_wrapper = nullptr;
 
   // TODO(xhwang): Check whether we can use static loops to simplify this code.
-  if (IsSupportedAndEnabledCdmInterfaceVersion(10)) {
+
+  // Try to use the latest supported and enabled CDM interface first. If it's
+  // not supported by the CDM, try to create the CDM using older supported
+  // versions.
+  if (IsSupportedAndEnabledCdmInterfaceVersion(11)) {
+    cdm_wrapper =
+        CdmWrapperImpl<11>::Create(create_cdm_func, key_system, key_system_size,
+                                   get_cdm_host_func, user_data);
+  }
+
+  if (!cdm_wrapper && IsSupportedAndEnabledCdmInterfaceVersion(10)) {
     cdm_wrapper =
         CdmWrapperImpl<10>::Create(create_cdm_func, key_system, key_system_size,
                                    get_cdm_host_func, user_data);
   }
 
-  // If |cdm_wrapper| is NULL, try to create the CDM using older supported
-  // versions of the CDM interface here.
   if (!cdm_wrapper && IsSupportedAndEnabledCdmInterfaceVersion(9)) {
     cdm_wrapper =
         CdmWrapperImpl<9>::Create(create_cdm_func, key_system, key_system_size,

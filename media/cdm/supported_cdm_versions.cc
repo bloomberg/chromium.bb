@@ -34,6 +34,8 @@ base::Optional<int> GetSupportedCdmInterfaceVersionOverrideFromCommandLine() {
 constexpr bool IsCdmInterfaceVersionEnabledByDefault(int version) {
   switch (version) {
     // Supported versions in decreasing order.
+    case 11:
+      return CdmInterfaceTraits<11>::IsEnabledByDefault();
     case 10:
       return CdmInterfaceTraits<10>::IsEnabledByDefault();
     case 9:
@@ -44,16 +46,6 @@ constexpr bool IsCdmInterfaceVersionEnabledByDefault(int version) {
 }
 
 }  // namespace
-
-bool IsSupportedCdmModuleVersion(int version) {
-  switch (version) {
-    // Latest.
-    case CDM_MODULE_VERSION:
-      return true;
-    default:
-      return false;
-  }
-}
 
 bool IsSupportedAndEnabledCdmInterfaceVersion(int version) {
   if (!IsSupportedCdmInterfaceVersion(version))
