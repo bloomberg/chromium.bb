@@ -93,6 +93,11 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
             });
       };
 
+      var overlayUrl = $('arc-tos-overlay-webview');
+      overlayUrl.addEventListener('contentload', function() {
+        overlayUrl.classList.remove('overlay-loading');
+      });
+
       // Update the screen size after setup layout.
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
@@ -332,6 +337,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     showUrlOverlay: function(targetUrl) {
       this.lastFocusedElement = document.activeElement;
       $('arc-tos-overlay-webview').src = targetUrl;
+      $('arc-tos-overlay-webview').classList.add('overlay-loading');
       $('arc-tos-overlay-url').hidden = false;
       $('arc-tos-overlay-url-close').focus();
     },

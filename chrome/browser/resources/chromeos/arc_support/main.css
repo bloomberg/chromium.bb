@@ -163,12 +163,20 @@ p.title {
   display: none;
 }
 
+.overlay-url .content-area {
+  height: 332px;
+}
+
 .overlay-url webview {
   display: block;
   height: 300px;
   margin: 24px 8px 8px 8px;
   padding: 0;
   width: 100%;
+}
+
+.overlay-url.overlay-loading webview {
+  display: none;
 }
 
 .page {

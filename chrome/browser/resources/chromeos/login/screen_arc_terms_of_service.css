@@ -42,13 +42,17 @@
 #arc-tos-overlay-webview {
   border: 1px solid #d9d9d9;
   display: block;
-  height: 270px;
+  height: 300px;
   width: 622px;
+}
+
+#arc-tos-overlay-webview.overlay-loading {
+  display: none;
 }
 
 #arc-tos-overlay-webview-container {
   box-sizing: border-box;
-  height: 300px;
+  height: 332px;
   margin: auto;
   padding: 24px 8px 8px 8px;
   width: 100%;
