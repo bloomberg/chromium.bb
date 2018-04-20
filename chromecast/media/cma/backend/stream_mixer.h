@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "chromecast/media/cma/backend/mixer_input.h"
 #include "chromecast/public/cast_media_shlib.h"
+#include "chromecast/public/media/external_audio_pipeline_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
 
@@ -124,6 +125,15 @@ class StreamMixer {
   }
 
  private:
+  class ExternalLoopbackAudioObserver;
+  class BaseExternalMediaVolumeChangeRequestObserver
+      : public ExternalAudioPipelineShlib::
+            ExternalMediaVolumeChangeRequestObserver {
+   public:
+    ~BaseExternalMediaVolumeChangeRequestObserver() override = default;
+  };
+  class ExternalMediaVolumeChangeRequestObserver;
+
   enum State {
     kStateStopped,
     kStateRunning,
@@ -168,11 +178,21 @@ class StreamMixer {
       CastMediaShlib::LoopbackAudioObserver* observer);
   void RemoveLoopbackAudioObserverOnShimThread(
       CastMediaShlib::LoopbackAudioObserver* observer);
-  void SendLoopbackData(int64_t expected_playback_time,
+
+  void PostLoopbackData(int64_t expected_playback_time,
+                        SampleFormat sample_format,
                         int sample_rate,
-                        int frames,
                         int channels,
-                        std::unique_ptr<float[]> data);
+                        std::unique_ptr<uint8_t[]> data,
+                        int length);
+  void PostLoopbackInterrupted();
+
+  void SendLoopbackData(int64_t expected_playback_time,
+                        SampleFormat sample_format,
+                        int sample_rate,
+                        int channels,
+                        std::unique_ptr<uint8_t[]> data,
+                        int length);
   void LoopbackInterrupted();
 
   std::unique_ptr<MixerOutputStream> output_;
@@ -213,6 +233,12 @@ class StreamMixer {
   base::flat_set<CastMediaShlib::LoopbackAudioObserver*> loopback_observers_;
 
   base::flat_map<AudioContentType, VolumeInfo> volume_info_;
+
+  const bool external_audio_pipeline_supported_;
+  std::unique_ptr<BaseExternalMediaVolumeChangeRequestObserver>
+      external_volume_observer_;
+  std::unique_ptr<ExternalLoopbackAudioObserver>
+      external_loopback_audio_observer_;
 
   base::WeakPtrFactory<StreamMixer> weak_factory_;
 

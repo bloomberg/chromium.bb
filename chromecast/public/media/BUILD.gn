@@ -13,6 +13,7 @@ cast_source_set("media") {
     "cast_key_system.h",
     "decoder_config.h",
     "direct_audio_source.h",
+    "external_audio_pipeline_shlib.h",
     "media_pipeline_backend.h",
     "media_pipeline_device_params.h",
     "stream_id.h",

@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chromecast/media/cma/backend/mixer_output_stream.h"
+#include "chromecast/public/media/mixer_output_stream.h"
 
 namespace chromecast {
 namespace media {

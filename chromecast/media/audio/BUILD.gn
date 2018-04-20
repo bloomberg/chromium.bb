@@ -35,3 +35,13 @@ cast_source_set("audio") {
 
   configs += [ "//media/audio:platform_config" ]
 }
+
+cast_shared_library("libcast_external_audio_pipeline_1.0") {
+  sources = [
+    "external_audio_pipeline_dummy.cc",
+  ]
+
+  public_deps = [
+    "//chromecast/public/media",
+  ]
+}
