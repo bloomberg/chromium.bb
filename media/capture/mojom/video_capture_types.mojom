@@ -21,11 +21,6 @@ enum PowerLineFrequency {
   HZ_60
 };
 
-enum VideoPixelStorage {
-  CPU,
-  GPUMEMORYBUFFER
-};
-
 enum VideoCaptureApi {
   LINUX_V4L2_SINGLE_PLANE,
   WIN_MEDIA_FOUNDATION,
@@ -50,7 +45,6 @@ struct VideoCaptureFormat {
   gfx.mojom.Size frame_size;
   float frame_rate;
   VideoPixelFormat pixel_format;
-  VideoPixelStorage pixel_storage;
 };
 
 struct VideoCaptureParams {
@@ -63,7 +57,6 @@ struct VideoFrameInfo{
   mojo_base.mojom.TimeDelta timestamp;
   mojo_base.mojom.DictionaryValue metadata;
   VideoPixelFormat pixel_format;
-  VideoPixelStorage storage_type;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
 };

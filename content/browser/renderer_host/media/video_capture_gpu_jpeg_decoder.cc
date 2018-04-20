@@ -176,7 +176,6 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
       media::mojom::VideoFrameInfo::New();
   out_frame_info->timestamp = timestamp;
   out_frame_info->pixel_format = media::PIXEL_FORMAT_I420;
-  out_frame_info->storage_type = media::VideoPixelStorage::CPU;
   out_frame_info->coded_size = dimensions;
   out_frame_info->visible_rect = gfx::Rect(dimensions);
   out_frame_info->metadata = out_frame->metadata()->GetInternalValues().Clone();

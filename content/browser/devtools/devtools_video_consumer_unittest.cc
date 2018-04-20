@@ -18,7 +18,6 @@ namespace {
 // Capture parameters.
 constexpr gfx::Size kResolution = gfx::Size(320, 180);  // Arbitrarily chosen.
 constexpr media::VideoPixelFormat kFormat = media::PIXEL_FORMAT_I420;
-constexpr media::VideoPixelStorage kStorage = media::VideoPixelStorage::CPU;
 
 // A non-zero FrameSinkId to prevent validation errors when
 // DevToolsVideoConsumer::ChangeTarget(viz::FrameSinkId) is called
@@ -170,7 +169,7 @@ class DevToolsVideoConsumerTest : public testing::Test {
 
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New(
         base::TimeDelta(), base::Value(base::Value::Type::DICTIONARY), kFormat,
-        kStorage, kResolution, gfx::Rect(kResolution));
+        kResolution, gfx::Rect(kResolution));
 
     consumer_->OnFrameCaptured(std::move(buffer), buffer_size, std::move(info),
                                gfx::Rect(kResolution), gfx::Rect(kResolution),

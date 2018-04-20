@@ -14,17 +14,14 @@ SharedMemoryBufferTracker::SharedMemoryBufferTracker() = default;
 SharedMemoryBufferTracker::~SharedMemoryBufferTracker() = default;
 
 bool SharedMemoryBufferTracker::Init(const gfx::Size& dimensions,
-                                     VideoPixelFormat format,
-                                     VideoPixelStorage storage_type) {
+                                     VideoPixelFormat format) {
   DVLOG(2) << __func__ << "allocating ShMem of " << dimensions.ToString();
   set_dimensions(dimensions);
   // |dimensions| can be 0x0 for trackers that do not require memory backing.
   set_max_pixel_count(dimensions.GetArea());
   set_pixel_format(format);
-  set_storage_type(storage_type);
   return provider_.InitForSize(
-      VideoCaptureFormat(dimensions, 0.0f, format, storage_type)
-          .ImageAllocationSize());
+      VideoCaptureFormat(dimensions, 0.0f, format).ImageAllocationSize());
 }
 
 std::unique_ptr<VideoCaptureBufferHandle>

@@ -273,13 +273,11 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
   bool consume_buffer = state_ == VIDEO_CAPTURE_STATE_STARTED;
-  if ((info->pixel_format != media::PIXEL_FORMAT_I420 &&
-       info->pixel_format != media::PIXEL_FORMAT_Y16) ||
-      info->storage_type != media::VideoPixelStorage::CPU) {
+  if (info->pixel_format != media::PIXEL_FORMAT_I420 &&
+      info->pixel_format != media::PIXEL_FORMAT_Y16) {
     consume_buffer = false;
-    LOG(DFATAL) << "Wrong pixel format or storage, got pixel format:"
-                << VideoPixelFormatToString(info->pixel_format)
-                << ", storage:" << static_cast<int>(info->storage_type);
+    LOG(DFATAL) << "Wrong pixel format, got pixel format:"
+                << VideoPixelFormatToString(info->pixel_format);
   }
   if (!consume_buffer) {
     GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id, -1.0);

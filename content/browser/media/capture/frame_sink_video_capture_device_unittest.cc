@@ -60,13 +60,12 @@ constexpr int kMaxFrameRate = 25;  // It evenly divides 1 million usec.
 constexpr base::TimeDelta kMinCapturePeriod = base::TimeDelta::FromMicroseconds(
     base::Time::kMicrosecondsPerSecond / kMaxFrameRate);
 constexpr media::VideoPixelFormat kFormat = media::PIXEL_FORMAT_I420;
-constexpr media::VideoPixelStorage kStorage = media::VideoPixelStorage::CPU;
 
 // Helper to return the capture parameters packaged in a VideoCaptureParams.
 media::VideoCaptureParams GetCaptureParams() {
   media::VideoCaptureParams params;
   params.requested_format =
-      media::VideoCaptureFormat(kResolution, kMaxFrameRate, kFormat, kStorage);
+      media::VideoCaptureFormat(kResolution, kMaxFrameRate, kFormat);
   return params;
 }
 
@@ -348,7 +347,7 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
               std::move(buffer), buffer_size,
               media::mojom::VideoFrameInfo::New(
                   kMinCapturePeriod * frame_number,
-                  base::Value(base::Value::Type::DICTIONARY), kFormat, kStorage,
+                  base::Value(base::Value::Type::DICTIONARY), kFormat,
                   kResolution, gfx::Rect(kResolution)),
               gfx::Rect(kResolution), gfx::Rect(kResolution),
               viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr(
@@ -478,7 +477,6 @@ TEST_F(FrameSinkVideoCaptureDeviceTest, CapturesAndDeliversFrames) {
         ASSERT_TRUE(info);
         EXPECT_EQ(kMinCapturePeriod * frame_number, info->timestamp);
         EXPECT_EQ(kFormat, info->pixel_format);
-        EXPECT_EQ(kStorage, info->storage_type);
         EXPECT_EQ(kResolution, info->coded_size);
         EXPECT_EQ(gfx::Rect(kResolution), info->visible_rect);
       }

@@ -99,7 +99,6 @@ struct TestParams {
 struct FrameInfo {
   gfx::Size size;
   media::VideoPixelFormat pixel_format;
-  media::VideoPixelStorage storage_type;
   base::TimeDelta timestamp;
 };
 
@@ -319,7 +318,6 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
                             const media::mojom::VideoFrameInfoPtr& frame_info) {
             FrameInfo received_frame_info;
             received_frame_info.pixel_format = frame_info->pixel_format;
-            received_frame_info.storage_type = frame_info->storage_type;
             received_frame_info.size = frame_info->coded_size;
             received_frame_info.timestamp = frame_info->timestamp;
             received_frame_infos.emplace_back(received_frame_info);
@@ -350,7 +348,6 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   bool first_frame = true;
   for (const auto& frame_info : received_frame_infos) {
     EXPECT_EQ(params_.GetPixelFormatToUse(), frame_info.pixel_format);
-    EXPECT_EQ(media::VideoPixelStorage::CPU, frame_info.storage_type);
     EXPECT_EQ(params_.resolution_to_use, frame_info.size);
     // Timestamps are expected to increase
     if (!first_frame)

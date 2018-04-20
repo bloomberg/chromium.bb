@@ -21,26 +21,14 @@ static VideoPixelFormat const kSupportedCapturePixelFormats[] = {
 };
 
 VideoCaptureFormat::VideoCaptureFormat()
-    : frame_rate(0.0f),
-      pixel_format(PIXEL_FORMAT_UNKNOWN),
-      pixel_storage(VideoPixelStorage::CPU) {}
+    : frame_rate(0.0f), pixel_format(PIXEL_FORMAT_UNKNOWN) {}
 
 VideoCaptureFormat::VideoCaptureFormat(const gfx::Size& frame_size,
                                        float frame_rate,
                                        VideoPixelFormat pixel_format)
     : frame_size(frame_size),
       frame_rate(frame_rate),
-      pixel_format(pixel_format),
-      pixel_storage(VideoPixelStorage::CPU) {}
-
-VideoCaptureFormat::VideoCaptureFormat(const gfx::Size& frame_size,
-                                       float frame_rate,
-                                       VideoPixelFormat pixel_format,
-                                       VideoPixelStorage pixel_storage)
-    : frame_size(frame_size),
-      frame_rate(frame_rate),
-      pixel_format(pixel_format),
-      pixel_storage(pixel_storage) {}
+      pixel_format(pixel_format) {}
 
 bool VideoCaptureFormat::IsValid() const {
   return (frame_size.width() < media::limits::kMaxDimension) &&
@@ -62,22 +50,8 @@ std::string VideoCaptureFormat::ToString(const VideoCaptureFormat& format) {
   // Beware: This string is parsed by manager.js:parseVideoCaptureFormat_,
   // take care when changing the formatting.
   return base::StringPrintf(
-      "(%s)@%.3ffps, pixel format: %s, storage: %s",
-      format.frame_size.ToString().c_str(), format.frame_rate,
-      VideoPixelFormatToString(format.pixel_format).c_str(),
-      PixelStorageToString(format.pixel_storage).c_str());
-}
-
-// static
-std::string VideoCaptureFormat::PixelStorageToString(
-    VideoPixelStorage storage) {
-  switch (storage) {
-    case VideoPixelStorage::CPU:
-      return "CPU";
-  }
-  NOTREACHED() << "Invalid VideoPixelStorage provided: "
-               << static_cast<int>(storage);
-  return std::string();
+      "(%s)@%.3ffps, pixel format: %s", format.frame_size.ToString().c_str(),
+      format.frame_rate, VideoPixelFormatToString(format.pixel_format).c_str());
 }
 
 // static

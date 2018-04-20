@@ -26,8 +26,7 @@ media::mojom::VideoFrameInfoPtr GetVideoFrameInfo(const gfx::Size& size) {
                         base::TimeTicks());
   return media::mojom::VideoFrameInfo::New(
       base::TimeDelta(), metadata.GetInternalValues().Clone(),
-      media::PIXEL_FORMAT_I420, media::VideoPixelStorage::CPU, size,
-      gfx::Rect(size));
+      media::PIXEL_FORMAT_I420, size, gfx::Rect(size));
 }
 
 }  // namespace

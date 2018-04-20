@@ -44,13 +44,11 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
       int buffer_id) override;
   int ReserveForProducer(const gfx::Size& dimensions,
                          VideoPixelFormat format,
-                         VideoPixelStorage storage,
                          int frame_feedback_id,
                          int* buffer_id_to_drop) override;
   void RelinquishProducerReservation(int buffer_id) override;
   int ResurrectLastForProducer(const gfx::Size& dimensions,
-                               VideoPixelFormat format,
-                               VideoPixelStorage storage) override;
+                               VideoPixelFormat format) override;
   double GetBufferPoolUtilization() const override;
   void HoldForConsumers(int buffer_id, int num_clients) override;
   void RelinquishConsumerHold(int buffer_id, int num_clients) override;
@@ -61,7 +59,6 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
 
   int ReserveForProducerInternal(const gfx::Size& dimensions,
                                  VideoPixelFormat format,
-                                 VideoPixelStorage storage,
                                  int frame_feedback_id,
                                  int* tracker_id_to_drop);
 

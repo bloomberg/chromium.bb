@@ -28,15 +28,8 @@
 
 namespace content {
 
-struct PixelFormatAndStorage {
-  media::VideoPixelFormat pixel_format;
-  media::VideoPixelStorage pixel_storage;
-};
-
-static const PixelFormatAndStorage kCapturePixelFormatAndStorages[] = {
-    {media::PIXEL_FORMAT_I420, media::VideoPixelStorage::CPU},
-    {media::PIXEL_FORMAT_ARGB, media::VideoPixelStorage::CPU},
-    {media::PIXEL_FORMAT_Y16, media::VideoPixelStorage::CPU},
+static const media::VideoPixelFormat kCapturePixelFormats[] = {
+    media::PIXEL_FORMAT_I420, media::PIXEL_FORMAT_ARGB, media::PIXEL_FORMAT_Y16,
 };
 
 static const int kTestBufferPoolSize = 3;
@@ -46,7 +39,7 @@ static const int kTestBufferPoolSize = 3;
 // with some context that is specific to renderer_host/media, and therefore
 // this test must live here and not in media/capture/video.
 class VideoCaptureBufferPoolTest
-    : public testing::TestWithParam<PixelFormatAndStorage> {
+    : public testing::TestWithParam<media::VideoPixelFormat> {
  protected:
   // This is a generic Buffer tracker
   class Buffer {
@@ -76,21 +69,17 @@ class VideoCaptureBufferPoolTest
     expected_dropped_id_ = expected_dropped_id;
   }
 
-  std::unique_ptr<Buffer> ReserveBuffer(
-      const gfx::Size& dimensions,
-      PixelFormatAndStorage format_and_storage) {
+  std::unique_ptr<Buffer> ReserveBuffer(const gfx::Size& dimensions,
+                                        media::VideoPixelFormat pixel_format) {
     // To verify that ReserveBuffer always sets |buffer_id_to_drop|,
     // initialize it to something different than the expected value.
     int buffer_id_to_drop = ~expected_dropped_id_;
-    DVLOG(1) << media::VideoCaptureFormat::PixelStorageToString(
-                    format_and_storage.pixel_storage) << " "
-             << media::VideoPixelFormatToString(format_and_storage.pixel_format)
-             << " " << dimensions.ToString();
+    DVLOG(1) << media::VideoPixelFormatToString(pixel_format) << " "
+             << dimensions.ToString();
     const int arbitrary_frame_feedback_id = 0;
-    const int buffer_id = pool_->ReserveForProducer(
-        dimensions, format_and_storage.pixel_format,
-        format_and_storage.pixel_storage, arbitrary_frame_feedback_id,
-        &buffer_id_to_drop);
+    const int buffer_id = pool_->ReserveForProducer(dimensions, pixel_format,
+                                                    arbitrary_frame_feedback_id,
+                                                    &buffer_id_to_drop);
     if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
       return std::unique_ptr<Buffer>();
     EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
@@ -103,10 +92,9 @@ class VideoCaptureBufferPoolTest
 
   std::unique_ptr<Buffer> ResurrectLastBuffer(
       const gfx::Size& dimensions,
-      PixelFormatAndStorage format_and_storage) {
-    const int buffer_id = pool_->ResurrectLastForProducer(
-        dimensions, format_and_storage.pixel_format,
-        format_and_storage.pixel_storage);
+      media::VideoPixelFormat pixel_format) {
+    const int buffer_id =
+        pool_->ResurrectLastForProducer(dimensions, pixel_format);
     if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
       return std::unique_ptr<Buffer>();
     return std::unique_ptr<Buffer>(new Buffer(
@@ -124,10 +112,8 @@ class VideoCaptureBufferPoolTest
 TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   const gfx::Size size_lo = gfx::Size(10, 10);
   const gfx::Size size_hi = gfx::Size(21, 33);
-  const media::VideoCaptureFormat format_lo(
-      size_lo, 0.0, GetParam().pixel_format, GetParam().pixel_storage);
-  const media::VideoCaptureFormat format_hi(
-      size_hi, 0.0, GetParam().pixel_format, GetParam().pixel_storage);
+  const media::VideoCaptureFormat format_lo(size_lo, 0.0, GetParam());
+  const media::VideoCaptureFormat format_hi(size_hi, 0.0, GetParam());
 
   // Reallocation won't happen for the first part of the test.
   ExpectDroppedId(media::VideoCaptureBufferPool::kInvalidId);
@@ -352,13 +338,11 @@ TEST_P(VideoCaptureBufferPoolTest, DoesNotResurrectIfPropertiesNotMatched) {
 
   // Expect that the buffer cannot be resurrected if the pixel format does not
   // match.
-  PixelFormatAndStorage altered_format_or_storage = GetParam();
-  altered_format_or_storage.pixel_format =
-      (altered_format_or_storage.pixel_format == media::PIXEL_FORMAT_I420
-           ? media::PIXEL_FORMAT_ARGB
-           : media::PIXEL_FORMAT_I420);
-  resurrected =
-      ResurrectLastBuffer(gfx::Size(10, 10), altered_format_or_storage);
+  media::VideoPixelFormat altered_format = GetParam();
+  altered_format =
+      (altered_format == media::PIXEL_FORMAT_I420 ? media::PIXEL_FORMAT_ARGB
+                                                  : media::PIXEL_FORMAT_I420);
+  resurrected = ResurrectLastBuffer(gfx::Size(10, 10), altered_format);
   ASSERT_EQ(nullptr, resurrected.get());
 
   // Finally, check that the buffer CAN be resurrected if all properties match.
@@ -410,6 +394,6 @@ TEST_P(VideoCaptureBufferPoolTest, AvoidsClobberingForResurrectingLastBuffer) {
 
 INSTANTIATE_TEST_CASE_P(,
                         VideoCaptureBufferPoolTest,
-                        testing::ValuesIn(kCapturePixelFormatAndStorages));
+                        testing::ValuesIn(kCapturePixelFormats));
 
 } // namespace content

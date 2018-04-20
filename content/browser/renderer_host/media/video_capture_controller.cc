@@ -212,8 +212,7 @@ void VideoCaptureController::AddClient(
   // report an error immediately and punt.
   if (!params.IsValid() ||
       !(params.requested_format.pixel_format == media::PIXEL_FORMAT_I420 ||
-        params.requested_format.pixel_format == media::PIXEL_FORMAT_Y16) ||
-      params.requested_format.pixel_storage != media::VideoPixelStorage::CPU) {
+        params.requested_format.pixel_format == media::PIXEL_FORMAT_Y16)) {
     // Crash in debug builds since the renderer should not have asked for
     // invalid or unsupported parameters.
     LOG(DFATAL) << "Invalid or unsupported video capture parameters requested: "
@@ -423,8 +422,7 @@ void VideoCaptureController::OnFrameReadyInBuffer(
         client->known_buffer_context_ids.push_back(buffer_context_id);
         const size_t mapped_size =
             media::VideoCaptureFormat(frame_info->coded_size, 0.0f,
-                                      frame_info->pixel_format,
-                                      frame_info->storage_type)
+                                      frame_info->pixel_format)
                 .ImageAllocationSize();
         client->event_handler->OnBufferCreated(
             client->controller_id, buffer_context_iter->CloneHandle(),

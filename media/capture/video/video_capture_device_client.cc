@@ -105,7 +105,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     base::TimeDelta timestamp,
     int frame_feedback_id) {
   TRACE_EVENT0("media", "VideoCaptureDeviceClient::OnIncomingCapturedData");
-  DCHECK_EQ(VideoPixelStorage::CPU, format.pixel_storage);
 
   if (last_captured_pixel_format_ != format.pixel_format) {
     OnLog("Pixel format: " + VideoPixelFormatToString(format.pixel_format));
@@ -151,8 +150,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     rotation_mode = libyuv::kRotate270;
 
   const gfx::Size dimensions(destination_width, destination_height);
-  Buffer buffer = ReserveOutputBuffer(
-      dimensions, PIXEL_FORMAT_I420, VideoPixelStorage::CPU, frame_feedback_id);
+  Buffer buffer =
+      ReserveOutputBuffer(dimensions, PIXEL_FORMAT_I420, frame_feedback_id);
 #if DCHECK_IS_ON()
   dropped_frame_counter_ = buffer.is_valid() ? 0 : dropped_frame_counter_ + 1;
   if (dropped_frame_counter_ >= kMaxDroppedFrames)
@@ -278,8 +277,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     return;
   }
 
-  const VideoCaptureFormat output_format = VideoCaptureFormat(
-      dimensions, format.frame_rate, PIXEL_FORMAT_I420, VideoPixelStorage::CPU);
+  const VideoCaptureFormat output_format =
+      VideoCaptureFormat(dimensions, format.frame_rate, PIXEL_FORMAT_I420);
   OnIncomingCapturedBuffer(std::move(buffer), output_format, reference_time,
                            timestamp);
 }
@@ -287,7 +286,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 VideoCaptureDevice::Client::Buffer
 VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
                                               VideoPixelFormat pixel_format,
-                                              VideoPixelStorage pixel_storage,
                                               int frame_feedback_id) {
   DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
   DCHECK_GT(frame_size.width(), 0);
@@ -295,9 +293,8 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
   DCHECK(IsFormatSupported(pixel_format));
 
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
-  const int buffer_id =
-      buffer_pool_->ReserveForProducer(frame_size, pixel_format, pixel_storage,
-                                       frame_feedback_id, &buffer_id_to_drop);
+  const int buffer_id = buffer_pool_->ReserveForProducer(
+      frame_size, pixel_format, frame_feedback_id, &buffer_id_to_drop);
   if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId) {
     // |buffer_pool_| has decided to release a buffer. Notify receiver in case
     // the buffer has already been shared with it.
@@ -350,7 +347,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
   mojom::VideoFrameInfoPtr info = mojom::VideoFrameInfo::New();
   info->timestamp = timestamp;
   info->pixel_format = format.pixel_format;
-  info->storage_type = format.pixel_storage;
   info->coded_size = format.frame_size;
   info->visible_rect = visible_rect;
   info->metadata = metadata.GetInternalValues().Clone();
@@ -366,11 +362,10 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
 VideoCaptureDevice::Client::Buffer
 VideoCaptureDeviceClient::ResurrectLastOutputBuffer(const gfx::Size& dimensions,
                                                     VideoPixelFormat format,
-                                                    VideoPixelStorage storage,
                                                     int new_frame_feedback_id) {
   DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
   const int buffer_id =
-      buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
+      buffer_pool_->ResurrectLastForProducer(dimensions, format);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return Buffer();
   return MakeBufferStruct(buffer_pool_, buffer_id, new_frame_feedback_id);
@@ -407,9 +402,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     int frame_feedback_id) {
-  Buffer buffer =
-      ReserveOutputBuffer(format.frame_size, PIXEL_FORMAT_Y16,
-                          VideoPixelStorage::CPU, frame_feedback_id);
+  Buffer buffer = ReserveOutputBuffer(format.frame_size, PIXEL_FORMAT_Y16,
+                                      frame_feedback_id);
   // The input |length| can be greater than the required buffer size because of
   // paddings and/or alignments, but it cannot be smaller.
   DCHECK_GE(static_cast<size_t>(length), format.ImageAllocationSize());
@@ -423,9 +417,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
     return;
   auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
   memcpy(buffer_access->data(), data, length);
-  const VideoCaptureFormat output_format =
-      VideoCaptureFormat(format.frame_size, format.frame_rate, PIXEL_FORMAT_Y16,
-                         VideoPixelStorage::CPU);
+  const VideoCaptureFormat output_format = VideoCaptureFormat(
+      format.frame_size, format.frame_rate, PIXEL_FORMAT_Y16);
   OnIncomingCapturedBuffer(std::move(buffer), output_format, reference_time,
                            timestamp);
 }

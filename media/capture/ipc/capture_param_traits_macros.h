@@ -9,9 +9,6 @@
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelStorage,
-                          media::VideoPixelStorage::MAX)
-
 IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureDeviceDescriptor::CameraCalibration)
   IPC_STRUCT_TRAITS_MEMBER(focal_length_x)
   IPC_STRUCT_TRAITS_MEMBER(focal_length_y)

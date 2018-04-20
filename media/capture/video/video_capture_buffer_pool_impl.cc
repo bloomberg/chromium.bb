@@ -68,12 +68,11 @@ VideoCaptureBufferPoolImpl::GetHandleForInProcessAccess(int buffer_id) {
 
 int VideoCaptureBufferPoolImpl::ReserveForProducer(const gfx::Size& dimensions,
                                                    VideoPixelFormat format,
-                                                   VideoPixelStorage storage,
                                                    int frame_feedback_id,
                                                    int* buffer_id_to_drop) {
   base::AutoLock lock(lock_);
-  return ReserveForProducerInternal(dimensions, format, storage,
-                                    frame_feedback_id, buffer_id_to_drop);
+  return ReserveForProducerInternal(dimensions, format, frame_feedback_id,
+                                    buffer_id_to_drop);
 }
 
 void VideoCaptureBufferPoolImpl::RelinquishProducerReservation(int buffer_id) {
@@ -121,8 +120,7 @@ void VideoCaptureBufferPoolImpl::RelinquishConsumerHold(int buffer_id,
 
 int VideoCaptureBufferPoolImpl::ResurrectLastForProducer(
     const gfx::Size& dimensions,
-    VideoPixelFormat format,
-    VideoPixelStorage storage) {
+    VideoPixelFormat format) {
   base::AutoLock lock(lock_);
 
   // Return early if the last relinquished buffer has been re-used already.
@@ -132,14 +130,13 @@ int VideoCaptureBufferPoolImpl::ResurrectLastForProducer(
   // If there are no consumers reading from this buffer, then it's safe to
   // provide this buffer back to the producer (because the producer may
   // potentially modify the content). Check that the expected dimensions,
-  // format, and storage match.
+  // and format match.
   auto it = trackers_.find(last_relinquished_buffer_id_);
   DCHECK(it != trackers_.end());
   DCHECK(!it->second->held_by_producer());
   if (it->second->consumer_hold_count() == 0 &&
       it->second->dimensions() == dimensions &&
-      it->second->pixel_format() == format &&
-      it->second->storage_type() == storage) {
+      it->second->pixel_format() == format) {
     it->second->set_held_by_producer(true);
     const int resurrected_buffer_id = last_relinquished_buffer_id_;
     last_relinquished_buffer_id_ = kInvalidId;
@@ -163,7 +160,6 @@ double VideoCaptureBufferPoolImpl::GetBufferPoolUtilization() const {
 int VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
     const gfx::Size& dimensions,
     VideoPixelFormat pixel_format,
-    VideoPixelStorage storage_type,
     int frame_feedback_id,
     int* buffer_id_to_drop) {
   lock_.AssertAcquired();
@@ -179,8 +175,7 @@ int VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
     VideoCaptureBufferTracker* const tracker = it->second.get();
     if (!tracker->consumer_hold_count() && !tracker->held_by_producer()) {
       if (tracker->max_pixel_count() >= size_in_pixels &&
-          (tracker->pixel_format() == pixel_format) &&
-          (tracker->storage_type() == storage_type)) {
+          (tracker->pixel_format() == pixel_format)) {
         if (it->first == last_relinquished_buffer_id_) {
           // This buffer would do just fine, but avoid returning it because the
           // client may want to resurrect it. It will be returned perforce if
@@ -226,8 +221,8 @@ int VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
   const int buffer_id = next_buffer_id_++;
 
   std::unique_ptr<VideoCaptureBufferTracker> tracker =
-      buffer_tracker_factory_->CreateTracker(storage_type);
-  if (!tracker->Init(dimensions, pixel_format, storage_type)) {
+      buffer_tracker_factory_->CreateTracker();
+  if (!tracker->Init(dimensions, pixel_format)) {
     DLOG(ERROR) << "Error initializing VideoCaptureBufferTracker";
     return kInvalidId;
   }

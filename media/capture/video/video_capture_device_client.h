@@ -59,7 +59,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
                               int frame_feedback_id = 0) override;
   Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
                              VideoPixelFormat format,
-                             VideoPixelStorage storage,
                              int frame_feedback_id) override;
   void OnIncomingCapturedBuffer(Buffer buffer,
                                 const VideoCaptureFormat& format,
@@ -74,7 +73,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
       const VideoFrameMetadata& additional_metadata) override;
   Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
                                    VideoPixelFormat format,
-                                   VideoPixelStorage storage,
                                    int new_frame_feedback_id) override;
   void OnError(const base::Location& from_here,
                const std::string& reason) override;

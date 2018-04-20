@@ -69,7 +69,6 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   // returned via |buffer_id_to_drop|.
   virtual int ReserveForProducer(const gfx::Size& dimensions,
                                  VideoPixelFormat format,
-                                 VideoPixelStorage storage,
                                  int frame_feedback_id,
                                  int* buffer_id_to_drop) = 0;
 
@@ -87,8 +86,7 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   // A producer may assume the content of the buffer has been preserved and may
   // also make modifications.
   virtual int ResurrectLastForProducer(const gfx::Size& dimensions,
-                                       VideoPixelFormat format,
-                                       VideoPixelStorage storage) = 0;
+                                       VideoPixelFormat format) = 0;
 
   // Returns a snapshot of the current number of buffers in-use divided by the
   // maximum |count_|.

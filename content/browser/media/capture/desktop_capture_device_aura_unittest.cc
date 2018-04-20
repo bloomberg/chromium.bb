@@ -63,10 +63,8 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
   Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
                              media::VideoPixelFormat format,
-                             media::VideoPixelStorage storage,
                              int frame_feedback_id) override {
     EXPECT_EQ(media::PIXEL_FORMAT_I420, format);
-    EXPECT_EQ(media::VideoPixelStorage::CPU, storage);
     DoReserveOutputBuffer();
     return Buffer();
   }
@@ -87,10 +85,8 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   }
   Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
                                    media::VideoPixelFormat format,
-                                   media::VideoPixelStorage storage,
                                    int frame_feedback_id) override {
     EXPECT_EQ(media::PIXEL_FORMAT_I420, format);
-    EXPECT_EQ(media::VideoPixelStorage::CPU, storage);
     DoResurrectLastOutputBuffer();
     return Buffer();
   }
