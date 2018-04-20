@@ -13,11 +13,13 @@
 
 class TestInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
-  static bool Create(InfoBarService* infobar_service) {
-    return !!infobar_service->AddInfoBar(
-        std::make_unique<InfoBarView>(std::make_unique<TestInfoBarDelegate>()));
+  static InfoBarView* Create(InfoBarService* infobar_service) {
+    return static_cast<InfoBarView*>(
+        infobar_service->AddInfoBar(std::make_unique<InfoBarView>(
+            std::make_unique<TestInfoBarDelegate>())));
   }
 
+  // infobars::InfoBarDelegate:
   InfoBarIdentifier GetIdentifier() const override { return TEST_INFOBAR; }
 };
 
@@ -43,15 +45,11 @@ class InfoBarViewTest : public ChromeViewsTestBase {
 };
 
 TEST_F(InfoBarViewTest, ShouldDrawSeparator) {
-  // Add multiple infobars.
-  for (int i = 0; i < 3; ++i)
-    EXPECT_TRUE(TestInfoBarDelegate::Create(infobar_service()));
-
-  // The top infobar should not draw a separator; the others should.
-  auto infobar_at = [this](size_t index) {
-    return static_cast<InfoBarView*>(infobar_service()->infobar_at(index));
-  };
-  EXPECT_FALSE(infobar_at(0)->ShouldDrawSeparator());
-  EXPECT_TRUE(infobar_at(1)->ShouldDrawSeparator());
-  EXPECT_TRUE(infobar_at(2)->ShouldDrawSeparator());
+  // Add multiple infobars.  The top infobar should not draw a separator; the
+  // others should.
+  for (int i = 0; i < 3; ++i) {
+    InfoBarView* infobar = TestInfoBarDelegate::Create(infobar_service());
+    ASSERT_TRUE(infobar);
+    EXPECT_EQ(i > 0, infobar->ShouldDrawSeparator());
+  }
 }
