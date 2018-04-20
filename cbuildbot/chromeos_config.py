@@ -715,7 +715,6 @@ _nofactory_boards = (
 
 _toolchains_from_source = frozenset([
     'x32-generic',
-    'lakitu_next',
 ])
 
 _noimagetest_boards = (_lakitu_boards | _loonix_boards | _termina_boards
