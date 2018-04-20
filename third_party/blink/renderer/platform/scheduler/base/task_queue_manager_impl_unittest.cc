@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -1435,8 +1436,7 @@ void CheckIsNested(bool* is_nested) {
 void PostAndQuitFromNestedRunloop(base::RunLoop* run_loop,
                                   base::SingleThreadTaskRunner* runner,
                                   bool* was_nested) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
+  base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
   runner->PostTask(FROM_HERE, run_loop->QuitClosure());
   runner->PostTask(FROM_HERE, base::BindOnce(&CheckIsNested, was_nested));
   run_loop->Run();

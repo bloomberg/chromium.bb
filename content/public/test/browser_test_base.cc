@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -353,8 +354,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     // This can be called from a posted task. Allow nested tasks here, because
     // otherwise the test body will have to do it in order to use RunLoop for
     // waiting.
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
+    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     PreRunTestOnMainThread();
     std::unique_ptr<InitialNavigationObserver> initial_navigation_observer;
     if (initial_web_contents_ &&
@@ -497,8 +497,7 @@ void BrowserTestBase::InitializeNetworkProcess() {
       mojom::kNetworkServiceName, &network_service_test);
 
   // Allow nested tasks so that the mojo reply is dispatched.
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
+  base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
   // Send the DNS rules to network service process. Android needs the RunLoop
   // to dispatch a Java callback that makes network process to enter native
   // code.

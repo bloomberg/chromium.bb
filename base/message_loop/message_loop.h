@@ -67,7 +67,7 @@ class ThreadTaskRunnerHandle;
 // Sample workaround when inner task processing is needed:
 //   HRESULT hr;
 //   {
-//     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+//     MessageLoopCurrent::ScopedNestableTaskAllower allow;
 //     hr = DoDragDrop(...); // Implicitly runs a modal message loop.
 //   }
 //   // Process |hr| (the result returned by DoDragDrop()).

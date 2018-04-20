@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,8 +38,7 @@ void DragBookmarks(Profile* profile,
   drag_data.Write(profile->GetPath(), &data);
 
   // Allow nested run loop so we get DnD events as we drag this around.
-  base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
-      base::MessageLoop::current());
+  base::MessageLoopCurrent::ScopedNestableTaskAllower nestable_task_allower;
 
   int operation = ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
