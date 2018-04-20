@@ -24,7 +24,7 @@ def _CheckTestharnessResults(input_api, output_api):
         return []
 
     checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-        '..', 'Tools', 'Scripts', 'check-testharness-expected-pass')
+        '..', '..', 'blink', 'tools', 'check_testharness_expected_pass.py')
 
     args = [input_api.python_executable, checker_path]
     args.extend(baseline_files)
