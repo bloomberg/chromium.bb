@@ -32,8 +32,6 @@ namespace extensions {
 
 class ExtensionFunctionalTest : public ExtensionBrowserTest {
  public:
-  bool ShouldAllowLegacyExtensionManifests() override { return true; }
-
   void InstallExtensionSilently(ExtensionService* service,
                                 const char* filename) {
     ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
