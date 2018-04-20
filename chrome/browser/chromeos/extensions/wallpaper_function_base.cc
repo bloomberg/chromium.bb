@@ -158,8 +158,14 @@ void WallpaperFunctionBase::OnCancel() {
 }
 
 void WallpaperFunctionBase::OnFailure(const std::string& error) {
+  OnFailureWithArguments(nullptr, error);
+}
+
+void WallpaperFunctionBase::OnFailureWithArguments(
+    std::unique_ptr<base::ListValue> args,
+    const std::string& error) {
   unsafe_wallpaper_decoder_ = nullptr;
-  Respond(Error(error));
+  Respond(args ? ErrorWithArguments(std::move(args), error) : Error(error));
 }
 
 void WallpaperFunctionBase::GenerateThumbnail(
