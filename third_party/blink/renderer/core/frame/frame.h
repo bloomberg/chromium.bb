@@ -169,6 +169,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
       LocalFrame*,
       UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture);
+  static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
+      LocalFrame*,
+      UserGestureToken*);
 
   // Returns the transient user activation state of the |LocalFrame|, provided
   // it is non-null.  Otherwise returns |false|.

@@ -635,8 +635,10 @@ void LocalDOMWindow::PostMessageTimerFired(PostMessageTimer* timer) {
   UserGestureToken* token = timer->GetUserGestureToken();
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (!RuntimeEnabledFeatures::UserActivationV2Enabled() && token &&
-      token->HasGestures() && document())
-    gesture_indicator = Frame::NotifyUserActivation(document()->GetFrame());
+      token->HasGestures() && document()) {
+    gesture_indicator =
+        Frame::NotifyUserActivation(document()->GetFrame(), token);
+  }
 
   event->EntangleMessagePorts(document());
 

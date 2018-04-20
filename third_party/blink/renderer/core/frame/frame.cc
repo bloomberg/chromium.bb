@@ -207,6 +207,15 @@ std::unique_ptr<UserGestureIndicator> Frame::NotifyUserActivation(
 }
 
 // static
+std::unique_ptr<UserGestureIndicator> Frame::NotifyUserActivation(
+    LocalFrame* frame,
+    UserGestureToken* token) {
+  if (frame)
+    frame->NotifyUserActivation();
+  return std::make_unique<UserGestureIndicator>(token);
+}
+
+// static
 bool Frame::HasTransientUserActivation(LocalFrame* frame,
                                        bool checkIfMainThread) {
   if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
