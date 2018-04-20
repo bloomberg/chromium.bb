@@ -24,7 +24,6 @@ struct URLLoaderCompletionStatus;
 
 namespace content {
 
-
 // This is implemented by our custom resource loader within content. The Peer
 // and it's bridge should have identical lifetimes as they represent each end of
 // a communication channel.
