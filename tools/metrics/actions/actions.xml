@@ -4133,6 +4133,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContextualSuggestions.Preference.Disabled">
+  <owner>huayinz@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    Android: Contextual suggestions are disabled by a user click on the switch
+    preference in contextual suggestions settings.
+  </description>
+</action>
+
+<action name="ContextualSuggestions.Preference.Enabled">
+  <owner>huayinz@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    Android: Contextual suggestions are enabled by a user click on the switch
+    preference in contextual suggestions settings.
+  </description>
+</action>
+
 <action name="CookieBlockingDisabledPerDefault">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
