@@ -129,11 +129,10 @@ TaskProperties = collections.namedtuple(
 NewTaskRequest = collections.namedtuple(
     'NewTaskRequest',
     [
-      'expiration_secs',
       'name',
       'parent_task_id',
       'priority',
-      'properties',
+      'task_slices',
       'service_account',
       'tags',
       'user',
@@ -142,19 +141,13 @@ NewTaskRequest = collections.namedtuple(
 
 def namedtuple_to_dict(value):
   """Recursively converts a namedtuple to a dict."""
-  out = dict(value._asdict())
-  for k, v in out.iteritems():
-    if hasattr(v, '_asdict'):
-      out[k] = namedtuple_to_dict(v)
-    elif isinstance(v, (list, tuple)):
-      l = []
-      for elem in v:
-        if hasattr(elem, '_asdict'):
-          l.append(namedtuple_to_dict(elem))
-        else:
-          l.append(elem)
-      out[k] = l
-  return out
+  if hasattr(value, '_asdict'):
+    return namedtuple_to_dict(value._asdict())
+  if isinstance(value, (list, tuple)):
+    return [namedtuple_to_dict(v) for v in value]
+  if isinstance(value, dict):
+    return {k: namedtuple_to_dict(v) for k, v in value.iteritems()}
+  return value
 
 
 def task_request_to_raw_request(task_request):
@@ -168,15 +161,15 @@ def task_request_to_raw_request(task_request):
   # use it at all.
   if not out['service_account']:
     out.pop('service_account')
-  out['properties']['dimensions'] = [
+  out['task_slices'][0]['properties']['dimensions'] = [
     {'key': k, 'value': v}
-    for k, v in out['properties']['dimensions']
+    for k, v in out['task_slices'][0]['properties']['dimensions']
   ]
-  out['properties']['env'] = [
+  out['task_slices'][0]['properties']['env'] = [
     {'key': k, 'value': v}
-    for k, v in out['properties']['env'].iteritems()
+    for k, v in out['task_slices'][0]['properties']['env'].iteritems()
   ]
-  out['properties']['env'].sort(key=lambda x: x['key'])
+  out['task_slices'][0]['properties']['env'].sort(key=lambda x: x['key'])
   return out
 
 
@@ -239,8 +232,8 @@ def trigger_task_shards(swarming, task_request, shards):
   def convert(index):
     req = task_request_to_raw_request(task_request)
     if shards > 1:
-      req['properties']['env'] = setup_googletest(
-          req['properties']['env'], shards, index)
+      req['task_slices'][0]['properties']['env'] = setup_googletest(
+          req['task_slices'][0]['properties']['env'], shards, index)
       req['name'] += ':%s:%s' % (index, shards)
     return req
 
@@ -1134,11 +1127,15 @@ def process_trigger_options(parser, options, args):
       secret_bytes=secret_bytes)
 
   return NewTaskRequest(
-      expiration_secs=options.expiration,
       name=default_task_name(options),
       parent_task_id=os.environ.get('SWARMING_TASK_ID', ''),
       priority=options.priority,
-      properties=properties,
+      task_slices=[
+        {
+          'expiration_secs': options.expiration,
+          'properties': properties,
+        },
+      ],
       service_account=options.service_account,
       tags=options.tags,
       user=options.user)
@@ -1371,9 +1368,16 @@ def CMDcollect(parser, args):
     except (KeyError, TypeError):
       parser.error('Failed to process %s' % options.json)
     if not options.timeout:
-      options.timeout = (
-          data['request']['properties']['execution_timeout_secs'] +
-          data['request']['expiration_secs'] + 10.)
+      options.timeout = 0
+      # Take in account all the task slices.
+      offset = 0
+      for s in data['request']['task_slices']:
+        m = (offset + s['properties']['execution_timeout_secs'] +
+             s['expiration_secs'])
+        if m > options.timeout:
+          options.timeout = m
+        offset += s['expiration_secs']
+      options.timeout += 10
   else:
     valid = frozenset('0123456789abcdef')
     if any(not valid.issuperset(task_id) for task_id in args):

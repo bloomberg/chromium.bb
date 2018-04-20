@@ -86,41 +86,50 @@ def main(args):
   return dispatcher.execute(swarming.OptionParserSwarming(), args)
 
 
+def gen_properties(**kwargs):
+  out = {
+    'caches': [],
+    'cipd_input': None,
+    'command': None,
+    'relative_cwd': None,
+    'dimensions': [
+      {'key': 'foo', 'value': 'bar'},
+      {'key': 'os', 'value': 'Mac'},
+    ],
+    'env': [],
+    'env_prefixes': [],
+    'execution_timeout_secs': 60,
+    'extra_args': ['--some-arg', '123'],
+    'grace_period_secs': 30,
+    'idempotent': False,
+    'inputs_ref': {
+      'isolated': None,
+      'isolatedserver': '',
+      'namespace': 'default-gzip',
+    },
+    'io_timeout_secs': 60,
+    'outputs': [],
+    'secret_bytes': None,
+  }
+  out.update(kwargs)
+  return out
+
+
 def gen_request_data(properties=None, **kwargs):
   out = {
-    'expiration_secs': 3600,
     'name': 'unit_tests',
     'parent_task_id': '',
     'priority': 101,
-    'properties': {
-      'caches': [],
-      'cipd_input': None,
-      'command': None,
-      'relative_cwd': None,
-      'dimensions': [
-        {'key': 'foo', 'value': 'bar'},
-        {'key': 'os', 'value': 'Mac'},
-      ],
-      'env': [],
-      'env_prefixes': [],
-      'execution_timeout_secs': 60,
-      'extra_args': ['--some-arg', '123'],
-      'grace_period_secs': 30,
-      'idempotent': False,
-      'inputs_ref': {
-        'isolated': None,
-        'isolatedserver': '',
-        'namespace': 'default-gzip',
+    'task_slices': [
+      {
+        'expiration_secs': 3600,
+        'properties': gen_properties(**(properties or {})),
       },
-      'io_timeout_secs': 60,
-      'outputs': [],
-      'secret_bytes': None,
-    },
+    ],
     'tags': ['tag:a', 'tag:b'],
     'user': 'joe@localhost',
   }
   out.update(kwargs)
-  out['properties'].update(properties or {})
   return out
 
 
@@ -332,37 +341,41 @@ class TestIsolated(auto_stub.TestCase, Common):
 class TestSwarmingTrigger(NetTestCase):
   def test_trigger_task_shards_2_shards(self):
     task_request = swarming.NewTaskRequest(
-        expiration_secs=60*60,
         name=TEST_NAME,
         parent_task_id=None,
         priority=101,
-        properties=swarming.TaskProperties(
-            caches=[],
-            cipd_input=None,
-            command=['a', 'b'],
-            relative_cwd=None,
-            dimensions=[('foo', 'bar'), ('os', 'Mac')],
-            env={},
-            env_prefixes=[],
-            execution_timeout_secs=60,
-            extra_args=[],
-            grace_period_secs=30,
-            idempotent=False,
-            inputs_ref={
-              'isolated': None,
-              'isolatedserver': '',
-              'namespace': 'default-gzip',
-            },
-            io_timeout_secs=60,
-            outputs=[],
-            secret_bytes=None),
+        task_slices=[
+          {
+            'expiration_secs': 60*60,
+            'properties': swarming.TaskProperties(
+                caches=[],
+                cipd_input=None,
+                command=['a', 'b'],
+                relative_cwd=None,
+                dimensions=[('foo', 'bar'), ('os', 'Mac')],
+                env={},
+                env_prefixes=[],
+                execution_timeout_secs=60,
+                extra_args=[],
+                grace_period_secs=30,
+                idempotent=False,
+                inputs_ref={
+                  'isolated': None,
+                  'isolatedserver': '',
+                  'namespace': 'default-gzip',
+                },
+                io_timeout_secs=60,
+                outputs=[],
+                secret_bytes=None),
+          },
+        ],
         service_account=None,
         tags=['tag:a', 'tag:b'],
         user='joe@localhost')
 
     request_1 = swarming.task_request_to_raw_request(task_request)
     request_1['name'] = u'unit_tests:0:2'
-    request_1['properties']['env'] = [
+    request_1['task_slices'][0]['properties']['env'] = [
       {'key': 'GTEST_SHARD_INDEX', 'value': '0'},
       {'key': 'GTEST_TOTAL_SHARDS', 'value': '2'},
     ]
@@ -370,7 +383,7 @@ class TestSwarmingTrigger(NetTestCase):
 
     request_2 = swarming.task_request_to_raw_request(task_request)
     request_2['name'] = u'unit_tests:1:2'
-    request_2['properties']['env'] = [
+    request_2['task_slices'][0]['properties']['env'] = [
       {'key': 'GTEST_SHARD_INDEX', 'value': '1'},
       {'key': 'GTEST_TOTAL_SHARDS', 'value': '2'},
     ]
@@ -409,30 +422,34 @@ class TestSwarmingTrigger(NetTestCase):
 
   def test_trigger_task_shards_priority_override(self):
     task_request = swarming.NewTaskRequest(
-        expiration_secs=60*60,
         name=TEST_NAME,
         parent_task_id='123',
         priority=101,
-        properties=swarming.TaskProperties(
-            caches=[],
-            cipd_input=None,
-            command=['a', 'b'],
-            relative_cwd=None,
-            dimensions=[('foo', 'bar'), ('os', 'Mac')],
-            env={},
-            env_prefixes=[],
-            execution_timeout_secs=60,
-            extra_args=[],
-            grace_period_secs=30,
-            idempotent=False,
-            inputs_ref={
-              'isolated': None,
-              'isolatedserver': '',
-              'namespace': 'default-gzip',
-            },
-            io_timeout_secs=60,
-            outputs=[],
-            secret_bytes=None),
+        task_slices=[
+          {
+            'expiration_secs': 60*60,
+            'properties': swarming.TaskProperties(
+                caches=[],
+                cipd_input=None,
+                command=['a', 'b'],
+                relative_cwd=None,
+                dimensions=[('foo', 'bar'), ('os', 'Mac')],
+                env={},
+                env_prefixes=[],
+                execution_timeout_secs=60,
+                extra_args=[],
+                grace_period_secs=30,
+                idempotent=False,
+                inputs_ref={
+                  'isolated': None,
+                  'isolatedserver': '',
+                  'namespace': 'default-gzip',
+                },
+                io_timeout_secs=60,
+                outputs=[],
+                secret_bytes=None),
+          },
+        ],
         service_account=None,
         tags=['tag:a', 'tag:b'],
         user='joe@localhost')
@@ -471,37 +488,41 @@ class TestSwarmingTrigger(NetTestCase):
 
   def test_trigger_cipd_package(self):
     task_request = swarming.NewTaskRequest(
-        expiration_secs=60*60,
         name=TEST_NAME,
         parent_task_id='123',
         priority=101,
-        properties=swarming.TaskProperties(
-            caches=[],
-            cipd_input=swarming.CipdInput(
-                client_package=None,
-                packages=[
-                    swarming.CipdPackage(
-                        package_name='mypackage',
-                        path='path/to/package',
-                        version='abc123')],
-                server=None),
-            command=['a', 'b'],
-            relative_cwd=None,
-            dimensions=[('foo', 'bar'), ('os', 'Mac')],
-            env={},
-            env_prefixes=[],
-            execution_timeout_secs=60,
-            extra_args=[],
-            grace_period_secs=30,
-            idempotent=False,
-            inputs_ref={
-              'isolated': None,
-              'isolatedserver': '',
-              'namespace': 'default-gzip',
-            },
-            io_timeout_secs=60,
-            outputs=[],
-            secret_bytes=None),
+        task_slices=[
+          {
+            'expiration_secs': 60*60,
+            'properties': swarming.TaskProperties(
+                caches=[],
+                cipd_input=swarming.CipdInput(
+                    client_package=None,
+                    packages=[
+                        swarming.CipdPackage(
+                            package_name='mypackage',
+                            path='path/to/package',
+                            version='abc123')],
+                    server=None),
+                command=['a', 'b'],
+                relative_cwd=None,
+                dimensions=[('foo', 'bar'), ('os', 'Mac')],
+                env={},
+                env_prefixes=[],
+                execution_timeout_secs=60,
+                extra_args=[],
+                grace_period_secs=30,
+                idempotent=False,
+                inputs_ref={
+                  'isolated': None,
+                  'isolatedserver': '',
+                  'namespace': 'default-gzip',
+                },
+                io_timeout_secs=60,
+                outputs=[],
+                secret_bytes=None),
+          },
+        ],
         service_account=None,
         tags=['tag:a', 'tag:b'],
         user='joe@localhost')
@@ -516,7 +537,8 @@ class TestSwarmingTrigger(NetTestCase):
       }],
       'server': None
     }
-    self.assertEqual(expected, request['properties']['cipd_input'])
+    self.assertEqual(
+        expected, request['task_slices'][0]['properties']['cipd_input'])
 
     result = gen_request_response(request)
     result['request']['priority'] = 200
@@ -896,29 +918,22 @@ class TestMain(NetTestCase):
   def test_run_raw_cmd(self):
     # Minimalist use.
     request = {
-      'expiration_secs': 21600,
       'name': u'None/foo=bar',
       'parent_task_id': '',
       'priority': 100,
-      'properties': {
-        'caches': [],
-        'cipd_input': None,
-        'command': ['python', '-c', 'print(\'hi\')'],
-        'relative_cwd': 'deeep',
-        'dimensions': [
-          {'key': 'foo', 'value': 'bar'},
-        ],
-        'env': [],
-        'env_prefixes': [],
-        'execution_timeout_secs': 3600,
-        'extra_args': None,
-        'grace_period_secs': 30,
-        'idempotent': False,
-        'inputs_ref': None,
-        'io_timeout_secs': 1200,
-        'outputs': [],
-        'secret_bytes': None,
-      },
+      'task_slices': [
+        {
+          'expiration_secs': 21600,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+        },
+      ],
       'tags': [],
       'user': None,
     }
@@ -955,33 +970,25 @@ class TestMain(NetTestCase):
   def test_run_raw_cmd_isolated(self):
     # Minimalist use.
     request = {
-      'expiration_secs': 21600,
       'name': u'None/foo=bar/' + FILE_HASH,
       'parent_task_id': '',
       'priority': 100,
-      'properties': {
-        'caches': [],
-        'cipd_input': None,
-        'command': ['python', '-c', 'print(\'hi\')'],
-        'relative_cwd': None,
-        'dimensions': [
-          {'key': 'foo', 'value': 'bar'},
-        ],
-        'env': [],
-        'env_prefixes': [],
-        'execution_timeout_secs': 3600,
-        'extra_args': None,
-        'grace_period_secs': 30,
-        'idempotent': False,
-        'inputs_ref': {
-          'isolated': FILE_HASH,
-          'isolatedserver': 'https://localhost:2',
-          'namespace': 'default-gzip',
+      'task_slices': [
+        {
+          'expiration_secs': 21600,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref={
+                'isolated': u'1111111111111111111111111111111111111111',
+                'isolatedserver': 'https://localhost:2',
+                'namespace': 'default-gzip',
+              },
+              io_timeout_secs=1200),
         },
-        'io_timeout_secs': 1200,
-        'outputs': [],
-        'secret_bytes': None,
-      },
+      ],
       'tags': [],
       'user': None,
     }
@@ -1019,29 +1026,21 @@ class TestMain(NetTestCase):
   def test_run_raw_cmd_with_service_account(self):
     # Minimalist use.
     request = {
-      'expiration_secs': 21600,
       'name': u'None/foo=bar',
       'parent_task_id': '',
       'priority': 100,
-      'properties': {
-        'caches': [],
-        'cipd_input': None,
-        'command': ['python', '-c', 'print(\'hi\')'],
-        'relative_cwd': None,
-        'dimensions': [
-          {'key': 'foo', 'value': 'bar'},
-        ],
-        'env': [],
-        'env_prefixes': [],
-        'execution_timeout_secs': 3600,
-        'extra_args': None,
-        'grace_period_secs': 30,
-        'idempotent': False,
-        'inputs_ref': None,
-        'io_timeout_secs': 1200,
-        'outputs': [],
-        'secret_bytes': None,
-      },
+      'task_slices': [
+        {
+          'expiration_secs': 21600,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200),
+        },
+      ],
       'service_account': 'bot',
       'tags': [],
       'user': None,
@@ -1081,15 +1080,17 @@ class TestMain(NetTestCase):
     self.mock(swarming, 'now', lambda: 123456)
 
     request = gen_request_data(
-        properties={
-          'command': None,
-          'inputs_ref': {
-            'isolated': FILE_HASH,
-            'isolatedserver': 'https://localhost:2',
-            'namespace': 'default-gzip',
+        task_slices=[
+          {
+            'expiration_secs': 3600,
+            'properties': gen_properties(
+                inputs_ref={
+                  'isolated': u'1111111111111111111111111111111111111111',
+                  'isolatedserver': 'https://localhost:2',
+                  'namespace': 'default-gzip',
+                }),
           },
-          'secret_bytes': None,
-        })
+        ])
     result = gen_request_response(request)
     self.expected_requests(
         [
@@ -1144,16 +1145,18 @@ class TestMain(NetTestCase):
 
     isolated_hash = isolateserver_mock.hash_content(content)
     request = gen_request_data(
-        properties={
-          'command': None,
-          'idempotent': True,
-          'inputs_ref': {
-            'isolated': isolated_hash,
-            'isolatedserver': 'https://localhost:2',
-            'namespace': 'default-gzip',
+        task_slices=[
+          {
+            'expiration_secs': 3600,
+            'properties': gen_properties(
+                idempotent=True,
+                inputs_ref={
+                  'isolated': isolated_hash,
+                  'isolatedserver': 'https://localhost:2',
+                  'namespace': 'default-gzip',
+                }),
           },
-          'secret_bytes': None,
-        })
+        ])
     result = gen_request_response(request)
     self.expected_requests(
         [
@@ -1208,34 +1211,21 @@ class TestMain(NetTestCase):
             }
           },
           'request': {
-            'expiration_secs': 3600,
             'name': 'unit_tests',
             'parent_task_id': '',
             'priority': 101,
-            'properties': {
-              'caches': [],
-              'cipd_input': None,
-              'command': None,
-              'relative_cwd': None,
-              'dimensions': [
-                {'key': 'foo', 'value': 'bar'},
-                {'key': 'os', 'value': 'Mac'},
-              ],
-              'env': [],
-              'env_prefixes': [],
-              'execution_timeout_secs': 60,
-              'extra_args': ['--some-arg', '123'],
-              'grace_period_secs': 30,
-              'idempotent': True,
-              'inputs_ref': {
-                'isolated': isolated_hash,
-                'isolatedserver': 'https://localhost:2',
-                'namespace': 'default-gzip',
-                },
-              'io_timeout_secs': 60,
-              'outputs': [],
-              'secret_bytes': None,
-            },
+            'task_slices': [
+              {
+                'expiration_secs': 3600,
+                'properties': gen_properties(
+                    idempotent=True,
+                    inputs_ref={
+                      'isolated': isolated_hash,
+                      'isolatedserver': 'https://localhost:2',
+                      'namespace': 'default-gzip',
+                    }),
+              },
+            ],
             'tags': ['tag:a', 'tag:b'],
             'user': 'joe@localhost',
           },
@@ -1249,24 +1239,28 @@ class TestMain(NetTestCase):
     self.mock(swarming, 'now', lambda: 123456)
 
     request = gen_request_data(
-        properties={
-          'cipd_input': {
-            'client_package': None,
-            'packages': [{
-              'package_name': 'super/awesome/pkg',
-              'path': 'path/to/pkg',
-              'version': 'version:42',
-            }],
-            'server': None,
+        task_slices=[
+          {
+            'expiration_secs': 3600,
+            'properties': gen_properties(
+                cipd_input={
+                  'client_package': None,
+                  'packages': [
+                    {
+                      'package_name': 'super/awesome/pkg',
+                      'path': 'path/to/pkg',
+                      'version': 'version:42',
+                    },
+                  ],
+                  'server': None,
+                },
+                inputs_ref={
+                  'isolated': u'1111111111111111111111111111111111111111',
+                  'isolatedserver': 'https://localhost:2',
+                  'namespace': 'default-gzip',
+                }),
           },
-          'command': None,
-          'inputs_ref': {
-            'isolated': FILE_HASH,
-            'isolatedserver': 'https://localhost:2',
-            'namespace': 'default-gzip',
-          },
-          'secret_bytes': None,
-        })
+        ])
     result = gen_request_response(request)
     self.expected_requests(
         [
@@ -1381,29 +1375,17 @@ class TestMain(NetTestCase):
         }
       },
       'request': {
-        'expiration_secs': 3600,
         'name': 'unit_tests',
         'parent_task_id': '',
         'priority': 101,
-        'properties': {
-          'command': None,
-          'dimensions': [
-            {'key': 'foo', 'value': 'bar'},
-            {'key': 'os', 'value': 'Mac'},
-          ],
-          'env': [],
-          'execution_timeout_secs': 60,
-          'extra_args': ['--some-arg', '123'],
-          'grace_period_secs': 30,
-          'idempotent': True,
-          'inputs_ref': {
-            'isolated': FILE_HASH,
-            'isolatedserver': 'https://localhost:2',
-            'namespace': 'default-gzip',
-            },
-          'io_timeout_secs': 60,
-          'secret_bytes': None,
-        },
+        'task_slices': [
+          {
+            'expiration_secs': 3600,
+            'properties': gen_properties(
+                command=['python', '-c', 'print(\'hi\')'],
+                relative_cwd='deeep'),
+          },
+        ],
         'tags': ['tag:a', 'tag:b'],
         'user': 'joe@localhost',
       },
