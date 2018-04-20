@@ -458,10 +458,6 @@ void FaviconHandler::OnGotInitialHistoryDataAndIconURLCandidates() {
     return;
   }
 
-  if (!current_candidate()) {
-    return;
-  }
-
   if (!initial_history_result_expired_or_incomplete_ &&
       current_candidate()->icon_url == notification_icon_url_ &&
       current_candidate()->icon_type == notification_icon_type_) {
