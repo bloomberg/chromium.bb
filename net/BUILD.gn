@@ -133,7 +133,6 @@ component("net") {
     "base/net_error_list.h",
     "base/net_errors.cc",
     "base/net_errors.h",
-    "base/net_errors_posix.cc",
     "base/net_export.h",
     "base/net_module.cc",
     "base/net_module.h",
@@ -361,6 +360,10 @@ component("net") {
   ]
   net_unfiltered_sources = []
 
+  if (is_posix || is_fuchsia) {
+    sources += [ "base/net_errors_posix.cc" ]
+  }
+
   deps = [
     ":constants",
     ":net_resources",
@@ -426,7 +429,6 @@ component("net") {
       "base/file_stream.h",
       "base/file_stream_context.cc",
       "base/file_stream_context.h",
-      "base/file_stream_context_posix.cc",
       "base/file_stream_context_win.cc",
       "base/filename_util.cc",
       "base/filename_util.h",
@@ -476,8 +478,6 @@ component("net") {
       "base/network_interfaces_linux.cc",
       "base/network_interfaces_linux.h",
       "base/network_interfaces_nacl.cc",
-      "base/network_interfaces_posix.cc",
-      "base/network_interfaces_posix.h",
       "base/network_interfaces_win.cc",
       "base/network_interfaces_win.h",
       "base/platform_mime_util.h",
@@ -648,7 +648,6 @@ component("net") {
       "disk_cache/blockfile/file_ios.cc",
       "disk_cache/blockfile/file_lock.cc",
       "disk_cache/blockfile/file_lock.h",
-      "disk_cache/blockfile/file_posix.cc",
       "disk_cache/blockfile/file_win.cc",
       "disk_cache/blockfile/histogram_macros.h",
       "disk_cache/blockfile/in_flight_backend_io.cc",
@@ -657,8 +656,6 @@ component("net") {
       "disk_cache/blockfile/in_flight_io.h",
       "disk_cache/blockfile/mapped_file.cc",
       "disk_cache/blockfile/mapped_file.h",
-      "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc",
-      "disk_cache/blockfile/mapped_file_posix.cc",
       "disk_cache/blockfile/mapped_file_win.cc",
       "disk_cache/blockfile/rankings.cc",
       "disk_cache/blockfile/rankings.h",
@@ -675,7 +672,6 @@ component("net") {
       "disk_cache/blockfile/webfonts_histogram.h",
       "disk_cache/cache_util.cc",
       "disk_cache/cache_util.h",
-      "disk_cache/cache_util_posix.cc",
       "disk_cache/cache_util_win.cc",
       "disk_cache/disk_cache.cc",
       "disk_cache/disk_cache.h",
@@ -705,7 +701,6 @@ component("net") {
       "disk_cache/simple/simple_index_delegate.h",
       "disk_cache/simple/simple_index_file.cc",
       "disk_cache/simple/simple_index_file.h",
-      "disk_cache/simple/simple_index_file_posix.cc",
       "disk_cache/simple/simple_index_file_win.cc",
       "disk_cache/simple/simple_net_log_parameters.cc",
       "disk_cache/simple/simple_net_log_parameters.h",
@@ -713,20 +708,14 @@ component("net") {
       "disk_cache/simple/simple_synchronous_entry.h",
       "disk_cache/simple/simple_util.cc",
       "disk_cache/simple/simple_util.h",
-      "disk_cache/simple/simple_util_posix.cc",
       "disk_cache/simple/simple_util_win.cc",
       "disk_cache/simple/simple_version_upgrade.cc",
       "disk_cache/simple/simple_version_upgrade.h",
       "dns/address_sorter.h",
-      "dns/address_sorter_posix.cc",
-      "dns/address_sorter_posix.h",
       "dns/address_sorter_win.cc",
-      "dns/dns_client.cc",
       "dns/dns_client.h",
       "dns/dns_config_service.cc",
       "dns/dns_config_service.h",
-      "dns/dns_config_service_posix.cc",
-      "dns/dns_config_service_posix.h",
       "dns/dns_config_service_win.cc",
       "dns/dns_config_service_win.h",
       "dns/dns_config_watcher_mac.cc",
@@ -797,8 +786,6 @@ component("net") {
       "http/http_auth_controller.h",
       "http/http_auth_filter.cc",
       "http/http_auth_filter.h",
-      "http/http_auth_gssapi_posix.cc",
-      "http/http_auth_gssapi_posix.h",
       "http/http_auth_handler.cc",
       "http/http_auth_handler.h",
       "http/http_auth_handler_basic.cc",
@@ -889,7 +876,6 @@ component("net") {
       "http/transport_security_persister.h",
       "http/url_security_manager.cc",
       "http/url_security_manager.h",
-      "http/url_security_manager_posix.cc",
       "http/url_security_manager_win.cc",
       "log/file_net_log_observer.cc",
       "log/file_net_log_observer.h",
@@ -1470,8 +1456,6 @@ component("net") {
       "socket/socket_net_log_params.h",
       "socket/socket_options.cc",
       "socket/socket_options.h",
-      "socket/socket_posix.cc",
-      "socket/socket_posix.h",
       "socket/socket_tag.cc",
       "socket/socket_tag.h",
       "socket/socks5_client_socket.cc",
@@ -1490,8 +1474,6 @@ component("net") {
       "socket/tcp_server_socket.cc",
       "socket/tcp_server_socket.h",
       "socket/tcp_socket.h",
-      "socket/tcp_socket_posix.cc",
-      "socket/tcp_socket_posix.h",
       "socket/tcp_socket_win.cc",
       "socket/tcp_socket_win.h",
       "socket/transport_client_socket.h",
@@ -1504,8 +1486,6 @@ component("net") {
       "socket/udp_server_socket.cc",
       "socket/udp_server_socket.h",
       "socket/udp_socket.h",
-      "socket/udp_socket_posix.cc",
-      "socket/udp_socket_posix.h",
       "socket/udp_socket_win.cc",
       "socket/udp_socket_win.h",
       "socket/websocket_endpoint_lock_manager.cc",
@@ -1860,10 +1840,28 @@ component("net") {
     }
 
     if (is_posix || is_fuchsia) {
+      sources += [
+        "base/file_stream_context_posix.cc",
+        "base/network_interfaces_posix.cc",
+        "base/network_interfaces_posix.h",
+        "disk_cache/blockfile/file_posix.cc",
+        "disk_cache/cache_util_posix.cc",
+        "disk_cache/simple/simple_index_file_posix.cc",
+        "disk_cache/simple/simple_util_posix.cc",
+        "dns/dns_config_service_posix.cc",
+        "dns/dns_config_service_posix.h",
+        "http/url_security_manager_posix.cc",
+        "socket/socket_posix.cc",
+        "socket/socket_posix.h",
+        "socket/tcp_socket_posix.cc",
+        "socket/tcp_socket_posix.h",
+        "socket/udp_socket_posix.cc",
+        "socket/udp_socket_posix.h",
+      ]
       if (posix_avoid_mmap) {
-        sources -= [ "disk_cache/blockfile/mapped_file_posix.cc" ]
+        sources += [ "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc" ]
       } else {
-        sources -= [ "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc" ]
+        sources += [ "disk_cache/blockfile/mapped_file_posix.cc" ]
       }
     }
 
@@ -1881,16 +1879,18 @@ component("net") {
       ]
     }
 
-    if (!enable_built_in_dns) {
-      sources -= [
-        "dns/address_sorter_posix.cc",
-        "dns/address_sorter_posix.h",
-        "dns/dns_client.cc",
-      ]
+    if (enable_built_in_dns) {
+      sources += [ "dns/dns_client.cc" ]
+      if (is_posix || is_fuchsia) {
+        sources += [
+          "dns/address_sorter_posix.cc",
+          "dns/address_sorter_posix.h",
+        ]
+      }
     }
 
-    if (!use_kerberos || is_android) {
-      sources -= [
+    if (use_kerberos && ((is_posix && !is_android) || is_fuchsia)) {
+      sources += [
         "http/http_auth_gssapi_posix.cc",
         "http/http_auth_gssapi_posix.h",
       ]
@@ -2732,9 +2732,12 @@ static_library("test_support") {
     sources += [
       "test/spawned_test_server/local_test_server.cc",
       "test/spawned_test_server/local_test_server.h",
-      "test/spawned_test_server/local_test_server_posix.cc",
-      "test/spawned_test_server/local_test_server_win.cc",
     ]
+    if (is_win) {
+      sources += [ "test/spawned_test_server/local_test_server_win.cc" ]
+    } else if (is_posix || is_fuchsia) {
+      sources += [ "test/spawned_test_server/local_test_server_posix.cc" ]
+    }
   }
 
   if (enable_python_utils) {
@@ -4822,9 +4825,6 @@ test("net_unittests") {
     "disk_cache/simple/simple_test_util.h",
     "disk_cache/simple/simple_util_unittest.cc",
     "disk_cache/simple/simple_version_upgrade_unittest.cc",
-    "dns/address_sorter_posix_unittest.cc",
-    "dns/address_sorter_unittest.cc",
-    "dns/dns_config_service_posix_unittest.cc",
     "dns/dns_config_service_unittest.cc",
     "dns/dns_config_service_win_unittest.cc",
     "dns/dns_hosts_unittest.cc",
@@ -4864,7 +4864,6 @@ test("net_unittests") {
     "http/http_auth_challenge_tokenizer_unittest.cc",
     "http/http_auth_controller_unittest.cc",
     "http/http_auth_filter_unittest.cc",
-    "http/http_auth_gssapi_posix_unittest.cc",
     "http/http_auth_handler_basic_unittest.cc",
     "http/http_auth_handler_digest_unittest.cc",
     "http/http_auth_handler_factory_unittest.cc",
@@ -4907,8 +4906,6 @@ test("net_unittests") {
     "http/http_vary_data_unittest.cc",
     "http/mock_allow_http_auth_preferences.cc",
     "http/mock_allow_http_auth_preferences.h",
-    "http/mock_gssapi_library_posix.cc",
-    "http/mock_gssapi_library_posix.h",
     "http/mock_http_cache.cc",
     "http/mock_http_cache.h",
     "http/mock_sspi_library_win.cc",
@@ -5229,7 +5226,6 @@ test("net_unittests") {
     "socket/transport_client_socket_pool_test_util.h",
     "socket/transport_client_socket_pool_unittest.cc",
     "socket/transport_client_socket_unittest.cc",
-    "socket/udp_socket_posix_unittest.cc",
     "socket/udp_socket_unittest.cc",
     "socket/websocket_endpoint_lock_manager_unittest.cc",
     "socket/websocket_transport_client_socket_pool_unittest.cc",
@@ -5366,6 +5362,13 @@ test("net_unittests") {
     "//url",
     "//url:url_features",
   ]
+
+  if (is_posix || is_fuchsia) {
+    sources += [
+      "dns/dns_config_service_posix_unittest.cc",
+      "socket/udp_socket_posix_unittest.cc",
+    ]
+  }
 
   if (enable_reporting) {
     sources += [
@@ -5511,8 +5514,8 @@ test("net_unittests") {
 
   # These are excluded on Android, because the actual Kerberos support, which
   # these test, is in a separate app on Android.
-  if (!use_kerberos || is_android) {
-    sources -= [
+  if (use_kerberos && ((is_posix && !is_android) || is_fuchsia)) {
+    sources += [
       "http/http_auth_gssapi_posix_unittest.cc",
       "http/mock_gssapi_library_posix.cc",
       "http/mock_gssapi_library_posix.h",
@@ -5583,11 +5586,11 @@ test("net_unittests") {
     ]
   }
 
-  if (!enable_built_in_dns) {
-    sources -= [
-      "dns/address_sorter_posix_unittest.cc",
-      "dns/address_sorter_unittest.cc",
-    ]
+  if (enable_built_in_dns) {
+    sources += [ "dns/address_sorter_unittest.cc" ]
+    if (is_posix || is_fuchsia) {
+      sources += [ "dns/address_sorter_posix_unittest.cc" ]
+    }
   }
 
   if (use_v8_in_net) {
