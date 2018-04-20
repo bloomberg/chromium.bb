@@ -194,7 +194,6 @@ void IdleSpellCheckCallback::invoke(IdleDeadline* deadline) {
 }
 
 void IdleSpellCheckCallback::DocumentAttached(Document* document) {
-  SetNeedsColdModeInvocation();
   SetContext(document);
 }
 
