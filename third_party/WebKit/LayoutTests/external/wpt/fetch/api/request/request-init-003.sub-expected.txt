@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS Check request values when initialized from Request
+PASS Check request values when initialized from Request and init values
+FAIL Check request values when initialized from url string assert_equals: Check credentials attribute expected "same-origin" but got "omit"
+PASS Check request values when initialized from url and init values
+Harness: the test ran to completion.
+
