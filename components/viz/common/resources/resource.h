@@ -13,7 +13,6 @@
 #include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
-#include "components/viz/common/resources/resource_texture_hint.h"
 #include "components/viz/common/resources/resource_type.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -69,7 +68,6 @@ struct VIZ_COMMON_EXPORT Resource {
 
   Resource(const gfx::Size& size,
            Origin origin,
-           ResourceTextureHint hint,
            ResourceType type,
            ResourceFormat format,
            const gfx::ColorSpace& color_space);
@@ -177,9 +175,6 @@ struct VIZ_COMMON_EXPORT Resource {
   GLenum filter = GL_LINEAR;
   // The current min filter for GpuMemoryBuffer- and texture-backed resources.
   GLenum min_filter = GL_LINEAR;
-  // A hint for texture-backed resources about how the resource will be used,
-  // that dictates how it should be allocated/used.
-  ResourceTextureHint hint = ResourceTextureHint::kDefault;
   // The type of backing for the resource (such as gpu vs software).
   ResourceType type = ResourceType::kBitmap;
   // This is the the actual format of the underlying GpuMemoryBuffer, if any,

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "components/viz/common/resources/resource_format.h"
-#include "components/viz/common/resources/resource_texture_hint.h"
 #include "components/viz/service/viz_service_export.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/color_space.h"

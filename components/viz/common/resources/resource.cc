@@ -12,7 +12,6 @@ namespace internal {
 
 Resource::Resource(const gfx::Size& size,
                    Origin origin,
-                   ResourceTextureHint hint,
                    ResourceType type,
                    ResourceFormat format,
                    const gfx::ColorSpace& color_space)
@@ -28,7 +27,6 @@ Resource::Resource(const gfx::Size& size,
 #endif
       size(size),
       origin(origin),
-      hint(hint),
       type(type),
       format(format),
       color_space(color_space) {

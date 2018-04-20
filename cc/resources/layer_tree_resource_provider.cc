@@ -320,7 +320,6 @@ void LayerTreeResourceProvider::ReceiveReturnsFromParent(
 
 viz::ResourceId LayerTreeResourceProvider::CreateGpuTextureResource(
     const gfx::Size& size,
-    viz::ResourceTextureHint hint,
     viz::ResourceFormat format,
     const gfx::ColorSpace& color_space) {
   DCHECK(compositor_context_provider_);
@@ -334,7 +333,7 @@ viz::ResourceId LayerTreeResourceProvider::CreateGpuTextureResource(
   viz::ResourceId id = next_id_++;
   viz::internal::Resource* resource =
       InsertResource(id, viz::internal::Resource(
-                             size, viz::internal::Resource::INTERNAL, hint,
+                             size, viz::internal::Resource::INTERNAL,
                              viz::ResourceType::kTexture, format, color_space));
   GLES2Interface* gl = ContextGL();
   DCHECK(gl);

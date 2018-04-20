@@ -57,7 +57,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
       const std::vector<viz::ReturnedResource>& transferable_resources);
 
   viz::ResourceId CreateGpuTextureResource(const gfx::Size& size,
-                                           viz::ResourceTextureHint hint,
                                            viz::ResourceFormat format,
                                            const gfx::ColorSpace& color_space);
 
