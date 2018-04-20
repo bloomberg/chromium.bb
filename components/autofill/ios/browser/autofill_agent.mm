@@ -619,7 +619,7 @@ void GetFormAndField(autofill::FormData* form,
     return;
 
   // Return early if the page is not processed yet.
-  if (pageProcessed_)
+  if (!pageProcessed_)
     return;
 
   // Return early if |params| is not complete.
