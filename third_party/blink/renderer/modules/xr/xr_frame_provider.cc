@@ -84,8 +84,7 @@ std::unique_ptr<TransformationMatrix> getPoseMatrix(
 
 }  // namespace
 
-XRFrameProvider::XRFrameProvider(XRDevice* device)
-    : device_(device), last_has_focus_(device->HasDeviceAndFrameFocus()) {}
+XRFrameProvider::XRFrameProvider(XRDevice* device) : device_(device) {}
 
 void XRFrameProvider::BeginExclusiveSession(XRSession* session,
                                             ScriptPromiseResolver* resolver) {
@@ -146,20 +145,6 @@ void XRFrameProvider::OnPresentComplete(
   }
 
   pending_exclusive_session_resolver_ = nullptr;
-}
-
-void XRFrameProvider::OnFocusChanged() {
-  bool focus = device_->HasDeviceAndFrameFocus();
-
-  // If we are gaining focus, schedule a frame.
-  if (focus && !last_has_focus_) {
-    if (exclusive_session_) {
-      ScheduleExclusiveFrame();
-    } else if (requesting_sessions_.size() > 0) {
-      ScheduleNonExclusiveFrame();
-    }
-  }
-  last_has_focus_ = focus;
 }
 
 void XRFrameProvider::OnPresentationProviderConnectionError() {
@@ -311,11 +296,6 @@ void XRFrameProvider::ProcessScheduledFrame(double timestamp) {
 
   TRACE_EVENT1("gpu", "XRFrameProvider::ProcessScheduledFrame", "frame",
                frame_id_);
-
-  if (!device_->HasDeviceAndFrameFocus() && !exclusive_session_) {
-    return;  // Not currently focused, so we won't expose poses (except to
-             // exclusive sessions).
-  }
 
   if (exclusive_session_can_send_frames_) {
     if (frame_pose_ && frame_pose_->input_state.has_value()) {

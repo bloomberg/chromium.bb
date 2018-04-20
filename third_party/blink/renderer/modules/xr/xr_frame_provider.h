@@ -39,7 +39,6 @@ class XRFrameProvider final
   void UpdateWebGLLayerViewports(XRWebGLLayer*);
 
   void Dispose();
-  void OnFocusChanged();
 
   virtual void Trace(blink::Visitor*);
 
@@ -89,7 +88,6 @@ class XRFrameProvider final
   bool vsync_connection_failed_ = false;
 
   base::Optional<gpu::MailboxHolder> buffer_mailbox_holder_;
-  bool last_has_focus_ = false;
 };
 
 }  // namespace blink
