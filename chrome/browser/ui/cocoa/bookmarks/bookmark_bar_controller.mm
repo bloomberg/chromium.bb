@@ -386,7 +386,7 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
 
   [pulsingButton_ setPulseIsStuckOn:YES];
   pulsingBookmarkObserver_.reset(
-      new BookmarkModelObserverForCocoa(bookmarkModel_, ^() {
+      new BookmarkModelObserverForCocoa(bookmarkModel_, ^{
         // Stop pulsing if anything happened to the node.
         [self stopPulsingBookmarkNode];
       }));
