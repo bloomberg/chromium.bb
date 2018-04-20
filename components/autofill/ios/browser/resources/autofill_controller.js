@@ -223,6 +223,15 @@ __gCrWeb.autofill['fillActiveFormField'] = function(data) {
   __gCrWeb.autofill.fillFormField(data, activeElement);
 };
 
+// Remove Autofill styling when control element is edited by the user.
+function controlElementInputListener_(evt) {
+  if (evt.isTrusted) {
+    evt.target.removeAttribute('chrome-autofilled');
+    evt.target.isAutofilled = false;
+    evt.target.removeEventListener('input', controlElementInputListener_);
+  }
+};
+
 /**
  * Fills a number of fields in the same named form for full-form Autofill.
  * Applies Autofill CSS (i.e. yellow background) to filled elements.
@@ -245,15 +254,6 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
     document.head.appendChild(style);
     __gCrWeb.autofill.styleInjected = true;
   }
-
-  // Remove Autofill styling when control element is edited by the user.
-  var controlElementInputListener = function(evt) {
-    if (evt.isTrusted) {
-      evt.target.removeAttribute('chrome-autofilled');
-      evt.target.isAutofilled = false;
-      evt.target.removeEventListener('input', controlElementInputListener);
-    }
-  };
 
   var form = __gCrWeb.form.getFormElementFromIdentifier(data.formName);
   var controlElements = [];
@@ -293,11 +293,11 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
         window.setTimeout(function() {
           __gCrWeb.fill.setInputElementValue(
               _value, _element, function(changed) {
-                if (!changed)
-                  return;
+                if (!changed) return;
                 _element.setAttribute('chrome-autofilled', '');
                 _element.isAutofilled = true;
-                _element.addEventListener('input', controlElementInputListener);
+                _element.addEventListener(
+                    'input', controlElementInputListener_);
               });
         }, _delay);
       })(element, value, delay);
@@ -306,7 +306,6 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
       // TODO(bondd): Handle __gCrWeb.fill.isCheckableElement(element) ==
       // true. |is_checked| is not currently passed in by the caller.
     }
-
   }
 
   if (form) {
@@ -371,7 +370,7 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
                 _element.removeAttribute('chrome-autofilled');
                 _element.isAutofilled = false;
                 _element.removeEventListener(
-                    'input', controlElementInputListener);
+                    'input', controlElementInputListener_);
               });
         }, _delay);
       })(element, value, delay);
@@ -415,8 +414,8 @@ __gCrWeb.autofill.extractNewForms = function(
   /** @type {HTMLCollection} */
   var webForms = document.forms;
 
-  var extractMask = __gCrWeb.fill.EXTRACT_MASK_VALUE |
-      __gCrWeb.fill.EXTRACT_MASK_OPTIONS;
+  var extractMask =
+      __gCrWeb.fill.EXTRACT_MASK_VALUE | __gCrWeb.fill.EXTRACT_MASK_OPTIONS;
   var numFieldsSeen = 0;
   for (var formIndex = 0; formIndex < webForms.length; ++formIndex) {
     /** @type {HTMLFormElement} */
@@ -703,7 +702,7 @@ __gCrWeb.autofill['sanitizedFieldIsEmpty'] = function(value) {
   // Some sites enter values such as ____-____-____-____ or (___)-___-____ in
   // their fields. Check if the field value is empty after the removal of the
   // formatting characters.
-  return __gCrWeb.common.trim(value.replace(/[-_()/|]/g,'')) == '';
- };
+  return __gCrWeb.common.trim(value.replace(/[-_()/|]/g, '')) == '';
+};
 
 }());  // End of anonymous object
