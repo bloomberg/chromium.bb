@@ -782,14 +782,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.
-    // We can allocate a LocalSurfaceId on navigation prior to giving the widget
-    // a size. We should only propagate a LocalSurfaceId here if the
-    // compositor's viewport has a non-empty size.
-    viz::LocalSurfaceId local_surface_id =
-        resize_params->compositor_viewport_pixel_size.IsEmpty() &&
-                !auto_resize_enabled_
-            ? viz::LocalSurfaceId()
-            : view_->GetLocalSurfaceId();
+    viz::LocalSurfaceId local_surface_id = view_->GetLocalSurfaceId();
     if (local_surface_id.is_valid())
       resize_params->local_surface_id = local_surface_id;
   }
