@@ -20,8 +20,8 @@
 # $ third_party/WebKit/Tools/Scripts/run-webkit-tests --additional-driver-f<tab>
 # $ .../run-webkit-tests --additional-driver-flag=--site-per-pro<tab>
 #
-# Blink webkit-patch sub-commands:
-# $ third_party/WebKit/Tools/Scripts/webkit-patch reb<tab>
+# Blink blink_tool.py sub-commands:
+# $ third_party/blink/tools/blink_tool.py reb<tab>
 
 if [ -n "$BASH_SOURCE" ]; then
     # The $BASH_SOURCE variable returns path of current script in bash.
@@ -80,11 +80,11 @@ _layout_test_flag() {
     return 0
 }
 
-_webkit_patch_flag() {
+_blink_tool_flag() {
     local cur targets webkit_scripts_dir
     cur="${COMP_WORDS[COMP_CWORD]}"
-    webkit_scripts_dir=$chrome_source/third_party/WebKit/Tools/Scripts
-    targets=$($webkit_scripts_dir/webkit-patch help | grep '^   [a-z]' | \
+    blink_tools_dir=$chrome_source/third_party/blink/tools
+    targets=$($blink_tools_dir/blink_tool.py help | grep '^   [a-z]' | \
         awk '{ print $1 }')
     COMPREPLY=($(compgen -W "$targets" -- "$cur"))
     return 0
@@ -105,4 +105,4 @@ for gtest_test_executable in $(
 done
 
 complete -F _layout_test_flag run-webkit-tests
-complete -F _webkit_patch_flag webkit-patch
+complete -F _blink_tool_flag blink_tool.py

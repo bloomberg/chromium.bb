@@ -6,9 +6,9 @@ import optparse
 
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.layout_package import bot_test_expectations
-from webkitpy.tool.commands import flaky_tests
-from webkitpy.tool.commands.command_test import CommandsTest
-from webkitpy.tool.mock_tool import MockWebKitPatch
+from blinkpy.tool.commands import flaky_tests
+from blinkpy.tool.commands.command_test import CommandsTest
+from blinkpy.tool.mock_tool import MockBlinkTool
 
 
 class FakeBotTestExpectations(object):
@@ -72,7 +72,7 @@ class FlakyTestsTest(CommandsTest):
 
     def test_integration(self):
         command = flaky_tests.FlakyTests()
-        tool = MockWebKitPatch()
+        tool = MockBlinkTool()
         tool.builders = self.fake_builders_list()
         command.expectations_factory = FakeBotTestExpectationsFactory
         options = optparse.Values({'upload': True})

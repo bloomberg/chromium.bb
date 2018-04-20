@@ -4,8 +4,8 @@
 
 import optparse
 
-from webkitpy.tool.commands.optimize_baselines import OptimizeBaselines
-from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
+from blinkpy.tool.commands.optimize_baselines import OptimizeBaselines
+from blinkpy.tool.commands.rebaseline_unittest import BaseTestCase
 
 
 class TestOptimizeBaselines(BaseTestCase):

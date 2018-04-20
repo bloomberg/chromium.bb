@@ -25,7 +25,7 @@
 from optparse import make_option
 import threading
 
-from webkitpy.tool.commands.command import Command
+from blinkpy.tool.commands.command import Command
 
 
 class AbstractLocalServerCommand(Command):

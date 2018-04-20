@@ -86,15 +86,15 @@ document.
 ## Tooling implementation
 
 This section describes the implications the fallback mechanism has on the
-implementation details of tooling, namely `webkit-patch`. If you are not hacking
-`webkitpy`, you can stop here.
+implementation details of tooling, namely `blink_tool.py`. If you are not
+hacking `blinkpy`, you can stop here.
 
 ### Optimization
 
 We can remove a baseline if it is the same as its fallback. An extreme example
 is that if all platforms have the same result, we can just have a single generic
 baseline. Here is the algorithm used by
-[`webkit-patch optimize-baselines`](../../third_party/WebKit/Tools/Scripts/webkitpy/common/checkout/baseline_optimizer.py)
+[`blink_tool.py optimize-baselines`](../../third_party/WebKit/Tools/Scripts/webkitpy/common/checkout/baseline_optimizer.py)
 to optimize the duplication away.
 
 Notice from the previous section that the virtual and non-virtual parts are two
@@ -123,7 +123,7 @@ not be found for a platform.
 
 ### Rebaseline
 
-The fallback mechanism also affects the rebaseline tool (`webkit-patch
+The fallback mechanism also affects the rebaseline tool (`blink_tool.py
 rebaseline{-cl}`). When asked to rebaseline a test on some platforms, the tool
 downloads results from corresponding try bots and put them into the respective
 platform directories. This is potentially problematic. Because of the fallback
@@ -134,8 +134,8 @@ The solution is to copy the current baselines from the to-be-rebaselined
 platforms to all the platforms that immediately fall back to them (i.e. down one
 level in the fallback tree) before downloading new baselines. This is done in a
 hidden internal command
-[`webkit-patch copy-existing-baselines`](../../third_party/WebKit/Tools/Scripts/webkitpy/tool/commands/copy_existing_baselines.py),
-which is always executed by `webkit-patch rebaseline`.
+[`blink_tool.py copy-existing-baselines`](../../third_party/blink/tools/blinkpy/tool/commands/copy_existing_baselines.py),
+which is always executed by `blink_tool.py rebaseline`.
 
-Finally, `webkit-patch rebaseline{-cl}` also does optimization in the end by
+Finally, `blink_tool.py rebaseline{-cl}` also does optimization in the end by
 default.

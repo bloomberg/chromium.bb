@@ -11,11 +11,11 @@ from webkitpy.common.net.layout_test_results import LayoutTestResults
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port.factory_mock import MockPortFactory
-from webkitpy.tool.commands.rebaseline import (
+from blinkpy.tool.commands.rebaseline import (
     AbstractParallelRebaselineCommand, Rebaseline, RebaselineExpectations,
     TestBaselineSet
 )
-from webkitpy.tool.mock_tool import MockWebKitPatch
+from blinkpy.tool.mock_tool import MockBlinkTool
 
 
 class BaseTestCase(unittest.TestCase):
@@ -25,7 +25,7 @@ class BaseTestCase(unittest.TestCase):
     command_constructor = lambda: None
 
     def setUp(self):
-        self.tool = MockWebKitPatch()
+        self.tool = MockBlinkTool()
         self.command = self.command_constructor()
         self.command._tool = self.tool   # pylint: disable=protected-access
         self.tool.builders = BuilderList({
@@ -154,7 +154,7 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
 
 
 class TestRebaseline(BaseTestCase):
-    """Tests for the webkit-patch rebaseline command.
+    """Tests for the blink_tool.py rebaseline command.
 
     Also tests some common behaviours of all rebaseline commands.
     """
@@ -601,7 +601,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
 
 
 class TestRebaselineExecute(BaseTestCase):
-    """Tests for the main execute function of the webkit-patch rebaseline command."""
+    """Tests for the main execute function of the blink_tool.py rebaseline command."""
 
     command_constructor = Rebaseline
 
@@ -689,7 +689,7 @@ class TestRebaselineExecute(BaseTestCase):
 
 
 class TestRebaselineExpectations(BaseTestCase):
-    """Tests for the webkit-patch rebaseline-expectations command."""
+    """Tests for the blink_tool.py rebaseline-expectations command."""
 
     command_constructor = RebaselineExpectations
 
@@ -976,7 +976,7 @@ class TestRebaselineExpectations(BaseTestCase):
 class TestBaselineSetTest(unittest.TestCase):
 
     def setUp(self):
-        host = MockWebKitPatch()
+        host = MockBlinkTool()
         host.port_factory = MockPortFactory(host)
         port = host.port_factory.get()
         base_dir = port.layout_tests_dir()

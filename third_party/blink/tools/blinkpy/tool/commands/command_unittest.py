@@ -30,7 +30,7 @@ import optparse
 import unittest
 
 from webkitpy.common.system.output_capture import OutputCapture
-from webkitpy.tool.commands.command import Command
+from blinkpy.tool.commands.command import Command
 
 
 class TrivialCommand(Command):

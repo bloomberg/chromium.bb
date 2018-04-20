@@ -6,8 +6,8 @@ import optparse
 
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.output_capture import OutputCapture
-from webkitpy.tool.commands.rebaseline_test import RebaselineTest
-from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
+from blinkpy.tool.commands.rebaseline_test import RebaselineTest
+from blinkpy.tool.commands.rebaseline_unittest import BaseTestCase
 
 
 class TestRebaselineTest(BaseTestCase):

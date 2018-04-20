@@ -37,7 +37,7 @@ from webkitpy.common.net.buildbot import Build
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
 from webkitpy.layout_tests.port import base, factory
-from webkitpy.tool.commands.command import Command
+from blinkpy.tool.commands.command import Command
 
 _log = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class AbstractRebaseliningCommand(Command):
     no_optimize_option = optparse.make_option(
         '--no-optimize', dest='optimize', action='store_false', default=True,
         help=('Do not optimize (de-duplicate) the expectations after rebaselining '
-              '(default is to de-dupe automatically). You can use "webkit-patch '
+              '(default is to de-dupe automatically). You can use "blink_tool.py '
               'optimize-baselines" to optimize separately.'))
     platform_options = factory.platform_options(use_globs=True)
     results_directory_option = optparse.make_option(
@@ -262,7 +262,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return set(builders_to_fallback_paths)
 
     def _rebaseline_commands(self, test_baseline_set, options):
-        path_to_webkit_patch = self._tool.path()
+        path_to_blink_tool = self._tool.path()
         cwd = self._tool.git().checkout_root
         copy_baseline_commands = []
         rebaseline_commands = []
@@ -295,7 +295,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 '--port-name', port_name,
             ])
 
-            copy_command = [self._tool.executable, path_to_webkit_patch, 'copy-existing-baselines-internal'] + args
+            copy_command = [self._tool.executable, path_to_blink_tool, 'copy-existing-baselines-internal'] + args
             copy_baseline_commands.append(tuple([copy_command, cwd]))
 
             args.extend(['--builder', build.builder_name])
@@ -304,7 +304,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if options.results_directory:
                 args.extend(['--results-directory', options.results_directory])
 
-            rebaseline_command = [self._tool.executable, path_to_webkit_patch, 'rebaseline-test-internal'] + args
+            rebaseline_command = [self._tool.executable, path_to_blink_tool, 'rebaseline-test-internal'] + args
             rebaseline_commands.append(tuple([rebaseline_command, cwd]))
 
         return copy_baseline_commands, rebaseline_commands, lines_to_remove
@@ -346,9 +346,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if verbose:
                 args.append('--verbose')
             args.extend(['--suffixes', ','.join(suffixes), test])
-            path_to_webkit_patch = self._tool.path()
+            path_to_blink_tool = self._tool.path()
             cwd = self._tool.git().checkout_root
-            command = [self._tool.executable, path_to_webkit_patch, 'optimize-baselines'] + args
+            command = [self._tool.executable, path_to_blink_tool, 'optimize-baselines'] + args
             optimize_commands.append(tuple([command, cwd]))
 
         return optimize_commands
@@ -360,7 +360,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         # This is so we remove lines for builders that skip this test.
         # For example, Android skips most tests and we don't want to leave
         # stray [ Android ] lines in TestExpectations.
-        # This is only necessary for "webkit-patch rebaseline".
+        # This is only necessary for "blink_tool.py rebaseline".
         for port_name in self._tool.port_factory.all_port_names():
             port = self._tool.port_factory.get(port_name)
             for test in tests:

@@ -473,7 +473,7 @@ class WPTExpectationsUpdater(object):
     def download_text_baselines(self, test_results):
         """Fetches new baseline files for tests that should be rebaselined.
 
-        Invokes `webkit-patch rebaseline-cl` in order to download new baselines
+        Invokes `blink_tool.py rebaseline-cl` in order to download new baselines
         (-expected.txt files) for testharness.js tests that did not crash or
         time out. Then, the platform-specific test is removed from the overall
         failure test dictionary and the resulting dictionary is returned.
@@ -495,10 +495,10 @@ class WPTExpectationsUpdater(object):
         for test in tests_to_rebaseline:
             _log.info('  %s', test)
 
-        webkit_patch = self.finder.path_from_tools_scripts('webkit-patch')
+        blink_tool = self.finder.path_from_blink_tools('blink_tool.py')
         self.host.executive.run_command([
             'python',
-            webkit_patch,
+            blink_tool,
             'rebaseline-cl',
             '--verbose',
             '--no-trigger-jobs',

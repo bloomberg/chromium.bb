@@ -97,17 +97,17 @@ platforms.
 
 The recommended way to rebaseline for a currently-in-progress CL is to use
 results from try jobs, by using the command-tool
-`third_party/WebKit/Tools/Scripts/webkit-patch rebaseline-cl`:
+`third_party/blink/tools/blink_tool.py rebaseline-cl`:
 
 1. First, upload a CL.
-2. Trigger try jobs by running `webkit-patch rebaseline-cl`. This should
+2. Trigger try jobs by running `blink_tool.py rebaseline-cl`. This should
    trigger jobs on
    [tryserver.blink](https://build.chromium.org/p/tryserver.blink/builders).
 3. Wait for all try jobs to finish.
-4. Run `webkit-patch rebaseline-cl` again to fetch new baselines.
+4. Run `blink_tool.py rebaseline-cl` again to fetch new baselines.
    By default, this will download new baselines for any failing tests
    in the try jobs.
-   (Run `webkit-patch rebaseline-cl --help` for more specific options.)
+   (Run `blink_tool.py rebaseline-cl --help` for more specific options.)
 5. Commit the new baselines and upload a new patch.
 
 This way, the new baselines can be reviewed along with the changes, which helps
@@ -118,7 +118,7 @@ is no period of time when the layout test results are ignored.
 
 ### Rebaselining with try jobs
 
-The tests which `webkit-patch rebaseline-cl` tries to download new baselines for
+The tests which `blink_tool.py rebaseline-cl` tries to download new baselines for
 depends on its arguments.
 
 * By default, it tries to download all baselines for tests that failed in the
@@ -137,7 +137,7 @@ depends on its arguments.
    `NeedsManualRebaseline` and comment out the flaky line so that your patch can
    land without turning the tree red. If the test is not in TestExpectations,
    you can add a `[ Rebaseline ]` line to TestExpectations.
-2. Run `third_party/WebKit/Tools/Scripts/webkit-patch rebaseline-expectations`
+2. Run `third_party/blink/tools/blink_tool.py rebaseline-expectations`
 3. Post the patch created in step 2 for review.
 
 ## Kinds of expectations files

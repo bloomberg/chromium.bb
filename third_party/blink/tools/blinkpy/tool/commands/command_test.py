@@ -30,14 +30,14 @@ import optparse
 import unittest
 
 from webkitpy.common.system.output_capture import OutputCapture
-from webkitpy.tool.mock_tool import MockWebKitPatch
+from blinkpy.tool.mock_tool import MockBlinkTool
 
 
 class CommandsTest(unittest.TestCase):
 
     def assert_execute_outputs(
             self, command, args=None, expected_stdout='', expected_stderr='',
-            expected_exception=None, expected_logs=None, options=optparse.Values(), tool=MockWebKitPatch()):
+            expected_exception=None, expected_logs=None, options=optparse.Values(), tool=MockBlinkTool()):
         args = args or []
         options.blocks = None
         options.cc = 'MOCK cc'

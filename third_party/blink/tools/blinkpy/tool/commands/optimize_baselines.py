@@ -5,7 +5,7 @@
 import logging
 
 from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
-from webkitpy.tool.commands.rebaseline import AbstractRebaseliningCommand
+from blinkpy.tool.commands.rebaseline import AbstractRebaseliningCommand
 
 
 _log = logging.getLogger(__name__)

@@ -31,9 +31,10 @@
 import math
 import optparse
 
+from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.views.metered_stream import MeteredStream
-from webkitpy.tool import grammar
+from blinkpy.tool import grammar
 
 
 NUM_SLOW_TESTS_TO_LOG = 10

@@ -28,7 +28,7 @@
 
 import optparse
 
-from webkitpy.tool.commands.command import Command
+from blinkpy.tool.commands.command import Command
 
 
 class HelpCommand(Command):

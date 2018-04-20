@@ -36,10 +36,10 @@ import os
 import signal
 import sys
 
-import webkitpy.common.version_check
-
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
+from webkitpy.common import version_check  # pylint: disable=unused-import
 from webkitpy.common.system.log_utils import configure_logging
-from webkitpy.tool.webkit_patch import WebKitPatch
+from blinkpy.tool.blink_tool import BlinkTool
 
 # A StreamWriter will by default try to encode all objects passed
 # to write(), so when passed a raw string already encoded as utf8,
@@ -76,7 +76,7 @@ def main():
     else:
         logging_level = logging.INFO
     configure_logging(logging_level=logging_level)
-    WebKitPatch(os.path.abspath(__file__)).main()
+    BlinkTool(os.path.abspath(__file__)).main()
 
 
 if __name__ == "__main__":

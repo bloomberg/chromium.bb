@@ -13,9 +13,9 @@ from webkitpy.common.net.git_cl_mock import MockGitCL
 from webkitpy.common.net.layout_test_results import LayoutTestResults
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
-from webkitpy.tool.commands.rebaseline import TestBaselineSet
-from webkitpy.tool.commands.rebaseline_cl import RebaselineCL
-from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
+from blinkpy.tool.commands.rebaseline import TestBaselineSet
+from blinkpy.tool.commands.rebaseline_cl import RebaselineCL
+from blinkpy.tool.commands.rebaseline_unittest import BaseTestCase
 
 
 class RebaselineCLTest(BaseTestCase, LoggingTestCase):
@@ -193,7 +193,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO:   MOCK Try Mac\n',
             'INFO:   MOCK Try Win\n',
             'INFO: Once all pending try jobs have finished, please re-run\n'
-            'webkit-patch rebaseline-cl to fetch new baselines.\n'
+            'blink_tool.py rebaseline-cl to fetch new baselines.\n'
         ])
 
     def test_execute_no_try_jobs_started_and_no_trigger_jobs(self):
@@ -223,7 +223,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO: Triggering try jobs:\n',
             'INFO:   MOCK Try Linux\n',
             'INFO: Once all pending try jobs have finished, please re-run\n'
-            'webkit-patch rebaseline-cl to fetch new baselines.\n',
+            'blink_tool.py rebaseline-cl to fetch new baselines.\n',
         ])
 
     def test_execute_with_unfinished_jobs(self):
@@ -400,7 +400,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO:   MOCK Try Linux\n',
             'INFO:   MOCK Try Win\n',
             'INFO: Once all pending try jobs have finished, please re-run\n'
-            'webkit-patch rebaseline-cl to fetch new baselines.\n',
+            'blink_tool.py rebaseline-cl to fetch new baselines.\n',
         ])
 
     def test_execute_missing_results_with_no_fill_missing_prompts(self):

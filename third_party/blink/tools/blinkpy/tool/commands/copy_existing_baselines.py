@@ -7,7 +7,7 @@ import logging
 from webkitpy.common.memoized import memoized
 from webkitpy.layout_tests.models.test_expectations import SKIP
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
-from webkitpy.tool.commands.rebaseline import AbstractRebaseliningCommand
+from blinkpy.tool.commands.rebaseline import AbstractRebaseliningCommand
 
 _log = logging.getLogger(__name__)
 

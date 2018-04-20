@@ -27,9 +27,10 @@ import argparse
 import logging
 import webbrowser
 
+from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
 from webkitpy.layout_tests.models.test_expectations import CHROMIUM_BUG_PREFIX
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
-from webkitpy.tool.commands.flaky_tests import FlakyTests
+from blinkpy.tool.commands.flaky_tests import FlakyTests
 
 _log = logging.getLogger(__name__)
 

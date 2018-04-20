@@ -30,13 +30,14 @@ import logging
 import math
 import time
 
+from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
 from webkitpy.common import message_pool
 from webkitpy.layout_tests.controllers import single_test_runner
 from webkitpy.layout_tests.models.test_run_results import TestRunResults
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_results
-from webkitpy.tool import grammar
+from blinkpy.tool import grammar
 
 _log = logging.getLogger(__name__)
 

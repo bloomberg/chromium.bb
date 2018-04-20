@@ -4,8 +4,8 @@
 
 import optparse
 
-from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
-from webkitpy.tool.commands.copy_existing_baselines import CopyExistingBaselines
+from blinkpy.tool.commands.rebaseline_unittest import BaseTestCase
+from blinkpy.tool.commands.copy_existing_baselines import CopyExistingBaselines
 
 
 class TestCopyExistingBaselines(BaseTestCase):

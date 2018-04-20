@@ -135,7 +135,7 @@ def parse_args(args):
                 '--add-platform-exceptions',
                 action='callback',
                 callback=deprecate,
-                help=('Deprecated. Use "webkit-patch rebaseline*" instead.')),
+                help=('Deprecated. Use "blink_tool.py rebaseline*" instead.')),
             optparse.make_option(
                 '--additional-driver-flag',
                 '--additional-drt-flag',
@@ -197,7 +197,7 @@ def parse_args(args):
                 '--new-baseline',
                 action='callback',
                 callback=deprecate,
-                help=('Deprecated. Use "webkit-patch rebaseline*" instead.')),
+                help=('Deprecated. Use "blink_tool.py rebaseline*" instead.')),
             optparse.make_option(
                 '--new-flag-specific-baseline',
                 action='callback',
