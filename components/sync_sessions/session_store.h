@@ -134,18 +134,14 @@ class SessionStore {
 
   const SessionInfo& local_session_info() const { return local_session_info_; }
 
-  // Converts the in-memory model (SyncedSessionTracker) of the local session to
-  // sync protos.
-  std::unique_ptr<syncer::DataBatch> GetLocalSessionDataForKeys(
+  // Converts the in-memory model (SyncedSessionTracker) of sessions to sync
+  // protos.
+  std::unique_ptr<syncer::DataBatch> GetSessionDataForKeys(
       const std::vector<std::string>& storage_keys) const;
 
-  // Returns all known local session entities, generated from the in-memory
-  // model (SyncedSessionTracker).
-  // TODO(crbug.com/681921): Implement the retrieval of foreign sessions too.
-  // Right now, the issue is that SyncedSessionTracker does *NOT* maintain a
-  // mapping between tab IDs and tab node IDs for foreign sessions, and hence
-  // it is impossible to compute storage keys.
-  std::unique_ptr<syncer::DataBatch> GetAllLocalSessionData() const;
+  // Returns all known session entities, local and foreign, generated from the
+  // in-memory model (SyncedSessionTracker).
+  std::unique_ptr<syncer::DataBatch> GetAllSessionData() const;
 
   // Write API. WriteBatch instances must not outlive this store and must be
   // committed prior to destruction. Besides, more than one uncommitted

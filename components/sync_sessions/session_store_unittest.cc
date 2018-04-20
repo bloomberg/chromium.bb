@@ -96,14 +96,9 @@ class MockFactoryCompletionCallback {
   std::unique_ptr<SessionStore> store_;
 };
 
-testing::Matcher<const EntityData&> SpecificsMatchHeader(
-    testing::Matcher<std::string> session_tag,
-    const std::vector<int>& window_ids,
-    const std::vector<int>& tab_ids) {
-  return testing::Field(
-      &EntityData::specifics,
-      testing::Property(&sync_pb::EntitySpecifics::session,
-                        MatchesHeader(session_tag, window_ids, tab_ids)));
+MATCHER_P(EntityDataHasSpecifics, session_specifics_matcher, "") {
+  return session_specifics_matcher.MatchAndExplain(arg.specifics.session(),
+                                                   result_listener);
 }
 
 std::map<std::string, EntityData> BatchToEntityDataMap(
@@ -289,18 +284,18 @@ TEST_F(SessionStoreTest, ShouldCreateLocalSession) {
   const std::string header_storage_key =
       SessionStore::GetHeaderStorageKeyForTest(kLocalSessionTag);
 
-  EXPECT_THAT(
-      BatchToEntityDataMap(session_store()->GetAllLocalSessionData()),
-      ElementsAre(Pair(header_storage_key,
-                       SpecificsMatchHeader(kLocalSessionTag, /*window_ids=*/{},
-                                            /*tab_ids=*/{}))));
-  // Verify that GetLocalSessionDataForKeys() returns the header entity.
-  EXPECT_THAT(
-      BatchToEntityDataMap(
-          session_store()->GetLocalSessionDataForKeys({header_storage_key})),
-      ElementsAre(Pair(header_storage_key,
-                       SpecificsMatchHeader(kLocalSessionTag, /*window_ids=*/{},
-                                            /*tab_ids=*/{}))));
+  EXPECT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
+              ElementsAre(Pair(header_storage_key,
+                               EntityDataHasSpecifics(MatchesHeader(
+                                   kLocalSessionTag, /*window_ids=*/{},
+                                   /*tab_ids=*/{})))));
+  // Verify that GetSessionDataForKeys() returns the header entity.
+  EXPECT_THAT(BatchToEntityDataMap(
+                  session_store()->GetSessionDataForKeys({header_storage_key})),
+              ElementsAre(Pair(header_storage_key,
+                               EntityDataHasSpecifics(MatchesHeader(
+                                   kLocalSessionTag, /*window_ids=*/{},
+                                   /*tab_ids=*/{})))));
 
   // Verify the underlying storage does NOT contain the data.
   EXPECT_THAT(ReadAllPersistedDataFrom(underlying_store_.get()), IsEmpty());
@@ -361,6 +356,16 @@ TEST_F(SessionStoreTest, ShouldUpdateTrackerWithForeignData) {
                   SyncedSessionTracker::RAW),
               IsEmpty());
 
+  const std::string header_storage_key =
+      SessionStore::GetHeaderStorageKeyForTest(kForeignSessionTag);
+  const std::string tab_storage_key1 =
+      SessionStore::GetTabStorageKeyForTest(kForeignSessionTag, kTabNodeId1);
+  const std::string tab_storage_key2 =
+      SessionStore::GetTabStorageKeyForTest(kForeignSessionTag, kTabNodeId2);
+  ASSERT_THAT(BatchToEntityDataMap(session_store()->GetSessionDataForKeys(
+                  {header_storage_key, tab_storage_key1, tab_storage_key2})),
+              IsEmpty());
+
   // Populate with data.
   SessionSpecifics header;
   header.set_session_tag(kForeignSessionTag);
@@ -395,6 +400,21 @@ TEST_F(SessionStoreTest, ShouldUpdateTrackerWithForeignData) {
                   SyncedSessionTracker::RAW),
               ElementsAre(MatchesSyncedSession(
                   kForeignSessionTag, {{kWindowId, {kTabId1, kTabId2}}})));
+  EXPECT_THAT(
+      BatchToEntityDataMap(session_store()->GetSessionDataForKeys(
+          {header_storage_key, tab_storage_key1, tab_storage_key2})),
+      UnorderedElementsAre(
+          Pair(header_storage_key,
+               EntityDataHasSpecifics(MatchesHeader(
+                   kForeignSessionTag, {kWindowId}, {kTabId1, kTabId2}))),
+          Pair(tab_storage_key1,
+               EntityDataHasSpecifics(MatchesTab(kForeignSessionTag, kWindowId,
+                                                 kTabId1, kTabNodeId1,
+                                                 /*urls=*/_))),
+          Pair(tab_storage_key2,
+               EntityDataHasSpecifics(MatchesTab(kForeignSessionTag, kWindowId,
+                                                 kTabId2, kTabNodeId2,
+                                                 /*urls=*/_)))));
 }
 
 TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
@@ -412,7 +432,7 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
                   SyncedSessionTracker::RAW),
               IsEmpty());
   // Local session is automatically created.
-  ASSERT_THAT(BatchToEntityDataMap(session_store()->GetAllLocalSessionData()),
+  ASSERT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
               ElementsAre(Pair(local_header_storage_key, _)));
   ASSERT_THAT(ReadAllPersistedDataFrom(underlying_store_.get()), IsEmpty());
 
@@ -488,6 +508,71 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
           SyncedSessionTracker::RAW),
       ElementsAre(MatchesSyncedSession(
           kForeignSessionTag, {{kWindowId, std::vector<int>{kTabId1}}})));
+
+  EXPECT_THAT(BatchToEntityDataMap(restored_store->GetAllSessionData()),
+              UnorderedElementsAre(
+                  Pair(local_header_storage_key, _),
+                  Pair(header_storage_key,
+                       EntityDataHasSpecifics(MatchesHeader(
+                           kForeignSessionTag, {kWindowId}, {kTabId1}))),
+                  Pair(tab_storage_key1,
+                       EntityDataHasSpecifics(MatchesTab(
+                           kForeignSessionTag, kWindowId, kTabId1, kTabNodeId1,
+                           /*urls=*/_)))));
+
+  EXPECT_THAT(BatchToEntityDataMap(session_store()->GetSessionDataForKeys(
+                  {header_storage_key, tab_storage_key1})),
+              UnorderedElementsAre(
+                  Pair(header_storage_key,
+                       EntityDataHasSpecifics(MatchesHeader(
+                           kForeignSessionTag, {kWindowId}, {kTabId1}))),
+                  Pair(tab_storage_key1,
+                       EntityDataHasSpecifics(MatchesTab(
+                           kForeignSessionTag, kWindowId, kTabId1, kTabNodeId1,
+                           /*urls=*/_)))));
+}
+
+TEST_F(SessionStoreTest, ShouldReturnForeignUnmappedTabs) {
+  const std::string kForeignSessionTag = "SomeForeignTag";
+  const int kWindowId = 5;
+  const int kTabId1 = 7;
+  const int kTabNodeId1 = 2;
+
+  const std::string local_header_storage_key =
+      SessionStore::GetHeaderStorageKeyForTest(kLocalSessionTag);
+  const std::string foreign_header_storage_key =
+      SessionStore::GetHeaderStorageKeyForTest(kForeignSessionTag);
+  const std::string foreign_tab_storage_key =
+      SessionStore::GetTabStorageKeyForTest(kForeignSessionTag, kTabNodeId1);
+
+  // Local header entity is present initially.
+  ASSERT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
+              ElementsAre(Pair(local_header_storage_key, _)));
+
+  SessionSpecifics tab1;
+  tab1.set_session_tag(kForeignSessionTag);
+  tab1.set_tab_node_id(kTabNodeId1);
+  tab1.mutable_tab()->set_window_id(kWindowId);
+  tab1.mutable_tab()->set_tab_id(kTabId1);
+  ASSERT_TRUE(SessionStore::AreValidSpecifics(tab1));
+
+  std::unique_ptr<SessionStore::WriteBatch> batch =
+      session_store()->CreateWriteBatch(/*error_handler=*/base::DoNothing());
+  ASSERT_THAT(batch, NotNull());
+  batch->PutAndUpdateTracker(tab1, base::Time::Now());
+  SessionStore::WriteBatch::Commit(std::move(batch));
+
+  EXPECT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
+              UnorderedElementsAre(
+                  Pair(local_header_storage_key, _),
+                  Pair(foreign_header_storage_key,
+                       EntityDataHasSpecifics(MatchesHeader(kForeignSessionTag,
+                                                            /*window_ids=*/{},
+                                                            /*tab_ids=*/{}))),
+                  Pair(foreign_tab_storage_key,
+                       EntityDataHasSpecifics(MatchesTab(
+                           kForeignSessionTag, kWindowId, kTabId1, kTabNodeId1,
+                           /*urls=*/_)))));
 }
 
 }  // namespace

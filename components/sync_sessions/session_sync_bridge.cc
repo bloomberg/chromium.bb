@@ -301,13 +301,12 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
 void SessionSyncBridge::GetData(StorageKeyList storage_keys,
                                 DataCallback callback) {
   DCHECK(syncing_);
-  std::move(callback).Run(
-      syncing_->store->GetLocalSessionDataForKeys(storage_keys));
+  std::move(callback).Run(syncing_->store->GetSessionDataForKeys(storage_keys));
 }
 
 void SessionSyncBridge::GetAllData(DataCallback callback) {
   DCHECK(syncing_);
-  std::move(callback).Run(syncing_->store->GetAllLocalSessionData());
+  std::move(callback).Run(syncing_->store->GetAllSessionData());
 }
 
 std::string SessionSyncBridge::GetClientTag(
