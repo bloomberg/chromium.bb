@@ -103,11 +103,6 @@ static const InterpFilterParams av1_interp_4tap[2] = {
     EIGHTTAP_SMOOTH },
 };
 
-InterpFilterParams av1_get_interp_filter_params(
-    const InterpFilter interp_filter) {
-  return av1_interp_filter_params_list[interp_filter];
-}
-
 InterpFilterParams av1_get_interp_filter_params_with_block_size(
     const InterpFilter interp_filter, const int w) {
   if (w <= 4 &&

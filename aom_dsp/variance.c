@@ -8,19 +8,19 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
 
-#include "aom_ports/mem.h"
 #include "aom/aom_integer.h"
+#include "aom_ports/mem.h"
 
-#include "aom_dsp/variance.h"
 #include "aom_dsp/aom_filter.h"
 #include "aom_dsp/blend.h"
+#include "aom_dsp/variance.h"
 
 #include "./av1_rtcd.h"
 #include "av1/common/filter.h"
@@ -312,29 +312,28 @@ void aom_upsampled_pred_c(uint8_t *comp_pred, int width, int height,
       ref += ref_stride;
     }
   } else {
-    InterpFilterParams filter;
-    filter = av1_get_interp_filter_params(EIGHTTAP_REGULAR);
+    const InterpFilterParams filter =
+        av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
     if (!subpel_y_q3) {
-      const int16_t *kernel;
-      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      const int16_t *kernel =
+          av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
       /*Directly call C version to allow this to work for small (2x2) sizes.*/
       aom_convolve8_horiz_c(ref, ref_stride, comp_pred, width, kernel, 16, NULL,
                             -1, width, height);
     } else if (!subpel_x_q3) {
-      const int16_t *kernel;
-      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      const int16_t *kernel =
+          av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
       /*Directly call C version to allow this to work for small (2x2) sizes.*/
       aom_convolve8_vert_c(ref, ref_stride, comp_pred, width, NULL, -1, kernel,
                            16, width, height);
     } else {
       DECLARE_ALIGNED(16, uint8_t,
                       temp[((MAX_SB_SIZE * 2 + 16) + 16) * MAX_SB_SIZE]);
-      const int16_t *kernel_x;
-      const int16_t *kernel_y;
-      int intermediate_height;
-      kernel_x = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
-      kernel_y = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
-      intermediate_height =
+      const int16_t *kernel_x =
+          av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      const int16_t *kernel_y =
+          av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      const int intermediate_height =
           (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
       assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
       /*Directly call C versions to allow this to work for small (2x2) sizes.*/
@@ -824,18 +823,18 @@ void aom_highbd_upsampled_pred_c(uint16_t *comp_pred, int width, int height,
       ref += ref_stride;
     }
   } else {
-    InterpFilterParams filter;
-    filter = av1_get_interp_filter_params(EIGHTTAP_REGULAR);
+    const InterpFilterParams filter =
+        av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
     if (!subpel_y_q3) {
-      const int16_t *kernel;
-      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      const int16_t *kernel =
+          av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
       /*Directly call C version to allow this to work for small (2x2) sizes.*/
       aom_highbd_convolve8_horiz_c(ref8, ref_stride,
                                    CONVERT_TO_BYTEPTR(comp_pred), width, kernel,
                                    16, NULL, -1, width, height, bd);
     } else if (!subpel_x_q3) {
-      const int16_t *kernel;
-      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      const int16_t *kernel =
+          av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
       /*Directly call C version to allow this to work for small (2x2) sizes.*/
       aom_highbd_convolve8_vert_c(ref8, ref_stride,
                                   CONVERT_TO_BYTEPTR(comp_pred), width, NULL,
@@ -843,12 +842,11 @@ void aom_highbd_upsampled_pred_c(uint16_t *comp_pred, int width, int height,
     } else {
       DECLARE_ALIGNED(16, uint16_t,
                       temp[((MAX_SB_SIZE + 16) + 16) * MAX_SB_SIZE]);
-      const int16_t *kernel_x;
-      const int16_t *kernel_y;
-      int intermediate_height;
-      kernel_x = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
-      kernel_y = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
-      intermediate_height =
+      const int16_t *kernel_x =
+          av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      const int16_t *kernel_y =
+          av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      const int intermediate_height =
           (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
       assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
       /*Directly call C versions to allow this to work for small (2x2) sizes.*/

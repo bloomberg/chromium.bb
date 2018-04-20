@@ -91,12 +91,6 @@ static INLINE const int16_t *av1_get_interp_filter_subpel_kernel(
   return filter_params.filter_ptr + filter_params.taps * subpel;
 }
 
-static INLINE int av1_is_interpolating_filter(
-    const InterpFilter interp_filter) {
-  const InterpFilterParams ip = av1_get_interp_filter_params(interp_filter);
-  return (ip.filter_ptr[ip.taps / 2 - 1] == 128);
-}
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

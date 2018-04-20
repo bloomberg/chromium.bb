@@ -15,16 +15,16 @@
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/aom_filter.h"
+#include "aom_mem/aom_mem.h"
+#include "aom_ports/aom_timer.h"
+#include "aom_ports/mem.h"
+#include "av1/common/filter.h"
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
-#include "aom_dsp/aom_dsp_common.h"
-#include "aom_dsp/aom_filter.h"
-#include "aom_mem/aom_mem.h"
-#include "aom_ports/mem.h"
-#include "aom_ports/aom_timer.h"
-#include "av1/common/filter.h"
 
 namespace {
 
@@ -494,7 +494,7 @@ TEST(ConvolveTest, FiltersWontSaturateWhenAddedPairwise) {
     const InterpKernel *filters =
         (const InterpKernel *)av1_get_interp_filter_kernel(filter);
     const InterpFilterParams filter_params =
-        av1_get_interp_filter_params(filter);
+        av1_get_interp_filter_params_with_block_size(filter, 8);
     if (filter_params.taps != SUBPEL_TAPS) continue;
     for (int i = 0; i < kNumFilters; i++) {
       const int p0 = filters[i][0] + filters[i][1];
@@ -532,7 +532,7 @@ TEST_P(ConvolveTest, MatchesReferenceSubpixelFilter) {
     const InterpKernel *filters =
         (const InterpKernel *)av1_get_interp_filter_kernel(filter);
     const InterpFilterParams filter_params =
-        av1_get_interp_filter_params(filter);
+        av1_get_interp_filter_params_with_block_size(filter, 8);
     if (filter_params.taps != SUBPEL_TAPS) continue;
 
     for (int filter_x = 0; filter_x < kNumFilters; ++filter_x) {
@@ -618,7 +618,7 @@ TEST_P(ConvolveTest, FilterExtremes) {
         const InterpKernel *filters =
             (const InterpKernel *)av1_get_interp_filter_kernel(filter);
         const InterpFilterParams filter_params =
-            av1_get_interp_filter_params(filter);
+            av1_get_interp_filter_params_with_block_size(filter, 8);
         if (filter_params.taps != SUBPEL_TAPS) continue;
         for (int filter_x = 0; filter_x < kNumFilters; ++filter_x) {
           for (int filter_y = 0; filter_y < kNumFilters; ++filter_y) {
@@ -717,7 +717,7 @@ TEST_P(ConvolveTest, DISABLED_Speed) {
       const InterpKernel *filters =
           (const InterpKernel *)av1_get_interp_filter_kernel(filter);
       const InterpFilterParams filter_params =
-          av1_get_interp_filter_params(filter);
+          av1_get_interp_filter_params_with_block_size(filter, 8);
       if (filter_params.taps != SUBPEL_TAPS) continue;
 
       for (int filter_x = 0; filter_x < kNumFilters; ++filter_x) {

@@ -64,9 +64,11 @@ void AV1Convolve2DSrTest::RunCheckOutput(convolve_2d_func test_impl) {
       for (vfilter = EIGHTTAP_REGULAR; vfilter < INTERP_FILTERS_ALL;
            ++vfilter) {
         InterpFilterParams filter_params_x =
-            av1_get_interp_filter_params((InterpFilter)hfilter);
+            av1_get_interp_filter_params_with_block_size((InterpFilter)hfilter,
+                                                         out_w);
         InterpFilterParams filter_params_y =
-            av1_get_interp_filter_params((InterpFilter)vfilter);
+            av1_get_interp_filter_params_with_block_size((InterpFilter)vfilter,
+                                                         out_h);
         for (int do_average = 0; do_average < 1; ++do_average) {
           ConvolveParams conv_params1 =
               get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, 8);
@@ -122,10 +124,6 @@ void AV1Convolve2DSrTest::RunSpeedTest(convolve_2d_func test_impl) {
   int hfilter = EIGHTTAP_REGULAR, vfilter = EIGHTTAP_REGULAR;
   int subx = 0, suby = 0;
 
-  InterpFilterParams filter_params_x =
-      av1_get_interp_filter_params((InterpFilter)hfilter);
-  InterpFilterParams filter_params_y =
-      av1_get_interp_filter_params((InterpFilter)vfilter);
   const int do_average = 0;
   ConvolveParams conv_params2 =
       get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, 8);
@@ -138,6 +136,14 @@ void AV1Convolve2DSrTest::RunSpeedTest(convolve_2d_func test_impl) {
     const int out_w = block_size_wide[block_idx] >> shift;
     const int out_h = block_size_high[block_idx] >> shift;
     const int num_loops = 1000000000 / (out_w + out_h);
+
+    InterpFilterParams filter_params_x =
+        av1_get_interp_filter_params_with_block_size((InterpFilter)hfilter,
+                                                     out_w);
+    InterpFilterParams filter_params_y =
+        av1_get_interp_filter_params_with_block_size((InterpFilter)vfilter,
+                                                     out_h);
+
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
 
@@ -183,9 +189,11 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
   for (hfilter = EIGHTTAP_REGULAR; hfilter < INTERP_FILTERS_ALL; ++hfilter) {
     for (vfilter = EIGHTTAP_REGULAR; vfilter < INTERP_FILTERS_ALL; ++vfilter) {
       InterpFilterParams filter_params_x =
-          av1_get_interp_filter_params((InterpFilter)hfilter);
+          av1_get_interp_filter_params_with_block_size((InterpFilter)hfilter,
+                                                       out_w);
       InterpFilterParams filter_params_y =
-          av1_get_interp_filter_params((InterpFilter)vfilter);
+          av1_get_interp_filter_params_with_block_size((InterpFilter)vfilter,
+                                                       out_h);
       for (int do_average = 0; do_average <= 1; ++do_average) {
         ConvolveParams conv_params1 = get_conv_params_no_round(
             0, do_average, 0, output1, MAX_SB_SIZE, 1, 8);
@@ -333,11 +341,6 @@ void AV1HighbdConvolve2DSrTest::RunSpeedTest(
   subx = 0;
   suby = 0;
 
-  InterpFilterParams filter_params_x =
-      av1_get_interp_filter_params((InterpFilter)hfilter);
-  InterpFilterParams filter_params_y =
-      av1_get_interp_filter_params((InterpFilter)vfilter);
-
   ConvolveParams conv_params =
       get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, bd);
 
@@ -350,6 +353,13 @@ void AV1HighbdConvolve2DSrTest::RunSpeedTest(
     const int out_w = block_size_wide[block_idx] >> shift;
     const int out_h = block_size_high[block_idx] >> shift;
     const int num_loops = 1000000000 / (out_w + out_h);
+
+    InterpFilterParams filter_params_x =
+        av1_get_interp_filter_params_with_block_size((InterpFilter)hfilter,
+                                                     out_w);
+    InterpFilterParams filter_params_y =
+        av1_get_interp_filter_params_with_block_size((InterpFilter)vfilter,
+                                                     out_h);
 
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
@@ -394,9 +404,11 @@ void AV1HighbdConvolve2DSrTest::RunCheckOutput(
       for (vfilter = EIGHTTAP_REGULAR; vfilter < INTERP_FILTERS_ALL;
            ++vfilter) {
         InterpFilterParams filter_params_x =
-            av1_get_interp_filter_params((InterpFilter)hfilter);
+            av1_get_interp_filter_params_with_block_size((InterpFilter)hfilter,
+                                                         out_w);
         InterpFilterParams filter_params_y =
-            av1_get_interp_filter_params((InterpFilter)vfilter);
+            av1_get_interp_filter_params_with_block_size((InterpFilter)vfilter,
+                                                         out_h);
         for (int do_average = 0; do_average < 1; ++do_average) {
           ConvolveParams conv_params1 =
               get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, bd);
@@ -466,9 +478,11 @@ void AV1HighbdJntConvolve2DTest::RunSpeedTest(
   const int out_h = block_size_high[block_idx];
 
   InterpFilterParams filter_params_x =
-      av1_get_interp_filter_params((InterpFilter)hfilter);
+      av1_get_interp_filter_params_with_block_size((InterpFilter)hfilter,
+                                                   out_w);
   InterpFilterParams filter_params_y =
-      av1_get_interp_filter_params((InterpFilter)vfilter);
+      av1_get_interp_filter_params_with_block_size((InterpFilter)vfilter,
+                                                   out_h);
 
   ConvolveParams conv_params =
       get_conv_params_no_round(0, do_average, 0, output, MAX_SB_SIZE, 1, bd);
@@ -523,9 +537,11 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
   for (hfilter = EIGHTTAP_REGULAR; hfilter < INTERP_FILTERS_ALL; ++hfilter) {
     for (vfilter = EIGHTTAP_REGULAR; vfilter < INTERP_FILTERS_ALL; ++vfilter) {
       InterpFilterParams filter_params_x =
-          av1_get_interp_filter_params((InterpFilter)hfilter);
+          av1_get_interp_filter_params_with_block_size((InterpFilter)hfilter,
+                                                       out_w);
       InterpFilterParams filter_params_y =
-          av1_get_interp_filter_params((InterpFilter)vfilter);
+          av1_get_interp_filter_params_with_block_size((InterpFilter)vfilter,
+                                                       out_h);
       for (int do_average = 0; do_average <= 1; ++do_average) {
         ConvolveParams conv_params1 = get_conv_params_no_round(
             0, do_average, 0, output1, MAX_SB_SIZE, 1, bd);
