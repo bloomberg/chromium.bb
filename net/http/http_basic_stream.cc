@@ -61,8 +61,9 @@ int HttpBasicStream::ReadResponseBody(IOBuffer* buf,
 }
 
 void HttpBasicStream::Close(bool not_reusable) {
-  // parser() is null if |this| is created by an orphaned HttpStreamFactory::Job
-  // in which case InitializeStream() will not have been called.
+  // parser() is null if |this| is created by an orphaned
+  // HttpStreamFactoryImpl::Job in which case InitializeStream() will not have
+  // been called.
   if (parser())
     parser()->Close(not_reusable);
 }

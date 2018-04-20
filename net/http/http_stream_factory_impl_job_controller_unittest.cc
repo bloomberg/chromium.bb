@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http/http_stream_factory_job_controller.h"
+#include "net/http/http_stream_factory_impl_job_controller.h"
 
 #include <algorithm>
 #include <list>
@@ -23,8 +23,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session_peer.h"
-#include "net/http/http_stream_factory.h"
-#include "net/http/http_stream_factory_job.h"
+#include "net/http/http_stream_factory_impl.h"
+#include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_test_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
@@ -141,7 +141,7 @@ class MockHttpServerProperties : public HttpServerPropertiesImpl {
 
 class HttpStreamFactoryImplJobPeer {
  public:
-  static void Start(HttpStreamFactory::Job* job,
+  static void Start(HttpStreamFactoryImpl::Job* job,
                     HttpStreamRequest::StreamType stream_type) {
     // Start() is mocked for MockHttpStreamFactoryImplJob.
     // This is the alternative method to invoke real Start() method on Job.
@@ -150,21 +150,21 @@ class HttpStreamFactoryImplJobPeer {
   }
 
   // Returns |num_streams_| of |job|. It should be 0 for non-preconnect Jobs.
-  static int GetNumStreams(const HttpStreamFactory::Job* job) {
+  static int GetNumStreams(const HttpStreamFactoryImpl::Job* job) {
     return job->num_streams_;
   }
 
   // Return SpdySessionKey of |job|.
   static const SpdySessionKey GetSpdySessionKey(
-      const HttpStreamFactory::Job* job) {
+      const HttpStreamFactoryImpl::Job* job) {
     return job->spdy_session_key_;
   }
 
-  static void SetShouldReconsiderProxy(HttpStreamFactory::Job* job) {
+  static void SetShouldReconsiderProxy(HttpStreamFactoryImpl::Job* job) {
     job->should_reconsider_proxy_ = true;
   }
 
-  static void SetStream(HttpStreamFactory::Job* job,
+  static void SetStream(HttpStreamFactoryImpl::Job* job,
                         std::unique_ptr<HttpStream> http_stream) {
     job->stream_ = std::move(http_stream);
   }
@@ -173,17 +173,17 @@ class HttpStreamFactoryImplJobPeer {
 class JobControllerPeer {
  public:
   static bool main_job_is_blocked(
-      HttpStreamFactory::JobController* job_controller) {
+      HttpStreamFactoryImpl::JobController* job_controller) {
     return job_controller->main_job_is_blocked_;
   }
 
   static bool main_job_is_resumed(
-      HttpStreamFactory::JobController* job_controller) {
+      HttpStreamFactoryImpl::JobController* job_controller) {
     return job_controller->main_job_is_resumed_;
   }
 
   static AlternativeServiceInfo GetAlternativeServiceInfoFor(
-      HttpStreamFactory::JobController* job_controller,
+      HttpStreamFactoryImpl::JobController* job_controller,
       const HttpRequestInfo& request_info,
       HttpStreamRequest::Delegate* delegate,
       HttpStreamRequest::StreamType stream_type) {
@@ -253,14 +253,15 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
         &crypto_client_stream_factory_;
     session_context.quic_random = &random_generator_;
     session_ = std::make_unique<HttpNetworkSession>(params, session_context);
-    factory_ = static_cast<HttpStreamFactory*>(session_->http_stream_factory());
+    factory_ =
+        static_cast<HttpStreamFactoryImpl*>(session_->http_stream_factory());
     if (create_job_controller_) {
-      job_controller_ = new HttpStreamFactory::JobController(
+      job_controller_ = new HttpStreamFactoryImpl::JobController(
           factory_, &request_delegate_, session_.get(), &job_factory_,
           request_info, is_preconnect_, false /* is_websocket */,
           enable_ip_based_pooling_, enable_alternative_services_, SSLConfig(),
           SSLConfig());
-      HttpStreamFactoryPeer::AddJobController(factory_, job_controller_);
+      HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller_);
     }
   }
 
@@ -308,8 +309,8 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
   MockHttpStreamRequestDelegate request_delegate_;
   SpdySessionDependencies session_deps_{ProxyResolutionService::CreateDirect()};
   std::unique_ptr<HttpNetworkSession> session_;
-  HttpStreamFactory* factory_ = nullptr;
-  HttpStreamFactory::JobController* job_controller_ = nullptr;
+  HttpStreamFactoryImpl* factory_ = nullptr;
+  HttpStreamFactoryImpl::JobController* job_controller_ = nullptr;
   std::unique_ptr<HttpStreamRequest> request_;
   std::unique_ptr<SequencedSocketData> tcp_data_;
   std::unique_ptr<MockQuicData> quic_data_;
@@ -369,7 +370,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, ProxyResolutionFailsSync) {
 
   base::RunLoop().RunUntilIdle();
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest, ProxyResolutionFailsAsync) {
@@ -406,7 +407,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, ProxyResolutionFailsAsync) {
       ERR_FAILED, &resolver);
   base::RunLoop().RunUntilIdle();
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest, NoSupportedProxies) {
@@ -431,7 +432,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, NoSupportedProxies) {
 
   base::RunLoop().RunUntilIdle();
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 class JobControllerReconsiderProxyAfterErrorTest
@@ -447,18 +448,19 @@ class JobControllerReconsiderProxyAfterErrorTest
     session_ = std::make_unique<HttpNetworkSession>(
         SpdySessionDependencies::CreateSessionParams(&session_deps_),
         SpdySessionDependencies::CreateSessionContext(&session_deps_));
-    factory_ = static_cast<HttpStreamFactory*>(session_->http_stream_factory());
+    factory_ =
+        static_cast<HttpStreamFactoryImpl*>(session_->http_stream_factory());
   }
 
   std::unique_ptr<HttpStreamRequest> CreateJobController(
       const HttpRequestInfo& request_info) {
-    HttpStreamFactory::JobController* job_controller =
-        new HttpStreamFactory::JobController(
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
             factory_, &request_delegate_, session_.get(), &default_job_factory_,
             request_info, is_preconnect_, false /* is_websocket */,
             enable_ip_based_pooling_, enable_alternative_services_, SSLConfig(),
             SSLConfig());
-    HttpStreamFactoryPeer::AddJobController(factory_, job_controller);
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
     return job_controller->Start(&request_delegate_, nullptr, net_log_.bound(),
                                  HttpStreamRequest::HTTP_STREAM,
                                  DEFAULT_PRIORITY);
@@ -467,7 +469,7 @@ class JobControllerReconsiderProxyAfterErrorTest
  private:
   // Use real Jobs so that Job::Resume() is not mocked out. When main job is
   // resumed it will use mock socket data.
-  HttpStreamFactory::JobFactory default_job_factory_;
+  HttpStreamFactoryImpl::JobFactory default_job_factory_;
 };
 
 INSTANTIATE_TEST_CASE_P(
@@ -571,7 +573,7 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
     if (set_alternative_proxy_server)
       EXPECT_THAT(retry_info, Contains(Key("quic://badproxy:99")));
   }
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 // Tests that the main (HTTP) job is started after the alternative
@@ -720,7 +722,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, CancelJobsBeforeBinding) {
   // itself upon completion.
   request_.reset();
   VerifyBrokenAlternateProtocolMapping(request_info, false);
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 // Test that the controller does not create alternative job when the advertised
@@ -749,7 +751,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   request_.reset();
   VerifyBrokenAlternateProtocolMapping(request_info, false);
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
@@ -779,7 +781,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
   base::RunLoop().RunUntilIdle();
   VerifyBrokenAlternateProtocolMapping(request_info, false);
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
@@ -822,7 +824,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   VerifyBrokenAlternateProtocolMapping(request_info, true);
   // Reset the request as it's been successfully served.
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 // Tests that when alt job succeeds, main job is destroyed.
@@ -867,7 +869,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, AltJobSucceedsMainJobDestroyed) {
 
   request_.reset();
   VerifyBrokenAlternateProtocolMapping(request_info, false);
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 // Tests that if alt job succeeds and main job is blocked, main job should be
@@ -909,7 +911,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   request_.reset();
   VerifyBrokenAlternateProtocolMapping(request_info, false);
   // This fails without the fix for crbug.com/678768.
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
@@ -992,7 +994,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Invoke OnRequestComplete() which should not delete |job_controller_| from
   // |factory_| because alt job is yet to finish.
   request_.reset();
-  ASSERT_FALSE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  ASSERT_FALSE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
   EXPECT_FALSE(job_controller_->main_job());
   EXPECT_TRUE(job_controller_->alternative_job());
 
@@ -1004,7 +1006,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // This should not call request_delegate_::OnStreamReady.
   job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
   // Make sure that controller does not leak.
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
@@ -1052,7 +1054,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // |alternative_job| succeeds and should report status to Request.
   VerifyBrokenAlternateProtocolMapping(request_info, false);
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
@@ -1094,7 +1096,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   histogram_tester.ExpectUniqueSample("Net.AlternateServiceFailed", -ERR_FAILED,
                                       1);
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 // Verifies that if the alternative job fails due to a connection change event,
@@ -1136,7 +1138,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   histogram_tester.ExpectUniqueSample("Net.AlternateServiceFailed",
                                       -ERR_NETWORK_CHANGED, 1);
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 // Regression test for crbug/621069.
@@ -1185,7 +1187,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetLoadStateAfterMainJobFailed) {
   job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
 
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest, ResumeMainJobWhenAltJobStalls) {
@@ -1786,8 +1788,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, FailAlternativeProxy) {
   request_info.url = GURL("http://mail.example.org/");
   Initialize(request_info);
   EXPECT_TRUE(test_proxy_delegate()->alternative_proxy_server().is_quic());
-  EXPECT_THAT(session_->proxy_resolution_service()->proxy_retry_info(),
-              IsEmpty());
+  EXPECT_THAT(
+      session_->proxy_resolution_service()->proxy_retry_info(), IsEmpty());
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
@@ -1814,7 +1816,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, FailAlternativeProxy) {
   EXPECT_THAT(session_->proxy_resolution_service()->proxy_retry_info(),
               ElementsAre(Key("quic://myproxy.org:443")));
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 // Verifies that if the alternative proxy server job fails due to network
@@ -1860,7 +1862,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // The alternative proxy server should not be marked as bad.
   EXPECT_TRUE(test_proxy_delegate()->alternative_proxy_server().is_valid());
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
@@ -1910,7 +1912,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   // Reset the request as it's been successfully served.
   request_.reset();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 
   histogram_tester.ExpectUniqueSample("Net.QuicAlternativeProxy.Usage",
                                       2 /* ALTERNATIVE_PROXY_USAGE_LOST_RACE */,
@@ -1937,12 +1939,12 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   job_controller_->Preconnect(1);
   EXPECT_TRUE(job_controller_->main_job());
-  EXPECT_EQ(HttpStreamFactory::PRECONNECT,
+  EXPECT_EQ(HttpStreamFactoryImpl::PRECONNECT,
             job_controller_->main_job()->job_type());
   EXPECT_FALSE(job_controller_->alternative_job());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 // When preconnect to a H2 supported server, only 1 connection is opened.
@@ -1965,14 +1967,14 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Only one job is started.
   EXPECT_TRUE(job_controller_->main_job());
   EXPECT_FALSE(job_controller_->alternative_job());
-  EXPECT_EQ(HttpStreamFactory::PRECONNECT,
+  EXPECT_EQ(HttpStreamFactoryImpl::PRECONNECT,
             job_controller_->main_job()->job_type());
   // There is only 1 connect even though multiple streams were requested.
   EXPECT_EQ(1, HttpStreamFactoryImplJobPeer::GetNumStreams(
                    job_controller_->main_job()));
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 class JobControllerLimitMultipleH2Requests
@@ -2007,13 +2009,13 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
   for (int i = 0; i < kNumRequests; ++i) {
     request_delegates.emplace_back(
         std::make_unique<MockHttpStreamRequestDelegate>());
-    HttpStreamFactory::JobController* job_controller =
-        new HttpStreamFactory::JobController(
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
             factory_, request_delegates[i].get(), session_.get(), &job_factory_,
             request_info, is_preconnect_, false /* is_websocket */,
             enable_ip_based_pooling_, enable_alternative_services_, SSLConfig(),
             SSLConfig());
-    HttpStreamFactoryPeer::AddJobController(factory_, job_controller);
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
     auto request = job_controller->Start(
         request_delegates[i].get(), nullptr, net_log_.bound(),
         HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
@@ -2028,7 +2030,7 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
 
   base::RunLoop().RunUntilIdle();
   requests.clear();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
   TestNetLogEntry::List entries;
   size_t log_position = 0;
   for (int i = 0; i < kNumRequests - 1; ++i) {
@@ -2083,13 +2085,13 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
   for (int i = 0; i < kNumRequests; ++i) {
     request_delegates.push_back(
         std::make_unique<MockHttpStreamRequestDelegate>());
-    HttpStreamFactory::JobController* job_controller =
-        new HttpStreamFactory::JobController(
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
             factory_, request_delegates[i].get(), session_.get(), &job_factory_,
             request_info, is_preconnect_, false /* is_websocket */,
             enable_ip_based_pooling_, enable_alternative_services_, SSLConfig(),
             SSLConfig());
-    HttpStreamFactoryPeer::AddJobController(factory_, job_controller);
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
     auto request = job_controller->Start(
         request_delegates[i].get(), nullptr, net_log_.bound(),
         HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
@@ -2106,12 +2108,12 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
       NetTestSuite::GetScopedTaskEnvironment()->MainThreadHasPendingTask());
   NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
       base::TimeDelta::FromMilliseconds(
-          HttpStreamFactory::Job::kHTTP2ThrottleMs));
+          HttpStreamFactoryImpl::Job::kHTTP2ThrottleMs));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_FALSE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
   requests.clear();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 
   EXPECT_TRUE(hangdata.AllReadDataConsumed());
   for (const auto& data : socket_data) {
@@ -2160,13 +2162,13 @@ TEST_F(JobControllerLimitMultipleH2Requests,
   for (int i = 0; i < kNumRequests; ++i) {
     request_delegates.emplace_back(
         std::make_unique<MockHttpStreamRequestDelegate>());
-    HttpStreamFactory::JobController* job_controller =
-        new HttpStreamFactory::JobController(
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
             factory_, request_delegates[i].get(), session_.get(), &job_factory_,
             request_info, is_preconnect_, false /* is_websocket */,
             enable_ip_based_pooling_, enable_alternative_services_, SSLConfig(),
             SSLConfig());
-    HttpStreamFactoryPeer::AddJobController(factory_, job_controller);
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
     auto request = job_controller->Start(
         request_delegates[i].get(), nullptr, net_log_.bound(),
         HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
@@ -2182,9 +2184,9 @@ TEST_F(JobControllerLimitMultipleH2Requests,
   }
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_FALSE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
   requests.clear();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 
   EXPECT_TRUE(first_socket.AllReadDataConsumed());
   for (const auto& data : socket_data) {
@@ -2214,19 +2216,19 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultiplePreconnects) {
   for (int i = 0; i < kNumRequests; ++i) {
     request_delegates.emplace_back(
         std::make_unique<MockHttpStreamRequestDelegate>());
-    HttpStreamFactory::JobController* job_controller =
-        new HttpStreamFactory::JobController(
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
             factory_, request_delegates[i].get(), session_.get(), &job_factory_,
             request_info, is_preconnect_, false /* is_websocket */,
             enable_ip_based_pooling_, enable_alternative_services_, SSLConfig(),
             SSLConfig());
-    HttpStreamFactoryPeer::AddJobController(factory_, job_controller);
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
     job_controller->Preconnect(1);
     EXPECT_TRUE(job_controller->main_job());
     EXPECT_FALSE(job_controller->alternative_job());
   }
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(JobControllerLimitMultipleH2Requests, H1NegotiatedForFirstRequest) {
@@ -2261,13 +2263,13 @@ TEST_F(JobControllerLimitMultipleH2Requests, H1NegotiatedForFirstRequest) {
   for (int i = 0; i < 2; ++i) {
     request_delegates.emplace_back(
         std::make_unique<MockHttpStreamRequestDelegate>());
-    HttpStreamFactory::JobController* job_controller =
-        new HttpStreamFactory::JobController(
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
             factory_, request_delegates[i].get(), session_.get(), &job_factory_,
             request_info, is_preconnect_, false /* is_websocket */,
             enable_ip_based_pooling_, enable_alternative_services_, SSLConfig(),
             SSLConfig());
-    HttpStreamFactoryPeer::AddJobController(factory_, job_controller);
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
     auto request = job_controller->Start(
         request_delegates[i].get(), nullptr, net_log_.bound(),
         HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
@@ -2281,9 +2283,9 @@ TEST_F(JobControllerLimitMultipleH2Requests, H1NegotiatedForFirstRequest) {
   }
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_FALSE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
   requests.clear();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 
   EXPECT_TRUE(first_socket.AllReadDataConsumed());
   EXPECT_FALSE(second_socket.AllReadDataConsumed());
@@ -2321,14 +2323,14 @@ TEST_F(JobControllerLimitMultipleH2Requests, QuicJobNotThrottled) {
   session_->http_server_properties()->SetSupportsSpdy(server, true);
 
   // Use default job factory so that Resume() is not mocked out.
-  HttpStreamFactory::JobFactory default_job_factory;
-  HttpStreamFactory::JobController* job_controller =
-      new HttpStreamFactory::JobController(
+  HttpStreamFactoryImpl::JobFactory default_job_factory;
+  HttpStreamFactoryImpl::JobController* job_controller =
+      new HttpStreamFactoryImpl::JobController(
           factory_, &request_delegate_, session_.get(), &default_job_factory,
           request_info, is_preconnect_, false /* is_websocket */,
           enable_ip_based_pooling_, enable_alternative_services_, SSLConfig(),
           SSLConfig());
-  HttpStreamFactoryPeer::AddJobController(factory_, job_controller);
+  HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
   request_ =
       job_controller->Start(&request_delegate_, nullptr, net_log_.bound(),
                             HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
@@ -2414,16 +2416,17 @@ class HttpStreamFactoryImplJobControllerPreconnectTest
     session_deps_.http_server_properties =
         std::make_unique<MockHttpServerProperties>();
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-    factory_ = static_cast<HttpStreamFactory*>(session_->http_stream_factory());
+    factory_ =
+        static_cast<HttpStreamFactoryImpl*>(session_->http_stream_factory());
     request_info_.method = "GET";
     request_info_.url = GURL("https://www.example.com");
-    job_controller_ = new HttpStreamFactory::JobController(
+    job_controller_ = new HttpStreamFactoryImpl::JobController(
         factory_, &request_delegate_, session_.get(), &job_factory_,
         request_info_, /* is_preconnect = */ true,
         /* is_websocket = */ false,
         /* enable_ip_based_pooling = */ true,
         /* enable_alternative_services = */ true, SSLConfig(), SSLConfig());
-    HttpStreamFactoryPeer::AddJobController(factory_, job_controller_);
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller_);
   }
 
  protected:
@@ -2466,7 +2469,7 @@ TEST_P(HttpStreamFactoryImplJobControllerPreconnectTest,
       (int)actual_num_connects,
       HttpStreamFactoryImplJobPeer::GetNumStreams(job_controller_->main_job()));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 // Test that GetAlternativeServiceInfoFor will include a list of advertised
