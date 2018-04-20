@@ -425,6 +425,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/integerstatequery.html',
         ['passthrough', 'opengl'], bug=602688)
 
+    # Passthrough command decoder / OpenGL / Windows
+    self.Fail('deqp/functional/gles3/fbocompleteness.html',
+        ['win', 'passthrough', 'opengl'], bug=835364)
+    self.Flaky('conformance/renderbuffers/' +
+        'depth-renderbuffer-initialization.html',
+        ['win', 'passthrough', 'opengl'], bug=835364)
+
     # These Transform Feedback tests seem flaky on ANGLE/GL with passthrough.
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
         ['passthrough', 'opengl'], bug=832238)
