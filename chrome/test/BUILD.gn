@@ -3230,6 +3230,7 @@ test("unit_tests") {
     ]
     deps += [
       "//ash:test_support_with_content",
+      "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/resources",
       "//ash/strings",
     ]

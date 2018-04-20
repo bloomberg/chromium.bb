@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"

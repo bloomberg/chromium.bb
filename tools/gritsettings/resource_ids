@@ -290,8 +290,11 @@
   "ash/components/resources/ash_components_resources.grd": {
     "structures": [24250],
   },
+  "ash/public/cpp/resources/ash_public_unscaled_resources.grd": {
+    "includes": [24260],
+  },
   "ash/resources/ash_resources.grd": {
-    "structures": [24260],
+    "structures": [24280],
   },
 
   "chromecast/browser/cast_browser_resources.grd": {
