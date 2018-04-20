@@ -23,12 +23,13 @@
 namespace web {
 namespace {
 
-// Posts |callback| to run on IO Thread, this is needed because
+// Posts a task to run |block| on IO Thread. This is needed because
 // WKHTTPCookieStore executes callbacks on the main thread, while
 // SystemCookieStore should operate on IO thread.
-void RunSystemCookieCallbackOnIOThread(base::OnceClosure callback) {
-  DCHECK(!callback.is_null());
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, std::move(callback));
+void RunBlockOnIOThread(ProceduralBlock block) {
+  DCHECK(block != nil);
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
+                           base::BindBlockArc(block));
 }
 
 // Returns wether |cookie| should be included for queries about |url|.
@@ -111,12 +112,12 @@ void WKHTTPSystemCookieStore::DeleteCookieAsync(NSHTTPCookie* cookie,
       web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
         [cookie_store_ deleteCookie:block_cookie
                   completionHandler:^{
-                    RunSystemCookieCallbackOnIOThread(base::BindBlockArc(^{
+                    RunBlockOnIOThread(^{
                       if (weak_time_manager)
                         weak_time_manager->DeleteCreationTime(block_cookie);
                       if (!shared_callback.is_null())
                         std::move(shared_callback).Run();
-                    }));
+                    });
                   }];
       }));
 }
@@ -139,7 +140,7 @@ void WKHTTPSystemCookieStore::SetCookieAsync(
         [cookie_store_
                     setCookie:block_cookie
             completionHandler:^{
-              RunSystemCookieCallbackOnIOThread(base::BindBlockArc(^{
+              RunBlockOnIOThread(^{
                 if (weak_time_manager) {
                   weak_time_manager->SetCreationTime(
                       block_cookie,
@@ -147,7 +148,7 @@ void WKHTTPSystemCookieStore::SetCookieAsync(
                 }
                 if (!shared_callback.is_null())
                   std::move(shared_callback).Run();
-              }));
+              });
             }];
       }));
 }
@@ -160,11 +161,11 @@ void WKHTTPSystemCookieStore::ClearStoreAsync(SystemCookieCallback callback) {
       web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
         [cookie_store_ getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
           ProceduralBlock completionHandler = ^{
-            RunSystemCookieCallbackOnIOThread(base::BindBlockArc(^{
+            RunBlockOnIOThread(^{
               if (weak_time_manager)
                 weak_time_manager->Clear();
               std::move(shared_callback).Run();
-            }));
+            });
           };
 
           // If there are no cookies to clear, immediately invoke the
@@ -208,7 +209,7 @@ void WKHTTPSystemCookieStore::RunSystemCookieCallbackForCookies(
   NSArray* block_cookies = cookies;
   __block net::SystemCookieStore::SystemCookieCallbackForCookies
       shared_callback = std::move(callback);
-  RunSystemCookieCallbackOnIOThread(base::BindBlockArc(^{
+  RunBlockOnIOThread(^{
     if (weak_time_manager) {
       NSArray* result = [block_cookies
           sortedArrayUsingFunction:net::SystemCookieStore::CompareCookies
@@ -217,7 +218,7 @@ void WKHTTPSystemCookieStore::RunSystemCookieCallbackForCookies(
     } else {
       std::move(shared_callback).Run(block_cookies);
     }
-  }));
+  });
 }
 
 }  // namespace web
