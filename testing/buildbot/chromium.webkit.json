@@ -4,9 +4,6 @@
   "WebKit Linux Trusty": {
     "isolated_scripts": [
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -32,8 +29,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--debug",
-          "--zero-tests-executed-ok"
+          "--debug"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -61,11 +57,10 @@
       {
         "args": [
           "--additional-expectations",
-          "--enable-sanitizer",
-          "--time-out-ms",
-          "--zero-tests-executed-ok",
           "../../third_party/WebKit/LayoutTests/ASANExpectations",
-          "48000"
+          "--time-out-ms",
+          "48000",
+          "--enable-sanitizer"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -93,11 +88,10 @@
       {
         "args": [
           "--additional-expectations",
-          "--enable-leak-detection",
-          "--time-out-ms",
-          "--zero-tests-executed-ok",
           "../../third_party/WebKit/LayoutTests/LeakExpectations",
-          "48000"
+          "--time-out-ms",
+          "48000",
+          "--enable-leak-detection"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -125,11 +119,10 @@
       {
         "args": [
           "--additional-expectations",
-          "--enable-sanitizer",
-          "--time-out-ms",
-          "--zero-tests-executed-ok",
           "../../third_party/WebKit/LayoutTests/MSANExpectations",
-          "66000"
+          "--time-out-ms",
+          "66000",
+          "--enable-sanitizer"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -158,9 +151,6 @@
   "WebKit Mac10.10": {
     "isolated_scripts": [
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -186,9 +176,6 @@
   "WebKit Mac10.11": {
     "isolated_scripts": [
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -215,8 +202,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--debug",
-          "--zero-tests-executed-ok"
+          "--debug"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -244,9 +230,6 @@
   "WebKit Mac10.12 (retina)": {
     "isolated_scripts": [
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -284,9 +267,6 @@
   "WebKit Win10": {
     "isolated_scripts": [
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -311,9 +291,6 @@
   "WebKit Win7": {
     "isolated_scripts": [
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
