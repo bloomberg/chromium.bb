@@ -60,9 +60,9 @@ class MockRecorder : public mojom::Recorder {
     }
   }
 
-  void AddMetadata(std::unique_ptr<base::DictionaryValue> metadata) override {
+  void AddMetadata(base::Value metadata) override {
     base::DictionaryValue* dict = nullptr;
-    EXPECT_TRUE(metadata->GetAsDictionary(&dict));
+    EXPECT_TRUE(metadata.GetAsDictionary(&dict));
     std::string value;
     if (dict->GetString(kTestMetadataKey, &value))
       Append(&metadata_, value);

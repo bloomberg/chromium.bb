@@ -73,7 +73,7 @@ class TracingControllerImpl : public TracingController,
   void OnDataAvailable(const void* data, size_t num_bytes) override;
   void OnDataComplete() override;
 
-  void OnMetadataAvailable(std::unique_ptr<base::DictionaryValue> metadata);
+  void OnMetadataAvailable(base::Value metadata);
 
   void CompleteFlush();
 

@@ -50,7 +50,7 @@ class Recorder : public mojom::Recorder {
   // mojom::Recorder
   // These are called by agents for sending trace data to the tracing service.
   void AddChunk(const std::string& chunk) override;
-  void AddMetadata(std::unique_ptr<base::DictionaryValue> metadata) override;
+  void AddMetadata(base::Value metadata) override;
 
   void OnConnectionError();
 

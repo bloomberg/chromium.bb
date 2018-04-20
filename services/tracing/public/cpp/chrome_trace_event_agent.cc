@@ -92,7 +92,7 @@ void ChromeTraceEventAgent::StopAndFlush(mojom::RecorderPtr recorder) {
   for (const auto& generator : metadata_generator_functions_) {
     auto metadata = generator.Run();
     if (metadata)
-      recorder_->AddMetadata(std::move(metadata));
+      recorder_->AddMetadata(std::move(*metadata));
   }
   trace_log_needs_me_ = true;
   base::trace_event::TraceLog::GetInstance()->Flush(base::Bind(

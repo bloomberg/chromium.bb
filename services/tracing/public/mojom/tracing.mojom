@@ -5,7 +5,7 @@
 module tracing.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/values.mojom";
 
 // The JSON type of data coming from a tracing agents.
 //
@@ -37,12 +37,12 @@ interface AgentRegistry {
 // close the recorder connection to signal the tracing service that no more data
 // will be sent.
 interface Agent {
-  StartTracing(string config, mojo_base.mojom.TimeTicks coordinator_time) => (
-      bool success);
+  StartTracing(string config, mojo_base.mojom.TimeTicks coordinator_time)
+      => (bool success);
   StopAndFlush(Recorder recorder);
-  RequestClockSyncMarker(string sync_id) => (
-      mojo_base.mojom.TimeTicks issue_ts,
-      mojo_base.mojom.TimeTicks issue_end_ts);
+  RequestClockSyncMarker(string sync_id)
+      => (mojo_base.mojom.TimeTicks issue_ts,
+          mojo_base.mojom.TimeTicks issue_end_ts);
   RequestBufferStatus() => (uint32 capacity, uint32 count);
   GetCategories() => (string categories);
 };
@@ -53,7 +53,7 @@ interface Agent {
 // their trace data would be mixed up.
 interface Recorder {
   AddChunk(string chunk);
-  AddMetadata(mojo.common.mojom.DictionaryValue metadata);
+  AddMetadata(mojo_base.mojom.DictionaryValue metadata);
 };
 
 // A tracing controller uses this interface to coordinate trace data collection
@@ -64,12 +64,12 @@ interface Coordinator {
   // config. Otherwise, true is returned as soon as the service receives acks
   // from all existing agents and agents that connect during |StartTracing|.
   StartTracing(string config) => (bool success);
-  StopAndFlush(handle<data_pipe_producer> stream) => (
-      mojo.common.mojom.DictionaryValue metadata);
+  StopAndFlush(handle<data_pipe_producer> stream)
+      => (mojo_base.mojom.DictionaryValue metadata);
   // Same as |StopAndFlush| but only write data from a certain |agent_label| to
   // the |stream|.
-  StopAndFlushAgent(handle<data_pipe_producer> stream, string agent_label) => (
-      mojo.common.mojom.DictionaryValue metadata);
+  StopAndFlushAgent(handle<data_pipe_producer> stream, string agent_label)
+      => (mojo_base.mojom.DictionaryValue metadata);
   IsTracing() => (bool is_tracing);
   RequestBufferUsage() => (bool success, float percent_full,
                            uint32 approximate_count);
