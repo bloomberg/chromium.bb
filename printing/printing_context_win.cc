@@ -37,10 +37,13 @@ void AssignResult(PrintingContext::Result* out, PrintingContext::Result in) {
 
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  return base::WrapUnique(new PrintingContextWin(delegate));
-#else
+#if BUILDFLAG(ENABLE_PRINTING)
   return base::WrapUnique(new PrintingContextSystemDialogWin(delegate));
+#else
+  // The code in printing/ is still built when the GN |enable_basic_printing|
+  // variable is set to false. Just return PrintingContextWin as a dummy
+  // context.
+  return base::WrapUnique(new PrintingContextWin(delegate));
 #endif
 }
 
