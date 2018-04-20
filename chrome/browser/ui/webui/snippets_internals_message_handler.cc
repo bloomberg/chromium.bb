@@ -54,7 +54,6 @@ using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::ContentSuggestion;
 using ntp_snippets::IsBookmarkProviderEnabled;
-using ntp_snippets::IsPhysicalWebPageProviderEnabled;
 using ntp_snippets::IsRecentTabProviderEnabled;
 using ntp_snippets::KnownCategories;
 using ntp_snippets::RemoteSuggestion;
@@ -437,12 +436,6 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
               AreOfflinePageDownloadsEnabled());
 
   SendBoolean("flag-bookmark-suggestions", IsBookmarkProviderEnabled());
-
-  SendBoolean("flag-physical-web-page-suggestions",
-              IsPhysicalWebPageProviderEnabled());
-
-  SendBoolean("flag-physical-web", base::FeatureList::IsEnabled(
-                                       chrome::android::kPhysicalWebFeature));
 
   SendClassification();
   SendRankerDebugData();

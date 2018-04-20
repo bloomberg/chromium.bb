@@ -16,18 +16,6 @@
 
 namespace ntp_snippets {
 
-namespace {
-
-bool IsPhysicalWebEnabled() {
-#if defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(chrome::android::kPhysicalWebFeature);
-#else
-  return false;
-#endif  // OS_ANDROID
-}
-
-}  // namespace
-
 // All platforms proxy for whether NTP shortcuts are enabled.
 bool AreNtpShortcutsEnabled() {
 #if defined(OS_ANDROID)
@@ -64,13 +52,6 @@ bool IsRecentTabProviderEnabled() {
              ntp_snippets::kRecentOfflineTabSuggestionsFeature) &&
          base::FeatureList::IsEnabled(
              offline_pages::kOffliningRecentPagesFeature);
-}
-
-bool IsPhysicalWebPageProviderEnabled() {
-  return !AreNtpShortcutsEnabled() &&
-         base::FeatureList::IsEnabled(
-             ntp_snippets::kPhysicalWebPageSuggestionsFeature) &&
-         IsPhysicalWebEnabled();
 }
 
 bool IsForeignSessionsProviderEnabled() {

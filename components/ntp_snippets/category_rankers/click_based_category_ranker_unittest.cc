@@ -608,9 +608,6 @@ TEST_F(ClickBasedCategoryRankerTest,
   ResetRanker(base::DefaultClock::GetInstance());
   // Make sure we have the default order.
   EXPECT_TRUE(CompareCategories(
-      Category::FromKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES),
-      Category::FromKnownCategory(KnownCategories::DOWNLOADS)));
-  EXPECT_TRUE(CompareCategories(
       Category::FromKnownCategory(KnownCategories::DOWNLOADS),
       Category::FromKnownCategory(KnownCategories::RECENT_TABS)));
   EXPECT_TRUE(CompareCategories(
@@ -625,20 +622,20 @@ TEST_F(ClickBasedCategoryRankerTest,
 }
 
 TEST_F(ClickBasedCategoryRankerTest, ShouldEndPromotionOnSectionDismissal) {
-  const Category physical_web =
-      Category::FromKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES);
+  const Category downloads =
+      Category::FromKnownCategory(KnownCategories::DOWNLOADS);
   const Category articles =
       Category::FromKnownCategory(KnownCategories::ARTICLES);
-  ASSERT_TRUE(CompareCategories(physical_web, articles));
+  ASSERT_TRUE(CompareCategories(downloads, articles));
 
   SetPromotedCategoryVariationParam(articles.id());
   ResetRanker(base::DefaultClock::GetInstance());
 
-  ASSERT_TRUE(CompareCategories(articles, physical_web));
+  ASSERT_TRUE(CompareCategories(articles, downloads));
 
   ranker()->OnCategoryDismissed(articles);
-  EXPECT_FALSE(CompareCategories(articles, physical_web));
-  EXPECT_TRUE(CompareCategories(physical_web, articles));
+  EXPECT_FALSE(CompareCategories(articles, downloads));
+  EXPECT_TRUE(CompareCategories(downloads, articles));
 }
 
 TEST_F(ClickBasedCategoryRankerTest,

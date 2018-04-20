@@ -1,4 +1,0 @@
-include_rules = [
-  "+components/grit",
-  "+components/physical_web/data_source",
-]

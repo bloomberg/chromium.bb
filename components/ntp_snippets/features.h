@@ -34,7 +34,6 @@ extern const base::Feature* const kAllFeatures[];
 
 extern const base::Feature kBookmarkSuggestionsFeature;
 extern const base::Feature kRecentOfflineTabSuggestionsFeature;
-extern const base::Feature kPhysicalWebPageSuggestionsFeature;
 extern const base::Feature kForeignSessionsSuggestionsFeature;
 
 ////////////////////////////////////////////////////////////////////////////////

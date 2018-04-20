@@ -136,7 +136,7 @@ public class SuggestionsCategoryInfo {
             case KnownCategories.FOREIGN_TABS:
                 navigationDelegate.navigateToRecentTabs();
                 break;
-            case KnownCategories.PHYSICAL_WEB_PAGES:
+            case KnownCategories.PHYSICAL_WEB_PAGES_DEPRECATED:
             case KnownCategories.RECENT_TABS:
             case KnownCategories.ARTICLES:
             default:

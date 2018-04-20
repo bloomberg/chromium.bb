@@ -6818,7 +6818,7 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Recent Tabs"/>
   <int value="2" label="Downloads"/>
   <int value="3" label="Bookmarks"/>
-  <int value="4" label="Physical Web Pages"/>
+  <int value="4" label="Physical Web Pages (obsolete)"/>
   <int value="5" label="Foreign Tabs"/>
   <int value="6" label="Articles"/>
 </enum>
