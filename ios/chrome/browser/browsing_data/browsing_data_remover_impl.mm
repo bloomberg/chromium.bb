@@ -600,19 +600,16 @@ void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
     return;
   }
 
-  // Blocks don't play well with move-only objects, so wrap the closure as
-  // a repeating closure (this is better than recreating the same API with
-  // blocks).
-  base::RepeatingClosure closure =
-      AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure());
+  base::WeakPtr<BrowsingDataRemoverImpl> weak_ptr = GetWeakPtr();
+  __block base::OnceClosure closure = CreatePendingTaskCompletionClosure();
   ProceduralBlock completion_block = ^{
-    dummy_web_view_ = nil;
-    closure.Run();
+    if (BrowsingDataRemoverImpl* strong_ptr = weak_ptr.get())
+      strong_ptr->dummy_web_view_ = nil;
+    std::move(closure).Run();
   };
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_VISITED_LINKS)) {
     ProceduralBlock previous_completion_block = completion_block;
-    base::WeakPtr<BrowsingDataRemoverImpl> weak_ptr = GetWeakPtr();
 
     // TODO(crbug.com/557963): Purging the WKProcessPool is a workaround for
     // the fact that there is no public API to clear visited links in
