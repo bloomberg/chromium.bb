@@ -89,7 +89,9 @@ const CFTimeInterval kMinimumPullDurationToTransitionToReadyInSeconds = 0.25;
 const CGFloat kDirectTouchFrameExpansion = 20;
 // The vertical padding between the bottom of the action image view and its
 // corresponding label.
-const CGFloat kActionLabelVerticalPadding = 35.0;
+const CGFloat kActionLabelVerticalPadding = 25.0;
+// The minimum distance between the action labels and the side of the screen.
+const CGFloat kActionLabelSidePadding = 15.0;
 // The value to use as the R, B, and B components for the action label text and
 // selection layer animation.
 const CGFloat kSelectionColor = 0.4;
@@ -279,6 +281,7 @@ enum class OverscrollViewState {
     _deformationBehaviorEnabled = YES;
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.clipsToBounds = YES;
     _selectionCircleLayer = [self newSelectionCircleLayer];
     _selectionCircleMaskLayer = [self newSelectionCircleLayer];
     _selectionCircleMaskLayer.contentsGravity = kCAGravityCenter;
@@ -318,6 +321,9 @@ enum class OverscrollViewState {
 
     if (IsUIRefreshPhase1Enabled()) {
       _addTabLabel = [[UILabel alloc] init];
+      _addTabLabel.numberOfLines = 0;
+      _addTabLabel.lineBreakMode = NSLineBreakByWordWrapping;
+      _addTabLabel.textAlignment = NSTextAlignmentLeft;
       _addTabLabel.alpha = 0.0;
       _addTabLabel.font =
           [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
@@ -326,9 +332,11 @@ enum class OverscrollViewState {
           [UIColor colorWithWhite:kSelectionColor alpha:1.0];
       _addTabLabel.text =
           l10n_util::GetNSString(IDS_IOS_OVERSCROLL_ADD_TAB_LABEL);
-      [_addTabLabel sizeToFit];
       [self addSubview:_addTabLabel];
       _refreshLabel = [[UILabel alloc] init];
+      _refreshLabel.numberOfLines = 0;
+      _refreshLabel.lineBreakMode = NSLineBreakByWordWrapping;
+      _refreshLabel.textAlignment = NSTextAlignmentCenter;
       _refreshLabel.alpha = 0.0;
       _refreshLabel.font =
           [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
@@ -337,9 +345,11 @@ enum class OverscrollViewState {
           [UIColor colorWithWhite:kSelectionColor alpha:1.0];
       _refreshLabel.text =
           l10n_util::GetNSString(IDS_IOS_OVERSCROLL_REFRESH_LABEL);
-      [_refreshLabel sizeToFit];
       [self addSubview:_refreshLabel];
       _closeTabLabel = [[UILabel alloc] init];
+      _closeTabLabel.numberOfLines = 0;
+      _closeTabLabel.lineBreakMode = NSLineBreakByWordWrapping;
+      _closeTabLabel.textAlignment = NSTextAlignmentRight;
       _closeTabLabel.alpha = 0.0;
       _closeTabLabel.font =
           [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
@@ -348,7 +358,6 @@ enum class OverscrollViewState {
           [UIColor colorWithWhite:kSelectionColor alpha:1.0];
       _closeTabLabel.text =
           l10n_util::GetNSString(IDS_IOS_OVERSCROLL_CLOSE_TAB_LABEL);
-      [_closeTabLabel sizeToFit];
       [self addSubview:_closeTabLabel];
     }
 
@@ -579,27 +588,33 @@ enum class OverscrollViewState {
   if (!IsUIRefreshPhase1Enabled())
     return;
 
-  // Lay out labels within a CATransaction with no actions to prevent implicit
-  // animations from occurring.
-  [CATransaction begin];
-  [CATransaction setDisableActions:YES];
-  NSArray* labelLayers = @[
-    self.addTabLabel.layer, self.refreshLabel.layer, self.closeTabLabel.layer
-  ];
-  NSArray* imageLayers = @[
-    self.addTabActionImageView.layer, self.refreshActionImageView.layer,
-    self.closeTabActionImageView.layer
-  ];
-  [labelLayers
-      enumerateObjectsUsingBlock:^(CALayer* label, NSUInteger idx, BOOL*) {
-        CALayer* image = imageLayers[idx];
-        label.position =
-            CGPointMake(image.position.x,
-                        image.position.y + CGRectGetHeight(image.bounds) / 2.0 +
-                            kActionLabelVerticalPadding);
+  // The text is truncated to be a maximum of half the width of the view.
+  CGSize boundingSize = self.bounds.size;
+  boundingSize.width /= 2.0;
 
-      }];
-  [CATransaction commit];
+  // The UILabels in |labels| are laid out according to the location of their
+  // corresponding UIImageView in |images|.
+  NSArray* labels =
+      @[ self.addTabLabel, self.refreshLabel, self.closeTabLabel ];
+  NSArray* images = @[
+    self.addTabActionImageView, self.refreshActionImageView,
+    self.closeTabActionImageView
+  ];
+
+  [labels enumerateObjectsUsingBlock:^(UILabel* label, NSUInteger idx, BOOL*) {
+    UIImageView* image = images[idx];
+    CGRect frame = CGRectZero;
+    frame.size = [label sizeThatFits:boundingSize];
+    frame.origin.x = image.center.x - frame.size.width / 2.0;
+    frame.origin.x = fmaxf(
+        frame.origin.x, CGRectGetMinX(self.bounds) + kActionLabelSidePadding);
+    frame.origin.x = fminf(frame.origin.x, CGRectGetMaxX(self.bounds) -
+                                               kActionLabelSidePadding -
+                                               CGRectGetWidth(frame));
+    frame.origin.y = image.center.y + CGRectGetHeight(image.bounds) / 2.0 +
+                     kActionLabelVerticalPadding;
+    label.frame = frame;
+  }];
 }
 
 - (CGFloat)absorbsHorizontalMovementAroundActions:(CGFloat)x {
