@@ -45,18 +45,18 @@ void SafeMediaMetadataParser::OnMediaParserCreated() {
 }
 
 void SafeMediaMetadataParser::OnConnectionError() {
-  auto metadata_dictionary = std::make_unique<base::DictionaryValue>();
+  chrome::mojom::MediaMetadataPtr metadata =
+      chrome::mojom::MediaMetadata::New();
   auto attached_images =
       std::make_unique<std::vector<metadata::AttachedImage>>();
 
-  std::move(callback_).Run(/*parse_success=*/false,
-                           std::move(metadata_dictionary),
+  std::move(callback_).Run(/*parse_success=*/false, std::move(metadata),
                            std::move(attached_images));
 }
 
 void SafeMediaMetadataParser::ParseMediaMetadataDone(
     bool parse_success,
-    std::unique_ptr<base::DictionaryValue> metadata_dictionary,
+    chrome::mojom::MediaMetadataPtr metadata,
     const std::vector<metadata::AttachedImage>& attached_images) {
   ResetMediaParser();
   media_data_source_.reset();
@@ -64,7 +64,7 @@ void SafeMediaMetadataParser::ParseMediaMetadataDone(
   auto attached_images_copy =
       std::make_unique<std::vector<metadata::AttachedImage>>(attached_images);
 
-  std::move(callback_).Run(parse_success, std::move(metadata_dictionary),
+  std::move(callback_).Run(parse_success, std::move(metadata),
                            std::move(attached_images_copy));
 }
 

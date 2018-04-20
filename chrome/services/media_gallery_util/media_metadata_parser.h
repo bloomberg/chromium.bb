@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/media_galleries/metadata_types.h"
+#include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 
 namespace base {
 class Thread;
@@ -28,9 +28,8 @@ class DataSource;
 // so we sandbox potentially dangerous operations on user-provided data.
 class MediaMetadataParser {
  public:
-  typedef extensions::api::media_galleries::MediaMetadata MediaMetadata;
   typedef base::Callback<void(
-      const MediaMetadata& metadata,
+      chrome::mojom::MediaMetadataPtr metadata,
       const std::vector<metadata::AttachedImage>& attached_images)>
       MetadataCallback;
 

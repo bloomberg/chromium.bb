@@ -21,9 +21,9 @@ namespace {
 void ParseMediaMetadataDone(
     MediaParser::ParseMediaMetadataCallback callback,
     MediaMetadataParser* /* parser */,
-    const extensions::api::media_galleries::MediaMetadata& metadata,
+    chrome::mojom::MediaMetadataPtr metadata,
     const std::vector<metadata::AttachedImage>& attached_images) {
-  std::move(callback).Run(true, metadata.ToValue(), attached_images);
+  std::move(callback).Run(true, std::move(metadata), attached_images);
 }
 
 }  // namespace

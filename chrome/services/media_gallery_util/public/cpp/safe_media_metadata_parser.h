@@ -30,7 +30,7 @@ class SafeMediaMetadataParser : public MediaParserProvider {
  public:
   typedef base::OnceCallback<void(
       bool parse_success,
-      std::unique_ptr<base::DictionaryValue> metadata_dictionary,
+      chrome::mojom::MediaMetadataPtr metadata,
       std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images)>
       DoneCallback;
 
@@ -68,7 +68,7 @@ class SafeMediaMetadataParser : public MediaParserProvider {
   // Callback from utility process when it finishes parsing metadata.
   void ParseMediaMetadataDone(
       bool parse_success,
-      std::unique_ptr<base::DictionaryValue> metadata_dictionary,
+      chrome::mojom::MediaMetadataPtr metadata,
       const std::vector<metadata::AttachedImage>& attached_images);
 
   // Invoked when the media data has been read, which will be sent back to
