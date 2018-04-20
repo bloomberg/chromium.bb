@@ -26,7 +26,6 @@ source_set("safe_browsing") {
       "binary_feature_extractor.cc",
       "binary_feature_extractor.h",
       "binary_feature_extractor_mac.cc",
-      "binary_feature_extractor_posix.cc",
       "binary_feature_extractor_win.cc",
       "download_protection_util.cc",
       "download_protection_util.h",
@@ -42,6 +41,9 @@ source_set("safe_browsing") {
       "zip_analyzer.cc",
       "zip_analyzer.h",
     ]
+    if (is_posix) {
+      sources += [ "binary_feature_extractor_posix.cc" ]
+    }
   }
 
   public_deps = [

@@ -21,10 +21,12 @@ source_set("command_ids") {
 
 # TODO: put back in chrome/browser if necessary. http://crbug.com/771801.
 source_set("shutdown_signal_handlers") {
-  sources = [
-    "shutdown_signal_handlers_posix.cc",
-    "shutdown_signal_handlers_posix.h",
-  ]
+  if (is_posix || is_fuchsia) {
+    sources = [
+      "shutdown_signal_handlers_posix.cc",
+      "shutdown_signal_handlers_posix.h",
+    ]
+  }
   deps = [
     "//base",
   ]

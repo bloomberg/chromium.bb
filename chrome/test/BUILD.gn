@@ -2928,7 +2928,6 @@ test("unit_tests") {
       "../browser/notifications/message_center_notifications_unittest.cc",
       "../browser/platform_util_unittest.cc",
       "../browser/policy/policy_path_parser_unittest.cc",
-      "../browser/process_singleton_posix_unittest.cc",
       "../browser/profile_resetter/profile_resetter_unittest.cc",
       "../browser/profile_resetter/triggered_profile_resetter_win_unittest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_unittest.cc",
@@ -3067,6 +3066,10 @@ test("unit_tests") {
       "../utility/importer/firefox_importer_unittest_utils_mac.cc",
       "../utility/importer/safari_importer_unittest.mm",
     ]
+    if (is_posix || is_fuchsia) {
+      sources += [ "../browser/process_singleton_posix_unittest.cc" ]
+    }
+
     deps += [
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//components/favicon/core/test:test_support",
