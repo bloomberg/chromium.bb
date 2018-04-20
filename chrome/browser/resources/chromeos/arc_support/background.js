@@ -869,7 +869,10 @@ function showErrorPage(errorMessage, opt_shouldShowSendFeedback) {
 function showOverlay(overlayClass) {
   var doc = appWindow.contentWindow.document;
   var overlayContainer = doc.getElementById('overlay-container');
-  overlayContainer.className = 'overlay ' + overlayClass;
+  overlayContainer.classList.remove('overlay-text');
+  overlayContainer.classList.remove('overlay-url');
+  overlayContainer.classList.add('overlay-loading');
+  overlayContainer.classList.add(overlayClass);
   overlayContainer.hidden = false;
   lastFocusedElement = doc.activeElement;
   doc.getElementById('overlay-close').focus();
@@ -983,6 +986,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
     appWindow.contentWindow.cr.ui.overlay.setupOverlay(overlay);
     appWindow.contentWindow.cr.ui.overlay.globalInitialization();
     overlay.addEventListener('cancelOverlay', hideOverlay);
+
+    var overlayWebview = doc.getElementById('overlay-url');
+    overlayWebview.addEventListener('contentload', function() {
+      overlay.classList.remove('overlay-loading');
+    });
 
     focusManager = new appWindow.contentWindow.ArcOptInFocusManager();
     focusManager.initialize();
