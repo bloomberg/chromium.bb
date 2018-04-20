@@ -317,7 +317,10 @@ void NinjaBuildWriter::WriteAllPools() {
               return pool_name(a) < pool_name(b);
             });
   for (const Pool* pool : sorted_pools) {
-    out_ << "pool " << pool_name(pool) << std::endl
+    std::string name = pool_name(pool);
+    if (name == "console")
+      continue;
+    out_ << "pool " << name << std::endl
          << "  depth = " << pool->depth() << std::endl
          << std::endl;
   }
