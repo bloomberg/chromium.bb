@@ -34,7 +34,6 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
-#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
@@ -304,14 +303,13 @@ class RasterBufferProviderTest
     context3d->set_support_sync_query(true);
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
-        context_provider_.get(), &shared_bitmap_manager_,
-        &gpu_memory_buffer_manager_);
+        context_provider_.get(), &gpu_memory_buffer_manager_);
   }
 
   void CreateSoftwareResourceProvider() {
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
-        nullptr, &shared_bitmap_manager_, &gpu_memory_buffer_manager_);
+        nullptr, &gpu_memory_buffer_manager_);
   }
 
   void OnTimeout() {
@@ -328,7 +326,6 @@ class RasterBufferProviderTest
   std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  viz::TestSharedBitmapManager shared_bitmap_manager_;
   SynchronousTaskGraphRunner task_graph_runner_;
   base::CancelableClosure timeout_;
   UniqueNotifier all_tile_tasks_finished_;

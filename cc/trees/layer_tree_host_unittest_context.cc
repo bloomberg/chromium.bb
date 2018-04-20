@@ -887,7 +887,7 @@ class LayerTreeHostContextTestDontUseLostResources
     shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
     child_resource_provider_ =
         FakeResourceProvider::CreateLayerTreeResourceProvider(
-            child_context_provider_.get(), shared_bitmap_manager_.get());
+            child_context_provider_.get());
   }
 
   static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,

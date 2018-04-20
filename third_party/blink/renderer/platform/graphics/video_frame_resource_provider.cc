@@ -51,8 +51,8 @@ void VideoFrameResourceProvider::Initialize(
   context_provider_ = media_context_provider;
 
   resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
-      media_context_provider, /*shared_bitmap_manager=*/nullptr,
-      gpu_memory_buffer_manager_, true, settings_.resource_settings);
+      media_context_provider, gpu_memory_buffer_manager_, true,
+      settings_.resource_settings);
 
   // TODO(kylechar): VideoResourceUpdater needs something it can notify about
   // SharedBitmaps that isn't a LayerTreeFrameSink. https://crbug.com/730660#c88

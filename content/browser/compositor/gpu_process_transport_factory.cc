@@ -645,7 +645,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       GetFrameSinkManager(), data->display.get(), data->display_client.get(),
       context_provider, shared_worker_context_provider_,
       compositor->task_runner(), GetGpuMemoryBufferManager(),
-      viz::ServerSharedBitmapManager::current(),
       features::IsVizHitTestingEnabled());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);

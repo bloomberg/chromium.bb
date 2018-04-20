@@ -11,7 +11,6 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
-#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +27,6 @@ class LayerTreeResourceProviderTest : public testing::TestWithParam<bool> {
         bound_(context_provider_->BindToCurrentThread()),
         provider_(std::make_unique<LayerTreeResourceProvider>(
             use_gpu_ ? context_provider_.get() : nullptr,
-            &shared_bitmap_manager_,
             &gpu_memory_buffer_manager_,
             delegated_sync_points_required_,
             resource_settings_)) {
@@ -74,7 +72,6 @@ class LayerTreeResourceProviderTest : public testing::TestWithParam<bool> {
   bool use_gpu_;
   scoped_refptr<viz::TestContextProvider> context_provider_;
   gpu::ContextResult bound_;
-  viz::TestSharedBitmapManager shared_bitmap_manager_;
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   bool delegated_sync_points_required_ = true;
   viz::ResourceSettings resource_settings_;

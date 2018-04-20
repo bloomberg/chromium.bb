@@ -56,8 +56,7 @@ class SoftwareRendererTest : public testing::Test {
     renderer_->SetVisible(true);
 
     child_resource_provider_ =
-        cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
-            nullptr, shared_bitmap_manager_.get());
+        cc::FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr);
   }
 
   cc::DisplayResourceProvider* resource_provider() const {

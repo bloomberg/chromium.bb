@@ -13,7 +13,6 @@
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -26,7 +25,6 @@ static constexpr FrameSinkId kLayerTreeFrameSinkId(1, 1);
 TestLayerTreeFrameSink::TestLayerTreeFrameSink(
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<RasterContextProvider> worker_context_provider,
-    SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const RendererSettings& renderer_settings,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
@@ -37,8 +35,7 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
     : LayerTreeFrameSink(std::move(compositor_context_provider),
                          std::move(worker_context_provider),
                          std::move(compositor_task_runner),
-                         gpu_memory_buffer_manager,
-                         shared_bitmap_manager),
+                         gpu_memory_buffer_manager),
       synchronous_composite_(synchronous_composite),
       disable_display_vsync_(disable_display_vsync),
       renderer_settings_(renderer_settings),
@@ -104,7 +101,7 @@ bool TestLayerTreeFrameSink::BindToClient(
   }
 
   display_ = std::make_unique<Display>(
-      shared_bitmap_manager(), renderer_settings_, frame_sink_id_,
+      &shared_bitmap_manager_, renderer_settings_, frame_sink_id_,
       std::move(display_output_surface), std::move(scheduler),
       compositor_task_runner_);
 
@@ -128,11 +125,11 @@ bool TestLayerTreeFrameSink::BindToClient(
 }
 
 void TestLayerTreeFrameSink::DetachFromClient() {
-  // The shared_bitmap_manager() has ownership of shared memory for each
+  // The shared_bitmap_manager_ has ownership of shared memory for each
   // SharedBitmapId that has been reported from the client. Since the client is
   // gone that memory can be freed. If we don't then it would leak.
   for (const auto& id : owned_bitmaps_)
-    shared_bitmap_manager()->ChildDeletedSharedBitmap(id);
+    shared_bitmap_manager_.ChildDeletedSharedBitmap(id);
   owned_bitmaps_.clear();
 
   if (display_begin_frame_source_) {
@@ -210,14 +207,14 @@ void TestLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
 void TestLayerTreeFrameSink::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const SharedBitmapId& id) {
-  bool ok = shared_bitmap_manager()->ChildAllocatedSharedBitmap(
-      std::move(buffer), id);
+  bool ok =
+      shared_bitmap_manager_.ChildAllocatedSharedBitmap(std::move(buffer), id);
   DCHECK(ok);
   owned_bitmaps_.insert(id);
 }
 
 void TestLayerTreeFrameSink::DidDeleteSharedBitmap(const SharedBitmapId& id) {
-  shared_bitmap_manager()->ChildDeletedSharedBitmap(id);
+  shared_bitmap_manager_.ChildDeletedSharedBitmap(id);
   owned_bitmaps_.erase(id);
 }
 

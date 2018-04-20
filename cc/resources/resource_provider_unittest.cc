@@ -416,8 +416,8 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
 
   void MakeChildResourceProvider() {
     child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-        child_context_provider_.get(), shared_bitmap_manager_.get(), nullptr,
-        child_needs_sync_token_, CreateResourceSettings());
+        child_context_provider_.get(), nullptr, child_needs_sync_token_,
+        CreateResourceSettings());
   }
 
   static void CollectResources(
@@ -622,8 +622,8 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
 
   bool need_sync_tokens = false;
   auto no_token_resource_provider = std::make_unique<LayerTreeResourceProvider>(
-      child_context_provider_.get(), shared_bitmap_manager_.get(), nullptr,
-      need_sync_tokens, CreateResourceSettings());
+      child_context_provider_.get(), nullptr, need_sync_tokens,
+      CreateResourceSettings());
 
   gfx::Size size(1, 1);
   viz::ResourceFormat format = viz::RGBA_8888;
@@ -1285,8 +1285,8 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
       nullptr, shared_bitmap_manager_.get()));
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
-      nullptr, shared_bitmap_manager_.get(), nullptr,
-      kDelegatedSyncPointsRequired, CreateResourceSettings()));
+      nullptr, nullptr, kDelegatedSyncPointsRequired,
+      CreateResourceSettings()));
 
   gpu::SyncToken release_sync_token;
   bool lost_resource = false;
@@ -1362,8 +1362,8 @@ class ResourceProviderTestImportedResourceGLFilters
     child_context_provider->BindToCurrentThread();
 
     auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
-        child_context_provider.get(), shared_bitmap_manager, nullptr,
-        kDelegatedSyncPointsRequired, CreateResourceSettings()));
+        child_context_provider.get(), nullptr, kDelegatedSyncPointsRequired,
+        CreateResourceSettings()));
 
     unsigned texture_id = 1;
     gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
@@ -1522,8 +1522,8 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
   child_context_provider->BindToCurrentThread();
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
-      child_context_provider.get(), shared_bitmap_manager_.get(), nullptr,
-      kDelegatedSyncPointsRequired, CreateResourceSettings()));
+      child_context_provider.get(), nullptr, kDelegatedSyncPointsRequired,
+      CreateResourceSettings()));
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
@@ -1759,8 +1759,8 @@ TEST_P(ResourceProviderTest, ImportedResource_PrepareSendToParent_NoSyncToken) {
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
-      context_provider.get(), shared_bitmap_manager_.get(), nullptr,
-      kDelegatedSyncPointsRequired, CreateResourceSettings()));
+      context_provider.get(), nullptr, kDelegatedSyncPointsRequired,
+      CreateResourceSettings()));
 
   EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
   EXPECT_CALL(*context, waitSyncToken(_)).Times(0);

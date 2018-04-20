@@ -24,7 +24,6 @@ namespace viz {
 
 class HitTestDataProvider;
 class LocalSurfaceIdProvider;
-class SharedBitmapManager;
 
 class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
     : public cc::LayerTreeFrameSink,
@@ -52,7 +51,6 @@ class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
 
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner;
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
-    SharedBitmapManager* shared_bitmap_manager = nullptr;
     std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source;
     std::unique_ptr<HitTestDataProvider> hit_test_data_provider;
     std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider;

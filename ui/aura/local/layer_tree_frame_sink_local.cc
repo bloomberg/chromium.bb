@@ -21,7 +21,7 @@ LayerTreeFrameSinkLocal::LayerTreeFrameSinkLocal(
     const viz::FrameSinkId& frame_sink_id,
     viz::HostFrameSinkManager* host_frame_sink_manager,
     const std::string& debug_label)
-    : cc::LayerTreeFrameSink(nullptr, nullptr, nullptr, nullptr, nullptr),
+    : cc::LayerTreeFrameSink(nullptr, nullptr, nullptr, nullptr),
       frame_sink_id_(frame_sink_id),
       host_frame_sink_manager_(host_frame_sink_manager) {
   host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);

@@ -109,7 +109,6 @@ class CC_EXPORT LayerTreeImpl {
   const LayerTreeSettings& settings() const;
   const LayerTreeDebugState& debug_state() const;
   viz::ContextProvider* context_provider() const;
-  viz::SharedBitmapManager* shared_bitmap_manager() const;
   LayerTreeResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
   ImageDecodeCache* image_decode_cache() const;

@@ -12,10 +12,6 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
-namespace viz {
-class SharedBitmapManager;
-}  // namespace viz
-
 namespace gpu {
 class GpuMemoryBufferManager;
 namespace raster {
@@ -31,7 +27,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
  public:
   LayerTreeResourceProvider(
       viz::ContextProvider* compositor_context_provider,
-      viz::SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       bool delegated_sync_points_required,
       const viz::ResourceSettings& resource_settings);
@@ -169,7 +164,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
                         viz::ResourceId id,
                         viz::TransferableResource* resource);
 
-  viz::SharedBitmapManager* shared_bitmap_manager_;
   struct ImportedResource;
   base::flat_map<viz::ResourceId, ImportedResource> imported_resources_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;

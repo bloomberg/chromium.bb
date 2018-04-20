@@ -2819,7 +2819,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
   has_valid_layer_tree_frame_sink_ = true;
   resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
       layer_tree_frame_sink_->context_provider(),
-      layer_tree_frame_sink_->shared_bitmap_manager(),
       layer_tree_frame_sink_->gpu_memory_buffer_manager(),
       layer_tree_frame_sink_->capabilities().delegated_sync_points_required,
       settings_.resource_settings);

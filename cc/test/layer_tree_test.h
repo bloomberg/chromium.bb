@@ -133,9 +133,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool TestEnded() const { return ended_; }
 
   LayerTreeHost* layer_tree_host();
-  viz::SharedBitmapManager* shared_bitmap_manager() const {
-    return shared_bitmap_manager_.get();
-  }
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() {
     return gpu_memory_buffer_manager_.get();
   }
@@ -217,7 +214,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
   std::unique_ptr<base::Thread> impl_thread_;
   std::unique_ptr<base::Thread> image_worker_;
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<TestTaskGraphRunner> task_graph_runner_;
   base::CancelableClosure timeout_;
