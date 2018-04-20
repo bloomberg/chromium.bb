@@ -1926,38 +1926,6 @@ TEST_P(GpuImageDecodeCacheTest, GetTaskForLargeImageNonSRGBColorSpace) {
   cache->UnrefImage(draw_image);
 }
 
-TEST_P(GpuImageDecodeCacheTest, RemoveUnusedImage) {
-  auto cache = CreateCache();
-  bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
-  std::vector<PaintImage::FrameKey> frame_keys;
-
-  for (int i = 0; i < 10; ++i) {
-    PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
-    DrawImage draw_image(
-        image, SkIRect::MakeWH(image.width(), image.height()), quality,
-        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
-        PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-    frame_keys.push_back(draw_image.frame_key());
-    ImageDecodeCache::TaskResult result = cache->GetTaskForImageAndRef(
-        draw_image, ImageDecodeCache::TracingInfo());
-    EXPECT_TRUE(result.need_unref);
-    EXPECT_TRUE(result.task);
-    TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
-    TestTileTaskRunner::ProcessTask(result.task.get());
-    cache->UnrefImage(draw_image);
-  }
-
-  // We should now have images in our cache.
-  EXPECT_EQ(cache->GetNumCacheEntriesForTesting(), 10u);
-
-  // Remove unused ids.
-  for (uint32_t i = 0; i < 10; ++i) {
-    cache->NotifyImageUnused(frame_keys[i]);
-    EXPECT_EQ(cache->GetNumCacheEntriesForTesting(), (10 - i - 1));
-  }
-}
-
 TEST_P(GpuImageDecodeCacheTest, CacheDecodesExpectedFrames) {
   auto cache = CreateCache();
 

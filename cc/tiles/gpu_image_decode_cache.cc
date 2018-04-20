@@ -895,15 +895,6 @@ size_t GpuImageDecodeCache::GetMaximumMemoryLimitBytes() const {
   return max_working_set_bytes_;
 }
 
-void GpuImageDecodeCache::NotifyImageUnused(
-    const PaintImage::FrameKey& frame_key) {
-  base::AutoLock hold(lock_);
-
-  auto it = persistent_cache_.Peek(frame_key);
-  if (it != persistent_cache_.end())
-    RemoveFromPersistentCache(it);
-}
-
 bool GpuImageDecodeCache::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
