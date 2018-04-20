@@ -38,6 +38,7 @@ import StringIO
 import sys
 import urllib2
 
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 from webkitpy.common.host import Host
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 

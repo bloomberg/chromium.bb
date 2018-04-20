@@ -1,6 +1,5 @@
 #!/usr/bin/env vpython
-#
-# Copyright (C) 2013 Google Inc. All rights reserved.
+# Copyright (C) 2012 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -28,9 +27,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
+"""Runs a WebSocket server for WebSocket tests.
 
-from webkitpy.common import host
-from webkitpy.layout_tests import print_layout_test_times
+Some tests require both an HTTP server and WebSocket server. You can start
+both servers by running both run_blink_httpd.py and
+run_blink_websocketserver.py.
 
-print_layout_test_times.main(host.Host(), sys.argv[1:])
+Tests served by the HTTP server have paths relative to LayoutTests/http/tests/.
+For example, to run a test http/tests/websocket/binary-type.html which depends
+on WebSocket, you can navigate to:
+    http://127.0.0.1:8000/websocket/close-unref-websocket.html
+"""
+
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
+from webkitpy.common import version_check  # pylint: disable=unused-import
+from webkitpy.layout_tests.servers import cli_wrapper
+from webkitpy.layout_tests.servers import pywebsocket
+
+cli_wrapper.main(pywebsocket.PyWebSocket, description=__doc__)

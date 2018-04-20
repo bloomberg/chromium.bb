@@ -4,6 +4,7 @@ import optparse
 import os
 import sys
 
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 from webkitpy.common.host import Host
 from webkitpy.layout_tests.port import platform_options, configuration_options
 

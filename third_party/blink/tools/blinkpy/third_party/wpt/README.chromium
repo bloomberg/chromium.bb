@@ -7,10 +7,10 @@ This directory contains checked out and reduced code from web-platform-tests
 of Blink's test infrastructure and some maintenance/configuration code.
 
 The third party code lives entirely in the wpt subdirectory:
-Tools/Scripts/webkitpy/thirdparty/wpt/wpt
+tools/blinkpy/third_party/wpt/wpt
 
 For licensing, see README.chromium in parent directory
-(Tools/Scripts/webkitpy/thirdparty/README.chromium).
+(tools/blinkpy/third_party/README.chromium).
 
 **
 
@@ -56,10 +56,10 @@ re-generate them:
 1. Add "openssl" command to PATH.
 2. Apply the following change locally:
 
-diff --git a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json
+diff --git a/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json b/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json
 index 6243954..84fd3f4 100644
---- a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json
-+++ b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json
+--- a/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json
++++ b/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json
 @@ -9,13 +9,5 @@
      "https": [8444],
      "ws": [9001],
@@ -74,10 +74,10 @@ index 6243954..84fd3f4 100644
 -    }
    }
  }
-diff --git a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py
+diff --git a/third_party/blink/tools/blinkpy/third_party/wpt/wpt/tools/sslutils/openssl.py b/third_party/blink/tools/blinkpy/third_party/wpt/wpt/tools/sslutils/openssl.py
 index 5b571c0..223a18b 100644
---- a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py
-+++ b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py
+--- a/third_party/blink/tools/blinkpy/third_party/wpt/wpt/tools/sslutils/openssl.py
++++ b/third_party/blink/tools/blinkpy/third_party/wpt/wpt/tools/sslutils/openssl.py
 @@ -207,7 +207,7 @@ class OpenSSLEnvironment(object):
 
      def __init__(self, logger, openssl_binary="openssl", base_path=None,
@@ -88,7 +88,7 @@ index 5b571c0..223a18b 100644
 
          By default this will look in base_path for existing certificates that are still
 
-3. Run third_party/WebKit/Tools/Scripts/run-blink-wptserve
+3. Run third_party/blink/tools/run_blink_wptserve.py
 4. Type Enter key to terminate it.
 5. Revert the local change.  e.g. git reset --hard HEAD
 6. Replace certs/ with wpt/_certs/
@@ -110,7 +110,7 @@ the desired HEAD position. You can then call "./checkout.sh clone" which will
 pull in all the code.
 
 It is also important to update the hashes in the 'Version:' fields of
-Tools/Scripts/webkitpy/thirdparty/README.chromium.
+tools/blinkpy/thir_dparty/README.chromium.
 
 You can examine what's pulled in and update WPTWhiteList if some new files are
 required to run the updated version.

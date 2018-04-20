@@ -14,30 +14,30 @@ believe depends on an earlier test running.
 ### Bisect test ordering
 
 1. Run the tests such that the test in question fails.
-2. Run `./Tools/Scripts/print-test-ordering` and save the output to a file. This
+2. Run `./tools/print_web_test_ordering.py` and save the output to a file. This
    outputs the tests run in the order they were run on each content_shell
    instance.
 3. Create a file that contains only the tests run on that worker in the same
    order as in your saved output file. The last line in the file should be the
    failing test.
 4. Run
-   `./Tools/Scripts/bisect-test-ordering --test-list=path/to/file/from/step/3`
+   `./tools/bisect_web_test_ordering.py --test-list=path/to/file/from/step/3`
 
-The bisect-test-ordering script should spit out a list of tests at the end that
-causes the test to fail.
+The bisect_web_test_ordering.py script should spit out a list of tests at the
+end that causes the test to fail.
 
 *** promo
-At the moment bisect-test-ordering only allows you to find tests that fail due
-to a previous test running. It's a small change to the script to make it work
-for tests that pass due to a previous test running (i.e. to figure out which
-test it depends on running before it). Contact ojan@chromium if you're
+At the moment bisect_web_test_ordering.py only allows you to find tests that
+fail due to a previous test running. It's a small change to the script to make
+it work for tests that pass due to a previous test running (i.e. to figure out
+which test it depends on running before it). Contact ojan@chromium if you're
 interested in adding that feature to the script.
 ***
 
 ### Manual bisect
 
-Instead of running `bisect-test-ordering`, you can manually do the work of step
-4 above.
+Instead of running `bisect_web_test_ordering.py`, you can manually do the work
+of step 4 above.
 
 1. `run-webkit-tests --child-processes=1 --order=none --test-list=path/to/file/from/step/3`
 2. If the test doesn't fail here, then the test itself is probably just flaky.
@@ -58,7 +58,7 @@ Instead of running `bisect-test-ordering`, you can manually do the work of step
 #### Run tests in a random order and diagnose failures
 
 1. Run `run-webkit-tests --order=random --no-retry`
-2. Run `./Tools/Scripts/print-test-ordering` and save the output to a file. This
+2. Run `./tools/print_web_test_ordering.py` and save the output to a file. This
    outputs the tests run in the order they were run on each content_shell
    instance.
 3. Run the diagnosing steps from above to figure out which tests

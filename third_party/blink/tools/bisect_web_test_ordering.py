@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (C) 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -27,13 +27,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import with_statement
 import sys
 
-from webkitpy.common import read_checksum_from_png
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
+from webkitpy.layout_tests import bisect_test_ordering
 
-
-if '__main__' == __name__:
-    for filename in sys.argv[1:]:
-        with open(filename, 'r') as filehandle:
-            print "%s: %s" % (read_checksum_from_png.read_checksum(filehandle), filename)
+sys.exit(bisect_test_ordering.main(sys.argv[1:]))

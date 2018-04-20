@@ -32,6 +32,7 @@ import json
 import optparse
 import sys
 
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 from webkitpy.common.host import Host
 
 
