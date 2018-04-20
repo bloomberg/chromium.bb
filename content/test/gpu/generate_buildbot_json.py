@@ -1257,47 +1257,45 @@ COMMON_GTESTS = {
     ],
   },
 
-  # Temporarily disabled while we roll Vulkan.
-  # TODO(jmadill): Re-enable after roll. http://anglebug.com/2393
-  # 'angle_deqp_gles2_vulkan_tests': {
-  #   'tester_configs': [
-  #     {
-  #       'predicate': Predicates.DEQP,
-  #       'swarming_dimension_sets': [
-  #         # NVIDIA Win 10
-  #         {
-  #           'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
-  #           'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
-  #         },
-  #         # AMD Win 7
-  #         {
-  #           'gpu': '1002:6613',
-  #           'os': 'Windows-2008ServerR2-SP1'
-  #         },
-  #         # NVIDIA Linux Quadro P400
-  #         {
-  #           'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
-  #           'os': 'Ubuntu'
-  #         },
-  #       ],
-  #     },
-  #   ],
-  #   'disabled_tester_configs': [
-  #     {
-  #       'names': [
-  #         'Linux FYI Ozone (Intel)',
-  #       ],
-  #     },
-  #   ],
-  #   'desktop_swarming': {
-  #     'shards': 4,
-  #   },
-  #   'test': 'angle_deqp_gles2_tests',
-  #   'args': [
-  #     '--test-launcher-batch-limit=400',
-  #     '--deqp-egl-display-type=angle-vulkan'
-  #   ]
-  # },
+  'angle_deqp_gles2_vulkan_tests': {
+    'tester_configs': [
+      {
+        'predicate': Predicates.DEQP,
+        'swarming_dimension_sets': [
+          # NVIDIA Win 10
+          {
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
+            'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
+          },
+          # AMD Win 7
+          {
+            'gpu': '1002:6613',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+          # NVIDIA Linux Quadro P400
+          {
+            'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
+            'os': 'Ubuntu'
+          },
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux FYI Ozone (Intel)',
+        ],
+      },
+    ],
+    'desktop_swarming': {
+      'shards': 4,
+    },
+    'test': 'angle_deqp_gles2_tests',
+    'args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-vulkan'
+    ]
+  },
 
   'angle_deqp_gles3_gles_tests': {
     'tester_configs': [
