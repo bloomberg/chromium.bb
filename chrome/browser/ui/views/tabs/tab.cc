@@ -69,6 +69,7 @@
 #endif
 
 using base::UserMetricsAction;
+using MD = ui::MaterialDesignController;
 
 namespace {
 
@@ -94,14 +95,17 @@ const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
 // Drawing and utility functions
 
 // Returns the width of the tab endcap in DIP.  More precisely, this is the
-// width of the curve making up either the outer or inner edge of the stroke;
-// since these two curves are horizontally offset by 1 px (regardless of scale),
-// the total width of the endcap from tab outer edge to the inside end of the
-// stroke inner edge is (GetUnscaledEndcapWidth() * scale) + 1.
+// width of the curve making up either the outer or inner edge of the stroke.
+//
+// For non-material-refresh mode, these two curves are horizontally offset by
+// 1 px (regardless of scale), the total width of the endcap from tab outer
+// edge to the inside end of the stroke inner edge is
+// (GetUnscaledEndcapWidth() * scale) + 1.
 //
 // The value returned here must be at least Tab::kMinimumEndcapWidth.
 float GetTabEndcapWidth() {
-  return GetLayoutInsets(TAB).left() - 0.5f;
+  return GetLayoutInsets(TAB).left() -
+         (MD::GetMode() == MD::MATERIAL_REFRESH ? 0.0f : 0.5f);
 }
 
 void DrawHighlight(gfx::Canvas* canvas,
@@ -138,30 +142,73 @@ gfx::Path GetInteriorPath(float scale,
   // this makes it easier to avoid overdraw in the top center near minimum
   // width, and to implement cases where |horizontal_inset| != 0.
   gfx::Path right_path;
-  right_path.moveTo(right - 1 - scaled_horizontal_inset, bottom);
-  right_path.rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale,
-                      -2 * scale, -1.5 * scale);
-  right_path.lineTo(
-      right - 1 - scaled_horizontal_inset - (endcap_width - 2) * scale,
-      2.5 * scale);
-  right_path.rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale, -1.5 * scale,
-                      -2 * scale, -1.5 * scale);
-  right_path.lineTo(0, scale);
-  right_path.lineTo(0, bottom);
-  right_path.close();
-
   gfx::Path left_path;
-  const float scaled_endcap_width = 1 + endcap_width * scale;
-  left_path.moveTo(scaled_endcap_width + scaled_horizontal_inset, scale);
-  left_path.rCubicTo(-0.75 * scale, 0, -1.625 * scale, 0.5 * scale, -2 * scale,
-                     1.5 * scale);
-  left_path.lineTo(1 + scaled_horizontal_inset + 2 * scale,
-                   bottom - 1.5 * scale);
-  left_path.rCubicTo(-0.375 * scale, scale, -1.25 * scale, 1.5 * scale,
-                     -2 * scale, 1.5 * scale);
-  left_path.lineTo(right, bottom);
-  left_path.lineTo(right, scale);
-  left_path.close();
+  if (MD::GetMode() == MD::MATERIAL_REFRESH) {
+    const float radius = (endcap_width / 2) * scale;
+
+    const float stroke_thickness = TabStrip::ShouldDrawStrokes() ? 1 : 0;
+
+    // Bottom right.
+    right_path.moveTo(right, bottom);
+
+    right_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
+                     SkPath::kCW_Direction, right - radius, bottom - radius);
+
+    // Right vertical.
+    right_path.lineTo(right - radius, radius + stroke_thickness);
+
+    // Top right.
+    right_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
+                     SkPath::kCCW_Direction, right - radius * 2,
+                     stroke_thickness);
+
+    // Top edge.
+    right_path.lineTo(0, stroke_thickness);
+    right_path.lineTo(0, bottom);
+    right_path.close();
+
+    // Top left.
+    left_path.moveTo(radius * 2, stroke_thickness);
+
+    left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
+                    SkPath::kCCW_Direction, radius, radius + stroke_thickness);
+
+    // Left vertical.
+    left_path.lineTo(radius, bottom - radius);
+
+    // Bottom left.
+    left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
+                    SkPath::kCW_Direction, 0, bottom);
+
+    // Bottom edge.
+    left_path.lineTo(right, bottom);
+    left_path.lineTo(right, stroke_thickness);
+    left_path.close();
+  } else {
+    right_path.moveTo(right - 1 - scaled_horizontal_inset, bottom);
+    right_path.rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale,
+                        -2 * scale, -1.5 * scale);
+    right_path.lineTo(
+        right - 1 - scaled_horizontal_inset - (endcap_width - 2) * scale,
+        2.5 * scale);
+    right_path.rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale, -1.5 * scale,
+                        -2 * scale, -1.5 * scale);
+    right_path.lineTo(0, scale);
+    right_path.lineTo(0, bottom);
+    right_path.close();
+
+    const float scaled_endcap_width = 1 + endcap_width * scale;
+    left_path.moveTo(scaled_endcap_width + scaled_horizontal_inset, scale);
+    left_path.rCubicTo(-0.75 * scale, 0, -1.625 * scale, 0.5 * scale,
+                       -2 * scale, 1.5 * scale);
+    left_path.lineTo(1 + scaled_horizontal_inset + 2 * scale,
+                     bottom - 1.5 * scale);
+    left_path.rCubicTo(-0.375 * scale, scale, -1.25 * scale, 1.5 * scale,
+                       -2 * scale, 1.5 * scale);
+    left_path.lineTo(right, bottom);
+    left_path.lineTo(right, scale);
+    left_path.close();
+  }
 
   gfx::Path complete_path;
   Op(left_path, right_path, SkPathOp::kIntersect_SkPathOp, &complete_path);
@@ -179,34 +226,63 @@ gfx::Path GetBorderPath(float scale,
                         bool extend_to_top,
                         float endcap_width,
                         const gfx::Size& size) {
-  const float top = scale - 1;
+  const float stroke_thickness = TabStrip::ShouldDrawStrokes() ? 1 : 0;
+  const float top = scale - stroke_thickness;
   const float right = size.width() * scale;
   const float bottom = size.height() * scale;
 
   gfx::Path path;
+
   path.moveTo(0, bottom);
   path.rLineTo(0, -1);
-  path.rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
-                -1.5 * scale);
-  path.lineTo((endcap_width - 2) * scale, top + 1.5 * scale);
-  if (extend_to_top) {
-    // Create the vertical extension by extending the side diagonals until
-    // they reach the top of the bounds.
-    const float dy = 2.5 * scale - 1;
-    const float dx = Tab::GetInverseDiagonalSlope() * dy;
-    path.rLineTo(dx, -dy);
-    path.lineTo(right - (endcap_width - 2) * scale - dx, 0);
-    path.rLineTo(dx, dy);
+
+  if (MD::GetMode() == MD::MATERIAL_REFRESH) {
+    const float radius = (endcap_width / 2) * scale;
+    const float bottom_radius = radius - stroke_thickness;
+    const float top_radius = radius + stroke_thickness;
+
+    // bottom left
+    path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+               SkPath::kCCW_Direction, bottom_radius, bottom - radius);
+    // left vertical
+    path.lineTo(bottom_radius, top_radius);
+    // top left
+    path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
+               SkPath::kCW_Direction, radius * 2, 0);
+    // top line
+    path.lineTo(right - radius * 2, 0);
+    // top right
+    path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
+               SkPath::kCW_Direction, right - bottom_radius, radius);
+    // right vertical
+    path.lineTo(right - bottom_radius, bottom - radius);
+    // bottom right
+    path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+               SkPath::kCCW_Direction, right, bottom - stroke_thickness);
   } else {
-    path.rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale, 2 * scale,
+    path.rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
                   -1.5 * scale);
-    path.lineTo(right - endcap_width * scale, top);
-    path.rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
+    path.lineTo((endcap_width - 2) * scale, top + 1.5 * scale);
+    if (extend_to_top) {
+      // Create the vertical extension by extending the side diagonals until
+      // they reach the top of the bounds.
+      const float dy = 2.5 * scale - 1;
+      const float dx = Tab::GetInverseDiagonalSlope() * dy;
+      path.rLineTo(dx, -dy);
+      path.lineTo(right - (endcap_width - 2) * scale - dx, 0);
+      path.rLineTo(dx, dy);
+    } else {
+      path.rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale,
+                    2 * scale, -1.5 * scale);
+      path.lineTo(right - endcap_width * scale, top);
+      path.rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
+                    1.5 * scale);
+    }
+    path.lineTo(right - 2 * scale, bottom - 1 - 1.5 * scale);
+    path.rCubicTo(0.375 * scale, scale, 1.25 * scale, 1.5 * scale, 2 * scale,
                   1.5 * scale);
   }
-  path.lineTo(right - 2 * scale, bottom - 1 - 1.5 * scale);
-  path.rCubicTo(0.375 * scale, scale, 1.25 * scale, 1.5 * scale, 2 * scale,
-                1.5 * scale);
+
   path.rLineTo(0, 1);
   path.close();
 
@@ -281,8 +357,7 @@ Tab::~Tab() {
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
-  const bool is_touch_optimized =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
   // If theme provider is not yet available, return the default button
   // color.
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
@@ -678,8 +753,7 @@ void Tab::Layout() {
   close_button_->SetVisible(showing_close_button_);
 
   if (showing_alert_indicator_) {
-    const bool is_touch_optimized =
-        ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+    const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
     const gfx::Size image_size(alert_indicator_button_->GetPreferredSize());
     const int alert_to_close_spacing =
         is_touch_optimized ? after_title_padding : 0;
@@ -991,15 +1065,17 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   if (fill_id || paint_hover_effect) {
     gfx::Path fill_path =
         GetInteriorPath(canvas->image_scale(), size(), endcap_width);
-    gfx::Path stroke_path = GetBorderPath(canvas->image_scale(), false, false,
-                                          endcap_width, size());
     PaintTabBackgroundFill(canvas, fill_path, active, paint_hover_effect,
                            active_color, inactive_color, fill_id, y_offset);
-    gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
-    if (clip)
-      canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
-    PaintTabBackgroundStroke(canvas, fill_path, stroke_path, active,
-                             stroke_color);
+    if (TabStrip::ShouldDrawStrokes()) {
+      gfx::Path stroke_path = GetBorderPath(canvas->image_scale(), false, false,
+                                            endcap_width, size());
+      gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
+      if (clip)
+        canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
+      PaintTabBackgroundStroke(canvas, fill_path, stroke_path, active,
+                               stroke_color);
+    }
     return;
   }
 
@@ -1022,7 +1098,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
                              fill_id, y_offset);
       cache.fill_record = recorder.finishRecordingAsPicture();
     }
-    {
+    if (TabStrip::ShouldDrawStrokes()) {
       gfx::Canvas cache_canvas(
           recorder.beginRecording(size().width(), size().height()),
           canvas->image_scale());
@@ -1036,10 +1112,12 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   }
 
   canvas->sk_canvas()->drawPicture(cache.fill_record);
-  gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
-  if (clip)
-    canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
-  canvas->sk_canvas()->drawPicture(cache.stroke_record);
+  if (TabStrip::ShouldDrawStrokes()) {
+    gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
+    if (clip)
+      canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
+    canvas->sk_canvas()->drawPicture(cache.stroke_record);
+  }
 }
 
 void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
@@ -1110,8 +1188,7 @@ void Tab::UpdateIconVisibility() {
 
   int available_width = std::max(0, width() - min_size.width());
 
-  const bool is_touch_optimized =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
   const int favicon_width = gfx::kFaviconSize;
   const int alert_icon_width =
       alert_indicator_button_->GetPreferredSize().width();
@@ -1233,10 +1310,10 @@ void Tab::OnButtonColorMaybeChanged() {
     button_color_ = new_button_color;
     title_->SetEnabledColor(title_color);
     alert_indicator_button_->OnParentTabButtonColorChanged();
-    if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    if (!MD::IsTouchOptimizedUiEnabled())
       close_button_->SetTabColor(button_color_);
   }
-  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+  if (MD::IsTouchOptimizedUiEnabled())
     close_button_->ActiveStateChanged(this);
 }
 

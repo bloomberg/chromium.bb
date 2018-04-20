@@ -80,6 +80,7 @@
 
 using base::UserMetricsAction;
 using ui::DropTargetEvent;
+using MD = ui::MaterialDesignController;
 
 namespace {
 
@@ -304,6 +305,11 @@ TabStrip::~TabStrip() {
   // The children (tabs) may callback to us from their destructor. Delete them
   // so that if they call back we aren't in a weird state.
   RemoveAllChildViews(true);
+}
+
+// static
+bool TabStrip::ShouldDrawStrokes() {
+  return MD::GetMode() != MD::MATERIAL_REFRESH;
 }
 
 void TabStrip::AddObserver(TabStripObserver* observer) {
@@ -1172,14 +1178,16 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
                              paint_info.paint_recording_scale_x(),
                              paint_info.paint_recording_scale_y(), nullptr);
 
-  gfx::Canvas* canvas = recorder.canvas();
-  if (active_tab && active_tab->visible()) {
-    canvas->sk_canvas()->clipRect(
-        gfx::RectToSkRect(active_tab->GetMirroredBounds()),
-        SkClipOp::kDifference);
+  if (ShouldDrawStrokes()) {
+    gfx::Canvas* canvas = recorder.canvas();
+    if (active_tab && active_tab->visible()) {
+      canvas->sk_canvas()->clipRect(
+          gfx::RectToSkRect(active_tab->GetMirroredBounds()),
+          SkClipOp::kDifference);
+    }
+    BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
+                                        GetLocalBounds(), true);
   }
-  BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
-                                      GetLocalBounds(), true);
 }
 
 const char* TabStrip::GetClassName() const {
@@ -2327,8 +2335,7 @@ bool TabStrip::NeedsTouchLayout() const {
 }
 
 void TabStrip::SetResetToShrinkOnExit(bool value) {
-  if (!adjust_layout_ ||
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+  if (!adjust_layout_ || MD::IsTouchOptimizedUiEnabled()) {
     return;
   }
 

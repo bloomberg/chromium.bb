@@ -38,6 +38,8 @@
 #include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
 #endif
 
+using MD = ui::MaterialDesignController;
+
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
@@ -61,7 +63,7 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
 
 // static
 int BrowserNonClientFrameView::GetAvatarIconPadding() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 8 : 4;
+  return MD::IsTouchOptimizedUiEnabled() ? 8 : 4;
 }
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
@@ -258,20 +260,21 @@ void BrowserNonClientFrameView::PaintToolbarBackground(
                      tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 
-  // Top stroke.
-  gfx::ScopedCanvas scoped_canvas(canvas);
-  gfx::Rect tabstrip_bounds =
-      GetMirroredRect(GetBoundsForTabStrip(browser_view()->tabstrip()));
-  canvas->ClipRect(tabstrip_bounds, SkClipOp::kDifference);
-  gfx::Rect separator_rect(x, y, w, 0);
-  separator_rect.set_y(tabstrip_bounds.bottom());
-  BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
-                                      separator_rect, true);
-
-  // Toolbar/content separator.
-  BrowserView::Paint1pxHorizontalLine(
-      canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
-      toolbar_bounds, true);
+  if (TabStrip::ShouldDrawStrokes()) {
+    // Top stroke.
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    gfx::Rect tabstrip_bounds =
+        GetMirroredRect(GetBoundsForTabStrip(browser_view()->tabstrip()));
+    canvas->ClipRect(tabstrip_bounds, SkClipOp::kDifference);
+    gfx::Rect separator_rect(x, y, w, 0);
+    separator_rect.set_y(tabstrip_bounds.bottom());
+    BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
+                                        separator_rect, true);
+    // Toolbar/content separator.
+    BrowserView::Paint1pxHorizontalLine(
+        canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
+        toolbar_bounds, true);
+  }
 }
 
 void BrowserNonClientFrameView::ViewHierarchyChanged(
@@ -424,7 +427,7 @@ bool BrowserNonClientFrameView::ShouldShowProfileIndicatorIcon() const {
   // frame. It's instead shown in the new tab button. However, we still show an
   // avatar icon for the teleported browser windows between multi-user sessions
   // (Chrome OS only). Note that you can't teleport an incognito window.
-  if (is_incognito && ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+  if (is_incognito && MD::IsTouchOptimizedUiEnabled())
     return false;
 
 #if defined(OS_CHROMEOS)
