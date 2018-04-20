@@ -150,11 +150,7 @@ void TabStripModel::WebContentsData::WebContentsDestroyed() {
   // already been closed. We just want to undo our bookkeeping.
   int index = tab_strip_model_->GetIndexOfWebContents(web_contents());
   DCHECK_NE(TabStripModel::kNoTab, index);
-
-  // TODO(erikchen): Clean up the internal ownership of TabStripModel once we
-  // move to a world where there's always explicit ownership of WebContents.
-  // https://crbug.com/832879.
-  tab_strip_model_->DetachWebContentsAt(index).release();
+  tab_strip_model_->DetachWebContentsAt(index);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -277,8 +273,7 @@ std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
   return base::WrapUnique(old_contents);
 }
 
-std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsAt(
-    int index) {
+WebContents* TabStripModel::DetachWebContentsAt(int index) {
   CHECK(!in_notify_);
   if (contents_data_.empty())
     return nullptr;
@@ -329,7 +324,7 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsAt(
         observer.TabSelectionChanged(this, old_model);
     }
   }
-  return base::WrapUnique(removed_contents);
+  return removed_contents;
 }
 
 void TabStripModel::ActivateTabAt(int index, bool user_gesture) {

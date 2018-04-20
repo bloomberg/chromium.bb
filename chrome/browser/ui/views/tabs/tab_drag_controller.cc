@@ -980,10 +980,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
     // Hide the tab so that the user doesn't see it animate closed.
     drag_data_[i].attached_tab->SetVisible(false);
     drag_data_[i].attached_tab->set_detached();
-
-    // TODO(erikchen): Fix ownership semantics for this class once all
-    // TabStripModel APIs have been migrated to use proper ownership semantics.
-    attached_model->DetachWebContentsAt(index).release();
+    attached_model->DetachWebContentsAt(index);
 
     // Detaching may end up deleting the tab, drop references to it.
     drag_data_[i].attached_tab = NULL;
@@ -1457,14 +1454,12 @@ void TabDragController::RevertDragAt(size_t drag_index) {
     if (attached_tabstrip_ != source_tabstrip_) {
       // The Tab was inserted into another TabStrip. We need to put it back
       // into the original one.
-      std::unique_ptr<content::WebContents> detached_web_contents =
-          GetModel(attached_tabstrip_)->DetachWebContentsAt(index);
+      GetModel(attached_tabstrip_)->DetachWebContentsAt(index);
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.
-      GetModel(source_tabstrip_)
-          ->InsertWebContentsAt(data->source_model_index,
-                                detached_web_contents.release(),
-                                (data->pinned ? TabStripModel::ADD_PINNED : 0));
+      GetModel(source_tabstrip_)->InsertWebContentsAt(
+          data->source_model_index, data->contents,
+          (data->pinned ? TabStripModel::ADD_PINNED : 0));
     } else {
       // The Tab was moved within the TabStrip where the drag was initiated.
       // Move it back to the starting location.
