@@ -2293,6 +2293,9 @@
         }
       },
       {
+        "args": [
+          "--zero-tests-executed-ok"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -2807,6 +2810,9 @@
   "Dummy WebKit Mac10.13": {
     "isolated_scripts": [
       {
+        "args": [
+          "--zero-tests-executed-ok"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -4805,6 +4811,9 @@
         }
       },
       {
+        "args": [
+          "--zero-tests-executed-ok"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -5324,7 +5333,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "--additional-driver-flag=--enable-features=NetworkService"
+          "--additional-driver-flag=--enable-features=NetworkService",
+          "--zero-tests-executed-ok"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -7652,7 +7662,8 @@
       {
         "args": [
           "--additional-driver-flag=--enable-blink-features=LayoutNG",
-          "--additional-driver-flag=--enable-slimming-paint-v175"
+          "--additional-driver-flag=--enable-slimming-paint-v175",
+          "--zero-tests-executed-ok"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -7680,7 +7691,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "--additional-driver-flag=--root-layer-scrolls"
+          "--additional-driver-flag=--root-layer-scrolls",
+          "--zero-tests-executed-ok"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -7708,7 +7720,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "--additional-driver-flag=--enable-slimming-paint-v2"
+          "--additional-driver-flag=--enable-slimming-paint-v2",
+          "--zero-tests-executed-ok"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -8237,8 +8250,9 @@
     "isolated_scripts": [
       {
         "args": [
+          "--additional-driver-flag=--enable-blink-features=HeapIncrementalMarking",
           "--debug",
-          "--additional-driver-flag=--enable-blink-features=HeapIncrementalMarking"
+          "--zero-tests-executed-ok"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -8411,6 +8425,9 @@
     ],
     "isolated_scripts": [
       {
+        "args": [
+          "--zero-tests-executed-ok"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [

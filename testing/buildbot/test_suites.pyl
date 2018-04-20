@@ -543,6 +543,9 @@
 
   'chromium_webkit_isolated_scripts': {
     'webkit_layout_tests': {
+      'args': [
+        '--zero-tests-executed-ok',
+      ],
       'isolate_name': 'webkit_layout_tests_exparchive',
       'merge': {
         'args': [
@@ -818,6 +821,9 @@
     },
     'views_perftests': {},
     'webkit_layout_tests': {
+      'args': [
+        '--zero-tests-executed-ok',
+      ],
       'isolate_name': 'webkit_layout_tests_exparchive',
       'merge': {
         'args': [
@@ -1089,6 +1095,7 @@
     'webkit_layout_tests': {
       'args': [
         '--additional-driver-flag=--enable-features=NetworkService',
+        '--zero-tests-executed-ok',
       ],
       'isolate_name': 'webkit_layout_tests_exparchive',
       'merge': {
@@ -1766,6 +1773,9 @@
   # adding them to test_suite_exceptions.pyl.
   'webkit_layout_tests_isolated_scripts': {
     'webkit_layout_tests': {
+      'args': [
+        '--zero-tests-executed-ok',
+      ],
       'isolate_name': 'webkit_layout_tests_exparchive',
       'merge': {
         'args': [
