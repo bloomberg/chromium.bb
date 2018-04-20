@@ -3916,6 +3916,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Is Shared"/>
 </enum>
 
+<enum name="BooleanIsSystemLevelInstall">
+  <int value="0" label="User Level Install"/>
+  <int value="1" label="System Level Install"/>
+</enum>
+
 <enum name="BooleanIsTagged">
   <int value="0" label="Not Tagged"/>
   <int value="1" label="Is Tagged"/>
@@ -28116,6 +28121,12 @@ from previous Chrome versions.
   <int value="20" label="MacBookPro7,X"/>
   <int value="21" label="MacBookPro6,X"/>
   <int value="22" label="MacBookPro5,X"/>
+</enum>
+
+<enum name="MachineLevelUserCloudPolicyEnrollmentResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to fetch DM Token from the server"/>
+  <int value="2" label="Failed to store DM Token to the device"/>
 </enum>
 
 <enum name="MacOSBluetoothOperationsResult">

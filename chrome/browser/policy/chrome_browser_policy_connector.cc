@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -37,6 +38,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
+#include "chrome/install_static/install_util.h"
 #include "components/policy/core/common/policy_loader_win.h"
 #elif defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
@@ -55,6 +57,17 @@ namespace policy {
 namespace {
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+// This enum is used for recording the metrics. It must match the
+// MachineLevelUserCloudPolicyEnrollmentResult in enums.xml and should not be
+// reordered. |kMaxValue| must be assigned to the last entry of the enum.
+enum MachineLevelUserCloudPolicyEnrollmentResult {
+  kSuccess = 0,
+  kFailedToFetch = 1,
+  kFailedToStore = 2,
+  kMaxValue = kFailedToStore,
+};
+
 std::unique_ptr<MachineLevelUserCloudPolicyManager>
 CreateMachineLevelUserCloudPolicyManager() {
   base::FilePath user_data_dir;
@@ -77,6 +90,12 @@ CreateMachineLevelUserCloudPolicyManager() {
       base::ThreadTaskRunnerHandle::Get(),
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO));
+}
+
+void RecordEnrollmentResult(
+    MachineLevelUserCloudPolicyEnrollmentResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Enterprise.MachineLevelUserCloudPolicyEnrollment.Result", result);
 }
 #endif
 
@@ -253,6 +272,16 @@ void ChromeBrowserPolicyConnector::InitializeMachineLevelUserCloudPolicies(
             base::Bind(&ChromeBrowserPolicyConnector::
                            RegisterForPolicyWithEnrollmentTokenCallback,
                        base::Unretained(this)));
+#if defined(OS_WIN)
+    // This metric is only published on Windows to indicate how many user level
+    // install Chrome try to enroll the policy which can't store the DM token
+    // in the Registry in the end of enrollment. Mac and Linux does not need
+    // this metric for now as they might use different token storage mechanism
+    // in the future.
+    UMA_HISTOGRAM_BOOLEAN(
+        "Enterprise.MachineLevelUserCloudPolicyEnrollment.InstallLevel_Win",
+        install_static::IsSystemInstall());
+#endif
   }
 }
 
@@ -272,6 +301,8 @@ void ChromeBrowserPolicyConnector::RegisterForPolicyWithEnrollmentTokenCallback(
     const std::string& client_id) {
   if (dm_token.empty()) {
     DVLOG(1) << "No DM token returned from browser registration";
+    RecordEnrollmentResult(
+        MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch);
     return;
   }
 
@@ -280,8 +311,15 @@ void ChromeBrowserPolicyConnector::RegisterForPolicyWithEnrollmentTokenCallback(
   // TODO(alito): Log failures to store the DM token. Should we try again later?
   BrowserDMTokenStorage::Get()->StoreDMToken(
       dm_token, base::BindOnce([](bool success) {
-        DVLOG(1) << (success ? "Successfully stored the DM token"
-                             : "Failed to store the DM token");
+        if (!success) {
+          DVLOG(1) << "Failed to store the DM token";
+          RecordEnrollmentResult(
+              MachineLevelUserCloudPolicyEnrollmentResult::kFailedToStore);
+        } else {
+          DVLOG(1) << "Successfully stored the DM token";
+          RecordEnrollmentResult(
+              MachineLevelUserCloudPolicyEnrollmentResult::kSuccess);
+        }
       }));
 
   // Start fetching policies.
