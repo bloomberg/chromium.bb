@@ -90,25 +90,56 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
 
   ~SimpleThread() override;
 
-  virtual void Start();
-  virtual void Join();
+  // Starts the thread and returns only after the thread has started and
+  // initialized (i.e. ThreadMain() has been called).
+  void Start();
+
+  // Joins the thread. If StartAsync() was used to start the thread, then this
+  // first waits for the thread to start cleanly, then it joins.
+  void Join();
+
+  // Starts the thread, but returns immediately, without waiting for the thread
+  // to have initialized first (i.e. this does not wait for ThreadMain() to have
+  // been run first).
+  void StartAsync();
 
   // Subclasses should override the Run method.
   virtual void Run() = 0;
 
-  // Return the thread id, only valid after Start().
-  PlatformThreadId tid() { return tid_; }
+  // Returns the thread id, only valid after the thread has started. If the
+  // thread was started using Start(), then this will be valid after the call to
+  // Start(). If StartAsync() was used to start the thread, then this must not
+  // be called before HasBeenStarted() returns True.
+  PlatformThreadId tid();
 
-  // Return True if Start() has ever been called.
+  // Returns True if the thread has been started and initialized (i.e. if
+  // ThreadMain() has run). If the thread was started with StartAsync(), but it
+  // hasn't been initialized yet (i.e. ThreadMain() has not run), then this will
+  // return False.
   bool HasBeenStarted();
 
-  // Return True if Join() has ever been called.
+  // Returns True if Join() has ever been called.
   bool HasBeenJoined() { return joined_; }
+
+  // Returns true if Start() or StartAsync() has been called.
+  bool HasStartBeenAttempted() { return start_called_; }
 
   // Overridden from PlatformThread::Delegate:
   void ThreadMain() override;
 
  private:
+  // This is called just before the thread is started. This is called regardless
+  // of whether Start() or StartAsync() is used to start the thread.
+  virtual void BeforeStart() {}
+
+  // This is called just after the thread has been initialized and just before
+  // Run() is called. This is called on the newly started thread.
+  virtual void BeforeRun() {}
+
+  // This is called just before the thread is joined. The thread is started and
+  // has been initialized before this is called.
+  virtual void BeforeJoin() {}
+
   const std::string name_prefix_;
   std::string name_;
   const Options options_;
@@ -116,6 +147,8 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
   WaitableEvent event_;          // Signaled if Start() was ever called.
   PlatformThreadId tid_ = kInvalidThreadId;  // The backing thread's id.
   bool joined_ = false;                      // True if Join has been called.
+  // Set to true when the platform-thread creation has started.
+  bool start_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleThread);
 };
