@@ -684,7 +684,7 @@ cr.define('device_page_tests', function() {
             width: 1920,
             height: 1080,
           },
-          displayZoomFactors: [1],
+          availableDisplayZoomFactors: [1],
         };
         fakeSystemDisplay.addDisplayForTest(display);
       };

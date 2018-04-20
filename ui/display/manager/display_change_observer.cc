@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "chromeos/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/display.h"
@@ -68,7 +67,7 @@ DisplayChangeObserver::GetInternalManagedDisplayModeList(
                                  display_info.device_scale_factor());
   // When display zoom option is available, we cannot change the mode for
   // internal displays.
-  if (chromeos::switches::IsDisplayZoomSettingEnabled()) {
+  if (features::IsDisplayZoomSettingEnabled()) {
     native_mode.set_is_default(true);
     return ManagedDisplayInfo::ManagedDisplayModeList{native_mode};
   }
@@ -129,7 +128,7 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
 
   // If we are using display zoom mode, we no longer have to add additional
   // display modes for ultra high resolution displays.
-  if (chromeos::switches::IsDisplayZoomSettingEnabled())
+  if (features::IsDisplayZoomSettingEnabled())
     return display_mode_list;
 
   if (native_mode.size().width() >= kMinimumWidthFor4K) {

@@ -13,6 +13,7 @@
 #include "base/metrics/user_metrics.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -25,7 +26,7 @@ bool IsInternalDisplayZoomEnabled() {
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   return display_manager->IsDisplayUIScalingEnabled() ||
          display_manager->IsInUnifiedMode() ||
-         chromeos::switches::IsDisplayZoomSettingEnabled();
+         features::IsDisplayZoomSettingEnabled();
 }
 
 bool ZoomDisplay(bool up) {
@@ -37,7 +38,7 @@ bool ZoomDisplay(bool up) {
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
 
   if (display_manager->IsInUnifiedMode() ||
-      !chromeos::switches::IsDisplayZoomSettingEnabled()) {
+      !features::IsDisplayZoomSettingEnabled()) {
     return display_manager->ZoomInternalDisplay(up);
   }
 
@@ -50,7 +51,7 @@ bool ZoomDisplay(bool up) {
 void ResetDisplayZoom() {
   base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Reset"));
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
-  if (chromeos::switches::IsDisplayZoomSettingEnabled() &&
+  if (features::IsDisplayZoomSettingEnabled() &&
       !display_manager->IsInUnifiedMode()) {
     gfx::Point point = display::Screen::GetScreen()->GetCursorScreenPoint();
     display::Display display =
