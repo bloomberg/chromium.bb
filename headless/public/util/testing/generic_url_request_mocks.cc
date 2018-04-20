@@ -105,17 +105,14 @@ void MockCookieStore::DeleteCanonicalCookieAsync(
   CHECK(false);
 }
 
-void MockCookieStore::DeleteAllCreatedBetweenAsync(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
+void MockCookieStore::DeleteAllCreatedInTimeRangeAsync(
+    const TimeRange& time_range,
     DeleteCallback callback) {
   CHECK(false);
 }
 
-void MockCookieStore::DeleteAllCreatedBetweenWithPredicateAsync(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
-    const CookiePredicate& predicate,
+void MockCookieStore::DeleteAllMatchingInfoAsync(
+    net::CookieStore::CookieDeletionInfo delete_info,
     DeleteCallback callback) {
   CHECK(false);
 }

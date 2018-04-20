@@ -35,19 +35,14 @@ namespace extensions {
 
 namespace {
 
-bool DoesCookieMatchHost(const std::string& host,
-                         const net::CanonicalCookie& cookie) {
-  return cookie.IsHostCookie() && cookie.IsDomainMatch(host);
-}
-
 void ClearCookiesOnIOThread(scoped_refptr<net::URLRequestContextGetter> context,
                             const GURL& origin) {
   net::CookieStore* cookie_store =
       context->GetURLRequestContext()->cookie_store();
-  cookie_store->DeleteAllCreatedBetweenWithPredicateAsync(
-      base::Time(), base::Time::Max(),
-      base::BindRepeating(&DoesCookieMatchHost, origin.host()),
-      net::CookieStore::DeleteCallback());
+  net::CookieStore::CookieDeletionInfo delete_info;
+  delete_info.host = origin.host();
+  cookie_store->DeleteAllMatchingInfoAsync(std::move(delete_info),
+                                           net::CookieStore::DeleteCallback());
 }
 
 // Helper function that deletes data of a given |storage_origin| in a given

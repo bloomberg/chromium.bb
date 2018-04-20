@@ -171,14 +171,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
                          base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
-  void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
-                                    const base::Time& delete_end,
-                                    DeleteCallback callback) override;
-  void DeleteAllCreatedBetweenWithPredicateAsync(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      const base::Callback<bool(const CanonicalCookie&)>& predicate,
-      DeleteCallback callback) override;
+  void DeleteAllCreatedInTimeRangeAsync(const TimeRange& creation_range,
+                                        DeleteCallback callback) override;
+  void DeleteAllMatchingInfoAsync(CookieDeletionInfo delete_info,
+                                  DeleteCallback callback) override;
   void DeleteSessionCookiesAsync(DeleteCallback) override;
   void FlushStore(base::OnceClosure callback) override;
   void SetForceKeepSessionState() override;
@@ -377,16 +373,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                 const CookieOptions& options,
                                 GetCookieListCallback callback);
 
-  void DeleteAllCreatedBetween(const base::Time& delete_begin,
-                               const base::Time& delete_end,
-                               DeleteCallback callback);
+  void DeleteAllCreatedInTimeRange(const TimeRange& creation_range,
+                                   DeleteCallback callback);
 
-  // Predicate will be called with the calling thread.
-  void DeleteAllCreatedBetweenWithPredicate(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      const base::Callback<bool(const CanonicalCookie&)>& predicate,
-      DeleteCallback callback);
+  void DeleteAllMatchingInfo(net::CookieStore::CookieDeletionInfo delete_info,
+                             DeleteCallback callback);
 
   void SetCookieWithOptions(const GURL& url,
                             const std::string& cookie_line,

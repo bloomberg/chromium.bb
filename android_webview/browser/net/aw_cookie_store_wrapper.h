@@ -60,13 +60,10 @@ class AwCookieStoreWrapper : public net::CookieStore {
                          base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const net::CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
-  void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
-                                    const base::Time& delete_end,
-                                    DeleteCallback callback) override;
-  void DeleteAllCreatedBetweenWithPredicateAsync(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      const CookiePredicate& predicate,
+  void DeleteAllCreatedInTimeRangeAsync(const TimeRange& creation_range,
+                                        DeleteCallback callback) override;
+  void DeleteAllMatchingInfoAsync(
+      net::CookieStore::CookieDeletionInfo delete_info,
       DeleteCallback callback) override;
   void DeleteSessionCookiesAsync(DeleteCallback callback) override;
   void FlushStore(base::OnceClosure callback) override;

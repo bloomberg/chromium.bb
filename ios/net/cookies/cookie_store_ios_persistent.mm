@@ -92,31 +92,27 @@ void CookieStoreIOSPersistent::DeleteCanonicalCookieAsync(
       cookie, WrapDeleteCallback(std::move(callback)));
 }
 
-void CookieStoreIOSPersistent::DeleteAllCreatedBetweenAsync(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
+void CookieStoreIOSPersistent::DeleteAllCreatedInTimeRangeAsync(
+    const TimeRange& creation_range,
     DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (metrics_enabled())
     ResetCookieCountMetrics();
 
-  cookie_monster()->DeleteAllCreatedBetweenAsync(
-      delete_begin, delete_end, WrapDeleteCallback(std::move(callback)));
+  cookie_monster()->DeleteAllCreatedInTimeRangeAsync(
+      creation_range, WrapDeleteCallback(std::move(callback)));
 }
 
-void CookieStoreIOSPersistent::DeleteAllCreatedBetweenWithPredicateAsync(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
-    const CookiePredicate& predicate,
+void CookieStoreIOSPersistent::DeleteAllMatchingInfoAsync(
+    CookieDeletionInfo delete_info,
     DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (metrics_enabled())
     ResetCookieCountMetrics();
 
-  cookie_monster()->DeleteAllCreatedBetweenWithPredicateAsync(
-      delete_begin, delete_end, predicate,
-      WrapDeleteCallback(std::move(callback)));
+  cookie_monster()->DeleteAllMatchingInfoAsync(
+      std::move(delete_info), WrapDeleteCallback(std::move(callback)));
 }
 
 void CookieStoreIOSPersistent::DeleteSessionCookiesAsync(

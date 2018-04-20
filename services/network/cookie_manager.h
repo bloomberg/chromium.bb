@@ -97,6 +97,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };
 
+COMPONENT_EXPORT(NETWORK_SERVICE)
+net::CookieStore::CookieDeletionInfo DeletionFilterToInfo(
+    network::mojom::CookieDeletionFilterPtr filter);
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_COOKIE_MANAGER_H_

@@ -175,17 +175,14 @@ void DelayedCookieMonster::DeleteCanonicalCookieAsync(
   ADD_FAILURE();
 }
 
-void DelayedCookieMonster::DeleteAllCreatedBetweenAsync(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
+void DelayedCookieMonster::DeleteAllCreatedInTimeRangeAsync(
+    const TimeRange& creation_range,
     DeleteCallback callback) {
   ADD_FAILURE();
 }
 
-void DelayedCookieMonster::DeleteAllCreatedBetweenWithPredicateAsync(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
-    const base::Callback<bool(const CanonicalCookie&)>& predicate,
+void DelayedCookieMonster::DeleteAllMatchingInfoAsync(
+    net::CookieStore::CookieDeletionInfo delete_info,
     DeleteCallback callback) {
   ADD_FAILURE();
 }

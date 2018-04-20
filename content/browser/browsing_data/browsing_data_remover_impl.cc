@@ -435,12 +435,12 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     }
 
     // If cookies are supposed to be conditionally deleted from the storage
-    // partition, create a cookie matcher function.
-    StoragePartition::CookieMatcherFunction cookie_matcher;
+    // partition, create the deletion info object.
+    net::CookieStore::CookieDeletionInfo cookie_delete_info;
     if (!filter_builder.IsEmptyBlacklist() &&
         (storage_partition_remove_mask &
          StoragePartition::REMOVE_DATA_MASK_COOKIES)) {
-      cookie_matcher = filter_builder.BuildCookieFilter();
+      cookie_delete_info = filter_builder.BuildCookieDeletionInfo();
     }
 
     BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
@@ -451,7 +451,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         storage_partition_remove_mask, quota_storage_remove_mask,
         base::BindRepeating(&DoesOriginMatchMaskAndURLs, origin_type_mask_,
                             filter, std::move(embedder_matcher)),
-        std::move(cookie_matcher), delete_begin_, delete_end_,
+        std::move(cookie_delete_info), delete_begin_, delete_end_,
         CreatePendingTaskCompletionClosure());
   }
 

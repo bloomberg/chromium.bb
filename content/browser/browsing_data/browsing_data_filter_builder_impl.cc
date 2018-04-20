@@ -56,27 +56,6 @@ bool MatchesURL(
           (mode == BrowsingDataFilterBuilder::WHITELIST));
 }
 
-// True if no domains can see the given cookie and we're a blacklist, or any
-// domains can see the cookie and we're a whitelist.
-// The whitelist or blacklist is represented as |domains_and_ips| and |mode|.
-bool MatchesCookieForRegisterableDomainsAndIPs(
-    const std::set<std::string>& domains_and_ips,
-    BrowsingDataFilterBuilder::Mode mode,
-    const net::CanonicalCookie& cookie) {
-  if (domains_and_ips.empty())
-    return mode == BrowsingDataFilterBuilder::BLACKLIST;
-  std::string cookie_domain = cookie.Domain();
-  if (cookie.IsDomainCookie())
-    cookie_domain = cookie_domain.substr(1);
-  std::string parsed_cookie_domain =
-      GetDomainAndRegistry(cookie_domain, INCLUDE_PRIVATE_REGISTRIES);
-  // This means we're an IP address or an internal hostname.
-  if (parsed_cookie_domain.empty())
-    parsed_cookie_domain = cookie_domain;
-  return (mode == BrowsingDataFilterBuilder::WHITELIST) ==
-      (domains_and_ips.find(parsed_cookie_domain) != domains_and_ips.end());
-}
-
 // True if none of the supplied domains matches this Channel ID's server ID
 // and we're a blacklist, or one of them does and we're a whitelist.
 // The whitelist or blacklist is represented as |domains_and_ips| and |mode|.
@@ -173,13 +152,24 @@ BrowsingDataFilterBuilderImpl::BuildClearCacheUrlFilter() const {
   return filter;
 }
 
-base::RepeatingCallback<bool(const net::CanonicalCookie& cookie)>
-BrowsingDataFilterBuilderImpl::BuildCookieFilter() const {
-  DCHECK(origins_.empty()) <<
-      "Origin-based deletion is not suitable for cookies. Please use "
-      "different scoping, such as RegistrableDomainFilterBuilder.";
-  return base::BindRepeating(&MatchesCookieForRegisterableDomainsAndIPs,
-                             domains_, mode_);
+net::CookieStore::CookieDeletionInfo
+BrowsingDataFilterBuilderImpl::BuildCookieDeletionInfo() const {
+  DCHECK(origins_.empty())
+      << "Origin-based deletion is not suitable for cookies. Please use "
+         "different scoping, such as RegistrableDomainFilterBuilder.";
+  net::CookieStore::CookieDeletionInfo delete_info;
+
+  switch (mode_) {
+    case WHITELIST:
+      delete_info.domains_and_ips_to_delete.insert(domains_.begin(),
+                                                   domains_.end());
+      break;
+    case BLACKLIST:
+      delete_info.domains_and_ips_to_ignore.insert(domains_.begin(),
+                                                   domains_.end());
+      break;
+  }
+  return delete_info;
 }
 
 base::RepeatingCallback<bool(const std::string& channel_id_server_id)>

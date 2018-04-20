@@ -96,13 +96,10 @@ class CookieStoreIOS : public net::CookieStore,
                          base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
-  void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
-                                    const base::Time& delete_end,
-                                    DeleteCallback callback) override;
-  void DeleteAllCreatedBetweenWithPredicateAsync(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      const CookiePredicate& predicate,
+  void DeleteAllCreatedInTimeRangeAsync(const TimeRange& creation_range,
+                                        DeleteCallback callback) override;
+  void DeleteAllMatchingInfoAsync(
+      net::CookieStore::CookieDeletionInfo delete_info,
       DeleteCallback callback) override;
   void DeleteSessionCookiesAsync(DeleteCallback callback) override;
   void FlushStore(base::OnceClosure callback) override;
@@ -132,11 +129,6 @@ class CookieStoreIOS : public net::CookieStore,
   using CookieChangeCallbackList =
       base::CallbackList<void(const CanonicalCookie& cookie,
                               CookieChangeCause cause)>;
-
-  // Cookie filter for DeleteCookiesWithFilter().
-  // Takes a cookie and a creation time and returns true the cookie must be
-  // deleted.
-  typedef base::Callback<bool(NSHTTPCookie*, base::Time)> CookieFilterFunction;
 
   // CookieChangeDispatcher implementation that proxies into IOSCookieStore.
   class CookieChangeDispatcherIOS : public CookieChangeDispatcher {
@@ -178,8 +170,9 @@ class CookieStoreIOS : public net::CookieStore,
   // Inherited CookieNotificationObserver methods.
   void OnSystemCookiesChanged() override;
 
-  void DeleteCookiesWithFilterAsync(CookieFilterFunction filter,
-                                    DeleteCallback callback);
+  void DeleteCookiesMatchingInfoAsync(
+      CookieStore::CookieDeletionInfo delete_info,
+      DeleteCallback callback);
 
   // Flush to CookieMonster from |cookies|, and run |callback|.
   void FlushStoreFromCookies(base::OnceClosure callback,

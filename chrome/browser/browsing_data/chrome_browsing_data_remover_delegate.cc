@@ -206,30 +206,26 @@ void ClearPnaclCacheOnIOThread(base::Time begin,
 }
 #endif
 
-void ClearCookiesOnIOThread(base::Time delete_begin,
-                            base::Time delete_end,
+void ClearCookiesOnIOThread(const net::CookieStore::TimeRange& creation_range,
                             net::URLRequestContextGetter* rq_context,
                             base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* cookie_store =
       rq_context->GetURLRequestContext()->cookie_store();
-  cookie_store->DeleteAllCreatedBetweenAsync(
-      delete_begin, delete_end,
-      base::AdaptCallbackForRepeating(
-          IgnoreArgument<uint32_t>(std::move(callback))));
+  cookie_store->DeleteAllCreatedInTimeRangeAsync(
+      creation_range, base::AdaptCallbackForRepeating(
+                          IgnoreArgument<uint32_t>(std::move(callback))));
 }
 
-void ClearCookiesWithPredicateOnIOThread(
-    base::Time delete_begin,
-    base::Time delete_end,
-    net::CookieStore::CookiePredicate predicate,
+void ClearCookiesMatchingInfoOnIOThread(
+    net::CookieStore::CookieDeletionInfo delete_info,
     net::URLRequestContextGetter* rq_context,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* cookie_store =
       rq_context->GetURLRequestContext()->cookie_store();
-  cookie_store->DeleteAllCreatedBetweenWithPredicateAsync(
-      delete_begin, delete_end, predicate,
+  cookie_store->DeleteAllMatchingInfoAsync(
+      std::move(delete_info),
       base::AdaptCallbackForRepeating(
           IgnoreArgument<uint32_t>(std::move(callback))));
 }
@@ -721,18 +717,22 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           BrowserThread::PostTask(
               BrowserThread::IO, FROM_HERE,
               base::BindOnce(
-                  &ClearCookiesOnIOThread, delete_begin_, delete_end_,
+                  &ClearCookiesOnIOThread,
+                  net::CookieStore::TimeRange(delete_begin_, delete_end_),
                   base::RetainedRef(std::move(sb_context)),
                   UIThreadTrampoline(base::BindOnce(
                       &ChromeBrowsingDataRemoverDelegate::OnClearedCookies,
                       weak_ptr_factory_.GetWeakPtr(),
                       CreatePendingTaskCompletionClosure()))));
         } else {
+          net::CookieStore::CookieDeletionInfo delete_info =
+              filter_builder.BuildCookieDeletionInfo();
+          delete_info.creation_range.SetStart(delete_begin_);
+          delete_info.creation_range.SetEnd(delete_end_);
           BrowserThread::PostTask(
               BrowserThread::IO, FROM_HERE,
               base::BindOnce(
-                  &ClearCookiesWithPredicateOnIOThread, delete_begin_,
-                  delete_end_, filter_builder.BuildCookieFilter(),
+                  &ClearCookiesMatchingInfoOnIOThread, std::move(delete_info),
                   base::RetainedRef(std::move(sb_context)),
                   UIThreadTrampoline(base::BindOnce(
                       &ChromeBrowsingDataRemoverDelegate::OnClearedCookies,

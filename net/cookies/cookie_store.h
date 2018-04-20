@@ -10,10 +10,12 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
@@ -46,7 +48,124 @@ class NET_EXPORT CookieStore {
   typedef base::OnceCallback<void(bool success)> SetCookiesCallback;
   typedef base::OnceCallback<void(uint32_t num_deleted)> DeleteCallback;
 
-  typedef base::Callback<bool(const CanonicalCookie& cookie)> CookiePredicate;
+  // Define a range of time from [start, end) where start is inclusive and end
+  // is exclusive. There is a special case where |start| == |end| (matching a
+  // single time) where |end| is inclusive. This special case is for iOS that
+  // will be removed in the future.
+  //
+  // TODO(crbug.com/830689): Delete the start=end special case.
+  class NET_EXPORT TimeRange {
+   public:
+    // Default constructor matches any non-null time.
+    TimeRange();
+    TimeRange(const TimeRange& other);
+    TimeRange(base::Time start, base::Time end);
+    TimeRange& operator=(const TimeRange& rhs);
+
+    // Is |time| within this time range?
+    //
+    // Will return true if:
+    //
+    //   |start_| <= |time| < |end_|
+    //
+    // If |start_| is null then the range is unbounded on the lower range.
+    // If |end_| is null then the range is unbounded on the upper range.
+    //
+    // Note 1: |time| cannot be null.
+    // Note 2: If |start_| == |end_| then end_ is inclusive.
+    //
+    bool Contains(const base::Time& time) const;
+
+    // Set the range start time. Set to null (i.e. Time()) to indicated an
+    // unbounded lower range.
+    void SetStart(base::Time value);
+
+    // Set the range end time. Set to null (i.e. Time()) to indicated an
+    // unbounded upper range.
+    void SetEnd(base::Time value);
+
+    // Return the start time.
+    base::Time start() const { return start_; }
+
+    // Return the end time.
+    base::Time end() const { return end_; }
+
+   private:
+    // The inclusive start time of this range.
+    base::Time start_;
+    // The exclusive end time of this range.
+    base::Time end_;
+  };
+
+  // Used to specify which cookies to delete. All members are ANDed together.
+  struct NET_EXPORT CookieDeletionInfo {
+    // TODO(cmumford): Combine with
+    // network::mojom::CookieDeletionSessionControl.
+    enum SessionControl {
+      IGNORE_CONTROL,
+      SESSION_COOKIES,
+      PERSISTENT_COOKIES,
+    };
+
+    CookieDeletionInfo();
+    CookieDeletionInfo(CookieDeletionInfo&& other);
+    CookieDeletionInfo(const CookieDeletionInfo& other);
+    CookieDeletionInfo(base::Time start_time, base::Time end_time);
+    ~CookieDeletionInfo();
+
+    CookieDeletionInfo& operator=(CookieDeletionInfo&& rhs);
+    CookieDeletionInfo& operator=(const CookieDeletionInfo& rhs);
+
+    // Return true if |cookie| matches all members of this instance. All members
+    // are ANDed together. For example: if the |cookie| creation date is within
+    // |creation_range| AND the |cookie| name is equal to |name|, etc. then true
+    // will be returned. If not false.
+    //
+    // All members are used. See comments above other members for specifics
+    // about how checking is done for that value.
+    bool Matches(const CanonicalCookie& cookie) const;
+
+    // See comment above for TimeRange::Contains() for more info.
+    TimeRange creation_range;
+
+    // By default ignore session type and delete both session and persistent
+    // cookies.
+    SessionControl session_control = SessionControl::IGNORE_CONTROL;
+
+    // If has a value then cookie.Host() must equal |host|.
+    base::Optional<std::string> host;
+
+    // If has a value then cookie.Name() must equal |name|.
+    base::Optional<std::string> name;
+
+    // If has a value then will match if the cookie being evaluated would be
+    // included for a request of |url|.
+    base::Optional<GURL> url;
+
+    // Only used for |url| comparison.
+    CookieOptions cookie_options;
+
+    // If this is not empty then any cookie with a domain/ip contained in this
+    // set will be deleted (assuming other fields match).
+    // Domains must not have a leading period. e.g "example.com" and not
+    // ".example.com".
+    //
+    // Note: |domains_and_ips_to_ignore| takes precedence. For example if this
+    // has a value of ["A", "B"] and |domains_and_ips_to_ignore| is ["B", "C"]
+    // then only "A" will be deleted.
+    std::set<std::string> domains_and_ips_to_delete;
+
+    // If this is not empty then any cookie with a domain/ip contained in this
+    // set will be ignored (and not deleted).
+    // Domains must not have a leading period. e.g "example.com" and not
+    // ".example.com".
+    //
+    // See precedence note above.
+    std::set<std::string> domains_and_ips_to_ignore;
+
+    // Used only for testing purposes.
+    base::Optional<std::string> value_for_testing;
+  };
 
   virtual ~CookieStore();
 
@@ -107,26 +226,18 @@ class NET_EXPORT CookieStore {
   virtual void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                           DeleteCallback callback) = 0;
 
-  // Deletes all of the cookies that have a creation_date greater than or equal
-  // to |delete_begin| and less than |delete_end|
+  // Deletes all of the cookies that have a creation_date matching
+  // |creation_range|. See TimeRange::Matches().
   // Calls |callback| with the number of cookies deleted.
-  virtual void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
-                                            const base::Time& delete_end,
-                                            DeleteCallback callback) = 0;
+  virtual void DeleteAllCreatedInTimeRangeAsync(const TimeRange& creation_range,
+                                                DeleteCallback callback) = 0;
 
-  // Deletes all of the cookies that match the given predicate and that have a
-  // creation_date greater than or equal to |delete_begin| and smaller than
-  // |delete_end|. Null times do not cap their ranges (i.e.
-  // |delete_end.is_null()| would mean that there is no time after which
-  // cookies are not deleted).  This includes all http_only and secure
-  // cookies. Avoid deleting cookies that could leave websites with a
-  // partial set of visible cookies.
+  // Deletes all of the cookies matching |delete_info|. This includes all
+  // http_only and secure cookies. Avoid deleting cookies that could leave
+  // websites with a partial set of visible cookies.
   // Calls |callback| with the number of cookies deleted.
-  virtual void DeleteAllCreatedBetweenWithPredicateAsync(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      const CookiePredicate& predicate,
-      DeleteCallback callback) = 0;
+  virtual void DeleteAllMatchingInfoAsync(CookieDeletionInfo delete_info,
+                                          DeleteCallback callback) = 0;
 
   virtual void DeleteSessionCookiesAsync(DeleteCallback) = 0;
 

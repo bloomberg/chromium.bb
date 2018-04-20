@@ -66,17 +66,14 @@
 #include "content/browser/plugin_private_storage_helper.h"
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
+using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
+
 namespace content {
 
 namespace {
 
 base::LazyInstance<StoragePartitionImpl::CreateNetworkFactoryCallback>::Leaky
     g_url_loader_factory_callback_for_test = LAZY_INSTANCE_INITIALIZER;
-
-bool DoesCookieMatchHost(const std::string& host,
-                         const net::CanonicalCookie& cookie) {
-  return cookie.IsHostCookie() && cookie.IsDomainMatch(host);
-}
 
 void OnClearedCookies(base::OnceClosure callback, uint32_t num_deleted) {
   // The final callback needs to happen from UI thread.
@@ -90,36 +87,17 @@ void OnClearedCookies(base::OnceClosure callback, uint32_t num_deleted) {
   std::move(callback).Run();
 }
 
-// Cookie matcher and storage_origin are never both populated.
 void ClearCookiesOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& rq_context,
-    const base::Time begin,
-    const base::Time end,
-    const GURL& storage_origin,
-    const StoragePartition::CookieMatcherFunction& cookie_matcher,
+    CookieDeletionInfo delete_info,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(cookie_matcher.is_null() || storage_origin.is_empty());
   net::CookieStore* cookie_store =
       rq_context->GetURLRequestContext()->cookie_store();
-  if (!cookie_matcher.is_null()) {
-    cookie_store->DeleteAllCreatedBetweenWithPredicateAsync(
-        begin, end, cookie_matcher,
-        base::BindOnce(&OnClearedCookies, std::move(callback)));
-    return;
-  }
-  if (!storage_origin.is_empty()) {
-    // TODO(mkwst): It's not clear whether removing host cookies is the correct
-    // behavior. We might want to remove all domain-matching cookies instead.
-    // Also, this code path may be dead anyways.
-    cookie_store->DeleteAllCreatedBetweenWithPredicateAsync(
-        begin, end,
-        StoragePartitionImpl::CreatePredicateForHostCookies(storage_origin),
-        base::BindOnce(&OnClearedCookies, std::move(callback)));
-    return;
-  }
-  cookie_store->DeleteAllCreatedBetweenAsync(
-      begin, end, base::BindOnce(&OnClearedCookies, std::move(callback)));
+
+  cookie_store->DeleteAllMatchingInfoAsync(
+      std::move(delete_info),
+      base::BindOnce(&OnClearedCookies, std::move(callback)));
 }
 
 void CheckQuotaManagedDataDeletionStatus(size_t* deletion_task_count,
@@ -364,12 +342,6 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32_t remove_mask) {
 }
 
 // static
-net::CookieStore::CookiePredicate
-StoragePartitionImpl::CreatePredicateForHostCookies(const GURL& url) {
-  return base::Bind(&DoesCookieMatchHost, url.host());
-}
-
-// static
 void StoragePartitionImpl::
     SetGetURLLoaderFactoryForBrowserProcessCallbackForTesting(
         const CreateNetworkFactoryCallback& url_loader_factory_callback) {
@@ -479,7 +451,7 @@ class StoragePartitionImpl::DataDeletionHelper {
   void ClearDataOnUIThread(
       const GURL& storage_origin,
       const OriginMatcherFunction& origin_matcher,
-      const CookieMatcherFunction& cookie_matcher,
+      CookieDeletionInfo cookie_delete_info,
       const base::FilePath& path,
       net::URLRequestContextGetter* rq_context,
       DOMStorageContextWrapper* dom_storage_context,
@@ -889,7 +861,7 @@ void StoragePartitionImpl::ClearDataImpl(
     uint32_t quota_storage_remove_mask,
     const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
-    const CookieMatcherFunction& cookie_matcher,
+    CookieDeletionInfo cookie_delete_info,
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
@@ -902,7 +874,7 @@ void StoragePartitionImpl::ClearDataImpl(
   // DataDeletionHelper::DecrementTaskCount().
   deletion_helpers_running_++;
   helper->ClearDataOnUIThread(
-      storage_origin, origin_matcher, cookie_matcher, GetPath(),
+      storage_origin, origin_matcher, std::move(cookie_delete_info), GetPath(),
       GetURLRequestContext(), dom_storage_context_.get(), quota_manager_.get(),
       special_storage_policy_.get(), filesystem_context_.get(), begin, end);
 }
@@ -1049,7 +1021,7 @@ void StoragePartitionImpl::DataDeletionHelper::DecrementTaskCount() {
 void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
-    const CookieMatcherFunction& cookie_matcher,
+    CookieDeletionInfo cookie_delete_info,
     const base::FilePath& path,
     net::URLRequestContextGetter* rq_context,
     DOMStorageContextWrapper* dom_storage_context,
@@ -1070,8 +1042,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
-            &ClearCookiesOnIOThread, base::WrapRefCounted(rq_context), begin,
-            end, storage_origin, cookie_matcher,
+            &ClearCookiesOnIOThread, base::WrapRefCounted(rq_context),
+            std::move(cookie_delete_info),
             // Use OwnsReference instead of Increment/DecrementTaskCount*
             // to handle the cookie store being destroyed and the callback
             // thus not being called.
@@ -1140,8 +1112,11 @@ void StoragePartitionImpl::ClearDataForOrigin(
     uint32_t quota_storage_remove_mask,
     const GURL& storage_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  CookieDeletionInfo delete_info;
+  if (!storage_origin.host().empty())
+    delete_info.host = storage_origin.host();
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
-                OriginMatcherFunction(), CookieMatcherFunction(), base::Time(),
+                OriginMatcherFunction(), std::move(delete_info), base::Time(),
                 base::Time::Max(), base::DoNothing());
 }
 
@@ -1153,8 +1128,11 @@ void StoragePartitionImpl::ClearData(
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
+  CookieDeletionInfo delete_info;
+  if (!storage_origin.host().empty())
+    delete_info.host = storage_origin.host();
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
-                origin_matcher, CookieMatcherFunction(), begin, end,
+                origin_matcher, std::move(delete_info), begin, end,
                 std::move(callback));
 }
 
@@ -1162,12 +1140,12 @@ void StoragePartitionImpl::ClearData(
     uint32_t remove_mask,
     uint32_t quota_storage_remove_mask,
     const OriginMatcherFunction& origin_matcher,
-    const CookieMatcherFunction& cookie_matcher,
+    CookieDeletionInfo cookie_delete_info,
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
   ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(), origin_matcher,
-                cookie_matcher, begin, end, std::move(callback));
+                std::move(cookie_delete_info), begin, end, std::move(callback));
 }
 
 void StoragePartitionImpl::ClearHttpAndMediaCaches(

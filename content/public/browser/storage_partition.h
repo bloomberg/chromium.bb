@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <set>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -152,9 +153,6 @@ class CONTENT_EXPORT StoragePartition {
   typedef base::Callback<bool(const GURL&, storage::SpecialStoragePolicy*)>
       OriginMatcherFunction;
 
-  // A callback type to check if a given cookie should be cleared.
-  using CookieMatcherFunction = net::CookieStore::CookiePredicate;
-
   // Similar to ClearDataForOrigin().
   // Deletes all data out for the StoragePartition if |storage_origin| is empty.
   // |origin_matcher| is present if special storage policy is to be handled,
@@ -176,20 +174,19 @@ class CONTENT_EXPORT StoragePartition {
   // * |origin_matcher| is present if special storage policy is to be handled,
   //   otherwise the callback should be null (base::Callback::is_null()==true).
   //   The origin matcher does not apply to cookies, instead use:
-  // * |cookies_matcher| is present if special cookie clearing is to be handled.
-  //   If the callback is null all cookies withing the time range will be
-  //   cleared.
+  // * |cookie_delete_info| identifies which cookies to delete.
   // * |callback| is called when data deletion is done or at least the deletion
   //   is scheduled.
   // Note: Make sure you know what you are doing before clearing cookies
   // selectively. You don't want to break the web.
-  virtual void ClearData(uint32_t remove_mask,
-                         uint32_t quota_storage_remove_mask,
-                         const OriginMatcherFunction& origin_matcher,
-                         const CookieMatcherFunction& cookie_matcher,
-                         const base::Time begin,
-                         const base::Time end,
-                         base::OnceClosure callback) = 0;
+  virtual void ClearData(
+      uint32_t remove_mask,
+      uint32_t quota_storage_remove_mask,
+      const OriginMatcherFunction& origin_matcher,
+      net::CookieStore::CookieDeletionInfo cookie_delete_info,
+      const base::Time begin,
+      const base::Time end,
+      base::OnceClosure callback) = 0;
 
   // Clears the HTTP and media caches associated with this StoragePartition's
   // request contexts. If |begin| and |end| are not null, only entries with

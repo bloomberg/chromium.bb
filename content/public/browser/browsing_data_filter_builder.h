@@ -13,13 +13,10 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 class GURL;
-
-namespace net {
-class CanonicalCookie;
-}
 
 namespace url {
 class Origin;
@@ -75,10 +72,10 @@ class CONTENT_EXPORT BrowsingDataFilterBuilder {
   virtual network::mojom::ClearCacheUrlFilterPtr BuildClearCacheUrlFilter()
       const = 0;
 
-  // Builds a filter that matches cookies whose sources are in the whitelist,
-  // or aren't in the blacklist.
-  virtual base::RepeatingCallback<bool(const net::CanonicalCookie& pattern)>
-      BuildCookieFilter() const = 0;
+  // Builds a CookieDeletionInfo object that matches cookies whose sources are
+  // in the whitelist, or aren't in the blacklist.
+  virtual net::CookieStore::CookieDeletionInfo BuildCookieDeletionInfo()
+      const = 0;
 
   // Builds a filter that matches channel IDs whose server identifiers are in
   // the whitelist, or aren't in the blacklist.
