@@ -429,7 +429,6 @@ jumbo_split_static_library("browser") {
     "download/save_package_file_picker.h",
     "download/trusted_sources_manager.cc",
     "download/trusted_sources_manager.h",
-    "download/trusted_sources_manager_posix.cc",
     "download/trusted_sources_manager_win.cc",
     "engagement/important_sites_usage_counter.cc",
     "engagement/important_sites_usage_counter.h",
@@ -507,7 +506,6 @@ jumbo_split_static_library("browser") {
     "google/google_brand.h",
     "google/google_brand_chromeos.cc",
     "google/google_brand_chromeos.h",
-    "google/google_update_settings_posix.cc",
     "google/google_url_tracker_factory.cc",
     "google/google_url_tracker_factory.h",
     "gpu/gpu_mode_manager.cc",
@@ -759,7 +757,6 @@ jumbo_split_static_library("browser") {
     "net/loading_predictor_observer.cc",
     "net/loading_predictor_observer.h",
     "net/net_error_diagnostics_dialog.h",
-    "net/net_error_diagnostics_dialog_posix.cc",
     "net/net_error_diagnostics_dialog_win.cc",
     "net/net_error_tab_helper.cc",
     "net/net_error_tab_helper.h",
@@ -1834,6 +1831,14 @@ jumbo_split_static_library("browser") {
     "//ui/web_dialogs",
   ]
 
+  if (is_posix || is_fuchsia) {
+    sources += [
+      "download/trusted_sources_manager_posix.cc",
+      "google/google_update_settings_posix.cc",
+      "net/net_error_diagnostics_dialog_posix.cc",
+    ]
+  }
+
   if (is_android) {
     sources += [
       "after_startup_task_utils_android.cc",
@@ -2375,8 +2380,6 @@ jumbo_split_static_library("browser") {
       "certificate_viewer.h",
       "chrome_browser_field_trials_desktop.cc",
       "chrome_browser_field_trials_desktop.h",
-      "chrome_browser_main_posix.cc",
-      "chrome_browser_main_posix.h",
       "chrome_process_singleton.cc",
       "chrome_process_singleton.h",
       "custom_handlers/register_protocol_handler_permission_request.cc",
@@ -2436,7 +2439,6 @@ jumbo_split_static_library("browser") {
       "first_run/first_run_internal.h",
       "first_run/first_run_internal_linux.cc",
       "first_run/first_run_internal_mac.mm",
-      "first_run/first_run_internal_posix.cc",
       "first_run/first_run_internal_win.cc",
       "first_run/upgrade_util.h",
       "first_run/upgrade_util_mac.cc",
@@ -2450,7 +2452,6 @@ jumbo_split_static_library("browser") {
       "importer/external_process_importer_host.h",
       "importer/firefox_profile_lock.cc",
       "importer/firefox_profile_lock.h",
-      "importer/firefox_profile_lock_posix.cc",
       "importer/firefox_profile_lock_win.cc",
       "importer/importer_list.cc",
       "importer/importer_list.h",
@@ -2566,7 +2567,6 @@ jumbo_split_static_library("browser") {
       "policy/local_sync_policy_handler.h",
       "process_singleton_modal_dialog_lock.cc",
       "process_singleton_modal_dialog_lock.h",
-      "process_singleton_posix.cc",
       "process_singleton_startup_lock.cc",
       "process_singleton_startup_lock.h",
       "profile_resetter/brandcode_config_fetcher.cc",
@@ -2744,7 +2744,6 @@ jumbo_split_static_library("browser") {
       "task_manager/providers/web_contents/web_contents_task_provider.cc",
       "task_manager/providers/web_contents/web_contents_task_provider.h",
       "task_manager/sampling/shared_sampler.h",
-      "task_manager/sampling/shared_sampler_posix.cc",
       "task_manager/sampling/shared_sampler_win.cc",
       "task_manager/sampling/shared_sampler_win_defines.h",
       "task_manager/sampling/task_group.cc",
@@ -2796,6 +2795,17 @@ jumbo_split_static_library("browser") {
       "//components/zoom",
       "//net:net",
     ]
+
+    if (is_posix || is_fuchsia) {
+      sources += [
+        "chrome_browser_main_posix.cc",
+        "chrome_browser_main_posix.h",
+        "first_run/first_run_internal_posix.cc",
+        "importer/firefox_profile_lock_posix.cc",
+        "process_singleton_posix.cc",
+        "task_manager/sampling/shared_sampler_posix.cc",
+      ]
+    }
   }
 
   if (is_chromeos) {
@@ -3339,7 +3349,6 @@ jumbo_split_static_library("browser") {
         "printing/background_printing_manager.h",
         "printing/print_dialog_cloud.cc",
         "printing/print_dialog_cloud.h",
-        "printing/print_dialog_cloud_posix.cc",
         "printing/print_dialog_cloud_win.cc",
         "printing/print_error_dialog.cc",
         "printing/print_error_dialog.h",
@@ -3356,6 +3365,10 @@ jumbo_split_static_library("browser") {
         "printing/pwg_raster_converter.cc",
         "printing/pwg_raster_converter.h",
       ]
+
+      if (is_posix || is_fuchsia) {
+        sources += [ "printing/print_dialog_cloud_posix.cc" ]
+      }
 
       if (!is_chromeos) {
         sources += [

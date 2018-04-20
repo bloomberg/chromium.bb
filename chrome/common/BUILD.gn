@@ -62,7 +62,7 @@ source_set("channel_info") {
     "channel_info_win.cc",
   ]
 
-  if (!is_android && !is_chromeos && !is_mac) {
+  if (is_posix && !is_android && !is_chromeos && !is_mac) {
     sources += [ "channel_info_posix.cc" ]
   }
   public_deps = [
@@ -415,10 +415,14 @@ static_library("common") {
         "service_process_util.h",
         "service_process_util_linux.cc",
         "service_process_util_mac.mm",
-        "service_process_util_posix.cc",
-        "service_process_util_posix.h",
         "service_process_util_win.cc",
       ]
+      if (is_posix) {
+        sources += [
+          "service_process_util_posix.cc",
+          "service_process_util_posix.h",
+        ]
+      }
     }
     if (enable_print_preview && is_win) {
       sources += [ "chrome_utility_printing_messages.h" ]

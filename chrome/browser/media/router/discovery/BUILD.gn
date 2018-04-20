@@ -64,7 +64,6 @@ static_library("discovery") {
       "discovery_network_info.cc",
       "discovery_network_info.h",
       "discovery_network_list.h",
-      "discovery_network_list_posix.cc",
       "discovery_network_list_wifi.h",
       "discovery_network_list_wifi_linux.cc",
       "discovery_network_list_wifi_mac.mm",
@@ -76,6 +75,9 @@ static_library("discovery") {
       "discovery_network_monitor_metrics.cc",
       "discovery_network_monitor_metrics.h",
     ]
+    if (is_posix) {
+      sources += [ "discovery_network_list_posix.cc" ]
+    }
   }
 
   if (is_mac) {
