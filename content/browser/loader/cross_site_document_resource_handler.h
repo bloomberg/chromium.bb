@@ -113,7 +113,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // Computes whether this response contains a cross-site document that needs to
   // be blocked from the renderer process.  This is a first approximation based
   // on the headers, and may be revised after some of the data is sniffed.
-  bool ShouldBlockBasedOnHeaders(network::ResourceResponse* response);
+  bool ShouldBlockBasedOnHeaders(const network::ResourceResponse& response);
 
   // Once the downstream handler has allocated the buffer for OnWillRead
   // (possibly after deferring), this sets up sniffing into a local buffer.
@@ -162,10 +162,11 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // The size of |next_handler_buffer_|.
   int next_handler_buffer_size_ = 0;
 
-  // A canonicalization of the specified MIME type, to determine if blocking the
-  // response is needed, as well as which type of sniffing to perform.
-  network::CrossOriginReadBlocking::MimeType canonical_mime_type_ =
-      network::CrossOriginReadBlocking::MimeType::kInvalid;
+  // The helper class that encapsulates the logic for deciding whether to block
+  // the response or not.
+  // TODO(lukasza): Also move the sniffing logic (e.g. |sniffers_|) into
+  // network::CrossOriginReadBlocking::ResponseAnalyzer.
+  std::unique_ptr<network::CrossOriginReadBlocking::ResponseAnalyzer> analyzer_;
 
   // Indicates whether this request was made by a plugin and was not using CORS.
   // Such requests are exempt from blocking, while other plugin requests must be
@@ -182,12 +183,6 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // pending the outcome of sniffing the content.  Set in OnResponseStarted and
   // should only be read afterwards.
   bool should_block_based_on_headers_ = false;
-
-  // Whether the response data should be sniffed before blocking it, to avoid
-  // blocking mislabeled responses (e.g., JSONP labeled as HTML).  This is
-  // usually true when |should_block_based_on_headers_| is set, unless there is
-  // a nosniff header or range request.
-  bool needs_sniffing_ = false;
 
   // Whether this response will be allowed through despite being flagged for
   // blocking (via |should_block_based_on_headers_), because sniffing determined
