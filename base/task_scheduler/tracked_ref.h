@@ -137,7 +137,14 @@ class TrackedRefFactory {
     ready_to_destroy_->Wait();
   }
 
-  TrackedRef<T> GetTrackedRef() { return TrackedRef<T>(ptr_, this); }
+  TrackedRef<T> GetTrackedRef() {
+    // TrackedRefs cannot be obtained after |live_tracked_refs_| has already
+    // reached zero. In other words, the owner of a TrackedRefFactory shouldn't
+    // vend new TrackedRefs while it's being destroyed (owners of TrackedRefs
+    // may still copy/move their refs around during the destruction phase).
+    DCHECK(!live_tracked_refs_.IsZero());
+    return TrackedRef<T>(ptr_, this);
+  }
 
  private:
   friend class TrackedRef<T>;
