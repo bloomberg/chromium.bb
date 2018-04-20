@@ -54,6 +54,10 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
 
     const auto return_code = ConvertDeviceResponseCodeToFidoReturnCode(
         device_response_code, response_data.has_value());
+
+    // Any device response codes that do not result from user consent
+    // imply that the device should be dropped and that other on-going
+    // requests should continue until timeout is reached.
     if (!return_code) {
       ongoing_tasks().erase(device->GetId());
       return;
