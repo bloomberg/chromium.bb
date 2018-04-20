@@ -138,10 +138,29 @@ var cleanTestRun = true;
 var pendingTearDown = null;
 
 /**
+ * Name of current test.
+ * @type {String?}
+ */
+var testName = null;
+
+/**
+ * Time current test started.
+ * @type {number}
+ */
+var testStartTime = 0;
+
+/**
+ * Time first test started.
+ * @type {number}
+ */
+var runnerStartTime = 0;
+
+/**
  * Runs all functions starting with test and reports success or
  * failure of the test suite.
  */
 function runTests() {
+  runnerStartTime = performance.now();
   for (var name in window) {
     // To avoid unnecessary getting properties, test name first.
     if (/^test/.test(name) && typeof window[name] == 'function')
@@ -167,6 +186,13 @@ function runTests() {
  *     last asynchronous test failed.
  */
 function continueTesting(opt_asyncTestFailure) {
+  var now = performance.now();
+  if (testName) {
+    console.log(
+        'TEST ' + testName +
+        ' complete, status=' + (opt_asyncTestFailure ? 'FAIL' : 'PASS') +
+        ', duration=' + Math.round(now - testStartTime) + 'ms');
+  }
   if (opt_asyncTestFailure)
     cleanTestRun = false;
   var done = false;
@@ -175,15 +201,17 @@ function continueTesting(opt_asyncTestFailure) {
     pendingTearDown = null;
   }
   if (testCases.length > 0) {
-    var fn = testCases.pop();
-    var isAsyncTest = window[fn].length;
+    testStartTime = now;
+    testName = testCases.pop();
+    console.log('TEST ' + testName + ' starting...');
+    var isAsyncTest = window[testName].length;
     try {
       if (window.setUp)
         window.setUp();
       pendingTearDown = window.tearDown;
-      window[fn](continueTesting);
+      window[testName](continueTesting);
     } catch (err) {
-      console.error('Failure in test ' + fn + '\n' + err);
+      console.error('Failure in test ' + testName + '\n' + err);
       console.log(err.stack);
       cleanTestRun = false;
     }
@@ -199,16 +227,23 @@ function continueTesting(opt_asyncTestFailure) {
   }
 }
 
-exports.runTests = runTests;
-})(this);
-
 /**
  * Signals completion of a test.
  * @param {boolean} success Indicates if the test completed successfully.
  */
 function endTests(success) {
+  var duration = runnerStartTime == 0 ? 0 : performance.now() - runnerStartTime;
+  console.log(
+      'TEST all complete, status=' + (success ? 'PASS' : 'FAIL') +
+      ', duration=' + Math.round(duration) + 'ms');
+  testName = null;
+  runnerStartTime = 0;
   domAutomationController.send(success ? 'SUCCESS' : 'FAILURE');
 }
+
+exports.runTests = runTests;
+exports.endTests = endTests;
+})(this);
 
 window.onerror = function() {
   endTests(false);
