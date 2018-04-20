@@ -26,6 +26,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/api/usb/usb_guid_map.h"
+#include "extensions/browser/extension_function_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -668,8 +669,14 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
       filters.push_back(ConvertDeviceFilter(filter));
   }
 
-  prompt_ = ExtensionsAPIClient::Get()->CreateDevicePermissionsPrompt(
-      GetAssociatedWebContentsDeprecated());
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents) {
+    return RespondNow(
+        Error(function_constants::kCouldNotFindSenderWebContents));
+  }
+
+  prompt_ =
+      ExtensionsAPIClient::Get()->CreateDevicePermissionsPrompt(web_contents);
   if (!prompt_) {
     return RespondNow(Error(kErrorNotSupported));
   }
