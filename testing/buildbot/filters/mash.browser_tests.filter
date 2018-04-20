@@ -124,9 +124,6 @@
 # SystemLogsFetcher -> TouchLogSource -> ash::TouchHudDebug -> ash::Shell
 -FeedbackTest.*
 
-# FirstRunController -> ash::Shell
--FirstRunUIBrowserTest.*
-
 # ash::Shell::display_manager() to update displays.
 # http://crbug.com/831826
 -ForceMaximizeOnFirstRunTest.*

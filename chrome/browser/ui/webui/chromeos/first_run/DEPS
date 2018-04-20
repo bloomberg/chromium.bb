@@ -1,7 +1,0 @@
-specific_include_rules = {
-  "first_run_ui\.cc": [
-    # TODO(mash): Remove. http://crbug.com/770866
-    "+ash/shell.h",
-    "+ash/shelf/shelf.h",
-  ],
-}
