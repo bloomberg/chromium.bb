@@ -75,6 +75,8 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   }
   static void CloseCurrentBubble();
 
+  const std::vector<AppInfo>& GetAppInfoForTesting() const { return app_info_; }
+
   // LocationBarBubbleDelegateView overrides:
   bool Accept() override;
   bool Cancel() override;
