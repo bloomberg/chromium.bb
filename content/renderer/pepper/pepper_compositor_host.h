@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/resources/shared_bitmap_id_registrar.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/shared_impl/compositor_layer_data.h"
@@ -21,16 +22,13 @@ class SharedMemory;
 }  // namespace
 
 namespace cc {
+class CrossThreadSharedBitmap;
 class Layer;
 }  // namespace cc
 
 namespace gpu {
 struct SyncToken;
 }  // namespace gpu
-
-namespace viz {
-class SharedBitmap;
-}
 
 namespace content {
 
@@ -61,8 +59,8 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
 
  private:
   void ImageReleased(int32_t id,
-                     std::unique_ptr<base::SharedMemory> shared_memory,
-                     std::unique_ptr<viz::SharedBitmap> bitmap,
+                     scoped_refptr<cc::CrossThreadSharedBitmap> shared_bitmap,
+                     cc::SharedBitmapIdRegistration registration,
                      const gpu::SyncToken& sync_token,
                      bool is_lost);
   void ResourceReleased(int32_t id,
