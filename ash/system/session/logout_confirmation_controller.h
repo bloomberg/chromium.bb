@@ -72,8 +72,6 @@ class ASH_EXPORT LogoutConfirmationController : public SessionObserver {
   LogoutConfirmationDialog* dialog_ = nullptr;  // Owned by the Views hierarchy.
   base::Timer logout_timer_;
 
-  ScopedSessionObserver scoped_session_observer_;
-
   DISALLOW_COPY_AND_ASSIGN(LogoutConfirmationController);
 };
 

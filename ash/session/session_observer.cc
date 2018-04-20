@@ -11,14 +11,13 @@ namespace ash {
 
 ScopedSessionObserver::ScopedSessionObserver(SessionObserver* observer)
     : observer_(observer) {
-  // Shell may not exist in some tests.
-  if (Shell::HasInstance())
-    Shell::Get()->session_controller()->AddObserver(observer_);
+  DCHECK(Shell::HasInstance());
+  Shell::Get()->session_controller()->AddObserver(observer_);
 }
 
 ScopedSessionObserver::~ScopedSessionObserver() {
-  if (Shell::HasInstance())
-    Shell::Get()->session_controller()->RemoveObserver(observer_);
+  DCHECK(Shell::HasInstance());
+  Shell::Get()->session_controller()->RemoveObserver(observer_);
 }
 
 }  // namespace ash

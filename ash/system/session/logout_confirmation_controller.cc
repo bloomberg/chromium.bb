@@ -111,12 +111,17 @@ class LogoutConfirmationController::LastWindowClosedObserver
 LogoutConfirmationController::LogoutConfirmationController()
     : clock_(base::DefaultTickClock::GetInstance()),
       logout_closure_(base::Bind(&SignOut)),
-      logout_timer_(false, false),
-      scoped_session_observer_(this) {}
+      logout_timer_(false, false) {
+  if (Shell::HasInstance())  // Null in testing::Test.
+    Shell::Get()->session_controller()->AddObserver(this);
+}
 
 LogoutConfirmationController::~LogoutConfirmationController() {
   if (dialog_)
     dialog_->ControllerGone();
+
+  if (Shell::HasInstance())  // Null in testing::Test.
+    Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 void LogoutConfirmationController::ConfirmLogout(base::TimeTicks logout_time) {

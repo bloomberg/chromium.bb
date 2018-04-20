@@ -57,6 +57,9 @@ class ASH_EXPORT SessionObserver {
 };
 
 // A class to attach / detach an object as a session state observer.
+//
+// NOTE: Both ash::Shell and ash::SessionController must outlive your object.
+// You may find it clearer to manually add and remove your observer.
 class ASH_EXPORT ScopedSessionObserver {
  public:
   explicit ScopedSessionObserver(SessionObserver* observer);
