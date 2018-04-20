@@ -63,6 +63,8 @@ class FakeMessageCenter : public MessageCenter {
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) override;
   void SetVisibility(Visibility visible) override;
   bool IsMessageCenterVisible() const override;
+  void SetHasMessageCenterView(bool has_message_center_view) override;
+  bool HasMessageCenterView() const override;
   void RestartPopupTimers() override;
   void PausePopupTimers() override;
   const base::string16& GetSystemNotificationAppName() const override;
@@ -73,6 +75,7 @@ class FakeMessageCenter : public MessageCenter {
 
  private:
   const NotificationList::Notifications empty_notifications_;
+  bool has_message_center_view_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMessageCenter);
 };

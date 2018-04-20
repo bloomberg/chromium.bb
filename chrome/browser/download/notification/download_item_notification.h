@@ -56,7 +56,7 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest,
 
   void CloseNotification();
   void Update();
-  void UpdateNotificationData(bool display, bool bump_priority);
+  void UpdateNotificationData(bool display, bool force_pop_up);
   SkColor GetNotificationIconColor();
 
   // Set preview image of the notification. Must be called on IO thread.

@@ -96,15 +96,10 @@ void NotificationList::UpdateNotificationMessage(
   if (iter == notifications_.end())
     return;
 
-  Notification* notification = iter->first.get();
   NotificationState state = iter->second;
 
-  // Handles priority promotion. If the notification is already dismissed but
-  // the updated notification has higher priority, it should re-appear as a
-  // toast. Notifications coming from websites through the Web Notification API
-  // will always re-appear on update.
-  if ((notification->priority() < new_notification->priority() ||
-       new_notification->notifier_id().type == NotifierId::WEB_PAGE) &&
+  if ((new_notification->renotify() ||
+       !message_center_->HasMessageCenterView()) &&
       !quiet_mode_) {
     state = NotificationState();
   }

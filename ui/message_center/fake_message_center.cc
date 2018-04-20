@@ -124,6 +124,14 @@ bool FakeMessageCenter::IsMessageCenterVisible() const {
   return false;
 }
 
+void FakeMessageCenter::SetHasMessageCenterView(bool has_message_center_view) {
+  has_message_center_view_ = has_message_center_view;
+}
+
+bool FakeMessageCenter::HasMessageCenterView() const {
+  return has_message_center_view_;
+}
+
 void FakeMessageCenter::RestartPopupTimers() {}
 
 void FakeMessageCenter::PausePopupTimers() {}
