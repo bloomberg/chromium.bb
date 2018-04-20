@@ -116,7 +116,7 @@ NSString* const kCreditCardFormHtml =
 
 // An HTML page without a card-type form.
 static NSString* kNoCreditCardFormHtml =
-    @"<input type=\"text\" autofocus autocomplete=\"username\"></form>";
+    @"<form><input type=\"text\" autofocus autocomplete=\"username\"></form>";
 
 // A credit card-type form with the autofocus attribute (which is detected at
 // page load).

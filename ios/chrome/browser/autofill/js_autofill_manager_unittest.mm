@@ -7,7 +7,9 @@
 #import <Foundation/Foundation.h>
 
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -21,6 +23,40 @@
 #endif
 
 namespace {
+
+NSString* const kUnownedUntitledFormHtml =
+    @"<INPUT type='text' id='firstname'/>"
+     "<INPUT type='text' id='lastname'/>"
+     "<INPUT type='hidden' id='imhidden'/>"
+     "<INPUT type='text' id='notempty' value='Hi'/>"
+     "<INPUT type='text' autocomplete='off' id='noautocomplete'/>"
+     "<INPUT type='text' disabled='disabled' id='notenabled'/>"
+     "<INPUT type='text' readonly id='readonly'/>"
+     "<INPUT type='text' style='visibility: hidden'"
+     "       id='invisible'/>"
+     "<INPUT type='text' style='display: none' id='displaynone'/>"
+     "<INPUT type='month' id='month'/>"
+     "<INPUT type='month' id='month-nonempty' value='2011-12'/>"
+     "<SELECT id='select'>"
+     "  <OPTION></OPTION>"
+     "  <OPTION value='CA'>California</OPTION>"
+     "  <OPTION value='TX'>Texas</OPTION>"
+     "</SELECT>"
+     "<SELECT id='select-nonempty'>"
+     "  <OPTION value='CA' selected>California</OPTION>"
+     "  <OPTION value='TX'>Texas</OPTION>"
+     "</SELECT>"
+     "<SELECT id='select-unchanged'>"
+     "  <OPTION value='CA' selected>California</OPTION>"
+     "  <OPTION value='TX'>Texas</OPTION>"
+     "</SELECT>"
+     "<SELECT id='select-displaynone' style='display:none'>"
+     "  <OPTION value='CA' selected>California</OPTION>"
+     "  <OPTION value='TX'>Texas</OPTION>"
+     "</SELECT>"
+     "<TEXTAREA id='textarea'></TEXTAREA>"
+     "<TEXTAREA id='textarea-nonempty'>Go&#10;away!</TEXTAREA>"
+     "<INPUT type='submit' name='reply-send' value='Send'/>";
 
 // TODO(crbug.com/619982): MobileSafari corrected HTMLInputElement.maxLength
 // with the specification ( https://bugs.webkit.org/show_bug.cgi?id=154906 ).
@@ -124,6 +160,72 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
   }];
 }
 
+// Tests forms extraction method
+// (fetchFormsWithRequirements:minimumRequiredFieldsCount:completionHandler:)
+// when formless forms are restricted to checkout flows. No form is expected to
+// be extracted here.
+TEST_F(JsAutofillManagerTest, ExtractFormlessForms_RestrictToFormlessCheckout) {
+  // Restrict formless forms to checkout flows.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+
+  LoadHtml(kUnownedUntitledFormHtml);
+
+  __block BOOL block_was_called = NO;
+  __block NSString* result;
+  [manager_ fetchFormsWithMinimumRequiredFieldsCount:
+                autofill::MinRequiredFieldsForHeuristics()
+                                   completionHandler:^(NSString* actualResult) {
+                                     block_was_called = YES;
+                                     result = [actualResult copy];
+                                   }];
+  base::test::ios::WaitUntilCondition(^bool() {
+    return block_was_called;
+  });
+
+  // Verify that the form is empty.
+  NSArray* resultArray = [NSJSONSerialization
+      JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
+                 options:0
+                   error:nil];
+  EXPECT_NSNE(nil, resultArray);
+  EXPECT_EQ(0u, resultArray.count);
+}
+
+// Tests forms extraction method
+// (fetchFormsWithRequirements:minimumRequiredFieldsCount:completionHandler:)
+// when all formless forms are extracted. A formless form is expected to be
+// extracted here.
+TEST_F(JsAutofillManagerTest, ExtractFormlessForms_AllFormlessForms) {
+  // Allow all formless forms to be extracted.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+
+  LoadHtml(kUnownedUntitledFormHtml);
+
+  __block BOOL block_was_called = NO;
+  __block NSString* result;
+  [manager_ fetchFormsWithMinimumRequiredFieldsCount:
+                autofill::MinRequiredFieldsForHeuristics()
+                                   completionHandler:^(NSString* actualResult) {
+                                     block_was_called = YES;
+                                     result = [actualResult copy];
+                                   }];
+  base::test::ios::WaitUntilCondition(^bool() {
+    return block_was_called;
+  });
+
+  // Verify that the form is non-empty.
+  NSArray* resultArray = [NSJSONSerialization
+      JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
+                 options:0
+                   error:nil];
+  EXPECT_NSNE(nil, resultArray);
+  EXPECT_NE(0u, resultArray.count);
+}
+
 // Tests form filling (fillActiveFormField:completionHandler:) method.
 TEST_F(JsAutofillManagerTest, FillActiveFormField) {
   LoadHtml(
@@ -185,6 +287,11 @@ TEST_F(JsAutofillManagerTest, TestExtractedFieldsNames) {
 
 // Tests the generation of the name of the fields.
 TEST_F(JsAutofillManagerTest, TestExtractedFieldsIDs) {
+  // Allow all formless forms to be extracted.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+
   NSString* HTML =
       @"<html><body><form name='testform' method='post'>"
        // Field with name and id

@@ -1498,7 +1498,7 @@ void AutofillControllerJsTest::TestExtractNewForms(
   }
 
   NSString* actual = ExecuteJavaScriptWithFormat(
-      @"var forms = __gCrWeb.autofill.extractNewForms(%" PRIuS "); %@",
+      @"var forms = __gCrWeb.autofill.extractNewForms(%" PRIuS ", true); %@",
       autofill::MinRequiredFieldsForHeuristics(),
       [verifying_javascripts componentsJoinedByString:@"&&"]);
 
@@ -1507,7 +1507,7 @@ void AutofillControllerJsTest::TestExtractNewForms(
                         "but it is expected to be verified by %@",
                        ExecuteJavaScriptWithFormat(
                            @"var forms = __gCrWeb.autofill.extractNewForms("
-                            "%" PRIuS "); __gCrWeb.stringify(forms)",
+                            "%" PRIuS ", true); __gCrWeb.stringify(forms)",
                            autofill::MinRequiredFieldsForHeuristics()),
                        verifying_javascripts]);
 }
@@ -1572,7 +1572,7 @@ TEST_F(AutofillControllerJsTest,
                                    @"forms[0]['fields'][3]['label']==='4'";
   EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
                         @"var forms = "
-                         "__gCrWeb.autofill.extractNewForms(1); %@",
+                         "__gCrWeb.autofill.extractNewForms(1, true); %@",
                         verifying_javascript));
 }
 
@@ -1691,7 +1691,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   };
 
   NSString* result =
-      ExecuteJavaScriptWithFormat(@"__gCrWeb.autofill.extractForms(%zu)",
+      ExecuteJavaScriptWithFormat(@"__gCrWeb.autofill.extractForms(%zu, true)",
                                   autofill::MinRequiredFieldsForHeuristics());
   NSArray* resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
@@ -1708,7 +1708,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   // Test with Object.prototype.toJSON override.
   result = ExecuteJavaScriptWithFormat(
       @"Object.prototype.toJSON=function(){return 'abcde';};"
-       "__gCrWeb.autofill.extractForms(%zu)",
+       "__gCrWeb.autofill.extractForms(%zu, true)",
       autofill::MinRequiredFieldsForHeuristics());
   resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
@@ -1724,7 +1724,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   // Test with Array.prototype.toJSON override.
   result = ExecuteJavaScriptWithFormat(
       @"Array.prototype.toJSON=function(){return 'abcde';};"
-       "__gCrWeb.autofill.extractForms(%zu)",
+       "__gCrWeb.autofill.extractForms(%zu, true)",
       autofill::MinRequiredFieldsForHeuristics());
   resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
@@ -1808,9 +1808,9 @@ TEST_F(AutofillControllerJsTest, ExtractNewForms) {
   for (NSDictionary* testCase in testCases) {
     LoadHtml(testCase[@"html"]);
 
-    NSString* result =
-        ExecuteJavaScriptWithFormat(@"__gCrWeb.autofill.extractForms(%zu)",
-                                    autofill::MinRequiredFieldsForHeuristics());
+    NSString* result = ExecuteJavaScriptWithFormat(
+        @"__gCrWeb.autofill.extractForms(%zu, true)",
+        autofill::MinRequiredFieldsForHeuristics());
     NSArray* resultArray = [NSJSONSerialization
         JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                    options:0
