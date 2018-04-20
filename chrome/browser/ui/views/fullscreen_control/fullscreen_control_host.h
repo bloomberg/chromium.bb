@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FULLSCREEN_CONTROL_FULLSCREEN_CONTROL_HOST_H_
 #define CHROME_BROWSER_UI_VIEWS_FULLSCREEN_CONTROL_FULLSCREEN_CONTROL_HOST_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_popup.h"
@@ -33,6 +34,7 @@ class FullscreenControlHost : public ui::EventHandler {
   static bool IsFullscreenExitUIEnabled();
 
   // ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -46,10 +48,13 @@ class FullscreenControlHost : public ui::EventHandler {
   }
 
  private:
+  friend class FullscreenControlViewTest;
+
   // Ensures symmetric input show and hide (e.g. a touch show is hidden by
   // touch).
   enum class InputEntryMethod {
     NOT_ACTIVE,  // The view is hidden.
+    KEYBOARD,    // A key event caused the view to show.
     MOUSE,       // A mouse event caused the view to show.
     TOUCH,       // A touch event caused the view to show.
   };
@@ -65,6 +70,10 @@ class FullscreenControlHost : public ui::EventHandler {
 
   FullscreenControlPopup fullscreen_control_popup_;
   base::OneShotTimer touch_timeout_timer_;
+  base::OneShotTimer key_press_delay_timer_;
+
+  // Used to allow tests to wait for popup visibility changes.
+  base::OnceClosure on_popup_visibility_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenControlHost);
 };

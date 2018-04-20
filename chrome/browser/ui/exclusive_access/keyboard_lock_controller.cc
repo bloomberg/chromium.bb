@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 using base::TimeDelta;
 using content::WebContents;
@@ -99,6 +100,7 @@ void KeyboardLockController::RequestKeyboardLock(WebContents* web_contents,
 
 bool KeyboardLockController::HandleKeyEvent(
     const content::NativeWebKeyboardEvent& event) {
+  DCHECK_EQ(ui::VKEY_ESCAPE, event.windows_key_code);
   // This method handles the press and hold gesture used for exiting fullscreen.
   // If we don't have a feature which requires press and hold, or there isn't an
   // active keyboard lock request which requires press and hold, then we just
@@ -107,7 +109,8 @@ bool KeyboardLockController::HandleKeyEvent(
   if (!RequiresPressAndHoldEscToExit())
     return false;
 
-  // TODO(joedow): Hook up press and hold exit animation here.
+  // Note: This logic handles exiting fullscreen but the UI feedback element is
+  // created and managed by the FullscreenControlHost class.
   if (event.GetType() == content::NativeWebKeyboardEvent::kKeyUp &&
       hold_timer_.IsRunning()) {
     // Seeing a key up event on Esc with the hold timer running cancels the
