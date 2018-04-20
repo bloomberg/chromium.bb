@@ -427,7 +427,7 @@ void BrowserChildProcessHostImpl::TerminateOnBadMessageReceived(
   // what the bad message was.
   base::debug::DumpWithoutCrashing();
 
-  child_process_->GetProcess().Terminate(RESULT_CODE_KILLED_BAD_MESSAGE, false);
+  child_process_->Terminate(RESULT_CODE_KILLED_BAD_MESSAGE);
 }
 
 void BrowserChildProcessHostImpl::OnChannelInitialized(IPC::Channel* channel) {
@@ -648,8 +648,7 @@ void BrowserChildProcessHostImpl::OnMojoError(
   base::debug::ScopedCrashKeyString scoped_error_key(
       bad_message::GetMojoErrorCrashKey(), error);
   base::debug::DumpWithoutCrashing();
-  process->child_process_->GetProcess().Terminate(
-      RESULT_CODE_KILLED_BAD_MESSAGE, false);
+  process->child_process_->Terminate(RESULT_CODE_KILLED_BAD_MESSAGE);
 }
 
 #if defined(OS_WIN)
