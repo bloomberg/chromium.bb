@@ -292,18 +292,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, exit_codes.NO_TESTS_EXIT_STATUS)
         self.assert_contains(err, 'No tests to run.\n')
 
-    def test_no_tests_found_with_ok_flag(self):
-        details, err, _ = logging_run(
-            ['resources', '--zero-tests-executed-ok'], tests_included=True)
-        self.assertEqual(details.exit_code, exit_codes.OK_EXIT_STATUS)
-        self.assert_contains(err, 'No tests to run.\n')
-
-    def test_no_tests_found_with_ok_flag_shards(self):
-        details, err, _ = logging_run(
-            ['--shard-index', '4', '--total-shards', '40', 'foo/bar.html', '--zero-tests-executed-ok'], tests_included=True)
-        self.assertEqual(details.exit_code, exit_codes.OK_EXIT_STATUS)
-        self.assert_contains(err, 'No tests to run.\n')
-
     def test_natural_order(self):
         tests_to_run = [
             'passes/audio.html',

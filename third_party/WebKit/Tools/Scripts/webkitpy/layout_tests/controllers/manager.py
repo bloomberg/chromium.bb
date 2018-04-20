@@ -135,14 +135,8 @@ class Manager(object):
 
         # Check to make sure we're not skipping every test.
         if not tests_to_run:
-            msg = 'No tests to run.'
-            if self._options.zero_tests_executed_ok:
-                _log.info(msg)
-                code = exit_codes.OK_EXIT_STATUS
-            else:
-                _log.critical(msg)
-                code = exit_codes.NO_TESTS_EXIT_STATUS
-            return test_run_results.RunDetails(exit_code=code)
+            _log.critical('No tests to run.')
+            return test_run_results.RunDetails(exit_code=exit_codes.NO_TESTS_EXIT_STATUS)
 
         exit_code = self._set_up_run(tests_to_run)
         if exit_code:
