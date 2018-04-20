@@ -238,7 +238,7 @@ template <typename Traversal>
 bool IsAfterAtomicInlineOrLineBreak(const InlineBox& box, int offset) {
   if (offset != Traversal::CaretEndOffsetOf(box))
     return false;
-  if (box.IsText() && ToInlineTextBox(box).IsLineBreak())
+  if (box.IsInlineTextBox() && ToInlineTextBox(box).IsLineBreak())
     return true;
   return box.GetLineLayoutItem().IsAtomicInlineLevel();
 }

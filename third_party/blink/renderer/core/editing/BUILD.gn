@@ -388,6 +388,7 @@ jumbo_source_set("unit_tests") {
     "rendered_position_test.cc",
     "selection_adjuster_test.cc",
     "selection_controller_test.cc",
+    "selection_modifier_character_test.cc",
     "selection_modifier_test.cc",
     "selection_template_test.cc",
     "serializers/styled_markup_serializer_test.cc",
