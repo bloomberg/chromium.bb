@@ -701,6 +701,8 @@ void ShellSurfaceBase::OnSurfaceCommit() {
   geometry_ = pending_geometry_;
 
   // Apply new minimum/maximium size.
+  bool size_constraint_changed = minimum_size_ != pending_minimum_size_ ||
+                                 maximum_size_ != pending_maximum_size_;
   minimum_size_ = pending_minimum_size_;
   maximum_size_ = pending_maximum_size_;
 
@@ -747,7 +749,8 @@ void ShellSurfaceBase::OnSurfaceCommit() {
 
   SubmitCompositorFrame();
 
-  widget_->OnSizeConstraintsChanged();
+  if (size_constraint_changed)
+    widget_->OnSizeConstraintsChanged();
 }
 
 bool ShellSurfaceBase::IsInputEnabled(Surface*) const {
