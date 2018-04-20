@@ -49,6 +49,12 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
     // new chunk id will be treated as having no id to avoid the chunk from
     // using the same id as the chunk before the forced chunk.
     current_chunk_id_ = WTF::nullopt;
+  } else if (force_new_chunk_ && data_.chunks.size() &&
+             data_.chunks.back().id == current_chunk_id_) {
+    // For other forced_new_chunk_ reasons (e.g. subsequences), use the first
+    // display items' id if the client didn't specify an id for the forced new
+    // chunk (i.e. |current_chunk_id_| has been used by the previous chunk).
+    current_chunk_id_ = WTF::nullopt;
   }
 
   size_t new_chunk_begin_index;

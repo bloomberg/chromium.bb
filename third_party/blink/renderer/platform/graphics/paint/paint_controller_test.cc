@@ -851,6 +851,16 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
 
   GetPaintController().CommitNewDisplayItems();
 
+  // Even though the paint properties match, |container| should receive its
+  // own PaintChunk because it created a subsequence.
+  EXPECT_EQ(3u, GetPaintController().GetPaintArtifact().PaintChunks().size());
+  EXPECT_EQ(root,
+            GetPaintController().GetPaintArtifact().PaintChunks()[0].id.client);
+  EXPECT_EQ(container,
+            GetPaintController().GetPaintArtifact().PaintChunks()[1].id.client);
+  EXPECT_EQ(root,
+            GetPaintController().GetPaintArtifact().PaintChunks()[2].id.client);
+
   root_properties.backface_hidden = true;
   // This time, record the fist chunk with backface_hidden == true
   GetPaintController().UpdateCurrentPaintChunkProperties(root_id,
@@ -860,8 +870,8 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
   DrawRect(context, root, kForegroundType, FloatRect(100, 100, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
-  // Even though the paint properties match, |container| should receive its
-  // own PaintChunk because it is a cached subsequence.
+  // |container| should still receive its own PaintChunk because it is a cached
+  // subsequence.
   EXPECT_EQ(3u, GetPaintController().GetPaintArtifact().PaintChunks().size());
   EXPECT_EQ(root,
             GetPaintController().GetPaintArtifact().PaintChunks()[0].id.client);
