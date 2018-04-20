@@ -61,8 +61,8 @@ cvox.KbExplorer.init = function() {
     cvox.ChromeVox.modKeyStr = 'Search+Shift';
   }
 
-  /** @type {cvox.LibLouis} */
-  this.currentBrailleTranslator_ =
+  /** @type {cvox.LibLouis.Translator} */
+  cvox.KbExplorer.currentBrailleTranslator_ =
       backgroundWindow['cvox']['BrailleBackground']['getInstance']()
           ['getTranslatorManager']()['getDefaultTranslator']();
 

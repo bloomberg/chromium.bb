@@ -574,7 +574,7 @@ cvox.SelectionUtil.getText = function() {
     }
     return text;
   } else {
-    return this.getSelectionText_();
+    return cvox.SelectionUtil.getSelectionText_();
   }
 };
 

@@ -54,6 +54,11 @@ _AUTOMATION_EXTERNS = (
 _METRICS_PRIVATE_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/metrics_private.js'))
 
+
+# Additional chrome api externs file.
+_CHROME_EXTERNS = (
+    ChromeRootPath('third_party/closure_compiler/externs/chrome.js'))
+
 # Additional chrome extension api externs file.
 _CHROME_EXTENSIONS_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/chrome_extensions.js'))
@@ -68,6 +73,7 @@ _COMMON_EXTERNS = [
     CVoxPath('host/chrome/externs.js'),
     _ACCESSIBILITY_PRIVATE_EXTERNS,
     _AUTOMATION_EXTERNS,
+    _CHROME_EXTERNS,
     _CHROME_EXTENSIONS_EXTERNS,
     _METRICS_PRIVATE_EXTERNS]
 

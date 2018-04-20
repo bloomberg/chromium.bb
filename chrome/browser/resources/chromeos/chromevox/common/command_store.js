@@ -882,6 +882,7 @@ cvox.CommandStore.CMD_WHITELIST = {
 /**
  * List of find next commands and their associated data.
  * @type {Object<{predicate: string,
+ *                typeMsg: string,
  *                forwardError: string,
  *                backwardError: string}>}
  *  predicate: The name of the predicate. This must be defined in DomPredicates.

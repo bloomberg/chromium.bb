@@ -75,7 +75,7 @@ cvox.BrailleCaptionsBackground.setContent = function(
     brailleChars +=
         String.fromCharCode(self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
   }
-  var groups = this.groupBrailleAndText(
+  var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
       brailleChars, text, brailleToText, offsetsForSlices);
   if (cvox.ChromeVox.isChromeOS) {
     var data = {groups: groups, rows: rows, cols: columns};

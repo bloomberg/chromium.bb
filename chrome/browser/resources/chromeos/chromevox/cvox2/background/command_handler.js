@@ -927,7 +927,8 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
     return;
 
   imageNode.addEventListener(
-      EventType.IMAGE_FRAME_UPDATED, this.onImageFrameUpdated_, false);
+      EventType.IMAGE_FRAME_UPDATED, CommandHandler.onImageFrameUpdated_,
+      false);
   CommandHandler.imageNode_ = imageNode;
   if (imageNode.imageDataUrl) {
     var event = new CustomAutomationEvent(
