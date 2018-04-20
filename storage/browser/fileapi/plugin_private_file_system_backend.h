@@ -27,13 +27,14 @@ namespace content {
 class PluginPrivateFileSystemBackendTest;
 }
 
-namespace storage {
-class SpecialStoragePolicy;
+namespace leveldb {
+class Env;
 }
 
 namespace storage {
 
 class ObfuscatedFileUtil;
+class SpecialStoragePolicy;
 class WatcherManager;
 
 class STORAGE_EXPORT PluginPrivateFileSystemBackend
@@ -47,7 +48,8 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
       base::SequencedTaskRunner* file_task_runner,
       const base::FilePath& profile_path,
       storage::SpecialStoragePolicy* special_storage_policy,
-      const FileSystemOptions& file_system_options);
+      const FileSystemOptions& file_system_options,
+      leveldb::Env* env_override);
   ~PluginPrivateFileSystemBackend() override;
 
   // This must be used to open 'private' filesystem instead of regular

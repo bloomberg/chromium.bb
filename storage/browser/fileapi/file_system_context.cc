@@ -37,6 +37,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
 
 using storage::QuotaClient;
@@ -146,7 +147,10 @@ FileSystemContext::FileSystemContext(
     const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
     const FileSystemOptions& options)
-    : io_task_runner_(io_task_runner),
+    : env_override_(options.is_in_memory()
+                        ? leveldb_chrome::NewMemEnv("FileSystem")
+                        : nullptr),
+      io_task_runner_(io_task_runner),
       default_file_task_runner_(file_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
       sandbox_delegate_(
@@ -154,13 +158,15 @@ FileSystemContext::FileSystemContext(
                                                file_task_runner,
                                                partition_path,
                                                special_storage_policy,
-                                               options)),
+                                               options,
+                                               env_override_.get())),
       sandbox_backend_(new SandboxFileSystemBackend(sandbox_delegate_.get())),
       plugin_private_backend_(
           new PluginPrivateFileSystemBackend(file_task_runner,
                                              partition_path,
                                              special_storage_policy,
-                                             options)),
+                                             options,
+                                             env_override_.get())),
       additional_backends_(std::move(additional_backends)),
       auto_mount_handlers_(auto_mount_handlers),
       external_mount_points_(external_mount_points),
@@ -501,7 +507,11 @@ void FileSystemContext::OpenPluginPrivateFileSystem(
       origin_url, type, filesystem_id, plugin_id, mode, std::move(callback));
 }
 
-FileSystemContext::~FileSystemContext() = default;
+FileSystemContext::~FileSystemContext() {
+  // TODO(crbug.com/823854) This is a leak. Delete env after the backends have
+  // been deleted.
+  env_override_.release();
+}
 
 void FileSystemContext::DeleteOnCorrectSequence() const {
   if (!io_task_runner_->RunsTasksInCurrentSequence() &&
