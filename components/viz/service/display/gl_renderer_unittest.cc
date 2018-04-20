@@ -538,7 +538,7 @@ class GLRendererShaderTest : public GLRendererTest {
     child_context_provider_->BindToCurrentThread();
     child_resource_provider_ =
         cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
-            child_context_provider_.get(), shared_bitmap_manager_.get());
+            child_context_provider_.get());
   }
 
   void TestRenderPassProgram(TexCoordPrecision precision,
@@ -991,7 +991,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
-          child_context_provider.get(), shared_bitmap_manager.get());
+          child_context_provider.get());
 
   RenderPass* root_pass =
       cc::AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(100, 100),
@@ -2055,7 +2055,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
-          child_context_provider.get(), shared_bitmap_manager.get());
+          child_context_provider.get());
 
   auto transfer_resource = TransferableResource::MakeGLOverlay(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
@@ -2247,7 +2247,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
-          child_context_provider.get(), shared_bitmap_manager.get());
+          child_context_provider.get());
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x123), 29);

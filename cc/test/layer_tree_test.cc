@@ -34,7 +34,6 @@
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
-#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -46,7 +45,6 @@ class SynchronousLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
   SynchronousLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
-      viz::SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const viz::RendererSettings& renderer_settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -54,7 +52,6 @@ class SynchronousLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
       viz::BeginFrameSource* begin_frame_source)
       : viz::TestLayerTreeFrameSink(std::move(compositor_context_provider),
                                     std::move(worker_context_provider),
-                                    shared_bitmap_manager,
                                     gpu_memory_buffer_manager,
                                     renderer_settings,
                                     task_runner,
@@ -939,7 +936,6 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
   image_worker_ = std::make_unique<base::Thread>("ImageWorker");
   ASSERT_TRUE(image_worker_->Start());
 
-  shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
   gpu_memory_buffer_manager_ =
       std::make_unique<viz::TestGpuMemoryBufferManager>();
   task_graph_runner_.reset(new TestTaskGraphRunner);
@@ -1007,15 +1003,15 @@ LayerTreeTest::CreateLayerTreeFrameSink(
   if (layer_tree_host()->GetSettings().using_synchronous_renderer_compositor) {
     return std::make_unique<SynchronousLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
-        shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings,
-        impl_task_runner_, refresh_rate, begin_frame_source_);
+        gpu_memory_buffer_manager(), renderer_settings, impl_task_runner_,
+        refresh_rate, begin_frame_source_);
   }
 
   return std::make_unique<viz::TestLayerTreeFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
-      shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings,
-      impl_task_runner_, synchronous_composite, disable_display_vsync,
-      refresh_rate, begin_frame_source_);
+      gpu_memory_buffer_manager(), renderer_settings, impl_task_runner_,
+      synchronous_composite, disable_display_vsync, refresh_rate,
+      begin_frame_source_);
 }
 
 std::unique_ptr<viz::OutputSurface>

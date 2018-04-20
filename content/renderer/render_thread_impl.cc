@@ -2086,7 +2086,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
         std::move(compositor_frame_sink_client),
         std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
-    params.shared_bitmap_manager = shared_bitmap_manager();
     callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
         nullptr, nullptr, &params));
     return;

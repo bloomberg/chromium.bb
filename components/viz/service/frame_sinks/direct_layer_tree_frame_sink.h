@@ -45,7 +45,6 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
       scoped_refptr<RasterContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      SharedBitmapManager* shared_bitmap_manager,
       bool use_viz_hit_test);
   ~DirectLayerTreeFrameSink() override;
 

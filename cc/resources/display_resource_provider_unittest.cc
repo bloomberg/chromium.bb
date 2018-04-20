@@ -373,9 +373,8 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
 
   void MakeChildResourceProvider() {
     child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-        child_context_provider_.get(), shared_bitmap_manager_.get(),
-        child_gpu_memory_buffer_manager_.get(), child_needs_sync_token_,
-        CreateResourceSettings());
+        child_context_provider_.get(), child_gpu_memory_buffer_manager_.get(),
+        child_needs_sync_token_, CreateResourceSettings());
   }
 
   static void CollectResources(

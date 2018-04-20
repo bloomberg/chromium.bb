@@ -868,8 +868,7 @@ void CompositorImpl::InitializeDisplay(
       frame_sink_id_, GetHostFrameSinkManager(), manager, display_.get(),
       nullptr /* display_client */, context_provider,
       nullptr /* worker_context_provider */, task_runner,
-      gpu_memory_buffer_manager, viz::ServerSharedBitmapManager::current(),
-      features::IsVizHitTestingEnabled());
+      gpu_memory_buffer_manager, features::IsVizHitTestingEnabled());
 
   display_->SetVisible(true);
   display_->Resize(size_);

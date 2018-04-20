@@ -11,7 +11,6 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -105,7 +104,6 @@ struct LayerTreeResourceProvider::ImportedResource {
 
 LayerTreeResourceProvider::LayerTreeResourceProvider(
     viz::ContextProvider* compositor_context_provider,
-    viz::SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     bool delegated_sync_points_required,
     const viz::ResourceSettings& resource_settings)
@@ -113,7 +111,6 @@ LayerTreeResourceProvider::LayerTreeResourceProvider(
       settings_(compositor_context_provider,
                 delegated_sync_points_required,
                 resource_settings),
-      shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       next_id_(kLayerTreeInitialResourceId) {
 }

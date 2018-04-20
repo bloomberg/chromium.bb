@@ -14,7 +14,6 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
 
 namespace viz {
 
@@ -42,8 +41,7 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
     : cc::LayerTreeFrameSink(std::move(context_provider),
                              std::move(worker_context_provider),
                              std::move(params->compositor_task_runner),
-                             params->gpu_memory_buffer_manager,
-                             params->shared_bitmap_manager),
+                             params->gpu_memory_buffer_manager),
       hit_test_data_provider_(std::move(params->hit_test_data_provider)),
       local_surface_id_provider_(std::move(params->local_surface_id_provider)),
       synthetic_begin_frame_source_(

@@ -87,10 +87,10 @@ class VideoResourceUpdaterTest : public testing::Test {
     layer_tree_frame_sink_software_ = FakeLayerTreeFrameSink::CreateSoftware();
     resource_provider3d_ =
         FakeResourceProvider::CreateLayerTreeResourceProvider(
-            context_provider_.get(), nullptr, nullptr, high_bit_for_testing_);
+            context_provider_.get(), nullptr, high_bit_for_testing_);
     resource_provider_software_ =
         FakeResourceProvider::CreateLayerTreeResourceProvider(
-            nullptr, nullptr, nullptr, high_bit_for_testing_);
+            nullptr, nullptr, high_bit_for_testing_);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForHardware(

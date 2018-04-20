@@ -1395,10 +1395,6 @@ viz::ContextProvider* LayerTreeImpl::context_provider() const {
   return host_impl_->layer_tree_frame_sink()->context_provider();
 }
 
-viz::SharedBitmapManager* LayerTreeImpl::shared_bitmap_manager() const {
-  return host_impl_->layer_tree_frame_sink()->shared_bitmap_manager();
-}
-
 LayerTreeResourceProvider* LayerTreeImpl::resource_provider() const {
   return host_impl_->resource_provider();
 }

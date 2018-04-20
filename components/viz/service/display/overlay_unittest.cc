@@ -514,7 +514,7 @@ class OverlayTest : public testing::Test {
     child_provider_->BindToCurrentThread();
     child_resource_provider_ =
         cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
-            child_provider_.get(), shared_bitmap_manager_.get());
+            child_provider_.get());
 
     overlay_processor_ =
         std::make_unique<OverlayProcessor>(output_surface_.get());

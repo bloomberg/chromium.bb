@@ -212,8 +212,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
       /*support_gles2_interface=*/true);
   child_context_provider_->BindToCurrentThread();
   child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-      child_context_provider_.get(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), true,
+      child_context_provider_.get(), gpu_memory_buffer_manager_.get(), true,
       settings_.resource_settings);
 }
 
@@ -247,8 +246,7 @@ void PixelTest::SetUpSoftwareRenderer() {
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get());
   child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-      nullptr, shared_bitmap_manager_.get(), nullptr, true,
-      settings_.resource_settings);
+      nullptr, nullptr, true, settings_.resource_settings);
 
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());

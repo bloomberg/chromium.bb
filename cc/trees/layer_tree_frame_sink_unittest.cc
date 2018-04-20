@@ -25,7 +25,6 @@ class StubLayerTreeFrameSink : public LayerTreeFrameSink {
       : LayerTreeFrameSink(std::move(context_provider),
                            std::move(worker_context_provider),
                            std::move(compositor_task_runner),
-                           nullptr,
                            nullptr) {}
 
   void SubmitCompositorFrame(viz::CompositorFrame frame) override {

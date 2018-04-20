@@ -20,7 +20,6 @@
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
-#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "components/viz/test/test_web_graphics_context_3d.h"
 
 namespace viz {
@@ -133,7 +132,6 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
       scoped_refptr<viz::RasterContextProvider> worker_context_provider);
 
   viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
-  viz::TestSharedBitmapManager test_shared_bitmap_manager_;
 
   std::vector<viz::SharedBitmapId> shared_bitmaps_;
   std::unique_ptr<viz::CompositorFrame> last_sent_frame_;

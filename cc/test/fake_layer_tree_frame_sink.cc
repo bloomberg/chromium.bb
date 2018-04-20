@@ -37,13 +37,10 @@ FakeLayerTreeFrameSink::FakeLayerTreeFrameSink(
     : LayerTreeFrameSink(std::move(context_provider),
                          std::move(worker_context_provider),
                          base::ThreadTaskRunnerHandle::Get(),
-                         nullptr,
                          nullptr),
       weak_ptr_factory_(this) {
   gpu_memory_buffer_manager_ =
       context_provider_ ? &test_gpu_memory_buffer_manager_ : nullptr;
-  shared_bitmap_manager_ =
-      context_provider_ ? nullptr : &test_shared_bitmap_manager_;
 }
 
 FakeLayerTreeFrameSink::~FakeLayerTreeFrameSink() = default;

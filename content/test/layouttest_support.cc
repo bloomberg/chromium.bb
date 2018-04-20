@@ -349,9 +349,9 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     constexpr double refresh_rate = 60.0;
     auto layer_tree_frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
         std::move(compositor_context_provider),
-        std::move(worker_context_provider), nullptr /* shared_bitmap_manager */,
-        gpu_memory_buffer_manager, renderer_settings, task_runner,
-        synchronous_composite, disable_display_vsync, refresh_rate);
+        std::move(worker_context_provider), gpu_memory_buffer_manager,
+        renderer_settings, task_runner, synchronous_composite,
+        disable_display_vsync, refresh_rate);
     layer_tree_frame_sink->SetClient(this);
     layer_tree_frame_sinks_[routing_id] = layer_tree_frame_sink.get();
     return std::move(layer_tree_frame_sink);
