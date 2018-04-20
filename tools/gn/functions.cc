@@ -852,6 +852,13 @@ const char kPool_Help[] =
   context of more than one toolchain it is recommended to specify an
   explicit toolchain when defining and referencing a pool.
 
+  A pool named "console" defined in the root build file represents Ninja's
+  console pool. Targets using this pool will have access to the console's
+  stdin and stdout, and output will not be buffered. This special pool must
+  have a depth of 1. Pools not defined in the root must not be named "console".
+  The console pool can only be defined for the default toolchain.
+  Refer to the Ninja documentation on the console pool for more info.
+
   A pool is referenced by its label just like a target.
 
 Variables
@@ -906,13 +913,31 @@ Value RunPool(const FunctionCallNode* function,
     return Value();
 
   if (depth->int_value() < 0) {
-    *err = Err(function, "depth must be positive or nul.");
+    *err = Err(*depth, "depth must be positive or 0.");
     return Value();
   }
 
   // Create the new pool.
   std::unique_ptr<Pool> pool = std::make_unique<Pool>(
       scope->settings(), label, scope->build_dependency_files());
+
+  if (label.name() == "console") {
+    const Settings* settings = scope->settings();
+    if (!settings->is_default()) {
+      *err = Err(
+          function,
+          "\"console\" pool must be defined only in the default toolchain.");
+      return Value();
+    }
+    if (label.dir() != settings->build_settings()->root_target_label().dir()) {
+      *err = Err(function, "\"console\" pool must be defined in the root //.");
+      return Value();
+    }
+    if (depth->int_value() != 1) {
+      *err = Err(*depth, "\"console\" pool must have depth 1.");
+      return Value();
+    }
+  }
   pool->set_depth(depth->int_value());
 
   // Save the generated item.

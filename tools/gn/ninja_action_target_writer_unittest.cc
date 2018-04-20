@@ -75,7 +75,7 @@ build obj/foo/bar.stamp: stamp foo.out
 
 
 // Tests an action with no sources and pool
-TEST(NinjaActionTargetWriter, ActionNoSourcesPool) {
+TEST(NinjaActionTargetWriter, ActionNoSourcesConsole) {
   Err err;
   TestWithScope setup;
 
@@ -89,9 +89,9 @@ TEST(NinjaActionTargetWriter, ActionNoSourcesPool) {
       SubstitutionList::MakeForTest("//out/Debug/foo.out");
 
   Pool pool(setup.settings(),
-            Label(SourceDir("//foo/"), "pool", setup.toolchain()->label().dir(),
+            Label(SourceDir("//"), "console", setup.toolchain()->label().dir(),
                   setup.toolchain()->label().name()));
-  pool.set_depth(5);
+  pool.set_depth(1);
   target.action_values().set_pool(LabelPtrPair<Pool>(&pool));
 
   target.SetToolchain(setup.toolchain());
@@ -104,6 +104,8 @@ TEST(NinjaActionTargetWriter, ActionNoSourcesPool) {
   NinjaActionTargetWriter writer(&target, out);
   writer.Run();
 
+  // The console pool's name must be mapped exactly to the string "console"
+  // which is a special pre-defined pool name in ninja.
   const char* expected = 1 /* skip initial newline */ + R"(
 rule __foo_bar___rule
   command = /usr/bin/python ../../foo/script.py
@@ -111,7 +113,7 @@ rule __foo_bar___rule
   restat = 1
 
 build foo.out: __foo_bar___rule | ../../foo/script.py ../../foo/included.txt
-  pool = foo_pool
+  pool = console
 
 build obj/foo/bar.stamp: stamp foo.out
 )";

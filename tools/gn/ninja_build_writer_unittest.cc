@@ -34,16 +34,26 @@ TEST_F(NinjaBuildWriterTest, TwoTargets) {
   target_bar.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target_bar.OnResolved(&err));
 
-  // Make a secondary toolchain that references a pool.
+  // Make a secondary toolchain that references two pools.
   Label other_toolchain_label(SourceDir("//other/"), "toolchain");
-  Pool other_pool(setup.settings(), Label(SourceDir("//other/"), "pool",
-                                          other_toolchain_label.dir(),
-                                          other_toolchain_label.name()));
-  other_pool.set_depth(42);
   Toolchain other_toolchain(setup.settings(), other_toolchain_label);
   TestWithScope::SetupToolchain(&other_toolchain);
-  other_toolchain.GetTool(Toolchain::TYPE_LINK)->set_pool(
-      LabelPtrPair<Pool>(&other_pool));
+
+  Pool other_regular_pool(
+      setup.settings(),
+      Label(SourceDir("//other/"), "depth_pool", other_toolchain_label.dir(),
+            other_toolchain_label.name()));
+  other_regular_pool.set_depth(42);
+  other_toolchain.GetTool(Toolchain::TYPE_LINK)
+      ->set_pool(LabelPtrPair<Pool>(&other_regular_pool));
+
+  // The console pool must be in the default toolchain.
+  Pool console_pool(setup.settings(), Label(SourceDir("//"), "console",
+                                            setup.toolchain()->label().dir(),
+                                            setup.toolchain()->label().name()));
+  console_pool.set_depth(1);
+  other_toolchain.GetTool(Toolchain::TYPE_STAMP)
+      ->set_pool(LabelPtrPair<Pool>(&console_pool));
 
   // Settings to go with the other toolchain.
   Settings other_settings(setup.build_settings(), "toolchain/");
@@ -68,7 +78,7 @@ TEST_F(NinjaBuildWriterTest, TwoTargets) {
       "  generator = 1\n"
       "  depfile = build.ninja.d\n";
   const char expected_other_pool[] =
-      "pool other_toolchain_other_pool\n"
+      "pool other_toolchain_other_depth_pool\n"
       "  depth = 42\n";
   const char expected_toolchain[] =
       "subninja toolchain.ninja\n";
@@ -95,6 +105,9 @@ TEST_F(NinjaBuildWriterTest, TwoTargets) {
   EXPECT_SNIPPET(expected_root_target);
   EXPECT_SNIPPET(expected_default);
 #undef EXPECT_SNIPPET
+
+  // A pool definition for ninja's built-in console pool must not be written.
+  EXPECT_EQ(std::string::npos, out_str.find("pool console"));
 }
 
 TEST_F(NinjaBuildWriterTest, DuplicateOutputs) {
