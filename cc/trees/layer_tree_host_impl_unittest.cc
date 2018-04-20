@@ -8294,14 +8294,11 @@ class BlendStateCheckLayer : public LayerImpl {
         quads_appended_(false),
         quad_rect_(5, 5, 5, 5),
         quad_visible_rect_(5, 5, 5, 5) {
-    if (tree_impl->context_provider()) {
-      resource_id_ = resource_provider->CreateGpuTextureResource(
-          gfx::Size(1, 1), viz::ResourceTextureHint::kDefault, viz::RGBA_8888,
-          gfx::ColorSpace());
-    } else {
-      resource_id_ = resource_provider->CreateBitmapResource(
-          gfx::Size(1, 1), gfx::ColorSpace(), viz::RGBA_8888);
-    }
+    resource_id_ = resource_provider->ImportResource(
+        viz::TransferableResource::MakeSoftware(viz::SharedBitmap::GenerateId(),
+                                                0, gfx::Size(1, 1),
+                                                viz::RGBA_8888),
+        viz::SingleReleaseCallback::Create(base::DoNothing()));
     SetBounds(gfx::Size(10, 10));
     SetDrawsContent(true);
   }

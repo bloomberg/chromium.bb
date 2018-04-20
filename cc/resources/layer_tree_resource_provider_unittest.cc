@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -108,6 +109,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceReleased) {
 TEST_P(LayerTreeResourceProviderTest, TransferableResourceSendToParent) {
   MockReleaseCallback release;
   viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
+  tran.buffer_format = gfx::BufferFormat::RGBX_8888;
   viz::ResourceId id = provider().ImportResource(
       tran, viz::SingleReleaseCallback::Create(base::Bind(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
@@ -134,6 +136,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceSendToParent) {
             tran.mailbox_holder.texture_target);
   EXPECT_EQ(exported[0].shared_bitmap_sequence_number,
             tran.shared_bitmap_sequence_number);
+  EXPECT_EQ(exported[0].buffer_format, tran.buffer_format);
 
   // Exported resources are not released when removed, until the export returns.
   EXPECT_CALL(release, Released(_, _)).Times(0);
@@ -151,6 +154,73 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceSendToParent) {
   // The sync token is given to the ReleaseCallback.
   EXPECT_CALL(release, Released(returned[0].sync_token, false));
   provider().ReceiveReturnsFromParent(returned);
+}
+
+TEST_P(LayerTreeResourceProviderTest, TransferableResourceSendTwoToParent) {
+  viz::TransferableResource tran[] = {
+      MakeTransferableResource(use_gpu(), 'a', 15),
+      MakeTransferableResource(use_gpu(), 'b', 16)};
+  viz::ResourceId id1 = provider().ImportResource(
+      tran[0], viz::SingleReleaseCallback::Create(base::DoNothing()));
+  viz::ResourceId id2 = provider().ImportResource(
+      tran[1], viz::SingleReleaseCallback::Create(base::DoNothing()));
+
+  // Export the resource.
+  std::vector<viz::ResourceId> to_send = {id1, id2};
+  std::vector<viz::TransferableResource> exported;
+  provider().PrepareSendToParent(to_send, &exported);
+  ASSERT_EQ(exported.size(), 2u);
+
+  // Exported resource matches except for the id which was mapped
+  // to the local ResourceProvider, and the sync token should be
+  // verified if it's a gpu resource.
+  for (int i = 0; i < 2; ++i) {
+    gpu::SyncToken verified_sync_token = tran[i].mailbox_holder.sync_token;
+    if (!tran[i].is_software)
+      verified_sync_token.SetVerifyFlush();
+    EXPECT_EQ(exported[i].id, to_send[i]);
+    EXPECT_EQ(exported[i].is_software, tran[i].is_software);
+    EXPECT_EQ(exported[i].filter, tran[i].filter);
+    EXPECT_EQ(exported[i].size, tran[i].size);
+    EXPECT_EQ(exported[i].mailbox_holder.mailbox,
+              tran[i].mailbox_holder.mailbox);
+    EXPECT_EQ(exported[i].mailbox_holder.sync_token, verified_sync_token);
+    EXPECT_EQ(exported[i].mailbox_holder.texture_target,
+              tran[i].mailbox_holder.texture_target);
+    EXPECT_EQ(exported[i].shared_bitmap_sequence_number,
+              tran[i].shared_bitmap_sequence_number);
+    EXPECT_EQ(exported[i].buffer_format, tran[i].buffer_format);
+  }
+}
+
+TEST_P(LayerTreeResourceProviderTest,
+       TransferableResourceSendToParentTwoTimes) {
+  viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
+  viz::ResourceId id = provider().ImportResource(
+      tran, viz::SingleReleaseCallback::Create(base::DoNothing()));
+
+  // Export the resource.
+  std::vector<viz::ResourceId> to_send = {id};
+  std::vector<viz::TransferableResource> exported;
+  provider().PrepareSendToParent(to_send, &exported);
+  ASSERT_EQ(exported.size(), 1u);
+  EXPECT_EQ(exported[0].id, id);
+
+  // Return the resource, with a sync token if using gpu.
+  std::vector<viz::ReturnedResource> returned;
+  returned.push_back({});
+  returned.back().id = exported[0].id;
+  if (use_gpu())
+    returned.back().sync_token = SyncTokenFromUInt(31);
+  returned.back().count = 1;
+  returned.back().lost = false;
+  provider().ReceiveReturnsFromParent(returned);
+
+  // Then export again, it still sends.
+  exported.clear();
+  provider().PrepareSendToParent(to_send, &exported);
+  ASSERT_EQ(exported.size(), 1u);
+  EXPECT_EQ(exported[0].id, id);
 }
 
 TEST_P(LayerTreeResourceProviderTest,
@@ -342,93 +412,6 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceLostOnFirstReturn) {
   returned.back().lost = false;
   EXPECT_CALL(release, Released(_, true));
   provider().ReceiveReturnsFromParent(returned);
-}
-
-TEST_P(LayerTreeResourceProviderTest,
-       NormalPlusTransferableResourceSendToParent) {
-  MockReleaseCallback release;
-  viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
-
-  viz::ResourceId tran_id = provider().ImportResource(
-      tran, viz::SingleReleaseCallback::Create(base::Bind(
-                &MockReleaseCallback::Released, base::Unretained(&release))));
-  viz::ResourceId norm_id;
-  if (use_gpu()) {
-    norm_id = provider().CreateGpuTextureResource(
-        gfx::Size(3, 4), viz::ResourceTextureHint::kDefault, viz::RGBA_8888,
-        gfx::ColorSpace());
-  } else {
-    norm_id = provider().CreateBitmapResource(
-        gfx::Size(3, 4), gfx::ColorSpace(), viz::RGBA_8888);
-  }
-
-  // Export the resources.
-  std::vector<viz::ResourceId> to_send = {tran_id, norm_id};
-  std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
-  ASSERT_EQ(exported.size(), 2u);
-
-  // They're both exported (normal resources come first).
-  EXPECT_EQ(exported[0].id, norm_id);
-  EXPECT_EQ(exported[1].id, tran_id);
-  viz::TransferableResource exported_norm = exported[0];
-  viz::TransferableResource exported_tran = exported[1];
-
-  // Exported normal Resource matches what it should.
-  EXPECT_EQ(exported_norm.id, norm_id);
-  EXPECT_EQ(exported_norm.is_software, tran.is_software);
-  EXPECT_NE(exported_norm.filter, 0u);
-  EXPECT_EQ(exported_norm.size, gfx::Size(3, 4));
-  EXPECT_NE(exported_norm.mailbox_holder.mailbox, gpu::Mailbox());
-  if (use_gpu()) {
-    EXPECT_NE(exported_norm.mailbox_holder.sync_token, gpu::SyncToken());
-    EXPECT_NE(exported_norm.mailbox_holder.texture_target, 0u);
-    EXPECT_EQ(exported_norm.shared_bitmap_sequence_number, 0u);
-  } else {
-    EXPECT_EQ(exported_norm.mailbox_holder.sync_token, gpu::SyncToken());
-    EXPECT_EQ(exported_norm.mailbox_holder.texture_target, 0u);
-    EXPECT_NE(exported_norm.shared_bitmap_sequence_number, 0u);
-  }
-
-  // Exported TransferableResource matches except for the id which was mapped
-  // to the local ResourceProvider, and the sync token should be
-  // verified if it's a gpu resource.
-  gpu::SyncToken verified_sync_token = tran.mailbox_holder.sync_token;
-  if (!tran.is_software)
-    verified_sync_token.SetVerifyFlush();
-  EXPECT_EQ(exported_tran.id, tran_id);
-  EXPECT_EQ(exported_tran.is_software, tran.is_software);
-  EXPECT_EQ(exported_tran.filter, tran.filter);
-  EXPECT_EQ(exported_tran.size, tran.size);
-  EXPECT_EQ(exported_tran.mailbox_holder.mailbox, tran.mailbox_holder.mailbox);
-  EXPECT_EQ(exported_tran.mailbox_holder.sync_token, verified_sync_token);
-  EXPECT_EQ(exported_tran.mailbox_holder.texture_target,
-            tran.mailbox_holder.texture_target);
-  EXPECT_EQ(exported_tran.shared_bitmap_sequence_number,
-            tran.shared_bitmap_sequence_number);
-
-  // Return both resources, with sync tokens if using gpu.
-  std::vector<viz::ReturnedResource> returned;
-  returned.push_back({});
-  returned.back().id = exported_norm.id;
-  if (use_gpu())
-    returned.back().sync_token = SyncTokenFromUInt(31);
-  returned.back().count = 1;
-  returned.back().lost = false;
-
-  returned.push_back({});
-  returned.back().id = exported_tran.id;
-  if (use_gpu())
-    returned.back().sync_token = SyncTokenFromUInt(82);
-  returned.back().count = 1;
-  returned.back().lost = false;
-
-  provider().ReceiveReturnsFromParent(returned);
-
-  // The sync token for the TransferableResource is given to the
-  // ReleaseCallback.
-  EXPECT_CALL(release, Released(returned[1].sync_token, false));
-  provider().RemoveImportedResource(tran_id);
 }
 
 }  // namespace

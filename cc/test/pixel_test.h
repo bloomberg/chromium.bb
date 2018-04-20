@@ -6,9 +6,11 @@
 #define CC_TEST_PIXEL_TEST_H_
 
 #include "base/files/file_util.h"
+#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/skia_renderer.h"
@@ -27,7 +29,6 @@ class TestSharedBitmapManager;
 namespace cc {
 class DisplayResourceProvider;
 class FakeOutputSurfaceClient;
-class LayerTreeResourceProvider;
 class OutputSurface;
 class TestInProcessContextProvider;
 
@@ -58,6 +59,17 @@ class PixelTest : public testing::Test {
   viz::ContextProvider* context_provider() const {
     return output_surface_->context_provider();
   }
+
+  // Allocates a SharedMemory bitmap and registers it with the display
+  // compositor's SharedBitmapManager.
+  std::unique_ptr<base::SharedMemory> AllocateSharedBitmapMemory(
+      const viz::SharedBitmapId& id,
+      const gfx::Size& size);
+  // Uses AllocateSharedBitmapMemory() then registers a ResourceId with the
+  // |child_resource_provider_|, and copies the contents of |source| into the
+  // software resource backing.
+  viz::ResourceId AllocateAndFillSoftwareResource(const gfx::Size& size,
+                                                  const SkBitmap& source);
 
   LayerTreeSettings settings_;
   viz::RendererSettings renderer_settings_;

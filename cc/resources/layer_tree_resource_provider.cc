@@ -358,32 +358,6 @@ viz::ResourceId LayerTreeResourceProvider::CreateGpuTextureResource(
   return id;
 }
 
-viz::ResourceId LayerTreeResourceProvider::CreateBitmapResource(
-    const gfx::Size& size,
-    const gfx::ColorSpace& color_space,
-    viz::ResourceFormat format) {
-  DCHECK(!compositor_context_provider_);
-  DCHECK(!size.IsEmpty());
-  DCHECK(viz::IsBitmapFormatSupported(format));
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // TODO(danakj): Allocate this outside ResourceProvider.
-  std::unique_ptr<viz::SharedBitmap> bitmap =
-      shared_bitmap_manager_->AllocateSharedBitmap(size, format);
-  DCHECK(bitmap);
-  DCHECK(bitmap->pixels());
-
-  viz::ResourceId id = next_id_++;
-  viz::internal::Resource* resource = InsertResource(
-      id,
-      viz::internal::Resource(size, viz::internal::Resource::INTERNAL,
-                              viz::ResourceTextureHint::kDefault,
-                              viz::ResourceType::kBitmap, format, color_space));
-  resource->SetSharedBitmap(bitmap.get());
-  resource->owned_shared_bitmap = std::move(bitmap);
-  return id;
-}
-
 void LayerTreeResourceProvider::DeleteResource(viz::ResourceId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ResourceMap::iterator it = resources_.find(id);
@@ -435,28 +409,16 @@ void LayerTreeResourceProvider::CopyToResource(viz::ResourceId id,
   DCHECK_EQ(image_size.width(), resource->size.width());
   DCHECK_EQ(image_size.height(), resource->size.height());
 
-  if (resource->type == viz::ResourceType::kBitmap) {
-    DCHECK_EQ(viz::ResourceType::kBitmap, resource->type);
-    DCHECK_EQ(viz::RGBA_8888, resource->format);
-    SkImageInfo source_info =
-        SkImageInfo::MakeN32Premul(image_size.width(), image_size.height());
-    size_t image_stride = image_size.width() * 4;
-
-    SkBitmap sk_bitmap;
-    PopulateSkBitmapWithResource(&sk_bitmap, resource);
-    SkCanvas dest(sk_bitmap);
-    dest.writePixels(source_info, image, image_stride, 0, 0);
-  } else {
-    GLuint texture_id = resource->gl_id;
-    DCHECK(texture_id);
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->BindTexture(resource->target, texture_id);
-    gl->TexSubImage2D(resource->target, 0, 0, 0, image_size.width(),
-                      image_size.height(), GLDataFormat(resource->format),
-                      GLDataType(resource->format), image);
-    resource->SetLocallyUsed();
-  }
+  DCHECK_NE(resource->type, viz::ResourceType::kBitmap);
+  GLuint texture_id = resource->gl_id;
+  DCHECK(texture_id);
+  GLES2Interface* gl = ContextGL();
+  DCHECK(gl);
+  gl->BindTexture(resource->target, texture_id);
+  gl->TexSubImage2D(resource->target, 0, 0, 0, image_size.width(),
+                    image_size.height(), GLDataFormat(resource->format),
+                    GLDataType(resource->format), image);
+  resource->SetLocallyUsed();
 }
 
 void LayerTreeResourceProvider::TransferResource(
@@ -472,20 +434,13 @@ void LayerTreeResourceProvider::TransferResource(
   resource->is_overlay_candidate = false;
   resource->color_space = source->color_space;
 
-  if (source->type == viz::ResourceType::kBitmap) {
-    DCHECK(source->shared_bitmap);
-    resource->mailbox_holder.mailbox = source->shared_bitmap_id;
-    resource->is_software = true;
-    resource->shared_bitmap_sequence_number =
-        source->shared_bitmap->sequence_number();
-  } else {
-    DCHECK(!source->mailbox.IsZero());
-    // This is either an external resource, or a compositor resource that we
-    // already exported. Make sure to forward the sync point that we were given.
-    resource->mailbox_holder.mailbox = source->mailbox;
-    resource->mailbox_holder.texture_target = source->target;
-    resource->mailbox_holder.sync_token = source->sync_token();
-  }
+  DCHECK_NE(source->type, viz::ResourceType::kBitmap);
+  DCHECK(!source->mailbox.IsZero());
+  // This is either an external resource, or a compositor resource that we
+  // already exported. Make sure to forward the sync point that we were given.
+  resource->mailbox_holder.mailbox = source->mailbox;
+  resource->mailbox_holder.texture_target = source->target;
+  resource->mailbox_holder.sync_token = source->sync_token();
 }
 
 void LayerTreeResourceProvider::FlushPendingDeletions() const {
