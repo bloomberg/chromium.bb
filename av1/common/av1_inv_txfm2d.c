@@ -17,8 +17,6 @@
 #include "av1/common/av1_inv_txfm1d.h"
 #include "av1/common/av1_inv_txfm1d_cfg.h"
 
-#define NO_INV_TRANSPOSE 1
-
 static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {
     case TXFM_TYPE_DCT4: return av1_idct4_new;
@@ -266,23 +264,7 @@ void av1_inv_txfm2d_add_4x8_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_8x4_c(const int32_t *input, uint16_t *output,
                               int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[8 * 4 + 8 + 8]);
-#if NO_INV_TRANSPOSE
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_8X4, bd);
-#else
-  int32_t rinput[8 * 4];
-  uint16_t routput[8 * 4];
-  TX_SIZE tx_size = TX_8X4;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int32(rinput, rw, input, w, w, h);
-  transpose_uint16(routput, rw, output, stride, w, h);
-  inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
-  transpose_uint16(output, stride, routput, rw, rw, rh);
-#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_8x16_c(const int32_t *input, uint16_t *output,
@@ -294,23 +276,7 @@ void av1_inv_txfm2d_add_8x16_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_16x8_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[16 * 8 + 16 + 16]);
-#if NO_INV_TRANSPOSE
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X8, bd);
-#else
-  int32_t rinput[16 * 8];
-  uint16_t routput[16 * 8];
-  TX_SIZE tx_size = TX_16X8;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int32(rinput, rw, input, w, w, h);
-  transpose_uint16(routput, rw, output, stride, w, h);
-  inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
-  transpose_uint16(output, stride, routput, rw, rw, rh);
-#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_16x32_c(const int32_t *input, uint16_t *output,
@@ -322,23 +288,7 @@ void av1_inv_txfm2d_add_16x32_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_32x16_c(const int32_t *input, uint16_t *output,
                                 int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[32 * 16 + 32 + 32]);
-#if NO_INV_TRANSPOSE
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X16, bd);
-#else
-  int32_t rinput[32 * 16];
-  uint16_t routput[32 * 16];
-  TX_SIZE tx_size = TX_32X16;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int32(rinput, rw, input, w, w, h);
-  transpose_uint16(routput, rw, output, stride, w, h);
-  inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
-  transpose_uint16(output, stride, routput, rw, rw, rh);
-#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_4x4_c(const int32_t *input, uint16_t *output,
@@ -393,24 +343,8 @@ void av1_inv_txfm2d_add_64x32_c(const int32_t *input, uint16_t *output,
     memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
   }
   DECLARE_ALIGNED(32, int, txfm_buf[64 * 32 + 64 + 64]);
-#if NO_INV_TRANSPOSE
   inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_64X32,
                         bd);
-#else
-  int32_t rinput[64 * 32];
-  uint16_t routput[64 * 32];
-  TX_SIZE tx_size = TX_64X32;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int32(rinput, rw, mod_input, w, w, h);
-  transpose_uint16(routput, rw, output, stride, w, h);
-  inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
-  transpose_uint16(output, stride, routput, rw, rw, rh);
-#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_32x64_c(const int32_t *input, uint16_t *output,
@@ -450,24 +384,8 @@ void av1_inv_txfm2d_add_64x16_c(const int32_t *input, uint16_t *output,
     memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
   }
   DECLARE_ALIGNED(32, int, txfm_buf[16 * 64 + 64 + 64]);
-#if NO_INV_TRANSPOSE
   inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_64X16,
                         bd);
-#else
-  int32_t rinput[16 * 64];
-  uint16_t routput[16 * 64];
-  TX_SIZE tx_size = TX_64X16;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int32(rinput, rw, mod_input, w, w, h);
-  transpose_uint16(routput, rw, output, stride, w, h);
-  inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
-  transpose_uint16(output, stride, routput, rw, rw, rh);
-#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_4x16_c(const int32_t *input, uint16_t *output,
@@ -479,23 +397,7 @@ void av1_inv_txfm2d_add_4x16_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_16x4_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[4 * 16 + 16 + 16]);
-#if NO_INV_TRANSPOSE
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X4, bd);
-#else
-  int32_t rinput[4 * 16];
-  uint16_t routput[4 * 16];
-  TX_SIZE tx_size = TX_16X4;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int32(rinput, rw, input, w, w, h);
-  transpose_uint16(routput, rw, output, stride, w, h);
-  inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
-  transpose_uint16(output, stride, routput, rw, rw, rh);
-#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_8x32_c(const int32_t *input, uint16_t *output,
@@ -507,21 +409,5 @@ void av1_inv_txfm2d_add_8x32_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_32x8_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[8 * 32 + 32 + 32]);
-#if NO_INV_TRANSPOSE
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X8, bd);
-#else
-  int32_t rinput[8 * 32];
-  uint16_t routput[8 * 32];
-  TX_SIZE tx_size = TX_32X8;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int32(rinput, rw, input, w, w, h);
-  transpose_uint16(routput, rw, output, stride, w, h);
-  inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
-  transpose_uint16(output, stride, routput, rw, rw, rh);
-#endif  // NO_INV_TRANSPOSE
 }
