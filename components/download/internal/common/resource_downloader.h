@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RESOURCE_DOWNLOADER_H_
-#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RESOURCE_DOWNLOADER_H_
+#ifndef COMPONENTS_DOWNLOAD_INTERNAL_COMMON_RESOURCE_DOWNLOADER_H_
+#define COMPONENTS_DOWNLOAD_INTERNAL_COMMON_RESOURCE_DOWNLOADER_H_
 
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_response_handler.h"
@@ -144,4 +144,4 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RESOURCE_DOWNLOADER_H_
+#endif  // COMPONENTS_DOWNLOAD_INTERNAL_COMMON_RESOURCE_DOWNLOADER_H_
