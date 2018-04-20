@@ -4362,10 +4362,10 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="BrokenAlternateProtocolLocation">
-  <int value="0" label="HTTP_STREAM_FACTORY_IMPL_JOB"/>
+  <int value="0" label="HTTP_STREAM_FACTORY_JOB"/>
   <int value="1" label="QUIC_STREAM_FACTORY"/>
-  <int value="2" label="HTTP_STREAM_FACTORY_IMPL_JOB_ALT"/>
-  <int value="3" label="HTTP_STREAM_FACTORY_IMPL_JOB_MAIN"/>
+  <int value="2" label="HTTP_STREAM_FACTORY_JOB_ALT"/>
+  <int value="3" label="HTTP_STREAM_FACTORY_JOB_MAIN"/>
   <int value="4" label="QUIC_HTTP_STREAM"/>
 </enum>
 

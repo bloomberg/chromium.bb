@@ -32,7 +32,7 @@ struct NetErrorDetails;
 // Exposes an interface to do HTTP/2 bidirectional streaming.
 // Note that only one ReadData or SendData should be in flight until the
 // operation completes synchronously or asynchronously.
-// BidirectionalStreamImpl once created by HttpStreamFactoryImpl should be owned
+// BidirectionalStreamImpl once created by HttpStreamFactory should be owned
 // by BidirectionalStream.
 class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
  public:
