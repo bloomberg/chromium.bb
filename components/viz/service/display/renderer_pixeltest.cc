@@ -2486,16 +2486,14 @@ class RendererPixelTestWithBackgroundFilter
   gfx::Rect filter_pass_layer_rect_;
 };
 
+// The software renderer does not support background filters yet.
 using BackgroundFilterRendererTypes =
-    ::testing::Types<GLRenderer, SoftwareRenderer>;
+    ::testing::Types<GLRenderer, SkiaRenderer>;
+
 TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter,
                 BackgroundFilterRendererTypes);
 
-using GLRendererPixelTestWithBackgroundFilter =
-    RendererPixelTestWithBackgroundFilter<GLRenderer>;
-
-// TODO(skaslev): The software renderer does not support filters yet.
-TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
+TYPED_TEST(RendererPixelTestWithBackgroundFilter, InvertFilter) {
   this->background_filters_.Append(
       cc::FilterOperation::CreateInvertFilter(1.f));
 

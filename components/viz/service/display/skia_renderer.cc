@@ -35,7 +35,6 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -57,9 +56,8 @@ namespace viz {
 struct SkiaRenderer::DrawRenderPassDrawQuadParams {
   // The "in" parameters that will be used when apply filters.
   const cc::FilterOperations* filters = nullptr;
-  const cc::FilterOperations* background_filters = nullptr;
 
-  // The "out" parameters that will be returned for future use.
+  // The "out" parameters returned by filters.
   // A Skia image that should be sampled from instead of the original
   // contents.
   sk_sp<SkImage> filter_image;
@@ -651,7 +649,6 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
 
   DrawRenderPassDrawQuadParams params;
   params.filters = FiltersForPass(quad->render_pass_id);
-  params.background_filters = BackgroundFiltersForPass(quad->render_pass_id);
   bool can_draw = CalculateRPDQParams(content, quad, &params);
 
   if (!can_draw)
@@ -670,8 +667,6 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
         QuadVertexRect(), gfx::RectF(quad->rect),
         gfx::RectF(quad->visible_rect)));
   }
-  current_canvas_->drawImageRect(content, content_rect, dest_visible_rect,
-                                 &current_paint_);
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
 
@@ -688,11 +683,19 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
     NOTIMPLEMENTED();
   }
 
-  // TODO(weiliangc): If we have a background filter shader, render its
-  // results first. (https://crbug.com/644851)
-  if (ShouldApplyBackgroundFilters(quad, params.background_filters)) {
+  // If we have a background filter shader, render its results first.
+  sk_sp<SkShader> background_filter_shader =
+      GetBackgroundFilterShader(quad, SkShader::kClamp_TileMode);
+  if (background_filter_shader) {
+    SkPaint paint;
+    paint.setShader(std::move(background_filter_shader));
+    paint.setMaskFilter(current_paint_.refMaskFilter());
+    current_canvas_->drawRect(dest_visible_rect, paint);
     current_paint_.setShader(std::move(shader));
     current_canvas_->drawRect(dest_visible_rect, current_paint_);
+  } else {
+    current_canvas_->drawImageRect(content, content_rect, dest_visible_rect,
+                                   &current_paint_);
   }
 }
 
@@ -773,20 +776,17 @@ bool SkiaRenderer::ShouldApplyBackgroundFilters(
   return true;
 }
 
-SkBitmap SkiaRenderer::GetBackdropBitmap(const gfx::Rect& bounding_rect) const {
-  SkBitmap bitmap;
-  bitmap.allocPixels(SkImageInfo::MakeN32Premul(bounding_rect.width(),
-                                                bounding_rect.height()));
-  if (!current_canvas_->readPixels(bitmap, bounding_rect.x(),
-                                   bounding_rect.y()))
-    bitmap.reset();
-  return bitmap;
+sk_sp<SkImage> SkiaRenderer::GetBackdropImage(
+    const gfx::Rect& bounding_rect) const {
+  return root_surface_->makeImageSnapshot()->makeSubset(
+      gfx::RectToSkIRect(bounding_rect));
 }
 
 gfx::Rect SkiaRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
-    const cc::FilterOperations* background_filters) const {
+    const cc::FilterOperations* background_filters,
+    gfx::Rect* unclipped_rect) const {
   DCHECK(ShouldApplyBackgroundFilters(quad, background_filters));
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
       contents_device_transform, QuadVertexRect()));
@@ -795,18 +795,109 @@ gfx::Rect SkiaRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
   backdrop_rect = background_filters->MapRectReverse(backdrop_rect, matrix);
 
+  *unclipped_rect = backdrop_rect;
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
       current_frame()->current_render_pass->output_rect));
 
   return backdrop_rect;
 }
 
+// If non-null, auto_bounds will be filled with the automatically-computed
+// destination bounds. If null, the output will be the same size as the
+// input image.
+sk_sp<SkImage> SkiaRenderer::ApplyBackgroundFilters(
+    SkImageFilter* filter,
+    const RenderPassDrawQuad* quad,
+    sk_sp<SkImage> src_image,
+    const gfx::Rect& rect) const {
+  if (!filter)
+    return nullptr;
+
+  SkMatrix local_matrix;
+  local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
+  local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
+
+  SkImageInfo image_info =
+      SkImageInfo::Make(rect.width(), rect.height(), src_image->colorType(),
+                        src_image->alphaType(), nullptr);
+
+#if BUILDFLAG(ENABLE_VULKAN)
+// TODO(xing.xu):  Handle Vulkan related logic here.
+#else
+  GrContext* gr_context = output_surface_->context_provider()->GrContext();
+  // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
+  // How to setup is in ResourceProvider. (http://crbug.com/644851)
+  // LegacyFontHost will get LCD text and skia figures out what type to use.
+  SkSurfaceProps surface_props(0, SkSurfaceProps::kLegacyFontHost_InitType);
+  sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
+      gr_context, SkBudgeted::kNo, image_info, 0, kBottomLeft_GrSurfaceOrigin,
+      &surface_props, false);
+#endif
+
+  if (!surface) {
+    return nullptr;
+  }
+
+  SkPaint paint;
+  // Treat subnormal float values as zero for performance.
+  cc::ScopedSubnormalFloatDisabler disabler;
+  paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
+  surface->getCanvas()->translate(-rect.x(), -rect.y());
+  surface->getCanvas()->drawImage(src_image, rect.x(), rect.y(), &paint);
+
+  return surface->makeImageSnapshot();
+}
+
 sk_sp<SkShader> SkiaRenderer::GetBackgroundFilterShader(
     const RenderPassDrawQuad* quad,
     SkShader::TileMode content_tile_mode) const {
-  // TODO(weiliangc): properly implement background filters. (crbug.com/644851)
-  NOTIMPLEMENTED();
-  return nullptr;
+  const cc::FilterOperations* background_filters =
+      BackgroundFiltersForPass(quad->render_pass_id);
+  if (!ShouldApplyBackgroundFilters(quad, background_filters))
+    return nullptr;
+
+  gfx::Transform quad_rect_matrix;
+  QuadRectTransform(&quad_rect_matrix,
+                    quad->shared_quad_state->quad_to_target_transform,
+                    gfx::RectF(quad->rect));
+  gfx::Transform contents_device_transform =
+      current_frame()->window_matrix * current_frame()->projection_matrix *
+      quad_rect_matrix;
+  contents_device_transform.FlattenTo2d();
+
+  gfx::Rect unclipped_rect;
+  gfx::Rect backdrop_rect = GetBackdropBoundingBoxForRenderPassQuad(
+      quad, contents_device_transform, background_filters, &unclipped_rect);
+
+  // Figure out the transformations to move it back to pixel space.
+  gfx::Transform contents_device_transform_inverse;
+  if (!contents_device_transform.GetInverse(&contents_device_transform_inverse))
+    return nullptr;
+
+  SkMatrix filter_backdrop_transform =
+      contents_device_transform_inverse.matrix();
+  filter_backdrop_transform.preTranslate(backdrop_rect.x(), backdrop_rect.y());
+
+  // Apply the filter to the backdrop.
+  sk_sp<SkImage> backdrop_image = GetBackdropImage(backdrop_rect);
+
+  gfx::Vector2dF clipping_offset =
+      (unclipped_rect.top_right() - backdrop_rect.top_right()) +
+      (backdrop_rect.bottom_left() - unclipped_rect.bottom_left());
+  sk_sp<SkImageFilter> filter =
+      cc::RenderSurfaceFilters::BuildImageFilter(
+          *background_filters,
+          gfx::SizeF(backdrop_image->width(), backdrop_image->height()),
+          clipping_offset)
+          ->cached_sk_filter_;
+  sk_sp<SkImage> filter_backdrop_image =
+      ApplyBackgroundFilters(filter.get(), quad, backdrop_image, backdrop_rect);
+
+  if (!filter_backdrop_image)
+    return nullptr;
+
+  return filter_backdrop_image->makeShader(content_tile_mode, content_tile_mode,
+                                           &filter_backdrop_transform);
 }
 
 void SkiaRenderer::UpdateRenderPassTextures(

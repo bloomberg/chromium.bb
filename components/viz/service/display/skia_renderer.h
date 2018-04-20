@@ -95,8 +95,14 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
-      const cc::FilterOperations* background_filters) const;
-  SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
+      const cc::FilterOperations* background_filters,
+      gfx::Rect* unclipped_rect) const;
+  sk_sp<SkImage> ApplyBackgroundFilters(SkImageFilter* filter,
+                                        const RenderPassDrawQuad* quad,
+                                        sk_sp<SkImage> src_image,
+                                        const gfx::Rect& rect) const;
+
+  sk_sp<SkImage> GetBackdropImage(const gfx::Rect& bounding_rect) const;
   sk_sp<SkShader> GetBackgroundFilterShader(
       const RenderPassDrawQuad* quad,
       SkShader::TileMode content_tile_mode) const;
