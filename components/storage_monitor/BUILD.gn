@@ -56,12 +56,15 @@ static_library("storage_monitor") {
   if (is_chromeos && use_dbus) {
     deps += [
       "//device/media_transfer_protocol",
-      "//device/media_transfer_protocol:mtp_file_entry_proto",
-      "//device/media_transfer_protocol:mtp_storage_info_proto",
+      "//mojo/public/cpp/bindings",
+      "//services/device/public/mojom",
+      "//services/service_manager/public/cpp",
     ]
     sources += [
       "media_transfer_protocol_device_observer_chromeos.cc",
       "media_transfer_protocol_device_observer_chromeos.h",
+      "mtp_manager_client_chromeos.cc",
+      "mtp_manager_client_chromeos.h",
       "storage_info_utils.cc",
       "storage_info_utils.h",
     ]
@@ -116,8 +119,6 @@ static_library("test_support") {
   if (is_chromeos && use_dbus) {
     deps = [
       "//device/media_transfer_protocol",
-      "//device/media_transfer_protocol:mtp_file_entry_proto",
-      "//device/media_transfer_protocol:mtp_storage_info_proto",
     ]
   }
 
@@ -151,8 +152,6 @@ source_set("unit_tests") {
     if (is_chromeos) {
       deps += [
         "//device/media_transfer_protocol",
-        "//device/media_transfer_protocol:mtp_file_entry_proto",
-        "//device/media_transfer_protocol:mtp_storage_info_proto",
         "//testing/gmock",
       ]
       sources += [ "storage_monitor_chromeos_unittest.cc" ]

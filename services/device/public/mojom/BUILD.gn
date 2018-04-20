@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
@@ -36,6 +37,11 @@ mojom("mojom") {
     "//services/network/public/mojom",
     "//services/network/public/mojom:mutable_network_traffic_annotation_interface",
   ]
+
+  if (is_chromeos && use_dbus) {
+    sources += [ "mtp_manager.mojom" ]
+    public_deps += [ "//device/media_transfer_protocol/public/mojom" ]
+  }
 
   # The blink variant of the Device Service mojom are depended on by the
   # blink platform target. All blink variant mojoms use WTF types, which are

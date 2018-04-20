@@ -4,5 +4,8 @@ include_rules = [
   "+content/public/test",
   "+device/media_transfer_protocol",
   "+device/udev_linux",
+  "+mojo/public/cpp/bindings",
+  "+services/device/public",
+  "+services/service_manager/public",
   "+ui/base",
 ]
