@@ -3856,8 +3856,28 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-settings-shortcut-search",
      flag_descriptions::kEnableSettingsShortcutSearchName,
      flag_descriptions::kEnableSettingsShortcutSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list::features::kEnableSettingsShortcutSearch)}
+     FEATURE_VALUE_TYPE(app_list::features::kEnableSettingsShortcutSearch)},
 #endif  // OS_CHROMEOS
+
+    {"autofill-enforce-min-required-fields-for-heuristics",
+     flag_descriptions::kAutofillEnforceMinRequiredFieldsForHeuristicsName,
+     flag_descriptions::
+         kAutofillEnforceMinRequiredFieldsForHeuristicsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics)},
+    {"autofill-enforce-min-required-fields-for-query",
+     flag_descriptions::kAutofillEnforceMinRequiredFieldsForQueryName,
+     flag_descriptions::kAutofillEnforceMinRequiredFieldsForQueryDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnforceMinRequiredFieldsForQuery)},
+    {"autofill-enforce-min-required-fields-for-upload",
+     flag_descriptions::kAutofillEnforceMinRequiredFieldsForUploadName,
+     flag_descriptions::kAutofillEnforceMinRequiredFieldsForUploadDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnforceMinRequiredFieldsForUpload)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

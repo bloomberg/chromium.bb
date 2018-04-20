@@ -15,6 +15,14 @@ extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 extern const char kAutofillDynamicFormsName[];
 extern const char kAutofillDynamicFormsDescription[];
 
+// Enforcing restrictions to enable/disable autofill small form support.
+extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[];
+extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[];
+extern const char kAutofillEnforceMinRequiredFieldsForQueryName[];
+extern const char kAutofillEnforceMinRequiredFieldsForQueryDescription[];
+extern const char kAutofillEnforceMinRequiredFieldsForUploadName[];
+extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
+
 // Title and description for the flag to restrict extraction of formless forms
 // to checkout flows.
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
