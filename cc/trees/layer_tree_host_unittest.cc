@@ -1231,9 +1231,12 @@ class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
     }
   }
 
+  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    PostSetNeedsCommitToMainThread();
+  }
+
   void DidInvalidateLayerTreeFrameSink(LayerTreeHostImpl* impl) override {
     int frame_number = impl->active_tree()->source_frame_number();
-
     // Frames 0 and 1 invalidate because the early damage check is not enabled
     // during this setup. But frames 1 and 2 are not damaged, so the early
     // check should prevent frame 2 from invalidating.
@@ -1250,8 +1253,6 @@ class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
       EndTest();
       return;
     }
-
-    PostSetNeedsCommitToMainThread();
   }
 
   void AfterTest() override {
@@ -1269,9 +1270,7 @@ class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
 
 // This behavior is specific to Android WebView, which only uses
 // multi-threaded compositor.
-// Flaky on Win7 Tests (dbg)(1). https://crbug.com/813578
-// Flaky on linux_chromium_tsan_rel_ng. https://crbug.com/822473
-// MULTI_THREAD_TEST_F(LayerTreeHostTestEarlyDamageCheckStops);
+MULTI_THREAD_TEST_F(LayerTreeHostTestEarlyDamageCheckStops);
 
 // Verify CanDraw() is false until first commit.
 class LayerTreeHostTestCantDrawBeforeCommit : public LayerTreeHostTest {
