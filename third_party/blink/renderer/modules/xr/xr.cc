@@ -34,7 +34,6 @@ const char kNoDevicesMessage[] = "No devices found.";
 
 XR::XR(LocalFrame& frame)
     : ContextLifecycleObserver(frame.GetDocument()),
-      FocusChangedObserver(frame.GetPage()),
       devices_synced_(false),
       binding_(this) {
   frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
@@ -48,16 +47,6 @@ XR::XR(LocalFrame& frame)
   // XRDevices.
   service_->SetClient(std::move(client),
                       WTF::Bind(&XR::OnDevicesSynced, WrapPersistent(this)));
-}
-
-void XR::FocusedFrameChanged() {
-  // Tell devices that focus changed.
-  for (const auto& device : devices_)
-    device->OnFrameFocusChanged();
-}
-
-bool XR::IsFrameFocused() {
-  return FocusChangedObserver::IsFrameFocused(GetFrame());
 }
 
 ExecutionContext* XR::GetExecutionContext() const {
