@@ -79,8 +79,6 @@ static_library("test_support") {
     "scoped_environment_variable_override.h",
     "scoped_feature_list.cc",
     "scoped_feature_list.h",
-    "scoped_locale.cc",
-    "scoped_locale.h",
     "scoped_mock_time_message_loop_task_runner.cc",
     "scoped_mock_time_message_loop_task_runner.h",
     "scoped_path_override.cc",
@@ -102,7 +100,6 @@ static_library("test_support") {
     "test_file_util_android.cc",
     "test_file_util_linux.cc",
     "test_file_util_mac.cc",
-    "test_file_util_posix.cc",
     "test_file_util_win.cc",
     "test_io_thread.cc",
     "test_io_thread.h",
@@ -178,10 +175,11 @@ static_library("test_support") {
     "//third_party/libxml",
   ]
 
-  if (!is_posix && !is_fuchsia) {
-    sources -= [
+  if (is_posix || is_fuchsia) {
+    sources += [
       "scoped_locale.cc",
       "scoped_locale.h",
+      "test_file_util_posix.cc",
     ]
   }
 
