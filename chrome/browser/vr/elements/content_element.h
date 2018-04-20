@@ -50,7 +50,6 @@ class ContentElement : public UiElement {
   void SetOverlayTextureId(unsigned int texture_id);
   void SetOverlayTextureLocation(UiElementRenderer::TextureLocation location);
   void SetOverlayTextureEmpty(bool empty);
-  bool GetOverlayTextureEmpty();
   void SetProjectionMatrix(const gfx::Transform& matrix);
   void SetTextInputDelegate(TextInputDelegate* text_input_delegate);
   void SetDelegate(ContentInputDelegate* delegate);

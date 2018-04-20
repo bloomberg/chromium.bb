@@ -174,8 +174,6 @@ static_library("vr_common") {
     "renderers/gradient_quad_renderer.h",
     "renderers/textured_quad_renderer.cc",
     "renderers/textured_quad_renderer.h",
-    "renderers/transparent_quad_renderer.cc",
-    "renderers/transparent_quad_renderer.h",
     "renderers/web_vr_renderer.cc",
     "renderers/web_vr_renderer.h",
     "sample_queue.cc",

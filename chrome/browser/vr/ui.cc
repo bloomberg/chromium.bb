@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/cpu_surface_provider.h"
-#include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/ganesh_surface_provider.h"
@@ -532,30 +531,6 @@ void Ui::PerformUiActionForTesting(UiTestInput test_input) {
     default:
       NOTREACHED() << "Given unsupported action";
   }
-}
-
-ContentElement* Ui::GetContentElement() {
-  if (!content_element_) {
-    content_element_ =
-        static_cast<ContentElement*>(scene()->GetUiElementByName(kContentQuad));
-  }
-  return content_element_;
-}
-
-bool Ui::IsContentVisibleAndOpaque() {
-  return GetContentElement()->IsVisibleAndOpaque();
-}
-
-bool Ui::IsContentOverlayTextureEmpty() {
-  return GetContentElement()->GetOverlayTextureEmpty();
-}
-
-void Ui::SetContentUsesQuadLayer(bool uses_quad_layer) {
-  return GetContentElement()->SetUsesQuadLayer(uses_quad_layer);
-}
-
-gfx::Transform Ui::GetContentWorldSpaceTransform() {
-  return GetContentElement()->world_space_transform();
 }
 
 }  // namespace vr
