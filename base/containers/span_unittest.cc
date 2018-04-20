@@ -642,6 +642,20 @@ TEST(SpanTest, MakeSpanFromContainer) {
   EXPECT_EQ(span, make_span(vector));
 }
 
+TEST(SpanTest, MakeSpanFromSpan) {
+  static constexpr int kArray[] = {1, 2, 3, 4, 5};
+  constexpr span<const int> span(kArray);
+  static_assert(std::is_same<decltype(span)::element_type,
+                             decltype(make_span(span))::element_type>::value,
+                "make_span(span) should have the same element_type as span");
+
+  static_assert(span.data() == make_span(span).data(),
+                "make_span(span) should have the same data() as span");
+
+  static_assert(span.size() == make_span(span).size(),
+                "make_span(span) should have the same size() as span");
+}
+
 TEST(SpanTest, EnsureConstexprGoodness) {
   static constexpr int kArray[] = {5, 4, 3, 2, 1};
   constexpr span<const int> constexpr_span(kArray);
