@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.text.SpannableString;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsBridge;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
@@ -29,10 +30,11 @@ import org.chromium.ui.text.SpanApplier;
  */
 public class ContextualSuggestionsPreference
         extends PreferenceFragment implements EnabledStateMonitor.Observer {
-    private static final String PREF_CONTEXTUAL_SUGGESTIONS_SWITCH =
-            "contextual_suggestions_switch";
+    static final String PREF_CONTEXTUAL_SUGGESTIONS_SWITCH = "contextual_suggestions_switch";
     private static final String PREF_CONTEXTUAL_SUGGESTIONS_MESSAGE =
             "contextual_suggestions_message";
+
+    private static EnabledStateMonitor sEnabledStateMonitorForTesting;
 
     private ChromeSwitchPreference mSwitch;
     private EnabledStateMonitor mEnabledStateMonitor;
@@ -44,7 +46,9 @@ public class ContextualSuggestionsPreference
         getActivity().setTitle(R.string.prefs_contextual_suggestions);
 
         mSwitch = (ChromeSwitchPreference) findPreference(PREF_CONTEXTUAL_SUGGESTIONS_SWITCH);
-        mEnabledStateMonitor = new EnabledStateMonitor(this);
+        mEnabledStateMonitor = sEnabledStateMonitorForTesting != null
+                ? sEnabledStateMonitorForTesting
+                : new EnabledStateMonitor(this);
         initialize();
     }
 
@@ -108,5 +112,10 @@ public class ContextualSuggestionsPreference
     private void updateSwitch() {
         mSwitch.setEnabled(EnabledStateMonitor.getSettingsEnabled());
         mSwitch.setChecked(EnabledStateMonitor.getEnabledState());
+    }
+
+    @VisibleForTesting
+    static void setEnabledStateMonitorForTesting(EnabledStateMonitor monitor) {
+        sEnabledStateMonitorForTesting = monitor;
     }
 }
