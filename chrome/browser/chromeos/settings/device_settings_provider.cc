@@ -647,13 +647,17 @@ void DecodeGenericPolicies(
     }
   }
 
-  if (policy.has_virtual_machines_allowed()) {
-    const em::VirtualMachinesAllowedProto& container(
-        policy.virtual_machines_allowed());
-    if (container.has_virtual_machines_allowed()) {
-      new_values_cache->SetValue(
-          kVirtualMachinesAllowed,
-          std::make_unique<base::Value>(container.virtual_machines_allowed()));
+  if (policy.virtual_machines_allowed().has_virtual_machines_allowed()) {
+    new_values_cache->SetBoolean(
+        kVirtualMachinesAllowed,
+        policy.virtual_machines_allowed().virtual_machines_allowed());
+  } else {
+    // If the policy is missing, default to false on enterprise-enrolled
+    // devices.
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    if (connector->IsEnterpriseManaged()) {
+      new_values_cache->SetBoolean(kVirtualMachinesAllowed, false);
     }
   }
 }
