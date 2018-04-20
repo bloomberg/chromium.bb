@@ -177,7 +177,7 @@ void Core::OnFrameRendered() {
   // block to dereference |this|, which is thread unsafe because it doesn't
   // support ARC.
   __weak id<GlDisplayHandlerDelegate> handler_delegate = handler_delegate_;
-  runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^() {
+  runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^{
                                          [handler_delegate rendererTicked];
                                        }));
 }
@@ -186,7 +186,7 @@ void Core::OnSizeChanged(int width, int height) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   __weak id<GlDisplayHandlerDelegate> handler_delegate = handler_delegate_;
   runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::BindBlockArc(^() {
+      FROM_HERE, base::BindBlockArc(^{
         [handler_delegate canvasSizeChanged:CGSizeMake(width, height)];
       }));
 }
@@ -200,7 +200,7 @@ void Core::CreateRendererContext(EAGLView* view) {
   }
   view_ = view;
 
-  runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^() {
+  runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^{
                                          [view startWithContext:eagl_context_];
                                        }));
 
@@ -224,7 +224,7 @@ void Core::DestroyRendererContext() {
 
   renderer_->OnSurfaceDestroyed();
   __weak EAGLView* view = view_;
-  runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^() {
+  runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^{
                                          [view stop];
                                        }));
   view_ = nil;

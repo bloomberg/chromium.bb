@@ -490,13 +490,13 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
                      title:IDS_HIDE_KEYBOARD
                      style:UIAlertActionStyleDefault
           restoresKeyboard:NO
-                   handler:^() {
+                   handler:^{
                      weakClientKeyboard.showsSoftKeyboard = NO;
                    }];
   } else {
     [self addActionToAlert:alert
                      title:IDS_SHOW_KEYBOARD
-                   handler:^() {
+                   handler:^{
                      weakClientKeyboard.showsSoftKeyboard = YES;
                    }];
   }
@@ -507,7 +507,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
       currentInputMode == remoting::GestureInterpreter::DIRECT_INPUT_MODE
           ? IDS_SELECT_TRACKPAD_MODE
           : IDS_SELECT_TOUCH_MODE;
-  void (^switchInputModeHandler)() = ^() {
+  void (^switchInputModeHandler)() = ^{
     switch (currentInputMode) {
       case remoting::GestureInterpreter::DIRECT_INPUT_MODE:
         [self useTrackpadInputMode];
@@ -522,7 +522,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
                    title:switchInputModeTitle
                  handler:switchInputModeHandler];
 
-  void (^disconnectHandler)() = ^() {
+  void (^disconnectHandler)() = ^{
     [weakSelf disconnectFromHost];
     [weakSelf.navigationController popToRootViewControllerAnimated:YES];
   };
@@ -532,7 +532,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
         restoresKeyboard:NO
                  handler:disconnectHandler];
 
-  void (^settingsHandler)() = ^() {
+  void (^settingsHandler)() = ^{
     RemotingSettingsViewController* settingsViewController =
         [[RemotingSettingsViewController alloc] init];
     settingsViewController.delegate = weakSelf;
@@ -553,12 +553,12 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   [self addActionToAlert:alert
                    title:(_fabIsRight) ? IDS_MOVE_FAB_LEFT_BUTTON
                                        : IDS_MOVE_FAB_RIGHT_BUTTON
-                 handler:^() {
+                 handler:^{
                    [weakSelf moveFAB];
                  }];
 
   __weak UIAlertController* weakAlert = alert;
-  void (^cancelHandler)() = ^() {
+  void (^cancelHandler)() = ^{
     [weakAlert dismissViewControllerAnimated:YES completion:nil];
   };
   [self addActionToAlert:alert
