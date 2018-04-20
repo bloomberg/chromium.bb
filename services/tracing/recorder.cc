@@ -35,8 +35,12 @@ void Recorder::AddChunk(const std::string& chunk) {
   on_data_change_callback_.Run();
 }
 
-void Recorder::AddMetadata(std::unique_ptr<base::DictionaryValue> metadata) {
-  metadata_.MergeDictionary(metadata.get());
+void Recorder::AddMetadata(base::Value metadata) {
+  base::DictionaryValue* dict;
+  bool result = metadata.GetAsDictionary(&dict);
+  DCHECK(result);
+
+  metadata_.MergeDictionary(static_cast<base::DictionaryValue*>(&metadata));
 }
 
 void Recorder::OnConnectionError() {

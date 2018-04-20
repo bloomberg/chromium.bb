@@ -289,7 +289,7 @@ Coordinator::Coordinator(
 Coordinator::~Coordinator() {
   if (!stop_and_flush_callback_.is_null()) {
     base::ResetAndReturn(&stop_and_flush_callback_)
-        .Run(std::make_unique<base::DictionaryValue>());
+        .Run(base::Value(base::Value::Type::DICTIONARY));
   }
   if (!start_tracing_callback_.is_null())
     base::ResetAndReturn(&start_tracing_callback_).Run(false);
@@ -375,7 +375,7 @@ void Coordinator::StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
                                     StopAndFlushCallback callback) {
   if (!is_tracing_) {
     stream.reset();
-    std::move(callback).Run(std::make_unique<base::DictionaryValue>());
+    std::move(callback).Run(base::Value(base::Value::Type::DICTIONARY));
     return;
   }
   DCHECK(!trace_streamer_);
@@ -482,7 +482,7 @@ void Coordinator::SendRecorder(
 
 void Coordinator::OnFlushDone() {
   base::ResetAndReturn(&stop_and_flush_callback_)
-      .Run(trace_streamer_->GetMetadata());
+      .Run(std::move(*trace_streamer_->GetMetadata()));
   background_task_runner_->DeleteSoon(FROM_HERE, trace_streamer_.release());
   agent_registry_->ForAllAgents([this](AgentRegistry::AgentEntry* agent_entry) {
     agent_entry->set_is_tracing(false);

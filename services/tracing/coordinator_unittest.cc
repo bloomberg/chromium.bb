@@ -100,8 +100,7 @@ class CoordinatorTest : public testing::Test,
 
   void StopAndFlush() {
     mojo::DataPipe data_pipe;
-    auto dummy_callback = [](std::unique_ptr<base::DictionaryValue> metadata) {
-    };
+    auto dummy_callback = [](base::Value metadata) {};
     coordinator_->StopAndFlush(std::move(data_pipe.producer_handle),
                                base::BindRepeating(dummy_callback));
     drainer_.reset(

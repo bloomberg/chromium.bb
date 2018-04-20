@@ -38,7 +38,7 @@ class RecorderTest : public testing::Test {
 
   void AddChunk(const std::string& chunk) { recorder_->AddChunk(chunk); }
 
-  void AddMetadata(std::unique_ptr<base::DictionaryValue> metadata) {
+  void AddMetadata(base::Value metadata) {
     recorder_->AddMetadata(std::move(metadata));
   }
 
@@ -95,12 +95,12 @@ TEST_F(RecorderTest, AddChunkString) {
 TEST_F(RecorderTest, AddMetadata) {
   CreateRecorder(mojom::TraceDataType::ARRAY, base::BindRepeating([] {}));
 
-  auto dict1 = std::make_unique<base::DictionaryValue>();
-  dict1->SetString("network-type", "Ethernet");
+  base::DictionaryValue dict1;
+  dict1.SetKey("network-type", base::Value("Ethernet"));
   AddMetadata(std::move(dict1));
 
-  auto dict2 = std::make_unique<base::DictionaryValue>();
-  dict2->SetString("os-name", "CrOS");
+  base::DictionaryValue dict2;
+  dict2.SetKey("os-name", base::Value("CrOS"));
   AddMetadata(std::move(dict2));
 
   EXPECT_EQ(2u, recorder_->metadata().size());

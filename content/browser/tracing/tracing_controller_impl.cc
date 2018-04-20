@@ -406,8 +406,7 @@ void TracingControllerImpl::OnDataComplete() {
     CompleteFlush();
 }
 
-void TracingControllerImpl::OnMetadataAvailable(
-    std::unique_ptr<base::DictionaryValue> metadata) {
+void TracingControllerImpl::OnMetadataAvailable(base::Value metadata) {
   DCHECK(!filtered_metadata_);
   is_metadata_available_ = true;
   MetadataFilterPredicate metadata_filter;
@@ -416,16 +415,15 @@ void TracingControllerImpl::OnMetadataAvailable(
       metadata_filter = delegate_->GetMetadataFilterPredicate();
   }
   if (metadata_filter.is_null()) {
-    filtered_metadata_ = std::move(metadata);
+    filtered_metadata_ = base::DictionaryValue::From(
+        base::Value::ToUniquePtrValue(std::move(metadata)));
   } else {
     filtered_metadata_ = std::make_unique<base::DictionaryValue>();
-    for (base::DictionaryValue::Iterator it(*metadata); !it.IsAtEnd();
-         it.Advance()) {
-      if (metadata_filter.Run(it.key())) {
-        filtered_metadata_->Set(
-            it.key(), std::make_unique<base::Value>(it.value().Clone()));
+    for (auto it : metadata.DictItems()) {
+      if (metadata_filter.Run(it.first)) {
+        filtered_metadata_->SetKey(it.first, std::move(it.second));
       } else {
-        filtered_metadata_->SetString(it.key(), "__stripped__");
+        filtered_metadata_->SetKey(it.first, base::Value("__stripped__"));
       }
     }
   }
