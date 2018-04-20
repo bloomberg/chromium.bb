@@ -183,9 +183,6 @@ class AutofillControllerTest : public ChromeWebTest {
   }
 
  private:
-  // Weak pointer to AutofillAgent, owned by the AutofillController.
-  __weak AutofillAgent* autofill_agent_;
-
   // Histogram tester for these tests.
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
@@ -212,12 +209,11 @@ void AutofillControllerTest::SetUp() {
   AutofillAgent* agent = [[AutofillAgent alloc]
       initWithPrefService:chrome_browser_state_->GetPrefs()
                  webState:web_state()];
-  autofill_agent_ = agent;
   InfoBarManagerImpl::CreateForWebState(web_state());
   autofill_controller_ = [[AutofillController alloc]
            initWithBrowserState:chrome_browser_state_.get()
                        webState:web_state()
-                  autofillAgent:autofill_agent_
+                  autofillAgent:agent
       passwordGenerationManager:nullptr
                 downloadEnabled:NO];
   suggestion_controller_ = [[TestSuggestionController alloc]

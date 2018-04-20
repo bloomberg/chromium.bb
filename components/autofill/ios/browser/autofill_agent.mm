@@ -35,6 +35,8 @@
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
+#import "components/prefs/ios/pref_observer_bridge.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_state/form_activity_params.h"
@@ -63,8 +65,7 @@ typedef void (^FetchFormsCompletionHandler)(BOOL, const FormDataVector&);
 void GetFormAndField(autofill::FormData* form,
                      autofill::FormFieldData* field,
                      const FormDataVector& forms,
-                     const std::string& fieldIdentifier,
-                     const std::string& type) {
+                     const std::string& fieldIdentifier) {
   DCHECK_GE(forms.size(), 1U);
   *form = forms[0];
   const base::string16 fieldIdentifier16 = base::UTF8ToUTF16(fieldIdentifier);
@@ -88,7 +89,7 @@ void GetFormAndField(autofill::FormData* form,
 
 }  // namespace
 
-@interface AutofillAgent ()<CRWWebStateObserver>
+@interface AutofillAgent ()<CRWWebStateObserver, PrefObserverDelegate>
 
 // Notifies the autofill manager when forms are detected on a page.
 - (void)notifyAutofillManager:(autofill::AutofillManager*)autofillManager
@@ -115,14 +116,6 @@ void GetFormAndField(autofill::FormData* form,
     minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
                        pageURL:(const GURL&)pageURL
              completionHandler:(FetchFormsCompletionHandler)completionHandler;
-
-// Processes the JSON form data extracted from the page when form activity is
-// detected and informs the AutofillManager.
-- (void)processFormActivityExtractedData:(const FormDataVector&)forms
-                               fieldName:(const std::string&)fieldName
-                         fieldIdentifier:(const std::string&)fieldIdentifier
-                                    type:(const std::string&)type
-                                webState:(web::WebState*)webState;
 
 // Returns whether Autofill is enabled by checking if Autofill is turned on and
 // if the current URL has a web scheme and the page content is HTML.
@@ -193,6 +186,11 @@ void GetFormAndField(autofill::FormData* form,
   // The autofill data that needs to be send when the |webState_| is shown.
   // The string is in JSON format.
   NSString* pendingFormJSON_;
+
+  // Bridge to listen to pref changes.
+  std::unique_ptr<PrefObserverBridge> prefObserverBridge_;
+  // Registrar for pref changes notifications.
+  PrefChangeRegistrar prefChangeRegistrar_;
 }
 
 - (instancetype)initWithPrefService:(PrefService*)prefService
@@ -206,6 +204,11 @@ void GetFormAndField(autofill::FormData* form,
     webStateObserverBridge_ =
         std::make_unique<web::WebStateObserverBridge>(self);
     webState_->AddObserver(webStateObserverBridge_.get());
+    prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
+    prefChangeRegistrar_.Init(prefService);
+    prefObserverBridge_->ObserveChangesForPreference(
+        autofill::prefs::kAutofillEnabled, &prefChangeRegistrar_);
+
     jsAutofillManager_ = [[JsAutofillManager alloc]
         initWithReceiver:webState_->GetJSInjectionReceiver()];
   }
@@ -233,6 +236,9 @@ void GetFormAndField(autofill::FormData* form,
     webStateObserverBridge_.reset();
     webState_ = nullptr;
   }
+
+  // Do not wait for deallocation. Remove all observers here.
+  prefChangeRegistrar_.RemoveAll();
 }
 
 #pragma mark -
@@ -370,8 +376,7 @@ void GetFormAndField(autofill::FormData* form,
   autofill::FormFieldData field;
   autofill::FormData form;
   GetFormAndField(&form, &field, forms,
-                  base::SysNSStringToUTF8(fieldIdentifier),
-                  base::SysNSStringToUTF8(type));
+                  base::SysNSStringToUTF8(fieldIdentifier));
 
   // Save the completion and go look for suggestions.
   suggestionsAvailableCompletion_ = [completion copy];
@@ -613,14 +618,13 @@ void GetFormAndField(autofill::FormData* form,
   if (![self isAutofillEnabled])
     return;
 
-  // Returns early and reset the suggestion state if an error occurs.
-  if (params.input_missing)
+  // Return early if the page is not processed yet.
+  if (pageProcessed_)
     return;
 
-  // Processing the page can be needed here if Autofill is enabled in settings
-  // when the page is already loaded, or if the user focuses a field before the
-  // page is fully loaded.
-  [self processPage:webState];
+  // Return early if |params| is not complete.
+  if (params.input_missing)
+    return;
 
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
@@ -628,35 +632,40 @@ void GetFormAndField(autofill::FormData* form,
   // If the event is a form_changed, then the event concerns the whole page and
   // not a particular form. The whole page need to be reparsed to find the new
   // forms.
-  if (params.type.compare("form_changed") == 0) {
+  if (params.type == "form_changed") {
     [self scanFormsInPage:webState pageURL:pageURL];
     return;
   }
 
-  // Blur not handled; we don't reset the suggestion state because if the
-  // keyboard is about to be dismissed there's no point. If not it means the
-  // next focus event will update the suggestion state within milliseconds, so
-  // if we do it now a flicker will be seen.
-  if (params.type.compare("blur") == 0)
+  // We are only interested in 'input' events in order to notify the autofill
+  // manager for metrics purposes.
+  if (params.type != "input" ||
+      (params.field_type != "text" && params.field_type != "password")) {
     return;
+  }
 
-  // Necessary so the strings can be used inside a block.
-  std::string fieldNameCopy = params.field_name;
-  std::string fieldIdentifierCopy = params.field_identifier;
-  std::string typeCopy = params.type;
+  // Necessary so the string can be used inside the block.
+  std::string fieldIdentifier = params.field_identifier;
 
   __weak AutofillAgent* weakSelf = self;
   id completionHandler = ^(BOOL success, const FormDataVector& forms) {
-    if (success && forms.size() == 1) {
-      [weakSelf processFormActivityExtractedData:forms
-                                       fieldName:fieldNameCopy
-                                 fieldIdentifier:fieldIdentifierCopy
-                                            type:typeCopy
-                                        webState:webState];
-    }
+    if (!success || forms.size() != 1)
+      return;
+
+    DCHECK_EQ(webState_, webState);
+    autofill::AutofillManager* autofillManager =
+        [weakSelf autofillManagerFromWebState:webState];
+    if (!autofillManager)
+      return;
+
+    autofill::FormFieldData field;
+    autofill::FormData form;
+    GetFormAndField(&form, &field, forms, fieldIdentifier);
+    autofillManager->OnTextFieldDidChange(form, field, gfx::RectF(),
+                                          base::TimeTicks::Now());
   };
 
-  // Re-extract the active form and field only. There is no minimum field
+  // Extract the active form and field only. There is no minimum field
   // requirement because key/value suggestions are offered even on short forms.
   [self fetchFormsFiltered:YES
                         withName:base::UTF8ToUTF16(params.form_name)
@@ -665,30 +674,19 @@ void GetFormAndField(autofill::FormData* form,
                completionHandler:completionHandler];
 }
 
-#pragma mark - Private methods.
+#pragma mark - PrefObserverDelegate
 
-- (void)processFormActivityExtractedData:(const FormDataVector&)forms
-                               fieldName:(const std::string&)fieldName
-                         fieldIdentifier:(const std::string&)fieldIdentifier
-                                    type:(const std::string&)type
-                                webState:(web::WebState*)webState {
-  DCHECK_EQ(webState_, webState);
-  autofill::AutofillManager* autofillManager =
-      [self autofillManagerFromWebState:webState];
-  if (!autofillManager)
+- (void)onPreferenceChanged:(const std::string&)preferenceName {
+  if (preferenceName != autofill::prefs::kAutofillEnabled)
     return;
 
-  autofill::FormFieldData field;
-  autofill::FormData form;
-  GetFormAndField(&form, &field, forms, fieldIdentifier, type);
-
-  // Tell the manager about the form activity (for metrics).
-  if (type.compare("input") == 0 && (field.form_control_type == "text" ||
-                                     field.form_control_type == "password")) {
-    autofillManager->OnTextFieldDidChange(form, field, gfx::RectF(),
-                                          base::TimeTicks::Now());
-  }
+  // Processing the page can be needed here if Autofill is enabled in settings
+  // when the page is already loaded.
+  if ([self isAutofillEnabled])
+    [self processPage:webState_];
 }
+
+#pragma mark - Private methods.
 
 - (BOOL)isAutofillEnabled {
   if (!prefService_->GetBoolean(autofill::prefs::kAutofillEnabled))
@@ -749,6 +747,8 @@ void GetFormAndField(autofill::FormData* form,
   base::JSONWriter::Write(*JSONForm.get(), &JSONString);
   NSString* nsJSONString = base::SysUTF8ToNSString(JSONString);
 
+  // Store the form data when WebState is not visible, to send it as soon as it
+  // becomes visible again, e.g., when the CVC unmask prompt is showing.
   if (!webState_->IsVisible()) {
     pendingFormJSON_ = nsJSONString;
     return;
