@@ -264,6 +264,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,
      flag_descriptions::kAutofillDynamicFormsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
+    {"autofill-restrict-formless-form-extraction",
+     flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
+     flag_descriptions::
+         kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
     {"ui-refresh-location-bar", flag_descriptions::kUIRefreshLocationBarName,
      flag_descriptions::kUIRefreshLocationBarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUIRefreshLocationBar)},
