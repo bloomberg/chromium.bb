@@ -334,6 +334,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
                       Viewport& viewport,
                       const gfx::Size& render_size,
                       RenderInfo* out_render_info);
+  void UpdateContentViewportTransforms(const gfx::Transform& head_pose);
   void DrawFrame(int16_t frame_index, base::TimeTicks current_time);
   void DrawIntoAcquiredFrame(int16_t frame_index, base::TimeTicks current_time);
   void DrawFrameSubmitWhenReady(int16_t frame_index,
@@ -342,6 +343,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void DrawFrameSubmitNow(int16_t frame_index, const gfx::Transform& head_pose);
   bool ShouldDrawWebVr();
   void DrawWebVr();
+  void DrawContentQuad(bool draw_overlay_texture);
   bool ShouldSendGesturesToWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
@@ -437,6 +439,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
+  int content_texture_id_ = 0;
+  int content_overlay_texture_id_ = 0;
 
   // Set from feature flags.
   bool webvr_vsync_align_;
@@ -457,6 +461,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   Viewport main_viewport_;
   Viewport webvr_viewport_;
   Viewport webvr_overlay_viewport_;
+  Viewport content_underlay_viewport_;
   bool viewports_need_updating_;
   gvr::SwapChain swap_chain_;
   gvr::Frame acquired_frame_;
@@ -562,7 +567,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   gfx::Point3F pointer_start_;
 
-  RenderInfo render_info_primary_;
+  RenderInfo render_info_;
 
   AndroidVSyncHelper vsync_helper_;
 

@@ -16,11 +16,16 @@ class WebVrRenderer : public BaseQuadRenderer {
   WebVrRenderer();
   ~WebVrRenderer() override;
 
-  void Draw(int texture_handle, const float (&uv_transform)[16]);
+  void Draw(int texture_handle,
+            const float (&uv_transform)[16],
+            float xborder,
+            float yborder);
 
  private:
   GLuint texture_handle_;
   GLuint uv_transform_;
+  GLuint x_border_handle_;
+  GLuint y_border_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(WebVrRenderer);
 };
