@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
@@ -255,7 +256,7 @@ void UpdateGpuInfoOnIO(const gpu::GPUInfo& gpu_info) {
       base::BindOnce(
           [](const gpu::GPUInfo& gpu_info) {
             TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
-            GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
+            GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info, nullptr);
           },
           gpu_info));
 }
@@ -273,12 +274,16 @@ void GpuDataManagerImplPrivate::BlacklistWebGLForTesting() {
     else
       gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusEnabled;
   }
-  UpdateGpuFeatureInfo(gpu_feature_info);
+  UpdateGpuFeatureInfo(gpu_feature_info, gpu::GpuFeatureInfo());
   NotifyGpuInfoUpdate();
 }
 
 gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfo() const {
   return gpu_info_;
+}
+
+gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfoForHardwareGpu() const {
+  return gpu_info_for_hardware_gpu_;
 }
 
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(
@@ -421,13 +426,23 @@ void GpuDataManagerImplPrivate::UnblockDomainFrom3DAPIs(const GURL& url) {
   timestamps_of_gpu_resets_.clear();
 }
 
-void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
+void GpuDataManagerImplPrivate::UpdateGpuInfo(
+    const gpu::GPUInfo& gpu_info,
+    const gpu::GPUInfo* optional_gpu_info_for_hardware_gpu) {
   bool sandboxed = gpu_info_.sandboxed;
 #if defined(OS_WIN)
   uint32_t d3d12_feature_level = gpu_info_.d3d12_feature_level;
   uint32_t vulkan_version = gpu_info_.vulkan_version;
 #endif
   gpu_info_ = gpu_info;
+  if (optional_gpu_info_for_hardware_gpu &&
+      !gpu_info_for_hardware_gpu_.IsInitialized()) {
+    if (optional_gpu_info_for_hardware_gpu->IsInitialized()) {
+      gpu_info_for_hardware_gpu_ = *optional_gpu_info_for_hardware_gpu;
+    } else {
+      gpu_info_for_hardware_gpu_ = gpu_info;
+    }
+  }
 #if defined(OS_WIN)
   // On Windows, complete GPUInfo is collected through an unsandboxed
   // GPU process. If the regular GPU process is sandboxed, it should
@@ -457,8 +472,16 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
-    const gpu::GpuFeatureInfo& gpu_feature_info) {
+    const gpu::GpuFeatureInfo& gpu_feature_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu) {
   gpu_feature_info_ = gpu_feature_info;
+  if (!gpu_feature_info_for_hardware_gpu_.IsInitialized()) {
+    if (gpu_feature_info_for_hardware_gpu.IsInitialized()) {
+      gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_for_hardware_gpu;
+    } else {
+      gpu_feature_info_for_hardware_gpu_ = gpu_feature_info;
+    }
+  }
   if (update_histograms_) {
     UpdateFeatureStats(gpu_feature_info);
     UpdateDriverBugListStats(gpu_feature_info);
@@ -467,6 +490,11 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
 
 gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfo() const {
   return gpu_feature_info_;
+}
+
+gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfoForHardwareGpu()
+    const {
+  return gpu_feature_info_for_hardware_gpu_;
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
@@ -553,36 +581,12 @@ bool GpuDataManagerImplPrivate::SwiftShaderAllowed() const {
 }
 
 void GpuDataManagerImplPrivate::OnGpuBlocked() {
+  gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu = gpu_feature_info_;
   gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfoWithNoGpu();
-  UpdateGpuFeatureInfo(gpu_feature_info);
+  UpdateGpuFeatureInfo(gpu_feature_info, gpu_feature_info_for_hardware_gpu);
 
   // Some observers might be waiting.
   NotifyGpuInfoUpdate();
-}
-
-void GpuDataManagerImplPrivate::GetBlacklistReasons(
-    base::ListValue* reasons) const {
-  if (!gpu_feature_info_.applied_gpu_blacklist_entries.empty()) {
-    std::unique_ptr<gpu::GpuBlacklist> blacklist(gpu::GpuBlacklist::Create());
-    blacklist->GetReasons(reasons, "disabledFeatures",
-                          gpu_feature_info_.applied_gpu_blacklist_entries);
-  }
-  if (!gpu_feature_info_.applied_gpu_driver_bug_list_entries.empty()) {
-    std::unique_ptr<gpu::GpuDriverBugList> bug_list(
-        gpu::GpuDriverBugList::Create());
-    bug_list->GetReasons(reasons, "workarounds",
-                         gpu_feature_info_.applied_gpu_driver_bug_list_entries);
-  }
-}
-
-std::vector<std::string>
-GpuDataManagerImplPrivate::GetDriverBugWorkarounds() const {
-  std::vector<std::string> workarounds;
-  for (auto workaround : gpu_feature_info_.enabled_gpu_driver_bug_workarounds) {
-    workarounds.push_back(gpu::GpuDriverBugWorkaroundTypeToString(
-        static_cast<gpu::GpuDriverBugWorkaroundType>(workaround)));
-  }
-  return workarounds;
 }
 
 void GpuDataManagerImplPrivate::AddLogMessage(
@@ -671,18 +675,6 @@ bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
   return true;
 }
 
-void GpuDataManagerImplPrivate::GetDisabledExtensions(
-    std::string* disabled_extensions) const {
-  DCHECK(disabled_extensions);
-  *disabled_extensions = gpu_feature_info_.disabled_extensions;
-}
-
-void GpuDataManagerImplPrivate::GetDisabledWebGLExtensions(
-    std::string* disabled_webgl_extensions) const {
-  DCHECK(disabled_webgl_extensions);
-  *disabled_webgl_extensions = gpu_feature_info_.disabled_webgl_extensions;
-}
-
 void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(
     const GURL& url, GpuDataManagerImpl::DomainGuilt guilt) {
   BlockDomainFrom3DAPIsAtTime(url, guilt, base::Time::Now());
@@ -744,6 +736,15 @@ GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
 
 void GpuDataManagerImplPrivate::NotifyGpuInfoUpdate() {
   observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::OnGpuInfoUpdate);
+}
+
+bool GpuDataManagerImplPrivate::IsGpuProcessUsingHardwareGpu() const {
+  if (base::StartsWith(gpu_info_.gl_renderer, "Google SwiftShader",
+                       base::CompareCase::SENSITIVE))
+    return false;
+  if (gpu_info_.gl_renderer == "Disabled")
+    return false;
+  return true;
 }
 
 std::string GpuDataManagerImplPrivate::GetDomainFromURL(

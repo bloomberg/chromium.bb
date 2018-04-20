@@ -47,6 +47,11 @@ CONTENT_EXPORT std::unique_ptr<base::DictionaryValue> GetFeatureStatus();
 CONTENT_EXPORT std::unique_ptr<base::ListValue> GetProblems();
 CONTENT_EXPORT std::vector<std::string> GetDriverBugWorkarounds();
 
+CONTENT_EXPORT std::unique_ptr<base::DictionaryValue>
+GetFeatureStatusForHardwareGpu();
+CONTENT_EXPORT std::unique_ptr<base::ListValue> GetProblemsForHardwareGpu();
+CONTENT_EXPORT std::vector<std::string> GetDriverBugWorkaroundsForHardwareGpu();
+
 // Populate a list of buffer usage/format for which a per platform specific
 // texture target must be used instead of GL_TEXTURE_2D.
 CONTENT_EXPORT std::vector<gfx::BufferUsageAndFormat>

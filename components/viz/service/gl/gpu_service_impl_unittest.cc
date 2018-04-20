@@ -51,7 +51,8 @@ class GpuServiceTest : public testing::Test {
     ASSERT_TRUE(io_thread_.Start());
     gpu_service_ = std::make_unique<GpuServiceImpl>(
         gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_.task_runner(),
-        gpu::GpuFeatureInfo(), gpu::GpuPreferences());
+        gpu::GpuFeatureInfo(), gpu::GpuPreferences(), gpu::GPUInfo(),
+        gpu::GpuFeatureInfo());
   }
 
   void TearDown() override {

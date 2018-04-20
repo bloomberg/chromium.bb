@@ -184,7 +184,8 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
     // TODO(zmo): CHECK everywhere once https://crbug.com/796386 is fixed.
     gpu::GpuFeatureInfo gpu_feature_info =
         gpu::ComputeGpuFeatureInfoWithHardwareAccelerationDisabled();
-    GpuDataManagerImpl::GetInstance()->UpdateGpuFeatureInfo(gpu_feature_info);
+    GpuDataManagerImpl::GetInstance()->UpdateGpuFeatureInfo(
+        gpu_feature_info, gpu::GpuFeatureInfo());
     UnregisterAndSendResponse();
 #else
     CHECK(false) << "Gathering system GPU info took more than 5 seconds.";
