@@ -206,7 +206,7 @@ def main():
       help='Arch for CTS tests.')
   parser.add_argument(
       '--platform',
-      choices=['L', 'M', 'N'],
+      choices=['L', 'M', 'N', 'O'],
       required=True,
       help='Android platform version for CTS tests.')
   parser.add_argument(
