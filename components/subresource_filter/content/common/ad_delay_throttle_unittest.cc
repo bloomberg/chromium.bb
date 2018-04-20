@@ -16,6 +16,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
@@ -335,6 +336,104 @@ TEST_F(AdDelayThrottleTest, AdDiscoveredAfterSecureRedirect) {
   EXPECT_TRUE(client_->has_received_completion());
 }
 
+TEST_F(AdDelayThrottleTest, DelayMetrics) {
+  AdDelayThrottle::Factory factory;
+  const GURL secure_url("https://example.test/ad.js");
+  const GURL insecure_url("http://example.test/ad.js");
+  loader_factory_.AddResponse(secure_url.spec(), "foo");
+  loader_factory_.AddResponse(insecure_url.spec(), "foo");
+
+  const base::TimeDelta kQueuingDelay = base::TimeDelta::FromMilliseconds(25);
+
+  const char kDelayHistogram[] = "SubresourceFilter.AdDelay.Delay";
+  const char kQueuingDelayHistogram[] =
+      "SubresourceFilter.AdDelay.Delay.Queuing";
+  const char kExpectedDelayHistogram[] =
+      "SubresourceFilter.AdDelay.Delay.Expected";
+  {
+    // Secure isolated ad -> no delay.
+    base::HistogramTester histograms;
+    {
+      auto throttle =
+          factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
+      throttle->set_tick_clock_for_testing(
+          scoped_environment_.GetMockTickClock());
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(secure_url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectTotalCount(kDelayHistogram, 0);
+    histograms.ExpectTotalCount(kQueuingDelayHistogram, 0);
+    histograms.ExpectTotalCount(kExpectedDelayHistogram, 0);
+  }
+  {
+    // Insecure isolated non-ad -> no delay.
+    base::HistogramTester histograms;
+    {
+      auto non_ad_metadata = std::make_unique<MockMetadataProvider>();
+      non_ad_metadata->set_is_ad_request(false);
+      auto throttle = factory.MaybeCreate(std::move(non_ad_metadata));
+      throttle->set_tick_clock_for_testing(
+          scoped_environment_.GetMockTickClock());
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(insecure_url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectTotalCount(kDelayHistogram, 0);
+    histograms.ExpectTotalCount(kQueuingDelayHistogram, 0);
+    histograms.ExpectTotalCount(kExpectedDelayHistogram, 0);
+  }
+
+  // Use a test clock instead of the scoped task environment's clock because the
+  // environment executes tasks as soon as it is able, and we want to simulate
+  // jank by advancing time more than the expected delay.
+  base::SimpleTestTickClock tick_clock;
+  {
+    // Insecure isolated ad -> delay.
+    base::HistogramTester histograms;
+    base::TimeDelta expected_delay = GetExpectedDelay(kInsecureDelayParam);
+    {
+      auto throttle =
+          factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
+      throttle->set_tick_clock_for_testing(&tick_clock);
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(insecure_url, std::move(throttle));
+
+      tick_clock.Advance(expected_delay + kQueuingDelay);
+      scoped_environment_.FastForwardBy(expected_delay + kQueuingDelay);
+    }
+    histograms.ExpectUniqueSample(
+        kDelayHistogram, (expected_delay + kQueuingDelay).InMilliseconds(), 1);
+    histograms.ExpectUniqueSample(kQueuingDelayHistogram,
+                                  kQueuingDelay.InMilliseconds(), 1);
+    histograms.ExpectUniqueSample(kExpectedDelayHistogram,
+                                  expected_delay.InMilliseconds(), 1);
+  }
+  {
+    // Insecure non-isolated ad -> delay.
+    base::HistogramTester histograms;
+    base::TimeDelta expected_delay = GetExpectedDelay(kInsecureDelayParam) +
+                                     GetExpectedDelay(kNonIsolatedDelayParam);
+    {
+      auto non_isolated_metadata = std::make_unique<MockMetadataProvider>();
+      non_isolated_metadata->set_is_non_isolated(true);
+      auto throttle = factory.MaybeCreate(std::move(non_isolated_metadata));
+      throttle->set_tick_clock_for_testing(&tick_clock);
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(insecure_url, std::move(throttle));
+
+      tick_clock.Advance(expected_delay + kQueuingDelay);
+      scoped_environment_.FastForwardBy(expected_delay + kQueuingDelay);
+    }
+    histograms.ExpectUniqueSample(
+        kDelayHistogram, (expected_delay + kQueuingDelay).InMilliseconds(), 1);
+    histograms.ExpectUniqueSample(kQueuingDelayHistogram,
+                                  kQueuingDelay.InMilliseconds(), 1);
+    histograms.ExpectUniqueSample(kExpectedDelayHistogram,
+                                  expected_delay.InMilliseconds(), 1);
+  }
+}
+
 // Make sure metrics are logged when the feature is enabled and disabled.
 TEST_P(AdDelayThrottleEnabledParamTest, SecureMetrics) {
   AdDelayThrottle::Factory factory;
@@ -397,6 +496,66 @@ TEST_P(AdDelayThrottleEnabledParamTest, SecureMetrics) {
     histograms.ExpectUniqueSample(
         kSecureHistogram,
         static_cast<int>(AdDelayThrottle::SecureInfo::kSecureNonAd), 1);
+  }
+}
+
+TEST_P(AdDelayThrottleEnabledParamTest, IsolatedMetrics) {
+  AdDelayThrottle::Factory factory;
+  const GURL url("https://example.test/ad.js");
+  loader_factory_.AddResponse(url.spec(), "foo");
+
+  const char kIsolatedHistogram[] = "SubresourceFilter.AdDelay.IsolatedInfo";
+  {
+    base::HistogramTester histograms;
+    {
+      auto throttle =
+          factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectUniqueSample(
+        kIsolatedHistogram,
+        static_cast<int>(AdDelayThrottle::IsolatedInfo::kIsolatedAd), 1);
+  }
+  {
+    base::HistogramTester histograms;
+    {
+      auto metadata = std::make_unique<MockMetadataProvider>();
+      metadata->set_is_non_isolated(true);
+      auto throttle = factory.MaybeCreate(std::move(metadata));
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectUniqueSample(
+        kIsolatedHistogram,
+        static_cast<int>(AdDelayThrottle::IsolatedInfo::kNonIsolatedAd), 1);
+  }
+  {
+    base::HistogramTester histograms;
+    {
+      auto non_ad_metadata = std::make_unique<MockMetadataProvider>();
+      non_ad_metadata->set_is_ad_request(false);
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto throttle = factory.MaybeCreate(std::move(non_ad_metadata));
+      auto loader = CreateLoaderAndStart(url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectTotalCount(kIsolatedHistogram, 0);
+  }
+  {
+    base::HistogramTester histograms;
+    {
+      auto non_ad_metadata = std::make_unique<MockMetadataProvider>();
+      non_ad_metadata->set_is_ad_request(false);
+      non_ad_metadata->set_is_non_isolated(true);
+      auto throttle = factory.MaybeCreate(std::move(non_ad_metadata));
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectTotalCount(kIsolatedHistogram, 0);
   }
 }
 

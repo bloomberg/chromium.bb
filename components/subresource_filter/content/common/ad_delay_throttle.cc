@@ -15,6 +15,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -60,7 +62,15 @@ class NonIsolatedCondition : public AdDelayThrottle::DeferCondition {
   NonIsolatedCondition(base::TimeDelta delay,
                        AdDelayThrottle::MetadataProvider* provider)
       : DeferCondition(delay, provider) {}
-  ~NonIsolatedCondition() override = default;
+  ~NonIsolatedCondition() override {
+    if (provider()->IsAdRequest()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "SubresourceFilter.AdDelay.IsolatedInfo",
+          was_condition_ever_satisfied()
+              ? AdDelayThrottle::IsolatedInfo::kNonIsolatedAd
+              : AdDelayThrottle::IsolatedInfo::kIsolatedAd);
+    }
+  }
 
  private:
   // DeferCondition:
@@ -120,8 +130,14 @@ std::unique_ptr<AdDelayThrottle> AdDelayThrottle::Factory::MaybeCreate(
   return base::WrapUnique(new AdDelayThrottle(std::move(provider), this));
 }
 
-// TODO(csharrison): Log metrics for actual delay time.
 AdDelayThrottle::~AdDelayThrottle() {
+  if (!expected_delay_.is_zero()) {
+    UMA_HISTOGRAM_TIMES("SubresourceFilter.AdDelay.Delay", actual_delay_);
+    UMA_HISTOGRAM_TIMES("SubresourceFilter.AdDelay.Delay.Expected",
+                        expected_delay_);
+    UMA_HISTOGRAM_TIMES("SubresourceFilter.AdDelay.Delay.Queuing",
+                        actual_delay_ - expected_delay_);
+  }
 }
 
 void AdDelayThrottle::DetachFromCurrentSequence() {
@@ -162,17 +178,19 @@ bool AdDelayThrottle::MaybeDefer(const GURL& url) {
   for (DeferCondition* condition : matched_conditions) {
     delay += condition->OnReadyToDefer();
   }
-
   // TODO(csharrison): Consider logging to the console here that Chrome
   // delayed this request.
+  expected_delay_ += delay;
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&AdDelayThrottle::Resume, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&AdDelayThrottle::Resume, weak_factory_.GetWeakPtr(),
+                     tick_clock_->NowTicks()),
       delay);
   return true;
 }
 
-void AdDelayThrottle::Resume() {
+void AdDelayThrottle::Resume(base::TimeTicks defer_start) {
+  actual_delay_ += tick_clock_->NowTicks() - defer_start;
   delegate_->Resume();
 }
 
@@ -180,6 +198,7 @@ AdDelayThrottle::AdDelayThrottle(std::unique_ptr<MetadataProvider> provider,
                                  const AdDelayThrottle::Factory* factory)
     : content::URLLoaderThrottle(),
       provider_(std::move(provider)),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       delay_enabled_(factory->delay_enabled()),
       weak_factory_(this) {
   defer_conditions_.emplace_back(std::make_unique<InsecureCondition>(
