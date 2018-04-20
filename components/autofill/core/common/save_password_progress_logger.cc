@@ -422,6 +422,14 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Generated password accepted";
     case STRING_SUCCESSFUL_SUBMISSION_INDICATOR_EVENT:
       return "Successful submission indicator event";
+    case STRING_MAIN_FRAME_ORIGIN:
+      return "Main frame origin";
+    case STRING_IS_FORM_TAG:
+      return "Form with form tag";
+    case STRING_FORM_PARSING_INPUT:
+      return "Form parsing input";
+    case STRING_FORM_PARSING_OUTPUT:
+      return "Form parsing output";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

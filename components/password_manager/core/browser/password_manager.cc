@@ -696,7 +696,7 @@ void PasswordManager::CreateFormManagers(
   // Create form manager for new forms.
   for (const autofill::FormData* new_form : new_forms) {
     form_managers_.push_back(
-        std::make_unique<NewPasswordFormManager>(*new_form));
+        std::make_unique<NewPasswordFormManager>(client_, *new_form));
   }
 }
 

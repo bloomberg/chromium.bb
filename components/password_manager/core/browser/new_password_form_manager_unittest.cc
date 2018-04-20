@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,10 +36,11 @@ class NewPasswordFormManagerTest : public testing::Test {
 
  protected:
   FormData form_;
+  StubPasswordManagerClient client_;
 };
 
 TEST_F(NewPasswordFormManagerTest, DoesManage) {
-  NewPasswordFormManager form_manager(form_);
+  NewPasswordFormManager form_manager(&client_, form_);
   EXPECT_TRUE(form_manager.DoesManage(form_));
   FormData another_form = form_;
   another_form.name += ASCIIToUTF16("1");
