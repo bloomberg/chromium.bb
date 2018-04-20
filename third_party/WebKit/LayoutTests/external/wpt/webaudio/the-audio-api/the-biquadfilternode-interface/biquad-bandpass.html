@@ -2,36 +2,38 @@
 <html>
   <head>
     <title>
-      biquad-highpass.html
+      biquad-bandpass.html
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audit.js"></script>
-    <script src="../resources/biquad-filters.js"></script>
-    <script src="../resources/biquad-testing.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit-util.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
+    <script src="/webaudio/resources/biquad-filters.js"></script>
+    <script src="/webaudio/resources/biquad-testing.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
 
       audit.define(
-          {label: 'test', description: 'Biquad highpass filter'},
+          {label: 'test', description: 'Biquad bandpass filter.'},
           function(task, should) {
+
             // Create offline audio context.
             let context = new OfflineAudioContext(
                 2, sampleRate * renderLengthSeconds, sampleRate);
 
             // The filters we want to test.
             let filterParameters = [
-              {cutoff: 0, q: 1, gain: 1},
-              {cutoff: 1, q: 1, gain: 1},
+              {cutoff: 0, q: 0, gain: 1},
+              {cutoff: 1, q: 0, gain: 1},
+              {cutoff: 0.5, q: 0, gain: 1},
               {cutoff: 0.25, q: 1, gain: 1},
             ];
 
-            createTestAndRun(context, 'highpass', {
+            createTestAndRun(context, 'bandpass', {
               should: should,
-              threshold: 1.5487e-8,
+              threshold: 2.2501e-8,
               filterParameters: filterParameters
             }).then(task.done.bind(task));
           });
