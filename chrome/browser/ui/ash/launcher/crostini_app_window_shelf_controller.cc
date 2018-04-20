@@ -9,9 +9,9 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_util.h"
+#include "chrome/browser/ui/ash/launcher/app_window_base.h"
+#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/crostini_app_window.h"
-#include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_item_controller.h"
 #include "components/exo/shell_surface.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -23,20 +23,6 @@
 namespace {
 
 constexpr char kArcAppIdPrefix[] = "org.chromium.arc";
-
-// Please note the down cast from ShelfItemDelegate to
-// CrostiniAppWindowShelfItemController.
-CrostiniAppWindowShelfItemController* GetItemController(
-    const ash::ShelfID& shelf_id,
-    const ash::ShelfModel& model) {
-  DCHECK(IsCrostiniAppId(shelf_id.app_id));
-
-  ash::ShelfItemDelegate* item_delegate = model.GetShelfItemDelegate(shelf_id);
-  if (item_delegate == nullptr)
-    return nullptr;
-  return static_cast<CrostiniAppWindowShelfItemController*>(
-      item_delegate->AsAppWindowLauncherItemController());
-}
 
 }  // namespace
 
@@ -102,14 +88,14 @@ void CrostiniAppWindowShelfController::RegisterAppWindow(
   const ash::ShelfID shelf_id(crostini_app_id);
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   aura_window_to_app_window_[window] =
-      std::make_unique<CrostiniAppWindow>(shelf_id, widget);
-  CrostiniAppWindow* app_window = aura_window_to_app_window_[window].get();
+      std::make_unique<AppWindowBase>(shelf_id, widget);
+  AppWindowBase* app_window = aura_window_to_app_window_[window].get();
 
-  CrostiniAppWindowShelfItemController* item_controller =
-      GetItemController(shelf_id, *owner()->shelf_model());
+  AppWindowLauncherItemController* item_controller =
+      owner()->shelf_model()->GetAppWindowLauncherItemController(shelf_id);
   if (item_controller == nullptr) {
-    std::unique_ptr<CrostiniAppWindowShelfItemController> controller =
-        std::make_unique<CrostiniAppWindowShelfItemController>(shelf_id);
+    auto controller =
+        std::make_unique<AppWindowLauncherItemController>(shelf_id);
     item_controller = controller.get();
     if (!owner()->GetItem(shelf_id)) {
       owner()->CreateAppLauncherItem(std::move(controller),
@@ -142,8 +128,10 @@ void CrostiniAppWindowShelfController::OnWindowDestroying(
 
   // Check if we may close controller now, at this point we can safely remove
   // controllers without window.
-  CrostiniAppWindowShelfItemController* item_controller = GetItemController(
-      app_window_it->second->shelf_id(), *owner()->shelf_model());
+  AppWindowLauncherItemController* item_controller =
+      owner()->shelf_model()->GetAppWindowLauncherItemController(
+          app_window_it->second->shelf_id());
+
   if (item_controller != nullptr && item_controller->window_count() == 0)
     owner()->CloseLauncherItem(item_controller->shelf_id());
 
@@ -159,7 +147,7 @@ CrostiniAppWindowShelfController::ControllerForWindow(aura::Window* window) {
   if (app_window_it == aura_window_to_app_window_.end())
     return nullptr;
 
-  CrostiniAppWindow* app_window = app_window_it->second.get();
+  AppWindowBase* app_window = app_window_it->second.get();
 
   if (app_window == nullptr)
     return nullptr;
@@ -168,11 +156,11 @@ CrostiniAppWindowShelfController::ControllerForWindow(aura::Window* window) {
 }
 
 void CrostiniAppWindowShelfController::UnregisterAppWindow(
-    CrostiniAppWindow* app_window) {
+    AppWindowBase* app_window) {
   if (!app_window)
     return;
 
-  CrostiniAppWindowShelfItemController* controller = app_window->controller();
+  AppWindowLauncherItemController* controller = app_window->controller();
   if (controller)
     controller->RemoveWindow(app_window);
   app_window->SetController(nullptr);
@@ -181,7 +169,7 @@ void CrostiniAppWindowShelfController::UnregisterAppWindow(
 void CrostiniAppWindowShelfController::OnItemDelegateDiscarded(
     ash::ShelfItemDelegate* delegate) {
   for (auto& it : aura_window_to_app_window_) {
-    CrostiniAppWindow* app_window = it.second.get();
+    AppWindowBase* app_window = it.second.get();
     if (!app_window || app_window->controller() != delegate)
       continue;
 

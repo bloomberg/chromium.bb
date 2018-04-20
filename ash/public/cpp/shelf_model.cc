@@ -307,6 +307,13 @@ ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(
   return nullptr;
 }
 
+AppWindowLauncherItemController* ShelfModel::GetAppWindowLauncherItemController(
+    const ShelfID& shelf_id) {
+  ShelfItemDelegate* item_delegate = GetShelfItemDelegate(shelf_id);
+  return item_delegate ? item_delegate->AsAppWindowLauncherItemController()
+                       : nullptr;
+}
+
 void ShelfModel::AddObserver(ShelfModelObserver* observer) {
   observers_.AddObserver(observer);
 }

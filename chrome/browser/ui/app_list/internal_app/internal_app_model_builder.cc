@@ -12,8 +12,6 @@ InternalAppModelBuilder::InternalAppModelBuilder(
     AppListControllerDelegate* controller)
     : AppListModelBuilder(controller, InternalAppItem::kItemType) {}
 
-InternalAppModelBuilder::~InternalAppModelBuilder() = default;
-
 void InternalAppModelBuilder::BuildModel() {
   for (const auto& internal_app : app_list::GetInternalAppList()) {
     if (!internal_app.show_in_launcher)

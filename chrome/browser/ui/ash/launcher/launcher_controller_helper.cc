@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -124,6 +125,10 @@ base::string16 LauncherControllerHelper::GetAppTitle(
   const extensions::Extension* extension = GetExtensionByID(profile, app_id);
   if (extension)
     return base::UTF8ToUTF16(extension->name());
+
+  if (app_list::IsInternalApp(app_id))
+    return app_list::GetInternalAppNameById(app_id);
+
   return base::string16();
 }
 
@@ -152,6 +157,9 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
   if (arc_prefs && arc_prefs->IsRegistered(id))
     return true;
 
+  if (app_list::IsInternalApp(id))
+    return true;
+
   if (!GetExtensionByID(profile_, id))
     return false;
   if (id == arc::kPlayStoreAppId) {
@@ -178,6 +186,11 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
   if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
     arc::LaunchApp(profile_, app_id, event_flags, display_id);
+    return;
+  }
+
+  if (app_list::IsInternalApp(app_id)) {
+    app_list::OpenInternalApp(app_id, profile_);
     return;
   }
 

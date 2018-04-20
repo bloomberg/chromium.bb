@@ -22,10 +22,8 @@ InternalAppResult::InternalAppResult(Profile* profile,
     : AppResult(profile, app_id, controller, is_recommendation) {
   set_id(app_id);
   set_result_type(ResultType::kInternalApp);
-
-  gfx::ImageSkia icon = GetIconForResourceId(GetIconResourceIdByAppId(app_id));
-  if (!icon.isNull())
-    SetIcon(icon);
+  SetIcon(
+      GetIconForResourceId(GetIconResourceIdByAppId(app_id), kTileIconSize));
 }
 
 InternalAppResult::~InternalAppResult() {}

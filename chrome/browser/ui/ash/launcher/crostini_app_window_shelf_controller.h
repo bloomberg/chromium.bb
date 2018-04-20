@@ -13,7 +13,6 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/crostini_app_window.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
@@ -22,7 +21,7 @@ namespace aura {
 class Window;
 }
 
-class CrostiniAppWindow;
+class AppWindowBase;
 class ChromeLauncherController;
 
 // A controller to manage Crostini app shelf items. It listens to window events
@@ -44,11 +43,11 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
 
  private:
   using AuraWindowToAppWindow =
-      std::map<aura::Window*, std::unique_ptr<CrostiniAppWindow>>;
+      std::map<aura::Window*, std::unique_ptr<AppWindowBase>>;
 
   void RegisterAppWindow(aura::Window* window,
                          const std::string* window_app_id);
-  void UnregisterAppWindow(CrostiniAppWindow* app_window);
+  void UnregisterAppWindow(AppWindowBase* app_window);
 
   // AppWindowLauncherController:
   AppWindowLauncherItemController* ControllerForWindow(
