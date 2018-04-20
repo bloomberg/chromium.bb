@@ -216,7 +216,8 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         }
 
         initializePageInfoViewChild(mUrlTitle, true, 0f, params.urlTitleClickCallback);
-        initializePageInfoViewChild(mConnectionSummary, true, 0f, null);
+        // Hide the summary until its text is set.
+        initializePageInfoViewChild(mConnectionSummary, false, 0f, null);
         initializePageInfoViewChild(mConnectionMessage, true, 0f, null);
         // Hide the permissions list for sites with no permissions.
         initializePageInfoViewChild(mPermissionsList, false, 1f, null);
@@ -224,7 +225,8 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
                 params.instantAppButtonClickCallback);
         initializePageInfoViewChild(mSiteSettingsButton, params.siteSettingsButtonShown, 0f,
                 params.siteSettingsButtonClickCallback);
-        initializePageInfoViewChild(mOpenOnlineButton, params.openOnlineButtonShown, 0f,
+        // The open online button should not fade in.
+        initializePageInfoViewChild(mOpenOnlineButton, params.openOnlineButtonShown, 1f,
                 params.openOnlineButtonClickCallback);
     }
 
