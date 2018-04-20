@@ -308,7 +308,9 @@ void ArcNotificationContentView::Update(
 
 message_center::NotificationControlButtonsView*
 ArcNotificationContentView::GetControlButtonsView() {
-  return &control_buttons_view_;
+  // |control_buttons_view_| is hosted in |floating_control_buttons_widget_| and
+  // should not be used when there is no |floating_control_buttons_widget_|.
+  return floating_control_buttons_widget_ ? &control_buttons_view_ : nullptr;
 }
 
 void ArcNotificationContentView::UpdateControlButtonsVisibility() {
