@@ -74,9 +74,14 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisement) {
       arc::mojom::BluetoothAdvertisement::New();
   std::vector<arc::mojom::BluetoothAdvertisingDataPtr> adv_data;
 
-  // Create service UUIDs.
+  // Create 16bit service UUIDs.
   arc::mojom::BluetoothAdvertisingDataPtr data =
       arc::mojom::BluetoothAdvertisingData::New();
+  data->set_service_uuids_16({kUuid16});
+  adv_data.push_back(std::move(data));
+
+  // Create service UUIDs.
+  data = arc::mojom::BluetoothAdvertisingData::New();
   std::vector<device::BluetoothUUID> service_uuids;
   service_uuids.push_back((device::BluetoothUUID(kUuidStr)));
   data->set_service_uuids(service_uuids);
@@ -110,8 +115,9 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisement) {
 
   std::unique_ptr<device::BluetoothAdvertisement::UUIDList> converted_uuids =
       advertisement->service_uuids();
-  EXPECT_EQ(converted_uuids->size(), 1U);
-  EXPECT_EQ(*converted_uuids->begin(), kUuidStr);
+  EXPECT_EQ(converted_uuids->size(), 2U);
+  EXPECT_EQ(converted_uuids->at(0), kUuid16Str);
+  EXPECT_EQ(converted_uuids->at(1), kUuidStr);
 
   std::unique_ptr<device::BluetoothAdvertisement::ServiceData>
       converted_service = advertisement->service_data();

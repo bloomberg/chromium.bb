@@ -37,13 +37,31 @@ struct AdvertisementEntry {
   virtual void AddTo(device::BluetoothAdvertisement::Data* data) {}
 };
 
+struct ServiceUUID16Entry : public AdvertisementEntry {
+  std::vector<uint16_t> service_uuids_16;
+
+  ~ServiceUUID16Entry() override {}
+
+  void AddTo(device::BluetoothAdvertisement::Data* data) override {
+    auto string_uuids = data->service_uuids();
+    if (string_uuids == nullptr)
+      string_uuids = std::make_unique<std::vector<std::string>>();
+    for (const auto& uuid : service_uuids_16) {
+      string_uuids->emplace_back(base::StringPrintf("%04x", uuid));
+    }
+    data->set_service_uuids(std::move(string_uuids));
+  }
+};
+
 struct ServiceUUIDEntry : public AdvertisementEntry {
   std::vector<device::BluetoothUUID> service_uuids;
 
   ~ServiceUUIDEntry() override {}
 
   void AddTo(device::BluetoothAdvertisement::Data* data) override {
-    auto string_uuids = std::make_unique<std::vector<std::string>>();
+    auto string_uuids = data->service_uuids();
+    if (string_uuids == nullptr)
+      string_uuids = std::make_unique<std::vector<std::string>>();
     for (const auto& uuid : service_uuids) {
       string_uuids->emplace_back(uuid.value());
     }
@@ -167,6 +185,15 @@ struct UnionTraits<arc::mojom::BluetoothAdvertisingDataDataView,
   static bool Read(arc::mojom::BluetoothAdvertisingDataDataView data,
                    std::unique_ptr<AdvertisementEntry>* output) {
     switch (data.tag()) {
+      case arc::mojom::BluetoothAdvertisingDataDataView::Tag::
+          SERVICE_UUIDS_16: {
+        std::unique_ptr<ServiceUUID16Entry> service_uuids_16 =
+            std::make_unique<ServiceUUID16Entry>();
+        if (!data.ReadServiceUuids16(&service_uuids_16->service_uuids_16))
+          return false;
+        *output = std::move(service_uuids_16);
+        break;
+      }
       case arc::mojom::BluetoothAdvertisingDataDataView::Tag::SERVICE_UUIDS: {
         std::unique_ptr<ServiceUUIDEntry> service_uuids =
             std::make_unique<ServiceUUIDEntry>();
