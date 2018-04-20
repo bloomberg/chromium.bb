@@ -1526,6 +1526,7 @@ bool PepperPluginInstanceImpl::CanEditText() {
 bool PepperPluginInstanceImpl::HasEditableText() {
   if (!LoadPdfInterface())
     return false;
+
   // No reference to |this| on the stack. Do not do any more work after this.
   // See NOTE above.
   return PP_ToBool(plugin_pdf_interface_->HasEditableText(pp_instance()));
@@ -1534,6 +1535,7 @@ bool PepperPluginInstanceImpl::HasEditableText() {
 void PepperPluginInstanceImpl::ReplaceSelection(const std::string& text) {
   if (!LoadPdfInterface())
     return;
+
   // No reference to |this| on the stack. Do not do any more work after this.
   // See NOTE above.
   plugin_pdf_interface_->ReplaceSelection(pp_instance(), text.c_str());
@@ -1556,6 +1558,40 @@ void PepperPluginInstanceImpl::SelectAll() {
   // No reference to |this| on the stack. Do not do any more work after this.
   // See NOTE above.
   HandleInputEvent(MakeWebKeyboardEvent(event), &dummy_cursor_info);
+}
+
+bool PepperPluginInstanceImpl::CanUndo() {
+  if (!LoadPdfInterface())
+    return false;
+
+  // No reference to |this| on the stack. Do not do any more work after this.
+  // See NOTE above.
+  return PP_ToBool(plugin_pdf_interface_->CanUndo(pp_instance()));
+}
+
+bool PepperPluginInstanceImpl::CanRedo() {
+  if (!LoadPdfInterface())
+    return false;
+
+  // No reference to |this| on the stack. Do not do any more work after this.
+  // See NOTE above.
+  return PP_ToBool(plugin_pdf_interface_->CanRedo(pp_instance()));
+}
+
+void PepperPluginInstanceImpl::Undo() {
+  if (!LoadPdfInterface())
+    return;
+
+  // No reference to |this| on the stack. Do not do any more work after this.
+  // See NOTE above.
+  plugin_pdf_interface_->Undo(pp_instance());
+}
+
+void PepperPluginInstanceImpl::Redo() {
+  if (!LoadPdfInterface())
+    return;
+
+  plugin_pdf_interface_->Redo(pp_instance());
 }
 
 void PepperPluginInstanceImpl::RequestSurroundingText(

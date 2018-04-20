@@ -150,6 +150,14 @@ class PepperPluginInstance {
 
   // Issues a select all command.
   virtual void SelectAll() = 0;
+
+  // Returns true if the plugin can undo/redo.
+  virtual bool CanUndo() = 0;
+  virtual bool CanRedo() = 0;
+
+  // Issues undo and redo commands.
+  virtual void Undo() = 0;
+  virtual void Redo() = 0;
 };
 
 }  // namespace content

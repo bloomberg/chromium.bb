@@ -53,6 +53,10 @@ class FakePepperPluginInstance : public PepperPluginInstance {
   bool HasEditableText() override;
   void ReplaceSelection(const std::string& text) override;
   void SelectAll() override;
+  bool CanUndo() override;
+  bool CanRedo() override;
+  void Undo() override;
+  void Redo() override;
 
  private:
   GURL gurl_;

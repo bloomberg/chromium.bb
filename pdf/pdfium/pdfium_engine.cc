@@ -2720,6 +2720,28 @@ void PDFiumEngine::ReplaceSelection(const std::string& text) {
   }
 }
 
+bool PDFiumEngine::CanUndo() {
+  if (last_page_mouse_down_ == -1)
+    return false;
+  return !!FORM_CanUndo(form_, pages_[last_page_mouse_down_]->GetPage());
+}
+
+bool PDFiumEngine::CanRedo() {
+  if (last_page_mouse_down_ == -1)
+    return false;
+  return !!FORM_CanRedo(form_, pages_[last_page_mouse_down_]->GetPage());
+}
+
+void PDFiumEngine::Undo() {
+  if (last_page_mouse_down_ != -1)
+    FORM_Undo(form_, pages_[last_page_mouse_down_]->GetPage());
+}
+
+void PDFiumEngine::Redo() {
+  if (last_page_mouse_down_ != -1)
+    FORM_Redo(form_, pages_[last_page_mouse_down_]->GetPage());
+}
+
 std::string PDFiumEngine::GetLinkAtPosition(const pp::Point& point) {
   std::string url;
   int temp;
