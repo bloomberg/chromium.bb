@@ -106,13 +106,13 @@ chrome.test.getConfig(function(config) {
             chrome.wallpaperPrivate.setWallpaperIfExists(
                 'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
                 false /*previewMode=*/,
-                fail('Failed to set wallpaper test1.jpg from file system.'));
+                fail('The wallpaper doesn\'t exist in local file system.'));
             // Attempt to preview wallpaper from a non-existent file should
             // also fail.
             chrome.wallpaperPrivate.setWallpaperIfExists(
                 'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
                 true /*previewMode=*/,
-                fail('Failed to set wallpaper test1.jpg from file system.'));
+                fail('The wallpaper doesn\'t exist in local file system.'));
           }));
     },
     function getAndSetThumbnail() {
@@ -140,19 +140,8 @@ chrome.test.getConfig(function(config) {
     function getOfflineWallpaperList() {
       chrome.wallpaperPrivate.getOfflineWallpaperList(pass(function(list) {
         // We have previously saved test.jpg in wallpaper directory.
+        chrome.test.assertEq(1, list.length);
         chrome.test.assertEq('test.jpg', list[0]);
-        // Saves the same wallpaper to wallpaper directory but name it as
-        // test1.jpg.
-        chrome.wallpaperPrivate.setWallpaper(
-            wallpaperJpeg, 'CENTER_CROPPED', 'http://dummyurl/test1.jpg',
-            false /*previewMode=*/, pass(function() {
-              chrome.wallpaperPrivate.getOfflineWallpaperList(
-                  pass(function(list) {
-                    list = list.sort();
-                    chrome.test.assertEq('test.jpg', list[0]);
-                    chrome.test.assertEq('test1.jpg', list[1]);
-                  }));
-            }));
       }));
     }
   ]);

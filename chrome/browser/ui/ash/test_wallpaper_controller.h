@@ -49,11 +49,18 @@ class TestWallpaperController : ash::mojom::WallpaperController {
                           ash::WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode) override;
-  void SetOnlineWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
-                          const gfx::ImageSkia& image,
-                          const std::string& url,
-                          ash::WallpaperLayout layout,
-                          bool preview_mode) override;
+  void SetOnlineWallpaperIfExists(
+      ash::mojom::WallpaperUserInfoPtr user_info,
+      const GURL& url,
+      ash::WallpaperLayout layout,
+      bool preview_mode,
+      ash::mojom::WallpaperController::SetOnlineWallpaperIfExistsCallback
+          callback) override;
+  void SetOnlineWallpaperFromData(ash::mojom::WallpaperUserInfoPtr user_info,
+                                  const std::string& image_data,
+                                  const GURL& url,
+                                  ash::WallpaperLayout layout,
+                                  bool preview_mode) override;
   void SetDefaultWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;
@@ -82,6 +89,9 @@ class TestWallpaperController : ash::mojom::WallpaperController {
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                              const std::string& wallpaper_files_id) override;
+  void GetOfflineWallpaperList(
+      ash::mojom::WallpaperController::GetOfflineWallpaperListCallback callback)
+      override;
   void SetAnimationDuration(base::TimeDelta animation_duration) override;
   void OpenWallpaperPickerIfAllowed() override;
   void MinimizeInactiveWindows(const std::string& user_id_hash) override;
