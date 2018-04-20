@@ -115,6 +115,44 @@ message AudioPerception {
 
   // Human presence detection results for an audio frame.
   optional AudioHumanPresenceDetection audio_human_presence_detection = 3;
+
+  // Hotword detection results.
+  optional HotwordDetection hotword_detection = 4;
+}
+
+// Detection of hotword in the audio stream.
+message HotwordDetection {
+  enum Type {
+    UNKNOWN_TYPE = 0;
+    OK_GOOGLE = 1;
+  }
+
+  message Hotword {
+    // Unique identifier for the hotword instance. Note that a single hotword
+    // instance can span more than one audio frame. In that case a single
+    // hotword instance can be reported in multiple Hotword or HotwordDetection
+    // messages. Hotword messages associated with the same hotword instance will
+    // have the same id.
+    optional uint64 id = 1;
+
+    // Indicates the type of this hotword.
+    optional Type type = 2;
+
+    // Id of the audio frame in which the hotword was detected.
+    optional uint64 frame_id = 3;
+
+    // Indicates the start time of this hotword in the audio frame.
+    optional uint64 start_timestamp_ms = 4;
+
+    // Indicates the end time of this hotword in the audio frame.
+    optional uint64 end_timestamp_ms = 5;
+
+    // Indicates a probability in [0, 1] interval that this hotword is present
+    // in the audio frame.
+    optional float confidence = 6;
+  }
+
+  repeated Hotword hotwords = 1;
 }
 
 // An estimate of the direction that the sound is coming from.

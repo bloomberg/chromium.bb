@@ -286,6 +286,42 @@ namespace mediaPerceptionPrivate {
     AudioSpectrogram? frameSpectrogram;
   };
 
+  enum HotwordType {
+    UNKNOWN_TYPE,
+    OK_GOOGLE
+  };
+
+  // A hotword detected in the audio stream.
+  dictionary Hotword {
+    // Unique identifier for the hotword instance. Note that a single hotword
+    // instance can span more than one audio frame. In that case a single
+    // hotword instance can be reported in multiple Hotword or HotwordDetection
+    // results. Hotword results associated with the same hotword instance will
+    // have the same <code>id</code>.
+    long? id;
+
+    // Indicates the type of this hotword.
+    HotwordType? type;
+
+    // Id of the audio frame in which the hotword was detected.
+    long? frameId;
+
+    // Indicates the start time of this hotword in the audio frame.
+    long? startTimestampMs;
+
+    // Indicates the end time of this hotword in the audio frame.
+    long? endTimestampMs;
+
+    // Indicates a probability in [0, 1] interval that this hotword is present
+    // in the audio frame.
+    double? confidence;
+  };
+
+  // Detection of hotword in the audio stream.
+  dictionary HotwordDetection {
+    Hotword[]? hotwords;
+  };
+
   // Audio perception results for an audio frame.
   dictionary AudioPerception {
     // A timestamp in microseconds attached when this message was generated.
@@ -296,6 +332,9 @@ namespace mediaPerceptionPrivate {
 
     // Audio human presence detection results for an audio frame.
     AudioHumanPresenceDetection? audioHumanPresenceDetection;
+
+    // Hotword detection results.
+    HotwordDetection? hotwordDetection;
   };
 
   // Detection of human presence based on both audio and video inputs.
