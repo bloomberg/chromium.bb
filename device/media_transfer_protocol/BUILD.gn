@@ -22,7 +22,11 @@ proto_library("mtp_storage_info_proto") {
   proto_out_dir = "device/media_transfer_protocol"
 }
 
-static_library("media_transfer_protocol") {
+# TODO(donna.wu@intel.com): this is temporaryly made a component to avoid
+# copying the shared MediaTransferProtocolManager in Device Service during
+# component build, and the signleton object will only exist in Device
+# Service after mojo-fication.
+component("media_transfer_protocol") {
   sources = [
     "media_transfer_protocol_daemon_client.cc",
     "media_transfer_protocol_daemon_client.h",
@@ -30,14 +34,17 @@ static_library("media_transfer_protocol") {
     "media_transfer_protocol_manager.h",
   ]
 
-  public_deps = [
+  defines = [ "IS_DEVICE_MTP_IMPL" ]
+
+  deps = [
     ":mtp_file_entry_proto",
     ":mtp_storage_info_proto",
     "//base",
-    "//device/media_transfer_protocol/public/mojom",
-  ]
-  deps = [
     "//chromeos",
     "//dbus",
+  ]
+
+  public_deps = [
+    "//device/media_transfer_protocol/public/mojom",
   ]
 }

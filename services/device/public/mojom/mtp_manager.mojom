@@ -1,0 +1,24 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module device.mojom;
+
+import "device/media_transfer_protocol/public/mojom/mtp_storage_info.mojom";
+
+interface MtpManagerClient {
+  // Notifies the client that a storage is attached.
+  StorageAttached(MtpStorageInfo storage_info);
+
+  // Notifies the client that a storage is detached.
+  StorageDetached(string storage_name);
+};
+
+interface MtpManager {
+  // This is a combined interface to get existing storages and set a
+  // client for incoming storage change events. It is designed to reduce
+  // async calls and eliminate a potential race condition between
+  // the client being set and storage updates being made.
+  EnumerateStoragesAndSetClient(associated MtpManagerClient client) =>
+    (array<MtpStorageInfo> storages);
+};

@@ -5,6 +5,9 @@
 #ifndef SERVICES_DEVICE_DEVICE_SERVICE_H_
 #define SERVICES_DEVICE_DEVICE_SERVICE_H_
 
+#include <memory>
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "device/geolocation/geolocation_provider.h"
@@ -34,6 +37,10 @@
 #include "base/android/scoped_java_ref.h"
 #else
 #include "services/device/public/mojom/hid.mojom.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "services/device/media_transfer_protocol/mtp_device_manager.h"
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
@@ -119,6 +126,10 @@ class DeviceService : public service_manager::Service {
   void BindVibrationManagerRequest(mojom::VibrationManagerRequest request);
 #endif
 
+#if defined(OS_CHROMEOS)
+  void BindMtpManagerRequest(mojom::MtpManagerRequest request);
+#endif
+
   void BindPowerMonitorRequest(mojom::PowerMonitorRequest request);
 
   void BindPublicIpAddressGeolocationProviderRequest(
@@ -164,6 +175,10 @@ class DeviceService : public service_manager::Service {
   base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate_;
 #else
   std::unique_ptr<HidManagerImpl> hid_manager_;
+#endif
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<MtpDeviceManager> mtp_device_manager_;
 #endif
 
   service_manager::BinderRegistry registry_;
