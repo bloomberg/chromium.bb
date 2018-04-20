@@ -319,14 +319,14 @@ static bool ChildDoesNotAffectWidthOrFlexing(LayoutObject* child) {
 }
 
 static LayoutUnit ContentWidthForChild(LayoutBox* child) {
-  if (child->HasOverrideLogicalContentWidth())
-    return child->OverrideLogicalContentWidth();
+  if (child->HasOverrideContentLogicalWidth())
+    return child->OverrideContentLogicalWidth();
   return child->LogicalWidth() - child->BorderAndPaddingLogicalWidth();
 }
 
 static LayoutUnit ContentHeightForChild(LayoutBox* child) {
-  if (child->HasOverrideLogicalContentHeight())
-    return child->OverrideLogicalContentHeight();
+  if (child->HasOverrideContentLogicalHeight())
+    return child->OverrideContentLogicalHeight();
   return child->LogicalHeight() - child->BorderAndPaddingLogicalHeight();
 }
 
@@ -474,7 +474,7 @@ static void GatherFlexChildrenInfo(FlexBoxIterator& iterator,
       // We always have to lay out flexible objects again, since the flex
       // distribution
       // may have changed, and we need to reallocate space.
-      child->ClearOverrideSize();
+      child->ClearOverrideContentSize();
       if (!relayout_children)
         child->SetChildNeedsLayout(kMarkOnlyThis);
       have_flex = true;
@@ -712,7 +712,7 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
                 LayoutUnit(space_available_this_pass *
                            (child->Style()->BoxFlex() / total_flex));
             if (space_add) {
-              child->SetOverrideLogicalContentWidth(
+              child->SetOverrideContentLogicalWidth(
                   ContentWidthForChild(child) + space_add);
               flexing_children = true;
               relayout_children = true;
@@ -731,7 +731,7 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
           for (LayoutBox* child = iterator.First(); child && remaining_space;
                child = iterator.Next()) {
             if (AllowedChildFlex(child, expanding)) {
-              child->SetOverrideLogicalContentWidth(
+              child->SetOverrideContentLogicalWidth(
                   ContentWidthForChild(child) + space_add);
               flexing_children = true;
               relayout_children = true;
@@ -998,7 +998,7 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
                 space_available_this_pass *
                 (child->Style()->BoxFlex() / total_flex));
             if (space_add) {
-              child->SetOverrideLogicalContentHeight(
+              child->SetOverrideContentLogicalHeight(
                   ContentHeightForChild(child) + space_add);
               flexing_children = true;
               relayout_children = true;
@@ -1017,7 +1017,7 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
           for (LayoutBox* child = iterator.First(); child && remaining_space;
                child = iterator.Next()) {
             if (AllowedChildFlex(child, expanding)) {
-              child->SetOverrideLogicalContentHeight(
+              child->SetOverrideContentLogicalHeight(
                   ContentHeightForChild(child) + space_add);
               flexing_children = true;
               relayout_children = true;
@@ -1117,7 +1117,7 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
     if (ChildDoesNotAffectWidthOrFlexing(child))
       continue;
 
-    child->ClearOverrideSize();
+    child->ClearOverrideContentSize();
     if (relayout_children ||
         (child->IsAtomicInlineLevel() &&
          (child->Style()->Width().IsPercentOrCalc() ||
@@ -1162,7 +1162,7 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
     if (new_height == child->Size().Height())
       continue;
 
-    child->SetOverrideLogicalContentHeight(new_height -
+    child->SetOverrideContentLogicalHeight(new_height -
                                            child->BorderAndPaddingHeight());
     child->ForceChildLayout();
 
@@ -1231,7 +1231,7 @@ void LayoutDeprecatedFlexibleBox::ClearLineClamp() {
     if (ChildDoesNotAffectWidthOrFlexing(child))
       continue;
 
-    child->ClearOverrideSize();
+    child->ClearOverrideContentSize();
     if ((child->IsAtomicInlineLevel() &&
          (child->Style()->Width().IsPercentOrCalc() ||
           child->Style()->Height().IsPercentOrCalc())) ||

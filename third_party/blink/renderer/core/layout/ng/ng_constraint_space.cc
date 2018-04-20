@@ -95,11 +95,11 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
 
   LayoutUnit available_logical_width;
   if (parallel_containing_block &&
-      box.HasOverrideContainingBlockLogicalWidth()) {
-    // Grid layout sets OverrideContainingBlockLogicalWidth|Height
+      box.HasOverrideContainingBlockContentLogicalWidth()) {
+    // Grid layout sets OverrideContainingBlockContentLogicalWidth|Height
     available_logical_width = box.OverrideContainingBlockContentLogicalWidth();
   } else if (!parallel_containing_block &&
-             box.HasOverrideContainingBlockLogicalHeight()) {
+             box.HasOverrideContainingBlockContentLogicalHeight()) {
     available_logical_width = box.OverrideContainingBlockContentLogicalHeight();
   } else {
     if (parallel_containing_block)
@@ -111,12 +111,12 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
 
   LayoutUnit available_logical_height;
   if (parallel_containing_block &&
-      box.HasOverrideContainingBlockLogicalHeight()) {
-    // Grid layout sets OverrideContainingBlockLogicalWidth|Height
+      box.HasOverrideContainingBlockContentLogicalHeight()) {
+    // Grid layout sets OverrideContainingBlockContentLogicalWidth|Height
     available_logical_height =
         box.OverrideContainingBlockContentLogicalHeight();
   } else if (!parallel_containing_block &&
-             box.HasOverrideContainingBlockLogicalWidth()) {
+             box.HasOverrideContainingBlockContentLogicalWidth()) {
     available_logical_height = box.OverrideContainingBlockContentLogicalWidth();
   } else {
     if (!box.Parent()) {
@@ -137,14 +137,14 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
   // When we have an override size, the available_logical_{width,height} will be
   // used as the final size of the box, so it has to include border and
   // padding.
-  if (box.HasOverrideLogicalContentWidth()) {
+  if (box.HasOverrideContentLogicalWidth()) {
     available_size.inline_size =
-        box.BorderAndPaddingLogicalWidth() + box.OverrideLogicalContentWidth();
+        box.BorderAndPaddingLogicalWidth() + box.OverrideContentLogicalWidth();
     fixed_inline = true;
   }
-  if (box.HasOverrideLogicalContentHeight()) {
+  if (box.HasOverrideContentLogicalHeight()) {
     available_size.block_size = box.BorderAndPaddingLogicalHeight() +
-                                box.OverrideLogicalContentHeight();
+                                box.OverrideContentLogicalHeight();
     fixed_block = true;
   }
 

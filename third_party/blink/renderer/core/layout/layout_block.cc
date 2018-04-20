@@ -927,7 +927,7 @@ void LayoutBlock::InsertPositionedObject(LayoutBox* o) {
   DCHECK(!IsAnonymousBlock());
   DCHECK_EQ(o->ContainingBlock(), this);
 
-  o->ClearContainingBlockOverrideSize();
+  o->ClearOverrideContainingBlockContentSize();
 
   if (g_positioned_container_map) {
     auto container_map_it = g_positioned_container_map->find(o);
@@ -2151,8 +2151,8 @@ LayoutUnit LayoutBlock::AvailableLogicalHeightForPercentageComputation() const {
 
   if (stretched_flex_height != LayoutUnit(-1)) {
     available_height = stretched_flex_height;
-  } else if (IsGridItem() && HasOverrideLogicalContentHeight()) {
-    available_height = OverrideLogicalContentHeight();
+  } else if (IsGridItem() && HasOverrideContentLogicalHeight()) {
+    available_height = OverrideContentLogicalHeight();
   } else if (style.LogicalHeight().IsFixed()) {
     LayoutUnit content_box_height = AdjustContentBoxLogicalHeightForBoxSizing(
         style.LogicalHeight().Value());

@@ -830,7 +830,7 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
     LayoutBox& child,
     LayoutUnit main_axis_border_and_padding,
     ChildLayoutType child_layout_type) {
-  child.ClearOverrideSize();
+  child.ClearOverrideContentSize();
 
   if (child.IsImage() || child.IsVideo() || child.IsCanvas())
     UseCounter::Count(GetDocument(), WebFeature::kAspectRatioFlexItem);
@@ -1126,10 +1126,10 @@ LayoutUnit LayoutFlexibleBox::CrossSizeForPercentageResolution(
     return LayoutUnit(-1);
 
   // Here we implement https://drafts.csswg.org/css-flexbox/#algo-stretch
-  if (HasOrthogonalFlow(child) && child.HasOverrideLogicalContentWidth())
-    return child.OverrideLogicalContentWidth() - child.ScrollbarLogicalWidth();
-  if (!HasOrthogonalFlow(child) && child.HasOverrideLogicalContentHeight()) {
-    return child.OverrideLogicalContentHeight() -
+  if (HasOrthogonalFlow(child) && child.HasOverrideContentLogicalWidth())
+    return child.OverrideContentLogicalWidth() - child.ScrollbarLogicalWidth();
+  if (!HasOrthogonalFlow(child) && child.HasOverrideContentLogicalHeight()) {
+    return child.OverrideContentLogicalHeight() -
            child.ScrollbarLogicalHeight();
   }
 
@@ -1160,12 +1160,12 @@ LayoutUnit LayoutFlexibleBox::MainSizeForPercentageResolution(
   }
 
   if (HasOrthogonalFlow(child))
-    return child.HasOverrideLogicalContentHeight()
-               ? child.OverrideLogicalContentHeight() -
+    return child.HasOverrideContentLogicalHeight()
+               ? child.OverrideContentLogicalHeight() -
                      child.ScrollbarLogicalHeight()
                : LayoutUnit(-1);
-  return child.HasOverrideLogicalContentWidth()
-             ? child.OverrideLogicalContentWidth() -
+  return child.HasOverrideContentLogicalWidth()
+             ? child.OverrideContentLogicalWidth() -
                    child.ScrollbarLogicalWidth()
              : LayoutUnit(-1);
 }
@@ -1215,7 +1215,7 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
     // height of the child).
     if (child.NeedsLayout() ||
         (IsColumnFlow() && layout_type == kForceLayout)) {
-      child.ClearOverrideSize();
+      child.ClearOverrideContentSize();
       child.ForceChildLayout();
       CacheChildMainSize(child);
       layout_type = kLayoutIfNeeded;
@@ -1284,9 +1284,9 @@ void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(
     LayoutBox& child,
     LayoutUnit child_preferred_size) {
   if (HasOrthogonalFlow(child))
-    child.SetOverrideLogicalContentHeight(child_preferred_size);
+    child.SetOverrideContentLogicalHeight(child_preferred_size);
   else
-    child.SetOverrideLogicalContentWidth(child_preferred_size);
+    child.SetOverrideContentLogicalWidth(child_preferred_size);
 }
 
 LayoutUnit LayoutFlexibleBox::StaticMainAxisPositionForPositionedChild(
@@ -1713,8 +1713,8 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(
       // So, redo it here.
       child_needs_relayout = true;
     }
-    if (child_needs_relayout || !child.HasOverrideLogicalContentHeight())
-      child.SetOverrideLogicalContentHeight(
+    if (child_needs_relayout || !child.HasOverrideContentLogicalHeight())
+      child.SetOverrideContentLogicalHeight(
           desired_logical_height - child.BorderAndPaddingLogicalHeight());
     if (child_needs_relayout) {
       child.SetLogicalHeight(LayoutUnit());
@@ -1739,7 +1739,7 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(
     flex_item.cross_axis_size = child_width;
 
     if (child_width != child.LogicalWidth()) {
-      child.SetOverrideLogicalContentWidth(
+      child.SetOverrideContentLogicalWidth(
           child_width - child.BorderAndPaddingLogicalWidth());
       child.ForceChildLayout();
     }

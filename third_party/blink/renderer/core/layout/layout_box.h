@@ -65,8 +65,8 @@ struct LayoutBoxRareData {
  public:
   LayoutBoxRareData()
       : spanner_placeholder_(nullptr),
-        override_logical_content_width_(-1),
-        override_logical_content_height_(-1),
+        override_content_logical_width_(-1),
+        override_content_logical_height_(-1),
         has_override_containing_block_content_logical_width_(false),
         has_override_containing_block_content_logical_height_(false),
         has_previous_content_box_size_and_layout_overflow_rect_(false),
@@ -78,8 +78,8 @@ struct LayoutBoxRareData {
   // container.
   LayoutMultiColumnSpannerPlaceholder* spanner_placeholder_;
 
-  LayoutUnit override_logical_content_width_;
-  LayoutUnit override_logical_content_height_;
+  LayoutUnit override_content_logical_width_;
+  LayoutUnit override_content_logical_height_;
 
   bool has_override_containing_block_content_logical_width_ : 1;
   bool has_override_containing_block_content_logical_height_ : 1;
@@ -693,24 +693,23 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // them store the border-box height/width like the regular height/width
   // accessors on LayoutBox. Right now, these are different than contentHeight/
   // contentWidth because they still include the scrollbar height/width.
-  LayoutUnit OverrideLogicalContentWidth() const;
-  LayoutUnit OverrideLogicalContentHeight() const;
-  bool HasOverrideLogicalContentHeight() const;
-  bool HasOverrideLogicalContentWidth() const;
-  void SetOverrideLogicalContentHeight(LayoutUnit);
-  void SetOverrideLogicalContentWidth(LayoutUnit);
-  void ClearOverrideSize();
-  void ClearOverrideLogicalContentHeight();
-  void ClearOverrideLogicalContentWidth();
+  LayoutUnit OverrideContentLogicalWidth() const;
+  LayoutUnit OverrideContentLogicalHeight() const;
+  bool HasOverrideContentLogicalHeight() const;
+  bool HasOverrideContentLogicalWidth() const;
+  void SetOverrideContentLogicalHeight(LayoutUnit);
+  void SetOverrideContentLogicalWidth(LayoutUnit);
+  void ClearOverrideContentSize();
+  void ClearOverrideContentLogicalHeight();
+  void ClearOverrideContentLogicalWidth();
 
   LayoutUnit OverrideContainingBlockContentLogicalWidth() const;
   LayoutUnit OverrideContainingBlockContentLogicalHeight() const;
-  bool HasOverrideContainingBlockLogicalWidth() const;
-  bool HasOverrideContainingBlockLogicalHeight() const;
+  bool HasOverrideContainingBlockContentLogicalWidth() const;
+  bool HasOverrideContainingBlockContentLogicalHeight() const;
   void SetOverrideContainingBlockContentLogicalWidth(LayoutUnit);
   void SetOverrideContainingBlockContentLogicalHeight(LayoutUnit);
-  void ClearContainingBlockOverrideSize();
-  void ClearOverrideContainingBlockContentLogicalHeight();
+  void ClearOverrideContainingBlockContentSize();
 
   LayoutSize OffsetFromContainer(const LayoutObject*) const override;
 

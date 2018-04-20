@@ -112,8 +112,8 @@ bool GridLayoutUtils::HasOverrideContainingBlockContentSizeForChild(
     const LayoutBox& child,
     GridTrackSizingDirection direction) {
   return direction == kForColumns
-             ? child.HasOverrideContainingBlockLogicalWidth()
-             : child.HasOverrideContainingBlockLogicalHeight();
+             ? child.HasOverrideContainingBlockContentLogicalWidth()
+             : child.HasOverrideContainingBlockContentLogicalHeight();
 }
 
 LayoutUnit GridLayoutUtils::OverrideContainingBlockContentSizeForChild(

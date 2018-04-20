@@ -550,13 +550,13 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
 
   // TODO(layout-ng): Does this handle scrollbars correctly?
   if (constraint_space.IsFixedSizeInline()) {
-    box_->SetOverrideLogicalContentWidth(
+    box_->SetOverrideContentLogicalWidth(
         (constraint_space.AvailableSize().inline_size -
          box_->BorderAndPaddingLogicalWidth())
             .ClampNegativeToZero());
   }
   if (constraint_space.IsFixedSizeBlock()) {
-    box_->SetOverrideLogicalContentHeight(
+    box_->SetOverrideContentLogicalHeight(
         (constraint_space.AvailableSize().block_size -
          box_->BorderAndPaddingLogicalHeight())
             .ClampNegativeToZero());
