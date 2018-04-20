@@ -459,6 +459,9 @@
         }
       },
       {
+        "args": [
+          "--zero-tests-executed-ok"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -929,6 +932,9 @@
         }
       },
       {
+        "args": [
+          "--zero-tests-executed-ok"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -1399,6 +1405,9 @@
         }
       },
       {
+        "args": [
+          "--zero-tests-executed-ok"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -1886,6 +1895,9 @@
         }
       },
       {
+        "args": [
+          "--zero-tests-executed-ok"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [

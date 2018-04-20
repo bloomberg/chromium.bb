@@ -1778,6 +1778,7 @@
         "args": [
           "--debug",
           "--target",
+          "--zero-tests-executed-ok",
           "Debug_x64"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -3015,6 +3016,7 @@
         "args": [
           "--debug",
           "--time-out-ms",
+          "--zero-tests-executed-ok",
           "60000"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
