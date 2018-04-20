@@ -452,8 +452,10 @@ Browser* ReparentWebContentsIntoAppBrowser(
 
   TabStripModel* source_tabstrip = source_browser->tab_strip_model();
   target_browser->tab_strip_model()->AppendWebContents(
-      source_tabstrip->DetachWebContentsAt(
-          source_tabstrip->GetIndexOfWebContents(contents)),
+      source_tabstrip
+          ->DetachWebContentsAt(
+              source_tabstrip->GetIndexOfWebContents(contents))
+          .release(),
       true);
   target_browser->window()->Show();
 

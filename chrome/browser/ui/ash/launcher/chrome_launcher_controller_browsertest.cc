@@ -1107,8 +1107,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabDragAndDrop) {
 
   // Detach a tab at index 1 (app1) from |tab_strip_model1| and insert it as an
   // active tab at index 1 to |tab_strip_model2|.
-  content::WebContents* detached_tab = tab_strip_model1->DetachWebContentsAt(1);
-  tab_strip_model2->InsertWebContentsAt(1, detached_tab,
+  std::unique_ptr<content::WebContents> detached_tab =
+      tab_strip_model1->DetachWebContentsAt(1);
+  tab_strip_model2->InsertWebContentsAt(1, detached_tab.release(),
                                         TabStripModel::ADD_ACTIVE);
   EXPECT_EQ(1, tab_strip_model1->count());
   EXPECT_EQ(2, tab_strip_model2->count());

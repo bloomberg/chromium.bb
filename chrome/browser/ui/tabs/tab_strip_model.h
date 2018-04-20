@@ -191,7 +191,7 @@ class TabStripModel : public WebContentsCloseDelegate {
   // WebContents is not destroyed, just removed from display. The caller
   // is responsible for doing something with it (e.g. stuffing it into another
   // strip). Returns the detached WebContents.
-  content::WebContents* DetachWebContentsAt(int index);
+  std::unique_ptr<content::WebContents> DetachWebContentsAt(int index);
 
   // Makes the tab at the specified index the active tab. |user_gesture| is true
   // if the user actually clicked on the tab or navigated to it using a keyboard
