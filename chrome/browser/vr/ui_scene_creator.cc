@@ -596,11 +596,8 @@ std::unique_ptr<UiElement> CreateHostedUi(
   // suggestion doesn't hide the keyboard. We will probably need to change this
   // when we support the keyboard on native UI elements.
   hosted_ui->set_focusable(false);
-  hosted_ui->SetVisible(false);
-  hosted_ui->set_opacity_when_visible(1.0);
   hosted_ui->set_requires_layout(false);
   hosted_ui->set_corner_radius(kContentCornerRadius);
-  hosted_ui->SetTransitionedProperties({OPACITY});
   hosted_ui->SetTranslate(0, 0, kHostedUiShadowOffset);
   hosted_ui->AddBinding(VR_BIND_FUNC(
       ContentInputDelegatePtr, Model, model, model->hosted_platform_ui.delegate,
@@ -614,7 +611,6 @@ std::unique_ptr<UiElement> CreateHostedUi(
           base::Unretained(model)),
       VR_BIND_LAMBDA(
           [](ContentElement* dialog, const bool& enabled) {
-            dialog->SetVisible(enabled);
             dialog->set_requires_layout(enabled);
             dialog->set_hit_testable(enabled);
           },
@@ -649,6 +645,9 @@ std::unique_ptr<UiElement> CreateHostedUi(
   auto shadow = Create<Shadow>(kNone, kPhaseForeground);
   shadow->SetType(kTypePromptShadow);
   shadow->SetTranslate(0, 0, kHostedUiDepthOffset - kHostedUiShadowOffset);
+  shadow->SetVisible(false);
+  shadow->set_opacity_when_visible(1.0);
+  shadow->SetTransitionedProperties({OPACITY});
   shadow->AddChild(std::move(hosted_ui));
   shadow->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::PointF>>>(
       base::BindRepeating(
@@ -677,6 +676,9 @@ std::unique_ptr<UiElement> CreateHostedUi(
             }
           },
           base::Unretained(shadow.get()))));
+  shadow->AddBinding(VR_BIND_FUNC(bool, Model, model,
+                                  model->hosted_platform_ui.hosted_ui_enabled,
+                                  Shadow, shadow.get(), SetVisible));
 
   auto backplane = Create<InvisibleHitTarget>(name, kPhaseForeground);
   backplane->SetType(kTypeHostedUiBackplane);
