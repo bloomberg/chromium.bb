@@ -451,4 +451,6 @@ class RunIsolatedTest(unittest.TestCase):
 
 if __name__ == '__main__':
   fix_encoding.fix_encoding()
+  logging.basicConfig(
+      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
   test_utils.main()

@@ -878,10 +878,11 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
     for item in items:
       pending.add(item.digest)
       queue.add(item.digest)
+      queue.wait_on(item.digest)
 
     # Wait for fetch to complete.
     while pending:
-      fetched = queue.wait(pending)
+      fetched = queue.wait()
       pending.discard(fetched)
 
     # Ensure fetched same data as was pushed.
