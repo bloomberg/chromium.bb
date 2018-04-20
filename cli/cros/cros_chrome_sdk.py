@@ -207,7 +207,17 @@ class SDKFetcher(object):
     return path.strip('"')
 
   def _GetFullVersionFromStorage(self, version_file):
+    """Cat |version_file| in google storage.
+
+    Args:
+      version_file: google storage path of the version file.
+
+    Returns:
+      Version number in the format 'R30-3929.0.0' or None.
+    """
     try:
+       # If the version doesn't exist in google storage,
+       # which isn't unlikely, don't waste time on retries.
       full_version = self.gs_ctx.Cat(version_file, retries=0)
       assert full_version.startswith('R')
       return full_version
