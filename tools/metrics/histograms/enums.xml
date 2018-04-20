@@ -15207,6 +15207,7 @@ Called by update_net_error_codes.py.-->
       label="ENTERPRISEREPORTINGPRIVATE_UPLOADCHROMEDESKTOPREPORT"/>
   <int value="1242" label="CECPRIVATE_SENDSTANDBY"/>
   <int value="1243" label="CECPRIVATE_SENDWAKEUP"/>
+  <int value="1244" label="WEBSTOREPRIVATE_GETREFERRERCHAIN"/>
 </enum>
 
 <enum name="ExtensionIconState">
