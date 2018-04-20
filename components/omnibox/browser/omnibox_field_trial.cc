@@ -697,16 +697,6 @@ bool OmniboxFieldTrial::InTabSwitchSuggestionTrial() {
              omnibox::kOmniboxTabSwitchSuggestionsFlag) != "disabled";
 }
 
-// static
-bool OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(omnibox::kOmniboxTabSwitchSuggestionsFlag) &&
-         command_line.GetSwitchValueASCII(
-             omnibox::kOmniboxTabSwitchSuggestionsFlag) ==
-             omnibox::kOmniboxTabSwitchWithButton;
-}
-
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";

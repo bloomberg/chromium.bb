@@ -417,10 +417,6 @@ class OmniboxFieldTrial {
   // Returns whether the tab switch suggestion experiment is enabled.
   static bool InTabSwitchSuggestionTrial();
 
-  // Returns whether the tab switch suggestion experiment using
-  // a button is selected.
-  static bool InTabSwitchSuggestionWithButtonTrial();
-
   // ---------------------------------------------------------
   // Clipboard URL suggestions:
 

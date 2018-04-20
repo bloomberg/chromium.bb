@@ -220,34 +220,9 @@ void AutocompleteResult::ConvertOpenTabMatches(
     // possibly re-change the description.
     if (match.has_tab_match)
       continue;
-    // If URL is not in a tab, there's nothing to do.
-    if (!client->IsTabOpenWithURL(match.destination_url, input))
-      continue;
-    match.has_tab_match = true;
-    // If we display a button for tab switching, don't change the description.
-    if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial())
-      continue;
-    const base::string16 switch_tab_message =
-        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT) +
-        base::UTF8ToUTF16(match.description.empty() ? "" : " - ");
-    match.description = switch_tab_message + match.description;
-    // Add classfication for the prefix.
-    if (match.description_class.empty()) {
-      match.description_class.push_back(
-          ACMatchClassification(0, ACMatchClassification::NONE));
-    } else {
-      if (match.description_class[0].style != ACMatchClassification::NONE) {
-        match.description_class.insert(
-            match.description_class.begin(),
-            ACMatchClassification(0, ACMatchClassification::NONE));
-      }
-      // Shift the rest.
-      for (auto& classification : match.description_class) {
-        if (classification.offset != 0 ||
-            classification.style != ACMatchClassification::NONE)
-          classification.offset += switch_tab_message.size();
-      }
-    }
+    // If URL is in a tab, remember that.
+    if (client->IsTabOpenWithURL(match.destination_url, input))
+      match.has_tab_match = true;
   }
 }
 bool AutocompleteResult::HasCopiedMatches() const {
