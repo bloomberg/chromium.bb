@@ -183,7 +183,7 @@ TEST_F(IntentPickerBubbleViewTest, ChromeNotInCandidates) {
   size_t size = bubble_->GetScrollViewSize();
   for (size_t i = 0; i < size; ++i) {
     EXPECT_FALSE(arc::ArcIntentHelperBridge::IsIntentHelperPackage(
-        bubble_->app_info_[i].launch_name));
+        bubble_->GetAppInfoForTesting()[i].launch_name));
   }
 }
 
