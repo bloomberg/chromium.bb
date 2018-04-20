@@ -762,6 +762,10 @@ PrefsPrepopulatedTestBase::PrefsPrepopulatedTestBase()
       Extension::NO_FLAGS,
       &error);
 
+  internal_extension_ = Extension::Create(
+      prefs_.temp_dir().AppendASCII("internal extension"), Manifest::INTERNAL,
+      simple_dict, Extension::NO_FLAGS, &error);
+
   for (size_t i = 0; i < kNumInstalledExtensions; ++i)
     installed_[i] = false;
 }

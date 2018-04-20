@@ -56,7 +56,7 @@ class ExtensionPrefsTest : public testing::Test {
 
 class PrefsPrepopulatedTestBase : public ExtensionPrefsTest {
  public:
-  static const size_t kNumInstalledExtensions = 4;
+  static const size_t kNumInstalledExtensions = 5;
 
   PrefsPrepopulatedTestBase();
   ~PrefsPrepopulatedTestBase() override;
@@ -65,14 +65,19 @@ class PrefsPrepopulatedTestBase : public ExtensionPrefsTest {
   Extension* extension2() { return extension2_.get(); }
   Extension* extension3() { return extension3_.get(); }
   Extension* extension4() { return extension4_.get(); }
+  Extension* internal_extension() { return internal_extension_.get(); }
 
  protected:
   bool installed_[kNumInstalledExtensions];
 
+  // The following extensions all have Manifest::Location set to EXTERNAL_PREF.
   scoped_refptr<Extension> extension1_;
   scoped_refptr<Extension> extension2_;
   scoped_refptr<Extension> extension3_;
   scoped_refptr<Extension> extension4_;
+
+  // This extension has a location of Manifest::INTERNAL.
+  scoped_refptr<Extension> internal_extension_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefsPrepopulatedTestBase);

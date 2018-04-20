@@ -156,10 +156,8 @@ void ExtensionControlledPrefsTest::UninstallExtension(
 void ExtensionControlledPrefsTest::EnsureExtensionInstalled(
     Extension* extension) {
   // Install extension the first time a preference is set for it.
-  Extension* extensions[] = { extension1(),
-                              extension2(),
-                              extension3(),
-                              extension4() };
+  Extension* extensions[] = {extension1(), extension2(), extension3(),
+                             extension4(), internal_extension()};
   for (size_t i = 0; i < kNumInstalledExtensions; ++i) {
     if (extension == extensions[i] && !installed_[i]) {
       prefs()->OnExtensionInstalled(extension,
@@ -175,10 +173,8 @@ void ExtensionControlledPrefsTest::EnsureExtensionInstalled(
 
 void ExtensionControlledPrefsTest::EnsureExtensionUninstalled(
     const std::string& extension_id) {
-  Extension* extensions[] = { extension1(),
-                              extension2(),
-                              extension3(),
-                              extension4() };
+  Extension* extensions[] = {extension1(), extension2(), extension3(),
+                             extension4(), internal_extension()};
   for (size_t i = 0; i < kNumInstalledExtensions; ++i) {
     if (extensions[i]->id() == extension_id) {
       installed_[i] = false;
@@ -439,19 +435,33 @@ class ControlledPrefsDisableExtensions : public ExtensionControlledPrefsTest {
       : iteration_(0) {}
   ~ControlledPrefsDisableExtensions() override {}
   void Initialize() override {
-    InstallExtensionControlledPref(extension1(), kPref1,
-                                   new base::Value("val1"));
+    InstallExtensionControlledPref(internal_extension(), kPref1,
+                                   new base::Value("internal extension value"));
+
+    EXPECT_TRUE(Manifest::IsExternalLocation(extension1()->location()));
+    InstallExtensionControlledPref(extension1(), kPref2,
+                                   new base::Value("external extension value"));
     // This becomes only active in the second verification phase.
     prefs_.set_extensions_disabled(true);
   }
   void Verify() override {
-    std::string actual = prefs()->pref_service()->GetString(kPref1);
+    // Internal extensions are not loaded with --disable-extensions. This means
+    // that the preference will be reset on the second verification run (when
+    // the ExtensionPrefs are recreated).
+    std::string pref1_actual = prefs()->pref_service()->GetString(kPref1);
     if (iteration_ == 0) {
-      EXPECT_EQ("val1", actual);
+      EXPECT_EQ("internal extension value", pref1_actual);
       ++iteration_;
     } else {
-      EXPECT_EQ(kDefaultPref1, actual);
+      EXPECT_EQ(kDefaultPref1, pref1_actual);
     }
+
+    // External extensions are loaded even when extensions are disabled (though
+    // they likely shouldn't be, see https://crbug.com/833540). Because of this,
+    // the preference should still be controlled by the external extension.
+    // Regression test for https://crbug.com/828295.
+    std::string pref2_actual = prefs()->pref_service()->GetString(kPref2);
+    EXPECT_EQ("external extension value", pref2_actual);
   }
 
  private:
