@@ -94,6 +94,12 @@ bool GpuDataManagerImpl::HardwareAccelerationEnabled() const {
   return private_->HardwareAccelerationEnabled();
 }
 
+void GpuDataManagerImpl::GetDisabledExtensions(
+    std::string* disabled_extensions) const {
+  base::AutoLock auto_lock(lock_);
+  private_->GetDisabledExtensions(disabled_extensions);
+}
+
 void GpuDataManagerImpl::RequestGpuSupportedRuntimeVersion() const {
   base::AutoLock auto_lock(lock_);
   private_->RequestGpuSupportedRuntimeVersion();
@@ -104,35 +110,26 @@ bool GpuDataManagerImpl::GpuProcessStartAllowed() const {
   return private_->GpuProcessStartAllowed();
 }
 
-void GpuDataManagerImpl::UpdateGpuInfo(
-    const gpu::GPUInfo& gpu_info,
-    const gpu::GPUInfo* optional_gpu_info_for_hardware_gpu) {
+void GpuDataManagerImpl::GetDisabledWebGLExtensions(
+    std::string* disabled_webgl_extensions) const {
   base::AutoLock auto_lock(lock_);
-  private_->UpdateGpuInfo(gpu_info, optional_gpu_info_for_hardware_gpu);
+  private_->GetDisabledWebGLExtensions(disabled_webgl_extensions);
+}
+
+void GpuDataManagerImpl::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateGpuInfo(gpu_info);
 }
 
 void GpuDataManagerImpl::UpdateGpuFeatureInfo(
-    const gpu::GpuFeatureInfo& gpu_feature_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu) {
+    const gpu::GpuFeatureInfo& gpu_feature_info) {
   base::AutoLock auto_lock(lock_);
-  private_->UpdateGpuFeatureInfo(gpu_feature_info,
-                                 gpu_feature_info_for_hardware_gpu);
+  private_->UpdateGpuFeatureInfo(gpu_feature_info);
 }
 
 gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfo() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuFeatureInfo();
-}
-
-gpu::GPUInfo GpuDataManagerImpl::GetGPUInfoForHardwareGpu() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->GetGPUInfoForHardwareGpu();
-}
-
-gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfoForHardwareGpu()
-    const {
-  base::AutoLock auto_lock(lock_);
-  return private_->GetGpuFeatureInfoForHardwareGpu();
 }
 
 void GpuDataManagerImpl::AppendGpuCommandLine(
@@ -145,6 +142,16 @@ void GpuDataManagerImpl::UpdateGpuPreferences(
     gpu::GpuPreferences* gpu_preferences) const {
   base::AutoLock auto_lock(lock_);
   private_->UpdateGpuPreferences(gpu_preferences);
+}
+
+void GpuDataManagerImpl::GetBlacklistReasons(base::ListValue* reasons) const {
+  base::AutoLock auto_lock(lock_);
+  private_->GetBlacklistReasons(reasons);
+}
+
+std::vector<std::string> GpuDataManagerImpl::GetDriverBugWorkarounds() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->GetDriverBugWorkarounds();
 }
 
 void GpuDataManagerImpl::AddLogMessage(int level,
@@ -209,11 +216,6 @@ void GpuDataManagerImpl::NotifyGpuInfoUpdate() {
 void GpuDataManagerImpl::OnGpuProcessInitFailure() {
   base::AutoLock auto_lock(lock_);
   private_->OnGpuProcessInitFailure();
-}
-
-bool GpuDataManagerImpl::IsGpuProcessUsingHardwareGpu() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->IsGpuProcessUsingHardwareGpu();
 }
 
 GpuDataManagerImpl::GpuDataManagerImpl()

@@ -61,6 +61,10 @@ class GpuDataManager {
   // Whether a GPU is in use (as opposed to a software renderer).
   virtual bool HardwareAccelerationEnabled() const = 0;
 
+  // Extensions that are currently disabled.
+  virtual void GetDisabledExtensions(
+      std::string* disabled_extensions) const = 0;
+
  protected:
   virtual ~GpuDataManager() {}
 };

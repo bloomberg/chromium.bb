@@ -62,9 +62,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                  std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
                  scoped_refptr<base::SingleThreadTaskRunner> io_runner,
                  const gpu::GpuFeatureInfo& gpu_feature_info,
-                 const gpu::GpuPreferences& gpu_preferences,
-                 const gpu::GPUInfo& gpu_info_for_hardware_gpu,
-                 const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu);
+                 const gpu::GpuPreferences& gpu_preferences);
 
   ~GpuServiceImpl() override;
 
@@ -227,11 +225,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   // Information about general chrome feature support for the GPU.
   gpu::GpuFeatureInfo gpu_feature_info_;
-
-  // What we would have gotten if we haven't fallen back to SwiftShader or
-  // pure software (in the viz case).
-  gpu::GPUInfo gpu_info_for_hardware_gpu_;
-  gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu_;
 
   scoped_refptr<mojom::ThreadSafeGpuHostPtr> gpu_host_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;

@@ -114,9 +114,7 @@ GpuServiceImpl::GpuServiceImpl(
     std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     const gpu::GpuFeatureInfo& gpu_feature_info,
-    const gpu::GpuPreferences& gpu_preferences,
-    const gpu::GPUInfo& gpu_info_for_hardware_gpu,
-    const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu)
+    const gpu::GpuPreferences& gpu_preferences)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),
@@ -125,8 +123,6 @@ GpuServiceImpl::GpuServiceImpl(
       gpu_preferences_(gpu_preferences),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
-      gpu_info_for_hardware_gpu_(gpu_info_for_hardware_gpu),
-      gpu_feature_info_for_hardware_gpu_(gpu_feature_info_for_hardware_gpu),
       bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()),
       weak_ptr_factory_(this) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
@@ -194,9 +190,7 @@ void GpuServiceImpl::InitializeWithHost(
     gpu::SyncPointManager* sync_point_manager,
     base::WaitableEvent* shutdown_event) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  gpu_host->DidInitialize(gpu_info_, gpu_feature_info_,
-                          gpu_info_for_hardware_gpu_,
-                          gpu_feature_info_for_hardware_gpu_);
+  gpu_host->DidInitialize(gpu_info_, gpu_feature_info_);
   gpu_host_ =
       mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(), io_runner_);
   if (!in_host_process()) {

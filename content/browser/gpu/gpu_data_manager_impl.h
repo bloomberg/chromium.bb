@@ -81,34 +81,40 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void RemoveObserver(GpuDataManagerObserver* observer) override;
   void DisableHardwareAcceleration() override;
   bool HardwareAccelerationEnabled() const override;
+  void GetDisabledExtensions(std::string* disabled_extensions) const override;
 
   void RequestGpuSupportedRuntimeVersion() const;
   bool GpuProcessStartAllowed() const;
+
+  void GetDisabledWebGLExtensions(std::string* disabled_webgl_extensions) const;
 
   bool IsGpuFeatureInfoAvailable() const;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
 
   // Only update if the current GPUInfo is not finalized.  If blacklist is
   // loaded, run through blacklist and update blacklisted features.
-  void UpdateGpuInfo(const gpu::GPUInfo& gpu_info,
-                     const gpu::GPUInfo* optional_gpu_info_for_hardware_gpu);
+  void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
 
   // Update the GPU feature info. This updates the blacklist and enabled status
   // of GPU rasterization. In the future this will be used for more features.
-  void UpdateGpuFeatureInfo(
-      const gpu::GpuFeatureInfo& gpu_feature_info,
-      const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu);
+  void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
 
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
-
-  gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
-  gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
 
   // Insert switches into gpu process command line: kUseGL, etc.
   void AppendGpuCommandLine(base::CommandLine* command_line) const;
 
   // Update GpuPreferences based on blacklisting decisions.
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences) const;
+
+  // Returns the reasons for the latest run of blacklisting decisions.
+  // For the structure of returned value, see documentation for
+  // GpuBlacklist::GetBlacklistedReasons().
+  void GetBlacklistReasons(base::ListValue* reasons) const;
+
+  // Returns the workarounds that are applied to the current system as
+  // a vector of strings.
+  std::vector<std::string> GetDriverBugWorkarounds() const;
 
   void AddLogMessage(int level,
                      const std::string& header,
@@ -153,10 +159,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
 
   void BlockSwiftShader();
   bool SwiftShaderAllowed() const;
-
-  // Returns false if the latest GPUInfo gl_renderer is from SwiftShader or
-  // Disabled (in the viz case).
-  bool IsGpuProcessUsingHardwareGpu() const;
 
  private:
   friend class GpuDataManagerImplPrivate;

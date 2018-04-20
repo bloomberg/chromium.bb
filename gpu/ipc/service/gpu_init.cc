@@ -409,17 +409,14 @@ bool GpuInit::ShouldEnableSwiftShader(base::CommandLine* command_line,
 }
 
 void GpuInit::AdjustInfoToSwiftShader() {
-  gpu_info_for_hardware_gpu_ = gpu_info_;
-  gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
   gpu_feature_info_ = ComputeGpuFeatureInfoForSwiftShader();
-  gpu_info_.gl_vendor = "Google Inc.";
-  gpu_info_.gl_renderer = "Google SwiftShader";
-  gpu_info_.gl_version = "OpenGL ES 2.0 SwiftShader";
+  gpu_info_.gl_vendor = "Google Inc. (" + gpu_info_.gl_vendor + ")";
+  gpu_info_.gl_renderer = "Google SwiftShader (" + gpu_info_.gl_renderer + ")";
+  gpu_info_.gl_version =
+      "OpenGL ES 2.0 SwiftShader (" + gpu_info_.gl_version + ")";
 }
 
 void GpuInit::AdjustInfoToNoGpu() {
-  gpu_info_for_hardware_gpu_ = gpu_info_;
-  gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
   gpu_feature_info_ = ComputeGpuFeatureInfoWithNoGpu();
   gpu_info_.gl_vendor = "Disabled";
   gpu_info_.gl_renderer = "Disabled";

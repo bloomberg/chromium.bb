@@ -41,7 +41,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void BlacklistWebGLForTesting();
   gpu::GPUInfo GetGPUInfo() const;
-  gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
   bool GpuAccessAllowed(std::string* reason) const;
   bool GpuProcessStartAllowed() const;
   void RequestCompleteGpuInfoIfNeeded();
@@ -60,17 +59,17 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void BlockSwiftShader();
   bool SwiftShaderAllowed() const;
 
-  void UpdateGpuInfo(const gpu::GPUInfo& gpu_info,
-                     const gpu::GPUInfo* optional_gpu_info_for_hardware_gpu);
-  void UpdateGpuFeatureInfo(
-      const gpu::GpuFeatureInfo& gpu_feature_info,
-      const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu);
+  void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
+  void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
-  gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
 
   void AppendGpuCommandLine(base::CommandLine* command_line) const;
 
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences) const;
+
+  void GetBlacklistReasons(base::ListValue* reasons) const;
+
+  std::vector<std::string> GetDriverBugWorkarounds() const;
 
   void AddLogMessage(int level,
                      const std::string& header,
@@ -81,6 +80,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   std::unique_ptr<base::ListValue> GetLogMessages() const;
 
   void HandleGpuSwitch();
+
+  void GetDisabledExtensions(std::string* disabled_extensions) const;
+  void GetDisabledWebGLExtensions(std::string* disabled_webgl_extensions) const;
 
   void BlockDomainFrom3DAPIs(
       const GURL& url, GpuDataManagerImpl::DomainGuilt guilt);
@@ -102,8 +104,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
-
-  bool IsGpuProcessUsingHardwareGpu() const;
 
   virtual ~GpuDataManagerImplPrivate();
 
@@ -171,13 +171,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   bool complete_gpu_info_already_requested_;
 
+  // Eventually |blacklisted_features_| should be folded in to this.
   gpu::GpuFeatureInfo gpu_feature_info_;
-  gpu::GPUInfo gpu_info_;
 
-  // What we would have gotten if we haven't fallen back to SwiftShader or
-  // pure software (in the viz case).
-  gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu_;
-  gpu::GPUInfo gpu_info_for_hardware_gpu_;
+  gpu::GPUInfo gpu_info_;
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 

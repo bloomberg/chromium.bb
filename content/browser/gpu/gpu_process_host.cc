@@ -1030,9 +1030,7 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
 
 void GpuProcessHost::DidInitialize(
     const gpu::GPUInfo& gpu_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info,
-    const gpu::GPUInfo& gpu_info_for_hardware_gpu,
-    const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu) {
+    const gpu::GpuFeatureInfo& gpu_feature_info) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", true);
   status_ = SUCCESS;
 
@@ -1048,9 +1046,8 @@ void GpuProcessHost::DidInitialize(
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   // Update GpuFeatureInfo first, because UpdateGpuInfo() will notify all
   // listeners.
-  gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info,
-                                         gpu_feature_info_for_hardware_gpu);
-  gpu_data_manager->UpdateGpuInfo(gpu_info, &gpu_info_for_hardware_gpu);
+  gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info);
+  gpu_data_manager->UpdateGpuInfo(gpu_info);
   RunRequestGPUInfoCallbacks(gpu_data_manager->GetGPUInfo());
 }
 
