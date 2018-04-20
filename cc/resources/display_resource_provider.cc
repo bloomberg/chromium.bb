@@ -394,7 +394,6 @@ void DisplayResourceProvider::ReceiveFromChild(
       resource = InsertResource(
           local_id,
           viz::internal::Resource(it->size, viz::internal::Resource::DELEGATED,
-                                  viz::ResourceTextureHint::kDefault,
                                   viz::ResourceType::kBitmap, it->format,
                                   it->color_space));
       resource->has_shared_bitmap_id = true;
@@ -403,7 +402,6 @@ void DisplayResourceProvider::ReceiveFromChild(
       resource = InsertResource(
           local_id,
           viz::internal::Resource(it->size, viz::internal::Resource::DELEGATED,
-                                  viz::ResourceTextureHint::kDefault,
                                   viz::ResourceType::kTexture, it->format,
                                   it->color_space));
       resource->target = it->mailbox_holder.texture_target;

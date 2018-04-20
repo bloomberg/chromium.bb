@@ -132,24 +132,24 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
   *sync_token_for_mailbox_tebxture = kSyncTokenForMailboxTextureQuad;
 
   viz::ResourceId resource1 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(45, 5), viz::ResourceTextureHint::kDefault,
-      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
+      gfx::Size(45, 5), resource_provider->best_texture_format(),
+      gfx::ColorSpace::CreateSRGB());
   viz::ResourceId resource2 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(346, 61), viz::ResourceTextureHint::kDefault,
-      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
+      gfx::Size(346, 61), resource_provider->best_texture_format(),
+      gfx::ColorSpace::CreateSRGB());
   viz::ResourceId resource3 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(12, 134), viz::ResourceTextureHint::kDefault,
-      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
+      gfx::Size(12, 134), resource_provider->best_texture_format(),
+      gfx::ColorSpace::CreateSRGB());
   viz::ResourceId resource4 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(56, 12), viz::ResourceTextureHint::kDefault,
-      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
+      gfx::Size(56, 12), resource_provider->best_texture_format(),
+      gfx::ColorSpace::CreateSRGB());
   gfx::Size resource5_size(73, 26);
   viz::ResourceId resource5 = resource_provider->CreateGpuTextureResource(
-      resource5_size, viz::ResourceTextureHint::kDefault,
-      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
+      resource5_size, resource_provider->best_texture_format(),
+      gfx::ColorSpace::CreateSRGB());
   viz::ResourceId resource6 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(64, 92), viz::ResourceTextureHint::kDefault,
-      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
+      gfx::Size(64, 92), resource_provider->best_texture_format(),
+      gfx::ColorSpace::CreateSRGB());
 
   unsigned target = GL_TEXTURE_2D;
   gpu::Mailbox gpu_mailbox;
@@ -235,8 +235,7 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
   viz::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
     plane_resources[i] = resource_provider->CreateGpuTextureResource(
-        gfx::Size(20, 12), viz::ResourceTextureHint::kDefault,
-        resource_provider->best_texture_format(),
+        gfx::Size(20, 12), resource_provider->best_texture_format(),
         gfx::ColorSpace::CreateREC601());
   }
 
@@ -270,33 +269,26 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   *sync_token_for_mailbox_tebxture = kSyncTokenForMailboxTextureQuad;
 
   viz::ResourceId resource1 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(45, 5), viz::ResourceTextureHint::kDefault,
-      child_resource_provider->best_texture_format(),
+      gfx::Size(45, 5), child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   viz::ResourceId resource2 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(346, 61), viz::ResourceTextureHint::kDefault,
-      child_resource_provider->best_texture_format(),
+      gfx::Size(346, 61), child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   viz::ResourceId resource3 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(12, 134), viz::ResourceTextureHint::kDefault,
-      child_resource_provider->best_texture_format(),
+      gfx::Size(12, 134), child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   viz::ResourceId resource4 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(56, 12), viz::ResourceTextureHint::kDefault,
-      child_resource_provider->best_texture_format(),
+      gfx::Size(56, 12), child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   gfx::Size resource5_size(73, 26);
   viz::ResourceId resource5 = child_resource_provider->CreateGpuTextureResource(
-      resource5_size, viz::ResourceTextureHint::kDefault,
-      child_resource_provider->best_texture_format(),
+      resource5_size, child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   viz::ResourceId resource6 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(64, 92), viz::ResourceTextureHint::kDefault,
-      child_resource_provider->best_texture_format(),
+      gfx::Size(64, 92), child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   viz::ResourceId resource7 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(9, 14), viz::ResourceTextureHint::kDefault,
-      child_resource_provider->best_texture_format(),
+      gfx::Size(9, 14), child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
 
   unsigned target = GL_TEXTURE_2D;
@@ -323,8 +315,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   viz::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
     plane_resources[i] = child_resource_provider->CreateGpuTextureResource(
-        gfx::Size(20, 12), viz::ResourceTextureHint::kDefault,
-        child_resource_provider->best_texture_format(),
+        gfx::Size(20, 12), child_resource_provider->best_texture_format(),
         gfx::ColorSpace::CreateREC601());
     resource_ids_to_transfer.push_back(plane_resources[i]);
   }

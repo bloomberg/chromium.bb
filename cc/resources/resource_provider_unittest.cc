@@ -631,7 +631,7 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
   ASSERT_EQ(4U, pixel_size);
 
   viz::ResourceId id1 = no_token_resource_provider->CreateGpuTextureResource(
-      size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
+      size, format, gfx::ColorSpace());
 
   GLuint external_texture_id = child_context_->createExternalTexture();
 
@@ -720,7 +720,7 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
   viz::ResourceId ids[2];
   for (size_t i = 0; i < arraysize(ids); i++) {
     ids[i] = child_resource_provider_->CreateGpuTextureResource(
-        size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
+        size, format, gfx::ColorSpace());
     resource_ids_to_transfer.push_back(ids[i]);
   }
 
@@ -776,7 +776,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   viz::ResourceFormat format = viz::RGBA_8888;
 
   viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
-      size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
+      size, format, gfx::ColorSpace());
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
@@ -841,7 +841,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   viz::ResourceFormat format = viz::RGBA_8888;
 
   viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
-      size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
+      size, format, gfx::ColorSpace());
   child_resource_provider_->EnableReadLockFencesForTesting(id1);
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
@@ -897,11 +897,11 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   viz::ResourceFormat format = viz::RGBA_8888;
 
   viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
-      size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
+      size, format, gfx::ColorSpace());
   child_resource_provider_->EnableReadLockFencesForTesting(id1);
 
   viz::ResourceId id2 = child_resource_provider_->CreateGpuTextureResource(
-      size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
+      size, format, gfx::ColorSpace());
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
@@ -961,11 +961,11 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   viz::ResourceFormat format = viz::RGBA_8888;
 
   viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
-      size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
+      size, format, gfx::ColorSpace());
   child_resource_provider_->EnableReadLockFencesForTesting(id1);
 
   viz::ResourceId id2 = child_resource_provider_->CreateGpuTextureResource(
-      size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
+      size, format, gfx::ColorSpace());
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
