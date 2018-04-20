@@ -12,6 +12,7 @@ namespace app_list {
 struct InternalApp;
 }
 
+// A class that represents an internal app in launcher.
 class InternalAppItem : public ChromeAppListItem {
  public:
   static const char kItemType[];

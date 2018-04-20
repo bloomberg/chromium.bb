@@ -13,12 +13,25 @@
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
 namespace app_list {
+
+namespace {
+
+// Returns InternalApp by |app_id|.
+// Returns nullptr if |app_id| does not correspond to an internal app.
+const InternalApp* FindInternalApp(const std::string& app_id) {
+  for (const auto& app : GetInternalAppList()) {
+    if (app_id == app.app_id)
+      return &app;
+  }
+  return nullptr;
+}
+
+}  // namespace
 
 const std::vector<InternalApp>& GetInternalAppList() {
   static const base::NoDestructor<std::vector<InternalApp>> internal_app_list(
@@ -37,12 +50,19 @@ const std::vector<InternalApp>& GetInternalAppList() {
   return *internal_app_list;
 }
 
+bool IsInternalApp(const std::string& app_id) {
+  return !!FindInternalApp(app_id);
+}
+
+base::string16 GetInternalAppNameById(const std::string& app_id) {
+  const auto* app = FindInternalApp(app_id);
+  return app ? l10n_util::GetStringUTF16(app->name_string_resource_id)
+             : base::string16();
+}
+
 int GetIconResourceIdByAppId(const std::string& app_id) {
-  for (const auto& app : GetInternalAppList()) {
-    if (app_id == app.app_id)
-      return app.icon_resource_id;
-  }
-  return 0;
+  const auto* app = FindInternalApp(app_id);
+  return app ? app->icon_resource_id : 0;
 }
 
 void OpenInternalApp(const std::string& app_id, Profile* profile) {
@@ -53,7 +73,7 @@ void OpenInternalApp(const std::string& app_id, Profile* profile) {
   }
 }
 
-gfx::ImageSkia GetIconForResourceId(int resource_id) {
+gfx::ImageSkia GetIconForResourceId(int resource_id, int resource_size_in_dip) {
   if (resource_id == 0)
     return gfx::ImageSkia();
 
@@ -61,7 +81,7 @@ gfx::ImageSkia GetIconForResourceId(int resource_id) {
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   return gfx::ImageSkiaOperations::CreateResizedImage(
       *source, skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(kTileIconSize, kTileIconSize));
+      gfx::Size(resource_size_in_dip, resource_size_in_dip));
 }
 
 size_t GetNumberOfInternalAppsShowInLauncherForTest(std::string* apps_name) {

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "ash/display/display_configuration_controller.h"
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -4241,4 +4242,28 @@ TEST_F(ChromeLauncherControllerTest, ShelfItemImageSync) {
   EXPECT_EQ(added_count + 1, shelf_controller->added_count());
   EXPECT_EQ(updated_count + 3, shelf_controller->updated_count());
   EXPECT_EQ(gfx::Size(3, 3), shelf_controller->last_item().image.size());
+}
+
+// Test the Settings can be pinned and unpinned.
+TEST_F(ChromeLauncherControllerTest, PinUnpinInternalApp) {
+  InitLauncherController();
+  // The model should only contain the browser shortcut, app list and back
+  // button items.
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_FALSE(
+      launcher_controller_->IsAppPinned(app_list::kInternalAppIdSettings));
+
+  // Pin Settings.
+  launcher_controller_->PinAppWithID(app_list::kInternalAppIdSettings);
+  EXPECT_EQ(4, model_->item_count());
+  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[3].type);
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[3].status);
+  EXPECT_TRUE(
+      launcher_controller_->IsAppPinned(app_list::kInternalAppIdSettings));
+
+  // Unpin Settings.
+  launcher_controller_->UnpinAppWithID(app_list::kInternalAppIdSettings);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_FALSE(
+      launcher_controller_->IsAppPinned(app_list::kInternalAppIdSettings));
 }

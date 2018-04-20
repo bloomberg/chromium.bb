@@ -24,9 +24,9 @@ ArcAppWindow::ArcAppWindow(int task_id,
                            views::Widget* widget,
                            ArcAppWindowLauncherController* owner,
                            Profile* profile)
-    : task_id_(task_id),
+    : AppWindowBase(ash::ShelfID(app_shelf_id.app_id()), widget),
+      task_id_(task_id),
       app_shelf_id_(app_shelf_id),
-      widget_(widget),
       owner_(owner),
       profile_(profile) {
   SetDefaultAppIcon();
@@ -34,12 +34,6 @@ ArcAppWindow::ArcAppWindow(int task_id,
 
 ArcAppWindow::~ArcAppWindow() {
   ImageDecoder::Cancel(this);
-}
-
-void ArcAppWindow::SetController(
-    ArcAppWindowLauncherItemController* controller) {
-  DCHECK(!controller_ || !controller);
-  controller_ = controller;
 }
 
 void ArcAppWindow::SetFullscreenMode(FullScreenMode mode) {
@@ -73,99 +67,11 @@ void ArcAppWindow::SetDescription(
 }
 
 bool ArcAppWindow::IsActive() const {
-  return widget_->IsActive() && owner_->active_task_id() == task_id_;
-}
-
-bool ArcAppWindow::IsMaximized() const {
-  NOTREACHED();
-  return false;
-}
-
-bool ArcAppWindow::IsMinimized() const {
-  NOTREACHED();
-  return false;
-}
-
-bool ArcAppWindow::IsFullscreen() const {
-  NOTREACHED();
-  return false;
-}
-
-gfx::NativeWindow ArcAppWindow::GetNativeWindow() const {
-  return widget_->GetNativeWindow();
-}
-
-gfx::Rect ArcAppWindow::GetRestoredBounds() const {
-  NOTREACHED();
-  return gfx::Rect();
-}
-
-ui::WindowShowState ArcAppWindow::GetRestoredState() const {
-  NOTREACHED();
-  return ui::SHOW_STATE_NORMAL;
-}
-
-gfx::Rect ArcAppWindow::GetBounds() const {
-  NOTREACHED();
-  return gfx::Rect();
-}
-
-void ArcAppWindow::Show() {
-  widget_->Show();
-}
-
-void ArcAppWindow::ShowInactive() {
-  NOTREACHED();
-}
-
-void ArcAppWindow::Hide() {
-  NOTREACHED();
-}
-
-bool ArcAppWindow::IsVisible() const {
-  NOTREACHED();
-  return true;
+  return widget()->IsActive() && owner_->active_task_id() == task_id_;
 }
 
 void ArcAppWindow::Close() {
   arc::CloseTask(task_id_);
-}
-
-void ArcAppWindow::Activate() {
-  widget_->Activate();
-}
-
-void ArcAppWindow::Deactivate() {
-  NOTREACHED();
-}
-
-void ArcAppWindow::Maximize() {
-  NOTREACHED();
-}
-
-void ArcAppWindow::Minimize() {
-  widget_->Minimize();
-}
-
-void ArcAppWindow::Restore() {
-  NOTREACHED();
-}
-
-void ArcAppWindow::SetBounds(const gfx::Rect& bounds) {
-  NOTREACHED();
-}
-
-void ArcAppWindow::FlashFrame(bool flash) {
-  NOTREACHED();
-}
-
-bool ArcAppWindow::IsAlwaysOnTop() const {
-  NOTREACHED();
-  return false;
-}
-
-void ArcAppWindow::SetAlwaysOnTop(bool always_on_top) {
-  NOTREACHED();
 }
 
 void ArcAppWindow::OnIconUpdated(ArcAppIcon* icon) {
@@ -191,7 +97,7 @@ void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
     return;
   }
   exo::ShellSurfaceBase* shell_surface = static_cast<exo::ShellSurfaceBase*>(
-      widget_->widget_delegate()->GetContentsView());
+      widget()->widget_delegate()->GetContentsView());
   if (!shell_surface)
     return;
   shell_surface->SetIcon(icon);

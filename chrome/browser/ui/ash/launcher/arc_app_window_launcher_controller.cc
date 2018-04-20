@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -512,7 +513,7 @@ void ArcAppWindowLauncherController::UnregisterApp(
   if (!app_window)
     return;
 
-  ArcAppWindowLauncherItemController* controller = app_window->controller();
+  AppWindowLauncherItemController* controller = app_window->controller();
   if (controller)
     controller->RemoveWindow(app_window);
   app_window->SetController(nullptr);

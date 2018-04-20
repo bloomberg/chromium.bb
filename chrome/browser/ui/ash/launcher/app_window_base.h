@@ -2,28 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_CROSTINI_APP_WINDOW_H_
-#define CHROME_BROWSER_UI_ASH_LAUNCHER_CROSTINI_APP_WINDOW_H_
+#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_BASE_H_
+#define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_BASE_H_
 
 #include <string>
-#include <vector>
 
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "ui/base/base_window.h"
 
-class CrostiniAppWindowShelfItemController;
+class AppWindowLauncherItemController;
 
 namespace views {
 class Widget;
 }
 
-// A ui::BaseWindow for a Chrome OS launcher to control Crostini applications.
-class CrostiniAppWindow final : public ui::BaseWindow {
+// A ui::BaseWindow for a Chrome OS shelf to control CrOS apps, e.g. ARC++,
+// Crostini, and interal apps.
+class AppWindowBase : public ui::BaseWindow {
  public:
-  CrostiniAppWindow(const ash::ShelfID& shelf_id, views::Widget* widget);
+  AppWindowBase(const ash::ShelfID& shelf_id, views::Widget* widget);
 
-  void SetController(CrostiniAppWindowShelfItemController* controller);
+  virtual ~AppWindowBase() {}
+
+  void SetController(AppWindowLauncherItemController* controller);
 
   const std::string& app_id() const { return shelf_id_.app_id; }
 
@@ -33,9 +35,7 @@ class CrostiniAppWindow final : public ui::BaseWindow {
 
   views::Widget* widget() const { return widget_; }
 
-  CrostiniAppWindowShelfItemController* controller() const {
-    return controller_;
-  }
+  AppWindowLauncherItemController* controller() const { return controller_; }
 
   // ui::BaseWindow:
   bool IsActive() const override;
@@ -62,13 +62,11 @@ class CrostiniAppWindow final : public ui::BaseWindow {
   void SetAlwaysOnTop(bool always_on_top) override;
 
  private:
-  // Keeps shelf id.
   ash::ShelfID shelf_id_;
-  // Unowned pointers
   views::Widget* const widget_;
-  CrostiniAppWindowShelfItemController* controller_ = nullptr;
+  AppWindowLauncherItemController* controller_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(CrostiniAppWindow);
+  DISALLOW_COPY_AND_ASSIGN(AppWindowBase);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_CROSTINI_APP_WINDOW_H_
+#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_BASE_H_

@@ -18,7 +18,7 @@ class SettingsWindowObserver : public chrome::SettingsWindowManagerObserver {
   SettingsWindowObserver();
   ~SettingsWindowObserver() override;
 
-  // SettingsWindowManagerObserver:
+  // chrome::SettingsWindowManagerObserver:
   void OnNewSettingsWindow(Browser* settings_browser) override;
 
  private:

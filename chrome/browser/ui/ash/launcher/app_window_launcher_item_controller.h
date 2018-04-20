@@ -32,6 +32,7 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
  public:
   using WindowList = std::list<ui::BaseWindow*>;
 
+  explicit AppWindowLauncherItemController(const ash::ShelfID& shelf_id);
   ~AppWindowLauncherItemController() override;
 
   void AddWindow(ui::BaseWindow* window);
@@ -66,9 +67,6 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   size_t window_count() const { return windows_.size(); }
 
   const WindowList& windows() const { return windows_; }
-
- protected:
-  explicit AppWindowLauncherItemController(const ash::ShelfID& shelf_id);
 
  private:
   // Returns the action performed. Should be one of SHELF_ACTION_NONE,

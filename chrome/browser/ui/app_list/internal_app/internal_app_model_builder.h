@@ -9,11 +9,12 @@
 
 class AppListControllerDelegate;
 
-// This class populates and maintains Crostini apps.
+// This class populates and maintains internal apps.
 class InternalAppModelBuilder : public AppListModelBuilder {
  public:
   explicit InternalAppModelBuilder(AppListControllerDelegate* controller);
-  ~InternalAppModelBuilder() override;
+
+  ~InternalAppModelBuilder() override = default;
 
  private:
   // AppListModelBuilder:

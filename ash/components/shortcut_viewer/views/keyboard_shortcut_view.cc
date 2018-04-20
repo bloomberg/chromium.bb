@@ -127,7 +127,7 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     const ash::ShelfID shelf_id(app_list::kInternalAppIdKeyboardShortcutViewer);
     window->SetProperty(ash::kShelfIDKey,
                         new std::string(shelf_id.Serialize()));
-    window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
+    window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
 
     // We don't want the KSV window to have a title (per design), however the
     // shelf uses the window title to set the shelf item's tooltip text. The
