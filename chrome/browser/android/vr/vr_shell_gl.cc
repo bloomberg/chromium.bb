@@ -64,10 +64,10 @@ constexpr float kZNear = 0.1f;
 constexpr float kZFar = 10000.0f;
 
 // GVR buffer indices for use with viewport->SetSourceBufferIndex
-// or frame.BindBuffer. We use one for multisampled contents (Browser UI), and
-// one for non-multisampled content (webVR or quad layer).
-constexpr int kMultiSampleBuffer = 0;
-constexpr int kNoMultiSampleBuffer = 1;
+// or frame.BindBuffer. We use one for world content (with reprojection)
+// including main VrShell and WebVR content plus world-space UI.
+constexpr int kFramePrimaryBuffer = 0;
+constexpr int kFrameWebVrBrowserUiBuffer = 1;
 
 // When display UI on top of WebVR, we use a seperate buffer. Normally, the
 // buffer is set to recommended size to get best visual (i.e the buffer for
@@ -119,23 +119,15 @@ constexpr base::TimeDelta kWebVrSlowAcquireThreshold =
 // Drop at most one frame in MaxDropRate.
 constexpr int kWebVrUnstuffMaxDropRate = 7;
 
-constexpr float kRedrawSceneAngleDeltaDegrees = 1.0;
+constexpr int kNumSamplesPerPixelBrowserUi = 2;
+constexpr int kNumSamplesPerPixelWebVr = 1;
 
-// Taken from the GVR source code, this is the default vignette border fraction.
-constexpr float kContentVignetteBorder = 0.04;
-constexpr float kContentVignetteScale = 1.0 + (kContentVignetteBorder * 2.0);
-constexpr gvr::Rectf kContentUv = {0, 1.0, 0, 1.0};
+constexpr float kRedrawSceneAngleDeltaDegrees = 1.0;
 
 // If we're not using the SurfaceTexture, use this matrix instead of
 // webvr_surface_texture_uv_transform_ for drawing to GVR.
 constexpr float kWebVrIdentityUvTransform[16] = {1, 0, 0, 0, 0, 1, 0, 0,
                                                  0, 0, 1, 0, 0, 0, 0, 1};
-
-// TODO(mthiesse, https://crbug.com/834985): We should be reading this transform
-// from the surface, but it appears to be wrong for a few frames and the content
-// window ends up upside-down for a few frames...
-constexpr float kContentUvTransform[16] = {1, 0, 0, 0, 0, -1, 0, 0,
-                                           0, 0, 1, 0, 0, 1,  0, 1};
 
 gfx::Transform PerspectiveMatrixFromView(const gvr::Rectf& fov,
                                          float z_near,
@@ -392,13 +384,13 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   unsigned int textures[4];
   glGenTextures(4, textures);
   webvr_texture_id_ = textures[0];
-  content_texture_id_ = textures[1];
-  content_overlay_texture_id_ = textures[2];
+  unsigned int content_texture_id = textures[1];
+  unsigned int content_overlay_texture_id = textures[2];
   unsigned int ui_texture_id = textures[3];
 
-  content_surface_texture_ = gl::SurfaceTexture::Create(content_texture_id_);
+  content_surface_texture_ = gl::SurfaceTexture::Create(content_texture_id);
   content_overlay_surface_texture_ =
-      gl::SurfaceTexture::Create(content_overlay_texture_id_);
+      gl::SurfaceTexture::Create(content_overlay_texture_id);
   ui_surface_texture_ = gl::SurfaceTexture::Create(ui_texture_id);
   webvr_surface_texture_ = gl::SurfaceTexture::Create(webvr_texture_id_);
 
@@ -442,8 +434,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     InitializeRenderer();
 
   ui_->OnGlInitialized(
-      content_texture_id_, UiElementRenderer::kTextureLocationExternal,
-      content_overlay_texture_id_, UiElementRenderer::kTextureLocationExternal,
+      content_texture_id, UiElementRenderer::kTextureLocationExternal,
+      content_overlay_texture_id, UiElementRenderer::kTextureLocationExternal,
       ui_texture_id, true);
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
@@ -1106,22 +1098,28 @@ void VrShellGl::InitializeRenderer() {
   device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
   webxr_ = std::make_unique<WebXrPresentationState>();
 
-  // Create multisampled and non-multisampled buffers.
+  // For kFramePrimaryBuffer (primary VrShell and WebVR content)
   specs_.push_back(gvr_api_->CreateBufferSpec());
   specs_.push_back(gvr_api_->CreateBufferSpec());
 
-  gvr::Sizei default_size = specs_[0].GetSize();
-  render_size_default_ = {default_size.width, default_size.height};
-  render_size_webvr_ui_ = {default_size.width / kWebVrBrowserUiSizeFactor,
-                           default_size.height / kWebVrBrowserUiSizeFactor};
+  gvr::Sizei render_size_default = specs_[kFramePrimaryBuffer].GetSize();
+  render_size_default_ = {render_size_default.width,
+                          render_size_default.height};
 
-  specs_[kMultiSampleBuffer].SetSamples(2);
-  specs_[kMultiSampleBuffer].SetDepthStencilFormat(
+  specs_[kFramePrimaryBuffer].SetSamples(
+      web_vr_mode_ ? kNumSamplesPerPixelWebVr : kNumSamplesPerPixelBrowserUi);
+  specs_[kFramePrimaryBuffer].SetDepthStencilFormat(
       GVR_DEPTH_STENCIL_FORMAT_NONE);
 
-  specs_[kNoMultiSampleBuffer].SetSamples(1);
-  specs_[kNoMultiSampleBuffer].SetDepthStencilFormat(
+  specs_[kFrameWebVrBrowserUiBuffer].SetSize(
+      {render_size_default.width / kWebVrBrowserUiSizeFactor,
+       render_size_default.height / kWebVrBrowserUiSizeFactor});
+  specs_[kFrameWebVrBrowserUiBuffer].SetSamples(2);
+  specs_[kFrameWebVrBrowserUiBuffer].SetDepthStencilFormat(
       GVR_DEPTH_STENCIL_FORMAT_NONE);
+  render_size_webvr_ui_ = {
+      render_size_default.width / kWebVrBrowserUiSizeFactor,
+      render_size_default.height / kWebVrBrowserUiSizeFactor};
 
   swap_chain_ = gvr_api_->CreateSwapChain(specs_);
 
@@ -1147,18 +1145,12 @@ void VrShellGl::UpdateViewports() {
   // own UV bounds.
   viewport_list.GetBufferViewport(0, &webvr_viewport_.left);
   viewport_list.GetBufferViewport(1, &webvr_viewport_.right);
-  // Set up Content UI viewports. Content will be shown as a quad layer to get
-  // the best possible quality.
-  viewport_list.GetBufferViewport(0, &content_underlay_viewport_.left);
-  viewport_list.GetBufferViewport(1, &content_underlay_viewport_.right);
   viewport_list.GetBufferViewport(0, &webvr_overlay_viewport_.left);
   viewport_list.GetBufferViewport(1, &webvr_overlay_viewport_.right);
 
-  main_viewport_.SetSourceBufferIndex(kMultiSampleBuffer);
-  webvr_overlay_viewport_.SetSourceBufferIndex(kMultiSampleBuffer);
-  webvr_viewport_.SetSourceBufferIndex(kNoMultiSampleBuffer);
-  content_underlay_viewport_.SetSourceBufferIndex(kNoMultiSampleBuffer);
-  content_underlay_viewport_.SetSourceUv(kContentUv);
+  main_viewport_.SetSourceBufferIndex(kFramePrimaryBuffer);
+  webvr_viewport_.SetSourceBufferIndex(kFramePrimaryBuffer);
+  webvr_overlay_viewport_.SetSourceBufferIndex(kFrameWebVrBrowserUiBuffer);
 }
 
 void VrShellGl::UpdateController(const RenderInfo& render_info,
@@ -1344,30 +1336,34 @@ bool VrShellGl::ResizeForWebVR(int16_t frame_index) {
     CreateOrResizeWebVRSurface(bounds.source_size);
     pending_bounds_.pop();
   }
+  if (render_info_primary_.surface_texture_size != webvr_surface_size_) {
+    if (!webvr_surface_size_.width()) {
+      // Don't try to resize to 0x0 pixels, drop frames until we get a valid
+      // size.
+      return false;
+    }
 
-  // Resize the webvr overlay buffer, which may have been used by the content
-  // quad buffer previously.
-  gvr::Sizei size = swap_chain_.GetBufferSize(kMultiSampleBuffer);
-  gfx::Size target_size = render_size_webvr_ui_;
-  if (size.width != target_size.width() ||
-      size.height != target_size.height()) {
-    swap_chain_.ResizeBuffer(kMultiSampleBuffer,
-                             {target_size.width(), target_size.height()});
-  }
-
-  size = swap_chain_.GetBufferSize(kNoMultiSampleBuffer);
-  target_size = webvr_surface_size_;
-  if (!target_size.width()) {
-    // Don't try to resize to 0x0 pixels, drop frames until we get a valid
-    // size.
-    return false;
-  }
-  if (size.width != target_size.width() ||
-      size.height != target_size.height()) {
-    swap_chain_.ResizeBuffer(kNoMultiSampleBuffer,
-                             {target_size.width(), target_size.height()});
+    render_info_primary_.surface_texture_size = webvr_surface_size_;
+    DVLOG(1) << __FUNCTION__ << ": resize GVR to "
+             << webvr_surface_size_.width() << "x"
+             << webvr_surface_size_.height();
+    swap_chain_.ResizeBuffer(
+        kFramePrimaryBuffer,
+        {webvr_surface_size_.width(), webvr_surface_size_.height()});
   }
   return true;
+}
+
+void VrShellGl::UpdateSamples() {
+  // It is illegal to call SetSamples on the swap change if we have an acquired
+  // frame outstanding. Ensure that this is not the case here.
+  CHECK(!acquired_frame_);
+  int required_samples = ShouldDrawWebVr() ? kNumSamplesPerPixelWebVr
+                                           : kNumSamplesPerPixelBrowserUi;
+  if (specs_[kFramePrimaryBuffer].GetSamples() != required_samples) {
+    specs_[kFramePrimaryBuffer].SetSamples(required_samples);
+    swap_chain_ = gvr_api_->CreateSwapChain(specs_);
+  }
 }
 
 void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
@@ -1394,28 +1390,6 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
     eye_info.proj_matrix =
         PerspectiveMatrixFromView(vp.GetSourceFov(), kZNear, kZFar);
     eye_info.view_proj_matrix = eye_info.proj_matrix * eye_info.view_matrix;
-  }
-}
-
-void VrShellGl::UpdateContentViewportTransforms(
-    const gfx::Transform& head_pose) {
-  gfx::Transform quad_transform = ui_->GetContentWorldSpaceTransform();
-  // The Texture Quad renderer draws quads that extend from -0.5 to 0.5 in X and
-  // Y, while Daydream's quad layers are implicitly -1.0 to 1.0. Thus to ensure
-  // things line up we have to scale by 0.5.
-  quad_transform.Scale3d(0.5f * kContentVignetteScale,
-                         0.5f * kContentVignetteScale, 1.0f);
-
-  for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
-    CameraModel camera = (eye == GVR_LEFT_EYE) ? render_info_.left_eye_model
-                                               : render_info_.right_eye_model;
-    gfx::Transform transform = camera.view_matrix * quad_transform;
-    gvr::Mat4f viewport_transform;
-    TransformToGvrMat(transform, &viewport_transform);
-    gvr::BufferViewport& viewport = (eye == GVR_LEFT_EYE)
-                                        ? content_underlay_viewport_.left
-                                        : content_underlay_viewport_.right;
-    viewport.SetTransform(viewport_transform);
   }
 }
 
@@ -1461,6 +1435,29 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 
   CHECK(!acquired_frame_);
 
+  UpdateViewports();
+
+  // We may need to recreate the swap chain if we've switched between web vr and
+  // browsing mode.
+  UpdateSamples();
+
+  // If needed, resize the primary buffer for use with WebVR. Resizing
+  // needs to happen before acquiring a frame.
+  if (is_webvr_frame) {
+    if (!ResizeForWebVR(frame_index)) {
+      // We don't have a valid size yet, can't draw.
+      return;
+    }
+  } else {
+    if (render_info_primary_.surface_texture_size != render_size_default_) {
+      render_info_primary_.surface_texture_size = render_size_default_;
+      swap_chain_.ResizeBuffer(
+          kFramePrimaryBuffer,
+          {render_info_primary_.surface_texture_size.width(),
+           render_info_primary_.surface_texture_size.height()});
+    }
+  }
+
   // When using async reprojection, we need to know which pose was
   // used in the WebVR app for drawing this frame and supply it when
   // submitting. Technically we don't need a pose if not reprojecting,
@@ -1469,24 +1466,24 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   if (is_webvr_frame && webxr_->HaveProcessingFrame()) {
     // Copy into render info for overlay UI. WebVR doesn't use this.
     WebXrFrame* frame = webxr_->GetProcessingFrame();
-    render_info_.head_pose = frame->head_pose;
+    render_info_primary_.head_pose = frame->head_pose;
   } else {
-    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(),
-                                                 &render_info_.head_pose);
+    device::GvrDelegate::GetGvrPoseWithNeckModel(
+        gvr_api_.get(), &render_info_primary_.head_pose);
   }
 
   // Update the render position of all UI elements (including desktop).
   TRACE_EVENT_BEGIN0("gpu", "SceneUpdate");
   base::TimeTicks scene_start = base::TimeTicks::Now();
   bool scene_changed =
-      ui_->scene()->OnBeginFrame(current_time, render_info_.head_pose);
+      ui_->scene()->OnBeginFrame(current_time, render_info_primary_.head_pose);
 
   // WebVR handles controller input in OnVsync.
   base::TimeDelta controller_time = base::TimeDelta();
   if (!is_webvr_frame) {
     TRACE_EVENT0("gpu", "Controller");
     base::TimeTicks controller_start = base::TimeTicks::Now();
-    UpdateController(render_info_, current_time);
+    UpdateController(render_info_primary_, current_time);
     controller_time = base::TimeTicks::Now() - controller_start;
     ui_controller_update_time_.AddSample(controller_time);
   }
@@ -1504,9 +1501,9 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   bool redraw_needed = controller_dirty || scene_changed || textures_changed ||
                        content_frame_available_;
 
-  bool head_moved =
-      HeadMoveExceedsThreshold(last_used_head_pose_, render_info_.head_pose,
-                               kRedrawSceneAngleDeltaDegrees);
+  bool head_moved = HeadMoveExceedsThreshold(last_used_head_pose_,
+                                             render_info_primary_.head_pose,
+                                             kRedrawSceneAngleDeltaDegrees);
 
   bool dirty = is_webvr_frame || head_moved || redraw_needed;
 
@@ -1517,33 +1514,6 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 
   if (!dirty && ui_->SkipsRedrawWhenNotDirty())
     return;
-
-  UpdateViewports();
-
-  // If needed, resize the primary buffer for use with WebVR. Resizing
-  // needs to happen before acquiring a frame.
-  if (is_webvr_frame) {
-    if (!ResizeForWebVR(frame_index)) {
-      // We don't have a valid size yet, can't draw.
-      return;
-    }
-  } else {
-    gvr::Sizei size = swap_chain_.GetBufferSize(kMultiSampleBuffer);
-    gfx::Size target_size = render_size_default_;
-    if (size.width != target_size.width() ||
-        size.height != target_size.height()) {
-      swap_chain_.ResizeBuffer(kMultiSampleBuffer,
-                               {target_size.width(), target_size.height()});
-    }
-    size = swap_chain_.GetBufferSize(kNoMultiSampleBuffer);
-    target_size = {content_tex_buffer_size_.width() * kContentVignetteScale,
-                   content_tex_buffer_size_.height() * kContentVignetteScale};
-    if (size.width != target_size.width() ||
-        size.height != target_size.height()) {
-      swap_chain_.ResizeBuffer(kNoMultiSampleBuffer,
-                               {target_size.width(), target_size.height()});
-    }
-  }
 
   TRACE_EVENT_BEGIN0("gpu", "VrShellGl::AcquireFrame");
   base::TimeTicks acquire_start = base::TimeTicks::Now();
@@ -1559,52 +1529,19 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
                                       base::TimeTicks current_time) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawIntoAcquiredFrame", "frame", frame_index);
-  last_used_head_pose_ = render_info_.head_pose;
+  last_used_head_pose_ = render_info_primary_.head_pose;
+
+  UpdateEyeInfos(render_info_primary_.head_pose, main_viewport_,
+                 render_info_primary_.surface_texture_size,
+                 &render_info_primary_);
+  ui_->OnProjMatrixChanged(render_info_primary_.left_eye_model.proj_matrix);
 
   bool is_webvr_frame = frame_index >= 0;
   DCHECK(!is_webvr_frame || webxr_->HaveProcessingFrame());
 
-  gvr::Sizei primary_render_size =
-      is_webvr_frame ? swap_chain_.GetBufferSize(kNoMultiSampleBuffer)
-                     : swap_chain_.GetBufferSize(kMultiSampleBuffer);
-  UpdateEyeInfos(render_info_.head_pose, main_viewport_,
-                 {primary_render_size.width, primary_render_size.height},
-                 &render_info_);
-  ui_->OnProjMatrixChanged(render_info_.left_eye_model.proj_matrix);
-
-  // Content quad can't have transparency when using the quad layer because we
-  // can't blend with the quad layer.
-  bool use_quad_layer = ui_->IsContentVisibleAndOpaque();
-
-  // We can't use webvr and the quad layer at the same time because they
-  // currently share the same non-multisampled buffer.
-  DCHECK(!is_webvr_frame || !use_quad_layer);
-
   viewport_list_ = gvr_api_->CreateEmptyBufferViewportList();
 
-  ui_->SetContentUsesQuadLayer(use_quad_layer);
-  if (use_quad_layer) {
-    // This should be the first layer as it needs to be rendered behind the
-    // rest of the browser UI, which punches a transparent hole through to this
-    // layer.
-    DCHECK(viewport_list_.GetSize() == 0);
-
-    UpdateContentViewportTransforms(render_info_.head_pose);
-
-    viewport_list_.SetBufferViewport(viewport_list_.GetSize(),
-                                     content_underlay_viewport_.left);
-    viewport_list_.SetBufferViewport(viewport_list_.GetSize(),
-                                     content_underlay_viewport_.right);
-
-    // Draw the main browser content to a quad layer.
-    acquired_frame_.BindBuffer(kNoMultiSampleBuffer);
-
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    DrawContentQuad(!ui_->IsContentOverlayTextureEmpty());
-
-    acquired_frame_.Unbind();
-  }
+  acquired_frame_.BindBuffer(kFramePrimaryBuffer);
 
   // We're redrawing over the entire viewport, but it's generally more
   // efficient on mobile tiling GPUs to clear anyway as a hint that
@@ -1614,30 +1551,25 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   // it's not supported on older devices such as Nexus 5X.
   glClear(GL_COLOR_BUFFER_BIT);
 
+  DCHECK(viewport_list_.GetSize() == 0);
   if (is_webvr_frame) {
-    DCHECK(viewport_list_.GetSize() == 0);
     viewport_list_.SetBufferViewport(0, webvr_viewport_.left);
     viewport_list_.SetBufferViewport(1, webvr_viewport_.right);
-    acquired_frame_.BindBuffer(kNoMultiSampleBuffer);
     DrawWebVr();
-    acquired_frame_.Unbind();
   } else {
-    DCHECK(viewport_list_.GetSize() <= 2);
-    viewport_list_.SetBufferViewport(viewport_list_.GetSize(),
-                                     main_viewport_.left);
-    viewport_list_.SetBufferViewport(viewport_list_.GetSize(),
-                                     main_viewport_.right);
-    acquired_frame_.BindBuffer(kMultiSampleBuffer);
+    viewport_list_.SetBufferViewport(0, main_viewport_.left);
+    viewport_list_.SetBufferViewport(1, main_viewport_.right);
+
     // At this point, we draw non-WebVR content that could, potentially, fill
     // the viewport.  NB: this is not just 2d browsing stuff, we may have a
     // splash screen showing in WebVR mode that must also fill the screen. That
     // said, while the splash screen is up ShouldDrawWebVr() will return false,
     // and we only draw UI frames, not WebVR frames.
-    ui_->ui_renderer()->Draw(render_info_);
-    acquired_frame_.Unbind();
+    ui_->ui_renderer()->Draw(render_info_primary_);
   }
 
   content_frame_available_ = false;
+  acquired_frame_.Unbind();
 
   std::vector<const UiElement*> overlay_elements;
   if (is_webvr_frame) {
@@ -1649,7 +1581,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   if (!overlay_elements.empty() && is_webvr_frame) {
     // WebVR content may use an arbitrary size buffer. We need to draw browser
     // UI on a different buffer to make sure that our UI has enough resolution.
-    acquired_frame_.BindBuffer(kMultiSampleBuffer);
+    acquired_frame_.BindBuffer(kFrameWebVrBrowserUiBuffer);
 
     // Update recommended fov and uv per frame.
     const gvr::Rectf& fov_recommended_left = main_viewport_.left.GetSourceFov();
@@ -1659,7 +1591,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     // Set render info to recommended setting. It will be used as our base for
     // optimization.
     RenderInfo render_info_webvr_browser_ui;
-    render_info_webvr_browser_ui.head_pose = render_info_.head_pose;
+    render_info_webvr_browser_ui.head_pose = render_info_primary_.head_pose;
     webvr_overlay_viewport_.left.SetSourceFov(fov_recommended_left);
     webvr_overlay_viewport_.right.SetSourceFov(fov_recommended_right);
 
@@ -1692,12 +1624,12 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   // GVR submit needs the exact head pose that was used for rendering.
   gfx::Transform submit_head_pose;
   if (is_webvr_frame) {
-    // Don't use render_info_.head_pose here, that may have been
+    // Don't use render_info_primary_.head_pose here, that may have been
     // overwritten by OnVSync's controller handling. We need the pose that was
     // sent to JS.
     submit_head_pose = webxr_->GetProcessingFrame()->head_pose;
   } else {
-    submit_head_pose = render_info_.head_pose;
+    submit_head_pose = render_info_primary_.head_pose;
   }
   std::unique_ptr<gl::GLFenceEGL> fence = nullptr;
   if (is_webvr_frame && surfaceless_rendering_) {
@@ -1951,40 +1883,11 @@ void VrShellGl::DrawWebVr() {
 
     // Use an identity UV transform, the image is already oriented correctly.
     ui_->ui_element_renderer()->DrawWebVr(buffer->local_texture,
-                                          kWebVrIdentityUvTransform, 0, 0);
+                                          kWebVrIdentityUvTransform);
   } else {
     // Apply the UV transform from the SurfaceTexture, that's usually a Y flip.
-    ui_->ui_element_renderer()->DrawWebVr(
-        webvr_texture_id_, webvr_surface_texture_uv_transform_, 0, 0);
-  }
-}
-
-void VrShellGl::DrawContentQuad(bool draw_overlay_texture) {
-  // Add a 2 pixel border to avoid aliasing issues at the edge of the texture.
-  constexpr float kBorder = 2;
-  TRACE_EVENT0("gpu", "VrShellGl::DrawContentQuad");
-  // Don't need face culling, depth testing, blending, etc. Turn it all off.
-  glDisable(GL_CULL_FACE);
-  glDisable(GL_SCISSOR_TEST);
-  glDisable(GL_POLYGON_OFFSET_FILL);
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  glViewport(
-      content_tex_buffer_size_.width() * kContentVignetteBorder - kBorder,
-      content_tex_buffer_size_.height() * kContentVignetteBorder - kBorder,
-      content_tex_buffer_size_.width() + 2 * kBorder,
-      content_tex_buffer_size_.height() + 2 * kBorder);
-  ui_->ui_element_renderer()->DrawWebVr(
-      content_texture_id_, kContentUvTransform,
-      kBorder / content_tex_buffer_size_.width(),
-      kBorder / content_tex_buffer_size_.height());
-  if (draw_overlay_texture) {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    ui_->ui_element_renderer()->DrawWebVr(
-        content_overlay_texture_id_, kContentUvTransform,
-        kBorder / content_tex_buffer_size_.width(),
-        kBorder / content_tex_buffer_size_.height());
+    ui_->ui_element_renderer()->DrawWebVr(webvr_texture_id_,
+                                          webvr_surface_texture_uv_transform_);
   }
 }
 
@@ -2211,9 +2114,9 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     // DrawFrame.
     TRACE_EVENT0("gpu", "Controller");
     base::TimeTicks controller_start = base::TimeTicks::Now();
-    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(),
-                                                 &render_info_.head_pose);
-    UpdateController(render_info_, frame_time);
+    device::GvrDelegate::GetGvrPoseWithNeckModel(
+        gvr_api_.get(), &render_info_primary_.head_pose);
+    UpdateController(render_info_primary_, frame_time);
     if (report_webxr_input_) {
       input_states_.push_back(controller_->GetInputSourceState());
     }

@@ -52,7 +52,7 @@ void ContentElement::Render(UiElementRenderer* renderer,
   int texture_id = texture_id_;
   bool blend = true;
   if (uses_quad_layer_) {
-    texture_id = 0;
+    texture_id = overlay_texture_id_;
     overlay_texture_id = 0;
     blend = false;
   }
@@ -154,10 +154,6 @@ void ContentElement::SetOverlayTextureLocation(
 
 void ContentElement::SetOverlayTextureEmpty(bool empty) {
   overlay_texture_non_empty_ = !empty;
-}
-
-bool ContentElement::GetOverlayTextureEmpty() {
-  return !overlay_texture_non_empty_;
 }
 
 void ContentElement::SetProjectionMatrix(const gfx::Transform& matrix) {

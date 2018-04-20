@@ -142,6 +142,7 @@ class UiInputManagerContentTest : public UiTest {
         1.0f, static_cast<float>(kWindowSize.width()) / kWindowSize.height());
 
     render_info.head_pose = head_pose_;
+    render_info.surface_texture_size = kWindowSize;
     render_info.left_eye_model.viewport = gfx::Rect(kWindowSize);
     render_info.left_eye_model.view_matrix = head_pose_;
     render_info.left_eye_model.proj_matrix = projection_matrix;
