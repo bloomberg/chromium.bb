@@ -130,12 +130,14 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
   std::string result;
   result += GetStringFromID(STRING_FIELDS) + ": " + "\n";
   for (const auto& field : form_structure) {
-    std::string field_info = ScrubElementID(field->name) + ": " +
-                             ScrubNonDigit(field->FieldSignatureAsStr()) +
-                             ", " + ScrubElementID(field->form_control_type);
+    std::string field_info =
+        ScrubElementID(field->name) + ": " +
+        ScrubNonDigit(field->FieldSignatureAsStr()) +
+        ", type=" + ScrubElementID(field->form_control_type);
 
     if (!field->autocomplete_attribute.empty())
-      field_info += ", " + ScrubElementID(field->autocomplete_attribute);
+      field_info +=
+          ", autocomplete=" + ScrubElementID(field->autocomplete_attribute);
 
     if (!field->Type().IsUnknown())
       field_info += ", SERVER_PREDICTION: " + field->Type().ToString();
@@ -171,6 +173,42 @@ void BrowserSavePasswordProgressLogger::LogSuccessfulSubmissionIndicatorEvent(
   std::string message =
       GetStringFromID(STRING_SUCCESSFUL_SUBMISSION_INDICATOR_EVENT) + ": " +
       submission_event_string_stream.str();
+  SendLog(message);
+}
+
+void BrowserSavePasswordProgressLogger::LogFormData(
+    StringID label,
+    const autofill::FormData& form) {
+  std::string message = GetStringFromID(label) + ": {\n";
+  message +=
+      GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(form.origin) + "\n";
+  message +=
+      GetStringFromID(STRING_ACTION) + ": " + ScrubURL(form.action) + "\n";
+  if (form.main_frame_origin.GetURL().is_valid())
+    message += GetStringFromID(STRING_MAIN_FRAME_ORIGIN) + ": " +
+               ScrubURL(form.main_frame_origin.GetURL()) + "\n";
+  message += GetStringFromID(STRING_FORM_NAME) + ": " +
+             ScrubElementID(form.name) + "\n";
+
+  message += GetStringFromID(STRING_IS_FORM_TAG) + ": " +
+             (form.is_form_tag ? "true" : "false") + "\n";
+
+  // Log fields.
+  message += GetStringFromID(STRING_FIELDS) + ": " + "\n";
+  for (const auto& field : form.fields) {
+    std::string is_visible = field.is_focusable ? "visible" : "invisible";
+    std::string is_empty = field.value.empty() ? "empty" : "non-empty";
+    std::string autocomplete =
+        field.autocomplete_attribute.empty()
+            ? std::string()
+            : (", autocomplete=" +
+               ScrubElementID(field.autocomplete_attribute));
+    std::string field_info = ScrubElementID(field.name) + ": type=" +
+                             ScrubElementID(field.form_control_type) + ", " +
+                             is_visible + ", " + is_empty + autocomplete + "\n";
+    message += field_info;
+  }
+  message += "}";
   SendLog(message);
 }
 

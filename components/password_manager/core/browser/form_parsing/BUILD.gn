@@ -4,37 +4,31 @@
 
 import("//build/config/sanitizers/sanitizers.gni")
 
-# Determine whetner fuzzer_test targets are built.
-does_fuzzer_test_compile =
-    !disable_libfuzzer && (use_fuzzing_engine || use_drfuzz || is_linux)
+static_library("form_parsing") {
+  sources = [
+    # TODO(https://crbug.com/831123): Make compilation of ios_form_parser only for iOS, when it is not needed for experimentation anymore.
+    "ios_form_parser.cc",
+    "ios_form_parser.h",
+  ]
 
-if (does_fuzzer_test_compile || is_ios) {
-  # Compile for production under iOS and for fuzzing whenever fuzzer_tests are built.
-  static_library("form_parsing") {
-    sources = [
-      "ios_form_parser.cc",
-      "ios_form_parser.h",
-    ]
+  deps = [
+    "//base",
+    "//components/autofill/core/common",
+  ]
+}
 
-    deps = [
-      "//base",
-      "//components/autofill/core/common",
-    ]
-  }
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "ios_form_parser_unittest.cc",
+  ]
 
-  source_set("unit_tests") {
-    testonly = true
-    sources = [
-      "ios_form_parser_unittest.cc",
-    ]
-
-    deps = [
-      ":form_parsing",
-      "//base",
-      "//components/autofill/core/common",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//url",
-    ]
-  }
-}  # if (does_fuzzer_test_compile || is_ios)
+  deps = [
+    ":form_parsing",
+    "//base",
+    "//components/autofill/core/common",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url",
+  ]
+}

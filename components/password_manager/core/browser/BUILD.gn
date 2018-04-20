@@ -183,6 +183,7 @@ static_library("browser") {
     "//components/autofill/core/common",
     "//components/keyed_service/core",
     "//components/os_crypt",
+    "//components/password_manager/core/browser/form_parsing",
     "//components/password_manager/core/common",
     "//components/pref_registry",
     "//components/prefs",

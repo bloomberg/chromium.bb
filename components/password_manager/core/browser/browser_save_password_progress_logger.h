@@ -13,6 +13,7 @@
 #include "url/gurl.h"
 
 namespace autofill {
+struct FormData;
 class FormStructure;
 }
 
@@ -49,6 +50,10 @@ class BrowserSavePasswordProgressLogger
   // Log a password successful submission event.
   void LogSuccessfulSubmissionIndicatorEvent(
       autofill::PasswordForm::SubmissionIndicatorEvent event);
+
+  // Browser-specific addition to the base class' Log* methods. The input is
+  // sanitized and passed to SendLog for display.
+  void LogFormData(StringID label, const autofill::FormData& form);
 
  protected:
   // autofill::SavePasswordProgressLogger:
