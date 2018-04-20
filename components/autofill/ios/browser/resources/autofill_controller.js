@@ -197,10 +197,15 @@ function getUnownedAutofillableFormFieldElements_(elements, fieldsets) {
  *
  * @param {number} requiredFields The minimum number of fields forms must have
  *     to be extracted.
+ * @param {bool} restrictUnownedFieldsToFormlessCheckout whether forms made of
+ *     unowned fields (i.e., not within a <form> tag) should be restricted to
+ *     those that appear to be in a checkout flow.
  * @return {string} A JSON encoded an array of the forms data.
  */
-__gCrWeb.autofill['extractForms'] = function(requiredFields) {
-  var forms = __gCrWeb.autofill.extractNewForms(requiredFields);
+__gCrWeb.autofill['extractForms'] = function(
+    requiredFields, restrictUnownedFieldsToFormlessCheckout) {
+  var forms = __gCrWeb.autofill.extractNewForms(
+      requiredFields, restrictUnownedFieldsToFormlessCheckout);
   return __gCrWeb.stringify(forms);
 };
 
@@ -394,9 +399,13 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
  *
  * @param {number} minimumRequiredFields The minimum number of fields a form
  *     should contain for autofill.
+ * @param {bool} restrictUnownedFieldsToFormlessCheckout whether forms made of
+ *     unowned fields (i.e., not within a <form> tag) should be restricted to
+ *     those that appear to be in a checkout flow.
  * @return {Array<AutofillFormData>} The extracted forms.
  */
-__gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
+__gCrWeb.autofill.extractNewForms = function(
+    minimumRequiredFields, restrictUnownedFieldsToFormlessCheckout) {
   var forms = [];
   // Protect against custom implementation of Array.toJSON in host pages.
   /** @suppress {checkTypes} */ (function() {
@@ -445,7 +454,8 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
   if (numEditableUnownedElements > 0) {
     var unownedForm = new __gCrWeb['common'].JSONSafeObject;
     var hasUnownedForm = unownedFormElementsAndFieldSetsToFormData_(
-        window, fieldsets, unownedControlElements, extractMask, unownedForm);
+        window, fieldsets, unownedControlElements, extractMask,
+        restrictUnownedFieldsToFormlessCheckout, unownedForm);
     if (hasUnownedForm) {
       numFieldsSeen += unownedForm['fields'].length;
       if (numFieldsSeen <= __gCrWeb.fill.MAX_PARSEABLE_FIELDS) {
@@ -492,13 +502,17 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
  *     will be processed.
  * @param {number} extractMask Mask controls what data is extracted from
  *     formElement.
+ * @param {bool} restrictUnownedFieldsToFormlessCheckout whether forms made of
+ *     unowned fields (i.e., not within a <form> tag) should be restricted to
+ *     those that appear to be in a checkout flow.
  * @param {AutofillFormData} form Form to fill in the AutofillFormData
  *     information of formElement.
  * @return {boolean} Whether there are fields and not too many fields in the
  *     form.
  */
 function unownedFormElementsAndFieldSetsToFormData_(
-    frame, fieldsets, controlElements, extractMask, form) {
+    frame, fieldsets, controlElements, extractMask,
+    restrictUnownedFieldsToFormlessCheckout, form) {
   if (!frame) {
     return false;
   }
@@ -508,6 +522,12 @@ function unownedFormElementsAndFieldSetsToFormData_(
       __gCrWeb.common.removeQueryAndReferenceFromURL(frame.location.href);
   form['action'] = '';
   form['is_form_tag'] = false;
+
+  if (!restrictUnownedFieldsToFormlessCheckout) {
+    return __gCrWeb.fill.formOrFieldsetsToFormData(
+        null /* formElement*/, null /* formControlElement */, fieldsets,
+        controlElements, extractMask, form, null /* field */);
+  }
 
   // For now this restriction only applies to English-language pages, because
   // the keywords are not translated. Note that an empty "lang" attribute
@@ -539,9 +559,22 @@ function unownedFormElementsAndFieldSetsToFormData_(
     }
   }
 
+  // Since it's not a checkout flow, only add fields that have a non-"off"
+  // autocomplete attribute to the formless autofill.
+  var controlElementsWithAutocomplete = [];
+  for (var index = 0; index < controlElements.length; index++) {
+    if (controlElements[index].hasAttribute('autocomplete') &&
+        controlElements[index].getAttribute('autocomplete') !== 'off') {
+      controlElementsWithAutocomplete += controlElements[index];
+    }
+  }
+
+  if (controlElementsWithAutocomplete.length == 0) {
+    return false;
+  }
   return __gCrWeb.fill.formOrFieldsetsToFormData(
       null /* formElement*/, null /* formControlElement */, fieldsets,
-      controlElements, extractMask, form, null /* field */);
+      controlElementsWithAutocomplete, extractMask, form, null /* field */);
 }
 
 /**
