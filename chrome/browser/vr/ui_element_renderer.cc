@@ -15,6 +15,7 @@
 #include "chrome/browser/vr/renderers/external_textured_quad_renderer.h"
 #include "chrome/browser/vr/renderers/gradient_quad_renderer.h"
 #include "chrome/browser/vr/renderers/textured_quad_renderer.h"
+#include "chrome/browser/vr/renderers/transparent_quad_renderer.h"
 #include "chrome/browser/vr/renderers/web_vr_renderer.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -38,6 +39,7 @@ UiElementRenderer::~UiElementRenderer() = default;
 void UiElementRenderer::Init() {
   external_textured_quad_renderer_ =
       std::make_unique<ExternalTexturedQuadRenderer>();
+  transparent_quad_renderer_ = std::make_unique<TransparentQuadRenderer>();
   textured_quad_renderer_ = std::make_unique<TexturedQuadRenderer>();
   gradient_quad_renderer_ = std::make_unique<GradientQuadRenderer>();
   webvr_renderer_ = std::make_unique<WebVrRenderer>();
@@ -70,6 +72,11 @@ void UiElementRenderer::DrawTexturedQuad(
   TexturedQuadRenderer* renderer = texture_location == kTextureLocationExternal
                                        ? external_textured_quad_renderer_.get()
                                        : textured_quad_renderer_.get();
+  if (!texture_data_handle && !overlay_texture_data_handle) {
+    // If we're blending, why are we even drawing a transparent quad?
+    DCHECK(!blend);
+    renderer = transparent_quad_renderer_.get();
+  }
   FlushIfNecessary(renderer);
   renderer->AddQuad(texture_data_handle, overlay_texture_data_handle,
                     model_view_proj_matrix, copy_rect, opacity, element_size,
@@ -128,9 +135,11 @@ void UiElementRenderer::DrawReticle(
 }
 
 void UiElementRenderer::DrawWebVr(int texture_data_handle,
-                                  const float (&uv_transform)[16]) {
+                                  const float (&uv_transform)[16],
+                                  float xborder,
+                                  float yborder) {
   FlushIfNecessary(webvr_renderer_.get());
-  webvr_renderer_->Draw(texture_data_handle, uv_transform);
+  webvr_renderer_->Draw(texture_data_handle, uv_transform, xborder, yborder);
 }
 
 void UiElementRenderer::DrawShadow(const gfx::Transform& model_view_proj_matrix,
