@@ -609,6 +609,7 @@
       'fuchsia_x64_cast_audio': 'release_trybot_fuchsia_cast_audio',
       'layout_test_leak_detection': 'release_trybot',
       'leak_detection_linux': 'release_trybot',
+      'linux-blink-heap-incremental-marking': 'debug_trybot_enable_blink_heap_incremental_marking',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
       'linux-jumbo-rel': 'jumbo_release_bot_minimal_symbols',
       'linux_arm': 'release_trybot_arm',
@@ -1221,6 +1222,10 @@
 
     'debug_bot_enable_blink_heap_incremental_marking': [
       'debug_bot', 'enable_blink_heap_incremental_marking',
+    ],
+
+    'debug_trybot_enable_blink_heap_incremental_marking': [
+      'debug_trybot', 'enable_blink_heap_incremental_marking',
     ],
 
     'debug_bot_fuchsia': [
