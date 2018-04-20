@@ -66,7 +66,7 @@ bool HasSomethingAtIndex(const base::ListValue* list, int index) {
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
     : SyncInternalsMessageHandler(base::BindRepeating(
-          &syncer::sync_ui_util::ConstructAboutInformation_DEPRECATED)) {}
+          &syncer::sync_ui_util::ConstructAboutInformation)) {}
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler(
     AboutSyncDataDelegate about_sync_data_delegate)

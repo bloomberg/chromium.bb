@@ -241,20 +241,12 @@ std::string GetConnectionStatus(const SyncService::SyncTokenStatus& status) {
 
 }  // namespace
 
-std::unique_ptr<base::DictionaryValue> ConstructAboutInformation_DEPRECATED(
-    SyncService* service,
-    version_info::Channel channel) {
-  return ConstructAboutInformation(
-      service, service->GetAuthenticatedAccountInfo(), channel);
-}
-
 // This function both defines the structure of the message to be returned and
 // its contents.  Most of the message consists of simple fields in about:sync
 // which are grouped into sections and populated with the help of the SyncStat
 // classes defined above.
 std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     SyncService* service,
-    AccountInfo primary_account_info,
     version_info::Channel channel) {
   auto about_info = std::make_unique<base::DictionaryValue>();
 
@@ -410,7 +402,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     sync_id->Set(full_status.sync_id);
   if (is_status_valid && !full_status.invalidator_client_id.empty())
     invalidator_id->Set(full_status.invalidator_client_id);
-  username->Set(primary_account_info.email);
+  username->Set(service->GetAuthenticatedAccountInfo().email);
 
   // Credentials.
   request_token_time->Set(GetTimeStr(token_status.token_request_time, "n/a"));
