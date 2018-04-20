@@ -31,7 +31,7 @@ TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
 
   __block size_t pings = 0U;
 
-  BookmarkModelObserverForCocoa::ChangeCallback callback = ^() {
+  BookmarkModelObserverForCocoa::ChangeCallback callback = ^{
     ++pings;
   };
 

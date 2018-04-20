@@ -196,7 +196,7 @@ NSString* const kDoneTouchBarId = @"DONE";
   // dialog, the bookmark bubble's cancel: means "don't add this as a
   // bookmark", not "cancel editing".  We must take extra care to not
   // touch the bookmark in this selector.
-  bookmarkObserver_.reset(new BookmarkModelObserverForCocoa(model_, ^() {
+  bookmarkObserver_.reset(new BookmarkModelObserverForCocoa(model_, ^{
     [self dismissWithoutEditing:nil];
   }));
   bookmarkObserver_->StartObservingNode(node_);

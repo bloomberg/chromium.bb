@@ -81,7 +81,7 @@ using bookmarks::BookmarkNode;
 - (void)runAsModalSheet {
   // Ping me when things change out from under us.
   observer_.reset(new BookmarkModelObserverForCocoa(
-      BookmarkModelFactory::GetForBrowserContext(profile_), ^() {
+      BookmarkModelFactory::GetForBrowserContext(profile_), ^{
         [self cancel:nil];
       }));
   observer_->StartObservingNode(node_);
