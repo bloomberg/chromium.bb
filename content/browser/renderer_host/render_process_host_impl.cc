@@ -64,7 +64,6 @@
 #include "components/metrics/single_sample_metrics.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/common/switches.h"
-#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
@@ -1433,8 +1432,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       instance_weak_factory_(
           new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
       frame_sink_provider_(id_),
-      shared_bitmap_allocation_notifier_impl_(
-          viz::ServerSharedBitmapManager::current()),
       weak_factory_(this) {
   for (size_t i = 0; i < kNumKeepAliveClients; i++)
     keep_alive_client_count_[i] = 0;
@@ -1932,11 +1929,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::Bind(&RenderProcessHostImpl::BindSharedBitmapAllocationNotifier,
-                 base::Unretained(this)));
-
-  AddUIThreadInterface(
-      registry.get(),
       base::Bind(&BackgroundSyncContext::CreateService,
                  base::Unretained(
                      storage_partition_impl_->GetBackgroundSyncContext())));
@@ -2128,11 +2120,6 @@ void RenderProcessHostImpl::BindCompositingModeReporter(
     viz::mojom::CompositingModeReporterRequest request) {
   BrowserMainLoop::GetInstance()->GetCompositingModeReporter(
       std::move(request));
-}
-
-void RenderProcessHostImpl::BindSharedBitmapAllocationNotifier(
-    viz::mojom::SharedBitmapAllocationNotifierRequest request) {
-  shared_bitmap_allocation_notifier_impl_.Bind(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
@@ -3889,8 +3876,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   compositing_mode_reporter_.reset();
 
-  shared_bitmap_allocation_notifier_impl_.ChildDied();
-
   HistogramController::GetInstance()->NotifyChildDied<RenderProcessHost>(this);
   // This object is not deleted at this point and might be reused later.
   // TODO(darin): clean this up
@@ -4388,11 +4373,6 @@ void RenderProcessHostImpl::OnMojoError(int render_process_id,
       bad_message::GetMojoErrorCrashKey(), error);
   bad_message::ReceivedBadMessage(render_process_id,
                                   bad_message::RPH_MOJO_PROCESS_ERROR);
-}
-
-viz::SharedBitmapAllocationNotifierImpl*
-RenderProcessHostImpl::GetSharedBitmapAllocationNotifier() {
-  return &shared_bitmap_allocation_notifier_impl_;
 }
 
 void RenderProcessHostImpl::GetBrowserHistogram(

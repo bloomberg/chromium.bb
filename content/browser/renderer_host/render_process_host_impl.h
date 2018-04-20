@@ -25,7 +25,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
-#include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -389,9 +388,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       RenderProcessHost* render_process_host,
       const GURL& site_url);
 
-  viz::SharedBitmapAllocationNotifierImpl* GetSharedBitmapAllocationNotifier()
-      override;
-
   // Return the spare RenderProcessHost, if it exists. There is at most one
   // globally-used spare RenderProcessHost at any time.
   static RenderProcessHost* GetSpareRenderProcessHostForTesting();
@@ -489,8 +485,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
   void BindCompositingModeReporter(
       viz::mojom::CompositingModeReporterRequest request);
-  void BindSharedBitmapAllocationNotifier(
-      viz::mojom::SharedBitmapAllocationNotifierRequest request);
   void CreateStoragePartitionService(
       mojom::StoragePartitionServiceRequest request);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
@@ -838,9 +832,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   FrameSinkProviderImpl frame_sink_provider_;
   std::unique_ptr<mojo::Binding<viz::mojom::CompositingModeReporter>>
       compositing_mode_reporter_;
-
-  viz::SharedBitmapAllocationNotifierImpl
-      shared_bitmap_allocation_notifier_impl_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

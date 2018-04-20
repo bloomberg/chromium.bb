@@ -15,7 +15,6 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/trees/layer_tree_host.h"
-#include "components/viz/client/client_shared_bitmap_manager.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"

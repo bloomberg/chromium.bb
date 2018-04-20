@@ -21,7 +21,6 @@
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "ipc/ipc_test_sink.h"
@@ -143,8 +142,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool MayReuseHost() override;
   bool IsUnused() override;
   void SetIsUsed() override;
-  viz::SharedBitmapAllocationNotifierImpl* GetSharedBitmapAllocationNotifier()
-      override;
 
   bool HostHasNotBeenUsed() override;
 
@@ -214,8 +211,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   std::unique_ptr<resource_coordinator::ProcessResourceCoordinator>
       process_resource_coordinator_;
   service_manager::Identity child_identity_;
-  viz::SharedBitmapAllocationNotifierImpl
-      shared_bitmap_allocation_notifier_impl_;
   bool did_frame_commit_navigation_ = false;
   base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_;
 

@@ -36,6 +36,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 using content::BrowserContext;
 using content::RenderProcessHost;

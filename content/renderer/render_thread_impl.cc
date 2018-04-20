@@ -50,7 +50,6 @@
 #include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
-#include "components/viz/client/client_shared_bitmap_manager.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/hit_test_data_provider_surface_layer.h"
@@ -809,16 +808,6 @@ void RenderThreadImpl::Init(
                              ? ui::mojom::kServiceName
                              : mojom::kBrowserServiceName,
                          GetIOTaskRunner());
-
-  viz::mojom::SharedBitmapAllocationNotifierPtr
-      shared_bitmap_allocation_notifier_ptr;
-  GetConnector()->BindInterface(
-      mojom::kBrowserServiceName,
-      mojo::MakeRequest(&shared_bitmap_allocation_notifier_ptr));
-  shared_bitmap_manager_ = std::make_unique<viz::ClientSharedBitmapManager>(
-      viz::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr::Create(
-          shared_bitmap_allocation_notifier_ptr.PassInterface(),
-          GetChannel()->ipc_task_runner_refptr()));
 
   notification_dispatcher_ = new NotificationDispatcher(
       thread_safe_sender(), GetWebMainThreadScheduler()->IPCTaskRunner());

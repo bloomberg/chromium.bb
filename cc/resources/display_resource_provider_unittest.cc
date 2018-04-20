@@ -19,8 +19,11 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
+#include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
@@ -49,30 +52,33 @@ MATCHER_P(MatchesSyncToken, sync_token, "") {
   return other == sync_token;
 }
 
-static void ReleaseSharedBitmapCallback(
-    std::unique_ptr<viz::SharedBitmap> shared_bitmap,
-    bool* release_called,
-    gpu::SyncToken* release_sync_token,
-    bool* lost_resource_result,
-    const gpu::SyncToken& sync_token,
-    bool lost_resource) {
+static void ReleaseSharedBitmapCallback(viz::SharedBitmapId shared_bitmap_id,
+                                        bool* release_called,
+                                        gpu::SyncToken* release_sync_token,
+                                        bool* lost_resource_result,
+                                        const gpu::SyncToken& sync_token,
+                                        bool lost_resource) {
   *release_called = true;
   *release_sync_token = sync_token;
   *lost_resource_result = lost_resource;
 }
 
-static std::unique_ptr<viz::SharedBitmap> CreateAndFillSharedBitmap(
+static viz::SharedBitmapId CreateAndFillSharedBitmap(
     viz::SharedBitmapManager* manager,
     const gfx::Size& size,
     viz::ResourceFormat format,
     uint32_t value) {
-  std::unique_ptr<viz::SharedBitmap> shared_bitmap =
-      manager->AllocateSharedBitmap(size, format);
-  CHECK(shared_bitmap);
-  uint32_t* pixels = reinterpret_cast<uint32_t*>(shared_bitmap->pixels());
-  CHECK(pixels);
-  std::fill_n(pixels, size.GetArea(), value);
-  return shared_bitmap;
+  viz::SharedBitmapId shared_bitmap_id = viz::SharedBitmap::GenerateId();
+
+  std::unique_ptr<base::SharedMemory> shm =
+      viz::bitmap_allocation::AllocateMappedBitmap(size, viz::RGBA_8888);
+  manager->ChildAllocatedSharedBitmap(
+      viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(shm.get(), size,
+                                                            viz::RGBA_8888),
+      shared_bitmap_id);
+
+  std::fill_n(static_cast<uint32_t*>(shm->memory()), size.GetArea(), value);
+  return shared_bitmap_id;
 }
 
 static viz::ResourceSettings CreateResourceSettings() {
@@ -411,10 +417,9 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
       child_context_->genSyncToken(sync_token->GetData());
       EXPECT_TRUE(sync_token->HasData());
 
-      std::unique_ptr<viz::SharedBitmap> shared_bitmap;
       std::unique_ptr<viz::SingleReleaseCallback> callback =
           viz::SingleReleaseCallback::Create(base::BindRepeating(
-              ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
+              ReleaseSharedBitmapCallback, viz::SharedBitmapId(),
               release_called, release_sync_token, lost_resource));
       viz::TransferableResource gl_resource = viz::TransferableResource::MakeGL(
           gpu_mailbox, GL_LINEAR, GL_TEXTURE_2D, *sync_token);
@@ -423,19 +428,16 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
                                                       std::move(callback));
     } else {
       gfx::Size size(64, 64);
-      std::unique_ptr<viz::SharedBitmap> shared_bitmap(
-          CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, format,
-                                    0));
+      viz::SharedBitmapId shared_bitmap_id = CreateAndFillSharedBitmap(
+          shared_bitmap_manager_.get(), size, format, 0);
 
-      viz::SharedBitmap* shared_bitmap_ptr = shared_bitmap.get();
       std::unique_ptr<viz::SingleReleaseCallback> callback =
           viz::SingleReleaseCallback::Create(base::BindRepeating(
-              ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
-              release_called, release_sync_token, lost_resource));
+              ReleaseSharedBitmapCallback, shared_bitmap_id, release_called,
+              release_sync_token, lost_resource));
       return child_resource_provider_->ImportResource(
           viz::TransferableResource::MakeSoftware(
-              shared_bitmap_ptr->id(), shared_bitmap_ptr->sequence_number(),
-              size, format),
+              shared_bitmap_id, /*sequence_number=*/0, size, format),
           std::move(callback));
     }
   }
