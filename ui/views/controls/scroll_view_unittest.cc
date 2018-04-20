@@ -8,7 +8,9 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/border.h"
@@ -1493,6 +1495,43 @@ TEST_F(WidgetScrollViewTest, ScrollOffsetUsingLayers) {
 
   EXPECT_TRUE(compositor->GetScrollOffsetForLayer(layer_id, &impl_offset));
   EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), impl_offset);
+}
+
+// Tests to see the scroll events are handled correctly in composited and
+// non-composited scrolling.
+TEST_F(WidgetScrollViewTest, CompositedScrollEvents) {
+  // Set up with a vertical scroll bar.
+  ScrollView* scroll_view =
+      AddScrollViewWithContentSize(gfx::Size(10, kDefaultHeight * 5));
+  ScrollViewTestApi test_api(scroll_view);
+
+  // Create a fake scroll event and send it to the scroll view.
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(), base::TimeTicks::Now(), 0,
+                         0, -10, 0, -10, 3);
+  EXPECT_FALSE(scroll.handled());
+  EXPECT_FALSE(scroll.stopped_propagation());
+  scroll_view->OnScrollEvent(&scroll);
+
+  // Check to see if the scroll event is handled by the scroll view.
+  if (base::FeatureList::IsEnabled(features::kUiCompositorScrollWithLayers)) {
+    // If UiCompositorScrollWithLayers is enabled, the event is set handled
+    // and its propagation is stopped.
+    EXPECT_TRUE(scroll.handled());
+    EXPECT_TRUE(scroll.stopped_propagation());
+  } else {
+    // If UiCompositorScrollWithLayers is disabled, the event isn't handled.
+    // This informs Widget::OnScrollEvent() to convert to a MouseWheel event
+    // and dispatch again. Simulate that.
+    EXPECT_FALSE(scroll.handled());
+    EXPECT_FALSE(scroll.stopped_propagation());
+    EXPECT_EQ(gfx::ScrollOffset(), test_api.CurrentOffset());
+
+    ui::MouseWheelEvent wheel(scroll);
+    scroll_view->OnMouseEvent(&wheel);
+  }
+
+  // Check if the scroll view has been offset.
+  EXPECT_EQ(gfx::ScrollOffset(0, 10), test_api.CurrentOffset());
 }
 
 }  // namespace views

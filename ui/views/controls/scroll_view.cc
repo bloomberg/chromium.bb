@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/compositor/overscroll/scroll_input_handler.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
@@ -23,15 +25,6 @@ namespace views {
 const char ScrollView::kViewClassName[] = "ScrollView";
 
 namespace {
-
-const base::Feature kToolkitViewsScrollWithLayers {
-  "ToolkitViewsScrollWithLayers",
-#if defined(OS_MACOSX)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 class ScrollCornerView : public View {
  public:
@@ -187,8 +180,8 @@ ScrollView::ScrollView()
       min_height_(-1),
       max_height_(-1),
       hide_horizontal_scrollbar_(false),
-      scroll_with_layers_enabled_(
-          base::FeatureList::IsEnabled(kToolkitViewsScrollWithLayers)) {
+      scroll_with_layers_enabled_(base::FeatureList::IsEnabled(
+          features::kUiCompositorScrollWithLayers)) {
   set_notify_enter_exit_on_child(true);
 
   AddChildView(contents_viewport_);
@@ -552,6 +545,7 @@ bool ScrollView::OnKeyPressed(const ui::KeyEvent& event) {
 bool ScrollView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   bool processed = false;
 
+  // TODO(https://crbug.com/615948): Use composited scrolling.
   if (vert_sb_->visible())
     processed = vert_sb_->OnMouseWheel(e);
 
@@ -562,13 +556,18 @@ bool ScrollView::OnMouseWheel(const ui::MouseWheelEvent& e) {
 }
 
 void ScrollView::OnScrollEvent(ui::ScrollEvent* event) {
-#if defined(OS_MACOSX)
   if (!contents_)
     return;
 
-  // TODO(tapted): Send |event| to a cc::InputHandler. For now, there's nothing
-  // to do because Widget::OnScrollEvent() will automatically process an
-  // unhandled ScrollEvent as a MouseWheelEvent.
+  ui::ScrollInputHandler* compositor_scroller =
+      GetWidget()->GetCompositor()->scroll_input_handler();
+  if (compositor_scroller) {
+    DCHECK(scroll_with_layers_enabled_);
+    if (compositor_scroller->OnScrollEvent(*event, contents_->layer())) {
+      event->SetHandled();
+      event->StopPropagation();
+    }
+  }
 
   // A direction might not be known when the event stream starts, notify both
   // scrollbars that they may be about scroll, or that they may need to cancel
@@ -577,7 +576,6 @@ void ScrollView::OnScrollEvent(ui::ScrollEvent* event) {
     horiz_sb_->ObserveScrollEvent(*event);
   if (vert_sb_)
     vert_sb_->ObserveScrollEvent(*event);
-#endif
 }
 
 void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
@@ -589,6 +587,7 @@ void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
                       event->type() == ui::ET_GESTURE_SCROLL_END ||
                       event->type() == ui::ET_SCROLL_FLING_START;
 
+  // TODO(https://crbug.com/615948): Use composited scrolling.
   if (vert_sb_->visible()) {
     if (vert_sb_->bounds().Contains(event->location()) || scroll_event)
       vert_sb_->OnGestureEvent(event);

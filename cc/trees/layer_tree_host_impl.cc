@@ -3804,8 +3804,24 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   DCHECK(scroll_state);
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBy");
-  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
+  auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
+
+  ElementId provided_element =
+      scroll_state->data()->current_native_scrolling_element();
+  const auto* provided_scroll_node =
+      scroll_tree.FindNodeFromElementId(provided_element);
+
+  // If the currently scrolling node is not set, set it with
+  // |provided_scroll_node|.
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
+  if (scroll_node) {
+    // If |provided_scroll_node| is not null, make sure it matches
+    // |scroll_node|.
+    DCHECK(!provided_scroll_node || scroll_node == provided_scroll_node);
+  } else {
+    active_tree_->SetCurrentlyScrollingNode(provided_scroll_node);
+    scroll_node = scroll_tree.CurrentlyScrollingNode();
+  }
 
   if (!scroll_node)
     return InputHandlerScrollResult();
@@ -3826,8 +3842,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   scroll_state->set_delta_consumed_for_scroll_sequence(
       did_lock_scrolling_layer_);
   scroll_state->set_is_direct_manipulation(!wheel_scrolling_);
-  scroll_state->set_current_native_scrolling_node(
-      active_tree()->property_trees()->scroll_tree.CurrentlyScrollingNode());
+  scroll_state->set_current_native_scrolling_node(scroll_node);
 
   DistributeScrollDelta(scroll_state);
 

@@ -50,6 +50,17 @@ bool IsTouchableAppContextMenuEnabled() {
          switches::IsTouchableAppContextMenuEnabled();
 }
 
+// Enables scrolling with layers under ui using the ui::Compositor.
+const base::Feature kUiCompositorScrollWithLayers = {
+    "UiCompositorScrollWithLayers",
+// TODO(https://crbug.com/615948): Use composited scrolling on all platforms.
+#if defined(OS_MACOSX)
+    base::FEATURE_ENABLED_BY_DEFAULT
+#else
+    base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 #if defined(OS_WIN)
 // Enables stylus appearing as touch when in contact with digitizer.
 const base::Feature kDirectManipulationStylus = {

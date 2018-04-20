@@ -40,6 +40,7 @@
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
@@ -48,6 +49,7 @@
 #include "ui/compositor/external_begin_frame_client.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator_collection.h"
+#include "ui/compositor/overscroll/scroll_input_handler.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/icc_profile.h"
@@ -170,6 +172,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   // require zero copy.
   settings.resource_settings.use_gpu_memory_buffer_resources =
       settings.use_zero_copy;
+  settings.enable_elastic_overscroll = true;
 #endif
 
   settings.memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
@@ -200,6 +203,11 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
+
+  if (base::FeatureList::IsEnabled(features::kUiCompositorScrollWithLayers)) {
+    scroll_input_handler_.reset(
+        new ScrollInputHandler(host_->GetInputHandler()));
+  }
 
   animation_timeline_ =
       cc::AnimationTimeline::Create(cc::AnimationIdProvider::NextTimelineId());

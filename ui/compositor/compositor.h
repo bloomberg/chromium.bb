@@ -77,6 +77,7 @@ class LatencyInfo;
 class Layer;
 class Reflector;
 class ScopedAnimationDurationScaleMode;
+class ScrollInputHandler;
 
 constexpr int kCompositorLockTimeoutMs = 67;
 
@@ -434,6 +435,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // If true, all paint commands are recorded at pixel size instead of DIP.
   bool is_pixel_canvas() const { return is_pixel_canvas_; }
 
+  ScrollInputHandler* scroll_input_handler() const {
+    return scroll_input_handler_.get();
+  }
+
  private:
   friend class base::RefCounted<Compositor>;
 
@@ -494,6 +499,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   const bool is_pixel_canvas_;
 
   CompositorLockManager lock_manager_;
+
+  std::unique_ptr<ScrollInputHandler> scroll_input_handler_;
 
   base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_;
 

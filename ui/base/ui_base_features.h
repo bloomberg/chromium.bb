@@ -20,6 +20,7 @@ UI_BASE_EXPORT extern const base::Feature
 UI_BASE_EXPORT extern const base::Feature kEnableStylusVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature kSecondaryUiMd;
 UI_BASE_EXPORT extern const base::Feature kTouchableAppContextMenu;
+UI_BASE_EXPORT extern const base::Feature kUiCompositorScrollWithLayers;
 
 UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();
 
