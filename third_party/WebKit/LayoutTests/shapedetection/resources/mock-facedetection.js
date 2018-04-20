@@ -46,15 +46,7 @@ class MockFaceDetection {
           boundingBox: {x: 1.0, y: 1.0, width: 100.0, height: 100.0},
           landmarks: [{
             type: shapeDetection.mojom.LandmarkType.EYE,
-            locations: [{x: 4.0, y: 5.0}]
-          },
-          {
-            type: shapeDetection.mojom.LandmarkType.EYE,
-            locations: [
-              {x: 4.0, y: 5.0}, {x: 5.0, y: 4.0}, {x: 6.0, y: 3.0},
-              {x: 7.0, y: 4.0}, {x: 8.0, y: 5.0}, {x: 7.0, y: 6.0},
-              {x: 6.0, y: 7.0}, {x: 5.0, y: 6.0}
-            ]
+            location: {x: 4.0, y: 5.0}
           }]
         },
         {
