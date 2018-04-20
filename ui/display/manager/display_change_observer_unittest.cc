@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -37,7 +39,23 @@ std::unique_ptr<DisplayMode> MakeDisplayMode(int width,
 
 }  // namespace
 
-TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
+class DisplayChangeObserverTest : public testing::Test {
+ public:
+  DisplayChangeObserverTest() = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kEnableDisplayZoomSetting);
+    testing::Test::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserverTest);
+};
+
+TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
   std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
@@ -89,7 +107,7 @@ TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
   EXPECT_EQ(display_modes[5].refresh_rate(), 60);
 }
 
-TEST(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
+TEST_F(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   FakeDisplaySnapshot display_snapshot(
       123, gfx::Point(), gfx::Size(), DISPLAY_CONNECTION_TYPE_UNKNOWN, false,
       false, false, std::string(), {}, nullptr, nullptr, 0, gfx::Size());
@@ -100,7 +118,7 @@ TEST(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   EXPECT_EQ(0u, display_modes.size());
 }
 
-TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
+TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
   std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
@@ -144,7 +162,7 @@ TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
   EXPECT_EQ(display_modes[4].refresh_rate(), 60);
 }
 
-TEST(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
+TEST_F(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
   // Data picked from peppy.
   std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
@@ -203,7 +221,7 @@ TEST(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
   EXPECT_EQ(display_modes[7].refresh_rate(), 60);
 }
 
-TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
+TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
   // Data picked from peppy.
   std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
@@ -245,7 +263,7 @@ TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
   EXPECT_EQ(display_modes[4].refresh_rate(), 60);
 }
 
-TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
+TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
   std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
@@ -319,7 +337,7 @@ TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
   EXPECT_EQ(display_modes[8].refresh_rate(), 30);
 }
 
-TEST(DisplayChangeObserverTest, FindDeviceScaleFactor) {
+TEST_F(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(19.5f, gfx::Rect(1600, 900)));
 
   // 21.5" 1920x1080
@@ -352,7 +370,8 @@ TEST(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(2.0f, DisplayChangeObserver::FindDeviceScaleFactor(10000.0f));
 }
 
-TEST(DisplayChangeObserverTest, FindExternalDisplayNativeModeWhenOverwritten) {
+TEST_F(DisplayChangeObserverTest,
+       FindExternalDisplayNativeModeWhenOverwritten) {
   std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)

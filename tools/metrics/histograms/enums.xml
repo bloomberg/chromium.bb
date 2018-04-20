@@ -27030,6 +27030,7 @@ from previous Chrome versions.
   <int value="48159177" label="reduced-referrer-granularity"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
   <int value="52368742" label="enable-pixel-canvas-recording:disabled"/>
+  <int value="54571864" label="EnableDisplayZoomSetting:enabled"/>
   <int value="56723110" label="enable-webfonts-intervention"/>
   <int value="57639188" label="SoundContentSetting:disabled"/>
   <int value="57791920" label="MemoryCoordinator:enabled"/>
@@ -27668,6 +27669,7 @@ from previous Chrome versions.
   <int value="1536921097" label="NavigationMojoResponse:disabled"/>
   <int value="1538690515" label="OneGoogleBarOnLocalNtp:enabled"/>
   <int value="1541723759" label="ServiceWorkerNavigationPreload:disabled"/>
+  <int value="1543027970" label="EnableDisplayZoomSetting:disabled"/>
   <int value="1544552792" label="InterestFeedContentSuggestions:enabled"/>
   <int value="1548776701" label="AllBookmarks:disabled"/>
   <int value="1548942246" label="PassiveDocumentEventListeners:disabled"/>

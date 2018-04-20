@@ -3704,7 +3704,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-display-zoom-setting",
      flag_descriptions::kEnableDisplayZoomSettingName,
      flag_descriptions::kEnableDisplayZoomSettingDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableDisplayZoomSetting)},
+     FEATURE_VALUE_TYPE(features::kEnableDisplayZoomSetting)},
 
     {"ash-enable-new-overview-ui",
      flag_descriptions::kAshEnableNewOverviewUiName,

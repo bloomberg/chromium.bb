@@ -316,9 +316,6 @@ const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 // Enables demo mode feature.
 const char kEnableDemoMode[] = "enable-demo-mode";
 
-// Enables the slider in display settings to modify the display size.
-const char kEnableDisplayZoomSetting[] = "enable-display-zoom-setting";
-
 // Enables encryption migration for user's cryptohome to run latest Arc.
 const char kEnableEncryptionMigration[] = "enable-encryption-migration";
 
@@ -710,11 +707,6 @@ bool IsNetworkSettingsConfigEnabled() {
 bool AreExperimentalAccessibilityFeaturesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableExperimentalAccessibilityFeatures);
-}
-
-bool IsDisplayZoomSettingEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableDisplayZoomSetting);
 }
 
 bool ShouldHideActiveAppsFromShelf() {

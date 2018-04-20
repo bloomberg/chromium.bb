@@ -92,7 +92,6 @@ CHROMEOS_EXPORT extern const char kEnableChromeVoxArcSupport[];
 CHROMEOS_EXPORT extern const char kEnableConsumerKiosk[];
 CHROMEOS_EXPORT extern const char kEnableDataSaverPrompt[];
 CHROMEOS_EXPORT extern const char kEnableDemoMode[];
-CHROMEOS_EXPORT extern const char kEnableDisplayZoomSetting[];
 CHROMEOS_EXPORT extern const char kEnableEncryptionMigration[];
 CHROMEOS_EXPORT extern const char kEnableExperimentalAccessibilityFeatures[];
 CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
@@ -208,9 +207,6 @@ CHROMEOS_EXPORT bool IsSigninFrameClientCertUserSelectionEnabled();
 
 // Returns true if experimental accessibility features are enabled.
 CHROMEOS_EXPORT bool AreExperimentalAccessibilityFeaturesEnabled();
-
-// Returns true if experimental display zoom setting is enabled.
-CHROMEOS_EXPORT bool IsDisplayZoomSettingEnabled();
 
 // Returns true if we should hide open apps that aren't pinned from the shelf.
 CHROMEOS_EXPORT bool ShouldHideActiveAppsFromShelf();

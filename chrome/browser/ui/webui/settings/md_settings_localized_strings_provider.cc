@@ -721,7 +721,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
           chromeos::switches::kEnableTouchCalibrationSetting));
 
   html_source->AddBoolean("enableDisplayZoomSetting",
-                          chromeos::switches::IsDisplayZoomSettingEnabled());
+                          features::IsDisplayZoomSettingEnabled());
 
   html_source->AddBoolean("hasExternalTouchDevice",
                           display::HasExternalTouchscreenDevice());
