@@ -28,5 +28,12 @@ const CSSValue* BorderImageSlice::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForNinePieceImageSlice(style.BorderImage());
 }
 
+const CSSValue* BorderImageSlice::InitialValue() const {
+  DEFINE_STATIC_LOCAL(CSSValue, value,
+                      (CSSPrimitiveValue::Create(
+                          100, CSSPrimitiveValue::UnitType::kPercentage)));
+  return &value;
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

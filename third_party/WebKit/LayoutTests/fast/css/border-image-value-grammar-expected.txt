@@ -4,11 +4,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS style.getPropertyValue('border-image-slice') is "3"
-PASS style.getPropertyValue('border-image-width') is "initial"
+PASS style.getPropertyValue('border-image-width') is "1"
 PASS style.getPropertyValue('border-image-outset') is "2"
 PASS style.getPropertyValue('border-image-slice') is "4"
 PASS style.getPropertyValue('border-image-width') is "5"
-PASS style.getPropertyValue('border-image-outset') is "initial"
+PASS style.getPropertyValue('border-image-outset') is "0"
 PASS style.getPropertyValue('border-image-slice') is "1"
 PASS style.getPropertyValue('border-image-width') is "2"
 PASS style.getPropertyValue('border-image-outset') is "3"

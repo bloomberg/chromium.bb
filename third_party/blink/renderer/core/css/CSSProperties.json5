@@ -982,28 +982,28 @@
     },
     {
       name: "border-image-outset",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       interpolable: true,
       custom_apply_functions_all: true,
       typedom_types: ["Length", "Number"]
     },
     {
       name: "border-image-repeat",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       custom_apply_functions_all: true,
       keywords: ["stretch", "repeat", "round", "space"],
       typedom_types: ["Keyword"]
     },
     {
       name: "border-image-slice",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       interpolable: true,
       custom_apply_functions_all: true,
       typedom_types: ["Number", "Percentage"],
     },
     {
       name: "border-image-source",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       interpolable: true,
       keywords: ["none"],
       typedom_types: ["Keyword", "Image"],
@@ -1011,7 +1011,7 @@
     },
     {
       name: "border-image-width",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       interpolable: true,
       custom_apply_functions_all: true,
       keywords: ["auto"],

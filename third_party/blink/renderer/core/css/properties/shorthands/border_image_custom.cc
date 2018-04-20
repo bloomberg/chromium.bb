@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -34,24 +35,34 @@ bool BorderImage::ParseShorthand(
 
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyBorderImageSource, CSSPropertyBorderImage,
-      source ? *source : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      source ? *source
+             : *ToLonghand(&GetCSSPropertyBorderImageSource())->InitialValue(),
+      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      properties);
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyBorderImageSlice, CSSPropertyBorderImage,
-      slice ? *slice : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      slice ? *slice
+            : *ToLonghand(&GetCSSPropertyBorderImageSlice())->InitialValue(),
+      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      properties);
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyBorderImageWidth, CSSPropertyBorderImage,
-      width ? *width : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      width ? *width
+            : *ToLonghand(&GetCSSPropertyBorderImageWidth())->InitialValue(),
+      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      properties);
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyBorderImageOutset, CSSPropertyBorderImage,
-      outset ? *outset : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      outset ? *outset
+             : *ToLonghand(&GetCSSPropertyBorderImageOutset())->InitialValue(),
+      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      properties);
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyBorderImageRepeat, CSSPropertyBorderImage,
-      repeat ? *repeat : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      repeat ? *repeat
+             : *ToLonghand(&GetCSSPropertyBorderImageRepeat())->InitialValue(),
+      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      properties);
 
   return true;
 }

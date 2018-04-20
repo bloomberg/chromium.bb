@@ -28,5 +28,16 @@ const CSSValue* BorderImageOutset::CSSValueFromComputedStyleInternal(
       style.BorderImage().Outset(), style);
 }
 
+const CSSValue* BorderImageOutset::InitialValue() const {
+  DEFINE_STATIC_LOCAL(
+      CSSValue, zeroInteger,
+      (CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kInteger)));
+  DEFINE_STATIC_LOCAL(
+      CSSQuadValue, value,
+      (CSSQuadValue::Create(&zeroInteger, &zeroInteger, &zeroInteger,
+                            &zeroInteger, CSSQuadValue::kSerializeAsQuad)));
+  return &value;
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink
