@@ -294,14 +294,9 @@ class VM(object):
         '-mon', 'chardev=control_pipe',
         # Append 'check' to warn if the requested CPU is not fully supported.
         '-cpu', self.qemu_cpu + ',check',
-        # Qemu-vlans are used by qemu to separate out network traffic on the
-        # slirp network bridge. qemu forwards traffic on a slirp vlan to all
-        # ports conected on that vlan. By default, slirp ports are on vlan
-        # 0. We explicitly set a vlan here so that another qemu VM using
-        # slirp doesn't conflict with our network traffic.
-        '-net', 'nic,model=virtio,vlan=%d' % self.ssh_port,
-        '-net', 'user,hostfwd=tcp:127.0.0.1:%d-:22,vlan=%d'
-        % (self.ssh_port, self.ssh_port),
+        '-device', 'virtio-net,netdev=eth0',
+        '-netdev', 'user,id=eth0,net=10.0.2.0/27,hostfwd=tcp:127.0.0.1:%d-:22'
+        % self.ssh_port,
         '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=%s'
         % (self.image_path, self.image_format),
     ]
