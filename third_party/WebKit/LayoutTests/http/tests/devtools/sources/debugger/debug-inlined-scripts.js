@@ -27,10 +27,9 @@
     SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
     SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
 
-    SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame)
-        .then(() => {
-          TestRunner.reloadPage(() => SourcesTestRunner.completeDebuggerTest());
-        });
+    SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame).then(() => {
+      TestRunner.reloadPage(() => SourcesTestRunner.completeDebuggerTest());
+    });
 
     SourcesTestRunner.waitUntilPaused(step3);
   }

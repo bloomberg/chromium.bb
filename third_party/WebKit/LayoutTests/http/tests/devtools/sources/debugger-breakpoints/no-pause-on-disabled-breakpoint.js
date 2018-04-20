@@ -13,7 +13,7 @@
   const sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.js');
   TestRunner.addResult('Set breakpoint');
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Run function and check pause');
   TestRunner.evaluateInPage('main()//# sourceURL=test.js');

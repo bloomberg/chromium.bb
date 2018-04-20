@@ -14,32 +14,32 @@
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 3, false);
   SourcesTestRunner.createNewBreakpoint(sourceFrame, 5, 'a === 3', true);
   SourcesTestRunner.createNewBreakpoint(sourceFrame, 6, '', false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.js');
   TestRunner.addResult('Set different breakpoints and dump them');
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, false);
   SourcesTestRunner.createNewBreakpoint(sourceFrame, 10, 'a === 3', true);
   SourcesTestRunner.createNewBreakpoint(sourceFrame, 5, '', false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Dump to b.html and check that there is no breakpoints');
   await TestRunner.navigate(TestRunner.url('resources/b.html'));
   sourceFrame = await SourcesTestRunner.showScriptSourcePromise('b.html');
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Navigate back to a.html and dump breakpoints');
   await TestRunner.navigate(TestRunner.url('resources/a.html'));
   TestRunner.addResult('a.html:');
   sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.html');
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
   TestRunner.addResult('a.js:');
   sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.js');
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-  SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.completeTest();
 })();

@@ -24,8 +24,8 @@
   TestRunner.evaluateInPageWithTimeout('testFunction()');
   var sourceFrame = await waitForPausedUISourceCode();
   SourcesTestRunner.createNewBreakpoint(sourceFrame, 10, '', true);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-  await SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+  await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.completeDebuggerTest();
 
   function waitForPausedUISourceCode() {

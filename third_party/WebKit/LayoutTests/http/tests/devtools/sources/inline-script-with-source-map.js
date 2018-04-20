@@ -19,7 +19,7 @@
   let sourceFrame = await new Promise(
       resolve => SourcesTestRunner.showScriptSource('a.ts', resolve));
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 1, false);
-  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Call function and dump stack trace');
   TestRunner.evaluateInPageAnonymously('foo()');
