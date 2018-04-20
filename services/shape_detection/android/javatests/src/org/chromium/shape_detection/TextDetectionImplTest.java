@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.shape_detection.mojom.TextDetection;
@@ -53,7 +52,6 @@ public class TextDetectionImplTest {
     }
 
     @Test
-    @DisabledTest(message = "crbug.com/835331")
     @SmallTest
     @Feature({"ShapeDetection"})
     public void testDetectSucceedsOnValidBitmap() {
