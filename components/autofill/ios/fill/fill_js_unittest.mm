@@ -58,7 +58,6 @@ TEST_F(FillJsTest, GetCanonicalActionForForm) {
     LoadHtmlAndInject(html);
     id result = ExecuteJavaScript(
         @"__gCrWeb.fill.getCanonicalActionForForm(document.body.children[0])");
-    //  [NSThread sleepForTimeInterval:10000];
     NSString* base_url = base::SysUTF8ToNSString(BaseUrl());
     NSString* expected_action =
         [data.expected_action stringByReplacingOccurrencesOfString:@"baseurl/"
