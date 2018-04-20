@@ -5,8 +5,8 @@
 import optparse
 
 from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
-from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
-from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
+from blinkpy.tool.commands.analyze_baselines import AnalyzeBaselines
+from blinkpy.tool.commands.rebaseline_unittest import BaseTestCase
 
 
 class _FakeOptimizer(BaselineOptimizer):

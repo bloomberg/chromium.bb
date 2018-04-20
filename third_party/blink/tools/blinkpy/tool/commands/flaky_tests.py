@@ -31,7 +31,7 @@ import logging
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
 from webkitpy.layout_tests.models.test_expectations import TestExpectationsModel
-from webkitpy.tool.commands.command import Command
+from blinkpy.tool.commands.command import Command
 
 
 _log = logging.getLogger(__name__)

@@ -6,6 +6,7 @@ import logging
 
 from collections import OrderedDict
 
+from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.log_testing import LoggingTestCase
@@ -14,7 +15,7 @@ from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.port.test import LAYOUT_TEST_DIR
 from webkitpy.layout_tests.update_flaky_expectations import main
 from webkitpy.layout_tests.update_flaky_expectations import RemoveFlakesOMatic
-from webkitpy.tool.commands.flaky_tests import FlakyTests
+from blinkpy.tool.commands.flaky_tests import FlakyTests
 
 
 class FakeBotTestExpectations(object):

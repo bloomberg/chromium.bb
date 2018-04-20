@@ -31,8 +31,8 @@ import optparse
 import unittest
 
 from webkitpy.common.system.output_capture import OutputCapture
-from webkitpy.tool.commands.queries import PrintBaselines, PrintExpectations
-from webkitpy.tool.mock_tool import MockWebKitPatch
+from blinkpy.tool.commands.queries import PrintBaselines, PrintExpectations
+from blinkpy.tool.mock_tool import MockBlinkTool
 
 
 class PrintExpectationsTest(unittest.TestCase):
@@ -44,7 +44,7 @@ class PrintExpectationsTest(unittest.TestCase):
         }
         options_defaults.update(kwargs)
         options = optparse.Values(dict(**options_defaults))
-        tool = MockWebKitPatch()
+        tool = MockBlinkTool()
         tool.port_factory.all_port_names = lambda: [
             'test-linux-trusty', 'test-linux-precise',
             'test-mac-mac10.11', 'test-mac-mac10.10',
@@ -115,7 +115,7 @@ class PrintBaselinesTest(unittest.TestCase):
 
     def setUp(self):
         self.oc = None
-        self.tool = MockWebKitPatch()
+        self.tool = MockBlinkTool()
         self.test_port = self.tool.port_factory.get('test-win-win7')
         self.tool.port_factory.get = lambda port_name=None: self.test_port
         self.tool.port_factory.all_port_names = lambda: [

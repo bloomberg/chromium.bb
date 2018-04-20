@@ -28,7 +28,7 @@
 
 import unittest
 
-from webkitpy.tool import grammar
+from blinkpy.tool import grammar
 
 
 class GrammarTest(unittest.TestCase):

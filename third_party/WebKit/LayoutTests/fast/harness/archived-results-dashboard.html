@@ -257,7 +257,7 @@ function rerun()
         var url ='http://localhost:9630/';
         xmlhttp.open('POST', url, true);
         xmlhttp.onerror = function() {
-            logText.innerHTML = 'Please run the server using "webkit-patch layout-test-server"';
+            logText.innerHTML = 'Please run the server using "blink_tool.py layout-test-server"';
             logText.className = 'test-fail';
             alert('Server offline');
         }

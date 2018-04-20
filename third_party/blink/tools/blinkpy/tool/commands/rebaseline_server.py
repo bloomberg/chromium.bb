@@ -34,8 +34,8 @@ images and text) and allows one-click rebaselining of tests.
 from webkitpy.common.host import Host
 from webkitpy.common.net.layout_test_results import LayoutTestResults
 from webkitpy.layout_tests.layout_package import json_results_generator
-from webkitpy.tool.commands.abstract_local_server_command import AbstractLocalServerCommand
-from webkitpy.tool.servers.rebaseline_server import get_test_baselines, RebaselineHTTPServer, STATE_NEEDS_REBASELINE
+from blinkpy.tool.commands.abstract_local_server_command import AbstractLocalServerCommand
+from blinkpy.tool.servers.rebaseline_server import get_test_baselines, RebaselineHTTPServer, STATE_NEEDS_REBASELINE
 
 
 class TestConfig(object):

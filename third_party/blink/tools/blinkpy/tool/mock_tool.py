@@ -29,7 +29,7 @@
 from webkitpy.common.host_mock import MockHost
 
 
-class MockWebKitPatch(MockHost):
+class MockBlinkTool(MockHost):
 
     def __init__(self, *args, **kwargs):
         MockHost.__init__(self, *args, **kwargs)

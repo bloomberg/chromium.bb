@@ -27,12 +27,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Webkit-patch is a tool with multiple sub-commands with different purposes.
+"""blink_tool.py is a tool with multiple sub-commands with different purposes.
 
-Historically, it had commands related to dealing with bugzilla and posting
-and committing patches to WebKit. More recently, it has commands for printing
-expectations, fetching new test baselines, etc.
-
+It has commands for printing expectations, fetching new test baselines, etc.
 These commands don't necessarily have anything to do with each other.
 """
 
@@ -41,26 +38,26 @@ import optparse
 import sys
 
 from webkitpy.common.host import Host
-from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
-from webkitpy.tool.commands.command import HelpPrintingOptionParser
-from webkitpy.tool.commands.copy_existing_baselines import CopyExistingBaselines
-from webkitpy.tool.commands.flaky_tests import FlakyTests
-from webkitpy.tool.commands.help_command import HelpCommand
-from webkitpy.tool.commands.optimize_baselines import OptimizeBaselines
-from webkitpy.tool.commands.pretty_diff import PrettyDiff
-from webkitpy.tool.commands.queries import CrashLog
-from webkitpy.tool.commands.queries import PrintBaselines
-from webkitpy.tool.commands.queries import PrintExpectations
-from webkitpy.tool.commands.rebaseline import Rebaseline
-from webkitpy.tool.commands.rebaseline import RebaselineExpectations
-from webkitpy.tool.commands.rebaseline_cl import RebaselineCL
-from webkitpy.tool.commands.rebaseline_test import RebaselineTest
+from blinkpy.tool.commands.analyze_baselines import AnalyzeBaselines
+from blinkpy.tool.commands.command import HelpPrintingOptionParser
+from blinkpy.tool.commands.copy_existing_baselines import CopyExistingBaselines
+from blinkpy.tool.commands.flaky_tests import FlakyTests
+from blinkpy.tool.commands.help_command import HelpCommand
+from blinkpy.tool.commands.optimize_baselines import OptimizeBaselines
+from blinkpy.tool.commands.pretty_diff import PrettyDiff
+from blinkpy.tool.commands.queries import CrashLog
+from blinkpy.tool.commands.queries import PrintBaselines
+from blinkpy.tool.commands.queries import PrintExpectations
+from blinkpy.tool.commands.rebaseline import Rebaseline
+from blinkpy.tool.commands.rebaseline import RebaselineExpectations
+from blinkpy.tool.commands.rebaseline_cl import RebaselineCL
+from blinkpy.tool.commands.rebaseline_test import RebaselineTest
 
 
 _log = logging.getLogger(__name__)
 
 
-class WebKitPatch(Host):
+class BlinkTool(Host):
     # FIXME: It might make more sense if this class had a Host attribute
     # instead of being a Host subclass.
 
@@ -74,7 +71,7 @@ class WebKitPatch(Host):
     ]
 
     def __init__(self, path):
-        super(WebKitPatch, self).__init__()
+        super(BlinkTool, self).__init__()
         self._path = path
         self.commands = [
             AnalyzeBaselines(),

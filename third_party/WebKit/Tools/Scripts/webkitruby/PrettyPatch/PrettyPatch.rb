@@ -19,7 +19,7 @@ public
         str = "#{HEADER}<body>\n"
 
         # Just look at the first line to see if it is an SVN revision number as added
-        # by webkit-patch for git checkouts.
+        # by blink_tool.py for git checkouts.
         $svn_revision = 0
         string.each_line do |line|
             match = /^Subversion\ Revision: (\d*)$/.match(line)

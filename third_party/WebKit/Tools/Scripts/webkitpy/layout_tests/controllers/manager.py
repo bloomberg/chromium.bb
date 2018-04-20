@@ -55,7 +55,7 @@ from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_input import TestInput
-from webkitpy.tool import grammar
+from blinkpy.tool import grammar
 from blinkpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)

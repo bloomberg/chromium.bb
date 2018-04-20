@@ -33,7 +33,7 @@ import urllib
 
 from webkitpy.common.prettypatch import PrettyPatch
 from webkitpy.common.system.executive import ScriptError
-from webkitpy.tool.commands.command import Command
+from blinkpy.tool.commands.command import Command
 
 
 _log = logging.getLogger(__name__)

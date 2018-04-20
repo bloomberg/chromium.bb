@@ -30,7 +30,7 @@ import optparse
 import logging
 import sys
 
-from webkitpy.tool.grammar import pluralize
+from blinkpy.tool.grammar import pluralize
 
 _log = logging.getLogger(__name__)
 

@@ -113,7 +113,8 @@ class Git(object):
     def read_git_config(cls, key, cwd=None, executive=None):
         # FIXME: This should probably use cwd=self.checkout_root.
         # Pass --get-all for cases where the config has multiple values
-        # Pass the cwd if provided so that we can handle the case of running webkit-patch outside of the working directory.
+        # Pass the cwd if provided so that we can handle the case of running
+        # blink_tool.py outside of the working directory.
         # FIXME: This should use an Executive.
         executive = executive or Executive()
         return executive.run_command(

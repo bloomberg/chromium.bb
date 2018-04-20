@@ -1129,7 +1129,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
     """Tests for flags which cause new baselines to be written.
 
     When running layout tests, there are several flags which write new
-    baselines. This is separate from the "webkit-patch rebaseline" commands,
+    baselines. This is separate from the "blink_tool.py rebaseline" commands,
     which fetch new baselines from elsewhere rather than generating them.
     """
 

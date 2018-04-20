@@ -8,11 +8,10 @@ import json
 import logging
 import optparse
 
-from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
 from webkitpy.common.net.git_cl import GitCL, TryJobStatus
 from webkitpy.common.path_finder import PathFinder
-from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
-from webkitpy.tool.commands.rebaseline import TestBaselineSet
+from blinkpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
+from blinkpy.tool.commands.rebaseline import TestBaselineSet
 from blinkpy.w3c.wpt_manifest import WPTManifest
 
 
@@ -81,7 +80,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         # The WPT manifest is required when iterating through tests
         # TestBaselineSet if there are any tests in web-platform-tests.
-        # TODO(qyearsley): Consider calling ensure_manifest in WebKitPatch.
+        # TODO(qyearsley): Consider calling ensure_manifest in BlinkTool.
         # See: crbug.com/698294
         WPTManifest.ensure_manifest(tool)
 
@@ -180,7 +179,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             _log.info('  %s', builder)
         self.git_cl.trigger_try_jobs(builders)
         _log.info('Once all pending try jobs have finished, please re-run\n'
-                  'webkit-patch rebaseline-cl to fetch new baselines.')
+                  'blink_tool.py rebaseline-cl to fetch new baselines.')
 
     def _log_jobs(self, jobs):
         """Logs the current state of the try jobs.
