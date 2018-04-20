@@ -208,7 +208,7 @@ void DrawingBuffer::ResetBuffersToAutoClear() {
   GLuint buffers = GL_COLOR_BUFFER_BIT;
   if (want_depth_)
     buffers |= GL_DEPTH_BUFFER_BIT;
-  if (want_stencil_)
+  if (want_stencil_ || has_implicit_stencil_buffer_)
     buffers |= GL_STENCIL_BUFFER_BIT;
   SetBuffersToAutoClear(buffers);
 }
