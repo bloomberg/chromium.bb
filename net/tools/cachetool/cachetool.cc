@@ -337,8 +337,10 @@ bool GetResponseInfoForEntry(disk_cache::Entry* entry,
 
     if (rv == 0) {
       bool truncated_response_info = false;
-      net::HttpCache::ParseResponseInfo(buffer->data(), size, response_info,
-                                        &truncated_response_info);
+      if (!net::HttpCache::ParseResponseInfo(
+              buffer->data(), size, response_info, &truncated_response_info)) {
+        return false;
+      }
       return !truncated_response_info;
     }
 
@@ -514,10 +516,17 @@ void GetStreamForKey(CommandMarshal* command_marshal) {
   if (index == kResponseInfoIndex) {
     net::HttpResponseInfo response_info;
     bool truncated_response_info = false;
-    net::HttpCache::ParseResponseInfo(buffer->StartOfBuffer(), buffer->offset(),
-                                      &response_info, &truncated_response_info);
+    if (!net::HttpCache::ParseResponseInfo(buffer->StartOfBuffer(),
+                                           buffer->offset(), &response_info,
+                                           &truncated_response_info)) {
+      // This can happen when reading data stored by content::CacheStorage.
+      std::cerr << "WARNING: Returning empty response info for key: " << key
+                << std::endl;
+      command_marshal->ReturnSuccess();
+      return command_marshal->ReturnString("");
+    }
     if (truncated_response_info)
-      return command_marshal->ReturnFailure("Truncated HTTP response.");
+      std::cerr << "WARNING: Truncated HTTP response." << std::endl;
     command_marshal->ReturnSuccess();
     command_marshal->ReturnString(
         net::HttpUtil::ConvertHeadersBackToHTTPResponse(
@@ -543,7 +552,7 @@ void UpdateRawResponseHeaders(CommandMarshal* command_marshal) {
   net::HttpCache::ParseResponseInfo(buffer->StartOfBuffer(), buffer->offset(),
                                     &response_info, &truncated_response_info);
   if (truncated_response_info)
-    return command_marshal->ReturnFailure("Truncated HTTP response.");
+    std::cerr << "WARNING: Truncated HTTP response." << std::endl;
 
   response_info.headers = new net::HttpResponseHeaders(raw_headers);
   scoped_refptr<net::PickledIOBuffer> data(new net::PickledIOBuffer());
