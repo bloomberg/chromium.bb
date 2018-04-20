@@ -16,7 +16,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/ios/block_types.h"
-#include "base/ios/callback_counter.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
