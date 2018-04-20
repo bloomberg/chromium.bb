@@ -94,7 +94,7 @@ static bool IsRequiredForInjection(UChar c) {
 
 static bool IsTerminatingCharacter(UChar c) {
   return (c == '&' || c == '/' || c == '"' || c == '\'' || c == '<' ||
-          c == '>' || c == ',');
+          c == '>' || c == ',' || c == ';');
 }
 
 static bool IsSlash(UChar c) {
