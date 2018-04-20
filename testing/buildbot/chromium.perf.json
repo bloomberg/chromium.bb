@@ -753,26 +753,6 @@
       },
       {
         "args": [],
-        "isolate_name": "cc_perftests",
-        "name": "cc_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build13-b1--device2",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 1200,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [],
         "isolate_name": "components_perftests",
         "name": "components_perftests",
         "swarming": {
@@ -12520,26 +12500,6 @@
         }
       },
       {
-        "args": [],
-        "isolate_name": "cc_perftests",
-        "name": "cc_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build45-b1--device2",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 1200,
-          "upload_test_results": true
-        }
-      },
-      {
         "args": [
           "dromaeo",
           "-v",
@@ -19532,26 +19492,6 @@
           "expiration": 36000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
-          "io_timeout": 1200,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [],
-        "isolate_name": "cc_perftests",
-        "name": "cc_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build49-b1--device2",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
           "io_timeout": 1200,
           "upload_test_results": true
         }
