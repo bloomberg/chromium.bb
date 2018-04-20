@@ -1,4 +1,5 @@
 #!/usr/bin/env vpython
+#
 # Copyright (C) 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,6 +30,8 @@
 
 import sys
 
-from webkitpy.layout_tests import bisect_test_ordering
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
+from webkitpy.common import host
+from webkitpy.layout_tests import print_layout_test_times
 
-sys.exit(bisect_test_ordering.main(sys.argv[1:]))
+print_layout_test_times.main(host.Host(), sys.argv[1:])

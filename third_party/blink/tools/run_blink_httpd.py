@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython
-# Copyright (C) 2012 Google Inc. All rights reserved.
+# Copyright (C) 2010 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -27,20 +27,29 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Runs a WebSocket server for WebSocket tests.
+"""Runs an Apache HTTP server to manually run layout tests locally.
 
-Some tests require both an HTTP server and WebSocket server. You can start
-both servers by running both run-blink-httpd and run-blink-websocketserver.
+After running this script, you can locally navigate to URLs where
+the path is relative to LayoutTests/http/tests/. For example, to run
+LayoutTests/http/tests/cachestorage/window-cache-add.html, navigate to:
+    http://127.0.0.1:8000/cachestorage/window/cache-add.html
 
-Tests served by the HTTP server have paths relative to LayoutTests/http/tests/.
-For example, to run a test http/tests/websocket/binary-type.html which depends
-on WebSocket, you can navigate to:
-    http://127.0.0.1:8000/websocket/close-unref-websocket.html
+When using HTTPS, for example:
+    https://127.0.0.1:8443/https/verify-ssl-enabled.php
+you will may a certificate warning, which you need to bypass.
+
+After starting the server, you can also run individual layout tests
+via content_shell, e.g.
+    $ out/Release/content_shell --run-layout-test \
+    http://127.0.0.1:8000/security/cross-frame-access-get.html
+
+Note that some tests will only work if "127.0.0.1" for the host part of the
+URL, rather than "localhost".
 """
 
-import webkitpy.common.version_check
-
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
+from webkitpy.common import version_check  # pylint: disable=unused-import
 from webkitpy.layout_tests.servers import cli_wrapper
-from webkitpy.layout_tests.servers import pywebsocket
+from webkitpy.layout_tests.servers import apache_http
 
-cli_wrapper.main(pywebsocket.PyWebSocket, description=__doc__)
+cli_wrapper.main(apache_http.ApacheHTTP, additional_dirs={}, number_of_servers=4, description=__doc__)

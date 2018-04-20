@@ -13,8 +13,8 @@ Could be tried by running this scrip then navigating to:
     http://localhost:8001/referrer-policy/origin/http-rp/same-origin/http-http/img-tag/generic.no-redirect.http.html
 """
 
-import webkitpy.common.version_check
-
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
+from webkitpy.common import version_check  # pylint: disable=unused-import
 from webkitpy.layout_tests.servers import cli_wrapper
 from webkitpy.layout_tests.servers import wptserve
 

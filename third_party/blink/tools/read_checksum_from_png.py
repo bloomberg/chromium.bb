@@ -1,5 +1,5 @@
 #!/usr/bin/env vpython
-# Copyright (C) 2010 Google Inc. All rights reserved.
+# Copyright (c) 2011 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -27,29 +27,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Runs an Apache HTTP server to manually run layout tests locally.
+from __future__ import with_statement
+import sys
 
-After running this script, you can locally navigate to URLs where
-the path is relative to LayoutTests/http/tests/. For example, to run
-LayoutTests/http/tests/cachestorage/window-cache-add.html, navigate to:
-    http://127.0.0.1:8000/cachestorage/window/cache-add.html
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
+from webkitpy.common import read_checksum_from_png
 
-When using HTTPS, for example:
-    https://127.0.0.1:8443/https/verify-ssl-enabled.php
-you will may a certificate warning, which you need to bypass.
 
-After starting the server, you can also run individual layout tests
-via content_shell, e.g.
-    $ out/Release/content_shell --run-layout-test \
-    http://127.0.0.1:8000/security/cross-frame-access-get.html
-
-Note that some tests will only work if "127.0.0.1" for the host part of the
-URL, rather than "localhost".
-"""
-
-import webkitpy.common.version_check
-
-from webkitpy.layout_tests.servers import cli_wrapper
-from webkitpy.layout_tests.servers import apache_http
-
-cli_wrapper.main(apache_http.ApacheHTTP, additional_dirs={}, number_of_servers=4, description=__doc__)
+if '__main__' == __name__:
+    for filename in sys.argv[1:]:
+        with open(filename, 'r') as filehandle:
+            print "%s: %s" % (read_checksum_from_png.read_checksum(filehandle), filename)

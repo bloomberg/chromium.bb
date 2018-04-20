@@ -6,6 +6,7 @@
 
 import sys
 
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 from webkitpy.common import host
 from webkitpy.layout_tests import update_flaky_expectations
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
