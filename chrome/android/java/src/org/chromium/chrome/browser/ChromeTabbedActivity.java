@@ -131,7 +131,6 @@ import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -1188,19 +1187,6 @@ public class ChromeTabbedActivity
 
             boolean fromLauncherShortcut = IntentUtils.safeGetBooleanExtra(
                     intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
-
-            if (getBottomSheet() != null) {
-                // Either a url is being loaded in a new tab, a tab is being clobbered, or a tab
-                // is being brought to the front. In all scenarios, the bottom sheet should be
-                // closed. If a tab is being brought to the front, this indicates the user is coming
-                // back to Chrome through external means (e.g. homescreen shortcut, media
-                // notification) and animating the sheet closing is extraneous.
-                boolean animateSheetClose = tabOpenType == TabOpenType.CLOBBER_CURRENT_TAB
-                        || tabOpenType == TabOpenType.OPEN_NEW_TAB
-                        || tabOpenType == TabOpenType.OPEN_NEW_INCOGNITO_TAB;
-                getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, animateSheetClose,
-                        StateChangeReason.NAVIGATION);
-            }
 
             TabModel tabModel = getCurrentTabModel();
             switch (tabOpenType) {
