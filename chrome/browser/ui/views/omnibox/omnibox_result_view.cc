@@ -66,11 +66,6 @@ static const int kVerticalPadding = 4;
 // the additional padding here to zero).
 static const int kAnswerIconToTextPadding = 2;
 
-// Whether to use the two-line layout.
-bool IsTwoLineLayout() {
-  return base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout);
-}
-
 // Creates a views::Background for the current result style.
 std::unique_ptr<views::Background> CreateBackgroundWithColor(SkColor bg_color) {
   return ui::MaterialDesignController::IsNewerMaterialUi()
@@ -183,7 +178,6 @@ class OmniboxSuggestionView : public views::View {
   void LayoutAnswer();
   void LayoutEntity();
   void LayoutSplit();
-  void LayoutTwoLine();
 
   bool is_answer_;
   bool is_search_type_;
@@ -222,8 +216,6 @@ gfx::Size OmniboxSuggestionView::CalculatePreferredSize() const {
       text_height_ + GetVerticalInsets(text_height_, is_answer_).height();
   if (is_answer_)
     height += GetAnswerHeight();
-  else if (IsTwoLineLayout())
-    height += text_height_;
   return gfx::Size(0, height);
 }
 
@@ -244,7 +236,7 @@ int OmniboxSuggestionView::GetAnswerHeight() const {
 void OmniboxSuggestionView::OnMatchUpdate(const AutocompleteMatch& match) {
   is_answer_ = !!match.answer;
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
-  if (is_answer_ || IsTwoLineLayout()) {
+  if (is_answer_) {
     separator_view_->SetSize(gfx::Size());
   }
   if (is_answer_ &&
@@ -265,8 +257,6 @@ void OmniboxSuggestionView::Layout() {
     } else {
       LayoutAnswer();
     }
-  } else if (IsTwoLineLayout()) {
-    LayoutTwoLine();
   } else {
     LayoutSplit();
   }
@@ -277,9 +267,8 @@ void OmniboxSuggestionView::LayoutAnswer() {
   int x = start_x + LocationBarView::GetBorderThicknessDip();
   int y = GetVerticalInsets(text_height_, is_answer_).top();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
-  int center_icon_within = IsTwoLineLayout() ? height() : text_height_;
   icon_view_->SetPosition(
-      gfx::Point(x, y + (center_icon_within - icon_view_->height()) / 2));
+      gfx::Point(x, y + (text_height_ - icon_view_->height()) / 2));
   x += icon_view_->width() + HorizontalPadding();
   content_view_->SetBounds(x, y, width() - x, text_height_);
   y += text_height_;
@@ -336,29 +325,6 @@ void OmniboxSuggestionView::LayoutSplit() {
     description_view_->SetBounds(x, y, description_width, text_height_);
   } else {
     separator_view_->SetSize(gfx::Size());
-  }
-}
-
-void OmniboxSuggestionView::LayoutTwoLine() {
-  int x = GetIconAlignmentOffset() + HorizontalPadding() +
-          LocationBarView::GetBorderThicknessDip();
-  int y = GetVerticalInsets(text_height_, is_answer_).top();
-  icon_view_->SetSize(icon_view_->CalculatePreferredSize());
-  icon_view_->SetPosition(gfx::Point(x, (height() - icon_view_->height()) / 2));
-  x += icon_view_->width() + HorizontalPadding();
-  if (!!description_view_->GetContentsBounds().width()) {
-    // A description is present.
-    content_view_->SetBounds(x, y, width() - x, text_height_);
-    y += text_height_;
-    int description_width = width() - x;
-    description_view_->SetBounds(
-        x, y, description_width,
-        description_view_->GetHeightForWidth(description_width) +
-            kVerticalPadding);
-  } else {
-    // For no description, shift down halfway to draw contents in middle.
-    y += text_height_ / 2;
-    content_view_->SetBounds(x, y, width() - x, text_height_);
   }
 }
 

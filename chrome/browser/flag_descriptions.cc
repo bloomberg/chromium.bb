@@ -1089,10 +1089,6 @@ const char kOmniboxUISwapTitleAndUrlDescription[] =
     "In the omnibox dropdown, shows titles before URLs when both are "
     "available.";
 
-const char kOmniboxUIVerticalLayoutName[] = "Omnibox UI Vertical Layout";
-const char kOmniboxUIVerticalLayoutDescription[] =
-    "Displays Omnibox sugestions in 2 lines - title over origin.";
-
 const char kOmniboxUIVerticalMarginName[] = "Omnibox UI Vertical Margin";
 const char kOmniboxUIVerticalMarginDescription[] =
     "Changes the vertical margin in the Omnibox UI.";
