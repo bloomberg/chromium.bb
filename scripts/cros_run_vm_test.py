@@ -14,6 +14,7 @@ import re
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import osutils
 from chromite.scripts import cros_vm
 
 
@@ -157,6 +158,22 @@ class VMTest(object):
           if not re.search(suppress, line):
             f.write(line)
 
+  def FetchResults(self, src_list, dest_dir):
+    """Fetch results files/directories.
+
+    Args:
+      src_list: files/directories to fetch.
+      dest_dir: destination directory.
+    """
+    if not src_list:
+      return
+    osutils.SafeMakedirs(dest_dir)
+    for src in src_list:
+      logging.info('Fetching %s to %s', src, dest_dir)
+      self._vm.remote.CopyFromDevice(src=src, dest=dest_dir, mode='scp',
+                                     error_code_ok=True,
+                                     debug_level=logging.INFO)
+
   def RunVMCmd(self, cmd, files, cwd):
     """Run cmd in the VM.
 
@@ -232,6 +249,11 @@ def ParseCommandLine(argv):
                       help='Files to scp to the VM.')
   parser.add_argument('--files-from',
                       help='File with list of files to copy to the VM.')
+  parser.add_argument('--results-src', default=[], action='append',
+                      help='Files/Directories to copy from '
+                      'the VM into CWD after running the test.')
+  parser.add_argument('--results-dest-dir', help='Destination directory to '
+                      'copy results to.')
 
   opts = parser.parse_args(argv)
 
@@ -240,6 +262,19 @@ def ParseCommandLine(argv):
       parser.error('Must specifiy --build-dir with --build or --deploy.')
     if not os.path.isdir(opts.build_dir):
       parser.error('%s is not a directory.' % opts.build_dir)
+
+  if opts.results_src:
+    for src in opts.results_src:
+      if not os.path.isabs(src):
+        parser.error('results-src must be absolute.')
+    if not opts.results_dest_dir:
+      parser.error('results-dest-dir must be specified with results-src.')
+  if opts.results_dest_dir:
+    if not opts.results_src:
+      parser.error('results-src must be specified with results-dest-dir.')
+    if os.path.isfile(opts.results_dest_dir):
+      parser.error('results-dest-dir %s is an existing file.'
+                   % opts.results_dest_dir)
 
   # Ensure command is provided. For eg, to copy out to the VM and run
   # out/unittest:
@@ -290,6 +325,7 @@ def main(argv):
   else:
     result = vm_test.RunTests()
   vm_test.ProcessResult(result, opts.output)
+  vm_test.FetchResults(opts.results_src, opts.results_dest_dir)
 
   vm_test.StopVM()
   return result.returncode
