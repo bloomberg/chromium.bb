@@ -48,8 +48,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance/glsl/bugs/sampler-array-struct-function-arg.html',
         bug=757097)
 
-    # Flakes on any OpenGL configuration
-    self.Flaky('conformance2/transform_feedback/too-small-buffers.html',
+    # Flakes heavily on many OpenGL configurations
+    self.Fail('conformance2/transform_feedback/too-small-buffers.html',
         ['opengl'], bug=832238)
 
     # Failing on Windows and Linux with NVIDIA GPUs and OpenGL driver.
