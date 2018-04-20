@@ -25,7 +25,7 @@ class KEYBOARD_EXPORT KeyboardEventFilter : public ui::EventHandler {
   void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
-  void ProcessPointerEvent(const ui::LocatedEvent& event);
+  void ProcessPointerEvent(ui::LocatedEvent* event);
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardEventFilter);
 };

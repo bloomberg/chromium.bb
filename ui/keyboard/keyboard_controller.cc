@@ -803,10 +803,10 @@ bool KeyboardController::IsOverscrollAllowed() const {
   return container_behavior_->IsOverscrollAllowed();
 }
 
-void KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
+bool KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
   const display::Display& current_display =
       display_util_.GetNearestDisplayToWindow(container_->GetRootWindow());
-  container_behavior_->HandlePointerEvent(event, current_display);
+  return container_behavior_->HandlePointerEvent(event, current_display);
 }
 
 void KeyboardController::SetContainerType(
