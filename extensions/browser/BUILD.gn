@@ -127,6 +127,8 @@ jumbo_source_set("browser_sources") {
     "extension_file_task_runner.h",
     "extension_function.cc",
     "extension_function.h",
+    "extension_function_constants.cc",
+    "extension_function_constants.h",
     "extension_function_dispatcher.cc",
     "extension_function_dispatcher.h",
     "extension_function_registry.cc",
