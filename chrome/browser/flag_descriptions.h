@@ -67,6 +67,9 @@ extern const char kAsyncImageDecodingDescription[];
 extern const char kAutofillDynamicFormsName[];
 extern const char kAutofillDynamicFormsDescription[];
 
+extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
+extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
+
 extern const char kAutoplayPolicyName[];
 extern const char kAutoplayPolicyDescription[];
 

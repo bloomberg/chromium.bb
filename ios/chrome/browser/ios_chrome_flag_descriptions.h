@@ -15,6 +15,11 @@ extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 extern const char kAutofillDynamicFormsName[];
 extern const char kAutofillDynamicFormsDescription[];
 
+// Title and description for the flag to restrict extraction of formless forms
+// to checkout flows.
+extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
+extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
+
 // Title and description for the flag to control redirection to the task
 // scheduler.
 extern const char kBrowserTaskScheduler[];

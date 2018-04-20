@@ -59,6 +59,11 @@ const char kAutofillDynamicFormsName[] = "Autofill Dynamic Forms";
 const char kAutofillDynamicFormsDescription[] =
     "Allows autofill to fill dynamically changing forms";
 
+const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[] =
+    "Restrict formless form extraction";
+const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[] =
+    "Restrict extraction of formless forms to checkout flows";
+
 const char kAutoplayPolicyName[] = "Autoplay policy";
 const char kAutoplayPolicyDescription[] =
     "Policy used when deciding if audio or video is allowed to autoplay.";

@@ -3807,6 +3807,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillDynamicFormsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
 
+    {"autofill-restrict-formless-form-extraction",
+     flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
+     flag_descriptions::
+         kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
+
 #if defined(TOOLKIT_VIEWS)
     {"views-cast-dialog", flag_descriptions::kViewsCastDialogName,
      flag_descriptions::kViewsCastDialogDescription, kOsDesktop,
