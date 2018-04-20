@@ -45,8 +45,10 @@ function wait(time) {
 }
 
 /**
- * Verifies if there are no Javascript errors in the given app window.
- * @param {function()} Completion callback.
+ * Verifies if there are no Javascript errors in the given app window by
+ * asserting the count returned by the app.getErrorCount remote call.
+ * @param {!RemoteCall} app RemoteCall interface to the app window.
+ * @param {function()} callback Completion callback.
  */
 function checkIfNoErrorsOccuredOnApp(app, callback) {
   var countPromise = app.callRemoteTestUtil('getErrorCount', null, []);
@@ -58,7 +60,8 @@ function checkIfNoErrorsOccuredOnApp(app, callback) {
 
 /**
  * Adds check of chrome.test to the end of the given promise.
- * @param {Promise} promise Promise.
+ * @param {Promise} promise Promise to add the check to.
+ * @param {Array<!RemoteCall>} apps An array of RemoteCall interfaces.
  */
 function testPromiseAndApps(promise, apps) {
   promise.then(function() {
@@ -68,7 +71,7 @@ function testPromiseAndApps(promise, apps) {
         }));
   }).then(chrome.test.callbackPass(function() {
     // The callbackPass is necessary to avoid prematurely finishing tests.
-    // Don't put chrome.test.succeed() here to avoid doubled success log.
+    // Don't use chrome.test.succeed() here to avoid doubled success log.
   }), function(error) {
     chrome.test.fail(error.stack || error);
   });
