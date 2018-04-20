@@ -18,6 +18,7 @@ class EquivalenceMap;
 class OffsetMapper;
 class ImageIndex;
 class PatchElementWriter;
+class ReferenceBytesMixer;
 class ReferenceDeltaSink;
 class ReferenceSet;
 class TargetPool;
@@ -48,6 +49,7 @@ bool GenerateRawDelta(ConstBufferView old_image,
                       ConstBufferView new_image,
                       const EquivalenceMap& equivalence_map,
                       const ImageIndex& new_image_index,
+                      ReferenceBytesMixer* reference_bytes_mixer,
                       PatchElementWriter* patch_writer);
 
 // Writes reference delta between references from |old_refs| and from
