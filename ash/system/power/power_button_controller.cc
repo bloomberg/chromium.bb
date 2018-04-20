@@ -257,12 +257,19 @@ void PowerButtonController::OnPowerButtonEvent(
     power_button_menu_timer_.Stop();
     pre_shutdown_timer_.Stop();
 
-    // Cancel the menu animation if it's still ongoing when the button is
-    // released on a clamshell device.
-    if (!ShouldTurnScreenOffForTap() && IsMenuOpened() &&
-        !show_menu_animation_done_) {
-      static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
-          ->ScheduleShowHideAnimation(false);
+    if (!ShouldTurnScreenOffForTap()) {
+      // Cancel the menu animation if it's still ongoing when the button is
+      // released on a laptop-mode device.
+      if (IsMenuOpened() && !show_menu_animation_done_) {
+        static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
+            ->ScheduleShowHideAnimation(false);
+      }
+
+      // If the button is tapped (i.e. not held long enough to start the
+      // cancellable shutdown animation) while the menu is open, dismiss the
+      // menu.
+      if (menu_shown_when_power_button_down_ && pre_shutdown_timer_was_running)
+        DismissMenu();
     }
 
     // Ignore the event if it comes too soon after the last one.
