@@ -74,7 +74,7 @@ Msgs.addTranslatedMessagesToDom = function(root) {
     if (!msgid) {
       throw new Error('Element has no msgid attribute: ' + elts[i]);
     }
-    var val = this.getMsg(msgid);
+    var val = Msgs.getMsg(msgid);
     if (elts[i].tagName == 'INPUT') {
       elts[i].setAttribute('placeholder', val);
     } else {
@@ -105,7 +105,7 @@ Msgs.getNumber = function(num) {
 Msgs.getLocaleDisplayName = function(locale) {
   if (!Msgs.localeNameDict_) {
     Msgs.localeNameDict_ =
-        /** @type {!Object<string>} */ (JSON.parse(this.getMsg('locale_dict')));
+        /** @type {!Object<string>} */ (JSON.parse(Msgs.getMsg('locale_dict')));
   }
   var name = Msgs.localeNameDict_[locale];
   if (!name) {

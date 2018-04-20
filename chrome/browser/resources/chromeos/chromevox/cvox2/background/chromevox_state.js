@@ -102,5 +102,5 @@ ChromeVoxState.observers = [];
  * @param {ChromeVoxStateObserver} observer
  */
 ChromeVoxState.addObserver = function(observer) {
-  this.observers.push(observer);
+  ChromeVoxState.observers.push(observer);
 };

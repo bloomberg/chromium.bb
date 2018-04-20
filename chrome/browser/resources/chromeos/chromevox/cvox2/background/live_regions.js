@@ -81,7 +81,6 @@ LiveRegions.prototype = {
     if (!node.containerLiveStatus)
       return;
 
-    var mode = this.chromeVoxState_.mode;
     var currentRange = this.chromeVoxState_.currentRange;
 
     if (!cvox.ChromeVox.isActive)
