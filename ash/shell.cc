@@ -897,6 +897,8 @@ Shell::~Shell() {
   display_shutdown_observer_.reset();
 
   PowerStatus::Shutdown();
+  // Depends on SessionController.
+  power_event_observer_.reset();
 
   // Needs to happen right before |instance_| is reset.
   shell_port_.reset();

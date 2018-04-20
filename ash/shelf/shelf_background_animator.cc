@@ -112,9 +112,9 @@ ShelfBackgroundAnimator::ShelfBackgroundAnimator(
     ShelfBackgroundType background_type,
     Shelf* shelf,
     WallpaperController* wallpaper_controller)
-    : shelf_(shelf),
-      wallpaper_controller_(wallpaper_controller),
-      scoped_session_observer_(this) {
+    : shelf_(shelf), wallpaper_controller_(wallpaper_controller) {
+  if (Shell::HasInstance())  // Null in testing::Test.
+    Shell::Get()->session_controller()->AddObserver(this);
   if (wallpaper_controller_)
     wallpaper_controller_->AddObserver(this);
   if (shelf_)
@@ -130,6 +130,8 @@ ShelfBackgroundAnimator::~ShelfBackgroundAnimator() {
     wallpaper_controller_->RemoveObserver(this);
   if (shelf_)
     shelf_->RemoveObserver(this);
+  if (Shell::HasInstance())  // Null in testing::Test.
+    Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 void ShelfBackgroundAnimator::AddObserver(

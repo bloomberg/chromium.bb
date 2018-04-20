@@ -185,8 +185,6 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
 
   base::ObserverList<ShelfBackgroundAnimatorObserver> observers_;
 
-  ScopedSessionObserver scoped_session_observer_;
-
   DISALLOW_COPY_AND_ASSIGN(ShelfBackgroundAnimator);
 };
 
