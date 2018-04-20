@@ -15,6 +15,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace net {
+class URLRequest;
+}
+
 namespace network {
 
 struct ResourceResponse;
@@ -36,7 +40,57 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     kOthers = 4,
 
     kMax,
-    kInvalid = kMax,
+    kInvalidMimeType = kMax,
+  };
+
+  // An instance for tracking the state of analyzing a single response
+  // and deciding whether CORB should block the response.
+  class COMPONENT_EXPORT(NETWORK_SERVICE) ResponseAnalyzer {
+   public:
+    // Creates a ResponseAnalyzer for the |request|, |response| pair.  The
+    // ResponseAnalyzer will decide whether |response| needs to be blocked.
+    ResponseAnalyzer(const net::URLRequest& request,
+                     const ResourceResponse& response);
+
+    ~ResponseAnalyzer();
+
+    bool should_allow_based_on_headers() {
+      return should_block_based_on_headers_ == kAllow;
+    }
+
+    bool needs_sniffing() {
+      return should_block_based_on_headers_ == kNeedToSniffMore;
+    }
+
+    const CrossOriginReadBlocking::MimeType& canonical_mime_type() {
+      return canonical_mime_type_;
+    }
+
+   private:
+    // Three conclusions are possible from looking at the headers:
+    //   - Allow: response doesn't need to be blocked (e.g. if it is same-origin
+    //     or has been allowed via CORS headers)
+    //   - Block: response needs to be blocked (e.g. text/html + nosniff)
+    //   - NeedMoreData: cannot decide yet - need to sniff more body first.
+    enum BlockingDecision {
+      kAllow,
+      kBlock,
+      kNeedToSniffMore,
+    };
+    BlockingDecision ShouldBlockBasedOnHeaders(
+        const net::URLRequest& request,
+        const ResourceResponse& response);
+
+    // Outcome of ShouldBlockBasedOnHeaders recorder inside the Create method.
+    BlockingDecision should_block_based_on_headers_;
+
+    // Canonical MIME type detected by ShouldBlockBasedOnHeaders.  Used to
+    // determine if blocking the response is needed, as well as which type of
+    // sniffing to perform.
+    CrossOriginReadBlocking::MimeType canonical_mime_type_ =
+        CrossOriginReadBlocking::MimeType::kInvalidMimeType;
+
+    DISALLOW_COPY_AND_ASSIGN(ResponseAnalyzer);
   };
 
   // Used to strip response headers if a decision to block has been made.
