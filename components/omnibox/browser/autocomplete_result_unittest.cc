@@ -892,11 +892,6 @@ TEST_F(AutocompleteResultTest, ConvertsOpenTabsCorrectly) {
   result.ConvertOpenTabMatches(&client, nullptr);
 
   EXPECT_TRUE(result.match_at(0)->has_tab_match);
-  EXPECT_EQ(base::UTF8ToUTF16("Switch to tab"),
-            result.match_at(0)->description);
   EXPECT_TRUE(result.match_at(1)->has_tab_match);
-  EXPECT_EQ(base::UTF8ToUTF16("Switch to tab - Some Other Site"),
-            result.match_at(1)->description);
   EXPECT_FALSE(result.match_at(2)->has_tab_match);
-  EXPECT_EQ(base::string16(), result.match_at(2)->description);
 }

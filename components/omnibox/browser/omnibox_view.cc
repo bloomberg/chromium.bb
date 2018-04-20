@@ -87,17 +87,6 @@ void OmniboxView::OpenMatch(const AutocompleteMatch& match,
   // Invalid URLs such as chrome://history can end up here.
   if (!match.destination_url.is_valid() || !model_)
     return;
-  // Unless user requests navigation, change disposition for this match type
-  // so downstream will switch tabs.
-  if (match.has_tab_match) {
-    // "with-button" option inverts default action.
-    bool invert = OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial();
-    if (disposition == WindowOpenDisposition::CURRENT_TAB &&
-        // i.e. If shift is not pressed without button, or down with it,
-        // change it to switch tabs.
-        invert == shift_key_down_)
-      disposition = WindowOpenDisposition::SWITCH_TO_TAB;
-  }
   model_->OpenMatch(
       match, disposition, alternate_nav_url, pasted_text, selected_line);
 }

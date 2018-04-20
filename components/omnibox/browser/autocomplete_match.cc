@@ -205,10 +205,6 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
   if (is_bookmark)
     return is_touch_ui ? omnibox::kTouchableBookmarkIcon : omnibox::kStarIcon;
 
-  if (is_tab_match &&
-      !OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial()) {
-    return omnibox::kTabIcon;
-  }
   switch (type) {
     case Type::URL_WHAT_YOU_TYPED:
     case Type::HISTORY_URL:
