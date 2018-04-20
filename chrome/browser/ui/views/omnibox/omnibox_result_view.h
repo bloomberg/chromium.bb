@@ -67,7 +67,7 @@ class OmniboxResultView : public views::View,
   void OnMatchIconUpdated();
 
   // Stores the image in a local data member and schedules a repaint.
-  void SetAnswerImage(const gfx::ImageSkia& image);
+  void SetRichSuggestionImage(const gfx::ImageSkia& image);
 
   // views::ButtonListener:
 

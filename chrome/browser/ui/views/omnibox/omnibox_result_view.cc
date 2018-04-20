@@ -403,7 +403,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   keyword_view_->OnMatchUpdate(match_);
 
   suggestion_view_->image()->SetVisible(
-      false);  // Until SetAnswerImage is called.
+      false);  // Until SetRichSuggestionImage is called.
   keyword_view_->icon()->SetVisible(match_.associated_keyword.get());
 
   if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial() &&
@@ -503,7 +503,7 @@ void OmniboxResultView::OnMatchIconUpdated() {
   SchedulePaint();
 }
 
-void OmniboxResultView::SetAnswerImage(const gfx::ImageSkia& image) {
+void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
   suggestion_view_->image()->SetImage(image);
   suggestion_view_->image()->SetVisible(true);
   Layout();

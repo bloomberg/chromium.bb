@@ -129,8 +129,10 @@ class OmniboxPopupModel {
   void RemoveObserver(OmniboxPopupModelObserver* observer);
 
   // Stores the image in a local data member and schedules a repaint.
-  void SetAnswerBitmap(const SkBitmap& bitmap);
-  const SkBitmap& answer_bitmap() const { return answer_bitmap_; }
+  void SetRichSuggestionBitmap(const SkBitmap& bitmap);
+  const SkBitmap& rich_suggestion_bitmap() const {
+    return rich_suggestion_bitmap_;
+  }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Gets the icon for the match index.
@@ -145,7 +147,7 @@ class OmniboxPopupModel {
  private:
   void OnFaviconFetched(const GURL& page_url, const gfx::Image& icon);
 
-  SkBitmap answer_bitmap_;
+  SkBitmap rich_suggestion_bitmap_;
 
   OmniboxPopupView* view_;
 

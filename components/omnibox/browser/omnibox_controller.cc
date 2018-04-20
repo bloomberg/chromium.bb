@@ -65,9 +65,10 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
 
   // Note: The client outlives |this|, so bind a weak pointer to the callback
   // passed in to eliminate the potential for crashes on shutdown.
-  client_->OnResultChanged(result(), default_match_changed,
-                           base::Bind(&OmniboxController::SetAnswerBitmap,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  client_->OnResultChanged(
+      result(), default_match_changed,
+      base::Bind(&OmniboxController::SetRichSuggestionBitmap,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OmniboxController::InvalidateCurrentMatch() {
@@ -80,6 +81,6 @@ void OmniboxController::ClearPopupKeywordMode() const {
     popup_->SetSelectedLineState(OmniboxPopupModel::NORMAL);
 }
 
-void OmniboxController::SetAnswerBitmap(const SkBitmap& bitmap) {
-  popup_->SetAnswerBitmap(bitmap);
+void OmniboxController::SetRichSuggestionBitmap(const SkBitmap& bitmap) {
+  popup_->SetRichSuggestionBitmap(bitmap);
 }
