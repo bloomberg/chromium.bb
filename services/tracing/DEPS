@@ -1,3 +1,5 @@
 include_rules = [
-  "+services/service_manager/public"
+  "+services/service_manager/public",
+  "+third_party/perfetto/include",
+  "+third_party/perfetto/protos/perfetto",
 ]
