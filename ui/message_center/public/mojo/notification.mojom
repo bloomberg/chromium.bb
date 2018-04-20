@@ -62,7 +62,7 @@ struct RichNotificationData {
   bool should_make_spoken_feedback_for_popup_updates;
   bool pinned;
   // |vibration_pattern| intentionally omitted
-  // |renotify| intentionally omitted
+  bool renotify;
   // |silent| intentionally omitted
   mojo_base.mojom.String16 accessible_name;
   string vector_small_image_id;

@@ -49,6 +49,8 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
                   .should_make_spoken_feedback_for_popup_updates,
               output.rich_notification_data()
                   .should_make_spoken_feedback_for_popup_updates);
+    EXPECT_EQ(input.pinned(), output.pinned());
+    EXPECT_EQ(input.renotify(), output.renotify());
     EXPECT_EQ(input.accessible_name(), output.accessible_name());
     EXPECT_EQ(input.accent_color(), output.accent_color());
     EXPECT_EQ(input.should_show_settings_button(),

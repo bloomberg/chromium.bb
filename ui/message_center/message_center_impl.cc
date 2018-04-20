@@ -109,6 +109,16 @@ bool MessageCenterImpl::IsMessageCenterVisible() const {
   return visible_;
 }
 
+void MessageCenterImpl::SetHasMessageCenterView(bool has_message_center_view) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  has_message_center_view_ = has_message_center_view;
+}
+
+bool MessageCenterImpl::HasMessageCenterView() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return has_message_center_view_;
+}
+
 size_t MessageCenterImpl::NotificationCount() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return visible_notifications_.size();

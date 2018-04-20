@@ -175,6 +175,14 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // Allows querying the visibility of the center.
   virtual bool IsMessageCenterVisible() const = 0;
 
+  // Informs the MessageCenter whether there's a bubble anchored to a system
+  // tray which holds notifications. If false, only toasts are shown (e.g. on
+  // desktop Linux and Windows). When there's no message center view, updated
+  // notifications will be re-appear as toasts even if they've already been
+  // shown.
+  virtual void SetHasMessageCenterView(bool has_message_center_view) = 0;
+  virtual bool HasMessageCenterView() const = 0;
+
   // UI classes should call this when there is cause to leave popups visible for
   // longer than the default (for example, when the mouse hovers over a popup).
   virtual void PausePopupTimers() = 0;

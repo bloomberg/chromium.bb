@@ -41,6 +41,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterImpl
   void RemoveNotificationBlocker(NotificationBlocker* blocker) override;
   void SetVisibility(Visibility visible) override;
   bool IsMessageCenterVisible() const override;
+  void SetHasMessageCenterView(bool has_message_center_view) override;
+  bool HasMessageCenterView() const override;
   size_t NotificationCount() const override;
   bool HasPopupNotifications() const override;
   bool IsQuietMode() const override;
@@ -97,6 +99,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterImpl
   std::vector<NotificationBlocker*> blockers_;
 
   bool visible_ = false;
+  bool has_message_center_view_ = true;
 
   base::string16 system_notification_app_name_;
 
