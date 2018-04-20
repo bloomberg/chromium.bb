@@ -87,7 +87,6 @@ void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
   render_info.left_eye_model.proj_matrix = proj_matrix;
   render_info.left_eye_model.view_proj_matrix = proj_matrix * view_matrix;
   render_info.right_eye_model = render_info.left_eye_model;
-  render_info.surface_texture_size = frame_buffer_size_;
   render_info.left_eye_model.viewport = {0, 0, frame_buffer_size_.width(),
                                          frame_buffer_size_.height()};
   render_info.right_eye_model.viewport = {0, 0, 0, 0};

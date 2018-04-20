@@ -307,6 +307,14 @@ bool UiElement::IsVisible() const {
          computed_opacity() > 0.0f;
 }
 
+bool UiElement::IsVisibleAndOpaque() const {
+  DCHECK(update_phase_ >= kUpdatedComputedOpacity ||
+         FrameLifecycle::phase() >= kUpdatedComputedOpacity);
+  // TODO(crbug.com/832216): we shouldn't need to check opacity() here.
+  return update_phase_ != kDirty && opacity() == 1.0f &&
+         computed_opacity() == 1.0f;
+}
+
 bool UiElement::IsOrWillBeLocallyVisible() const {
   return opacity() > 0.0f || GetTargetOpacity() > 0.0f;
 }

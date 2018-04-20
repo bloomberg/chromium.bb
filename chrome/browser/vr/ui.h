@@ -21,6 +21,7 @@ namespace vr {
 
 class AudioDelegate;
 class BrowserUiInterface;
+class ContentElement;
 class ContentInputDelegate;
 class ContentInputForwarder;
 class KeyboardDelegate;
@@ -168,9 +169,15 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void AcceptDoffPromptForTesting();
   void PerformUiActionForTesting(UiTestInput test_input);
 
+  bool IsContentVisibleAndOpaque();
+  bool IsContentOverlayTextureEmpty();
+  void SetContentUsesQuadLayer(bool uses_quad_buffers);
+  gfx::Transform GetContentWorldSpaceTransform();
+
  private:
   void InitializeModel(const UiInitialState& ui_initial_state);
   UiBrowserInterface* browser_;
+  ContentElement* GetContentElement();
 
   // This state may be further abstracted into a SkiaUi object.
   std::unique_ptr<UiScene> scene_;
@@ -180,6 +187,10 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   std::unique_ptr<UiInputManager> input_manager_;
   std::unique_ptr<UiRenderer> ui_renderer_;
   std::unique_ptr<SkiaSurfaceProvider> provider_;
+
+  // Cache the content element so we don't have to get it multiple times per
+  // frame.
+  ContentElement* content_element_ = nullptr;
 
   AudioDelegate* audio_delegate_ = nullptr;
 

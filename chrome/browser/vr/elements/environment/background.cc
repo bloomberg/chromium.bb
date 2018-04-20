@@ -309,6 +309,7 @@ void Background::Renderer::Draw(const gfx::Transform& view_proj_matrix,
                                 float normal_factor,
                                 float incognito_factor,
                                 float fullscreen_factor) {
+  glDisable(GL_BLEND);
   glUseProgram(program_handle_);
 
   // Pass in model view project matrix.

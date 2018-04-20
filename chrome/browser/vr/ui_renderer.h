@@ -21,7 +21,6 @@ class UiElementRenderer;
 // matrix.
 struct RenderInfo {
   gfx::Transform head_pose;
-  gfx::Size surface_texture_size;
   CameraModel left_eye_model;
   CameraModel right_eye_model;
 };
