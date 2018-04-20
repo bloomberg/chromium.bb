@@ -81,7 +81,7 @@
     "label": "//android_webview/test:android_webview_unittests",
     "type": "console_test_launcher",
   },
-  "angle": {
+  "libANGLE": {
     "label": "//third_party/angle:libANGLE",
     "type": "additional_compile_target",
   },
@@ -1264,7 +1264,7 @@
     "label": "//url:url_unittests",
     "type": "console_test_launcher",
   },
-  "v8_all": {
+  "v8:gn_all": {
     "label": "//v8:gn_all",
     "type": "additional_compile_target",
   },
