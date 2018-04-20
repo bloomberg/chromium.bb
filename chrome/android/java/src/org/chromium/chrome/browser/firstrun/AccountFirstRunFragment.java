@@ -24,14 +24,6 @@ import org.chromium.components.signin.ChildAccountStatus;
  */
 public class AccountFirstRunFragment
         extends Fragment implements FirstRunFragment, AccountSigninView.Delegate {
-    /** FRE page that instantiates this fragment. */
-    public static class Page implements FirstRunPage<AccountFirstRunFragment> {
-        @Override
-        public AccountFirstRunFragment instantiateFragment() {
-            return new AccountFirstRunFragment();
-        }
-    }
-
     // Per-page parameters:
     public static final String FORCE_SIGNIN_ACCOUNT_TO = "ForceSigninAccountTo";
     public static final String PRESELECT_BUT_ALLOW_TO_CHANGE = "PreselectButAllowToChange";

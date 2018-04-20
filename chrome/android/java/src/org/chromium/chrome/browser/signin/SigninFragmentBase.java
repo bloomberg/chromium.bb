@@ -30,6 +30,7 @@ import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerResult;
 import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.GmsAvailabilityException;
 import org.chromium.components.signin.GmsJustUpdatedException;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -52,12 +53,17 @@ public abstract class SigninFragmentBase
     private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
 
     private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
+    private static final String ARGUMENT_ACCOUNT_NAME = "SigninFragmentBase.AccountName";
+    private static final String ARGUMENT_IS_DEFAULT_ACCOUNT = "SigninFragmentBase.IsDefaultAccount";
+    private static final String ARGUMENT_CHILD_ACCOUNT_STATUS =
+            "SigninFragmentBase.ChildAccountStatus";
+
     public static final String ACCOUNT_PICKER_DIALOG_TAG =
             "SigninFragmentBase.AccountPickerDialogFragment";
 
     private @SigninAccessPoint int mSigninAccessPoint;
-    // TODO(https://crbug.com/814728): Pass this as Fragment argument.
-    private boolean mAllowAccountSelection = true;
+    private boolean mForceSignin;
+    private @ChildAccountStatus.Status int mChildAccountStatus;
 
     private SigninView mView;
     private ConsentTextTracker mConsentTextTracker;
@@ -79,12 +85,31 @@ public abstract class SigninFragmentBase
     private long mGmsIsUpdatingDialogShowTime;
 
     /**
-     * Creates an argument bundle to start AccountSigninView from the account selection page.
+     * Creates an argument bundle for the default SigninFragmentBase flow (default account will be
+     * selected, account selection is enabled, etc.).
      * @param accessPoint The access point for starting signin flow.
      */
     protected static Bundle createArguments(@SigninAccessPoint int accessPoint) {
         Bundle result = new Bundle();
         result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        return result;
+    }
+
+    /**
+     * Creates an argument bundle for a custom SigninFragmentBase flow.
+     * @param accessPoint The access point for starting signin flow.
+     * @param accountName The account to preselect.
+     * @param isDefaultAccount Whether the selected account is the default one.
+     * @param childAccountStatus Whether the selected account is a child one.
+     */
+    protected static Bundle createArgumentsForForcedSigninFlow(@SigninAccessPoint int accessPoint,
+            String accountName, boolean isDefaultAccount,
+            @ChildAccountStatus.Status int childAccountStatus) {
+        Bundle result = new Bundle();
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
+        result.putBoolean(ARGUMENT_IS_DEFAULT_ACCOUNT, isDefaultAccount);
+        result.putInt(ARGUMENT_CHILD_ACCOUNT_STATUS, childAccountStatus);
         return result;
     }
 
@@ -116,12 +141,23 @@ public abstract class SigninFragmentBase
         return mSigninAccessPoint;
     }
 
+    /** Returns whether this fragment is in "force sign-in" mode. */
+    protected boolean isForcedSignin() {
+        return mForceSignin;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Bundle arguments = getSigninArguments();
         initAccessPoint(arguments.getInt(ARGUMENT_ACCESS_POINT, -1));
+
+        mSelectedAccountName = arguments.getString(ARGUMENT_ACCOUNT_NAME, null);
+        mIsDefaultAccountSelected = arguments.getBoolean(ARGUMENT_IS_DEFAULT_ACCOUNT, false);
+        mChildAccountStatus =
+                arguments.getInt(ARGUMENT_CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
+        mForceSignin = mSelectedAccountName != null;
 
         mConsentTextTracker = new ConsentTextTracker(getResources());
 
@@ -182,6 +218,7 @@ public abstract class SigninFragmentBase
     }
 
     private void updateConsentText() {
+        // TODO(https://crbug.com/814728): Change texts if mIsChildAccount is true.
         mConsentTextTracker.setText(mView.getTitleView(), R.string.signin_title);
         mConsentTextTracker.setText(
                 mView.getSyncDescriptionView(), R.string.signin_sync_description);
@@ -198,6 +235,7 @@ public abstract class SigninFragmentBase
         NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
+                // TODO(https://crbug.com/814728): Ignore clicks until account is preselected.
                 onSigninAccepted(mSelectedAccountName, mIsDefaultAccountSelected, true);
                 RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
 
@@ -347,7 +385,7 @@ public abstract class SigninFragmentBase
         if (mSelectedAccountName != null && mAccountNames.contains(mSelectedAccountName)) return;
 
         // No selected account
-        if (!mAllowAccountSelection) {
+        if (mForceSignin) {
             onSigninRefused();
             return;
         }
