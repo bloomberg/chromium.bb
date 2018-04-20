@@ -234,11 +234,6 @@ void EasyUnlockServiceSignin::SetRemoteDevices(const base::ListValue& devices) {
   NOTREACHED();
 }
 
-void EasyUnlockServiceSignin::SetRemoteBleDevices(
-    const base::ListValue& devices) {
-  NOTREACHED();
-}
-
 void EasyUnlockServiceSignin::RunTurnOffFlow() {
   NOTREACHED();
 }
