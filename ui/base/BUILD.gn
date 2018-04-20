@@ -210,7 +210,6 @@ component("base") {
     "l10n/l10n_util_collator.h",
     "l10n/l10n_util_mac.h",
     "l10n/l10n_util_mac.mm",
-    "l10n/l10n_util_posix.cc",
     "l10n/l10n_util_win.cc",
     "l10n/l10n_util_win.h",
     "l10n/time_format.cc",
@@ -325,6 +324,10 @@ component("base") {
     "work_area_watcher_observer.h",
   ]
 
+  if (is_posix) {
+    sources += [ "l10n/l10n_util_posix.cc" ]
+  }
+
   if (!is_ios) {
     sources += [
       "accelerators/accelerator.cc",
@@ -394,6 +397,7 @@ component("base") {
   if (is_fuchsia) {
     sources += [
       "idle/idle_fuchsia.cc",
+      "l10n/l10n_util_posix.cc",
       "resource/resource_bundle_fuchsia.cc",
     ]
   }
