@@ -14,7 +14,7 @@ enum LandmarkType { MOUTH, EYE };
 
 // https://wicg.github.io/shape-detection-api/#dictdef-landmark
 struct Landmark {
-  array<gfx.mojom.PointF> locations;
+  gfx.mojom.PointF location;
   LandmarkType type;
 };
 
