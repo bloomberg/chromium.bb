@@ -19,6 +19,10 @@
 #include "cc/raster/task_graph_work_queue.h"
 #include "content/common/content_export.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
 
 // A pool of threads used to run categorized work. The work can be scheduled on
@@ -69,9 +73,11 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   // Create a new sequenced task graph runner.
   scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner();
 
-  base::PlatformThreadId background_worker_thread_id() const {
-    return threads_.back()->tid();
-  }
+  // Runs the callback on the specified task-runner once the background worker
+  // thread is initialized.
+  void SetBackgroundingCallback(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::OnceCallback<void(base::PlatformThreadId)> callback);
 
  protected:
   ~CategorizedWorkerPool() override;
@@ -145,6 +151,9 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   base::ConditionVariable has_namespaces_with_finished_running_tasks_cv_;
   // Set during shutdown. Tells Run() to return when no more tasks are pending.
   bool shutdown_;
+
+  base::OnceCallback<void(base::PlatformThreadId)> backgrounding_callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> background_task_runner_;
 };
 
 }  // namespace content

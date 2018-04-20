@@ -39,21 +39,15 @@ class CallbackThread : public base::SimpleThread {
   ~CallbackThread() override {}
 
   // base::SimpleThread overrides.
-  void Start() override {
-    {
-      ProxyAutoLock acquire;
-      // Create the message loop here, after PpapiGlobals has been created.
-      message_loop_ = new MessageLoopResource(instance_);
-    }
-    base::SimpleThread::Start();
+  void BeforeStart() override {
+    ProxyAutoLock acquire;
+    // Create the message loop here, after PpapiGlobals has been created.
+    message_loop_ = new MessageLoopResource(instance_);
   }
-  void Join() override {
-    {
-      ProxyAutoLock acquire;
-      message_loop()->PostQuit(PP_TRUE);
-      message_loop_ = nullptr;
-    }
-    base::SimpleThread::Join();
+  void BeforeJoin() override {
+    ProxyAutoLock acquire;
+    message_loop()->PostQuit(PP_TRUE);
+    message_loop_ = nullptr;
   }
   void Run() override {
     ProxyAutoLock acquire;
