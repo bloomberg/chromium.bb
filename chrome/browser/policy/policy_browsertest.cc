@@ -52,6 +52,7 @@
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
@@ -291,13 +292,13 @@ const char kCookieOptions[] = ";expires=Wed Jan 01 2038 00:00:00 GMT";
 const base::FilePath::CharType kTestExtensionsDir[] =
     FILE_PATH_LITERAL("extensions");
 const base::FilePath::CharType kGoodCrxName[] = FILE_PATH_LITERAL("good.crx");
-const base::FilePath::CharType kAdBlockCrxName[] =
-    FILE_PATH_LITERAL("adblock.crx");
+const base::FilePath::CharType kSimpleWithIconCrxName[] =
+    FILE_PATH_LITERAL("simple_with_icon.crx");
 const base::FilePath::CharType kHostedAppCrxName[] =
     FILE_PATH_LITERAL("hosted_app.crx");
 
 const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
-const char kAdBlockCrxId[] = "dojnnbeimaimaojcialkkgajdnefpgcn";
+const char kSimpleWithIconCrxId[] = "dehdlahnlebladnfleagmjdapdjdcnlp";
 const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 
 const base::FilePath::CharType kGood2CrxManifestName[] =
@@ -1641,7 +1642,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
   // Verifies that blacklisted extensions can't be installed.
   ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
-  ASSERT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  ASSERT_FALSE(service->GetExtensionById(kSimpleWithIconCrxId, true));
   base::ListValue blacklist;
   blacklist.AppendString(kGoodCrxId);
   PolicyMap policies;
@@ -1654,12 +1655,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
   EXPECT_FALSE(InstallExtension(kGoodCrxName));
   EXPECT_FALSE(service->GetExtensionById(kGoodCrxId, true));
 
-  // "adblock.crx" is not.
-  const extensions::Extension* adblock = InstallExtension(kAdBlockCrxName);
-  ASSERT_TRUE(adblock);
-  EXPECT_EQ(kAdBlockCrxId, adblock->id());
-  EXPECT_EQ(adblock,
-            service->GetExtensionById(kAdBlockCrxId, true));
+  // "simple_with_icon.crx" is not.
+  const extensions::Extension* simple_with_icon =
+      InstallExtension(kSimpleWithIconCrxName);
+  ASSERT_TRUE(simple_with_icon);
+  EXPECT_EQ(kSimpleWithIconCrxId, simple_with_icon->id());
+  EXPECT_EQ(simple_with_icon,
+            service->GetExtensionById(kSimpleWithIconCrxId, true));
 }
 
 // Ensure that bookmark apps are not blocked by the ExtensionInstallBlacklist
@@ -1770,10 +1772,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionSettings_BookmarkApp) {
 #endif
 IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklistWildcard) {
   // Verify that a wildcard blacklist takes effect.
-  EXPECT_TRUE(InstallExtension(kAdBlockCrxName));
+  EXPECT_TRUE(InstallExtension(kSimpleWithIconCrxName));
   ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
-  ASSERT_TRUE(service->GetExtensionById(kAdBlockCrxId, true));
+  ASSERT_TRUE(service->GetExtensionById(kSimpleWithIconCrxId, true));
   base::ListValue blacklist;
   blacklist.AppendString("*");
   PolicyMap policies;
@@ -1782,14 +1784,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklistWildcard) {
                blacklist.CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
 
-  // AdBlock should be disabled.
-  EXPECT_TRUE(service->GetExtensionById(kAdBlockCrxId, true));
-  EXPECT_FALSE(service->IsExtensionEnabled(kAdBlockCrxId));
+  // "simple_with_icon" should be disabled.
+  EXPECT_TRUE(service->GetExtensionById(kSimpleWithIconCrxId, true));
+  EXPECT_FALSE(service->IsExtensionEnabled(kSimpleWithIconCrxId));
 
-  // It shouldn't be possible to re-enable AdBlock, until it satisfies
-  // management policy.
-  service->EnableExtension(kAdBlockCrxId);
-  EXPECT_FALSE(service->IsExtensionEnabled(kAdBlockCrxId));
+  // It shouldn't be possible to re-enable "simple_with_icon", until it
+  // satisfies management policy.
+  service->EnableExtension(kSimpleWithIconCrxId);
+  EXPECT_FALSE(service->IsExtensionEnabled(kSimpleWithIconCrxId));
 
   // It shouldn't be possible to install good.crx.
   EXPECT_FALSE(InstallExtension(kGoodCrxName));
@@ -1884,7 +1886,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
   // Verifies that the whitelist can open exceptions to the blacklist.
   ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
-  ASSERT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  ASSERT_FALSE(service->GetExtensionById(kSimpleWithIconCrxId, true));
   base::ListValue blacklist;
   blacklist.AppendString("*");
   base::ListValue whitelist;
@@ -1897,9 +1899,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                whitelist.CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
-  // "adblock.crx" is blacklisted.
-  EXPECT_FALSE(InstallExtension(kAdBlockCrxName));
-  EXPECT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  // "simple_with_icon.crx" is blacklisted.
+  EXPECT_FALSE(InstallExtension(kSimpleWithIconCrxName));
+  EXPECT_FALSE(service->GetExtensionById(kSimpleWithIconCrxId, true));
   // "good.crx" has a whitelist exception.
   const extensions::Extension* good = InstallExtension(kGoodCrxName);
   ASSERT_TRUE(good);
@@ -2161,6 +2163,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
+  extensions::ScopedInstallVerifierBypassForTest install_verifier_bypass;
 
   const GURL install_source_url(
       URLRequestMockHTTPJob::GetMockUrl("extensions/*"));
@@ -2197,7 +2200,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
 
   // The first extension shouldn't be present, the second should be there.
   EXPECT_FALSE(extension_service()->GetExtensionById(kGoodCrxId, true));
-  EXPECT_TRUE(extension_service()->GetExtensionById(kAdBlockCrxId, false));
+  EXPECT_TRUE(
+      extension_service()->GetExtensionById(kSimpleWithIconCrxId, false));
 }
 
 // Verifies that extensions with version older than the minimum version required
