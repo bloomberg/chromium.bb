@@ -7,8 +7,8 @@ test(function() {
   var div = document.createElement('div');
   div.setAttribute('style', 'border-image: round');
   assert_equals(div.style.borderImageRepeat, 'round');
-  assert_equals(div.style.borderImageSlice, 'initial');
-  assert_equals(div.style.borderImage, 'round');
+  assert_equals(div.style.borderImageSlice, '100%');
+  assert_equals(div.style.borderImage, 'none 100% / 1 / 0 round');
 
   div.setAttribute('style', 'border-image: url("https://example.com/") 1% 2% 3% 4% fill / 5px 6px 7px 8px / 9px 10px 11px 12px round space');
   assert_equals(div.style.borderImageRepeat, 'round space');

@@ -319,9 +319,6 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
     case CSSPropertyBorderRight:
     case CSSPropertyBorderBottom:
     case CSSPropertyBorderLeft:
-    // TODO(rob.buis): temporary, makes invalid output until crbug.com/772772 is
-    // fixed
-    case CSSPropertyBorderImage:
     case CSSPropertyOutline:
     case CSSPropertyColumnRule:
     case CSSPropertyColumns:
@@ -1002,14 +999,11 @@ String StylePropertySerializer::BorderImagePropertyValue() const {
   size_t length = arraysize(properties);
   for (size_t i = 0; i < length; ++i) {
     const CSSValue& value = *property_set_.GetPropertyCSSValue(*properties[i]);
-    String value_text = value.CssText();
-    if (value.IsInitialValue())
-      continue;
     if (!result.IsEmpty())
       result.Append(" ");
     if (i == 2 || i == 3)
       result.Append("/ ");
-    result.Append(value_text);
+    result.Append(value.CssText());
   }
   return result.ToString();
 }

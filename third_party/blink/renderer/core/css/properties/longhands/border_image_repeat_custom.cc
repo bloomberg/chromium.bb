@@ -27,5 +27,11 @@ const CSSValue* BorderImageRepeat::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForNinePieceImageRepeat(style.BorderImage());
 }
 
+const CSSValue* BorderImageRepeat::InitialValue() const {
+  DEFINE_STATIC_LOCAL(CSSValue, value,
+                      (CSSIdentifierValue::Create(CSSValueStretch)));
+  return &value;
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

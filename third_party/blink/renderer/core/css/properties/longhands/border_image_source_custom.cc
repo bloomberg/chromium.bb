@@ -32,5 +32,11 @@ const CSSValue* BorderImageSource::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(CSSValueNone);
 }
 
+const CSSValue* BorderImageSource::InitialValue() const {
+  DEFINE_STATIC_LOCAL(CSSValue, value,
+                      (CSSIdentifierValue::Create(CSSValueNone)));
+  return &value;
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

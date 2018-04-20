@@ -28,5 +28,16 @@ const CSSValue* BorderImageWidth::CSSValueFromComputedStyleInternal(
       style.BorderImage().BorderSlices(), style);
 }
 
+const CSSValue* BorderImageWidth::InitialValue() const {
+  DEFINE_STATIC_LOCAL(
+      CSSValue, oneInteger,
+      (CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kInteger)));
+  DEFINE_STATIC_LOCAL(
+      CSSQuadValue, value,
+      (CSSQuadValue::Create(&oneInteger, &oneInteger, &oneInteger, &oneInteger,
+                            CSSQuadValue::kSerializeAsQuad)));
+  return &value;
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

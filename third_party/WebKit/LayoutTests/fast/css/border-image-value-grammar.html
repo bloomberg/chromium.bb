@@ -7,13 +7,13 @@ var element = document.createElement('div');
 var style = element.style;
 style.borderImage = '3 / / 2';
 shouldBeEqualToString("style.getPropertyValue('border-image-slice')", "3");
-shouldBeEqualToString("style.getPropertyValue('border-image-width')", "initial");
+shouldBeEqualToString("style.getPropertyValue('border-image-width')", "1");
 shouldBeEqualToString("style.getPropertyValue('border-image-outset')", "2");
 
 style.borderImage = '4 / 5';
 shouldBeEqualToString("style.getPropertyValue('border-image-slice')", "4");
 shouldBeEqualToString("style.getPropertyValue('border-image-width')", "5");
-shouldBeEqualToString("style.getPropertyValue('border-image-outset')", "initial");
+shouldBeEqualToString("style.getPropertyValue('border-image-outset')", "0");
 
 style.borderImage = '1 / 2 / 3';
 shouldBeEqualToString("style.getPropertyValue('border-image-slice')", "1");
