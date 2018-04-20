@@ -193,6 +193,7 @@ void XRDevice::Dispose() {
 
 void XRDevice::SetXRDisplayInfo(
     device::mojom::blink::VRDisplayInfoPtr display_info) {
+  display_info_id_++;
   display_info_ = std::move(display_info);
   is_external_ = display_info_->capabilities->hasExternalDisplay;
   supports_exclusive_ = (display_info_->capabilities->canPresent);

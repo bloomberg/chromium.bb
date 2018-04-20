@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_frame_of_reference.h"
 
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/modules/xr/xr_device.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_stage_bounds.h"
 
 namespace blink {
@@ -26,6 +29,32 @@ void XRFrameOfReference::UpdateStageBounds(XRStageBounds* bounds) {
   // TODO(bajones): Fire a boundschange event
 }
 
+void XRFrameOfReference::UpdateStageTransform() {
+  const device::mojom::blink::VRDisplayInfoPtr& display_info =
+      session()->device()->xrDisplayInfoPtr();
+
+  if (display_info->stageParameters) {
+    // Use the transform given by xrDisplayInfo's stageParamters if available.
+    const WTF::Vector<float>& m =
+        display_info->stageParameters->standingTransform;
+    pose_transform_ = TransformationMatrix::Create(
+        m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
+        m[11], m[12], m[13], m[14], m[15]);
+  } else if (emulated_height_ != 0.0) {
+    // Otherwise, if this frame of reference has specified that an emulated
+    // height may be used, create a transform based on that.
+    pose_transform_ = TransformationMatrix::Create();
+    pose_transform_->Translate3d(0, emulated_height_, 0);
+  } else {
+    // If stage parameters aren't available and emulation is disabled, set the
+    // transform to null, which will subsequently cause this frame of reference
+    // to return null poses.
+    pose_transform_.reset();
+  }
+
+  display_info_id_ = session()->device()->xrDisplayInfoPtrId();
+}
+
 // Enables emulated height when using a stage frame of reference, which should
 // only be used if the sytem does not have a native concept of how far above the
 // floor the XRDevice is at any given moment. This applies a static vertical
@@ -33,12 +62,11 @@ void XRFrameOfReference::UpdateStageBounds(XRStageBounds* bounds) {
 // they are standing on a floor plane located at Y = 0. An explicit offset in
 // meters can be given if the page has specific needs.
 void XRFrameOfReference::UseEmulatedHeight(double value) {
-  if (value == 0.0) {
+  if (value == 0.0)
     value = kDefaultEmulationHeight;
-  }
-  emulatedHeight_ = value;
-  pose_transform_ = TransformationMatrix::Create();
-  pose_transform_->Translate3d(0, emulatedHeight_, 0);
+
+  emulated_height_ = value;
+  UpdateStageTransform();
 }
 
 // Transforms a given pose from a "base" coordinate system used by the XR
@@ -67,6 +95,11 @@ std::unique_ptr<TransformationMatrix> XRFrameOfReference::TransformBasePose(
       return TransformationMatrix::Create(base_pose);
       break;
     case kTypeStage:
+      // Check first to see if the xrDisplayInfo has updated since the last
+      // call. If so, update the pose transform.
+      if (display_info_id_ != session()->device()->xrDisplayInfoPtrId())
+        UpdateStageTransform();
+
       // If the stage has a transform apply it to the base pose and return that,
       // otherwise return null.
       if (pose_transform_) {
