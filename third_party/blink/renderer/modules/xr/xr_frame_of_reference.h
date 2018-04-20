@@ -32,17 +32,20 @@ class XRFrameOfReference final : public XRCoordinateSystem {
       const TransformationMatrix& base_pose) override;
 
   XRStageBounds* bounds() const { return bounds_; }
-  double emulatedHeight() const { return emulatedHeight_; }
+  double emulatedHeight() const { return emulated_height_; }
 
   Type type() const { return type_; }
 
   void Trace(blink::Visitor*) override;
 
  private:
+  void UpdateStageTransform();
+
   Member<XRStageBounds> bounds_;
-  double emulatedHeight_ = 0.0;
+  double emulated_height_ = 0.0;
   Type type_;
   std::unique_ptr<TransformationMatrix> pose_transform_;
+  unsigned int display_info_id_ = 0;
 };
 
 }  // namespace blink

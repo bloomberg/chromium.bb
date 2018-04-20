@@ -31,6 +31,10 @@ function setPose(pose) {
   mockVRService.mockVRDisplays_[0].setPose(pose);
 }
 
+function setStageTransform(transform) {
+  mockVRService.mockVRDisplays_[0].setStageTransform(transform);
+}
+
 // Returns the submitted frame count for the first display
 function getSubmitFrameCount() {
   return mockVRService.mockVRDisplays_[0].getSubmitFrameCount();
@@ -295,6 +299,24 @@ class MockDevice {
     return Promise.resolve({
       pose: this.presentation_provider_.pose_,
     });
+  }
+
+  setStageTransform(value) {
+    if (value) {
+      if (!this.displayInfo_.stageParameters) {
+        this.displayInfo_.stageParameters = {
+          standingTransform: value,
+          sizeX: 1.5,
+          sizeZ: 1.5,
+        };
+      } else {
+        this.displayInfo_.stageParameters.standingTransform = value;
+      }
+    } else if (this.displayInfo_.stageParameters) {
+      this.displayInfo_.stageParameters = null;
+    }
+
+    this.displayClient_.onChanged(this.displayInfo_);
   }
 
   getSubmitFrameCount() {

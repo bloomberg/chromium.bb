@@ -32,10 +32,10 @@ namespace {
 
 const char kSessionEnded[] = "XRSession has already ended.";
 
-const char kUnknownFrameOfReference[] = "Unknown frame of reference type";
+const char kUnknownFrameOfReference[] = "Unknown frame of reference type.";
 
 const char kNonEmulatedStageNotSupported[] =
-    "Non-emulated 'stage' frame of reference not yet supported";
+    "This device does not support a non-emulated 'stage' frame of reference.";
 
 const double kDegToRad = M_PI / 180.0;
 
@@ -162,8 +162,9 @@ ScriptPromise XRSession::requestFrameOfReference(
     if (!options.disableStageEmulation()) {
       frameOfRef = new XRFrameOfReference(this, XRFrameOfReference::kTypeStage);
       frameOfRef->UseEmulatedHeight(options.stageEmulationHeight());
+    } else if (device_->xrDisplayInfoPtr()->stageParameters) {
+      frameOfRef = new XRFrameOfReference(this, XRFrameOfReference::kTypeStage);
     } else {
-      // TODO(bajones): Support native stages using the standing transform.
       return ScriptPromise::RejectWithDOMException(
           script_state, DOMException::Create(kNotSupportedError,
                                              kNonEmulatedStageNotSupported));

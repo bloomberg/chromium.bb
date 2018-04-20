@@ -66,6 +66,9 @@ class XRDevice final : public EventTargetWithInlineData,
   const device::mojom::blink::VRDisplayInfoPtr& xrDisplayInfoPtr() const {
     return display_info_;
   }
+  // Incremented every time display_info_ is changed, so that other objects that
+  // depend on it can know when they need to update.
+  unsigned int xrDisplayInfoPtrId() const { return display_info_id_; }
 
   void OnFrameFocusChanged();
   // The device may report focus to us - for example if another application is
@@ -96,6 +99,7 @@ class XRDevice final : public EventTargetWithInlineData,
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;
   device::mojom::blink::VRDisplayInfoPtr display_info_;
+  unsigned int display_info_id_ = 0;
 
   mojo::Binding<device::mojom::blink::VRDisplayClient> display_client_binding_;
 };

@@ -12,6 +12,17 @@ var VALID_POSE = {
   angularAcceleration: [1.0, 2.0, 3.0]
 }
 
+// A valid VRPose for when we want the HMD to report being at the origin
+var ORIGIN_POSE = {
+  position: [0.0, 0.0, 0.0],
+  linearVelocity: [0.0, 0.0, 0.0],
+  linearAcceleration: [0.0, -9.8, 0.0],
+  orientation: [0.0, 0.0, 0.0, 1.0],
+  angularVelocity: [0.0, 0.0, 0.0],
+  angularAcceleration: [0.0, 0.0, 0.0]
+}
+
+
 // A valid input grip matrix for  when we don't care about specific values
 var VALID_GRIP = [1, 0, 0, 0,
                   0, 1, 0, 0,
@@ -28,3 +39,8 @@ var VALID_GRIP_WITH_POINTER_OFFSET = [1, 0, 0, 0,
                                       0, 1, 0, 0,
                                       0, 0, 1, 0,
                                       4, 3, 3, 1];
+
+var VALID_STAGE_TRANSFORM = [1, 0, 0, 0,
+                             0, 1, 0, 0,
+                             0, 0, 1, 0,
+                             1.0, 1.65, -1.0, 1];
