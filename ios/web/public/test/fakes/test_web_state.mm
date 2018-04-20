@@ -143,8 +143,8 @@ CRWJSInjectionReceiver* TestWebState::GetJSInjectionReceiver() const {
 void TestWebState::ExecuteJavaScript(const base::string16& javascript) {}
 
 void TestWebState::ExecuteJavaScript(const base::string16& javascript,
-                                     const JavaScriptResultCallback& callback) {
-  callback.Run(nullptr);
+                                     JavaScriptResultCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
 void TestWebState::ExecuteUserJavaScript(NSString* javaScript) {}

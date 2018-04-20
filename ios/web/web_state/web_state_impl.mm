@@ -656,8 +656,8 @@ void WebStateImpl::ExecuteJavaScript(const base::string16& javascript) {
 }
 
 void WebStateImpl::ExecuteJavaScript(const base::string16& javascript,
-                                     const JavaScriptResultCallback& callback) {
-  JavaScriptResultCallback stackCallback = callback;
+                                     JavaScriptResultCallback callback) {
+  __block JavaScriptResultCallback stack_callback = std::move(callback);
   [web_controller_ executeJavaScript:base::SysUTF16ToNSString(javascript)
                    completionHandler:^(id value, NSError* error) {
                      if (error) {
@@ -666,7 +666,8 @@ void WebStateImpl::ExecuteJavaScript(const base::string16& javascript,
                            << base::SysNSStringToUTF16(
                                   error.userInfo[NSLocalizedDescriptionKey]);
                      }
-                     stackCallback.Run(ValueResultFromWKResult(value).get());
+                     std::move(stack_callback)
+                         .Run(ValueResultFromWKResult(value).get());
                    }];
 }
 
