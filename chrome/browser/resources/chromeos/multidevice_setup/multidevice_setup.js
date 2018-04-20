@@ -32,8 +32,8 @@ Polymer({
      * DOM Element corresponding to the visible page.
      *
      * @private
-     * @type {!StartSetupPageElement|!SettingUpPageElement|
-     *        !SetupSucceededPageElement|!SetupFailedPageElement}
+     * @type {!SetupFailedPageElement|!SetupSucceededPageElement|
+     *        !StartSetupPageElement}
      */
     visiblePage_: Object,
 

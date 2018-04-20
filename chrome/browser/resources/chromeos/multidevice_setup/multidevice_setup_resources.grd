@@ -29,12 +29,6 @@
       <structure name="IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_JS"
                  file="multidevice_setup.js"
                  type="chrome_html" />
-      <structure name="IDR_MULTIDEVICE_SETUP_SETTING_UP_PAGE_HTML"
-                 file="setting_up_page.html"
-                 type="chrome_html" />
-      <structure name="IDR_MULTIDEVICE_SETUP_SETTING_UP_PAGE_JS"
-                 file="setting_up_page.js"
-                 type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_HTML"
                  file="setup_failed_page.html"
                  type="chrome_html" />
