@@ -52,6 +52,26 @@ void InitializeFakeAudioPerception(mri::AudioPerception* audio_perception) {
       audio_perception->mutable_audio_human_presence_detection();
   detection->set_human_presence_likelihood(0.4);
 
+  mri::HotwordDetection* hotword_detection =
+      audio_perception->mutable_hotword_detection();
+  mri::HotwordDetection::Hotword* hotword_one =
+      hotword_detection->add_hotwords();
+  hotword_one->set_type(mri::HotwordDetection::OK_GOOGLE);
+  hotword_one->set_frame_id(987);
+  hotword_one->set_start_timestamp_ms(10456);
+  hotword_one->set_end_timestamp_ms(234567);
+  hotword_one->set_confidence(0.9);
+  hotword_one->set_id(4567);
+
+  mri::HotwordDetection::Hotword* hotword_two =
+      hotword_detection->add_hotwords();
+  hotword_two->set_type(mri::HotwordDetection::UNKNOWN_TYPE);
+  hotword_two->set_frame_id(789);
+  hotword_two->set_start_timestamp_ms(65401);
+  hotword_two->set_end_timestamp_ms(765432);
+  hotword_two->set_confidence(0.4);
+  hotword_two->set_id(7654);
+
   mri::AudioSpectrogram* noise_spectrogram =
       detection->mutable_noise_spectrogram();
   noise_spectrogram->add_values(0.1);
@@ -265,6 +285,40 @@ void ValidateAudioPerceptionResult(
   ASSERT_TRUE(frame_spectrogram);
   ASSERT_EQ(1u, frame_spectrogram->values->size());
   EXPECT_EQ(frame_spectrogram->values->at(0), 0.3);
+
+  // Validate hotword detection.
+  const media_perception::HotwordDetection* hotword_detection =
+      audio_perception_result.hotword_detection.get();
+  ASSERT_TRUE(hotword_detection);
+  ASSERT_EQ(2u, hotword_detection->hotwords->size());
+
+  const media_perception::Hotword& hotword_one =
+      hotword_detection->hotwords->at(0);
+  EXPECT_EQ(hotword_one.type, media_perception::HOTWORD_TYPE_OK_GOOGLE);
+  ASSERT_TRUE(hotword_one.frame_id);
+  EXPECT_EQ(*hotword_one.frame_id, 987);
+  ASSERT_TRUE(hotword_one.start_timestamp_ms);
+  EXPECT_EQ(*hotword_one.start_timestamp_ms, 10456);
+  ASSERT_TRUE(hotword_one.end_timestamp_ms);
+  EXPECT_EQ(*hotword_one.end_timestamp_ms, 234567);
+  ASSERT_TRUE(hotword_one.confidence);
+  EXPECT_FLOAT_EQ(*hotword_one.confidence, 0.9);
+  ASSERT_TRUE(hotword_one.id);
+  EXPECT_EQ(*hotword_one.id, 4567);
+
+  const media_perception::Hotword& hotword_two =
+      hotword_detection->hotwords->at(1);
+  EXPECT_EQ(hotword_two.type, media_perception::HOTWORD_TYPE_UNKNOWN_TYPE);
+  ASSERT_TRUE(hotword_two.frame_id);
+  EXPECT_EQ(*hotword_two.frame_id, 789);
+  ASSERT_TRUE(hotword_two.start_timestamp_ms);
+  EXPECT_EQ(*hotword_two.start_timestamp_ms, 65401);
+  ASSERT_TRUE(hotword_two.end_timestamp_ms);
+  EXPECT_EQ(*hotword_two.end_timestamp_ms, 765432);
+  ASSERT_TRUE(hotword_two.confidence);
+  EXPECT_FLOAT_EQ(*hotword_two.confidence, 0.4);
+  ASSERT_TRUE(hotword_two.id);
+  EXPECT_EQ(*hotword_two.id, 7654);
 }
 
 void ValidateAudioVisualPerceptionResult(

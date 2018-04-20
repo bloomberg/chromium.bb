@@ -11,6 +11,62 @@ namespace media_perception_private {
 
 namespace {
 
+HotwordType HotwordTypeProtoToIdl(const mri::HotwordDetection::Type& type) {
+  switch (type) {
+    case mri::HotwordDetection::UNKNOWN_TYPE:
+      return HOTWORD_TYPE_UNKNOWN_TYPE;
+    case mri::HotwordDetection::OK_GOOGLE:
+      return HOTWORD_TYPE_OK_GOOGLE;
+  }
+  NOTREACHED() << "Unknown hotword type: " << type;
+  return HOTWORD_TYPE_UNKNOWN_TYPE;
+}
+
+Hotword HotwordProtoToIdl(const mri::HotwordDetection::Hotword& hotword) {
+  Hotword hotword_result;
+  if (hotword.has_id())
+    hotword_result.id = std::make_unique<int>(hotword.id());
+
+  if (hotword.has_type())
+    hotword_result.type = HotwordTypeProtoToIdl(hotword.type());
+
+  if (hotword.has_frame_id())
+    hotword_result.frame_id = std::make_unique<int>(hotword.frame_id());
+
+  if (hotword.has_start_timestamp_ms()) {
+    hotword_result.start_timestamp_ms =
+        std::make_unique<int>(hotword.start_timestamp_ms());
+  }
+
+  if (hotword.has_end_timestamp_ms()) {
+    hotword_result.end_timestamp_ms =
+        std::make_unique<int>(hotword.end_timestamp_ms());
+  }
+
+  if (hotword.has_confidence())
+    hotword_result.confidence = std::make_unique<double>(hotword.confidence());
+
+  if (hotword.has_id())
+    hotword_result.id = std::make_unique<int>(hotword.id());
+
+  return hotword_result;
+}
+
+std::unique_ptr<HotwordDetection> HotwordDetectionProtoToIdl(
+    const mri::HotwordDetection& detection) {
+  std::unique_ptr<HotwordDetection> detection_result =
+      std::make_unique<HotwordDetection>();
+
+  if (detection.hotwords_size() > 0) {
+    detection_result->hotwords = std::make_unique<std::vector<Hotword>>();
+    for (const auto& hotword : detection.hotwords()) {
+      detection_result->hotwords->emplace_back(HotwordProtoToIdl(hotword));
+    }
+  }
+
+  return detection_result;
+}
+
 std::unique_ptr<AudioSpectrogram> AudioSpectrogramProtoToIdl(
     const mri::AudioSpectrogram& spectrogram) {
   std::unique_ptr<AudioSpectrogram> spectrogram_result =
@@ -77,6 +133,10 @@ AudioPerception AudioPerceptionProtoToIdl(
     perception_result.audio_human_presence_detection =
         AudioHumanPresenceDetectionProtoToIdl(
             perception.audio_human_presence_detection());
+  }
+  if (perception.has_hotword_detection()) {
+    perception_result.hotword_detection =
+        HotwordDetectionProtoToIdl(perception.hotword_detection());
   }
   return perception_result;
 }
