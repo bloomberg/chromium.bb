@@ -350,49 +350,6 @@ void EasyUnlockServiceRegular::SetRemoteDevices(
   RefreshCryptohomeKeysIfPossible();
 }
 
-// This method is called from easyUnlock.setRemoteDevice JS API. It's used
-// here to set the (public key, device address) pair for BLE devices.
-void EasyUnlockServiceRegular::SetRemoteBleDevices(
-    const base::ListValue& devices) {
-  DCHECK(devices.GetSize() == 1);
-  const base::DictionaryValue* dict = nullptr;
-  if (devices.GetDictionary(0, &dict)) {
-    std::string address, b64_public_key;
-    if (dict->GetString("bluetoothAddress", &address) &&
-        dict->GetString("psk", &b64_public_key)) {
-      // The setup is done. Load the remote devices if the device with
-      // |public_key| was already sync from CryptAuth, otherwise re-sync the
-      // devices.
-      if (GetCryptAuthDeviceManager()) {
-        std::string public_key;
-        if (!base::Base64UrlDecode(b64_public_key,
-                                   base::Base64UrlDecodePolicy::REQUIRE_PADDING,
-                                   &public_key)) {
-          PA_LOG(ERROR) << "Unable to base64url decode the public key: "
-                        << b64_public_key;
-          return;
-        }
-        const std::vector<cryptauth::ExternalDeviceInfo> unlock_keys =
-            GetCryptAuthDeviceManager()->GetUnlockKeys();
-        auto iterator = std::find_if(
-            unlock_keys.begin(), unlock_keys.end(),
-            [&public_key](const cryptauth::ExternalDeviceInfo& unlock_key) {
-              return unlock_key.public_key() == public_key;
-            });
-
-        if (iterator != unlock_keys.end()) {
-          LoadRemoteDevices();
-        } else {
-          GetCryptAuthDeviceManager()->ForceSyncNow(
-              cryptauth::INVOCATION_REASON_FEATURE_TOGGLED);
-        }
-      }
-    } else {
-      PA_LOG(ERROR) << "Missing public key or device address";
-    }
-  }
-}
-
 void EasyUnlockServiceRegular::RunTurnOffFlow() {
   if (turn_off_flow_status_ == PENDING)
     return;
