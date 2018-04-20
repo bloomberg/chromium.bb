@@ -81,14 +81,11 @@ class DelayedCookieMonster : public CookieStore {
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
 
-  void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
-                                    const base::Time& delete_end,
-                                    DeleteCallback callback) override;
+  void DeleteAllCreatedInTimeRangeAsync(const TimeRange& creation_range,
+                                        DeleteCallback callback) override;
 
-  void DeleteAllCreatedBetweenWithPredicateAsync(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      const base::Callback<bool(const CanonicalCookie&)>& predicate,
+  void DeleteAllMatchingInfoAsync(
+      net::CookieStore::CookieDeletionInfo delete_info,
       DeleteCallback callback) override;
 
   void DeleteSessionCookiesAsync(DeleteCallback) override;

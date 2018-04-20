@@ -65,12 +65,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   // StoragePartition uses. This method generates that mask.
   static int GenerateQuotaClientMask(uint32_t remove_mask);
 
-  // This creates a CookiePredicate that matches all host (NOT domain) cookies
-  // that match the host of |url|. This is intended to be used with
-  // DeleteAllCreatedBetweenWithPredicateAsync.
-  static net::CookieStore::CookiePredicate
-  CreatePredicateForHostCookies(const GURL& url);
-
   // Allows overriding the URLLoaderFactory creation for
   // GetURLLoaderFactoryForBrowserProcess.
   // Passing a null callback will restore the default behavior.
@@ -127,7 +121,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
-                 const CookieMatcherFunction& cookie_matcher,
+                 net::CookieStore::CookieDeletionInfo delete_info,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override;
@@ -222,7 +216,8 @@ class CONTENT_EXPORT StoragePartitionImpl
                            RemoveQuotaManagedIgnoreDevTools);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest, RemoveCookieForever);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest, RemoveCookieLastHour);
-  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest, RemoveCookieWithMatcher);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveCookieWithDeleteInfo);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
                            RemoveUnprotectedLocalStorageForever);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
@@ -250,7 +245,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                      uint32_t quota_storage_remove_mask,
                      const GURL& remove_origin,
                      const OriginMatcherFunction& origin_matcher,
-                     const CookieMatcherFunction& cookie_matcher,
+                     net::CookieStore::CookieDeletionInfo cookie_delete_info,
                      const base::Time begin,
                      const base::Time end,
                      base::OnceClosure callback);

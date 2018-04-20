@@ -48,9 +48,10 @@
 
 namespace net {
 
-using CookiePredicate = CookieStore::CookiePredicate;
 using base::Time;
 using base::TimeDelta;
+using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
+using TimeRange = CookieStore::TimeRange;
 
 namespace {
 
@@ -88,25 +89,6 @@ const char kTopLevelDomainPlus2[] = "http://www.math.harvard.edu";
 const char kTopLevelDomainPlus2Secure[] = "https://www.math.harvard.edu";
 const char kTopLevelDomainPlus3[] = "http://www.bourbaki.math.harvard.edu";
 const char kOtherDomain[] = "http://www.mit.edu";
-
-bool AlwaysTrueCookiePredicate(CanonicalCookie* to_save,
-                               const CanonicalCookie& cookie) {
-  if (to_save)
-    *to_save = cookie;
-  return true;
-}
-
-bool AlwaysFalseCookiePredicate(CanonicalCookie* to_save,
-                                const CanonicalCookie& cookie) {
-  if (to_save)
-    *to_save = cookie;
-  return false;
-}
-
-bool CookieValuePredicate(const std::string& true_value,
-                          const CanonicalCookie& cookie) {
-  return cookie.Value() == true_value;
-}
 
 struct CookieMonsterTestTraits {
   static std::unique_ptr<CookieStore> Create() {
@@ -191,28 +173,24 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.result();
   }
 
-  uint32_t DeleteAllCreatedBetween(CookieMonster* cm,
-                                   const base::Time& delete_begin,
-                                   const base::Time& delete_end) {
+  uint32_t DeleteAllCreatedInTimeRange(CookieMonster* cm,
+                                       const TimeRange& creation_range) {
     DCHECK(cm);
     ResultSavingCookieCallback<uint32_t> callback;
-    cm->DeleteAllCreatedBetweenAsync(
-        delete_begin, delete_end,
-        base::Bind(&ResultSavingCookieCallback<uint32_t>::Run,
-                   base::Unretained(&callback)));
+    cm->DeleteAllCreatedInTimeRangeAsync(
+        creation_range,
+        base::BindRepeating(&ResultSavingCookieCallback<uint32_t>::Run,
+                            base::Unretained(&callback)));
     callback.WaitUntilDone();
     return callback.result();
   }
 
-  uint32_t DeleteAllCreatedBetweenWithPredicate(
-      CookieMonster* cm,
-      const base::Time delete_begin,
-      const base::Time delete_end,
-      const CookiePredicate& predicate) {
+  uint32_t DeleteAllMatchingInfo(CookieMonster* cm,
+                                 CookieDeletionInfo delete_info) {
     DCHECK(cm);
     ResultSavingCookieCallback<uint32_t> callback;
-    cm->DeleteAllCreatedBetweenWithPredicateAsync(
-        delete_begin, delete_end, predicate,
+    cm->DeleteAllMatchingInfoAsync(
+        std::move(delete_info),
         base::Bind(&ResultSavingCookieCallback<uint32_t>::Run,
                    base::Unretained(&callback)));
     callback.WaitUntilDone();
@@ -912,26 +890,23 @@ ACTION_P4(SetCookieAction, cookie_monster, url, cookie_line, callback) {
 ACTION_P3(SetAllCookiesAction, cookie_monster, list, callback) {
   cookie_monster->SetAllCookiesAsync(list, callback->Get());
 }
-ACTION_P4(DeleteAllCreatedBetweenAction,
+ACTION_P3(DeleteAllCreatedInTimeRangeAction,
           cookie_monster,
-          delete_begin,
-          delete_end,
+          creation_range,
           callback) {
-  cookie_monster->DeleteAllCreatedBetweenAsync(delete_begin, delete_end,
-                                               callback->Get());
+  cookie_monster->DeleteAllCreatedInTimeRangeAsync(creation_range,
+                                                   callback->Get());
 }
 ACTION_P2(GetAllCookiesAction, cookie_monster, callback) {
   cookie_monster->GetAllCookiesAsync(callback->Get());
 }
 
-ACTION_P5(DeleteAllCreatedBetweenWithPredicateAction,
+ACTION_P3(DeleteAllCreatedMatchingInfoAction,
           cookie_monster,
-          delete_begin,
-          delete_end,
-          predicate,
+          delete_info,
           callback) {
-  cookie_monster->DeleteAllCreatedBetweenWithPredicateAsync(
-      delete_begin, delete_end, predicate, callback->Get());
+  cookie_monster->DeleteAllMatchingInfoAsync(std::move(delete_info),
+                                             callback->Get());
 }
 
 ACTION_P3(DeleteCanonicalCookieAction, cookie_monster, cookie, callback) {
@@ -1247,18 +1222,18 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCookies) {
   loop.Run();
 }
 
-TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCreatedBetweenCookies) {
+TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCreatedInTimeRangeCookies) {
   MockDeleteCallback delete_callback;
 
-  BeginWith(DeleteAllCreatedBetweenAction(&cookie_monster(), base::Time(),
-                                          base::Time::Now(), &delete_callback));
+  const TimeRange time_range(base::Time(), base::Time::Now());
+  BeginWith(DeleteAllCreatedInTimeRangeAction(&cookie_monster(), time_range,
+                                              &delete_callback));
 
   WaitForLoadCall();
 
   EXPECT_CALL(delete_callback, Run(false))
-      .WillOnce(DeleteAllCreatedBetweenAction(&cookie_monster(), base::Time(),
-                                              base::Time::Now(),
-                                              &delete_callback));
+      .WillOnce(DeleteAllCreatedInTimeRangeAction(&cookie_monster(), time_range,
+                                                  &delete_callback));
   base::RunLoop loop;
   EXPECT_CALL(delete_callback, Run(false)).WillOnce(QuitRunLoop(&loop));
 
@@ -1267,20 +1242,18 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCreatedBetweenCookies) {
 }
 
 TEST_F(DeferredCookieTaskTest,
-       DeferredDeleteAllWithPredicateCreatedBetweenCookies) {
+       DeferredDeleteAllWithPredicateCreatedInTimeRangeCookies) {
   MockDeleteCallback delete_callback;
 
-  CookiePredicate predicate = base::Bind(&AlwaysTrueCookiePredicate, nullptr);
-
-  BeginWith(DeleteAllCreatedBetweenWithPredicateAction(
-      &cookie_monster(), base::Time(), base::Time::Now(), predicate,
+  BeginWith(DeleteAllCreatedMatchingInfoAction(
+      &cookie_monster(), CookieDeletionInfo(Time(), Time::Now()),
       &delete_callback));
 
   WaitForLoadCall();
 
   EXPECT_CALL(delete_callback, Run(false))
-      .WillOnce(DeleteAllCreatedBetweenWithPredicateAction(
-          &cookie_monster(), base::Time(), base::Time::Now(), predicate,
+      .WillOnce(DeleteAllCreatedMatchingInfoAction(
+          &cookie_monster(), CookieDeletionInfo(Time(), Time::Now()),
           &delete_callback));
   base::RunLoop loop;
   EXPECT_CALL(delete_callback, Run(false)).WillOnce(QuitRunLoop(&loop));
@@ -1398,13 +1371,14 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAll) {
   EXPECT_EQ("", GetCookiesWithOptions(cm.get(), http_www_foo_.url(), options));
 }
 
-TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedBetweenTimestamps) {
+TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedInTimeRangeTimestamps) {
   std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr));
   Time now = Time::Now();
 
   // Nothing has been added so nothing should be deleted.
-  EXPECT_EQ(0u, DeleteAllCreatedBetween(cm.get(), now - TimeDelta::FromDays(99),
-                                        Time()));
+  EXPECT_EQ(0u,
+            DeleteAllCreatedInTimeRange(
+                cm.get(), TimeRange(now - TimeDelta::FromDays(99), Time())));
 
   // Create 5 cookies with different creation dates.
   EXPECT_TRUE(
@@ -1423,41 +1397,37 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedBetweenTimestamps) {
                                         now - TimeDelta::FromDays(7)));
 
   // Try to delete threedays and the daybefore.
-  EXPECT_EQ(2u, DeleteAllCreatedBetween(cm.get(), now - TimeDelta::FromDays(3),
-                                        now - TimeDelta::FromDays(1)));
+  EXPECT_EQ(2u, DeleteAllCreatedInTimeRange(
+                    cm.get(), TimeRange(now - TimeDelta::FromDays(3),
+                                        now - TimeDelta::FromDays(1))));
 
   // Try to delete yesterday, also make sure that delete_end is not
   // inclusive.
-  EXPECT_EQ(
-      1u, DeleteAllCreatedBetween(cm.get(), now - TimeDelta::FromDays(2), now));
+  EXPECT_EQ(1u, DeleteAllCreatedInTimeRange(
+                    cm.get(), TimeRange(now - TimeDelta::FromDays(2), now)));
 
   // Make sure the delete_begin is inclusive.
-  EXPECT_EQ(
-      1u, DeleteAllCreatedBetween(cm.get(), now - TimeDelta::FromDays(7), now));
+  EXPECT_EQ(1u, DeleteAllCreatedInTimeRange(
+                    cm.get(), TimeRange(now - TimeDelta::FromDays(7), now)));
 
   // Delete the last (now) item.
-  EXPECT_EQ(1u, DeleteAllCreatedBetween(cm.get(), Time(), Time()));
+  EXPECT_EQ(1u, DeleteAllCreatedInTimeRange(cm.get(), TimeRange()));
 
   // Really make sure everything is gone.
   EXPECT_EQ(0u, DeleteAll(cm.get()));
 }
 
 TEST_F(CookieMonsterTest,
-       TestCookieDeleteAllCreatedBetweenTimestampsWithPredicate) {
+       TestCookieDeleteAllCreatedInTimeRangeTimestampsWithInfo) {
   std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr));
   Time now = Time::Now();
 
   CanonicalCookie test_cookie;
-  CookiePredicate true_predicate =
-      base::Bind(&AlwaysTrueCookiePredicate, &test_cookie);
-
-  CookiePredicate false_predicate =
-      base::Bind(&AlwaysFalseCookiePredicate, &test_cookie);
 
   // Nothing has been added so nothing should be deleted.
-  EXPECT_EQ(
-      0u, DeleteAllCreatedBetweenWithPredicate(
-              cm.get(), now - TimeDelta::FromDays(99), Time(), true_predicate));
+  EXPECT_EQ(0u, DeleteAllMatchingInfo(
+                    cm.get(),
+                    CookieDeletionInfo(now - TimeDelta::FromDays(99), Time())));
 
   // Create 5 cookies with different creation dates.
   EXPECT_TRUE(
@@ -1475,56 +1445,24 @@ TEST_F(CookieMonsterTest,
                                         "T-7=LastWeek",
                                         now - TimeDelta::FromDays(7)));
 
-  // Try to delete threedays and the daybefore, but we should do nothing due
-  // to the predicate.
-  EXPECT_EQ(0u, DeleteAllCreatedBetweenWithPredicate(
-                    cm.get(), now - TimeDelta::FromDays(3),
-                    now - TimeDelta::FromDays(1), false_predicate));
-  // Same as above with a null predicate, so it shouldn't delete anything.
-  EXPECT_EQ(0u, DeleteAllCreatedBetweenWithPredicate(
-                    cm.get(), now - TimeDelta::FromDays(3),
-                    now - TimeDelta::FromDays(1), CookiePredicate()));
-  // Same as above, but we use the true_predicate, so it works.
-  EXPECT_EQ(2u, DeleteAllCreatedBetweenWithPredicate(
-                    cm.get(), now - TimeDelta::FromDays(3),
-                    now - TimeDelta::FromDays(1), true_predicate));
+  // Delete threedays and the daybefore.
+  EXPECT_EQ(2u,
+            DeleteAllMatchingInfo(
+                cm.get(), CookieDeletionInfo(now - TimeDelta::FromDays(3),
+                                             now - TimeDelta::FromDays(1))));
 
-  // Try to delete yesterday, also make sure that delete_end is not
-  // inclusive.
-  EXPECT_EQ(0u,
-            DeleteAllCreatedBetweenWithPredicate(
-                cm.get(), now - TimeDelta::FromDays(2), now, false_predicate));
-  EXPECT_EQ(1u,
-            DeleteAllCreatedBetweenWithPredicate(
-                cm.get(), now - TimeDelta::FromDays(2), now, true_predicate));
-  // Check our cookie values.
-  std::unique_ptr<CanonicalCookie> expected_cookie =
-      CanonicalCookie::Create(http_www_foo_.url(), "T-1=Yesterday",
-                              now - TimeDelta::FromDays(1), CookieOptions());
-  EXPECT_THAT(test_cookie, CookieEquals(*expected_cookie))
-      << "Actual:\n"
-      << test_cookie.DebugString() << "\nExpected:\n"
-      << expected_cookie->DebugString();
+  // Delete yesterday, also make sure that delete_end is not inclusive.
+  EXPECT_EQ(
+      1u, DeleteAllMatchingInfo(
+              cm.get(), CookieDeletionInfo(now - TimeDelta::FromDays(2), now)));
 
   // Make sure the delete_begin is inclusive.
-  EXPECT_EQ(0u,
-            DeleteAllCreatedBetweenWithPredicate(
-                cm.get(), now - TimeDelta::FromDays(7), now, false_predicate));
-  EXPECT_EQ(1u,
-            DeleteAllCreatedBetweenWithPredicate(
-                cm.get(), now - TimeDelta::FromDays(7), now, true_predicate));
+  EXPECT_EQ(
+      1u, DeleteAllMatchingInfo(
+              cm.get(), CookieDeletionInfo(now - TimeDelta::FromDays(7), now)));
 
   // Delete the last (now) item.
-  EXPECT_EQ(0u, DeleteAllCreatedBetweenWithPredicate(cm.get(), Time(), Time(),
-                                                     false_predicate));
-  EXPECT_EQ(1u, DeleteAllCreatedBetweenWithPredicate(cm.get(), Time(), Time(),
-                                                     true_predicate));
-  expected_cookie = CanonicalCookie::Create(http_www_foo_.url(), "T-0=Now", now,
-                                            CookieOptions());
-  EXPECT_THAT(test_cookie, CookieEquals(*expected_cookie))
-      << "Actual:\n"
-      << test_cookie.DebugString() << "\nExpected:\n"
-      << expected_cookie->DebugString();
+  EXPECT_EQ(1u, DeleteAllMatchingInfo(cm.get(), CookieDeletionInfo()));
 
   // Really make sure everything is gone.
   EXPECT_EQ(0u, DeleteAll(cm.get()));
@@ -1914,15 +1852,14 @@ TEST_F(CookieMonsterTest, ImportDuplicateCreationTimes) {
 }
 
 TEST_F(CookieMonsterTest, PredicateSeesAllCookies) {
-  const std::string kTrueValue = "A";
   std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr));
-  // We test that we can see all cookies with our predicate. This includes
-  // host, http_only, host secure, and all domain cookies.
-  CookiePredicate value_matcher = base::Bind(&CookieValuePredicate, kTrueValue);
-
   PopulateCmForPredicateCheck(cm.get());
-  EXPECT_EQ(7u, DeleteAllCreatedBetweenWithPredicate(
-                    cm.get(), base::Time(), base::Time::Now(), value_matcher));
+  // We test that we can see all cookies with |delete_info|. This includes
+  // host, http_only, host secure, and all domain cookies.
+  CookieDeletionInfo delete_info(base::Time(), base::Time::Now());
+  delete_info.value_for_testing = "A";
+
+  EXPECT_EQ(7u, DeleteAllMatchingInfo(cm.get(), std::move(delete_info)));
 
   EXPECT_EQ("dom_2=B; dom_3=C; host_3=C",
             GetCookies(cm.get(), GURL(kTopLevelDomainPlus3)));

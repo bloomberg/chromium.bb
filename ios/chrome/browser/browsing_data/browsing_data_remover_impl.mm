@@ -111,16 +111,14 @@ void DeleteCallbackAdapter(base::OnceClosure callback, uint32_t) {
 // Clears cookies.
 void ClearCookies(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    base::Time delete_begin,
-    base::Time delete_end,
+    const net::CookieStore::TimeRange& creation_range,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   net::CookieStore* cookie_store =
       request_context_getter->GetURLRequestContext()->cookie_store();
-  cookie_store->DeleteAllCreatedBetweenAsync(
-      delete_begin, delete_end,
-      AdaptCallbackForRepeating(
-          base::BindOnce(&DeleteCallbackAdapter, std::move(callback))));
+  cookie_store->DeleteAllCreatedInTimeRangeAsync(
+      creation_range, AdaptCallbackForRepeating(base::BindOnce(
+                          &DeleteCallbackAdapter, std::move(callback))));
 }
 
 // Clears SSL connection pool and then invoke callback.
@@ -315,7 +313,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     web::WebThread::PostTask(
         web::WebThread::IO, FROM_HERE,
         base::BindOnce(
-            &ClearCookies, context_getter_, delete_begin, delete_end,
+            &ClearCookies, context_getter_,
+            net::CookieStore::TimeRange(delete_begin, delete_end),
             base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
                            current_task_runner, FROM_HERE,
                            CreatePendingTaskCompletionClosure())));

@@ -36,6 +36,8 @@
 //        sort cookie list responses from the network::mojom::CookieManager.
 //      * CompareCookiesByValue: As above, but only by value.
 
+using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
+
 namespace network {
 
 // Wraps a network::mojom::CookieManager in synchronous, blocking calls to make
@@ -360,7 +362,7 @@ TEST_F(CookieManagerTest, GetCookieList) {
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host/with/path"), net::CookieOptions());
 
-  EXPECT_EQ(2u, cookies.size());
+  ASSERT_EQ(2u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
 
   EXPECT_EQ("A", cookies[0].Name());
@@ -393,14 +395,14 @@ TEST_F(CookieManagerTest, GetCookieListHttpOnly) {
   EXPECT_TRUE(options.exclude_httponly());
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host/with/path"), options);
-  EXPECT_EQ(1u, cookies.size());
+  ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("C", cookies[0].Name());
 
   // Retrieve with httponly cookies.
   options.set_include_httponly();
   cookies = service_wrapper()->GetCookieList(GURL("https://foo_host/with/path"),
                                              options);
-  EXPECT_EQ(2u, cookies.size());
+  ASSERT_EQ(2u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
 
   EXPECT_EQ("A", cookies[0].Name());
@@ -438,7 +440,7 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
             options.same_site_cookie_mode());
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host/with/path"), options);
-  EXPECT_EQ(1u, cookies.size());
+  ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("A", cookies[0].Name());
 
   // Retrieve unrestricted and lax cookies.
@@ -446,7 +448,7 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
       net::CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
   cookies = service_wrapper()->GetCookieList(GURL("https://foo_host/with/path"),
                                              options);
-  EXPECT_EQ(2u, cookies.size());
+  ASSERT_EQ(2u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_EQ("C", cookies[1].Name());
@@ -456,7 +458,7 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
       net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   cookies = service_wrapper()->GetCookieList(GURL("https://foo_host/with/path"),
                                              options);
-  EXPECT_EQ(3u, cookies.size());
+  ASSERT_EQ(3u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_EQ("C", cookies[1].Name());
@@ -768,7 +770,7 @@ TEST_F(CookieManagerTest, DeleteDetails_eTLD) {
   EXPECT_EQ(2u, service_wrapper()->DeleteCookies(filter));
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
-  EXPECT_EQ(1u, cookies.size());
+  ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("A3", cookies[0].Name());
   filter = network::mojom::CookieDeletionFilter();
   EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
@@ -796,7 +798,7 @@ TEST_F(CookieManagerTest, DeleteDetails_eTLD) {
   filter.including_domains->push_back("example.co.uk");
   EXPECT_EQ(2u, service_wrapper()->DeleteCookies(filter));
   cookies = service_wrapper()->GetAllCookies();
-  EXPECT_EQ(1u, cookies.size());
+  ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("A3", cookies[0].Name());
   filter = network::mojom::CookieDeletionFilter();
   EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
@@ -825,7 +827,7 @@ TEST_F(CookieManagerTest, DeleteDetails_eTLD) {
   filter.including_domains->push_back("co.uk");
   EXPECT_EQ(0u, service_wrapper()->DeleteCookies(filter));
   cookies = service_wrapper()->GetAllCookies();
-  EXPECT_EQ(3u, cookies.size());
+  ASSERT_EQ(3u, cookies.size());
   EXPECT_EQ("A1", cookies[0].Name());
   EXPECT_EQ("A2", cookies[1].Name());
   EXPECT_EQ("A3", cookies[2].Name());
@@ -867,7 +869,7 @@ TEST_F(CookieManagerTest, DeleteDetails_HostDomain) {
   EXPECT_EQ(2u, service_wrapper()->DeleteCookies(filter));
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
-  EXPECT_EQ(2u, cookies.size());
+  ASSERT_EQ(2u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
   EXPECT_EQ("A3", cookies[0].Name());
   EXPECT_EQ("A4", cookies[1].Name());
@@ -1827,6 +1829,64 @@ TEST_F(FlushableCookieManagerTest, FlushCookieStore) {
 
   ASSERT_EQ(1, store()->flush_count());
   ASSERT_EQ(2U, service_wrapper()->callback_count());
+}
+
+TEST_F(FlushableCookieManagerTest, DeletionFilterToInfo) {
+  mojom::CookieDeletionFilterPtr filter_ptr =
+      mojom::CookieDeletionFilter::New();
+
+  // First test the default values.
+  CookieDeletionInfo delete_info = DeletionFilterToInfo(std::move(filter_ptr));
+  EXPECT_TRUE(delete_info.creation_range.start().is_null());
+  EXPECT_TRUE(delete_info.creation_range.end().is_null());
+  EXPECT_EQ(CookieDeletionInfo::SessionControl::IGNORE_CONTROL,
+            delete_info.session_control);
+  EXPECT_FALSE(delete_info.host.has_value());
+  EXPECT_FALSE(delete_info.name.has_value());
+  EXPECT_FALSE(delete_info.url.has_value());
+  EXPECT_TRUE(delete_info.domains_and_ips_to_delete.empty());
+  EXPECT_TRUE(delete_info.domains_and_ips_to_ignore.empty());
+  EXPECT_FALSE(delete_info.value_for_testing.has_value());
+
+  // Then test all with non-default values.
+  const double kTestStartEpoch = 1000;
+  const double kTestEndEpoch = 10000000;
+  filter_ptr = mojom::CookieDeletionFilter::New();
+  filter_ptr->created_after_time = base::Time::FromDoubleT(kTestStartEpoch);
+  filter_ptr->created_before_time = base::Time::FromDoubleT(kTestEndEpoch);
+  filter_ptr->cookie_name = "cookie-name";
+  filter_ptr->including_domains =
+      std::vector<std::string>({"first.com", "second.com", "third.com"});
+  filter_ptr->excluding_domains =
+      std::vector<std::string>({"ten.com", "twelve.com"});
+  filter_ptr->url = GURL("https://www.example.com");
+  filter_ptr->session_control =
+      mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
+
+  delete_info = DeletionFilterToInfo(std::move(filter_ptr));
+  EXPECT_EQ(base::Time::FromDoubleT(kTestStartEpoch),
+            delete_info.creation_range.start());
+  EXPECT_EQ(base::Time::FromDoubleT(kTestEndEpoch),
+            delete_info.creation_range.end());
+
+  EXPECT_EQ(CookieDeletionInfo::SessionControl::PERSISTENT_COOKIES,
+            delete_info.session_control);
+  EXPECT_FALSE(delete_info.host.has_value());
+  EXPECT_EQ("cookie-name", delete_info.name.value());
+  EXPECT_EQ(GURL("https://www.example.com"), delete_info.url.value());
+  EXPECT_EQ(3u, delete_info.domains_and_ips_to_delete.size());
+  EXPECT_NE(delete_info.domains_and_ips_to_delete.find("first.com"),
+            delete_info.domains_and_ips_to_delete.end());
+  EXPECT_NE(delete_info.domains_and_ips_to_delete.find("second.com"),
+            delete_info.domains_and_ips_to_delete.end());
+  EXPECT_NE(delete_info.domains_and_ips_to_delete.find("third.com"),
+            delete_info.domains_and_ips_to_delete.end());
+  EXPECT_EQ(2u, delete_info.domains_and_ips_to_ignore.size());
+  EXPECT_NE(delete_info.domains_and_ips_to_ignore.find("ten.com"),
+            delete_info.domains_and_ips_to_ignore.end());
+  EXPECT_NE(delete_info.domains_and_ips_to_ignore.find("twelve.com"),
+            delete_info.domains_and_ips_to_ignore.end());
+  EXPECT_FALSE(delete_info.value_for_testing.has_value());
 }
 
 }  // namespace network

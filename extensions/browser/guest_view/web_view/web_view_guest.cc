@@ -424,40 +424,39 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
     return;
   }
 
-  content::StoragePartition::CookieMatcherFunction cookie_matcher;
+  net::CookieStore::CookieDeletionInfo cookie_delete_info;
+  cookie_delete_info.creation_range.SetStart(remove_since);
+  cookie_delete_info.creation_range.SetEnd(base::Time::Now());
 
-  bool remove_session_cookies =
-      !!(removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES);
-  bool remove_persistent_cookies =
-      !!(removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES);
-  bool remove_all_cookies =
-      (!!(removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_COOKIES)) ||
-      (remove_session_cookies && remove_persistent_cookies);
+  // TODO(cmumford): Make this (and webview::* constants) constexpr.
+  const uint32_t ALL_COOKIES_MASK =
+      webview::WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES |
+      webview::WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES;
 
-  // Leaving the cookie_matcher unset will cause all cookies to be purged.
-  if (!remove_all_cookies) {
-    if (remove_session_cookies) {
-      cookie_matcher =
-          base::Bind([](const net::CanonicalCookie& cookie) -> bool {
-            return !cookie.IsPersistent();
-          });
-    } else if (remove_persistent_cookies) {
-      cookie_matcher =
-          base::Bind([](const net::CanonicalCookie& cookie) -> bool {
-            return cookie.IsPersistent();
-          });
-    }
+  if ((removal_mask & ALL_COOKIES_MASK) == ALL_COOKIES_MASK) {
+    cookie_delete_info.session_control =
+        net::CookieStore::CookieDeletionInfo::SessionControl::IGNORE_CONTROL;
+  } else if (removal_mask &
+             webview::WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES) {
+    cookie_delete_info.session_control =
+        net::CookieStore::CookieDeletionInfo::SessionControl::SESSION_COOKIES;
+  } else if (removal_mask &
+             webview::WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES) {
+    cookie_delete_info.session_control = net::CookieStore::CookieDeletionInfo::
+        SessionControl::PERSISTENT_COOKIES;
   }
 
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartition(
           web_contents()->GetBrowserContext(),
           web_contents()->GetSiteInstance());
+  base::Time start_time = cookie_delete_info.creation_range.start();
+  base::Time end_time = cookie_delete_info.creation_range.end();
   partition->ClearData(
       storage_partition_removal_mask,
       content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      content::StoragePartition::OriginMatcherFunction(), cookie_matcher,
-      remove_since, base::Time::Now(), callback);
+      content::StoragePartition::OriginMatcherFunction(),
+      std::move(cookie_delete_info), start_time, end_time, callback);
 }
 
 void WebViewGuest::GuestViewDidStopLoading() {

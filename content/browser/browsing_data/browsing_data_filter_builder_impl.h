@@ -26,8 +26,7 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
       BuildGeneralFilter() const override;
   network::mojom::ClearCacheUrlFilterPtr BuildClearCacheUrlFilter()
       const override;
-  base::RepeatingCallback<bool(const net::CanonicalCookie& pattern)>
-      BuildCookieFilter() const override;
+  net::CookieStore::CookieDeletionInfo BuildCookieDeletionInfo() const override;
   base::RepeatingCallback<bool(const std::string& server_id)>
       BuildChannelIDFilter() const override;
   base::RepeatingCallback<bool(const std::string& site)>

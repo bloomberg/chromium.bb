@@ -15,6 +15,8 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
+
 namespace content {
 
 namespace {
@@ -47,9 +49,7 @@ void RunTestCase(TestCase test_case,
       << test_case.url;
 }
 
-void RunTestCase(
-    TestCase test_case,
-    const base::Callback<bool(const net::CanonicalCookie&)>& filter) {
+void RunTestCase(TestCase test_case, CookieDeletionInfo delete_info) {
   // Test with regular cookie, http only, domain, and secure.
   std::string cookie_line = "A=2";
   GURL test_url(test_case.url);
@@ -59,28 +59,28 @@ void RunTestCase(
   EXPECT_TRUE(cookie) << cookie_line << " from " << test_case.url
                       << " is not a valid cookie";
   if (cookie)
-    EXPECT_EQ(test_case.should_match, filter.Run(*cookie))
+    EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
         << cookie->DebugString();
 
   cookie_line = std::string("A=2;domain=") + test_url.host();
   cookie = net::CanonicalCookie::Create(
       test_url, cookie_line, base::Time::Now(), net::CookieOptions());
   if (cookie)
-    EXPECT_EQ(test_case.should_match, filter.Run(*cookie))
+    EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
         << cookie->DebugString();
 
   cookie_line = std::string("A=2; HttpOnly;") + test_url.host();
   cookie = net::CanonicalCookie::Create(
       test_url, cookie_line, base::Time::Now(), net::CookieOptions());
   if (cookie)
-    EXPECT_EQ(test_case.should_match, filter.Run(*cookie))
+    EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
         << cookie->DebugString();
 
   cookie_line = std::string("A=2; HttpOnly; Secure;") + test_url.host();
   cookie = net::CanonicalCookie::Create(
       test_url, cookie_line, base::Time::Now(), net::CookieOptions());
   if (cookie)
-    EXPECT_EQ(test_case.should_match, filter.Run(*cookie))
+    EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
         << cookie->DebugString();
 }
 
@@ -210,8 +210,6 @@ TEST(BrowsingDataFilterBuilderImplTest,
   builder.AddRegisterableDomain(std::string(kIPAddress));
   builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
   builder.AddRegisterableDomain(std::string(kInternalHostname));
-  base::Callback<bool(const net::CanonicalCookie&)> filter =
-      builder.BuildCookieFilter();
 
   TestCase test_cases[] = {
       // Any cookie with the same registerable domain as the origins is matched.
@@ -250,7 +248,7 @@ TEST(BrowsingDataFilterBuilderImplTest,
   };
 
   for (TestCase test_case : test_cases)
-    RunTestCase(test_case, filter);
+    RunTestCase(test_case, builder.BuildCookieDeletionInfo());
 }
 
 TEST(BrowsingDataFilterBuilderImplTest,
@@ -262,8 +260,6 @@ TEST(BrowsingDataFilterBuilderImplTest,
   builder.AddRegisterableDomain(std::string(kIPAddress));
   builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
   builder.AddRegisterableDomain(std::string(kInternalHostname));
-  base::Callback<bool(const net::CanonicalCookie&)> filter =
-      builder.BuildCookieFilter();
 
   TestCase test_cases[] = {
       // Any cookie that doesn't have the same registerable domain is matched.
@@ -302,7 +298,7 @@ TEST(BrowsingDataFilterBuilderImplTest,
   };
 
   for (TestCase test_case : test_cases)
-    RunTestCase(test_case, filter);
+    RunTestCase(test_case, builder.BuildCookieDeletionInfo());
 }
 
 TEST(BrowsingDataFilterBuilderImplTest,

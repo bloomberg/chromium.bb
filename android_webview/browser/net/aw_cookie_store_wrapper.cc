@@ -59,21 +59,18 @@ void DeleteCanonicalCookieAsyncOnCookieThread(
   GetCookieStore()->DeleteCanonicalCookieAsync(cookie, std::move(callback));
 }
 
-void DeleteAllCreatedBetweenAsyncOnCookieThread(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
+void DeleteAllCreatedWithinRangeAsyncOnCookieThread(
+    const net::CookieStore::TimeRange& creation_range,
     net::CookieStore::DeleteCallback callback) {
-  GetCookieStore()->DeleteAllCreatedBetweenAsync(delete_begin, delete_end,
-                                                 std::move(callback));
+  GetCookieStore()->DeleteAllCreatedInTimeRangeAsync(creation_range,
+                                                     std::move(callback));
 }
 
-void DeleteAllCreatedBetweenWithPredicateAsyncOnCookieThread(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
-    const net::CookieStore::CookiePredicate& predicate,
+void DeleteAllMatchingInfoAsyncOnCookieThread(
+    net::CookieStore::CookieDeletionInfo delete_info,
     net::CookieStore::DeleteCallback callback) {
-  GetCookieStore()->DeleteAllCreatedBetweenWithPredicateAsync(
-      delete_begin, delete_end, predicate, std::move(callback));
+  GetCookieStore()->DeleteAllMatchingInfoAsync(std::move(delete_info),
+                                               std::move(callback));
 }
 
 void DeleteSessionCookiesAsyncOnCookieThread(
@@ -154,26 +151,22 @@ void AwCookieStoreWrapper::DeleteCanonicalCookieAsync(
                      CreateWrappedCallback<uint32_t>(std::move(callback))));
 }
 
-void AwCookieStoreWrapper::DeleteAllCreatedBetweenAsync(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
+void AwCookieStoreWrapper::DeleteAllCreatedInTimeRangeAsync(
+    const TimeRange& creation_range,
     DeleteCallback callback) {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   PostTaskToCookieStoreTaskRunner(base::BindOnce(
-      &DeleteAllCreatedBetweenAsyncOnCookieThread, delete_begin, delete_end,
+      &DeleteAllCreatedWithinRangeAsyncOnCookieThread, creation_range,
       CreateWrappedCallback<uint32_t>(std::move(callback))));
 }
 
-void AwCookieStoreWrapper::DeleteAllCreatedBetweenWithPredicateAsync(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
-    const CookiePredicate& predicate,
+void AwCookieStoreWrapper::DeleteAllMatchingInfoAsync(
+    net::CookieStore::CookieDeletionInfo delete_info,
     DeleteCallback callback) {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
-  PostTaskToCookieStoreTaskRunner(
-      base::BindOnce(&DeleteAllCreatedBetweenWithPredicateAsyncOnCookieThread,
-                     delete_begin, delete_end, predicate,
-                     CreateWrappedCallback<uint32_t>(std::move(callback))));
+  PostTaskToCookieStoreTaskRunner(base::BindOnce(
+      &DeleteAllMatchingInfoAsyncOnCookieThread, std::move(delete_info),
+      CreateWrappedCallback<uint32_t>(std::move(callback))));
 }
 
 void AwCookieStoreWrapper::DeleteSessionCookiesAsync(DeleteCallback callback) {

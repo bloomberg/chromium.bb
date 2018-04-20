@@ -10,115 +10,13 @@
 #include "net/cookies/cookie_options.h"
 #include "url/gurl.h"
 
+using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
+using CookieDeleteSessionControl =
+    net::CookieStore::CookieDeletionInfo::SessionControl;
+
 namespace network {
 
 namespace {
-
-// Class to wrap a CookieDeletionFilterPtr and provide a predicate for
-// use by DeleteAllCreatedBetweenWithPredicateAsync.
-class PredicateWrapper {
- public:
-  explicit PredicateWrapper(network::mojom::CookieDeletionFilterPtr filter)
-      : use_excluding_domains_(filter->excluding_domains.has_value()),
-        excluding_domains_(filter->excluding_domains.has_value()
-                               ? std::set<std::string>(
-                                     filter->excluding_domains.value().begin(),
-                                     filter->excluding_domains.value().end())
-                               : std::set<std::string>()),
-        use_including_domains_(filter->including_domains.has_value()),
-        including_domains_(filter->including_domains.has_value()
-                               ? std::set<std::string>(
-                                     filter->including_domains.value().begin(),
-                                     filter->including_domains.value().end())
-                               : std::set<std::string>()),
-        use_cookie_name_(filter->cookie_name.has_value()),
-        cookie_name_(filter->cookie_name.has_value()
-                         ? filter->cookie_name.value()
-                         : std::string()),
-        use_url_(filter->url.has_value()),
-        url_(filter->url.has_value() ? filter->url.value() : GURL()),
-        session_control_(filter->session_control) {
-    // Options to use for deletion of cookies associated with
-    // a particular URL.  These options will make sure that all
-    // cookies associated with the URL are deleted.
-    const_cast<net::CookieOptions&>(options_).set_include_httponly();
-    const_cast<net::CookieOptions&>(options_).set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  }
-
-  // Return true if the given cookie should be deleted.
-  bool Predicate(const net::CanonicalCookie& cookie) {
-    // Ignore begin/end times; they're handled by method args.
-    // Deleted cookies must satisfy all conditions, so if any of the
-    // below matches fail return false early.
-
-    // Delete if the cookie is not in excluding_domains_.
-    if (use_excluding_domains_ && DomainMatches(cookie, excluding_domains_))
-      return false;
-
-    // Delete if the cookie is in including_domains_.
-    if (use_including_domains_ && !DomainMatches(cookie, including_domains_))
-      return false;
-
-    // Delete if the cookie has a specified name.
-    if (use_cookie_name_ && !(cookie_name_ == cookie.Name()))
-      return false;
-
-    // Delete if the cookie matches the URL.
-    if (use_url_ && !cookie.IncludeForRequestURL(url_, options_))
-      return false;
-
-    // Delete if the cookie is not the correct persistent or session type.
-    if (session_control_ !=
-            network::mojom::CookieDeletionSessionControl::IGNORE_CONTROL &&
-        (cookie.IsPersistent() !=
-         (session_control_ ==
-          network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES))) {
-      return false;
-    }
-
-    return true;
-  }
-
- private:
-  // Return true if the eTLD+1 of the domain matches any of the strings
-  // in |match_domains|, false otherwise.
-  bool DomainMatches(const net::CanonicalCookie& cookie,
-                     const std::set<std::string>& match_domains) {
-    std::string effective_domain(
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            // GetDomainAndRegistry() is insensitive to leading dots, i.e.
-            // to host/domain cookie distinctions.
-            cookie.Domain(),
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-    // If the cookie's domain is is not parsed as belonging to a registry
-    // (e.g. for IP addresses or internal hostnames) an empty string will be
-    // returned.  In this case, use the domain in the cookie.
-    if (effective_domain.empty())
-      effective_domain = cookie.Domain();
-
-    return match_domains.count(effective_domain) != 0;
-  }
-
-  const bool use_excluding_domains_;
-  const std::set<std::string> excluding_domains_;
-
-  const bool use_including_domains_;
-  const std::set<std::string> including_domains_;
-
-  const bool use_cookie_name_;
-  const std::string cookie_name_;
-
-  const bool use_url_;
-  const GURL url_;
-
-  const network::mojom::CookieDeletionSessionControl session_control_;
-
-  // Set at construction; used for IncludeForRequestURL().
-  const net::CookieOptions options_;
-
-  DISALLOW_COPY_AND_ASSIGN(PredicateWrapper);
-};
 
 network::mojom::CookieChangeCause ChangeCauseTranslation(
     net::CookieChangeCause net_cause) {
@@ -186,21 +84,8 @@ void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
 void CookieManager::DeleteCookies(
     network::mojom::CookieDeletionFilterPtr filter,
     DeleteCookiesCallback callback) {
-  base::Time start_time;
-  base::Time end_time;
-
-  if (filter->created_after_time.has_value())
-    start_time = filter->created_after_time.value();
-
-  if (filter->created_before_time.has_value())
-    end_time = filter->created_before_time.value();
-
-  cookie_store_->DeleteAllCreatedBetweenWithPredicateAsync(
-      start_time, end_time,
-      base::BindRepeating(
-          &PredicateWrapper::Predicate,
-          std::make_unique<PredicateWrapper>(std::move(filter))),
-      std::move(callback));
+  cookie_store_->DeleteAllMatchingInfoAsync(
+      DeletionFilterToInfo(std::move(filter)), std::move(callback));
 }
 
 void CookieManager::AddCookieChangeListener(
@@ -288,6 +173,56 @@ void CookieManager::CloneInterface(
 void CookieManager::FlushCookieStore(FlushCookieStoreCallback callback) {
   // Flushes the backing store (if any) to disk.
   cookie_store_->FlushStore(std::move(callback));
+}
+
+CookieDeletionInfo DeletionFilterToInfo(
+    network::mojom::CookieDeletionFilterPtr filter) {
+  CookieDeletionInfo delete_info;
+
+  if (filter->created_after_time.has_value() &&
+      !filter->created_after_time.value().is_null()) {
+    delete_info.creation_range.SetStart(filter->created_after_time.value());
+  }
+  if (filter->created_before_time.has_value() &&
+      !filter->created_before_time.value().is_null()) {
+    delete_info.creation_range.SetEnd(filter->created_before_time.value());
+  }
+  delete_info.name = filter->cookie_name;
+  delete_info.url = filter->url;
+
+  switch (filter->session_control) {
+    case network::mojom::CookieDeletionSessionControl::IGNORE_CONTROL:
+      delete_info.session_control = CookieDeleteSessionControl::IGNORE_CONTROL;
+      break;
+    case network::mojom::CookieDeletionSessionControl::SESSION_COOKIES:
+      delete_info.session_control = CookieDeleteSessionControl::SESSION_COOKIES;
+      break;
+    case network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES:
+      delete_info.session_control =
+          CookieDeleteSessionControl::PERSISTENT_COOKIES;
+      break;
+  }
+
+  if (filter->including_domains.has_value()) {
+    delete_info.domains_and_ips_to_delete.insert(
+        filter->including_domains.value().begin(),
+        filter->including_domains.value().end());
+  }
+  if (filter->excluding_domains.has_value()) {
+    delete_info.domains_and_ips_to_ignore.insert(
+        filter->excluding_domains.value().begin(),
+        filter->excluding_domains.value().end());
+  }
+  if (filter->url.has_value()) {
+    // Options to use for deletion of cookies associated with
+    // a particular URL.  These options will make sure that all
+    // cookies associated with the URL are deleted.
+    delete_info.cookie_options.set_include_httponly();
+    delete_info.cookie_options.set_same_site_cookie_mode(
+        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  }
+
+  return delete_info;
 }
 
 }  // namespace network
