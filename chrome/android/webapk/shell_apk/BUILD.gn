@@ -11,6 +11,8 @@ unbound_shell_apk_manifest =
     "$target_gen_dir/unbound_shell_apk_manifest/AndroidManifest.xml"
 maps_go_apk_manifest =
     "$target_gen_dir/maps_go_apk_manifest/AndroidManifest.xml"
+shell_apk_http_manifest =
+    "$target_gen_dir/shell_apk_http_manifest/AndroidManifest.xml"
 
 manifest_processor_template("shell_apk_manifest") {
   input = "AndroidManifest.xml"
@@ -32,6 +34,14 @@ manifest_processor_template("maps_go_apk_manifest") {
   input = "AndroidManifest.xml"
   config_file = "maps_go_manifest_config.json"
   output = maps_go_apk_manifest
+
+  extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
+}
+
+manifest_processor_template("shell_apk_http_manifest") {
+  input = "AndroidManifest.xml"
+  config_file = "http_manifest_config.json"
+  output = shell_apk_http_manifest
 
   extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
 }
@@ -183,6 +193,12 @@ webapk_tmpl("unbound_webapk") {
   android_manifest = unbound_shell_apk_manifest
   android_manifest_dep = ":unbound_shell_apk_manifest"
   apk_name = "UnboundWebApk"
+}
+
+webapk_tmpl("http_webapk") {
+  android_manifest = shell_apk_http_manifest
+  android_manifest_dep = ":shell_apk_http_manifest"
+  apk_name = "HttpWebApk"
 }
 
 android_library("shell_apk_javatests") {
