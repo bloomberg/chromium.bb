@@ -231,8 +231,8 @@ crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Slow
 
 crbug.com/372424 fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Slow ]
 
-crbug.com/372424 http/tests/serviceworker/chromium/registration-stress.html [ Slow ]
-crbug.com/448670 http/tests/serviceworker/chromium/register-different-script-many-times.html [ Slow ]
+crbug.com/372424 http/tests/serviceworker/registration-stress.html [ Slow ]
+crbug.com/448670 http/tests/serviceworker/register-different-script-many-times.html [ Slow ]
 crbug.com/516319 [ Win ] http/tests/fetch/ [ Slow ]
 
 # Most crypto/subtle tests are slow some or most of the time.
