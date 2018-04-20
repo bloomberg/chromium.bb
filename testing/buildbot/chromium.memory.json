@@ -899,6 +899,26 @@
       },
       {
         "args": [
+          "--no-xvfb",
+          "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always",
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gl_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
           "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -1448,6 +1468,24 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gin_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--no-xvfb"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -2801,6 +2839,24 @@
         "test": "gin_unittests"
       },
       {
+        "args": [
+          "--use-gpu-in-tests",
+          "--no-xvfb"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gl_tests",
+        "use_xvfb": false
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3164,6 +3220,24 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gin_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--no-xvfb"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "swarming": {
