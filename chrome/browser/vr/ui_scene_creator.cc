@@ -1005,6 +1005,7 @@ void UiSceneCreator::CreateSystemIndicators() {
     element->SetSize(kIndicatorHeightDMM, kIndicatorHeightDMM);
     element->SetIconScaleFactor(kIndicatorIconScaleFactor);
     element->set_hover_offset(0.0f);
+    element->SetSounds(Sounds(), audio_delegate_);
     element->AddBinding(std::make_unique<Binding<bool>>(
         VR_BIND_LAMBDA(
             [](Model* model, bool CapturingStateModel::*signal,
