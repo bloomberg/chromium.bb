@@ -251,6 +251,8 @@ static_library("extensions") {
     "api/media_galleries/blob_data_source_factory.h",
     "api/media_galleries/media_galleries_api.cc",
     "api/media_galleries/media_galleries_api.h",
+    "api/media_galleries/media_galleries_api_util.cc",
+    "api/media_galleries/media_galleries_api_util.h",
     "api/messaging/chrome_messaging_delegate.cc",
     "api/messaging/chrome_messaging_delegate.h",
     "api/messaging/incognito_connectability.cc",

@@ -16,75 +16,59 @@
 #include "media/media_buildflags.h"
 #include "net/base/mime_sniffer.h"
 
-namespace MediaGalleries = extensions::api::media_galleries;
-
 namespace {
-
-#if BUILDFLAG(ENABLE_FFMPEG)
-void SetStringScopedPtr(const std::string& value,
-                        std::unique_ptr<std::string>* destination) {
-  DCHECK(destination);
-  if (!value.empty())
-    destination->reset(new std::string(value));
-}
-
-void SetIntScopedPtr(int value, std::unique_ptr<int>* destination) {
-  DCHECK(destination);
-  if (value >= 0)
-    destination->reset(new int(value));
-}
-#endif
 
 // This runs on |media_thread_|, as the underlying FFmpeg operation is
 // blocking, and the utility thread must not be blocked, so the media file
 // bytes can be sent from the browser process to the utility process.
-void ParseAudioVideoMetadata(
+chrome::mojom::MediaMetadataPtr ParseAudioVideoMetadata(
     media::DataSource* source,
     bool get_attached_images,
-    MediaMetadataParser::MediaMetadata* metadata,
+    const std::string& mime_type,
     std::vector<metadata::AttachedImage>* attached_images) {
   DCHECK(source);
-  DCHECK(metadata);
+
+  chrome::mojom::MediaMetadataPtr metadata =
+      chrome::mojom::MediaMetadata::New();
+  metadata->mime_type = mime_type;
 
 #if BUILDFLAG(ENABLE_FFMPEG)
   media::AudioVideoMetadataExtractor extractor;
 
   if (!extractor.Extract(source, get_attached_images))
-    return;
+    return metadata;
 
   if (extractor.has_duration() && extractor.duration() >= 0)
-    metadata->duration.reset(new double(extractor.duration()));
+    metadata->duration = extractor.duration();
 
   if (extractor.height() >= 0 && extractor.width() >= 0) {
-    metadata->height.reset(new int(extractor.height()));
-    metadata->width.reset(new int(extractor.width()));
+    metadata->height = extractor.height();
+    metadata->width = extractor.width();
   }
 
-  SetStringScopedPtr(extractor.artist(), &metadata->artist);
-  SetStringScopedPtr(extractor.album(), &metadata->album);
-  SetStringScopedPtr(extractor.artist(), &metadata->artist);
-  SetStringScopedPtr(extractor.comment(), &metadata->comment);
-  SetStringScopedPtr(extractor.copyright(), &metadata->copyright);
-  SetIntScopedPtr(extractor.disc(), &metadata->disc);
-  SetStringScopedPtr(extractor.genre(), &metadata->genre);
-  SetStringScopedPtr(extractor.language(), &metadata->language);
-  SetIntScopedPtr(extractor.rotation(), &metadata->rotation);
-  SetStringScopedPtr(extractor.title(), &metadata->title);
-  SetIntScopedPtr(extractor.track(), &metadata->track);
+  metadata->artist = extractor.artist();
+  metadata->album = extractor.album();
+  metadata->comment = extractor.comment();
+  metadata->copyright = extractor.copyright();
+  metadata->disc = extractor.disc();
+  metadata->genre = extractor.genre();
+  metadata->language = extractor.language();
+  metadata->rotation = extractor.rotation();
+  metadata->title = extractor.title();
+  metadata->track = extractor.track();
 
   for (media::AudioVideoMetadataExtractor::StreamInfoVector::const_iterator it =
            extractor.stream_infos().begin();
        it != extractor.stream_infos().end(); ++it) {
-    MediaGalleries::StreamInfo stream_info;
-    stream_info.type = it->type;
-
+    chrome::mojom::MediaStreamInfoPtr stream_info =
+        chrome::mojom::MediaStreamInfo::New(
+            it->type, std::make_unique<base::DictionaryValue>());
     for (std::map<std::string, std::string>::const_iterator tag_it =
              it->tags.begin();
          tag_it != it->tags.end(); ++tag_it) {
-      stream_info.tags.additional_properties.SetString(tag_it->first,
-                                                       tag_it->second);
+      stream_info->additional_properties->SetKey(tag_it->first,
+                                                 base::Value(tag_it->second));
     }
-
     metadata->raw_tags.push_back(std::move(stream_info));
   }
 
@@ -99,17 +83,18 @@ void ParseAudioVideoMetadata(
     }
   }
 #endif
+  return metadata;
 }
 
 void FinishParseAudioVideoMetadata(
     MediaMetadataParser::MetadataCallback callback,
-    MediaMetadataParser::MediaMetadata* metadata,
-    std::vector<metadata::AttachedImage>* attached_images) {
+    std::vector<metadata::AttachedImage>* attached_images,
+    chrome::mojom::MediaMetadataPtr metadata) {
   DCHECK(!callback.is_null());
   DCHECK(metadata);
   DCHECK(attached_images);
 
-  callback.Run(*metadata, *attached_images);
+  callback.Run(std::move(metadata), *attached_images);
 }
 
 bool IsSupportedMetadataMimetype(const std::string& mime_type) {
@@ -134,21 +119,20 @@ MediaMetadataParser::~MediaMetadataParser() = default;
 
 void MediaMetadataParser::Start(const MetadataCallback& callback) {
   if (!IsSupportedMetadataMimetype(mime_type_)) {
-    callback.Run(MediaMetadata(), std::vector<metadata::AttachedImage>());
+    callback.Run(chrome::mojom::MediaMetadata::New(),
+                 std::vector<metadata::AttachedImage>());
     return;
   }
 
-  MediaMetadata* metadata = new MediaMetadata();
-  metadata->mime_type = mime_type_;
   auto* images = new std::vector<metadata::AttachedImage>();
 
   media_thread_.reset(new base::Thread("media_thread"));
   CHECK(media_thread_->Start());
 
-  media_thread_->task_runner()->PostTaskAndReply(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      media_thread_->task_runner().get(), FROM_HERE,
       base::BindOnce(&ParseAudioVideoMetadata, source_.get(),
-                     get_attached_images_, metadata, images),
+                     get_attached_images_, mime_type_, images),
       base::BindOnce(&FinishParseAudioVideoMetadata, callback,
-                     base::Owned(metadata), base::Owned(images)));
+                     base::Owned(images)));
 }
