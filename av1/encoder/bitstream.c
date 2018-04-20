@@ -1452,8 +1452,8 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 
     if (is_inter_block(mbmi)) {
       int block[MAX_MB_PLANE] = { 0 };
-      const struct macroblockd_plane *const y_pd = &xd->plane[0];
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, y_pd);
+      const BLOCK_SIZE plane_bsize = mbmi->sb_type;
+      assert(plane_bsize == get_plane_block_size(mbmi->sb_type, &xd->plane[0]));
       const int num_4x4_w =
           block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
       const int num_4x4_h =
@@ -1462,7 +1462,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       TOKEN_STATS token_stats;
       init_token_stats(&token_stats);
 
-      const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, y_pd);
+      const BLOCK_SIZE max_unit_bsize = BLOCK_64X64;
+      assert(max_unit_bsize ==
+             get_plane_block_size(BLOCK_64X64, &xd->plane[0]));
       int mu_blocks_wide =
           block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
       int mu_blocks_high =
