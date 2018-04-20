@@ -8,7 +8,7 @@
 #include <media/audio.h>
 
 #include "base/time/time.h"
-#include "chromecast/media/cma/backend/mixer_output_stream.h"
+#include "chromecast/public/media/mixer_output_stream.h"
 
 namespace chromecast {
 namespace media {

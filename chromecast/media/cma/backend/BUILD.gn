@@ -113,7 +113,6 @@ cast_source_set("null_video") {
 
 cast_source_set("public") {
   sources = [
-    "mixer_output_stream.h",
     "system_volume_control.h",
   ]
 
@@ -193,10 +192,12 @@ cast_source_set("for_mixer_audio") {
     ":public",
     "//base",
     "//chromecast/base",
+    "//chromecast/media/audio:libcast_external_audio_pipeline_1.0",
     "//chromecast/media/base",
     "//chromecast/media/cma/backend/post_processors:post_processor_wrapper",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",
+    "//chromecast/public",
     "//chromecast/public/media",
     "//media",
     "//media:shared_memory_support",

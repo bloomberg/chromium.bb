@@ -382,11 +382,17 @@ int MixerOutputStreamAlsa::SetAlsaPlaybackParams(int requested_sample_rate) {
 
 void MixerOutputStreamAlsa::DefineAlsaParameters() {
   // Get the ALSA output configuration from the command line.
-  alsa_buffer_size_ = GetSwitchValueNonNegativeInt(
-      switches::kAlsaOutputBufferSize, kDefaultOutputBufferSizeFrames);
 
-  alsa_period_size_ = GetSwitchValueNonNegativeInt(
-      switches::kAlsaOutputPeriodSize, alsa_buffer_size_ / 2);
+  if (base::CommandLine::InitializedForCurrentProcess()) {
+    alsa_buffer_size_ = GetSwitchValueNonNegativeInt(
+        switches::kAlsaOutputBufferSize, kDefaultOutputBufferSizeFrames);
+    alsa_period_size_ = GetSwitchValueNonNegativeInt(
+        switches::kAlsaOutputPeriodSize, alsa_buffer_size_ / 2);
+  } else {
+    alsa_buffer_size_ = kDefaultOutputBufferSizeFrames;
+    alsa_period_size_ = alsa_buffer_size_ / 2;
+  }
+
   if (alsa_period_size_ >= alsa_buffer_size_) {
     LOG(DFATAL) << "ALSA period size must be smaller than the buffer size";
     alsa_period_size_ = alsa_buffer_size_ / 2;
@@ -395,9 +401,14 @@ void MixerOutputStreamAlsa::DefineAlsaParameters() {
   LOG(INFO) << "ALSA buffer = " << alsa_buffer_size_
             << ", period = " << alsa_period_size_;
 
-  alsa_start_threshold_ = GetSwitchValueNonNegativeInt(
-      switches::kAlsaOutputStartThreshold,
-      (alsa_buffer_size_ / alsa_period_size_) * alsa_period_size_);
+  if (base::CommandLine::InitializedForCurrentProcess()) {
+    alsa_start_threshold_ = GetSwitchValueNonNegativeInt(
+        switches::kAlsaOutputStartThreshold,
+        (alsa_buffer_size_ / alsa_period_size_) * alsa_period_size_);
+  } else {
+    alsa_start_threshold_ =
+        (alsa_buffer_size_ / alsa_period_size_) * alsa_period_size_;
+  }
   if (alsa_start_threshold_ > alsa_buffer_size_) {
     LOG(DFATAL) << "ALSA start threshold must be no larger than "
                 << "the buffer size";
@@ -407,8 +418,12 @@ void MixerOutputStreamAlsa::DefineAlsaParameters() {
 
   // By default, allow the transfer when at least period_size samples can be
   // processed.
-  alsa_avail_min_ = GetSwitchValueNonNegativeInt(switches::kAlsaOutputAvailMin,
-                                                 alsa_period_size_);
+  if (base::CommandLine::InitializedForCurrentProcess()) {
+    alsa_avail_min_ = GetSwitchValueNonNegativeInt(
+        switches::kAlsaOutputAvailMin, alsa_period_size_);
+  } else {
+    alsa_avail_min_ = alsa_period_size_;
+  }
   if (alsa_avail_min_ > alsa_buffer_size_) {
     LOG(DFATAL) << "ALSA avail min must be no larger than the buffer size";
     alsa_avail_min_ = alsa_period_size_;
