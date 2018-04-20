@@ -11499,7 +11499,7 @@
       If the policy is set to True, the device is allowed to run virtual machines.
       If the policy is set to False, the device will not be allowed to run virtual machines.
       When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
-      When this policy is not set on a managed device, the device is allowed to run virtual machines.
+      When this policy is not set on a managed device, the device is not allowed to run virtual machines.
       Unmanaged devices are allowed to run virtual machines.''',
     },
     {
