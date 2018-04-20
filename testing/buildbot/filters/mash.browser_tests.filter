@@ -186,7 +186,7 @@
 # OutputProtection problems:
 # interface_endpoint_client.cc(32) Check failed: !is_valid. The callback passed to OutputProtection::QueryStatus() was never run.
 # binder_registry.h(89) Failed to locate a binder for interface: display::mojom::OutputProtection
--ECKEncryptedMediaTest.OutputProtectionTest
+-*ECKEncryptedMediaTest.OutputProtectionTest*
 -OutOfProcessPPAPITest.*
 
 # ash::FocusRingController::SetVisible() from LoginDisplayHostWebUI.
@@ -295,16 +295,15 @@
 -WebViewScrollGuestContent/WebViewScrollGuestContentTest.OverscrollControllerSeesConsumedScrollsInGuest/0
 
 # Viz is not supported, https://crbug.com/827327
+-*ECKEncryptedMediaTest.*
 -MSE_ClearKey/EncryptedMediaTest.*
 -MSE_ExternalClearKey/EncryptedMediaTest.*
--EncryptedMediaTestExperimentalCdmInterface.*
 -AudioPlayerBrowserTestInGuestMode.OpenAudioOnDownloads
 -AutoplayExtensionBrowserTest.AutoplayAllowed
 -MediaEngagementBrowserTest.*
 -MediaEngagementAutoplayBrowserTest.*
 -UnifiedAutoplayBrowserTest.*
 -AutoplayPolicyTest.*
--ECKEncryptedMediaTest.*
 -ExtensionResourceRequestPolicyTest.Audio
 -ExtensionResourceRequestPolicyTest.Video
 -DeferredMediaBrowserTest.BackgroundMediaIsDeferred

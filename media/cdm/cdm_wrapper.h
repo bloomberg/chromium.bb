@@ -21,13 +21,9 @@ namespace media {
 
 namespace {
 
-bool IsExperimentalCdmInterfaceSupported() {
-  return base::FeatureList::IsEnabled(media::kSupportExperimentalCdmInterface);
-}
-
 bool IsEncryptionSchemeSupportedByLegacyCdms(
     const cdm::EncryptionScheme& scheme) {
-  // CDM_8 and CDM_9 don't check the encryption scheme, so do it here.
+  // CDM_9 don't check the encryption scheme, so do it here.
   return scheme == cdm::EncryptionScheme::kUnencrypted ||
          scheme == cdm::EncryptionScheme::kCenc;
 }
@@ -169,20 +165,6 @@ class CdmWrapper {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmWrapper);
-};
-
-// Traits for CDM Interfaces
-template <int CdmInterfaceVersion>
-struct CdmInterfaceTraits {};
-
-template <>
-struct CdmInterfaceTraits<9> {
-  using CdmInterface = cdm::ContentDecryptionModule_9;
-};
-
-template <>
-struct CdmInterfaceTraits<10> {
-  using CdmInterface = cdm::ContentDecryptionModule_10;
 };
 
 // Template class that does the CdmWrapper -> CdmInterface conversion. Default
@@ -418,7 +400,7 @@ CdmWrapper* CdmWrapper::Create(CreateCdmFunc create_cdm_func,
   CdmWrapper* cdm_wrapper = nullptr;
 
   // TODO(xhwang): Check whether we can use static loops to simplify this code.
-  if (IsExperimentalCdmInterfaceSupported()) {
+  if (IsSupportedAndEnabledCdmInterfaceVersion(10)) {
     cdm_wrapper =
         CdmWrapperImpl<10>::Create(create_cdm_func, key_system, key_system_size,
                                    get_cdm_host_func, user_data);
@@ -426,7 +408,7 @@ CdmWrapper* CdmWrapper::Create(CreateCdmFunc create_cdm_func,
 
   // If |cdm_wrapper| is NULL, try to create the CDM using older supported
   // versions of the CDM interface here.
-  if (!cdm_wrapper) {
+  if (!cdm_wrapper && IsSupportedAndEnabledCdmInterfaceVersion(9)) {
     cdm_wrapper =
         CdmWrapperImpl<9>::Create(create_cdm_func, key_system, key_system_size,
                                   get_cdm_host_func, user_data);

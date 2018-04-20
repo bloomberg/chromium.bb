@@ -8,6 +8,21 @@
 #include "media/base/media_export.h"
 #include "media/cdm/api/content_decryption_module.h"
 
+// A library CDM interface is "supported" if it's implemented by CdmAdapter and
+// CdmWrapper. Typically multiple CDM interfaces are supported:
+// - The latest stable CDM interface.
+// - Previous stable CDM interface(s), for supporting older CDMs.
+// - Experimental CDM interface(s), for development.
+//
+// A library CDM interface is "enabled" if it's enabled at runtime, e.g. being
+// able to be registered and creating CDM instances. Typically experimental CDM
+// interfaces are supported, but not enabled by default.
+//
+// Whether a CDM interface is enabled can also be overridden by using command
+// line switch switches::kOverrideEnabledCdmInterfaceVersion for finer control
+// in a test environment or for local debugging, including enabling experimental
+// CDM interfaces.
+
 namespace media {
 
 namespace {
@@ -33,8 +48,27 @@ constexpr bool CheckSupportedVersions(VersionCheckFunc check_func,
 
 }  // namespace
 
-MEDIA_EXPORT bool IsSupportedCdmModuleVersion(int version);
+// Traits for CDM Interfaces
+template <int CdmInterfaceVersion>
+struct CdmInterfaceTraits {};
 
+template <>
+struct CdmInterfaceTraits<9> {
+  using CdmInterface = cdm::ContentDecryptionModule_9;
+  static_assert(CdmInterface::kVersion == 9, "CDM interface version mismatch.");
+  static constexpr bool IsEnabledByDefault() { return true; }
+};
+
+template <>
+struct CdmInterfaceTraits<10> {
+  using CdmInterface = cdm::ContentDecryptionModule_10;
+  static_assert(CdmInterface::kVersion == 10,
+                "CDM interface version mismatch.");
+  static constexpr bool IsEnabledByDefault() { return false; }
+};
+
+// Returns whether the CDM interface of |version| is supported in the
+// implementation.
 constexpr bool IsSupportedCdmInterfaceVersion(int version) {
   static_assert(cdm::ContentDecryptionModule::kVersion ==
                     cdm::ContentDecryptionModule_9::kVersion,
@@ -49,6 +83,9 @@ constexpr bool IsSupportedCdmInterfaceVersion(int version) {
   }
 }
 
+// Returns whether the CDM host interface of |version| is supported in the
+// implementation. Currently there's no way to disable a supported CDM host
+// interface at run time.
 constexpr bool IsSupportedCdmHostVersion(int version) {
   static_assert(cdm::ContentDecryptionModule::Host::kVersion ==
                     cdm::ContentDecryptionModule_9::Host::kVersion,
@@ -64,7 +101,7 @@ constexpr bool IsSupportedCdmHostVersion(int version) {
 }
 
 // Ensures CDM interface versions in and only in the range [min_version,
-// max_version] are supported.
+// max_version] are supported in the implementation.
 constexpr bool CheckSupportedCdmInterfaceVersions(int min_version,
                                                   int max_version) {
   // The latest stable CDM interface should always be supported.
@@ -79,7 +116,7 @@ constexpr bool CheckSupportedCdmInterfaceVersions(int min_version,
 }
 
 // Ensures CDM host interface versions in and only in the range [min_version,
-// max_version] are supported.
+// max_version] are supported in the implementation.
 constexpr bool CheckSupportedCdmHostVersions(int min_version, int max_version) {
   // The latest stable CDM Host interface should always be supported.
   int latest_stable_version = cdm::ContentDecryptionModule::Host::kVersion;
@@ -91,6 +128,12 @@ constexpr bool CheckSupportedCdmHostVersions(int min_version, int max_version) {
   return CheckSupportedVersions(IsSupportedCdmHostVersion, min_version,
                                 max_version);
 }
+
+MEDIA_EXPORT bool IsSupportedCdmModuleVersion(int version);
+
+// Returns whether the CDM interface of |version| is supported in the
+// implementation and enabled at runtime.
+MEDIA_EXPORT bool IsSupportedAndEnabledCdmInterfaceVersion(int version);
 
 }  // namespace media
 

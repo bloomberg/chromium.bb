@@ -149,6 +149,20 @@ const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
 // kExternalClearKeyForTesting.
 const char kClearKeyCdmPathForTesting[] = "clear-key-cdm-path-for-testing";
 
+// Overrides the default enabled library CDM interface version(s) with the one
+// specified with this switch, which will be the only version enabled. For
+// example, on a build where CDM 8, CDM 9 and CDM 10 are all supported
+// (implemented), but only CDM 8 and CDM 9 are enabled by default:
+//  --override-enabled-cdm-interface-version=8 : Only CDM 8 is enabled
+//  --override-enabled-cdm-interface-version=9 : Only CDM 9 is enabled
+//  --override-enabled-cdm-interface-version=10 : Only CDM 10 is enabled
+//  --override-enabled-cdm-interface-version=11 : No CDM interface is enabled
+// This can be used for local testing and debugging. It can also be used to
+// enable an experimental CDM interface (which is always disabled by default)
+// for testing while it's still in development.
+const char kOverrideEnabledCdmInterfaceVersion[] =
+    "override-enabled-cdm-interface-version";
+
 #if !defined(OS_ANDROID)
 // Turns on the internal media session backend. This should be used by embedders
 // that want to control the media playback with the media session interfaces.
@@ -295,13 +309,6 @@ const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
 // no effect.
 const base::Feature kExternalClearKeyForTesting{
     "ExternalClearKeyForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables support of experimental CDM interface version(s). This is usually
-// used to enable new CDM interface support for testing while it's still in
-// development. This switch may not be used anywhere if there's no experimental
-// CDM interface being developed.
-const base::Feature kSupportExperimentalCdmInterface{
-    "SupportExperimentalCdmInterface", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables low-delay video rendering in media pipeline on "live" stream.
 const base::Feature kLowDelayVideoRenderingOnLiveStream{
