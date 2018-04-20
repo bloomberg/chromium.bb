@@ -655,11 +655,12 @@ void DisplayManager::RegisterDisplayProperty(
                                         Display::RotationSource::USER);
   display_info_[display_id].SetRotation(rotation,
                                         Display::RotationSource::ACTIVE);
-  // Just in case the preference file was corrupted.
-  // TODO(mukai): register |display_modes_| here as well, so the lookup for the
-  // default mode in GetActiveModeForDisplayId() gets much simpler.
-  if (0.5f <= ui_scale && ui_scale <= 2.0f)
+
+  if (features::IsDisplayZoomSettingEnabled())
+    display_info_[display_id].set_zoom_factor(display_zoom_factor);
+  else if (0.5f <= ui_scale && ui_scale <= 2.0f)
     display_info_[display_id].set_configured_ui_scale(ui_scale);
+
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(*overscan_insets);
 
@@ -671,8 +672,6 @@ void DisplayManager::RegisterDisplayProperty(
                             device_scale_factor);
     display_modes_[display_id] = mode;
   }
-
-  display_info_[display_id].set_zoom_factor(display_zoom_factor);
 }
 
 bool DisplayManager::GetActiveModeForDisplayId(int64_t display_id,

@@ -65,20 +65,27 @@ const base::Feature kHighDynamicRange{"HighDynamicRange",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
+// Enables using the monitor's provided color space information when
+// rendering.
+// TODO(mcasas): remove this flag http://crbug.com/771345.
+const base::Feature kUseMonitorColorSpace{"UseMonitorColorSpace",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // OS_CHROMEOS
+
 // Enables the slider in display settings to modify the display zoom/size.
 // TODO(malaykeshav): Remove this in M68 when the feature has been in stable for
 // atleast one milestone.
 constexpr base::Feature kEnableDisplayZoomSetting{
-    "EnableDisplayZoomSetting", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables using the monitor's provided color space information when rendering.
-// TODO(mcasas): remove this flag http://crbug.com/771345.
-const base::Feature kUseMonitorColorSpace{"UseMonitorColorSpace",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+  "EnableDisplayZoomSetting",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 bool IsDisplayZoomSettingEnabled() {
   return base::FeatureList::IsEnabled(kEnableDisplayZoomSetting);
 }
-#endif  // OS_CHROMEOS
 
 }  // namespace features

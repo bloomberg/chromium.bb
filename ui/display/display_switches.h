@@ -35,12 +35,13 @@ namespace features {
 DISPLAY_EXPORT extern const base::Feature kHighDynamicRange;
 
 #if defined(OS_CHROMEOS)
-DISPLAY_EXPORT extern const base::Feature kEnableDisplayZoomSetting;
 DISPLAY_EXPORT extern const base::Feature kUseMonitorColorSpace;
+#endif
+
+DISPLAY_EXPORT extern const base::Feature kEnableDisplayZoomSetting;
 
 // Returns true if experimental display zoom setting is enabled.
 DISPLAY_EXPORT bool IsDisplayZoomSettingEnabled();
-#endif
 
 }  // namespace features
 
