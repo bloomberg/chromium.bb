@@ -66,26 +66,6 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
-                       PRE_TestAdblockExtensionCrash) {
-  InstallExtensionSilently(extension_service(), "adblock.crx");
-}
-
-// Timing out on XP and Vista: http://crbug.com/387866
-#if defined(OS_WIN)
-#define MAYBE_TestAdblockExtensionCrash DISABLED_TestAdblockExtensionCrash
-#else
-#define MAYBE_TestAdblockExtensionCrash TestAdblockExtensionCrash
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
-                       MAYBE_TestAdblockExtensionCrash) {
-  ExtensionService* service = extension_service();
-  // Verify that the extension is enabled and allowed in incognito
-  // is disabled.
-  EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id()));
-  EXPECT_FALSE(util::IsIncognitoEnabled(last_loaded_extension_id(), profile()));
-}
-
 // Failing on Linux: http://crbug.com/654945
 #if defined(OS_LINUX)
 #define MAYBE_TestSetExtensionsState DISABLED_TestSetExtensionsState
