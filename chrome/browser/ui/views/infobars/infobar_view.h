@@ -34,6 +34,24 @@ class InfoBarView : public infobars::InfoBar,
   // Requests that the infobar recompute its target height.
   void RecalculateHeight();
 
+  // views::View:
+  void Layout() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  gfx::Size CalculatePreferredSize() const override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnThemeChanged() override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+
+  // views::ButtonListener:
+  // NOTE: This must not be called if we're unowned.  (Subclasses should ignore
+  // calls to ButtonPressed() in this case.)
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::ExternalFocusTracker:
+  void OnWillChangeFocus(View* focused_before, View* focused_now) override;
+
  protected:
   using Labels = std::vector<views::Label*>;
 
@@ -51,19 +69,6 @@ class InfoBarView : public infobars::InfoBar,
   // length of the next-longest, and so forth.
   static void AssignWidths(Labels* labels, int available_width);
 
-  // views::View:
-  void Layout() override;
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
-  void OnPaint(gfx::Canvas* canvas) override;
-  void OnThemeChanged() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
-
-  // views::ButtonListener:
-  // NOTE: This must not be called if we're unowned.  (Subclasses should ignore
-  // calls to ButtonPressed() in this case.)
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // Returns the minimum width the content (that is, everything between the icon
   // and the close button) can be shrunk to.  This is used to prevent the close
   // button from overlapping views that cannot be shrunk any further.
@@ -79,24 +84,17 @@ class InfoBarView : public infobars::InfoBar,
   // closed.
   int OffsetY(views::View* view) const;
 
+  // infobars::InfoBar:
+  void PlatformSpecificShow(bool animate) override;
+  void PlatformSpecificHide(bool animate) override;
+  void PlatformSpecificOnHeightRecalculated() override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(InfoBarViewTest, ShouldDrawSeparator);
 
   // Does the actual work for AssignWidths().  Assumes |labels| is sorted by
   // decreasing preferred width.
   static void AssignWidthsSorted(Labels* labels, int available_width);
-
-  // InfoBar:
-  void PlatformSpecificShow(bool animate) override;
-  void PlatformSpecificHide(bool animate) override;
-  void PlatformSpecificOnHeightRecalculated() override;
-
-  // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  gfx::Size CalculatePreferredSize() const override;
-
-  // views::ExternalFocusTracker:
-  void OnWillChangeFocus(View* focused_before, View* focused_now) override;
 
   // Returns whether this infobar should draw a 1 px separator at its top.
   bool ShouldDrawSeparator() const;

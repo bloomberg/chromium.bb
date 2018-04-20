@@ -143,29 +143,6 @@ void InfoBarView::RecalculateHeight() {
   SetTargetHeight(height + GetSeparatorHeightDip());
 }
 
-views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
-  views::Label* label = new views::Label(text, CONTEXT_BODY_TEXT_LARGE);
-  SetLabelDetails(label);
-  label->SetEnabledColor(GetColor(kTextColor));
-  label->SetProperty(kLabelType, LabelType::kLabel);
-  return label;
-}
-
-views::Link* InfoBarView::CreateLink(const base::string16& text,
-                                     views::LinkListener* listener) const {
-  views::Link* link = new views::Link(text, CONTEXT_BODY_TEXT_LARGE);
-  SetLabelDetails(link);
-  link->set_listener(listener);
-  link->SetProperty(kLabelType, LabelType::kLink);
-  return link;
-}
-
-// static
-void InfoBarView::AssignWidths(Labels* labels, int available_width) {
-  std::sort(labels->begin(), labels->end(), SortLabelsByDecreasingWidth);
-  AssignWidthsSorted(labels, available_width);
-}
-
 void InfoBarView::Layout() {
   const int spacing = GetElementSpacing();
   int start_x = 0;
@@ -188,6 +165,29 @@ void InfoBarView::Layout() {
   // For accessibility reasons, the close button should come last.
   DCHECK_EQ(close_button_->parent()->child_count() - 1,
             close_button_->parent()->GetIndexOf(close_button_));
+}
+
+void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR));
+  node_data->role = ax::mojom::Role::kAlert;
+  node_data->AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts,
+                                "Alt+Shift+A");
+}
+
+gfx::Size InfoBarView::CalculatePreferredSize() const {
+  int width = 0;
+
+  const int spacing = GetElementSpacing();
+  if (icon_)
+    width += spacing + icon_->width();
+
+  const int content_width = ContentMinimumWidth();
+  if (content_width)
+    width += spacing + content_width;
+
+  return gfx::Size(
+      width + GetCloseButtonSpacing().width() + close_button_->width(),
+      computed_height());
 }
 
 void InfoBarView::ViewHierarchyChanged(
@@ -251,6 +251,40 @@ void InfoBarView::ButtonPressed(views::Button* sender,
   }
 }
 
+void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
+  views::ExternalFocusTracker::OnWillChangeFocus(focused_before, focused_now);
+
+  // This will trigger some screen readers to read the entire contents of this
+  // infobar.
+  if (focused_before && focused_now && !Contains(focused_before) &&
+      Contains(focused_now)) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  }
+}
+
+views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
+  views::Label* label = new views::Label(text, CONTEXT_BODY_TEXT_LARGE);
+  SetLabelDetails(label);
+  label->SetEnabledColor(GetColor(kTextColor));
+  label->SetProperty(kLabelType, LabelType::kLabel);
+  return label;
+}
+
+views::Link* InfoBarView::CreateLink(const base::string16& text,
+                                     views::LinkListener* listener) const {
+  views::Link* link = new views::Link(text, CONTEXT_BODY_TEXT_LARGE);
+  SetLabelDetails(link);
+  link->set_listener(listener);
+  link->SetProperty(kLabelType, LabelType::kLink);
+  return link;
+}
+
+// static
+void InfoBarView::AssignWidths(Labels* labels, int available_width) {
+  std::sort(labels->begin(), labels->end(), SortLabelsByDecreasingWidth);
+  AssignWidthsSorted(labels, available_width);
+}
+
 int InfoBarView::ContentMinimumWidth() const {
   return 0;
 }
@@ -271,19 +305,6 @@ int InfoBarView::OffsetY(views::View* view) const {
   return GetSeparatorHeightDip() +
          std::max((target_height() - view->height()) / 2, 0) -
          (target_height() - height());
-}
-
-// static
-void InfoBarView::AssignWidthsSorted(Labels* labels, int available_width) {
-  if (labels->empty())
-    return;
-  gfx::Size back_label_size(labels->back()->GetPreferredSize());
-  back_label_size.set_width(
-      std::min(back_label_size.width(),
-               available_width / static_cast<int>(labels->size())));
-  labels->back()->SetSize(back_label_size);
-  labels->pop_back();
-  AssignWidthsSorted(labels, available_width - back_label_size.width());
 }
 
 void InfoBarView::PlatformSpecificShow(bool animate) {
@@ -322,38 +343,17 @@ void InfoBarView::PlatformSpecificOnHeightRecalculated() {
   InvalidateLayout();
 }
 
-void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR));
-  node_data->role = ax::mojom::Role::kAlert;
-  node_data->AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts,
-                                "Alt+Shift+A");
-}
-
-gfx::Size InfoBarView::CalculatePreferredSize() const {
-  int width = 0;
-
-  const int spacing = GetElementSpacing();
-  if (icon_)
-    width += spacing + icon_->width();
-
-  const int content_width = ContentMinimumWidth();
-  if (content_width)
-    width += spacing + content_width;
-
-  return gfx::Size(
-      width + GetCloseButtonSpacing().width() + close_button_->width(),
-      computed_height());
-}
-
-void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
-  views::ExternalFocusTracker::OnWillChangeFocus(focused_before, focused_now);
-
-  // This will trigger some screen readers to read the entire contents of this
-  // infobar.
-  if (focused_before && focused_now && !Contains(focused_before) &&
-      Contains(focused_now)) {
-    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-  }
+// static
+void InfoBarView::AssignWidthsSorted(Labels* labels, int available_width) {
+  if (labels->empty())
+    return;
+  gfx::Size back_label_size(labels->back()->GetPreferredSize());
+  back_label_size.set_width(
+      std::min(back_label_size.width(),
+               available_width / static_cast<int>(labels->size())));
+  labels->back()->SetSize(back_label_size);
+  labels->pop_back();
+  AssignWidthsSorted(labels, available_width - back_label_size.width());
 }
 
 bool InfoBarView::ShouldDrawSeparator() const {
