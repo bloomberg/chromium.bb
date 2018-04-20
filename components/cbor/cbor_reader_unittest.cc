@@ -27,92 +27,6 @@ std::vector<uint8_t> WithExtraneousData(base::span<const uint8_t> original) {
 
 }  // namespace
 
-TEST(CBORReaderTest, TestDecodeDataItemHeader) {
-  static const struct {
-    CBORReader::DataItemHeader expected_header;
-    const std::vector<uint8_t> cbor_data;
-  } kTestCases[] = {
-      {{CBORValue::Type::UNSIGNED, 0, 0}, {0x00}},
-      {{CBORValue::Type::UNSIGNED, 24, 24}, {0x18, 0x18}},
-      {{CBORValue::Type::UNSIGNED, 25, 12345}, {0x19, 0x30, 0x39}},
-      {{CBORValue::Type::UNSIGNED, 27, 1234567890123456789ull},
-       {0x1B, 0x11, 0x22, 0x10, 0xF4, 0x7D, 0xE9, 0x81, 0x15}},
-      {{CBORValue::Type::NEGATIVE, 24, 255}, {0x38, 0xff}},
-      {{CBORValue::Type::NEGATIVE, 26, 12345677},
-       {0x3a, 0x00, 0xbc, 0x61, 0x4d}},
-      {{CBORValue::Type::BYTE_STRING, 4, 4}, {0x44}},
-      {{CBORValue::Type::STRING, 3, 3}, {0x63}},
-      {{CBORValue::Type::ARRAY, 24, 25}, {0x98, 0x19}},
-      {{CBORValue::Type::MAP, 4, 4}, {0xa4}},
-      {{CBORValue::Type::SIMPLE_VALUE,
-        static_cast<uint8_t>(CBORValue::SimpleValue::FALSE_VALUE), 20},
-       {0xf4}},
-  };
-
-  int test_element_index = 0;
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message() << "testing case " << test_element_index++);
-    size_t consumed_bytes;
-    CBORReader::DecoderError error_code;
-    base::Optional<CBORReader::DataItemHeader> header =
-        CBORReader::ReadDataItemHeader(test_case.cbor_data, &consumed_bytes,
-                                       &error_code);
-
-    ASSERT_TRUE(header.has_value());
-    EXPECT_EQ(header->type, test_case.expected_header.type);
-    EXPECT_EQ(header->additional_info,
-              test_case.expected_header.additional_info);
-    EXPECT_EQ(header->value, test_case.expected_header.value);
-    EXPECT_EQ(consumed_bytes, test_case.cbor_data.size());
-    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
-
-    auto cbor_data_with_extra_byte = WithExtraneousData(test_case.cbor_data);
-    header = CBORReader::ReadDataItemHeader(cbor_data_with_extra_byte,
-                                            &consumed_bytes, &error_code);
-    ASSERT_TRUE(header.has_value());
-    EXPECT_EQ(header->type, test_case.expected_header.type);
-    EXPECT_EQ(header->additional_info,
-              test_case.expected_header.additional_info);
-    EXPECT_EQ(header->value, test_case.expected_header.value);
-    EXPECT_EQ(consumed_bytes, test_case.cbor_data.size());
-    EXPECT_EQ(error_code, CBORReader::DecoderError::CBOR_NO_ERROR);
-  }
-}
-
-TEST(CBORReaderTest, TestDecodeIncompleteDataItemHeader) {
-  static const std::vector<uint8_t> kTestCases[] = {
-      // clang-format off
-      {0x18},  // unsigned with pending 1 byte of numeric value.
-      {0x99},  // array with pending 2 byte of numeric value (length).
-      {0xba},  // map with pending 4 byte of numeric value (length).
-      {0x5b},  // byte string with pending 4 byte of numeric value (length).
-      {0x3b},  // negative integer with pending 8 byte of numeric value.
-      {0x99, 0x01},  // array with pending 2 byte of numeric value (length),
-                     // with only 1 byte of additional data.
-      {0xba, 0x01, 0x02, 0x03},  // map with pending 4 byte of numeric value
-                                 // (length), with only 3 bytes of additional
-                                 // data.
-      {0x3b, 0x01, 0x02, 0x03,
-       0x04, 0x05, 0x06, 0x07},  // negative integer with pending 8 byte of
-                                 // numeric value, with only 7 bytes of
-                                 // additional data.
-      // clang-format on
-  };
-
-  int test_element_index = 0;
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message() << "testing case " << test_element_index++);
-    size_t consumed_bytes;
-    CBORReader::DecoderError error_code;
-    base::Optional<CBORReader::DataItemHeader> header =
-        CBORReader::ReadDataItemHeader(test_case, &consumed_bytes, &error_code);
-
-    ASSERT_FALSE(header.has_value());
-    EXPECT_EQ(consumed_bytes, 0u);
-    EXPECT_EQ(error_code, CBORReader::DecoderError::INCOMPLETE_CBOR_DATA);
-  }
-}
-
 TEST(CBORReaderTest, TestReadUint) {
   struct UintTestCase {
     const int64_t value;
@@ -997,6 +911,20 @@ TEST(CBORReaderTest, TestIncompleteCBORDataError) {
       // CBOR map with single key value pair encoded with additional info of
       // length 2.
       {0xa2, 0x61, 0x61, 0x01},
+      {0x18},  // unsigned with pending 1 byte of numeric value.
+      {0x99},  // array with pending 2 byte of numeric value (length).
+      {0xba},  // map with pending 4 byte of numeric value (length).
+      {0x5b},  // byte string with pending 4 byte of numeric value (length).
+      {0x3b},  // negative integer with pending 8 byte of numeric value.
+      {0x99, 0x01},  // array with pending 2 byte of numeric value (length),
+                     // with only 1 byte of additional data.
+      {0xba, 0x01, 0x02, 0x03},  // map with pending 4 byte of numeric value
+                                 // (length), with only 3 bytes of additional
+                                 // data.
+      {0x3b, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+       0x07},  // negative integer with pending 8 byte of
+               // numeric value, with only 7 bytes of
+               // additional data.
   };
 
   int test_element_index = 0;

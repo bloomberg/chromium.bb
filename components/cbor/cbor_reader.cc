@@ -102,26 +102,6 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
   return decoded_cbor;
 }
 
-// static
-base::Optional<CBORReader::DataItemHeader> CBORReader::ReadDataItemHeader(
-    base::span<const uint8_t> data,
-    size_t* num_bytes_consumed,
-    DecoderError* error_code_out) {
-  CBORReader reader(data.cbegin(), data.cend());
-  base::Optional<DataItemHeader> decoded_header = reader.DecodeDataItemHeader();
-
-  if (error_code_out)
-    *error_code_out = reader.GetErrorCode();
-
-  if (reader.GetErrorCode() != DecoderError::CBOR_NO_ERROR) {
-    *num_bytes_consumed = 0;
-    return base::nullopt;
-  }
-
-  *num_bytes_consumed = reader.num_bytes_consumed();
-  return decoded_header;
-}
-
 base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
     int max_nesting_level) {
   if (max_nesting_level < 0 || max_nesting_level > kCBORMaxDepth) {
