@@ -1437,6 +1437,35 @@ bool SpdySession::ValidatePushedStream(SpdyStreamId stream_id,
     return false;
   }
 
+  SpdyHeaderBlock::const_iterator status_it =
+      stream_it->second->response_headers().find(kHttp2StatusHeader);
+  // Had there not been a status header, SpdyHeadersToHttpResponse() would have
+  // returned true just above.
+  DCHECK(status_it != stream_it->second->response_headers().end());
+  // 206 Partial Content and 416 Requested Range Not Satisfiable are range
+  // responses.
+  if (status_it->second == "206" || status_it->second == "416") {
+    SpdyHeaderBlock::const_iterator client_request_range_it =
+        stream_it->second->request_headers().find("range");
+    if (client_request_range_it == stream_it->second->request_headers().end()) {
+      // Client initiated request is not a range request.
+      // TODO(https://crbug.com/831536): Add histogram.
+      return false;
+    }
+    std::string pushed_request_range;
+    if (!request_info.extra_headers.GetHeader(HttpRequestHeaders::kRange,
+                                              &pushed_request_range)) {
+      // Pushed request is not a range request.
+      // TODO(https://crbug.com/831536): Add histogram.
+      return false;
+    }
+    if (client_request_range_it->second != pushed_request_range) {
+      // Client and pushed request ranges do not match.
+      // TODO(https://crbug.com/831536): Add histogram.
+      return false;
+    }
+  }
+
   HttpVaryData vary_data;
   if (!vary_data.Init(pushed_request_info,
                       *pushed_response_info.headers.get())) {
@@ -3053,6 +3082,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
     DCHECK_EQ(SPDY_PUSH_STREAM, stream->type());
     if (max_concurrent_pushed_streams_ &&
         num_active_pushed_streams_ >= max_concurrent_pushed_streams_) {
+      // TODO(https://crbug.com/831536): Add histogram.
       ResetStream(stream_id, ERROR_CODE_REFUSED_STREAM,
                   "Stream concurrency limit reached.");
       return;
