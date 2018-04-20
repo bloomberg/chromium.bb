@@ -20,6 +20,7 @@
 #include "base/win/scoped_winrt_initializer.h"
 #include "base/win/windows_types.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/registry_key_backup.h"
 #include "chrome/installer/util/util_constants.h"
@@ -100,22 +101,8 @@ class NotificationHelperTest : public testing::Test {
     base::FilePath notification_helper =
         dir_exe.Append(installer::kNotificationHelperExe);
 
-    base::string16 toast_activator_server_path = toast_activator_reg_path_;
-    toast_activator_server_path.append(L"\\LocalServer32");
-
-    // Command-line featuring the quoted path to the exe.
-    base::string16 command(1, L'"');
-    command.append(notification_helper.value()).append(1, L'"');
-
-    list->AddCreateRegKeyWorkItem(root_, toast_activator_server_path,
-                                  WorkItem::kWow64Default);
-
-    list->AddSetRegValueWorkItem(root_, toast_activator_server_path,
-                                 WorkItem::kWow64Default, L"", command, true);
-
-    list->AddSetRegValueWorkItem(root_, toast_activator_server_path,
-                                 WorkItem::kWow64Default, L"ServerExecutable",
-                                 notification_helper.value(), true);
+    installer::AddNativeNotificationInstallWorkItems(
+        root_, notification_helper, toast_activator_reg_path_, list.get());
 
     ASSERT_TRUE(list->Do());
   }

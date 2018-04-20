@@ -204,8 +204,8 @@ bool ProbeNotificationActivatorCallback(const CLSID& toast_activator_clsid,
   return true;
 }
 
-// Adds work items to |list| to register a COM server with the OS, which is used
-// to handle the toast notification activation.
+// Adds work items to |list| to register a COM server with the OS after deleting
+// the old ones, which is used to handle the toast notification activation.
 void AddNativeNotificationWorkItems(const InstallerState& installer_state,
                                     const base::FilePath& target_path,
                                     const base::Version& new_version,
@@ -239,21 +239,9 @@ void AddNativeNotificationWorkItems(const InstallerState& installer_state,
       target_path.AppendASCII(new_version.GetString())
           .Append(kNotificationHelperExe);
 
-  // Command-line featuring the quoted path to the exe.
-  base::string16 command(1, L'"');
-  command.append(notification_helper.value()).append(1, L'"');
-
-  toast_activator_reg_path.append(L"\\LocalServer32");
-
-  list->AddCreateRegKeyWorkItem(root, toast_activator_reg_path,
-                                WorkItem::kWow64Default);
-
-  list->AddSetRegValueWorkItem(root, toast_activator_reg_path,
-                               WorkItem::kWow64Default, L"", command, true);
-
-  list->AddSetRegValueWorkItem(root, toast_activator_reg_path,
-                               WorkItem::kWow64Default, L"ServerExecutable",
-                               notification_helper.value(), true);
+  AddNativeNotificationInstallWorkItems(installer_state.root_key(),
+                                        notification_helper,
+                                        toast_activator_reg_path, list);
 }
 
 // This is called when an MSI installation is run. It may be that a user is
@@ -914,6 +902,29 @@ void AddInstallWorkItems(const InstallationState& original_state,
                          current_version,
                          new_version,
                          install_list);
+}
+
+void AddNativeNotificationInstallWorkItems(
+    HKEY root,
+    const base::FilePath& notification_helper,
+    const base::string16& toast_activator_reg_path,
+    WorkItemList* list) {
+  base::string16 toast_activator_server_path =
+      toast_activator_reg_path + L"\\LocalServer32";
+
+  // Command-line featuring the quoted path to the exe.
+  base::string16 command(1, L'"');
+  command.append(notification_helper.value()).append(1, L'"');
+
+  list->AddCreateRegKeyWorkItem(root, toast_activator_server_path,
+                                WorkItem::kWow64Default);
+
+  list->AddSetRegValueWorkItem(root, toast_activator_server_path,
+                               WorkItem::kWow64Default, L"", command, true);
+
+  list->AddSetRegValueWorkItem(root, toast_activator_server_path,
+                               WorkItem::kWow64Default, L"ServerExecutable",
+                               notification_helper.value(), true);
 }
 
 void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
