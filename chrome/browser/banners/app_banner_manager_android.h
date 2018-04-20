@@ -130,7 +130,7 @@ class AppBannerManagerAndroid
 
   // Shows the ambient badge if the current page advertises a native app or is
   // a PWA.
-  void ShowAmbientBadge(bool is_installed);
+  void ShowAmbientBadge();
 
   // Hides the ambient badge if it is showing.
   void HideAmbientBadge();

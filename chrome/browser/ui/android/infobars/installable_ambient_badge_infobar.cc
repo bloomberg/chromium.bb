@@ -42,8 +42,7 @@ InstallableAmbientBadgeInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       gfx::ConvertToJavaBitmap(&delegate->GetPrimaryIcon());
 
   return Java_InstallableAmbientBadgeInfoBar_show(
-      env, delegate->GetIconId(), java_bitmap, java_message_text, java_url,
-      delegate->is_installed());
+      env, delegate->GetIconId(), java_bitmap, java_message_text, java_url);
 }
 
 void InstallableAmbientBadgeInfoBar::ProcessButton(int action) {}
