@@ -43,6 +43,8 @@ class GpuOESEGLImageTest : public testing::Test,
 };
 
 #if defined(OS_LINUX)
+// TODO(crbug.com/835072): re-enable this test on ASAN once bugs are fixed.
+#if !defined(ADDRESS_SANITIZER)
 
 #define SHADER(Src) #Src
 
@@ -172,6 +174,7 @@ TEST_F(GpuOESEGLImageTest, EGLImageToTexture) {
   glDeleteBuffers(1, &vbo);
   glDeleteTextures(1, &texture_id);
 }
+#endif  // !defined(ADDRESS_SANITIZER)
 #endif  // defined(OS_LINUX)
 
 }  // namespace

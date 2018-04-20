@@ -1531,12 +1531,6 @@
       # chromium.fyi
       'Out of Process Profiling Linux',
       'ThinLTO Linux ToT',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # https://crbug.com/830659
-      'Linux CFI',  # https://crbug.com/830659
-      'Linux MSan Tests',  # https://crbug.com/830659
-      'Linux ChromiumOS MSan Tests',  # https://crbug.com/830659
-      'Linux TSan Tests',  # https://crbug.com/830659
     ],
     'modifications': {
       'KitKat Tablet Tester': {
@@ -1548,6 +1542,106 @@
         'swarming': {
           'hard_timeout': 120,
         },
+      },
+      # chromium.memory
+      # https://crbug.com/830659
+      # TODO(kbr): figure out a better way to specify blocks of
+      # arguments like this for tests on multiple machines.
+      'Linux ASan LSan Tests (1)': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
+      'Linux ASan LSan Tests (1)': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
+      'Linux CFI': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
+      'Linux MSan Tests': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
+      'Linux ChromiumOS MSan Tests': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
+      'Linux TSan Tests': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
       },
     },
   },
