@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -1553,20 +1554,35 @@ void ExtensionPrefs::InitPrefStore() {
   TRACE_EVENT0("browser,startup", "ExtensionPrefs::InitPrefStore")
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefStoreTime");
 
-  if (extensions_disabled_) {
-    extension_pref_value_map_->NotifyInitializationCompleted();
-    return;
-  }
-
   // When this is called, the PrefService is initialized and provides access
   // to the user preferences stored in a JSON file.
-  ExtensionIdList extension_ids;
+  std::unique_ptr<ExtensionsInfo> extensions_info;
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefGetExtensionsTime");
-    GetExtensions(&extension_ids);
+    extensions_info = GetInstalledExtensionsInfo();
   }
 
-  InitExtensionControlledPrefs(extension_ids);
+  if (extensions_disabled_) {
+    // Normally, if extensions are disabled, we don't want to load the
+    // controlled prefs from that extension. However, some extensions are
+    // *always* loaded, even with e.g. --disable-extensions. For these, we
+    // need to load the extension-controlled preferences.
+    // See https://crbug.com/828295.
+    auto predicate = [](const auto& info) {
+      // Erase the entry if the extension won't be loaded.
+      return !Manifest::ShouldAlwaysLoadExtension(
+          info->extension_location,
+          Manifest::GetTypeFromManifestValue(*info->extension_manifest));
+    };
+    base::EraseIf(*extensions_info, predicate);
+  }
+
+  // TODO(devlin): |extensions_info| won't contain records for component
+  // extensions (see GetInstalledInfoHelper()). It probably should, because
+  // otherwise component extensions using APIs that rely on extension-controlled
+  // prefs may crash.
+
+  InitExtensionControlledPrefs(*extensions_info);
 
   extension_pref_value_map_->NotifyInitializationCompleted();
 }
@@ -1831,12 +1847,14 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
 }
 
 void ExtensionPrefs::InitExtensionControlledPrefs(
-    const ExtensionIdList& extension_ids) {
+    const ExtensionsInfo& extensions_info) {
   TRACE_EVENT0("browser,startup",
                "ExtensionPrefs::InitExtensionControlledPrefs")
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitExtensionControlledPrefsTime");
 
-  for (const ExtensionId& extension_id : extension_ids) {
+  for (const auto& info : extensions_info) {
+    const ExtensionId& extension_id = info->extension_id;
+
     base::Time install_time = GetInstallTime(extension_id);
     bool is_enabled = !IsExtensionDisabled(extension_id);
     bool is_incognito_enabled = IsIncognitoEnabled(extension_id);

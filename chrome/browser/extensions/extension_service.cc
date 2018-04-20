@@ -1200,9 +1200,9 @@ void ExtensionService::AddExtension(const Extension* extension) {
   // TODO(jstritar): We may be able to get rid of this branch by overriding the
   // default extension state to DISABLED when the --disable-extensions flag
   // is set (http://crbug.com/29067).
-  if (!extensions_enabled() && !extension->is_theme() &&
-      extension->location() != Manifest::COMPONENT &&
-      !Manifest::IsExternalLocation(extension->location()) &&
+  if (!extensions_enabled_ &&
+      !Manifest::ShouldAlwaysLoadExtension(extension->location(),
+                                           extension->GetType()) &&
       disable_flag_exempted_extensions_.count(extension->id()) == 0) {
     return;
   }

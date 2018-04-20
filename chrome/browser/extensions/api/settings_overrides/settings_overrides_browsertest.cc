@@ -9,11 +9,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -23,7 +25,13 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/version_info/version_info.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/mock_external_provider.h"
+#include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature_channel.h"
+
+namespace extensions {
 
 namespace {
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -224,6 +232,71 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BeforeTemplateUrlServiceLoad) {
   EXPECT_FALSE(url_service->IsExtensionControlledDefaultSearch());
 }
 
+constexpr char kExternalId[] = "eloigjjcaheakkihngcgjhbopomgemdj";
+
+class ExtensionsDisabledWithSettingsOverrideAPI : public ExtensionBrowserTest {
+ public:
+  ExtensionsDisabledWithSettingsOverrideAPI()
+      : prompt_for_external_extensions_(
+            FeatureSwitch::prompt_for_external_extensions(),
+            false) {}
+  ~ExtensionsDisabledWithSettingsOverrideAPI() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // A little tricky: we disable extensions (via the commandline) on the
+    // non-PRE run. The PRE run is responsible for installing the external
+    // extension.
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    const char* test_name =
+        testing::UnitTest::GetInstance()->current_test_info()->name();
+    if (!base::StartsWith(test_name, "PRE_", base::CompareCase::SENSITIVE)) {
+      command_line->AppendSwitch(::switches::kDisableExtensions);
+    }
+  }
+
+ private:
+  FeatureSwitch::ScopedOverride prompt_for_external_extensions_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsDisabledWithSettingsOverrideAPI);
+};
+
+// The following test combo is a regression test for https://crbug.com/828295.
+// When extensions are disabled with --disable-extensions, no
+// extension-controlled prefs were loaded. However, external extensions (such as
+// those from policy or specified in the registry) are still loaded with
+// --disable-extensions (this itself is somewhat strange; see
+// https://crbug.com/833540). This caused a CHECK failure in the settings
+// overrides API when an external extension used the API and
+// --disable-extensions was also used.
+// As a fix, we ensure that we load extension-controlled preferences for
+// extensions that will be loaded, even with --disable-extensions.
+IN_PROC_BROWSER_TEST_F(ExtensionsDisabledWithSettingsOverrideAPI,
+                       PRE_TestSettingsOverridesWithExtensionsDisabled) {
+  // This first part of the test adds an external extension that uses the
+  // settings overrides API.
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  TestExtensionRegistryObserver observer(registry);
+  auto provider = std::make_unique<MockExternalProvider>(
+      extension_service(), Manifest::EXTERNAL_PREF);
+  provider->UpdateOrAddExtension(
+      kExternalId, "2.1",
+      test_data_dir_.AppendASCII("api_test/settings_overrides/homepage.crx"));
+  extension_service()->AddProviderForTesting(std::move(provider));
+  extension_service()->CheckForExternalUpdates();
+  const Extension* extension = observer.WaitForExtensionLoaded();
+  EXPECT_EQ(kExternalId, extension->id());
+}
+IN_PROC_BROWSER_TEST_F(ExtensionsDisabledWithSettingsOverrideAPI,
+                       TestSettingsOverridesWithExtensionsDisabled) {
+  // The external extension was actually uninstalled at this point (see
+  // https://crbug.com/833540). However, it was first loaded, before being
+  // orphaned, which would have caused the settings API to look at the
+  // extension controlled preferences. As long as this didn't crash, the test
+  // succeeded.
+  EXPECT_TRUE(ExtensionsBrowserClient::Get()->AreExtensionsDisabled(
+      *base::CommandLine::ForCurrentProcess(), profile()));
+}
+
 #else
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, SettingsOverridesDisallowed) {
   const extensions::Extension* extension =
@@ -238,3 +311,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, SettingsOverridesDisallowed) {
 #endif
 
 }  // namespace
+}  // namespace extensions

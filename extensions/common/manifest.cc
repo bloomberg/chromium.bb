@@ -110,27 +110,52 @@ Manifest::Location Manifest::GetHigherPriorityLocation(
   return (loc1_rank > loc2_rank ? loc1 : loc2 );
 }
 
-Manifest::Manifest(Location location,
-                   std::unique_ptr<base::DictionaryValue> value)
-    : location_(location), value_(std::move(value)), type_(TYPE_UNKNOWN) {
-  if (value_->HasKey(keys::kTheme)) {
-    type_ = TYPE_THEME;
-  } else if (value_->HasKey(keys::kExport)) {
-    type_ = TYPE_SHARED_MODULE;
-  } else if (value_->HasKey(keys::kApp)) {
-    if (value_->Get(keys::kWebURLs, NULL) ||
-        value_->Get(keys::kLaunchWebURL, NULL)) {
-      type_ = TYPE_HOSTED_APP;
-    } else if (value_->Get(keys::kPlatformAppBackground, NULL)) {
-      type_ = TYPE_PLATFORM_APP;
+// static
+Manifest::Type Manifest::GetTypeFromManifestValue(
+    const base::DictionaryValue& value) {
+  Type type = TYPE_UNKNOWN;
+  if (value.HasKey(keys::kTheme)) {
+    type = TYPE_THEME;
+  } else if (value.HasKey(keys::kExport)) {
+    type = TYPE_SHARED_MODULE;
+  } else if (value.HasKey(keys::kApp)) {
+    if (value.Get(keys::kWebURLs, nullptr) ||
+        value.Get(keys::kLaunchWebURL, nullptr)) {
+      type = TYPE_HOSTED_APP;
+    } else if (value.Get(keys::kPlatformAppBackground, nullptr)) {
+      type = TYPE_PLATFORM_APP;
     } else {
-      type_ = TYPE_LEGACY_PACKAGED_APP;
+      type = TYPE_LEGACY_PACKAGED_APP;
     }
   } else {
-    type_ = TYPE_EXTENSION;
+    type = TYPE_EXTENSION;
   }
-  CHECK_NE(type_, TYPE_UNKNOWN);
+  DCHECK_NE(type, TYPE_UNKNOWN);
+
+  return type;
 }
+
+// static
+bool Manifest::ShouldAlwaysLoadExtension(Manifest::Location location,
+                                         Manifest::Type type) {
+  if (location == Manifest::COMPONENT)
+    return true;  // Component extensions are always allowed.
+
+  if (type == Manifest::TYPE_THEME)
+    return true;  // Themes are allowed, even with --disable-extensions.
+
+  // TODO(devlin): This seems wrong. See https://crbug.com/833540.
+  if (Manifest::IsExternalLocation(location))
+    return true;
+
+  return false;
+}
+
+Manifest::Manifest(Location location,
+                   std::unique_ptr<base::DictionaryValue> value)
+    : location_(location),
+      value_(std::move(value)),
+      type_(GetTypeFromManifestValue(*value_)) {}
 
 Manifest::~Manifest() {
 }
