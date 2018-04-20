@@ -109,11 +109,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // Returns the appropriate wallpaper resolution for all root windows.
   static WallpaperResolution GetAppropriateResolution();
 
-  // Returns the path of the online wallpaper corresponding to |url| and
-  // |resolution|.
-  static base::FilePath GetOnlineWallpaperPath(const GURL& url,
-                                               WallpaperResolution resolution);
-
   // Returns wallpaper subdirectory name for current resolution.
   static std::string GetCustomWallpaperSubdirForCurrentResolution();
 
@@ -316,17 +311,11 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
                           WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode) override;
-  void SetOnlineWallpaperIfExists(
-      mojom::WallpaperUserInfoPtr user_info,
-      const GURL& url,
-      WallpaperLayout layout,
-      bool preview_mode,
-      SetOnlineWallpaperIfExistsCallback callback) override;
-  void SetOnlineWallpaperFromData(mojom::WallpaperUserInfoPtr user_info,
-                                  const std::string& image_data,
-                                  const GURL& url,
-                                  WallpaperLayout layout,
-                                  bool preview_mode) override;
+  void SetOnlineWallpaper(mojom::WallpaperUserInfoPtr user_info,
+                          const gfx::ImageSkia& image,
+                          const std::string& url,
+                          WallpaperLayout layout,
+                          bool preview_mode) override;
   void SetDefaultWallpaper(mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;
@@ -353,8 +342,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
                              const std::string& wallpaper_files_id) override;
-  void GetOfflineWallpaperList(
-      GetOfflineWallpaperListCallback callback) override;
   void SetAnimationDuration(base::TimeDelta animation_duration) override;
   void OpenWallpaperPickerIfAllowed() override;
   void MinimizeInactiveWindows(const std::string& user_id_hash) override;
@@ -377,10 +364,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void OnColorCalculationComplete() override;
 
   // Sets dummy values for wallpaper directories.
-  void InitializePathsForTesting(
-      const base::FilePath& user_data_path,
-      const base::FilePath& chromeos_wallpapers_path,
-      const base::FilePath& chromeos_custom_wallpapers_path);
+  void InitializePathsForTesting();
 
   // Shows a default wallpaper for testing, without changing users' wallpaper
   // info.
@@ -412,14 +396,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
     base::FilePath file_path;
   };
 
-  struct OnlineWallpaperParams {
-    AccountId account_id;
-    bool is_ephemeral;
-    GURL url;
-    WallpaperLayout layout;
-    bool preview_mode;
-  };
-
   // Creates a WallpaperWidgetController for |root_window|.
   void InstallDesktopController(aura::Window* root_window);
 
@@ -441,24 +417,12 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void RemoveUserWallpaperImpl(const AccountId& account_id,
                                const std::string& wallpaper_files_id);
 
-  // Used as the callback of checking ONLINE wallpaper existence in
-  // |SetOnlineWallpaperIfExists|. Initiates reading and decoding the wallpaper
-  // if |file_path| is not empty.
-  void SetOnlineWallpaperFromPath(SetOnlineWallpaperIfExistsCallback callback,
-                                  const OnlineWallpaperParams& params,
-                                  const base::FilePath& file_path);
-
-  // Used as the callback of decoding wallpapers of type ONLINE. Saves the image
-  // to local file if |save_file| is true, and shows the wallpaper immediately
-  // if |params.account_id| is the active user.
-  void OnOnlineWallpaperDecoded(const OnlineWallpaperParams& params,
-                                bool save_file,
-                                const gfx::ImageSkia& image);
-
   // Implementation of |SetOnlineWallpaper|. Shows the wallpaper on screen if
   // |show_wallpaper| is true.
-  void SetOnlineWallpaperImpl(const OnlineWallpaperParams& params,
-                              const gfx::ImageSkia& image,
+  void SetOnlineWallpaperImpl(const gfx::ImageSkia& image,
+                              const std::string& url,
+                              const WallpaperLayout& layout,
+                              mojom::WallpaperUserInfoPtr user_info,
                               bool show_wallpaper);
 
   // Decodes |account_id|'s wallpaper. Shows the decoded wallpaper if
@@ -495,10 +459,10 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
                            const WallpaperInfo& info,
                            bool show_wallpaper);
 
-  // Used as the callback of wallpaper decoding. (Wallpapers of type ONLINE,
-  // DEFAULT and DEVICE should use their corresponding |*Decoded|, and all other
-  // types should use this.) Shows the wallpaper immediately if |show_wallpaper|
-  // is true. Otherwise, only updates the cache.
+  // Used as the callback of wallpaper decoding. (Wallpapers of type DEFAULT
+  // and DEVICE should use their corresponding |*Decoded|, and all other types
+  // should use this.) Shows the wallpaper now if |show_wallpaper| is true.
+  // Otherwise, only update the cache.
   void OnWallpaperDecoded(const AccountId& account_id,
                           const user_manager::UserType& user_type,
                           const base::FilePath& path,

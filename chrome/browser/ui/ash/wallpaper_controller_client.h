@@ -37,18 +37,11 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
                           ash::WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode);
-  void SetOnlineWallpaperIfExists(
-      const AccountId& account_id,
-      const GURL& url,
-      ash::WallpaperLayout layout,
-      bool preview_mode,
-      ash::mojom::WallpaperController::SetOnlineWallpaperIfExistsCallback
-          callback);
-  void SetOnlineWallpaperFromData(const AccountId& account_id,
-                                  const std::string& image_data,
-                                  const GURL& url,
-                                  ash::WallpaperLayout layout,
-                                  bool preview_mode);
+  void SetOnlineWallpaper(const AccountId& account_id,
+                          const gfx::ImageSkia& image,
+                          const std::string& url,
+                          ash::WallpaperLayout layout,
+                          bool preview_mode);
   void SetDefaultWallpaper(const AccountId& account_id, bool show_wallpaper);
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
@@ -70,9 +63,6 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   void ShowSigninWallpaper();
   void RemoveUserWallpaper(const AccountId& account_id);
   void RemovePolicyWallpaper(const AccountId& account_id);
-  void GetOfflineWallpaperList(
-      ash::mojom::WallpaperController::GetOfflineWallpaperListCallback
-          callback);
   void SetAnimationDuration(const base::TimeDelta& animation_duration);
   void OpenWallpaperPickerIfAllowed();
   void MinimizeInactiveWindows(const std::string& user_id_hash);
