@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
@@ -34,11 +33,10 @@ PolicyLoaderMac::PolicyLoaderMac(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::FilePath& managed_policy_path,
     MacPreferences* preferences)
-    : AsyncPolicyLoader(task_runner),
-      preferences_(preferences),
-      managed_policy_path_(managed_policy_path),
-      application_id_(kCFPreferencesCurrentApplication) {
-}
+    : PolicyLoaderMac(task_runner,
+                      managed_policy_path,
+                      preferences,
+                      kCFPreferencesCurrentApplication) {}
 
 PolicyLoaderMac::PolicyLoaderMac(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -48,7 +46,7 @@ PolicyLoaderMac::PolicyLoaderMac(
     : AsyncPolicyLoader(task_runner),
       preferences_(preferences),
       managed_policy_path_(managed_policy_path),
-      application_id_(application_id) {
+      application_id_(CFStringCreateCopy(kCFAllocatorDefault, application_id)) {
 }
 
 PolicyLoaderMac::~PolicyLoaderMac() {
