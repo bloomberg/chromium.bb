@@ -103,6 +103,7 @@
     *   [defines: [string list] C preprocessor defines.](#defines)
     *   [depfile: [string] File name for input dependencies for actions.](#depfile)
     *   [deps: [label list] Private linked dependencies.](#deps)
+    *   [friend: [label pattern list] Allow targets to include private headers.](#friend)
     *   [include_dirs: [directory list] Additional include directories.](#include_dirs)
     *   [inputs: [file list] Additional compile-time dependencies.](#inputs)
     *   [ldflags: [string list] Flags passed to the linker.](#ldflags)
@@ -242,7 +243,7 @@
       Note: you can edit the build args manually by editing the file "args.gn"
       in the build directory and then running "gn gen <out_dir>".
 
-  gn args <out_dir> --list[=<exact_arg>] [--short] [--overrides-only]
+  gn args <out_dir> --list[=<exact_arg>] [--short] [--overrides-only] [--json]
       Lists all build arguments available in the current configuration, or, if
       an exact_arg is specified for the list flag, just that one build
       argument.
@@ -257,6 +258,26 @@
       If --overrides-only is specified, only the names and current values of
       arguments that have been overridden (i.e. non-default arguments) will
       be printed. Overrides come from the <out_dir>/args.gn file and //.gn
+
+      If --json is specified, the output will be emitted in json format.
+      JSON schema for output:
+      [
+        {
+          "name": variable_name,
+          "current": {
+            "value": overridden_value,
+            "file": file_name,
+            "line": line_no
+          },
+          "default": {
+            "value": default_value,
+            "file": file_name,
+            "line": line_no
+          },
+          "comment": comment_string
+        },
+        ...
+      ]
 ```
 
 #### **Examples**
@@ -326,10 +347,8 @@
     - Only includes using "quotes" are checked. <brackets> are assumed to be
       system includes.
 
-    - Include paths are assumed to be relative to either the source root or the
-      "root_gen_dir" and must include all the path components. (It might be
-      nice in the future to incorporate GN's knowledge of the include path to
-      handle other include styles.)
+    - Include paths are assumed to be relative to any of the "include_dirs" for
+      the target (including the implicit current dir).
 
     - GN does not run the preprocessor so will not understand conditional
       includes.
@@ -363,9 +382,9 @@
 #### **Advice on fixing problems**
 
 ```
-  If you have a third party project that uses relative includes, it's generally
-  best to exclude that target from checking altogether via
-  "check_includes = false".
+  If you have a third party project that is difficult to fix or doesn't care
+  about include checks it's generally best to exclude that target from checking
+  altogether via "check_includes = false".
 
   If you have conditional includes, make sure the build conditions and the
   preprocessor conditions match, and annotate the line with "nogncheck" (see
@@ -1411,11 +1430,11 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
-         precompiled_header, precompiled_source
+         asmflags, defines, include_dirs, inputs, ldflags, lib_dirs,
+         libs, precompiled_header, precompiled_source
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
-  General: check_includes, configs, data, inputs, output_name,
+  General: check_includes, configs, data, friend, inputs, output_name,
            output_extension, public, sources, testonly, visibility
 ```
 ### <a name="group"></a>**group**: Declare a named group of targets.
@@ -1459,11 +1478,11 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
-         precompiled_header, precompiled_source
+         asmflags, defines, include_dirs, inputs, ldflags, lib_dirs,
+         libs, precompiled_header, precompiled_source
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
-  General: check_includes, configs, data, inputs, output_name,
+  General: check_includes, configs, data, friend, inputs, output_name,
            output_extension, public, sources, testonly, visibility
 ```
 ### <a name="shared_library"></a>**shared_library**: Declare a shared library target.
@@ -1480,11 +1499,11 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
-         precompiled_header, precompiled_source
+         asmflags, defines, include_dirs, inputs, ldflags, lib_dirs,
+         libs, precompiled_header, precompiled_source
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
-  General: check_includes, configs, data, inputs, output_name,
+  General: check_includes, configs, data, friend, inputs, output_name,
            output_extension, public, sources, testonly, visibility
 ```
 ### <a name="source_set"></a>**source_set**: Declare a source set target.
@@ -1516,11 +1535,11 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
-         precompiled_header, precompiled_source
+         asmflags, defines, include_dirs, inputs, ldflags, lib_dirs,
+         libs, precompiled_header, precompiled_source
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
-  General: check_includes, configs, data, inputs, output_name,
+  General: check_includes, configs, data, friend, inputs, output_name,
            output_extension, public, sources, testonly, visibility
 ```
 ### <a name="static_library"></a>**static_library**: Declare a static library target.
@@ -1538,11 +1557,11 @@
 ```
   complete_static_lib
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
-         precompiled_header, precompiled_source
+         asmflags, defines, include_dirs, inputs, ldflags, lib_dirs,
+         libs, precompiled_header, precompiled_source
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
-  General: check_includes, configs, data, inputs, output_name,
+  General: check_includes, configs, data, friend, inputs, output_name,
            output_extension, public, sources, testonly, visibility
 ```
 ### <a name="target"></a>**target**: Declare an target with the given programmatic type.
@@ -1619,8 +1638,8 @@
 #### **Variables valid in a config definition**
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
-         precompiled_header, precompiled_source
+         asmflags, defines, include_dirs, inputs, ldflags, lib_dirs,
+         libs, precompiled_header, precompiled_source
   Nested configs: configs
 ```
 
@@ -1800,8 +1819,9 @@
     }
 
   Executes the loop contents block over each item in the list, assigning the
-  loop_var to each item in sequence. The loop_var will be a copy so assigning
-  to it will not mutate the list.
+  loop_var to each item in sequence. The <loop_var> will be a copy so assigning
+  to it will not mutate the list. The loop will iterate over a copy of <list>
+  so mutating it inside the loop will not affect iteration.
 
   The block does not introduce a new scope, so that variable assignments inside
   the loop will be visible once the loop terminates.
@@ -1850,8 +1870,7 @@
   important because most targets have an implicit configs list, which means it
   wouldn't work at all if it didn't clobber).
 
-  The sources assignment filter (see "gn help "
-     "set_sources_assignment_filter")
+  The sources assignment filter (see "gn help set_sources_assignment_filter")
   is never applied by this function. It's assumed than any desired filtering
   was already done when sources was set on the from_scope.
 
@@ -4526,6 +4545,67 @@
 
   See also "public_deps".
 ```
+### <a name="friend"></a>**friend**: Allow targets to include private headers.
+
+```
+  A list of label patterns (see "gn help label_pattern") that allow dependent
+  targets to include private headers. Applies to all binary targets.
+
+  Normally if a target lists headers in the "public" list (see "gn help
+  public"), other headers are implicitly marked as private. Private headers
+  can not be included by other targets, even with a public dependency path.
+  The "gn check" function performs this validation.
+
+  A friend declaration allows one or more targets to include private headers.
+  This is useful for things like unit tests that are closely associated with a
+  target and require internal knowledge without opening up all headers to be
+  included by all dependents.
+
+  A friend target does not allow that target to include headers when no
+  dependency exists. A public dependency path must still exist between two
+  targets to include any headers from a destination target. The friend
+  annotation merely allows the use of headers that would otherwise be
+  prohibited because they are private.
+
+  The friend annotation is matched only against the target containing the file
+  with the include directive. Friend annotations are not propagated across
+  public or private dependencies. Friend annotations do not affect visibility.
+```
+
+#### **Example**
+
+```
+  static_library("lib") {
+    # This target can include our private headers.
+    friend = [ ":unit_tests" ]
+
+    public = [
+      "public_api.h",  # Normal public API for dependent targets.
+    ]
+
+    # Private API and sources.
+    sources = [
+      "a_source_file.cc",
+
+      # Normal targets that depend on this one won't be able to include this
+      # because this target defines a list of "public" headers. Without the
+      # "public" list, all headers are implicitly public.
+      "private_api.h",
+    ]
+  }
+
+  executable("unit_tests") {
+    sources = [
+      # This can include "private_api.h" from the :lib target because it
+      # depends on that target and because of the friend annotation.
+      "my_test.cc",
+    ]
+
+    deps = [
+      ":lib",  # Required for the include to be allowed.
+    ]
+  }
+```
 ### <a name="include_dirs"></a>**include_dirs**: Additional include directories.
 
 ```
@@ -5035,7 +5115,8 @@
   If no public files are declared, other targets (assuming they have visibility
   to depend on this target) can include any file in the sources list. If this
   variable is defined on a target, dependent targets may only include files on
-  this whitelist.
+  this whitelist unless that target is marked as a friend (see "gn help
+  friend").
 
   Header file permissions are also subject to visibility. A target must be
   visible to another target to include any files from it at all and the public
@@ -5050,6 +5131,11 @@
   GN only knows about files declared in the "sources" and "public" sections of
   targets. If a file is included that is not known to the build, it will be
   allowed.
+
+  It is common for test targets to need to include private headers for their
+  associated code. In this case, list the test target in the "friend" list of
+  the target that owns the private header to allow the inclusion. See
+  "gn help friend" for more.
 ```
 
 #### **Examples**
@@ -6124,7 +6210,7 @@
   many actions into one logic unit, and the "data"-ness of A's dependency is
   lost. Solutions:
 
-   - List the outputs of the action in it's data section (if the results of
+   - List the outputs of the action in its data section (if the results of
      that action are always runtime files).
    - Have B list the action in data_deps (if the outputs of the actions are
      always runtime files).
