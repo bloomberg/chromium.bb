@@ -997,7 +997,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       WaitForBackgroundTasks();
     }
     // Wait until suggestions are received.
-    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^() {
+    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
       return [GetSuggestionValues() count] > 0;
     }));
 

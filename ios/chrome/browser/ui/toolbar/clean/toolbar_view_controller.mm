@@ -610,7 +610,7 @@ const CGFloat kScrollFadeDistance = 30;
 
 - (void)addFullscreenAnimationsToAnimator:(FullscreenAnimator*)animator {
   CGFloat finalProgress = animator.finalProgress;
-  [animator addAnimations:^() {
+  [animator addAnimations:^{
     [self updateForFullscreenProgress:finalProgress];
   }];
 }

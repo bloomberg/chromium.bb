@@ -31,7 +31,7 @@ void DOMAlteringLock::Acquire(id<DOMAltering> feature,
       lockAction(NO);
       return;
     }
-    [current_dom_altering_feature_ releaseDOMLockWithCompletionHandler:^() {
+    [current_dom_altering_feature_ releaseDOMLockWithCompletionHandler:^{
       DCHECK_CURRENTLY_ON(web::WebThread::UI);
       DCHECK(current_dom_altering_feature_ == nil)
           << "The lock must be released before calling the completion handler.";

@@ -181,7 +181,7 @@ TEST_F(DialogPresenterTest, CancelTest) {
   [presenter() runJavaScriptAlertPanelWithMessage:@""
                                        requestURL:GURL()
                                          webState:&webState2
-                                completionHandler:^() {
+                                completionHandler:^{
                                   completion_called = YES;
                                 }];
   EXPECT_EQ(1U, delegate().presentedWebStates.size());
@@ -226,7 +226,7 @@ TEST_F(DialogPresenterTest, CancelAllTest) {
   [presenter() runJavaScriptAlertPanelWithMessage:@"1"
                                        requestURL:GURL()
                                          webState:&webState1
-                                completionHandler:^() {
+                                completionHandler:^{
                                   completion1_called = YES;
                                 }];
   DialogPresenterTestWebState webState2;
@@ -234,7 +234,7 @@ TEST_F(DialogPresenterTest, CancelAllTest) {
   [presenter() runJavaScriptAlertPanelWithMessage:@"2"
                                        requestURL:GURL()
                                          webState:&webState2
-                                completionHandler:^() {
+                                completionHandler:^{
                                   completion2_called = YES;
                                 }];
   DialogPresenterTestWebState webState3;
@@ -242,7 +242,7 @@ TEST_F(DialogPresenterTest, CancelAllTest) {
   [presenter() runJavaScriptAlertPanelWithMessage:@"3"
                                        requestURL:GURL()
                                          webState:&webState3
-                                completionHandler:^() {
+                                completionHandler:^{
                                   completion3_called = YES;
                                 }];
   EXPECT_EQ(1U, delegate().presentedWebStates.size());

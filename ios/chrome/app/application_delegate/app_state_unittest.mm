@@ -187,7 +187,7 @@ class AppStateTest : public BlockCleanupTest {
   void swizzleMetricsMediatorDisableReporting() {
     metrics_mediator_called_ = NO;
 
-    metrics_mediator_swizzle_block_ = ^() {
+    metrics_mediator_swizzle_block_ = ^{
       metrics_mediator_called_ = YES;
     };
 
@@ -236,7 +236,7 @@ class AppStateTest : public BlockCleanupTest {
 
     stubNullCurrentBrowserState(browser_view_information_);
 
-    void (^swizzleBlock)() = ^() {
+    void (^swizzleBlock)() = ^{
     };
 
     ScopedBlockSwizzler swizzler(
@@ -765,7 +765,7 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
 
   stubNullCurrentBrowserState(browserViewInformation);
 
-  void (^swizzleBlock)() = ^() {
+  void (^swizzleBlock)() = ^{
   };
 
   ScopedBlockSwizzler swizzler(

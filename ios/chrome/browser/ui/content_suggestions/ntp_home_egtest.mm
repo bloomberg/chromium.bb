@@ -417,7 +417,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Swizzle the method that needs to be called for correct logging.
   __block BOOL tapped = NO;
   ScopedBlockSwizzler swizzler([LocationBarLegacyCoordinator class],
-                               @selector(focusOmniboxFromFakebox), ^() {
+                               @selector(focusOmniboxFromFakebox), ^{
                                  tapped = YES;
                                });
 
@@ -444,7 +444,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Swizzle the method that needs to be called for correct logging.
   __block BOOL tapped = NO;
   ScopedBlockSwizzler swizzler([LocationBarCoordinator class],
-                               @selector(focusOmniboxFromSearchButton), ^() {
+                               @selector(focusOmniboxFromSearchButton), ^{
                                  tapped = YES;
                                });
 

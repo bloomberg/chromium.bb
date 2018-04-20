@@ -679,7 +679,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
         [[ContentSuggestionsArticlesHeaderItem alloc]
             initWithType:ItemTypeHeader
                    title:sectionInfo.title
-                callback:^() {
+                callback:^{
                   [weakSelf.dataSource toggleArticlesVisibility];
                 }];
     header.expanded = sectionInfo.expanded;

@@ -35,7 +35,7 @@ class FindTabHelperTest : public ChromeWebTest {
   void TearDown() override {
     // Stop any in-progress find operations when the test completes.
     __block BOOL completion_handler_block_was_called = NO;
-    FindTabHelper::FromWebState(web_state())->StopFinding(^() {
+    FindTabHelper::FromWebState(web_state())->StopFinding(^{
       completion_handler_block_was_called = YES;
     });
     base::test::ios::WaitUntilCondition(^bool() {
@@ -114,7 +114,7 @@ TEST_F(FindTabHelperTest, FindInPage) {
   base::test::ios::WaitUntilCondition(wait_block);
 
   // Stop finding and verify that the completion block was called properly.
-  helper->StopFinding(^() {
+  helper->StopFinding(^{
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);

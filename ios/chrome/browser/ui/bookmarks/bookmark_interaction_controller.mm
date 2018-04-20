@@ -155,7 +155,7 @@ using bookmarks::BookmarkNode;
   } else {
     __weak BookmarkInteractionController* weakSelf = self;
     __weak Tab* weakTab = tab;
-    void (^editAction)() = ^() {
+    void (^editAction)() = ^{
       BookmarkInteractionController* strongSelf = weakSelf;
       if (!strongSelf || !weakTab || !weakTab.webState)
         return;

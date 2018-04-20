@@ -30,7 +30,7 @@ TEST_F(PasswordsDirectoryUtilTest, Deletion) {
   // Create a new file in the passwords  directory.
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::BindBlockArc(^() {
+      base::BindBlockArc(^{
         NSFileManager* file_manager = [NSFileManager defaultManager];
         if ([file_manager createDirectoryAtURL:directory_url
                    withIntermediateDirectories:NO
