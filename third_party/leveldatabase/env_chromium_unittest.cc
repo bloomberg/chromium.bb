@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -261,6 +262,9 @@ TEST(ChromiumEnvTest, TestOpenOnRead) {
 
 class ChromiumEnvDBTrackerTest : public ::testing::Test {
  protected:
+  ChromiumEnvDBTrackerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   void SetUp() override {
     testing::Test::SetUp();
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
@@ -295,6 +299,7 @@ class ChromiumEnvDBTrackerTest : public ::testing::Test {
 
  private:
   base::ScopedTempDir scoped_temp_dir_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(ChromiumEnvDBTrackerTest, OpenDatabase) {
@@ -417,7 +422,8 @@ TEST_F(ChromiumEnvDBTrackerTest, CheckMemEnv) {
   ASSERT_TRUE(env != nullptr);
   EXPECT_FALSE(leveldb_chrome::IsMemEnv(env));
 
-  std::unique_ptr<leveldb::Env> memenv(leveldb_chrome::NewMemEnv(env));
+  std::unique_ptr<leveldb::Env> memenv =
+      leveldb_chrome::NewMemEnv("CheckMemEnv", env);
   EXPECT_TRUE(leveldb_chrome::IsMemEnv(memenv.get()));
 }
 
@@ -478,6 +484,41 @@ TEST_F(ChromiumEnvDBTrackerTest, MemoryDumpCreation) {
   EXPECT_GT(db_size, 0ul);
   EXPECT_EQ(db_size, mad2->GetSizeInternal());
   EXPECT_EQ(db_size, mad3->GetSizeInternal());
+}
+
+TEST_F(ChromiumEnvDBTrackerTest, MemEnvMemoryDumpCreation) {
+  std::unique_ptr<leveldb::Env> memenv = leveldb_chrome::NewMemEnv("test");
+
+  Status s;
+  WritableFile* writable_file;
+  s = memenv->NewWritableFile("first_file.txt", &writable_file);
+  ASSERT_TRUE(s.ok()) << s.ToString();
+
+  const std::string kValue(2048, 'x');
+  writable_file->Append(Slice(kValue));
+  delete writable_file;
+
+  const MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::BACKGROUND};
+  base::trace_event::ProcessMemoryDump dump1(nullptr, dump_args);
+  auto* mad = DBTracker::GetOrCreateAllocatorDump(&dump1, memenv.get());
+
+  uint64_t size_with_file = mad->GetSizeInternal();
+  EXPECT_GE(size_with_file, kValue.size());
+
+  // Now rename and size should be unchanged.
+  s = memenv->RenameFile("first_file.txt", "xxxxx_file.txt");  // same length.
+  EXPECT_TRUE(s.ok()) << s.ToString();
+  base::trace_event::ProcessMemoryDump dump2(nullptr, dump_args);
+  mad = DBTracker::GetOrCreateAllocatorDump(&dump2, memenv.get());
+  EXPECT_EQ(size_with_file, mad->GetSizeInternal());
+
+  // Now delete and size should go down.
+  s = memenv->DeleteFile("xxxxx_file.txt");
+  EXPECT_TRUE(s.ok()) << s.ToString();
+
+  base::trace_event::ProcessMemoryDump dump3(nullptr, dump_args);
+  mad = DBTracker::GetOrCreateAllocatorDump(&dump3, memenv.get());
+  EXPECT_EQ(mad->GetSizeInternal(), 0ul);
 }
 
 }  // namespace leveldb_env

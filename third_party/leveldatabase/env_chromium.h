@@ -269,6 +269,15 @@ class LEVELDB_EXPORT DBTracker {
       base::trace_event::ProcessMemoryDump* pmd,
       leveldb::DB* tracked_db);
 
+  // Returns the memory-infra dump for |tracked_memenv|. Can be used to attach
+  // additional info to the database dump, or to properly attribute memory
+  // usage in memory dump providers that also dump |tracked_memenv|.
+  // Note that |tracked_memenv| should be a live Env instance produced by
+  // leveldb_chrome::NewMemEnv().
+  static base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      leveldb::Env* tracked_memenv);
+
   // Report counts to UMA.
   void UpdateHistograms();
 
@@ -300,6 +309,7 @@ class LEVELDB_EXPORT DBTracker {
   friend class ChromiumEnvDBTrackerTest;
   FRIEND_TEST_ALL_PREFIXES(ChromiumEnvDBTrackerTest, IsTrackedDB);
   FRIEND_TEST_ALL_PREFIXES(ChromiumEnvDBTrackerTest, MemoryDumpCreation);
+  FRIEND_TEST_ALL_PREFIXES(ChromiumEnvDBTrackerTest, MemEnvMemoryDumpCreation);
 
   DBTracker();
   ~DBTracker();

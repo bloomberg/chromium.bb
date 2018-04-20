@@ -1257,7 +1257,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   leveldb_env::Options options;
   options.create_if_missing = create_if_missing;
   if (IsDatabaseInMemory()) {
-    env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    env_ = leveldb_chrome::NewMemEnv("service-worker");
     options.env = env_.get();
   } else {
     options.env = g_service_worker_env.Pointer();

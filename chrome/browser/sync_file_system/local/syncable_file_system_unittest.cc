@@ -35,7 +35,7 @@ namespace sync_file_system {
 class SyncableFileSystemTest : public testing::Test {
  public:
   SyncableFileSystemTest()
-      : in_memory_env_(leveldb_chrome::NewMemEnv(leveldb::Env::Default())),
+      : in_memory_env_(leveldb_chrome::NewMemEnv("SyncableFileSystemTest")),
         file_system_(GURL("http://example.com/"),
                      in_memory_env_.get(),
                      base::ThreadTaskRunnerHandle::Get().get(),

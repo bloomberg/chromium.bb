@@ -106,7 +106,7 @@ ModelTypeStoreBackend::~ModelTypeStoreBackend() {
 }
 
 std::unique_ptr<leveldb::Env> ModelTypeStoreBackend::CreateInMemoryEnv() {
-  return base::WrapUnique(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+  return leveldb_chrome::NewMemEnv("ModelTypeStore");
 }
 
 // static

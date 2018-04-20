@@ -62,11 +62,12 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
           switches::kAllowFileAccessFromFiles)) {
     additional_allowed_schemes.push_back(url::kFileScheme);
   }
-  leveldb::Env* env_override = nullptr;
+  std::unique_ptr<leveldb::Env> env_override;
   if (is_incognito)
-    env_override = leveldb_chrome::NewMemEnv(leveldb::Env::Default());
+    env_override = leveldb_chrome::NewMemEnv("filesystem");
+  // TODO(crbug.com/823854) Fix leaking override MemEnv.
   return FileSystemOptions(profile_mode, additional_allowed_schemes,
-                           env_override);
+                           env_override.release());
 }
 
 }  // namespace

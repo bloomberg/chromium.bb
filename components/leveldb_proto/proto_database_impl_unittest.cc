@@ -346,9 +346,20 @@ TEST_F(ProtoDatabaseImplTest, TestDBGetSuccess) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoadKeys) {
-  base::MessageLoop main_loop;
+class ProtoDatabaseImplLevelDBTest : public testing::Test {
+ public:
+  void SetUp() override { main_loop_.reset(new MessageLoop()); }
 
+  void TearDown() override {
+    base::RunLoop().RunUntilIdle();
+    main_loop_.reset();
+  }
+
+ private:
+  std::unique_ptr<MessageLoop> main_loop_;
+};
+
+TEST_F(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoadKeys) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::Thread db_thread("dbthread");
@@ -677,15 +688,15 @@ void TestLevelDBSaveAndLoad(bool close_after_save) {
   ExpectEntryPointersEquals(model, loaded_protos);
 }
 
-TEST(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoad) {
+TEST_F(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoad) {
   TestLevelDBSaveAndLoad(false);
 }
 
-TEST(ProtoDatabaseImplLevelDBTest, TestDBCloseAndReopen) {
+TEST_F(ProtoDatabaseImplLevelDBTest, TestDBCloseAndReopen) {
   TestLevelDBSaveAndLoad(true);
 }
 
-TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
+TEST_F(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -702,7 +713,7 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
   EXPECT_FALSE(db->Save(save_entries, remove_keys));
 }
 
-TEST(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
+TEST_F(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
 
   std::vector<std::string> load_entries;
@@ -723,7 +734,7 @@ TEST(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
   EXPECT_EQ(1u, second_load_entries.size());
 }
 
-TEST(ProtoDatabaseImplLevelDBTest, TestCorruptDBReset) {
+TEST_F(ProtoDatabaseImplLevelDBTest, TestCorruptDBReset) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 

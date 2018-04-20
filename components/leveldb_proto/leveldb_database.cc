@@ -49,7 +49,7 @@ bool LevelDB::Init(const base::FilePath& database_dir,
   open_options_ = options;
 
   if (database_dir.empty()) {
-    env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    env_ = leveldb_chrome::NewMemEnv("LevelDB");
     open_options_.env = env_.get();
   }
 

@@ -5,11 +5,21 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_LEVELDB_CHROME_H_
 #define THIRD_PARTY_LEVELDATABASE_LEVELDB_CHROME_H_
 
+#include <memory>
+#include <string>
+
 #include "base/files/file_path.h"
 #include "leveldb/cache.h"
 #include "leveldb/env.h"
 #include "leveldb/export.h"
 #include "third_party/leveldatabase/src/db/filename.h"
+
+namespace base {
+namespace trace_event {
+class MemoryAllocatorDump;
+class ProcessMemoryDump;
+}  // namespace trace_event
+}  // namespace base
 
 namespace leveldb_chrome {
 
@@ -29,10 +39,14 @@ LEVELDB_EXPORT leveldb::Cache* GetSharedInMemoryBlockCache();
 LEVELDB_EXPORT bool IsMemEnv(const leveldb::Env* env);
 
 // Creates an in-memory Env for which all files are stored in the heap.
-LEVELDB_EXPORT leveldb::Env* NewMemEnv(leveldb::Env* base_env);
+// This wraps leveldb::NewMemEnv to add memory-infra logging.
+// if |base_env| is null then leveldb::Env::Default() will be used.
+LEVELDB_EXPORT std::unique_ptr<leveldb::Env> NewMemEnv(
+    const std::string& name,
+    leveldb::Env* base_env = nullptr);
 
 // If filename is a leveldb file, store the type of the file in *type.
-// The number encoded in the filename is stored in *number.  If the
+// The number encoded in the filename is stored in *number.
 // Returns true if the filename was successfully parsed.
 LEVELDB_EXPORT bool ParseFileName(const std::string& filename,
                                   uint64_t* number,
@@ -46,6 +60,19 @@ LEVELDB_EXPORT void UpdateHistograms();
 // Returns true if the database was successfully corrupted, false if not.
 // Note: This function will fail if |db_path| does not exist.
 LEVELDB_EXPORT bool CorruptClosedDBForTesting(const base::FilePath& db_path);
+
+// Returns the memory-infra dump for |tracked_memenv|.
+// Do not call this function, instead call
+// leveldb_env::DBTracker::GetOrCreateAllocatorDump().
+// TODO(crbug.com/762598) Can be made private as part of leveldb cleanup.
+base::trace_event::MemoryAllocatorDump* GetEnvAllocatorDump(
+    base::trace_event::ProcessMemoryDump* pmd,
+    leveldb::Env* tracked_memenv);
+
+// Dump all tracked in-memory env's to the |pmd|. Do not call - this is a
+// private function for leveldb_env::DBTracker.
+// TODO(crbug.com/762598) Can be made private as part of leveldb cleanup.
+void DumpAllTrackedEnvs(base::trace_event::ProcessMemoryDump* pmd);
 
 }  // namespace leveldb_chrome
 

@@ -39,6 +39,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
 using base::StringPiece;
+using leveldb_env::DBTracker;
 
 namespace content {
 
@@ -334,7 +335,7 @@ std::unique_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
   std::unique_ptr<ComparatorAdapter> comparator_adapter(
       std::make_unique<ComparatorAdapter>(comparator));
   std::unique_ptr<leveldb::Env> in_memory_env(
-      leveldb_chrome::NewMemEnv(LevelDBEnv::Get()));
+      leveldb_chrome::NewMemEnv("indexed-db", LevelDBEnv::Get()));
 
   std::unique_ptr<leveldb::DB> db;
   std::unique_ptr<const leveldb::FilterPolicy> filter_policy;
@@ -479,27 +480,42 @@ bool LevelDBDatabase::OnMemoryDump(
     return false;
   // All leveldb databases are already dumped by leveldb_env::DBTracker. Add
   // an edge to the existing database.
-  auto* tracker_dump =
+  auto* db_tracker_dump =
       leveldb_env::DBTracker::GetOrCreateAllocatorDump(pmd, db_.get());
-  if (!tracker_dump)
+  if (!db_tracker_dump)
     return true;
 
-  auto* dump = pmd->CreateAllocatorDump(
-      base::StringPrintf("site_storage/index_db/0x%" PRIXPTR,
+  auto* db_dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("site_storage/index_db/db_0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(db_.get())));
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  tracker_dump->GetSizeInternal());
-  pmd->AddOwnershipEdge(dump->guid(), tracker_dump->guid());
+  db_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                     db_tracker_dump->GetSizeInternal());
+  pmd->AddOwnershipEdge(db_dump->guid(), db_tracker_dump->guid());
 
-  // Dumps in BACKGROUND mode cannot have strings or edges in order to minimize
-  // trace size and instrumentation overhead.
+  if (env_ && leveldb_chrome::IsMemEnv(env_.get())) {
+    // All leveldb env's are already dumped by leveldb_env::DBTracker. Add
+    // an edge to the existing env.
+    auto* env_tracker_dump =
+        DBTracker::GetOrCreateAllocatorDump(pmd, env_.get());
+    auto* env_dump = pmd->CreateAllocatorDump(
+        base::StringPrintf("site_storage/index_db/memenv_0x%" PRIXPTR,
+                           reinterpret_cast<uintptr_t>(env_.get())));
+    env_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        env_tracker_dump->GetSizeInternal());
+    pmd->AddOwnershipEdge(env_dump->guid(), env_tracker_dump->guid());
+  }
+
+  // Dumps in BACKGROUND mode can only have whitelisted strings (and there are
+  // currently none) so return early.
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     return true;
   }
 
-  dump->AddString("file_name", "", file_name_for_tracing);
+  db_dump->AddString("file_name", "", file_name_for_tracing);
+
   return true;
 }
 

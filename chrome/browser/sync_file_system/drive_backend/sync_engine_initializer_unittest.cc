@@ -51,7 +51,7 @@ class SyncEngineInitializerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
-    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_ = leveldb_chrome::NewMemEnv("SyncEngineInitializerTest");
 
     std::unique_ptr<drive::FakeDriveService> fake_drive_service(
         new drive::FakeDriveService);

@@ -43,6 +43,7 @@ class LevelDBServiceImpl : public mojom::LevelDBService {
   void OpenInMemory(
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
           memory_dump_id,
+      const std::string& tracking_name,
       leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
       OpenInMemoryCallback callback) override;
   void Destroy(filesystem::mojom::DirectoryPtr directory,

@@ -67,7 +67,7 @@ class LocalFileSyncContextTest : public testing::Test {
   void SetUp() override {
     RegisterSyncableFileSystem();
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
-    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_ = leveldb_chrome::NewMemEnv("LocalFileSyncContextTest");
 
     ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     io_task_runner_ = BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
