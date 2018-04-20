@@ -15,6 +15,10 @@
 
 class GURL;
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace subresource_filter {
 
 class DeferCondition;
@@ -75,6 +79,19 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
     kMaxValue = kInsecureNonAd
   };
 
+  // This enum backs a histogram. Make sure to only append elements, and update
+  // enums.xml with new values.
+  enum class IsolatedInfo {
+    // Ad that was loaded isolated from the top-level page (e.g. from a
+    // cross-domain iframe).
+    kIsolatedAd = 0,
+
+    // Ad loaded from a non-isolated context.
+    kNonIsolatedAd = 1,
+
+    // Add new elements above kLast.
+    kMaxValue = kNonIsolatedAd
+  };
   // The AdDelayThrottle has multiple possible conditions which can cause
   // delays. These conditions will subclass DeferCondition and override
   // IsConditionSatisfied.
@@ -112,6 +129,10 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
 
   ~AdDelayThrottle() override;
 
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
+
  private:
   // content::URLLoaderThrottle:
   void DetachFromCurrentSequence() override;
@@ -123,7 +144,7 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
 
   // Returns whether the request to |url| should be deferred.
   bool MaybeDefer(const GURL& url);
-  void Resume();
+  void Resume(base::TimeTicks defer_start);
 
   AdDelayThrottle(std::unique_ptr<MetadataProvider> provider,
                   const Factory* factory);
@@ -133,6 +154,13 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
 
   // Must be destroyed before |provider_|.
   std::vector<std::unique_ptr<DeferCondition>> defer_conditions_;
+
+  // Must never be nullptr.
+  const base::TickClock* tick_clock_;
+
+  // Will be zero if no delay occurs.
+  base::TimeDelta expected_delay_;
+  base::TimeDelta actual_delay_;
 
   // Whether to actually delay the request. If set to false, will operate in a
   // dry-run style mode that only logs metrics.

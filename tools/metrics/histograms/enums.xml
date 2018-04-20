@@ -521,6 +521,11 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="Timeout during installability check, site status unknown"/>
 </enum>
 
+<enum name="AdIsolatedInfo">
+  <int value="0" label="Isolated ad request"/>
+  <int value="1" label="Non-isolated ad request"/>
+</enum>
+
 <enum name="AdSamplerTriggerAction">
   <int value="0" label="The trigger was activated"/>
   <int value="1" label="An ad was found and data was collected"/>
