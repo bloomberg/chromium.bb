@@ -6,6 +6,8 @@
     "AutoConnect":false,
     "Host":"vpn.my.domain.com",
     "OpenVPN":{
+      "ClientCertPKCS11Id":"1:2345",
+      "ClientCertType":"PKCS11Id",
       "OTP":"user OTP",
       "Password":"user password",
       "SaveCredentials":true,

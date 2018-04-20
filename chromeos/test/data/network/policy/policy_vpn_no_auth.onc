@@ -8,6 +8,7 @@
         "AutoConnect":false,
         "Host":"vpn.my.domain.com",
         "OpenVPN":{
+          "ClientCertType":"None",
           "Port":443,
           "Proto":"udp",
           "Recommended": ["Username", "Password", "SaveCredentials"],
