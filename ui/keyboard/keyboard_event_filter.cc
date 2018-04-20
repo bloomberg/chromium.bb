@@ -23,17 +23,17 @@ void KeyboardEventFilter::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void KeyboardEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  ProcessPointerEvent(*event);
+  ProcessPointerEvent(event);
 }
 
 void KeyboardEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  ProcessPointerEvent(*event);
+  ProcessPointerEvent(event);
 }
 
-void KeyboardEventFilter::ProcessPointerEvent(const ui::LocatedEvent& event) {
+void KeyboardEventFilter::ProcessPointerEvent(ui::LocatedEvent* event) {
   KeyboardController* controller = KeyboardController::GetInstance();
-  if (controller)
-    controller->HandlePointerEvent(event);
+  if (controller && controller->HandlePointerEvent(*event))
+    event->SetHandled();
 }
 
 }  // nemespace keyboard

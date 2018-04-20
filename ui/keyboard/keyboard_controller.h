@@ -176,7 +176,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Handle mouse and touch events on the keyboard. The effects of this method
   // will not stop propagation to the keyboard extension.
-  void HandlePointerEvent(const ui::LocatedEvent& event);
+  bool HandlePointerEvent(const ui::LocatedEvent& event);
 
   // Moves an already loaded keyboard.
   void MoveKeyboard(const gfx::Rect new_bounds);

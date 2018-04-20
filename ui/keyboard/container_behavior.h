@@ -64,7 +64,7 @@ class KEYBOARD_EXPORT ContainerBehavior {
   virtual void SavePosition(const gfx::Rect& keyboard_bounds,
                             const gfx::Size& screen_size) = 0;
 
-  virtual void HandlePointerEvent(const ui::LocatedEvent& event,
+  virtual bool HandlePointerEvent(const ui::LocatedEvent& event,
                                   const display::Display& current_display) = 0;
 
   virtual ContainerType GetType() const = 0;
