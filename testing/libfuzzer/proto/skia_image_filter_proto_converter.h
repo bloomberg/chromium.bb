@@ -242,7 +242,6 @@ class Converter {
   void Visit(const LightChild&);
   void Visit(const CropRectangle&);
   void Visit(const Rectangle&);
-  void Visit(const RRectsGaussianEdgeMaskFilterImpl&);
   void Visit(const PictureInfo&);
   void Visit(const BlurMaskFilter&);
   void Visit(const HighContrast_Filter&);

@@ -1419,14 +1419,6 @@ void Converter::Visit(const Path& path) {
   CheckAlignment();
 }
 
-void Converter::Visit(const RRectsGaussianEdgeMaskFilterImpl&
-                          r_rects_gaussian_edge_mask_filter_impl) {
-  Visit(r_rects_gaussian_edge_mask_filter_impl.rect_1());
-  WriteFields(r_rects_gaussian_edge_mask_filter_impl, 2, 3);
-  Visit(r_rects_gaussian_edge_mask_filter_impl.rect_2());
-  WriteFields(r_rects_gaussian_edge_mask_filter_impl, 5);
-}
-
 void Converter::Visit(const BlurMaskFilter& blur_mask_filter) {
   // Sigma must be a finite number <= 0.
   float sigma = fabs(BoundFloat(blur_mask_filter.sigma()));
@@ -1980,7 +1972,6 @@ void Converter::Visit(const DiscretePathEffect& discrete_path_effect) {
 void Converter::Visit(const MaskFilterChild& mask_filter) {
   bool flattenable_visited = false;
   VISIT_ONEOF_FLATTENABLE(mask_filter, emboss_mask_filter);
-  VISIT_ONEOF_FLATTENABLE(mask_filter, r_rects_gaussian_edge_mask_filter_impl);
   VISIT_DEFAULT_FLATTENABLE(mask_filter, blur_mask_filter_impl);
 }
 
