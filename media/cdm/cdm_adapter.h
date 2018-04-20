@@ -40,7 +40,8 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
                                 public CdmContext,
                                 public Decryptor,
                                 public cdm::Host_9,
-                                public cdm::Host_10 {
+                                public cdm::Host_10,
+                                public cdm::Host_11 {
  public:
   // Creates the CDM and initialize it using |key_system| and |cdm_config|.
   // |allocator| is to be used whenever the CDM needs memory and to create
@@ -151,6 +152,8 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
 
   // cdm::Host_10 specific implementation.
   void OnInitialized(bool success) override;
+
+  // cdm::Host_11 specific implementation.
   cdm::CdmProxy* RequestCdmProxy(cdm::CdmProxyClient* client) override;
 
  private:

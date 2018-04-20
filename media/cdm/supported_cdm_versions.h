@@ -55,17 +55,27 @@ struct CdmInterfaceTraits {};
 template <>
 struct CdmInterfaceTraits<9> {
   using CdmInterface = cdm::ContentDecryptionModule_9;
-  static_assert(CdmInterface::kVersion == 9, "CDM interface version mismatch.");
+  static_assert(CdmInterface::kVersion == 9, "CDM interface version mismatch");
   static constexpr bool IsEnabledByDefault() { return true; }
 };
 
 template <>
 struct CdmInterfaceTraits<10> {
   using CdmInterface = cdm::ContentDecryptionModule_10;
-  static_assert(CdmInterface::kVersion == 10,
-                "CDM interface version mismatch.");
+  static_assert(CdmInterface::kVersion == 10, "CDM interface version mismatch");
   static constexpr bool IsEnabledByDefault() { return false; }
 };
+
+template <>
+struct CdmInterfaceTraits<11> {
+  using CdmInterface = cdm::ContentDecryptionModule_11;
+  static_assert(CdmInterface::kVersion == 11, "CDM interface version mismatch");
+  static constexpr bool IsEnabledByDefault() { return false; }
+};
+
+constexpr bool IsSupportedCdmModuleVersion(int version) {
+  return version == CDM_MODULE_VERSION;
+}
 
 // Returns whether the CDM interface of |version| is supported in the
 // implementation.
@@ -75,6 +85,7 @@ constexpr bool IsSupportedCdmInterfaceVersion(int version) {
                 "update the code below");
   switch (version) {
     // Supported versions in decreasing order.
+    case cdm::ContentDecryptionModule_11::kVersion:
     case cdm::ContentDecryptionModule_10::kVersion:
     case cdm::ContentDecryptionModule_9::kVersion:
       return true;
@@ -92,6 +103,7 @@ constexpr bool IsSupportedCdmHostVersion(int version) {
                 "update the code below");
   switch (version) {
     // Supported versions in decreasing order.
+    case cdm::Host_11::kVersion:
     case cdm::Host_10::kVersion:
     case cdm::Host_9::kVersion:
       return true;
@@ -128,8 +140,6 @@ constexpr bool CheckSupportedCdmHostVersions(int min_version, int max_version) {
   return CheckSupportedVersions(IsSupportedCdmHostVersion, min_version,
                                 max_version);
 }
-
-MEDIA_EXPORT bool IsSupportedCdmModuleVersion(int version);
 
 // Returns whether the CDM interface of |version| is supported in the
 // implementation and enabled at runtime.

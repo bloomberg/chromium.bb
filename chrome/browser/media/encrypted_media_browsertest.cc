@@ -692,10 +692,11 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Test both CDM_9 and CDM_10.
-static_assert(media::CheckSupportedCdmInterfaceVersions(9, 10),
+static_assert(media::CheckSupportedCdmInterfaceVersions(9, 11),
               "Mismatch between implementation and test coverage");
 INSTANTIATE_TEST_CASE_P(CDM_9, ECKEncryptedMediaTest, Values(9));
 INSTANTIATE_TEST_CASE_P(CDM_10, ECKEncryptedMediaTest, Values(10));
+INSTANTIATE_TEST_CASE_P(CDM_11, ECKEncryptedMediaTest, Values(11));
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, InitializeCDMFail) {
   TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem,
@@ -820,8 +821,8 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MultipleCdmTypes) {
 // Tests that only works on newer CDM interfaces.
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
-  if (GetCdmInterfaceVersion() < 10) {
-    DVLOG(0) << "Skipping test; CdmProxy only supported on CDM_10 and above.";
+  if (GetCdmInterfaceVersion() < 11) {
+    DVLOG(0) << "Skipping test; CdmProxy only supported on CDM_11 and above.";
     return;
   }
 
