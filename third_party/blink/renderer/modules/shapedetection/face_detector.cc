@@ -71,11 +71,13 @@ void FaceDetector::OnDetectFaces(
   for (const auto& face : face_detection_results) {
     HeapVector<Landmark> landmarks;
     for (const auto& landmark : face->landmarks) {
-      Point2D location;
-      location.setX(landmark->location.x);
-      location.setY(landmark->location.y);
       HeapVector<Point2D> locations;
-      locations.push_back(location);
+      for (const auto& location : landmark->locations) {
+        Point2D web_location;
+        web_location.setX(location.x);
+        web_location.setY(location.y);
+        locations.push_back(web_location);
+      }
 
       Landmark web_landmark;
       web_landmark.setLocations(locations);
