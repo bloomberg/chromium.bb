@@ -193,10 +193,6 @@ void ArcAccessibilityHelperBridge::Shutdown() {
 
   arc_bridge_service_->accessibility_helper()->RemoveObserver(this);
   arc_bridge_service_->accessibility_helper()->SetHost(nullptr);
-
-  auto* surface_manager = ArcNotificationSurfaceManager::Get();
-  if (surface_manager)
-    surface_manager->RemoveObserver(this);
 }
 
 void ArcAccessibilityHelperBridge::OnConnectionReady() {
@@ -214,6 +210,12 @@ void ArcAccessibilityHelperBridge::OnConnectionReady() {
   auto* surface_manager = ArcNotificationSurfaceManager::Get();
   if (surface_manager)
     surface_manager->AddObserver(this);
+}
+
+void ArcAccessibilityHelperBridge::OnConnectionClosed() {
+  auto* surface_manager = ArcNotificationSurfaceManager::Get();
+  if (surface_manager)
+    surface_manager->RemoveObserver(this);
 }
 
 void ArcAccessibilityHelperBridge::OnAccessibilityEventDeprecated(

@@ -63,6 +63,7 @@ class ArcAccessibilityHelperBridge
 
   // ConnectionObserver<mojom::AccessibilityHelperInstance> overrides.
   void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // mojom::AccessibilityHelperHost overrides.
   void OnAccessibilityEventDeprecated(
