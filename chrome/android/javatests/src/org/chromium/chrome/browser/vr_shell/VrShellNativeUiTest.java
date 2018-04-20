@@ -39,7 +39,7 @@ public class VrShellNativeUiTest {
     public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
 
     private static final String TEST_PAGE_2D_URL =
-            VrTestFramework.getHtmlTestFile("test_navigation_2d_page");
+            VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
 
     @Before
     public void setUp() throws Exception {

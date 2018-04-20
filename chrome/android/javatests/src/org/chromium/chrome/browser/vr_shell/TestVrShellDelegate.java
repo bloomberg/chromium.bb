@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import android.graphics.Point;
+import android.graphics.PointF;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -85,7 +85,7 @@ public class TestVrShellDelegate extends VrShellDelegate {
     }
 
     @Override
-    public void performUiActionForTesting(int elementName, int actionType, Point position) {
+    public void performUiActionForTesting(int elementName, int actionType, PointF position) {
         super.performUiActionForTesting(elementName, actionType, position);
     }
 

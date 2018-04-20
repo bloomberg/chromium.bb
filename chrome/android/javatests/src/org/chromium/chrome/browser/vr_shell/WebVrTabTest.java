@@ -65,7 +65,8 @@ public class WebVrTabTest {
     @MediumTest
     public void testPoseDataUnfocusedTab() throws InterruptedException {
         testPoseDataUnfocusedTabImpl(
-                VrTestFramework.getHtmlTestFile("test_pose_data_unfocused_tab"), mVrTestFramework);
+                VrTestFramework.getFileUrlForHtmlTestFile("test_pose_data_unfocused_tab"),
+                mVrTestFramework);
     }
 
     /**
@@ -77,7 +78,7 @@ public class WebVrTabTest {
     @CommandLineFlags.Add({"enable-features=WebXR"})
     public void testPoseDataUnfocusedTab_WebXr() throws InterruptedException {
         testPoseDataUnfocusedTabImpl(
-                XrTestFramework.getHtmlTestFile("webxr_test_pose_data_unfocused_tab"),
+                XrTestFramework.getFileUrlForHtmlTestFile("webxr_test_pose_data_unfocused_tab"),
                 mXrTestFramework);
     }
 

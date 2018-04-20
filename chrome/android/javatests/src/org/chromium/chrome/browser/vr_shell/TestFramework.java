@@ -121,9 +121,18 @@ public class TestFramework {
      * @param testName The name of the test whose file will be retrieved.
      * @return The file:// URL to the specified test file.
      */
-    public static String getHtmlTestFile(String testName) {
+    public static String getFileUrlForHtmlTestFile(String testName) {
         return "file://" + UrlUtils.getIsolatedTestFilePath(TEST_DIR) + "/html/" + testName
                 + ".html";
+    }
+
+    /**
+     * Gets the path to pass to an EmbeddedTestServer.getURL to load the given HTML test file.
+     * @param testName The name of the test whose file will be retrieved.
+     * @param A path that can be passed to EmbeddedTestServer.getURL to load the test file.
+     */
+    public static String getEmbeddedServerPathForHtmlTestFile(String testName) {
+        return "/" + TEST_DIR + "/html/" + testName + ".html";
     }
 
     /**

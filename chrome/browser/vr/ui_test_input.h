@@ -20,6 +20,7 @@ enum class UserFriendlyElementName : int {
   kReloadButton,    // Reload button in the overflow menu
   kOverflowMenu,    // Overflow menu
   kPageInfoButton,  // Page info button on the URL bar
+  kBrowsingDialog,  // 2D fallback UI, e.g. permission prompts
 };
 
 // These are used to specify what type of action should be performed on a UI

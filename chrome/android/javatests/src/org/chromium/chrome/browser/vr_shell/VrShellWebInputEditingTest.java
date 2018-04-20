@@ -59,8 +59,8 @@ public class VrShellWebInputEditingTest {
     @CommandLineFlags.Add("enable-features=VrLaunchIntents")
     public void testWebInputFocus() throws InterruptedException {
         // Load page in VR and make sure the controller is pointed at the content quad.
-        mVrTestRule.loadUrl(
-                VrTestFramework.getHtmlTestFile("test_web_input_editing"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_web_input_editing"),
+                PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.forceEnterVr();
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         mController.recenterView();

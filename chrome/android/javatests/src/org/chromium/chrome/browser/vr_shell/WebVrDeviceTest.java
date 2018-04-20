@@ -71,7 +71,8 @@ public class WebVrDeviceTest {
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testDeviceCapabilitiesMatchExpectations() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getHtmlTestFile("test_device_capabilities_match_expectations"),
+                VrTestFramework.getFileUrlForHtmlTestFile(
+                        "test_device_capabilities_match_expectations"),
                 PAGE_LOAD_TIMEOUT_S);
         VrTestFramework.executeStepAndWait("stepCheckDeviceCapabilities('" + Build.DEVICE + "')",
                 mVrTestFramework.getFirstTabWebContents());
@@ -91,7 +92,8 @@ public class WebVrDeviceTest {
         VrShellDelegateUtils.setVrCoreCompatibility(VrCoreCompatibility.VR_NOT_AVAILABLE);
 
         mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getHtmlTestFile("test_device_capabilities_match_expectations"),
+                VrTestFramework.getFileUrlForHtmlTestFile(
+                        "test_device_capabilities_match_expectations"),
                 PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue(
                 VrTestFramework.vrDisplayFound(mVrTestFramework.getFirstTabWebContents()));
@@ -111,7 +113,8 @@ public class WebVrDeviceTest {
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testWebXrCapabilities() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
-                XrTestFramework.getHtmlTestFile("test_webxr_capabilities"), PAGE_LOAD_TIMEOUT_S);
+                XrTestFramework.getFileUrlForHtmlTestFile("test_webxr_capabilities"),
+                PAGE_LOAD_TIMEOUT_S);
         XrTestFramework.executeStepAndWait(
                 "stepCheckCapabilities('Daydream')", mXrTestFramework.getFirstTabWebContents());
         XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());

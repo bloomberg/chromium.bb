@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.widget.FrameLayout;
 
 /**
@@ -100,7 +100,7 @@ public interface VrShell extends VrDialogManager, VrToastManager {
     /**
      * Performs a UI action that doesn't require a position argument on a UI element.
      */
-    void performUiActionForTesting(int elementName, int actionType, Point position);
+    void performUiActionForTesting(int elementName, int actionType, PointF position);
 
     /**
      * @param topContentOffset The content offset (usually applied by the omnibox).

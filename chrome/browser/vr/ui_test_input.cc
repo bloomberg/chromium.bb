@@ -25,6 +25,8 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kUrlBarOverflowButton;
     case UserFriendlyElementName::kPageInfoButton:
       return kUrlBarSecurityButton;
+    case UserFriendlyElementName::kBrowsingDialog:
+      return k2dBrowsingHostedUiContent;
     default:
       NOTREACHED();
       return kNone;
