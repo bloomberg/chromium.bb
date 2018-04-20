@@ -215,20 +215,19 @@ void EnsureLastTaskRuns(base::SingleThreadTaskRunner* runner) {
 
 CannedSyncableFileSystem::CannedSyncableFileSystem(
     const GURL& origin,
-    leveldb::Env* env_override,
+    bool in_memory_file_system,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
     : origin_(origin),
       type_(storage::kFileSystemTypeSyncable),
       result_(base::File::FILE_OK),
       sync_status_(sync_file_system::SYNC_STATUS_OK),
-      env_override_(env_override),
+      in_memory_file_system_(in_memory_file_system),
       io_task_runner_(io_task_runner),
       file_task_runner_(file_task_runner),
       is_filesystem_set_up_(false),
       is_filesystem_opened_(false),
-      sync_status_observers_(new ObserverList) {
-}
+      sync_status_observers_(new ObserverList) {}
 
 CannedSyncableFileSystem::~CannedSyncableFileSystem() {}
 
@@ -248,9 +247,8 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
   std::vector<std::string> additional_allowed_schemes;
   additional_allowed_schemes.push_back(origin_.scheme());
   storage::FileSystemOptions options(
-      storage::FileSystemOptions::PROFILE_MODE_NORMAL,
-      additional_allowed_schemes,
-      env_override_);
+      storage::FileSystemOptions::PROFILE_MODE_NORMAL, in_memory_file_system_,
+      additional_allowed_schemes);
 
   std::vector<std::unique_ptr<storage::FileSystemBackend>> additional_backends;
   additional_backends.push_back(SyncFileSystemBackend::CreateForTesting());

@@ -62,7 +62,7 @@ TEST(BrowserFileSystemHelperTest,
       new base::NullTaskRunner);
   storage::FileSystemOptions file_system_options(
       storage::FileSystemOptions::PROFILE_MODE_NORMAL,
-      std::vector<std::string>(), nullptr);
+      false /* force_in_memory */, std::vector<std::string>());
   scoped_refptr<storage::FileSystemContext> test_file_system_context(
       new storage::FileSystemContext(
           io_task_runner.get(), file_task_runner.get(),

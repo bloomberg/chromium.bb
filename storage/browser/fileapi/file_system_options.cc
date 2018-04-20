@@ -7,16 +7,19 @@
 namespace storage {
 
 FileSystemOptions::FileSystemOptions(
-      ProfileMode profile_mode,
-      const std::vector<std::string>& additional_allowed_schemes,
-      leveldb::Env* env_override)
-      : profile_mode_(profile_mode),
-        additional_allowed_schemes_(additional_allowed_schemes),
-        env_override_(env_override) {
-}
+    ProfileMode profile_mode,
+    bool force_in_memory,
+    const std::vector<std::string>& additional_allowed_schemes)
+    : profile_mode_(profile_mode),
+      force_in_memory_(force_in_memory),
+      additional_allowed_schemes_(additional_allowed_schemes) {}
 
 FileSystemOptions::FileSystemOptions(const FileSystemOptions& other) = default;
 
 FileSystemOptions::~FileSystemOptions() = default;
+
+bool FileSystemOptions::is_in_memory() const {
+  return force_in_memory_ || is_incognito();
+}
 
 }  // namespace storage

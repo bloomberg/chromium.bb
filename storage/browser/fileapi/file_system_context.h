@@ -32,17 +32,12 @@ class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
 
-namespace storage {
-class QuotaManagerProxy;
-class SpecialStoragePolicy;
+namespace leveleb {
+class Env;
 }
 
 namespace net {
 class URLRequest;
-}
-
-namespace storage {
-class FileStreamReader;
 }
 
 namespace storage {
@@ -51,6 +46,7 @@ class AsyncFileUtil;
 class CopyOrMoveFileValidatorFactory;
 class ExternalFileSystemBackend;
 class ExternalMountPoints;
+class FileStreamReader;
 class FileStreamWriter;
 class FileSystemBackend;
 class FileSystemOperation;
@@ -60,8 +56,10 @@ class FileSystemQuotaUtil;
 class FileSystemURL;
 class IsolatedFileSystemBackend;
 class MountPoints;
+class QuotaManagerProxy;
 class QuotaReservation;
 class SandboxFileSystemBackend;
+class SpecialStoragePolicy;
 
 struct DefaultContextDeleter;
 struct FileSystemInfo;
@@ -105,8 +103,9 @@ class STORAGE_EXPORT FileSystemContext
   // Unless a FileSystemBackend is overridden in CreateFileSystemOperation,
   // it is used for all file operations and file related meta operations.
   // The code assumes that file_task_runner->RunsTasksInCurrentSequence()
-  // returns false if the current task is not running on the sequence that allows
-  // blocking file operations (like SequencedWorkerPool implementation does).
+  // returns false if the current task is not running on the sequence that
+  // allows blocking file operations (like SequencedWorkerPool implementation
+  // does).
   //
   // |external_mount_points| contains non-system external mount points available
   // in the context. If not NULL, it will be used during URL cracking.
@@ -370,6 +369,9 @@ class STORAGE_EXPORT FileSystemContext
   PluginPrivateFileSystemBackend* plugin_private_backend() const {
     return plugin_private_backend_.get();
   }
+
+  // Override the default leveldb Env with |env_override_| if set.
+  std::unique_ptr<leveldb::Env> env_override_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> default_file_task_runner_;

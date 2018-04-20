@@ -34,6 +34,10 @@ class SandboxFileSystemBackendDelegateTest;
 class SandboxFileSystemTestHelper;
 }
 
+namespace leveldb {
+class Env;
+}
+
 namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
@@ -86,7 +90,8 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
       base::SequencedTaskRunner* file_task_runner,
       const base::FilePath& profile_path,
       storage::SpecialStoragePolicy* special_storage_policy,
-      const FileSystemOptions& file_system_options);
+      const FileSystemOptions& file_system_options,
+      leveldb::Env* env_override);
 
   ~SandboxFileSystemBackendDelegate() override;
 

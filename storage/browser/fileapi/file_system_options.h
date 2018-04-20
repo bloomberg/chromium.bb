@@ -10,10 +10,6 @@
 
 #include "storage/browser/storage_browser_export.h"
 
-namespace leveldb {
-class Env;
-}
-
 namespace storage {
 
 // Provides runtime options that may change FileSystem API behavior.
@@ -28,19 +24,23 @@ class STORAGE_EXPORT FileSystemOptions {
   // |profile_mode| specifies if the profile (for this filesystem)
   // is running in incognito mode (PROFILE_MODE_INCOGNITO) or no
   // (PROFILE_MODE_NORMAL).
+  // A FileSystem will be created in-memory when |profile_mode| is incognito,
+  // but it can be forced to be in-memory by setting |force_in_memory| to
+  // true - this is only to support testing.
   // |additional_allowed_schemes| specifies schemes that are allowed
   // to access FileSystem API in addition to "http" and "https".
-  // Non-NULL |env_override| overrides internal LevelDB environment.
-  FileSystemOptions(
-      ProfileMode profile_mode,
-      const std::vector<std::string>& additional_allowed_schemes,
-      leveldb::Env* env_override);
+  FileSystemOptions(ProfileMode profile_mode,
+                    bool force_in_memory,
+                    const std::vector<std::string>& additional_allowed_schemes);
   FileSystemOptions(const FileSystemOptions& other);
 
   ~FileSystemOptions();
 
   // Returns true if it is running in the incognito mode.
   bool is_incognito() const { return profile_mode_ == PROFILE_MODE_INCOGNITO; }
+
+  // Returns true if filesystem is in-memory.
+  bool is_in_memory() const;
 
   // Returns the schemes that must be allowed to access FileSystem API
   // in addition to standard "http" and "https".
@@ -50,12 +50,10 @@ class STORAGE_EXPORT FileSystemOptions {
     return additional_allowed_schemes_;
   }
 
-  leveldb::Env* env_override() const { return env_override_; }
-
  private:
   const ProfileMode profile_mode_;
+  const bool force_in_memory_;
   const std::vector<std::string> additional_allowed_schemes_;
-  leveldb::Env* env_override_;
 };
 
 }  // namespace storage

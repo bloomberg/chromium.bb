@@ -99,7 +99,8 @@ class BlobRegistryImplTest : public testing::Test {
         std::vector<std::unique_ptr<FileSystemBackend>>(),
         std::vector<URLRequestAutoMountHandler>(), data_dir_.GetPath(),
         FileSystemOptions(FileSystemOptions::PROFILE_MODE_INCOGNITO,
-                          std::vector<std::string>(), nullptr));
+                          false /* force_in_memory */,
+                          std::vector<std::string>()));
     registry_impl_ = std::make_unique<BlobRegistryImpl>(context_->AsWeakPtr(),
                                                         file_system_context_);
     auto delegate = std::make_unique<MockBlobRegistryDelegate>();

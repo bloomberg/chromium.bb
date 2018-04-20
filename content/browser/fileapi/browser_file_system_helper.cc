@@ -5,6 +5,7 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 
 #include <stddef.h>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -62,12 +63,8 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
           switches::kAllowFileAccessFromFiles)) {
     additional_allowed_schemes.push_back(url::kFileScheme);
   }
-  std::unique_ptr<leveldb::Env> env_override;
-  if (is_incognito)
-    env_override = leveldb_chrome::NewMemEnv("filesystem");
-  // TODO(crbug.com/823854) Fix leaking override MemEnv.
-  return FileSystemOptions(profile_mode, additional_allowed_schemes,
-                           env_override.release());
+  return FileSystemOptions(profile_mode, is_incognito,
+                           additional_allowed_schemes);
 }
 
 }  // namespace
