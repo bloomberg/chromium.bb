@@ -5,7 +5,6 @@ include_rules = [
   "+third_party/libyuv",
   "+third_party/v4l-utils",
   "+third_party/webrtc/common_video",
-  "+third_party/webrtc/system_wrappers",
   "+ui/base",
   "+ui/display/display_switches.h",
   "+ui/display/manager",

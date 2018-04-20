@@ -8,7 +8,6 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/mac/video_frame_mac.h"
-#include "third_party/webrtc/system_wrappers/include/clock.h"
 
 namespace media {
 
@@ -93,7 +92,7 @@ struct VTVideoEncodeAccelerator::BitstreamBufferRef {
 VTVideoEncodeAccelerator::VTVideoEncodeAccelerator()
     : target_bitrate_(0),
       h264_profile_(H264PROFILE_BASELINE),
-      bitrate_adjuster_(webrtc::Clock::GetRealTimeClock(), .5, .95),
+      bitrate_adjuster_(.5, .95),
       client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       encoder_thread_("VTEncoderThread"),
       encoder_task_weak_factory_(this) {
