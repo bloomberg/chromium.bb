@@ -79,6 +79,7 @@ ClientPolicyController::ClientPolicyController() {
                                      kUnlimitedPages)
           .SetIsRemovedOnCacheReset(false)
           .SetIsSupportedByDownload(true)
+          .SetIsUserRequestedDownload(true)
           .SetShouldAllowDownload(true)
           .Build()));
 
