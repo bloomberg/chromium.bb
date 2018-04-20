@@ -50,6 +50,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Flakes heavily on many OpenGL configurations
     self.Fail('conformance2/transform_feedback/too-small-buffers.html',
+        ['no_angle'], bug=832238)
+    self.Fail('conformance2/transform_feedback/too-small-buffers.html',
         ['opengl'], bug=832238)
 
     # Failing on Windows and Linux with NVIDIA GPUs and OpenGL driver.
