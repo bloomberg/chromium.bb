@@ -33,17 +33,19 @@ function sendTestMessage(message) {
 }
 
 /**
- * Returns promise to be fulfilled after the given milliseconds.
+ * Wait (aka pause, or sleep) for the given time in milliseconds.
  * @param {number} time Time in milliseconds.
+ * @return {Promise} Promise that will resolve after Time in milliseconds
+ *     has elapsed.
  */
 function wait(time) {
-  return new Promise(function(callback) {
-    setTimeout(callback, time);
+  return new Promise(function(resolve) {
+    setTimeout(resolve, time);
   });
 }
 
 /**
- * Verifies if there are no Javascript errors in any of the app windows.
+ * Verifies if there are no Javascript errors in the given app window.
  * @param {function()} Completion callback.
  */
 function checkIfNoErrorsOccuredOnApp(app, callback) {
@@ -65,7 +67,7 @@ function testPromiseAndApps(promise, apps) {
           return new Promise(checkIfNoErrorsOccuredOnApp.bind(null, app));
         }));
   }).then(chrome.test.callbackPass(function() {
-    // The callbacPass is necessary to avoid prematurely finishing tests.
+    // The callbackPass is necessary to avoid prematurely finishing tests.
     // Don't put chrome.test.succeed() here to avoid doubled success log.
   }), function(error) {
     chrome.test.fail(error.stack || error);
@@ -94,7 +96,7 @@ var LOG_INTERVAL = 3000;
 function getCaller() {
   var caller = '';
   try {
-    throw new Error('Force an exception to produce e.stack');
+    throw new Error('Force an exception to produce error.stack');
   } catch (error) {
     var ignoreStackLines = 3;
     var lines = error.stack.split('\n');
