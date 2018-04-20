@@ -53,6 +53,8 @@ Options:
                       updating any file. If not specified,
                       'tools/traffic_annotation/summary/annotations.xml' might
                       get updated.
+  --errors-file       Optional file path for possible errors. If not specified,
+                      errors are dumped to LOG(ERROR).
   --no-missing-error  Optional argument, resulting in just issuing a warning for
                       functions that miss annotation and not an error.
   --summary-file      Optional path to the output file with all annotations.
@@ -303,6 +305,7 @@ int main(int argc, char* argv[]) {
       command_line.GetSwitchValuePath("extractor-output");
   base::FilePath extractor_input =
       command_line.GetSwitchValuePath("extractor-input");
+  base::FilePath errors_file = command_line.GetSwitchValuePath("errors-file");
   bool filter_files = !command_line.HasSwitch("no-filtering");
   bool all_files = command_line.HasSwitch("all-files");
   bool test_only = command_line.HasSwitch("test-only");
@@ -368,7 +371,7 @@ int main(int argc, char* argv[]) {
   // Extract annotations.
   if (extractor_input.empty()) {
     if (!auditor.RunClangTool(path_filters, filter_files, all_files,
-                              !error_resilient)) {
+                              !error_resilient, errors_file)) {
       LOG(ERROR) << "Failed to run clang tool.";
       return error_value;
     }
