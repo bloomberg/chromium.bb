@@ -65,6 +65,19 @@ def main():
       help='Runtime data dependency file from GN.')
   parser.add_argument(
       '--cros-cache', type=str, required=True, help='Path to cros cache.')
+  # Gtest args.
+  parser.add_argument(
+      '--test-launcher-summary-output', type=str,
+      help='When set, will pass the same option down to the test and retrieve '
+           'its result file at the specified location.')
+  parser.add_argument(
+      '--test-launcher-shard-index',
+      type=int, default=os.environ.get('GTEST_SHARD_INDEX', 0),
+      help='Index of the external shard to run.')
+  parser.add_argument(
+      '--test-launcher-total-shards',
+      type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
+      help='Total number of external shards.')
   args, unknown_args = parser.parse_known_args()
 
   if unknown_args:
@@ -82,7 +95,7 @@ def main():
   if args.verbose:
     cros_run_vm_test_cmd.append('--debug')
 
-  # cros_run_vm_test has trouble with relative paths that go up directors, so
+  # cros_run_vm_test has trouble with relative paths that go up directories, so
   # cd to src/, which should be the root of all data deps.
   os.chdir(CHROMIUM_SRC_PATH)
 
@@ -93,11 +106,46 @@ def main():
       '--cmd',
       '--',
       './' + args.test_exe,
+      '--test-launcher-shard-index=%d' % args.test_launcher_shard_index,
+      '--test-launcher-total-shards=%d' % args.test_launcher_total_shards,
   ]
+
+  stdout_results_delimiter = '@@@@@results-file-delimiter@@@@@'
+  if args.test_launcher_summary_output:
+    result_file = 'gtest_results.json'
+    cros_run_vm_test_cmd.extend([
+        '--test-launcher-summary-output=%s' % result_file,
+        ';', 'export test_code=$?',
+        ';', 'echo %s' % stdout_results_delimiter,
+        ';', 'cat %s' % result_file,
+        ';', 'echo %s' % stdout_results_delimiter,
+        ';', 'exit $test_code',
+    ])
 
   print 'Running the following command:'
   print ' '.join(cros_run_vm_test_cmd)
-  os.execv(CROS_RUN_VM_TEST_PATH, cros_run_vm_test_cmd)
+
+  vm_proc = subprocess.Popen(
+      cros_run_vm_test_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+  # Stream cros_run_vm_test's stdout to our stdout while capturing it so we can
+  # strip out the results json file.
+  # TODO(crbug.com/835061): Remove all this stdout parsing and just pull the
+  # file directly.
+  vm_output = ''
+  while True:
+    line = vm_proc.stdout.readline()
+    if not line:
+      break
+    print line,  # End with a comma so print doesn't auto append a newline.
+    vm_output += line
+
+  if args.test_launcher_summary_output:
+    json_contents = vm_output.split(stdout_results_delimiter)[-2]
+    with open(args.test_launcher_summary_output, 'w') as f:
+      f.write(json_contents)
+
+  return vm_proc.returncode
 
 
 if __name__ == '__main__':
