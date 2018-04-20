@@ -314,6 +314,7 @@ Element* HTMLViewSourceDocument::AddLink(const AtomicString& url,
   anchor->setAttribute(classAttr, class_value);
   anchor->setAttribute(targetAttr, "_blank");
   anchor->setAttribute(hrefAttr, url);
+  anchor->setAttribute(relAttr, "noreferrer noopener");
   // Disallow JavaScript hrefs. https://crbug.com/808407
   if (anchor->Url().ProtocolIsJavaScript())
     anchor->setAttribute(hrefAttr, "about:blank");
