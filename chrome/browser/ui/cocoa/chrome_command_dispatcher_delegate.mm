@@ -8,9 +8,11 @@
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#import "chrome/browser/ui/cocoa/browser_view_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/browser_window_views_mac.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 
 namespace {
 
@@ -73,6 +75,16 @@ bool HandleExtraBrowserKeyboardShortcut(NSEvent* event, NSWindow* window) {
                                      CommandForBrowserKeyboardShortcut);
 }
 
+bool IsBrowserKeyboardShortcut(NSEvent* event, NSWindow* window) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  BrowserView* view = browser_view_bridge::BrowserViewForNativeWindow(window);
+  if (view)
+    return browser_view_bridge::BrowserViewHasAcceleratorForEvent(view, event);
+#endif
+  return CommandForExtraKeyboardShortcut(
+             event, window, CommandForWindowKeyboardShortcut) != -1;
+}
+
 }  // namespace
 
 @implementation ChromeCommandDispatcherDelegate
@@ -116,10 +128,8 @@ bool HandleExtraBrowserKeyboardShortcut(NSEvent* event, NSWindow* window) {
   // special handling here since they happen before normal command dispatch.
   int cmd = MenuCommandForKeyEvent(event);
   if (cmd != -1) {
-    int keyCmd = CommandForExtraKeyboardShortcut(
-        event, window, CommandForWindowKeyboardShortcut);
     Browser* browser = chrome::FindBrowserWithWindow(window);
-    if (keyCmd != -1 && browser) {
+    if (IsBrowserKeyboardShortcut(event, window) && browser) {
       chrome::ExecuteCommand(browser, cmd);
       return YES;
     }
