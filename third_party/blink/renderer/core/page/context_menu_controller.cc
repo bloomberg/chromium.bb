@@ -497,8 +497,13 @@ bool ContextMenuController::ShowContextMenu(const ContextMenu* default_menu,
   PopulateSubMenuItems(default_menu->Items(), data.custom_items);
 
   if (auto* anchor = ToHTMLAnchorElementOrNull(r.URLElement())) {
-    // Extract suggested filename for saving file.
-    data.suggested_filename = anchor->FastGetAttribute(HTMLNames::downloadAttr);
+    // Extract suggested filename for same-origin URLS for saving file.
+    const SecurityOrigin* origin =
+        selected_frame->GetSecurityContext()->GetSecurityOrigin();
+    if (origin->CanReadContent(anchor->Url())) {
+      data.suggested_filename =
+          anchor->FastGetAttribute(HTMLNames::downloadAttr);
+    }
 
     // If the anchor wants to suppress the referrer, update the referrerPolicy
     // accordingly.
