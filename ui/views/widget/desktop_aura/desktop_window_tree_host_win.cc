@@ -198,7 +198,7 @@ aura::WindowTreeHost* DesktopWindowTreeHostWin::AsWindowTreeHost() {
 void DesktopWindowTreeHostWin::ShowWindowWithState(
     ui::WindowShowState show_state) {
   if (compositor())
-    compositor()->SetVisible(show_state != ui::SHOW_STATE_MINIMIZED);
+    compositor()->SetVisible(true);
   message_handler_->ShowWindowWithState(show_state);
 }
 
