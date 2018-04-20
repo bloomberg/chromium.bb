@@ -8,7 +8,7 @@ cr.define('settings_subpage', function() {
       PolymerTest.clearBody();
     });
 
-    test('clear search', function() {
+    test('clear search (event)', function() {
       const subpage = document.createElement('settings-subpage');
       // Having a searchLabel will create the settings-subpage-search.
       subpage.searchLabel = 'test';
@@ -20,6 +20,22 @@ cr.define('settings_subpage', function() {
       subpage.fire('clear-subpage-search');
       Polymer.dom.flush();
       assertEquals('', search.getValue());
+    });
+
+    test('clear search (click)', function() {
+      const subpage = document.createElement('settings-subpage');
+      // Having a searchLabel will create the settings-subpage-search.
+      subpage.searchLabel = 'test';
+      document.body.appendChild(subpage);
+      Polymer.dom.flush();
+      const search = subpage.$$('settings-subpage-search');
+      assertTrue(!!search);
+      search.setValue('Hello');
+      assertEquals(null, search.root.activeElement);
+      search.$.clearSearch.click();
+      Polymer.dom.flush();
+      assertEquals('', search.getValue());
+      assertEquals(search.$.searchInput, search.root.activeElement);
     });
 
     test('navigates to parent when there is no history', function() {

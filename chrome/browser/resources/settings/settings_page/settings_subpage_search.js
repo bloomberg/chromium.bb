@@ -24,5 +24,6 @@ Polymer({
   /** @private */
   onTapClear_: function() {
     this.setValue('');
+    this.$.searchInput.focus();
   },
 });
