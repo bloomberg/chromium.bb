@@ -23,8 +23,8 @@ void VmApplicationsServiceProviderDelegate::UpdateApplicationList(
   if (!ProfileHelper::IsPrimaryProfile(profile))
     return;
 
-  CrostiniRegistryService* registry_service =
-      CrostiniRegistryServiceFactory::GetForProfile(profile);
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
   registry_service->UpdateApplicationList(app_list);
 }
 

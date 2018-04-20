@@ -34,8 +34,8 @@ void CrostiniAppModelBuilder::BuildModel() {
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGO_CROSTINI_TERMINAL)));
 
-  chromeos::CrostiniRegistryService* registry_service =
-      chromeos::CrostiniRegistryServiceFactory::GetForProfile(profile());
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
   for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
     InsertCrostiniAppItem(registry_service, app_id);
   }
@@ -44,15 +44,15 @@ void CrostiniAppModelBuilder::BuildModel() {
 }
 
 void CrostiniAppModelBuilder::InsertCrostiniAppItem(
-    const chromeos::CrostiniRegistryService* registry_service,
+    const crostini::CrostiniRegistryService* registry_service,
     const std::string& app_id) {
-  std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
+  std::unique_ptr<crostini::CrostiniRegistryService::Registration>
       registration = registry_service->GetRegistration(app_id);
   DCHECK(registration);
   if (registration->no_display)
     return;
   const std::string& localized_name =
-      chromeos::CrostiniRegistryService::Registration::Localize(
+      crostini::CrostiniRegistryService::Registration::Localize(
           registration->name);
   // TODO(timloh): Use a real icon
   InsertApp(std::make_unique<CrostiniAppItem>(
@@ -62,7 +62,7 @@ void CrostiniAppModelBuilder::InsertCrostiniAppItem(
 }
 
 void CrostiniAppModelBuilder::OnRegistryUpdated(
-    chromeos::CrostiniRegistryService* registry_service,
+    crostini::CrostiniRegistryService* registry_service,
     const std::vector<std::string>& updated_apps,
     const std::vector<std::string>& removed_apps,
     const std::vector<std::string>& inserted_apps) {

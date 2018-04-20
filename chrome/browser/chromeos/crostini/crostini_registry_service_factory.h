@@ -11,7 +11,7 @@
 
 class Profile;
 
-namespace chromeos {
+namespace crostini {
 
 class CrostiniRegistryService;
 
@@ -34,6 +34,6 @@ class CrostiniRegistryServiceFactory
   DISALLOW_COPY_AND_ASSIGN(CrostiniRegistryServiceFactory);
 };
 
-}  // namespace chromeos
+}  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_REGISTRY_SERVICE_FACTORY_H_

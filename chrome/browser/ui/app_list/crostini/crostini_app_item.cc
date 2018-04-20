@@ -49,7 +49,7 @@ void MaybeLaunchTerminal(Profile* profile,
 }
 
 void MaybeLaunchContainerAppplication(
-    std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
+    std::unique_ptr<crostini::CrostiniRegistryService::Registration>
         registration,
     crostini::ConciergeClientResult result) {
   if (result == crostini::ConciergeClientResult::SUCCESS) {
@@ -64,9 +64,9 @@ void MaybeLaunchContainerAppplication(
 }  // namespace
 
 void CrostiniAppItem::Activate(int event_flags) {
-  chromeos::CrostiniRegistryService* registry_service =
-      chromeos::CrostiniRegistryServiceFactory::GetForProfile(profile());
-  std::unique_ptr<chromeos::CrostiniRegistryService::Registration>
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
+  std::unique_ptr<crostini::CrostiniRegistryService::Registration>
       registration = registry_service->GetRegistration(id());
   auto* crostini_manager = crostini::CrostiniManager::GetInstance();
   if (registration) {

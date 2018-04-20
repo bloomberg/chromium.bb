@@ -24,7 +24,7 @@ class ApplicationList;
 }  // namespace apps
 }  // namespace vm_tools
 
-namespace chromeos {
+namespace crostini {
 
 // The CrostiniRegistryService stores information about Desktop Entries (apps)
 // in Crostini. We store this in prefs so that it is readily available even when
@@ -103,6 +103,6 @@ class CrostiniRegistryService : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(CrostiniRegistryService);
 };
 
-}  // namespace chromeos
+}  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_REGISTRY_SERVICE_H_
