@@ -32,6 +32,8 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
         void onSettingsStateChanged(boolean enabled);
     }
 
+    protected static boolean sSettingsEnabledForTesting;
+
     @VisibleForTesting
     protected Observer mObserver;
     private PrefChangeRegistrar mPrefChangeRegistrar;
@@ -86,6 +88,8 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
 
     /** @return Whether the settings state is currently enabled. */
     public static boolean getSettingsEnabled() {
+        if (sSettingsEnabledForTesting) return true;
+
         ProfileSyncService service = ProfileSyncService.get();
 
         boolean isUploadToGoogleActive =
