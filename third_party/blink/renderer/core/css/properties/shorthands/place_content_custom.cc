@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
@@ -16,17 +17,25 @@ namespace CSSShorthand {
 bool PlaceContent::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
-    const CSSParserContext&,
-    const CSSParserLocalContext&,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceContent).length(), 2u);
 
-  CSSValue* align_content_value = nullptr;
-  CSSValue* justify_content_value = nullptr;
+  CSSParserTokenRange range_copy = range;
+  const CSSValue* align_content_value =
+      ToLonghand(GetCSSPropertyAlignContent())
+          .ParseSingleValue(range, context, local_context);
+  if (!align_content_value)
+    return false;
 
-  if (!CSSParsingUtils::ConsumePlaceAlignment(
-          range, CSSParsingUtils::ConsumeSimplifiedContentPosition,
-          align_content_value, justify_content_value))
+  if (range.AtEnd())
+    range = range_copy;
+
+  const CSSValue* justify_content_value =
+      ToLonghand(GetCSSPropertyJustifyContent())
+          .ParseSingleValue(range, context, local_context);
+  if (!justify_content_value || !range.AtEnd())
     return false;
 
   DCHECK(align_content_value);

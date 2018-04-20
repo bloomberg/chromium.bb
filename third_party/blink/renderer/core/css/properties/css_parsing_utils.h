@@ -37,8 +37,6 @@ using ConsumeAnimationItemValue = CSSValue* (*)(CSSPropertyID,
                                                 const CSSParserContext&,
                                                 bool use_legacy_parsing);
 using IsPositionKeyword = bool (*)(CSSValueID);
-using ConsumePlaceAlignmentValue = CSSValue* (*)(CSSParserTokenRange&,
-                                                 IsPositionKeyword);
 
 constexpr size_t kMaxNumAnimationLonghands = 8;
 
@@ -205,11 +203,6 @@ CSSValue* ConsumeMarginOrOffset(CSSParserTokenRange&,
 CSSValue* ConsumeOffsetPath(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumePathOrNone(CSSParserTokenRange&);
 CSSValue* ConsumeOffsetRotate(CSSParserTokenRange&, const CSSParserContext&);
-
-bool ConsumePlaceAlignment(CSSParserTokenRange&,
-                           ConsumePlaceAlignmentValue,
-                           CSSValue*& align_value,
-                           CSSValue*& justify_value);
 
 CSSValue* ConsumeBasicShape(CSSParserTokenRange&, const CSSParserContext&);
 bool ConsumeRadii(CSSValue* horizontal_radii[4],

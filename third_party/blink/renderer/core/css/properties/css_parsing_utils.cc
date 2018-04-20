@@ -571,28 +571,6 @@ CSSValue* ConsumeSelfPositionOverflowPosition(
   return self_position;
 }
 
-CSSValue* ConsumeSimplifiedDefaultPosition(
-    CSSParserTokenRange& range,
-    IsPositionKeyword is_position_keyword) {
-  DCHECK(is_position_keyword);
-  CSSValueID id = range.Peek().Id();
-  if (IsNormalOrStretch(id) || is_position_keyword(id))
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-
-  if (IsBaselineKeyword(id))
-    return ConsumeBaselineKeyword(range);
-
-  return nullptr;
-}
-
-CSSValue* ConsumeSimplifiedSelfPosition(CSSParserTokenRange& range,
-                                        IsPositionKeyword is_position_keyword) {
-  DCHECK(is_position_keyword);
-  return IsAuto(range.Peek().Id())
-             ? CSSPropertyParserHelpers::ConsumeIdent(range)
-             : ConsumeSimplifiedDefaultPosition(range, is_position_keyword);
-}
-
 CSSValue* ConsumeContentDistributionOverflowPosition(
     CSSParserTokenRange& range,
     IsPositionKeyword is_position_keyword) {
@@ -624,35 +602,6 @@ CSSValue* ConsumeContentDistributionOverflowPosition(
   if (is_position_keyword(range.Peek().Id())) {
     return CSSContentDistributionValue::Create(
         CSSValueInvalid, range.ConsumeIncludingWhitespace().Id(), overflow);
-  }
-
-  return nullptr;
-}
-
-CSSValue* ConsumeSimplifiedContentPosition(
-    CSSParserTokenRange& range,
-    IsPositionKeyword is_position_keyword) {
-  DCHECK(is_position_keyword);
-  CSSValueID id = range.Peek().Id();
-  if (CSSPropertyParserHelpers::IdentMatches<CSSValueNormal>(id) ||
-      is_position_keyword(id)) {
-    return CSSContentDistributionValue::Create(
-        CSSValueInvalid, range.ConsumeIncludingWhitespace().Id(),
-        CSSValueInvalid);
-  }
-
-  if (IsBaselineKeyword(id)) {
-    CSSValue* baseline = ConsumeBaselineKeyword(range);
-    if (!baseline)
-      return nullptr;
-    return CSSContentDistributionValue::Create(
-        CSSValueInvalid, GetBaselineKeyword(*baseline), CSSValueInvalid);
-  }
-
-  if (IsContentDistributionKeyword(id)) {
-    return CSSContentDistributionValue::Create(
-        range.ConsumeIncludingWhitespace().Id(), CSSValueInvalid,
-        CSSValueInvalid);
   }
 
   return nullptr;
@@ -2421,41 +2370,6 @@ CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
   if (angle)
     list->Append(*angle);
   return list;
-}
-
-bool ConsumePlaceAlignment(CSSParserTokenRange& range,
-                           ConsumePlaceAlignmentValue consume_alignment_value,
-                           CSSValue*& align_value,
-                           CSSValue*& justify_value) {
-  DCHECK(consume_alignment_value);
-  DCHECK(!align_value);
-  DCHECK(!justify_value);
-
-  bool is_baseline = IsBaselineKeyword(range.Peek().Id());
-  bool is_content_alignment =
-      consume_alignment_value == ConsumeSimplifiedContentPosition;
-  align_value = consume_alignment_value(range, is_content_alignment
-                                                   ? IsContentPositionKeyword
-                                                   : IsSelfPositionKeyword);
-  if (!align_value)
-    return false;
-
-  // justify-content property does not allow the <baseline-position> values.
-  if (is_content_alignment) {
-    if (range.AtEnd() && is_baseline)
-      return false;
-    if (IsBaselineKeyword(range.Peek().Id()))
-      return false;
-  }
-
-  justify_value = range.AtEnd()
-                      ? align_value
-                      : consume_alignment_value(
-                            range, is_content_alignment
-                                       ? IsContentPositionOrLeftOrRightKeyword
-                                       : IsSelfPositionOrLeftOrRightKeyword);
-
-  return justify_value && range.AtEnd();
 }
 
 bool ConsumeRadii(CSSValue* horizontal_radii[4],
