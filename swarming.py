@@ -1368,7 +1368,7 @@ def CMDcollect(parser, args):
     except (KeyError, TypeError):
       parser.error('Failed to process %s' % options.json)
     if not options.timeout:
-      options.timeout = 0
+      options.timeout = 0.
       # Take in account all the task slices.
       offset = 0
       for s in data['request']['task_slices']:
@@ -1377,7 +1377,7 @@ def CMDcollect(parser, args):
         if m > options.timeout:
           options.timeout = m
         offset += s['expiration_secs']
-      options.timeout += 10
+      options.timeout += 10.
   else:
     valid = frozenset('0123456789abcdef')
     if any(not valid.issuperset(task_id) for task_id in args):
