@@ -48,6 +48,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/view_type_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -313,9 +314,10 @@ EasyUnlockPrivateShowErrorBubbleFunction::
 
 ExtensionFunction::ResponseAction
 EasyUnlockPrivateShowErrorBubbleFunction::Run() {
-  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
-  if (!web_contents)
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents || GetViewType(web_contents) != VIEW_TYPE_APP_WINDOW) {
     return RespondNow(Error("A foreground app window is required."));
+  }
 
   std::unique_ptr<easy_unlock_private::ShowErrorBubble::Params> params(
       easy_unlock_private::ShowErrorBubble::Params::Create(*args_));
