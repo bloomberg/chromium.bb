@@ -292,6 +292,11 @@ public class BottomSheet extends FrameLayout
          */
         @ContentPriority
         int getPriority();
+
+        /**
+         * @return Whether swiping the sheet down hard enough will cause the sheet to be dismissed.
+         */
+        boolean swipeToDismissEnabled();
     }
 
     /**
@@ -709,14 +714,14 @@ public class BottomSheet extends FrameLayout
 
     @Override
     public float getMinOffsetPx() {
-        return (flingToHideEnabled() ? getHiddenRatio() : getPeekRatio()) * mContainerHeight;
+        return (swipeToDismissEnabled() ? getHiddenRatio() : getPeekRatio()) * mContainerHeight;
     }
 
     /**
      * @return Whether flinging down hard enough will close the sheet.
      */
-    private boolean flingToHideEnabled() {
-        return true;
+    private boolean swipeToDismissEnabled() {
+        return mSheetContent != null ? mSheetContent.swipeToDismissEnabled() : true;
     }
 
     /**
@@ -724,7 +729,7 @@ public class BottomSheet extends FrameLayout
      *         close the sheet or peek it.
      */
     private @SheetState int getMinSwipableSheetState() {
-        return flingToHideEnabled() ? SHEET_STATE_HIDDEN : SHEET_STATE_PEEK;
+        return swipeToDismissEnabled() ? SHEET_STATE_HIDDEN : SHEET_STATE_PEEK;
     }
 
     @Override
