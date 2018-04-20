@@ -299,8 +299,15 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
   }
 
   if (!success) {
-    if (result == webrtc::DesktopCapturer::Result::ERROR_PERMANENT)
+    if (result == webrtc::DesktopCapturer::Result::ERROR_PERMANENT) {
+      if (capturer_type_ == DesktopMediaID::TYPE_SCREEN) {
+        IncrementDesktopCaptureCounter(SCREEN_CAPTURER_PERMANENT_ERROR);
+      } else {
+        IncrementDesktopCaptureCounter(WINDOW_CAPTURER_PERMANENT_ERROR);
+      }
+
       client_->OnError(FROM_HERE, "The desktop capturer has failed.");
+    }
     return;
   }
   DCHECK(frame);

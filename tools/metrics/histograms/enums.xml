@@ -9047,6 +9047,8 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="Screen capturer created without audio capturer."/>
   <int value="11" label="Tab capturer created together with audio capturer."/>
   <int value="12" label="Tab capturer created without audio capturer."/>
+  <int value="13" label="Screen capturer permanent error."/>
+  <int value="14" label="Window capturer permanent error."/>
 </enum>
 
 <enum name="DesktopIOSPromotionDismissalReason">
