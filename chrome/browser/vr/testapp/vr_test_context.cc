@@ -683,7 +683,6 @@ void VrTestContext::CycleOrigin() {
 RenderInfo VrTestContext::GetRenderInfo() const {
   RenderInfo render_info;
   render_info.head_pose = head_pose_;
-  render_info.surface_texture_size = window_size_;
   render_info.left_eye_model.viewport = gfx::Rect(window_size_);
   render_info.left_eye_model.view_matrix = head_pose_;
   render_info.left_eye_model.proj_matrix = ProjectionMatrix();

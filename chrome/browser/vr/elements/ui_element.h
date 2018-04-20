@@ -179,6 +179,9 @@ class UiElement : public cc::AnimationTarget {
   // If true, the object has a non-zero opacity.
   bool IsVisible() const;
 
+  // If true, the object is both visible and opaque.
+  bool IsVisibleAndOpaque() const;
+
   // For convenience, sets opacity to |opacity_when_visible_|.
   virtual void SetVisible(bool visible);
   virtual void SetVisibleImmediately(bool visible);
