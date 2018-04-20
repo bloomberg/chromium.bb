@@ -61,8 +61,6 @@ std::string BuildForceInstallPolicyValue(const char* extension_id,
 
 class ExtensionManagementTest : public ExtensionBrowserTest {
  public:
-  bool ShouldAllowLegacyExtensionManifests() override { return true; }
-
   void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
