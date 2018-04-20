@@ -22,7 +22,7 @@
 #include "base/values.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_response_body_drainer.h"
-#include "net/http/http_stream_factory.h"
+#include "net/http/http_stream_factory_impl.h"
 #include "net/http/url_security_manager.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/chromium/quic_crypto_client_stream_factory.h"
@@ -237,7 +237,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                          params.spdy_session_max_recv_window_size,
                          AddDefaultHttp2Settings(params.http2_settings),
                          params.time_func),
-      http_stream_factory_(std::make_unique<HttpStreamFactory>(this)),
+      http_stream_factory_(std::make_unique<HttpStreamFactoryImpl>(this)),
       params_(params),
       context_(context) {
   DCHECK(proxy_resolution_service_);
