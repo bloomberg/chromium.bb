@@ -62,7 +62,8 @@ TEST_F(SyncTabNodePoolTest, TabNodeIdIncreases) {
     ASSERT_EQ(TabNodePool::kInvalidTabNodeID,
               pool_.GetTabNodeIdFromTabId(tab_id));
     EXPECT_NE(TabNodePool::kInvalidTabNodeID,
-              pool_.AssociateWithFreeTabNode(tab_id));
+              pool_.AssociateWithFreeTabNode(tab_id,
+                                             /*reused_existing_tab=*/nullptr));
     EXPECT_EQ(kTabNodeId3, GetMaxUsedTabNodeId());
   }
   pool_.CleanupTabNodes(&deleted_node_ids);
@@ -145,7 +146,8 @@ TEST_F(SyncTabNodePoolTest, ReassociateThenFree) {
     const SessionID tab_id = SessionID::FromSerializedValue(i);
     EXPECT_EQ(TabNodePool::kInvalidTabNodeID,
               pool_.GetTabNodeIdFromTabId(tab_id));
-    sync_ids.push_back(pool_.AssociateWithFreeTabNode(tab_id));
+    sync_ids.push_back(pool_.AssociateWithFreeTabNode(
+        tab_id, /*reused_existing_tab=*/nullptr));
   }
 
   EXPECT_TRUE(pool_.Empty());
@@ -164,14 +166,16 @@ TEST_F(SyncTabNodePoolTest, AddGet) {
   EXPECT_EQ(2U, pool_.Capacity());
   ASSERT_EQ(TabNodePool::kInvalidTabNodeID,
             pool_.GetTabNodeIdFromTabId(kTabId1));
-  EXPECT_EQ(5, pool_.AssociateWithFreeTabNode(kTabId1));
+  EXPECT_EQ(5, pool_.AssociateWithFreeTabNode(kTabId1,
+                                              /*reused_existing_tab=*/nullptr));
   EXPECT_FALSE(pool_.Empty());
   EXPECT_FALSE(pool_.Full());
   EXPECT_EQ(2U, pool_.Capacity());
   ASSERT_EQ(TabNodePool::kInvalidTabNodeID,
             pool_.GetTabNodeIdFromTabId(kTabId2));
   // 5 is now used, should return 10.
-  EXPECT_EQ(10, pool_.AssociateWithFreeTabNode(kTabId2));
+  EXPECT_EQ(10, pool_.AssociateWithFreeTabNode(
+                    kTabId2, /*reused_existing_tab=*/nullptr));
 }
 
 TEST_F(SyncTabNodePoolTest, AssociateWithFreeTabNode) {
@@ -179,12 +183,18 @@ TEST_F(SyncTabNodePoolTest, AssociateWithFreeTabNode) {
             pool_.GetTabNodeIdFromTabId(kTabId1));
   ASSERT_EQ(TabNodePool::kInvalidTabNodeID,
             pool_.GetTabNodeIdFromTabId(kTabId2));
-  EXPECT_EQ(0, pool_.AssociateWithFreeTabNode(kTabId1));
+  bool reused_existing_tab = false;
+  EXPECT_EQ(0, pool_.AssociateWithFreeTabNode(kTabId1, &reused_existing_tab));
+  EXPECT_FALSE(reused_existing_tab);
   EXPECT_EQ(0, pool_.GetTabNodeIdFromTabId(kTabId1));
   ASSERT_EQ(TabNodePool::kInvalidTabNodeID,
             pool_.GetTabNodeIdFromTabId(kTabId2));
-  EXPECT_EQ(1, pool_.AssociateWithFreeTabNode(kTabId2));
+  EXPECT_EQ(1, pool_.AssociateWithFreeTabNode(kTabId2, &reused_existing_tab));
+  EXPECT_FALSE(reused_existing_tab);
   EXPECT_EQ(1, pool_.GetTabNodeIdFromTabId(kTabId2));
+  pool_.FreeTab(kTabId1);
+  EXPECT_EQ(0, pool_.AssociateWithFreeTabNode(kTabId3, &reused_existing_tab));
+  EXPECT_TRUE(reused_existing_tab);
 }
 
 TEST_F(SyncTabNodePoolTest, TabPoolFreeNodeLimits) {
@@ -195,8 +205,8 @@ TEST_F(SyncTabNodePoolTest, TabPoolFreeNodeLimits) {
   // kFreeNodesLowWatermark.
   std::vector<int> used_sync_ids;
   for (size_t i = 1; i <= TabNodePool::kFreeNodesHighWatermark + 1; ++i) {
-    used_sync_ids.push_back(
-        pool_.AssociateWithFreeTabNode(SessionID::FromSerializedValue(i)));
+    used_sync_ids.push_back(pool_.AssociateWithFreeTabNode(
+        SessionID::FromSerializedValue(i), /*reused_existing_tab=*/nullptr));
   }
 
   // Free all except one node.

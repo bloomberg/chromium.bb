@@ -136,7 +136,9 @@ class SyncedSessionTracker {
   // tag is passed. The tab pool is only updated with new tab nodes when they're
   // associated with a tab id (see ReassociateLocalTabNode or
   // GetTabNodeFromLocalTabId).
-  void OnTabNodeSeen(const std::string& session_tag, int tab_node_id);
+  void OnTabNodeSeen(const std::string& session_tag,
+                     int tab_node_id,
+                     SessionID tab_id);
 
   // Returns a pointer to the SessionTab object associated with
   // |tab_id| for the session specified with |session_tag|.
@@ -179,7 +181,13 @@ class SyncedSessionTracker {
 
   // Returns the tab node ID for |tab_id| if an existing tab node was found, or
   // kInvalidTabNodeID otherwise.
-  int LookupTabNodeFromLocalTabId(SessionID tab_id) const;
+  int LookupTabNodeFromTabId(const std::string& session_tag,
+                             SessionID tab_id) const;
+
+  // Returns the tab ID associated to |tab_node_id| or SessionID::InvalidValue()
+  // if not associated.
+  SessionID LookupTabIdFromTabNodeId(const std::string& session_tag,
+                                     int tab_node_id) const;
 
   // Fills |tab_node_id| with a tab node for |tab_id|. Returns true if an
   // existing tab node was found, false if there was none and one had to be
@@ -189,10 +197,6 @@ class SyncedSessionTracker {
   // Returns whether |tab_node_id| refers to a valid tab node that is associated
   // with a tab.
   bool IsLocalTabNodeAssociated(int tab_node_id) const;
-
-  // Returns the local tab ID associated to |tab_node_id| or
-  // SessionID::InvalidValue() if not associated.
-  SessionID LookupLocalTabIdFromTabNodeId(int tab_node_id) const;
 
   // Reassociates the tab denoted by |tab_node_id| with a new tab id, preserving
   // any previous SessionTab object the node was associated with. This is useful
@@ -228,7 +232,6 @@ class SyncedSessionTracker {
   bool IsTabUnmappedForTesting(SessionID tab_id);
 
  private:
-  friend class SessionsSyncManagerTest;
   friend class SyncedSessionTrackerTest;
 
   struct TrackedSession {
@@ -254,15 +257,9 @@ class SyncedSessionTracker {
     std::map<SessionID, std::unique_ptr<sessions::SessionTab>> unmapped_tabs;
     std::map<SessionID, std::unique_ptr<SyncedSessionWindow>> unmapped_windows;
 
-    // A tab node id is part of the identifier for the sync tab objects. Tab
-    // node ids are not used for interacting with the model/browser tabs.
-    // However, when when we want to delete a foreign session, we use these
-    // values to inform sync which tabs to delete. We are extracting these tab
-    // node ids from individual session (tab, not header) specifics, but store
-    // them here during runtime. We do this because tab node ids may be reused
-    // for different tabs, and tracking which tab id is currently associated
-    // with each tab node id is both difficult and unnecessary.
-    std::set<int> tab_node_ids;
+    // Mappings between tab node IDs and tab IDs. For the local session, it also
+    // knows about available sync nodes associated with this session.
+    TabNodePool tab_node_pool;
   };
 
   // LookupTrackedSession() returns null if the session tag is unknown.
@@ -289,9 +286,6 @@ class SyncedSessionTracker {
   // sessions.
   std::string local_session_tag_;
 
-  // Pool of used/available sync nodes associated with local tabs.
-  TabNodePool local_tab_pool_;
-
   DISALLOW_COPY_AND_ASSIGN(SyncedSessionTracker);
 };
 
@@ -300,6 +294,25 @@ class SyncedSessionTracker {
 void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
                                 base::Time modification_time,
                                 SyncedSessionTracker* tracker);
+
+// Generates all sync entities represented by the tracker. Instead of returning
+// protos by value, |output_cb| is run for each serialized entity.
+void SerializeTrackerToSpecifics(
+    const SyncedSessionTracker& tracker,
+    const base::RepeatingCallback<void(const std::string& session_name,
+                                       sync_pb::SessionSpecifics* specifics)>&
+        output_cb);
+
+// Same as above but generates a subset of sync entities represented by the
+// tracker, as selected by |session_tag_to_node_ids|. Unknown session tags or
+// node IDs will be ignored. kInvalidTabNodeID can be used to request header
+// entities.
+void SerializePartialTrackerToSpecifics(
+    const SyncedSessionTracker& tracker,
+    const std::map<std::string, std::set<int>>& session_tag_to_node_ids,
+    const base::RepeatingCallback<void(const std::string& session_name,
+                                       sync_pb::SessionSpecifics* specifics)>&
+        output_cb);
 
 }  // namespace sync_sessions
 

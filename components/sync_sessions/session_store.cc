@@ -556,91 +556,45 @@ SessionStore::SessionStore(
 
 SessionStore::~SessionStore() {}
 
-std::unique_ptr<syncer::DataBatch> SessionStore::GetLocalSessionDataForKeys(
+std::unique_ptr<syncer::DataBatch> SessionStore::GetSessionDataForKeys(
     const std::vector<std::string>& storage_keys) const {
-  auto batch = std::make_unique<syncer::MutableDataBatch>();
-
-  const SyncedSession* local_session = session_tracker_.LookupLocalSession();
-  DCHECK(local_session);
-  DCHECK_EQ(local_session->session_tag, local_session_info_.session_tag);
-
+  // Decode |storage_keys| into a map that can be fed to
+  // SerializePartialTrackerToSpecifics().
+  std::map<std::string, std::set<int>> session_tag_to_node_ids;
   for (const std::string& storage_key : storage_keys) {
     std::string session_tag;
     int tab_node_id;
     bool success = DecodeStorageKey(storage_key, &session_tag, &tab_node_id);
     DCHECK(success);
-
-    // During custom passphrase encryption, the processor can ask us about
-    // foreign entities too. We just drop those, and assume that the browser
-    // that owns them will take care of encryption.
-    if (session_tag != local_session->session_tag) {
-      continue;
-    }
-
-    // Header entity.
-    if (tab_node_id == TabNodePool::kInvalidTabNodeID) {
-      sync_pb::SessionSpecifics header_pb;
-      header_pb.set_session_tag(local_session->session_tag);
-      local_session->ToSessionHeaderProto().Swap(header_pb.mutable_header());
-      DCHECK_EQ(storage_key, GetStorageKey(header_pb));
-      batch->Put(storage_key,
-                 MoveToEntityData(local_session_info_.client_name, &header_pb));
-      continue;
-    }
-
-    // Tab entities.
-    const SessionID tab_id =
-        session_tracker_.LookupLocalTabIdFromTabNodeId(tab_node_id);
-    DCHECK(tab_id.is_valid());
-
-    const sessions::SessionTab* tab = session_tracker_.LookupSessionTab(
-        local_session_info_.session_tag, tab_id);
-    DCHECK(tab);
-
-    sync_pb::SessionSpecifics tab_pb;
-    tab_pb.set_session_tag(local_session->session_tag);
-    tab_pb.set_tab_node_id(tab_node_id);
-    tab->ToSyncData().Swap(tab_pb.mutable_tab());
-    DCHECK_EQ(storage_key, GetStorageKey(tab_pb));
-    batch->Put(storage_key,
-               MoveToEntityData(local_session_info_.client_name, &tab_pb));
+    session_tag_to_node_ids[session_tag].insert(tab_node_id);
   }
+  // Run the actual serialization into a data batch.
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
+  SerializePartialTrackerToSpecifics(
+      session_tracker_, session_tag_to_node_ids,
+      base::BindRepeating(
+          [](syncer::MutableDataBatch* batch, const std::string& session_name,
+             sync_pb::SessionSpecifics* specifics) {
+            // Local variable used to avoid assuming argument evaluation order.
+            const std::string storage_key = GetStorageKey(*specifics);
+            batch->Put(storage_key, MoveToEntityData(session_name, specifics));
+          },
+          batch.get()));
   return batch;
 }
 
-std::unique_ptr<syncer::DataBatch> SessionStore::GetAllLocalSessionData()
-    const {
+std::unique_ptr<syncer::DataBatch> SessionStore::GetAllSessionData() const {
   auto batch = std::make_unique<syncer::MutableDataBatch>();
-  const SyncedSession* session = session_tracker_.LookupLocalSession();
-  DCHECK(session);
-
-  // Return header entity.
-  sync_pb::SessionSpecifics header_pb;
-  header_pb.set_session_tag(session->session_tag);
-  session->ToSessionHeaderProto().Swap(header_pb.mutable_header());
-  const std::string header_storage_key = GetStorageKey(header_pb);
-  batch->Put(header_storage_key,
-             MoveToEntityData(session->session_name, &header_pb));
-
-  // Return mapped tabs.
-  for (const auto& window_pair : session->windows) {
-    for (const std::unique_ptr<sessions::SessionTab>& tab :
-         window_pair.second->wrapped_window.tabs) {
-      int tab_node_id =
-          session_tracker_.LookupTabNodeFromLocalTabId(tab->tab_id);
-      DCHECK_NE(TabNodePool::kInvalidTabNodeID, tab_node_id);
-
-      sync_pb::SessionSpecifics tab_pb;
-      tab_pb.set_tab_node_id(tab_node_id);
-      *tab_pb.mutable_tab() = tab->ToSyncData();
-      tab_pb.set_session_tag(session->session_tag);
-      const std::string tab_storage_key = GetStorageKey(tab_pb);
-      batch->Put(tab_storage_key,
-                 MoveToEntityData(session->session_name, &tab_pb));
-    }
-  }
-
-  // TODO(crbug.com/681921) Return unmapped tabs.
+  SerializeTrackerToSpecifics(
+      session_tracker_,
+      base::BindRepeating(
+          [](syncer::MutableDataBatch* batch, const std::string& session_name,
+             sync_pb::SessionSpecifics* specifics) {
+            // Local variable used to avoid assuming argument evaluation order.
+            const std::string storage_key = GetStorageKey(*specifics);
+            batch->Put(storage_key, MoveToEntityData(session_name, specifics));
+          },
+          batch.get()));
   return batch;
 }
 

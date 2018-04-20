@@ -214,10 +214,6 @@ class SessionsSyncManagerTest : public testing::Test {
     return local_device_->GetLocalDeviceInfo();
   }
 
-  TabNodePool* GetTabPool() {
-    return &manager()->session_tracker_.local_tab_pool_;
-  }
-
   SessionsSyncManager* manager() { return manager_.get(); }
   SessionSyncTestHelper* helper() { return &helper_; }
   LocalDeviceInfoProviderMock* local_device() { return local_device_.get(); }
@@ -1016,11 +1012,13 @@ TEST_F(SessionsSyncManagerTest, ProcessRemoteDeleteOfLocalSession) {
   VerifyLocalHeaderChange(out[3], 1, 1);
 
   // Verify TabLinks.
-  EXPECT_EQ(1U, GetTabPool()->Capacity());
-  EXPECT_TRUE(GetTabPool()->Empty());
   int tab_node_id = out[2].sync_data().GetSpecifics().session().tab_node_id();
   int tab_id = out[2].sync_data().GetSpecifics().session().tab().tab_id();
-  EXPECT_EQ(tab_id, GetTabPool()->GetTabIdFromTabNodeId(tab_node_id).id());
+  EXPECT_EQ(tab_id, manager()
+                        ->session_tracker_
+                        .LookupTabIdFromTabNodeId(
+                            manager()->current_machine_tag(), tab_node_id)
+                        .id());
 }
 
 // Test that receiving a session delete from sync removes the session

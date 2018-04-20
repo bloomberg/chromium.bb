@@ -199,7 +199,7 @@ const sessions::SessionTab* SyncedSessionTracker::LookupSessionTab(
 std::set<int> SyncedSessionTracker::LookupTabNodeIds(
     const std::string& session_tag) const {
   const TrackedSession* session = LookupTrackedSession(session_tag);
-  return session ? session->tab_node_ids : std::set<int>();
+  return session ? session->tab_node_pool.GetAllTabNodeIds() : std::set<int>();
 }
 
 std::vector<const sessions::SessionTab*>
@@ -273,7 +273,7 @@ void SyncedSessionTracker::DeleteForeignTab(const std::string& session_tag,
   DCHECK_NE(local_session_tag_, session_tag);
   TrackedSession* session = LookupTrackedSession(session_tag);
   if (session)
-    session->tab_node_ids.erase(tab_node_id);
+    session->tab_node_pool.DeleteTabNode(tab_node_id);
 }
 
 const SyncedSessionTracker::TrackedSession*
@@ -437,9 +437,15 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
 }
 
 void SyncedSessionTracker::OnTabNodeSeen(const std::string& session_tag,
-                                         int tab_node_id) {
-  if (tab_node_id != TabNodePool::kInvalidTabNodeID) {
-    GetTrackedSession(session_tag)->tab_node_ids.insert(tab_node_id);
+                                         int tab_node_id,
+                                         SessionID tab_id) {
+  // TODO(mastiz): Revisit if the exception for |local_session_tag_| can be
+  // avoided and treat all sessions equally, which ideally involves merging this
+  // function with ReassociateLocalTab().
+  if (session_tag != local_session_tag_ &&
+      tab_node_id != TabNodePool::kInvalidTabNodeID) {
+    GetTrackedSession(session_tag)
+        ->tab_node_pool.ReassociateTabNode(tab_node_id, tab_id);
   }
 }
 
@@ -489,53 +495,53 @@ void SyncedSessionTracker::CleanupLocalTabs(std::set<int>* deleted_node_ids) {
   DCHECK(!local_session_tag_.empty());
   TrackedSession* session = GetTrackedSession(local_session_tag_);
   for (const auto& tab_pair : session->unmapped_tabs)
-    local_tab_pool_.FreeTab(tab_pair.first);
+    session->tab_node_pool.FreeTab(tab_pair.first);
   CleanupSessionImpl(local_session_tag_);
-  local_tab_pool_.CleanupTabNodes(deleted_node_ids);
-  for (int tab_node_id : *deleted_node_ids) {
-    session->tab_node_ids.erase(tab_node_id);
-  }
+  session->tab_node_pool.CleanupTabNodes(deleted_node_ids);
 }
 
-int SyncedSessionTracker::LookupTabNodeFromLocalTabId(SessionID tab_id) const {
-  return local_tab_pool_.GetTabNodeIdFromTabId(tab_id);
+int SyncedSessionTracker::LookupTabNodeFromTabId(const std::string& session_tag,
+                                                 SessionID tab_id) const {
+  const TrackedSession* session = LookupTrackedSession(session_tag);
+  DCHECK(session);
+  return session->tab_node_pool.GetTabNodeIdFromTabId(tab_id);
+}
+
+SessionID SyncedSessionTracker::LookupTabIdFromTabNodeId(
+    const std::string& session_tag,
+    int tab_node_id) const {
+  const TrackedSession* session = LookupTrackedSession(session_tag);
+  DCHECK(session);
+  return session->tab_node_pool.GetTabIdFromTabNodeId(tab_node_id);
 }
 
 bool SyncedSessionTracker::GetTabNodeFromLocalTabId(SessionID tab_id,
                                                     int* tab_node_id) {
   DCHECK(!local_session_tag_.empty());
+  TrackedSession* session = GetTrackedSession(local_session_tag_);
+
   // Ensure a placeholder SessionTab is in place, if not already. Although we
   // don't need a SessionTab to fulfill this request, this forces the creation
   // of one if it doesn't already exist. This helps to make sure we're tracking
-  // this |tab_id| if |local_tab_pool_| is, and everyone's data structures are
-  // kept in sync and as consistent as possible.
+  // this |tab_id| if TabNodePool is, and everyone's data structures are kept in
+  // sync and as consistent as possible.
   GetTab(local_session_tag_, tab_id);  // Ignore result.
 
-  *tab_node_id = local_tab_pool_.GetTabNodeIdFromTabId(tab_id);
+  *tab_node_id = session->tab_node_pool.GetTabNodeIdFromTabId(tab_id);
   if (*tab_node_id != TabNodePool::kInvalidTabNodeID) {
-    DCHECK_NE(0U, GetTrackedSession(local_session_tag_)
-                      ->tab_node_ids.count(*tab_node_id));
     return true;  // Reused existing tab.
   }
 
   // Could not reuse an existing tab so create a new one.
-  *tab_node_id = local_tab_pool_.AssociateWithFreeTabNode(tab_id);
+  bool reused_existing_tab = false;
+  *tab_node_id = session->tab_node_pool.AssociateWithFreeTabNode(
+      tab_id, &reused_existing_tab);
   DCHECK_NE(TabNodePool::kInvalidTabNodeID, *tab_node_id);
-  // AssociateWithFreeTabNode() might have created a new tab node if none could
-  // be reused so make sure we register it in |tab_node_ids|.
-  bool reused_existing_tab = !GetTrackedSession(local_session_tag_)
-                                  ->tab_node_ids.insert(*tab_node_id)
-                                  .second;
   return reused_existing_tab;
 }
 
 bool SyncedSessionTracker::IsLocalTabNodeAssociated(int tab_node_id) const {
-  return local_tab_pool_.GetTabIdFromTabNodeId(tab_node_id).is_valid();
-}
-
-SessionID SyncedSessionTracker::LookupLocalTabIdFromTabNodeId(
-    int tab_node_id) const {
-  return local_tab_pool_.GetTabIdFromTabNodeId(tab_node_id);
+  return LookupTabIdFromTabNodeId(local_session_tag_, tab_node_id).is_valid();
 }
 
 void SyncedSessionTracker::ReassociateLocalTab(int tab_node_id,
@@ -547,12 +553,13 @@ void SyncedSessionTracker::ReassociateLocalTab(int tab_node_id,
   TrackedSession* session = LookupTrackedSession(local_session_tag_);
   DCHECK(session);
 
-  SessionID old_tab_id = local_tab_pool_.GetTabIdFromTabNodeId(tab_node_id);
+  SessionID old_tab_id =
+      session->tab_node_pool.GetTabIdFromTabNodeId(tab_node_id);
   if (new_tab_id == old_tab_id) {
     return;
   }
 
-  local_tab_pool_.ReassociateTabNode(tab_node_id, new_tab_id);
+  session->tab_node_pool.ReassociateTabNode(tab_node_id, new_tab_id);
 
   sessions::SessionTab* tab_ptr = nullptr;
 
@@ -621,12 +628,10 @@ void SyncedSessionTracker::ReassociateLocalTab(int tab_node_id,
 
   // Add the tab back into the tab map with the new id.
   session->synced_tab_map[new_tab_id] = tab_ptr;
-  session->tab_node_ids.insert(tab_node_id);
 }
 
 void SyncedSessionTracker::Clear() {
   session_map_.clear();
-  local_tab_pool_.Clear();
   local_session_tag_.clear();
 }
 
@@ -689,7 +694,7 @@ void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
     // is currently kInvalidTabNodeID.
     //
     // In both cases, we can safely throw it into the set of node ids.
-    tracker->OnTabNodeSeen(session_tag, specifics.tab_node_id());
+    tracker->OnTabNodeSeen(session_tag, specifics.tab_node_id(), tab_id);
     sessions::SessionTab* tab = tracker->GetTab(session_tag, tab_id);
     if (!tab->timestamp.is_null() && tab->timestamp > modification_time) {
       DVLOG(1) << "Ignoring " << session_tag << "'s session tab " << tab_id
@@ -707,6 +712,85 @@ void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
   } else {
     LOG(WARNING) << "Ignoring session node with missing header/tab "
                  << "fields and tag " << session_tag << ".";
+  }
+}
+
+void SerializeTrackerToSpecifics(
+    const SyncedSessionTracker& tracker,
+    const base::RepeatingCallback<void(const std::string& session_name,
+                                       sync_pb::SessionSpecifics* specifics)>&
+        output_cb) {
+  std::map<std::string, std::set<int>> session_tag_to_node_ids;
+  for (const SyncedSession* session :
+       tracker.LookupAllSessions(SyncedSessionTracker::RAW)) {
+    // Request all tabs.
+    session_tag_to_node_ids[session->session_tag] =
+        tracker.LookupTabNodeIds(session->session_tag);
+    // Request the header too.
+    session_tag_to_node_ids[session->session_tag].insert(
+        TabNodePool::kInvalidTabNodeID);
+  }
+  SerializePartialTrackerToSpecifics(tracker, session_tag_to_node_ids,
+                                     output_cb);
+}
+
+void SerializePartialTrackerToSpecifics(
+    const SyncedSessionTracker& tracker,
+    const std::map<std::string, std::set<int>>& session_tag_to_node_ids,
+    const base::RepeatingCallback<void(const std::string& session_name,
+                                       sync_pb::SessionSpecifics* specifics)>&
+        output_cb) {
+  for (const auto& session_entry : session_tag_to_node_ids) {
+    const std::string& session_tag = session_entry.first;
+    const SyncedSession* session = tracker.LookupSession(session_tag);
+    if (!session) {
+      // Unknown session.
+      continue;
+    }
+
+    const std::set<int> known_tab_node_ids =
+        tracker.LookupTabNodeIds(session_tag);
+
+    for (int tab_node_id : session_entry.second) {
+      // Header entity.
+      if (tab_node_id == TabNodePool::kInvalidTabNodeID) {
+        sync_pb::SessionSpecifics header_pb;
+        header_pb.set_session_tag(session_tag);
+        session->ToSessionHeaderProto().Swap(header_pb.mutable_header());
+        output_cb.Run(session->session_name, &header_pb);
+        continue;
+      }
+
+      // Check if |tab_node_id| is known by the tracker.
+      if (known_tab_node_ids.count(tab_node_id) == 0) {
+        continue;
+      }
+
+      // Tab entities.
+      const SessionID tab_id =
+          tracker.LookupTabIdFromTabNodeId(session_tag, tab_node_id);
+      if (tab_id.is_valid()) {
+        // Associated tab node.
+        const sessions::SessionTab* tab =
+            tracker.LookupSessionTab(session_tag, tab_id);
+        DCHECK(tab);
+
+        sync_pb::SessionSpecifics tab_pb;
+        tab_pb.set_session_tag(session_tag);
+        tab_pb.set_tab_node_id(tab_node_id);
+        tab->ToSyncData().Swap(tab_pb.mutable_tab());
+        output_cb.Run(session->session_name, &tab_pb);
+        continue;
+      }
+
+      // Create dummy tab entities for free nodes (i.e. ones that are known by
+      // the tracker but not associated to a tab ID).
+      sync_pb::SessionSpecifics tab_pb;
+      tab_pb.set_tab_node_id(tab_node_id);
+      tab_pb.set_session_tag(session_tag);
+      tab_pb.mutable_tab();
+      output_cb.Run(session->session_name, &tab_pb);
+    }
   }
 }
 
