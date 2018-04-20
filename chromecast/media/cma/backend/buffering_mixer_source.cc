@@ -215,15 +215,18 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
     LOG(INFO) << "End of stream for " << device_id_ << " (" << this << ")";
     locked->state_ = State::kGotEos;
   } else {
-    locked->queued_frames_ +=
-        data->data_size() / (num_channels_ * sizeof(float));
+    const int frames = data->data_size() / (num_channels_ * sizeof(float));
+    locked->queued_frames_ += frames;
     locked->queue_.push_back(std::move(data));
   }
 
-  RenderingDelay delay = locked->mixer_rendering_delay_;
-  delay.delay_microseconds += SamplesToMicroseconds(
-      locked->queued_frames_ + locked->extra_delay_frames_,
-      input_samples_per_second_);
+  RenderingDelay delay;
+  if (locked->started_) {
+    delay = locked->mixer_rendering_delay_;
+    delay.delay_microseconds += SamplesToMicroseconds(
+        locked->queued_frames_ + locked->extra_delay_frames_,
+        input_samples_per_second_);
+  }
   return delay;
 }
 
