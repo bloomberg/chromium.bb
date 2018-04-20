@@ -16,7 +16,7 @@ LayoutNGTableCell::LayoutNGTableCell(Element* element)
 void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
-  SetOverrideLogicalContentWidth(
+  SetOverrideContentLogicalWidth(
       (LogicalWidth() - BorderAndPaddingLogicalWidth()).ClampNegativeToZero());
 
   scoped_refptr<NGConstraintSpace> constraint_space =

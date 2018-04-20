@@ -189,14 +189,14 @@ void LayoutTableCell::ComputePreferredLogicalWidths() {
   // notional height on the cell, such as can happen when a percent sized image
   // scales up its width to match the available height. Setting a zero override
   // height prevents this from happening.
-  LayoutUnit content_height = HasOverrideLogicalContentHeight()
-                                  ? OverrideLogicalContentHeight()
+  LayoutUnit content_height = HasOverrideContentLogicalHeight()
+                                  ? OverrideContentLogicalHeight()
                                   : LayoutUnit(-1);
   if (content_height > -1)
-    SetOverrideLogicalContentHeight(LayoutUnit());
+    SetOverrideContentLogicalHeight(LayoutUnit());
   LayoutBlockFlow::ComputePreferredLogicalWidths();
   if (content_height > -1)
-    SetOverrideLogicalContentHeight(content_height);
+    SetOverrideContentLogicalHeight(content_height);
 
   if (GetNode() && Style()->AutoWrap()) {
     // See if nowrap was set.
@@ -347,10 +347,10 @@ LayoutUnit LayoutTableCell::PaddingRight() const {
                                             : LayoutUnit(result.ToInt());
 }
 
-void LayoutTableCell::SetOverrideLogicalContentHeightFromRowHeight(
+void LayoutTableCell::SetOverrideContentLogicalHeightFromRowHeight(
     LayoutUnit row_height) {
   ClearIntrinsicPadding();
-  SetOverrideLogicalContentHeight(
+  SetOverrideContentLogicalHeight(
       (row_height - CollapsedBorderAndCSSPaddingLogicalHeight())
           .ClampNegativeToZero());
 }

@@ -81,8 +81,8 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       container_style->GetWritingMode(), container_style->Direction());
 
   // Compute ContainingBlock logical size.
-  // OverrideContainingBlockLogicalWidth/Height are used by e.g. grid layout.
-  // Override sizes are padding box size, not border box, so we must add
+  // OverrideContainingBlockContentLogicalWidth/Height are used by e.g. grid
+  // layout. Override sizes are padding box size, not border box, so we must add
   // borders and scrollbars to compensate.
   NGBoxStrut borders_and_scrollbars =
       ComputeBorders(*constraint_space, *container_style) +
@@ -97,14 +97,14 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // object is really managed by legacy layout).
   LayoutUnit container_border_box_logical_width;
   LayoutUnit container_border_box_logical_height;
-  if (HasOverrideContainingBlockLogicalWidth()) {
+  if (HasOverrideContainingBlockContentLogicalWidth()) {
     container_border_box_logical_width =
         OverrideContainingBlockContentLogicalWidth() +
         borders_and_scrollbars.InlineSum();
   } else {
     container_border_box_logical_width = container->LogicalWidth();
   }
-  if (HasOverrideContainingBlockLogicalHeight()) {
+  if (HasOverrideContainingBlockContentLogicalHeight()) {
     container_border_box_logical_height =
         OverrideContainingBlockContentLogicalHeight() +
         borders_and_scrollbars.BlockSum();

@@ -293,12 +293,6 @@ class GridTrackSizingAlgorithmStrategy {
   void SetNeedsLayoutForChild(LayoutBox&) const;
 
   // Helper functions
-  static bool HasOverrideContainingBlockContentSizeForChild(
-      const LayoutBox& child,
-      GridTrackSizingDirection);
-  static LayoutUnit OverrideContainingBlockContentSizeForChild(
-      const LayoutBox& child,
-      GridTrackSizingDirection);
   static bool ShouldClearOverrideContainingBlockContentSizeForChild(
       const LayoutGrid&,
       const LayoutBox& child,
@@ -307,10 +301,6 @@ class GridTrackSizingAlgorithmStrategy {
       LayoutBox& child,
       GridTrackSizingDirection,
       LayoutUnit size);
-  static GridTrackSizingDirection FlowAwareDirectionForChild(
-      const LayoutGrid*,
-      const LayoutBox& child,
-      GridTrackSizingDirection);
 
   GridTrackSizingAlgorithm& algorithm_;
 

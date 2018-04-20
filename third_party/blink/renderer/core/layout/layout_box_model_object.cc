@@ -683,7 +683,7 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight()
       return false;
   }
   if (this_box && this_box->IsGridItem() &&
-      this_box->HasOverrideContainingBlockLogicalHeight())
+      this_box->HasOverrideContainingBlockContentLogicalHeight())
     return false;
   if (logical_height_length.IsAuto() &&
       !IsOutOfFlowPositionedWithImplicitHeight(this))

@@ -126,8 +126,8 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
 }
 
 void LayoutBox::WillBeDestroyed() {
-  ClearOverrideSize();
-  ClearContainingBlockOverrideSize();
+  ClearOverrideContentSize();
+  ClearOverrideContainingBlockContentSize();
 
   if (IsOutOfFlowPositioned())
     LayoutBlock::RemovePositionedObject(this);
@@ -316,7 +316,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   // change) but that should be harmless.
   if (IsOutOfFlowPositioned() && Parent() &&
       Parent()->StyleRef().IsDisplayFlexibleOrGridBox())
-    ClearOverrideSize();
+    ClearOverrideContentSize();
 
   if (LayoutMultiColumnSpannerPlaceholder* placeholder = SpannerPlaceholder())
     placeholder->LayoutObjectInFlowThreadStyleDidChange(old_style);
@@ -1377,73 +1377,73 @@ LayoutUnit LayoutBox::MaxPreferredLogicalWidth() const {
   return max_preferred_logical_width_;
 }
 
-bool LayoutBox::HasOverrideLogicalContentHeight() const {
-  return rare_data_ && rare_data_->override_logical_content_height_ != -1;
+bool LayoutBox::HasOverrideContentLogicalHeight() const {
+  return rare_data_ && rare_data_->override_content_logical_height_ != -1;
 }
 
-bool LayoutBox::HasOverrideLogicalContentWidth() const {
-  return rare_data_ && rare_data_->override_logical_content_width_ != -1;
+bool LayoutBox::HasOverrideContentLogicalWidth() const {
+  return rare_data_ && rare_data_->override_content_logical_width_ != -1;
 }
 
-void LayoutBox::SetOverrideLogicalContentHeight(LayoutUnit height) {
+void LayoutBox::SetOverrideContentLogicalHeight(LayoutUnit height) {
   DCHECK_GE(height, 0);
-  EnsureRareData().override_logical_content_height_ = height;
+  EnsureRareData().override_content_logical_height_ = height;
 }
 
-void LayoutBox::SetOverrideLogicalContentWidth(LayoutUnit width) {
+void LayoutBox::SetOverrideContentLogicalWidth(LayoutUnit width) {
   DCHECK_GE(width, 0);
-  EnsureRareData().override_logical_content_width_ = width;
+  EnsureRareData().override_content_logical_width_ = width;
 }
 
-void LayoutBox::ClearOverrideLogicalContentHeight() {
+void LayoutBox::ClearOverrideContentLogicalHeight() {
   if (rare_data_)
-    rare_data_->override_logical_content_height_ = LayoutUnit(-1);
+    rare_data_->override_content_logical_height_ = LayoutUnit(-1);
 }
 
-void LayoutBox::ClearOverrideLogicalContentWidth() {
+void LayoutBox::ClearOverrideContentLogicalWidth() {
   if (rare_data_)
-    rare_data_->override_logical_content_width_ = LayoutUnit(-1);
+    rare_data_->override_content_logical_width_ = LayoutUnit(-1);
 }
 
-void LayoutBox::ClearOverrideSize() {
-  ClearOverrideLogicalContentHeight();
-  ClearOverrideLogicalContentWidth();
+void LayoutBox::ClearOverrideContentSize() {
+  ClearOverrideContentLogicalHeight();
+  ClearOverrideContentLogicalWidth();
 }
 
-LayoutUnit LayoutBox::OverrideLogicalContentWidth() const {
-  DCHECK(HasOverrideLogicalContentWidth());
-  return rare_data_->override_logical_content_width_;
+LayoutUnit LayoutBox::OverrideContentLogicalWidth() const {
+  DCHECK(HasOverrideContentLogicalWidth());
+  return rare_data_->override_content_logical_width_;
 }
 
-LayoutUnit LayoutBox::OverrideLogicalContentHeight() const {
-  DCHECK(HasOverrideLogicalContentHeight());
-  return rare_data_->override_logical_content_height_;
+LayoutUnit LayoutBox::OverrideContentLogicalHeight() const {
+  DCHECK(HasOverrideContentLogicalHeight());
+  return rare_data_->override_content_logical_height_;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
 LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalWidth() const {
-  DCHECK(HasOverrideContainingBlockLogicalWidth());
+  DCHECK(HasOverrideContainingBlockContentLogicalWidth());
   return rare_data_->override_containing_block_content_logical_width_;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
 LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalHeight() const {
-  DCHECK(HasOverrideContainingBlockLogicalHeight());
+  DCHECK(HasOverrideContainingBlockContentLogicalHeight());
   return rare_data_->override_containing_block_content_logical_height_;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
-bool LayoutBox::HasOverrideContainingBlockLogicalWidth() const {
+bool LayoutBox::HasOverrideContainingBlockContentLogicalWidth() const {
   return rare_data_ &&
          rare_data_->has_override_containing_block_content_logical_width_;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
-bool LayoutBox::HasOverrideContainingBlockLogicalHeight() const {
+bool LayoutBox::HasOverrideContainingBlockContentLogicalHeight() const {
   return rare_data_ &&
          rare_data_->has_override_containing_block_content_logical_height_;
 }
@@ -1470,19 +1470,10 @@ void LayoutBox::SetOverrideContainingBlockContentLogicalHeight(
 
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
-void LayoutBox::ClearContainingBlockOverrideSize() {
+void LayoutBox::ClearOverrideContainingBlockContentSize() {
   if (!rare_data_)
     return;
   EnsureRareData().has_override_containing_block_content_logical_width_ = false;
-  EnsureRareData().has_override_containing_block_content_logical_height_ =
-      false;
-}
-
-// TODO (lajava) Shouldn't we implement these functions based on physical
-// direction ?.
-void LayoutBox::ClearOverrideContainingBlockContentLogicalHeight() {
-  if (!rare_data_)
-    return;
   EnsureRareData().has_override_containing_block_content_logical_height_ =
       false;
 }
@@ -2056,7 +2047,7 @@ LayoutUnit LayoutBox::ShrinkLogicalWidthToAvoidFloats(
 }
 
 LayoutUnit LayoutBox::ContainingBlockLogicalHeightForGetComputedStyle() const {
-  if (HasOverrideContainingBlockLogicalHeight())
+  if (HasOverrideContainingBlockContentLogicalHeight())
     return OverrideContainingBlockContentLogicalHeight();
 
   if (!IsPositioned())
@@ -2070,12 +2061,12 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForGetComputedStyle() const {
 }
 
 LayoutUnit LayoutBox::ContainingBlockLogicalWidthForContent() const {
-  if (HasOverrideContainingBlockLogicalWidth())
+  if (HasOverrideContainingBlockContentLogicalWidth())
     return OverrideContainingBlockContentLogicalWidth();
 
   // TODO(rego): Probably this should be done directly in
-  // HasOverrideContainingBlockLogicalWidth(), but that would imply more changes
-  // in other parts of the code so leaving it for a follow-up patch.
+  // HasOverrideContainingBlockContentLogicalWidth(), but that would imply more
+  // changes in other parts of the code so leaving it for a follow-up patch.
   if (IsGridItem())
     return LayoutUnit();
 
@@ -2087,11 +2078,11 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForContent() const {
 
 LayoutUnit LayoutBox::ContainingBlockLogicalHeightForContent(
     AvailableLogicalHeightType height_type) const {
-  if (HasOverrideContainingBlockLogicalHeight())
+  if (HasOverrideContainingBlockContentLogicalHeight())
     return OverrideContainingBlockContentLogicalHeight();
 
   // TODO(rego): Probably this should be done directly in
-  // HasOverrideContainingBlockLogicalHeight(), but that would imply more
+  // HasOverrideContainingBlockContentLogicalHeight(), but that would imply more
   // changes in other parts of the code so leaving it for a follow-up patch.
   if (IsGridItem())
     return LayoutUnit();
@@ -2110,12 +2101,12 @@ LayoutUnit LayoutBox::ContainingBlockAvailableLineWidth() const {
 }
 
 LayoutUnit LayoutBox::PerpendicularContainingBlockLogicalHeight() const {
-  if (HasOverrideContainingBlockLogicalHeight())
+  if (HasOverrideContainingBlockContentLogicalHeight())
     return OverrideContainingBlockContentLogicalHeight();
 
   LayoutBlock* cb = ContainingBlock();
-  if (cb->HasOverrideLogicalContentHeight())
-    return cb->OverrideLogicalContentHeight();
+  if (cb->HasOverrideContentLogicalHeight())
+    return cb->OverrideContentLogicalHeight();
 
   const ComputedStyle& containing_block_style = cb->StyleRef();
   Length logical_height_length = containing_block_style.LogicalHeight();
@@ -2663,9 +2654,9 @@ void LayoutBox::ComputeLogicalWidth(
 
   // The parent box is flexing us, so it has increased or decreased our
   // width.  Use the width from the style context.
-  if (HasOverrideLogicalContentWidth()) {
+  if (HasOverrideContentLogicalWidth()) {
     computed_values.extent_ =
-        OverrideLogicalContentWidth() + BorderAndPaddingLogicalWidth();
+        OverrideContentLogicalWidth() + BorderAndPaddingLogicalWidth();
     return;
   }
 
@@ -3144,9 +3135,9 @@ void LayoutBox::ComputeLogicalHeight(
   Length h;
   if (IsOutOfFlowPositioned()) {
     ComputePositionedLogicalHeight(computed_values);
-    if (HasOverrideLogicalContentHeight()) {
+    if (HasOverrideContentLogicalHeight()) {
       computed_values.extent_ =
-          OverrideLogicalContentHeight() + BorderAndPaddingLogicalHeight();
+          OverrideContentLogicalHeight() + BorderAndPaddingLogicalHeight();
     }
   } else {
     LayoutBlock* cb = ContainingBlock();
@@ -3187,8 +3178,8 @@ void LayoutBox::ComputeLogicalHeight(
 
     // The parent box is flexing us, so it has increased or decreased our
     // height. We have to grab our cached flexible height.
-    if (HasOverrideLogicalContentHeight()) {
-      h = Length(OverrideLogicalContentHeight(), kFixed);
+    if (HasOverrideContentLogicalHeight()) {
+      h = Length(OverrideContentLogicalHeight(), kFixed);
     } else if (treat_as_replaced) {
       h = Length(ComputeReplacedLogicalHeight(), kFixed);
     } else {
@@ -3409,7 +3400,7 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
   if (IsHorizontalWritingMode() != cb->IsHorizontalWritingMode()) {
     available_height =
         containing_block_child->ContainingBlockLogicalWidthForContent();
-  } else if (HasOverrideContainingBlockLogicalHeight()) {
+  } else if (HasOverrideContainingBlockContentLogicalHeight()) {
     available_height = OverrideContainingBlockContentLogicalHeight();
   } else if (cb->IsTableCell()) {
     if (!skipped_auto_height_containing_block) {
@@ -3417,7 +3408,7 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
       // Basically we don't care if the cell specified a height or not. We just
       // always make ourselves be a percentage of the cell's current content
       // height.
-      if (!cb->HasOverrideLogicalContentHeight()) {
+      if (!cb->HasOverrideContentLogicalHeight()) {
         // https://drafts.csswg.org/css-tables-3/#row-layout:
         // For the purpose of calculating [the minimum height of a row],
         // descendants of table cells whose height depends on percentages
@@ -3433,7 +3424,7 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
           return LayoutUnit();
         return LayoutUnit(-1);
       }
-      available_height = cb->OverrideLogicalContentHeight();
+      available_height = cb->OverrideContentLogicalHeight();
     }
   } else {
     available_height = cb->AvailableLogicalHeightForPercentageComputation();
@@ -3457,7 +3448,7 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
   bool subtract_border_and_padding =
       IsTable() ||
       (cb->IsTableCell() && !skipped_auto_height_containing_block &&
-       cb->HasOverrideLogicalContentHeight() &&
+       cb->HasOverrideContentLogicalHeight() &&
        Style()->BoxSizing() == EBoxSizing::kContentBox);
   if (subtract_border_and_padding) {
     result -= BorderAndPaddingLogicalHeight();
@@ -3622,8 +3613,8 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
               ToLayoutFlexibleBox(block->Parent())
                   ->ChildLogicalHeightForPercentageResolution(*block);
         else if (block->IsGridItem() &&
-                 block->HasOverrideLogicalContentHeight())
-          stretched_height = block->OverrideLogicalContentHeight();
+                 block->HasOverrideContentLogicalHeight())
+          stretched_height = block->OverrideContentLogicalHeight();
       }
 
       if (cb->IsOutOfFlowPositioned() && cb->Style()->Height().IsAuto() &&
@@ -3649,7 +3640,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
             ToLayoutBoxModelObject(cb));
       } else if (stretched_height != -1) {
         available_height = stretched_height;
-      } else if (HasOverrideContainingBlockLogicalHeight()) {
+      } else if (HasOverrideContainingBlockContentLogicalHeight()) {
         available_height = OverrideContainingBlockContentLogicalHeight();
       } else {
         available_height =
@@ -3718,8 +3709,8 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
   // some new height, and then when we lay out again we'll use the calculation
   // below.
   if (IsTableCell() && (h.IsAuto() || h.IsPercentOrCalc())) {
-    if (HasOverrideLogicalContentHeight())
-      return OverrideLogicalContentHeight();
+    if (HasOverrideContentLogicalHeight())
+      return OverrideContentLogicalHeight();
     return LogicalHeight() - BorderAndPaddingLogicalHeight();
   }
 
@@ -3817,7 +3808,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
     }
   }
 
-  if (HasOverrideContainingBlockLogicalWidth())
+  if (HasOverrideContainingBlockContentLogicalWidth())
     return OverrideContainingBlockContentLogicalWidth();
 
   // Ensure we compute our width based on the width of our rel-pos inline
@@ -3881,7 +3872,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
     }
   }
 
-  if (HasOverrideContainingBlockLogicalHeight())
+  if (HasOverrideContainingBlockContentLogicalHeight())
     return OverrideContainingBlockContentLogicalHeight();
 
   if (containing_block->IsBox())

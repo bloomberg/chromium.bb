@@ -324,7 +324,7 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     // interfere in current layout execution.
     for (auto* child = FirstInFlowChildBox(); child;
          child = child->NextInFlowSiblingBox())
-      child->ClearOverrideSize();
+      child->ClearOverrideContentSize();
 
     UpdateLogicalWidth();
 
@@ -1183,11 +1183,11 @@ void LayoutGrid::LayoutGridItems() {
     // Because the grid area cannot be styled, we don't need to adjust
     // the grid breadth to account for 'box-sizing'.
     LayoutUnit old_override_containing_block_content_logical_width =
-        child->HasOverrideContainingBlockLogicalWidth()
+        child->HasOverrideContainingBlockContentLogicalWidth()
             ? child->OverrideContainingBlockContentLogicalWidth()
             : LayoutUnit();
     LayoutUnit old_override_containing_block_content_logical_height =
-        child->HasOverrideContainingBlockLogicalHeight()
+        child->HasOverrideContainingBlockContentLogicalHeight()
             ? child->OverrideContainingBlockContentLogicalHeight()
             : LayoutUnit();
 
@@ -1459,7 +1459,7 @@ void LayoutGrid::ApplyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
             child);
     LayoutUnit desired_logical_height = child.ConstrainLogicalHeightByMinMax(
         stretched_logical_height, LayoutUnit(-1));
-    child.SetOverrideLogicalContentHeight(
+    child.SetOverrideContentLogicalHeight(
         (desired_logical_height - child.BorderAndPaddingLogicalHeight())
             .ClampNegativeToZero());
     if (desired_logical_height != child.LogicalHeight()) {
