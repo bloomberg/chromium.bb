@@ -191,8 +191,8 @@ function setInputElementAngularValue_(value, input) {
 }
 
 /**
- * Sets the value of an input and dispatches a change event if
- * |shouldSendChangeEvent|.
+ * Sets the value of an input, dispatches the events on the changed element and
+ * call |callback| if it is defined.
  *
  * It is based on the logic in
  *
@@ -215,35 +215,108 @@ __gCrWeb.fill.setInputElementValue = function(
   if (!input) {
     return;
   }
-  var changed = false;
-  if (input.type === 'checkbox' || input.type === 'radio') {
-    changed = input.checked !== value;
-    input.checked = value;
-  } else if (input.type === 'select-one') {
-    changed = input.value !== value;
-    input.value = value;
-  } else {
+  var activeElement = document.activeElement;
+  if (input != activeElement) {
+    __gCrWeb.fill.createAndDispatchHTMLEvent(
+        activeElement, value, 'blur', true, false);
+    __gCrWeb.fill.createAndDispatchHTMLEvent(
+        input, value, 'focus', true, false);
+  }
+  var changed = setInputElementValue_(value, input);
+  if (callback) {
+    callback(changed);
+  }
+  if (input != activeElement) {
+    __gCrWeb.fill.createAndDispatchHTMLEvent(input, value, 'blur', true, false);
+    __gCrWeb.fill.createAndDispatchHTMLEvent(
+        activeElement, value, 'focus', true, false);
+  }
+};
+
+/**
+ * Internal function to set the element value.
+ *
+ * @param {string} value The value the input element will be set.
+ * @param {Element} input The input element of which the value is set.
+ */
+function setInputElementValue_(value, input) {
+  var propertyName = (input.type === 'checkbox' || input.type === 'radio') ?
+      'checked' :
+      'value';
+  if (input.type !== 'select-one' && input.type !== 'checkbox' &&
+      input.type !== 'radio') {
     // In HTMLInputElement.cpp there is a check on canSetValue(value), which
     // returns false only for file input. As file input is not relevant for
     // autofill and this method is only used for autofill for now, there is no
     // such check in this implementation.
-    var sanitizedValue =
-        __gCrWeb.fill.sanitizeValueForInputElement(value, input);
-    changed = sanitizedValue !== input.value;
-    input.value = sanitizedValue;
+    value = __gCrWeb.fill.sanitizeValueForInputElement(value, input);
   }
+
+  if (input[propertyName] == value) return false;
+
+  // When the user inputs a value in an HTMLInput field, the property setter is
+  // not called. The different frameworks often call it explicitly when
+  // receiving the input event.
+  // This is probably due to the sync between the HTML object and the DOM
+  // object.
+  // The sequence of event is: User input -> input event -> setter.
+  // When the property is set programmatically (input.value = 'foo'), the setter
+  // is called immediately (then probably called again on the input event)
+  // JS input -> setter.
+  // The only way to emulate the user behavior is to override the property
+  // The getter will return the new value to emulate the fact the the HTML
+  // value was updated without calling the setter.
+  // The setter simply forwards the set to the older property descriptor.
+  // Once the setter has been called, just forward get and set calls.
+
+  var oldPropertyDescriptor = /** @type {!Object} */ (
+      Object.getOwnPropertyDescriptor(input, propertyName));
+  var overrideProperty =
+      oldPropertyDescriptor && oldPropertyDescriptor.configurable;
+  var setterCalled = false;
+
+  if (overrideProperty) {
+    var newProperty = {
+      get: function() {
+        if (setterCalled && oldPropertyDescriptor.get) {
+          return oldPropertyDescriptor.get.call(input);
+        }
+        // Simulate the fact that the HTML value has been set but not yet the
+        // property.
+        return value + '';
+      },
+      configurable: true
+    };
+    if (oldPropertyDescriptor.set) {
+      newProperty.set = function(e) {
+        setterCalled = true;
+        oldPropertyDescriptor.set.call(input, value);
+      }
+    }
+    Object.defineProperty(input, propertyName, newProperty);
+  } else {
+    setterCalled = true;
+    input[propertyName] = value;
+  }
+
   if (window['angular']) {
     // The page uses the AngularJS framework. Update the angular value before
     // sending events.
     setInputElementAngularValue_(value, input);
   }
-  if (changed) {
-    __gCrWeb.fill.notifyElementValueChanged(input);
+  __gCrWeb.fill.notifyElementValueChanged(input, value);
+
+  if (overrideProperty) {
+    Object.defineProperty(input, propertyName, oldPropertyDescriptor);
+    if (!setterCalled && input[propertyName] != value) {
+      // The setter was never called. This may be intentional (the framework
+      // ignored the input event) or not (the event did not conform to what
+      // framework expected). The whole function will likely fail, but try to
+      // set the value directly as a last try.
+      input[propertyName] = value;
+    }
   }
-  if (callback) {
-    callback(changed);
-  }
-};
+}
 
 /**
  * Returns a sanitized value of proposedValue for a given input element type.
@@ -384,15 +457,23 @@ __gCrWeb.fill.sanitizeValueForNumberInputType = function(proposedValue) {
 /**
  * Creates and sends notification that element has changed.
  *
- * Most handlers react to 'change' or 'input' event, so sent both.
+ * Send events that 'mimic' the user typing in a field.
+ * 'input' event is often use in case of a text field, and 'change'event is
+ * more often used in case of selects.
  *
  * @param {Element} element The element that changed.
  */
-__gCrWeb.fill.notifyElementValueChanged = function(element) {
-  __gCrWeb.fill.createAndDispatchHTMLEvent(element, 'keydown', true, false);
-  __gCrWeb.fill.createAndDispatchHTMLEvent(element, 'change', true, false);
-  __gCrWeb.fill.createAndDispatchHTMLEvent(element, 'input', true, false);
-  __gCrWeb.fill.createAndDispatchHTMLEvent(element, 'keyup', true, false);
+__gCrWeb.fill.notifyElementValueChanged = function(element, value) {
+  __gCrWeb.fill.createAndDispatchHTMLEvent(
+      element, value, 'keydown', true, false);
+  __gCrWeb.fill.createAndDispatchHTMLEvent(
+      element, value, 'keypress', true, false);
+  __gCrWeb.fill.createAndDispatchHTMLEvent(
+      element, value, 'input', true, false);
+  __gCrWeb.fill.createAndDispatchHTMLEvent(
+      element, value, 'keyup', true, false);
+  __gCrWeb.fill.createAndDispatchHTMLEvent(
+      element, value, 'change', true, false);
 };
 
 /**
@@ -406,30 +487,25 @@ __gCrWeb.fill.notifyElementValueChanged = function(element) {
  *     canceled.
  */
 __gCrWeb.fill.createAndDispatchHTMLEvent = function(
-    element, type, bubbles, cancelable) {
-  var changeEvent =
-      /** @type {!Event} */ (element.ownerDocument.createEvent('HTMLEvents'));
-  changeEvent.initEvent(type, bubbles, cancelable);
-  // Some frameworks will use the data field to update their cache value.
-  changeEvent.data = element.value;
-
-  // Adding a |simulated| flag on the event will force the React framework to
-  // update the backend store.
-  changeEvent.simulated = true;
-
-  element.dispatchEvent(changeEvent);
+    element, value, type, bubbles, cancelable) {
+  var event =
+      new Event(type, {bubbles: bubbles, cancelable: cancelable, data: value});
+  if (type == 'input') {
+    event.inputType = 'insertText';
+  }
+  element.dispatchEvent(event);
 };
 
- /**
-  * Returns a canonical action for |formElement|. It works the same as upstream
-  * function GetCanonicalActionForForm.
-  * @param {HTMLFormElement} formElement
-  * @return {string} Canonical action.
-  */
+/**
+ * Returns a canonical action for |formElement|. It works the same as upstream
+ * function GetCanonicalActionForForm.
+ * @param {HTMLFormElement} formElement
+ * @return {string} Canonical action.
+ */
 __gCrWeb.fill.getCanonicalActionForForm = function(formElement) {
-  var rawAction = formElement.getAttribute('action') || "";
-  var absoluteUrl = __gCrWeb.common.absoluteURL(
-     formElement.ownerDocument, rawAction);
+  var rawAction = formElement.getAttribute('action') || '';
+  var absoluteUrl =
+      __gCrWeb.common.absoluteURL(formElement.ownerDocument, rawAction);
   return __gCrWeb.common.removeQueryAndReferenceFromURL(absoluteUrl);
 };
 
