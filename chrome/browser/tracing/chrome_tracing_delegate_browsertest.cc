@@ -296,8 +296,14 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                         base::Time::Now().ToInternalValue());
 }
 
+// Flaky mojo CHECK stop on ChromeOS. https://crbug.com/832981
+#if defined(OS_CHROMEOS)
+#define MAYBE_StartupTracingThrottle DISABLED_StartupTracingThrottle
+#else
+#define MAYBE_StartupTracingThrottle StartupTracingThrottle
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
-                       StartupTracingThrottle) {
+                       MAYBE_StartupTracingThrottle) {
   // The startup scenario should *not* be started, since not enough
   // time has elapsed since the last upload (set in the PRE_ above).
   EXPECT_FALSE(
