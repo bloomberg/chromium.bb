@@ -64,6 +64,7 @@ class SoftwareImageDecodeCacheUtils {
     bool operator!=(const CacheKey& other) const { return !(*this == other); }
 
     const PaintImage::FrameKey& frame_key() const { return frame_key_; }
+    PaintImage::Id stable_id() const { return stable_id_; }
     ProcessingType type() const { return type_; }
     bool is_nearest_neighbor() const { return is_nearest_neighbor_; }
     gfx::Rect src_rect() const { return src_rect_; }
@@ -88,6 +89,7 @@ class SoftwareImageDecodeCacheUtils {
 
    private:
     CacheKey(PaintImage::FrameKey frame_key,
+             PaintImage::Id stable_id,
              ProcessingType type,
              bool is_nearest_neighbor,
              const gfx::Rect& src_rect,
@@ -95,6 +97,10 @@ class SoftwareImageDecodeCacheUtils {
              const gfx::ColorSpace& target_color_space);
 
     PaintImage::FrameKey frame_key_;
+    // The stable id is does not factor into the cache key's value for hashing
+    // and comparison (as it is redundant). It is only used to look up other
+    // cache entries of the same stable id.
+    PaintImage::Id stable_id_;
     ProcessingType type_;
     bool is_nearest_neighbor_;
     gfx::Rect src_rect_;

@@ -24,6 +24,24 @@ using base::trace_event::MemoryDumpLevelOfDetail;
 namespace cc {
 namespace {
 
+bool UseCacheForDrawImage(const DrawImage& draw_image) {
+  // Lazy generated images are have their decode cached.
+  sk_sp<SkImage> sk_image = draw_image.paint_image().GetSkImage();
+  if (sk_image->isLazyGenerated())
+    return true;
+
+  // Cache images that need to be converted to a non-sRGB color space.
+  // TODO(ccameron): Consider caching when any color conversion is required.
+  // https://crbug.com/791828
+  const gfx::ColorSpace& dst_color_space = draw_image.target_color_space();
+  if (dst_color_space.IsValid() &&
+      dst_color_space != gfx::ColorSpace::CreateSRGB()) {
+    return true;
+  }
+
+  return false;
+}
+
 // The number of entries to keep around in the cache. This limit can be breached
 // if more items are locked. That is, locked items ignore this limit.
 // Depending on the memory state of the system, we limit the amount of items
@@ -206,10 +224,7 @@ SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   if (key.target_size().IsEmpty())
     return TaskResult(false);
 
-  // For non-lazy images a decode isn't necessary.
-  // TODO(khushalsagar): If these images require color conversion, we should
-  // still cache that result.
-  if (!image.paint_image().IsLazyGenerated())
+  if (!UseCacheForDrawImage(image))
     return TaskResult(false);
 
   base::AutoLock lock(lock_);
@@ -475,8 +490,8 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
 
 DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
-  // Non-lazy generated images can be used for raster directly.
-  if (!draw_image.paint_image().GetSkImage()->isLazyGenerated()) {
+  // Non-cached images are be used for raster directly.
+  if (!UseCacheForDrawImage(draw_image)) {
     return DecodedDrawImage(draw_image.paint_image().GetSkImage(),
                             SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),
                             draw_image.filter_quality(),
@@ -523,8 +538,7 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
 void SoftwareImageDecodeCache::DrawWithImageFinished(
     const DrawImage& image,
     const DecodedDrawImage& decoded_image) {
-  // We don't cache any data for non-lazy images.
-  if (!image.paint_image().IsLazyGenerated())
+  if (!UseCacheForDrawImage(image))
     return;
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
@@ -540,21 +554,7 @@ void SoftwareImageDecodeCache::ReduceCacheUsageUntilWithinLimit(size_t limit) {
       std::max(lifetime_max_items_in_cache_, decoded_images_.size());
   for (auto it = decoded_images_.rbegin();
        decoded_images_.size() > limit && it != decoded_images_.rend();) {
-    if (it->second->ref_count != 0) {
-      ++it;
-      continue;
-    }
-
-    const CacheKey& key = it->first;
-    auto vector_it = frame_key_to_image_keys_.find(key.frame_key());
-    auto item_it =
-        std::find(vector_it->second.begin(), vector_it->second.end(), key);
-    DCHECK(item_it != vector_it->second.end());
-    vector_it->second.erase(item_it);
-    if (vector_it->second.empty())
-      frame_key_to_image_keys_.erase(vector_it);
-
-    it = decoded_images_.Erase(it);
+    EraseCacheEntry(&it);
   }
 }
 
@@ -570,31 +570,6 @@ void SoftwareImageDecodeCache::ClearCache() {
 
 size_t SoftwareImageDecodeCache::GetMaximumMemoryLimitBytes() const {
   return locked_images_budget_.total_limit_bytes();
-}
-
-void SoftwareImageDecodeCache::NotifyImageUnused(
-    const PaintImage::FrameKey& frame_key) {
-  base::AutoLock lock(lock_);
-
-  auto it = frame_key_to_image_keys_.find(frame_key);
-  if (it == frame_key_to_image_keys_.end())
-    return;
-
-  for (auto key_it = it->second.begin(); key_it != it->second.end();) {
-    // This iterates over the CacheKey vector for the given skimage_id,
-    // and deletes all entries from decoded_images_ corresponding to the
-    // skimage_id.
-    auto image_it = decoded_images_.Peek(*key_it);
-    // TODO(sohanjg): Find an optimized way to cleanup locked images.
-    if (image_it != decoded_images_.end() && image_it->second->ref_count == 0) {
-      decoded_images_.Erase(image_it);
-      key_it = it->second.erase(key_it);
-    } else {
-      ++key_it;
-    }
-  }
-  if (it->second.empty())
-    frame_key_to_image_keys_.erase(it);
 }
 
 void SoftwareImageDecodeCache::OnImageDecodeTaskCompleted(
@@ -684,10 +659,84 @@ void SoftwareImageDecodeCache::OnPurgeMemory() {
 SoftwareImageDecodeCache::CacheEntry* SoftwareImageDecodeCache::AddCacheEntry(
     const CacheKey& key) {
   lock_.AssertAcquired();
+
   frame_key_to_image_keys_[key.frame_key()].push_back(key);
+
+  PaintImage::ContentId content_id = key.frame_key().content_id();
+  content_id_to_cache_keys_[content_id].insert(key);
+  ContentIdSet& content_ids_for_stable_id =
+      stable_id_to_content_ids_[key.stable_id()];
+  content_ids_for_stable_id.insert(content_id);
+
   auto it = decoded_images_.Put(key, std::make_unique<CacheEntry>());
   it->second.get()->mark_cached();
+
+  // If we have more than two content ids for this stable id, then try to erase
+  // all images for all content ids except for the most recent two (and also
+  // |key|'s content id, in case it is not one of the most recent two).
+  if (content_ids_for_stable_id.size() > 2) {
+    ContentIdSet content_ids_to_remove = content_ids_for_stable_id;
+    content_ids_to_remove.erase(*content_ids_to_remove.rbegin());
+    content_ids_to_remove.erase(*content_ids_to_remove.rbegin());
+    content_ids_to_remove.erase(content_id);
+    for (auto content_id_to_erase : content_ids_to_remove) {
+      CacheKeySet cache_keys_to_remove =
+          content_id_to_cache_keys_[content_id_to_erase];
+      for (const CacheKey& key : cache_keys_to_remove) {
+        auto found = decoded_images_.Peek(key);
+        DCHECK(found != decoded_images_.end());
+        auto found_reversed = std::make_reverse_iterator(found);
+        EraseCacheEntry(&found_reversed);
+      }
+    }
+  }
+
   return it->second.get();
+}
+
+void SoftwareImageDecodeCache::EraseCacheEntry(
+    ImageMRUCache::reverse_iterator* it) {
+  if ((*it)->second->ref_count != 0) {
+    ++(*it);
+    return;
+  }
+  const CacheKey& key = (*it)->first;
+  PaintImage::ContentId content_id = key.frame_key().content_id();
+  PaintImage::Id stable_id = key.stable_id();
+
+  // Remove from |content_id_to_cache_keys_|.
+  auto found_cache_key_set = content_id_to_cache_keys_.find(content_id);
+  DCHECK(found_cache_key_set != content_id_to_cache_keys_.end());
+  found_cache_key_set->second.erase(key);
+  // If this erases the last entry for |content_id|, then...
+  if (found_cache_key_set->second.empty()) {
+    // Erase |content_id| from |content_id_to_cache_keys_|.
+    content_id_to_cache_keys_.erase(found_cache_key_set);
+    // Erase |content_id| from |stable_id_to_content_ids_[stable_id]|.
+    auto found_content_id_set = stable_id_to_content_ids_.find(stable_id);
+    DCHECK(found_content_id_set != stable_id_to_content_ids_.end());
+    auto found_content_id = found_content_id_set->second.find(content_id);
+    DCHECK(found_content_id != found_content_id_set->second.end());
+    found_content_id_set->second.erase(found_content_id);
+    // If that empties |stable_id_to_content_ids_[stable_id]|, then erase
+    // |stable_id| from |stable_id_to_content_ids_|.
+    if (found_content_id_set->second.empty()) {
+      stable_id_to_content_ids_.erase(found_content_id_set);
+    }
+  }
+
+  // Remove from |frame_key_to_image_keys_|.
+  auto vector_it = frame_key_to_image_keys_.find(key.frame_key());
+  auto item_it =
+      std::find(vector_it->second.begin(), vector_it->second.end(), key);
+  DCHECK(item_it != vector_it->second.end());
+  vector_it->second.erase(item_it);
+  if (vector_it->second.empty())
+    frame_key_to_image_keys_.erase(vector_it);
+
+  // Remove from the MRU cache.
+  *it = decoded_images_.Erase(*it);
+  return;
 }
 
 // MemoryBudget ----------------------------------------------------------------

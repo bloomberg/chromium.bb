@@ -1584,39 +1584,6 @@ TEST(SoftwareImageDecodeCacheTest, ClearCache) {
   EXPECT_EQ(0u, cache.GetNumCacheEntriesForTesting());
 }
 
-TEST(SoftwareImageDecodeCacheTest, RemoveUnusedImage) {
-  TestSoftwareImageDecodeCache cache;
-  bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
-
-  std::vector<PaintImage::FrameKey> frame_keys;
-
-  for (int i = 0; i < 10; ++i) {
-    SCOPED_TRACE(i);
-    PaintImage paint_image = CreatePaintImage(100, 100);
-    DrawImage draw_image(
-        paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
-        quality, CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
-        PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-    frame_keys.push_back(draw_image.frame_key());
-    ImageDecodeCache::TaskResult result = cache.GetTaskForImageAndRef(
-        draw_image, ImageDecodeCache::TracingInfo());
-    EXPECT_TRUE(result.need_unref);
-    EXPECT_TRUE(result.task);
-    TestTileTaskRunner::ProcessTask(result.task.get());
-    cache.UnrefImage(draw_image);
-  }
-
-  // We should now have data image in our cache.
-  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 10u);
-
-  // Remove unused ids.
-  for (uint32_t i = 0; i < 10; ++i) {
-    cache.NotifyImageUnused(frame_keys[i]);
-    EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), (10 - i - 1));
-  }
-}
-
 TEST(SoftwareImageDecodeCacheTest, CacheDecodesExpectedFrames) {
   TestSoftwareImageDecodeCache cache;
   std::vector<FrameMetadata> frames = {
@@ -1729,6 +1696,83 @@ TEST(SoftwareImageDecodeCacheTest, EmptyTargetSizeDecode) {
       cache.GetDecodedImageForDraw(empty_draw_image);
   EXPECT_FALSE(empty_decoded_draw_image.image());
   cache.DrawWithImageFinished(empty_draw_image, empty_decoded_draw_image);
+}
+
+TEST(SoftwareImageDecodeCacheTest, BitmapImageColorConverted) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+  gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateDisplayP3D65();
+
+  PaintImage paint_image = CreateBitmapImage(gfx::Size(100, 100));
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, target_color_space);
+
+  DecodedDrawImage decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // Expect that we allocated a new image.
+  EXPECT_NE(decoded_draw_image.image().get(), paint_image.GetSkImage().get());
+  // Expect that the image color space match the target color space.
+  EXPECT_TRUE(decoded_draw_image.image()->colorSpace());
+  EXPECT_TRUE(SkColorSpace::Equals(decoded_draw_image.image()->colorSpace(),
+                                   target_color_space.ToSkColorSpace().get()));
+
+  cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+}
+
+TEST(SoftwareImageDecodeCacheTest, BitmapImageNotColorConverted) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage paint_image = CreateBitmapImage(gfx::Size(100, 100));
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+
+  DecodedDrawImage decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  // Expect that we did not allocate a new image.
+  EXPECT_EQ(decoded_draw_image.image().get(), paint_image.GetSkImage().get());
+
+  cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+}
+
+TEST(SoftwareImageDecodeCacheTest, ContentIdCaching) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+  PaintImage::Id stable_id = 1001;
+
+  for (int i = 0; i < 10; ++i) {
+    // Create several images with the same stable id, but new content ids.
+    PaintImage paint_image = CreateDiscardablePaintImage(
+        gfx::Size(100, 100), nullptr, true, stable_id);
+
+    // Cache two entries of different scales.
+    for (int j = 0; j < 2; ++j) {
+      float scale = j == 0 ? 1.f : 0.5f;
+      DrawImage draw_image(
+          paint_image,
+          SkIRect::MakeWH(paint_image.width(), paint_image.height()), quality,
+          CreateMatrix(SkSize::Make(scale, scale), is_decomposable),
+          PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+      DecodedDrawImage decoded_draw_image =
+          cache.GetDecodedImageForDraw(draw_image);
+      EXPECT_TRUE(decoded_draw_image.image());
+      cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+    }
+
+    // After the first two entries come in, we start evicting old content ids.
+    if (i == 0)
+      EXPECT_LE(cache.GetNumCacheEntriesForTesting(), 2u);
+    else
+      EXPECT_LE(cache.GetNumCacheEntriesForTesting(), 4u);
+  }
 }
 
 }  // namespace

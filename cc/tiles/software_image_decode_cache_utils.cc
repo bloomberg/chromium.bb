@@ -152,6 +152,7 @@ SoftwareImageDecodeCacheUtils::CacheKey::FromDrawImage(const DrawImage& image,
   DCHECK(!image.paint_image().GetSkImage()->isTextureBacked());
 
   const PaintImage::FrameKey frame_key = image.frame_key();
+  const PaintImage::Id stable_id = image.paint_image().stable_id();
 
   const SkSize& scale = image.scale();
   // If the src_rect falls outside of the image, we need to clip it since
@@ -170,8 +171,8 @@ SoftwareImageDecodeCacheUtils::CacheKey::FromDrawImage(const DrawImage& image,
   // If the target size is empty, then we'll be skipping the decode anyway, so
   // the filter quality doesn't matter. Early out instead.
   if (target_size.IsEmpty()) {
-    return CacheKey(frame_key, kSubrectAndScale, false, src_rect, target_size,
-                    image.target_color_space());
+    return CacheKey(frame_key, stable_id, kSubrectAndScale, false, src_rect,
+                    target_size, image.target_color_space());
   }
 
   ProcessingType type = kOriginal;
@@ -232,18 +233,20 @@ SoftwareImageDecodeCacheUtils::CacheKey::FromDrawImage(const DrawImage& image,
     }
   }
 
-  return CacheKey(frame_key, type, is_nearest_neighbor, src_rect, target_size,
-                  image.target_color_space());
+  return CacheKey(frame_key, stable_id, type, is_nearest_neighbor, src_rect,
+                  target_size, image.target_color_space());
 }
 
 SoftwareImageDecodeCacheUtils::CacheKey::CacheKey(
     PaintImage::FrameKey frame_key,
+    PaintImage::Id stable_id,
     ProcessingType type,
     bool is_nearest_neighbor,
     const gfx::Rect& src_rect,
     const gfx::Size& target_size,
     const gfx::ColorSpace& target_color_space)
     : frame_key_(frame_key),
+      stable_id_(stable_id),
       type_(type),
       is_nearest_neighbor_(is_nearest_neighbor),
       src_rect_(src_rect),

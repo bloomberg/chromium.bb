@@ -138,12 +138,6 @@ class CC_EXPORT ImageDecodeCache {
   // locked budget before creating a task.
   virtual size_t GetMaximumMemoryLimitBytes() const = 0;
 
-  // Indicate to the cache that the image is no longer going
-  // to be used. This means it can be deleted altogether. If the
-  // image is locked, then the cache can do its best to clean it
-  // up later.
-  virtual void NotifyImageUnused(const PaintImage::FrameKey& frame_key) = 0;
-
  protected:
   void RecordImageMipLevelUMA(int mip_level);
 };
