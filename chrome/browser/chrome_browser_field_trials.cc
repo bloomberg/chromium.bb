@@ -17,6 +17,7 @@
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -113,7 +114,22 @@ void InstantiatePersistentHistograms() {
   std::string storage = variations::GetVariationParamValueByFeature(
       base::kPersistentHistogramsFeature, "storage");
 
-  if (storage.empty() || storage == "MappedFile") {
+  static const char kMappedFile[] = "MappedFile";
+  static const char kLocalMemory[] = "LocalMemory";
+
+#if defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  // Linux kernel 4.4.0.* shows a huge number of SIGBUS crashes with persistent
+  // histograms enabled using a mapped file.  Change this to use local memory.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=753741
+  if (storage.empty() || storage == kMappedFile) {
+    int major, minor, bugfix;
+    base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+    if (major == 4 && minor == 4 && bugfix == 0)
+      storage = kLocalMemory;
+  }
+#endif
+
+  if (storage.empty() || storage == kMappedFile) {
     if (!base::PathExists(upload_dir)) {
       // Handle failure to create the directory.
       result = NO_UPLOAD_DIR;
@@ -143,7 +159,7 @@ void InstantiatePersistentHistograms() {
                            &base::GlobalHistogramAllocator::CreateSpareFile),
                        std::move(spare_file), kAllocSize),
         base::TimeDelta::FromSeconds(kSpareFileCreateDelaySeconds));
-  } else if (storage == "LocalMemory") {
+  } else if (storage == kLocalMemory) {
     // Use local memory for storage even though it will not persist across
     // an unclean shutdown. This sets the result but the actual creation is
     // done below.
