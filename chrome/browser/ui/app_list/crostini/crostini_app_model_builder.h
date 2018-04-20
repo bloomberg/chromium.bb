@@ -13,7 +13,7 @@ class AppListControllerDelegate;
 // This class populates and maintains Crostini apps.
 class CrostiniAppModelBuilder
     : public AppListModelBuilder,
-      public chromeos::CrostiniRegistryService::Observer {
+      public crostini::CrostiniRegistryService::Observer {
  public:
   explicit CrostiniAppModelBuilder(AppListControllerDelegate* controller);
   ~CrostiniAppModelBuilder() override;
@@ -24,13 +24,13 @@ class CrostiniAppModelBuilder
 
   // CrostiniRegistryService::Observer:
   void OnRegistryUpdated(
-      chromeos::CrostiniRegistryService* registry_service,
+      crostini::CrostiniRegistryService* registry_service,
       const std::vector<std::string>& updated_apps,
       const std::vector<std::string>& removed_apps,
       const std::vector<std::string>& inserted_apps) override;
 
   void InsertCrostiniAppItem(
-      const chromeos::CrostiniRegistryService* registry_service,
+      const crostini::CrostiniRegistryService* registry_service,
       const std::string& app_id);
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppModelBuilder);

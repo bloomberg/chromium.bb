@@ -17,7 +17,7 @@
 using vm_tools::apps::App;
 using vm_tools::apps::ApplicationList;
 
-namespace chromeos {
+namespace crostini {
 
 class CrostiniRegistryServiceTest : public testing::Test {
  public:
@@ -177,4 +177,4 @@ TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
               testing::UnorderedElementsAre(app_id_1, app_id_3, new_app_id));
 }
 
-}  // namespace chromeos
+}  // namespace crostini

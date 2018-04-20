@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
-namespace chromeos {
+namespace crostini {
 
 // static
 CrostiniRegistryService* CrostiniRegistryServiceFactory::GetForProfile(
@@ -36,4 +36,4 @@ KeyedService* CrostiniRegistryServiceFactory::BuildServiceInstanceFor(
   return new CrostiniRegistryService(profile);
 }
 
-}  // namespace chromeos
+}  // namespace crostini

@@ -16,7 +16,7 @@
 
 using vm_tools::apps::App;
 
-namespace chromeos {
+namespace crostini {
 
 namespace {
 
@@ -264,4 +264,4 @@ void CrostiniRegistryService::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(kCrostiniRegistryPref);
 }
 
-}  // namespace chromeos
+}  // namespace crostini

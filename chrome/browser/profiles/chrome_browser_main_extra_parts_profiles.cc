@@ -254,11 +254,11 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   EnhancedBookmarkKeyServiceFactory::GetInstance();
 #endif
 #if defined(OS_CHROMEOS)
-  chromeos::CrostiniRegistryServiceFactory::GetInstance();
   chromeos::CupsPrintJobManagerFactory::GetInstance();
   chromeos::CupsPrintersManagerFactory::GetInstance();
   chromeos::SyncedPrintersManagerFactory::GetInstance();
   chromeos::smb_client::SmbServiceFactory::GetInstance();
+  crostini::CrostiniRegistryServiceFactory::GetInstance();
   TetherServiceFactory::GetInstance();
   extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
