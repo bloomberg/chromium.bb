@@ -347,8 +347,11 @@ class TestImporterTest(LoggingTestCase):
         })
         importer = TestImporter(host)
         self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
+        # Use a variable here, otherwise we get different values depending on
+        # the machine's time zone settings (e.g. "1969-12-31" vs "1970-01-01").
+        today = datetime.date.fromtimestamp(host.time()).isoformat()
         self.assertLog([
-            'ERROR: No entry found for date 1969-12-31 in rotations table.\n'
+            'ERROR: No entry found for date %s in rotations table.\n' % today
         ])
 
     def test_tbr_reviewer_nobody_on_rotation(self):
@@ -371,15 +374,16 @@ class TestImporterTest(LoggingTestCase):
 
     def test_tbr_reviewer(self):
         host = MockHost()
-        today = datetime.date.fromtimestamp(host.time()).isoformat()
+        today = datetime.date.fromtimestamp(host.time())
+        yesterday = today - datetime.timedelta(days=1)
         host.web.urls[ROTATIONS_URL] = json.dumps({
             'calendar': [
                 {
-                    'date': '2017-01-01',
+                    'date': yesterday.isoformat(),
                     'participants': [['other-sheriff'], ['last-sheriff']],
                 },
                 {
-                    'date': today,
+                    'date': today.isoformat(),
                     'participants': [['other-sheriff'], ['current-sheriff']],
                 },
             ],
