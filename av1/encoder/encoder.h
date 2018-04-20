@@ -549,7 +549,6 @@ typedef struct AV1_COMP {
 
   int multi_arf_allowed;
   int multi_arf_enabled;
-  int multi_arf_last_grp_enabled;
 
   TileDataEnc *tile_data;
   int allocated_tiles;  // Keep track of memory allocated for tiles.

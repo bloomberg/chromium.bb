@@ -2468,9 +2468,6 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       }
     }
   }
-
-  // Note whether multi-arf was enabled this group for next time.
-  cpi->multi_arf_last_grp_enabled = cpi->multi_arf_enabled;
 }
 
 // Analyse and define a gf/arf group.
@@ -2946,7 +2943,6 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Clear the alt ref active flag and last group multi arf flags as they
   // can never be set for a key frame.
   rc->source_alt_ref_active = 0;
-  cpi->multi_arf_last_grp_enabled = 0;
 
   // KF is always a GF so clear frames till next gf counter.
   rc->frames_till_gf_update_due = 0;

@@ -2380,7 +2380,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif
 
   cpi->refresh_alt_ref_frame = 0;
-  cpi->multi_arf_last_grp_enabled = 0;
 
   cpi->b_calculate_psnr = CONFIG_INTERNAL_STATS;
 #if CONFIG_INTERNAL_STATS
