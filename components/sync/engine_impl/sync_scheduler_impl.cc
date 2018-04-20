@@ -362,6 +362,7 @@ void SyncSchedulerImpl::ScheduleInvalidationNudge(
     std::unique_ptr<InvalidationInterface> invalidation,
     const base::Location& nudge_location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!syncer_->IsSyncing());
 
   SDVLOG_LOC(nudge_location, 2)
       << "Scheduling sync because we received invalidation for "
@@ -373,6 +374,7 @@ void SyncSchedulerImpl::ScheduleInvalidationNudge(
 
 void SyncSchedulerImpl::ScheduleInitialSyncNudge(ModelType model_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!syncer_->IsSyncing());
 
   SDVLOG(2) << "Scheduling non-blocking initial sync for "
             << ModelTypeToString(model_type);
@@ -386,7 +388,6 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
     const TimeDelta& delay,
     const base::Location& nudge_location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!syncer_->IsSyncing());
 
   if (!started_) {
     SDVLOG_LOC(nudge_location, 2)
