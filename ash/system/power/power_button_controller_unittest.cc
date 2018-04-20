@@ -207,6 +207,7 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfClamshell) {
   AdvanceClockToAvoidIgnoring();
   // Should turn screen on if screen is off.
   TappingPowerButtonWhenScreenIsIdleOff();
+  ASSERT_TRUE(power_button_test_api_->IsMenuOpened());
 
   AdvanceClockToAvoidIgnoring();
   // Should not start the dismissing menu animation if showing menu animation
@@ -217,17 +218,19 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfClamshell) {
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
   power_button_test_api_->SetShowMenuAnimationDone(true);
+  ASSERT_TRUE(power_button_test_api_->TriggerPreShutdownTimeout());
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   // Power button menu should keep opened if showing animation has finished.
   EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
 
-  // Tapping power button when menu is already shown should not turn screen off.
+  // Tapping power button when menu is already shown should keep the screen on
+  // and dismiss the power menu.
   AdvanceClockToAvoidIgnoring();
   PressPowerButton();
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
 // Tests that tapping power button of a device that has tablet mode switch.
@@ -317,8 +320,8 @@ TEST_F(PowerButtonControllerTest, ModeSpecificPowerButton) {
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
-  // Tapping power button again in laptop mode when menu is opened should not
-  // turn the screen off.
+  // Tapping power button again in laptop mode when menu is opened should
+  // dismiss the menu but keep the screen on.
   EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
   AdvanceClockToAvoidIgnoring();
   PressPowerButton();
@@ -326,7 +329,7 @@ TEST_F(PowerButtonControllerTest, ModeSpecificPowerButton) {
   EXPECT_TRUE(power_button_test_api_->PreShutdownTimerIsRunning());
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
 // Tests that release power button after menu is opened but before trigger
@@ -344,6 +347,37 @@ TEST_F(PowerButtonControllerTest, ReleasePowerButtonBeforeTriggerShutdown) {
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+}
+
+// Tests that tapping the power button dismisses the menu while in laptop mode.
+TEST_F(PowerButtonControllerTest, HoldPowerButtonWhileMenuShownInLaptopMode) {
+  // Hold the power button long enough to show the menu and start the
+  // cancellable shutdown animation. The menu should remain open.
+  PressPowerButton();
+  ASSERT_TRUE(power_button_test_api_->IsMenuOpened());
+  power_button_test_api_->SetShowMenuAnimationDone(true);
+  ASSERT_TRUE(power_button_test_api_->TriggerPreShutdownTimeout());
+  ASSERT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+  ReleasePowerButton();
+  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+
+  // Hold the power button long enough to start the cancellable shutdown
+  // animation again. The menu should remain open.
+  AdvanceClockToAvoidIgnoring();
+  PressPowerButton();
+  ASSERT_TRUE(power_button_test_api_->TriggerPreShutdownTimeout());
+  ASSERT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+  ReleasePowerButton();
+  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+
+  // This time, just tap the power button (i.e. release it before the
+  // cancellable shutdown animation starts). The menu should be dismissed.
+  AdvanceClockToAvoidIgnoring();
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
 // Tests press lock button and power button in sequence.
