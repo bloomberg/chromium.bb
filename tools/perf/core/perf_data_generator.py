@@ -134,7 +134,6 @@ def get_waterfall_config():
        'perf_tests': [
          ('tracing_perftests', 'build73-b1--device2'),
          ('gpu_perftests', 'build73-b1--device2'),
-         #  ('cc_perftests', 'build73-b1--device2'),  # crbug.com/721757
          ('media_perftests', 'build74-b1--device7'),
          ('components_perftests', 'build74-b1--device1'),
        ],
@@ -164,7 +163,6 @@ def get_waterfall_config():
        'perf_tests': [
          ('tracing_perftests', 'build13-b1--device2'),
          ('gpu_perftests', 'build13-b1--device2'),
-         ('cc_perftests', 'build13-b1--device2'),
          ('components_perftests', 'build48-b1--device5'),
         ],
        'perf_tests_with_args': [
@@ -194,7 +192,6 @@ def get_waterfall_config():
        'perf_tests': [
          ('tracing_perftests', 'build15-b1--device2'),
          ('gpu_perftests', 'build16-b1--device2'),
-         ('cc_perftests', 'build45-b1--device2'),
         ]
       }
     ])
@@ -219,7 +216,6 @@ def get_waterfall_config():
        'perf_tests': [
          ('tracing_perftests', 'build9-b1--device2'),
          ('gpu_perftests', 'build10-b1--device2'),
-         ('cc_perftests', 'build49-b1--device2'),
         ],
        'perf_tests_with_args': [
          ('angle_perftests', 'build49-b1--device7', ['--shard-timeout=300'],
@@ -248,7 +244,6 @@ def get_waterfall_config():
        'perf_tests': [
          ('tracing_perftests', 'build17-b1--device2'),
          # ('gpu_perftests', 'build18-b1--device2'), https://crbug.com/775219
-         # ('cc_perftests', 'build47-b1--device2'), https://crbug.com/736150
         ]
       }
     ])
@@ -502,7 +497,6 @@ def get_waterfall_config():
        ]
       }
     ])
-
 
   return waterfall
 
@@ -899,7 +893,6 @@ NON_TELEMETRY_BENCHMARKS = {
         'piman@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU>ANGLE', False),
     'net_perftests': BenchmarkMetadata('xunjieli@chromium.org', None, False),
-    'cc_perftests': BenchmarkMetadata('enne@chromium.org', None, False),
     'gpu_perftests': BenchmarkMetadata(
         'reveman@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU', False),
