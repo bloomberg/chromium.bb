@@ -193,17 +193,33 @@ void WallpaperControllerClient::SetCustomWallpaper(
                                             layout, image, preview_mode);
 }
 
-void WallpaperControllerClient::SetOnlineWallpaper(const AccountId& account_id,
-                                                   const gfx::ImageSkia& image,
-                                                   const std::string& url,
-                                                   ash::WallpaperLayout layout,
-                                                   bool preview_mode) {
+void WallpaperControllerClient::SetOnlineWallpaperIfExists(
+    const AccountId& account_id,
+    const GURL& url,
+    ash::WallpaperLayout layout,
+    bool preview_mode,
+    ash::mojom::WallpaperController::SetOnlineWallpaperIfExistsCallback
+        callback) {
   ash::mojom::WallpaperUserInfoPtr user_info =
       AccountIdToWallpaperUserInfo(account_id);
   if (!user_info)
     return;
-  wallpaper_controller_->SetOnlineWallpaper(std::move(user_info), image, url,
-                                            layout, preview_mode);
+  wallpaper_controller_->SetOnlineWallpaperIfExists(
+      std::move(user_info), url, layout, preview_mode, std::move(callback));
+}
+
+void WallpaperControllerClient::SetOnlineWallpaperFromData(
+    const AccountId& account_id,
+    const std::string& image_data,
+    const GURL& url,
+    ash::WallpaperLayout layout,
+    bool preview_mode) {
+  ash::mojom::WallpaperUserInfoPtr user_info =
+      AccountIdToWallpaperUserInfo(account_id);
+  if (!user_info)
+    return;
+  wallpaper_controller_->SetOnlineWallpaperFromData(
+      std::move(user_info), image_data, url, layout, preview_mode);
 }
 
 void WallpaperControllerClient::SetDefaultWallpaper(const AccountId& account_id,
@@ -348,6 +364,11 @@ void WallpaperControllerClient::RemovePolicyWallpaper(
 
   wallpaper_controller_->RemovePolicyWallpaper(std::move(user_info),
                                                GetFilesId(account_id));
+}
+
+void WallpaperControllerClient::GetOfflineWallpaperList(
+    ash::mojom::WallpaperController::GetOfflineWallpaperListCallback callback) {
+  wallpaper_controller_->GetOfflineWallpaperList(std::move(callback));
 }
 
 void WallpaperControllerClient::SetAnimationDuration(
