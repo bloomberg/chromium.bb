@@ -401,6 +401,18 @@ std::string SessionStore::GetStorageKey(const SessionSpecifics& specifics) {
   return EncodeStorageKey(specifics.session_tag(), specifics.tab_node_id());
 }
 
+// static
+std::string SessionStore::GetHeaderStorageKey(const std::string& session_tag) {
+  return EncodeStorageKey(session_tag, TabNodePool::kInvalidTabNodeID);
+}
+
+// static
+std::string SessionStore::GetTabStorageKey(const std::string& session_tag,
+                                           int tab_node_id) {
+  DCHECK_GE(tab_node_id, 0);
+  return EncodeStorageKey(session_tag, tab_node_id);
+}
+
 bool SessionStore::StorageKeyMatchesLocalSession(
     const std::string& storage_key) const {
   std::string session_tag;
@@ -408,20 +420,6 @@ bool SessionStore::StorageKeyMatchesLocalSession(
   bool success = DecodeStorageKey(storage_key, &session_tag, &tab_node_id);
   DCHECK(success);
   return session_tag == local_session_info_.session_tag;
-}
-
-// static
-std::string SessionStore::GetHeaderStorageKeyForTest(
-    const std::string& session_tag) {
-  return EncodeStorageKey(session_tag, TabNodePool::kInvalidTabNodeID);
-}
-
-// static
-std::string SessionStore::GetTabStorageKeyForTest(
-    const std::string& session_tag,
-    int tab_node_id) {
-  DCHECK_GE(tab_node_id, 0);
-  return EncodeStorageKey(session_tag, tab_node_id);
 }
 
 // static
