@@ -61,10 +61,13 @@ class TrafficAnnotationAuditor {
   // of git and will not be filtered.
   // If clang tool returns error, and |rerun_on_errors| is true, the tool is run
   // again to record errors.
+  // Errors are written to |errors_file| if it is not empty, otherwise
+  // LOG(ERROR).
   bool RunClangTool(const std::vector<std::string>& path_filters,
                     bool filter_files_based_on_heuristics,
                     bool use_compile_commands,
-                    bool rerun_on_errors);
+                    bool rerun_on_errors,
+                    const base::FilePath& errors_file);
 
   // Parses the output of clang tool (|clang_tool_raw_output_|) and populates
   // |extracted_annotations_|, |extracted_calls_|, and |errors_|.

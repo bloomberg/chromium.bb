@@ -145,7 +145,8 @@ bool TrafficAnnotationAuditor::RunClangTool(
     const std::vector<std::string>& path_filters,
     bool filter_files_based_on_heuristics,
     bool use_compile_commands,
-    bool rerun_on_errors) {
+    bool rerun_on_errors,
+    const base::FilePath& errors_file) {
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
 
@@ -232,7 +233,7 @@ bool TrafficAnnotationAuditor::RunClangTool(
       if (!base::ReadFileToString(options_filepath, &options_file_text))
         options_file_text = "Could not read options file.";
 
-      LOG(ERROR) << base::StringPrintf(
+      std::string error_message = base::StringPrintf(
           "Calling clang tool returned false from %s\nCommandline: %s\n\n"
           "Returned output: %s\n\nPartial options file: %s\n",
           source_path_.MaybeAsASCII().c_str(),
@@ -242,6 +243,16 @@ bool TrafficAnnotationAuditor::RunClangTool(
           cmdline.GetCommandLineString().c_str(),
 #endif
           tool_errors.c_str(), options_file_text.substr(0, 1024).c_str());
+
+      if (errors_file.empty()) {
+        LOG(ERROR) << error_message;
+      } else {
+        if (base::WriteFile(errors_file, error_message.c_str(),
+                            error_message.length()) == -1) {
+          LOG(ERROR) << "Writing error message to file failed:\n"
+                     << error_message;
+        }
+      }
     }
   }
 
