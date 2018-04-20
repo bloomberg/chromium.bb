@@ -823,6 +823,11 @@ void RenderWidgetHostViewAura::Destroy() {
 
 void RenderWidgetHostViewAura::SetTooltipText(
     const base::string16& tooltip_text) {
+  GetCursorManager()->SetTooltipTextForView(this, tooltip_text);
+}
+
+void RenderWidgetHostViewAura::DisplayTooltipText(
+    const base::string16& tooltip_text) {
   tooltip_ = tooltip_text;
   aura::Window* root_window = window_->GetRootWindow();
   wm::TooltipClient* tooltip_client = wm::GetTooltipClient(root_window);

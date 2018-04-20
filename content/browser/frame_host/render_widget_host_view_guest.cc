@@ -362,7 +362,7 @@ void RenderWidgetHostViewGuest::SetTooltipText(
     const base::string16& tooltip_text) {
   RenderWidgetHostViewBase* root_view = GetRootView(this);
   if (root_view)
-    root_view->SetTooltipText(tooltip_text);
+    root_view->GetCursorManager()->SetTooltipTextForView(this, tooltip_text);
 }
 
 void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(

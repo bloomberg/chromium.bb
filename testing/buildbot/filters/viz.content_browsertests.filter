@@ -39,6 +39,7 @@
 -SitePerProcessHitTestBrowserTest.CreateContextMenuTest*
 -SitePerProcessHitTestBrowserTest.CrossProcessMouseCapture*
 -SitePerProcessHitTestBrowserTest.CrossProcessMouseEnterAndLeaveTest*
+-SitePerProcessHitTestBrowserTest.CrossProcessTooltipTest*
 -SitePerProcessHitTestBrowserTest.CursorUpdateReceivedFromCrossSiteIframe*
 -SitePerProcessHitTestBrowserTest.HitTestLayerSquashing*
 -SitePerProcessHitTestBrowserTest.HitTestNestedFrames*
