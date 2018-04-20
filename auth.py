@@ -522,7 +522,7 @@ class Authenticator(object):
         self._access_token = self._load_access_token()
 
       # Refresh if expired or missing.
-      if not self._access_token or self._access_toke.needs_refresh():
+      if not self._access_token or self._access_token.needs_refresh():
         # Maybe some other process already updated it, reload from the cache.
         self._access_token = self._load_access_token()
         # Nope, still expired, need to run the refresh flow.
