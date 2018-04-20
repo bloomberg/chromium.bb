@@ -234,7 +234,7 @@ const base::Feature kExpectCTReporting{"ExpectCTReporting",
 // developers more control over when to show them.
 const base::Feature kExperimentalAppBanners {
   "ExperimentalAppBanners",
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
