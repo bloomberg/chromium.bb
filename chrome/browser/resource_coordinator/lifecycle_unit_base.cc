@@ -9,7 +9,8 @@
 
 namespace resource_coordinator {
 
-LifecycleUnitBase::LifecycleUnitBase() = default;
+LifecycleUnitBase::LifecycleUnitBase()
+    : last_visibility_change_time_(NowTicks()) {}
 
 LifecycleUnitBase::~LifecycleUnitBase() = default;
 
@@ -43,9 +44,9 @@ void LifecycleUnitBase::SetState(State state) {
 
 void LifecycleUnitBase::OnLifecycleUnitVisibilityChanged(
     content::Visibility visibility) {
+  last_visibility_change_time_ = NowTicks();
   for (auto& observer : observers_)
     observer.OnLifecycleUnitVisibilityChanged(this, visibility);
-  last_visibility_change_time_ = NowTicks();
 }
 
 void LifecycleUnitBase::OnLifecycleUnitDestroyed() {
