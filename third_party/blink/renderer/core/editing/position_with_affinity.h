@@ -18,7 +18,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
 
  public:
   PositionWithAffinityTemplate(const PositionTemplate<Strategy>&, TextAffinity);
-  PositionWithAffinityTemplate(const PositionTemplate<Strategy>&);
+  explicit PositionWithAffinityTemplate(const PositionTemplate<Strategy>&);
   PositionWithAffinityTemplate();
   ~PositionWithAffinityTemplate();
 
