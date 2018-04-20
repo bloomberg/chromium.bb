@@ -463,7 +463,11 @@ TEST_F(KeyboardControllerTest, TransientBlurShortDelay) {
   AddTimeToTransientBlurCounter(0.5);
   // Apply programmatic focus to the text field.
   SetProgrammaticFocus(&input_client);
-  EXPECT_TRUE(keyboard_container->IsVisible());
+
+  // TODO(blakeo): this is not technically wrong, but the DummyTextInputClient
+  // should allow for overriding the text input flags, to simulate testing
+  // a web-based text field.
+  EXPECT_FALSE(keyboard_container->IsVisible());
   EXPECT_FALSE(WillHideKeyboard());
 }
 

@@ -21,6 +21,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/types/display_constants.h"
@@ -522,6 +523,8 @@ void KeyboardController::OnTextInputStateChanged(
       client && (client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE &&
                  client->GetTextInputMode() != ui::TEXT_INPUT_MODE_NONE);
   bool should_hide = !focused && container_behavior_->TextBlurHidesKeyboard();
+  bool is_web =
+      client && client->GetTextInputFlags() != ui::TEXT_INPUT_FLAG_NONE;
 
   if (should_hide) {
     switch (state_) {
@@ -541,7 +544,7 @@ void KeyboardController::OnTextInputStateChanged(
         ChangeState(KeyboardControllerState::SHOWN);
         return;
       case KeyboardControllerState::HIDDEN:
-        if (focused)
+        if (focused && is_web)
           ShowKeyboardIfWithinTransientBlurThreshold();
         return;
       default:
