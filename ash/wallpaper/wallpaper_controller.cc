@@ -28,6 +28,7 @@
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
@@ -166,15 +167,6 @@ void DeleteWallpaperInList(const std::vector<base::FilePath>& file_list) {
   }
 }
 
-// Saves wallpaper image raw |data| to |path| (absolute path) in file system.
-// Returns true on success.
-bool SaveWallpaperInternal(const base::FilePath& path,
-                           const char* data,
-                           int size) {
-  int written_bytes = base::WriteFile(path, data, size);
-  return written_bytes == size;
-}
-
 // Creates all new custom wallpaper directories for |wallpaper_files_id| if they
 // don't exist.
 void EnsureCustomWallpaperDirectories(const std::string& wallpaper_files_id) {
@@ -259,8 +251,8 @@ bool ResizeImage(const gfx::ImageSkia& image,
   *output = new base::RefCountedBytes();
 
   if (layout == WALLPAPER_LAYOUT_CENTER_CROPPED) {
-    // Do not resize custom wallpaper if it is smaller than preferred size.
-    if (!(width > preferred_width && height > preferred_height))
+    // Do not resize wallpaper if it is smaller than preferred size.
+    if (width < preferred_width || height < preferred_height)
       return false;
 
     double horizontal_ratio = static_cast<double>(preferred_width) / width;
@@ -317,6 +309,71 @@ bool IsActiveUser(const AccountId& account_id) {
       Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
   return active_user_session &&
          active_user_session->user_info->account_id == account_id;
+}
+
+// Returns the file path of the wallpaper corresponding to |url| if it exists in
+// local file system, otherwise returns an empty file path.
+base::FilePath GetExistingOnlineWallpaperPath(const GURL& url) {
+  WallpaperController::WallpaperResolution resolution =
+      WallpaperController::GetAppropriateResolution();
+  base::FilePath wallpaper_path =
+      WallpaperController::GetOnlineWallpaperPath(url, resolution);
+  if (base::PathExists(wallpaper_path))
+    return wallpaper_path;
+
+  // Falls back to the large wallpaper if the small one doesn't exist.
+  if (resolution == WallpaperController::WALLPAPER_RESOLUTION_SMALL) {
+    wallpaper_path = WallpaperController::GetOnlineWallpaperPath(
+        url, WallpaperController::WALLPAPER_RESOLUTION_LARGE);
+    if (base::PathExists(wallpaper_path))
+      return wallpaper_path;
+  }
+  return base::FilePath();
+}
+
+// Saves the online wallpaper with both large and small sizes to local file
+// system.
+void SaveOnlineWallpaper(const GURL& url,
+                         WallpaperLayout layout,
+                         std::unique_ptr<gfx::ImageSkia> image) {
+  DCHECK(!dir_chrome_os_wallpapers_path.empty());
+  if (!base::DirectoryExists(dir_chrome_os_wallpapers_path) &&
+      !base::CreateDirectory(dir_chrome_os_wallpapers_path)) {
+    return;
+  }
+  WallpaperController::ResizeAndSaveWallpaper(
+      *image,
+      WallpaperController::GetOnlineWallpaperPath(
+          url, WallpaperController::WALLPAPER_RESOLUTION_LARGE),
+      layout, image->width(), image->height(), nullptr);
+  WallpaperController::ResizeAndSaveWallpaper(
+      *image,
+      WallpaperController::GetOnlineWallpaperPath(
+          url, WallpaperController::WALLPAPER_RESOLUTION_SMALL),
+      WALLPAPER_LAYOUT_CENTER_CROPPED,
+      WallpaperController::kSmallWallpaperMaxWidth,
+      WallpaperController::kSmallWallpaperMaxHeight, nullptr);
+}
+
+// Implementation of |WallpaperController::GetOfflineWallpaper|.
+std::vector<std::string> GetOfflineWallpaperListImpl() {
+  DCHECK(!dir_chrome_os_wallpapers_path.empty());
+  std::vector<std::string> file_names;
+  if (base::DirectoryExists(dir_chrome_os_wallpapers_path)) {
+    base::FileEnumerator files(dir_chrome_os_wallpapers_path,
+                               false /*recursive=*/,
+                               base::FileEnumerator::FILES);
+    for (base::FilePath current = files.Next(); !current.empty();
+         current = files.Next()) {
+      // Do not add file name of small resolution wallpaper to the list.
+      if (!base::EndsWith(current.BaseName().RemoveExtension().value(),
+                          WallpaperController::kSmallWallpaperSuffix,
+                          base::CompareCase::SENSITIVE)) {
+        file_names.push_back(current.BaseName().value());
+      }
+    }
+  }
+  return file_names;
 }
 
 }  // namespace
@@ -408,6 +465,20 @@ WallpaperController::GetAppropriateResolution() {
 }
 
 // static
+base::FilePath WallpaperController::GetOnlineWallpaperPath(
+    const GURL& url,
+    WallpaperResolution resolution) {
+  std::string file_name = url.ExtractFileName();
+  if (resolution == WALLPAPER_RESOLUTION_SMALL) {
+    file_name = base::FilePath(file_name)
+                    .InsertBeforeExtension(kSmallWallpaperSuffix)
+                    .value();
+  }
+  DCHECK(!dir_chrome_os_wallpapers_path.empty());
+  return dir_chrome_os_wallpapers_path.Append(file_name);
+}
+
+// static
 std::string
 WallpaperController::GetCustomWallpaperSubdirForCurrentResolution() {
   WallpaperResolution resolution = GetAppropriateResolution();
@@ -447,8 +518,10 @@ bool WallpaperController::ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
   scoped_refptr<base::RefCountedBytes> data;
   if (ResizeImage(image, layout, preferred_width, preferred_height, &data,
                   output_skia)) {
-    return SaveWallpaperInternal(
-        path, reinterpret_cast<const char*>(data->front()), data->size());
+    // Saves |data| to |path| in local file system.
+    size_t written_bytes =
+        base::WriteFile(path, data->front_as<const char>(), data->size());
+    return written_bytes == data->size();
   }
   return false;
 }
@@ -1039,31 +1112,45 @@ void WallpaperController::SetCustomWallpaper(
   }
 }
 
-void WallpaperController::SetOnlineWallpaper(
+void WallpaperController::SetOnlineWallpaperIfExists(
     mojom::WallpaperUserInfoPtr user_info,
-    const gfx::ImageSkia& image,
-    const std::string& url,
+    const GURL& url,
+    WallpaperLayout layout,
+    bool preview_mode,
+    SetOnlineWallpaperIfExistsCallback callback) {
+  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
+  DCHECK(CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral));
+
+  const OnlineWallpaperParams params = {user_info->account_id,
+                                        user_info->is_ephemeral, url, layout,
+                                        preview_mode};
+  base::PostTaskAndReplyWithResult(
+      sequenced_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&GetExistingOnlineWallpaperPath, url),
+      base::BindOnce(&WallpaperController::SetOnlineWallpaperFromPath,
+                     weak_factory_.GetWeakPtr(), std::move(callback), params));
+}
+
+void WallpaperController::SetOnlineWallpaperFromData(
+    mojom::WallpaperUserInfoPtr user_info,
+    const std::string& image_data,
+    const GURL& url,
     WallpaperLayout layout,
     bool preview_mode) {
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
     return;
 
-  const bool is_active_user = IsActiveUser(user_info->account_id);
-  if (preview_mode) {
-    DCHECK(is_active_user);
-    confirm_preview_wallpaper_callback_ =
-        base::BindOnce(&WallpaperController::SetOnlineWallpaperImpl,
-                       weak_factory_.GetWeakPtr(), image, url, layout,
-                       std::move(user_info), false /*show_wallpaper=*/);
-    ShowWallpaperImage(image,
-                       WallpaperInfo{std::string(), layout, ONLINE,
-                                     base::Time::Now().LocalMidnight()},
-                       true /*preview_mode=*/);
-  } else {
-    SetOnlineWallpaperImpl(image, url, layout, std::move(user_info),
-                           is_active_user /*show_wallpaper=*/);
-  }
+  const OnlineWallpaperParams params = {user_info->account_id,
+                                        user_info->is_ephemeral, url, layout,
+                                        preview_mode};
+  LoadedCallback callback =
+      base::Bind(&WallpaperController::OnOnlineWallpaperDecoded,
+                 weak_factory_.GetWeakPtr(), params, true /*save_file=*/);
+  if (bypass_decode_for_testing_)
+    std::move(callback).Run(CreateSolidColorWallpaper());
+  else
+    DecodeWallpaper(image_data, std::move(callback));
 }
 
 void WallpaperController::SetDefaultWallpaper(
@@ -1323,6 +1410,13 @@ void WallpaperController::RemovePolicyWallpaper(
   SetDefaultWallpaper(std::move(user_info), wallpaper_files_id, show_wallpaper);
 }
 
+void WallpaperController::GetOfflineWallpaperList(
+    GetOfflineWallpaperListCallback callback) {
+  base::PostTaskAndReplyWithResult(sequenced_task_runner_.get(), FROM_HERE,
+                                   base::BindOnce(&GetOfflineWallpaperListImpl),
+                                   std::move(callback));
+}
+
 void WallpaperController::SetAnimationDuration(
     base::TimeDelta animation_duration) {
   animation_duration_ = animation_duration;
@@ -1408,12 +1502,13 @@ void WallpaperController::OnColorCalculationComplete() {
   SetProminentColors(colors);
 }
 
-void WallpaperController::InitializePathsForTesting() {
-  dir_user_data_path = base::FilePath(FILE_PATH_LITERAL("user_data"));
-  dir_chrome_os_wallpapers_path =
-      base::FilePath(FILE_PATH_LITERAL("chrome_os_wallpapers"));
-  dir_chrome_os_custom_wallpapers_path =
-      base::FilePath(FILE_PATH_LITERAL("chrome_os_custom_wallpapers"));
+void WallpaperController::InitializePathsForTesting(
+    const base::FilePath& user_data_path,
+    const base::FilePath& chromeos_wallpapers_path,
+    const base::FilePath& chromeos_custom_wallpapers_path) {
+  dir_user_data_path = user_data_path;
+  dir_chrome_os_wallpapers_path = chromeos_wallpapers_path;
+  dir_chrome_os_custom_wallpapers_path = chromeos_custom_wallpapers_path;
 }
 
 void WallpaperController::ShowDefaultWallpaperForTesting() {
@@ -1533,30 +1628,68 @@ void WallpaperController::RemoveUserWallpaperImpl(
                            base::Bind(&DeleteWallpaperInList, file_to_remove));
 }
 
-void WallpaperController::SetOnlineWallpaperImpl(
-    const gfx::ImageSkia& image,
-    const std::string& url,
-    const WallpaperLayout& layout,
-    mojom::WallpaperUserInfoPtr user_info,
-    bool show_wallpaper) {
+void WallpaperController::SetOnlineWallpaperFromPath(
+    SetOnlineWallpaperIfExistsCallback callback,
+    const OnlineWallpaperParams& params,
+    const base::FilePath& file_path) {
+  bool file_exists = !file_path.empty();
+  std::move(callback).Run(file_exists);
+  if (file_exists) {
+    ReadAndDecodeWallpaper(
+        base::Bind(&WallpaperController::OnOnlineWallpaperDecoded,
+                   weak_factory_.GetWeakPtr(), params, false /*save_file=*/),
+        sequenced_task_runner_, file_path);
+  }
+}
+
+void WallpaperController::OnOnlineWallpaperDecoded(
+    const OnlineWallpaperParams& params,
+    bool save_file,
+    const gfx::ImageSkia& image) {
   if (image.isNull()) {
-    LOG(ERROR) << "The client provided an empty wallpaper image.";
+    LOG(ERROR) << "Failed to decode online wallpaper.";
     return;
   }
 
-  WallpaperInfo wallpaper_info = {url, layout, ONLINE,
+  if (save_file) {
+    image.EnsureRepsForSupportedScales();
+    std::unique_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
+    sequenced_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SaveOnlineWallpaper, params.url, params.layout,
+                       base::Passed(std::move(deep_copy))));
+  }
+
+  const bool is_active_user = IsActiveUser(params.account_id);
+  if (params.preview_mode) {
+    DCHECK(is_active_user);
+    confirm_preview_wallpaper_callback_ = base::BindOnce(
+        &WallpaperController::SetOnlineWallpaperImpl,
+        weak_factory_.GetWeakPtr(), params, image, false /*show_wallpaper=*/);
+    ShowWallpaperImage(image,
+                       WallpaperInfo{params.url.spec(), params.layout, ONLINE,
+                                     base::Time::Now().LocalMidnight()},
+                       true /*preview_mode=*/);
+  } else {
+    SetOnlineWallpaperImpl(params, image, is_active_user /*show_wallpaper=*/);
+  }
+}
+
+void WallpaperController::SetOnlineWallpaperImpl(
+    const OnlineWallpaperParams& params,
+    const gfx::ImageSkia& image,
+    bool show_wallpaper) {
+  WallpaperInfo wallpaper_info = {params.url.spec(), params.layout, ONLINE,
                                   base::Time::Now().LocalMidnight()};
-  if (!SetUserWallpaperInfo(user_info->account_id, wallpaper_info,
-                            user_info->is_ephemeral)) {
+  if (!SetUserWallpaperInfo(params.account_id, wallpaper_info,
+                            params.is_ephemeral)) {
     LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
                   "except in tests.";
   }
   if (show_wallpaper)
     ShowWallpaperImage(image, wallpaper_info, false /*preview_mode=*/);
 
-  // TODO(wzang): Create a |GetOnlineWallpaperPath| method similar to
-  // |GetCustomWallpaperPath|.
-  wallpaper_cache_map_[user_info->account_id] =
+  wallpaper_cache_map_[params.account_id] =
       CustomWallpaperElement(base::FilePath(), image);
 }
 
@@ -1586,18 +1719,9 @@ void WallpaperController::SetWallpaperFromInfo(
 
   base::FilePath wallpaper_path;
   if (info.type == ONLINE) {
-    std::string file_name = GURL(info.location).ExtractFileName();
-    WallpaperResolution resolution = GetAppropriateResolution();
-    // Only solid color wallpapers have stretch layout and they have only
-    // one resolution.
-    if (info.layout != WALLPAPER_LAYOUT_STRETCH &&
-        resolution == WALLPAPER_RESOLUTION_SMALL) {
-      file_name = base::FilePath(file_name)
-                      .InsertBeforeExtension(kSmallWallpaperSuffix)
-                      .value();
-    }
-    DCHECK(!dir_chrome_os_wallpapers_path.empty());
-    wallpaper_path = dir_chrome_os_wallpapers_path.Append(file_name);
+    const GURL url = GURL(info.location);
+    DCHECK(url.is_valid());
+    wallpaper_path = GetOnlineWallpaperPath(url, GetAppropriateResolution());
 
     // If the wallpaper exists and it already contains the correct image we
     // can return immediately.

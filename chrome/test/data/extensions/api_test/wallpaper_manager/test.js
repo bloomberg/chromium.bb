@@ -106,13 +106,13 @@ chrome.test.getConfig(function(config) {
             chrome.wallpaperPrivate.setWallpaperIfExists(
                 'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
                 false /*previewMode=*/,
-                fail('Failed to set wallpaper test1.jpg from file system.'));
+                fail('The wallpaper doesn\'t exist in local file system.'));
             // Attempt to preview wallpaper from a non-existent file should
             // also fail.
             chrome.wallpaperPrivate.setWallpaperIfExists(
                 'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
                 true /*previewMode=*/,
-                fail('Failed to set wallpaper test1.jpg from file system.'));
+                fail('The wallpaper doesn\'t exist in local file system.'));
           }));
     },
     function getAndSetThumbnail() {
