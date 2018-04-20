@@ -330,12 +330,25 @@
             "type": "string",
             "description": "The extension id of the extension to be checked."
           },
-          { 
+          {
             "name": "callback",
             "type": "function",
             "optional": false,
             "parameters": [
               { "name": "is_pending_approval", "type": "boolean" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getReferrerChain",
+        "description": "Returns a base-64 encoded referrer chain leading to the webstore page. Should only be used for extension anti-abuse purposes.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              { "name": "referrerChain", "type": "string" }
             ]
           }
         ]

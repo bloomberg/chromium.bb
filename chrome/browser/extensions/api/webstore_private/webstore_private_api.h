@@ -304,6 +304,25 @@ class WebstorePrivateIsPendingCustodianApprovalFunction
   ChromeExtensionFunctionDetails chrome_details_;
 };
 
+class WebstorePrivateGetReferrerChainFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.getReferrerChain",
+                             WEBSTOREPRIVATE_GETREFERRERCHAIN)
+
+  WebstorePrivateGetReferrerChainFunction();
+
+ private:
+  ~WebstorePrivateGetReferrerChainFunction() override;
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebstorePrivateGetReferrerChainFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_PRIVATE_WEBSTORE_PRIVATE_API_H_
