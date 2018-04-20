@@ -474,6 +474,15 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
   return nullptr;
 }
 
+void AddInitDisplay(std::vector<DisplayType>* init_displays,
+                    DisplayType display_type) {
+  // Make sure to not add the same display type twice.
+  if (std::find(init_displays->begin(), init_displays->end(), display_type) ==
+      init_displays->end()) {
+    init_displays->push_back(display_type);
+  }
+}
+
 }  // namespace
 
 void GetEGLInitDisplays(bool supports_angle_d3d,
@@ -484,7 +493,7 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   // SwiftShader does not use the platform extensions
   if (command_line->GetSwitchValueASCII(switches::kUseGL) ==
       kGLImplementationSwiftShaderForWebGLName) {
-    init_displays->push_back(SWIFT_SHADER);
+    AddInitDisplay(init_displays, SWIFT_SHADER);
     return;
   }
 
@@ -497,41 +506,51 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
 
   if (supports_angle_null &&
       requested_renderer == kANGLEImplementationNullName) {
-    init_displays->push_back(ANGLE_NULL);
+    AddInitDisplay(init_displays, ANGLE_NULL);
     return;
+  }
+
+  // If no display has been explicitly requested and the DefaultANGLEOpenGL
+  // experiment is enabled, try creating OpenGL displays first.
+  // TODO(oetuaho@nvidia.com): Only enable this path on specific GPUs with a
+  // blacklist entry. http://crbug.com/693090
+  if (supports_angle_opengl && use_angle_default &&
+      base::FeatureList::IsEnabled(features::kDefaultANGLEOpenGL)) {
+    AddInitDisplay(init_displays, ANGLE_OPENGL);
+    AddInitDisplay(init_displays, ANGLE_OPENGLES);
   }
 
   if (supports_angle_d3d) {
     if (use_angle_default) {
       // Default mode for ANGLE - try D3D11, else try D3D9
       if (!command_line->HasSwitch(switches::kDisableD3D11)) {
-        init_displays->push_back(ANGLE_D3D11);
+        AddInitDisplay(init_displays, ANGLE_D3D11);
       }
-      init_displays->push_back(ANGLE_D3D9);
+      AddInitDisplay(init_displays, ANGLE_D3D9);
     } else {
       if (requested_renderer == kANGLEImplementationD3D11Name) {
-        init_displays->push_back(ANGLE_D3D11);
+        AddInitDisplay(init_displays, ANGLE_D3D11);
       } else if (requested_renderer == kANGLEImplementationD3D9Name) {
-        init_displays->push_back(ANGLE_D3D9);
+        AddInitDisplay(init_displays, ANGLE_D3D9);
       } else if (requested_renderer == kANGLEImplementationD3D11NULLName) {
-        init_displays->push_back(ANGLE_D3D11_NULL);
+        AddInitDisplay(init_displays, ANGLE_D3D11_NULL);
       }
     }
   }
 
   if (supports_angle_opengl) {
     if (use_angle_default && !supports_angle_d3d) {
-      init_displays->push_back(ANGLE_OPENGL);
-      init_displays->push_back(ANGLE_OPENGLES);
+      AddInitDisplay(init_displays, ANGLE_OPENGL);
+      AddInitDisplay(init_displays, ANGLE_OPENGLES);
     } else {
       if (requested_renderer == kANGLEImplementationOpenGLName) {
-        init_displays->push_back(ANGLE_OPENGL);
+        AddInitDisplay(init_displays, ANGLE_OPENGL);
       } else if (requested_renderer == kANGLEImplementationOpenGLESName) {
-        init_displays->push_back(ANGLE_OPENGLES);
+        AddInitDisplay(init_displays, ANGLE_OPENGLES);
       } else if (requested_renderer == kANGLEImplementationOpenGLNULLName) {
-        init_displays->push_back(ANGLE_OPENGL_NULL);
+        AddInitDisplay(init_displays, ANGLE_OPENGL_NULL);
       } else if (requested_renderer == kANGLEImplementationOpenGLESNULLName) {
-        init_displays->push_back(ANGLE_OPENGLES_NULL);
+        AddInitDisplay(init_displays, ANGLE_OPENGLES_NULL);
       }
     }
   }

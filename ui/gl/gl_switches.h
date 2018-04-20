@@ -76,6 +76,7 @@ GL_EXPORT extern const base::Feature kD3DVsync;
 GL_EXPORT extern const base::Feature kDirectCompositionUnderlays;
 GL_EXPORT extern const base::Feature kDirectCompositionComplexOverlays;
 GL_EXPORT extern const base::Feature kDirectCompositionNonrootOverlays;
+GL_EXPORT extern const base::Feature kDefaultANGLEOpenGL;
 
 }  // namespace features
 

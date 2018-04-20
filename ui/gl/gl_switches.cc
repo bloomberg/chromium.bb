@@ -166,4 +166,8 @@ const base::Feature kDirectCompositionComplexOverlays{
 const base::Feature kDirectCompositionNonrootOverlays{
     "DirectCompositionNonrootOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Default to using ANGLE's OpenGL backend
+const base::Feature kDefaultANGLEOpenGL{"DefaultANGLEOpenGL",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
