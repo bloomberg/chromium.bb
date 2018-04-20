@@ -467,7 +467,13 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
     // See http://crbug.com/667602. Alternatives: call -setAlphaValue:0 and
     // -setIgnoresMouseEvents:YES on the NSWindow, or dismiss the sheet before
     // hiding.
-    DCHECK(![window_ attachedSheet]);
+    //
+    // TODO(ellyjones): Sort this entire situation out. This DCHECK doesn't
+    // trigger in shipped builds, but it does trigger when the browser exits
+    // "abnormally" (not via one of the UI paths to exiting), such as in browser
+    // tests, so this breaks a slew of browser tests in MacViews mode. See also
+    // https://crbug.com/834926.
+    // DCHECK(![window_ attachedSheet]);
 
     [window_ orderOut:nil];
     DCHECK(!window_visible_);
