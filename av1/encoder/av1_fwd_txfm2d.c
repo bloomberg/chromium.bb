@@ -19,8 +19,6 @@
 #include "av1/encoder/av1_fwd_txfm1d.h"
 #include "av1/encoder/av1_fwd_txfm1d_cfg.h"
 
-#define NO_FWD_TRANSPOSE 1
-
 static INLINE TxfmFunc fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {
     case TXFM_TYPE_DCT4: return av1_fdct4_new;
@@ -128,23 +126,8 @@ void av1_fwd_txfm2d_4x8_c(const int16_t *input, int32_t *output, int stride,
                           TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int32_t, txfm_buf[4 * 8]);
   TXFM_2D_FLIP_CFG cfg;
-#if NO_FWD_TRANSPOSE
   av1_get_fwd_txfm_cfg(tx_type, TX_4X8, &cfg);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
-#else
-  int16_t rinput[4 * 8];
-  TX_SIZE tx_size = TX_4X8;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int16(rinput, rw, input, stride, w, h);
-  av1_get_fwd_txfm_cfg(rtx_type, rtx_size, &cfg);
-  fwd_txfm2d_c(rinput, txfm_buf, rw, &cfg, output, bd);
-  transpose_int32(output, w, txfm_buf, rw, rw, rh);
-#endif  // NO_FWD_TRANSPOSE
 }
 
 void av1_fwd_txfm2d_8x4_c(const int16_t *input, int32_t *output, int stride,
@@ -159,23 +142,8 @@ void av1_fwd_txfm2d_8x16_c(const int16_t *input, int32_t *output, int stride,
                            TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int32_t, txfm_buf[8 * 16]);
   TXFM_2D_FLIP_CFG cfg;
-#if NO_FWD_TRANSPOSE
   av1_get_fwd_txfm_cfg(tx_type, TX_8X16, &cfg);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
-#else
-  int16_t rinput[8 * 16];
-  TX_SIZE tx_size = TX_8X16;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int16(rinput, rw, input, stride, w, h);
-  av1_get_fwd_txfm_cfg(rtx_type, rtx_size, &cfg);
-  fwd_txfm2d_c(rinput, txfm_buf, rw, &cfg, output, bd);
-  transpose_int32(output, w, txfm_buf, rw, rw, rh);
-#endif  // NO_FWD_TRANSPOSE
 }
 
 void av1_fwd_txfm2d_16x8_c(const int16_t *input, int32_t *output, int stride,
@@ -190,23 +158,8 @@ void av1_fwd_txfm2d_16x32_c(const int16_t *input, int32_t *output, int stride,
                             TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int32_t, txfm_buf[16 * 32]);
   TXFM_2D_FLIP_CFG cfg;
-#if NO_FWD_TRANSPOSE
   av1_get_fwd_txfm_cfg(tx_type, TX_16X32, &cfg);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
-#else
-  int16_t rinput[16 * 32];
-  TX_SIZE tx_size = TX_16X32;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int16(rinput, rw, input, stride, w, h);
-  av1_get_fwd_txfm_cfg(rtx_type, rtx_size, &cfg);
-  fwd_txfm2d_c(rinput, txfm_buf, rw, &cfg, output, bd);
-  transpose_int32(output, w, txfm_buf, rw, rw, rh);
-#endif  // NO_FWD_TRANSPOSE
 }
 
 void av1_fwd_txfm2d_32x16_c(const int16_t *input, int32_t *output, int stride,
@@ -221,23 +174,8 @@ void av1_fwd_txfm2d_4x16_c(const int16_t *input, int32_t *output, int stride,
                            TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int32_t, txfm_buf[4 * 16]);
   TXFM_2D_FLIP_CFG cfg;
-#if NO_FWD_TRANSPOSE
   av1_get_fwd_txfm_cfg(tx_type, TX_4X16, &cfg);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
-#else
-  int16_t rinput[4 * 16];
-  TX_SIZE tx_size = TX_4X16;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int16(rinput, rw, input, stride, w, h);
-  av1_get_fwd_txfm_cfg(rtx_type, rtx_size, &cfg);
-  fwd_txfm2d_c(rinput, txfm_buf, rw, &cfg, output, bd);
-  transpose_int32(output, w, txfm_buf, rw, rw, rh);
-#endif  // NO_FWD_TRANSPOSE
 }
 
 void av1_fwd_txfm2d_16x4_c(const int16_t *input, int32_t *output, int stride,
@@ -252,23 +190,8 @@ void av1_fwd_txfm2d_8x32_c(const int16_t *input, int32_t *output, int stride,
                            TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int32_t, txfm_buf[32 * 8]);
   TXFM_2D_FLIP_CFG cfg;
-#if NO_FWD_TRANSPOSE
   av1_get_fwd_txfm_cfg(tx_type, TX_8X32, &cfg);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
-#else
-  int16_t rinput[32 * 8];
-  TX_SIZE tx_size = TX_8X32;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int16(rinput, rw, input, stride, w, h);
-  av1_get_fwd_txfm_cfg(rtx_type, rtx_size, &cfg);
-  fwd_txfm2d_c(rinput, txfm_buf, rw, &cfg, output, bd);
-  transpose_int32(output, w, txfm_buf, rw, rw, rh);
-#endif  // NO_FWD_TRANSPOSE
 }
 
 void av1_fwd_txfm2d_32x8_c(const int16_t *input, int32_t *output, int stride,
@@ -334,24 +257,8 @@ void av1_fwd_txfm2d_32x64_c(const int16_t *input, int32_t *output, int stride,
                             TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int32_t, txfm_buf[32 * 64]);
   TXFM_2D_FLIP_CFG cfg;
-#if NO_FWD_TRANSPOSE
   av1_get_fwd_txfm_cfg(tx_type, TX_32X64, &cfg);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
-#else
-  int16_t rinput[64 * 32];
-  TX_SIZE tx_size = TX_32X64;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int16(rinput, rw, input, stride, w, h);
-  av1_get_fwd_txfm_cfg(rtx_type, rtx_size, &cfg);
-  fwd_txfm2d_c(rinput, txfm_buf, rw, &cfg, output, bd);
-  transpose_int32(output, w, txfm_buf, rw, rw, rh);
-#endif  // NO_FWD_TRANSPOSE
-
   // Zero out the bottom 32x32 area.
   memset(output + 32 * 32, 0, 32 * 32 * sizeof(*output));
   // Note: no repacking needed here.
@@ -378,23 +285,8 @@ void av1_fwd_txfm2d_16x64_c(const int16_t *input, int32_t *output, int stride,
                             TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int32_t, txfm_buf[64 * 16]);
   TXFM_2D_FLIP_CFG cfg;
-#if NO_FWD_TRANSPOSE
   av1_get_fwd_txfm_cfg(tx_type, TX_16X64, &cfg);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
-#else
-  int16_t rinput[64 * 16];
-  TX_SIZE tx_size = TX_16X64;
-  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
-  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  int rw = h;
-  int rh = w;
-  transpose_int16(rinput, rw, input, stride, w, h);
-  av1_get_fwd_txfm_cfg(rtx_type, rtx_size, &cfg);
-  fwd_txfm2d_c(rinput, txfm_buf, rw, &cfg, output, bd);
-  transpose_int32(output, w, txfm_buf, rw, rw, rh);
-#endif  // NO_FWD_TRANSPOSE
   // Zero out the bottom 16x32 area.
   memset(output + 16 * 32, 0, 16 * 32 * sizeof(*output));
   // Note: no repacking needed here.
