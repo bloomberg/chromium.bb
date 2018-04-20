@@ -158,9 +158,13 @@ void DefaultGpuHost::DestroyVizMain() {
 
 void DefaultGpuHost::DidInitialize(
     const gpu::GPUInfo& gpu_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info) {
+    const gpu::GpuFeatureInfo& gpu_feature_info,
+    const gpu::GPUInfo& gpu_info_for_hardware_gpu,
+    const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu) {
   gpu_info_ = gpu_info;
   gpu_feature_info_ = gpu_feature_info;
+  gpu_info_for_hardware_gpu_ = gpu_info_for_hardware_gpu;
+  gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_for_hardware_gpu;
   delegate_->OnGpuServiceInitialized();
 }
 

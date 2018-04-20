@@ -13,8 +13,13 @@ import "url/mojom/url.mojom";
 // Communication channel from the gpu process to the gpu host. This interface
 // should never have any sync function calls.
 interface GpuHost {
+  // If |gpu_info| and |gpu_feature_info| are for hardware GPU, then
+  // |gpu_info_for_hardware_gpu| and |gpu_feature_info_for_hardware_gpu| can
+  // be uninitialized data.
   DidInitialize(gpu.mojom.GpuInfo gpu_info,
-                gpu.mojom.GpuFeatureInfo gpu_feature_info);
+                gpu.mojom.GpuFeatureInfo gpu_feature_info,
+                gpu.mojom.GpuInfo gpu_info_for_hardware_gpu,
+                gpu.mojom.GpuFeatureInfo gpu_feature_info_for_hardware_gpu);
   DidFailInitialize();
 
   DidCreateContextSuccessfully();
