@@ -53,6 +53,8 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     private Bitmap mPageMediaImage;
     @VisibleForTesting
     Bitmap mFavicon;
+    // Set to true if favicon update callback was called at least once for the current tab.
+    private boolean mMaybeHasFavicon;
     private Bitmap mCurrentMediaImage;
     private String mOrigin;
     @VisibleForTesting
@@ -444,6 +446,8 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     private void updateFavicon(Bitmap icon) {
         if (icon == null) return;
 
+        mMaybeHasFavicon = true;
+
         // Store the favicon only if notification is being shown. Otherwise the favicon is
         // obtained from large icon bridge when needed.
         if (isNotificationHiddingOrHidden() || mPageMediaImage != null) return;
@@ -537,6 +541,10 @@ public class MediaSessionTabHelper implements MediaImageCallback {
      * @return if the favicon will be updated.
      */
     private boolean fetchFaviconImage() {
+        // The page does not have a favicon yet to fetch since onFaviconUpdated was never called.
+        // Don't waste time trying to find it.
+        if (!mMaybeHasFavicon) return false;
+
         if (mTab == null) return false;
         WebContents webContents = mTab.getWebContents();
         if (webContents == null) return false;
