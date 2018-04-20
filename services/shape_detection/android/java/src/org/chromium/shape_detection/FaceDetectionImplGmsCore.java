@@ -103,9 +103,10 @@ public class FaceDetectionImplGmsCore implements FaceDetection {
                         || landmarkType == Landmark.BOTTOM_MOUTH) {
                     org.chromium.shape_detection.mojom.Landmark mojoLandmark =
                             new org.chromium.shape_detection.mojom.Landmark();
-                    mojoLandmark.location = new org.chromium.gfx.mojom.PointF();
-                    mojoLandmark.location.x = landmark.getPosition().x;
-                    mojoLandmark.location.y = landmark.getPosition().y;
+                    mojoLandmark.locations = new org.chromium.gfx.mojom.PointF[1];
+                    mojoLandmark.locations[0] = new org.chromium.gfx.mojom.PointF();
+                    mojoLandmark.locations[0].x = landmark.getPosition().x;
+                    mojoLandmark.locations[0].y = landmark.getPosition().y;
                     mojoLandmark.type = landmarkType == Landmark.BOTTOM_MOUTH ? LandmarkType.MOUTH
                                                                               : LandmarkType.EYE;
                     mojoLandmarks.add(mojoLandmark);
