@@ -19,19 +19,6 @@ class SharedBitmapManager {
   SharedBitmapManager() {}
   virtual ~SharedBitmapManager() {}
 
-  // Allocate a shared bitmap that can be given to the display compositor.
-  virtual std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
-      const gfx::Size&,
-      ResourceFormat) = 0;
-
-  // The following methods are only used by the display compositor, but are on
-  // the base interface in order to allow tests (or prod) to implement the
-  // display and client implementations with the same type, in lieu of having
-  // the ServerSharedBitmapManager and ClientSharedBitmapManager be separate
-  // interfaces instead of this single one.
-  // TODO(crbug.com/730660): Intent is to remove the ClientSharedBitmapManager
-  // over time, and make SharedBitmapManager a display-compositor-only concept.
-
   // Used in the display compositor to find the bitmap associated with an id.
   virtual std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,

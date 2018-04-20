@@ -24,7 +24,6 @@ mojom("interfaces") {
     "compositing/resource_settings.mojom",
     "compositing/returned_resource.mojom",
     "compositing/selection.mojom",
-    "compositing/shared_bitmap_allocation_notifier.mojom",
     "compositing/shared_quad_state.mojom",
     "compositing/surface_id.mojom",
     "compositing/surface_info.mojom",

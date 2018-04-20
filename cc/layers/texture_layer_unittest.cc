@@ -105,7 +105,7 @@ class MockReleaseCallback {
                     const gpu::SyncToken& sync_token,
                     bool lost_resource));
   MOCK_METHOD3(Release2,
-               void(viz::SharedBitmap* shared_bitmap,
+               void(const viz::SharedBitmapId& shared_bitmap_id,
                     const gpu::SyncToken& sync_token,
                     bool lost_resource));
 };
@@ -133,14 +133,12 @@ struct CommonResourceObjects {
     resource2_ = viz::TransferableResource::MakeGL(
         mailbox_name2_, GL_LINEAR, arbitrary_target2, sync_token2_);
     gfx::Size size(128, 128);
-    shared_bitmap_ = manager->AllocateSharedBitmap(size, viz::RGBA_8888);
-    DCHECK(shared_bitmap_);
+    shared_bitmap_id_ = viz::SharedBitmap::GenerateId();
     release_callback3_ =
         base::Bind(&MockReleaseCallback::Release2,
-                   base::Unretained(&mock_callback_), shared_bitmap_.get());
+                   base::Unretained(&mock_callback_), shared_bitmap_id_);
     resource3_ = viz::TransferableResource::MakeSoftware(
-        shared_bitmap_->id(), shared_bitmap_->sequence_number(), size,
-        viz::RGBA_8888);
+        shared_bitmap_id_, /*sequence_number=*/0, size, viz::RGBA_8888);
   }
 
   using RepeatingReleaseCallback =
@@ -155,7 +153,7 @@ struct CommonResourceObjects {
   RepeatingReleaseCallback release_callback3_;
   gpu::SyncToken sync_token1_;
   gpu::SyncToken sync_token2_;
-  std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
+  viz::SharedBitmapId shared_bitmap_id_;
   viz::TransferableResource resource1_;
   viz::TransferableResource resource2_;
   viz::TransferableResource resource3_;
@@ -281,7 +279,7 @@ TEST_F(TextureLayerWithResourceTest, ReplaceMailboxOnMainThreadBeforeCommit) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   EXPECT_CALL(test_data_.mock_callback_,
-              Release2(test_data_.shared_bitmap_.get(), _, false))
+              Release2(test_data_.shared_bitmap_id_, _, false))
       .Times(1);
   test_layer->ClearTexture();
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
@@ -781,9 +779,8 @@ TEST_F(TextureLayerImplWithResourceTest, TestWillDraw) {
       test_data_.mock_callback_,
       Release(test_data_.mailbox_name1_, test_data_.sync_token1_, false))
       .Times(AnyNumber());
-  EXPECT_CALL(
-      test_data_.mock_callback_,
-      Release2(test_data_.shared_bitmap_.get(), gpu::SyncToken(), false))
+  EXPECT_CALL(test_data_.mock_callback_,
+              Release2(test_data_.shared_bitmap_id_, gpu::SyncToken(), false))
       .Times(AnyNumber());
   // Hardware mode.
   {

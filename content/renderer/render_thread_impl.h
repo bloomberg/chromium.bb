@@ -121,7 +121,6 @@ class Extension;
 
 namespace viz {
 class BeginFrameSource;
-class ClientSharedBitmapManager;
 class RasterContextProvider;
 class SyntheticBeginFrameSource;
 }
@@ -376,11 +375,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   VideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
-  }
-
-  viz::ClientSharedBitmapManager* shared_bitmap_manager() const {
-    DCHECK(shared_bitmap_manager_);
-    return shared_bitmap_manager_.get();
   }
 
   NotificationDispatcher* notification_dispatcher() const {
@@ -660,8 +654,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
-
-  std::unique_ptr<viz::ClientSharedBitmapManager> shared_bitmap_manager_;
 
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 

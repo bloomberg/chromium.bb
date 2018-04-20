@@ -30,8 +30,8 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
@@ -119,7 +119,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public TouchEmulatorClient,
       public SyntheticGestureController::Delegate,
       public viz::mojom::CompositorFrameSink,
-      public viz::SharedBitmapAllocationObserver,
       public IPC::Listener {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.
@@ -873,9 +872,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // responsive.
   void StopHangMonitorTimeout();
 
-  // viz::SharedBitmapAllocationObserver implementation.
-  void OnSharedBitmapAllocatedByChild(
-      uint32_t last_shared_bitmap_sequence_number) override;
   void SetupInputRouter();
 
   bool SurfacePropertiesMismatch(
@@ -1139,7 +1135,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   struct {
     viz::LocalSurfaceId local_surface_id;
     viz::CompositorFrame frame;
-    uint32_t max_shared_bitmap_sequence_number = 0;
     viz::mojom::HitTestRegionListPtr hit_test_region_list;
   } saved_frame_;
 

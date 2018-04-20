@@ -23,10 +23,7 @@ namespace viz {
 class BitmapData : public base::RefCountedThreadSafe<BitmapData> {
  public:
   explicit BitmapData(size_t buffer_size) : buffer_size(buffer_size) {}
-  // For shm allocated and shared from a client out-of-process.
   std::unique_ptr<base::SharedMemory> memory;
-  // For memory allocated by the ServerSharedBitmapManager for in-process.
-  std::unique_ptr<uint8_t[]> pixels;
   size_t buffer_size;
 
  private:
@@ -39,31 +36,23 @@ namespace {
 
 class ServerSharedBitmap : public SharedBitmap {
  public:
-  ServerSharedBitmap(uint8_t* pixels,
-                     scoped_refptr<BitmapData> bitmap_data,
-                     const SharedBitmapId& id,
-                     ServerSharedBitmapManager* manager)
-      : SharedBitmap(pixels, id, 0 /* sequence_number */),
-        bitmap_data_(bitmap_data),
-        manager_(manager) {}
+  ServerSharedBitmap(scoped_refptr<BitmapData> bitmap_data,
+                     const SharedBitmapId& id)
+      : SharedBitmap(static_cast<uint8_t*>(bitmap_data->memory->memory()),
+                     id,
+                     0 /* sequence_number */),
+        bitmap_data_(std::move(bitmap_data)) {}
 
   ~ServerSharedBitmap() override {
-    if (manager_)
-      manager_->FreeSharedMemoryFromMap(id());
   }
 
   // SharedBitmap implementation.
   base::UnguessableToken GetCrossProcessGUID() const override {
-    if (!bitmap_data_->memory) {
-      // Locally allocated for in-process use.
-      return {};
-    }
     return bitmap_data_->memory->mapped_id();
   }
 
  private:
   scoped_refptr<BitmapData> bitmap_data_;
-  ServerSharedBitmapManager* manager_;
 };
 
 }  // namespace
@@ -79,26 +68,6 @@ ServerSharedBitmapManager::~ServerSharedBitmapManager() {
 
 ServerSharedBitmapManager* ServerSharedBitmapManager::current() {
   return g_shared_memory_manager.Pointer();
-}
-
-std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::AllocateSharedBitmap(
-    const gfx::Size& size,
-    ResourceFormat format) {
-  DCHECK(IsBitmapFormatSupported(format));
-  base::AutoLock lock(lock_);
-  size_t bitmap_size;
-  if (!ResourceSizes::MaybeSizeInBytes(size, format, &bitmap_size))
-    return nullptr;
-
-  scoped_refptr<BitmapData> data(new BitmapData(bitmap_size));
-  // Bitmaps allocated in server don't need to be shared to other processes, so
-  // allocate them with new instead.
-  data->pixels = std::unique_ptr<uint8_t[]>(new uint8_t[bitmap_size]);
-
-  SharedBitmapId id = SharedBitmap::GenerateId();
-  handle_map_[id] = data;
-  return std::make_unique<ServerSharedBitmap>(data->pixels.get(), data, id,
-                                              this);
 }
 
 std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(
@@ -117,16 +86,11 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(
       bitmap_size > data->buffer_size)
     return nullptr;
 
-  if (data->pixels) {
-    return std::make_unique<ServerSharedBitmap>(data->pixels.get(), data, id,
-                                                nullptr);
-  }
   if (!data->memory->memory()) {
     return nullptr;
   }
 
-  return std::make_unique<ServerSharedBitmap>(
-      static_cast<uint8_t*>(data->memory->memory()), data, id, nullptr);
+  return std::make_unique<ServerSharedBitmap>(data, id);
 }
 
 bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
