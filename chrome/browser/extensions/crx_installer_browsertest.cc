@@ -213,8 +213,6 @@ class ManagementPolicyMock : public extensions::ManagementPolicy::Provider {
 
 class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
  protected:
-  bool ShouldAllowLegacyExtensionManifests() override { return true; }
-
   std::unique_ptr<WebstoreInstaller::Approval> GetApproval(
       const char* manifest_dir,
       const std::string& id,
