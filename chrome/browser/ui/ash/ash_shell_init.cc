@@ -6,9 +6,6 @@
 
 #include <utility>
 
-#include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/magnifier/magnification_controller.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -20,8 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
@@ -85,14 +80,6 @@ AshShellInit::AshShellInit() {
     window_manager_ = CreateMusShell();
   else
     CreateClassicShell();
-
-  ash::Shell* shell = ash::Shell::Get();
-  shell->high_contrast_controller()->SetEnabled(
-      chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
-
-  DCHECK(chromeos::MagnificationManager::Get());
-  shell->magnification_controller()->SetEnabled(
-      chromeos::MagnificationManager::Get()->IsMagnifierEnabled());
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 }
