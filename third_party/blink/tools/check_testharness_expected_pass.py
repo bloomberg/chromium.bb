@@ -14,6 +14,7 @@ all-PASS results for testharness tests when baselines are not found.
 
 import sys
 
+from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 from webkitpy.layout_tests.models.testharness_results import is_all_pass_testharness_result
 
 paths = []
