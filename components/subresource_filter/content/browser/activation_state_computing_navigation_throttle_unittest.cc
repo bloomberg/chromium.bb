@@ -21,6 +21,7 @@
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
@@ -31,6 +32,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace subresource_filter {
+
+namespace {
+
+// Histogram name on thread timers. Please, use |ExpectThreadTimers| for
+// expectation calls corrections.
+constexpr char kActivationCPU[] =
+    "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
+
+int ExpectThreadTimers(int expected) {
+  return ScopedThreadTimers::IsSupported() ? expected : 0;
+}
+
+}  // namespace
 
 namespace proto = url_pattern_index::proto;
 
@@ -501,27 +515,28 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DelayMetrics) {
 TEST_P(ActivationStateComputingThrottleSubFrameTest, Speculation) {
   // Use the activation performance metric as a proxy for how many times
   // activation computation occurred.
-  const char kActivationCPU[] =
-      "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
+  base::HistogramTester main_histogram_tester;
 
   // Main frames don't do speculative lookups, a navigation commit should only
   // trigger a single ruleset lookup.
-  base::HistogramTester main_histogram_tester;
   CreateTestNavigationForMainFrame(GURL("http://example.test/"));
   SimulateStartAndExpectToProceed();
   base::RunLoop().RunUntilIdle();
   int main_frame_checks = dryrun_speculation() ? 1 : 0;
-  main_histogram_tester.ExpectTotalCount(kActivationCPU, main_frame_checks);
+  main_histogram_tester.ExpectTotalCount(kActivationCPU,
+                                         ExpectThreadTimers(main_frame_checks));
 
   SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
   base::RunLoop().RunUntilIdle();
   main_frame_checks += dryrun_speculation() ? 1 : 0;
-  main_histogram_tester.ExpectTotalCount(kActivationCPU, main_frame_checks);
+  main_histogram_tester.ExpectTotalCount(kActivationCPU,
+                                         ExpectThreadTimers(main_frame_checks));
 
   NotifyPageActivation(ActivationState(ActivationLevel::ENABLED));
   SimulateCommitAndExpectToProceed();
   main_frame_checks += dryrun_speculation() ? 0 : 1;
-  main_histogram_tester.ExpectTotalCount(kActivationCPU, main_frame_checks);
+  main_histogram_tester.ExpectTotalCount(kActivationCPU,
+                                         ExpectThreadTimers(main_frame_checks));
 
   base::HistogramTester sub_histogram_tester;
   CreateSubframeAndInitTestNavigation(GURL("http://example.test/"),
@@ -530,16 +545,16 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, Speculation) {
   // For subframes, do a ruleset lookup at the start and every redirect.
   SimulateStartAndExpectToProceed();
   base::RunLoop().RunUntilIdle();
-  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 1);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, ExpectThreadTimers(1));
 
   SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
   base::RunLoop().RunUntilIdle();
-  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 2);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, ExpectThreadTimers(2));
 
   // No ruleset lookup required at commit because we've already checked the
   // latest URL.
   SimulateCommitAndExpectToProceed();
-  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 2);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, ExpectThreadTimers(2));
 }
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
@@ -548,8 +563,6 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
   // Use the activation performance metric as a proxy for how many times
   // activation computation occurred.
   base::HistogramTester main_histogram_tester;
-  const char kActivationCPU[] =
-      "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
 
   // Main frames will do speculative lookup only in some cases.
   auto simulator = content::NavigationSimulator::CreateRendererInitiated(
@@ -571,8 +584,8 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
   simple_task_runner()->RunPendingTasks();
   // If speculation was enabled for this test, will do a lookup at start and
   // redirect.
-  main_histogram_tester.ExpectTotalCount(kActivationCPU,
-                                         dryrun_speculation() ? 2 : 1);
+  main_histogram_tester.ExpectTotalCount(
+      kActivationCPU, ExpectThreadTimers(dryrun_speculation() ? 2 : 1));
   simulator->Wait();
   EXPECT_FALSE(simulator->IsDeferred());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -611,7 +624,7 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
   EXPECT_FALSE(subframe_simulator->IsDeferred());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             simulator->GetLastThrottleCheckResult());
-  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 2);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, ExpectThreadTimers(2));
 }
 
 INSTANTIATE_TEST_CASE_P(,
