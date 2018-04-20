@@ -36,6 +36,7 @@ source_set("browser") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/prefs:prefs",
+    "//components/prefs/ios",
     "//google_apis",
     "//ios/web",
     "//ui/gfx/geometry",

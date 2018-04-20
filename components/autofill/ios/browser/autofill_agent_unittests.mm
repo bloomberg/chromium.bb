@@ -41,9 +41,15 @@ class AutofillAgentTests : public PlatformTest {
                                           webState:&test_web_state_];
   }
 
+  void TearDown() override {
+    [autofill_agent_ detachFromWebState];
+
+    PlatformTest::TearDown();
+  }
+
   web::TestWebState test_web_state_;
-  AutofillAgent* autofill_agent_;
   std::unique_ptr<PrefService> prefs_;
+  AutofillAgent* autofill_agent_;
   id mock_js_injection_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgentTests);
