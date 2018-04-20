@@ -81,7 +81,7 @@ void CameraDeviceDelegate::AllocateAndStart(
 
   // We need to get the static camera metadata of the camera device first.
   camera_hal_delegate_->GetCameraInfo(
-      camera_id_, BindToCurrentLoop(base::Bind(
+      camera_id_, BindToCurrentLoop(base::BindOnce(
                       &CameraDeviceDelegate::OnGotCameraInfo, GetWeakPtr())));
 }
 
@@ -111,7 +111,8 @@ void CameraDeviceDelegate::StopAndDeAllocate(
     return;
   }
   stream_buffer_manager_->StopCapture();
-  device_ops_->Close(base::Bind(&CameraDeviceDelegate::OnClosed, GetWeakPtr()));
+  device_ops_->Close(
+      base::BindOnce(&CameraDeviceDelegate::OnClosed, GetWeakPtr()));
 }
 
 void CameraDeviceDelegate::TakePhoto(
@@ -223,12 +224,12 @@ void CameraDeviceDelegate::OnGotCameraInfo(
   // |device_ops_| is bound after the MakeRequest call.
   cros::mojom::Camera3DeviceOpsRequest device_ops_request =
       mojo::MakeRequest(&device_ops_);
-  device_ops_.set_connection_error_handler(
-      base::Bind(&CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
+  device_ops_.set_connection_error_handler(base::BindOnce(
+      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
   camera_hal_delegate_->OpenDevice(
       camera_id_, std::move(device_ops_request),
       BindToCurrentLoop(
-          base::Bind(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
+          base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
 }
 
 void CameraDeviceDelegate::OnOpenedDevice(int32_t result) {
@@ -267,7 +268,7 @@ void CameraDeviceDelegate::Initialize() {
       ipc_task_runner_);
   device_ops_->Initialize(
       std::move(callback_ops_ptr),
-      base::Bind(&CameraDeviceDelegate::OnInitialized, GetWeakPtr()));
+      base::BindOnce(&CameraDeviceDelegate::OnInitialized, GetWeakPtr()));
 }
 
 void CameraDeviceDelegate::OnInitialized(int32_t result) {
@@ -317,7 +318,7 @@ void CameraDeviceDelegate::ConfigureStreams() {
       CAMERA3_STREAM_CONFIGURATION_NORMAL_MODE;
   device_ops_->ConfigureStreams(
       std::move(stream_config),
-      base::Bind(&CameraDeviceDelegate::OnConfiguredStreams, GetWeakPtr()));
+      base::BindOnce(&CameraDeviceDelegate::OnConfiguredStreams, GetWeakPtr()));
 }
 
 void CameraDeviceDelegate::OnConfiguredStreams(
@@ -368,8 +369,8 @@ void CameraDeviceDelegate::ConstructDefaultRequestSettings() {
 
   device_ops_->ConstructDefaultRequestSettings(
       cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_PREVIEW,
-      base::Bind(&CameraDeviceDelegate::OnConstructedDefaultRequestSettings,
-                 GetWeakPtr()));
+      base::BindOnce(&CameraDeviceDelegate::OnConstructedDefaultRequestSettings,
+                     GetWeakPtr()));
 }
 
 void CameraDeviceDelegate::OnConstructedDefaultRequestSettings(

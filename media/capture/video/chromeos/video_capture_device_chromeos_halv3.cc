@@ -82,7 +82,7 @@ void VideoCaptureDeviceChromeOSHalv3::StopAndDeAllocate() {
   if (!camera_device_delegate_) {
     return;
   }
-  CloseDevice(base::Closure());
+  CloseDevice(base::OnceClosure());
   camera_device_ipc_thread_.Stop();
   camera_device_delegate_.reset();
   device_context_.reset();
@@ -154,7 +154,7 @@ void VideoCaptureDeviceChromeOSHalv3::OpenDevice() {
                             camera_device_delegate_->GetWeakPtr(), rotation_));
 }
 
-void VideoCaptureDeviceChromeOSHalv3::CloseDevice(base::Closure callback) {
+void VideoCaptureDeviceChromeOSHalv3::CloseDevice(base::OnceClosure callback) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   if (!camera_device_delegate_) {
