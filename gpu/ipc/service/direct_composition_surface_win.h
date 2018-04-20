@@ -42,6 +42,8 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();
 
+  static void EnableScaledOverlaysForTesting();
+
   bool InitializeNativeWindow();
 
   // GLSurfaceEGL implementation.
