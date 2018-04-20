@@ -79,9 +79,9 @@ namespace {
 // TODO(dschuyler): Make BitmapFetcherService use the more typical non-owning
 // ObserverList pattern and have ChromeOmniboxClient implement the Observer
 // call directly.
-class AnswerImageObserver : public BitmapFetcherService::Observer {
+class RichSuggestionImageObserver : public BitmapFetcherService::Observer {
  public:
-  explicit AnswerImageObserver(const BitmapFetchedCallback& callback)
+  explicit RichSuggestionImageObserver(const BitmapFetchedCallback& callback)
       : callback_(callback) {}
 
   void OnImageChanged(BitmapFetcherService::RequestId request_id,
@@ -90,10 +90,10 @@ class AnswerImageObserver : public BitmapFetcherService::Observer {
  private:
   const BitmapFetchedCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(AnswerImageObserver);
+  DISALLOW_COPY_AND_ASSIGN(RichSuggestionImageObserver);
 };
 
-void AnswerImageObserver::OnImageChanged(
+void RichSuggestionImageObserver::OnImageChanged(
     BitmapFetcherService::RequestId request_id,
     const SkBitmap& image) {
   DCHECK(!image.empty());
@@ -323,7 +323,7 @@ void ChromeOmniboxClient::OnResultChanged(
 
     request_id_ = image_service->RequestImage(
         match->answer->second_line().image_url(),
-        new AnswerImageObserver(
+        new RichSuggestionImageObserver(
             base::BindRepeating(&ChromeOmniboxClient::OnBitmapFetched,
                                 base::Unretained(this), on_bitmap_fetched)),
         traffic_annotation);
