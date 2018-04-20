@@ -277,7 +277,7 @@ TEST_P(QuantizeTest, MultipleQ) {
 
 // Force the coeff to be half the value of the dequant.  This exposes a
 // mismatch found in av1_quantize_fp_sse2().
-TEST_P(QuantizeTest, DISABLED_CoeffHalfDequant) {
+TEST_P(QuantizeTest, CoeffHalfDequant) {
   FillCoeff(16);
   QuantizeRun(false, 25, 1);
 }
