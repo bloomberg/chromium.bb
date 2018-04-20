@@ -101,6 +101,7 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
   const bool effects_only_;
   base::OnceClosure eos_cb_;
   const int64_t push_limit_us_;
+  const int playback_rate_change_count_;
   const int64_t playback_rate_change_interval_us_;
   float original_playback_rate_;
   float playback_rate_;
@@ -121,7 +122,9 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
 
 }  // namespace
 
-using TestParams = std::tuple<int /* sample rate */, float /* playback rate */>;
+using TestParams = std::tuple<int /* sample rate */,
+                              float /* playback rate */,
+                              bool /* change_playback_rate */>;
 
 class MultizoneBackendTest : public testing::TestWithParam<TestParams> {
  public:
@@ -170,6 +173,7 @@ BufferFeeder::BufferFeeder(const AudioConfig& config,
       effects_only_(effects_only),
       eos_cb_(std::move(eos_cb)),
       push_limit_us_(effects_only_ ? 0 : kPushTimeUs),
+      playback_rate_change_count_(playback_rate_change_count),
       playback_rate_change_interval_us_(push_limit_us_ /
                                         (playback_rate_change_count + 1)),
       original_playback_rate_(1.0f),
@@ -223,8 +227,9 @@ void BufferFeeder::FeedBuffer() {
   if (feeding_completed_)
     return;
 
-  if (!effects_only_ && pushed_us_ > pushed_us_when_rate_changed_ +
-                                         playback_rate_change_interval_us_) {
+  if (playback_rate_change_count_ > 1 && !effects_only_ &&
+      pushed_us_ >
+          pushed_us_when_rate_changed_ + playback_rate_change_interval_us_) {
     pushed_us_when_rate_changed_ = pushed_us_;
     if (playback_rate_ != original_playback_rate_) {
       playback_rate_ = original_playback_rate_;
@@ -369,8 +374,10 @@ TEST_P(MultizoneBackendTest, RenderingDelay) {
   const TestParams& params = GetParam();
   int sample_rate = testing::get<0>(params);
   float playback_rate = testing::get<1>(params);
+  bool change_playback_rate = testing::get<2>(params);
+  int playback_rate_change_count = (change_playback_rate ? 1 : 0);
 
-  Initialize(sample_rate, 1 /* playback_rate_change_count */);
+  Initialize(sample_rate, playback_rate_change_count);
   AddEffectsStreams();
   Start(playback_rate);
 }
@@ -393,13 +400,14 @@ INSTANTIATE_TEST_CASE_P(
                                        32000,
                                        44100,
                                        48000),
-                     ::testing::Values(0.5f, 0.99f, 1.0f, 1.01f, 2.0f)));
+                     ::testing::Values(0.5f, 0.99f, 1.0f, 1.01f, 2.0f),
+                     ::testing::Values(true)));
 
-INSTANTIATE_TEST_CASE_P(
-    Optional,
-    MultizoneBackendTest,
-    testing::Combine(::testing::Values(64000, 88200, 96000),
-                     ::testing::Values(0.5f, 0.99f, 1.0f, 1.01f, 2.0f)));
+INSTANTIATE_TEST_CASE_P(Optional,
+                        MultizoneBackendTest,
+                        testing::Combine(::testing::Values(64000, 88200, 96000),
+                                         ::testing::Values(1.0f),
+                                         ::testing::Values(false)));
 
 }  // namespace media
 }  // namespace chromecast
