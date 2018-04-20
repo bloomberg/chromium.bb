@@ -55,8 +55,6 @@ void av1_iidentity16_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                        const int8_t *stage_range);
 void av1_iidentity32_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                        const int8_t *stage_range);
-void av1_iidentity64_c(const int32_t *input, int32_t *output, int8_t cos_bit,
-                       const int8_t *stage_range);
 
 #ifdef __cplusplus
 }

@@ -1546,15 +1546,6 @@ void av1_fidentity32_c(const int32_t *input, int32_t *output, int8_t cos_bit,
   range_check(0, input, output, 32, stage_range[0]);
 }
 
-void av1_fidentity64_c(const int32_t *input, int32_t *output, int8_t cos_bit,
-                       const int8_t *stage_range) {
-  (void)cos_bit;
-  for (int i = 0; i < 64; ++i)
-    output[i] = round_shift((int64_t)input[i] * 4 * NewSqrt2, NewSqrt2Bits);
-  assert(stage_range[0] + NewSqrt2Bits <= 32);
-  range_check(0, input, output, 64, stage_range[0]);
-}
-
 void av1_fdct64_new(const int32_t *input, int32_t *output, int8_t cos_bit,
                     const int8_t *stage_range) {
   const int32_t size = 64;

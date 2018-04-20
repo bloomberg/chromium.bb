@@ -179,9 +179,9 @@ TEST(AV1FwdTxfm2d, CfgTest) {
     int8_t high_range = libaom_test::high_range_arr[bd_idx];
     for (int tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
       for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-        if ((tx_size_wide[tx_size] == 64 || tx_size_high[tx_size] == 64) &&
-            (tx_type != DCT_DCT && tx_type != IDTX && tx_type != V_DCT &&
-             tx_type != H_DCT)) {
+        if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(tx_size),
+                                           static_cast<TX_TYPE>(tx_type)) ==
+            false) {
           continue;
         }
         TXFM_2D_FLIP_CFG cfg;
@@ -212,11 +212,11 @@ void AV1FwdTxfm2dMatchTest(TX_SIZE tx_size, lowbd_fwd_txfm_func target_func) {
   const int cols = tx_size_wide[tx_size];
   // printf("%d x %d\n", cols, rows);
   for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-    if ((rows >= 32 || cols >= 32) && tx_type != DCT_DCT && tx_type != IDTX &&
-        tx_type != V_DCT && tx_type != H_DCT) {
-      // No ADST for large size transforms.
+    if (libaom_test::isTxSizeTypeValid(
+            tx_size, static_cast<TX_TYPE>(tx_type)) == false) {
       continue;
     }
+
     FwdTxfm2dFunc ref_func = libaom_test::fwd_txfm_func_ls[tx_size];
     if (ref_func != NULL) {
       DECLARE_ALIGNED(16, int16_t, input[64 * 64]) = { 0 };

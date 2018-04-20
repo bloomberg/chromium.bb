@@ -189,8 +189,9 @@ TEST(AV1InvTxfm2d, CfgTest) {
     int8_t high_range = libaom_test::high_range_arr[bd_idx];
     for (int tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
       for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-        if ((tx_size_wide[tx_size] == 64 || tx_size_high[tx_size] == 64) &&
-            tx_type != DCT_DCT) {
+        if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(tx_size),
+                                           static_cast<TX_TYPE>(tx_type)) ==
+            false) {
           continue;
         }
         TXFM_2D_FLIP_CFG cfg;
@@ -215,20 +216,6 @@ typedef ::testing::tuple<const LbdInvTxfm2dFunc> AV1LbdInvTxfm2dParam;
 class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
  public:
   virtual void SetUp() { target_func_ = GET_PARAM(0); }
-
-  bool ValidTypeSize(TX_TYPE tx_type, TX_SIZE tx_size) const {
-    const int rows = tx_size_wide[tx_size];
-    const int cols = tx_size_high[tx_size];
-    const TX_TYPE_1D vtype = vtx_tab[tx_type];
-    const TX_TYPE_1D htype = htx_tab[tx_type];
-    if (rows >= 32 && (htype == ADST_1D || htype == FLIPADST_1D)) {
-      return false;
-    } else if (cols >= 32 && (vtype == ADST_1D || vtype == FLIPADST_1D)) {
-      return false;
-    }
-    return true;
-  }
-
   void RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size, int run_times);
 
  private:
@@ -311,8 +298,10 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size,
 TEST_P(AV1LbdInvTxfm2d, match) {
   for (int j = 0; j < (int)(TX_SIZES_ALL); ++j) {
     for (int i = 0; i < (int)TX_TYPES; ++i) {
-      if (ValidTypeSize((TX_TYPE)(i), (TX_SIZE)(j))) {
-        RunAV1InvTxfm2dTest((TX_TYPE)i, (TX_SIZE)(j), 1);
+      if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(j),
+                                         static_cast<TX_TYPE>(i))) {
+        RunAV1InvTxfm2dTest(static_cast<TX_TYPE>(i), static_cast<TX_SIZE>(j),
+                            1);
       }
     }
   }
@@ -321,8 +310,10 @@ TEST_P(AV1LbdInvTxfm2d, match) {
 TEST_P(AV1LbdInvTxfm2d, DISABLED_Speed) {
   for (int j = 0; j < (int)(TX_SIZES_ALL); ++j) {
     for (int i = 0; i < (int)TX_TYPES; ++i) {
-      if (ValidTypeSize((TX_TYPE)(i), (TX_SIZE)(j))) {
-        RunAV1InvTxfm2dTest((TX_TYPE)i, (TX_SIZE)(j), 10000000);
+      if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(j),
+                                         static_cast<TX_TYPE>(i))) {
+        RunAV1InvTxfm2dTest(static_cast<TX_TYPE>(i), static_cast<TX_SIZE>(j),
+                            10000000);
       }
     }
   }

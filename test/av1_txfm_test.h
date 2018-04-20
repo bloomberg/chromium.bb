@@ -22,8 +22,9 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "test/acm_random.h"
-#include "av1/common/enums.h"
 #include "av1/common/av1_txfm.h"
+#include "av1/common/blockd.h"
+#include "av1/common/enums.h"
 #include "./av1_rtcd.h"
 
 namespace libaom_test {
@@ -80,6 +81,19 @@ typedef void (*LbdInvTxfm2dFunc)(const int32_t *, uint8_t *, int, TX_TYPE,
 
 static const int bd = 10;
 static const int input_base = (1 << bd);
+
+static INLINE bool isTxSizeTypeValid(TX_SIZE tx_size, TX_TYPE tx_type) {
+  const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
+  TxSetType tx_set_type;
+  if (tx_size_sqr_up > TX_32X32) {
+    tx_set_type = EXT_TX_SET_DCTONLY;
+  } else if (tx_size_sqr_up == TX_32X32) {
+    tx_set_type = EXT_TX_SET_DCT_IDTX;
+  } else {
+    tx_set_type = EXT_TX_SET_ALL16;
+  }
+  return av1_ext_tx_used[tx_set_type][tx_type];
+}
 
 #if CONFIG_AV1_ENCODER
 

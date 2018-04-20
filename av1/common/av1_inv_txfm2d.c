@@ -32,7 +32,6 @@ static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
     case TXFM_TYPE_IDENTITY8: return av1_iidentity8_c;
     case TXFM_TYPE_IDENTITY16: return av1_iidentity16_c;
     case TXFM_TYPE_IDENTITY32: return av1_iidentity32_c;
-    case TXFM_TYPE_IDENTITY64: return av1_iidentity64_c;
     default: assert(0); return NULL;
   }
 }

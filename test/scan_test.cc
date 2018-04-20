@@ -12,6 +12,7 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "av1/common/scan.h"
 #include "av1/common/txb_common.h"
+#include "test/av1_txfm_test.h"
 
 static int scan_test(const int16_t *scan, const int16_t *iscan, int si, int r,
                      int c, int w) {
@@ -100,9 +101,9 @@ TEST(Av1ScanTest, Dependency) {
     const int rows = get_txb_high((TX_SIZE)tx_size);
     const int cols = get_txb_wide((TX_SIZE)tx_size);
     for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-      if ((rows >= 32 || cols >= 32) && tx_type != DCT_DCT && tx_type != IDTX &&
-          tx_type != V_DCT && tx_type != H_DCT) {
-        // No ADST for large size transforms.
+      if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(tx_size),
+                                         static_cast<TX_TYPE>(tx_type)) ==
+          false) {
         continue;
       }
       SCAN_MODE scan_mode;
