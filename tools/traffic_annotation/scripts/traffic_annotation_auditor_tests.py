@@ -47,7 +47,8 @@ class TrafficAnnotationTestsChecker():
     configs = [
       ["--test-only", "--error-resilient"],  # Similar to trybot.
       ["--test-only"],                       # Failing on any runtime error.
-      ["--test-only", "--no-filtering"]      # Not using heuristic filtering.
+      # TODO(https://crbug.com/690323): Reenable the test.
+      # ["--test-only", "--no-filtering"]      # Not using heuristic filtering.
     ]
 
     last_result = None
@@ -64,10 +65,11 @@ class TrafficAnnotationTestsChecker():
 
 
   def CheckOutputExpectations(self):
-    # TODO(rhalavati): Add tests to check for an expected minimum number of
-    # items for each type of pattern that auditor extracts. E.g., we should have
-    # many annotations of each type (complete, partial, ...), functions that
-    # need annotations, direct assignment to mutable annotations, etc.
+    # TODO(https://crbug.com/690323): Add tests to check for an expected minimum
+    # number of items for each type of pattern that auditor extracts. E.g., we
+    # should have many annotations of each type (complete, partial, ...),
+    # functions that need annotations, direct assignment to mutable annotations,
+    # etc.
     return True
 
 
