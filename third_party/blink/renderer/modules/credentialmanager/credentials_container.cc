@@ -79,11 +79,12 @@ class ScopedPromiseResolver {
  private:
   void OnConnectionError() {
     // The only anticapted reason for a connection error is that the embedder
-    // does not implement mojom::CredentialManager, so go out on a limb and try
-    // to provide an actionable error message.
+    // does not implement mojom::CredentialManager, or mojom::AuthenticatorImpl,
+    //  so go out on a limb and try to provide an actionable error message.
     resolver_->Reject(DOMException::Create(
         kNotSupportedError,
-        "The user agent does not implement a password store."));
+        "The user agent either does not implement a password store or does"
+        "not support public key credentials."));
   }
 
   Persistent<ScriptPromiseResolver> resolver_;
