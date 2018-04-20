@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import contextlib
+import mock
 import os
 import tempfile
 
@@ -755,3 +756,83 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
     chroot_path = os.path.join(self.build_root, 'chroot')
     stage = self.ConstructStage()
     self.assertTrue(stage.CanReuseChroot(chroot_path))
+
+  def testChrootSnapshotClobber(self):
+    self._Prepare(
+        extra_cmd_args=['--clobber'],
+        extra_config={'chroot_use_image': True, 'chroot_replace': False})
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    osutils.Touch(chroot_path + '.img')
+    stage = self.ConstructStage()
+    self.assertFalse(stage.CanUseChrootSnapshotToDelete(chroot_path))
+
+  def testChrootSnapshotReplace(self):
+    self._Prepare(
+        extra_config={'chroot_use_image': True, 'chroot_replace': True})
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    osutils.Touch(chroot_path + '.img')
+    stage = self.ConstructStage()
+    self.assertFalse(stage.CanUseChrootSnapshotToDelete(chroot_path))
+
+  def testChrootSnapshotNoUseImage(self):
+    self._Prepare(
+        extra_config={'chroot_use_image': False, 'chroot_replace': False})
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    osutils.Touch(chroot_path + '.img')
+    stage = self.ConstructStage()
+    self.assertFalse(stage.CanUseChrootSnapshotToDelete(chroot_path))
+
+  def testChrootSnapshotMissingImage(self):
+    self._Prepare(
+        extra_config={'chroot_use_image': True, 'chroot_replace': False})
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    stage = self.ConstructStage()
+    self.assertFalse(stage.CanUseChrootSnapshotToDelete(chroot_path))
+
+  def testChrootSnapshotAllPass(self):
+    self._Prepare(
+        extra_config={'chroot_use_image': True, 'chroot_replace': False})
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    osutils.Touch(chroot_path + '.img')
+    stage = self.ConstructStage()
+    self.assertTrue(stage.CanUseChrootSnapshotToDelete(chroot_path))
+
+  def testChrootRevertNoSnapshots(self):
+    self.PatchObject(commands, 'ListChrootSnapshots', return_value=[])
+    self._Prepare(
+        extra_config={'chroot_use_image': True, 'chroot_replace': False})
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    osutils.Touch(chroot_path + '.img')
+    stage = self.ConstructStage()
+    self.assertFalse(stage._RevertChrootToCleanSnapshot())
+
+  def testChrootRevertSnapshotNotFound(self):
+    self.PatchObject(commands, 'ListChrootSnapshots', return_value=['snap'])
+    self._Prepare(
+        extra_config={'chroot_use_image': True, 'chroot_replace': False})
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    osutils.Touch(chroot_path + '.img')
+    stage = self.ConstructStage()
+    self.assertFalse(stage._RevertChrootToCleanSnapshot())
+
+  def testChrootCleanSnapshotReplacesAllExisting(self):
+    self.PatchObject(commands, 'ListChrootSnapshots',
+                     return_value=['snap1', 'snap2',
+                                   constants.CHROOT_SNAPSHOT_CLEAN])
+    delete_mock = self.PatchObject(commands, 'DeleteChrootSnapshot',
+                                   return_value=True)
+    create_mock = self.PatchObject(commands, 'CreateChrootSnapshot')
+
+    self._Prepare(
+        extra_config={'chroot_use_image': True, 'chroot_replace': False})
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    osutils.Touch(chroot_path + '.img')
+    stage = self.ConstructStage()
+    stage._CreateCleanSnapshot()
+
+    self.assertEqual(delete_mock.mock_calls, [
+        mock.call(self.build_root, 'snap1'),
+        mock.call(self.build_root, 'snap2'),
+        mock.call(self.build_root, constants.CHROOT_SNAPSHOT_CLEAN)])
+    create_mock.assert_called_with(self.build_root,
+                                   constants.CHROOT_SNAPSHOT_CLEAN)
