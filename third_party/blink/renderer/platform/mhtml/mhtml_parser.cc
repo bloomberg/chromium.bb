@@ -177,9 +177,12 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
 
   mime_parameters_iterator = key_value_pairs.find("date");
   if (mime_parameters_iterator != key_value_pairs.end()) {
-    double ms_since_epoch = ParseDate(mime_parameters_iterator->value);
-    if (!std::isnan(ms_since_epoch))
-      mime_header->date_ = WTF::Time::FromDoubleT(ms_since_epoch / 1000);
+    WTF::Time parsed_time;
+    // Behave like //net and parse time-valued headers with a default time zone
+    // of UTC.
+    if (WTF::Time::FromUTCString(mime_parameters_iterator->value.Utf8().data(),
+                                 &parsed_time))
+      mime_header->date_ = parsed_time;
   }
 
   return mime_header;

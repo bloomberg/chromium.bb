@@ -425,4 +425,48 @@ TEST_F(MHTMLParserTest, MissingBoundary) {
   EXPECT_EQ(0U, resources.size());
 }
 
+TEST_F(MHTMLParserTest, OverflowedDate) {
+  const char mhtml_data[] =
+      "From: <Saved by Blink>\r\n"
+      "Subject: Test Subject\r\n"
+      "Date:May1 922372\r\n"
+      "MIME-Version: 1.0\r\n"
+      "Content-Type: multipart/related;\r\n"
+      "\ttype=\"text/html\";\r\n"
+      "\tboundary=\"BoUnDaRy\"\r\n"
+      "\r\n"
+      "\r\n"
+      "--BoUnDaRy\r\n"
+      "Content-Location: http://www.example.com/page1\r\n"
+      "Content-Type: binary/octet-stream\r\n"
+      "\r\n"
+      "bin\0ary\r\n"
+      "--BoUnDaRy--\r\n";
+
+  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+  EXPECT_EQ(WTF::Time(), creation_time);
+}
+
+TEST_F(MHTMLParserTest, OverflowedDay) {
+  const char mhtml_data[] =
+      "From: <Saved by Blink>\r\n"
+      "Subject: Test Subject\r\n"
+      "Date:94/3/933720368547\r\n"
+      "MIME-Version: 1.0\r\n"
+      "Content-Type: multipart/related;\r\n"
+      "\ttype=\"text/html\";\r\n"
+      "\tboundary=\"BoUnDaRy\"\r\n"
+      "\r\n"
+      "\r\n"
+      "--BoUnDaRy\r\n"
+      "Content-Location: http://www.example.com/page1\r\n"
+      "Content-Type: binary/octet-stream\r\n"
+      "\r\n"
+      "bin\0ary\r\n"
+      "--BoUnDaRy--\r\n";
+
+  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+  EXPECT_EQ(WTF::Time(), creation_time);
+}
+
 }  // namespace blink
