@@ -227,8 +227,7 @@ SkColor GetOmniboxColor(OmniboxPart part,
 
   switch (part) {
     case OmniboxPart::LOCATION_BAR_BACKGROUND:
-      return dark ? SkColorSetRGB(0x28, 0x2C, 0x2F)
-                  : SkColorSetRGB(0xED, 0xEF, 0xF2);
+      return dark ? SkColorSetRGB(0x28, 0x2C, 0x2F) : gfx::kGoogleGrey100;
     case OmniboxPart::LOCATION_BAR_SECURITY_CHIP:
       return GetSecurityChipColor(tint, state);
     case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
