@@ -815,6 +815,7 @@ Shell::~Shell() {
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
   // Alphabetical. TODO(oshima): sort.
+  ash_assistant_controller_.reset();
   magnification_controller_.reset();
   tooltip_controller_.reset();
   event_client_.reset();
