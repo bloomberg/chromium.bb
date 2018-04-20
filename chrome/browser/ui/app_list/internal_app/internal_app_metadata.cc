@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
-#include "ash/resources/grit/ash_resources.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
@@ -36,8 +36,7 @@ const InternalApp* FindInternalApp(const std::string& app_id) {
 const std::vector<InternalApp>& GetInternalAppList() {
   static const base::NoDestructor<std::vector<InternalApp>> internal_app_list(
       {{kInternalAppIdKeyboardShortcutViewer,
-        IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER,
-        IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192,
+        IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER, IDR_SHORTCUT_VIEWER_LOGO_192,
         /*recommendable=*/false,
         /*show_in_launcher=*/false,
         IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},

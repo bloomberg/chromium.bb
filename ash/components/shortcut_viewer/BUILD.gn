@@ -26,11 +26,10 @@ source_set("ksv") {
   defines = [ "KSV_IMPLEMENTATION" ]
 
   deps = [
-    "//ash/components/resources",
     "//ash/components/shortcut_viewer/vector_icons",
     "//ash/components/strings",
     "//ash/public/cpp",
-    "//ash/resources",
+    "//ash/public/cpp/resources:ash_public_unscaled_resources",
     "//cc/paint",
     "//ui/accessibility",
     "//ui/aura",

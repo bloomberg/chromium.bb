@@ -2101,6 +2101,7 @@ split_static_library("ui") {
       "//ash/app_list/presenter",
       "//ash/components/shortcut_viewer:ksv",
       "//ash/public/cpp",
+      "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
       "//ash/strings",
       "//chrome/browser/chromeos",

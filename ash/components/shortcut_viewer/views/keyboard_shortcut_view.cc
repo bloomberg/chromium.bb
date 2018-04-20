@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/components/resources/grit/ash_components_resources.h"
 #include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 #include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_list_view.h"
@@ -14,9 +13,9 @@
 #include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
 #include "base/metrics/user_metrics.h"
@@ -138,7 +137,7 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     window->SetTitle(l10n_util::GetStringUTF16(IDS_KSV_TITLE));
     gfx::ImageSkia* icon =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192);
+            IDR_SHORTCUT_VIEWER_LOGO_192);
     // The new gfx::ImageSkia instance is owned by the window itself.
     window->SetProperty(aura::client::kWindowIconKey,
                         new gfx::ImageSkia(*icon));
