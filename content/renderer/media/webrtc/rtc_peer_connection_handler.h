@@ -285,16 +285,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // automatically disposed when there are no longer any components referencing
   // it.
   scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map_;
-  // Remote stream adapters. Every stream that is in use by the peer connection
-  // has an associated blink and webrtc layer representation of it. This vector
-  // keeps track of the relationship between |webrtc::MediaStreamInterface|s and
-  // |blink::WebMediaStream|s. Remote streams are added and removed from the
-  // peer connection on events fired during |setRemoteDescription|.
-  // TODO(hbos): |RTCPeerConnection::getRemoteStreams| should return all streams
-  // of all receivers and this standalone vector should be removed.
-  // https://crbug.com/741618
-  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-      remote_streams_;
   // Content layer correspondents of |webrtc::RtpSenderInterface|.
   std::vector<std::unique_ptr<RTCRtpSender>> rtp_senders_;
   // Maps |RTCRtpReceiver::getId|s of |webrtc::RtpReceiverInterface|s to the
