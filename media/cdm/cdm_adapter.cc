@@ -412,7 +412,8 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
     return nullptr;
 
   static_assert(
-      CheckSupportedCdmHostVersions(9, 10),
+      CheckSupportedCdmHostVersions(cdm::Host_9::kVersion,
+                                    cdm::Host_10::kVersion),
       "Mismatch between GetCdmHost() and IsSupportedCdmHostVersion()");
 
   DCHECK(IsSupportedCdmHostVersion(host_interface_version));

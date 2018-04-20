@@ -8,10 +8,11 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_key_information.h"
@@ -27,6 +28,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::Values;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -85,20 +87,16 @@ const char kKeyAsJWK[] =
     "}";
 
 // Tests CdmAdapter with the following parameter:
-// - bool: whether experimental CDM interface should be enabled.
+// - int: CDM interface version to test.
 class CdmAdapterTest : public testing::Test,
-                       public testing::WithParamInterface<bool> {
+                       public testing::WithParamInterface<int> {
  public:
   enum ExpectedResult { SUCCESS, FAILURE };
 
-  bool UseExperimentalCdmInterface() { return GetParam(); }
-
   CdmAdapterTest() {
-    // Enable use of External Clear Key CDM.
-    if (UseExperimentalCdmInterface()) {
-      scoped_feature_list_.InitWithFeatures(
-          {media::kSupportExperimentalCdmInterface}, {});
-    }
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kOverrideEnabledCdmInterfaceVersion,
+        base::IntToString(GetCdmInterfaceVersion()));
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
     CdmModule::GetInstance()->Initialize(helper_.LibraryPath(), {});
@@ -110,6 +108,8 @@ class CdmAdapterTest : public testing::Test,
   ~CdmAdapterTest() override { CdmModule::ResetInstanceForTesting(); }
 
  protected:
+  int GetCdmInterfaceVersion() { return GetParam(); }
+
   // Initializes the adapter. |expected_result| tests that the call succeeds
   // or generates an error.
   void InitializeAndExpect(ExpectedResult expected_result) {
@@ -197,12 +197,8 @@ class CdmAdapterTest : public testing::Test,
     if (cdm) {
       ASSERT_EQ(expected_result, SUCCESS)
           << "CDM creation succeeded unexpectedly.";
-
       CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(cdm.get());
-
-      ASSERT_EQ(UseExperimentalCdmInterface(),
-                cdm_adapter->GetInterfaceVersion() >
-                    cdm::ContentDecryptionModule::kVersion);
+      ASSERT_EQ(GetCdmInterfaceVersion(), cdm_adapter->GetInterfaceVersion());
       cdm_ = cdm;
     } else {
       ASSERT_EQ(expected_result, FAILURE) << error_message;
@@ -266,18 +262,12 @@ class CdmAdapterTest : public testing::Test,
   std::string session_id_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmAdapterTest);
 };
 
-INSTANTIATE_TEST_CASE_P(StableCdmInterface,
-                        CdmAdapterTest,
-                        testing::Values(false));
-
-INSTANTIATE_TEST_CASE_P(ExperimentalCdmInterface,
-                        CdmAdapterTest,
-                        testing::Values(true));
+INSTANTIATE_TEST_CASE_P(CDM_9, CdmAdapterTest, Values(9));
+INSTANTIATE_TEST_CASE_P(CDM_10, CdmAdapterTest, Values(10));
 
 TEST_P(CdmAdapterTest, Initialize) {
   InitializeAndExpect(SUCCESS);

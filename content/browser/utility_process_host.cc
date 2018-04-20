@@ -274,6 +274,7 @@ bool UtilityProcessHost::StartProcess() {
 #endif
       switches::kIgnoreCertificateErrors,
       switches::kOverrideUseSoftwareGLForTests,
+      switches::kOverrideEnabledCdmInterfaceVersion,
       switches::kProxyServer,
       switches::kUseFakeDeviceForMediaStream,
       switches::kUseFileForFakeVideoCapture,

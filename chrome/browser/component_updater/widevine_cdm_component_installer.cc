@@ -147,19 +147,17 @@ bool CheckForCompatibleVersion(const base::DictionaryValue& manifest,
 }
 
 // Returns whether the CDM's API versions, as specified in the manifest, are
-// compatible with this Chrome binary.
+// supported in this Chrome binary and not disabled at run time.
 // Checks the module API, CDM interface API, and Host API.
 // This should never fail except in rare cases where the component has not been
 // updated recently or the user downgrades Chrome.
 bool IsCompatibleWithChrome(const base::DictionaryValue& manifest) {
-  return CheckForCompatibleVersion(manifest,
-                                   kCdmModuleVersionsName,
+  return CheckForCompatibleVersion(manifest, kCdmModuleVersionsName,
                                    media::IsSupportedCdmModuleVersion) &&
-         CheckForCompatibleVersion(manifest,
-                                   kCdmInterfaceVersionsName,
-                                   media::IsSupportedCdmInterfaceVersion) &&
-         CheckForCompatibleVersion(manifest,
-                                   kCdmHostVersionsName,
+         CheckForCompatibleVersion(
+             manifest, kCdmInterfaceVersionsName,
+             media::IsSupportedAndEnabledCdmInterfaceVersion) &&
+         CheckForCompatibleVersion(manifest, kCdmHostVersionsName,
                                    media::IsSupportedCdmHostVersion);
 }
 
@@ -237,9 +235,8 @@ class WidevineCdmComponentInstallerPolicy : public ComponentInstallerPolicy {
       const base::DictionaryValue& manifest,
       const base::FilePath& install_dir) override;
   void OnCustomUninstall() override;
-  bool VerifyInstallation(
-      const base::DictionaryValue& manifest,
-      const base::FilePath& install_dir) const override;
+  bool VerifyInstallation(const base::DictionaryValue& manifest,
+                          const base::FilePath& install_dir) const override;
   void ComponentReady(const base::Version& version,
                       const base::FilePath& path,
                       std::unique_ptr<base::DictionaryValue> manifest) override;

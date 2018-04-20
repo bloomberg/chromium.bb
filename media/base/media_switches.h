@@ -81,6 +81,7 @@ MEDIA_EXPORT extern const char kMSEAudioBufferSizeLimit[];
 MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimit[];
 
 MEDIA_EXPORT extern const char kClearKeyCdmPathForTesting[];
+MEDIA_EXPORT extern const char kOverrideEnabledCdmInterfaceVersion[];
 
 #if !defined(OS_ANDROID)
 MEDIA_EXPORT extern const char kEnableInternalMediaSession[];
@@ -124,7 +125,6 @@ MEDIA_EXPORT extern const base::Feature kPreloadMediaEngagementData;
 MEDIA_EXPORT extern const base::Feature kPreloadMetadataSuspend;
 MEDIA_EXPORT extern const base::Feature kResumeBackgroundVideo;
 MEDIA_EXPORT extern const base::Feature kSpecCompliantCanPlayThrough;
-MEDIA_EXPORT extern const base::Feature kSupportExperimentalCdmInterface;
 MEDIA_EXPORT extern const base::Feature kUseAndroidOverlay;
 MEDIA_EXPORT extern const base::Feature kUseAndroidOverlayAggressively;
 MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
