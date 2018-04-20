@@ -9,7 +9,7 @@
 #include <string>
 
 #import "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
@@ -72,8 +72,7 @@ void ExtensionUninstallDialogCocoa::Show() {
 
   NSModalResponse response;
   {
-    base::MessageLoop::ScopedNestableTaskAllower allow_nested(
-        base::MessageLoop::current());
+    base::MessageLoopCurrent::ScopedNestableTaskAllower allow_nested;
     response = [alert runModal];
   }
   if (response == NSAlertFirstButtonReturn) {

@@ -8,6 +8,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -131,7 +132,7 @@ namespace {
 // the counter incremented after emptying that run loop mode.
 void IncrementInModeAndExpect(CFRunLoopMode mode, int result) {
   // Since this task is "ours" rather than a system task, allow nesting.
-  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+  MessageLoopCurrent::ScopedNestableTaskAllower allow;
   int counter = 0;
   auto increment = BindRepeating([](int* i) { ++*i; }, &counter);
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, increment);

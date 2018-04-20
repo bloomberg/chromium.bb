@@ -11,7 +11,7 @@
 #import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/mac/scoped_sending_event.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -261,8 +261,7 @@ void RenderViewContextMenuMac::Show() {
 
   {
     // Make sure events can be pumped while the menu is up.
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
+    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
 
     // Ensure the UI can update while the menu is fading out.
     base::ScopedPumpMessagesInPrivateModes pump_private;

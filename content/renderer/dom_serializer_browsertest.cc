@@ -11,7 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -140,8 +140,7 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
       WebData data(contents.data(), contents.length());
       GetMainFrame()->LoadData(data, "text/html", encoding_info, base_url);
     }
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
+    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     waiter.Wait();
   }
 

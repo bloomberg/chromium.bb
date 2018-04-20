@@ -11,7 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -521,8 +521,7 @@ class TestWriteReadCompletionCallback {
       scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
       rv = stream_->Read(buf.get(), buf->size(), callback.callback());
       if (rv == ERR_IO_PENDING) {
-        base::MessageLoop::ScopedNestableTaskAllower allow(
-            base::MessageLoop::current());
+        base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
         rv = callback.WaitForResult();
       }
       EXPECT_LE(0, rv);
@@ -559,8 +558,7 @@ class TestWriteReadCompletionCallback {
       EXPECT_THAT(stream_->Seek(0, callback64.callback()),
                   IsError(ERR_IO_PENDING));
       {
-        base::MessageLoop::ScopedNestableTaskAllower allow(
-            base::MessageLoop::current());
+        base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
         EXPECT_LE(0, callback64.WaitForResult());
       }
     }

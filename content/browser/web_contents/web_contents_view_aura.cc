@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
@@ -932,8 +932,7 @@ void WebContentsViewAura::StartDragging(
   int result_op = 0;
   {
     gfx::NativeView content_native_view = GetContentNativeView();
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
+    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     result_op = aura::client::GetDragDropClient(root_window)
         ->StartDragAndDrop(data,
                            root_window,

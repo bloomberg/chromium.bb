@@ -6,7 +6,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_sending_event.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -78,8 +78,7 @@ void PopupMenuHelper::ShowPopupMenu(
 
   {
     // Make sure events can be pumped while the menu is up.
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
+    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
 
     // One of the events that could be pumped is |window.close()|.
     // User-initiated event-tracking loops protect against this by

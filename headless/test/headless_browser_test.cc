@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
@@ -197,8 +197,7 @@ std::unique_ptr<runtime::EvaluateResult> HeadlessBrowserTest::EvaluateScript(
 }
 
 void HeadlessBrowserTest::RunAsynchronousTest() {
-  base::MessageLoop::ScopedNestableTaskAllower nestable_allower(
-      base::MessageLoop::current());
+  base::MessageLoopCurrent::ScopedNestableTaskAllower nestable_allower;
   EXPECT_FALSE(run_loop_);
   run_loop_ = std::make_unique<base::RunLoop>();
   PreRunAsynchronousTest();

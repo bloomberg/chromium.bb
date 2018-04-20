@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -92,8 +92,7 @@ void VerifyTestServerCertOnIOThread(
   // a RunLoop when waiting for the notification to allow tasks to run. As this
   // is effectively a _nested_ RunLoop, we need ScopedNestableTaskAllower to
   // allow it.
-  base::MessageLoop::ScopedNestableTaskAllower allow_nested(
-      base::MessageLoop::current());
+  base::MessageLoopCurrent::ScopedNestableTaskAllower allow_nested;
   *verification_result = test_callback.GetResult(cert_verifier->Verify(
       net::CertVerifier::RequestParams(test_server_cert.get(), "127.0.0.1", 0,
                                        std::string(), net::CertificateList()),

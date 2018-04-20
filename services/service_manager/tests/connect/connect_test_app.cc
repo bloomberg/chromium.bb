@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
@@ -132,8 +132,7 @@ class ConnectTestApp : public Service,
     {
       // This message is dispatched as a task on the same run loop, so we need
       // to allow nesting in order to pump additional signals.
-      base::MessageLoop::ScopedNestableTaskAllower allow(
-          base::MessageLoop::current());
+      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       run_loop.Run();
     }
   }
@@ -146,8 +145,7 @@ class ConnectTestApp : public Service,
     {
       base::RunLoop loop;
       class_interface->Ping(base::Bind(&ReceiveString, &ping_response, &loop));
-      base::MessageLoop::ScopedNestableTaskAllower allow(
-          base::MessageLoop::current());
+      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       loop.Run();
     }
     test::mojom::ConnectTestServicePtr service;
@@ -156,8 +154,7 @@ class ConnectTestApp : public Service,
     {
       base::RunLoop loop;
       service->GetTitle(base::Bind(&ReceiveString, &title_response, &loop));
-      base::MessageLoop::ScopedNestableTaskAllower allow(
-          base::MessageLoop::current());
+      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       loop.Run();
     }
     std::move(callback).Run(ping_response, title_response);
@@ -180,8 +177,7 @@ class ConnectTestApp : public Service,
       Connector::TestApi test_api(context()->connector());
       test_api.SetStartServiceCallback(
           base::Bind(&QuitLoop, &loop, &result, &resolved_identity));
-      base::MessageLoop::ScopedNestableTaskAllower allow(
-          base::MessageLoop::current());
+      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       loop.Run();
     }
     std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);

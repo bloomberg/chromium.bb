@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
@@ -1314,7 +1315,7 @@ namespace {
 void FuncThatRuns(TaskList* order, int cookie, RunLoop* run_loop) {
   order->RecordStart(RUNS, cookie);
   {
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    MessageLoopCurrent::ScopedNestableTaskAllower allow;
     run_loop->Run();
   }
   order->RecordEnd(RUNS, cookie);
@@ -1718,8 +1719,8 @@ TEST_P(MessageLoopTypedTest, NestableTasksAllowedExplicitlyInScope) {
       BindOnce(
           [](RunLoop* run_loop) {
             {
-              MessageLoop::ScopedNestableTaskAllower allow_nestable_tasks(
-                  MessageLoop::current());
+              MessageLoopCurrent::ScopedNestableTaskAllower
+                  allow_nestable_tasks;
               EXPECT_TRUE(MessageLoop::current()->NestableTasksAllowed());
             }
             EXPECT_FALSE(MessageLoop::current()->NestableTasksAllowed());

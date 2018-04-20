@@ -10,6 +10,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -54,8 +55,7 @@ FirstRunShowBridge::FirstRunShowBridge(
 void FirstRunShowBridge::ShowDialog(const base::Closure& quit_closure) {
   // Proceeding past the modal dialog requires user interaction. Allow nested
   // tasks to run so that signal handlers operate correctly.
-  base::MessageLoop::ScopedNestableTaskAllower allow_nested(
-      base::MessageLoop::current());
+  base::MessageLoopCurrent::ScopedNestableTaskAllower allow_nested;
   [controller_ show];
   quit_closure.Run();
 }

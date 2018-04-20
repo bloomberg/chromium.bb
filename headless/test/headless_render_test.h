@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -49,8 +49,7 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
    public:
     Sync() {}
     ~Sync() {
-      base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-          base::MessageLoop::current());
+      base::MessageLoopCurrent::ScopedNestableTaskAllower nest_loop;
       run_loop.Run();
     }
     operator base::OnceClosure() { return run_loop.QuitClosure(); }

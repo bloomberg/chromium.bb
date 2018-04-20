@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -57,8 +57,7 @@ void DragBookmarksCocoa(Profile* profile,
   DCHECK(!nodes.empty());
 
   // Allow nested run loop so we get DnD events as we drag this around.
-  base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
-      base::MessageLoop::current());
+  base::MessageLoopCurrent::ScopedNestableTaskAllower nestable_task_allower;
 
   bookmarks::BookmarkNodeData drag_data(nodes);
   drag_data.SetOriginatingProfilePath(profile->GetPath());
