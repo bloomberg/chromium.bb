@@ -33,6 +33,7 @@ using testing::ContainsRegex;
 
 namespace {
 const char kTestHtml[] = "/viewsource/test.html";
+const char kTestNavigationHtml[] = "/viewsource/navigation.html";
 const char kTestMedia[] = "/media/pink_noise_140ms.wav";
 }
 
@@ -465,4 +466,50 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInSubframe) {
   EXPECT_THAT(title, HasSubstr(original_url.host()));
   EXPECT_THAT(title, HasSubstr(original_url.port()));
   EXPECT_THAT(title, HasSubstr(original_url.path()));
+}
+
+// Verify that links clicked from view-source do not send a Referer header.
+// See https://crbug.com/834023.
+IN_PROC_BROWSER_TEST_F(ViewSourceTest, NavigationOmitsReferrer) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(content::kViewSourceScheme + std::string(":") +
+           embedded_test_server()->GetURL(kTestNavigationHtml).spec());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Click the first link in the view-source markup.
+  content::WebContentsAddedObserver nav_observer;
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementsByTagName('A')[0].click();"));
+  content::WebContents* new_contents = nav_observer.GetWebContents();
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+
+  // Validate that no referrer was sent.
+  std::string response_text;
+  std::string response_text_extraction_script =
+      "domAutomationController.send(document.body.innerText);";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      new_contents, response_text_extraction_script, &response_text));
+  EXPECT_EQ("None", response_text);
+}
+
+// Verify that JavaScript URIs are sanitized to about:blank.
+IN_PROC_BROWSER_TEST_F(ViewSourceTest, JavaScriptURISanitized) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(content::kViewSourceScheme + std::string(":") +
+           embedded_test_server()->GetURL(kTestNavigationHtml).spec());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Get the href of the second link in the view-source markup.
+  std::string link_href;
+  std::string link_href_extraction_script = R"(
+      domAutomationController.send(
+          document.getElementsByTagName('A')[1].href);)";
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      link_href_extraction_script, &link_href));
+  EXPECT_EQ("about:blank", link_href);
 }
