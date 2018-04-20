@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -60,6 +61,9 @@ public class ProfilingProcessHostAndroidTest {
     // Non-browser processes must be profiled with a command line flag, since
     // otherwise, profiling will start after the relevant processes have been
     // created, thus that process will be not be profiled.
+    // TODO(erikchen): Figure out what makes this test flaky and re-enable.
+    // https://crbug.com/833590.
+    @DisabledTest
     @Test
     @MediumTest
     @CommandLineFlags.Add({"memlog=all-renderers", "memlog-stack-mode=pseudo"})
