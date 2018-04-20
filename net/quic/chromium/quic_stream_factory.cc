@@ -1712,11 +1712,10 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   HistogramBrokenAlternateProtocolLocation(
       BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
 
-  // Since the session was active, there's no longer an
-  // HttpStreamFactoryImpl::Job running which can mark it broken, unless the TCP
-  // job also fails. So to avoid not using QUIC when we otherwise could, we mark
-  // it as recently broken, which means that 0-RTT will be disabled but we'll
-  // still race.
+  // Since the session was active, there's no longer an HttpStreamFactory::Job
+  // running which can mark it broken, unless the TCP job also fails. So to
+  // avoid not using QUIC when we otherwise could, we mark it as recently
+  // broken, which means that 0-RTT will be disabled but we'll still race.
   http_server_properties_->MarkAlternativeServiceRecentlyBroken(
       alternative_service);
 }

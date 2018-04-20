@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_CONTROLLER_H_
-#define NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_CONTROLLER_H_
+#ifndef NET_HTTP_HTTP_STREAM_FACTORY_JOB_CONTROLLER_H_
+#define NET_HTTP_HTTP_STREAM_FACTORY_JOB_CONTROLLER_H_
 
 #include <memory>
 #include <string>
@@ -11,13 +11,11 @@
 #include "base/cancelable_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"
-#include "net/http/http_stream_factory_impl_job.h"
+#include "net/http/http_stream_factory_job.h"
 #include "net/http/http_stream_request.h"
 #include "net/socket/next_proto.h"
 
 namespace net {
-
-class NetLogWithSource;
 
 namespace test {
 
@@ -25,12 +23,12 @@ class JobControllerPeer;
 
 }  // namespace test
 
-// HttpStreamFactoryImpl::JobController manages Request and Job(s).
-class HttpStreamFactoryImpl::JobController
-    : public HttpStreamFactoryImpl::Job::Delegate,
+// HttpStreamFactory::JobController manages Request and Job(s).
+class HttpStreamFactory::JobController
+    : public HttpStreamFactory::Job::Delegate,
       public HttpStreamRequest::Helper {
  public:
-  JobController(HttpStreamFactoryImpl* factory,
+  JobController(HttpStreamFactory* factory,
                 HttpStreamRequest::Delegate* delegate,
                 HttpNetworkSession* session,
                 JobFactory* job_factory,
@@ -50,9 +48,9 @@ class HttpStreamFactoryImpl::JobController
 
   GURL ApplyHostMappingRules(const GURL& url, HostPortPair* endpoint);
 
-  // Methods below are called by HttpStreamFactoryImpl only.
-  // Creates request and hands out to HttpStreamFactoryImpl, this will also
-  // create Job(s) and start serving the created request.
+  // Methods below are called by HttpStreamFactory only.
+  // Creates request and hands out to HttpStreamFactory, this will also create
+  // Job(s) and start serving the created request.
   std::unique_ptr<HttpStreamRequest> Start(
       HttpStreamRequest::Delegate* delegate,
       WebSocketHandshakeStreamBase::CreateHelper*
@@ -91,7 +89,7 @@ class HttpStreamFactoryImpl::JobController
       const ProxyInfo& used_proxy_info,
       std::unique_ptr<BidirectionalStreamImpl> stream) override;
 
-  // From HttpStreamFactoryImpl::Job::Delegate.
+  // From HttpStreamFactory::Job::Delegate.
   // Invoked when |job| has an HttpStream ready.
   void OnStreamReady(Job* job, const SSLConfig& used_ssl_config) override;
 
@@ -140,7 +138,6 @@ class HttpStreamFactoryImpl::JobController
                         HttpAuthController* auth_controller) override;
 
   bool OnInitConnection(const ProxyInfo& proxy_info) override;
-
 
   // Invoked to notify the Request and Factory of the readiness of new
   // SPDY session.
@@ -313,7 +310,7 @@ class HttpStreamFactoryImpl::JobController
   // Returns true if QUIC is whitelisted for |host|.
   bool IsQuicWhitelistedForHost(const std::string& host);
 
-  HttpStreamFactoryImpl* factory_;
+  HttpStreamFactory* factory_;
   HttpNetworkSession* session_;
   JobFactory* job_factory_;
 
@@ -389,4 +386,4 @@ class HttpStreamFactoryImpl::JobController
 
 }  // namespace net
 
-#endif  // NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_CONTROLLER_H_
+#endif  // NET_HTTP_HTTP_STREAM_FACTORY_JOB_CONTROLLER_H_
