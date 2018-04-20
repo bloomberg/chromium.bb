@@ -87,6 +87,18 @@ struct PPP_Pdf_1_1 {
   // If there is no selected text, append the replacement text after the current
   // caret position.
   void (*ReplaceSelection)(PP_Instance instance, const char* text);
+
+  // Return true if plugin can perform an undo operation.
+  PP_Bool (*CanUndo)(PP_Instance instance);
+
+  // Return true if plugin can perform a redo operation.
+  PP_Bool (*CanRedo)(PP_Instance instance);
+
+  // Perform an undo operation.
+  void (*Undo)(PP_Instance instance);
+
+  // Perform a redo operation.
+  void (*Redo)(PP_Instance instance);
 };
 
 typedef PPP_Pdf_1_1 PPP_Pdf;

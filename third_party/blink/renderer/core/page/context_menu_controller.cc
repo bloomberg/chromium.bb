@@ -397,6 +397,11 @@ bool ContextMenuController::ShowContextMenu(const ContextMenu* default_menu,
 
           if (plugin->HasEditableText())
             data.edit_flags |= WebContextMenuData::kCanSelectAll;
+
+          if (plugin->CanUndo())
+            data.edit_flags |= WebContextMenuData::kCanUndo;
+          if (plugin->CanRedo())
+            data.edit_flags |= WebContextMenuData::kCanRedo;
         }
         // Disable translation for plugins.
         data.edit_flags &= ~WebContextMenuData::kCanTranslate;

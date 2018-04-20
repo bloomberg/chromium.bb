@@ -84,6 +84,10 @@ class OutOfProcessInstance : public pp::Instance,
   bool CanEditText();
   bool HasEditableText();
   void ReplaceSelection(const std::string& text);
+  bool CanUndo();
+  bool CanRedo();
+  void Undo();
+  void Redo();
 
   void FlushCallback(int32_t result);
   void DidOpen(int32_t result);

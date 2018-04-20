@@ -81,11 +81,45 @@ void ReplaceSelection(PP_Instance instance, const char* text) {
       new PpapiMsg_PPPPdf_ReplaceSelection(API_ID_PPP_PDF, instance, text));
 }
 
+PP_Bool CanUndo(PP_Instance instance) {
+  PP_Bool ret = PP_FALSE;
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_CanUndo(API_ID_PPP_PDF, instance, &ret));
+  return ret;
+}
+
+PP_Bool CanRedo(PP_Instance instance) {
+  PP_Bool ret = PP_FALSE;
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_CanRedo(API_ID_PPP_PDF, instance, &ret));
+  return ret;
+}
+
+void Undo(PP_Instance instance) {
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_Undo(API_ID_PPP_PDF, instance));
+}
+
+void Redo(PP_Instance instance) {
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_Redo(API_ID_PPP_PDF, instance));
+}
+
 const PPP_Pdf ppp_pdf_interface = {
-    &GetLinkAtPosition,   &Transform,        &GetPrintPresetOptionsFromDocument,
-    &EnableAccessibility, &SetCaretPosition, &MoveRangeSelectionExtent,
-    &SetSelectionBounds,  &CanEditText,      &HasEditableText,
+    &GetLinkAtPosition,
+    &Transform,
+    &GetPrintPresetOptionsFromDocument,
+    &EnableAccessibility,
+    &SetCaretPosition,
+    &MoveRangeSelectionExtent,
+    &SetSelectionBounds,
+    &CanEditText,
+    &HasEditableText,
     &ReplaceSelection,
+    &CanUndo,
+    &CanRedo,
+    &Undo,
+    &Redo,
 };
 #else
 // The NaCl plugin doesn't need the host side interface - stub it out.
@@ -133,6 +167,10 @@ bool PPP_Pdf_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnPluginMsgHasEditableText)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_ReplaceSelection,
                         OnPluginMsgReplaceSelection)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_CanUndo, OnPluginMsgCanUndo)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_CanRedo, OnPluginMsgCanRedo)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_Undo, OnPluginMsgUndo)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_Redo, OnPluginMsgRedo)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -197,6 +235,26 @@ void PPP_Pdf_Proxy::OnPluginMsgReplaceSelection(PP_Instance instance,
                                                 const std::string& text) {
   if (ppp_pdf_)
     CallWhileUnlocked(ppp_pdf_->ReplaceSelection, instance, text.c_str());
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgCanUndo(PP_Instance instance, PP_Bool* result) {
+  *result =
+      PP_FromBool(ppp_pdf_ && CallWhileUnlocked(ppp_pdf_->CanUndo, instance));
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgCanRedo(PP_Instance instance, PP_Bool* result) {
+  *result =
+      PP_FromBool(ppp_pdf_ && CallWhileUnlocked(ppp_pdf_->CanRedo, instance));
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgUndo(PP_Instance instance) {
+  if (ppp_pdf_)
+    CallWhileUnlocked(ppp_pdf_->Undo, instance);
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgRedo(PP_Instance instance) {
+  if (ppp_pdf_)
+    CallWhileUnlocked(ppp_pdf_->Redo, instance);
 }
 
 }  // namespace proxy

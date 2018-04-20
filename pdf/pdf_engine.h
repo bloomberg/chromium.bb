@@ -324,6 +324,11 @@ class PDFEngine {
   // string. If there is no selected text, append the replacement text after the
   // current caret position.
   virtual void ReplaceSelection(const std::string& text) = 0;
+  // Methods to check if undo/redo is possible, and to perform them.
+  virtual bool CanUndo() = 0;
+  virtual bool CanRedo() = 0;
+  virtual void Undo() = 0;
+  virtual void Redo() = 0;
   virtual std::string GetLinkAtPosition(const pp::Point& point) = 0;
   // Checks the permissions associated with this document.
   virtual bool HasPermission(DocumentPermission permission) const = 0;

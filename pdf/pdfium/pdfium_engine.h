@@ -76,6 +76,10 @@ class PDFiumEngine : public PDFEngine,
   bool CanEditText() override;
   bool HasEditableText() override;
   void ReplaceSelection(const std::string& text) override;
+  bool CanUndo() override;
+  bool CanRedo() override;
+  void Undo() override;
+  void Redo() override;
   std::string GetLinkAtPosition(const pp::Point& point) override;
   bool HasPermission(DocumentPermission permission) const override;
   void SelectAll() override;

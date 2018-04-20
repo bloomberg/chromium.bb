@@ -420,6 +420,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool HasEditableText() override;
   void ReplaceSelection(const std::string& text) override;
   void SelectAll() override;
+  bool CanUndo() override;
+  bool CanRedo() override;
+  void Undo() override;
+  void Redo() override;
 
   // PPB_Instance_API implementation.
   PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) override;

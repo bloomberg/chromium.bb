@@ -163,6 +163,9 @@ class WebPlugin {
   virtual bool CanEditText() const { return false; }
   virtual bool HasEditableText() const { return false; }
 
+  virtual bool CanUndo() const { return false; }
+  virtual bool CanRedo() const { return false; }
+
   virtual bool ExecuteEditCommand(const WebString& name) { return false; }
   virtual bool ExecuteEditCommand(const WebString& name,
                                   const WebString& value) {

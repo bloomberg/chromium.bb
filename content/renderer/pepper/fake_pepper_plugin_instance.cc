@@ -97,4 +97,16 @@ void FakePepperPluginInstance::ReplaceSelection(const std::string& text) {}
 
 void FakePepperPluginInstance::SelectAll() {}
 
+bool FakePepperPluginInstance::CanUndo() {
+  return false;
+}
+
+bool FakePepperPluginInstance::CanRedo() {
+  return false;
+}
+
+void FakePepperPluginInstance::Undo() {}
+
+void FakePepperPluginInstance::Redo() {}
+
 }  // namespace content

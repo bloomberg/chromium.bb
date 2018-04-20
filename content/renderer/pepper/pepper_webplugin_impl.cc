@@ -298,6 +298,14 @@ bool PepperWebPluginImpl::HasEditableText() const {
   return instance_ && instance_->HasEditableText();
 }
 
+bool PepperWebPluginImpl::CanUndo() const {
+  return instance_ && instance_->CanUndo();
+}
+
+bool PepperWebPluginImpl::CanRedo() const {
+  return instance_ && instance_->CanRedo();
+}
+
 bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name) {
   return ExecuteEditCommand(name, WebString());
 }
@@ -339,6 +347,22 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
       return false;
 
     instance_->SelectAll();
+    return true;
+  }
+
+  if (name == "Undo") {
+    if (!CanUndo())
+      return false;
+
+    instance_->Undo();
+    return true;
+  }
+
+  if (name == "Redo") {
+    if (!CanRedo())
+      return false;
+
+    instance_->Redo();
     return true;
   }
 

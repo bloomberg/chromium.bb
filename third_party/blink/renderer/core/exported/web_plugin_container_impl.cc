@@ -417,7 +417,8 @@ bool WebPluginContainerImpl::ExecuteEditCommand(const WebString& name,
 // static
 bool WebPluginContainerImpl::SupportsCommand(const WebString& name) {
   return name == "Copy" || name == "Cut" || name == "Paste" ||
-         name == "PasteAndMatchStyle" || name == "SelectAll";
+         name == "PasteAndMatchStyle" || name == "SelectAll" ||
+         name == "Undo" || name == "Redo";
 }
 
 WebElement WebPluginContainerImpl::GetElement() {

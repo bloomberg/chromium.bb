@@ -284,11 +284,55 @@ void ReplaceSelection(PP_Instance instance, const char* text) {
   }
 }
 
+PP_Bool CanUndo(PP_Instance instance) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (!object)
+    return PP_FALSE;
+
+  auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+  return PP_FromBool(obj_instance->CanUndo());
+}
+
+PP_Bool CanRedo(PP_Instance instance) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (!object)
+    return PP_FALSE;
+
+  auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+  return PP_FromBool(obj_instance->CanRedo());
+}
+
+void Undo(PP_Instance instance) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (object) {
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+    obj_instance->Undo();
+  }
+}
+
+void Redo(PP_Instance instance) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (object) {
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+    obj_instance->Redo();
+  }
+}
+
 const PPP_Pdf ppp_private = {
-    &GetLinkAtPosition,   &Transform,        &GetPrintPresetOptionsFromDocument,
-    &EnableAccessibility, &SetCaretPosition, &MoveRangeSelectionExtent,
-    &SetSelectionBounds,  &CanEditText,      &HasEditableText,
+    &GetLinkAtPosition,
+    &Transform,
+    &GetPrintPresetOptionsFromDocument,
+    &EnableAccessibility,
+    &SetCaretPosition,
+    &MoveRangeSelectionExtent,
+    &SetSelectionBounds,
+    &CanEditText,
+    &HasEditableText,
     &ReplaceSelection,
+    &CanUndo,
+    &CanRedo,
+    &Undo,
+    &Redo,
 };
 
 int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
@@ -996,6 +1040,22 @@ bool OutOfProcessInstance::HasEditableText() {
 
 void OutOfProcessInstance::ReplaceSelection(const std::string& text) {
   engine_->ReplaceSelection(text);
+}
+
+bool OutOfProcessInstance::CanUndo() {
+  return engine_->CanUndo();
+}
+
+bool OutOfProcessInstance::CanRedo() {
+  return engine_->CanRedo();
+}
+
+void OutOfProcessInstance::Undo() {
+  engine_->Undo();
+}
+
+void OutOfProcessInstance::Redo() {
+  engine_->Redo();
 }
 
 uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {
