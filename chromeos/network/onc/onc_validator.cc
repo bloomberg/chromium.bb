@@ -33,6 +33,17 @@ std::vector<T> toVector(T const (&array)[N]) {
   return std::vector<T>(array, array + N);
 }
 
+void AddKeyToList(const char* key, base::Value::ListStorage& list) {
+  base::Value key_value(key);
+  if (!base::ContainsValue(list, key_value))
+    list.push_back(std::move(key_value));
+}
+
+std::string GetStringFromDict(const base::Value& dict, const char* key) {
+  const base::Value* value = dict.FindKeyOfType(key, base::Value::Type::STRING);
+  return value ? value->GetString() : std::string();
+}
+
 }  // namespace
 
 Validator::Validator(bool error_on_unknown_field,
@@ -302,9 +313,7 @@ bool Validator::ValidateClientCertFields(bool allow_cert_type_none,
   if (FieldExistsAndHasNoValidValue(*result, kClientCertType, valid_cert_types))
     return false;
 
-  std::string cert_type;
-  result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
-
+  std::string cert_type = GetStringFromDict(*result, kClientCertType);
   bool all_required_exist = true;
 
   if (cert_type == kPattern)
@@ -570,11 +579,10 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
     all_required_exist &=
         RequireField(*result, kName) && RequireField(*result, kType);
 
-    std::string ip_address_config_type, name_servers_config_type;
-    result->GetStringWithoutPathExpansion(kIPAddressConfigType,
-                                          &ip_address_config_type);
-    result->GetStringWithoutPathExpansion(kNameServersConfigType,
-                                          &name_servers_config_type);
+    std::string ip_address_config_type =
+        GetStringFromDict(*result, kIPAddressConfigType);
+    std::string name_servers_config_type =
+        GetStringFromDict(*result, kNameServersConfigType);
     if (ip_address_config_type == kIPConfigTypeStatic ||
         name_servers_config_type == kIPConfigTypeStatic) {
       // TODO(pneubeck): Add ValidateStaticIPConfig and confirm that the
@@ -582,8 +590,7 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
       all_required_exist &= RequireField(*result, kStaticIPConfig);
     }
 
-    std::string type;
-    result->GetStringWithoutPathExpansion(kType, &type);
+    std::string type = GetStringFromDict(*result, kType);
 
     // Prohibit anything but WiFi and Ethernet for device-level policy (which
     // corresponds to shared networks). See also http://crosbug.com/28741.
@@ -630,8 +637,7 @@ bool Validator::ValidateEthernet(base::DictionaryValue* result) {
   }
 
   bool all_required_exist = true;
-  std::string auth;
-  result->GetStringWithoutPathExpansion(kAuthentication, &auth);
+  std::string auth = GetStringFromDict(*result, kAuthentication);
   if (auth == k8021X)
     all_required_exist &= RequireField(*result, kEAP);
 
@@ -647,8 +653,7 @@ bool Validator::ValidateIPConfig(base::DictionaryValue* result) {
           *result, ::onc::ipconfig::kType, valid_types))
     return false;
 
-  std::string type;
-  result->GetStringWithoutPathExpansion(::onc::ipconfig::kType, &type);
+  std::string type = GetStringFromDict(*result, ::onc::ipconfig::kType);
   int lower_bound = 1;
   // In case of missing type, choose higher upper_bound.
   int upper_bound = (type == kIPv4) ? 32 : 128;
@@ -686,8 +691,7 @@ bool Validator::ValidateWiFi(base::DictionaryValue* result) {
   if (!result->HasKey(kHexSSID))
     all_required_exist &= RequireField(*result, kSSID);
 
-  std::string security;
-  result->GetStringWithoutPathExpansion(kSecurity, &security);
+  std::string security = GetStringFromDict(*result, kSecurity);
   if (security == kWEP_8021X || security == kWPA_EAP)
     all_required_exist &= RequireField(*result, kEAP);
   else if (security == kWEP_PSK || security == kWPA_PSK)
@@ -706,8 +710,7 @@ bool Validator::ValidateVPN(base::DictionaryValue* result) {
     return false;
 
   bool all_required_exist = RequireField(*result, ::onc::vpn::kType);
-  std::string type;
-  result->GetStringWithoutPathExpansion(::onc::vpn::kType, &type);
+  std::string type = GetStringFromDict(*result, ::onc::vpn::kType);
   if (type == kOpenVPN) {
     all_required_exist &= RequireField(*result, kOpenVPN);
   } else if (type == kIPsec) {
@@ -750,8 +753,7 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
 
   bool all_required_exist = RequireField(*result, kAuthenticationType) &&
                             RequireField(*result, kIKEVersion);
-  std::string auth;
-  result->GetStringWithoutPathExpansion(kAuthenticationType, &auth);
+  std::string auth = GetStringFromDict(*result, kAuthenticationType);
   bool has_server_ca_cert =
       result->HasKey(kServerCARefs) || result->HasKey(kServerCARef);
   if (auth == kCert) {
@@ -807,24 +809,35 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
     return false;
   }
 
+  // ONC policy prevents the UI from setting properties that are not explicitly
+  // listed as 'recommended' (i.e. the default is 'enforced'). Historically
+  // the configuration UI ignored this restriction. In order to support legacy
+  // ONC configurations, add recommended entries for user authentication
+  // properties where appropriate.
   if ((onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY ||
-       onc_source_ == ::onc::ONC_SOURCE_USER_POLICY) &&
-      !result->FindKeyOfType(::onc::openvpn::kUserAuthenticationType,
-                             base::Value::Type::STRING)) {
-    // If kUserAuthenticationType is unspecified for a policy controlled
-    // network, allow Password and OTP to be specified by the user by adding
-    // them to the recommended list.
+       onc_source_ == ::onc::ONC_SOURCE_USER_POLICY)) {
     base::Value* recommended =
         result->FindKeyOfType(::onc::kRecommended, base::Value::Type::LIST);
     if (!recommended)
       recommended = result->SetKey(::onc::kRecommended, base::ListValue());
-    base::Value::ListStorage& result_list = recommended->GetList();
-    base::Value password_value(::onc::openvpn::kPassword);
-    if (!base::ContainsValue(result_list, password_value))
-      result_list.push_back(std::move(password_value));
-    base::Value otp_value(::onc::openvpn::kOTP);
-    if (!base::ContainsValue(result_list, otp_value))
-      result_list.push_back(std::move(otp_value));
+
+    // If kUserAuthenticationType is unspecified, allow Password and OTP.
+    base::Value::ListStorage& recommended_list = recommended->GetList();
+    if (!result->FindKeyOfType(::onc::openvpn::kUserAuthenticationType,
+                               base::Value::Type::STRING)) {
+      AddKeyToList(::onc::openvpn::kPassword, recommended_list);
+      AddKeyToList(::onc::openvpn::kOTP, recommended_list);
+    }
+
+    // If client cert type is not provided, empty, or 'None', allow client cert
+    // properties.
+    std::string client_cert_type =
+        GetStringFromDict(*result, ::onc::client_cert::kClientCertType);
+    if (client_cert_type.empty() ||
+        client_cert_type == ::onc::client_cert::kClientCertTypeNone) {
+      AddKeyToList(::onc::client_cert::kClientCertType, recommended_list);
+      AddKeyToList(::onc::client_cert::kClientCertPKCS11Id, recommended_list);
+    }
   }
 
   if (result->HasKey(kServerCARefs) && result->HasKey(kServerCARef)) {
@@ -942,8 +955,7 @@ bool Validator::ValidateProxySettings(base::DictionaryValue* result) {
     return false;
 
   bool all_required_exist = RequireField(*result, ::onc::proxy::kType);
-  std::string type;
-  result->GetStringWithoutPathExpansion(::onc::proxy::kType, &type);
+  std::string type = GetStringFromDict(*result, ::onc::proxy::kType);
   if (type == kManual)
     all_required_exist &= RequireField(*result, kManual);
   else if (type == kPAC)
@@ -1004,8 +1016,7 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
     return false;
   }
 
-  std::string type;
-  result->GetStringWithoutPathExpansion(kType, &type);
+  std::string type = GetStringFromDict(*result, kType);
 
   if (!CheckGuidIsUniqueAndAddToSet(*result, kGUID, &certificate_guids_))
     return false;
@@ -1052,9 +1063,8 @@ bool Validator::ValidateTether(base::DictionaryValue* result) {
     return false;
   }
 
-  std::string carrier;
-  if (!result->GetStringWithoutPathExpansion(kCarrier, &carrier) ||
-      carrier.empty()) {
+  std::string carrier = GetStringFromDict(*result, kCarrier);
+  if (carrier.empty()) {
     // Carrier must be a non-empty string.
     error_or_warning_found_ = true;
     return false;

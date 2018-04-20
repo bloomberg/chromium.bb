@@ -311,6 +311,7 @@ Polymer({
     'updateIsConfigured_(configProperties_, eapProperties_.*)',
     'updateIsConfigured_(configProperties_.WiFi.*)',
     'updateIsConfigured_(configProperties_.VPN.*, vpnType_)',
+    'updateIsConfigured_(selectedUserCertHash_)',
   ],
 
   /** @const */
