@@ -3334,6 +3334,35 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   ASSERT_EQ(0u, parent_layer->children().size());
 }
 
+TEST_F(RenderWidgetHostViewAuraTest, ZeroSizeStillGetsLocalSurfaceId) {
+  gfx::Size frame_size;
+  viz::LocalSurfaceId local_surface_id =
+      parent_local_surface_id_allocator_.GenerateId();
+
+  // Prevent the DelegatedFrameHost from skipping frames.
+  view_->DisableResizeLock();
+
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(frame_size);
+  view_->Show();
+
+  ui::Layer* parent_layer = view_->GetNativeView()->layer();
+  EXPECT_EQ(gfx::Rect(), parent_layer->bounds());
+  EXPECT_EQ(2u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(1);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ(frame_size.ToString(), std::get<0>(params).new_size.ToString());
+    ASSERT_TRUE(std::get<0>(params).local_surface_id.has_value());
+    EXPECT_TRUE(std::get<0>(params).local_surface_id->is_valid());
+  }
+}
+
 TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
   // TODO: fix for mash.
   if (base::FeatureList::IsEnabled(features::kMash))

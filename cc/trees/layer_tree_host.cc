@@ -1055,10 +1055,6 @@ void LayerTreeHost::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
     float device_scale_factor,
     const viz::LocalSurfaceId& local_surface_id) {
-  DCHECK(!local_surface_id.is_valid() || !device_viewport_size.IsEmpty())
-      << "A valid LocalSurfaceId has been provided with an empty device "
-         "viewport size "
-      << local_surface_id;
   if (settings_.enable_surface_synchronization)
     SetLocalSurfaceId(local_surface_id);
 
