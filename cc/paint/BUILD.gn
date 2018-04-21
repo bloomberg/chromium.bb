@@ -67,6 +67,8 @@ cc_component("paint") {
     "paint_typeface.h",
     "paint_typeface_transfer_cache_entry.cc",
     "paint_typeface_transfer_cache_entry.h",
+    "path_transfer_cache_entry.cc",
+    "path_transfer_cache_entry.h",
     "raw_memory_transfer_cache_entry.cc",
     "raw_memory_transfer_cache_entry.h",
     "record_paint_canvas.cc",

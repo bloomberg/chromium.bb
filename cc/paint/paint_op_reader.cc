@@ -14,6 +14,7 @@
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
+#include "cc/paint/path_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -213,21 +214,17 @@ void PaintOpReader::Read(SkRRect* rect) {
 }
 
 void PaintOpReader::Read(SkPath* path) {
-  AlignMemory(4);
+  uint32_t transfer_cache_entry_id;
+  ReadSimple(&transfer_cache_entry_id);
   if (!valid_)
     return;
-
-  // This is assumed safe from TOCTOU violations as the SkPath deserializing
-  // function uses an SkRBuffer which reads each piece of memory once much
-  // like PaintOpReader does.  Additionally, paths are later validated in
-  // PaintOpBuffer.
-  size_t read_bytes =
-      path->readFromMemory(const_cast<const char*>(memory_), remaining_bytes_);
-  if (!read_bytes)
-    SetInvalid();
-
-  memory_ += read_bytes;
-  remaining_bytes_ -= read_bytes;
+  auto* entry = transfer_cache_->GetEntryAs<ServicePathTransferCacheEntry>(
+      transfer_cache_entry_id);
+  if (entry) {
+    *path = entry->path();
+  } else {
+    valid_ = false;
+  }
 }
 
 void PaintOpReader::Read(PaintFlags* flags) {

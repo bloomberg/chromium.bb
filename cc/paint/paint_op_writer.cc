@@ -11,6 +11,7 @@
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
+#include "cc/paint/path_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
@@ -169,16 +170,13 @@ void PaintOpWriter::Write(const SkRRect& rect) {
 }
 
 void PaintOpWriter::Write(const SkPath& path) {
-  AlignMemory(4);
-  size_t bytes = path.writeToMemory(nullptr);
-  EnsureBytes(bytes);
-  if (!valid_)
-    return;
-
-  size_t bytes_written = path.writeToMemory(memory_);
-  DCHECK_LE(bytes_written, bytes);
-  memory_ += bytes;
-  remaining_bytes_ -= bytes;
+  auto id = path.getGenerationID();
+  auto locked = transfer_cache_->LockEntry(TransferCacheEntryType::kPath, id);
+  if (!locked) {
+    transfer_cache_->CreateEntry(ClientPathTransferCacheEntry(path));
+    transfer_cache_->AssertLocked(TransferCacheEntryType::kPath, id);
+  }
+  Write(id);
 }
 
 void PaintOpWriter::Write(const PaintFlags& flags) {
