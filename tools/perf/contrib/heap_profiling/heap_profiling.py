@@ -63,9 +63,12 @@ class _HeapProfilingBenchmark(perf_benchmark.PerfBenchmark):
     super(_HeapProfilingBenchmark, self).SetExtraBrowserOptions(options)
     args = []
     if self.PROFILING_MODE == 'pseudo':
-      args += ['--enable-heap-profiling']
+      args += [
+          '--memlog=all', '--memlog-stack-mode=pseudo', '--memlog-sampling']
     elif self.PROFILING_MODE == 'native':
-      args += ['--enable-heap-profiling=native']
+      args += [
+          '--memlog=all', '--memlog-stack-mode=native-with-thread-names',
+          '--memlog-sampling']
     options.AppendExtraBrowserArgs(args)
 
 

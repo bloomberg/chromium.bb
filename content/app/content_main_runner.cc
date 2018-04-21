@@ -279,7 +279,6 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
   // to the zygote/renderers.
   static const char* const kForwardSwitches[] = {
       switches::kAndroidFontsPath, switches::kClearKeyCdmPathForTesting,
-      switches::kEnableHeapProfiling,
       switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
       // Need to tell the zygote that it is headless so that we don't try to use
       // the wrong type of main delegate.
