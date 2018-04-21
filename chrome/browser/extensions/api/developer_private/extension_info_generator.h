@@ -69,9 +69,8 @@ class ExtensionInfoGenerator {
   // Returns the icon url for the default icon to use.
   const std::string& GetDefaultIconUrl(bool is_app, bool is_disabled);
 
-  // Returns an icon url from the given image, optionally applying a greyscale.
-  std::string GetIconUrlFromImage(const gfx::Image& image,
-                                  bool should_greyscale);
+  // Returns an icon url from the given image.
+  std::string GetIconUrlFromImage(const gfx::Image& image);
 
   // Various systems, cached for convenience.
   content::BrowserContext* browser_context_;

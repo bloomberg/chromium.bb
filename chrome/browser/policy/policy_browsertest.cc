@@ -1448,68 +1448,6 @@ void WaitForExtensionsDevModeControlsVisibility(
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled */, {features::kMaterialDesignExtensions} /* disabled */);
-
-  // Verifies that when DeveloperToolsDisabled policy is set, the "dev mode"
-  // in chrome://extensions-frame is actively turned off and the checkbox
-  // is disabled.
-  // Note: We don't test the indicator as it is tested in the policy pref test
-  // for kDeveloperToolsDisabled.
-
-  // This test currently depends on the following assumptions about the webui:
-  // (1) The ID of the checkbox to toggle dev mode
-  const char toggle_dev_mode_accessor_js[] =
-      "document.getElementById('toggle-dev-on')";
-  // (2) The ID of the dev controls containing element
-  const char dev_controls_accessor_js[] =
-      "document.getElementById('dev-controls')";
-  // (3) the fact that dev-controls is displayed/hidden using its height attr
-  const char dev_controls_visibility_check_js[] =
-      "parseFloat(document.getElementById('dev-controls').style.height) > 0";
-
-  // Navigate to the extensions frame and enabled "Developer mode"
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(chrome::kChromeUIExtensionsFrameURL));
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::ExecuteScript(
-      contents, base::StringPrintf("domAutomationController.send(%s.click());",
-                                   toggle_dev_mode_accessor_js)));
-
-  WaitForExtensionsDevModeControlsVisibility(contents,
-                                             dev_controls_accessor_js,
-                                             dev_controls_visibility_check_js,
-                                             true);
-
-  // Disable devtools via policy.
-  PolicyMap policies;
-  policies.Set(key::kDeveloperToolsDisabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
-  UpdateProviderPolicy(policies);
-
-  // Expect devcontrols to be hidden now...
-  WaitForExtensionsDevModeControlsVisibility(contents,
-                                             dev_controls_accessor_js,
-                                             dev_controls_visibility_check_js,
-                                             false);
-
-  // ... and checkbox is not disabled
-  bool is_toggle_dev_mode_checkbox_enabled = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents,
-      base::StringPrintf(
-          "domAutomationController.send(!%s.hasAttribute('disabled'))",
-          toggle_dev_mode_accessor_js),
-      &is_toggle_dev_mode_checkbox_enabled));
-  EXPECT_FALSE(is_toggle_dev_mode_checkbox_enabled);
-}
-
-// TODO(dpapad): Remove the "_MD" suffix once the non-MD test is deleted.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode_MD) {
   // Verifies that when DeveloperToolsDisabled policy is set, the "dev mode"
   // in chrome://extensions is actively turned off and the checkbox
   // is disabled.
