@@ -1283,7 +1283,7 @@ int64_t DisplayManager::GetDisplayIdForUIScaling() const {
 
 bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
   DCHECK(new_id_list.size() > 1);
-  if (layout_store_->forced_mirror_mode())
+  if (layout_store_->forced_mirror_mode_for_tablet())
     return true;
 
   if (disable_restoring_mirror_mode_for_test_)
@@ -1406,7 +1406,10 @@ bool DisplayManager::SoftwareMirroringEnabled() const {
 bool DisplayManager::IsSoftwareMirroringEnforced() const {
   // There is no source display for hardware mirroring, so enforce software
   // mirroring if the mixed mirror mode parameters are specified.
-  return !!mixed_mirror_mode_params_;
+  // Enforce software mirroring if tablet mode is enabled as well because
+  // the tablet's rotation should be offset in external display.
+  return !!mixed_mirror_mode_params_ ||
+         layout_store_->forced_mirror_mode_for_tablet();
 }
 
 void DisplayManager::SetTouchCalibrationData(

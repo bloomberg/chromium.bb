@@ -39,6 +39,8 @@
 -DisplayManagerTest.SoftwareMirrorModeBasics
 -DisplayManagerTest.UpdateMouseCursorAfterRotateZoom
 -DisplayManagerTestDisableMultiMirroring.SoftwareMirroringWithCompositingCursor
+-DisplayManagerTest.SoftwareMirrorRotationForTablet
+-DisplayManagerTest.SoftwareMirrorRotationForNonTablet
 
 # TODO: Docked magnifier needs reflector to work in mash.
 # https://crbug.com/814481.

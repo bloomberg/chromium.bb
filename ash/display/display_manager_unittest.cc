@@ -3700,7 +3700,7 @@ TEST_F(DisplayManagerTest, ForcedMirrorMode) {
   EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             observer.GetStateForDisplayIds(outputs));
 
-  display_manager()->layout_store()->set_forced_mirror_mode(true);
+  display_manager()->layout_store()->set_forced_mirror_mode_for_tablet(true);
 
   observer.OnDisplayModeChanged(outputs);
 
@@ -3711,7 +3711,7 @@ TEST_F(DisplayManagerTest, ForcedMirrorMode) {
   EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
             observer.GetStateForDisplayIds(outputs));
 
-  display_manager()->layout_store()->set_forced_mirror_mode(false);
+  display_manager()->layout_store()->set_forced_mirror_mode_for_tablet(false);
 
   EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             observer.GetStateForDisplayIds(outputs));
@@ -4563,6 +4563,133 @@ TEST_F(DisplayManagerTest, MirrorModeRestoreAfterResume) {
   display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
+}
+
+TEST_F(DisplayManagerTest, SoftwareMirrorRotationForTablet) {
+  UpdateDisplay("400x300,800x800");
+  RunAllPendingInMessageLoop();
+
+  // Set the first display as internal display so that the tablet mode can be
+  // enabled.
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
+  // Simulate turning on mirror mode triggered by tablet mode on.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 300),
+            display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  MirrorWindowTestApi test_api;
+  std::vector<aura::WindowTreeHost*> host_list = test_api.GetHosts();
+  ASSERT_EQ(1U, host_list.size());
+  EXPECT_EQ(gfx::Size(800, 800), host_list[0]->GetBoundsInPixels().size());
+  EXPECT_EQ(gfx::Size(400, 300), host_list[0]->window()->bounds().size());
+
+  // Test the target display's bounds after the transforms are applied.
+  gfx::RectF transformed_rect1(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
+      &transformed_rect1);
+  host_list[0]->window()->transform().TransformRect(&transformed_rect1);
+  EXPECT_EQ(gfx::RectF(0.0f, 100.0f, 800.0f, 600.0f), transformed_rect1);
+
+  // Rotate the source display by 90 degrees.
+  UpdateDisplay("400x300/r,800x800");
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 400),
+            display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  host_list = test_api.GetHosts();
+  ASSERT_EQ(1U, host_list.size());
+  EXPECT_EQ(gfx::Size(800, 800), host_list[0]->GetBoundsInPixels().size());
+  EXPECT_EQ(gfx::Size(300, 400), host_list[0]->window()->bounds().size());
+
+  // Test the target display's bounds after the transforms are applied.
+  gfx::RectF transformed_rect2(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
+      &transformed_rect2);
+  host_list[0]->window()->transform().TransformRect(&transformed_rect2);
+  EXPECT_EQ(gfx::RectF(100.0f, 0.0f, 600.0f, 800.0f), transformed_rect2);
+
+  // Change the bounds of the source display and rotate the source display by 90
+  // degrees.
+  UpdateDisplay("300x400/r,800x800");
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 300),
+            display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  host_list = test_api.GetHosts();
+  ASSERT_EQ(1U, host_list.size());
+  EXPECT_EQ(gfx::Size(800, 800), host_list[0]->GetBoundsInPixels().size());
+  EXPECT_EQ(gfx::Size(400, 300), host_list[0]->window()->bounds().size());
+
+  // Test the target display's bounds after the transforms are applied.
+  gfx::RectF transformed_rect3(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
+      &transformed_rect3);
+  host_list[0]->window()->transform().TransformRect(&transformed_rect3);
+  EXPECT_EQ(gfx::RectF(0.0f, 100.0f, 800.0f, 600.0f), transformed_rect3);
+}
+
+TEST_F(DisplayManagerTest, SoftwareMirrorRotationForNonTablet) {
+  MirrorWindowTestApi test_api;
+  UpdateDisplay("400x300,800x800");
+
+  // Simulate turning on mirror mode not triggered by tablet mode.
+  SetSoftwareMirrorMode(true);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 300),
+            display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  std::vector<aura::WindowTreeHost*> host_list = test_api.GetHosts();
+  ASSERT_EQ(1U, host_list.size());
+  EXPECT_EQ(gfx::Size(800, 800), host_list[0]->GetBoundsInPixels().size());
+  EXPECT_EQ(gfx::Size(400, 300), host_list[0]->window()->bounds().size());
+
+  // Test the target display's bounds after the transforms are applied.
+  gfx::RectF transformed_rect1(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
+      &transformed_rect1);
+  host_list[0]->window()->transform().TransformRect(&transformed_rect1);
+  EXPECT_EQ(gfx::RectF(0.0f, 100.0f, 800.0f, 600.0f), transformed_rect1);
+
+  // Rotate the source display by 90 degrees.
+  UpdateDisplay("400x300/r,800x800");
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 400),
+            display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  host_list = test_api.GetHosts();
+  ASSERT_EQ(1U, host_list.size());
+  EXPECT_EQ(gfx::Size(800, 800), host_list[0]->GetBoundsInPixels().size());
+  EXPECT_EQ(gfx::Size(400, 300), host_list[0]->window()->bounds().size());
+
+  // Test the target display's bounds after the transforms are applied.
+  gfx::RectF transformed_rect2(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
+      &transformed_rect2);
+  host_list[0]->window()->transform().TransformRect(&transformed_rect2);
+  EXPECT_EQ(gfx::RectF(0.0f, 100.0f, 800.0f, 600.0f), transformed_rect2);
+
+  // Change the bounds of the source display and rotate the source display by 90
+  // degrees.
+  UpdateDisplay("300x400/r,800x800");
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 300),
+            display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  host_list = test_api.GetHosts();
+  ASSERT_EQ(1U, host_list.size());
+  EXPECT_EQ(gfx::Size(800, 800), host_list[0]->GetBoundsInPixels().size());
+  EXPECT_EQ(gfx::Size(300, 400), host_list[0]->window()->bounds().size());
+
+  // Test the target display's bounds after the transforms are applied.
+  gfx::RectF transformed_rect3(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
+      &transformed_rect3);
+  host_list[0]->window()->transform().TransformRect(&transformed_rect3);
+  EXPECT_EQ(gfx::RectF(100.0f, 0.0f, 600.0f, 800.0f), transformed_rect3);
 }
 
 }  // namespace ash
