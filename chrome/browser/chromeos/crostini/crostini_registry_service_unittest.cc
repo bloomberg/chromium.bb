@@ -65,6 +65,10 @@ class CrostiniRegistryServiceTest : public testing::Test {
     return app_list;
   }
 
+  std::string WindowIdForWMClass(const std::string& wm_class) {
+    return "org.chromium.termina.wmclass." + wm_class;
+  }
+
   CrostiniRegistryService* service() { return service_.get(); }
 
  private:
@@ -175,6 +179,42 @@ TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
 
   EXPECT_THAT(service()->GetRegisteredAppIds(),
               testing::UnorderedElementsAre(app_id_1, app_id_3, new_app_id));
+}
+
+TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNoStartupID) {
+  ApplicationList app_list = BasicAppList("app", "vm", "container");
+  *app_list.add_apps() = BasicApp("cool.app");
+  *app_list.add_apps() = BasicApp("super");
+  service()->UpdateApplicationList(app_list);
+
+  service()->UpdateApplicationList(BasicAppList("super", "vm 2", "container"));
+
+  EXPECT_THAT(service()->GetRegisteredAppIds(), testing::SizeIs(4));
+
+  EXPECT_EQ(
+      service()->GetCrostiniShelfAppId(WindowIdForWMClass("App"), nullptr),
+      GenerateAppId("app", "vm", "container"));
+  EXPECT_EQ(
+      service()->GetCrostiniShelfAppId(WindowIdForWMClass("cool.app"), nullptr),
+      GenerateAppId("cool.app", "vm", "container"));
+
+  EXPECT_EQ(
+      service()->GetCrostiniShelfAppId(WindowIdForWMClass("super"), nullptr),
+      "crostini:" + WindowIdForWMClass("super"));
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(
+                "org.chromium.termina.wmclientleader.1234", nullptr),
+            "crostini:org.chromium.termina.wmclientleader.1234");
+  EXPECT_EQ(service()->GetCrostiniShelfAppId("org.chromium.termina.xid.654321",
+                                             nullptr),
+            "crostini:org.chromium.termina.xid.654321");
+
+  EXPECT_EQ(service()->GetCrostiniShelfAppId("cool.app", nullptr),
+            GenerateAppId("cool.app", "vm", "container"));
+  EXPECT_EQ(service()->GetCrostiniShelfAppId("fancy.app", nullptr),
+            "crostini:fancy.app");
+
+  EXPECT_EQ(service()->GetCrostiniShelfAppId("org.chromium.arc.h", nullptr),
+            std::string());
 }
 
 }  // namespace crostini

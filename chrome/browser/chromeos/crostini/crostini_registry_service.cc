@@ -4,9 +4,11 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_util.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -20,6 +22,16 @@ namespace crostini {
 
 namespace {
 
+// Prefixes of the ApplicationId set on exo windows.
+constexpr char kArcWindowAppIdPrefix[] = "org.chromium.arc";
+constexpr char kCrostiniWindowAppIdPrefix[] = "org.chromium.termina.";
+// This comes after kCrostiniWindowAppIdPrefix
+constexpr char kWMClassPrefix[] = "wmclass.";
+
+// This prefix is used when generating the crostini app list id, and used as a
+// prefix when generating shelf ids for windows we couldn't match to an app.
+constexpr char kCrostiniAppIdPrefix[] = "crostini:";
+
 constexpr char kCrostiniRegistryPref[] = "crostini.registry";
 
 // Keys for the Dictionary stored in prefs for each app.
@@ -30,8 +42,6 @@ constexpr char kAppCommentKey[] = "comment";
 constexpr char kAppMimeTypesKey[] = "mime_types";
 constexpr char kAppNameKey[] = "name";
 constexpr char kAppNoDisplayKey[] = "no_display";
-
-constexpr char kCrostiniAppIdPrefix[] = "crostini:";
 
 std::string GenerateAppId(const std::string& desktop_file_id,
                           const std::string& vm_name,
@@ -124,6 +134,68 @@ CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
     : prefs_(profile->GetPrefs()) {}
 
 CrostiniRegistryService::~CrostiniRegistryService() = default;
+
+std::string CrostiniRegistryService::GetCrostiniShelfAppId(
+    const std::string& window_app_id,
+    const std::string* window_startup_id) {
+  if (base::StartsWith(window_app_id, kArcWindowAppIdPrefix,
+                       base::CompareCase::SENSITIVE))
+    return std::string();
+
+  // TODO(timloh): We should:
+  // - Use and store startup notify values so we can check against it.
+  // - Store StartUpWMClass values and give these priority over matching the
+  // desktop file id for non-wayland apps
+
+  base::StringPiece key;
+  if (base::StartsWith(window_app_id, kCrostiniWindowAppIdPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    base::StringPiece suffix(
+        window_app_id.begin() + strlen(kCrostiniWindowAppIdPrefix),
+        window_app_id.end());
+
+    // If we don't have an id to match to a desktop file, just return the window
+    // app id, which is already prefixed.
+    if (!base::StartsWith(suffix, kWMClassPrefix, base::CompareCase::SENSITIVE))
+      return kCrostiniAppIdPrefix + window_app_id;
+    key = suffix.substr(strlen(kWMClassPrefix));
+  } else {
+    key = window_app_id;
+  }
+
+  std::string result;
+  const base::DictionaryValue* apps =
+      prefs_->GetDictionary(kCrostiniRegistryPref);
+  for (const auto& item : apps->DictItems()) {
+    const std::string& desktop_file_id =
+        item.second
+            .FindKeyOfType(kAppDesktopFileIdKey, base::Value::Type::STRING)
+            ->GetString();
+    if (!EqualsCaseInsensitiveASCII(key, desktop_file_id))
+      continue;
+
+    if (!result.empty())
+      return kCrostiniAppIdPrefix + window_app_id;
+    result = item.first;
+  }
+
+  if (!result.empty())
+    return result;
+  return kCrostiniAppIdPrefix + window_app_id;
+}
+
+bool CrostiniRegistryService::IsCrostiniShelfAppId(
+    const std::string& shelf_app_id) {
+  if (base::StartsWith(shelf_app_id, kCrostiniAppIdPrefix,
+                       base::CompareCase::SENSITIVE))
+    return true;
+  // TODO(timloh): Return true for the default Terminal app.
+  // TODO(timloh): We need to handle desktop files that have been removed.
+  // For example, running windows with a no-longer-valid app id will try to
+  // use the ExtensionContextMenuModel.
+  return prefs_->GetDictionary(kCrostiniRegistryPref)->FindKey(shelf_app_id) !=
+         nullptr;
+}
 
 std::vector<std::string> CrostiniRegistryService::GetRegisteredAppIds() const {
   const base::DictionaryValue* apps =

@@ -8,6 +8,9 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
+#include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_util.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
@@ -19,12 +22,6 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-constexpr char kArcAppIdPrefix[] = "org.chromium.arc";
-
-}  // namespace
 
 CrostiniAppWindowShelfController::CrostiniAppWindowShelfController(
     ChromeLauncherController* owner)
@@ -62,30 +59,32 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanged(
   if (!visible)
     return;
 
-  const std::string* window_app_id =
-      exo::ShellSurface::GetApplicationId(window);
-  if (window_app_id == nullptr)
-    return;
-
-  // Skip handling ARC++ windows.
-  if (strncmp(window_app_id->c_str(), kArcAppIdPrefix,
-              sizeof(kArcAppIdPrefix) - 1) == 0)
-    return;
-
   // Skip when this window has been handled. This can happen when the window
   // becomes visible again.
   auto app_window_it = aura_window_to_app_window_.find(window);
   if (app_window_it != aura_window_to_app_window_.end())
     return;
 
-  RegisterAppWindow(window, window_app_id);
+  const std::string* window_app_id =
+      exo::ShellSurface::GetApplicationId(window);
+  if (window_app_id == nullptr)
+    return;
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+          owner()->profile());
+  const std::string& shelf_app_id = registry_service->GetCrostiniShelfAppId(
+      *window_app_id, exo::ShellSurface::GetStartupId(window));
+  // Non-crostini apps (i.e. arc++) are filtered out here.
+  if (shelf_app_id.empty())
+    return;
+
+  RegisterAppWindow(window, shelf_app_id);
 }
 
 void CrostiniAppWindowShelfController::RegisterAppWindow(
     aura::Window* window,
-    const std::string* window_app_id) {
-  const std::string crostini_app_id = CreateCrostiniAppId(*window_app_id);
-  const ash::ShelfID shelf_id(crostini_app_id);
+    const std::string& shelf_app_id) {
+  const ash::ShelfID shelf_id(shelf_app_id);
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   aura_window_to_app_window_[window] =
       std::make_unique<AppWindowBase>(shelf_id, widget);
