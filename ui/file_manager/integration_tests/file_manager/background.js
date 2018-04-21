@@ -374,7 +374,12 @@ function getFileType(fileListEntry) {
  */
 var testcase = {};
 
-// Ensure the test cases are loaded.
+/**
+ * When the FileManagerBrowserTest harness loads this test extension, request
+ * configuration and other details from that harness, including the test case
+ * name to run. Use the configuration/details to setup the test ennvironment,
+ * then run the test case using chrome.test.RunTests.
+ */
 window.addEventListener('load', function() {
   var steps = [
     // Check for the guest mode.
