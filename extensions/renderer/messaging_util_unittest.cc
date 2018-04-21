@@ -49,6 +49,37 @@ TEST_F(MessagingUtilTest, TestMaximumMessageSize) {
   }
 }
 
+TEST_F(MessagingUtilTest, TestParseMessageOptionsFrameId) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  struct {
+    int expected_frame_id;
+    const char* string_options;
+  } test_cases[] = {
+      {messaging_util::kNoFrameId, "({})"},
+      {messaging_util::kNoFrameId, "({frameId: undefined})"},
+      // Note: we don't test null here, because the argument parsing code
+      // ensures we would never pass undefined to ParseMessageOptions (and
+      // there's a DCHECK to validate it). The null case is tested in the tabs'
+      // API hooks delegate test.
+      {0, "({frameId: 0})"},
+      {2, "({frameId: 2})"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.string_options);
+    v8::Local<v8::Value> value =
+        V8ValueFromScriptSource(context, test_case.string_options);
+    ASSERT_FALSE(value.IsEmpty());
+    ASSERT_TRUE(value->IsObject());
+    messaging_util::MessageOptions options =
+        messaging_util::ParseMessageOptions(context, value.As<v8::Object>(),
+                                            messaging_util::PARSE_FRAME_ID);
+    EXPECT_EQ(test_case.expected_frame_id, options.frame_id);
+  }
+}
+
 using MessagingUtilWithSystemTest = NativeExtensionBindingsSystemUnittest;
 
 TEST_F(MessagingUtilWithSystemTest, TestGetTargetIdFromExtensionContext) {
