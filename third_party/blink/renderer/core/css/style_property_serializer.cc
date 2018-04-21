@@ -418,7 +418,7 @@ String StylePropertySerializer::GetPropertyValue(
     case CSSPropertyAnimation:
       return GetLayeredShorthandValue(animationShorthand());
     case CSSPropertyBorderSpacing:
-      return BorderSpacingValue(borderSpacingShorthand());
+      return Get2Values(borderSpacingShorthand());
     case CSSPropertyBackgroundPosition:
       return GetLayeredShorthandValue(backgroundPositionShorthand());
     case CSSPropertyBackgroundRepeat:
@@ -462,11 +462,11 @@ String StylePropertySerializer::GetPropertyValue(
     case CSSPropertyGap:
       return GetShorthandValue(gapShorthand());
     case CSSPropertyPlaceContent:
-      return GetAlignmentShorthandValue(placeContentShorthand());
+      return Get2Values(placeContentShorthand());
     case CSSPropertyPlaceItems:
-      return GetAlignmentShorthandValue(placeItemsShorthand());
+      return Get2Values(placeItemsShorthand());
     case CSSPropertyPlaceSelf:
-      return GetAlignmentShorthandValue(placeSelfShorthand());
+      return Get2Values(placeSelfShorthand());
     case CSSPropertyFont:
       return FontValue();
     case CSSPropertyFontVariant:
@@ -528,20 +528,6 @@ String StylePropertySerializer::GetPropertyValue(
     default:
       return String();
   }
-}
-
-String StylePropertySerializer::BorderSpacingValue(
-    const StylePropertyShorthand& shorthand) const {
-  const CSSValue* horizontal_value =
-      property_set_.GetPropertyCSSValue(*shorthand.properties()[0]);
-  const CSSValue* vertical_value =
-      property_set_.GetPropertyCSSValue(*shorthand.properties()[1]);
-
-  String horizontal_value_css_text = horizontal_value->CssText();
-  String vertical_value_css_text = vertical_value->CssText();
-  if (horizontal_value_css_text == vertical_value_css_text)
-    return horizontal_value_css_text;
-  return horizontal_value_css_text + ' ' + vertical_value_css_text;
 }
 
 void StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
@@ -963,14 +949,6 @@ String StylePropertySerializer::GetCommonValue(
       return String();
   }
   return res;
-}
-
-String StylePropertySerializer::GetAlignmentShorthandValue(
-    const StylePropertyShorthand& shorthand) const {
-  String value = GetCommonValue(shorthand);
-  if (value.IsNull() || value.IsEmpty())
-    return GetShorthandValue(shorthand);
-  return value;
 }
 
 String StylePropertySerializer::BorderPropertyValue() const {
