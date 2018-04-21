@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "net/cookies/canonical_cookie.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -301,68 +302,42 @@ TEST(BrowsingDataFilterBuilderImplTest,
     RunTestCase(test_case, builder.BuildCookieDeletionInfo());
 }
 
-TEST(BrowsingDataFilterBuilderImplTest,
-     RegistrableDomainMatchesChannelIDsWhitelist) {
+TEST(BrowsingDataFilterBuilderImplTest, NetworkServiceFilterWhitelist) {
   BrowsingDataFilterBuilderImpl builder(
       BrowsingDataFilterBuilderImpl::WHITELIST);
+  ASSERT_EQ(BrowsingDataFilterBuilderImpl::WHITELIST, builder.GetMode());
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
   builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
   builder.AddRegisterableDomain(std::string(kInternalHostname));
-  base::Callback<bool(const std::string&)> filter =
-      builder.BuildChannelIDFilter();
+  network::mojom::ClearDataFilterPtr filter =
+      builder.BuildNetworkServiceFilter();
 
-  TestCase test_cases[] = {
-      // Channel ID server identifiers can be second level domains, ...
-      {"google.com", true},
-      {"website.sp.nom.br", true},
-      {"second-level-domain.fileserver", true},
-
-      // ... IP addresses, or internal hostnames.
-      {"192.168.1.1", true},
-      {"fileserver", true},
-
-      // Channel IDs not in the whitelist are not matched.
-      {"example.com", false},
-      {"192.168.1.2", false},
-      {"website.fileserver", false},
-  };
-
-  for (TestCase test_case : test_cases)
-    RunTestCase(test_case, filter);
+  EXPECT_EQ(network::mojom::ClearDataFilter_Type::DELETE_MATCHES, filter->type);
+  EXPECT_THAT(filter->domains, testing::UnorderedElementsAre(
+                                   kGoogleDomain, kLongETLDDomain, kIPAddress,
+                                   kUnknownRegistryDomain, kInternalHostname));
+  EXPECT_TRUE(filter->origins.empty());
 }
 
-TEST(BrowsingDataFilterBuilderImplTest,
-     RegistrableDomainMatchesChannelIDsBlacklist) {
+TEST(BrowsingDataFilterBuilderImplTest, NetworkServiceFilterBlacklist) {
   BrowsingDataFilterBuilderImpl builder(
       BrowsingDataFilterBuilderImpl::BLACKLIST);
+  ASSERT_EQ(BrowsingDataFilterBuilderImpl::BLACKLIST, builder.GetMode());
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
   builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
   builder.AddRegisterableDomain(std::string(kInternalHostname));
-  base::Callback<bool(const std::string&)> filter =
-      builder.BuildChannelIDFilter();
+  network::mojom::ClearDataFilterPtr filter =
+      builder.BuildNetworkServiceFilter();
 
-  TestCase test_cases[] = {
-      // Channel ID server identifiers can be second level domains, ...
-      {"google.com", false},
-      {"website.sp.nom.br", false},
-      {"second-level-domain.fileserver", false},
-
-      // ...IP addresses, or internal hostnames.
-      {"192.168.1.1", false},
-      {"fileserver", false},
-
-      // Channel IDs that are not blacklisted are matched.
-      {"example.com", true},
-      {"192.168.1.2", true},
-      {"website.fileserver", true},
-  };
-
-  for (TestCase test_case : test_cases)
-    RunTestCase(test_case, filter);
+  EXPECT_EQ(network::mojom::ClearDataFilter_Type::KEEP_MATCHES, filter->type);
+  EXPECT_THAT(filter->domains, testing::UnorderedElementsAre(
+                                   kGoogleDomain, kLongETLDDomain, kIPAddress,
+                                   kUnknownRegistryDomain, kInternalHostname));
+  EXPECT_TRUE(filter->origins.empty());
 }
 
 TEST(BrowsingDataFilterBuilderImplTest,

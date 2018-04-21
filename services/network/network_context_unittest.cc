@@ -18,6 +18,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
+#include "base/test/gtest_util.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -44,6 +45,8 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/channel_id_store.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/http_user_agent_settings.h"
@@ -57,6 +60,7 @@
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/udp_socket_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
@@ -633,7 +637,7 @@ TEST_F(NetworkContextTest, ClearHttpCacheWithNoCache) {
   ASSERT_EQ(nullptr, cache);
   base::RunLoop run_loop;
   network_context->ClearHttpCache(base::Time(), base::Time(),
-                                  /*filter=*/nullptr,
+                                  nullptr /* filter */,
                                   base::BindOnce(run_loop.QuitClosure()));
   run_loop.Run();
 }
@@ -679,7 +683,7 @@ TEST_F(NetworkContextTest, ClearHttpCache) {
   EXPECT_EQ(entry_urls.size(), static_cast<size_t>(backend->GetEntryCount()));
   base::RunLoop run_loop;
   network_context->ClearHttpCache(base::Time(), base::Time(),
-                                  /*filter=*/nullptr,
+                                  nullptr /* filter */,
                                   base::BindOnce(run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_EQ(0U, static_cast<size_t>(backend->GetEntryCount()));
@@ -702,14 +706,174 @@ TEST_F(NetworkContextTest, MultipleClearHttpCacheCalls) {
 
   base::RunLoop run_loop;
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      /*num_closures=*/kNumberOfClearCalls, run_loop.QuitClosure());
+      kNumberOfClearCalls /* num_closures */, run_loop.QuitClosure());
   for (int i = 0; i < kNumberOfClearCalls; i++) {
     network_context->ClearHttpCache(base::Time(), base::Time(),
-                                    /*filter=*/nullptr,
+                                    nullptr /* filter */,
                                     base::BindOnce(barrier_closure));
   }
   run_loop.Run();
   // If all the callbacks were invoked, we should terminate.
+}
+
+TEST_F(NetworkContextTest, ClearChannelIds) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::ChannelIDStore* store = network_context->url_request_context()
+                                   ->channel_id_service()
+                                   ->GetChannelIDStore();
+  store->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
+      "google.com", base::Time::FromDoubleT(123),
+      crypto::ECPrivateKey::Create()));
+  store->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
+      "chromium.org", base::Time::FromDoubleT(456),
+      crypto::ECPrivateKey::Create()));
+
+  ASSERT_EQ(2, store->GetChannelIDCount());
+
+  base::RunLoop run_loop;
+  network_context->ClearChannelIds(base::Time(), base::Time(),
+                                   nullptr /* filter */,
+                                   base::BindOnce(run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(0, store->GetChannelIDCount());
+}
+
+TEST_F(NetworkContextTest, ClearEmptyChannelIds) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::ChannelIDStore* store = network_context->url_request_context()
+                                   ->channel_id_service()
+                                   ->GetChannelIDStore();
+  ASSERT_EQ(0, store->GetChannelIDCount());
+
+  base::RunLoop run_loop;
+  network_context->ClearChannelIds(base::Time(), base::Time(),
+                                   nullptr /* filter */,
+                                   base::BindOnce(run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(0, store->GetChannelIDCount());
+}
+
+void GetAllChannelIdsCallback(
+    base::RunLoop* run_loop,
+    net::ChannelIDStore::ChannelIDList* dest,
+    const net::ChannelIDStore::ChannelIDList& result) {
+  *dest = result;
+  run_loop->Quit();
+}
+
+TEST_F(NetworkContextTest, ClearChannelIdsWithKeepFilter) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::ChannelIDStore* store = network_context->url_request_context()
+                                   ->channel_id_service()
+                                   ->GetChannelIDStore();
+  store->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
+      "google.com", base::Time::FromDoubleT(123),
+      crypto::ECPrivateKey::Create()));
+  store->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
+      "chromium.org", base::Time::FromDoubleT(456),
+      crypto::ECPrivateKey::Create()));
+
+  ASSERT_EQ(2, store->GetChannelIDCount());
+
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
+  filter->domains.push_back("chromium.org");
+
+  base::RunLoop run_loop1;
+  network_context->ClearChannelIds(base::Time(), base::Time(),
+                                   std::move(filter),
+                                   base::BindOnce(run_loop1.QuitClosure()));
+  run_loop1.Run();
+
+  base::RunLoop run_loop2;
+  net::ChannelIDStore::ChannelIDList channel_ids;
+  store->GetAllChannelIDs(
+      base::BindRepeating(&GetAllChannelIdsCallback, &run_loop2, &channel_ids));
+  run_loop2.Run();
+  ASSERT_EQ(1u, channel_ids.size());
+  EXPECT_EQ("chromium.org", channel_ids.front().server_identifier());
+}
+
+TEST_F(NetworkContextTest, ClearChannelIdsWithDeleteFilter) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::ChannelIDStore* store = network_context->url_request_context()
+                                   ->channel_id_service()
+                                   ->GetChannelIDStore();
+  store->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
+      "google.com", base::Time::FromDoubleT(123),
+      crypto::ECPrivateKey::Create()));
+  store->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
+      "chromium.org", base::Time::FromDoubleT(456),
+      crypto::ECPrivateKey::Create()));
+
+  ASSERT_EQ(2, store->GetChannelIDCount());
+
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::DELETE_MATCHES;
+  filter->domains.push_back("chromium.org");
+
+  base::RunLoop run_loop1;
+  network_context->ClearChannelIds(base::Time(), base::Time(),
+                                   std::move(filter),
+                                   base::BindOnce(run_loop1.QuitClosure()));
+  run_loop1.Run();
+
+  base::RunLoop run_loop2;
+  net::ChannelIDStore::ChannelIDList channel_ids;
+  store->GetAllChannelIDs(
+      base::BindRepeating(&GetAllChannelIdsCallback, &run_loop2, &channel_ids));
+  run_loop2.Run();
+  ASSERT_EQ(1u, channel_ids.size());
+  EXPECT_EQ("google.com", channel_ids.front().server_identifier());
+}
+
+TEST_F(NetworkContextTest, ClearChannelIdsWithTimeRange) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::ChannelIDStore* store = network_context->url_request_context()
+                                   ->channel_id_service()
+                                   ->GetChannelIDStore();
+  store->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
+      "google.com", base::Time::FromDoubleT(123),
+      crypto::ECPrivateKey::Create()));
+  store->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
+      "chromium.org", base::Time::FromDoubleT(456),
+      crypto::ECPrivateKey::Create()));
+  store->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
+      "gmail.com", base::Time::FromDoubleT(789),
+      crypto::ECPrivateKey::Create()));
+
+  ASSERT_EQ(3, store->GetChannelIDCount());
+
+  base::RunLoop run_loop1;
+  network_context->ClearChannelIds(
+      base::Time::FromDoubleT(450), base::Time::FromDoubleT(460),
+      nullptr /* filter */, base::BindOnce(run_loop1.QuitClosure()));
+  run_loop1.Run();
+
+  base::RunLoop run_loop2;
+  net::ChannelIDStore::ChannelIDList channel_ids;
+  store->GetAllChannelIDs(
+      base::BindRepeating(&GetAllChannelIdsCallback, &run_loop2, &channel_ids));
+  run_loop2.Run();
+
+  std::vector<std::string> identifiers;
+  for (const auto& id : channel_ids) {
+    identifiers.push_back(id.server_identifier());
+  }
+  EXPECT_THAT(identifiers,
+              testing::UnorderedElementsAre("google.com", "gmail.com"));
 }
 
 void SetCookieCallback(base::RunLoop* run_loop, bool* result_out, bool result) {

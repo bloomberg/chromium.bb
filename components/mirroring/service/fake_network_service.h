@@ -82,8 +82,12 @@ class MockNetworkContext final : public network::mojom::NetworkContext {
       base::OnceClosure completion_callback) override {}
   void ClearHttpCache(base::Time start_time,
                       base::Time end_time,
-                      network::mojom::ClearCacheUrlFilterPtr filter,
+                      network::mojom::ClearDataFilterPtr filter,
                       ClearHttpCacheCallback callback) override {}
+  void ClearChannelIds(base::Time start_time,
+                       base::Time end_time,
+                       network::mojom::ClearDataFilterPtr filter,
+                       ClearChannelIdsCallback callback) override {}
   void SetNetworkConditions(
       const std::string& profile_id,
       network::mojom::NetworkConditionsPtr conditions) override {}

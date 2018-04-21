@@ -20,7 +20,7 @@ namespace network {
 
 namespace {
 
-bool DoesUrlMatchFilter(mojom::ClearCacheUrlFilter_Type filter_type,
+bool DoesUrlMatchFilter(mojom::ClearDataFilter_Type filter_type,
                         const std::set<url::Origin>& origins,
                         const std::set<std::string>& domains,
                         const GURL& url) {
@@ -34,13 +34,13 @@ bool DoesUrlMatchFilter(mojom::ClearCacheUrlFilter_Type filter_type,
   bool found_origin = (origins.find(url::Origin::Create(url)) != origins.end());
 
   return ((found_domain || found_origin) ==
-          (filter_type == mojom::ClearCacheUrlFilter_Type::DELETE_MATCHES));
+          (filter_type == mojom::ClearDataFilter_Type::DELETE_MATCHES));
 }
 
 }  // namespace
 
 HttpCacheDataRemover::HttpCacheDataRemover(
-    mojom::ClearCacheUrlFilterPtr url_filter,
+    mojom::ClearDataFilterPtr url_filter,
     base::Time delete_begin,
     base::Time delete_end,
     HttpCacheDataRemoverCallback done_callback)
@@ -69,7 +69,7 @@ HttpCacheDataRemover::~HttpCacheDataRemover() = default;
 // static.
 std::unique_ptr<HttpCacheDataRemover> HttpCacheDataRemover::CreateAndStart(
     net::URLRequestContext* url_request_context,
-    mojom::ClearCacheUrlFilterPtr url_filter,
+    mojom::ClearDataFilterPtr url_filter,
     base::Time delete_begin,
     base::Time delete_end,
     HttpCacheDataRemoverCallback done_callback) {

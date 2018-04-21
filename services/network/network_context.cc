@@ -98,6 +98,17 @@ class WrappedTestingCertVerifier : public net::CertVerifier {
   }
 };
 
+// Predicate function to determine if the given |channel_id_server_id| matches
+// the |filter_type| and |filter_domains| from a |mojom::ClearDataFilter|.
+bool MatchesClearChannelIdFilter(mojom::ClearDataFilter_Type filter_type,
+                                 std::set<std::string> filter_domains,
+                                 const std::string& channel_id_server_id) {
+  bool found_domain =
+      filter_domains.find(channel_id_server_id) != filter_domains.end();
+  return (filter_type == mojom::ClearDataFilter_Type::DELETE_MATCHES) ==
+         found_domain;
+}
+
 }  // namespace
 
 constexpr bool NetworkContext::enable_resource_scheduler_;
@@ -497,7 +508,7 @@ void NetworkContext::ClearNetworkingHistorySince(
 
 void NetworkContext::ClearHttpCache(base::Time start_time,
                                     base::Time end_time,
-                                    mojom::ClearCacheUrlFilterPtr filter,
+                                    mojom::ClearDataFilterPtr filter,
                                     ClearHttpCacheCallback callback) {
   // It's safe to use Unretained below as the HttpCacheDataRemover is owner by
   // |this| and guarantees it won't call its callback if deleted.
@@ -520,6 +531,32 @@ void NetworkContext::OnHttpCacheCleared(ClearHttpCacheCallback callback,
   }
   DCHECK(removed);
   std::move(callback).Run();
+}
+
+void NetworkContext::ClearChannelIds(base::Time start_time,
+                                     base::Time end_time,
+                                     mojom::ClearDataFilterPtr filter,
+                                     ClearChannelIdsCallback callback) {
+  base::RepeatingCallback<bool(const std::string& channel_id_server_id)>
+      filter_predicate;
+  if (filter) {
+    DCHECK(filter->origins.empty())
+        << "Origin filtering not allowed in a ClearChannelIds request as "
+           "channel IDs are only keyed by domain.";
+
+    std::set<std::string> filter_domains;
+    filter_domains.insert(filter->domains.begin(), filter->domains.end());
+    filter_predicate = base::BindRepeating(
+        &MatchesClearChannelIdFilter, filter->type, std::move(filter_domains));
+  } else {
+    filter_predicate =
+        base::BindRepeating([](const std::string&) { return true; });
+  }
+
+  url_request_context_->channel_id_service()
+      ->GetChannelIDStore()
+      ->DeleteForDomainsCreatedBetween(std::move(filter_predicate), start_time,
+                                       end_time, std::move(callback));
 }
 
 void NetworkContext::SetNetworkConditions(

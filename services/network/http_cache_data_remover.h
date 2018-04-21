@@ -41,7 +41,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HttpCacheDataRemover {
   // interface and might be slow.
   static std::unique_ptr<HttpCacheDataRemover> CreateAndStart(
       net::URLRequestContext* url_request_context,
-      mojom::ClearCacheUrlFilterPtr url_filter,
+      mojom::ClearDataFilterPtr url_filter,
       base::Time delete_begin,
       base::Time delete_end,
       HttpCacheDataRemoverCallback done_callback);
@@ -49,7 +49,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HttpCacheDataRemover {
   ~HttpCacheDataRemover();
 
  private:
-  HttpCacheDataRemover(mojom::ClearCacheUrlFilterPtr url_filter,
+  HttpCacheDataRemover(mojom::ClearDataFilterPtr url_filter,
                        base::Time delete_begin,
                        base::Time delete_end,
                        HttpCacheDataRemoverCallback done_callback);
