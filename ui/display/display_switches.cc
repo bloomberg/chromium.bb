@@ -76,13 +76,7 @@ const base::Feature kUseMonitorColorSpace{"UseMonitorColorSpace",
 // TODO(malaykeshav): Remove this in M68 when the feature has been in stable for
 // atleast one milestone.
 constexpr base::Feature kEnableDisplayZoomSetting{
-  "EnableDisplayZoomSetting",
-#if defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "EnableDisplayZoomSetting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsDisplayZoomSettingEnabled() {
   return base::FeatureList::IsEnabled(kEnableDisplayZoomSetting);
