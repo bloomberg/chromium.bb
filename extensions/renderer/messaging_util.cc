@@ -183,7 +183,10 @@ MessageOptions ParseMessageOptions(v8::Local<v8::Context> context,
 
     if (!v8_frame_id->IsUndefined()) {
       DCHECK(v8_frame_id->IsInt32());
-      options.frame_id = v8_frame_id->Int32Value();
+      int frame_id = v8_frame_id.As<v8::Int32>()->Value();
+      // NOTE(devlin): JS bindings coerce any negative value to -1. For
+      // backwards compatibility, we do the same here.
+      options.frame_id = frame_id < 0 ? -1 : frame_id;
     }
   }
 

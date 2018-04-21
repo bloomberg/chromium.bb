@@ -110,6 +110,9 @@ TEST_F(TabsHooksDelegateTest, Connect) {
   tester.TestConnect("4, {name: 'channel'}", "channel",
                      MessageTarget::ForTab(4, messaging_util::kNoFrameId),
                      kExpectIncludeTlsChannelId);
+  tester.TestConnect("9, {frameId: null}", "",
+                     MessageTarget::ForTab(9, messaging_util::kNoFrameId),
+                     kExpectIncludeTlsChannelId);
   tester.TestConnect("9, {frameId: 16}", "", MessageTarget::ForTab(9, 16),
                      kExpectIncludeTlsChannelId);
   tester.TestConnect("25, {}", "",
@@ -141,6 +144,10 @@ TEST_F(TabsHooksDelegateTest, SendMessage) {
   tester.TestSendMessage("1, {data: 'hello'}, function() {}", kStandardMessage,
                          MessageTarget::ForTab(1, messaging_util::kNoFrameId),
                          kExpectIncludeTlsChannelId, SendMessageTester::OPEN);
+  tester.TestSendMessage("1, {data: 'hello'}, {frameId: null}",
+                         kStandardMessage,
+                         MessageTarget::ForTab(1, messaging_util::kNoFrameId),
+                         kExpectIncludeTlsChannelId, SendMessageTester::CLOSED);
   tester.TestSendMessage("1, {data: 'hello'}, {frameId: 10}", kStandardMessage,
                          MessageTarget::ForTab(1, 10),
                          kExpectIncludeTlsChannelId, SendMessageTester::CLOSED);
