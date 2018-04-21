@@ -182,6 +182,10 @@ namespace app_controller_mac {
 // different models of application lifetime.
 bool IsOpeningNewWindow();
 
+// Create a guest profile if one is needed. Afterwards, even if the profile
+// already existed, notify the AppController of the profile in use.
+void CreateGuestProfileIfNeeded();
+
 }  // namespace app_controller_mac
 
 #endif  // CHROME_BROWSER_APP_CONTROLLER_MAC_H_

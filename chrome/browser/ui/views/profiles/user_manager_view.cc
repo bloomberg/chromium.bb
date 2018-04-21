@@ -46,6 +46,10 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/app_controller_mac.h"
+#endif
+
 namespace {
 
 // An open User Manager window. There can only be one open at a time. This
@@ -150,6 +154,10 @@ void UserManager::Show(
     // If we are showing the User Manager after locking a profile, change the
     // active profile to Guest.
     profiles::SetActiveProfileToGuestIfLocked();
+
+#if defined(OS_MACOSX)
+    app_controller_mac::CreateGuestProfileIfNeeded();
+#endif
 
     // Note the time we started opening the User Manager.
     g_user_manager_view->set_user_manager_started_showing(base::Time::Now());
@@ -378,6 +386,10 @@ void UserManagerView::OnSystemProfileCreated(
   // If we are showing the User Manager after locking a profile, change the
   // active profile to Guest.
   profiles::SetActiveProfileToGuestIfLocked();
+
+#if defined(OS_MACOSX)
+  app_controller_mac::CreateGuestProfileIfNeeded();
+#endif
 
   DCHECK(!g_user_manager_view);
   g_user_manager_view =
