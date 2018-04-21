@@ -15,10 +15,10 @@
 #include "jni/ViewAndroidDelegate_jni.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/android/event_forwarder.h"
+#include "ui/android/view_client.h"
 #include "ui/android/window_android.h"
 #include "ui/base/layout.h"
 #include "ui/events/android/drag_event_android.h"
-#include "ui/events/android/event_handler_android.h"
 #include "ui/events/android/gesture_event_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -81,10 +81,10 @@ ViewAndroid::ScopedAnchorView::view() const {
   return view_.get(env);
 }
 
-ViewAndroid::ViewAndroid(LayoutType layout_type)
-    : parent_(nullptr), layout_type_(layout_type) {}
+ViewAndroid::ViewAndroid(ViewClient* view_client, LayoutType layout_type)
+    : parent_(nullptr), client_(view_client), layout_type_(layout_type) {}
 
-ViewAndroid::ViewAndroid() : ViewAndroid(LayoutType::NORMAL) {}
+ViewAndroid::ViewAndroid() : ViewAndroid(nullptr, LayoutType::NORMAL) {}
 
 ViewAndroid::~ViewAndroid() {
   observer_list_.Clear();
@@ -441,8 +441,7 @@ void ViewAndroid::OnSizeChangedInternal(const gfx::Size& size) {
 }
 
 void ViewAndroid::DispatchOnSizeChanged() {
-  if (event_handler_)
-    event_handler_->OnSizeChanged();
+  client_->OnSizeChanged();
   for (auto* child : children_) {
     if (child->match_parent())
       child->DispatchOnSizeChanged();
@@ -453,8 +452,7 @@ void ViewAndroid::OnPhysicalBackingSizeChanged(const gfx::Size& size) {
   if (physical_size_ == size)
     return;
   physical_size_ = size;
-  if (event_handler_)
-    event_handler_->OnPhysicalBackingSizeChanged();
+  client_->OnPhysicalBackingSizeChanged();
 
   for (auto* child : children_)
     child->OnPhysicalBackingSizeChanged(size);
@@ -469,73 +467,71 @@ gfx::Size ViewAndroid::GetSize() const {
 }
 
 bool ViewAndroid::OnDragEvent(const DragEventAndroid& event) {
-  return HitTest(base::BindRepeating(&ViewAndroid::SendDragEventToHandler),
-                 event, event.location_f());
+  return HitTest(base::Bind(&ViewAndroid::SendDragEventToClient), event,
+                 event.location_f());
 }
 
 // static
-bool ViewAndroid::SendDragEventToHandler(EventHandlerAndroid* handler,
-                                         const DragEventAndroid& event) {
-  return handler->OnDragEvent(event);
+bool ViewAndroid::SendDragEventToClient(ViewClient* client,
+                                        const DragEventAndroid& event) {
+  return client->OnDragEvent(event);
 }
 
 bool ViewAndroid::OnTouchEvent(const MotionEventAndroid& event) {
-  return HitTest(base::BindRepeating(&ViewAndroid::SendTouchEventToHandler),
-                 event, event.GetPoint());
+  return HitTest(base::Bind(&ViewAndroid::SendTouchEventToClient), event,
+                 event.GetPoint());
 }
 
 // static
-bool ViewAndroid::SendTouchEventToHandler(EventHandlerAndroid* handler,
-                                          const MotionEventAndroid& event) {
-  return handler->OnTouchEvent(event);
+bool ViewAndroid::SendTouchEventToClient(ViewClient* client,
+                                         const MotionEventAndroid& event) {
+  return client->OnTouchEvent(event);
 }
 
 bool ViewAndroid::OnMouseEvent(const MotionEventAndroid& event) {
-  return HitTest(base::BindRepeating(&ViewAndroid::SendMouseEventToHandler),
-                 event, event.GetPoint());
+  return HitTest(base::Bind(&ViewAndroid::SendMouseEventToClient), event,
+                 event.GetPoint());
 }
 
 // static
-bool ViewAndroid::SendMouseEventToHandler(EventHandlerAndroid* handler,
-                                          const MotionEventAndroid& event) {
-  return handler->OnMouseEvent(event);
+bool ViewAndroid::SendMouseEventToClient(ViewClient* client,
+                                         const MotionEventAndroid& event) {
+  return client->OnMouseEvent(event);
 }
 
 bool ViewAndroid::OnMouseWheelEvent(const MotionEventAndroid& event) {
-  return HitTest(
-      base::BindRepeating(&ViewAndroid::SendMouseWheelEventToHandler), event,
-      event.GetPoint());
+  return HitTest(base::Bind(&ViewAndroid::SendMouseWheelEventToClient), event,
+                 event.GetPoint());
 }
 
 // static
-bool ViewAndroid::SendMouseWheelEventToHandler(
-    EventHandlerAndroid* handler,
-    const MotionEventAndroid& event) {
-  return handler->OnMouseWheelEvent(event);
+bool ViewAndroid::SendMouseWheelEventToClient(ViewClient* client,
+                                              const MotionEventAndroid& event) {
+  return client->OnMouseWheelEvent(event);
 }
 
 bool ViewAndroid::OnGestureEvent(const GestureEventAndroid& event) {
-  return HitTest(base::BindRepeating(&ViewAndroid::SendGestureEventToHandler),
-                 event, event.location());
+  return HitTest(base::Bind(&ViewAndroid::SendGestureEventToClient), event,
+                 event.location());
 }
 
 // static
-bool ViewAndroid::SendGestureEventToHandler(EventHandlerAndroid* handler,
-                                            const GestureEventAndroid& event) {
-  return handler->OnGestureEvent(event);
+bool ViewAndroid::SendGestureEventToClient(ViewClient* client,
+                                           const GestureEventAndroid& event) {
+  return client->OnGestureEvent(event);
 }
 
 template <typename E>
-bool ViewAndroid::HitTest(EventHandlerCallback<E> handler_callback,
+bool ViewAndroid::HitTest(ViewClientCallback<E> send_to_client,
                           const E& event,
                           const gfx::PointF& point) {
-  if (event_handler_) {
+  if (client_) {
     if (view_rect_.origin().IsOrigin()) {  // (x, y) == (0, 0)
-      if (handler_callback.Run(event_handler_, event))
+      if (send_to_client.Run(client_, event))
         return true;
     } else {
       std::unique_ptr<E> e(event.CreateFor(point));
-      if (handler_callback.Run(event_handler_, *e))
+      if (send_to_client.Run(client_, *e))
         return true;
     }
   }
@@ -550,7 +546,7 @@ bool ViewAndroid::HitTest(EventHandlerCallback<E> handler_callback,
       bool matched = child->match_parent();
       if (!matched)
         matched = child->view_rect_.Contains(int_point);
-      if (matched && child->HitTest(handler_callback, event, offset_point))
+      if (matched && child->HitTest(send_to_client, event, offset_point))
         return true;
     }
   }

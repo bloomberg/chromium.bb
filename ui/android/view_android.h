@@ -30,9 +30,9 @@ class Size;
 namespace ui {
 class DragEventAndroid;
 class EventForwarder;
-class EventHandlerAndroid;
 class GestureEventAndroid;
 class MotionEventAndroid;
+class ViewClient;
 class WindowAndroid;
 class ViewAndroidObserver;
 
@@ -91,7 +91,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
     MATCH_PARENT
   };
 
-  explicit ViewAndroid(LayoutType layout_type);
+  ViewAndroid(ViewClient* view_client, LayoutType layout_type);
 
   ViewAndroid();
   virtual ~ViewAndroid();
@@ -170,10 +170,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void RequestDisallowInterceptTouchEvent();
   void RequestUnbufferedDispatch(const MotionEventAndroid& event);
 
-  void set_event_handler(EventHandlerAndroid* handler) {
-    event_handler_ = handler;
-  }
-
   ViewAndroid* parent() const { return parent_; }
 
  protected:
@@ -203,25 +199,24 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   void SetLayoutForTesting(int x, int y, int width, int height);
 
-  // TODO(jinsukkim): Use OnceCallback, as it is used at most once.
   template <typename E>
-  using EventHandlerCallback =
-      const base::RepeatingCallback<bool(EventHandlerAndroid*, const E&)>;
+  using ViewClientCallback = const base::Callback<bool(ViewClient*, const E&)>;
+
   template <typename E>
-  bool HitTest(EventHandlerCallback<E> handler_callback,
+  bool HitTest(ViewClientCallback<E> send_to_client,
                const E& event,
                const gfx::PointF& point);
 
-  static bool SendDragEventToHandler(EventHandlerAndroid* handler,
-                                     const DragEventAndroid& event);
-  static bool SendTouchEventToHandler(EventHandlerAndroid* handler,
-                                      const MotionEventAndroid& event);
-  static bool SendMouseEventToHandler(EventHandlerAndroid* handler,
-                                      const MotionEventAndroid& event);
-  static bool SendMouseWheelEventToHandler(EventHandlerAndroid* handler,
-                                           const MotionEventAndroid& event);
-  static bool SendGestureEventToHandler(EventHandlerAndroid* handler,
-                                        const GestureEventAndroid& event);
+  static bool SendDragEventToClient(ViewClient* client,
+                                    const DragEventAndroid& event);
+  static bool SendTouchEventToClient(ViewClient* client,
+                                     const MotionEventAndroid& event);
+  static bool SendMouseEventToClient(ViewClient* client,
+                                     const MotionEventAndroid& event);
+  static bool SendMouseWheelEventToClient(ViewClient* client,
+                                          const MotionEventAndroid& event);
+  static bool SendGestureEventToClient(ViewClient* client,
+                                       const GestureEventAndroid& event);
 
   bool has_event_forwarder() const { return !!event_forwarder_; }
 
@@ -248,7 +243,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   scoped_refptr<cc::Layer> layer_;
   JavaObjectWeakGlobalRef delegate_;
 
-  EventHandlerAndroid* event_handler_ = nullptr;  // Not owned
+  ViewClient* const client_;
 
   // Basic view layout information. Used to do hit testing deciding whether
   // the passed events should be processed by the view. Unit in DIP.

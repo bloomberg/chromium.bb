@@ -227,8 +227,6 @@ component("events") {
     sources += [
       "android/drag_event_android.cc",
       "android/drag_event_android.h",
-      "android/event_handler_android.cc",
-      "android/event_handler_android.h",
       "android/gesture_event_android.cc",
       "android/gesture_event_android.h",
       "android/gesture_event_type.h",
