@@ -419,7 +419,7 @@ bool GLSurfaceGLX::InitializeOneOff() {
     return false;
   }
 
-  int major, minor;
+  int major = 0, minor = 0;
   if (!glXQueryVersion(gfx::GetXDisplay(), &major, &minor)) {
     LOG(ERROR) << "glxQueryVersion failed";
     return false;
