@@ -242,34 +242,28 @@ bool ChromeFileSystemDelegate::ShowSelectFileDialog(
     FileSystemDelegate::FilesSelectedCallback files_selected_callback,
     base::OnceClosure file_selection_canceled_callback) {
   const Extension* extension = extension_function->extension();
-  content::WebContents* web_contents = nullptr;
+  content::WebContents* web_contents =
+      extension_function->GetSenderWebContents();
+
+  if (!web_contents)
+    return false;
 
   // TODO(asargent/benwells) - As a short term remediation for
   // crbug.com/179010 we're adding the ability for a whitelisted extension to
   // use this API since chrome.fileBrowserHandler.selectFile is ChromeOS-only.
   // Eventually we'd like a better solution and likely this code will go back
   // to being platform-app only.
-  if (extension->is_platform_app()) {
-    content::WebContents* candidate = content::WebContents::FromRenderFrameHost(
-        extension_function->render_frame_host());
-    // Make sure there is an app window associated with the web contents.
-    if (AppWindowRegistry::Get(extension_function->browser_context())
-            ->GetAppWindowForWebContents(candidate)) {
-      web_contents = candidate;
-    }
-  } else {
-    // TODO(michaelpg): As a workaround for crbug.com/736930, allow this to work
-    // from a background page by using the the extended
-    // GetAssociatedWebContentsDeprecated() function provided by
-    // ChromeExtensionFunctionDetails. This is safe because only whitelisted
-    // extensions can access the chrome.fileSystem API; platform apps cannot
-    // open the file picker from a background page.
-    web_contents = ChromeExtensionFunctionDetails(extension_function.get())
-                       .GetAssociatedWebContentsDeprecated();
-  }
 
-  if (!web_contents)
+  // Make sure there is an app window associated with the web contents, so that
+  // platform apps cannot open the file picker from a background page.
+  // TODO(michaelpg): As a workaround for https://crbug.com/736930, allow this
+  // to work from a background page for non-platform apps (which, in practice,
+  // is restricted to whitelisted extensions).
+  if (extension->is_platform_app() &&
+      !AppWindowRegistry::Get(extension_function->browser_context())
+           ->GetAppWindowForWebContents(web_contents)) {
     return false;
+  }
 
   // The file picker will hold a reference to the UIThreadExtensionFunction
   // instance, preventing its destruction (and subsequent sending of the
