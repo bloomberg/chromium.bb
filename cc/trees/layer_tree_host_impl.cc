@@ -1449,6 +1449,7 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
 void LayerTreeHostImpl::DidModifyTilePriorities() {
   // Mark priorities as dirty and schedule a PrepareTiles().
   tile_priorities_dirty_ = true;
+  tile_manager_.DidModifyTilePriorities();
   client_->SetNeedsPrepareTilesOnImplThread();
 }
 

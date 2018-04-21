@@ -1558,6 +1558,11 @@ void TileManager::CheckPendingGpuWorkAndIssueSignals() {
     const ResourcePool::InUsePoolResource& resource =
         tile->draw_info().GetResource();
 
+    // Update requirements first so that if the tile has become required
+    // it will force a redraw.
+    if (pending_tile_requirements_dirty_)
+      tile->tiling()->UpdateRequiredStatesOnTile(tile);
+
     if (global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY ||
         raster_buffer_provider_->IsResourceReadyToDraw(resource)) {
       tile->draw_info().set_resource_ready_for_draw();
@@ -1569,8 +1574,6 @@ void TileManager::CheckPendingGpuWorkAndIssueSignals() {
     // TODO(ericrk): If a tile in our list no longer has valid tile priorities,
     // it may still report that it is required, and unnecessarily delay
     // activation. crbug.com/687265
-    if (pending_tile_requirements_dirty_)
-      tile->tiling()->UpdateRequiredStatesOnTile(tile);
     if (tile->required_for_activation())
       required_for_activation.push_back(&resource);
     if (tile->required_for_draw())
