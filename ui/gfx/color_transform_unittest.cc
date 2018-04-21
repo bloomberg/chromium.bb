@@ -284,7 +284,7 @@ TEST(SimpleColorSpace, ICCProfileOnlyXYZ) {
 }
 
 TEST(SimpleColorSpace, ICCProfileOnlyColorSpin) {
-  const float kEpsilon = 2.5f / 255.f;
+  const float kEpsilon = 3.0f / 255.f;
   ICCProfile icc_profile = ICCProfileForTestingNoAnalyticTrFn();
   ColorSpace icc_space = icc_profile.GetColorSpace();
   ColorSpace colorspin =

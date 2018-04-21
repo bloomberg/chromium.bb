@@ -75,6 +75,7 @@ config("skia_config") {
     ]
   }
 
+  defines += [ "SK_USE_SKCMS" ]
   include_dirs += [ "//third_party/skia/third_party/skcms" ]
 
   if (skia_support_gpu) {
