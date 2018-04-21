@@ -44,13 +44,11 @@ class StylePropertySerializer {
 
  private:
   String GetCommonValue(const StylePropertyShorthand&) const;
-  String GetAlignmentShorthandValue(const StylePropertyShorthand&) const;
   String BorderPropertyValue() const;
   String BorderImagePropertyValue() const;
   String GetLayeredShorthandValue(const StylePropertyShorthand&) const;
   String Get2Values(const StylePropertyShorthand&) const;
   String Get4Values(const StylePropertyShorthand&) const;
-  String BorderSpacingValue(const StylePropertyShorthand&) const;
   String PageBreakPropertyValue(const StylePropertyShorthand&) const;
   String GetShorthandValue(const StylePropertyShorthand&,
                            String separator = " ") const;
