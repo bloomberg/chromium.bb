@@ -4075,7 +4075,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (self.currentWebState) {
     UIEdgeInsets contentPadding =
         self.currentWebState->GetWebViewProxy().contentInset;
-    contentPadding.top = AlignValueToPixel(progress * [self toolbarHeight]);
+    CGFloat toolbarHeightFullscreen = 0;
+    if (IsUIRefreshPhase1Enabled()) {
+      toolbarHeightFullscreen = kToolbarHeightFullscreen;
+    }
+    CGFloat toolbarHeightDelta = [self toolbarHeight] - toolbarHeightFullscreen;
+    contentPadding.top = AlignValueToPixel(toolbarHeightFullscreen +
+                                           progress * toolbarHeightDelta);
     contentPadding.bottom =
         AlignValueToPixel(progress * [self secondaryToolbarHeightWithInset]);
     self.currentWebState->GetWebViewProxy().contentInset = contentPadding;
