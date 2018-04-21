@@ -116,6 +116,7 @@ const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
 const char kArcAssistantLogoPath[] = "assistant_logo.png";
 const char kArcPlaystoreCSSPath[] = "playstore.css";
+const char kArcOverlayCSSPath[] = "overlay.css";
 const char kArcPlaystoreJSPath[] = "playstore.js";
 const char kArcPlaystoreLogoPath[] = "playstore.svg";
 const char kProductLogoPath[] = "product-logo.png";
@@ -169,7 +170,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   // No #else section here as Sync Settings screen is Chrome-specific.
 #endif
 
-  // Required for postprocessing of Goolge PlayStore Terms.
+  // Required for postprocessing of Goolge PlayStore Terms and Overlay help.
+  source->AddResourcePath(kArcOverlayCSSPath, IDR_ARC_SUPPORT_OVERLAY_CSS);
   source->AddResourcePath(kArcPlaystoreCSSPath, IDR_ARC_SUPPORT_PLAYSTORE_CSS);
   source->AddResourcePath(kArcPlaystoreJSPath, IDR_ARC_SUPPORT_PLAYSTORE_JS);
   source->AddResourcePath(kArcPlaystoreLogoPath,

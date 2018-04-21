@@ -991,6 +991,12 @@ chrome.app.runtime.onLaunched.addListener(function() {
     overlayWebview.addEventListener('contentload', function() {
       overlay.classList.remove('overlay-loading');
     });
+    overlayWebview.addContentScripts([{
+      name: 'postProcess',
+      matches: ['https://support.google.com/*'],
+      css: {files: ['overlay.css']},
+      run_at: 'document_end'
+    }]);
 
     focusManager = new appWindow.contentWindow.ArcOptInFocusManager();
     focusManager.initialize();

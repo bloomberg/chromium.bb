@@ -97,6 +97,12 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       overlayUrl.addEventListener('contentload', function() {
         overlayUrl.classList.remove('overlay-loading');
       });
+      overlayUrl.addContentScripts([{
+        name: 'postProcess',
+        matches: ['https://support.google.com/*'],
+        css: {files: ['overlay.css']},
+        run_at: 'document_end'
+      }]);
 
       // Update the screen size after setup layout.
       if (Oobe.getInstance().currentScreen === this)
