@@ -578,7 +578,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 }
 
 void FileManagerBrowserTestBase::StartTest() {
-  LOG(INFO) << "FileManagerBrowserTest::StartTest " << GetTestManifestName();
+  LOG(INFO) << "FileManagerBrowserTest::StartTest " << GetTestCaseNameParam();
   InstallExtension(
       base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests")),
       GetTestManifestName());
