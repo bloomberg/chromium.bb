@@ -120,9 +120,6 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
         AccountId::FromUserEmail(email));
   }
 
- protected:
-  MagnifierTextInputTestHelper text_input_helper_;
-
  private:
   DockedMagnifierTestClient test_client_;
 
@@ -500,7 +497,8 @@ TEST_F(DockedMagnifierTest, TextInputFieldEvents) {
   const auto root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(1u, root_windows.size());
 
-  text_input_helper_.CreateAndShowTextInputView(gfx::Rect(500, 400, 80, 80));
+  MagnifierTextInputTestHelper text_input_helper;
+  text_input_helper.CreateAndShowTextInputView(gfx::Rect(500, 400, 80, 80));
 
   // Enable the docked magnifier.
   controller()->SetEnabled(true);
@@ -510,14 +508,14 @@ TEST_F(DockedMagnifierTest, TextInputFieldEvents) {
   EXPECT_FLOAT_EQ(scale1, controller()->GetScale());
 
   // Focus on the text input field.
-  text_input_helper_.FocusOnTextInputView();
+  text_input_helper.FocusOnTextInputView();
 
   // The text input caret center point will be our point of interest. When it
   // goes through the magnifier layer transform, it should end up being in the
   // center of the viewport.
   const ui::Layer* magnifier_layer =
       controller()->GetViewportMagnifierLayerForTesting();
-  gfx::Point caret_center(text_input_helper_.GetCaretBounds().CenterPoint());
+  gfx::Point caret_center(text_input_helper.GetCaretBounds().CenterPoint());
   magnifier_layer->transform().TransformPoint(&caret_center);
   const views::Widget* viewport_widget =
       controller()->GetViewportWidgetForTesting();
@@ -529,10 +527,46 @@ TEST_F(DockedMagnifierTest, TextInputFieldEvents) {
   // transformed caret center should always go to the viewport center.
   GetEventGenerator().PressKey(ui::VKEY_A, 0);
   GetEventGenerator().ReleaseKey(ui::VKEY_A, 0);
-  gfx::Point new_caret_center(
-      text_input_helper_.GetCaretBounds().CenterPoint());
+  gfx::Point new_caret_center(text_input_helper.GetCaretBounds().CenterPoint());
   magnifier_layer->transform().TransformPoint(&new_caret_center);
   EXPECT_EQ(new_caret_center, viewport_center);
+}
+
+TEST_F(DockedMagnifierTest, FocusChangeEvents) {
+  UpdateDisplay("600x900");
+  const auto root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(1u, root_windows.size());
+
+  MagnifierFocusTestHelper focus_test_helper;
+  focus_test_helper.CreateAndShowFocusTestView(gfx::Point(70, 500));
+
+  // Enable the docked magnifier.
+  controller()->SetEnabled(true);
+  const float scale = 2.0f;
+  controller()->SetScale(scale);
+  EXPECT_TRUE(controller()->GetEnabled());
+  EXPECT_FLOAT_EQ(scale, controller()->GetScale());
+
+  // Focus on the first button and expect the magnifier to be centered around
+  // its center.
+  focus_test_helper.FocusFirstButton();
+  const ui::Layer* magnifier_layer =
+      controller()->GetViewportMagnifierLayerForTesting();
+  gfx::Point button_1_center(
+      focus_test_helper.GetFirstButtonBoundsInRoot().CenterPoint());
+  magnifier_layer->transform().TransformPoint(&button_1_center);
+  const views::Widget* viewport_widget =
+      controller()->GetViewportWidgetForTesting();
+  const gfx::Point viewport_center(
+      viewport_widget->GetWindowBoundsInScreen().CenterPoint());
+  EXPECT_EQ(button_1_center, viewport_center);
+
+  // Similarly if we focus on the second button.
+  focus_test_helper.FocusSecondButton();
+  gfx::Point button_2_center(
+      focus_test_helper.GetSecondButtonBoundsInRoot().CenterPoint());
+  magnifier_layer->transform().TransformPoint(&button_2_center);
+  EXPECT_EQ(button_2_center, viewport_center);
 }
 
 // Tests that viewport layer is inverted properly when the status of the High

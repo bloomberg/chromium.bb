@@ -225,6 +225,13 @@ gfx::Rect MagnificationController::GetViewportRect() const {
   return gfx::ToEnclosingRect(GetWindowRectDIP(scale_));
 }
 
+void MagnificationController::CenterOnPoint(const gfx::Point& point_in_screen) {
+  gfx::Point point_in_root = point_in_screen;
+  ::wm::ConvertPointFromScreen(root_window_, &point_in_root);
+
+  MoveMagnifierWindowCenterPoint(point_in_root);
+}
+
 void MagnificationController::HandleFocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_screen) {
@@ -269,6 +276,61 @@ void MagnificationController::SwitchTargetRootWindow(
   RedrawKeepingMousePosition(scale, true, true);
 
   root_window_->AddObserver(this);
+}
+
+void MagnificationController::OnCaretBoundsChanged(
+    const ui::TextInputClient* client) {
+  // caret bounds in screen coordinates.
+  const gfx::Rect caret_bounds = client->GetCaretBounds();
+  // Note: OnCaretBoundsChanged could be fired OnTextInputTypeChanged during
+  // which the caret position is not set a meaning position, and we do not
+  // need to adjust the view port position based on the bogus caret position.
+  // This is only a transition period, the caret position will be fixed upon
+  // focusing right after.
+  if (caret_bounds.width() == 0 && caret_bounds.height() == 0)
+    return;
+
+  gfx::Point new_caret_point = caret_bounds.CenterPoint();
+  // |caret_point_| in |root_window_| coordinates.
+  ::wm::ConvertPointFromScreen(root_window_, &new_caret_point);
+
+  // When the caret point was not actually changed, nothing should happen.
+  // OnCaretBoundsChanged could be fired on every event that may change the
+  // caret bounds, in particular a window creation/movement, that may not result
+  // in an actual movement.
+  if (new_caret_point == caret_point_)
+    return;
+  caret_point_ = new_caret_point;
+
+  // If the feature for centering the text input focus is disabled, the
+  // magnifier window will be moved to follow the focus with a panning margin.
+  if (!KeepFocusCentered()) {
+    // Visible window_rect in |root_window_| coordinates.
+    const gfx::Rect visible_window_rect = GetViewportRect();
+    const int panning_margin = kCaretPanningMargin / scale_;
+    MoveMagnifierWindowFollowPoint(caret_point_, panning_margin, panning_margin,
+                                   visible_window_rect.width() / 2,
+                                   visible_window_rect.height() / 2);
+    return;
+  }
+
+  // Move the magnifier window to center the focus with a little delay.
+  // In Gmail compose window, when user types a blank space, it will insert
+  // a non-breaking space(NBSP). NBSP will be replaced with a blank space
+  // character when user types a non-blank space character later, which causes
+  // OnCaretBoundsChanged be called twice. The first call moves the caret back
+  // to the character position just before NBSP, replaces the NBSP with blank
+  // space plus the new character, then the second call will move caret to the
+  // position after the new character. In order to avoid the magnifier window
+  // being moved back and forth with these two OnCaretBoundsChanged events, we
+  // defer moving magnifier window until the |move_magnifier_timer_| fires,
+  // when the caret settles eventually.
+  move_magnifier_timer_.Stop();
+  move_magnifier_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(
+          disable_move_magnifier_delay_ ? 0 : kMoveMagnifierDelayInMs),
+      this, &MagnificationController::OnMoveMagnifierTimer);
 }
 
 void MagnificationController::OnImplicitAnimationsCompleted() {
@@ -482,61 +544,6 @@ ui::EventRewriteStatus MagnificationController::NextDispatchEvent(
   DCHECK_EQ(0u, press_event_map_.size());
 
   return ui::EVENT_REWRITE_REWRITTEN;
-}
-
-void MagnificationController::OnCaretBoundsChanged(
-    const ui::TextInputClient* client) {
-  // caret bounds in screen coordinates.
-  const gfx::Rect caret_bounds = client->GetCaretBounds();
-  // Note: OnCaretBoundsChanged could be fired OnTextInputTypeChanged during
-  // which the caret position is not set a meaning position, and we do not
-  // need to adjust the view port position based on the bogus caret position.
-  // This is only a transition period, the caret position will be fixed upon
-  // focusing right after.
-  if (caret_bounds.width() == 0 && caret_bounds.height() == 0)
-    return;
-
-  gfx::Point new_caret_point = caret_bounds.CenterPoint();
-  // |caret_point_| in |root_window_| coordinates.
-  ::wm::ConvertPointFromScreen(root_window_, &new_caret_point);
-
-  // When the caret point was not actually changed, nothing should happen.
-  // OnCaretBoundsChanged could be fired on every event that may change the
-  // caret bounds, in particular a window creation/movement, that may not result
-  // in an actual movement.
-  if (new_caret_point == caret_point_)
-    return;
-  caret_point_ = new_caret_point;
-
-  // If the feature for centering the text input focus is disabled, the
-  // magnifier window will be moved to follow the focus with a panning margin.
-  if (!KeepFocusCentered()) {
-    // Visible window_rect in |root_window_| coordinates.
-    const gfx::Rect visible_window_rect = GetViewportRect();
-    const int panning_margin = kCaretPanningMargin / scale_;
-    MoveMagnifierWindowFollowPoint(caret_point_, panning_margin, panning_margin,
-                                   visible_window_rect.width() / 2,
-                                   visible_window_rect.height() / 2);
-    return;
-  }
-
-  // Move the magnifier window to center the focus with a little delay.
-  // In Gmail compose window, when user types a blank space, it will insert
-  // a non-breaking space(NBSP). NBSP will be replaced with a blank space
-  // character when user types a non-blank space character later, which causes
-  // OnCaretBoundsChanged be called twice. The first call moves the caret back
-  // to the character position just before NBSP, replaces the NBSP with blank
-  // space plus the new character, then the second call will move caret to the
-  // position after the new character. In order to avoid the magnifier window
-  // being moved back and forth with these two OnCaretBoundsChanged events, we
-  // defer moving magnifier window until the |move_magnifier_timer_| fires,
-  // when the caret settles eventually.
-  move_magnifier_timer_.Stop();
-  move_magnifier_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(
-          disable_move_magnifier_delay_ ? 0 : kMoveMagnifierDelayInMs),
-      this, &MagnificationController::OnMoveMagnifierTimer);
 }
 
 bool MagnificationController::Redraw(const gfx::PointF& position,

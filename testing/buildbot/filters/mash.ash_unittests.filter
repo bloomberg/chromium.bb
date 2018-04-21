@@ -47,6 +47,7 @@
 -AccessibilityControllerSigninTest.EnableOnLoginScreenAndLogin/2
 -DockedMagnifierTest.AddRemoveDisplays
 -DockedMagnifierTest.DisplaysWorkAreas
+-DockedMagnifierTest.FocusChangeEvents
 -DockedMagnifierTest.HighContrastMode
 -DockedMagnifierTest.MutuallyExclusiveMagnifiers
 -DockedMagnifierTest.TestEnableAndDisable

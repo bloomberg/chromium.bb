@@ -517,6 +517,30 @@ TEST_F(MagnificationControllerTest, PanWindowToLeft) {
   EXPECT_EQ("100,300", GetHostMouseLocation());
 }
 
+TEST_F(MagnificationControllerTest, FocusChangeEvents) {
+  MagnifierFocusTestHelper focus_test_helper;
+  focus_test_helper.CreateAndShowFocusTestView(gfx::Point(100, 200));
+
+  // Enables magnifier and confirm the viewport is at center.
+  GetMagnificationController()->SetEnabled(true);
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+  EXPECT_EQ("200,150 400x300", GetViewport().ToString());
+  EXPECT_FALSE(GetMagnificationController()->KeepFocusCentered());
+
+  // Focus on the first button and expect the magnifier to be centered around
+  // its center.
+  focus_test_helper.FocusFirstButton();
+  gfx::Point button_1_center(
+      focus_test_helper.GetFirstButtonBoundsInRoot().CenterPoint());
+  EXPECT_EQ(button_1_center, GetViewport().CenterPoint());
+
+  // Similarly if we focus on the second button.
+  focus_test_helper.FocusSecondButton();
+  gfx::Point button_2_center(
+      focus_test_helper.GetSecondButtonBoundsInRoot().CenterPoint());
+  EXPECT_EQ(button_2_center, GetViewport().CenterPoint());
+}
+
 TEST_F(MagnificationControllerTest, FollowTextInputFieldFocus) {
   text_input_helper_.CreateAndShowTextInputView(gfx::Rect(500, 300, 80, 80));
   gfx::Rect text_input_bounds = text_input_helper_.GetTextInputViewBounds();

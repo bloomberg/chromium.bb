@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -21,7 +22,60 @@ aura::Window* GetViewRootWindow(views::View* view) {
   return view->GetWidget()->GetNativeWindow()->GetRootWindow();
 }
 
+gfx::Rect GetBoundsInRoot(const gfx::Rect& bounds_in_screen,
+                          views::View* view) {
+  gfx::Rect bounds = bounds_in_screen;
+  ::wm::ConvertRectFromScreen(GetViewRootWindow(view), &bounds);
+  return bounds;
+}
+
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// TestFocusView:
+
+// A view that contains two buttons positioned at constant bounds with ability
+// to request focus on either one.
+class TestFocusView : public views::WidgetDelegateView {
+ public:
+  TestFocusView()
+      : button_1_(new views::LabelButton(nullptr, {})),
+        button_2_(new views::LabelButton(nullptr, {})) {
+    button_1_->SetFocusForPlatform();
+    button_2_->SetFocusForPlatform();
+    AddChildView(button_1_);
+    AddChildView(button_2_);
+  }
+
+  ~TestFocusView() override = default;
+
+  gfx::Size CalculatePreferredSize() const override {
+    return MagnifierFocusTestHelper::kTestFocusViewSize;
+  }
+
+  void Layout() override {
+    // Layout the first button at the top of the view.
+    button_1_->SetBounds(0, 0,
+                         MagnifierFocusTestHelper::kTestFocusViewSize.width(),
+                         MagnifierFocusTestHelper::kButtonHeight);
+
+    // And the second at the other end at the bottom of the view.
+    button_2_->SetBounds(0,
+                         MagnifierFocusTestHelper::kTestFocusViewSize.height() -
+                             MagnifierFocusTestHelper::kButtonHeight,
+                         MagnifierFocusTestHelper::kTestFocusViewSize.width(),
+                         MagnifierFocusTestHelper::kButtonHeight);
+  }
+
+  views::LabelButton* button_1_;
+  views::LabelButton* button_2_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestFocusView);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// TestTextInputView:
 
 // A view that contains a single text field for testing text input events.
 class TestTextInputView : public views::WidgetDelegateView {
@@ -45,6 +99,49 @@ class TestTextInputView : public views::WidgetDelegateView {
 
   DISALLOW_COPY_AND_ASSIGN(TestTextInputView);
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// MagnifierFocusTestHelper:
+
+// static
+constexpr int MagnifierFocusTestHelper::kButtonHeight;
+
+// static
+constexpr gfx::Size MagnifierFocusTestHelper::kTestFocusViewSize;
+
+void MagnifierFocusTestHelper::CreateAndShowFocusTestView(
+    const gfx::Point& location) {
+  focus_test_view_ = new TestFocusView;
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      focus_test_view_, Shell::GetPrimaryRootWindow(),
+      gfx::Rect(location, MagnifierFocusTestHelper::kTestFocusViewSize));
+  widget->Show();
+}
+
+void MagnifierFocusTestHelper::FocusFirstButton() {
+  DCHECK(focus_test_view_);
+  focus_test_view_->button_1_->RequestFocus();
+}
+
+void MagnifierFocusTestHelper::FocusSecondButton() {
+  DCHECK(focus_test_view_);
+  focus_test_view_->button_2_->RequestFocus();
+}
+
+gfx::Rect MagnifierFocusTestHelper::GetFirstButtonBoundsInRoot() const {
+  DCHECK(focus_test_view_);
+  return GetBoundsInRoot(focus_test_view_->button_1_->GetBoundsInScreen(),
+                         focus_test_view_);
+}
+
+gfx::Rect MagnifierFocusTestHelper::GetSecondButtonBoundsInRoot() const {
+  DCHECK(focus_test_view_);
+  return GetBoundsInRoot(focus_test_view_->button_2_->GetBoundsInScreen(),
+                         focus_test_view_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MagnifierTextInputTestHelper:
 
 void MagnifierTextInputTestHelper::CreateAndShowTextInputView(
     const gfx::Rect& bounds) {
@@ -72,12 +169,9 @@ gfx::Rect MagnifierTextInputTestHelper::GetTextInputViewBounds() {
 }
 
 gfx::Rect MagnifierTextInputTestHelper::GetCaretBounds() {
-  gfx::Rect caret_bounds =
-      GetInputMethod()->GetTextInputClient()->GetCaretBounds();
-  gfx::Point origin = caret_bounds.origin();
-  ::wm::ConvertPointFromScreen(GetViewRootWindow(text_input_view_), &origin);
-  return gfx::Rect(origin.x(), origin.y(), caret_bounds.width(),
-                   caret_bounds.height());
+  return GetBoundsInRoot(
+      GetInputMethod()->GetTextInputClient()->GetCaretBounds(),
+      text_input_view_);
 }
 
 void MagnifierTextInputTestHelper::FocusOnTextInputView() {

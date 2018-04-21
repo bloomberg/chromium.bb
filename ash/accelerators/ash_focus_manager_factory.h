@@ -32,6 +32,8 @@ class AshFocusManagerFactory : public views::FocusManagerFactory {
 
     // views::FocusManagerDelegate overrides:
     bool ProcessAccelerator(const ui::Accelerator& accelerator) override;
+    void OnDidChangeFocus(views::View* focused_before,
+                          views::View* focused_now) override;
   };
 
   DISALLOW_COPY_AND_ASSIGN(AshFocusManagerFactory);
