@@ -41,7 +41,6 @@ class URLLoaderFactory;
 
 namespace chromeos {
 
-class NetworkPortalNotificationController;
 class NetworkState;
 
 // This class handles all notifications about network changes from
@@ -57,8 +56,8 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   static constexpr base::TimeDelta kDelaySinceShillPortalForUMA =
       base::TimeDelta::FromSeconds(60);
 
-  NetworkPortalDetectorImpl(network::mojom::URLLoaderFactory* loader_factory,
-                            bool create_notification_controller);
+  explicit NetworkPortalDetectorImpl(
+      network::mojom::URLLoaderFactory* loader_factory);
   ~NetworkPortalDetectorImpl() override;
 
   // Set the URL to be tested for portal state.
@@ -130,9 +129,8 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   CaptivePortalState GetCaptivePortalState(const std::string& guid) override;
   bool IsEnabled() override;
   void Enable(bool start_detection) override;
-  bool StartDetectionIfIdle() override;
+  bool StartPortalDetection(bool force) override;
   void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
-  void OnLockScreenRequest() override;
 
   // NetworkStateHandlerObserver implementation:
   void DefaultNetworkChanged(const NetworkState* network) override;
@@ -262,13 +260,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   // Number of detection attempts in a row with NO RESPONSE result.
   int no_response_result_count_ = 0;
 
-  // Must be declared before |notification_controller_| as
-  // ~NetworkPortalNotificationController() calls
-  // NetworkPortalDetectorImpl::RemoveObserver() which uses this.
   SEQUENCE_CHECKER(sequence_checker_);
-
-  // UI notification controller about captive portal state.
-  std::unique_ptr<NetworkPortalNotificationController> notification_controller_;
 
   content::NotificationRegistrar registrar_;
 

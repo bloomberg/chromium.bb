@@ -24,9 +24,8 @@ class CHROMEOS_EXPORT NetworkPortalDetectorStub : public NetworkPortalDetector {
       const std::string& service_path) override;
   bool IsEnabled() override;
   void Enable(bool start_detection) override;
-  bool StartDetectionIfIdle() override;
+  bool StartPortalDetection(bool force) override;
   void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
-  void OnLockScreenRequest() override;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorStub);
 };

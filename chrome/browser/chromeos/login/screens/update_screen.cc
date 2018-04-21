@@ -357,10 +357,10 @@ void UpdateScreen::OnPortalDetectionCompleted(
       is_first_detection_notification_) {
     is_first_detection_notification_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            base::IgnoreResult(&NetworkPortalDetector::StartDetectionIfIdle),
-            base::Unretained(network_portal_detector::GetInstance())));
+        FROM_HERE, base::BindOnce([]() {
+          network_portal_detector::GetInstance()->StartPortalDetection(
+              false /* force */);
+        }));
     return;
   }
   is_first_detection_notification_ = false;

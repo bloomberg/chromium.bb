@@ -13,6 +13,8 @@ NetworkPortalDetectorTestImpl::NetworkPortalDetectorTestImpl()
 }
 
 NetworkPortalDetectorTestImpl::~NetworkPortalDetectorTestImpl() {
+  for (auto& observer : observers_)
+    observer.OnShutdown();
 }
 
 void NetworkPortalDetectorTestImpl::SetDefaultNetworkForTesting(
@@ -86,16 +88,13 @@ bool NetworkPortalDetectorTestImpl::IsEnabled() {
 void NetworkPortalDetectorTestImpl::Enable(bool start_detection) {
 }
 
-bool NetworkPortalDetectorTestImpl::StartDetectionIfIdle() {
+bool NetworkPortalDetectorTestImpl::StartPortalDetection(bool force) {
   return false;
 }
 
 void NetworkPortalDetectorTestImpl::SetStrategy(
     PortalDetectorStrategy::StrategyId id) {
   strategy_id_ = id;
-}
-
-void NetworkPortalDetectorTestImpl::OnLockScreenRequest() {
 }
 
 }  // namespace chromeos

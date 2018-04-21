@@ -26,10 +26,9 @@ class MockNetworkPortalDetector : public NetworkPortalDetector {
                    const std::string& service_path));
   MOCK_METHOD0(IsEnabled, bool());
   MOCK_METHOD1(Enable, void(bool start_detection));
-  MOCK_METHOD0(StartDetectionIfIdle, bool());
+  MOCK_METHOD1(StartPortalDetection, bool(bool force));
   MOCK_METHOD1(SetStrategy,
                void(chromeos::PortalDetectorStrategy::StrategyId id));
-  MOCK_METHOD0(OnLockScreenRequest, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkPortalDetector);

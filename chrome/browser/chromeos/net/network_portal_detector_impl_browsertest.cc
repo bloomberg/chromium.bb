@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -75,7 +77,7 @@ class NetworkPortalDetectorImplBrowserTest
       : LoginManagerTest(false),
         test_account_id_(
             AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId)),
-        network_portal_detector_(NULL) {}
+        network_portal_detector_(nullptr) {}
 
   ~NetworkPortalDetectorImplBrowserTest() override {}
 
@@ -85,11 +87,8 @@ class NetworkPortalDetectorImplBrowserTest
     ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
-    service_test->AddService(kWifiServicePath,
-                             kWifiGuid,
-                             "wifi",
-                             shill::kTypeEthernet,
-                             shill::kStateIdle,
+    service_test->AddService(kWifiServicePath, kWifiGuid, "wifi",
+                             shill::kTypeEthernet, shill::kStateIdle,
                              true /* add_to_visible */);
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
         dbus::ObjectPath(kWifiServicePath), shill::kStateProperty,
@@ -99,14 +98,22 @@ class NetworkPortalDetectorImplBrowserTest
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         chromeos::ProfileHelper::GetSigninProfile());
 
-    network_portal_detector_ = new NetworkPortalDetectorImpl(
-        test_loader_factory(), true /* create_notification_controller */);
+    network_portal_detector_ =
+        new NetworkPortalDetectorImpl(test_loader_factory());
+    // Takes ownership of |network_portal_detector_|:
     network_portal_detector::InitializeForTesting(network_portal_detector_);
     network_portal_detector_->Enable(false /* start_detection */);
     set_detector(network_portal_detector_->captive_portal_detector_.get());
     PortalDetectorStrategy::set_delay_till_next_attempt_for_testing(
         base::TimeDelta());
+    network_portal_notification_controller_ =
+        std::make_unique<NetworkPortalNotificationController>(
+            network_portal_detector_);
     base::RunLoop().RunUntilIdle();
+  }
+
+  void TearDownOnMainThread() override {
+    network_portal_notification_controller_.reset();
   }
 
   void RestartDetection() {
@@ -120,13 +127,11 @@ class NetworkPortalDetectorImplBrowserTest
   }
 
   void SetIgnoreNoNetworkForTesting() {
-    network_portal_detector_->notification_controller_
-        ->SetIgnoreNoNetworkForTesting();
+    network_portal_notification_controller_->SetIgnoreNoNetworkForTesting();
   }
 
   const NetworkPortalWebDialog* GetDialog() const {
-    return network_portal_detector_->notification_controller_
-        ->GetDialogForTesting();
+    return network_portal_notification_controller_->GetDialogForTesting();
   }
 
  protected:
@@ -136,6 +141,8 @@ class NetworkPortalDetectorImplBrowserTest
 
  private:
   NetworkPortalDetectorImpl* network_portal_detector_;
+  std::unique_ptr<NetworkPortalNotificationController>
+      network_portal_notification_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorImplBrowserTest);
 };
@@ -152,9 +159,9 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   typedef NetworkPortalNotificationController Controller;
 
   EnumHistogramChecker ui_checker(
-      kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, NULL);
+      kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, nullptr);
   EnumHistogramChecker action_checker(
-      kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, NULL);
+      kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, nullptr);
 
   LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
@@ -167,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   // No notification until portal detection is completed.
   EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
   RestartDetection();
-  CompleteURLFetch(net::OK, 200, NULL);
+  CompleteURLFetch(net::OK, 200, nullptr);
 
   // Check that wifi is marked as behind the portal and that notification
   // is displayed.

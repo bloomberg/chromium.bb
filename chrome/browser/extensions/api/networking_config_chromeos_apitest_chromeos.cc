@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/location.h"
@@ -48,6 +49,9 @@ class NetworkingConfigTest
     : public ExtensionApiTest,
       public captive_portal::CaptivePortalDetectorTestBase {
  public:
+  NetworkingConfigTest() : network_portal_detector_(nullptr) {}
+  ~NetworkingConfigTest() override = default;
+
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
@@ -81,12 +85,20 @@ class NetworkingConfigTest
 
     content::RunAllPendingInMessageLoop();
 
-    network_portal_detector_ = new NetworkPortalDetectorImpl(
-        test_loader_factory(), true /* create_notification_controller */);
+    network_portal_detector_ =
+        new NetworkPortalDetectorImpl(test_loader_factory());
+    // Takes ownership of |network_portal_detector_|:
     chromeos::network_portal_detector::InitializeForTesting(
         network_portal_detector_);
     network_portal_detector_->Enable(false /* start_detection */);
     set_detector(network_portal_detector_->captive_portal_detector_.get());
+    network_portal_notification_controller_ =
+        std::make_unique<NetworkPortalNotificationController>(
+            network_portal_detector_);
+  }
+
+  void TearDownOnMainThread() override {
+    network_portal_notification_controller_.reset();
   }
 
   void LoadTestExtension() {
@@ -118,7 +130,9 @@ class NetworkingConfigTest
   }
 
  protected:
-  NetworkPortalDetectorImpl* network_portal_detector_ = nullptr;
+  NetworkPortalDetectorImpl* network_portal_detector_;
+  std::unique_ptr<NetworkPortalNotificationController>
+      network_portal_notification_controller_;
   const extensions::Extension* extension_ = nullptr;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 };

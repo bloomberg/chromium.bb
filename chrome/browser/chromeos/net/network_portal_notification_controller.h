@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace extensions {
@@ -28,7 +29,8 @@ class NetworkPortalNotificationControllerTest;
 // captive portal.
 class NetworkPortalNotificationController
     : public NetworkStateHandlerObserver,
-      public NetworkPortalDetector::Observer {
+      public NetworkPortalDetector::Observer,
+      public session_manager::SessionManagerObserver {
  public:
   // The values of these metrics are being used for UMA gathering, so it is
   // important that they don't change between releases.
@@ -60,16 +62,6 @@ class NetworkPortalNotificationController
   explicit NetworkPortalNotificationController(
       NetworkPortalDetector* network_portal_dectector);
   ~NetworkPortalNotificationController() override;
-
-  // |retry_detection_callback| will be called if the controller learns about a
-  // potential change of the captive portal (e.g. if an extension notifies about
-  // a finished authentication).
-  // |retry_detection_callback| will not be called after this controller is
-  // destroyed.
-  void set_retry_detection_callback(
-      const base::Closure& retry_detection_callback) {
-    retry_detection_callback_ = retry_detection_callback;
-  }
 
   // Creates NetworkPortalWebDialog.
   void ShowDialog();
@@ -124,6 +116,10 @@ class NetworkPortalNotificationController
   void OnPortalDetectionCompleted(
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) override;
+  void OnShutdown() override;
+
+  // session_manager::SessionManagerObserver:
+  void OnSessionStateChanged() override;
 
   // Last network guid for which notification was displayed.
   std::string last_network_guid_;
@@ -136,10 +132,6 @@ class NetworkPortalNotificationController
 
   // Do not close Portal Login dialog on "No network" error in browser tests.
   bool ignore_no_network_for_testing_ = false;
-
-  // This is called if the controller learns about a potential change of the
-  // captive portal.
-  base::Closure retry_detection_callback_;
 
   base::WeakPtrFactory<NetworkPortalNotificationController> weak_factory_;
 
