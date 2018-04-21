@@ -31,7 +31,11 @@ void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
     const char* name;
     int id;
   } kLocalizedStrings[] = {
-      {"title", IDS_MULTIDEVICE_SETUP_DIALOG_TITLE}, {"cancel", IDS_CANCEL},
+      {"accept", IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL},
+      {"cancel", IDS_CANCEL},
+      {"done", IDS_DONE},
+      {"title", IDS_MULTIDEVICE_SETUP_DIALOG_TITLE},
+      {"tryAgain", IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL},
   };
 
   for (const auto& entry : kLocalizedStrings)

@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="button_bar.html">
 <link rel="import" href="button_navigation_behavior.html">
 <link rel="import" href="setting_up_page.html">
 <link rel="import" href="setup_failed_page.html">
@@ -10,14 +11,19 @@
 
 <dom-module id="multidevice-setup">
   <template>
-    <iron-pages id="pages" attr-for-selected="is"
-        selected="[[visiblePageName_]]" selected-item="{{visiblePage_}}">
+    <iron-pages
+        id="pages"
+        attr-for-selected="is"
+        selected="[[visiblePageName_]]"
+        selected-item="{{visiblePage_}}">
       <setup-failed-page></setup-failed-page>
       <setup-succeeded-page></setup-succeeded-page>
       <start-setup-page></start-setup-page>
     </iron-pages>
-    <div>Forward Button: [[visiblePage_.forwardButtonText]]</div>
-    <div>Backward Button: [[visiblePage_.backwardButtonText]]</div>
+    <button-bar
+        forward-button-text="[[visiblePage_.forwardButtonText]]"
+        backward-button-text="[[visiblePage_.backwardButtonText]]">
+    </button-bar>
   </template>
   <script src="multidevice_setup.js"></script>
 </dom-module>

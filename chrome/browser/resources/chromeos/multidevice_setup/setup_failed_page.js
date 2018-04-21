@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @polymer */
 Polymer({
   is: 'setup-failed-page',
 
@@ -10,17 +9,17 @@ Polymer({
     /**
      * Overriden from ButtonNavigationBehavior
      */
-    forwardButtonText: {
+    forwardButtonTextId: {
       type: String,
-      value: 'Try again',
+      value: 'tryAgain',
     },
 
     /**
      * Overriden from ButtonNavigationBehavior
      */
-    backwardButtonText: {
+    backwardButtonTextId: {
       type: String,
-      value: 'Cancel',
+      value: 'cancel',
     },
   },
 
