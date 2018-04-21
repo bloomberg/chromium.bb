@@ -144,9 +144,9 @@ Tree link: https://github.com/PolymerElements/iron-range-behavior/tree/v2.0.0
 
 Name: iron-resizable-behavior
 Repository: https://github.com/PolymerElements/iron-resizable-behavior.git
-Tree: v1.0.5
-Revision: 354f287922e497b79797348b31596eebaccb9761
-Tree link: https://github.com/PolymerElements/iron-resizable-behavior/tree/v1.0.5
+Tree: v2.1.0
+Revision: 806e0807bd4253f446f8be624acf853069e36919
+Tree link: https://github.com/PolymerElements/iron-resizable-behavior/tree/v2.1.0
 
 Name: iron-scroll-target-behavior
 Repository: https://github.com/PolymerElements/iron-scroll-target-behavior.git
