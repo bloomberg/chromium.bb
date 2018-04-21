@@ -9,6 +9,10 @@ component("aura_extra") {
     "aura_extra_export.h",
     "image_window_delegate.cc",
     "image_window_delegate.h",
+    "window_occlusion_impl_win.cc",
+    "window_occlusion_impl_win.h",
+    "window_occlusion_win.cc",
+    "window_occlusion_win.h",
   ]
 
   defines = [ "AURA_EXTRA_IMPLEMENTATION" ]
