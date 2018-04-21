@@ -42,11 +42,6 @@ DialogDelegate::DialogDelegate()
   creation_time_ = base::TimeTicks::Now();
 }
 
-DialogDelegate::~DialogDelegate() {
-  UMA_HISTOGRAM_LONG_TIMES("Dialog.DialogDelegate.Duration",
-                           base::TimeTicks::Now() - creation_time_);
-}
-
 // static
 Widget* DialogDelegate::CreateDialogWidget(WidgetDelegate* delegate,
                                            gfx::NativeWindow context,
@@ -247,6 +242,11 @@ void DialogDelegate::RemoveObserver(DialogObserver* observer) {
 void DialogDelegate::DialogModelChanged() {
   for (DialogObserver& observer : observer_list_)
     observer.OnDialogModelChanged();
+}
+
+DialogDelegate::~DialogDelegate() {
+  UMA_HISTOGRAM_LONG_TIMES("Dialog.DialogDelegate.Duration",
+                           base::TimeTicks::Now() - creation_time_);
 }
 
 ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() const {
