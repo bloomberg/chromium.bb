@@ -31,6 +31,25 @@ namespace crostini {
 // the VM isn't running. The registrations here correspond to .desktop files,
 // which are detailed in the spec:
 // https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/
+
+// This class deals with several types of IDs, including:
+// 1) Desktop File IDs (desktop_file_id):
+//    - As per the desktop entry spec.
+// 2) Crostini App List Ids (app_id):
+//    - Valid extensions ids for apps stored in the registry, derived from the
+//    desktop file id, vm name, and container name.
+//    - The default Terminal app is a special case app list item, without an
+//    entry in the registry.
+// 3) Exo Window App Ids (window_app_id):
+//    - Retrieved from exo::ShellSurface::GetApplicationId()
+//    - For Wayland apps, this is the surface class of the app
+//    - For X apps, this is of the form org.chromium.termina.wmclass.foo when
+//    WM_CLASS is set to foo, or otherwise some string prefixed by
+//    "org.chromium.termina." when WM_CLASS is not set.
+// 4) Shelf App Ids (shelf_app_id):
+//    - Used in ash::ShelfID::app_id
+//    - Either a Window App Id prefixed by "crostini:" or a Crostini App Id.
+//    - For pinned apps, this is a Crostini App Id.
 class CrostiniRegistryService : public KeyedService {
  public:
   struct Registration {
@@ -79,6 +98,20 @@ class CrostiniRegistryService : public KeyedService {
 
   explicit CrostiniRegistryService(Profile* profile);
   ~CrostiniRegistryService() override;
+
+  // Returns a shelf app id for an exo window id.
+  //
+  // If the given window app id is not for Crostini (i.e. Arc++), returns an
+  // empty string. If we can uniquely identify a registry entry, returns the
+  // crostini app id for that. Otherwise, returns the |window_app_id|, possibly
+  // prefixed "org.chromium.termina.wayland." if it was not already prefixed.
+  //
+  // As the window app id is derived from fields set by the app itself, it is
+  // possible for an app to masquerade as a different app.
+  std::string GetCrostiniShelfAppId(const std::string& window_app_id,
+                                    const std::string* window_startup_id);
+  // Returns whether the app_id is a Crostini app id.
+  bool IsCrostiniShelfAppId(const std::string& shelf_app_id);
 
   std::vector<std::string> GetRegisteredAppIds() const;
 

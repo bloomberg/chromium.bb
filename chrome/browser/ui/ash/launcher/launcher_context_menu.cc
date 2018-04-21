@@ -9,9 +9,10 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "base/metrics/user_metrics.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_util.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -40,7 +41,9 @@ std::unique_ptr<LauncherContextMenu> LauncherContextMenu::Create(
   }
 
   // Create an CrostiniShelfContextMenu if the item is Crostini app.
-  if (IsCrostiniAppId(item->id.app_id)) {
+  if (crostini::CrostiniRegistryServiceFactory::GetForProfile(
+          controller->profile())
+          ->IsCrostiniShelfAppId(item->id.app_id)) {
     return std::make_unique<CrostiniShelfContextMenu>(controller, item,
                                                       display_id);
   }

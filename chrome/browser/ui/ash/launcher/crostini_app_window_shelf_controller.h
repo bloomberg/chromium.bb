@@ -45,8 +45,7 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
   using AuraWindowToAppWindow =
       std::map<aura::Window*, std::unique_ptr<AppWindowBase>>;
 
-  void RegisterAppWindow(aura::Window* window,
-                         const std::string* window_app_id);
+  void RegisterAppWindow(aura::Window* window, const std::string& shelf_app_id);
   void UnregisterAppWindow(AppWindowBase* app_window);
 
   // AppWindowLauncherController:
