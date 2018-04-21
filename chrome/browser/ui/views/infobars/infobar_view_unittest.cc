@@ -36,6 +36,13 @@ class InfoBarViewTest : public ChromeViewsTestBase {
     return InfoBarService::FromWebContents(web_contents_);
   }
 
+  // Detaches |infobar_container_view_| from infobar_service(), so that newly-
+  // created infobars will not be placed in a container.  This can be used to
+  // simulate creating an infobar in a background tab.
+  void DetachContainer() {
+    infobar_container_view_.ChangeInfoBarManager(nullptr);
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
@@ -52,4 +59,15 @@ TEST_F(InfoBarViewTest, ShouldDrawSeparator) {
     ASSERT_TRUE(infobar);
     EXPECT_EQ(i > 0, infobar->ShouldDrawSeparator());
   }
+}
+
+// Regression test for crbug.com/834728 .
+TEST_F(InfoBarViewTest, LayoutOnHiddenInfoBar) {
+  // Calling Layout() on an infobar inside a container should not crash.
+  InfoBarView* infobar = TestInfoBarDelegate::Create(infobar_service());
+  ASSERT_TRUE(infobar);
+  infobar->Layout();
+  // Neither should calling it on an infobar not in a container.
+  DetachContainer();
+  infobar->Layout();
 }
