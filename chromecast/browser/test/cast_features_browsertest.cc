@@ -90,25 +90,25 @@ const base::Feature kTestFeat23{"test_feat_23",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kTestFeat24{"test_feat_24",
                                 base::FEATURE_ENABLED_BY_DEFAULT};
-void RegisterFeatures() {
-  chromecast::RegisterFeaturesForTesting();
-  chromecast::RegisterFeature(&kTestFeat1);
-  chromecast::RegisterFeature(&kTestFeat2);
-  chromecast::RegisterFeature(&kTestFeat3);
-  chromecast::RegisterFeature(&kTestFeat4);
-  chromecast::RegisterFeature(&kTestFeat11);
-  chromecast::RegisterFeature(&kTestFeat21);
-  chromecast::RegisterFeature(&kTestFeat22);
-  chromecast::RegisterFeature(&kTestFeat23);
-  chromecast::RegisterFeature(&kTestFeat24);
+
+// Extend the default features with test features only used in this browsertest.
+void SetupFeatures() {
+  std::vector<const base::Feature*> features = {
+      &kTestFeat1,  &kTestFeat2,  &kTestFeat3,  &kTestFeat4, &kTestFeat11,
+      &kTestFeat21, &kTestFeat22, &kTestFeat23, &kTestFeat24};
+  std::vector<const base::Feature*> existing_features =
+      chromecast::GetFeatures();
+  features.insert(features.end(), existing_features.begin(),
+                  existing_features.end());
+  chromecast::SetFeaturesForTest(std::move(features));
 }
 
 }  // namespace
 
 class CastFeaturesBrowserTest : public CastBrowserTest {
  public:
-  CastFeaturesBrowserTest() { chromecast::ClearFeaturesForTesting(); }
-  ~CastFeaturesBrowserTest() override {}
+  CastFeaturesBrowserTest() { SetupFeatures(); }
+  ~CastFeaturesBrowserTest() override { chromecast::ResetCastFeaturesForTesting(); }
 
   static PrefService* pref_service() {
     return CastBrowserProcess::GetInstance()->pref_service();
@@ -160,14 +160,12 @@ class CastFeaturesBrowserTest : public CastBrowserTest {
 // Test that set features activate on the next boot. Part 1 of 3.
 IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
                        PRE_PRE_TestFeaturesActivateOnBoot) {
-  RegisterFeatures();
   ClearFeaturesFromPrefs({kTestFeat1, kTestFeat2, kTestFeat3, kTestFeat4});
 }
 
 // Test that set features activate on the next boot. Part 2 of 3.
 IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
                        PRE_TestFeaturesActivateOnBoot) {
-  RegisterFeatures();
   // Default values should be returned.
   ASSERT_FALSE(chromecast::IsFeatureEnabled(kTestFeat1));
   ASSERT_TRUE(chromecast::IsFeatureEnabled(kTestFeat2));
@@ -189,7 +187,6 @@ IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
 
 // Test that features activate on the next boot. Part 3 of 3.
 IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest, TestFeaturesActivateOnBoot) {
-  RegisterFeatures();
   // Overriden values set in test case above should be set.
   ASSERT_TRUE(chromecast::IsFeatureEnabled(kTestFeat1));
   ASSERT_TRUE(chromecast::IsFeatureEnabled(kTestFeat2));
@@ -200,13 +197,11 @@ IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest, TestFeaturesActivateOnBoot) {
 // Test that features with params activate on boot. Part 1 of 3.
 IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
                        PRE_PRE_TestParamsActivateOnBoot) {
-  RegisterFeatures();
   ClearFeaturesFromPrefs({kTestFeat11});
 }
 
 // Test that features with params activate on boot. Part 2 of 3.
 IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest, PRE_TestParamsActivateOnBoot) {
-  RegisterFeatures();
   // Default value should be returned.
   ASSERT_FALSE(chromecast::IsFeatureEnabled(kTestFeat11));
 
@@ -227,7 +222,6 @@ IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest, PRE_TestParamsActivateOnBoot) {
 
 // Test that features with params activate on boot. Part 3 of 3.
 IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest, TestParamsActivateOnBoot) {
-  RegisterFeatures();
   // Check that the feature is now enabled.
   ASSERT_TRUE(chromecast::IsFeatureEnabled(kTestFeat11));
 
@@ -252,14 +246,12 @@ IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest, TestParamsActivateOnBoot) {
 // Test that only well-formed features are persisted to disk. Part 1 of 3.
 IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
                        PRE_PRE_TestOnlyWellFormedFeaturesPersisted) {
-  RegisterFeatures();
   ClearFeaturesFromPrefs({kTestFeat21, kTestFeat22, kTestFeat23, kTestFeat24});
 }
 
 // Test that only well-formed features are persisted to disk. Part 2 of 3.
 IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
                        PRE_TestOnlyWellFormedFeaturesPersisted) {
-  RegisterFeatures();
   // Default values should be returned.
   ASSERT_FALSE(chromecast::IsFeatureEnabled(kTestFeat21));
   ASSERT_TRUE(chromecast::IsFeatureEnabled(kTestFeat22));
@@ -281,7 +273,6 @@ IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
 // Test that only well-formed features are persisted to disk. Part 2 of 2.
 IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
                        TestOnlyWellFormedFeaturesPersisted) {
-  RegisterFeatures();
   // Only the well-formed parameters should be overriden.
   ASSERT_TRUE(chromecast::IsFeatureEnabled(kTestFeat21));
   ASSERT_FALSE(chromecast::IsFeatureEnabled(kTestFeat24));

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/base/cast_features.h"
+
 #include <algorithm>
 #include <utility>
-
-#include "chromecast/base/cast_features.h"
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -13,17 +13,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
 namespace chromecast {
 namespace {
-
-// The mapping of feature names to features that have been registered
-// LazyInstance
-base::LazyInstance<std::vector<const base::Feature*>>::DestructorAtExit
-    g_features;
-
 // A constant used to always activate a FieldTrial.
 const base::FieldTrial::Probability k100PercentProbability = 100;
 
@@ -34,16 +29,10 @@ base::LazyInstance<std::unordered_set<int32_t>>::Leaky g_experiment_ids =
     LAZY_INSTANCE_INITIALIZER;
 bool g_experiment_ids_initialized = false;
 
-void ClearFeatures() {
-  g_features.Get().clear();
-}
-
-void RegisterFeatures() {
-  RegisterFeature(&kAllowUserMediaAccess);
-  RegisterFeature(&kEnableQuic);
-  RegisterFeature(&kTripleBuffer720);
-  RegisterFeature(&kSingleBuffer);
-  RegisterFeature(&kDisableIdleSocketsCloseOnMemoryPressure);
+// The collection of features that have been registered by unit tests
+std::vector<const base::Feature*>& GetTestFeatures() {
+  static base::NoDestructor<std::vector<const base::Feature*>> g_features_for_test;
+  return *g_features_for_test;
 }
 
 void SetExperimentIds(const base::ListValue& list) {
@@ -125,11 +114,9 @@ void SetExperimentIds(const base::ListValue& list) {
 //
 //      --disable-features=enable_foo,enable_bar
 //
-// 5) If you add a new feature to the system you must register the feature.
+// 5) If you add a new feature to the system you must include it in kFeatures
 //    This is because the system relies on knowing all of the features so
-//    it can properly iterate over all features to detect changes. You
-//    should register your feature via RegisterFeature(&feature) and most likely
-//    your feature registration should live in RegisterFeatures() function
+//    it can properly iterate over all features to detect changes.
 //
 
 // Begin Chromecast Feature definitions.
@@ -157,12 +144,30 @@ const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // End Chromecast Feature definitions.
+const base::Feature* kFeatures[] = {
+    &kAllowUserMediaAccess,
+    &kEnableQuic,
+    &kTripleBuffer720,
+    &kSingleBuffer,
+    &kDisableIdleSocketsCloseOnMemoryPressure,
+};
 
 // An iterator for a base::DictionaryValue. Use an alias for brevity in loops.
 using Iterator = base::DictionaryValue::Iterator;
 
-std::vector<const base::Feature*> GetFeatures() {
-  return g_features.Get();
+std::vector<const base::Feature*> GetInternalFeatures();
+
+const std::vector<const base::Feature*>& GetFeatures() {
+  static const base::NoDestructor<std::vector<const base::Feature*>> features([] {
+    auto features = std::vector<const base::Feature*>(
+      kFeatures, kFeatures + sizeof(kFeatures) / sizeof(base::Feature*));
+    auto internal_features = GetInternalFeatures();
+    features.insert(features.end(), internal_features.begin(), internal_features.end());
+    return features;
+  }());
+  if (GetTestFeatures().size() > 0)
+    return GetTestFeatures();
+  return *features;
 }
 
 void InitializeFeatureList(const base::DictionaryValue& dcs_features,
@@ -170,8 +175,6 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
                            const std::string& cmd_line_enable_features,
                            const std::string& cmd_line_disable_features) {
   DCHECK(!base::FeatureList::GetInstance());
-
-  RegisterFeatures();
 
   // Set the experiments.
   SetExperimentIds(dcs_experiment_ids);
@@ -257,14 +260,10 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
   base::FeatureList::SetInstance(std::move(feature_list));
 }
 
-bool IsFeatureRegistered(const base::Feature& feature) {
-  std::vector<const base::Feature*> features = g_features.Get();
-  auto it = std::find(features.begin(), features.end(), &feature);
-  return it != features.end();
-}
-
 bool IsFeatureEnabled(const base::Feature& feature) {
-  DCHECK(IsFeatureRegistered(feature)) << feature.name;
+  DCHECK(std::find(GetFeatures().begin(), GetFeatures().end(), &feature) !=
+         GetFeatures().end())
+      << feature.name;
   return base::FeatureList::IsEnabled(feature);
 }
 
@@ -322,26 +321,14 @@ const std::unordered_set<int32_t>& GetDCSExperimentIds() {
   return g_experiment_ids.Get();
 }
 
-void ClearFeaturesForTesting() {
-  ClearFeatures();
-}
-
-void RegisterFeature(const base::Feature* feature) {
-  DCHECK(!IsFeatureRegistered(*feature))
-      << feature->name << " is already registered";
-  g_features.Get().push_back(feature);
-}
-
-void RegisterFeaturesForTesting() {
-  // Clear out all existing features. This is to prevent DCHECK failures
-  // for duplicate feature registration during testing
-  ClearFeatures();
-  RegisterFeatures();
-}
-
 void ResetCastFeaturesForTesting() {
   g_experiment_ids_initialized = false;
   base::FeatureList::ClearInstanceForTesting();
+  GetTestFeatures().clear();
+}
+
+void SetFeaturesForTest(std::vector<const base::Feature*> features) {
+  GetTestFeatures() = std::move(features);
 }
 
 }  // namespace chromecast

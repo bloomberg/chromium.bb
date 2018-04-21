@@ -98,6 +98,12 @@ cast_source_set("base") {
   if (is_android) {
     deps += [ ":jni_headers" ]
   }
+
+  if (chromecast_branding == "public") {
+    sources += [ "cast_features_internal.cc" ]
+  } else {
+    deps += [ "//chromecast/internal/base:cast_internal_features" ]
+  }
 }
 
 # chromecast related switch values

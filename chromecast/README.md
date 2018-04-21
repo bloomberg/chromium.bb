@@ -11,17 +11,14 @@ comments of the header file. The basics are:
 
  * If you are adding a new feature, add it to `cast_features.cc` so it lives
  alongside existing features
- * Add registration of your new feature via `RegisterFeature(&feature)`.
- You can add it to `RegisterFeatures()` so it lives with existing features
+ * Add your new feature to the list of `kFeatures` in `cast_features.cc`
 
 ```c++
 const base::Feature kMyFeature{"my_feature", base::FEATURE_DISABLED_BY_DEFAULT};
 
-void RegisterFeatures() {
- // ...other features
- RegisterFeature(&kMyFeature);
+
+const base::Feature* kFeatures[] = {
+  // ..other features
+  &kMyFeature
 }
 ```
-
- * If you are writing a unit test that touches code that reads your feature be
- sure to call `RegisterFeaturesForTesting()` in your unit test constructor
