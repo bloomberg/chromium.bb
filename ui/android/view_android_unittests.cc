@@ -7,8 +7,8 @@
 #include "ui/android/event_forwarder.h"
 #include "ui/android/view_android.h"
 #include "ui/android/view_android_observer.h"
+#include "ui/android/view_client.h"
 #include "ui/android/window_android.h"
-#include "ui/events/android/event_handler_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/test/scoped_event_test_tick_clock.h"
 
@@ -18,15 +18,15 @@ using base::android::JavaParamRef;
 
 class TestViewAndroid : public ViewAndroid {
  public:
-  TestViewAndroid(ViewAndroid::LayoutType layout_type)
-      : ViewAndroid(layout_type) {}
+  TestViewAndroid(ViewClient* client, ViewAndroid::LayoutType layout_type)
+      : ViewAndroid(client, layout_type) {}
 
   float GetDipScale() override { return 1.f; }
 };
 
-class TestEventHandler : public EventHandlerAndroid {
+class TestViewClient : public ViewClient {
  public:
-  TestEventHandler() {}
+  TestViewClient() {}
 
   bool OnTouchEvent(const MotionEventAndroid& event) override {
     touch_called_ = true;
@@ -52,23 +52,19 @@ class TestEventHandler : public EventHandlerAndroid {
 class ViewAndroidBoundsTest : public testing::Test {
  public:
   ViewAndroidBoundsTest()
-      : root_(ViewAndroid::LayoutType::MATCH_PARENT),
-        view1_(ViewAndroid::LayoutType::NORMAL),
-        view2_(ViewAndroid::LayoutType::NORMAL),
-        view3_(ViewAndroid::LayoutType::NORMAL),
-        viewm_(ViewAndroid::LayoutType::MATCH_PARENT) {
+      : root_(nullptr, ViewAndroid::LayoutType::MATCH_PARENT),
+        view1_(&client1_, ViewAndroid::LayoutType::NORMAL),
+        view2_(&client2_, ViewAndroid::LayoutType::NORMAL),
+        view3_(&client3_, ViewAndroid::LayoutType::NORMAL),
+        viewm_(&clientm_, ViewAndroid::LayoutType::MATCH_PARENT) {
     root_.GetEventForwarder();
-    view1_.set_event_handler(&handler1_);
-    view2_.set_event_handler(&handler2_);
-    view3_.set_event_handler(&handler3_);
-    viewm_.set_event_handler(&handlerm_);
   }
 
   void Reset() {
-    handler1_.Reset();
-    handler2_.Reset();
-    handler3_.Reset();
-    handlerm_.Reset();
+    client1_.Reset();
+    client2_.Reset();
+    client3_.Reset();
+    clientm_.Reset();
     test_clock_.SetNowTicks(base::TimeTicks());
   }
 
@@ -81,14 +77,13 @@ class ViewAndroidBoundsTest : public testing::Test {
     root_.OnTouchEvent(event);
   }
 
-  void ExpectHit(const TestEventHandler& hitHandler) {
-    TestEventHandler* handlers[4] = {&handler1_, &handler2_, &handler3_,
-                                     &handlerm_};
-    for (auto* handler : handlers) {
-      if (&hitHandler == handler)
-        EXPECT_TRUE(handler->TouchEventHandled());
+  void ExpectHit(const TestViewClient& hitClient) {
+    TestViewClient* clients[4] = {&client1_, &client2_, &client3_, &clientm_};
+    for (auto* client : clients) {
+      if (&hitClient == client)
+        EXPECT_TRUE(client->TouchEventHandled());
       else
-        EXPECT_FALSE(handler->TouchEventHandled());
+        EXPECT_FALSE(client->TouchEventHandled());
     }
     Reset();
   }
@@ -98,10 +93,10 @@ class ViewAndroidBoundsTest : public testing::Test {
   TestViewAndroid view2_;
   TestViewAndroid view3_;
   TestViewAndroid viewm_;  // match-parent view
-  TestEventHandler handler1_;
-  TestEventHandler handler2_;
-  TestEventHandler handler3_;
-  TestEventHandler handlerm_;
+  TestViewClient client1_;
+  TestViewClient client2_;
+  TestViewClient client3_;
+  TestViewClient clientm_;
   ui::test::ScopedEventTestTickClock test_clock_;
 };
 
@@ -112,12 +107,12 @@ TEST_F(ViewAndroidBoundsTest, MatchesViewInFront) {
   root_.AddChild(&view1_);
 
   GenerateTouchEventAt(100.f, 100.f);
-  ExpectHit(handler1_);
+  ExpectHit(client1_);
 
   // View 2 moves up to the top, and events should hit it from now.
   root_.MoveToFront(&view2_);
   GenerateTouchEventAt(100.f, 100.f);
-  ExpectHit(handler2_);
+  ExpectHit(client2_);
 }
 
 TEST_F(ViewAndroidBoundsTest, MatchesViewArea) {
@@ -129,11 +124,11 @@ TEST_F(ViewAndroidBoundsTest, MatchesViewArea) {
 
   // Falls within |view1_|'s bounds
   GenerateTouchEventAt(100.f, 100.f);
-  ExpectHit(handler1_);
+  ExpectHit(client1_);
 
   // Falls within |view2_|'s bounds
   GenerateTouchEventAt(300.f, 400.f);
-  ExpectHit(handler2_);
+  ExpectHit(client2_);
 }
 
 TEST_F(ViewAndroidBoundsTest, MatchesViewAfterMove) {
@@ -143,11 +138,11 @@ TEST_F(ViewAndroidBoundsTest, MatchesViewAfterMove) {
   root_.AddChild(&view1_);
 
   GenerateTouchEventAt(100.f, 100.f);
-  ExpectHit(handler1_);
+  ExpectHit(client1_);
 
   view1_.SetLayoutForTesting(150, 150, 200, 200);
   GenerateTouchEventAt(100.f, 100.f);
-  ExpectHit(handler2_);
+  ExpectHit(client2_);
 }
 
 TEST_F(ViewAndroidBoundsTest, MatchesViewSizeOfkMatchParent) {
@@ -159,15 +154,15 @@ TEST_F(ViewAndroidBoundsTest, MatchesViewSizeOfkMatchParent) {
   view1_.AddChild(&viewm_);
 
   GenerateTouchEventAt(100.f, 100.f);
-  ExpectHit(handler2_);
+  ExpectHit(client2_);
 
   GenerateTouchEventAt(300.f, 400.f);
-  ExpectHit(handler1_);
+  ExpectHit(client1_);
 
-  handler1_.SetHandleEvent(false);
+  client1_.SetHandleEvent(false);
   GenerateTouchEventAt(300.f, 400.f);
-  EXPECT_TRUE(handler1_.TouchEventCalled());
-  ExpectHit(handlerm_);
+  EXPECT_TRUE(client1_.TouchEventCalled());
+  ExpectHit(clientm_);
 }
 
 TEST_F(ViewAndroidBoundsTest, MatchesViewsWithOffset) {
@@ -180,16 +175,16 @@ TEST_F(ViewAndroidBoundsTest, MatchesViewsWithOffset) {
   view1_.AddChild(&view3_);
 
   GenerateTouchEventAt(70, 30);
-  ExpectHit(handler1_);
+  ExpectHit(client1_);
 
-  handler1_.SetHandleEvent(false);
+  client1_.SetHandleEvent(false);
   GenerateTouchEventAt(40, 60);
-  EXPECT_TRUE(handler1_.TouchEventCalled());
-  ExpectHit(handler2_);
+  EXPECT_TRUE(client1_.TouchEventCalled());
+  ExpectHit(client2_);
 
   GenerateTouchEventAt(100, 70);
-  EXPECT_TRUE(handler1_.TouchEventCalled());
-  ExpectHit(handler3_);
+  EXPECT_TRUE(client1_.TouchEventCalled());
+  ExpectHit(client3_);
 }
 
 TEST_F(ViewAndroidBoundsTest, OnSizeChanged) {
@@ -199,16 +194,16 @@ TEST_F(ViewAndroidBoundsTest, OnSizeChanged) {
 
   // Size event propagates to non-match-parent children only.
   view1_.OnSizeChanged(100, 100);
-  EXPECT_TRUE(handler1_.OnSizeCalled());
-  EXPECT_TRUE(handlerm_.OnSizeCalled());
-  EXPECT_FALSE(handler3_.OnSizeCalled());
+  EXPECT_TRUE(client1_.OnSizeCalled());
+  EXPECT_TRUE(clientm_.OnSizeCalled());
+  EXPECT_FALSE(client3_.OnSizeCalled());
 
   Reset();
 
   // Match-parent view should not receivee size events in the first place.
   EXPECT_DCHECK_DEATH(viewm_.OnSizeChanged(100, 200));
-  EXPECT_FALSE(handlerm_.OnSizeCalled());
-  EXPECT_FALSE(handler3_.OnSizeCalled());
+  EXPECT_FALSE(clientm_.OnSizeCalled());
+  EXPECT_FALSE(client3_.OnSizeCalled());
 
   viewm_.RemoveFromParent();
   viewm_.OnSizeChangedInternal(gfx::Size(0, 0));  // Reset the size.
@@ -218,10 +213,10 @@ TEST_F(ViewAndroidBoundsTest, OnSizeChanged) {
   view1_.OnSizeChanged(100, 100);
 
   // Size event is generated for a newly added, match-parent child view.
-  EXPECT_FALSE(handlerm_.OnSizeCalled());
+  EXPECT_FALSE(clientm_.OnSizeCalled());
   view1_.AddChild(&viewm_);
-  EXPECT_TRUE(handlerm_.OnSizeCalled());
-  EXPECT_FALSE(handler3_.OnSizeCalled());
+  EXPECT_TRUE(clientm_.OnSizeCalled());
+  EXPECT_FALSE(client3_.OnSizeCalled());
 
   viewm_.RemoveFromParent();
 
@@ -231,8 +226,8 @@ TEST_F(ViewAndroidBoundsTest, OnSizeChanged) {
 
   // Size event won't propagate if the children already have the same size.
   view1_.AddChild(&viewm_);
-  EXPECT_FALSE(handlerm_.OnSizeCalled());
-  EXPECT_FALSE(handler3_.OnSizeCalled());
+  EXPECT_FALSE(clientm_.OnSizeCalled());
+  EXPECT_FALSE(client3_.OnSizeCalled());
 }
 
 TEST(ViewAndroidTest, ChecksMultipleEventForwarders) {

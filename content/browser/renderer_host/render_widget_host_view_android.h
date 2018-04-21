@@ -31,9 +31,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/view_android.h"
+#include "ui/android/view_client.h"
 #include "ui/android/window_android_observer.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/events/android/event_handler_android.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -65,16 +65,16 @@ struct ContextMenuParams;
 // -----------------------------------------------------------------------------
 class CONTENT_EXPORT RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
+      public ui::GestureProviderClient,
+      public ui::ViewAndroidObserver,
+      public ui::ViewClient,
+      public ui::WindowAndroidObserver,
+      public viz::FrameEvictorClient,
       public StylusTextSelectorClient,
+      public ui::TouchSelectionControllerClient,
       public content::TextInputManager::Observer,
       public ui::DelegatedFrameHostAndroid::Client,
-      public ui::EventHandlerAndroid,
-      public ui::GestureProviderClient,
-      public ui::TouchSelectionControllerClient,
-      public ui::ViewAndroidObserver,
-      public ui::WindowAndroidObserver,
-      public viz::BeginFrameObserver,
-      public viz::FrameEvictorClient {
+      public viz::BeginFrameObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               gfx::NativeView parent_native_view);
@@ -186,7 +186,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnRenderWidgetInit() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
-  // ui::EventHandlerAndroid implementation.
+  // ui::ViewClient implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;
   bool OnMouseEvent(const ui::MotionEventAndroid& m) override;
   bool OnMouseWheelEvent(const ui::MotionEventAndroid& event) override;

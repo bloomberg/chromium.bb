@@ -15,8 +15,7 @@
 #include "content/public/common/drop_data.h"
 #include "ui/android/overscroll_refresh.h"
 #include "ui/android/view_android.h"
-#include "ui/android/view_android_observer.h"
-#include "ui/events/android/event_handler_android.h"
+#include "ui/android/view_client.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
@@ -29,7 +28,7 @@ class WebContentsImpl;
 // Android-specific implementation of the WebContentsView.
 class WebContentsViewAndroid : public WebContentsView,
                                public RenderViewHostDelegateView,
-                               public ui::EventHandlerAndroid {
+                               public ui::ViewClient {
  public:
   WebContentsViewAndroid(WebContentsImpl* web_contents,
                          WebContentsViewDelegate* delegate);
@@ -107,7 +106,7 @@ class WebContentsViewAndroid : public WebContentsView,
   int GetBottomControlsHeight() const override;
   bool DoBrowserControlsShrinkBlinkSize() const override;
 
-  // ui::EventHandlerAndroid implementation.
+  // ui::ViewClient implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& event) override;
   bool OnMouseEvent(const ui::MotionEventAndroid& event) override;
   bool OnDragEvent(const ui::DragEventAndroid& event) override;
