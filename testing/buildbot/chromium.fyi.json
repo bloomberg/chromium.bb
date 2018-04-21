@@ -3610,9 +3610,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_browser_tests",
+        "name": "not_site_per_process_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4159,9 +4159,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_interactive_ui_tests",
+        "name": "not_site_per_process_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4493,9 +4493,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_sync_integration_tests",
+        "name": "not_site_per_process_sync_integration_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4552,9 +4552,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_unit_tests",
+        "name": "not_site_per_process_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

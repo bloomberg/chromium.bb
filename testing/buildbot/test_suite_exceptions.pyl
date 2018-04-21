@@ -2636,7 +2636,7 @@
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
   },
-  'site_per_process_browser_tests': {
+  'not_site_per_process_browser_tests': {
     'remove_from': [
       # chromium.fyi
       'Site Isolation Android',
@@ -2701,38 +2701,25 @@
       'Linux Tests (dbg)(1)(32)',
     ],
   },
-  'site_per_process_interactive_ui_tests': {
+  'not_site_per_process_interactive_ui_tests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
   },
-  'site_per_process_sync_integration_tests': {
+  'not_site_per_process_sync_integration_tests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
   },
-  'site_per_process_unit_tests': {
+  'not_site_per_process_unit_tests': {
     'remove_from': [
       # chromium.fyi
       'Site Isolation Android',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
-    'modifications': {
-      'Linux - Future': {
-        'args': [
-          '--site-per-process',
-        ],
-      },
-      'Linux - Future (dbg)': {
-        # TODO(dpranke): this should be --site-per-process.
-        'args': [
-          '--site_per_process',
-        ],
-      },
-    },
   },
   'site_per_process_webkit_layout_tests': {
     'remove_from': [
