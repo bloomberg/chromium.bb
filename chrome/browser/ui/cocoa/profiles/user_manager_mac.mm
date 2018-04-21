@@ -36,18 +36,6 @@
 
 namespace {
 
-// Update the App Controller with a new Profile. Used when a Profile is locked
-// to set the Controller to the Guest profile so the old Profile's bookmarks,
-// etc... cannot be accessed.
-void ChangeAppControllerForProfile(Profile* profile,
-                                   Profile::CreateStatus status) {
-  if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    AppController* controller =
-        base::mac::ObjCCast<AppController>([NSApp delegate]);
-    [controller windowChangedToProfile:profile];
-  }
-}
-
 // An open User Manager window. There can only be one open at a time. This
 // is reset to NULL when the window is closed.
 UserManagerMac* instance_ = nullptr;  // Weak.
@@ -368,14 +356,8 @@ class UserManagerProfileDialogDelegate
   // will not trigger a -windowChangedToProfile and update the menu bar.
   // This is only important if the active profile is Guest, which may have
   // happened after locking a profile.
-  if (profiles::SetActiveProfileToGuestIfLocked()) {
-    g_browser_process->profile_manager()->CreateProfileAsync(
-        ProfileManager::GetGuestProfilePath(),
-        base::Bind(&ChangeAppControllerForProfile),
-        base::string16(),
-        std::string(),
-        std::string());
-  }
+  if (profiles::SetActiveProfileToGuestIfLocked())
+    app_controller_mac::CreateGuestProfileIfNeeded();
   [[self window] makeKeyAndOrderFront:self];
 }
 

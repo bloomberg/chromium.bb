@@ -1716,10 +1716,29 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 //---------------------------------------------------------------------------
 
+namespace {
+
+void UpdateProfileInUse(Profile* profile, Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    AppController* controller =
+        base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+    [controller windowChangedToProfile:profile];
+  }
+}
+
+}  // namespace
+
 namespace app_controller_mac {
 
 bool IsOpeningNewWindow() {
   return g_is_opening_new_window;
+}
+
+void CreateGuestProfileIfNeeded() {
+  g_browser_process->profile_manager()->CreateProfileAsync(
+      ProfileManager::GetGuestProfilePath(),
+      base::BindRepeating(&UpdateProfileInUse), base::string16(), std::string(),
+      std::string());
 }
 
 }  // namespace app_controller_mac
