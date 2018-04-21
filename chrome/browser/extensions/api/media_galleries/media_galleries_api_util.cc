@@ -51,8 +51,9 @@ std::unique_ptr<base::DictionaryValue> SerializeMediaMetadata(
   for (const chrome::mojom::MediaStreamInfoPtr& info : metadata->raw_tags) {
     extensions::api::media_galleries::StreamInfo stream_info;
     stream_info.type = std::move(info->type);
-    stream_info.tags.additional_properties.Swap(
-        info->additional_properties.get());
+    base::DictionaryValue* dict_value;
+    info->additional_properties.GetAsDictionary(&dict_value);
+    stream_info.tags.additional_properties.Swap(dict_value);
     extension_metadata.raw_tags.push_back(std::move(stream_info));
   }
 
