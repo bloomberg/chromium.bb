@@ -36,6 +36,8 @@ class OfflinePageItemGenerator {
   void SetAccessCount(int access_count);
   void SetArchiveDirectory(const base::FilePath& archive_dir);
   void SetDigest(const std::string& digest);
+  void SetFileMissingTime(base::Time file_missing_time);
+  void SetUseOfflineIdAsSystemDownloadId(bool enable);
 
  private:
   std::string namespace_ = kDefaultNamespace;
@@ -49,6 +51,9 @@ class OfflinePageItemGenerator {
   int access_count_ = 0;
   base::FilePath archive_dir_;
   std::string digest_;
+  base::Time file_missing_time_;
+
+  bool use_offline_id_as_system_download_id_ = false;
 };
 }  // namespace offline_pages
 

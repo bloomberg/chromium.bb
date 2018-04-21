@@ -32,6 +32,10 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   item.last_access_time = last_access_time_;
   item.access_count = access_count_;
   item.digest = digest_;
+  item.file_missing_time = file_missing_time_;
+  if (use_offline_id_as_system_download_id_) {
+    item.system_download_id = item.offline_id;
+  }
   return item;
 }
 
@@ -93,6 +97,15 @@ void OfflinePageItemGenerator::SetArchiveDirectory(
 
 void OfflinePageItemGenerator::SetDigest(const std::string& digest) {
   digest_ = digest;
+}
+
+void OfflinePageItemGenerator::SetFileMissingTime(
+    base::Time file_missing_time) {
+  file_missing_time_ = file_missing_time;
+}
+
+void OfflinePageItemGenerator::SetUseOfflineIdAsSystemDownloadId(bool enable) {
+  use_offline_id_as_system_download_id_ = enable;
 }
 
 }  // namespace offline_pages

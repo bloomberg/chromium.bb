@@ -23,6 +23,7 @@
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/model/offline_page_test_utils.h"
+#include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
@@ -829,7 +830,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
 
   base::MockCallback<DeletePageCallback> callback;
-  EXPECT_CALL(callback, Run(testing::A<DeletePageResult>()));
+  EXPECT_CALL(callback, Run(A<DeletePageResult>()));
   CheckTaskQueueIdle();
 
   model()->DeletePagesByOfflineId({page1.offline_id}, callback.Get());
@@ -1399,11 +1400,12 @@ TEST_F(OfflinePageModelTaskifiedTest, GetAllPages) {
 // This test is affected by https://crbug.com/725685, which only affects windows
 // platform.
 #if defined(OS_WIN)
-#define MAYBE_ConsistencyCheckExecuted DISABLED_ConsistencyCheckExecuted
+#define MAYBE_StartupMaintenanceTaskExecuted \
+  DISABLED_StartupMaintenanceTaskExecuted
 #else
-#define MAYBE_ConsistencyCheckExecuted ConsistencyCheckExecuted
+#define MAYBE_StartupMaintenanceTaskExecuted StartupMaintenanceTaskExecuted
 #endif
-TEST_F(OfflinePageModelTaskifiedTest, MAYBE_ConsistencyCheckExecuted) {
+TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartupMaintenanceTaskExecuted) {
   // Insert temporary pages
   page_generator()->SetArchiveDirectory(temporary_dir_path());
   page_generator()->SetNamespace(kDefaultNamespace);
@@ -1420,12 +1422,11 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_ConsistencyCheckExecuted) {
 
   // Insert persistent pages.
   page_generator()->SetNamespace(kDownloadNamespace);
-  // Page missing archive file in pesistent directory.
+  // Page missing archive file in private directory.
   OfflinePageItem persistent_page1 = page_generator()->CreateItem();
   // Page missing metadata entry in database since it's not inserted into store.
   OfflinePageItem persistent_page2 = page_generator()->CreateItemWithTempFile();
-  // Page in persistent namespace saved in persistent directory to simulate
-  // pages saved in legacy directory.
+  // Page in persistent namespace saved in private directory.
   OfflinePageItem persistent_page3 = page_generator()->CreateItemWithTempFile();
   InsertPageIntoStore(persistent_page1);
   InsertPageIntoStore(persistent_page3);
@@ -1438,7 +1439,7 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_ConsistencyCheckExecuted) {
             test_utils::GetFileCountInDirectory(private_archive_dir_path()));
 
   // Execute GetAllPages and move the clock forward to cover the delay, in order
-  // to trigger consistency checks.
+  // to trigger StartupMaintenanceTask execution.
   base::MockCallback<MultipleOfflinePageItemCallback> callback;
   model()->GetAllPages(callback.Get());
   task_runner()->FastForwardBy(
@@ -1446,7 +1447,7 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_ConsistencyCheckExecuted) {
       base::TimeDelta::FromMilliseconds(1));
   PumpLoop();
 
-  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(2LL, store_test_util()->GetPageCount());
   EXPECT_EQ(0UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1UL,
             test_utils::GetFileCountInDirectory(private_archive_dir_path()));
@@ -1523,6 +1524,115 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   // Check that CleanupThumbnailsTask ran only once.
   histogram_tester()->ExpectTotalCount("OfflinePages.CleanupThumbnails.Count",
                                        1);
+}
+
+// This test is affected by https://crbug.com/725685, which only affects windows
+// platform.
+#if defined(OS_WIN)
+#define MAYBE_PersistentPageConsistencyCheckExecuted \
+  DISABLED_PersistentPageConsistencyCheckExecuted
+#else
+#define MAYBE_PersistentPageConsistencyCheckExecuted \
+  PersistentPageConsistencyCheckExecuted
+#endif
+TEST_F(OfflinePageModelTaskifiedTest, PersistentPageConsistencyCheckExecuted) {
+  // The PersistentPageConsistencyCheckTask should not be executed based on time
+  // delays after launch (aka the model being built).
+  task_runner()->FastForwardBy(base::TimeDelta::FromDays(1));
+  PumpLoop();
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.Result", 0);
+
+  // GetAllPages should schedule a delayed task that will eventually run
+  // PersistentPageConsistencyCheck.
+  base::MockCallback<MultipleOfflinePageItemCallback> callback;
+  model()->GetAllPages(callback.Get());
+  PumpLoop();
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.Result", 0);
+
+  // Add a persistent page with file.
+  page_generator()->SetNamespace(kDownloadNamespace);
+  page_generator()->SetArchiveDirectory(public_archive_dir_path());
+  OfflinePageItem page = page_generator()->CreateItemWithTempFile();
+  page.system_download_id = kDownloadId;
+  InsertPageIntoStore(page);
+  EXPECT_EQ(1UL,
+            test_utils::GetFileCountInDirectory(public_archive_dir_path()));
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+
+  // After the delay (plus 1 millisecond just in case), the consistency check
+  // should be enqueued and executed.
+  const base::TimeDelta run_delay =
+      OfflinePageModelTaskified::kMaintenanceTasksDelay +
+      base::TimeDelta::FromMilliseconds(1);
+  task_runner()->FastForwardBy(run_delay);
+  PumpLoop();
+  // But nothing should change.
+  EXPECT_EQ(1UL,
+            test_utils::GetFileCountInDirectory(public_archive_dir_path()));
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.Result", 1);
+
+  // Delete the file associated with |page|, so the next time when the
+  // consistency check is executed, the page will be marked as hidden.
+  base::DeleteFile(page.file_path, false);
+
+  // Calling GetAllPages after only half of the enforced interval between
+  // consistency check runs should not schedule the task.
+  // Note: The previous elapsed delay is discounted from the clock advance here.
+  task_runner()->FastForwardBy(
+      OfflinePageModelTaskified::kClearStorageInterval / 2 - run_delay);
+  model()->GetAllPages(callback.Get());
+  // And advance the delay too.
+  task_runner()->FastForwardBy(run_delay);
+  PumpLoop();
+  // Confirm no persistent page consistency check is executed.
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.Result", 1);
+
+  // Forwarding by the full interval (plus 1 second just in case) should allow
+  // the task to be enqueued again and call GetAllPages again to enqueue the
+  // task.
+  task_runner()->FastForwardBy(
+      OfflinePageModelTaskified::kClearStorageInterval / 2 +
+      base::TimeDelta::FromSeconds(1));
+  model()->GetAllPages(callback.Get());
+  // And advance the delay too.
+  task_runner()->FastForwardBy(run_delay);
+  PumpLoop();
+  // Confirm persistent page consistency check is executed, and the page is
+  // marked as missing file.
+  EXPECT_EQ(0UL,
+            test_utils::GetFileCountInDirectory(public_archive_dir_path()));
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  auto actual_page = store_test_util()->GetPageByOfflineId(page.offline_id);
+  ASSERT_TRUE(actual_page);
+  EXPECT_NE(base::Time(), actual_page->file_missing_time);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.Result", 2);
+
+  // Forwarding by a long time that is enough for the page with missing file to
+  // get expired.
+  task_runner()->FastForwardBy(base::TimeDelta::FromDays(400));
+  // Saving a page should also immediately enqueue the consistency check task.
+  auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
+  SavePageWithExpectedResult(kTestUrl, kTestClientId1, kTestUrl2,
+                             kEmptyRequestOrigin, std::move(archiver),
+                             SavePageResult::SUCCESS);
+  // Advance the delay to activate task execution.
+  task_runner()->FastForwardBy(run_delay);
+  PumpLoop();
+  // Confirm persistent page consistency check is executed, and the page is
+  // deleted from database, also notified system download manager.
+  EXPECT_EQ(0UL,
+            test_utils::GetFileCountInDirectory(public_archive_dir_path()));
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(page.system_download_id,
+            download_manager_stub()->last_removed_id());
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.Result", 3);
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, MaintenanceTasksAreDisabled) {

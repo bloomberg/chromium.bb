@@ -16,8 +16,8 @@ class ClientPolicyController;
 class OfflinePageMetadataStoreSQL;
 
 // This task is responsible for executing maintenance sub-tasks during Chrome
-// startup, including: consistency checks, legacy directory cleaning and report
-// storage usage UMA.
+// startup, including: temporary page consistency check, legacy directory
+// cleaning and report storage usage UMA.
 class StartupMaintenanceTask : public Task {
  public:
   StartupMaintenanceTask(OfflinePageMetadataStoreSQL* store,
