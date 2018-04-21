@@ -67,23 +67,25 @@ static ShouldRespectOverflowClipType ShouldRespectOverflowClip(
 }
 
 bool PaintLayerPainter::PaintedOutputInvisible(
-    const PaintLayerPaintingInfo& painting_info) {
-  const LayoutObject& layout_object = paint_layer_.GetLayoutObject();
-  if (layout_object.HasBackdropFilter())
+    const ComputedStyle& style,
+    GlobalPaintFlags global_paint_flags) const {
+  if (style.HasBackdropFilter())
     return false;
 
   // Always paint when 'will-change: opacity' is present. Reduces jank for
   // common animation implementation approaches, for example, an element that
   // starts with opacity zero and later begins to animate.
-  if (layout_object.StyleRef().HasWillChangeOpacityHint())
+  if (style.HasWillChangeOpacityHint())
     return false;
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    if (layout_object.StyleRef().Opacity())
+    if (style.Opacity())
       return false;
 
-    const EffectPaintPropertyNode* effect =
-        layout_object.FirstFragment().PaintProperties()->Effect();
+    const auto* effect = paint_layer_.GetLayoutObject()
+                             .FirstFragment()
+                             .PaintProperties()
+                             ->Effect();
     if (effect && effect->RequiresCompositingForAnimation()) {
       return false;
     }
@@ -94,9 +96,8 @@ bool PaintLayerPainter::PaintedOutputInvisible(
   // less leads to a color output of less than 0.5 in all channels, hence
   // not visible.
   static const float kMinimumVisibleOpacity = 0.0004f;
-  if (paint_layer_.PaintsWithTransparency(
-          painting_info.GetGlobalPaintFlags())) {
-    if (layout_object.StyleRef().Opacity() < kMinimumVisibleOpacity) {
+  if (paint_layer_.PaintsWithTransparency(global_paint_flags)) {
+    if (style.Opacity() < kMinimumVisibleOpacity) {
       return true;
     }
   }
@@ -138,7 +139,8 @@ PaintResult PaintLayerPainter::Paint(
   // but skipping the painted content during layerization in
   // PaintArtifactCompositor.
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-      PaintedOutputInvisible(painting_info)) {
+      PaintedOutputInvisible(paint_layer_.GetLayoutObject().StyleRef(),
+                             painting_info.GetGlobalPaintFlags())) {
     return kFullyPainted;
   }
 

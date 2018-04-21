@@ -28,7 +28,9 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
     PaintLayerPaintingInfo painting_info(nullptr, LayoutRect(),
                                          kGlobalPaintNormalPhase, LayoutSize());
     bool invisible =
-        PaintLayerPainter(*target_layer).PaintedOutputInvisible(painting_info);
+        PaintLayerPainter(*target_layer)
+            .PaintedOutputInvisible(target_layer->GetLayoutObject().StyleRef(),
+                                    painting_info.GetGlobalPaintFlags());
     EXPECT_EQ(expected_value, invisible)
         << "Failed painted output visibility [spv175_enabled="
         << RuntimeEnabledFeatures::SlimmingPaintV175Enabled()

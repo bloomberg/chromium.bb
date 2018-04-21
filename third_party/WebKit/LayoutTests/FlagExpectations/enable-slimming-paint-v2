@@ -1225,6 +1225,7 @@ crbug.com/738613 paint/invalidation/overflow/composited-overflow-with-negative-o
 crbug.com/738613 paint/invalidation/compositing/background-attachment-local-composited.html [ Failure ]
 crbug.com/738613 paint/invalidation/compositing/background-attachment-local-equivalent.html [ Failure ]
 crbug.com/738613 paint/invalidation/compositing/new-stacking-context.html [ Failure ]
+crbug.com/738613 paint/invalidation/compositing/opacity-from-zero-to-non-zero-composited.html [ Failure ]
 crbug.com/738613 paint/invalidation/compositing/should-not-clip-composited-overflow-scrolling-layer.html [ Failure ]
 crbug.com/738613 paint/invalidation/compositing/updating-scrolling-content.html [ Failure ]
 crbug.com/738613 paint/invalidation/scroll/flipped-blocks-writing-mode-scroll.html [ Failure ]
