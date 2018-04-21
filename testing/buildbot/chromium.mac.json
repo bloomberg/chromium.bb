@@ -57,9 +57,6 @@
         "test": "boringssl_ssl_tests"
       },
       {
-        "args": [
-          "--test-launcher-jobs=1"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -539,9 +536,6 @@
         "test": "boringssl_ssl_tests"
       },
       {
-        "args": [
-          "--test-launcher-jobs=1"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -997,9 +991,6 @@
         "test": "blink_platform_unittests"
       },
       {
-        "args": [
-          "--test-launcher-jobs=1"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -1480,9 +1471,6 @@
         "test": "boringssl_ssl_tests"
       },
       {
-        "args": [
-          "--test-launcher-jobs=1"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
