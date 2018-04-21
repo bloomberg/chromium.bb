@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -59,8 +60,8 @@ AutofillPopupRowView::AutofillPopupRowView(AutofillPopupController* controller,
       frontend_id ==
           autofill::POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
 
-  SetFocusBehavior(is_separator_ ? FocusBehavior::ALWAYS
-                                 : FocusBehavior::NEVER);
+  SetFocusBehavior(is_separator_ ? FocusBehavior::NEVER
+                                 : FocusBehavior::ALWAYS);
   CreateContent();
 }
 
@@ -73,6 +74,7 @@ void AutofillPopupRowView::SetSelected(bool is_selected) {
     return;
 
   is_selected_ = is_selected;
+  NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
   RefreshStyle();
 }
 
@@ -137,8 +139,32 @@ void AutofillPopupRowView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 void AutofillPopupRowView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kMenuItem;
   node_data->SetName(controller_->GetSuggestionAt(line_number_).value);
+
+  if (is_separator_) {
+    // Separators are not selectable.
+    node_data->role = ax::mojom::Role::kSplitter;
+  } else {
+    // Options are selectable.
+    node_data->role = ax::mojom::Role::kMenuItem;
+    node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                                is_selected_);
+
+    // Compute set size and position in set, which must not include separators.
+    int set_size = 0;
+    int pos_in_set = line_number_ + 1;
+    for (int i = 0; i < controller_->GetLineCount(); ++i) {
+      if (controller_->GetSuggestionAt(i).frontend_id ==
+          autofill::POPUP_ITEM_ID_SEPARATOR) {
+        if (i < line_number_)
+          --pos_in_set;
+      } else {
+        ++set_size;
+      }
+    }
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, set_size);
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, pos_in_set);
+  }
 }
 
 void AutofillPopupRowView::CreateContent() {
@@ -233,11 +259,31 @@ gfx::Size AutofillPopupViewNativeViews::CalculatePreferredSize() const {
   return size;
 }
 
+void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
+                                                     bool is_visible) {
+  if (is_visible) {
+    GetViewAccessibility().OnAutofillShown();
+  } else {
+    GetViewAccessibility().OnAutofillHidden();
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
+  }
+}
+
 void AutofillPopupViewNativeViews::OnSelectedRowChanged(
     base::Optional<int> previous_row_selection,
     base::Optional<int> current_row_selection) {
-  if (previous_row_selection)
+  if (previous_row_selection) {
     rows_[*previous_row_selection]->SetSelected(false);
+  } else {
+    // Fire this the first time a row is selected. By firing this and the
+    // matching kMenuEnd event, we are telling screen readers that the focus
+    // is only changing temporarily, and the screen reader will restore the
+    // focus back to the appropriate textfield when the menu closes.
+    // This is deferred until the first focus so that the screen reader doesn't
+    // treat the textfield as unfocused while the user edits, just because
+    // autofill options are visible.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+  }
 
   if (current_row_selection)
     rows_[*current_row_selection]->SetSelected(true);

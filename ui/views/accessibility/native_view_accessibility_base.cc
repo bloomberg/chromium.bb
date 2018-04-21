@@ -291,8 +291,9 @@ void NativeViewAccessibilityBase::OnAutofillShown() {
 }
 
 void NativeViewAccessibilityBase::OnAutofillHidden() {
-  DCHECK(fake_focus_view_id_ == GetUniqueId().Get())
-      << "Cannot clear fake focus on an object that did not have fake focus.";
+  DCHECK(fake_focus_view_id_) << "No autofill fake focus set.";
+  DCHECK_EQ(fake_focus_view_id_, GetUniqueId().Get())
+      << "Cannot clear autofill fake focus on an object that did not have it.";
   fake_focus_view_id_ = 0;
   ui::AXPlatformNode::OnAutofillHidden();
 }
