@@ -26,6 +26,13 @@
         "'single-qouted'": true,
         "notDangerous();": true
     }
+    var cantTouchThis = false;
+    function dontRunThis() {
+      cantTouchThis = true;
+    }
+    function stall() {
+      while(true);
+    }
   `);
 
   var consoleEditor;
@@ -35,7 +42,7 @@
    * @param {!Array<string>} expected
    * @param {boolean=} force
    */
-  function testCompletions(text, expected, force) {
+  async function testCompletions(text, expected, force) {
     var cursorPosition = text.indexOf('|');
 
     if (cursorPosition < 0)
@@ -44,35 +51,40 @@
     consoleEditor.setText(text.replace('|', ''));
     consoleEditor.setSelection(TextUtils.TextRange.createFromLocation(0, cursorPosition));
     consoleEditor._autocompleteController.autocomplete(force);
-    return TestRunner.addSnifferPromise(consoleEditor._autocompleteController, '_onSuggestionsShownForTest').then(checkExpected);
+    var message =
+        'Checking \'' + text.replace('\n', '\\n').replace('\r', '\\r') + '\'';
 
-    /**
-     * @param {!Array<{text: string, title: string}>} suggestions
-     */
-    function checkExpected(suggestions) {
-      var completions = new Map(suggestions.map(suggestion => [suggestion, suggestion.text])).inverse();
-      var message = 'Checking \'' + text.replace('\n', '\\n').replace('\r', '\\r') + '\'';
+    if (force)
+      message += ' forcefully';
 
-      if (force)
-        message += ' forcefully';
+    TestRunner.addResult(message);
+    const suggestions = await TestRunner.addSnifferPromise(
+        consoleEditor._autocompleteController, '_onSuggestionsShownForTest');
+    var completions =
+        new Map(suggestions.map(suggestion => [suggestion, suggestion.text]))
+            .inverse();
 
-      TestRunner.addResult(message);
 
-      for (var i = 0; i < expected.length; i++) {
-        if (completions.has(expected[i])) {
-          for (var completion of completions.get(expected[i])) {
-            if (completion.title)
-              TestRunner.addResult('Found: ' + expected[i] + ', displayed as ' + completion.title);
-            else
-              TestRunner.addResult('Found: ' + expected[i]);
-          }
-        } else {
-          TestRunner.addResult('Not Found: ' + expected[i]);
+    for (var i = 0; i < expected.length; i++) {
+      if (completions.has(expected[i])) {
+        for (var completion of completions.get(expected[i])) {
+          if (completion.title)
+            TestRunner.addResult(
+                'Found: ' + expected[i] + ', displayed as ' + completion.title);
+          else
+            TestRunner.addResult('Found: ' + expected[i]);
         }
+      } else {
+        TestRunner.addResult('Not Found: ' + expected[i]);
       }
-
-      TestRunner.addResult('');
     }
+
+    if (await TestRunner.evaluateInPagePromise('cantTouchThis') !== false) {
+      TestRunner.addResult('ERROR! Side effects were detected!');
+      await TestRunner.evaluateInPagePromise('cantTouchThis = false');
+    }
+
+    TestRunner.addResult('');
   }
 
   function sequential(tests) {
@@ -85,7 +97,8 @@
   }
 
   sequential([
-    () => ConsoleTestRunner.waitUntilConsoleEditorLoaded().then(e => consoleEditor = e),
+    () => ConsoleTestRunner.waitUntilConsoleEditorLoaded().then(
+        e => consoleEditor = e),
     () => testCompletions('window.do', ['document']),
     () => testCompletions('win', ['window']),
     () => testCompletions('window["doc', ['"document"]']),
@@ -93,7 +106,9 @@
     () => testCompletions('window["document"]["body"].textC', ['textContent']),
     () => testCompletions('document.body.inner', ['innerText', 'innerHTML']),
     () => testCompletions('document["body"][window.do', ['document']),
-    () => testCompletions('document["body"][window["document"].body.childNodes[0].text', ['textContent']),
+    () => testCompletions(
+        'document["body"][window["document"].body.childNodes[0].text',
+        ['textContent']),
     () => testCompletions('templateString`asdf`should', ['shouldNotFindThis']),
     () => testCompletions('window.document.BODY', ['body']),
     () => testCompletions('window.dOcUmE', ['document']),
@@ -109,10 +124,16 @@
     () => testCompletions('["should', ['shouldNotFindThisFunction']),
     () => testCompletions('shou', ['should not find this']),
     () => testCompletions('myMap.get(', ['"first")', '"second")', '"third")']),
-    () => testCompletions('myMap.get(\'', ['\'first\')', '\'second\')', '\'third\')']),
+    () => testCompletions(
+        'myMap.get(\'', ['\'first\')', '\'second\')', '\'third\')']),
     () => testCompletions('myMap.set(\'firs', ['\'first\', ']),
-    () => testCompletions('myMap.set(should', ['shouldFindThisFunction', 'shouldNotFindThis', '"shouldNotFindThis")']),
-    () => testCompletions('myMap.delete(\'', ['\'first\')', '\'second\')', '\'third\')']),
+    () => testCompletions(
+        'myMap.set(should',
+        [
+          'shouldFindThisFunction', 'shouldNotFindThis', '"shouldNotFindThis")'
+        ]),
+    () => testCompletions(
+        'myMap.delete(\'', ['\'first\')', '\'second\')', '\'third\')']),
     () => testCompletions('document.   bo', ['body']),
     () => testCompletions('document.\tbo', ['body']),
     () => testCompletions('document.\nbo', ['body']),
@@ -128,12 +149,44 @@
     () => testCompletions('complicatedObject["foo', ['"foo-bar"]']),
     () => testCompletions('complicatedObject["foo-', ['"foo-bar"]']),
     () => testCompletions('complicatedObject["foo-bar', ['"foo-bar"]']),
-    () => testCompletions('complicatedObject["\'sing', ['"\'single-qouted\'"]']),
-    () => testCompletions('complicatedObject[\'\\\'sing', ['\'\\\'single-qouted\\\'\']']),
-    () => testCompletions('complicatedObject["\'single-qou', ['"\'single-qouted\'"]']),
-    () => testCompletions('complicatedObject["\\"double-qouted\\"', ['"\\"double-qouted\\""]']),
-    () => testCompletions('complicatedObject["notDangerous();', ['"notDangerous();"]']),
-    () => testCompletions('queryOb', ["queryObjects"]),
-    () => testCompletions('fun', ['function'])
+    () =>
+        testCompletions('complicatedObject["\'sing', ['"\'single-qouted\'"]']),
+    () => testCompletions(
+        'complicatedObject[\'\\\'sing', ['\'\\\'single-qouted\\\'\']']),
+    () => testCompletions(
+        'complicatedObject["\'single-qou', ['"\'single-qouted\'"]']),
+    () => testCompletions(
+        'complicatedObject["\\"double-qouted\\"', ['"\\"double-qouted\\""]']),
+    () => testCompletions(
+        'complicatedObject["notDangerous();', ['"notDangerous();"]']),
+    () => testCompletions('queryOb', ['queryObjects']),
+    () => testCompletions('fun', ['function']),
+    () => testCompletions(
+        '"stringwithscary!@#$%^&*()\\"\'`~+-=".char', ['charAt']),
+    () => testCompletions('("hello" + "goodbye").char', ['charAt']),
+    () => testCompletions('({7: "string"})[3 + 4].char', ['charAt']),
+    () => testCompletions('cantTouchThis++; "string".char', ['charAt']),
+    () => testCompletions('cantTouchThis++ + "string".char', ['charAt']),
+    () => testCompletions('var x = "string".char', ['charAt']),
+    () => testCompletions('({abc: 123}).a', ['abc']),
+    () => testCompletions('{dontFindLabels: 123}.dont', ['dontFindLabels']),
+    () => testCompletions('const x = 5; {dontFindLabels: 123}.dont', ['dontFindLabels']),
+    () => testCompletions('const x = {abc: 123}.a', ['abc']),
+    () => testCompletions('x = {abc: 123}.', ['abc']),
+    () => testCompletions('[1,2,3].j', ['join']),
+    () => testCompletions('document.body[{abc: "children"}.abc].', ['length']),
+    () => testCompletions('new Date.', ['UTC', 'toUTCString']),
+    () => testCompletions('new Date().', ['UTC', 'toUTCString']),
+    () => testCompletions('const x = {7: "hi"}[3+4].', ['anchor']),
+    () => testCompletions('["length"]["length"].', ['toExponential']),
+    () => testCompletions('(await "no completions").', ['toString']),
+    () => testCompletions('(++cantTouchThis).', []),
+    () => testCompletions('(cantTouchThis -= 2).', []),
+    () => testCompletions('new dontRunThis.', []),
+    () => testCompletions('new dontRunThis().', []),
+    () => testCompletions('(new dontRunThis).', []),
+    () => testCompletions('(dontRunThis`asdf`).', []),
+    () => testCompletions('dontRunThis().', []),
+    () => testCompletions('stall().', []),
   ]).then(TestRunner.completeTest);
 })();
