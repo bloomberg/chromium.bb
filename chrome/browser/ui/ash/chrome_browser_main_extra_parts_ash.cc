@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -22,7 +21,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/ash_config.h"
-#include "chrome/browser/chromeos/docked_magnifier/docked_magnifier_client.h"
 #include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -296,11 +294,6 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
     night_light_client_ = std::make_unique<NightLightClient>(
         g_browser_process->system_request_context());
     night_light_client_->Start();
-  }
-
-  if (ash::features::IsDockedMagnifierEnabled()) {
-    docked_magnifier_client_ = std::make_unique<DockedMagnifierClient>();
-    docked_magnifier_client_->Start();
   }
 }
 

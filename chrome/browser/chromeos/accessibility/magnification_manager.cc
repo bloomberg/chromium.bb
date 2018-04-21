@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "ash/magnifier/magnification_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -22,6 +24,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -48,7 +52,7 @@ MagnificationManager* MagnificationManager::Get() {
 }
 
 bool MagnificationManager::IsMagnifierEnabled() const {
-  return enabled_;
+  return fullscreen_magnifier_enabled_;
 }
 
 void MagnificationManager::SetMagnifierEnabled(bool enabled) {
@@ -87,6 +91,18 @@ MagnificationManager::MagnificationManager() {
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
+  // TODO(warx): observe focus changed in page notification when either
+  // fullscreen magnifier or docked magnifier is enabled.
+  registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+                 content::NotificationService::AllSources());
+
+  // Connect to ash's DockedMagnifierController interface.
+  if (ash::features::IsDockedMagnifierEnabled()) {
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ash::mojom::kServiceName,
+                        &docked_magnifier_controller_);
+  }
 }
 
 MagnificationManager::~MagnificationManager() {
@@ -122,10 +138,7 @@ void MagnificationManager::Observe(
       break;
     }
     case content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE: {
-      content::FocusedNodeDetails* node_details =
-          content::Details<content::FocusedNodeDetails>(details).ptr();
-      ash::Shell::Get()->magnification_controller()->HandleFocusedNodeChanged(
-          node_details->is_editable_node, node_details->node_bounds_in_screen);
+      HandleFocusChangedInPage(details);
       break;
     }
   }
@@ -168,13 +181,12 @@ void MagnificationManager::SetMagnifierEnabledInternal(bool enabled) {
   // even if |enabled| is unchanged. Only if |enabled| is false and the
   // magnifier is already disabled, we are sure that we don't need to reflect
   // the new settings right now because the magnifier keeps disabled.
-  if (!enabled && !enabled_)
+  if (!enabled && !fullscreen_magnifier_enabled_)
     return;
 
-  enabled_ = enabled;
+  fullscreen_magnifier_enabled_ = enabled;
 
-  ash::Shell::Get()->magnification_controller()->SetEnabled(enabled_);
-  MonitorFocusInPageChange();
+  ash::Shell::Get()->magnification_controller()->SetEnabled(enabled);
 }
 
 void MagnificationManager::SetMagnifierKeepFocusCenteredInternal(
@@ -221,7 +233,7 @@ void MagnificationManager::UpdateMagnifierFromPrefs() {
   }
 
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-                                          enabled_);
+                                          fullscreen_magnifier_enabled_);
 
   if (!AccessibilityManager::Get())
     return;
@@ -230,16 +242,36 @@ void MagnificationManager::UpdateMagnifierFromPrefs() {
     ash::Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
-void MagnificationManager::MonitorFocusInPageChange() {
-  if (enabled_ && !observing_focus_change_in_page_) {
-    registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                   content::NotificationService::AllSources());
-    observing_focus_change_in_page_ = true;
-  } else if (!enabled_ && observing_focus_change_in_page_) {
-    registrar_.Remove(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                      content::NotificationService::AllSources());
-    observing_focus_change_in_page_ = false;
+void MagnificationManager::HandleFocusChangedInPage(
+    const content::NotificationDetails& details) {
+  const bool docked_magnifier_enabled =
+      ash::features::IsDockedMagnifierEnabled() && profile_ &&
+      profile_->GetPrefs()->GetBoolean(ash::prefs::kDockedMagnifierEnabled);
+  if (!fullscreen_magnifier_enabled_ && !docked_magnifier_enabled)
+    return;
+
+  content::FocusedNodeDetails* node_details =
+      content::Details<content::FocusedNodeDetails>(details).ptr();
+  // Ash uses the InputMethod of the window tree host to observe text input
+  // caret bounds changes, which works for both the native UI as well as
+  // webpages. We don't need to notify it of editable nodes in this case.
+  if (node_details->is_editable_node)
+    return;
+
+  const gfx::Rect& bounds_in_screen = node_details->node_bounds_in_screen;
+  if (bounds_in_screen.IsEmpty())
+    return;
+
+  // Fullscreen magnifier and docked magnifier are mutually exclusive.
+  if (fullscreen_magnifier_enabled_) {
+    ash::Shell::Get()->magnification_controller()->HandleFocusedNodeChanged(
+        node_details->is_editable_node, node_details->node_bounds_in_screen);
+    return;
   }
+  DCHECK(docked_magnifier_enabled);
+  // Called when docked magnifier feature is enabled to avoid unnecessary
+  // mojo IPC to ash.
+  docked_magnifier_controller_->CenterOnPoint(bounds_in_screen.CenterPoint());
 }
 
 }  // namespace chromeos
