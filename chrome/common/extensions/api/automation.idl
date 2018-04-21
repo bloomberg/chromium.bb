@@ -285,7 +285,11 @@
     /**
      * This node was removed.
      */
-    nodeRemoved
+    nodeRemoved,
+    /**
+     * This subtree has finished an update.
+     */
+    subtreeUpdateEnd
   };
 
   // Where the node's name is from.

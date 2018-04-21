@@ -23,6 +23,7 @@ LiveRegionsTest.prototype = {
   /** @override */
   setUp: function() {
     window.RoleType = chrome.automation.RoleType;
+    window.TreeChangeType = chrome.automation.TreeChangeType;
   },
 
   /**
@@ -52,7 +53,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionAddElement', function() {
   this.runWithLoadedTree(
     function() {/*!
       <h1>Document with live region</h1>
-      <p id="live" aria-live="polite"></p>
+      <p id="live" aria-live="assertive"></p>
       <button id="go">Go</button>
       <script>
         document.getElementById('go').addEventListener('click', function() {
@@ -73,7 +74,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionRemoveElement', function() {
   this.runWithLoadedTree(
     function() {/*!
       <h1>Document with live region</h1>
-      <p id="live" aria-live="polite" aria-relevant="removals">Hello, world</p>
+      <p id="live" aria-live="assertive" aria-relevant="removals">Hello, world</p>
       <button id="go">Go</button>
       <script>
         document.getElementById('go').addEventListener('click', function() {
@@ -95,7 +96,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
-      <div id="live" aria-live="polite" aria-atomic="true">
+      <div id="live" aria-live="assertive" aria-atomic="true">
         <div></div><div>Bravo</div><div></div>
       </div>
       <button id="go">Go</button>
@@ -120,7 +121,7 @@ TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeAtomicText', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
-      <h1 aria-atomic="true" id="live"aria-live="polite">foo</h1>
+      <h1 aria-atomic="true" id="live"aria-live="assertive">foo</h1>
       <button id="go">go</button>
       <script>
         document.getElementById('go').addEventListener('click', function(e) {
@@ -146,7 +147,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
-      <div id="live" aria-live="polite">
+      <div id="live" aria-live="assertive">
         <img id="img" src="#" alt="Before">
       </div>
       <button id="go">Go</button>
@@ -169,7 +170,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionThenFocus', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
-      <div id="live" aria-live="polite"></div>
+      <div id="live" aria-live="assertive"></div>
       <button id="go">Go</button>
       <button id="focus">Focus</button>
       <script>
@@ -194,7 +195,7 @@ TEST_F('LiveRegionsTest', 'FocusThenLiveRegion', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
-      <div id="live" aria-live="polite"></div>
+      <div id="live" aria-live="assertive"></div>
       <button id="go">Go</button>
       <button id="focus">Focus</button>
       <script>
@@ -222,8 +223,8 @@ TEST_F('LiveRegionsTest', 'LiveRegionCategoryFlush', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
-      <div id="live1" aria-live="polite"></div>
-      <div id="live2" aria-live="polite"></div>
+      <div id="live1" aria-live="assertive"></div>
+      <div id="live2" aria-live="assertive"></div>
       <button id="go">Go</button>
       <button id="focus">Focus</button>
       <script>
@@ -249,7 +250,7 @@ TEST_F('LiveRegionsTest', 'SilentOnNodeChange', function() {
   this.runWithLoadedTree(function() {/*!
     <p>start</p>
     <button>first</button>
-    <div role="button" id="live" aria-live="polite">
+    <div role="button" id="live" aria-live="assertive">
       hello!
     </div>
     <script>
@@ -269,6 +270,36 @@ TEST_F('LiveRegionsTest', 'SilentOnNodeChange', function() {
         .expectSpeech('hello!')
         .expectNextSpeechUtteranceIsNot('hello!')
         .expectNextSpeechUtteranceIsNot('hello!')       ;
+    mockFeedback.replay();
+  });
+});
+
+TEST_F('LiveRegionsTest', 'SimulateTreeChanges', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <button></button>
+    <div aria-live="assertive">
+      <p>hello</p><p>there</p>
+    </div>
+  */},
+  function(root) {
+    var live = new LiveRegions(ChromeVoxState.instance);
+    var t1, t2;
+    [t1, t2] = root.findAll({role: RoleType.STATIC_TEXT});
+    mockFeedback.call(function() {
+          live.onTreeChange({type: TreeChangeType.TEXT_CHANGED, target: t2});
+          live.onTreeChange({type: TreeChangeType.SUBTREE_UPDATE_END, target: t2});
+        })
+        .expectNextSpeechUtteranceIsNot('hello')
+        .expectSpeech('there')
+        .clearPendingOutput()
+        mockFeedback.call(function() {
+          live.onTreeChange({type: TreeChangeType.TEXT_CHANGED, target: t1});
+          live.onTreeChange({type: TreeChangeType.TEXT_CHANGED, target: t2});
+          live.onTreeChange({type: TreeChangeType.SUBTREE_UPDATE_END, target: t2});
+        })
+        .expectSpeech('hello')
+        .expectSpeech('there');
     mockFeedback.replay();
   });
 });
