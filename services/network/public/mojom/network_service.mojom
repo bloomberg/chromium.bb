@@ -133,9 +133,9 @@ struct NetworkConditions {
   double upload_throughput;
 };
 
-// Used in NetworkContext.ClearHttpCache() to specify the resources to
-// keep/delete based on their URLs.
-struct ClearCacheUrlFilter {
+// Used in some clearing methods of URL-keyed data to specify the resources to
+// keep/delete.
+struct ClearDataFilter {
   enum Type {DELETE_MATCHES, KEEP_MATCHES};
 
   Type type;
@@ -182,7 +182,18 @@ interface NetworkContext {
   // in either direction by using null Time values for either argument.
   ClearHttpCache(mojo_base.mojom.Time start_time,
                  mojo_base.mojom.Time end_time,
-                 ClearCacheUrlFilter? filter) => ();
+                 ClearDataFilter? filter) => ();
+
+  // Clears channel IDs. A specific range of time can be specified with
+  // |start_time| and |end_time|. This supports unbounded deletes in either
+  // direction by using null Time values for either argument.
+  //
+  // If a non-null |filter| is specified, will clear only IDs matching the
+  // filter. Filtering by origins is not supported. If |filter| is non-null,
+  // |filter.origins| must be empty.
+  ClearChannelIds(mojo_base.mojom.Time start_time,
+                  mojo_base.mojom.Time end_time,
+                  ClearDataFilter? filter) => ();
 
   // Configures network conditions for the specified throttling profile.
   // The throttling will be applied only to requests that have

@@ -119,34 +119,31 @@ void ClearHttpAuthCacheOnIOThread(
   http_session->CloseAllConnections();
 }
 
-void OnClearedChannelIDsOnIOThread(net::URLRequestContextGetter* rq_context,
-                                   base::OnceClosure callback) {
+void OnClearedChannelIDsOnIOThread(
+    net::URLRequestContextGetter* request_context,
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Need to close open SSL connections which may be using the channel ids we
   // are deleting.
   // TODO(mattm): http://crbug.com/166069 Make the server bound cert
   // service/store have observers that can notify relevant things directly.
-  rq_context->GetURLRequestContext()
+  // TODO(ericorth): http://crbug.com/824970 Move this over to the network
+  // service and handle within ClearChannelIds().
+  request_context->GetURLRequestContext()
       ->ssl_config_service()
       ->NotifySSLConfigChange();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
 }
 
-void ClearChannelIDsOnIOThread(
-    const base::Callback<bool(const std::string&)>& domain_predicate,
-    base::Time delete_begin,
-    base::Time delete_end,
+void OnClearedChannelIDs(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::ChannelIDService* channel_id_service =
-      request_context->GetURLRequestContext()->channel_id_service();
-  channel_id_service->GetChannelIDStore()->DeleteForDomainsCreatedBetween(
-      domain_predicate, delete_begin, delete_end,
-      base::Bind(&OnClearedChannelIDsOnIOThread,
-                 base::RetainedRef(std::move(request_context)),
-                 base::Passed(std::move(callback))));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&OnClearedChannelIDsOnIOThread,
+                     base::RetainedRef(std::move(request_context)),
+                     std::move(callback)));
 }
 
 }  // namespace
@@ -353,16 +350,22 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       !(remove_mask & DATA_TYPE_AVOID_CLOSING_CONNECTIONS) &&
       origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
+
+    network::mojom::ClearDataFilterPtr service_filter =
+        filter_builder.BuildNetworkServiceFilter();
+    DCHECK(service_filter->origins.empty())
+        << "Origin-based deletion is not suitable for channel IDs.";
+
     // Since we are running on the UI thread don't call GetURLRequestContext().
     scoped_refptr<net::URLRequestContextGetter> request_context =
         BrowserContext::GetDefaultStoragePartition(browser_context_)
             ->GetURLRequestContext();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ClearChannelIDsOnIOThread,
-                       filter_builder.BuildChannelIDFilter(), delete_begin_,
-                       delete_end_, std::move(request_context),
-                       CreatePendingTaskCompletionClosure()));
+    BrowserContext::GetDefaultStoragePartition(browser_context_)
+        ->GetNetworkContext()
+        ->ClearChannelIds(
+            delete_begin, delete_end, std::move(service_filter),
+            base::BindOnce(&OnClearedChannelIDs, std::move(request_context),
+                           CreatePendingTaskCompletionClosureForMojo()));
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -469,7 +472,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       // The clearing of the HTTP cache happens in the network service process
       // when enabled.
       network_context->ClearHttpCache(
-          delete_begin, delete_end, filter_builder.BuildClearCacheUrlFilter(),
+          delete_begin, delete_end, filter_builder.BuildNetworkServiceFilter(),
           CreatePendingTaskCompletionClosureForMojo());
     }
 

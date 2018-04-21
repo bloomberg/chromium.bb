@@ -117,8 +117,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       base::OnceClosure completion_callback) override;
   void ClearHttpCache(base::Time start_time,
                       base::Time end_time,
-                      mojom::ClearCacheUrlFilterPtr filter,
+                      mojom::ClearDataFilterPtr filter,
                       ClearHttpCacheCallback callback) override;
+  void ClearChannelIds(base::Time start_time,
+                       base::Time end_time,
+                       mojom::ClearDataFilterPtr filter,
+                       ClearChannelIdsCallback callback) override;
   void SetNetworkConditions(const std::string& profile_id,
                             mojom::NetworkConditionsPtr conditions) override;
   void SetAcceptLanguage(const std::string& new_accept_language) override;

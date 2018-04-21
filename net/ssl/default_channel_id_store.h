@@ -52,13 +52,13 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
                    const GetChannelIDCallback& callback) override;
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override;
   void DeleteChannelID(const std::string& server_identifier,
-                       const base::Closure& callback) override;
+                       base::OnceClosure callback) override;
   void DeleteForDomainsCreatedBetween(
       const base::Callback<bool(const std::string&)>& domain_predicate,
       base::Time delete_begin,
       base::Time delete_end,
-      const base::Closure& callback) override;
-  void DeleteAll(const base::Closure& callback) override;
+      base::OnceClosure callback) override;
+  void DeleteAll(base::OnceClosure callback) override;
   void GetAllChannelIDs(const GetChannelIDListCallback& callback) override;
   void Flush() override;
   int GetChannelIDCount() override;

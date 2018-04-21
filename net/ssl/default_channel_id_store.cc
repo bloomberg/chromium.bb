@@ -33,15 +33,15 @@ class DefaultChannelIDStore::Task {
   virtual void Run(DefaultChannelIDStore* store) = 0;
 
  protected:
-  void InvokeCallback(base::Closure callback) const;
+  void InvokeCallback(base::OnceClosure callback) const;
 };
 
 DefaultChannelIDStore::Task::~Task() = default;
 
 void DefaultChannelIDStore::Task::InvokeCallback(
-    base::Closure callback) const {
+    base::OnceClosure callback) const {
   if (!callback.is_null())
-    callback.Run();
+    std::move(callback).Run();
 }
 
 // --------------------------------------------------------------------------
@@ -75,8 +75,8 @@ void DefaultChannelIDStore::GetChannelIDTask::Run(
                                 GetChannelIDCallback());
   DCHECK(err != ERR_IO_PENDING);
 
-  InvokeCallback(base::Bind(callback_, err, server_identifier_,
-                            base::Passed(std::move(key_result))));
+  InvokeCallback(base::BindOnce(callback_, err, server_identifier_,
+                                std::move(key_result)));
 }
 
 // --------------------------------------------------------------------------
@@ -109,22 +109,19 @@ class DefaultChannelIDStore::DeleteChannelIDTask
     : public DefaultChannelIDStore::Task {
  public:
   DeleteChannelIDTask(const std::string& server_identifier,
-                      const base::Closure& callback);
+                      base::OnceClosure callback);
   ~DeleteChannelIDTask() override;
   void Run(DefaultChannelIDStore* store) override;
 
  private:
   std::string server_identifier_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
 };
 
-DefaultChannelIDStore::DeleteChannelIDTask::
-    DeleteChannelIDTask(
-        const std::string& server_identifier,
-        const base::Closure& callback)
-        : server_identifier_(server_identifier),
-          callback_(callback) {
-}
+DefaultChannelIDStore::DeleteChannelIDTask::DeleteChannelIDTask(
+    const std::string& server_identifier,
+    base::OnceClosure callback)
+    : server_identifier_(server_identifier), callback_(std::move(callback)) {}
 
 DefaultChannelIDStore::DeleteChannelIDTask::~DeleteChannelIDTask() = default;
 
@@ -132,7 +129,7 @@ void DefaultChannelIDStore::DeleteChannelIDTask::Run(
     DefaultChannelIDStore* store) {
   store->SyncDeleteChannelID(server_identifier_);
 
-  InvokeCallback(callback_);
+  InvokeCallback(std::move(callback_));
 }
 
 // --------------------------------------------------------------------------
@@ -144,7 +141,7 @@ class DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask
       const base::Callback<bool(const std::string&)>& domain_predicate,
       base::Time delete_begin,
       base::Time delete_end,
-      const base::Closure& callback);
+      base::OnceClosure callback);
   ~DeleteForDomainsCreatedBetweenTask() override;
   void Run(DefaultChannelIDStore* store) override;
 
@@ -152,7 +149,7 @@ class DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask
   const base::Callback<bool(const std::string&)> domain_predicate_;
   base::Time delete_begin_;
   base::Time delete_end_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
 };
 
 DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask::
@@ -160,11 +157,11 @@ DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask::
         const base::Callback<bool(const std::string&)>& domain_predicate,
         base::Time delete_begin,
         base::Time delete_end,
-        const base::Closure& callback)
+        base::OnceClosure callback)
     : domain_predicate_(domain_predicate),
       delete_begin_(delete_begin),
       delete_end_(delete_end),
-      callback_(callback) {}
+      callback_(std::move(callback)) {}
 
 DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask::
     ~DeleteForDomainsCreatedBetweenTask() = default;
@@ -174,7 +171,7 @@ void DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask::Run(
   store->SyncDeleteForDomainsCreatedBetween(domain_predicate_, delete_begin_,
                                             delete_end_);
 
-  InvokeCallback(callback_);
+  InvokeCallback(std::move(callback_));
 }
 
 // --------------------------------------------------------------------------
@@ -203,7 +200,7 @@ void DefaultChannelIDStore::GetAllChannelIDsTask::Run(
   ChannelIDList key_list;
   store->SyncGetAllChannelIDs(&key_list);
 
-  InvokeCallback(base::Bind(callback_, key_list));
+  InvokeCallback(base::BindOnce(std::move(callback_), key_list));
 }
 
 // --------------------------------------------------------------------------
@@ -248,24 +245,23 @@ void DefaultChannelIDStore::SetChannelID(
 
 void DefaultChannelIDStore::DeleteChannelID(
     const std::string& server_identifier,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   RunOrEnqueueTask(std::unique_ptr<Task>(
-      new DeleteChannelIDTask(server_identifier, callback)));
+      new DeleteChannelIDTask(server_identifier, std::move(callback))));
 }
 
 void DefaultChannelIDStore::DeleteForDomainsCreatedBetween(
     const base::Callback<bool(const std::string&)>& domain_predicate,
     base::Time delete_begin,
     base::Time delete_end,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   RunOrEnqueueTask(std::unique_ptr<Task>(new DeleteForDomainsCreatedBetweenTask(
-      domain_predicate, delete_begin, delete_end, callback)));
+      domain_predicate, delete_begin, delete_end, std::move(callback))));
 }
 
-void DefaultChannelIDStore::DeleteAll(
-    const base::Closure& callback) {
+void DefaultChannelIDStore::DeleteAll(base::OnceClosure callback) {
   DeleteForDomainsCreatedBetween(base::Bind(&AllDomainsPredicate), base::Time(),
-                                 base::Time(), callback);
+                                 base::Time(), std::move(callback));
 }
 
 void DefaultChannelIDStore::GetAllChannelIDs(

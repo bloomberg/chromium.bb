@@ -104,7 +104,7 @@ class HttpCacheDataRemoverTest : public testing::Test {
               static_cast<size_t>(backend_->GetEntryCount()));
   }
 
-  void RemoveData(mojom::ClearCacheUrlFilterPtr filter,
+  void RemoveData(mojom::ClearDataFilterPtr filter,
                   base::Time start_time,
                   base::Time end_time) {
     base::RunLoop run_loop;
@@ -158,8 +158,8 @@ TEST_F(HttpCacheDataRemoverTest, ClearAll) {
 }
 
 TEST_F(HttpCacheDataRemoverTest, FilterDeleteByDomain) {
-  mojom::ClearCacheUrlFilterPtr filter = mojom::ClearCacheUrlFilter::New();
-  filter->type = mojom::ClearCacheUrlFilter_Type::DELETE_MATCHES;
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::DELETE_MATCHES;
   filter->domains.push_back("wikipedia.com");
   filter->domains.push_back("google.com");
   RemoveData(std::move(filter), base::Time(), base::Time());
@@ -171,8 +171,8 @@ TEST_F(HttpCacheDataRemoverTest, FilterDeleteByDomain) {
 }
 
 TEST_F(HttpCacheDataRemoverTest, FilterKeepByDomain) {
-  mojom::ClearCacheUrlFilterPtr filter = mojom::ClearCacheUrlFilter::New();
-  filter->type = mojom::ClearCacheUrlFilter_Type::KEEP_MATCHES;
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
   filter->domains.push_back("wikipedia.com");
   filter->domains.push_back("google.com");
   RemoveData(std::move(filter), base::Time(), base::Time());
@@ -184,8 +184,8 @@ TEST_F(HttpCacheDataRemoverTest, FilterKeepByDomain) {
 }
 
 TEST_F(HttpCacheDataRemoverTest, FilterDeleteByOrigin) {
-  mojom::ClearCacheUrlFilterPtr filter = mojom::ClearCacheUrlFilter::New();
-  filter->type = mojom::ClearCacheUrlFilter_Type::DELETE_MATCHES;
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::DELETE_MATCHES;
   filter->origins.push_back(url::Origin::Create(GURL("http://www.google.com")));
   filter->origins.push_back(url::Origin::Create(GURL("http://localhost:1234")));
   RemoveData(std::move(filter), base::Time(), base::Time());
@@ -195,8 +195,8 @@ TEST_F(HttpCacheDataRemoverTest, FilterDeleteByOrigin) {
 }
 
 TEST_F(HttpCacheDataRemoverTest, FilterKeepByOrigin) {
-  mojom::ClearCacheUrlFilterPtr filter = mojom::ClearCacheUrlFilter::New();
-  filter->type = mojom::ClearCacheUrlFilter_Type::KEEP_MATCHES;
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
   filter->origins.push_back(url::Origin::Create(GURL("http://www.google.com")));
   filter->origins.push_back(url::Origin::Create(GURL("http://localhost:1234")));
   RemoveData(std::move(filter), base::Time(), base::Time());
@@ -206,8 +206,8 @@ TEST_F(HttpCacheDataRemoverTest, FilterKeepByOrigin) {
 }
 
 TEST_F(HttpCacheDataRemoverTest, FilterDeleteByDomainAndOrigin) {
-  mojom::ClearCacheUrlFilterPtr filter = mojom::ClearCacheUrlFilter::New();
-  filter->type = mojom::ClearCacheUrlFilter_Type::DELETE_MATCHES;
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::DELETE_MATCHES;
   filter->domains.push_back("wikipedia.com");
   filter->origins.push_back(url::Origin::Create(GURL("http://localhost:1234")));
   RemoveData(std::move(filter), base::Time(), base::Time());
@@ -218,8 +218,8 @@ TEST_F(HttpCacheDataRemoverTest, FilterDeleteByDomainAndOrigin) {
 }
 
 TEST_F(HttpCacheDataRemoverTest, FilterKeepByDomainAndOrigin) {
-  mojom::ClearCacheUrlFilterPtr filter = mojom::ClearCacheUrlFilter::New();
-  filter->type = mojom::ClearCacheUrlFilter_Type::KEEP_MATCHES;
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
   filter->domains.push_back("wikipedia.com");
   filter->origins.push_back(url::Origin::Create(GURL("http://localhost:1234")));
   RemoveData(std::move(filter), base::Time(), base::Time());
@@ -264,8 +264,8 @@ TEST_F(HttpCacheDataRemoverTest, FilterByDateRange) {
 }
 
 TEST_F(HttpCacheDataRemoverTest, FilterDeleteByDomainAndDate) {
-  mojom::ClearCacheUrlFilterPtr filter = mojom::ClearCacheUrlFilter::New();
-  filter->type = mojom::ClearCacheUrlFilter_Type::DELETE_MATCHES;
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::DELETE_MATCHES;
   filter->domains.push_back("google.com");
   filter->domains.push_back("wikipedia.com");
 
@@ -282,8 +282,8 @@ TEST_F(HttpCacheDataRemoverTest, FilterDeleteByDomainAndDate) {
 }
 
 TEST_F(HttpCacheDataRemoverTest, FilterKeepByDomainAndDate) {
-  mojom::ClearCacheUrlFilterPtr filter = mojom::ClearCacheUrlFilter::New();
-  filter->type = mojom::ClearCacheUrlFilter_Type::KEEP_MATCHES;
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
   filter->domains.push_back("google.com");
   filter->domains.push_back("wikipedia.com");
 

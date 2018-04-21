@@ -692,13 +692,13 @@ class FailingChannelIDStore : public ChannelIDStore {
   }
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override {}
   void DeleteChannelID(const std::string& server_identifier,
-                       const base::Closure& completion_callback) override {}
+                       base::OnceClosure completion_callback) override {}
   void DeleteForDomainsCreatedBetween(
       const base::Callback<bool(const std::string&)>& domain_predicate,
       base::Time delete_begin,
       base::Time delete_end,
-      const base::Closure& completion_callback) override {}
-  void DeleteAll(const base::Closure& completion_callback) override {}
+      base::OnceClosure completion_callback) override {}
+  void DeleteAll(base::OnceClosure completion_callback) override {}
   void GetAllChannelIDs(const GetChannelIDListCallback& callback) override {}
   int GetChannelIDCount() override { return 0; }
   void SetForceKeepSessionState() override {}
@@ -719,13 +719,13 @@ class AsyncFailingChannelIDStore : public ChannelIDStore {
   }
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override {}
   void DeleteChannelID(const std::string& server_identifier,
-                       const base::Closure& completion_callback) override {}
+                       base::OnceClosure completion_callback) override {}
   void DeleteForDomainsCreatedBetween(
       const base::Callback<bool(const std::string&)>& domain_predicate,
       base::Time delete_begin,
       base::Time delete_end,
-      const base::Closure& completion_callback) override {}
-  void DeleteAll(const base::Closure& completion_callback) override {}
+      base::OnceClosure completion_callback) override {}
+  void DeleteAll(base::OnceClosure completion_callback) override {}
   void GetAllChannelIDs(const GetChannelIDListCallback& callback) override {}
   int GetChannelIDCount() override { return 0; }
   void SetForceKeepSessionState() override {}
