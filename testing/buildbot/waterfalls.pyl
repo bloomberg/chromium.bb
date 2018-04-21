@@ -1219,14 +1219,19 @@
         },
       },
       'Site Isolation Linux': {
-        # TODO(dpranke): Remove this builder once the tests are running on
-        # the main 'Linux Tests' bot; base_unittests is a placeholder
+        # TODO(lukasza, dpranke): Remove this bot once site-per-process has
+        # been turned on by default for a while (e.g. once
+        # https://crrev.com/c/981019 "sticks").
+        # base_unittests is a placeholder
         # to keep the builder from building "all".
         'additional_compile_targets': [
           'base_unittests',
         ],
       },
       'Site Isolation Win': {
+        # TODO(lukasza, dpranke): Remove this bot once site-per-process has
+        # been turned on by default for a while (e.g. once
+        # https://crrev.com/c/981019 "sticks").
         'test_suites': {
           'gtest_tests': 'site_isolation_win_fyi_gtests',
         },

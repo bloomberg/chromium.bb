@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_render_process_probe.h"
 #include "chrome/browser/ui/browser.h"
@@ -82,6 +83,12 @@ class ResourceCoordinatorRenderProcessProbeBrowserTest
 
 IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
                        TrackAndMeasureActiveRenderProcesses) {
+#if defined(OS_WIN)
+  // TODO(https://crbug.com/833430): Spare-RPH-related failures when run with
+  // --site-per-process on Windows.
+  if (content::AreAllSitesIsolatedForTesting())
+    return;
+#endif
   // Ensure that the |resource_coordinator| service is enabled.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures({features::kGlobalResourceCoordinator,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -124,7 +125,9 @@ class WebDriverSitePerProcessPolicyBrowserTest
     // the call to the base setup method because setting the Site Isolation
     // policy is indistinguishable from setting the the command line flag
     // directly.
-    are_sites_isolated_for_testing_ = content::AreAllSitesIsolatedForTesting();
+    are_sites_isolated_for_testing_ =
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableSiteIsolationTrials);
 
     // We setup the policy here, because the policy must be 'live' before the
     // renderer is created, since the value for this policy is passed to the
@@ -226,7 +229,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTestFieldTrialTest, Simple) {
   CheckExpectations(expectations, arraysize(expectations));
 }
 
-IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest, NoPolicyNoTrialsFlags) {
+// https://crbug.com/833423: The test is incompatible with the
+// not_site_per_process_browser_tests step on the trybots.
+#if defined(OS_LINUX)
+#define MAYBE_NoPolicyNoTrialsFlags DISABLED_NoPolicyNoTrialsFlags
+#else
+#define MAYBE_NoPolicyNoTrialsFlags NoPolicyNoTrialsFlags
+#endif
+IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest,
+                       MAYBE_NoPolicyNoTrialsFlags) {
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableSiteIsolationTrials));
 }

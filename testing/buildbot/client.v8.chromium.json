@@ -18,9 +18,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_browser_tests",
+        "name": "not_site_per_process_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -212,9 +212,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_unit_tests",
+        "name": "not_site_per_process_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -292,9 +292,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_browser_tests",
+        "name": "not_site_per_process_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -469,9 +469,9 @@
       },
       {
         "args": [
-          "--site_per_process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_unit_tests",
+        "name": "not_site_per_process_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

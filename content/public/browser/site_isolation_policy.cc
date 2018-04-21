@@ -72,11 +72,6 @@ bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
   if (UseDedicatedProcessesForAllSites())
     return false;
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolationTrials)) {
-    return false;
-  }
-
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an
   // experiment group - such assignment should be final.
