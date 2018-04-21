@@ -62,12 +62,12 @@ chrome::mojom::MediaMetadataPtr ParseAudioVideoMetadata(
        it != extractor.stream_infos().end(); ++it) {
     chrome::mojom::MediaStreamInfoPtr stream_info =
         chrome::mojom::MediaStreamInfo::New(
-            it->type, std::make_unique<base::DictionaryValue>());
+            it->type, base::Value(base::Value::Type::DICTIONARY));
     for (std::map<std::string, std::string>::const_iterator tag_it =
              it->tags.begin();
          tag_it != it->tags.end(); ++tag_it) {
-      stream_info->additional_properties->SetKey(tag_it->first,
-                                                 base::Value(tag_it->second));
+      stream_info->additional_properties.SetKey(tag_it->first,
+                                                base::Value(tag_it->second));
     }
     metadata->raw_tags.push_back(std::move(stream_info));
   }
