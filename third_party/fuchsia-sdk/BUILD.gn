@@ -19,7 +19,7 @@ fuchsia_sdk_pkg("async") {
 # async-default keep a per-thread dispatcher for async.
 fuchsia_sdk_pkg("async_default") {
   name = "async-default"
-  libs = [ "async.default" ]
+  libs = [ "async-default" ]
 }
 
 fuchsia_sdk_pkg("zx") {
