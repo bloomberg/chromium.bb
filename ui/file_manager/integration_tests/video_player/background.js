@@ -72,7 +72,7 @@ function openSingleVideo(volumeName, volumeType, entry) {
     chrome.test.assertFalse('disabled' in videoPlayer.attributes);
     return args;
   });
-};
+}
 
 /**
  * Namespace for test cases.
