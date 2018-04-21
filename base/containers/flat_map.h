@@ -210,9 +210,9 @@ class flat_map : public ::base::internal::flat_tree<
   //
   // Assume that swap invalidates iterators and references.
 
-  void swap(flat_map& other);
+  void swap(flat_map& other) noexcept;
 
-  friend void swap(flat_map& lhs, flat_map& rhs) { lhs.swap(rhs); }
+  friend void swap(flat_map& lhs, flat_map& rhs) noexcept { lhs.swap(rhs); }
 };
 
 // ----------------------------------------------------------------------------
@@ -287,7 +287,7 @@ auto flat_map<Key, Mapped, Compare>::try_emplace(const_iterator hint,
 // General operations.
 
 template <class Key, class Mapped, class Compare>
-void flat_map<Key, Mapped, Compare>::swap(flat_map& other) {
+void flat_map<Key, Mapped, Compare>::swap(flat_map& other) noexcept {
   tree::swap(other);
 }
 
