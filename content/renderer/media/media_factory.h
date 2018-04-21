@@ -43,6 +43,7 @@ class CdmFactory;
 class DecoderFactory;
 class MediaLog;
 class MediaObserver;
+class RemotePlaybackClientWrapper;
 class RendererWebMediaPlayerDelegate;
 class SurfaceManager;
 class WebEncryptedMediaClientImpl;
@@ -112,6 +113,7 @@ class MediaFactory {
       media::MediaLog* media_log,
       bool use_media_player,
       media::DecoderFactory* decoder_factory,
+      std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
       base::WeakPtr<media::MediaObserver>* out_media_observer);
 
   blink::WebMediaPlayer* CreateWebMediaPlayerForMediaStream(

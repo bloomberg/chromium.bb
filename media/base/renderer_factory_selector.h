@@ -17,13 +17,15 @@ namespace media {
 class MEDIA_EXPORT RendererFactorySelector {
  public:
   using QueryIsRemotingActiveCB = base::Callback<bool()>;
+  using QueryIsFlingingActiveCB = base::Callback<bool()>;
 
   enum FactoryType {
     DEFAULT,       // DefaultRendererFactory.
     MOJO,          // MojoRendererFactory.
     MEDIA_PLAYER,  // MediaPlayerRendererClientFactory.
     COURIER,       // CourierRendererFactory.
-    FACTORY_TYPE_MAX = COURIER,
+    FLINGING,      // FlingingRendererClientFactory
+    FACTORY_TYPE_MAX = FLINGING,
   };
 
   RendererFactorySelector();
@@ -54,10 +56,16 @@ class MEDIA_EXPORT RendererFactorySelector {
   void SetQueryIsRemotingActiveCB(
       QueryIsRemotingActiveCB query_is_remoting_active_cb);
 
+  // Sets the callback to query whether we are currently flinging media, and if
+  // we should temporarily use the FLINGING factory.
+  void SetQueryIsFlingingActiveCB(
+      QueryIsFlingingActiveCB query_is_flinging_active_cb);
+
  private:
   bool use_media_player_ = false;
 
   QueryIsRemotingActiveCB query_is_remoting_active_cb_;
+  QueryIsFlingingActiveCB query_is_flinging_active_cb_;
 
   base::Optional<FactoryType> base_factory_type_;
   std::unique_ptr<RendererFactory> factories_[FACTORY_TYPE_MAX + 1];

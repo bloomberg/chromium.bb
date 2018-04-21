@@ -35,6 +35,9 @@ RendererFactory* RendererFactorySelector::GetCurrentFactory() {
   if (query_is_remoting_active_cb_ && query_is_remoting_active_cb_.Run())
     next_factory_type = FactoryType::COURIER;
 
+  if (query_is_flinging_active_cb_ && query_is_flinging_active_cb_.Run())
+    next_factory_type = FactoryType::FLINGING;
+
   DVLOG(1) << __func__ << " Selecting factory type: " << next_factory_type;
 
   RendererFactory* current_factory = factories_[next_factory_type].get();
@@ -54,6 +57,12 @@ void RendererFactorySelector::SetQueryIsRemotingActiveCB(
     QueryIsRemotingActiveCB query_is_remoting_active_cb) {
   DCHECK(!query_is_remoting_active_cb_);
   query_is_remoting_active_cb_ = query_is_remoting_active_cb;
+}
+
+void RendererFactorySelector::SetQueryIsFlingingActiveCB(
+    QueryIsFlingingActiveCB query_is_flinging_active_cb) {
+  DCHECK(!query_is_flinging_active_cb_);
+  query_is_flinging_active_cb_ = query_is_flinging_active_cb;
 }
 
 }  // namespace media

@@ -24,6 +24,7 @@ class GpuVideoAcceleratorFactories;
 class MojoRendererFactory : public RendererFactory {
  public:
   using GetGpuFactoriesCB = base::Callback<GpuVideoAcceleratorFactories*()>;
+  using GetTypeSpecificIdCB = base::Callback<std::string()>;
 
   MojoRendererFactory(mojom::HostedRendererType type,
                       const GetGpuFactoriesCB& get_gpu_factories_cb,
@@ -39,10 +40,19 @@ class MojoRendererFactory : public RendererFactory {
       const RequestOverlayInfoCB& request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
 
+  // Sets the callback that will fetch the TypeSpecificId when
+  // InterfaceFactory::CreateRenderer() is called. What the string represents
+  // depends on the value of |hosted_renderer_type_|. Currently, we only use it
+  // with mojom::HostedRendererType::kFlinging, in which case
+  // |get_type_specific_id| should return the presentation ID to be given to the
+  // FlingingRenderer in the browser process.
+  void SetGetTypeSpecificIdCB(const GetTypeSpecificIdCB& get_type_specific_id);
+
  private:
   mojom::RendererPtr GetRendererPtr();
 
   GetGpuFactoriesCB get_gpu_factories_cb_;
+  GetTypeSpecificIdCB get_type_specific_id_;
 
   // InterfaceFactory or InterfaceProvider used to create or connect to remote
   // renderer.
