@@ -1296,6 +1296,7 @@ void RenderWidget::Resize(const ResizeParams& params) {
   UpdateSurfaceAndScreenInfo(new_local_surface_id,
                              new_compositor_viewport_pixel_size,
                              params.screen_info);
+  UpdateCaptureSequenceNumber(params.capture_sequence_number);
   if (compositor_) {
     // If surface synchronization is enabled, then this will use the provided
     // |local_surface_id_| to submit the next generated CompositorFrame.
@@ -1852,6 +1853,19 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
 
   if (web_device_scale_factor_changed)
     UpdateWebViewWithDeviceScaleFactor();
+}
+
+void RenderWidget::UpdateCaptureSequenceNumber(
+    uint32_t capture_sequence_number) {
+  if (capture_sequence_number == last_capture_sequence_number_)
+    return;
+  last_capture_sequence_number_ = capture_sequence_number;
+
+  // Notify observers of the new capture sequence number.
+  for (auto& observer : render_frame_proxies_)
+    observer.UpdateCaptureSequenceNumber(capture_sequence_number);
+  for (auto& observer : browser_plugins_)
+    observer.UpdateCaptureSequenceNumber(capture_sequence_number);
 }
 
 void RenderWidget::OnRepaint(gfx::Size size_to_paint) {

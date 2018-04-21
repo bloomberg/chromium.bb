@@ -6,12 +6,9 @@
 
 namespace content {
 
-FrameResizeParams::FrameResizeParams()
-    : auto_resize_enabled(false), auto_resize_sequence_number(0u) {}
-
+FrameResizeParams::FrameResizeParams() = default;
 FrameResizeParams::FrameResizeParams(const FrameResizeParams& other) = default;
-
-FrameResizeParams::~FrameResizeParams() {}
+FrameResizeParams::~FrameResizeParams() = default;
 
 FrameResizeParams& FrameResizeParams::operator=(
     const FrameResizeParams& other) = default;

@@ -179,6 +179,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResizeParams)
   IPC_STRUCT_TRAITS_MEMBER(display_mode)
   IPC_STRUCT_TRAITS_MEMBER(needs_resize_ack)
   IPC_STRUCT_TRAITS_MEMBER(content_source_id)
+  IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::MenuItem)

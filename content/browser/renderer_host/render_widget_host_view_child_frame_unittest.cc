@@ -355,6 +355,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
   resize_params.screen_space_rect = screen_space_rect;
   resize_params.local_frame_size = compositor_viewport_pixel_size;
   resize_params.auto_resize_sequence_number = 1u;
+  resize_params.capture_sequence_number = 123u;
   test_frame_connector_->UpdateResizeParams(surface_id, resize_params);
 
   ASSERT_EQ(1u, process->sink().message_count());
@@ -368,6 +369,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
             std::get<0>(params).compositor_viewport_pixel_size);
   EXPECT_EQ(screen_space_rect.size(), std::get<0>(params).new_size);
   EXPECT_EQ(local_surface_id, std::get<0>(params).local_surface_id);
+  EXPECT_EQ(123u, std::get<0>(params).capture_sequence_number);
 }
 
 }  // namespace content

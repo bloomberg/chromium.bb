@@ -77,27 +77,30 @@ class CONTENT_EXPORT FrameConnectorDelegate {
                           const FrameResizeParams& resize_params);
 
   // Return the size of the CompositorFrame to use in the child renderer.
-  const gfx::Size& local_frame_size_in_pixels() {
+  const gfx::Size& local_frame_size_in_pixels() const {
     return local_frame_size_in_pixels_;
   }
 
   // Return the size of the CompositorFrame to use in the child renderer in DIP.
   // This is used to set the layout size of the child renderer.
-  const gfx::Size& local_frame_size_in_dip() {
+  const gfx::Size& local_frame_size_in_dip() const {
     return local_frame_size_in_dip_;
   }
 
   // Return the rect in DIP that the RenderWidgetHostViewChildFrame's content
   // will render into.
-  const gfx::Rect& screen_space_rect_in_dip() {
+  const gfx::Rect& screen_space_rect_in_dip() const {
     return screen_space_rect_in_dip_;
   }
 
   // Return the rect in pixels that the RenderWidgetHostViewChildFrame's content
   // will render into.
-  const gfx::Rect& screen_space_rect_in_pixels() {
+  const gfx::Rect& screen_space_rect_in_pixels() const {
     return screen_space_rect_in_pixels_;
   }
+
+  // Return the latest capture sequence number of this delegate.
+  uint32_t capture_sequence_number() const { return capture_sequence_number_; }
 
   // Request that the platform change the mouse cursor when the mouse is
   // positioned over this view's content.
@@ -261,6 +264,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
 
   bool has_size_ = false;
   const bool use_zoom_for_device_scale_factor_;
+
+  uint32_t capture_sequence_number_ = 0u;
 
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewChildFrameZoomForDSFTest,
                            CompositorViewportPixelSize);

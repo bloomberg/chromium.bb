@@ -99,6 +99,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}
   void SetWantsAnimateOnlyBeginFrames() override {}
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
+  void EnsureSurfaceSynchronizedForLayoutTest() override {}
 
   // RenderWidgetHostViewBase:
   void InitAsPopup(RenderWidgetHostView* parent_host_view,

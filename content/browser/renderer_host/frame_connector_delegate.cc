@@ -30,6 +30,7 @@ void FrameConnectorDelegate::UpdateResizeParams(
     const FrameResizeParams& resize_params) {
   screen_info_ = resize_params.screen_info;
   local_surface_id_ = surface_id.local_surface_id();
+  capture_sequence_number_ = resize_params.capture_sequence_number;
 
   SetScreenSpaceRect(resize_params.screen_space_rect);
   SetLocalFrameSize(resize_params.local_frame_size);

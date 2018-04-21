@@ -283,6 +283,12 @@ void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
   WasResized();
 }
 
+void RenderFrameProxy::UpdateCaptureSequenceNumber(
+    uint32_t capture_sequence_number) {
+  pending_resize_params_.capture_sequence_number = capture_sequence_number;
+  WasResized();
+}
+
 void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   DCHECK(web_frame_);
 
@@ -603,6 +609,14 @@ void RenderFrameProxy::WasResized() {
   if (!frame_sink_id_.is_valid() || crashed_ || transaction_pending_)
     return;
 
+  // Note that the following flag is true if the capture sequence number
+  // actually changed. That is, it is false if we did not have
+  // |sent_resize_params_|, which is different from
+  // |synchronized_params_changed| below.
+  bool capture_sequence_number_changed =
+      sent_resize_params_ && sent_resize_params_->capture_sequence_number !=
+                                 pending_resize_params_.capture_sequence_number;
+
   bool synchronized_params_changed =
       !sent_resize_params_ ||
       sent_resize_params_->auto_resize_enabled !=
@@ -617,18 +631,22 @@ void RenderFrameProxy::WasResized() {
           pending_resize_params_.screen_space_rect.size() ||
       sent_resize_params_->screen_info != pending_resize_params_.screen_info ||
       sent_resize_params_->auto_resize_sequence_number !=
-          pending_resize_params_.auto_resize_sequence_number;
+          pending_resize_params_.auto_resize_sequence_number ||
+      capture_sequence_number_changed;
 
   if (synchronized_params_changed)
     local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
 
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   if (enable_surface_synchronization_) {
-    // TODO(vmpstr): When capture_sequence_number is available, the deadline
-    // should be infinite if the sequence number has changed.
-    compositing_helper_->SetPrimarySurfaceId(
-        surface_id, local_frame_size(),
-        cc::DeadlinePolicy::UseDefaultDeadline());
+    // If we're synchronizing surfaces, then use an infinite deadline to ensure
+    // everything is synchronized.
+    cc::DeadlinePolicy deadline =
+        capture_sequence_number_changed
+            ? cc::DeadlinePolicy::UseInfiniteDeadline()
+            : cc::DeadlinePolicy::UseDefaultDeadline();
+    compositing_helper_->SetPrimarySurfaceId(surface_id, local_frame_size(),
+                                             deadline);
   }
 
   bool rect_changed =

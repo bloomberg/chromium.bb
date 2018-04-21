@@ -265,19 +265,31 @@ void BrowserPlugin::WasResized() {
                       sent_resize_params_->auto_resize_sequence_number !=
                           pending_resize_params_.auto_resize_sequence_number;
 
+  // Note that the following flag is true if the capture sequence number
+  // actually changed. That is, it is false if we did not have
+  // |sent_resize_params_|, which is different from the other local flags here.
+  bool capture_sequence_number_changed =
+      sent_resize_params_ && sent_resize_params_->capture_sequence_number !=
+                                 pending_resize_params_.capture_sequence_number;
+
   bool synchronized_params_changed =
       !sent_resize_params_ || size_changed ||
-      sent_resize_params_->screen_info != pending_resize_params_.screen_info;
+      sent_resize_params_->screen_info != pending_resize_params_.screen_info ||
+      capture_sequence_number_changed;
 
   if (synchronized_params_changed)
     parent_local_surface_id_allocator_.GenerateId();
 
   if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
-    // TODO(vmpstr): When capture_sequence_number is available, the deadline
-    // should be infinite if the sequence number has changed.
+    // If we're synchronizing surfaces, then use an infinite deadline to ensure
+    // everything is synchronized.
+    cc::DeadlinePolicy deadline =
+        capture_sequence_number_changed
+            ? cc::DeadlinePolicy::UseInfiniteDeadline()
+            : cc::DeadlinePolicy::UseDefaultDeadline();
     compositing_helper_->SetPrimarySurfaceId(
         viz::SurfaceId(frame_sink_id_, GetLocalSurfaceId()),
-        screen_space_rect().size(), cc::DeadlinePolicy::UseDefaultDeadline());
+        screen_space_rect().size(), deadline);
   }
 
   bool position_changed = !sent_resize_params_ ||
@@ -449,6 +461,12 @@ void BrowserPlugin::ScreenInfoChanged(const ScreenInfo& screen_info) {
                                         screen_info.device_scale_factor);
     return;
   }
+  WasResized();
+}
+
+void BrowserPlugin::UpdateCaptureSequenceNumber(
+    uint32_t capture_sequence_number) {
+  pending_resize_params_.capture_sequence_number = capture_sequence_number;
   WasResized();
 }
 

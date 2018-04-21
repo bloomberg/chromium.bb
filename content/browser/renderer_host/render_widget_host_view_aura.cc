@@ -637,6 +637,11 @@ bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
   return delegated_frame_host_->CanCopyFromCompositingSurface();
 }
 
+void RenderWidgetHostViewAura::EnsureSurfaceSynchronizedForLayoutTest() {
+  ++latest_capture_sequence_number_;
+  WasResized(cc::DeadlinePolicy::UseInfiniteDeadline(), base::nullopt);
+}
+
 bool RenderWidgetHostViewAura::IsShowing() {
   return window_->IsVisible();
 }
@@ -842,6 +847,10 @@ gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
   return delegated_frame_host_
              ? delegated_frame_host_->GetRequestedRendererSize()
              : RenderWidgetHostViewBase::GetRequestedRendererSize();
+}
+
+uint32_t RenderWidgetHostViewAura::GetCaptureSequenceNumber() const {
+  return latest_capture_sequence_number_;
 }
 
 void RenderWidgetHostViewAura::CopyFromSurface(

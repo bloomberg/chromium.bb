@@ -450,6 +450,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   viz::LocalSurfaceId local_surface_id_;
   ScreenInfo screen_info_;
+  uint32_t capture_sequence_number_ = 0u;
 
   // Weak pointer used to ask GeolocationPermissionContext about geolocation
   // permission.

@@ -120,6 +120,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
+  void EnsureSurfaceSynchronizedForLayoutTest() override;
+  uint32_t GetCaptureSequenceNumber() const override;
   bool DoBrowserControlsShrinkBlinkSize() const override;
   float GetTopControlsHeight() const override;
   float GetBottomControlsHeight() const override;
@@ -491,6 +493,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   base::ObserverList<DestructionObserver> destruction_observers_;
 
   MouseWheelPhaseHandler mouse_wheel_phase_handler_;
+  uint32_t latest_capture_sequence_number_ = 0u;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

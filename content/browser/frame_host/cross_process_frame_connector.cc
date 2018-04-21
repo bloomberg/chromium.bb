@@ -276,7 +276,8 @@ void CrossProcessFrameConnector::OnUpdateResizeParams(
   // If the |screen_space_rect| or |screen_info| of the frame has changed, then
   // the viz::LocalSurfaceId must also change.
   if ((last_received_local_frame_size_ != resize_params.local_frame_size ||
-       screen_info_ != resize_params.screen_info) &&
+       screen_info_ != resize_params.screen_info ||
+       capture_sequence_number() != resize_params.capture_sequence_number) &&
       local_surface_id_ == surface_id.local_surface_id()) {
     bad_message::ReceivedBadMessage(
         frame_proxy_in_parent_renderer_->GetProcess(),

@@ -76,6 +76,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   void ScreenInfoChanged(const ScreenInfo& screen_info);
 
+  void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
+
   // Indicates whether the guest should be focused.
   bool ShouldGuestBeFocused() const;
 

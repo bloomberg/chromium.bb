@@ -767,6 +767,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
 
   if (view_) {
     resize_params->new_size = view_->GetRequestedRendererSize();
+    resize_params->capture_sequence_number = view_->GetCaptureSequenceNumber();
     resize_params->compositor_viewport_pixel_size =
         view_->GetCompositorViewportPixelSize();
     resize_params->top_controls_height = view_->GetTopControlsHeight();
@@ -834,7 +835,10 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
        old_resize_params_->content_source_id !=
            resize_params->content_source_id) ||
       (enable_surface_synchronization_ &&
-       old_resize_params_->local_surface_id != resize_params->local_surface_id);
+       old_resize_params_->local_surface_id !=
+           resize_params->local_surface_id) ||
+      old_resize_params_->capture_sequence_number !=
+          resize_params->capture_sequence_number;
 
   // We don't expect to receive an ACK when the requested size or the physical
   // backing size is empty, or when the main viewport size didn't change.

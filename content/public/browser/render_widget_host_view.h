@@ -184,8 +184,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // visible viewport.
   virtual void SetInsets(const gfx::Insets& insets) = 0;
 
-  // Returns true if the current display surface is available, a prerequisite
-  // for CopyFromSurface() to succeed.
+  // Returns true if the current display surface is available.
   virtual bool IsSurfaceAvailableForCopy() const = 0;
 
   // Copies the given subset of the view's surface, optionally scales it, and
@@ -213,6 +212,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) = 0;
+
+  // Ensures that all surfaces are synchronized for the next call to
+  // CopyFromSurface. This is used by LayoutTests.
+  virtual void EnsureSurfaceSynchronizedForLayoutTest() = 0;
 
   // Creates a video capturer, which will allow the caller to receive a stream
   // of media::VideoFrames captured from this view. The capturer is configured
