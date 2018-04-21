@@ -111,6 +111,11 @@
         <include name="IDR_APPS_FOLDER_OVERLAY_128" file="mac/apps_folder_overlay_128.png" type="BINDATA" />
         <include name="IDR_APPS_FOLDER_OVERLAY_512" file="mac/apps_folder_overlay_512.png" type="BINDATA" />
       </if>
+      <if expr="chromeos">
+        <!-- Crostini icons -->
+        <include name="IDR_LOGO_CROSTINI_TERMINAL" file="crostini/logo_crostini_terminal.png" type="BINDATA" />
+        <include name="IDR_LOGO_CROSTINI_DEFAULT" file="crostini/logo_crostini_default.png" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

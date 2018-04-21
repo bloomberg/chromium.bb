@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 
-#include "ash/resources/grit/ash_resources.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/crx_file/id_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -54,11 +54,11 @@ void CrostiniAppModelBuilder::InsertCrostiniAppItem(
   const std::string& localized_name =
       crostini::CrostiniRegistryService::Registration::Localize(
           registration->name);
-  // TODO(timloh): Use a real icon
+  // TODO(timloh): Get an icon from the registry.
   InsertApp(std::make_unique<CrostiniAppItem>(
       profile(), GetSyncItem(app_id), app_id, localized_name,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOGO_CROSTINI_TERMINAL)));
+          IDR_LOGO_CROSTINI_DEFAULT)));
 }
 
 void CrostiniAppModelBuilder::OnRegistryUpdated(

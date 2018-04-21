@@ -19,9 +19,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT" file="common/window_header_shade_right_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP" file="common/window_header_shade_top_inactive.png" />
-
-      <!-- Crostini terminal images -->
-      <structure type="chrome_scaled_image" name="IDR_LOGO_CROSTINI_TERMINAL" file="cros/crostini/logo_crostini_terminal.png" />
     </structures>
   </release>
 </grit>
