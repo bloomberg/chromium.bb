@@ -571,61 +571,6 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventDispatchToTab) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Tests that the lazy background page updates the chrome://extensions page
-// when it is destroyed.
-IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, UpdateExtensionsPage) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled */, {features::kMaterialDesignExtensions} /* disabled */);
-
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
-  auto* extensions_page = browser()->tab_strip_model()->GetActiveWebContents();
-
-  ResultCatcher catcher;
-  base::FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
-      AppendASCII("wait_for_view");
-  const Extension* extension = LoadExtension(extdir);
-  ASSERT_TRUE(extension);
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  // The extension should've opened a new tab to an extension page.
-  EXPECT_EQ(extension->GetResourceURL("extension_page.html").spec(),
-            browser()->tab_strip_model()->GetActiveWebContents()->
-                GetURL().spec());
-
-  // Lazy Background Page still exists, because the extension created a new tab
-  // to an extension page.
-  EXPECT_TRUE(IsBackgroundPageAlive(last_loaded_extension_id()));
-
-  // Close the new tab.
-  LazyBackgroundObserver page_complete;
-  browser()->tab_strip_model()->CloseWebContentsAt(
-      browser()->tab_strip_model()->active_index(), TabStripModel::CLOSE_NONE);
-  page_complete.WaitUntilClosed();
-
-  // Lazy Background Page has been shut down.
-  EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
-
-  // Updating the extensions page is a process that has back-and-forth
-  // communication (i.e., backend tells extensions page something changed,
-  // extensions page requests updated data, backend responds with updated data,
-  // and so forth). This makes it difficult to know for sure when the page is
-  // done updating, so just try a few times. We limit the total number of
-  // attempts so that a) the test *fails* (instead of times out), and b) we
-  // know we're not making a ridiculous amount of trips to update the page.
-  bool is_inactive = false;
-  int kMaxTries = 10;
-  int num_tries = 0;
-  while (!is_inactive && num_tries++ < kMaxTries) {
-    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        extensions_page,
-        "var ele = document.querySelectorAll('div.active-views');"
-        "window.domAutomationController.send("
-        "    ele[0].innerHTML.search('(Inactive)') > 0);",
-        &is_inactive));
-  }
-}
-
 // Tests that the lazy background page will be unloaded if the onSuspend event
 // handler calls an API function such as chrome.storage.local.set().
 // See: http://crbug.com/296834

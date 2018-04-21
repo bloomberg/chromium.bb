@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/extensions/install_extension_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -54,8 +53,8 @@ constexpr char kLoadTimeClassesKey[] = "loadTimeClasses";
 
 class ExtensionWebUiTimer : public content::WebContentsObserver {
  public:
-  explicit ExtensionWebUiTimer(content::WebContents* web_contents, bool is_md)
-      : content::WebContentsObserver(web_contents), is_md_(is_md) {}
+  explicit ExtensionWebUiTimer(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
   ~ExtensionWebUiTimer() override {}
 
   void DidStartNavigation(
@@ -72,13 +71,8 @@ class ExtensionWebUiTimer : public content::WebContentsObserver {
         !timer_) {  // See comment in DocumentOnLoadCompletedInMainFrame()
       return;
     }
-    if (is_md_) {
-      UMA_HISTOGRAM_TIMES("Extensions.WebUi.DocumentLoadedInMainFrameTime.MD",
-                          timer_->Elapsed());
-    } else {
-      UMA_HISTOGRAM_TIMES("Extensions.WebUi.DocumentLoadedInMainFrameTime.Uber",
-                          timer_->Elapsed());
-    }
+    UMA_HISTOGRAM_TIMES("Extensions.WebUi.DocumentLoadedInMainFrameTime.MD",
+                        timer_->Elapsed());
   }
 
   void DocumentOnLoadCompletedInMainFrame() override {
@@ -89,22 +83,14 @@ class ExtensionWebUiTimer : public content::WebContentsObserver {
       // will receive this current callback.
       return;
     }
-    if (is_md_) {
-      UMA_HISTOGRAM_TIMES("Extensions.WebUi.LoadCompletedInMainFrame.MD",
-                          timer_->Elapsed());
-    } else {
-      UMA_HISTOGRAM_TIMES("Extensions.WebUi.LoadCompletedInMainFrame.Uber",
-                          timer_->Elapsed());
-    }
+    UMA_HISTOGRAM_TIMES("Extensions.WebUi.LoadCompletedInMainFrame.MD",
+                        timer_->Elapsed());
     timer_.reset();
   }
 
   void WebContentsDestroyed() override { delete this; }
 
  private:
-  // Whether this is the MD version of the chrome://extensions page.
-  bool is_md_;
-
   std::unique_ptr<base::ElapsedTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebUiTimer);
@@ -390,74 +376,31 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
   return source;
 }
 
-content::WebUIDataSource* CreateExtensionsHTMLSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
-
-  source->SetJsonPath("strings.js");
-  source->AddResourcePath("extensions.js", IDR_EXTENSIONS_JS);
-  source->AddResourcePath("extension_command_list.js",
-                          IDR_EXTENSION_COMMAND_LIST_JS);
-  source->AddResourcePath("extension_list.js", IDR_EXTENSION_LIST_JS);
-  source->SetDefaultResource(IDR_EXTENSIONS_HTML);
-  source->DisableDenyXFrameOptions();
-  return source;
-}
-
 }  // namespace
 
 ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = nullptr;
 
-  bool is_md =
-      base::FeatureList::IsEnabled(features::kMaterialDesignExtensions);
+  in_dev_mode_.Init(
+      prefs::kExtensionsUIDeveloperMode, profile->GetPrefs(),
+      base::Bind(&ExtensionsUI::OnDevModeChanged, base::Unretained(this)));
 
-  if (is_md) {
-    in_dev_mode_.Init(
-        prefs::kExtensionsUIDeveloperMode, profile->GetPrefs(),
-        base::Bind(&ExtensionsUI::OnDevModeChanged, base::Unretained(this)));
+  source = CreateMdExtensionsSource(*in_dev_mode_);
 
-    source = CreateMdExtensionsSource(*in_dev_mode_);
-
-    source->AddBoolean(
-        "isGuest",
+  source->AddBoolean(
+      "isGuest",
 #if defined(OS_CHROMEOS)
-        user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
-            user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
+      user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+          user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
 #else
-        profile->IsOffTheRecord());
+      profile->IsOffTheRecord());
 #endif
 
-    auto install_extension_handler =
-        std::make_unique<InstallExtensionHandler>();
-    InstallExtensionHandler* handler = install_extension_handler.get();
-    web_ui->AddMessageHandler(std::move(install_extension_handler));
-    handler->GetLocalizedValues(source);
-  } else {
-    source = CreateExtensionsHTMLSource();
-
-    auto extension_settings_handler =
-        std::make_unique<ExtensionSettingsHandler>();
-    ExtensionSettingsHandler* settings_handler =
-        extension_settings_handler.get();
-    web_ui->AddMessageHandler(std::move(extension_settings_handler));
-    settings_handler->GetLocalizedValues(source);
-
-    auto extension_loader_handler =
-        std::make_unique<ExtensionLoaderHandler>(profile);
-    ExtensionLoaderHandler* loader_handler = extension_loader_handler.get();
-    web_ui->AddMessageHandler(std::move(extension_loader_handler));
-    loader_handler->GetLocalizedValues(source);
-
-    auto install_extension_handler =
-        std::make_unique<InstallExtensionHandler>();
-    InstallExtensionHandler* install_handler = install_extension_handler.get();
-    web_ui->AddMessageHandler(std::move(install_extension_handler));
-    install_handler->GetLocalizedValues(source);
-
-    web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
-  }
+  auto install_extension_handler = std::make_unique<InstallExtensionHandler>();
+  InstallExtensionHandler* handler = install_extension_handler.get();
+  web_ui->AddMessageHandler(std::move(install_extension_handler));
+  handler->GetLocalizedValues(source);
 
 #if defined(OS_CHROMEOS)
   auto kiosk_app_handler = std::make_unique<chromeos::KioskAppsHandler>(
@@ -475,7 +418,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource::Add(profile, source);
 
   // Handles its own lifetime.
-  new ExtensionWebUiTimer(web_ui->GetWebContents(), is_md);
+  new ExtensionWebUiTimer(web_ui->GetWebContents());
 }
 
 ExtensionsUI::~ExtensionsUI() {}
