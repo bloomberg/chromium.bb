@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
@@ -36,7 +37,7 @@ gfx::Transform CreateRootWindowRotationTransform(
   display::ManagedDisplayInfo info =
       Shell::Get()->display_manager()->GetDisplayInfo(display.id());
   return CreateRotationTransform(display::Display::ROTATE_0,
-                                 info.GetActiveRotation(), display);
+                                 info.GetActiveRotation(), display.bounds());
 }
 
 gfx::Transform CreateMagnifierTransform(aura::Window* root_window) {
@@ -163,6 +164,26 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
       const display::ManagedDisplayInfo& source_display_info,
       const display::ManagedDisplayInfo& mirror_display_info) {
     root_bounds_ = gfx::Rect(source_display_info.bounds_in_native().size());
+
+    // The rotation of the source display (internal display) should be undone in
+    // the destination display (external display) if mirror mode is enabled in
+    // tablet mode.
+    bool should_undo_rotation = Shell::Get()
+                                    ->display_manager()
+                                    ->layout_store()
+                                    ->forced_mirror_mode_for_tablet();
+    gfx::Transform rotation_transform;
+    if (should_undo_rotation) {
+      // Calculate the transform to undo the rotation and apply it to the
+      // source display.
+      rotation_transform =
+          CreateRotationTransform(source_display_info.GetActiveRotation(),
+                                  display::Display::ROTATE_0, root_bounds_);
+      gfx::RectF rotated_bounds(root_bounds_);
+      rotation_transform.TransformRect(&rotated_bounds);
+      root_bounds_ = gfx::ToNearestRect(rotated_bounds);
+    }
+
     gfx::Rect mirror_display_rect =
         gfx::Rect(mirror_display_info.bounds_in_native().size());
 
@@ -193,6 +214,9 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
       transform_.Translate(margin, 0);
       transform_.Scale(inverted_scale, inverted_scale);
     }
+
+    // Make sure the rotation transform is applied in the beginning.
+    transform_.PreconcatTransform(rotation_transform);
   }
 
   // aura::RootWindowTransformer overrides:

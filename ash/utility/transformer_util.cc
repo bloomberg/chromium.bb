@@ -25,22 +25,22 @@ void RoundNearZero(gfx::Transform* transform) {
 
 gfx::Transform CreateRotationTransform(display::Display::Rotation old_rotation,
                                        display::Display::Rotation new_rotation,
-                                       const display::Display& display) {
+                                       const gfx::Rect& rect_to_rotate) {
   const int rotation_angle = 90 * (((new_rotation - old_rotation) + 4) % 4);
   gfx::Transform rotate;
   switch (rotation_angle) {
     case 0:
       break;
     case 90:
-      rotate.Translate(display.bounds().height(), 0);
+      rotate.Translate(rect_to_rotate.height(), 0);
       rotate.Rotate(90);
       break;
     case 180:
-      rotate.Translate(display.bounds().width(), display.bounds().height());
+      rotate.Translate(rect_to_rotate.width(), rect_to_rotate.height());
       rotate.Rotate(180);
       break;
     case 270:
-      rotate.Translate(0, display.bounds().width());
+      rotate.Translate(0, rect_to_rotate.width());
       rotate.Rotate(270);
       break;
   }

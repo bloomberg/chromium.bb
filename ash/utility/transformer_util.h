@@ -14,12 +14,12 @@ class Transform;
 
 namespace ash {
 
-// Creates rotation transform from |old_rotation| to |new_rotation| based on the
-// |display| info.
+// Creates rotation transform that rotates the |rect_to_rotate| from
+// |old_rotation| to |new_rotation|.
 ASH_EXPORT gfx::Transform CreateRotationTransform(
     display::Display::Rotation old_rotation,
     display::Display::Rotation new_rotation,
-    const display::Display& display);
+    const gfx::Rect& rect_to_rotate);
 
 }  // namespace ash
 

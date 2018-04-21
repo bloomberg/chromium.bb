@@ -115,7 +115,7 @@ gfx::Transform CreateScreenRotationOldLayerTransformForDisplay(
     display::Display::Rotation new_rotation,
     const display::Display& display) {
   gfx::Transform inverse;
-  CHECK(CreateRotationTransform(old_rotation, new_rotation, display)
+  CHECK(CreateRotationTransform(old_rotation, new_rotation, display.bounds())
             .GetInverse(&inverse));
   return inverse;
 }
