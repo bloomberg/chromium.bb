@@ -100,6 +100,12 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Page* GetPage() const;  // Null when the frame is detached.
   virtual FrameView* View() const = 0;
 
+  // Before using this, make sure you really want the top-level frame in the
+  // entire page, as opposed to a top-level local frame in a sub-tree, e.g.
+  // one representing a cross-process iframe in a renderer separate from the
+  // main frame's renderer. For layout and compositing code, often
+  // LocalFrame::IsLocalRoot() is more appropriate. If you are unsure, please
+  // reach out to site-isolation-dev@chromium.org.
   bool IsMainFrame() const;
 
   FrameOwner* Owner() const;

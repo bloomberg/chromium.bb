@@ -398,7 +398,7 @@ bool LayoutGeometryMap::IsTopmostLayoutView(
   if (!(map_coordinates_flags_ & kTraverseDocumentBoundaries))
     return true;
 
-  return layout_object->GetFrame()->IsMainFrame();
+  return layout_object->GetFrame()->IsLocalRoot();
 }
 #endif
 
