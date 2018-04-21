@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_UTIL_H_
-#define CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_UTIL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_
+#define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_
 
 // Returns true if crostini is allowed to run.
 // Otherwise, returns false, e.g. if crostini is not available on the device,
@@ -18,4 +18,4 @@ constexpr char kCrostiniDefaultContainerName[] = "penguin";
 constexpr char kCrostiniCroshBuiltinAppId[] =
     "nkoccljplnhpfnfiajclkommnmllphnl";
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_UTIL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_
