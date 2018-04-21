@@ -99,6 +99,125 @@ cr.define('gpu', function() {
         this.setText_('client-info', '... loading...');
       }
 
+
+      // GPU info, basic
+      var diagnosticsDiv = this.querySelector('.diagnostics');
+      var diagnosticsLoadingDiv = this.querySelector('.diagnostics-loading');
+      var featureStatusList = this.querySelector('.feature-status-list');
+      var problemsDiv = this.querySelector('.problems-div');
+      var problemsList = this.querySelector('.problems-list');
+      var workaroundsDiv = this.querySelector('.workarounds-div');
+      var workaroundsList = this.querySelector('.workarounds-list');
+
+      var basicInfoForHardwareGpuDiv =
+          this.querySelector('.basic-info-for-hardware-gpu-div');
+      var featureStatusForHardwareGpuDiv =
+          this.querySelector('.feature-status-for-hardware-gpu-div');
+      var featureStatusForHardwareGpuList =
+          this.querySelector('.feature-status-for-hardware-gpu-list');
+      var problemsForHardwareGpuDiv =
+          this.querySelector('.problems-for-hardware-gpu-div');
+      var problemsForHardwareGpuList =
+          this.querySelector('.problems-for-hardware-gpu-list');
+      var workaroundsForHardwareGpuDiv =
+          this.querySelector('.workarounds-for-hardware-gpu-div');
+      var workaroundsForHardwareGpuList =
+          this.querySelector('.workarounds-for-hardware-gpu-list');
+
+      var gpuInfo = browserBridge.gpuInfo;
+      var i;
+      if (gpuInfo) {
+        // Not using jstemplate here for blacklist status because we construct
+        // href from data, which jstemplate can't seem to do.
+        if (gpuInfo.featureStatus) {
+          this.appendFeatureInfo_(gpuInfo.featureStatus, featureStatusList,
+                                  problemsDiv, problemsList,
+                                  workaroundsDiv, workaroundsList);
+        } else {
+          featureStatusList.textContent = '';
+          problemsList.hidden = true;
+          workaroundsList.hidden = true;
+        }
+
+        if (gpuInfo.featureStatusForHardwareGpu) {
+          basicInfoForHardwareGpuDiv.hidden = false;
+          featureStatusForHardwareGpuDiv.hidden = false;
+          problemsForHardwareGpuDiv.hidden = false;
+          workaroundsForHardwareGpuDiv.hidden = false;
+          this.appendFeatureInfo_(gpuInfo.featureStatusForHardwareGpu,
+                                  featureStatusForHardwareGpuList,
+                                  problemsForHardwareGpuDiv,
+                                  problemsForHardwareGpuList,
+                                  workaroundsForHardwareGpuDiv,
+                                  workaroundsForHardwareGpuList);
+          if (gpuInfo.basicInfoForHardwareGpu) {
+            this.setTable_('basic-info-for-hardware-gpu',
+                           gpuInfo.basicInfoForHardwareGpu);
+          } else {
+            this.setTable_('basic-info-for-hardware-gpu', []);
+          }
+        } else {
+          basicInfoForHardwareGpuDiv.hidden = true;
+          featureStatusForHardwareGpuDiv.hidden = true;
+          problemsForHardwareGpuDiv.hidden = true;
+          workaroundsForHardwareGpuDiv.hidden = true;
+        }
+
+        if (gpuInfo.basicInfo)
+          this.setTable_('basic-info', gpuInfo.basicInfo);
+        else
+          this.setTable_('basic-info', []);
+
+        if (gpuInfo.compositorInfo)
+          this.setTable_('compositor-info', gpuInfo.compositorInfo);
+        else
+          this.setTable_('compositor-info', []);
+
+        if (gpuInfo.gpuMemoryBufferInfo)
+          this.setTable_('gpu-memory-buffer-info', gpuInfo.gpuMemoryBufferInfo);
+        else
+          this.setTable_('gpu-memory-buffer-info', []);
+
+        if (gpuInfo.displayInfo)
+          this.setTable_('display-info', gpuInfo.displayInfo);
+        else
+          this.setTable_('display-info', []);
+
+        if (gpuInfo.videoAcceleratorsInfo) {
+          this.setTable_(
+              'video-acceleration-info', gpuInfo.videoAcceleratorsInfo);
+        } else {
+          this.setTable_('video-acceleration-info', []);
+        }
+
+        if (gpuInfo.diagnostics) {
+          diagnosticsDiv.hidden = false;
+          diagnosticsLoadingDiv.hidden = true;
+          $('diagnostics-table').hidden = false;
+          this.setTable_('diagnostics-table', gpuInfo.diagnostics);
+        } else if (gpuInfo.diagnostics === null) {
+          // gpu_internals.cc sets diagnostics to null when it is being loaded
+          diagnosticsDiv.hidden = false;
+          diagnosticsLoadingDiv.hidden = false;
+          $('diagnostics-table').hidden = true;
+        } else {
+          diagnosticsDiv.hidden = true;
+        }
+      } else {
+        this.setText_('basic-info', '... loading ...');
+        diagnosticsDiv.hidden = true;
+        featureStatusList.textContent = '';
+        problemsDiv.hidden = true;
+      }
+
+      // Log messages
+      jstProcess(new JsEvalContext({values: browserBridge.logMessages}),
+                 $('log-messages'));
+    },
+
+    appendFeatureInfo_: function(featureInfo, featureStatusList,
+                                 problemsDiv, problemsList,
+                                 workaroundsDiv, workaroundsList) {
       // Feature map
       var featureLabelMap = {
         '2d_canvas': 'Canvas',
@@ -167,130 +286,58 @@ cr.define('gpu', function() {
         },
       };
 
-      // GPU info, basic
-      var diagnosticsDiv = this.querySelector('.diagnostics');
-      var diagnosticsLoadingDiv = this.querySelector('.diagnostics-loading');
-      var featureStatusList = this.querySelector('.feature-status-list');
-      var problemsDiv = this.querySelector('.problems-div');
-      var problemsList = this.querySelector('.problems-list');
-      var workaroundsDiv = this.querySelector('.workarounds-div');
-      var workaroundsList = this.querySelector('.workarounds-list');
-      var gpuInfo = browserBridge.gpuInfo;
-      var i;
-      if (gpuInfo) {
-        // Not using jstemplate here for blacklist status because we construct
-        // href from data, which jstemplate can't seem to do.
-        if (gpuInfo.featureStatus) {
-          // feature status list
-          featureStatusList.textContent = '';
-          for (var featureName in gpuInfo.featureStatus.featureStatus) {
-            var featureStatus =
-                gpuInfo.featureStatus.featureStatus[featureName];
-            var featureEl = document.createElement('li');
+      // feature status list
+      featureStatusList.textContent = '';
+      for (var featureName in featureInfo.featureStatus) {
+        var featureStatus = featureInfo.featureStatus[featureName];
+        var featureEl = document.createElement('li');
 
-            var nameEl = document.createElement('span');
-            if (!featureLabelMap[featureName])
-              console.log('Missing featureLabel for', featureName);
-            nameEl.textContent = featureLabelMap[featureName] + ': ';
-            featureEl.appendChild(nameEl);
+        var nameEl = document.createElement('span');
+        if (!featureLabelMap[featureName])
+          console.log('Missing featureLabel for', featureName);
+        nameEl.textContent = featureLabelMap[featureName] + ': ';
+        featureEl.appendChild(nameEl);
 
-            var statusEl = document.createElement('span');
-            var statusInfo = statusMap[featureStatus];
-            if (!statusInfo) {
-              console.log('Missing status for ', featureStatus);
-              statusEl.textContent = 'Unknown';
-              statusEl.className = 'feature-red';
-            } else {
-              statusEl.textContent = statusInfo['label'];
-              statusEl.className = statusInfo['class'];
-            }
-            featureEl.appendChild(statusEl);
-
-            featureStatusList.appendChild(featureEl);
-          }
-
-          // problems list
-          if (gpuInfo.featureStatus.problems.length) {
-            problemsDiv.hidden = false;
-            problemsList.textContent = '';
-            for (i = 0; i < gpuInfo.featureStatus.problems.length; i++) {
-              var problem = gpuInfo.featureStatus.problems[i];
-              var problemEl = this.createProblemEl_(problem);
-              problemsList.appendChild(problemEl);
-            }
-          } else {
-            problemsDiv.hidden = true;
-          }
-
-          // driver bug workarounds list
-          if (gpuInfo.featureStatus.workarounds.length) {
-            workaroundsDiv.hidden = false;
-            workaroundsList.textContent = '';
-            for (i = 0; i < gpuInfo.featureStatus.workarounds.length; i++) {
-              var workaroundEl = document.createElement('li');
-              workaroundEl.textContent = gpuInfo.featureStatus.workarounds[i];
-              workaroundsList.appendChild(workaroundEl);
-            }
-          } else {
-            workaroundsDiv.hidden = true;
-          }
-
+        var statusEl = document.createElement('span');
+        var statusInfo = statusMap[featureStatus];
+        if (!statusInfo) {
+          console.log('Missing status for ', featureStatus);
+          statusEl.textContent = 'Unknown';
+          statusEl.className = 'feature-red';
         } else {
-          featureStatusList.textContent = '';
-          problemsList.hidden = true;
-          workaroundsList.hidden = true;
+          statusEl.textContent = statusInfo['label'];
+          statusEl.className = statusInfo['class'];
         }
+        featureEl.appendChild(statusEl);
 
-        if (gpuInfo.basic_info)
-          this.setTable_('basic-info', gpuInfo.basic_info);
-        else
-          this.setTable_('basic-info', []);
+        featureStatusList.appendChild(featureEl);
+      }
 
-        if (gpuInfo.compositorInfo)
-          this.setTable_('compositor-info', gpuInfo.compositorInfo);
-        else
-          this.setTable_('compositor-info', []);
-
-        if (gpuInfo.gpuMemoryBufferInfo)
-          this.setTable_('gpu-memory-buffer-info', gpuInfo.gpuMemoryBufferInfo);
-        else
-          this.setTable_('gpu-memory-buffer-info', []);
-
-        if (gpuInfo.displayInfo)
-          this.setTable_('display-info', gpuInfo.displayInfo);
-        else
-          this.setTable_('display-info', []);
-
-        if (gpuInfo.videoAcceleratorsInfo) {
-          this.setTable_(
-              'video-acceleration-info', gpuInfo.videoAcceleratorsInfo);
-        } else {
-          this.setTable_('video-acceleration-info', []);
-        }
-
-        if (gpuInfo.diagnostics) {
-          diagnosticsDiv.hidden = false;
-          diagnosticsLoadingDiv.hidden = true;
-          $('diagnostics-table').hidden = false;
-          this.setTable_('diagnostics-table', gpuInfo.diagnostics);
-        } else if (gpuInfo.diagnostics === null) {
-          // gpu_internals.cc sets diagnostics to null when it is being loaded
-          diagnosticsDiv.hidden = false;
-          diagnosticsLoadingDiv.hidden = false;
-          $('diagnostics-table').hidden = true;
-        } else {
-          diagnosticsDiv.hidden = true;
+      // problems list
+      if (featureInfo.problems.length) {
+        problemsDiv.hidden = false;
+        problemsList.textContent = '';
+        for (i = 0; i < featureInfo.problems.length; i++) {
+          var problem = featureInfo.problems[i];
+          var problemEl = this.createProblemEl_(problem);
+          problemsList.appendChild(problemEl);
         }
       } else {
-        this.setText_('basic-info', '... loading ...');
-        diagnosticsDiv.hidden = true;
-        featureStatusList.textContent = '';
         problemsDiv.hidden = true;
       }
 
-      // Log messages
-      jstProcess(new JsEvalContext({values: browserBridge.logMessages}),
-                 $('log-messages'));
+      // driver bug workarounds list
+      if (featureInfo.workarounds.length) {
+        workaroundsDiv.hidden = false;
+        workaroundsList.textContent = '';
+        for (i = 0; i < featureInfo.workarounds.length; i++) {
+          var workaroundEl = document.createElement('li');
+          workaroundEl.textContent = featureInfo.workarounds[i];
+          workaroundsList.appendChild(workaroundEl);
+        }
+      } else {
+        workaroundsDiv.hidden = true;
+      }
     },
 
     createProblemEl_: function(problem) {

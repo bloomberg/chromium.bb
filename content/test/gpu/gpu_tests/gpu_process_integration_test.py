@@ -79,6 +79,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_gpu_info_complete', 'gpu/functional_3d_css.html'),
              ('GpuProcess_driver_bug_workarounds_in_gpu_process', 'chrome:gpu'),
              ('GpuProcess_readback_webgl_gpu_process', 'chrome:gpu'),
+             ('GpuProcess_feature_status_under_swiftshader', 'chrome:gpu'),
              ('GpuProcess_only_one_workaround', 'chrome:gpu'),
              ('GpuProcess_disable_gpu', 'gpu/functional_webgl.html'),
              ('GpuProcess_disable_gpu_and_swiftshader',
@@ -186,7 +187,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                 'workarounds are not equal: %s != %s, diff: %s' %
                 (browser_list, gpu_list, list(diff)))
 
-    basic_infos = tab.EvaluateJavaScript('browserBridge.gpuInfo.basic_info')
+    basic_infos = tab.EvaluateJavaScript('browserBridge.gpuInfo.basicInfo')
     disabled_gl_extensions = None
     for info in basic_infos:
       if info['description'].startswith('Disabled Extensions'):
@@ -261,6 +262,40 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         pass
     if not result:
       self.fail('WebGL readback setup failed: %s' % feature_status_list)
+
+  def _GpuProcess_feature_status_under_swiftshader(self, test_path):
+    if not self._SupportsSwiftShader():
+      return
+    # Hit test group 2 with entry 153 from kSoftwareRenderingListEntries.
+    self.RestartBrowserIfNecessaryWithArgs([
+      '--gpu-blacklist-test-group=2'])
+    self._Navigate(test_path)
+    feature_status_list = self.tab.EvaluateJavaScript(
+        'browserBridge.gpuInfo.featureStatus.featureStatus')
+    for name, status in feature_status_list.items():
+      if name == 'webgl':
+        if status != 'unavailable_software':
+          self.fail('WebGL status for SwiftShader failed: %s' % status)
+          return
+      elif name == '2d_canvas':
+        if status != 'unavailable_software':
+          self.fail('2D Canvas status for SwiftShader failed: %s' % status)
+          return
+      else:
+        pass
+    feature_status_for_hardware_gpu_list = self.tab.EvaluateJavaScript(
+        'browserBridge.gpuInfo.featureStatusForHardwareGpu.featureStatus')
+    for name, status in feature_status_for_hardware_gpu_list.items():
+      if name == 'webgl':
+        if status != 'unavailable_off':
+          self.fail('WebGL status for hardware GPU failed: %s' % status)
+          return
+      elif name == '2d_canvas':
+        if status != 'enabled':
+          self.fail('2D Canvas status for hardware GPU failed: %s' % status)
+          return
+      else:
+        pass
 
   def _GpuProcess_only_one_workaround(self, test_path):
     # Start this test by launching the browser with no command line

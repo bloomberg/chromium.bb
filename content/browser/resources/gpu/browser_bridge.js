@@ -143,8 +143,8 @@ cr.define('gpu', function() {
      * Returns the value of the "Sandboxed" row.
      */
     isSandboxedForTesting : function() {
-      for (i = 0; i < this.gpuInfo_.basic_info.length; ++i) {
-        var info = this.gpuInfo_.basic_info[i];
+      for (i = 0; i < this.gpuInfo_.basicInfo.length; ++i) {
+        var info = this.gpuInfo_.basicInfo[i];
         if (info.description == "Sandboxed")
           return info.value;
       }

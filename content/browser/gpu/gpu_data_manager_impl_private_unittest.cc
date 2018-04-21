@@ -140,7 +140,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuInfoUpdate) {
   EXPECT_FALSE(observer.gpu_info_updated());
 
   gpu::GPUInfo gpu_info;
-  manager->UpdateGpuInfo(gpu_info);
+  manager->UpdateGpuInfo(gpu_info, nullptr);
   {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();

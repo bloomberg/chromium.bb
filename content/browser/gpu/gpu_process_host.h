@@ -203,8 +203,11 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnProcessCrashed(int exit_code) override;
 
   // viz::mojom::GpuHost:
-  void DidInitialize(const gpu::GPUInfo& gpu_info,
-                     const gpu::GpuFeatureInfo& gpu_feature_info) override;
+  void DidInitialize(
+      const gpu::GPUInfo& gpu_info,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
+      const gpu::GPUInfo& gpu_info_for_hardware_gpu,
+      const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
   void DidCreateOffscreenContext(const GURL& url) override;

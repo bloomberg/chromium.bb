@@ -96,8 +96,11 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
 #endif  // defined(OS_CHROMEOS)
 
   // viz::mojom::GpuHost:
-  void DidInitialize(const gpu::GPUInfo& gpu_info,
-                     const gpu::GpuFeatureInfo& gpu_feature_info) override;
+  void DidInitialize(
+      const gpu::GPUInfo& gpu_info,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
+      const gpu::GPUInfo& gpu_info_for_hardware_gpu,
+      const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
   void DidCreateOffscreenContext(const GURL& url) override;
@@ -122,6 +125,12 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
   mojo::Binding<viz::mojom::GpuHost> gpu_host_binding_;
   gpu::GPUInfo gpu_info_;
   gpu::GpuFeatureInfo gpu_feature_info_;
+
+  // What we would have gotten if we haven't fallen back to SwiftShader or
+  // pure software (in the viz case).
+  gpu::GPUInfo gpu_info_for_hardware_gpu_;
+  gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu_;
+
   std::unique_ptr<viz::ServerGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   viz::mojom::VizMainPtr viz_main_;
