@@ -385,7 +385,7 @@ const base::Feature kMaterialDesignIncognitoNTP{
 // Enables media content bitstream remoting, an optimization that can activate
 // during Cast Tab Mirroring.
 const base::Feature kMediaRemoting{"MediaRemoting",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // Enables or disables modal permission prompts.
