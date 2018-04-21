@@ -67,6 +67,9 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     /** Whether composited UI is currently showing (such as Contextual Search). */
     private boolean mIsCompositedUIShowing;
 
+    /** Whether the bottom sheet is temporarily suppressed. */
+    private boolean mIsSuppressed;
+
     /**
      * Build a new controller of the bottom sheet.
      * @param tabModelSelector A tab model selector to track events on tabs open in the browser.
@@ -141,11 +144,10 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             public void onSceneChange(Layout layout) {
                 // If the tab did not change, reshow the existing content. Once the tab actually
                 // changes, existing content and requests will be cleared.
-                if (canShowInLayout(layout) && mWasShownForCurrentTab && !mBottomSheet.isSheetOpen()
-                        && mBottomSheet.getCurrentSheetContent() != null) {
-                    mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+                if (canShowInLayout(layout)) {
+                    unsuppressSheet();
                 } else if (!canShowInLayout(layout)) {
-                    mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, false);
+                    suppressSheet(StateChangeReason.COMPOSITED_UI);
                 }
             }
         });
@@ -187,29 +189,19 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         // TODO(mdjones): This should be changed to a generic OverlayPanel observer.
         if (contextualSearchManager != null) {
             contextualSearchManager.addObserver(new ContextualSearchObserver() {
-                /** Whether the bottom sheet was showing prior to contextual search appearing. */
-                private boolean mWasSheetShowing;
-
                 @Override
                 public void onShowContextualSearch(
                         @Nullable GSAContextDisplaySelection selectionContext) {
                     // Contextual Search can call this method more than once per show event.
                     if (mIsCompositedUIShowing) return;
-                    mWasSheetShowing = mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK;
                     mIsCompositedUIShowing = true;
-                    mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, false,
-                            BottomSheet.StateChangeReason.COMPOSITED_UI);
+                    suppressSheet(StateChangeReason.COMPOSITED_UI);
                 }
 
                 @Override
                 public void onHideContextualSearch() {
                     mIsCompositedUIShowing = false;
-                    if (mBottomSheet.getCurrentSheetContent() != null && mWasSheetShowing) {
-                        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
-                    } else {
-                        showNextContent();
-                    }
-                    mWasSheetShowing = false;
+                    unsuppressSheet();
                 }
             });
         }
@@ -217,6 +209,35 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
                 (content1, content2) -> content2.getPriority() - content1.getPriority());
+    }
+
+    /**
+     * Temporarily suppress the bottom sheet while other UI is showing. This will not itself change
+     * the content displayed by the sheet.
+     * @param reason The reason the sheet was suppressed.
+     */
+    private void suppressSheet(@StateChangeReason int reason) {
+        mIsSuppressed = true;
+        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, false, reason);
+    }
+
+    /**
+     * Unsuppress the bottom sheet. This may or may not affect the sheet depending on the state of
+     * the browser (i.e. the tab switcher may be showing).
+     */
+    private void unsuppressSheet() {
+        if (!mIsSuppressed || !canShowInLayout(mLayoutManager.getActiveLayout())
+                || !mWasShownForCurrentTab || isOtherUIObscuring()) {
+            return;
+        }
+        mIsSuppressed = false;
+
+        if (mBottomSheet.getCurrentSheetContent() != null) {
+            mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+        } else {
+            // In the event the previous content was hidden, try to show the next one.
+            showNextContent();
+        }
     }
 
     /**
