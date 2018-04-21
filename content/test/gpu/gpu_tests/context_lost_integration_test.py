@@ -298,7 +298,11 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         self.fail(
           'Page should have been blocked from getting a new WebGL context')
     finally:
-      gpucrash_tab.Close()
+      # This try/except is still needed. crbug.com/832886
+      try:
+        gpucrash_tab.Close()
+      except Exception:
+        print 'Tab crashed while closing chrome://gpucrash'
 
   def _ContextLost_WebGLUnblockedAfterUserInitiatedReload(self, test_path):
     self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([]))
@@ -334,7 +338,11 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         self.fail(
           'WebGL should have been unblocked after a user-initiated navigation')
     finally:
-      gpucrash_tab.Close()
+      # This try/except is still needed. crbug.com/832886
+      try:
+        gpucrash_tab.Close()
+      except Exception:
+        print 'Tab crashed while closing chrome://gpucrash'
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
