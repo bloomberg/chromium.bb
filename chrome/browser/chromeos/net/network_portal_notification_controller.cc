@@ -42,6 +42,7 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/api/networking_config/networking_config_service.h"
 #include "extensions/browser/api/networking_config/networking_config_service_factory.h"
@@ -227,17 +228,23 @@ const char NetworkPortalNotificationController::kUserActionMetric[] =
 NetworkPortalNotificationController::NetworkPortalNotificationController(
     NetworkPortalDetector* network_portal_detector)
     : network_portal_detector_(network_portal_detector), weak_factory_(this) {
-  if (NetworkHandler::IsInitialized()) {  // NULL for unit tests.
+  if (NetworkHandler::IsInitialized()) {  // May be false in tests.
     NetworkHandler::Get()->network_state_handler()->AddObserver(this,
                                                                 FROM_HERE);
   }
-  if (network_portal_detector_)
+  if (network_portal_detector_) {  // May be null in tests.
     network_portal_detector_->AddObserver(this);
+    DCHECK(session_manager::SessionManager::Get());
+    session_manager::SessionManager::Get()->AddObserver(this);
+  }
 }
 
 NetworkPortalNotificationController::~NetworkPortalNotificationController() {
-  if (network_portal_detector_)
+  if (network_portal_detector_) {
+    if (session_manager::SessionManager::Get())
+      session_manager::SessionManager::Get()->RemoveObserver(this);
     network_portal_detector_->RemoveObserver(this);
+  }
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                    FROM_HERE);
@@ -300,6 +307,19 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
       NetworkPortalNotificationController::kNotificationMetric,
       NetworkPortalNotificationController::NOTIFICATION_METRIC_DISPLAYED,
       NetworkPortalNotificationController::NOTIFICATION_METRIC_COUNT);
+}
+
+void NetworkPortalNotificationController::OnShutdown() {
+  CloseDialog();
+  network_portal_detector_->RemoveObserver(this);
+  network_portal_detector_ = nullptr;
+}
+
+void NetworkPortalNotificationController::OnSessionStateChanged() {
+  session_manager::SessionState state =
+      session_manager::SessionManager::Get()->session_state();
+  if (state == session_manager::SessionState::LOCKED)
+    CloseDialog();
 }
 
 void NetworkPortalNotificationController::ShowDialog() {
@@ -424,8 +444,8 @@ NetworkPortalNotificationController::GetNotification(
 }
 
 void NetworkPortalNotificationController::OnExtensionFinishedAuthentication() {
-  if (!retry_detection_callback_.is_null())
-    retry_detection_callback_.Run();
+  if (network_portal_detector_)
+    network_portal_detector_->StartPortalDetection(true /* force */);
 }
 
 void NetworkPortalNotificationController::SetIgnoreNoNetworkForTesting() {

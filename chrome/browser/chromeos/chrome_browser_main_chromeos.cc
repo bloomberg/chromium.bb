@@ -220,8 +220,7 @@ void InitializeNetworkPortalDetector() {
     network_portal_detector::SetNetworkPortalDetector(
         new NetworkPortalDetectorImpl(
             g_browser_process->system_network_context_manager()
-                ->GetURLLoaderFactory(),
-            true));
+                ->GetURLLoaderFactory()));
   }
 }
 

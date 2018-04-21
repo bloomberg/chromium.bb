@@ -19,9 +19,11 @@
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/docked_magnifier/docked_magnifier_client.h"
+#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -50,9 +52,11 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
@@ -257,6 +261,18 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   login_screen_client_ = std::make_unique<LoginScreenClient>();
   media_client_ = std::make_unique<MediaClient>();
 
+  // Do not create a NetworkPortalNotificationController for tests since the
+  // NetworkPortalDetector instance may be replaced.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestType)) {
+    chromeos::NetworkPortalDetector* detector =
+        chromeos::network_portal_detector::GetInstance();
+    CHECK(detector);
+    network_portal_notification_controller_ =
+        std::make_unique<chromeos::NetworkPortalNotificationController>(
+            detector);
+  }
+
   // TODO(mash): Port TabScrubber.
   if (chromeos::GetAshConfig() != ash::Config::MASH) {
     // Initialize TabScrubber after the Ash Shell has been initialized.
@@ -307,6 +323,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   system_tray_client_.reset();
   session_controller_client_.reset();
   chrome_new_window_client_.reset();
+  network_portal_notification_controller_.reset();
   media_client_.reset();
   login_screen_client_.reset();
   ime_controller_client_.reset();

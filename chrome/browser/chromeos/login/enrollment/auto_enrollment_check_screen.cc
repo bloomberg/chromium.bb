@@ -113,7 +113,8 @@ void AutoEnrollmentCheckScreen::Show() {
 
   // Make sure gears are in motion in the background.
   auto_enrollment_controller_->Start();
-  network_portal_detector::GetInstance()->StartDetectionIfIdle();
+  network_portal_detector::GetInstance()->StartPortalDetection(
+      false /* force */);
 }
 
 void AutoEnrollmentCheckScreen::Hide() {}

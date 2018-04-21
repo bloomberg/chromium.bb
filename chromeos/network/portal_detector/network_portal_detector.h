@@ -55,6 +55,9 @@ class CHROMEOS_EXPORT NetworkPortalDetector {
         const NetworkState* network,
         const CaptivePortalState& state) = 0;
 
+    // Called on Shutdown, allows removal of observers. Primarly used in tests.
+    virtual void OnShutdown() {}
+
    protected:
     virtual ~Observer() {}
   };
@@ -93,17 +96,15 @@ class CHROMEOS_EXPORT NetworkPortalDetector {
   // initiated by this method.
   virtual void Enable(bool start_detection) = 0;
 
-  // Restarts portal detection for the default network if currently in
-  // the idle state. Returns true if new portal detection attempt was
-  // started.
-  virtual bool StartDetectionIfIdle() = 0;
+  // Starts or restarts portal detection for the default network. If not
+  // currently in the idle state, does nothing unless |force| is true in which
+  // case any current detection is stopped and a new attempt is started. Returns
+  // true if a new portal detection attempt was started.
+  virtual bool StartPortalDetection(bool force) = 0;
 
   // Sets current strategy according to |id|. If current detection id
   // doesn't equal to |id|, detection is restarted.
   virtual void SetStrategy(PortalDetectorStrategy::StrategyId id) = 0;
-
-  // Closes portal login window before screen is locked.
-  virtual void OnLockScreenRequest() = 0;
 
   // Returns non-localized string representation of |status|.
   static std::string CaptivePortalStatusString(CaptivePortalStatus status);

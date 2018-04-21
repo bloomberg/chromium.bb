@@ -275,8 +275,7 @@ void GaiaScreenHandler::MaybePreloadAuthExtension() {
   if (!network_portal_detector_) {
     NetworkPortalDetectorImpl* detector = new NetworkPortalDetectorImpl(
         g_browser_process->system_network_context_manager()
-            ->GetURLLoaderFactory(),
-        false);
+            ->GetURLLoaderFactory());
     detector->set_portal_test_url(GURL(kRestrictiveProxyURL));
     network_portal_detector_.reset(detector);
     network_portal_detector_->AddObserver(this);

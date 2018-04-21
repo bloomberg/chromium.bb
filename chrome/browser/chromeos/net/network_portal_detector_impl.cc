@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
@@ -211,8 +210,7 @@ constexpr base::TimeDelta
     NetworkPortalDetectorImpl::kDelaySinceShillPortalForUMA;
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
-    network::mojom::URLLoaderFactory* loader_factory,
-    bool create_notification_controller)
+    network::mojom::URLLoaderFactory* loader_factory)
     : strategy_(PortalDetectorStrategy::CreateById(
           PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN,
           this)),
@@ -228,21 +226,13 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     portal_test_url_ = GURL(CaptivePortalDetector::kDefaultURL);
   }
 
-  if (create_notification_controller) {
-    notification_controller_.reset(
-        new NetworkPortalNotificationController(this));
-    notification_controller_->set_retry_detection_callback(
-        base::Bind(&NetworkPortalDetectorImpl::RetryDetection,
-                   weak_factory_.GetWeakPtr()));
-  }
-
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllSources());
 
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
-  StartDetectionIfIdle();
+  StartPortalDetection(false /* force */);
 }
 
 NetworkPortalDetectorImpl::~NetworkPortalDetectorImpl() {
@@ -259,6 +249,8 @@ NetworkPortalDetectorImpl::~NetworkPortalDetectorImpl() {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                    FROM_HERE);
   }
+  for (auto& observer : observers_)
+    observer.OnShutdown();
 }
 
 void NetworkPortalDetectorImpl::AddObserver(Observer* observer) {
@@ -315,9 +307,12 @@ NetworkPortalDetectorImpl::GetCaptivePortalState(const std::string& guid) {
   return it->second;
 }
 
-bool NetworkPortalDetectorImpl::StartDetectionIfIdle() {
-  if (!is_idle())
-    return false;
+bool NetworkPortalDetectorImpl::StartPortalDetection(bool force) {
+  if (!is_idle()) {
+    if (!force)
+      return false;
+    StopDetection();
+  }
   StartDetection();
   return true;
 }
@@ -327,13 +322,7 @@ void NetworkPortalDetectorImpl::SetStrategy(
   if (id == strategy_->Id())
     return;
   strategy_ = PortalDetectorStrategy::CreateById(id, this);
-  StopDetection();
-  StartDetectionIfIdle();
-}
-
-void NetworkPortalDetectorImpl::OnLockScreenRequest() {
-  if (notification_controller_)
-    notification_controller_->CloseDialog();
+  StartPortalDetection(true /* force */);
 }
 
 void NetworkPortalDetectorImpl::DefaultNetworkChanged(
@@ -440,11 +429,6 @@ void NetworkPortalDetectorImpl::StopDetection() {
   captive_portal_detector_->Cancel();
   state_ = STATE_IDLE;
   ResetStrategyAndCounters();
-}
-
-void NetworkPortalDetectorImpl::RetryDetection() {
-  StopDetection();
-  StartDetection();
 }
 
 void NetworkPortalDetectorImpl::ScheduleAttempt(const base::TimeDelta& delay) {
