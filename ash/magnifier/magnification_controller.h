@@ -95,6 +95,9 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   // window coordinates.
   gfx::Rect GetViewportRect() const;
 
+  // Centers the viewport around the given point in screen coordinates.
+  void CenterOnPoint(const gfx::Point& point_in_screen);
+
   // Follows the focus on web page for non-editable controls.
   void HandleFocusedNodeChanged(bool is_editable_node,
                                 const gfx::Rect& node_bounds_in_screen);
@@ -105,6 +108,14 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   //  - Switch the target window from current window to |new_root_window|.
   void SwitchTargetRootWindow(aura::Window* new_root_window,
                               bool redraw_original_root);
+
+  // ui::InputMethodObserver:
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnShowImeIfNeeded() override {}
 
   // Returns the last mouse cursor (or last touched) location.
   gfx::Point GetPointOfInterestForTesting() {
@@ -146,14 +157,6 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   ui::EventRewriteStatus NextDispatchEvent(
       const ui::Event& last_event,
       std::unique_ptr<ui::Event>* new_event) override;
-
-  // ui::InputMethodObserver:
-  void OnFocus() override {}
-  void OnBlur() override {}
-  void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
-  void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
-  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
-  void OnShowImeIfNeeded() override {}
 
   // Redraws the magnification window with the given origin position and the
   // given scale. Returns true if the window is changed; otherwise, false.
