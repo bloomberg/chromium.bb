@@ -326,6 +326,7 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
     <label id="CRASH"><input type="checkbox">Crash <span></span></label>
     <label id="TIMEOUT"><input type="checkbox">Timeout <span></span></label>
     <label id="TEXT"><input type="checkbox">Text failure <span></span></label>
+    <label id="HARNESS"><input type="checkbox">Harness failure <span></span></label>
     <label id="IMAGE"><input type="checkbox">Image failure <span></span></label>
     <label id="IMAGE_TEXT"><input type="checkbox">Image+text failure <span></span></label>
     <label id="SKIP"><input type="checkbox">Skipped <span></span></label>
@@ -873,10 +874,14 @@ const Query = {
     return test => {
       if (!queryFilter(test) || !textFilter(test))
         return false;
+      let resultKey = test.is_testharness_test ? "HARNESS" : test.actualFinal;
       // Ignore all results except final one, or not?
-      if (!(test.actualFinal in this.resultCounts))
-        this.resultCounts[test.actualFinal] = 0;
-      this.resultCounts[test.actualFinal]++;
+      if (!(resultKey in this.resultCounts))
+        this.resultCounts[resultKey] = 0;
+      this.resultCounts[resultKey]++;
+      if (test.actualFinal == "TEXT" && test.is_testharness_test) {
+        return filterMap.has("HARNESS");
+      }
       return filterMap.has(test.actualFinal);
     };
   },
