@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
@@ -3085,13 +3086,25 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   SetNeedsCompositingInputsUpdate();
   GetLayoutObject().SetNeedsPaintPropertyUpdate();
 
-  // We don't need to invalidate paint of objects on SPv175 when paint order
-  // changes. However, we do need to repaint the containing stacking context,
-  // in order to generate new paint chunks in the correct order. Raster
-  // invalidation will be issued if needed during paint.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      diff.ZIndexChanged())
-    SetNeedsRepaint();
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() && !NeedsRepaint()) {
+    if (diff.ZIndexChanged()) {
+      // We don't need to invalidate paint of objects on SPv175 when paint order
+      // changes. However, we do need to repaint the containing stacking
+      // context, in order to generate new paint chunks in the correct order.
+      // Raster invalidation will be issued if needed during paint.
+      SetNeedsRepaint();
+    } else if (old_style) {
+      // Change of PaintedOutputInvisible() will affect existence of paint
+      // chunks, so needs repaint.
+      PaintLayerPainter painter(*this);
+      // It's fine for PaintedOutputInvisible() to access the current
+      // compositing state.
+      DisableCompositingQueryAsserts disable;
+      if (painter.PaintedOutputInvisible(*old_style) !=
+          painter.PaintedOutputInvisible(GetLayoutObject().StyleRef()))
+        SetNeedsRepaint();
+    }
+  }
 }
 
 LayoutPoint PaintLayer::LocationInternal() const {

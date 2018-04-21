@@ -14,6 +14,7 @@
 namespace blink {
 
 class ClipRect;
+class ComputedStyle;
 class DisplayItemClient;
 class PaintLayer;
 class GraphicsContext;
@@ -53,6 +54,11 @@ class CORE_EXPORT PaintLayerPainter {
   void PaintOverlayScrollbars(GraphicsContext&,
                               const LayoutRect& damage_rect,
                               const GlobalPaintFlags);
+
+  // Returns true if the painted output of this PaintLayer and its children is
+  // invisible and therefore can't impact painted output.
+  bool PaintedOutputInvisible(const ComputedStyle&,
+                              GlobalPaintFlags = kGlobalPaintNormalPhase) const;
 
  private:
   friend class PaintLayerPainterTest;
@@ -146,10 +152,6 @@ class CORE_EXPORT PaintLayerPainter {
                           const ClipRect&,
                           const PaintLayerFlags&,
                           const LayoutBoxModelObject&);
-
-  // Returns true if the painted output of this PaintLayer and its children is
-  // invisible and therefore can't impact painted output.
-  bool PaintedOutputInvisible(const PaintLayerPaintingInfo&);
 
   void AdjustForPaintProperties(PaintLayerPaintingInfo&, PaintLayerFlags&);
 
