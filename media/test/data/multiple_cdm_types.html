@@ -79,7 +79,9 @@
     session3 = session;
     log('Crash session2');
     return session.update(crashJwkSet);
-  }).then(function() {
+  }).finally(function() {
+    // Due to the crash, the update() above could resolve or reject.
+    // So use "finally" so that we continue the test regardless.
     log('Session2 crashed');
     return session2.closed;
   }).then(function() {
