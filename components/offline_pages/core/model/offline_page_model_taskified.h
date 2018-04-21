@@ -205,6 +205,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void RunMaintenanceTasks(const base::Time now, bool first_run);
   void OnClearCachedPagesDone(size_t deleted_page_count,
                               ClearStorageTask::ClearStorageResult result);
+  void OnPersistentPageConsistencyCheckDone(
+      bool success,
+      const std::vector<int64_t>& pages_deleted);
 
   // Method for upgrade to public storage.
   void PostSelectItemsMarkedForUpgrade();

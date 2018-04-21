@@ -28,6 +28,7 @@
 #include "components/offline_pages/core/model/get_thumbnail_task.h"
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
+#include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
 #include "components/offline_pages/core/model/startup_maintenance_task.h"
 #include "components/offline_pages/core/model/store_thumbnail_task.h"
 #include "components/offline_pages/core/model/update_file_path_task.h"
@@ -715,6 +716,23 @@ void OfflinePageModelTaskified::RunMaintenanceTasks(const base::Time now,
       store_.get(), archive_manager_.get(), policy_controller_.get(), now,
       base::BindOnce(&OfflinePageModelTaskified::OnClearCachedPagesDone,
                      weak_ptr_factory_.GetWeakPtr())));
+
+  // TODO(https://crbug.com/834902) This might need a better execution plan.
+  task_queue_.AddTask(std::make_unique<PersistentPageConsistencyCheckTask>(
+      store_.get(), archive_manager_.get(), policy_controller_.get(), now,
+      base::BindOnce(
+          &OfflinePageModelTaskified::OnPersistentPageConsistencyCheckDone,
+          weak_ptr_factory_.GetWeakPtr())));
+}
+
+void OfflinePageModelTaskified::OnPersistentPageConsistencyCheckDone(
+    bool success,
+    const std::vector<int64_t>& pages_deleted) {
+  // If there's no persistent page expired, save some effort by exiting early.
+  // TODO(https://crbug.com/834909), use the temporary hidden bit in
+  // DownloadUIAdapter instead of calling remove directly.
+  if (pages_deleted.size() > 0)
+    download_manager_->Remove(pages_deleted);
 }
 
 void OfflinePageModelTaskified::OnClearCachedPagesDone(

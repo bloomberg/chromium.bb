@@ -89,29 +89,51 @@ bool DeleteFiles(const std::vector<base::FilePath>& file_paths) {
   return result;
 }
 
-SyncOperationResult ClearLegacyTempPagesSync(
+// This method is clearing the private dir(the legacy dir).
+// - For all files associated with temporary pages:
+//   The strategy is if any temporary page
+//   is still left behind in the legacy dir, delete them.
+// - For all files associated with persistent pages:
+//   Leave them as-is, since they might be still in use.
+// - For all files without any associated DB entry:
+//   Delete the files, since they're 'headless' and has no way to be accessed.
+SyncOperationResult ClearLegacyPagesInPrivateDirSync(
     sql::Connection* db,
-    const std::vector<std::string>& namespaces,
-    const base::FilePath& legacy_archives_dir) {
+    const std::vector<std::string>& temporary_namespaces,
+    const std::vector<std::string>& persistent_namespaces,
+    const base::FilePath& private_dir) {
   // One large database transaction that will:
   // 1. Get temporary page infos from the database.
-  // 2. Decide which pages to delete (still in legacy archive directory).
-  // 3. Delete metadata entries from the database.
+  // 2. Get persistent page infos from the database, in case they're in private
+  //    dir.
+  // 3. Get all file paths in private dir as a set F.
+  // 4. For each temporary page info:
+  //    - If its file path is in F, record its offline id for deletion.
+  // 5. For each persistent page info:
+  //    - If its file path is in F, remove it from F.
+  // 6. Delete page entries by recorded offline ids, and delete the remaining
+  //    files in F.
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return SyncOperationResult::TRANSACTION_BEGIN_ERROR;
 
-  std::vector<PageInfo> temp_page_infos =
-      GetPageInfosByNamespaces(namespaces, db);
+  std::vector<PageInfo> temporary_page_infos =
+      GetPageInfosByNamespaces(temporary_namespaces, db);
+  std::vector<PageInfo> persistent_page_infos =
+      GetPageInfosByNamespaces(persistent_namespaces, db);
+  std::map<base::FilePath, PageInfo> path_to_page_info;
 
+  std::set<base::FilePath> archive_paths = GetAllArchives(private_dir);
   std::vector<int64_t> offline_ids_to_delete;
-  std::vector<base::FilePath> files_to_delete;
-  for (const auto& page_info : temp_page_infos) {
-    // Get pages whose archive files are still in the legacy archives directory.
-    if (legacy_archives_dir.IsParent(page_info.file_path)) {
+
+  for (const auto& page_info : temporary_page_infos) {
+    if (archive_paths.find(page_info.file_path) != archive_paths.end())
       offline_ids_to_delete.push_back(page_info.offline_id);
-      files_to_delete.push_back(page_info.file_path);
-    }
+  }
+  for (const auto& page_info : persistent_page_infos) {
+    auto iter = archive_paths.find(page_info.file_path);
+    if (iter != archive_paths.end())
+      archive_paths.erase(iter);
   }
 
   // Try to delete the pages by offline ids collected above.
@@ -124,17 +146,26 @@ SyncOperationResult ClearLegacyTempPagesSync(
   if (!transaction.Commit())
     return SyncOperationResult::TRANSACTION_COMMIT_ERROR;
 
+  std::vector<base::FilePath> files_to_delete(archive_paths.begin(),
+                                              archive_paths.end());
   if (!DeleteFiles(files_to_delete))
     return SyncOperationResult::FILE_OPERATION_ERROR;
+
+  size_t headless_file_count =
+      files_to_delete.size() - offline_ids_to_delete.size();
+  if (headless_file_count > 0) {
+    UMA_HISTOGRAM_COUNTS_1M(
+        "OfflinePages.ConsistencyCheck.Legacy.DeletedHeadlessFileCount",
+        headless_file_count);
+  }
 
   return SyncOperationResult::SUCCESS;
 }
 
-SyncOperationResult CheckConsistencySync(
+SyncOperationResult CheckTemporaryPageConsistencySync(
     sql::Connection* db,
     const std::vector<std::string>& namespaces,
-    const base::FilePath& archives_dir,
-    const std::string& prefix_for_uma) {
+    const base::FilePath& archives_dir) {
   // One large database transaction that will:
   // 1. Get page infos by |namespaces| from the database.
   // 2. Decide which pages to delete.
@@ -165,9 +196,8 @@ SyncOperationResult CheckConsistencySync(
     // committed.
     if (!DeletePagesByOfflineIds(offline_ids_to_delete, db))
       return SyncOperationResult::DB_OPERATION_ERROR;
-    base::UmaHistogramCounts1M(
-        "OfflinePages.ConsistencyCheck." + prefix_for_uma +
-            ".PagesMissingArchiveFileCount",
+    UMA_HISTOGRAM_COUNTS_1M(
+        "OfflinePages.ConsistencyCheck.Temporary.PagesMissingArchiveFileCount",
         base::saturated_cast<int32_t>(offline_ids_to_delete.size()));
   }
 
@@ -186,9 +216,9 @@ SyncOperationResult CheckConsistencySync(
   if (files_to_delete.size() > 0) {
     if (!DeleteFiles(files_to_delete))
       return SyncOperationResult::FILE_OPERATION_ERROR;
-    base::UmaHistogramCounts1M("OfflinePages.ConsistencyCheck." +
-                                   prefix_for_uma + ".PagesMissingDbEntryCount",
-                               static_cast<int32_t>(files_to_delete.size()));
+    UMA_HISTOGRAM_COUNTS_1M(
+        "OfflinePages.ConsistencyCheck.Temporary.PagesMissingDbEntryCount",
+        static_cast<int32_t>(files_to_delete.size()));
   }
 
   return SyncOperationResult::SUCCESS;
@@ -232,23 +262,14 @@ bool StartupMaintenanceSync(OfflinePageMetadataStoreSQL* store,
 
   // Clear temporary pages that are in legacy directory, which is also the
   // directory that serves as the 'private' directory.
-  SyncOperationResult result = ClearLegacyTempPagesSync(
-      db, temporary_namespaces, archive_manager->GetPrivateArchivesDir());
+  SyncOperationResult result = ClearLegacyPagesInPrivateDirSync(
+      db, temporary_namespaces, persistent_namespaces,
+      archive_manager->GetPrivateArchivesDir());
 
   // Clear temporary pages in cache directory.
-  result = CheckConsistencySync(db, temporary_namespaces,
-                                archive_manager->GetTemporaryArchivesDir(),
-                                "Temporary" /*prefix_for_uma*/);
+  result = CheckTemporaryPageConsistencySync(
+      db, temporary_namespaces, archive_manager->GetTemporaryArchivesDir());
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.ConsistencyCheck.Temporary.Result",
-                            result, SyncOperationResult::RESULT_COUNT);
-
-  // Clear persistent pages in private directory.
-  // TODO(romax): this can be merged with the legacy temporary pages clearing
-  // above.
-  result = CheckConsistencySync(db, persistent_namespaces,
-                                archive_manager->GetPrivateArchivesDir(),
-                                "Persistent" /*prefix_for_uma*/);
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.ConsistencyCheck.Persistent.Result",
                             result, SyncOperationResult::RESULT_COUNT);
 
   // Report storage usage UMA.
