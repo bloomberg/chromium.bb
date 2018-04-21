@@ -114,7 +114,6 @@ amount of memory used.
 
  * [Adding MemoryInfra Tracing to a Component](adding_memory_infra_tracing.md)
  * [GPU Memory Tracing](probe-gpu.md)
- * [Heap Profiler Internals](heap_profiler_internals.md)
  * [Heap Profiling with MemoryInfra](heap_profiler.md)
  * [Startup Tracing with MemoryInfra](memory_infra_startup_tracing.md)
 
