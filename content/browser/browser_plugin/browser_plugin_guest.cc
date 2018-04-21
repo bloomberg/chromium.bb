@@ -1038,7 +1038,8 @@ void BrowserPluginGuest::OnUpdateResizeParams(
     const FrameResizeParams& resize_params) {
   if (local_surface_id_ > local_surface_id ||
       ((frame_rect_.size() != resize_params.screen_space_rect.size() ||
-        screen_info_ != resize_params.screen_info) &&
+        screen_info_ != resize_params.screen_info ||
+        capture_sequence_number_ != resize_params.capture_sequence_number) &&
        local_surface_id_ == local_surface_id)) {
     SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
     bad_message::ReceivedBadMessage(
@@ -1051,10 +1052,21 @@ void BrowserPluginGuest::OnUpdateResizeParams(
   frame_rect_ = resize_params.screen_space_rect;
   GetWebContents()->SendScreenRects();
   local_surface_id_ = local_surface_id;
+  bool capture_sequence_number_changed =
+      capture_sequence_number_ != resize_params.capture_sequence_number;
+  capture_sequence_number_ = resize_params.capture_sequence_number;
 
   RenderWidgetHostView* view = web_contents()->GetRenderWidgetHostView();
   if (!view)
     return;
+
+  // We could add functionality to set a specific capture sequence number on the
+  // |view|, but knowing that it's changed is sufficient for us simply request
+  // that our RenderWidgetHostView synchronizes its surfaces. Note that this
+  // should only happen during layout tests, since that is the only call that
+  // should trigger the capture sequence number to change.
+  if (capture_sequence_number_changed)
+    view->EnsureSurfaceSynchronizedForLayoutTest();
 
   RenderWidgetHostImpl* render_widget_host =
       RenderWidgetHostImpl::From(view->GetRenderWidgetHost());

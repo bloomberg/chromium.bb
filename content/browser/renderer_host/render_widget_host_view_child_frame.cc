@@ -241,6 +241,17 @@ bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
   return has_frame_;
 }
 
+void RenderWidgetHostViewChildFrame::EnsureSurfaceSynchronizedForLayoutTest() {
+  // The capture sequence number which would normally be updated here is
+  // actually retrieved from the frame connector.
+}
+
+uint32_t RenderWidgetHostViewChildFrame::GetCaptureSequenceNumber() const {
+  if (!frame_connector_)
+    return 0u;
+  return frame_connector_->capture_sequence_number();
+}
+
 void RenderWidgetHostViewChildFrame::Show() {
   if (!host()->is_hidden())
     return;

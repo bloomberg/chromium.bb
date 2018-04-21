@@ -213,6 +213,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   } repaint_state_ = RepaintState::None;
   bool repaint_auto_resize_enabled_ = false;
 
+  uint32_t capture_sequence_number_ = 0;
+
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;
 };
 

@@ -683,6 +683,10 @@ void RenderWidgetHostViewMac::CopyFromSurface(
       src_subrect, dst_size, std::move(callback));
 }
 
+void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForLayoutTest() {
+  // TODO(vmpstr): Figure out what needs to be done here.
+}
+
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
   needs_begin_frames_ = needs_begin_frames;
   UpdateNeedsBeginFramesInternal();

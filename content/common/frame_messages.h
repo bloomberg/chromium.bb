@@ -243,6 +243,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameResizeParams)
   IPC_STRUCT_TRAITS_MEMBER(auto_resize_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(screen_space_rect)
   IPC_STRUCT_TRAITS_MEMBER(local_frame_size)
+  IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::FramePolicy)

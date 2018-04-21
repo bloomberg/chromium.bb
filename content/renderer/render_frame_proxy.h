@@ -134,6 +134,10 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // ScreenInfo has changed.
   void OnScreenInfoChanged(const ScreenInfo& screen_info);
 
+  // Invoked by RenderWidget when a new capture sequence number was set,
+  // indicating that surfaces should be synchronized.
+  void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
+
   // Pass replicated information, such as security origin, to this
   // RenderFrameProxy's WebRemoteFrame.
   void SetReplicatedState(const FrameReplicationState& state);

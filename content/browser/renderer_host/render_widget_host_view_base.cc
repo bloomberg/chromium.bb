@@ -154,6 +154,12 @@ gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() const {
   return GetViewBounds().size();
 }
 
+uint32_t RenderWidgetHostViewBase::GetCaptureSequenceNumber() const {
+  // TODO(vmpstr): Implement this for overrides other than aura and child frame.
+  NOTIMPLEMENTED();
+  return 0u;
+}
+
 ui::TextInputClient* RenderWidgetHostViewBase::GetTextInputClient() {
   NOTREACHED();
   return nullptr;

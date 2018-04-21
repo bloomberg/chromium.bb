@@ -830,6 +830,15 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
           std::move(callback), start_time));
 }
 
+void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForLayoutTest() {
+  ++latest_capture_sequence_number_;
+  WasResized();
+}
+
+uint32_t RenderWidgetHostViewAndroid::GetCaptureSequenceNumber() const {
+  return latest_capture_sequence_number_;
+}
+
 void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
     const gfx::Rect& rect_pixels, const SkBitmap& zoomed_bitmap) {
   if (!tap_disambiguator_)

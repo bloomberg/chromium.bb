@@ -140,11 +140,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetTooltipText(const base::string16& tooltip_text) override;
   void DisplayTooltipText(const base::string16& tooltip_text) override;
   gfx::Size GetRequestedRendererSize() const override;
+  uint32_t GetCaptureSequenceNumber() const override;
   bool IsSurfaceAvailableForCopy() const override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
+  void EnsureSurfaceSynchronizedForLayoutTest() override;
   gfx::Vector2d GetOffsetFromRootSurface() override;
   gfx::Rect GetBoundsInRootWindow() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
@@ -659,6 +661,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   std::unique_ptr<CursorManager> cursor_manager_;
   int tab_show_sequence_ = 0;
+
+  // Latest capture sequence number which is incremented when the caller
+  // requests surfaces be synchronized via
+  // EnsureSurfaceSynchronizedForLayoutTest().
+  uint32_t latest_capture_sequence_number_ = 0u;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 

@@ -429,6 +429,11 @@ class CONTENT_EXPORT RenderWidget
   const gfx::Size& max_size_for_auto_resize() const {
     return max_size_for_auto_resize_;
   }
+
+  uint32_t capture_sequence_number() const {
+    return last_capture_sequence_number_;
+  }
+
   // MainThreadEventQueueClient overrides.
 
   // Requests a BeginMainFrame callback from the compositor.
@@ -900,6 +905,8 @@ class CONTENT_EXPORT RenderWidget
       const gfx::Size& new_compositor_viewport_pixel_size,
       const ScreenInfo& new_screen_info);
 
+  void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
+
   // A variant of Send but is fatal if it fails. The browser may
   // be waiting for this IPC Message and if the send fails the browser will
   // be left in a state waiting for something that never comes. And if it
@@ -992,10 +999,11 @@ class CONTENT_EXPORT RenderWidget
   gfx::Rect viewport_intersection_;
   gfx::Rect compositor_visible_rect_;
 
-  // Cache whether or not we have touch handlers, to reduce IPCs sent.
   // Different consumers in the browser process makes different assumptions, so
   // must always send the first IPC regardless of value.
   base::Optional<bool> has_touch_handlers_;
+
+  uint32_t last_capture_sequence_number_ = 0u;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 

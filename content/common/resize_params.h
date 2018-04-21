@@ -19,11 +19,13 @@ struct CONTENT_EXPORT ResizeParams {
   ResizeParams(const ResizeParams& other);
   ~ResizeParams();
 
+  ResizeParams& operator=(const ResizeParams& other);
+
   // Information about the screen (dpi, depth, etc..).
   ScreenInfo screen_info;
 
   // Whether or not blink should be in auto-resize mode.
-  bool auto_resize_enabled;
+  bool auto_resize_enabled = false;
 
   // The minimum size for Blink if auto-resize is enabled.
   gfx::Size min_size_for_auto_resize;
@@ -34,7 +36,7 @@ struct CONTENT_EXPORT ResizeParams {
   // This variable is increased after each auto-resize. If the
   // renderer receives a ResizeParams with stale auto_resize_seqence_number,
   // then the resize request is dropped.
-  uint64_t auto_resize_sequence_number;
+  uint64_t auto_resize_sequence_number = 0u;
 
   // The size for the widget in DIPs.
   gfx::Size new_size;
@@ -46,18 +48,18 @@ struct CONTENT_EXPORT ResizeParams {
 
   // Whether or not Blink's viewport size should be shrunk by the height of the
   // URL-bar (always false on platforms where URL-bar hiding isn't supported).
-  bool browser_controls_shrink_blink_size;
+  bool browser_controls_shrink_blink_size = false;
 
   // Whether or not the focused node should be scrolled into view after the
   // resize.
-  bool scroll_focused_node_into_view;
+  bool scroll_focused_node_into_view = false;
 
   // The height of the top controls (always 0 on platforms where URL-bar hiding
   // isn't supported).
-  float top_controls_height;
+  float top_controls_height = 0.f;
 
   // The height of the bottom controls.
-  float bottom_controls_height;
+  float bottom_controls_height = 0.f;
 
   // The local surface ID to use (if valid).
   base::Optional<viz::LocalSurfaceId> local_surface_id;
@@ -68,20 +70,25 @@ struct CONTENT_EXPORT ResizeParams {
   gfx::Size visible_viewport_size;
 
   // Indicates whether tab-initiated fullscreen was granted.
-  bool is_fullscreen_granted;
+  bool is_fullscreen_granted = false;
 
   // The display mode.
-  blink::WebDisplayMode display_mode;
+  blink::WebDisplayMode display_mode = blink::kWebDisplayModeUndefined;
 
   // If set, requests the renderer to reply with a
   // ViewHostMsg_ResizeOrRepaint_ACK with the
   // ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK bit set in flags.
-  bool needs_resize_ack;
+  bool needs_resize_ack = false;
 
   // This variable is increased after each cross-document navigation. If the
   // renderer receives a ResizeParams with stale content_source_id, it still
   // performs the resize but doesn't use the given LocalSurfaceId.
-  uint32_t content_source_id;
+  uint32_t content_source_id = 0u;
+
+  // This represents the latest capture sequence number requested. When this is
+  // incremented, that means the caller wants to synchronize surfaces which
+  // should cause a new LocalSurfaceId to be generated.
+  uint32_t capture_sequence_number = 0u;
 };
 
 }  // namespace content

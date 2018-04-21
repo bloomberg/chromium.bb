@@ -24,7 +24,7 @@ struct CONTENT_EXPORT FrameResizeParams {
   ScreenInfo screen_info;
 
   // Whether or not blink should be in auto-resize mode.
-  bool auto_resize_enabled;
+  bool auto_resize_enabled = false;
 
   // The minimum size for Blink if auto-resize is enabled.
   gfx::Size min_size_for_auto_resize;
@@ -35,11 +35,13 @@ struct CONTENT_EXPORT FrameResizeParams {
   // This variable is increased after each auto-resize. If the
   // renderer receives a ResizeParams with stale auto_resize_seqence_number,
   // then the resize request is dropped.
-  uint64_t auto_resize_sequence_number;
+  uint64_t auto_resize_sequence_number = 0u;
 
   gfx::Rect screen_space_rect;
 
   gfx::Size local_frame_size;
+
+  uint32_t capture_sequence_number = 0u;
 };
 
 }  // namespace content

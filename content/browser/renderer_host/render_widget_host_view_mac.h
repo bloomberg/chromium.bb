@@ -131,6 +131,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
+  void EnsureSurfaceSynchronizedForLayoutTest() override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
   void DidCreateNewRendererCompositorFrameSink(

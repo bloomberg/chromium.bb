@@ -197,6 +197,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // when the view requires additional throttling.
   virtual gfx::Size GetRequestedRendererSize() const;
 
+  // Returns the current capture sequence number.
+  virtual uint32_t GetCaptureSequenceNumber() const;
+
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   virtual gfx::Size GetCompositorViewportPixelSize() const;
 
