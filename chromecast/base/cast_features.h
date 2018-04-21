@@ -30,7 +30,7 @@ extern const base::Feature kDisableIdleSocketsCloseOnMemoryPressure;
 
 // Get an iterable list of all of the cast features for checking all features as
 // a collection.
-std::vector<const base::Feature*> GetFeatures();
+const std::vector<const base::Feature*>& GetFeatures();
 
 // Below are utilities needed by the Cast receiver to persist feature
 // information. Client code which is simply querying the status of a feature
@@ -50,7 +50,7 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
                            const std::string& cmd_line_disable_features);
 
 // Determine whether or not a feature is enabled. This replaces
-// base::FeatureList::IsEnabled for Cast builds
+// base::FeatureList::IsEnabled for Cast builds.
 bool IsFeatureEnabled(const base::Feature& feature);
 
 // Given a dictionary of features, create a copy that is ready to be persisted
@@ -64,19 +64,13 @@ base::DictionaryValue GetOverriddenFeaturesForStorage(
 // thread.
 const std::unordered_set<int32_t>& GetDCSExperimentIds();
 
-// Remove all feature registrations. Required for certain test patterns
-void ClearFeaturesForTesting();
-
-// Register a feature. All instances of base::Feature within
-// chromecast should be registered by calling this function.
-void RegisterFeature(const base::Feature* feature);
-
-// Register all known features. For tests only.
-void RegisterFeaturesForTesting();
-
 // Reset static state to ensure clean unittests. For tests only.
 void ResetCastFeaturesForTesting();
 
+// Set the response to GetFeatures(). Calls to this function should
+// be cleaned up by a call to ResetCastFeaturesForTesting() otherwise
+// your test will leak the overridden feature state.
+void SetFeaturesForTest(std::vector<const base::Feature*> features);
 }  // namespace chromecast
 
 #endif  // CHROMECAST_BASE_CAST_FEATURES_H_

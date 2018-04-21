@@ -30,6 +30,7 @@ class CastFeaturesTest : public testing::Test {
 
   // testing::Test implementation:
   void SetUp() override { ResetCastFeaturesForTesting(); }
+  void TearDown() override { ResetCastFeaturesForTesting(); }
 
  private:
   // A field trial list must be created before attempting to create FieldTrials.
@@ -40,8 +41,6 @@ class CastFeaturesTest : public testing::Test {
 };
 
 TEST_F(CastFeaturesTest, EnableDisableMultipleBooleanFeatures) {
-  chromecast::ClearFeaturesForTesting();
-
   // Declare several boolean features.
   base::Feature bool_feature{kTestBooleanFeatureName,
                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -53,10 +52,8 @@ TEST_F(CastFeaturesTest, EnableDisableMultipleBooleanFeatures) {
                                base::FEATURE_ENABLED_BY_DEFAULT};
 
   // Properly register them
-  chromecast::RegisterFeature(&bool_feature);
-  chromecast::RegisterFeature(&bool_feature_2);
-  chromecast::RegisterFeature(&bool_feature_3);
-  chromecast::RegisterFeature(&bool_feature_4);
+  chromecast::SetFeaturesForTest(
+      {&bool_feature, &bool_feature_2, &bool_feature_3, &bool_feature_4});
 
   // Override those features with DCS configs.
   auto experiments = std::make_unique<base::ListValue>();
@@ -77,11 +74,10 @@ TEST_F(CastFeaturesTest, EnableDisableMultipleBooleanFeatures) {
 }
 
 TEST_F(CastFeaturesTest, EnableSingleFeatureWithParams) {
-  chromecast::ClearFeaturesForTesting();
   // Define a feature with params.
   base::Feature test_feature{kTestParamsFeatureName,
                              base::FEATURE_DISABLED_BY_DEFAULT};
-  chromecast::RegisterFeature(&test_feature);
+  chromecast::SetFeaturesForTest({&test_feature});
 
   // Pass params via DCS.
   auto experiments = std::make_unique<base::ListValue>();
@@ -114,7 +110,6 @@ TEST_F(CastFeaturesTest, EnableSingleFeatureWithParams) {
 }
 
 TEST_F(CastFeaturesTest, CommandLineOverridesDcsAndDefault) {
-  chromecast::ClearFeaturesForTesting();
   // Declare several boolean features.
   base::Feature bool_feature{kTestBooleanFeatureName,
                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -124,12 +119,6 @@ TEST_F(CastFeaturesTest, CommandLineOverridesDcsAndDefault) {
                                base::FEATURE_DISABLED_BY_DEFAULT};
   base::Feature bool_feature_4{kTestBooleanFeatureName4,
                                base::FEATURE_ENABLED_BY_DEFAULT};
-
-  // Properly register them
-  chromecast::RegisterFeature(&bool_feature);
-  chromecast::RegisterFeature(&bool_feature_2);
-  chromecast::RegisterFeature(&bool_feature_3);
-  chromecast::RegisterFeature(&bool_feature_4);
 
   // Override those features with DCS configs.
   auto experiments = std::make_unique<base::ListValue>();
@@ -142,7 +131,9 @@ TEST_F(CastFeaturesTest, CommandLineOverridesDcsAndDefault) {
   // Also override a param feature with DCS config.
   base::Feature params_feature{kTestParamsFeatureName,
                                base::FEATURE_ENABLED_BY_DEFAULT};
-  chromecast::RegisterFeature(&params_feature);
+  chromecast::SetFeaturesForTest({&bool_feature, &bool_feature_2,
+                                  &bool_feature_3, &bool_feature_4,
+                                  &params_feature});
 
   auto params = std::make_unique<base::DictionaryValue>();
   params->SetString("foo_key", "foo");
@@ -175,7 +166,6 @@ TEST_F(CastFeaturesTest, CommandLineOverridesDcsAndDefault) {
 }
 
 TEST_F(CastFeaturesTest, SetEmptyExperiments) {
-  chromecast::ClearFeaturesForTesting();
   // Override those features with DCS configs.
   auto experiments = std::make_unique<base::ListValue>();
   auto features = std::make_unique<base::DictionaryValue>();
@@ -201,7 +191,6 @@ TEST_F(CastFeaturesTest, SetGoodExperiments) {
 }
 
 TEST_F(CastFeaturesTest, SetSomeGoodExperiments) {
-  chromecast::ClearFeaturesForTesting();
   // Override those features with DCS configs.
   auto experiments = std::make_unique<base::ListValue>();
   auto features = std::make_unique<base::DictionaryValue>();
@@ -220,7 +209,6 @@ TEST_F(CastFeaturesTest, SetSomeGoodExperiments) {
 }
 
 TEST_F(CastFeaturesTest, SetAllBadExperiments) {
-  chromecast::ClearFeaturesForTesting();
   // Override those features with DCS configs.
   auto experiments = std::make_unique<base::ListValue>();
   auto features = std::make_unique<base::DictionaryValue>();
