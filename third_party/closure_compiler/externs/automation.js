@@ -278,6 +278,7 @@ chrome.automation.TreeChangeType = {
   NODE_CHANGED: 'nodeChanged',
   TEXT_CHANGED: 'textChanged',
   NODE_REMOVED: 'nodeRemoved',
+  SUBTREE_UPDATE_END: 'subtreeUpdateEnd',
 };
 
 /**

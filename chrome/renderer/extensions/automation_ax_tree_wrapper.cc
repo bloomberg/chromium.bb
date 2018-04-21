@@ -202,8 +202,15 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     if (!tree_.Unserialize(params.update))
       return false;
 
-    if (is_active_profile)
+    if (is_active_profile) {
       owner_->SendNodesRemovedEvent(&tree_, deleted_node_ids_);
+
+      ui::AXNode* target = tree_.GetFromId(params.id);
+      if (target) {
+        owner_->SendTreeChangeEvent(
+            api::automation::TREE_CHANGE_TYPE_SUBTREEUPDATEEND, &tree_, target);
+      }
+    }
   }
 
   // Exit early if this isn't the active profile.

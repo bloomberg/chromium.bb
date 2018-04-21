@@ -108,7 +108,7 @@ BackgroundTest.prototype = {
       <p>After2</p>
       <p>After3</p>
     </div>
-    <div id="live" aria-live="polite"></div>
+    <div id="live" aria-live="assertive"></div>
     <div id="delete" role="button">Delete</div>
     <script>
       document.getElementById('delete').addEventListener('click', function() {
@@ -1343,7 +1343,7 @@ TEST_F('BackgroundTest', 'TextSelectionAndLiveRegion', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <div><input value="test" type="text"></input></div>
-    <div id="live" aria-live="polite"></div>
+    <div id="live" aria-live="assertive"></div>
     <script>
       const input = document.querySelector('input');
       const [div, live] = document.querySelectorAll('div');
