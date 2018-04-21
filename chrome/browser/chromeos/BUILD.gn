@@ -509,6 +509,8 @@ source_set("chromeos") {
     "crostini/crostini_registry_service.h",
     "crostini/crostini_registry_service_factory.cc",
     "crostini/crostini_registry_service_factory.h",
+    "crostini/crostini_util.cc",
+    "crostini/crostini_util.h",
     "cryptauth/chrome_cryptauth_service.cc",
     "cryptauth/chrome_cryptauth_service.h",
     "cryptauth/chrome_cryptauth_service_factory.cc",
