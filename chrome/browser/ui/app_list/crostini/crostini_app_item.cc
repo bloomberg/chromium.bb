@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 // static
 const char CrostiniAppItem::kItemType[] = "CrostiniAppItem";
@@ -24,7 +26,9 @@ CrostiniAppItem::CrostiniAppItem(
     const std::string& name,
     const gfx::ImageSkia* image_skia)
     : ChromeAppListItem(profile, id) {
-  SetIcon(*image_skia);
+  SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
+      *image_skia, skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(app_list::kTileIconSize, app_list::kTileIconSize)));
   SetName(name);
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     UpdateFromSync(sync_item);
