@@ -127,6 +127,7 @@ const char kShowDefaultPosterCSSClass[] = "use-default-poster";
 const char kActAsAudioControlsCSSClass[] = "audio-only";
 const char kScrubbingMessageCSSClass[] = "scrubbing-message";
 const char kTestModeCSSClass[] = "test-mode";
+const char kImmersiveModeCSSClass[] = "immersive-mode";
 
 bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   // Unconditionally allow the user to exit fullscreen if we are in it
@@ -686,6 +687,12 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
   if (is_acting_as_audio_controls_) {
     builder.Append(" ");
     builder.Append(kActAsAudioControlsCSSClass);
+  }
+
+  if (ShouldShowVideoControls() && GetDocument().GetSettings() &&
+      GetDocument().GetSettings()->GetImmersiveModeEnabled()) {
+    builder.Append(" ");
+    builder.Append(kImmersiveModeCSSClass);
   }
 
   if (is_test_mode_) {

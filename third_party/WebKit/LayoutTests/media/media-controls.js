@@ -512,3 +512,14 @@ function enableTestMode(video) {
   if (window.internals)
     window.internals.setMediaControlsTestMode(video, true);
 }
+
+function enableImmersiveMode(t) {
+  if (!window.internals)
+    return;
+
+  const oldImmersive = internals.settings.immersiveModeEnabled;
+  internals.settings.setImmersiveModeEnabled(true);
+  t.add_cleanup(() => {
+    window.internals.settings.setImmersiveModeEnabled(oldImmersive);
+  });
+}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<title>Test that enabling immersive mode adds the immersive mode CSS class.</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../media-controls.js"></script>
+<video controls width=400 preload=metadata src="../../content/60_sec_video.webm"></video>
+<script>
+async_test(t => {
+  const video = document.querySelector('video');
+  const controls = mediaControls(video);
+  const immersiveModeCSSClass = "immersive-mode";
+
+  window.onload = t.step_func_done(() => {
+    assert_false(controls.classList.contains(immersiveModeCSSClass));
+    enableImmersiveMode(t);
+    assert_true(controls.classList.contains(immersiveModeCSSClass));
+  });
+});
+</script>
+</html>
