@@ -15,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/stl_util.h"
 #include "storage/browser/quota/quota_client.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -23,7 +24,7 @@ class GURL;
 namespace storage {
 
 struct UsageInfo;
-typedef std::vector<UsageInfo> UsageInfoEntries;
+using UsageInfoEntries = std::vector<UsageInfo>;
 
 // Common callback types that are used throughout in the quota module.
 using GlobalUsageCallback =
@@ -90,7 +91,7 @@ class CallbackQueueMap {
   }
 
   bool HasCallbacks(const Key& key) const {
-    return (callback_map_.find(key) != callback_map_.end());
+    return base::ContainsKey(callback_map_, key);
   }
 
   bool HasAnyCallbacks() const {

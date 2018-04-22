@@ -25,7 +25,7 @@ namespace storage {
 class STORAGE_EXPORT SpecialStoragePolicy
     : public base::RefCountedThreadSafe<SpecialStoragePolicy> {
  public:
-  typedef int StoragePolicy;
+  using StoragePolicy = int;
   enum ChangeFlags {
     STORAGE_PROTECTED = 1 << 0,
     STORAGE_UNLIMITED = 1 << 1,

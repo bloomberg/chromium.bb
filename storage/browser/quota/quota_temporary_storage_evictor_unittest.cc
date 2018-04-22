@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
@@ -75,9 +76,8 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
 
   int64_t GetUsage() const {
     int64_t total_usage = 0;
-    for (std::map<GURL, int64_t>::const_iterator p = origins_.begin();
-         p != origins_.end(); ++p)
-      total_usage += p->second;
+    for (const auto& origin_usage_pair : origins_)
+      total_usage += origin_usage_pair.second;
     return total_usage;
   }
 
@@ -105,7 +105,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
   // Simulates an access to |origin|.  It reorders the internal LRU list.
   // It internally uses AddOrigin().
   void AccessOrigin(const GURL& origin) {
-    std::map<GURL, int64_t>::iterator found = origins_.find(origin);
+    const auto& found = origins_.find(origin);
     EXPECT_TRUE(origins_.end() != found);
     AddOrigin(origin, found->second);
   }
@@ -122,7 +122,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
  private:
   int64_t EnsureOriginRemoved(const GURL& origin) {
     int64_t origin_usage;
-    if (origins_.find(origin) == origins_.end())
+    if (!base::ContainsKey(origins_, origin))
       return -1;
     else
       origin_usage = origins_[origin];

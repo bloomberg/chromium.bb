@@ -27,17 +27,17 @@ StorageObserverList::~StorageObserverList() = default;
 
 void StorageObserverList::AddObserver(
     StorageObserver* observer, const StorageObserver::MonitorParams& params) {
-  ObserverState& observer_state = observers_[observer];
+  ObserverState& observer_state = observer_state_map_[observer];
   observer_state.origin = params.filter.origin;
   observer_state.rate = params.rate;
 }
 
 void StorageObserverList::RemoveObserver(StorageObserver* observer) {
-  observers_.erase(observer);
+  observer_state_map_.erase(observer);
 }
 
 int StorageObserverList::ObserverCount() const {
-  return observers_.size();
+  return observer_state_map_.size();
 }
 
 void StorageObserverList::OnStorageChange(const StorageObserver::Event& event) {
@@ -45,10 +45,8 @@ void StorageObserverList::OnStorageChange(const StorageObserver::Event& event) {
   TRACE_EVENT0("io",
                "HostStorageObserversStorageObserverList::OnStorageChange");
 
-  for (StorageObserverStateMap::iterator it = observers_.begin();
-       it != observers_.end(); ++it) {
-    it->second.requires_update = true;
-  }
+  for (auto& observer_state_pair : observer_state_map_)
+    observer_state_pair.second.requires_update = true;
 
   MaybeDispatchEvent(event);
 }
@@ -62,24 +60,25 @@ void StorageObserverList::MaybeDispatchEvent(
   base::TimeDelta min_delay = base::TimeDelta::Max();
   bool all_observers_notified = true;
 
-  for (StorageObserverStateMap::iterator it = observers_.begin();
-       it != observers_.end(); ++it) {
-    if (!it->second.requires_update)
+  for (auto& observer_state_pair : observer_state_map_) {
+    StorageObserver* observer = observer_state_pair.first;
+    ObserverState& state = observer_state_pair.second;
+
+    if (!state.requires_update)
       continue;
 
     base::TimeTicks current_time = base::TimeTicks::Now();
-    base::TimeDelta delta = current_time - it->second.last_notification_time;
-    if (it->second.last_notification_time.is_null() ||
-        delta >= it->second.rate) {
-      it->second.requires_update = false;
-      it->second.last_notification_time = current_time;
+    base::TimeDelta delta = current_time - state.last_notification_time;
+    if (state.last_notification_time.is_null() || delta >= state.rate) {
+      state.requires_update = false;
+      state.last_notification_time = current_time;
 
-      if (it->second.origin == event.filter.origin) {
+      if (state.origin == event.filter.origin) {
         // crbug.com/349708
         TRACE_EVENT0("io",
                      "StorageObserverList::MaybeDispatchEvent OnStorageEvent1");
 
-        it->first->OnStorageEvent(event);
+        observer->OnStorageEvent(event);
       } else {
         // When the quota and usage of an origin is requested, QuotaManager
         // returns the quota and usage of the host. Multiple origins can map to
@@ -87,17 +86,17 @@ void StorageObserverList::MaybeDispatchEvent(
         // event matches the |origin| specified by the observer when it was
         // registered.
         StorageObserver::Event dispatch_event(event);
-        dispatch_event.filter.origin = it->second.origin;
+        dispatch_event.filter.origin = state.origin;
 
         // crbug.com/349708
         TRACE_EVENT0("io",
                      "StorageObserverList::MaybeDispatchEvent OnStorageEvent2");
 
-        it->first->OnStorageEvent(dispatch_event);
+        observer->OnStorageEvent(dispatch_event);
       }
     } else {
       all_observers_notified = false;
-      base::TimeDelta delay = it->second.rate - delta;
+      base::TimeDelta delay = state.rate - delta;
       if (delay < min_delay)
         min_delay = delay;
     }
@@ -118,8 +117,8 @@ void StorageObserverList::MaybeDispatchEvent(
 }
 
 void StorageObserverList::ScheduleUpdateForObserver(StorageObserver* observer) {
-  DCHECK(base::ContainsKey(observers_, observer));
-  observers_[observer].requires_update = true;
+  DCHECK(base::ContainsKey(observer_state_map_, observer));
+  observer_state_map_[observer].requires_update = true;
 }
 
 void StorageObserverList::DispatchPendingEvent() {
@@ -324,10 +323,8 @@ void StorageMonitor::AddObserver(
 }
 
 void StorageMonitor::RemoveObserver(StorageObserver* observer) {
-  for (auto it = storage_type_observers_map_.begin();
-       it != storage_type_observers_map_.end(); ++it) {
-    it->second->RemoveObserver(observer);
-  }
+  for (auto& type_observers_pair : storage_type_observers_map_)
+    type_observers_pair.second->RemoveObserver(observer);
 }
 
 const StorageTypeObservers* StorageMonitor::GetStorageTypeObservers(

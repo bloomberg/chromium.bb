@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/url_util.h"
@@ -128,10 +129,8 @@ class StorageMonitorTestBase : public testing::Test {
 
   int GetRequiredUpdatesCount(const StorageObserverList& observer_list) {
     int count = 0;
-    for (StorageObserverList::StorageObserverStateMap::const_iterator it =
-            observer_list.observers_.begin();
-         it != observer_list.observers_.end(); ++it) {
-      if (it->second.requires_update)
+    for (const auto& observer_state_pair : observer_list.observer_state_map_) {
+      if (observer_state_pair.second.requires_update)
         ++count;
     }
 
@@ -144,11 +143,9 @@ class StorageMonitorTestBase : public testing::Test {
 
   void SetLastNotificationTime(StorageObserverList& observer_list,
                                StorageObserver* observer) {
-    ASSERT_TRUE(observer_list.observers_.find(observer) !=
-                observer_list.observers_.end());
-
+    ASSERT_TRUE(base::ContainsKey(observer_list.observer_state_map_, observer));
     StorageObserverList::ObserverState& state =
-        observer_list.observers_[observer];
+        observer_list.observer_state_map_[observer];
     state.last_notification_time = base::TimeTicks::Now() - state.rate;
   }
 
@@ -184,7 +181,7 @@ class StorageTestWithManagerBase : public StorageMonitorTestBase {
 
 // Tests for StorageObserverList:
 
-typedef StorageMonitorTestBase StorageObserverListTest;
+using StorageObserverListTest = StorageMonitorTestBase;
 
 // Test dispatching events to one observer.
 TEST_F(StorageObserverListTest, DispatchEventToSingleObserver) {
@@ -309,7 +306,7 @@ TEST_F(StorageObserverListTest, ReplaceEventOrigin) {
 
 // Tests for HostStorageObservers:
 
-typedef StorageTestWithManagerBase HostStorageObserversTest;
+using HostStorageObserversTest = StorageTestWithManagerBase;
 
 // Verify that HostStorageObservers is initialized after the first usage change.
 TEST_F(HostStorageObserversTest, InitializeOnUsageChange) {
@@ -487,7 +484,7 @@ TEST_F(HostStorageObserversTest, AsyncInitialization) {
 
 // Tests for StorageTypeObservers:
 
-typedef StorageTestWithManagerBase StorageTypeObserversTest;
+using StorageTypeObserversTest = StorageTestWithManagerBase;
 
 // Test adding and removing observers.
 TEST_F(StorageTypeObserversTest, AddRemoveObservers) {

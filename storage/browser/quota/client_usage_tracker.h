@@ -73,12 +73,9 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   using HostUsageMap = std::map<std::string, UsageMap>;
 
   struct AccumulateInfo {
-    int pending_jobs;
-    int64_t limited_usage;
-    int64_t unlimited_usage;
-
-    AccumulateInfo()
-        : pending_jobs(0), limited_usage(0), unlimited_usage(0) {}
+    int pending_jobs = 0;
+    int64_t limited_usage = 0;
+    int64_t unlimited_usage = 0;
   };
 
   void AccumulateLimitedOriginUsage(AccumulateInfo* info,

@@ -80,9 +80,9 @@ url::Origin ToOrigin(const std::string& url) {
 
 class QuotaManagerTest : public testing::Test {
  protected:
-  typedef QuotaManager::QuotaTableEntry QuotaTableEntry;
-  typedef QuotaManager::QuotaTableEntries QuotaTableEntries;
-  typedef QuotaManager::OriginInfoTableEntries OriginInfoTableEntries;
+  using QuotaTableEntry = QuotaManager::QuotaTableEntry;
+  using QuotaTableEntries = QuotaManager::QuotaTableEntries;
+  using OriginInfoTableEntries = QuotaManager::OriginInfoTableEntries;
 
  public:
   QuotaManagerTest()
@@ -1484,12 +1484,9 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   DumpOriginInfoTable();
   scoped_task_environment_.RunUntilIdle();
 
-  typedef OriginInfoTableEntries::const_iterator iterator;
-  for (iterator itr(origin_info_entries().begin()),
-                end(origin_info_entries().end());
-       itr != end; ++itr) {
-    if (itr->type == kTemp)
-      EXPECT_NE(std::string("http://foo.com/"), itr->origin.spec());
+  for (const auto& entry : origin_info_entries()) {
+    if (entry.type == kTemp)
+      EXPECT_NE(std::string("http://foo.com/"), entry.origin.spec());
   }
 
   GetGlobalUsage(kTemp);
@@ -1613,11 +1610,8 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
   scoped_task_environment_.RunUntilIdle();
 
   bool found_origin_in_database = false;
-  typedef OriginInfoTableEntries::const_iterator iterator;
-  for (iterator itr(origin_info_entries().begin()),
-                end(origin_info_entries().end());
-       itr != end; ++itr) {
-    if (itr->type == kTemp && itr->origin == "http://foo.com/") {
+  for (const auto& entry : origin_info_entries()) {
+    if (entry.type == kTemp && entry.origin == "http://foo.com/") {
       found_origin_in_database = true;
       break;
     }
@@ -1785,16 +1779,14 @@ TEST_F(QuotaManagerTest, DeleteHostDataMultiple) {
   DumpOriginInfoTable();
   scoped_task_environment_.RunUntilIdle();
 
-  typedef OriginInfoTableEntries::const_iterator iterator;
-  for (iterator itr(origin_info_entries().begin()),
-                end(origin_info_entries().end());
-       itr != end; ++itr) {
-    if (itr->type == kTemp) {
-      EXPECT_NE(std::string("http://foo.com/"), itr->origin.spec());
-      EXPECT_NE(std::string("http://foo.com:1/"), itr->origin.spec());
-      EXPECT_NE(std::string("https://foo.com/"), itr->origin.spec());
-      EXPECT_NE(std::string("http://bar.com/"), itr->origin.spec());
-    }
+  for (const auto& entry : origin_info_entries()) {
+    if (entry.type != kTemp)
+      continue;
+
+    EXPECT_NE(std::string("http://foo.com/"), entry.origin.spec());
+    EXPECT_NE(std::string("http://foo.com:1/"), entry.origin.spec());
+    EXPECT_NE(std::string("https://foo.com/"), entry.origin.spec());
+    EXPECT_NE(std::string("http://bar.com/"), entry.origin.spec());
   }
 
   GetGlobalUsage(kTemp);
@@ -1881,14 +1873,12 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
   DumpOriginInfoTable();
   scoped_task_environment_.RunUntilIdle();
 
-  typedef OriginInfoTableEntries::const_iterator iterator;
-  for (iterator itr(origin_info_entries().begin()),
-                end(origin_info_entries().end());
-       itr != end; ++itr) {
-    if (itr->type == kTemp) {
-      EXPECT_NE(std::string("http://foo.com/"), itr->origin.spec());
-      EXPECT_NE(std::string("http://bar.com/"), itr->origin.spec());
-    }
+  for (const auto& entry : origin_info_entries()) {
+    if (entry.type != kTemp)
+      continue;
+
+    EXPECT_NE(std::string("http://foo.com/"), entry.origin.spec());
+    EXPECT_NE(std::string("http://bar.com/"), entry.origin.spec());
   }
 
   GetGlobalUsage(kTemp);
@@ -1954,7 +1944,7 @@ TEST_F(QuotaManagerTest, GetCachedOrigins) {
 
   for (size_t i = 0; i < arraysize(kData); ++i) {
     if (kData[i].type == kTemp)
-      EXPECT_TRUE(origins.find(GURL(kData[i].origin)) != origins.end());
+      EXPECT_TRUE(base::ContainsKey(origins, GURL(kData[i].origin)));
   }
 }
 
@@ -2122,13 +2112,10 @@ TEST_F(QuotaManagerTest, DumpQuotaTable) {
   };
   std::set<QuotaTableEntry> entries(kEntries, kEntries + arraysize(kEntries));
 
-  typedef QuotaTableEntries::const_iterator iterator;
-  for (iterator itr(quota_entries().begin()), end(quota_entries().end());
-       itr != end; ++itr) {
-    SCOPED_TRACE(testing::Message()
-                 << "host = " << itr->host << ", "
-                 << "quota = " << itr->quota);
-    EXPECT_EQ(1u, entries.erase(*itr));
+  for (const auto& quota_entry : quota_entries()) {
+    SCOPED_TRACE(testing::Message() << "host = " << quota_entry.host << ", "
+                                    << "quota = " << quota_entry.quota);
+    EXPECT_EQ(1u, entries.erase(quota_entry));
   }
   EXPECT_TRUE(entries.empty());
 }
@@ -2153,25 +2140,22 @@ TEST_F(QuotaManagerTest, DumpOriginInfoTable) {
   DumpOriginInfoTable();
   scoped_task_environment_.RunUntilIdle();
 
-  typedef std::pair<GURL, StorageType> TypedOrigin;
-  typedef std::pair<TypedOrigin, int> Entry;
+  using TypedOrigin = std::pair<GURL, StorageType>;
+  using Entry = std::pair<TypedOrigin, int>;
   const Entry kEntries[] = {
     make_pair(make_pair(GURL("http://example.com/"), kTemp), 1),
     make_pair(make_pair(GURL("http://example.com/"), kPerm), 2),
   };
   std::set<Entry> entries(kEntries, kEntries + arraysize(kEntries));
 
-  typedef OriginInfoTableEntries::const_iterator iterator;
-  for (iterator itr(origin_info_entries().begin()),
-                end(origin_info_entries().end());
-       itr != end; ++itr) {
+  for (const auto& origin_info : origin_info_entries()) {
     SCOPED_TRACE(testing::Message()
-                 << "host = " << itr->origin << ", "
-                 << "type = " << static_cast<int>(itr->type) << ", "
-                 << "used_count = " << itr->used_count);
+                 << "host = " << origin_info.origin << ", "
+                 << "type = " << static_cast<int>(origin_info.type) << ", "
+                 << "used_count = " << origin_info.used_count);
     EXPECT_EQ(1u, entries.erase(
-        make_pair(make_pair(itr->origin, itr->type),
-                  itr->used_count)));
+                      make_pair(make_pair(origin_info.origin, origin_info.type),
+                                origin_info.used_count)));
   }
   EXPECT_TRUE(entries.empty());
 }
