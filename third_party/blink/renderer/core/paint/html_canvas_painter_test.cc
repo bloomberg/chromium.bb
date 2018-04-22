@@ -53,7 +53,6 @@ class HTMLCanvasPainterTestForSPv2 : public PaintControllerPaintTest {
 
   FrameSettingOverrideFunction SettingOverrider() const override {
     return [](Settings& settings) {
-      settings.SetAcceleratedCompositingEnabled(true);
       // LayoutHTMLCanvas doesn't exist if script is disabled.
       settings.SetScriptEnabled(true);
     };

@@ -529,7 +529,6 @@ TEST_P(FrameThrottlingTest, ChangeOriginInThrottledFrame) {
 
 TEST_P(FrameThrottlingTest, ThrottledFrameWithFocus) {
   WebView().GetSettings()->SetJavaScriptEnabled(true);
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   ScopedCompositedSelectionUpdateForTest composited_selection_update(true);
 
   // Create a hidden frame which is throttled and has a text selection.
@@ -570,8 +569,6 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
   // TODO(crbug.com/809638): Make this test pass for SPv2.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
-
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
 
   // Create a hidden frame which is throttled.
   SimRequest main_resource("https://example.com/", "text/html");
@@ -637,7 +634,6 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
 
 TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
   WebView().GetSettings()->SetJavaScriptEnabled(true);
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 
   // Create a hidden frame which is throttled and has a touch handler inside a
@@ -684,7 +680,6 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
 
 TEST_P(FrameThrottlingTest,
        ScrollingCoordinatorShouldSkipCompositedThrottledFrame) {
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 
   // Create a hidden frame which is throttled.
@@ -736,8 +731,6 @@ TEST_P(FrameThrottlingTest,
 }
 
 TEST_P(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout) {
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
-
   // Create a hidden frame which is throttled.
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
@@ -768,7 +761,6 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   WebView().GetSettings()->SetJavaScriptEnabled(true);
   EXPECT_EQ(0u, TouchHandlerRegionSize());
 
@@ -809,7 +801,6 @@ TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   WebView().GetSettings()->SetJavaScriptEnabled(true);
   EXPECT_EQ(0u, TouchHandlerRegionSize());
 
@@ -878,7 +869,6 @@ TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 
   // Create a hidden frame which is throttled.
@@ -915,7 +905,6 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 
   // Create a hidden frame which is throttled.
@@ -1061,7 +1050,6 @@ TEST_P(FrameThrottlingTest, ThrottleSubtreeAtomically) {
 }
 
 TEST_P(FrameThrottlingTest, SkipPaintingLayersInThrottledFrames) {
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 
   SimRequest main_resource("https://example.com/", "text/html");

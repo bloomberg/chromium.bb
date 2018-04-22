@@ -170,7 +170,6 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
     </div>
   )HTML");
 
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   GetDocument().View()->SetParentVisible(true);
   GetDocument().View()->SetSelfVisible(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -246,7 +245,6 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
     </div>
   )HTML");
 
-  WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
   GetDocument().View()->SetParentVisible(true);
   GetDocument().View()->SetSelfVisible(true);
   GetDocument().View()->UpdateAllLifecyclePhases();

@@ -83,7 +83,6 @@ class BrowserControlsTest : public testing::Test {
 
   static void ConfigureSettings(WebSettings* settings) {
     settings->SetJavaScriptEnabled(true);
-    settings->SetAcceleratedCompositingEnabled(true);
     settings->SetPreferCompositingToLCDTextEnabled(true);
     // Android settings
     settings->SetViewportEnabled(true);

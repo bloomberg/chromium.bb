@@ -1020,29 +1020,22 @@ void WebFrameWidgetImpl::InitializeLayerTreeView() {
   DCHECK(Client());
   DCHECK(!mutator_);
   layer_tree_view_ = Client()->InitializeLayerTreeView();
-  if (layer_tree_view_ && layer_tree_view_->CompositorAnimationHost()) {
+  DCHECK(layer_tree_view_);
+  if (layer_tree_view_->CompositorAnimationHost()) {
     animation_host_ = std::make_unique<CompositorAnimationHost>(
         layer_tree_view_->CompositorAnimationHost());
   }
 
-  GetPage()->GetSettings().SetAcceleratedCompositingEnabled(layer_tree_view_);
-  if (layer_tree_view_) {
-    GetPage()->LayerTreeViewInitialized(*layer_tree_view_,
-                                        LocalRootImpl()->GetFrame()->View());
+  GetPage()->LayerTreeViewInitialized(*layer_tree_view_,
+                                      LocalRootImpl()->GetFrame()->View());
 
-    // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
-    // This is okay because it is only necessarily to set the trigger to false
-    // for certain cases that affect the top-level frame, but it would be better
-    // to be consistent with the top-level frame. Ideally the logic should
-    // be moved from WebViewImpl into WebFrameWidget and used for all local
-    // frame roots. https://crbug.com/712794
-    layer_tree_view_->HeuristicsForGpuRasterizationUpdated(true);
-  }
-
-  // FIXME: only unittests, click to play, Android priting, and printing (for
-  // headers and footers) make this assert necessary. We should make them not
-  // hit this code and then delete allowsBrokenNullLayerTreeView.
-  DCHECK(layer_tree_view_ || Client()->AllowsBrokenNullLayerTreeView());
+  // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
+  // This is okay because it is only necessarily to set the trigger to false
+  // for certain cases that affect the top-level frame, but it would be better
+  // to be consistent with the top-level frame. Ideally the logic should
+  // be moved from WebViewImpl into WebFrameWidget and used for all local
+  // frame roots. https://crbug.com/712794
+  layer_tree_view_->HeuristicsForGpuRasterizationUpdated(true);
 }
 
 void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
