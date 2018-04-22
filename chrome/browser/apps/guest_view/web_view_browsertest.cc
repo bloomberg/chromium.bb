@@ -4729,3 +4729,21 @@ IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest,
       &cookie_is_correct));
   EXPECT_TRUE(cookie_is_correct);
 }
+
+// Sends an auto-resize message to the RenderWidgetHost and ensures that the
+// auto-resize transaction is handled and produces a single response message
+// from guest to embedder.
+IN_PROC_BROWSER_TEST_P(WebViewTest, AutoResizeMessages) {
+  LoadAppWithGuest("web_view/simple");
+  content::WebContents* embedder = GetEmbedderWebContents();
+  content::WebContents* guest = GetGuestWebContents();
+  bool is_guest =
+      !base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames);
+
+  // Helper function as this test requires inspecting a number of content::
+  // internal objects.
+  EXPECT_TRUE(content::TestChildOrGuestAutoresize(
+      is_guest,
+      embedder->GetRenderWidgetHostView()->GetRenderWidgetHost()->GetProcess(),
+      guest->GetRenderWidgetHostView()->GetRenderWidgetHost()));
+}

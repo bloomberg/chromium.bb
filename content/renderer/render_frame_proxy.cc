@@ -258,7 +258,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 void RenderFrameProxy::ResendResizeParams() {
   // Reset |sent_resize_params_| in order to allocate a new viz::LocalSurfaceId.
   sent_resize_params_ = base::nullopt;
-  WasResized();
+  WasResized(viz::LocalSurfaceId());
 }
 
 void RenderFrameProxy::WillBeginCompositorFrame() {
@@ -280,13 +280,13 @@ void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
                                         screen_info.device_scale_factor);
     return;
   }
-  WasResized();
+  WasResized(viz::LocalSurfaceId());
 }
 
 void RenderFrameProxy::UpdateCaptureSequenceNumber(
     uint32_t capture_sequence_number) {
   pending_resize_params_.capture_sequence_number = capture_sequence_number;
-  WasResized();
+  WasResized(viz::LocalSurfaceId());
 }
 
 void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
@@ -423,10 +423,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
-    IPC_MESSAGE_HANDLER(FrameMsg_BeginResizeDueToAutoResize,
-                        OnBeginResizeDueToAutoResize)
-    IPC_MESSAGE_HANDLER(FrameMsg_EndResizeDueToAutoResize,
-                        OnEndResizeDueToAutoResize)
+    IPC_MESSAGE_HANDLER(FrameMsg_ResizeDueToAutoResize, OnResizeDueToAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableAutoResize, OnEnableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_DisableAutoResize, OnDisableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
@@ -573,16 +570,11 @@ void RenderFrameProxy::OnScrollRectToVisible(
   web_frame_->ScrollRectToVisible(rect_to_scroll, params);
 }
 
-void RenderFrameProxy::OnBeginResizeDueToAutoResize() {
-  DCHECK(!transaction_pending_);
-  transaction_pending_ = true;
-}
-
-void RenderFrameProxy::OnEndResizeDueToAutoResize(uint64_t sequence_number) {
-  DCHECK(transaction_pending_);
-  transaction_pending_ = false;
+void RenderFrameProxy::OnResizeDueToAutoResize(
+    uint64_t sequence_number,
+    viz::LocalSurfaceId child_allocated_surface_id) {
   pending_resize_params_.auto_resize_sequence_number = sequence_number;
-  WasResized();
+  WasResized(child_allocated_surface_id);
 }
 
 void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
@@ -590,12 +582,12 @@ void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
   pending_resize_params_.auto_resize_enabled = true;
   pending_resize_params_.min_size_for_auto_resize = min_size;
   pending_resize_params_.max_size_for_auto_resize = max_size;
-  WasResized();
+  WasResized(viz::LocalSurfaceId());
 }
 
 void RenderFrameProxy::OnDisableAutoResize() {
   pending_resize_params_.auto_resize_enabled = false;
-  WasResized();
+  WasResized(viz::LocalSurfaceId());
 }
 
 #if defined(USE_AURA)
@@ -605,8 +597,9 @@ void RenderFrameProxy::SetMusEmbeddedFrame(
 }
 #endif
 
-void RenderFrameProxy::WasResized() {
-  if (!frame_sink_id_.is_valid() || crashed_ || transaction_pending_)
+void RenderFrameProxy::WasResized(
+    const viz::LocalSurfaceId& child_allocated_surface_id) {
+  if (!frame_sink_id_.is_valid() || crashed_)
     return;
 
   // Note that the following flag is true if the capture sequence number
@@ -616,6 +609,28 @@ void RenderFrameProxy::WasResized() {
   bool capture_sequence_number_changed =
       sent_resize_params_ && sent_resize_params_->capture_sequence_number !=
                                  pending_resize_params_.capture_sequence_number;
+
+  // TODO(ericrk): Once we short-circuit responses to child allocated surface
+  // IDs, we can remove |surface_id_changed| here and simply update.
+  // https://crbug.com/811944
+  bool surface_id_changed = false;
+  if (child_allocated_surface_id.is_valid()) {
+    viz::LocalSurfaceId previous_id = local_surface_id_;
+    local_surface_id_ = parent_local_surface_id_allocator_.UpdateFromChild(
+        child_allocated_surface_id);
+    surface_id_changed = previous_id != local_surface_id_;
+  }
+
+  // We no longer use auto resize sequence numbers to trigger ID generation,
+  // instead getting auto resize IDs from the child. If our auto-resize
+  // sequence number changed our surface ID must change as well.
+  // TODO(ericrk): Once we short-circuit, we can remove references to sequence
+  // numbers and clean this up. https://crbug.com/811944.
+  if (sent_resize_params_ &&
+      sent_resize_params_->auto_resize_sequence_number !=
+          pending_resize_params_.auto_resize_sequence_number) {
+    DCHECK(surface_id_changed);
+  }
 
   bool synchronized_params_changed =
       !sent_resize_params_ ||
@@ -630,8 +645,6 @@ void RenderFrameProxy::WasResized() {
       sent_resize_params_->screen_space_rect.size() !=
           pending_resize_params_.screen_space_rect.size() ||
       sent_resize_params_->screen_info != pending_resize_params_.screen_info ||
-      sent_resize_params_->auto_resize_sequence_number !=
-          pending_resize_params_.auto_resize_sequence_number ||
       capture_sequence_number_changed;
 
   if (synchronized_params_changed)
@@ -652,7 +665,8 @@ void RenderFrameProxy::WasResized() {
   bool rect_changed =
       !sent_resize_params_ || sent_resize_params_->screen_space_rect !=
                                   pending_resize_params_.screen_space_rect;
-  bool resize_params_changed = synchronized_params_changed || rect_changed;
+  bool resize_params_changed =
+      synchronized_params_changed || rect_changed || surface_id_changed;
 
 #if defined(USE_AURA)
   if (rect_changed && mus_embedded_frame_) {
@@ -791,7 +805,7 @@ void RenderFrameProxy::FrameRectsChanged(
                                         screen_info().device_scale_factor);
     return;
   }
-  WasResized();
+  WasResized(viz::LocalSurfaceId());
 }
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(

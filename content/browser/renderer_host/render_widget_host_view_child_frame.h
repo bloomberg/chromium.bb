@@ -298,7 +298,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // using CSS.
   bool CanBecomeVisible();
 
-  void OnResizeDueToAutoResizeComplete(uint64_t sequence_number);
+  void OnResizeDueToAutoResizeComplete(uint64_t sequence_number,
+                                       viz::LocalSurfaceId local_surface_id);
 
   std::vector<base::OnceClosure> frame_swapped_callbacks_;
 

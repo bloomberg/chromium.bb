@@ -1050,12 +1050,9 @@ RenderWidgetHostViewChildFrame::ResizeDueToAutoResize(
     const gfx::Size& new_size,
     uint64_t sequence_number,
     const viz::LocalSurfaceId& local_surface_id) {
-  if (frame_connector_)
-    frame_connector_->BeginResizeDueToAutoResize();
-
   base::OnceCallback<void()> allocation_task = base::BindOnce(
       &RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete,
-      weak_factory_.GetWeakPtr(), sequence_number);
+      weak_factory_.GetWeakPtr(), sequence_number, local_surface_id);
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
@@ -1139,9 +1136,10 @@ bool RenderWidgetHostViewChildFrame::CanBecomeVisible() {
 }
 
 void RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete(
-    uint64_t sequence_number) {
+    uint64_t sequence_number,
+    viz::LocalSurfaceId local_surface_id) {
   if (frame_connector_)
-    frame_connector_->EndResizeDueToAutoResize(sequence_number);
+    frame_connector_->ResizeDueToAutoResize(sequence_number, local_surface_id);
 }
 
 void RenderWidgetHostViewChildFrame::DidNavigate() {

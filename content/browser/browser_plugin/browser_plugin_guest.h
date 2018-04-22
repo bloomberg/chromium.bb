@@ -30,6 +30,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "content/common/edit_command.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/guest_host.h"
@@ -181,8 +182,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void DisableAutoResize();
-  void ResizeDueToAutoResize(const gfx::Size& new_size,
-                             uint64_t sequence_number);
+  void ResizeDueToAutoResize(
+      const gfx::Size& new_size,
+      uint64_t sequence_number,
+      const viz::LocalSurfaceId& child_allocated_surface_id);
 
   // WebContentsObserver implementation.
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;

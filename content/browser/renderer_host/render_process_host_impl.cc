@@ -1787,9 +1787,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   MediaInternals* media_internals = MediaInternals::GetInstance();
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.
-  scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
-      new BrowserPluginMessageFilter(GetID()));
-  AddFilter(bp_message_filter.get());
+  bp_message_filter_ = new BrowserPluginMessageFilter(GetID());
+  AddFilter(bp_message_filter_.get());
 
   scoped_refptr<net::URLRequestContextGetter> request_context(
       storage_partition_impl_->GetURLRequestContext());
@@ -4395,6 +4394,11 @@ void RenderProcessHostImpl::GetBrowserHistogram(
     histogram->WriteJSON(&histogram_json, base::JSON_VERBOSITY_LEVEL_FULL);
   }
   std::move(callback).Run(histogram_json);
+}
+
+void RenderProcessHostImpl::SetBrowserPluginMessageFilterSubFilterForTesting(
+    scoped_refptr<BrowserMessageFilter> message_filter) const {
+  bp_message_filter_->SetSubFilterForTesting(std::move(message_filter));
 }
 
 }  // namespace content

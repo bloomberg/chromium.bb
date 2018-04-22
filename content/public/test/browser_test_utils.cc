@@ -37,20 +37,24 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_resize_params.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -73,6 +77,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_fileapi_operation_waiter.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -2537,6 +2542,178 @@ void EnsureCookiesFlushed(BrowserContext* browser_context) {
 bool HasValidProcessForProcessGroup(const std::string& process_group_name) {
   return ServiceManagerContext::HasValidProcessForProcessGroup(
       process_group_name);
+}
+
+bool TestChildOrGuestAutoresize(bool is_guest,
+                                RenderProcessHost* embedder_rph,
+                                RenderWidgetHost* guest_rwh) {
+  RenderProcessHostImpl* embedder_rph_impl =
+      static_cast<RenderProcessHostImpl*>(embedder_rph);
+  RenderWidgetHostImpl* guest_rwh_impl =
+      static_cast<RenderWidgetHostImpl*>(guest_rwh);
+
+  scoped_refptr<UpdateResizeParamsMessageFilter> filter(
+      new UpdateResizeParamsMessageFilter());
+
+  // Register the message filter for the guest or child. For guest, we must use
+  // a special hook, as there are already message filters installed which will
+  // supercede us.
+  if (is_guest) {
+    embedder_rph_impl->SetBrowserPluginMessageFilterSubFilterForTesting(
+        filter.get());
+  } else {
+    embedder_rph_impl->AddFilter(filter.get());
+  }
+
+  // Enable auto-resize.
+  guest_rwh_impl->SetAutoResize(true, gfx::Size(10, 10), gfx::Size(100, 100));
+
+  // Fake an auto-resize update.
+  int routing_id = guest_rwh_impl->GetRoutingID();
+  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
+  params.view_size = gfx::Size(75, 75);
+  params.flags = 0;
+  params.sequence_number = 7;
+  viz::LocalSurfaceId current_id =
+      guest_rwh_impl->GetView()->GetLocalSurfaceId();
+  params.child_allocated_local_surface_id = viz::LocalSurfaceId(
+      current_id.parent_sequence_number(),
+      current_id.child_sequence_number() + 1, current_id.embed_token());
+  guest_rwh_impl->OnMessageReceived(
+      ViewHostMsg_ResizeOrRepaint_ACK(routing_id, params));
+
+  // Get the first delivered surface id and ensure it has the surface id which
+  // we expect.
+  return filter->WaitForSurfaceId() == params.child_allocated_local_surface_id;
+}
+
+const uint32_t UpdateResizeParamsMessageFilter::kMessageClassesToFilter[2] = {
+    FrameMsgStart, BrowserPluginMsgStart};
+
+UpdateResizeParamsMessageFilter::UpdateResizeParamsMessageFilter()
+    : content::BrowserMessageFilter(kMessageClassesToFilter,
+                                    arraysize(kMessageClassesToFilter)),
+      screen_space_rect_run_loop_(std::make_unique<base::RunLoop>()),
+      screen_space_rect_received_(false) {}
+
+void UpdateResizeParamsMessageFilter::WaitForRect() {
+  screen_space_rect_run_loop_->Run();
+}
+
+void UpdateResizeParamsMessageFilter::ResetRectRunLoop() {
+  last_rect_ = gfx::Rect();
+  screen_space_rect_run_loop_.reset(new base::RunLoop);
+  screen_space_rect_received_ = false;
+}
+
+viz::FrameSinkId UpdateResizeParamsMessageFilter::GetOrWaitForId() {
+  // No-op if already quit.
+  frame_sink_id_run_loop_.Run();
+  return frame_sink_id_;
+}
+
+viz::LocalSurfaceId UpdateResizeParamsMessageFilter::WaitForSurfaceId() {
+  surface_id_run_loop_.reset(new base::RunLoop);
+  surface_id_run_loop_->Run();
+  return last_surface_id_;
+}
+
+UpdateResizeParamsMessageFilter::~UpdateResizeParamsMessageFilter() {}
+
+void UpdateResizeParamsMessageFilter::OnUpdateFrameHostResizeParams(
+    const viz::SurfaceId& surface_id,
+    const FrameResizeParams& resize_params) {
+  OnUpdateResizeParams(surface_id.local_surface_id(),
+                       surface_id.frame_sink_id(), resize_params);
+}
+
+void UpdateResizeParamsMessageFilter::OnUpdateBrowserPluginResizeParams(
+    int browser_plugin_guest_instance_id,
+    viz::LocalSurfaceId surface_id,
+    FrameResizeParams resize_params) {
+  OnUpdateResizeParams(surface_id, viz::FrameSinkId(), resize_params);
+}
+
+void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
+    const viz::LocalSurfaceId& local_surface_id,
+    const viz::FrameSinkId& frame_sink_id,
+    const FrameResizeParams& resize_params) {
+  gfx::Rect screen_space_rect_in_dip = resize_params.screen_space_rect;
+  if (IsUseZoomForDSFEnabled()) {
+    screen_space_rect_in_dip =
+        gfx::Rect(gfx::ScaleToFlooredPoint(
+                      resize_params.screen_space_rect.origin(),
+                      1.f / resize_params.screen_info.device_scale_factor),
+                  gfx::ScaleToCeiledSize(
+                      resize_params.screen_space_rect.size(),
+                      1.f / resize_params.screen_info.device_scale_factor));
+  }
+  // Track each rect updates.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI,
+                     this, screen_space_rect_in_dip));
+
+  // Track each surface id update.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&UpdateResizeParamsMessageFilter::OnUpdatedSurfaceIdOnUI,
+                     this, local_surface_id));
+
+  // Record the received value. We cannot check the current state of the child
+  // frame, as it can only be processed on the UI thread, and we cannot block
+  // here.
+  frame_sink_id_ = frame_sink_id;
+
+  // There can be several updates before a valid viz::FrameSinkId is ready. Do
+  // not quit |run_loop_| until after we receive a valid one.
+  if (!frame_sink_id_.is_valid())
+    return;
+
+  // We can't nest on the IO thread. So tests will wait on the UI thread, so
+  // post there to exit the nesting.
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     &UpdateResizeParamsMessageFilter::OnUpdatedFrameSinkIdOnUI,
+                     this));
+}
+
+void UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI(
+    const gfx::Rect& rect) {
+  last_rect_ = rect;
+  if (!screen_space_rect_received_) {
+    screen_space_rect_received_ = true;
+    // Tests looking at the rect currently expect all received input to finish
+    // processing before the test continutes.
+    screen_space_rect_run_loop_->QuitWhenIdle();
+  }
+}
+
+void UpdateResizeParamsMessageFilter::OnUpdatedFrameSinkIdOnUI() {
+  frame_sink_id_run_loop_.Quit();
+}
+
+void UpdateResizeParamsMessageFilter::OnUpdatedSurfaceIdOnUI(
+    viz::LocalSurfaceId surface_id) {
+  last_surface_id_ = surface_id;
+  if (surface_id_run_loop_) {
+    surface_id_run_loop_->QuitWhenIdle();
+  }
+}
+
+bool UpdateResizeParamsMessageFilter::OnMessageReceived(
+    const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(UpdateResizeParamsMessageFilter, message)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateResizeParams,
+                        OnUpdateFrameHostResizeParams)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateResizeParams,
+                        OnUpdateBrowserPluginResizeParams)
+  IPC_END_MESSAGE_MAP()
+
+  // We do not consume the message, so that we can verify the effects of it
+  // being processed.
+  return false;
 }
 
 }  // namespace content
