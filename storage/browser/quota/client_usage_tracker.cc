@@ -144,7 +144,7 @@ void ClientUsageTracker::GetHostUsage(const std::string& host,
 
 void ClientUsageTracker::UpdateUsageCache(const GURL& origin, int64_t delta) {
   std::string host = net::GetHostOrSpecFromURL(origin);
-  if (cached_hosts_.find(host) != cached_hosts_.end()) {
+  if (base::ContainsKey(cached_hosts_, host)) {
     if (!IsUsageCacheEnabledForOrigin(origin))
       return;
 

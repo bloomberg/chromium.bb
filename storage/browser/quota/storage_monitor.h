@@ -60,11 +60,11 @@ class STORAGE_EXPORT StorageObserverList {
 
     ObserverState();
   };
-  typedef std::map<StorageObserver*, ObserverState> StorageObserverStateMap;
+  using StorageObserverStateMap = std::map<StorageObserver*, ObserverState>;
 
   void DispatchPendingEvent();
 
-  StorageObserverStateMap observers_;
+  StorageObserverStateMap observer_state_map_;
   base::OneShotTimer notification_timer_;
   StorageObserver::Event pending_event_;
 

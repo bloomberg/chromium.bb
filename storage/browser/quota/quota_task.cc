@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 using base::TaskRunner;
@@ -68,7 +69,7 @@ void QuotaTaskObserver::RegisterTask(QuotaTask* task) {
 }
 
 void QuotaTaskObserver::UnregisterTask(QuotaTask* task) {
-  DCHECK(running_quota_tasks_.find(task) != running_quota_tasks_.end());
+  DCHECK(base::ContainsKey(running_quota_tasks_, task));
   running_quota_tasks_.erase(task);
 }
 

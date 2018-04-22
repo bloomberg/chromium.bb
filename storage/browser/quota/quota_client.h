@@ -79,7 +79,7 @@ class STORAGE_EXPORT QuotaClient {
 };
 
 // TODO(dmikurube): Replace it to std::vector for efficiency.
-typedef std::list<QuotaClient*> QuotaClientList;
+using QuotaClientList = std::list<QuotaClient*>;
 
 }  // namespace storage
 

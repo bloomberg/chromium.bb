@@ -80,10 +80,8 @@ class MockQuotaClient : public QuotaClient {
                          GetOriginsCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     std::set<url::Origin> origins;
-    for (UsageMap::const_iterator itr = usage_map_.begin();
-         itr != usage_map_.end(); ++itr) {
-      origins.insert(url::Origin::Create(itr->first));
-    }
+    for (const auto& origin_usage_pair : origin_usage_map_)
+      origins.insert(url::Origin::Create(origin_usage_pair.first));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), origins));
   }
@@ -93,10 +91,9 @@ class MockQuotaClient : public QuotaClient {
                          GetOriginsCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     std::set<url::Origin> origins;
-    for (UsageMap::const_iterator itr = usage_map_.begin();
-         itr != usage_map_.end(); ++itr) {
-      if (net::GetHostOrSpecFromURL(itr->first) == host)
-        origins.insert(url::Origin::Create(itr->first));
+    for (const auto& origin_usage_pair : origin_usage_map_) {
+      if (net::GetHostOrSpecFromURL(origin_usage_pair.first) == host)
+        origins.insert(url::Origin::Create(origin_usage_pair.first));
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), origins));
@@ -106,7 +103,7 @@ class MockQuotaClient : public QuotaClient {
                         StorageType type,
                         DeletionCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    usage_map_.erase(origin.GetURL());
+    origin_usage_map_.erase(origin.GetURL());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), QuotaStatusCode::kOk));
   }
@@ -116,24 +113,22 @@ class MockQuotaClient : public QuotaClient {
   }
 
   int64_t GetUsage(const GURL& origin) {
-    UsageMap::const_iterator found = usage_map_.find(origin);
-    if (found == usage_map_.end())
+    auto found = origin_usage_map_.find(origin);
+    if (found == origin_usage_map_.end())
       return 0;
     return found->second;
   }
 
   void SetUsage(const GURL& origin, int64_t usage) {
-    usage_map_[origin] = usage;
+    origin_usage_map_[origin] = usage;
   }
 
   int64_t UpdateUsage(const GURL& origin, int64_t delta) {
-    return usage_map_[origin] += delta;
+    return origin_usage_map_[origin] += delta;
   }
 
  private:
-  typedef std::map<GURL, int64_t> UsageMap;
-
-  UsageMap usage_map_;
+  std::map<GURL, int64_t> origin_usage_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MockQuotaClient);
 };

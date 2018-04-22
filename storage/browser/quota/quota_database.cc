@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -341,14 +342,12 @@ bool QuotaDatabase::RegisterInitialOriginInfo(
   if (!LazyOpen(true))
     return false;
 
-  typedef std::set<GURL>::const_iterator itr_type;
-  for (itr_type itr = origins.begin(), end = origins.end();
-       itr != end; ++itr) {
+  for (const auto& origin : origins) {
     const char* kSql =
         "INSERT OR IGNORE INTO OriginInfoTable"
         " (origin, type) VALUES (?, ?)";
     sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-    statement.BindString(0, itr->spec());
+    statement.BindString(0, origin.spec());
     statement.BindInt(1, static_cast<int>(type));
 
     if (!statement.Run())
@@ -456,7 +455,7 @@ bool QuotaDatabase::GetLRUOrigin(
 
   while (statement.Step()) {
     GURL url(statement.ColumnString(0));
-    if (exceptions.find(url) != exceptions.end()) {
+    if (base::ContainsKey(exceptions, url)) {
       HistogramOriginType(IN_USE);
       continue;
     }
@@ -687,7 +686,6 @@ bool QuotaDatabase::UpgradeSchema(int current_version) {
 
   if (current_version == 2) {
     QuotaTableImporter importer;
-    typedef std::vector<QuotaTableEntry> QuotaTableEntries;
     if (!DumpQuotaTable(base::BindRepeating(&QuotaTableImporter::Append,
                                             base::Unretained(&importer)))) {
       return false;
@@ -697,9 +695,8 @@ bool QuotaDatabase::UpgradeSchema(int current_version) {
     sql::Transaction transaction(db_.get());
     if (!transaction.Begin())
       return false;
-    for (QuotaTableEntries::const_iterator iter = importer.entries.begin();
-         iter != importer.entries.end(); ++iter) {
-      if (!InsertOrReplaceHostQuota(iter->host, iter->type, iter->quota))
+    for (const auto& entry : importer.entries) {
+      if (!InsertOrReplaceHostQuota(entry.host, entry.type, entry.quota))
         return false;
     }
     return transaction.Commit();
