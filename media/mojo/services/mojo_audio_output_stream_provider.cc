@@ -23,9 +23,8 @@ MojoAudioOutputStreamProvider::MojoAudioOutputStreamProvider(
       observer_binding_(observer_.get()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Unretained is safe since |this| owns |binding_|.
-  binding_.set_connection_error_handler(
-      base::BindOnce(&MojoAudioOutputStreamProvider::CleanUp,
-                     base::Unretained(this), /*had_error*/ false));
+  binding_.set_connection_error_handler(base::Bind(
+      &MojoAudioOutputStreamProvider::OnError, base::Unretained(this)));
   DCHECK(create_delegate_callback_);
   DCHECK(deleter_callback_);
 }
@@ -35,8 +34,10 @@ MojoAudioOutputStreamProvider::~MojoAudioOutputStreamProvider() {
 }
 
 void MojoAudioOutputStreamProvider::Acquire(
+    mojom::AudioOutputStreamRequest stream_request,
+    mojom::AudioOutputStreamClientPtr client,
     const AudioParameters& params,
-    mojom::AudioOutputStreamProviderClientPtr provider_client) {
+    AcquireCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if !defined(OS_ANDROID)
   if (params.IsBitstreamFormat()) {
@@ -52,31 +53,29 @@ void MojoAudioOutputStreamProvider::Acquire(
     return;
   }
 
-  provider_client_ = std::move(provider_client);
-
   mojom::AudioOutputStreamObserverPtr observer_ptr;
   observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
   // Unretained is safe since |this| owns |audio_output_|.
-  audio_output_.emplace(
-      base::BindOnce(std::move(create_delegate_callback_), params,
-                     std::move(observer_ptr)),
-      base::BindOnce(&mojom::AudioOutputStreamProviderClient::Created,
-                     base::Unretained(provider_client_.get())),
-      base::BindOnce(&MojoAudioOutputStreamProvider::CleanUp,
-                     base::Unretained(this)));
+  audio_output_.emplace(std::move(stream_request), std::move(client),
+                        base::BindOnce(std::move(create_delegate_callback_),
+                                       params, std::move(observer_ptr)),
+                        std::move(callback),
+                        base::BindOnce(&MojoAudioOutputStreamProvider::OnError,
+                                       base::Unretained(this)));
 }
 
-void MojoAudioOutputStreamProvider::CleanUp(bool had_error) {
-  if (had_error) {
-    provider_client_.ResetWithReason(
-        mojom::AudioOutputStreamProviderClient::kPlatformErrorDisconnectReason,
-        std::string());
-  }
+void MojoAudioOutputStreamProvider::OnError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Deletes |this|:
   std::move(deleter_callback_).Run(this);
 }
 
 void MojoAudioOutputStreamProvider::BadMessage(const std::string& error) {
   mojo::ReportBadMessage(error);
+  if (binding_.is_bound())
+    binding_.Unbind();
+  if (observer_binding_.is_bound())
+    observer_binding_.Unbind();
   std::move(deleter_callback_).Run(this);  // deletes |this|.
 }
 

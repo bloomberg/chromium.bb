@@ -32,9 +32,9 @@ MojoAudioOutputIPC::MojoAudioOutputIPC(
 MojoAudioOutputIPC::~MojoAudioOutputIPC() {
   DCHECK(!AuthorizationRequested() && !StreamCreationRequested())
       << "CloseStream must be called before destructing the AudioOutputIPC";
-  // No sequence check.
-  // Destructing |weak_factory_| on any sequence is safe since it's not used
-  // after the final call to CloseStream, where its pointers are invalidated.
+  // No thread check.
+  // Destructing |weak_factory_| on any thread is safe since it's not used after
+  // the final call to CloseStream, where its pointers are invalidated.
 }
 
 void MojoAudioOutputIPC::RequestDeviceAuthorization(
@@ -81,13 +81,17 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
   // Since the creation callback won't fire if the provider binding is gone
   // and |this| owns |stream_provider_|, unretained is safe.
   stream_creation_start_time_ = base::TimeTicks::Now();
-  media::mojom::AudioOutputStreamProviderClientPtr client_ptr;
+  media::mojom::AudioOutputStreamClientPtr client_ptr;
   binding_.Bind(mojo::MakeRequest(&client_ptr));
-  // Unretained is safe because |this| owns |binding_|.
-  binding_.set_connection_error_with_reason_handler(
-      base::BindOnce(&MojoAudioOutputIPC::ProviderClientBindingDisconnected,
-                     base::Unretained(this)));
-  stream_provider_->Acquire(params, std::move(client_ptr));
+  stream_provider_->Acquire(mojo::MakeRequest(&stream_), std::move(client_ptr),
+                            params,
+                            base::BindOnce(&MojoAudioOutputIPC::StreamCreated,
+                                           base::Unretained(this)));
+
+  // Don't set a connection error handler. Either an error has already been
+  // signaled through the AudioOutputStreamClient interface, or the connection
+  // is broken because the frame owning |this| was destroyed, in which
+  // case |this| will soon be cleaned up anyways.
 }
 
 void MojoAudioOutputIPC::PlayStream() {
@@ -119,25 +123,18 @@ void MojoAudioOutputIPC::SetVolume(double volume) {
   stream_->SetVolume(volume);
 }
 
-void MojoAudioOutputIPC::ProviderClientBindingDisconnected(
-    uint32_t disconnect_reason,
-    const std::string& description) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+void MojoAudioOutputIPC::OnError() {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
-  if (disconnect_reason == kPlatformErrorDisconnectReason) {
-    delegate_->OnError();
-  }
-  // Otherwise, disconnection was due to the frame owning |this| being
-  // destructed or having a navigation. In this case, |this| will soon be
-  // cleaned up.
+  delegate_->OnError();
 }
 
-bool MojoAudioOutputIPC::AuthorizationRequested() const {
+bool MojoAudioOutputIPC::AuthorizationRequested() {
   return stream_provider_.is_bound();
 }
 
-bool MojoAudioOutputIPC::StreamCreationRequested() const {
-  return binding_.is_bound();
+bool MojoAudioOutputIPC::StreamCreationRequested() {
+  return stream_.is_bound();
 }
 
 media::mojom::AudioOutputStreamProviderRequest
@@ -206,14 +203,13 @@ void MojoAudioOutputIPC::ReceivedDeviceAuthorization(
   delegate_->OnDeviceAuthorized(status, params, device_id);
 }
 
-void MojoAudioOutputIPC::Created(media::mojom::AudioOutputStreamPtr stream,
-                                 media::mojom::AudioDataPipePtr data_pipe) {
+void MojoAudioOutputIPC::StreamCreated(
+    media::mojom::AudioDataPipePtr data_pipe) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
 
   UMA_HISTOGRAM_TIMES("Media.Audio.Render.OutputDeviceStreamCreationTime",
                       base::TimeTicks::Now() - stream_creation_start_time_);
-  stream_ = std::move(stream);
 
   base::PlatformFile socket_handle;
   auto result =
