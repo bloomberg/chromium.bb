@@ -45,18 +45,29 @@ base::Callback<void(Args...)> BindToCurrentThreadIfWeakPtr(
 
 namespace media {
 
-D3D11VideoDecoder::D3D11VideoDecoder(
+std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     const gpu::GpuPreferences& gpu_preferences,
-    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb)
-    : impl_task_runner_(std::move(gpu_task_runner)),
-      gpu_preferences_(gpu_preferences),
-      weak_factory_(this) {
+    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb) {
   // We create |impl_| on the wrong thread, but we never use it here.
   // Note that the output callback will hop to our thread, post the video
   // frame, and along with a callback that will hop back to the impl thread
   // when it's released.
-  impl_ = std::make_unique<D3D11VideoDecoderImpl>(get_stub_cb);
+  // Note that we WrapUnique<VideoDecoder> rather than D3D11VideoDecoder to make
+  // this castable; the deleters have to match.
+  return base::WrapUnique<VideoDecoder>(new D3D11VideoDecoder(
+      std::move(gpu_task_runner), gpu_preferences,
+      std::make_unique<D3D11VideoDecoderImpl>(get_stub_cb)));
+}
+
+D3D11VideoDecoder::D3D11VideoDecoder(
+    scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+    const gpu::GpuPreferences& gpu_preferences,
+    std::unique_ptr<D3D11VideoDecoderImpl> impl)
+    : impl_(std::move(impl)),
+      impl_task_runner_(std::move(gpu_task_runner)),
+      gpu_preferences_(gpu_preferences),
+      weak_factory_(this) {
   impl_weak_ = impl_->GetWeakPtr();
 }
 
@@ -85,6 +96,8 @@ void D3D11VideoDecoder::Initialize(
 
   // Bind our own init / output cb that hop to this thread, so we don't call the
   // originals on some other thread.
+  // Important but subtle note: base::Bind will copy |config_| since it's a
+  // const ref.
   // TODO(liberato): what's the lifetime of |cdm_context|?
   impl_task_runner_->PostTask(
       FROM_HERE,
@@ -134,6 +147,7 @@ bool D3D11VideoDecoder::IsUnsupported(const VideoDecoderConfig& config) {
   // Must be H264.
   const bool is_h264 = config.profile() >= H264PROFILE_MIN &&
                        config.profile() <= H264PROFILE_MAX;
+
   if (!is_h264)
     return true;
 

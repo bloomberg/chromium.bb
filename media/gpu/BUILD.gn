@@ -576,6 +576,7 @@ source_set("unit_tests") {
   testonly = true
   deps = [
     "//base",
+    "//base/test:test_support",
     "//media:test_support",
     "//media/gpu",
     "//media/gpu/ipc/service:unit_tests",
@@ -594,6 +595,7 @@ source_set("unit_tests") {
       "windows/d3d11_cdm_proxy_unittest.cc",
       "windows/d3d11_mocks.cc",
       "windows/d3d11_mocks.h",
+      "windows/d3d11_video_decoder_unittest.cc",
     ]
     libs = [ "dxguid.lib" ]
   }
