@@ -35,7 +35,6 @@ class RenderFrameHost;
 class Shell;
 class SiteInstance;
 class ToRenderFrameHost;
-struct FrameResizeParams;
 
 // Navigates the frame represented by |node| to |url|, blocking until the
 // navigation finishes.
@@ -189,52 +188,6 @@ class UrlCommitObserver : WebContentsObserver {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlCommitObserver);
-};
-
-// Class to sniff incoming IPCs for FrameHostMsg_UpdateResizeParams messages.
-// This allows the message to continue to the target child so that processing
-// can be verified by tests.
-class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
- public:
-  UpdateResizeParamsMessageFilter();
-
-  gfx::Rect last_rect() const { return last_rect_; }
-
-  void WaitForRect();
-  void ResetRectRunLoop();
-
-  // Returns the new viz::FrameSinkId immediately if the IPC has been received.
-  // Otherwise this will block the UI thread until it has been received, then it
-  // will return the new viz::FrameSinkId.
-  viz::FrameSinkId GetOrWaitForId();
-
-  // Waits for the next sequence number to be received and returns it.
-  uint64_t WaitForSequenceNumber();
-
- protected:
-  ~UpdateResizeParamsMessageFilter() override;
-
- private:
-  void OnUpdateResizeParams(const viz::SurfaceId& surface_id,
-                            const FrameResizeParams& resize_params);
-  // |rect| is in DIPs.
-  void OnUpdatedFrameRectOnUI(const gfx::Rect& rect);
-  void OnUpdatedFrameSinkIdOnUI();
-  void OnUpdatedSequenceNumberOnUI(uint64_t sequence_number);
-
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  viz::FrameSinkId frame_sink_id_;
-  base::RunLoop frame_sink_id_run_loop_;
-
-  std::unique_ptr<base::RunLoop> screen_space_rect_run_loop_;
-  bool screen_space_rect_received_;
-  gfx::Rect last_rect_;
-
-  uint64_t last_sequence_number_ = 0;
-  std::unique_ptr<base::RunLoop> sequence_number_run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateResizeParamsMessageFilter);
 };
 
 // Waits for a kill of the given RenderProcessHost and returns the

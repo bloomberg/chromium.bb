@@ -71,6 +71,7 @@ using test_server::EmbeddedTestServer;
 namespace content {
 
 class BrowserContext;
+struct FrameResizeParams;
 class InterstitialPage;
 class MessageLoopRunner;
 class NavigationHandle;
@@ -1142,6 +1143,65 @@ void EnsureCookiesFlushed(BrowserContext* browser_context);
 // Returns true if there is a valid process for |process_group_name|. Must be
 // called on the IO thread.
 bool HasValidProcessForProcessGroup(const std::string& process_group_name);
+
+// Performs a simple auto-resize flow and ensures that the embedder gets a
+// single response messages back from the guest, with the expected values.
+bool TestChildOrGuestAutoresize(bool is_guest,
+                                RenderProcessHost* embedder_rph,
+                                RenderWidgetHost* guest_rwh);
+
+// Class to sniff incoming IPCs for either FrameHostMsg_UpdateResizeParams or
+// BrowserPluginHostMsg_UpdateResizeParams messages. This allows the message to
+// continue to the target child so that processing can be verified by tests.
+class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
+ public:
+  UpdateResizeParamsMessageFilter();
+
+  gfx::Rect last_rect() const { return last_rect_; }
+
+  void WaitForRect();
+  void ResetRectRunLoop();
+
+  // Returns the new viz::FrameSinkId immediately if the IPC has been received.
+  // Otherwise this will block the UI thread until it has been received, then it
+  // will return the new viz::FrameSinkId.
+  viz::FrameSinkId GetOrWaitForId();
+
+  // Waits for the next viz::LocalSurfaceId be received and returns it.
+  viz::LocalSurfaceId WaitForSurfaceId();
+
+ protected:
+  ~UpdateResizeParamsMessageFilter() override;
+
+ private:
+  void OnUpdateFrameHostResizeParams(const viz::SurfaceId& surface_id,
+                                     const FrameResizeParams& resize_params);
+  void OnUpdateBrowserPluginResizeParams(int browser_plugin_guest_instance_id,
+                                         viz::LocalSurfaceId surface_id,
+                                         FrameResizeParams resize_params);
+  void OnUpdateResizeParams(const viz::LocalSurfaceId& surface_id,
+                            const viz::FrameSinkId& frame_sink_id,
+                            const FrameResizeParams& resize_params);
+  // |rect| is in DIPs.
+  void OnUpdatedFrameRectOnUI(const gfx::Rect& rect);
+  void OnUpdatedFrameSinkIdOnUI();
+  void OnUpdatedSurfaceIdOnUI(viz::LocalSurfaceId surface_id);
+
+  bool OnMessageReceived(const IPC::Message& message) override;
+
+  static const uint32_t kMessageClassesToFilter[2];
+  viz::FrameSinkId frame_sink_id_;
+  base::RunLoop frame_sink_id_run_loop_;
+
+  std::unique_ptr<base::RunLoop> screen_space_rect_run_loop_;
+  bool screen_space_rect_received_;
+  gfx::Rect last_rect_;
+
+  viz::LocalSurfaceId last_surface_id_;
+  std::unique_ptr<base::RunLoop> surface_id_run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateResizeParamsMessageFilter);
+};
 
 }  // namespace content
 

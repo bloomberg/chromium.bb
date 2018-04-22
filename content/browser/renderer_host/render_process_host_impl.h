@@ -70,6 +70,7 @@ class SharedPersistentMemoryAllocator;
 }
 
 namespace content {
+class BrowserPluginMessageFilter;
 class ChildConnection;
 class GpuClient;
 class IndexedDBDispatcherHost;
@@ -336,6 +337,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   NotificationMessageFilter* notification_message_filter() const {
     return notification_message_filter_.get();
   }
+
+  void SetBrowserPluginMessageFilterSubFilterForTesting(
+      scoped_refptr<BrowserMessageFilter> message_filter) const;
 
   void set_is_for_guests_only_for_testing(bool is_for_guests_only) {
     is_for_guests_only_ = is_for_guests_only;
@@ -682,6 +686,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The filter for Web Notification messages coming from the renderer. Holds a
   // closure per notification that must be freed when the notification closes.
   scoped_refptr<NotificationMessageFilter> notification_message_filter_;
+
+  // The filter for messages coming from the browser plugin.
+  scoped_refptr<BrowserPluginMessageFilter> bp_message_filter_;
 
   // Used in single-process mode.
   std::unique_ptr<base::Thread> in_process_renderer_;

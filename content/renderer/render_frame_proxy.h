@@ -161,7 +161,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame);
 #endif
 
-  void WasResized();
+  void WasResized(const viz::LocalSurfaceId& child_allocated_surface_id);
 
   const gfx::Rect& screen_space_rect() const {
     return pending_resize_params_.screen_space_rect;
@@ -254,8 +254,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetHasReceivedUserGesture();
   void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                              const blink::WebScrollIntoViewParams& params);
-  void OnBeginResizeDueToAutoResize();
-  void OnEndResizeDueToAutoResize(uint64_t sequence_number);
+  void OnResizeDueToAutoResize(uint64_t sequence_number,
+                               viz::LocalSurfaceId child_allocated_surface_id);
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize();
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
@@ -304,11 +304,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // The current set of ResizeParams. This may or may not match
   // |sent_resize_params_|.
   FrameResizeParams pending_resize_params_;
-
-  // Whether we are in the middle of a transaction which modifies
-  // |pending_resize_params_|. If so, we delay allocating a new LocalSurfaceId
-  // until the transaction completes.
-  bool transaction_pending_ = false;
 
   bool crashed_ = false;
 
