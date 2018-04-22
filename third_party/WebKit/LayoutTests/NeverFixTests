@@ -1827,9 +1827,6 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-and-other-pseudo-elements.ht
 crbug.com/457718 external/wpt/css/css-pseudo/marker-color.html [ WontFix ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-font-properties.html [ WontFix ]
 
-# https://github.com/w3c/web-platform-tests/issues/8633
-external/wpt/css/css-style-attr/style-attr-braces-002-quirks.htm [ WontFix ]
-
 # Requires --use-fake-ui-for-media-stream to run.
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
 
