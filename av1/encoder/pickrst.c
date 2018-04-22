@@ -199,17 +199,67 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
   } else {
     const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
     const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
-    for (i = 0; i < height; ++i) {
-      for (j = 0; j < width; ++j) {
-        const int32_t u =
-            (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
-        int32_t v = u << SGRPROJ_PRJ_BITS;
-        if (params->r0 > 0) v += xq[0] * (flt0[i * flt0_stride + j] - u);
-        if (params->r1 > 0) v += xq[1] * (flt1[i * flt1_stride + j] - u);
-        const int32_t e =
-            ROUND_POWER_OF_TWO(v, SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS) -
-            src[i * src_stride + j];
-        err += e * e;
+    const int32_t half = 1 << (SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS - 1);
+    if (params->r0 > 0 && params->r1 > 0) {
+      int xq0 = xq[0];
+      int xq1 = xq[1];
+      for (i = 0; i < height; ++i) {
+        for (j = 0; j < width; ++j) {
+          const int32_t d = dat[j];
+          const int32_t s = src[j];
+          const int32_t u = (int32_t)(d << SGRPROJ_RST_BITS);
+          int32_t v0 = flt0[j] - u;
+          int32_t v1 = flt1[j] - u;
+          int32_t v = half;
+          v += xq0 * v0;
+          v += xq1 * v1;
+          const int32_t e =
+              (v >> (SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS)) + d - s;
+          err += e * e;
+        }
+        dat += dat_stride;
+        flt0 += flt0_stride;
+        flt1 += flt1_stride;
+        src += src_stride;
+      }
+    } else if (params->r0 > 0 || params->r1 > 0) {
+      int exq;
+      int32_t *flt;
+      int flt_stride;
+      if (params->r0 > 0) {
+        exq = xq[0];
+        flt = flt0;
+        flt_stride = flt0_stride;
+      } else {
+        exq = xq[1];
+        flt = flt1;
+        flt_stride = flt1_stride;
+      }
+      for (i = 0; i < height; ++i) {
+        for (j = 0; j < width; ++j) {
+          const int32_t d = dat[j];
+          const int32_t s = src[j];
+          const int32_t u = (int32_t)(d << SGRPROJ_RST_BITS);
+          int32_t v = half;
+          v += exq * (flt[j] - u);
+          const int32_t e =
+              (v >> (SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS)) + d - s;
+          err += e * e;
+        }
+        dat += dat_stride;
+        flt += flt_stride;
+        src += src_stride;
+      }
+    } else {
+      for (i = 0; i < height; ++i) {
+        for (j = 0; j < width; ++j) {
+          const int32_t d = dat[j];
+          const int32_t s = src[j];
+          const int32_t e = d - s;
+          err += e * e;
+        }
+        dat += dat_stride;
+        src += src_stride;
       }
     }
   }
