@@ -2565,6 +2565,13 @@ bool TestChildOrGuestAutoresize(bool is_guest,
     embedder_rph_impl->AddFilter(filter.get());
   }
 
+  viz::LocalSurfaceId current_id =
+      guest_rwh_impl->GetView()->GetLocalSurfaceId();
+  // The guest may not yet be fully attached / initted. If not, |current_id|
+  // will be invalid, and we should wait for an ID before proceeding.
+  if (!current_id.is_valid())
+    current_id = filter->WaitForSurfaceId();
+
   // Enable auto-resize.
   guest_rwh_impl->SetAutoResize(true, gfx::Size(10, 10), gfx::Size(100, 100));
 
@@ -2574,8 +2581,6 @@ bool TestChildOrGuestAutoresize(bool is_guest,
   params.view_size = gfx::Size(75, 75);
   params.flags = 0;
   params.sequence_number = 7;
-  viz::LocalSurfaceId current_id =
-      guest_rwh_impl->GetView()->GetLocalSurfaceId();
   params.child_allocated_local_surface_id = viz::LocalSurfaceId(
       current_id.parent_sequence_number(),
       current_id.child_sequence_number() + 1, current_id.embed_token());
