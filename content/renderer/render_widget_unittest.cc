@@ -517,6 +517,18 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
     EXPECT_TRUE(local_surface_id2.has_value());
   }
 
+  // Our first child allocated LSI should match |fake_parent_local_surface_id|
+  // with an incremented child sequence number.
+  EXPECT_NE(fake_parent_local_surface_id, local_surface_id1);
+  EXPECT_EQ(fake_parent_local_surface_id.parent_sequence_number(),
+            local_surface_id1->parent_sequence_number());
+  EXPECT_EQ(fake_parent_local_surface_id.child_sequence_number() + 1,
+            local_surface_id1->child_sequence_number());
+  EXPECT_EQ(fake_parent_local_surface_id.embed_token(),
+            local_surface_id2->embed_token());
+
+  // Our second child allocated LSI should match the first with an incremented
+  // child sequence number.
   EXPECT_NE(local_surface_id1, local_surface_id2);
   EXPECT_EQ(local_surface_id1->parent_sequence_number(),
             local_surface_id2->parent_sequence_number());

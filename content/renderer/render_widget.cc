@@ -2283,7 +2283,7 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
     viz::LocalSurfaceId local_surface_id;
-    if (!compositor_viewport_pixel_size_.IsEmpty())
+    if (!new_compositor_viewport_pixel_size.IsEmpty())
       local_surface_id = child_local_surface_id_allocator_.GenerateId();
     UpdateSurfaceAndScreenInfo(
         local_surface_id, new_compositor_viewport_pixel_size, screen_info_);
