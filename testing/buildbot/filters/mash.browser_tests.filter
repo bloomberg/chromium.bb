@@ -296,7 +296,7 @@
 -MSE_ClearKey/EncryptedMediaTest.*
 -MSE_ExternalClearKey/EncryptedMediaTest.*
 -AudioPlayerBrowserTest.*
--AudioPlayerBrowserTestGuest.*
+-AudioPlayerBrowserTestInGuestMode.OpenAudioOnDownloads
 -AutoplayExtensionBrowserTest.AutoplayAllowed
 -MediaEngagementBrowserTest.*
 -MediaEngagementAutoplayBrowserTest.*

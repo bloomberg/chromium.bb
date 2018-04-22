@@ -27,14 +27,16 @@ class AudioPlayerBrowserTestBase : public FileManagerBrowserTestBase {
 };
 
 typedef AudioPlayerBrowserTestBase<NOT_IN_GUEST_MODE> AudioPlayerBrowserTest;
-typedef AudioPlayerBrowserTestBase<IN_GUEST_MODE> AudioPlayerBrowserTestGuest;
+typedef AudioPlayerBrowserTestBase<IN_GUEST_MODE>
+    AudioPlayerBrowserTestInGuestMode;
 
 IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, OpenAudioOnDownloads) {
   set_test_case_name("openAudioOnDownloads");
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTestGuest, OpenAudioOnDownloads) {
+IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTestInGuestMode,
+                       OpenAudioOnDownloads) {
   set_test_case_name("openAudioOnDownloads");
   StartTest();
 }
