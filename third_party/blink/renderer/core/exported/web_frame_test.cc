@@ -248,7 +248,6 @@ class WebFrameTest : public testing::Test {
   }
 
   static void ConfigureCompositingWebView(WebSettings* settings) {
-    settings->SetAcceleratedCompositingEnabled(true);
     settings->SetPreferCompositingToLCDTextEnabled(true);
   }
 

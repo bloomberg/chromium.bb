@@ -127,7 +127,6 @@ class ScrollingCoordinatorTest : public testing::Test,
 
  private:
   static void ConfigureSettings(WebSettings* settings) {
-    settings->SetAcceleratedCompositingEnabled(true);
     settings->SetPreferCompositingToLCDTextEnabled(true);
   }
 

@@ -122,7 +122,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     timeline_->ResetForTesting();
     element_ = GetDocument().CreateElementForBinding("test");
 
-    helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
+    helper_.Initialize(nullptr, nullptr, nullptr);
     base_url_ = "http://www.test.com/";
   }
 
@@ -333,9 +333,6 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   }
 
  private:
-  static void ConfigureSettings(WebSettings* settings) {
-    settings->SetAcceleratedCompositingEnabled(true);
-  }
   FrameTestHelpers::WebViewHelper helper_;
   std::string base_url_;
 };
