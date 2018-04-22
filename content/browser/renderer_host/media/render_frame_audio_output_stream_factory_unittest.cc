@@ -37,12 +37,10 @@ using AudioOutputStreamFactoryRequest =
 using AudioOutputStream = media::mojom::AudioOutputStream;
 using AudioOutputStreamPtr = mojo::InterfacePtr<AudioOutputStream>;
 using AudioOutputStreamRequest = mojo::InterfaceRequest<AudioOutputStream>;
-using AudioOutputStreamProviderClient =
-    media::mojom::AudioOutputStreamProviderClient;
-using AudioOutputStreamProviderClientPtr =
-    mojo::InterfacePtr<AudioOutputStreamProviderClient>;
-using AudioOutputStreamProviderClientRequest =
-    mojo::InterfaceRequest<AudioOutputStreamProviderClient>;
+using AudioOutputStreamClient = media::mojom::AudioOutputStreamClient;
+using AudioOutputStreamClientPtr = mojo::InterfacePtr<AudioOutputStreamClient>;
+using AudioOutputStreamClientRequest =
+    mojo::InterfaceRequest<AudioOutputStreamClient>;
 using AudioOutputStreamProvider = media::mojom::AudioOutputStreamProvider;
 using AudioOutputStreamProviderPtr =
     mojo::InterfacePtr<AudioOutputStreamProvider>;
@@ -168,21 +166,13 @@ class MockContext : public RendererAudioOutputStreamFactoryContext {
   DISALLOW_COPY_AND_ASSIGN(MockContext);
 };
 
-class MockClient : public AudioOutputStreamProviderClient {
+class MockClient : public AudioOutputStreamClient {
  public:
-  MockClient() : provider_client_binding_(this) {}
+  MockClient() {}
   ~MockClient() override {}
 
-  AudioOutputStreamProviderClientPtr MakeProviderClientPtr() {
-    AudioOutputStreamProviderClientPtr p;
-    provider_client_binding_.Bind(mojo::MakeRequest(&p));
-    return p;
-  }
-
-  void Created(AudioOutputStreamPtr stream,
-               media::mojom::AudioDataPipePtr data_pipe) {
+  void StreamCreated(media::mojom::AudioDataPipePtr data_pipe) {
     was_called_ = true;
-    stream_ = std::move(stream);
   }
 
   bool was_called() { return was_called_; }
@@ -190,8 +180,6 @@ class MockClient : public AudioOutputStreamProviderClient {
   MOCK_METHOD0(OnError, void());
 
  private:
-  mojo::Binding<AudioOutputStreamProviderClient> provider_client_binding_;
-  AudioOutputStreamPtr stream_;
   bool was_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockClient);
@@ -211,13 +199,17 @@ void AuthCallback(media::OutputDeviceStatus* status_out,
 }  // namespace
 
 // This test authorizes and creates a stream, and checks that
-// 1. the ProviderClient callback is called with appropriate parameters.
+// 1. the authorization callback is called with appropriate parameters.
 // 2. the AudioOutputDelegate is created.
 // 3. when the delegate calls OnStreamCreated, this is propagated to the client.
 TEST(RenderFrameAudioOutputStreamFactoryTest, CreateStream) {
   content::TestBrowserThreadBundle thread_bundle;
   AudioOutputStreamProviderPtr provider;
+  AudioOutputStreamPtr output_stream;
   MockClient client;
+  AudioOutputStreamClientPtr client_ptr;
+  mojo::Binding<AudioOutputStreamClient> client_binding(
+      &client, mojo::MakeRequest(&client_ptr));
   media::AudioOutputDelegate::EventHandler* event_handler = nullptr;
   auto factory_context = std::make_unique<MockContext>(true);
   factory_context->PrepareDelegateForCreation(
@@ -237,7 +229,9 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, CreateStream) {
             GetTestAudioParameters().AsHumanReadableString());
   EXPECT_TRUE(id.empty());
 
-  provider->Acquire(params, client.MakeProviderClientPtr());
+  provider->Acquire(
+      mojo::MakeRequest(&output_stream), std::move(client_ptr), params,
+      base::BindOnce(&MockClient::StreamCreated, base::Unretained(&client)));
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
 
@@ -276,7 +270,11 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, NotAuthorized_Denied) {
 TEST(RenderFrameAudioOutputStreamFactoryTest, ConnectionError_DeletesStream) {
   content::TestBrowserThreadBundle thread_bundle;
   AudioOutputStreamProviderPtr provider;
+  AudioOutputStreamPtr output_stream;
   MockClient client;
+  AudioOutputStreamClientPtr client_ptr;
+  mojo::Binding<AudioOutputStreamClient> client_binding(
+      &client, mojo::MakeRequest(&client_ptr));
   bool delegate_is_destructed = false;
   media::AudioOutputDelegate::EventHandler* event_handler = nullptr;
   auto factory_context = std::make_unique<MockContext>(true);
@@ -294,11 +292,14 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, ConnectionError_DeletesStream) {
                         const std::string& id) {}));
   base::RunLoop().RunUntilIdle();
 
-  provider->Acquire(GetTestAudioParameters(), client.MakeProviderClientPtr());
+  provider->Acquire(
+      mojo::MakeRequest(&output_stream), std::move(client_ptr),
+      GetTestAudioParameters(),
+      base::BindOnce(&MockClient::StreamCreated, base::Unretained(&client)));
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
   EXPECT_FALSE(delegate_is_destructed);
-  provider.reset();
+  output_stream.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(delegate_is_destructed);
 }
@@ -306,7 +307,11 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, ConnectionError_DeletesStream) {
 TEST(RenderFrameAudioOutputStreamFactoryTest, DelegateError_DeletesStream) {
   content::TestBrowserThreadBundle thread_bundle;
   AudioOutputStreamProviderPtr provider;
+  AudioOutputStreamPtr output_stream;
   MockClient client;
+  AudioOutputStreamClientPtr client_ptr;
+  mojo::Binding<AudioOutputStreamClient> client_binding(
+      &client, mojo::MakeRequest(&client_ptr));
   bool delegate_is_destructed = false;
   media::AudioOutputDelegate::EventHandler* event_handler = nullptr;
   auto factory_context = std::make_unique<MockContext>(true);
@@ -324,7 +329,10 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, DelegateError_DeletesStream) {
                         const std::string& id) {}));
   base::RunLoop().RunUntilIdle();
 
-  provider->Acquire(GetTestAudioParameters(), client.MakeProviderClientPtr());
+  provider->Acquire(
+      mojo::MakeRequest(&output_stream), std::move(client_ptr),
+      GetTestAudioParameters(),
+      base::BindOnce(&MockClient::StreamCreated, base::Unretained(&client)));
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
   EXPECT_FALSE(delegate_is_destructed);
