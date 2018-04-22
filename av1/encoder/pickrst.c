@@ -589,10 +589,10 @@ static double find_average_highbd(const uint16_t *src, int h_start, int h_end,
   return avg;
 }
 
-static void compute_stats_highbd(int wiener_win, const uint8_t *dgd8,
-                                 const uint8_t *src8, int h_start, int h_end,
-                                 int v_start, int v_end, int dgd_stride,
-                                 int src_stride, double *M, double *H) {
+static AOM_FORCE_INLINE void compute_stats_highbd(
+    int wiener_win, const uint8_t *dgd8, const uint8_t *src8, int h_start,
+    int h_end, int v_start, int v_end, int dgd_stride, int src_stride,
+    double *M, double *H) {
   int i, j, k, l;
   double Y[WIENER_WIN2];
   const int wiener_win2 = wiener_win * wiener_win;
@@ -616,13 +616,15 @@ static void compute_stats_highbd(int wiener_win, const uint8_t *dgd8,
       }
       assert(idx == wiener_win2);
       for (k = 0; k < wiener_win2; ++k) {
-        M[k] += Y[k] * X;
-        H[k * wiener_win2 + k] += Y[k] * Y[k];
+        double Yk = Y[k];
+        M[k] += Yk * X;
+        double *H2 = &H[k * wiener_win2];
+        H2[k] += Yk * Yk;
         for (l = k + 1; l < wiener_win2; ++l) {
           // H is a symmetric matrix, so we only need to fill out the upper
           // triangle here. We can copy it down to the lower triangle outside
           // the (i, j) loops.
-          H[k * wiener_win2 + l] += Y[k] * Y[l];
+          H2[l] += Yk * Y[l];
         }
       }
     }
@@ -997,14 +999,23 @@ static void search_wiener(const RestorationTileLimits *limits,
   double vfilterd[WIENER_WIN], hfilterd[WIENER_WIN];
 
   const AV1_COMMON *const cm = rsc->cm;
-  if (cm->use_highbitdepth)
-    compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
-                         limits->h_start, limits->h_end, limits->v_start,
-                         limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
-  else
+  if (cm->use_highbitdepth) {
+    if (rsc->plane == AOM_PLANE_Y) {
+      compute_stats_highbd(WIENER_WIN, rsc->dgd_buffer, rsc->src_buffer,
+                           limits->h_start, limits->h_end, limits->v_start,
+                           limits->v_end, rsc->dgd_stride, rsc->src_stride, M,
+                           H);
+    } else {
+      compute_stats_highbd(WIENER_WIN_CHROMA, rsc->dgd_buffer, rsc->src_buffer,
+                           limits->h_start, limits->h_end, limits->v_start,
+                           limits->v_end, rsc->dgd_stride, rsc->src_stride, M,
+                           H);
+    }
+  } else {
     compute_stats(wiener_win, rsc->dgd_buffer, rsc->src_buffer, limits->h_start,
                   limits->h_end, limits->v_start, limits->v_end,
                   rsc->dgd_stride, rsc->src_stride, M, H);
+  }
 
   const MACROBLOCK *const x = rsc->x;
   const int64_t bits_none = x->wiener_restore_cost[0];
