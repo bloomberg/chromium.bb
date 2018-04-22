@@ -100,13 +100,8 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
       parsed_value =
           CSSPropertyParserHelpers::ConsumePercent(args, kValueRangeAll);
       if (!parsed_value) {
-        parsed_value =
-            CSSPropertyParserHelpers::ConsumeNumber(args, kValueRangeAll);
-      }
-      if (parsed_value &&
-          ToCSSPrimitiveValue(parsed_value)->GetDoubleValue() < 0) {
-        // crbug.com/776208: Negative values are not allowed by spec.
-        context.Count(WebFeature::kCSSFilterFunctionNegativeBrightness);
+        parsed_value = CSSPropertyParserHelpers::ConsumeNumber(
+            args, kValueRangeNonNegative);
       }
     } else if (filter_type == CSSValueHueRotate) {
       parsed_value = CSSPropertyParserHelpers::ConsumeAngle(

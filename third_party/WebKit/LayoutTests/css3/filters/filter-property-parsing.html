@@ -68,7 +68,6 @@ assert_valid_value("filter", "brightness(1.0)", "brightness(1)"); // Float value
 assert_valid_value("filter", "brightness(0)"); // Zero value
 assert_valid_value("filter", "brightness()"); // No arguments
 assert_valid_value("filter", "brightness(0.5) brightness(0.25)"); // Multiple values
-assert_valid_value("filter", "brightness(-1.1)"); // Parameter less than -100%
 assert_valid_value("filter", "brightness(101%)"); // Parameter more than 100%
 
 assert_valid_value("filter", "contrast(1)"); // Integer value

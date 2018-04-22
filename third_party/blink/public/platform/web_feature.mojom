@@ -1674,7 +1674,6 @@ enum WebFeature {
   kPaintTimingObserved = 2190,
   kPaintTimingRequested = 2191,
   kHTMLMediaElementMediaPlaybackRateOutOfRange = 2192,
-  kCSSFilterFunctionNegativeBrightness = 2193,
   kCookieSet = 2194,
   kCookieGet = 2195,
   kGeolocationDisabledByFeaturePolicy = 2196,
