@@ -18,6 +18,7 @@
 namespace media {
 
 class D3D11VideoDecoderImpl;
+class D3D11VideoDecoderTest;
 
 // Thread-hopping implementation of D3D11VideoDecoder.  It's meant to run on
 // a random thread, and hop to the gpu main thread.  It does this so that it
@@ -27,11 +28,10 @@ class D3D11VideoDecoderImpl;
 // now, it's easier to hop threads.
 class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
  public:
-  D3D11VideoDecoder(
+  static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       const gpu::GpuPreferences& gpu_preferences,
       base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
-  ~D3D11VideoDecoder() override;
 
   // VideoDecoder implementation:
   std::string GetDisplayName() const override;
@@ -53,7 +53,19 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
   // init without bothering with a thread hop.
   bool IsUnsupported(const VideoDecoderConfig& config);
 
+ protected:
+  // Owners should call Destroy(). This is automatic via
+  // std::default_delete<media::VideoDecoder> when held by a
+  // std::unique_ptr<media::VideoDecoder>.
+  ~D3D11VideoDecoder() override;
+
  private:
+  friend class D3D11VideoDecoderTest;
+
+  D3D11VideoDecoder(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+                    const gpu::GpuPreferences& gpu_preferences,
+                    std::unique_ptr<D3D11VideoDecoderImpl> impl);
+
   // The implementation, which we trampoline to the impl thread.
   // This must be freed on the impl thread.
   std::unique_ptr<D3D11VideoDecoderImpl> impl_;
