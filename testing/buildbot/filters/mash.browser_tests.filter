@@ -306,6 +306,7 @@
 -ExtensionResourceRequestPolicyTest.Video
 -DeferredMediaBrowserTest.BackgroundMediaIsDeferred
 -DeclarativeNetRequestResourceTypeBrowserTest.Test1/0
+-VideoPlayerBrowserTest.*
 -VideoPlayerBrowserTestInGuestMode.OpenSingleVideoOnDownloads
 -IsolatedAppTest.SubresourceCookieIsolation
 -PageLoadMetricsBrowserTest.*
