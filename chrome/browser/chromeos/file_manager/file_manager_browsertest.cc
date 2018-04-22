@@ -130,9 +130,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "imageOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "imageOpenDrive")));
 
-// Flaky: crbug.com/715963
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_CreateNewFolder,
+    CreateNewFolder,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "createNewFolderAfterSelectFile"),
