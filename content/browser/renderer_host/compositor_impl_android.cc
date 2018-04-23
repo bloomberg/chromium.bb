@@ -7,8 +7,11 @@
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
 #include <stdint.h>
+
+#include <string>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -243,7 +246,7 @@ void CreateContextProviderAfterGpuChannelEstablished(
           stream_id, stream_priority, handle,
           GURL(std::string("chrome://gpu/Compositor::CreateContextProvider")),
           automatic_flushes, support_locking, support_grcontext,
-          shared_memory_limits, attributes, nullptr /* shared_context */,
+          shared_memory_limits, attributes,
           ui::command_buffer_metrics::CONTEXT_TYPE_UNKNOWN);
   callback.Run(std::move(context_provider));
 }
@@ -800,7 +803,6 @@ void CompositorImpl::OnGpuChannelEstablished(
                              ->GetDisplayNearestWindow(root_window_)
                              .color_space();
 
-  ui::ContextProviderCommandBuffer* shared_context = nullptr;
   auto context_provider =
       base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
           std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
@@ -811,7 +813,6 @@ void CompositorImpl::OnGpuChannelEstablished(
           GetCompositorContextSharedMemoryLimits(root_window_),
           GetCompositorContextAttributes(display_color_space_,
                                          requires_alpha_channel_),
-          shared_context,
           ui::command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
   auto result = context_provider->BindToCurrentThread();
   LOG_IF(FATAL, result == gpu::ContextResult::kFatalFailure)

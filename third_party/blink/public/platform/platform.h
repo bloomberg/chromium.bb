@@ -552,13 +552,10 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Returns a newly allocated and initialized offscreen context provider,
   // backed by an independent context. Returns null if the context cannot be
   // created or initialized.
-  // Passing an existing provider to |share_context| will create the new context
-  // in the same share group as the one passed.
   virtual std::unique_ptr<WebGraphicsContext3DProvider>
   CreateOffscreenGraphicsContext3DProvider(
       const ContextAttributes&,
       const WebURL& top_document_url,
-      WebGraphicsContext3DProvider* share_context,
       GraphicsInfo*);
 
   // Returns a newly allocated and initialized offscreen context provider,

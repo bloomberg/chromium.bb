@@ -5,6 +5,7 @@
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 
 #include <limits>
+#include <utility>
 
 #include "components/viz/common/features.h"
 #include "components/viz/common/gl_helper.h"
@@ -87,7 +88,7 @@ TestImageTransportFactory::SharedMainThreadContextProvider() {
 
   constexpr bool kSupportsLocking = false;
   shared_main_context_provider_ = ui::InProcessContextProvider::CreateOffscreen(
-      &gpu_memory_buffer_manager_, &image_factory_, nullptr, kSupportsLocking);
+      &gpu_memory_buffer_manager_, &image_factory_, kSupportsLocking);
   auto result = shared_main_context_provider_->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)
     shared_main_context_provider_ = nullptr;

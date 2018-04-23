@@ -598,7 +598,7 @@ static void CreateContextProviderOnMainThread(
       !Platform::Current()->IsGpuCompositingDisabled();
   creation_info->created_context_provider =
       Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-          creation_info->context_attributes, creation_info->url, nullptr,
+          creation_info->context_attributes, creation_info->url,
           creation_info->gl_info);
   waitable_event->Signal();
 }
@@ -657,7 +657,7 @@ WebGLRenderingContextBase::CreateContextProviderInternal(
     *using_gpu_compositing = !Platform::Current()->IsGpuCompositingDisabled();
     context_provider =
         Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-            context_attributes, url, nullptr, &gl_info);
+            context_attributes, url, &gl_info);
   } else {
     context_provider = CreateContextProviderOnWorkerThread(
         context_attributes, &gl_info, using_gpu_compositing, url);
@@ -7603,7 +7603,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
     using_gpu_compositing = !Platform::Current()->IsGpuCompositingDisabled();
     context_provider =
         Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-            attributes, url, nullptr, &gl_info);
+            attributes, url, &gl_info);
   } else {
     context_provider = CreateContextProviderOnWorkerThread(
         attributes, &gl_info, &using_gpu_compositing, url);

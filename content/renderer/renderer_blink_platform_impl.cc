@@ -1079,7 +1079,6 @@ std::unique_ptr<blink::WebGraphicsContext3DProvider>
 RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
     const blink::Platform::ContextAttributes& web_attributes,
     const blink::WebURL& top_document_web_url,
-    blink::WebGraphicsContext3DProvider* share_provider,
     blink::Platform::GraphicsInfo* gl_info) {
   DCHECK(gl_info);
   if (!RenderThreadImpl::current()) {
@@ -1097,22 +1096,6 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
     return nullptr;
   }
   Collect3DContextInformation(gl_info, gpu_channel_host->gpu_info());
-
-  content::WebGraphicsContext3DProviderImpl* share_provider_impl =
-      static_cast<content::WebGraphicsContext3DProviderImpl*>(share_provider);
-  ui::ContextProviderCommandBuffer* share_context = nullptr;
-
-  // WebGL contexts must fail creation if the share group is lost.
-  if (share_provider_impl) {
-    auto* gl = share_provider_impl->ContextGL();
-    if (gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
-      std::string error_message(
-          "OffscreenContext Creation failed, Shared context is lost");
-      gl_info->error_message = WebString::FromUTF8(error_message);
-      return nullptr;
-    }
-    share_context = share_provider_impl->context_provider();
-  }
 
   bool is_software_rendering = gpu_channel_host->gpu_info().software_rendering;
 
@@ -1150,7 +1133,7 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
           kGpuStreamIdDefault, kGpuStreamPriorityDefault,
           gpu::kNullSurfaceHandle, GURL(top_document_web_url),
           automatic_flushes, support_locking, web_attributes.support_grcontext,
-          gpu::SharedMemoryLimits(), attributes, share_context,
+          gpu::SharedMemoryLimits(), attributes,
           ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
       std::move(provider), is_software_rendering);

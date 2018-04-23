@@ -4,6 +4,8 @@
 
 #include "content/test/gpu_browsertest_helpers.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_main_loop.h"
@@ -64,7 +66,7 @@ scoped_refptr<ui::ContextProviderCommandBuffer> GpuBrowsertestCreateContext(
       std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
       content::kGpuStreamIdDefault, content::kGpuStreamPriorityDefault,
       gpu::kNullSurfaceHandle, GURL(), automatic_flushes, support_locking,
-      support_grcontext, gpu::SharedMemoryLimits(), attributes, nullptr,
+      support_grcontext, gpu::SharedMemoryLimits(), attributes,
       ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
 }
 

@@ -223,7 +223,6 @@ std::unique_ptr<WebGraphicsContext3DProvider>
 Platform::CreateOffscreenGraphicsContext3DProvider(
     const Platform::ContextAttributes&,
     const WebURL& top_document_url,
-    WebGraphicsContext3DProvider* share_context,
     Platform::GraphicsInfo*) {
   return nullptr;
 };

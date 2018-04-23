@@ -31,11 +31,6 @@ class GrContextForGLES2Interface;
 namespace cc {
 
 std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext();
-std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
-    viz::TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
-    TestImageFactory* image_factory,
-    gpu::GLInProcessContext* shared_context,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
 class TestInProcessContextProvider
     : public base::RefCountedThreadSafe<TestInProcessContextProvider>,
@@ -44,8 +39,7 @@ class TestInProcessContextProvider
  public:
   // TODO(backer): Once we only support OOP-R on Raster{Implementation,Decoder},
   // fold these two options into one.
-  TestInProcessContextProvider(TestInProcessContextProvider* shared_context,
-                               bool enable_oop_rasterization,
+  TestInProcessContextProvider(bool enable_oop_rasterization,
                                bool support_gles2_interface);
 
   // viz::ContextProvider / viz::RasterContextProvider implementation.

@@ -64,7 +64,7 @@ class OopPixelTestBase : public testing::Test {
 
     raster_context_provider_ =
         base::MakeRefCounted<TestInProcessContextProvider>(
-            nullptr, /*enable_oop_rasterization=*/true,
+            /*enable_oop_rasterization=*/true,
             /*enable_gles2_interface=*/!UseRasterDecoder());
     int max_texture_size =
         raster_context_provider_->ContextCapabilities().max_texture_size;
@@ -74,7 +74,7 @@ class OopPixelTestBase : public testing::Test {
 
     gles2_context_provider_ =
         base::MakeRefCounted<TestInProcessContextProvider>(
-            nullptr, /*enable_oop_rasterization=*/false,
+            /*enable_oop_rasterization=*/false,
             /*enable_gles2_interface=*/true);
     gpu_image_cache_.reset(new GpuImageDecodeCache(
         gles2_context_provider_.get(), false, kRGBA_8888_SkColorType,

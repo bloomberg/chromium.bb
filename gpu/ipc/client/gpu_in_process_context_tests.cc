@@ -41,7 +41,6 @@ class ContextTestBase : public testing::Test {
         nullptr,                 /* surface */
         true,                    /* offscreen */
         gpu::kNullSurfaceHandle, /* window */
-        nullptr,                 /* share_context */
         attributes, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_.get(),
         nullptr, /* image_factory */
         nullptr /* gpu_channel_manager_delegate */,
