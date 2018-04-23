@@ -931,8 +931,7 @@ void ServicesCustomizationDocument::OnOEMWallpaperDownloaded(
             << GetCustomizedWallpaperDownloadedFileName().value() << "' ('"
             << wallpaper_url.spec() << "')";
     customization_wallpaper_util::StartSettingCustomizedDefaultWallpaper(
-        wallpaper_url, GetCustomizedWallpaperDownloadedFileName(),
-        GetCustomizedWallpaperCacheDir());
+        wallpaper_url, GetCustomizedWallpaperDownloadedFileName());
   }
   wallpaper_downloader_.reset();
   applying->Finished(success);

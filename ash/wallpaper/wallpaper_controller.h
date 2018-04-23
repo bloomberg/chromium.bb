@@ -77,20 +77,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   static const char kSmallWallpaperSubDir[];
   static const char kLargeWallpaperSubDir[];
   static const char kOriginalWallpaperSubDir[];
-  static const char kThumbnailWallpaperSubDir[];
-
-  // File path suffices of resized small or large wallpaper.
-  static const char kSmallWallpaperSuffix[];
-  static const char kLargeWallpaperSuffix[];
-
-  // The width and height of small/large resolution wallpaper. When screen size
-  // is smaller than |kSmallWallpaperMaxWidth| and |kSmallWallpaperMaxHeight|,
-  // the small resolution wallpaper should be used. Otherwise, use the large
-  // resolution wallpaper.
-  static const int kSmallWallpaperMaxWidth;
-  static const int kSmallWallpaperMaxHeight;
-  static const int kLargeWallpaperMaxWidth;
-  static const int kLargeWallpaperMaxHeight;
 
   // The color of the wallpaper if no other wallpaper images are available.
   static const SkColor kDefaultWallpaperColor;
@@ -152,23 +138,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
 
   // Creates a 1x1 solid color image to be used as the backup default wallpaper.
   static gfx::ImageSkia CreateSolidColorWallpaper();
-
-  // TODO(crbug.com/776464): All the static |*ForTesting| functions should be
-  // moved to the anonymous namespace of |WallpaperControllerTest|.
-  //
-  // Creates compressed JPEG image of solid color. Result bytes are written to
-  // |output|. Returns true if gfx::JPEGCodec::Encode() succeeds.
-  static bool CreateJPEGImageForTesting(int width,
-                                        int height,
-                                        SkColor color,
-                                        std::vector<unsigned char>* output);
-
-  // Writes a JPEG image of the specified size and color to |path|. Returns true
-  // on success.
-  static bool WriteJPEGFileForTesting(const base::FilePath& path,
-                                      int width,
-                                      int height,
-                                      SkColor color);
 
   // Binds the mojom::WallpaperController interface request to this object.
   void BindRequest(mojom::WallpaperControllerRequest request);

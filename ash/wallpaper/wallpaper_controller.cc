@@ -67,13 +67,16 @@ base::FilePath dir_chrome_os_custom_wallpapers_path;
 base::FilePath device_policy_wallpaper_file_path;
 
 // Names of nodes with wallpaper info in |kUserWallpaperInfo| dictionary.
-const char kNewWallpaperDateNodeName[] = "date";
-const char kNewWallpaperLayoutNodeName[] = "layout";
-const char kNewWallpaperLocationNodeName[] = "file";
-const char kNewWallpaperTypeNodeName[] = "type";
+constexpr char kNewWallpaperDateNodeName[] = "date";
+constexpr char kNewWallpaperLayoutNodeName[] = "layout";
+constexpr char kNewWallpaperLocationNodeName[] = "file";
+constexpr char kNewWallpaperTypeNodeName[] = "type";
 
 // The file name of the policy wallpaper.
-const char kPolicyWallpaperFile[] = "policy-controlled.jpeg";
+constexpr char kPolicyWallpaperFile[] = "policy-controlled.jpeg";
+
+// File path suffix of resized small wallpapers.
+constexpr char kSmallWallpaperSuffix[] = "_small";
 
 // How long to wait reloading the wallpaper after the display size has changed.
 constexpr int kWallpaperReloadDelayMs = 100;
@@ -82,7 +85,7 @@ constexpr int kWallpaperReloadDelayMs = 100;
 constexpr int kCompositorLockTimeoutMs = 750;
 
 // Default quality for encoding wallpaper.
-const int kDefaultEncodingQuality = 90;
+constexpr int kDefaultEncodingQuality = 90;
 
 // Returns true if a color should be extracted from the wallpaper based on the
 // command kAshShelfColor line arg.
@@ -226,13 +229,11 @@ void SaveCustomWallpaper(const std::string& wallpaper_files_id,
       *image, original_path, WALLPAPER_LAYOUT_STRETCH, image->width(),
       image->height(), nullptr);
   WallpaperController::ResizeAndSaveWallpaper(
-      *image, small_wallpaper_path, layout,
-      WallpaperController::kSmallWallpaperMaxWidth,
-      WallpaperController::kSmallWallpaperMaxHeight, nullptr);
+      *image, small_wallpaper_path, layout, kSmallWallpaperMaxWidth,
+      kSmallWallpaperMaxHeight, nullptr);
   WallpaperController::ResizeAndSaveWallpaper(
-      *image, large_wallpaper_path, layout,
-      WallpaperController::kLargeWallpaperMaxWidth,
-      WallpaperController::kLargeWallpaperMaxHeight, nullptr);
+      *image, large_wallpaper_path, layout, kLargeWallpaperMaxWidth,
+      kLargeWallpaperMaxHeight, nullptr);
 }
 
 // Resizes |image| to a resolution which is nearest to |preferred_width| and
@@ -350,9 +351,8 @@ void SaveOnlineWallpaper(const GURL& url,
       *image,
       WallpaperController::GetOnlineWallpaperPath(
           url, WallpaperController::WALLPAPER_RESOLUTION_SMALL),
-      WALLPAPER_LAYOUT_CENTER_CROPPED,
-      WallpaperController::kSmallWallpaperMaxWidth,
-      WallpaperController::kSmallWallpaperMaxHeight, nullptr);
+      WALLPAPER_LAYOUT_CENTER_CROPPED, kSmallWallpaperMaxWidth,
+      kSmallWallpaperMaxHeight, nullptr);
 }
 
 // Implementation of |WallpaperController::GetOfflineWallpaper|.
@@ -367,7 +367,7 @@ std::vector<std::string> GetOfflineWallpaperListImpl() {
          current = files.Next()) {
       // Do not add file name of small resolution wallpaper to the list.
       if (!base::EndsWith(current.BaseName().RemoveExtension().value(),
-                          WallpaperController::kSmallWallpaperSuffix,
+                          kSmallWallpaperSuffix,
                           base::CompareCase::SENSITIVE)) {
         file_names.push_back(current.BaseName().value());
       }
@@ -381,14 +381,6 @@ std::vector<std::string> GetOfflineWallpaperListImpl() {
 const char WallpaperController::kSmallWallpaperSubDir[] = "small";
 const char WallpaperController::kLargeWallpaperSubDir[] = "large";
 const char WallpaperController::kOriginalWallpaperSubDir[] = "original";
-
-const char WallpaperController::kSmallWallpaperSuffix[] = "_small";
-const char WallpaperController::kLargeWallpaperSuffix[] = "_large";
-
-const int WallpaperController::kSmallWallpaperMaxWidth = 1366;
-const int WallpaperController::kSmallWallpaperMaxHeight = 800;
-const int WallpaperController::kLargeWallpaperMaxWidth = 2560;
-const int WallpaperController::kLargeWallpaperMaxHeight = 1700;
 
 const SkColor WallpaperController::kDefaultWallpaperColor = SK_ColorGRAY;
 
@@ -564,44 +556,6 @@ gfx::ImageSkia WallpaperController::CreateSolidColorWallpaper() {
   bitmap.allocN32Pixels(1, 1);
   bitmap.eraseColor(kDefaultWallpaperColor);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-}
-
-// static
-bool WallpaperController::CreateJPEGImageForTesting(
-    int width,
-    int height,
-    SkColor color,
-    std::vector<unsigned char>* output) {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(width, height);
-  bitmap.eraseColor(color);
-
-  constexpr int kQuality = 80;
-  if (!gfx::JPEGCodec::Encode(bitmap, kQuality, output)) {
-    LOG(ERROR) << "Unable to encode " << width << "x" << height << " bitmap";
-    return false;
-  }
-  return true;
-}
-
-// static
-bool WallpaperController::WriteJPEGFileForTesting(const base::FilePath& path,
-                                                  int width,
-                                                  int height,
-                                                  SkColor color) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  std::vector<unsigned char> output;
-  if (!CreateJPEGImageForTesting(width, height, color, &output))
-    return false;
-
-  size_t bytes_written = base::WriteFile(
-      path, reinterpret_cast<const char*>(&output[0]), output.size());
-  if (bytes_written != output.size()) {
-    LOG(ERROR) << "Wrote " << bytes_written << " byte(s) instead of "
-               << output.size() << " to " << path.value();
-    return false;
-  }
-  return true;
 }
 
 void WallpaperController::BindRequest(

@@ -18,13 +18,13 @@ namespace customization_wallpaper_util {
 
 // First checks if the file paths exist for both large and small sizes, then
 // calls |SetCustomizedDefaultWallpaperAfterCheck| with |both_sizes_exist|.
-void StartSettingCustomizedDefaultWallpaper(
-    const GURL& wallpaper_url,
-    const base::FilePath& file_path,
-    const base::FilePath& resized_directory);
+void StartSettingCustomizedDefaultWallpaper(const GURL& wallpaper_url,
+                                            const base::FilePath& file_path);
 
-// Gets the customized default wallpaper file paths for the |suffix|.
-base::FilePath GetCustomizedDefaultWallpaperPath(const std::string& suffix);
+// Gets the file paths of both small and large sizes of the customized default
+// wallpaper. Returns true on success.
+bool GetCustomizedDefaultWallpaperPaths(base::FilePath* small_path_out,
+                                        base::FilePath* large_path_out);
 
 // Whether customized default wallpaper should be used wherever a default
 // wallpaper is needed.

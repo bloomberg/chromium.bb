@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -514,14 +513,13 @@ void WallpaperControllerClient::OnReadyToSetWallpaper() {
   // Apply device customization.
   namespace util = chromeos::customization_wallpaper_util;
   if (util::ShouldUseCustomizedDefaultWallpaper()) {
-    base::FilePath customized_default_small_path =
-        util::GetCustomizedDefaultWallpaperPath(
-            ash::WallpaperController::kSmallWallpaperSuffix);
-    base::FilePath customized_default_large_path =
-        util::GetCustomizedDefaultWallpaperPath(
-            ash::WallpaperController::kLargeWallpaperSuffix);
-    wallpaper_controller_->SetCustomizedDefaultWallpaperPaths(
-        customized_default_small_path, customized_default_large_path);
+    base::FilePath customized_default_small_path;
+    base::FilePath customized_default_large_path;
+    if (util::GetCustomizedDefaultWallpaperPaths(
+            &customized_default_small_path, &customized_default_large_path)) {
+      wallpaper_controller_->SetCustomizedDefaultWallpaperPaths(
+          customized_default_small_path, customized_default_large_path);
+    }
   }
 
   // Guest wallpaper should be initialized when guest logs in.

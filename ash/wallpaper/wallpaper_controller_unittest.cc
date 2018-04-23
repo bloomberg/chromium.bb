@@ -37,6 +37,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/views/widget/widget.h"
 
 using session_manager::SessionState;
@@ -48,11 +49,6 @@ namespace {
 constexpr int kWallpaperId = kShellWindowId_WallpaperContainer;
 constexpr int kLockScreenWallpaperId =
     kShellWindowId_LockScreenWallpaperContainer;
-
-constexpr int kLargeWallpaperWidth = 256;
-const int kLargeWallpaperHeight = WallpaperController::kLargeWallpaperMaxHeight;
-constexpr int kSmallWallpaperWidth = 256;
-const int kSmallWallpaperHeight = WallpaperController::kSmallWallpaperMaxHeight;
 
 constexpr char kDefaultSmallWallpaperName[] = "small.jpg";
 constexpr char kDefaultLargeWallpaperName[] = "large.jpg";
@@ -131,6 +127,32 @@ void RunAnimationForWidget(views::Widget* widget) {
     layer->GetAnimator()->Step(step_time +
                                base::TimeDelta::FromMilliseconds(1000));
   }
+}
+
+// Writes a JPEG image of the specified size and color to |path|. Returns true
+// on success.
+bool WriteJPEGFile(const base::FilePath& path,
+                   int width,
+                   int height,
+                   SkColor color) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(width, height);
+  bitmap.eraseColor(color);
+  std::vector<unsigned char> output;
+  if (!gfx::JPEGCodec::Encode(bitmap, 80 /*quality*/, &output)) {
+    LOG(ERROR) << "Unable to encode " << width << "x" << height << " bitmap";
+    return false;
+  }
+
+  size_t bytes_written = base::WriteFile(
+      path, reinterpret_cast<const char*>(&output[0]), output.size());
+  if (bytes_written != output.size()) {
+    LOG(ERROR) << "Wrote " << bytes_written << " byte(s) instead of "
+               << output.size() << " to " << path.value();
+    return false;
+  }
+  return true;
 }
 
 // Returns custom wallpaper path. Creates the directory if it doesn't exist.
@@ -388,12 +410,12 @@ class WallpaperControllerTest : public AshTestBase {
 
     // Saves the small/large resolution wallpapers to small/large custom
     // wallpaper paths.
-    ASSERT_TRUE(WallpaperController::WriteJPEGFileForTesting(
-        small_wallpaper_path, kSmallWallpaperWidth, kSmallWallpaperHeight,
-        kSmallCustomWallpaperColor));
-    ASSERT_TRUE(WallpaperController::WriteJPEGFileForTesting(
-        large_wallpaper_path, kLargeWallpaperWidth, kLargeWallpaperHeight,
-        kLargeCustomWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(small_wallpaper_path, kSmallWallpaperMaxWidth,
+                              kSmallWallpaperMaxHeight,
+                              kSmallCustomWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(large_wallpaper_path, kLargeWallpaperMaxWidth,
+                              kLargeWallpaperMaxHeight,
+                              kLargeCustomWallpaperColor));
 
     std::string relative_path =
         base::FilePath(wallpaper_files_id).Append(file_name).value();
@@ -451,20 +473,20 @@ class WallpaperControllerTest : public AshTestBase {
                                     child_large_file.value());
 
     const int kWallpaperSize = 2;
-    ASSERT_TRUE(WallpaperController::WriteJPEGFileForTesting(
-        small_file, kWallpaperSize, kWallpaperSize, kWallpaperColor));
-    ASSERT_TRUE(WallpaperController::WriteJPEGFileForTesting(
-        large_file, kWallpaperSize, kWallpaperSize, kWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(small_file, kWallpaperSize, kWallpaperSize,
+                              kWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(large_file, kWallpaperSize, kWallpaperSize,
+                              kWallpaperColor));
 
-    ASSERT_TRUE(WallpaperController::WriteJPEGFileForTesting(
-        guest_small_file, kWallpaperSize, kWallpaperSize, kWallpaperColor));
-    ASSERT_TRUE(WallpaperController::WriteJPEGFileForTesting(
-        guest_large_file, kWallpaperSize, kWallpaperSize, kWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(guest_small_file, kWallpaperSize, kWallpaperSize,
+                              kWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(guest_large_file, kWallpaperSize, kWallpaperSize,
+                              kWallpaperColor));
 
-    ASSERT_TRUE(WallpaperController::WriteJPEGFileForTesting(
-        child_small_file, kWallpaperSize, kWallpaperSize, kWallpaperColor));
-    ASSERT_TRUE(WallpaperController::WriteJPEGFileForTesting(
-        child_large_file, kWallpaperSize, kWallpaperSize, kWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(child_small_file, kWallpaperSize, kWallpaperSize,
+                              kWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(child_large_file, kWallpaperSize, kWallpaperSize,
+                              kWallpaperColor));
   }
 
   // A helper to test the behavior of setting online wallpaper after the image
