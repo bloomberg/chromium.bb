@@ -27,7 +27,7 @@ const TxfmFunc fwd_txfm_func_ls[][txfm_type_num] = {
   { av1_fdct4_new, av1_fadst4_new },
   { av1_fdct8_new, av1_fadst8_new },
   { av1_fdct16_new, av1_fadst16_new },
-  { av1_fdct32_new, av1_fadst32_new },
+  { av1_fdct32_new, NULL },
   { av1_fdct64_new, NULL },
 };
 
@@ -35,7 +35,7 @@ const TxfmFunc inv_txfm_func_ls[][txfm_type_num] = {
   { av1_idct4_new, av1_iadst4_new },
   { av1_idct8_new, av1_iadst8_new },
   { av1_idct16_new, av1_iadst16_new },
-  { av1_idct32_new, av1_iadst32_new },
+  { av1_idct32_new, NULL },
   { av1_idct64_new, NULL },
 };
 

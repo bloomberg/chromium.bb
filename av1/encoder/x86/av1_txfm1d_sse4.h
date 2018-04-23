@@ -37,8 +37,6 @@ void av1_fadst8_new_sse4_1(const __m128i *input, __m128i *output,
                            const int8_t cos_bit, const int8_t *stage_range);
 void av1_fadst16_new_sse4_1(const __m128i *input, __m128i *output,
                             const int8_t cos_bit, const int8_t *stage_range);
-void av1_fadst32_new_sse4_1(const __m128i *input, __m128i *output,
-                            const int8_t cos_bit, const int8_t *stage_range);
 
 void av1_idct4_new_sse4_1(const __m128i *input, __m128i *output,
                           const int8_t cos_bit, const int8_t *stage_range);
@@ -57,9 +55,6 @@ void av1_iadst8_new_sse4_1(const __m128i *input, __m128i *output,
                            const int8_t cos_bit, const int8_t *stage_range);
 void av1_iadst16_new_sse4_1(const __m128i *input, __m128i *output,
                             const int8_t cos_bit, const int8_t *stage_range);
-void av1_iadst32_new_sse4_1(const __m128i *input, __m128i *output,
-                            const int8_t cos_bit, const int8_t *stage_range);
-
 static INLINE void transpose_32_4x4(int stride, const __m128i *input,
                                     __m128i *output) {
   __m128i temp0 = _mm_unpacklo_epi32(input[0 * stride], input[2 * stride]);

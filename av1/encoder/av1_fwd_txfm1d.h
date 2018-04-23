@@ -34,8 +34,6 @@ void av1_fadst8_new(const int32_t *input, int32_t *output, int8_t cos_bit,
                     const int8_t *stage_range);
 void av1_fadst16_new(const int32_t *input, int32_t *output, int8_t cos_bit,
                      const int8_t *stage_range);
-void av1_fadst32_new(const int32_t *input, int32_t *output, int8_t cos_bit,
-                     const int8_t *stage_range);
 void av1_fidentity4_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                       const int8_t *stage_range);
 void av1_fidentity8_c(const int32_t *input, int32_t *output, int8_t cos_bit,

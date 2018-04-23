@@ -133,35 +133,62 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
   int lr_flip_;  // flip left to right
 };
 
+static double avg_error_ls[TX_SIZES_ALL] = {
+  0.5,   // 4x4 transform
+  0.5,   // 8x8 transform
+  1.2,   // 16x16 transform
+  6.1,   // 32x32 transform
+  3.4,   // 64x64 transform
+  0.57,  // 4x8 transform
+  0.68,  // 8x4 transform
+  0.92,  // 8x16 transform
+  1.1,   // 16x8 transform
+  4.1,   // 16x32 transform
+  6,     // 32x16 transform
+  3.5,   // 32x64 transform
+  5.7,   // 64x32 transform
+  0.6,   // 4x16 transform
+  0.9,   // 16x4 transform
+  1.2,   // 8x32 transform
+  1.7,   // 32x8 transform
+  2.0,   // 16x64 transform
+  4.7,   // 64x16 transform
+};
+
+static double max_error_ls[TX_SIZES_ALL] = {
+  3,    // 4x4 transform
+  5,    // 8x8 transform
+  11,   // 16x16 transform
+  70,   // 32x32 transform
+  64,   // 64x64 transform
+  3.9,  // 4x8 transform
+  4.3,  // 8x4 transform
+  12,   // 8x16 transform
+  12,   // 16x8 transform
+  32,   // 16x32 transform
+  46,   // 32x16 transform
+  136,  // 32x64 transform
+  136,  // 64x32 transform
+  5,    // 4x16 transform
+  6,    // 16x4 transform
+  21,   // 8x32 transform
+  13,   // 32x8 transform
+  30,   // 16x64 transform
+  36,   // 64x16 transform
+};
+
 vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
   vector<AV1FwdTxfm2dParam> param_list;
-  for (int t = 0; t < TX_TYPES; ++t) {
-    const TX_TYPE tx_type = static_cast<TX_TYPE>(t);
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X4, 3, 0.5));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X8, 5, 0.5));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X16, 11, 1.2));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X32, 70, 6.1));
-    if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
-      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X64, 64, 3.4));
-    }
-
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 3.9, 0.57));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 4.3, 0.68));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X16, 12, 0.92));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X8, 12, 1.1));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X32, 32, 4.1));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X16, 46, 6));
-
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X16, 5, 0.6));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X4, 6, 0.9));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X32, 21, 1.2));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X8, 13, 1.7));
-
-    if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
-      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X64, 136, 3.5));
-      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X32, 136, 5.7));
-      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X64, 30, 2.0));
-      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X16, 36, 4.7));
+  for (int s = 0; s < TX_SIZES; ++s) {
+    const double max_error = max_error_ls[s];
+    const double avg_error = avg_error_ls[s];
+    for (int t = 0; t < TX_TYPES; ++t) {
+      const TX_TYPE tx_type = static_cast<TX_TYPE>(t);
+      const TX_SIZE tx_size = static_cast<TX_SIZE>(s);
+      if (libaom_test::isTxSizeTypeValid(tx_size, tx_type)) {
+        param_list.push_back(
+            AV1FwdTxfm2dParam(tx_type, tx_size, max_error, avg_error));
+      }
     }
   }
   return param_list;

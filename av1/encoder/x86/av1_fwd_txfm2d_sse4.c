@@ -54,7 +54,6 @@ static void fdct32_new_sse4_1(const __m128i *input, __m128i *output,
 static INLINE TxfmFuncSSE2 fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {
     case TXFM_TYPE_DCT32: return fdct32_new_sse4_1; break;
-    case TXFM_TYPE_ADST32: return av1_fadst32_new_sse4_1; break;
     default: assert(0);
   }
   return NULL;
