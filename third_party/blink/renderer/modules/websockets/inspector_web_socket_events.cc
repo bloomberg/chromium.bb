@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -18,15 +20,21 @@ std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::Data(
     unsigned long identifier,
     const KURL& url,
     const String& protocol) {
+  DCHECK(execution_context->IsContextThread());
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("identifier", identifier);
   value->SetString("url", url.GetString());
   if (execution_context->IsDocument()) {
     value->SetString("frame", IdentifiersFactory::FrameId(
                                   ToDocument(execution_context)->GetFrame()));
+  } else if (execution_context->IsWorkerGlobalScope()) {
+    value->SetString("workerId", IdentifiersFactory::IdFromToken(
+                                     ToWorkerGlobalScope(execution_context)
+                                         ->GetThread()
+                                         ->GetDevToolsWorkerToken()));
   } else {
-    // TODO(nhiroki): Support WorkerGlobalScope (https://crbug.com/825740).
-    NOTREACHED();
+    NOTREACHED()
+        << "WebSocket is available only in Document and WorkerGlobalScope";
   }
   if (!protocol.IsNull())
     value->SetString("webSocketProtocol", protocol);
@@ -37,14 +45,20 @@ std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::Data(
 std::unique_ptr<TracedValue> InspectorWebSocketEvent::Data(
     ExecutionContext* execution_context,
     unsigned long identifier) {
+  DCHECK(execution_context->IsContextThread());
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("identifier", identifier);
   if (execution_context->IsDocument()) {
     value->SetString("frame", IdentifiersFactory::FrameId(
                                   ToDocument(execution_context)->GetFrame()));
+  } else if (execution_context->IsWorkerGlobalScope()) {
+    value->SetString("workerId", IdentifiersFactory::IdFromToken(
+                                     ToWorkerGlobalScope(execution_context)
+                                         ->GetThread()
+                                         ->GetDevToolsWorkerToken()));
   } else {
-    // TODO(nhiroki): Support WorkerGlobalScope (https://crbug.com/825740).
-    NOTREACHED();
+    NOTREACHED()
+        << "WebSocket is available only in Document and WorkerGlobalScope";
   }
   SetCallStack(value.get());
   return value;
