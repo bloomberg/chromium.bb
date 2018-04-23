@@ -8,9 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "base/containers/mru_cache.h"
 #include "base/memory/memory_coordinator_client.h"
@@ -93,8 +91,6 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   using ImageMRUCache = base::
       HashingMRUCache<CacheKey, std::unique_ptr<CacheEntry>, CacheKeyHash>;
-  using ContentIdSet = std::set<PaintImage::ContentId>;
-  using CacheKeySet = std::unordered_set<CacheKey, CacheKeyHash>;
 
   // Actually decode the image. Note that this function can (and should) be
   // called with no lock acquired, since it can do a lot of work. Note that it
@@ -126,10 +122,6 @@ class CC_EXPORT SoftwareImageDecodeCache
                                            DecodeTaskType type);
 
   CacheEntry* AddCacheEntry(const CacheKey& key);
-  // If the entry at |*it| is not in use, erase it and update |*it| to point to
-  // the next entry. If unable to erase the entry, update |*it| to point to the
-  // next entry.
-  void EraseCacheEntry(ImageMRUCache::reverse_iterator* it);
 
   void DecodeImageIfNecessary(const CacheKey& key,
                               const PaintImage& paint_image,
@@ -147,11 +139,6 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   // Decoded images and ref counts (predecode path).
   ImageMRUCache decoded_images_;
-
-  // Additional tracking of all entries in |decoded_images_| by static id and
-  // by content id. Updated only in AddCacheEntry and EraseCacheEntry.
-  std::map<PaintImage::Id, ContentIdSet> stable_id_to_content_ids_;
-  std::map<PaintImage::ContentId, CacheKeySet> content_id_to_cache_keys_;
 
   // A map of PaintImage::FrameKey to the ImageKeys for cached decodes of this
   // PaintImage.

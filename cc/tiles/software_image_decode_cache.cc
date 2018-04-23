@@ -554,7 +554,21 @@ void SoftwareImageDecodeCache::ReduceCacheUsageUntilWithinLimit(size_t limit) {
       std::max(lifetime_max_items_in_cache_, decoded_images_.size());
   for (auto it = decoded_images_.rbegin();
        decoded_images_.size() > limit && it != decoded_images_.rend();) {
-    EraseCacheEntry(&it);
+    if (it->second->ref_count != 0) {
+      ++it;
+      continue;
+    }
+
+    const CacheKey& key = it->first;
+    auto vector_it = frame_key_to_image_keys_.find(key.frame_key());
+    auto item_it =
+        std::find(vector_it->second.begin(), vector_it->second.end(), key);
+    DCHECK(item_it != vector_it->second.end());
+    vector_it->second.erase(item_it);
+    if (vector_it->second.empty())
+      frame_key_to_image_keys_.erase(vector_it);
+
+    it = decoded_images_.Erase(it);
   }
 }
 
@@ -659,84 +673,10 @@ void SoftwareImageDecodeCache::OnPurgeMemory() {
 SoftwareImageDecodeCache::CacheEntry* SoftwareImageDecodeCache::AddCacheEntry(
     const CacheKey& key) {
   lock_.AssertAcquired();
-
   frame_key_to_image_keys_[key.frame_key()].push_back(key);
-
-  PaintImage::ContentId content_id = key.frame_key().content_id();
-  content_id_to_cache_keys_[content_id].insert(key);
-  ContentIdSet& content_ids_for_stable_id =
-      stable_id_to_content_ids_[key.stable_id()];
-  content_ids_for_stable_id.insert(content_id);
-
   auto it = decoded_images_.Put(key, std::make_unique<CacheEntry>());
   it->second.get()->mark_cached();
-
-  // If we have more than two content ids for this stable id, then try to erase
-  // all images for all content ids except for the most recent two (and also
-  // |key|'s content id, in case it is not one of the most recent two).
-  if (content_ids_for_stable_id.size() > 2) {
-    ContentIdSet content_ids_to_remove = content_ids_for_stable_id;
-    content_ids_to_remove.erase(*content_ids_to_remove.rbegin());
-    content_ids_to_remove.erase(*content_ids_to_remove.rbegin());
-    content_ids_to_remove.erase(content_id);
-    for (auto content_id_to_erase : content_ids_to_remove) {
-      CacheKeySet cache_keys_to_remove =
-          content_id_to_cache_keys_[content_id_to_erase];
-      for (const CacheKey& key : cache_keys_to_remove) {
-        auto found = decoded_images_.Peek(key);
-        DCHECK(found != decoded_images_.end());
-        auto found_reversed = std::make_reverse_iterator(found);
-        EraseCacheEntry(&found_reversed);
-      }
-    }
-  }
-
   return it->second.get();
-}
-
-void SoftwareImageDecodeCache::EraseCacheEntry(
-    ImageMRUCache::reverse_iterator* it) {
-  if ((*it)->second->ref_count != 0) {
-    ++(*it);
-    return;
-  }
-  const CacheKey& key = (*it)->first;
-  PaintImage::ContentId content_id = key.frame_key().content_id();
-  PaintImage::Id stable_id = key.stable_id();
-
-  // Remove from |content_id_to_cache_keys_|.
-  auto found_cache_key_set = content_id_to_cache_keys_.find(content_id);
-  DCHECK(found_cache_key_set != content_id_to_cache_keys_.end());
-  found_cache_key_set->second.erase(key);
-  // If this erases the last entry for |content_id|, then...
-  if (found_cache_key_set->second.empty()) {
-    // Erase |content_id| from |content_id_to_cache_keys_|.
-    content_id_to_cache_keys_.erase(found_cache_key_set);
-    // Erase |content_id| from |stable_id_to_content_ids_[stable_id]|.
-    auto found_content_id_set = stable_id_to_content_ids_.find(stable_id);
-    DCHECK(found_content_id_set != stable_id_to_content_ids_.end());
-    auto found_content_id = found_content_id_set->second.find(content_id);
-    DCHECK(found_content_id != found_content_id_set->second.end());
-    found_content_id_set->second.erase(found_content_id);
-    // If that empties |stable_id_to_content_ids_[stable_id]|, then erase
-    // |stable_id| from |stable_id_to_content_ids_|.
-    if (found_content_id_set->second.empty()) {
-      stable_id_to_content_ids_.erase(found_content_id_set);
-    }
-  }
-
-  // Remove from |frame_key_to_image_keys_|.
-  auto vector_it = frame_key_to_image_keys_.find(key.frame_key());
-  auto item_it =
-      std::find(vector_it->second.begin(), vector_it->second.end(), key);
-  DCHECK(item_it != vector_it->second.end());
-  vector_it->second.erase(item_it);
-  if (vector_it->second.empty())
-    frame_key_to_image_keys_.erase(vector_it);
-
-  // Remove from the MRU cache.
-  *it = decoded_images_.Erase(*it);
-  return;
 }
 
 // MemoryBudget ----------------------------------------------------------------
