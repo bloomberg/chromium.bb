@@ -71,8 +71,7 @@ constexpr char kLoginUserLabelClassName[] = "LoginUserLabel";
 constexpr char kLoginUserDomainClassName[] = "LoginUserDomain";
 
 // Color of the user domain text.
-constexpr SkColor kDomainTextColor =
-    SkColorSetARGBMacro(0xAB, 0xFF, 0xFF, 0xFF);
+constexpr SkColor kDomainTextColor = SkColorSetARGB(0xAB, 0xFF, 0xFF, 0xFF);
 constexpr int kEnterpriseIconSizeDp = 12;
 constexpr int kBetweenEnterpriseIconAndDomainDp = 8;
 constexpr int kVerticalSpacingBetweenUserNameAndDomainDp = 14;

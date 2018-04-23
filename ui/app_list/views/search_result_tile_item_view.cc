@@ -47,16 +47,14 @@ constexpr int kSearchRatingStarVerticalSpacing = 2;
 constexpr int kIconSelectedSize = 56;
 constexpr int kIconSelectedCornerRadius = 4;
 // Icon selected color, #000 8%.
-constexpr int kIconSelectedColor = SkColorSetARGBMacro(0x14, 0x00, 0x00, 0x00);
+constexpr int kIconSelectedColor = SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
 
-constexpr SkColor kSearchTitleColor =
-    SkColorSetARGBMacro(0xDF, 0x00, 0x00, 0x00);
+constexpr SkColor kSearchTitleColor = SkColorSetARGB(0xDF, 0x00, 0x00, 0x00);
 constexpr SkColor kSearchAppRatingColor =
-    SkColorSetARGBMacro(0x8F, 0x00, 0x00, 0x00);
-constexpr SkColor kSearchAppPriceColor =
-    SkColorSetARGBMacro(0xFF, 0x0F, 0x9D, 0x58);
+    SkColorSetARGB(0x8F, 0x00, 0x00, 0x00);
+constexpr SkColor kSearchAppPriceColor = SkColorSetARGB(0xFF, 0x0F, 0x9D, 0x58);
 constexpr SkColor kSearchRatingStarColor =
-    SkColorSetARGBMacro(0x8F, 0x00, 0x00, 0x00);
+    SkColorSetARGB(0x8F, 0x00, 0x00, 0x00);
 
 // The background image source for badge.
 class BadgeBackgroundImageSource : public gfx::CanvasImageSource {

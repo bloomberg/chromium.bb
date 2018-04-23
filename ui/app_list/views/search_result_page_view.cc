@@ -45,7 +45,7 @@ constexpr int kSeparatorThickness = 1;
 // The height of the search box in this page.
 constexpr int kSearchBoxHeight = 56;
 
-constexpr SkColor kSeparatorColor = SkColorSetARGBMacro(0x1F, 0x00, 0x00, 0x00);
+constexpr SkColor kSeparatorColor = SkColorSetARGB(0x1F, 0x00, 0x00, 0x00);
 
 // A container view that ensures the card background and the shadow are painted
 // in the correct order.

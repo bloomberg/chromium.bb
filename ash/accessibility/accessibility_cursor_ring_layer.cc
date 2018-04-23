@@ -67,8 +67,7 @@ void AccessibilityCursorRingLayer::OnPaintLayer(
   r.Inset(kLayerMargin, kLayerMargin, kLayerMargin, kLayerMargin);
   const int w = kGradientWidth;
   for (int i = 0; i < w; ++i) {
-    flags.setColor(
-        SkColorSetARGBMacro(255 * i * i / (w * w), red_, green_, blue_));
+    flags.setColor(SkColorSetARGB(255 * i * i / (w * w), red_, green_, blue_));
     SkPath path;
     path.addOval(SkRect::MakeXYWH(r.x(), r.y(), r.width(), r.height()));
     r.Inset(1, 1, 1, 1);

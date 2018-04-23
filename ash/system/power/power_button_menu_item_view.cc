@@ -18,10 +18,10 @@ namespace ash {
 namespace {
 
 // Color of the image icon.
-constexpr SkColor kItemIconColor = SkColorSetARGBMacro(0xFF, 0x20, 0x21, 0x24);
+constexpr SkColor kItemIconColor = SkColorSetARGB(0xFF, 0x20, 0x21, 0x24);
 
 // Color of the title of the label.
-constexpr SkColor kItemTitleColor = SkColorSetARGBMacro(0xFF, 0x5F, 0x63, 0x68);
+constexpr SkColor kItemTitleColor = SkColorSetARGB(0xFF, 0x5F, 0x63, 0x68);
 
 // Font size of the title should be 14p. The default font size is 12p and
 // MediumFont is 15p. We use MediumFont for the title plus the delta here.
@@ -41,11 +41,10 @@ constexpr int kFocusedItemRoundRectRadiusDp = 8;
 
 // Color of the focused menu item's border.
 constexpr SkColor kFocusedItemBorderColor =
-    SkColorSetARGBMacro(0x66, 0x1A, 0x73, 0xE8);
+    SkColorSetARGB(0x66, 0x1A, 0x73, 0xE8);
 
 // Color of the focused menu item.
-constexpr SkColor kFocusedItemColor =
-    SkColorSetARGBMacro(0x0A, 0x1A, 0x73, 0xE8);
+constexpr SkColor kFocusedItemColor = SkColorSetARGB(0x0A, 0x1A, 0x73, 0xE8);
 
 }  // namespace
 

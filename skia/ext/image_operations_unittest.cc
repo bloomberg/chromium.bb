@@ -519,10 +519,8 @@ TEST(ImageOperations, ScaleUp) {
 
   for (int src_y = 0; src_y < src_h; ++src_y) {
     for (int src_x = 0; src_x < src_w; ++src_x) {
-      *src.getAddr32(src_x, src_y) = SkColorSetARGBInline(255,
-                                                          10 + src_x * 100,
-                                                          10 + src_y * 100,
-                                                          0);
+      *src.getAddr32(src_x, src_y) =
+          SkColorSetARGB(255, 10 + src_x * 100, 10 + src_y * 100, 0);
     }
   }
 

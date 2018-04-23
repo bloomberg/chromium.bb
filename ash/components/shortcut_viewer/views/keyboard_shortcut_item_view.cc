@@ -27,8 +27,7 @@ namespace {
 
 // Creates the separator view between bubble views of modifiers and key.
 std::unique_ptr<views::View> CreateSeparatorView() {
-  constexpr SkColor kSeparatorColor =
-      SkColorSetARGBMacro(0xFF, 0x1A, 0x73, 0xE8);
+  constexpr SkColor kSeparatorColor = SkColorSetARGB(0xFF, 0x1A, 0x73, 0xE8);
   constexpr int kIconSize = 16;
 
   std::unique_ptr<views::ImageView> separator_view =

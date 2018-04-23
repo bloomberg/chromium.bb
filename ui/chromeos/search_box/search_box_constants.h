@@ -13,7 +13,7 @@ namespace search_box {
 // Default color used when wallpaper customized color is not available for
 // searchbox, #000 at 87% opacity.
 SEARCH_BOX_EXPORT constexpr SkColor kDefaultSearchboxColor =
-    SkColorSetARGBMacro(0xDE, 0x00, 0x00, 0x00);
+    SkColorSetARGB(0xDE, 0x00, 0x00, 0x00);
 
 // The horizontal padding of the box layout of the search box.
 SEARCH_BOX_EXPORT constexpr int kPadding = 12;

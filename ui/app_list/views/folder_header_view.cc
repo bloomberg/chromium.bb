@@ -28,7 +28,7 @@ namespace app_list {
 namespace {
 
 constexpr int kMaxFolderNameWidth = 204;
-constexpr SkColor kFolderNameColor = SkColorSetARGBMacro(138, 0, 0, 0);
+constexpr SkColor kFolderNameColor = SkColorSetARGB(138, 0, 0, 0);
 
 }  // namespace
 

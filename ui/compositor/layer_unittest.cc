@@ -1341,8 +1341,8 @@ TEST_F(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
   EXPECT_GE(viewport_size.height(), test_size);
 
   // Blue with a wee bit of transparency.
-  SkColor blue_with_alpha = SkColorSetARGBInline(40, 10, 20, 200);
-  SkColor blend_color = SkColorSetARGBInline(255, 216, 3, 32);
+  SkColor blue_with_alpha = SkColorSetARGB(40, 10, 20, 200);
+  SkColor blend_color = SkColorSetARGB(255, 216, 3, 32);
 
   std::unique_ptr<Layer> background_layer(
       CreateColorLayer(SK_ColorRED, gfx::Rect(viewport_size)));
@@ -1377,8 +1377,8 @@ TEST_F(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
   EXPECT_GE(viewport_size.height(), test_size);
 
   int blue_height = 10;
-  SkColor blue_with_alpha = SkColorSetARGBInline(40, 0, 0, 255);
-  SkColor blend_color = SkColorSetARGBInline(255, 215, 0, 40);
+  SkColor blue_with_alpha = SkColorSetARGB(40, 0, 0, 255);
+  SkColor blend_color = SkColorSetARGB(255, 215, 0, 40);
 
   std::unique_ptr<Layer> background_layer(
       CreateColorLayer(SK_ColorRED, gfx::Rect(viewport_size)));

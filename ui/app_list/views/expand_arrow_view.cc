@@ -56,11 +56,10 @@ constexpr int kArrowMoveInEndTimeInMs = 900;
 constexpr SkColor kExpandArrowColor = SK_ColorWHITE;
 constexpr SkColor kPulseColor = SK_ColorWHITE;
 constexpr SkColor kUnFocusedBackgroundColor =
-    SkColorSetARGBMacro(0xF, 0xFF, 0xFF, 0xFF);
+    SkColorSetARGB(0xF, 0xFF, 0xFF, 0xFF);
 constexpr SkColor kFocusedBackgroundColor =
-    SkColorSetARGBMacro(0x3D, 0xFF, 0xFF, 0xFF);
-constexpr SkColor kInkDropRippleColor =
-    SkColorSetARGBMacro(0x14, 0xFF, 0xFF, 0xFF);
+    SkColorSetARGB(0x3D, 0xFF, 0xFF, 0xFF);
+constexpr SkColor kInkDropRippleColor = SkColorSetARGB(0x14, 0xFF, 0xFF, 0xFF);
 
 }  // namespace
 

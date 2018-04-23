@@ -56,7 +56,7 @@ void SetupSearchIllustrationView(views::View* illustration_view,
                                  int message_id) {
   constexpr int kSearchIllustrationIconSize = 150;
   constexpr SkColor kSearchIllustrationIconColor =
-      SkColorSetARGBMacro(0xFF, 0xDA, 0xDC, 0xE0);
+      SkColorSetARGB(0xFF, 0xDA, 0xDC, 0xE0);
 
   illustration_view->set_owned_by_client();
   constexpr int kTopPadding = 98;
@@ -72,7 +72,7 @@ void SetupSearchIllustrationView(views::View* illustration_view,
   illustration_view->AddChildView(image_view);
 
   constexpr SkColor kSearchIllustrationTextColor =
-      SkColorSetARGBMacro(0xFF, 0x20, 0x21, 0x24);
+      SkColorSetARGB(0xFF, 0x20, 0x21, 0x24);
   views::Label* text = new views::Label(l10n_util::GetStringUTF16(message_id));
   text->SetEnabledColor(kSearchIllustrationTextColor);
   constexpr int kLabelFontSizeDelta = 1;

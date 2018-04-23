@@ -35,7 +35,7 @@ constexpr int kSeparatorLeftRightPadding = 4;
 constexpr int kSeparatorHeight = 46;
 constexpr int kSeparatorTopPadding = 10;
 
-constexpr SkColor kSeparatorColor = SkColorSetARGBMacro(0x1F, 0x00, 0x00, 0x00);
+constexpr SkColor kSeparatorColor = SkColorSetARGB(0x1F, 0x00, 0x00, 0x00);
 
 }  // namespace
 

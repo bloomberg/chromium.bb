@@ -19,7 +19,7 @@ namespace {
 constexpr int kSettingsIconSize = 48;
 
 // Icon color.
-constexpr SkColor kSettingsColor = SkColorSetARGBMacro(0x8A, 0x00, 0x00, 0x00);
+constexpr SkColor kSettingsColor = SkColorSetARGB(0x8A, 0x00, 0x00, 0x00);
 
 }  // namespace
 

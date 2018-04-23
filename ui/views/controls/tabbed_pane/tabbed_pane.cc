@@ -36,17 +36,17 @@ namespace {
 
 // TODO(markusheintz|msw): Use NativeTheme colors.
 constexpr SkColor kTabTitleColor_InactiveBorder =
-    SkColorSetARGBMacro(0xFF, 0x64, 0x64, 0x64);
+    SkColorSetARGB(0xFF, 0x64, 0x64, 0x64);
 constexpr SkColor kTabTitleColor_InactiveHighlight =
-    SkColorSetARGBMacro(0xFF, 0x80, 0x86, 0x8B);
+    SkColorSetARGB(0xFF, 0x80, 0x86, 0x8B);
 constexpr SkColor kTabTitleColor_ActiveBorder = SK_ColorBLACK;
 constexpr SkColor kTabTitleColor_ActiveHighlight =
-    SkColorSetARGBMacro(0xFF, 0x42, 0x85, 0xF4);
+    SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
 const SkColor kTabTitleColor_Hovered = SK_ColorBLACK;
 const SkColor kTabBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
 const SkScalar kTabBorderThickness = 1.0f;
 constexpr SkColor kTabHighlightBackgroundColor =
-    SkColorSetARGBMacro(0xFF, 0xE8, 0xF0, 0xFE);
+    SkColorSetARGB(0xFF, 0xE8, 0xF0, 0xFE);
 constexpr int kTabHighlightBorderRadius = 32;
 constexpr int kTabHighlightPreferredHeight = 32;
 constexpr int kTabHighlightPreferredWidth = 208;

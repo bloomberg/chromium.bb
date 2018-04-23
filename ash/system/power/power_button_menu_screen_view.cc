@@ -22,7 +22,7 @@ namespace ash {
 namespace {
 
 // Color of the fullscreen background shield.
-constexpr SkColor kShieldColor = SkColorSetARGBMacro(0xFF, 0x00, 0x00, 0x00);
+constexpr SkColor kShieldColor = SkColorSetARGB(0xFF, 0x00, 0x00, 0x00);
 
 // Opacity of the power button menu fullscreen background shield.
 constexpr float kPowerButtonMenuOpacity = 0.6f;
