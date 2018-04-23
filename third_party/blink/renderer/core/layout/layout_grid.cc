@@ -319,12 +319,13 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutSize previous_size = Size();
     has_definite_logical_height_ = HasDefiniteLogicalHeight();
 
-    // Grid's layout logic controls the grid item's override size, hence
-    // we need to clear any override size set previously, so it doesn't
+    // Grid's layout logic controls the grid item's override height, hence
+    // we need to clear any override height set previously, so it doesn't
     // interfere in current layout execution.
+    // Grid never uses the override width, that's why we don't need to clear it.
     for (auto* child = FirstInFlowChildBox(); child;
          child = child->NextInFlowSiblingBox())
-      child->ClearOverrideContentSize();
+      child->ClearOverrideContentLogicalHeight();
 
     UpdateLogicalWidth();
 
