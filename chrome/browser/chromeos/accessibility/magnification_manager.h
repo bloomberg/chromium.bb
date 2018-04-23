@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_MAGNIFICATION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_MAGNIFICATION_MANAGER_H_
 
-#include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
 #include "base/macros.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -16,18 +15,14 @@ class Profile;
 
 namespace chromeos {
 
-// MagnificationManager controls the Fullscreen and Docked magnifier from
-// chrome-browser side (not ash side).
+// MagnificationManager controls the full screen magnifier from chrome-browser
+// side (not ash side).
 //
-// MagnificationManager does below for Fullscreen magnifier:
-// TODO(warx): Move to ash.
+// MagnificationManager does:
 //   - Watch logged-in. Changes the behavior between the login screen and user
 //     desktop.
 //   - Watch change of the pref. When the pref changes, the setting of the
 //     magnifier will interlock with it.
-//
-// MagnificationManager also observes focus changed in page and calls Ash when
-// either Fullscreen or Docked magnifier is enabled.
 class MagnificationManager
     : public content::NotificationObserver,
       public user_manager::UserManager::UserSessionStateObserver {
@@ -41,16 +36,16 @@ class MagnificationManager
   // Returns the existing instance. If there is no instance, returns NULL.
   static MagnificationManager* Get();
 
-  // Returns if the Fullscreen magnifier is enabled.
+  // Returns if the screen magnifier is enabled.
   bool IsMagnifierEnabled() const;
 
-  // Enables the Fullscreen magnifier.
+  // Enables the screen magnifier.
   void SetMagnifierEnabled(bool enabled);
 
-  // Saves the Fullscreen magnifier scale to the pref.
+  // Saves the magnifier scale to the pref.
   void SaveScreenMagnifierScale(double scale);
 
-  // Loads the Fullscreen magnifier scale from the pref.
+  // Loads the magnifier scale from the pref.
   double GetSavedScreenMagnifierScale() const;
 
   void SetProfileForTest(Profile* profile);
@@ -74,22 +69,19 @@ class MagnificationManager
   void SetMagnifierScaleInternal(double scale);
   void UpdateMagnifierFromPrefs();
 
-  // Called when received content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE.
-  void HandleFocusChangedInPage(const content::NotificationDetails& details);
+  void MonitorFocusInPageChange();
 
   Profile* profile_ = nullptr;
 
-  bool fullscreen_magnifier_enabled_ = false;
+  bool enabled_ = false;
   bool keep_focus_centered_ = false;
   double scale_ = 0.0;
+  bool observing_focus_change_in_page_ = false;
 
   content::NotificationRegistrar registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<user_manager::ScopedUserSessionStateObserver>
       session_state_observer_;
-
-  // Ash's mojom::DockedMagnifierController used to request Ash's a11y feature.
-  ash::mojom::DockedMagnifierControllerPtr docked_magnifier_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MagnificationManager);
 };
