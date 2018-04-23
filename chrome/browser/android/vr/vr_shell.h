@@ -227,7 +227,8 @@ class VrShell : device::GvrGamepadDataProvider,
                          float x,
                          float y);
   void SetDialogFloating(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj);
+                         const base::android::JavaParamRef<jobject>& obj,
+                         bool floating);
 
   void ShowToast(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj,

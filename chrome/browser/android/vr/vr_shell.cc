@@ -628,11 +628,12 @@ void VrShell::SetDialogLocation(JNIEnv* env,
                                            gl_thread_->GetVrShellGl(), x, y));
 }
 
-void VrShell::SetDialogFloating(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::SetDialogFloating,
-                                           gl_thread_->GetVrShellGl()));
+void VrShell::SetDialogFloating(JNIEnv* env,
+                                const base::android::JavaParamRef<jobject>& obj,
+                                bool floating) {
+  PostToGlThread(FROM_HERE,
+                 base::BindOnce(&VrShellGl::SetDialogFloating,
+                                gl_thread_->GetVrShellGl(), floating));
 }
 
 void VrShell::ShowToast(JNIEnv* env,

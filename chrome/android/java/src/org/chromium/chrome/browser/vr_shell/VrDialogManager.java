@@ -49,7 +49,9 @@ public interface VrDialogManager {
     void initVrDialog(int width, int height);
 
     /**
-     * Set dialog as floating. This means that Dialog can change its position
+     * Set dialog as floating or not floating. Floting means that Dialog can change its position.
+     *
+     * @param floating indicates if the dialog is floating.
      */
-    void setDialogFloating();
+    void setDialogFloating(boolean floating);
 }

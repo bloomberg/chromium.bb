@@ -28,6 +28,7 @@ public class VrPopupWindow extends PopupWindow {
         super(context);
         mContext = context;
         mVrDialogManager = vrDialogManager;
+        mVrDialogManager.setDialogFloating(true);
     }
 
     @Override
@@ -44,7 +45,6 @@ public class VrPopupWindow extends PopupWindow {
         mVrPopupContainer.addView(dialogView, params);
         mVrDialogManager.setDialogView(mVrPopupContainer);
         mVrDialogManager.initVrDialog(getWidth(), getHeight());
-        mVrDialogManager.setDialogFloating();
         mVrDialogManager.setDialogLocation(x, y);
         mIsShowing = true;
     }

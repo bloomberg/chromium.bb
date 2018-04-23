@@ -312,7 +312,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void SetAlertDialogSize(float width, float height);
   void SetDialogLocation(float x, float y);
-  void SetDialogFloating();
+  void SetDialogFloating(bool floating);
 
   void ShowToast(const base::string16& text);
   void CancelToast();

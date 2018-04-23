@@ -786,8 +786,8 @@ public class VrShellImpl
     }
 
     @Override
-    public void setDialogFloating() {
-        nativeSetDialogFloating(mNativeVrShell);
+    public void setDialogFloating(boolean floating) {
+        nativeSetDialogFloating(mNativeVrShell, floating);
     }
 
     /**
@@ -1163,7 +1163,7 @@ public class VrShellImpl
     private native void nativeSetDialogBufferSize(long nativeVrShell, float width, float height);
     private native void nativeSetAlertDialogSize(long nativeVrShell, float width, float height);
     private native void nativeSetDialogLocation(long nativeVrShell, float x, float y);
-    private native void nativeSetDialogFloating(long nativeVrShell);
+    private native void nativeSetDialogFloating(long nativeVrShell, boolean floating);
     private native void nativeShowToast(long nativeVrShell, String text);
     private native void nativeCancelToast(long nativeVrShell);
     private native void nativeSetHistoryButtonsEnabled(

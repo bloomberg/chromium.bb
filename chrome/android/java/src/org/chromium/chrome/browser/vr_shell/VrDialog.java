@@ -34,6 +34,7 @@ public class VrDialog extends FrameLayout {
                 DIALOG_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.LEFT));
         setBackgroundColor(Color.WHITE);
         mVrDialogManager = vrDialogManager;
+        mVrDialogManager.setDialogFloating(false);
     }
 
     /**
