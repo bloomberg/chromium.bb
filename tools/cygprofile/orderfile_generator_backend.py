@@ -141,31 +141,6 @@ def _UnstashOutputDirectory(buildpath):
   shutil.move(stashpath, buildpath)
 
 
-def _EnsureOrderfileStartsWithAnchorSection(filename):
-  """Ensures that the orderfile starts with the right anchor symbol.
-
-  This changes the orderfile, if required.
-
-  Args:
-    filename: (str) Path to the orderfile.
-  """
-  anchor_section = '.text.dummy_function_to_anchor_text'
-  with open(filename, 'r') as f:
-    if f.readline().strip() == anchor_section:
-      return
-  try:
-    f = tempfile.NamedTemporaryFile(dir=os.path.dirname(filename), delete=False)
-    f.write(anchor_section + '\n')
-    with open(filename, 'r') as orderfile_file:
-      for line in orderfile_file:
-        f.write(line + '\n')
-    f.close()
-    os.rename(f.name, filename)
-  finally:
-    if os.path.exists(f.name):
-      os.remove(f.name)
-
-
 class StepRecorder(object):
   """Records steps and timings."""
 
@@ -648,7 +623,6 @@ class OrderfileGenerator(object):
             self._step_recorder, self._options.arch, self._options.jobs,
             self._options.max_load, self._options.use_goma,
             self._options.goma_dir)
-        _EnsureOrderfileStartsWithAnchorSection(self._GetPathToOrderfile())
         self._compiler.CompileChromeApk(True)
         self._GenerateAndProcessProfile()
         self._MaybeArchiveOrderfile(self._GetUnpatchedOrderfileFilename())

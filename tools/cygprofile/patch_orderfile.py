@@ -384,8 +384,6 @@ def GeneratePatchedOrderfile(unpatched_orderfile, native_lib_filename,
     # after everything else.
     # See the comment in //base/android/library_loader/anchor_functions.cc.
     for prefix in _PREFIXES:
-      f.write(prefix + 'dummy_function_to_anchor_text\n')
-    for prefix in _PREFIXES:
       f.write(prefix + 'dummy_function_start_of_ordered_text\n')
 
     for section in expanded_sections:
