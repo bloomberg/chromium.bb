@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "printing/backend/print_backend.h"
@@ -273,8 +273,8 @@ PrintingContext::Result PrintingContextWin::NewDocument(
   }
 
   // No message loop running in unit tests.
-  DCHECK(!base::MessageLoop::current() ||
-         !base::MessageLoop::current()->NestableTasksAllowed());
+  DCHECK(!base::MessageLoopCurrent::Get() ||
+         !base::MessageLoopCurrent::Get()->NestableTasksAllowed());
 
   // Begin a print job by calling the StartDoc function.
   // NOTE: StartDoc() starts a message loop. That causes a lot of problems with
