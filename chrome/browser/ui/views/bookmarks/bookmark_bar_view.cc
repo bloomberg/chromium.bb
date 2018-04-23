@@ -133,7 +133,7 @@ static const int kBottomMargin = 2;
 static const int kHorizontalMargin = 4;
 
 // Padding between buttons.
-static const int kButtonPadding = 0;
+static const int kButtonPadding = 6;
 
 // Width of the drop indicator.
 static const int kDropIndicatorWidth = 2;
