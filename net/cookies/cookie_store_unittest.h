@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/threading/thread.h"
@@ -117,10 +118,10 @@ class CookieStoreTest : public testing::Test {
         http_bar_com_("http://bar.com") {
     // This test may be used outside of the net test suite, and thus may not
     // have a message loop.
-    if (!base::MessageLoop::current())
+    if (!base::MessageLoopCurrent::Get())
       message_loop_.reset(new base::MessageLoop);
     weak_factory_.reset(new base::WeakPtrFactory<base::MessageLoop>(
-        base::MessageLoop::current()));
+        base::MessageLoopCurrent::Get()));
   }
 
   // Helper methods for the asynchronous Cookie Store API that call the
