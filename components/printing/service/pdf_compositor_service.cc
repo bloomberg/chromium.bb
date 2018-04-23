@@ -18,6 +18,8 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#include "ui/base/ui_base_features.h"
 
 #if defined(OS_WIN)
 #include "content/public/child/dwrite_font_proxy_init_win.h"
@@ -64,8 +66,17 @@ std::unique_ptr<service_manager::Service> PdfCompositorService::Create(
 void PdfCompositorService::PrepareToStart() {
   // Set up discardable memory manager.
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  context()->connector()->BindInterface(content::mojom::kBrowserServiceName,
-                                        &manager_ptr);
+  if (features::IsMusEnabled()) {
+#if defined(USE_AURA)
+    context()->connector()->BindInterface(ui::mojom::kServiceName,
+                                          &manager_ptr);
+#else
+    NOTREACHED();
+#endif
+  } else {
+    context()->connector()->BindInterface(content::mojom::kBrowserServiceName,
+                                          &manager_ptr);
+  }
   discardable_shared_memory_manager_ = std::make_unique<
       discardable_memory::ClientDiscardableSharedMemoryManager>(
       std::move(manager_ptr), content::UtilityThread::Get()->GetIOTaskRunner());

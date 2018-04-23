@@ -24,6 +24,7 @@ static_library("service") {
     "//content/public/common:service_names",
     "//content/public/utility",
     "//printing/common",
+    "//services/ui/public/interfaces",
     "//skia",
     "//third_party/blink/public:blink_headers",
   ]
