@@ -74,8 +74,10 @@ TAGS_ALPHABETIZATION_RULES = {
     'enums': [('enum', LOWERCASE_NAME_FN)],
     'enum': [('int', lambda n: int(n.attributes['value'].value))],
     'histogram_suffixes_list': [('histogram_suffixes', LOWERCASE_NAME_FN)],
-    # TODO(asvitkine): Add suffix alphabetization, as done for actions.
-    'histogram_suffixes': [('affected-histogram', LOWERCASE_NAME_FN)],
+    'histogram_suffixes': [
+        ('suffix', LOWERCASE_NAME_FN),
+        ('affected-histogram', LOWERCASE_NAME_FN),
+    ],
 }
 
 
