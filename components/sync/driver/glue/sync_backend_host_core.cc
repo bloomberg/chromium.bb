@@ -347,6 +347,13 @@ void SyncBackendHostCore::DoUpdateCredentials(
   }
 }
 
+void SyncBackendHostCore::DoInvalidateCredentials() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (sync_manager_) {
+    sync_manager_->InvalidateCredentials();
+  }
+}
+
 void SyncBackendHostCore::DoStartConfiguration() {
   sync_manager_->StartConfiguration();
 }

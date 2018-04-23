@@ -144,6 +144,22 @@ class SyncEngineCaptureClearServerData : public FakeSyncEngine {
   ClearServerDataCalled clear_server_data_called_;
 };
 
+// FakeSyncEngine that calls an external callback when InvalidateCredentials is
+// called.
+class SyncEngineCaptureInvalidateCredentials : public FakeSyncEngine {
+ public:
+  explicit SyncEngineCaptureInvalidateCredentials(
+      const base::RepeatingClosure& invalidate_credentials_called)
+      : invalidate_credentials_called_(invalidate_credentials_called) {}
+
+  void InvalidateCredentials() override {
+    invalidate_credentials_called_.Run();
+  }
+
+ private:
+  base::RepeatingClosure invalidate_credentials_called_;
+};
+
 ACTION(ReturnNewFakeSyncEngine) {
   return new FakeSyncEngine();
 }
@@ -164,6 +180,10 @@ void OnClearServerDataCalled(base::Closure* captured_callback,
 ACTION_P(ReturnNewMockHostCaptureClearServerData, captured_callback) {
   return new SyncEngineCaptureClearServerData(base::Bind(
       &OnClearServerDataCalled, base::Unretained(captured_callback)));
+}
+
+ACTION_P(ReturnNewMockHostCaptureInvalidateCredentials, callback) {
+  return new SyncEngineCaptureInvalidateCredentials(callback);
 }
 
 // A test harness that uses a real ProfileSyncService and in most cases a
@@ -312,6 +332,13 @@ class ProfileSyncServiceTest : public ::testing::Test {
     EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
         .Times(1)
         .WillOnce(ReturnNewMockHostCaptureClearServerData(captured_callback));
+  }
+
+  void ExpectSyncEngineCreationCaptureInvalidateCredentials(
+      const base::RepeatingClosure& callback) {
+    EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
+        .Times(1)
+        .WillOnce(ReturnNewMockHostCaptureInvalidateCredentials(callback));
   }
 
   void PrepareDelayedInitSyncEngine() {
@@ -609,6 +636,44 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
 
   auth_service()->RevokeCredentials(primary_account_id);
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
+}
+
+// Checks that CREDENTIALS_REJECTED_BY_CLIENT resets the access token and stops
+// Sync. Regression test for https://crbug.com/824791.
+TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
+  bool invalidate_credentials_called = false;
+  base::RepeatingClosure invalidate_credentials_callback =
+      base::BindRepeating([](bool* called) { *called = true; },
+                          base::Unretained(&invalidate_credentials_called));
+  CreateService(ProfileSyncService::AUTO_START);
+  IssueTestTokens();
+  ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
+  ExpectSyncEngineCreationCaptureInvalidateCredentials(
+      invalidate_credentials_callback);
+  InitializeForNthSync();
+  ASSERT_TRUE(service()->IsSyncActive());
+
+  std::string primary_account_id =
+      signin_manager()->GetAuthenticatedAccountId();
+  auth_service()->LoadCredentials(primary_account_id);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
+
+  GoogleServiceAuthError rejected_by_client =
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_CLIENT);
+  auth_service()->UpdateAuthErrorForTesting(primary_account_id,
+                                            rejected_by_client);
+  // The access token is not yet invalidated, it will be invalidated when
+  // OnRefreshTokenAvailable() is called.
+  EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
+  EXPECT_FALSE(invalidate_credentials_called);
+  auth_service()->LoadCredentials(primary_account_id);
+  ASSERT_EQ(rejected_by_client,
+            auth_service()->GetAuthError(primary_account_id));
+  EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
+  EXPECT_TRUE(invalidate_credentials_called);
 }
 
 // CrOS does not support signout.

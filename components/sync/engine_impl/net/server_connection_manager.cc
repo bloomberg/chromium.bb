@@ -155,16 +155,20 @@ ServerConnectionManager::MakeActiveConnection() {
 
 bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (previously_invalidated_token != auth_token) {
+
+  if (!auth_token.empty() && (previously_invalidated_token != auth_token)) {
     auth_token_.assign(auth_token);
     previously_invalidated_token = std::string();
     return true;
   }
 
-  // This could happen in case like server outage/bug. E.g. token returned by
-  // first request is considered invalid by sync server and because
-  // of token server's caching policy, etc, same token is returned on second
-  // request. Need to notify sync frontend again to request new token,
+  if (auth_token.empty())
+    InvalidateAndClearAuthToken();
+
+  // The auth token could be non-empty in cases like server outage/bug. E.g.
+  // token returned by first request is considered invalid by sync server and
+  // because of token server's caching policy, etc, same token is returned on
+  // second request. Need to notify sync frontend again to request new token,
   // otherwise backend will stay in SYNC_AUTH_ERROR state while frontend thinks
   // everything is fine and takes no actions.
   SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);

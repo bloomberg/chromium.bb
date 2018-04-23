@@ -60,6 +60,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void Initialize(InitParams params) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
+  void InvalidateCredentials() override;
   void StartConfiguration() override;
   void StartSyncingWithServer() override;
   void SetEncryptionPassphrase(const std::string& passphrase,

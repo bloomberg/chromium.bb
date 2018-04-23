@@ -72,6 +72,7 @@ class SyncManagerImpl
                           ModelTypeSet to_journal,
                           ModelTypeSet to_unapply) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
+  void InvalidateCredentials() override;
   void StartSyncingNormally(base::Time last_poll_time) override;
   void StartConfiguration() override;
   void ConfigureSyncer(ConfigureReason reason,

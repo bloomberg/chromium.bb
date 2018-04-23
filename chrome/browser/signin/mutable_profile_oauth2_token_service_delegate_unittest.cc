@@ -1280,3 +1280,58 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GetAuthError) {
                     CREDENTIALS_REJECTED_BY_CLIENT),
             oauth2_service_delegate_->GetAuthError("account_id_2"));
 }
+
+// Checks that OnAuthErrorChanged() is called before OnRefreshTokenAvailable,
+// and that the error state is correctly available from within both calls.
+// Regression test for https://crbug.com/824791.
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       InvalidTokenObserverCallsOrdering) {
+  class TokenServiceErrorObserver : public OAuth2TokenService::Observer {
+   public:
+    explicit TokenServiceErrorObserver(
+        MutableProfileOAuth2TokenServiceDelegate* delegate)
+        : delegate_(delegate) {}
+
+    void OnAuthErrorChanged(const std::string& account_id,
+                            const GoogleServiceAuthError& auth_error) override {
+      error_changed_ = true;
+      EXPECT_FALSE(token_available_)
+          << "OnAuthErrorChanged() should be called first";
+      EXPECT_EQ(auth_error, delegate_->GetAuthError(account_id));
+      CheckTokenState(account_id);
+    }
+
+    void OnRefreshTokenAvailable(const std::string& account_id) override {
+      token_available_ = true;
+      EXPECT_TRUE(error_changed_)
+          << "OnAuthErrorChanged() should be called first";
+      CheckTokenState(account_id);
+    }
+
+    void CheckTokenState(const std::string& account_id) {
+      EXPECT_EQ("account_id", account_id);
+      EXPECT_TRUE(delegate_->RefreshTokenIsAvailable("account_id"));
+      EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                    GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                        CREDENTIALS_REJECTED_BY_CLIENT),
+                delegate_->GetAuthError("account_id"));
+    }
+
+    MutableProfileOAuth2TokenServiceDelegate* delegate_;
+    bool error_changed_ = false;
+    bool token_available_ = false;
+
+    DISALLOW_COPY_AND_ASSIGN(TokenServiceErrorObserver);
+  };
+
+  CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
+  TokenServiceErrorObserver token_service_observer(
+      oauth2_service_delegate_.get());
+  oauth2_service_delegate_->AddObserver(&token_service_observer);
+  oauth2_service_delegate_->UpdateCredentials(
+      "account_id",
+      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+  EXPECT_TRUE(token_service_observer.token_available_);
+  EXPECT_TRUE(token_service_observer.error_changed_);
+  oauth2_service_delegate_->RemoveObserver(&token_service_observer);
+}

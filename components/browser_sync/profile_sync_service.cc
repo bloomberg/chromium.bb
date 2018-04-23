@@ -631,6 +631,31 @@ void ProfileSyncService::OnRefreshTokenRevoked(const std::string& account_id) {
 
 void ProfileSyncService::OnRefreshTokensLoaded() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  GoogleServiceAuthError token_error =
+      oauth2_token_service_->GetAuthError(signin_->GetAccountIdToUse());
+  if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                             CREDENTIALS_REJECTED_BY_CLIENT)) {
+    // When the refresh token is replaced by a new token with a
+    // CREDENTIALS_REJECTED_BY_CLIENT error, Sync must be stopped immediately,
+    // even if the current access token is still valid. This happens e.g. when
+    // the user signs out of the web with Dice enabled.
+    // It is not necessary to do this when the refresh token is
+    // CREDENTIALS_REJECTED_BY_SERVER, because in that case the access token
+    // will be rejected by the server too.
+    // We only do this in OnRefreshTokensLoaded(), as opposed to
+    // OAuth2TokenService::Observer::OnAuthErrorChanged(), because
+    // CREDENTIALS_REJECTED_BY_CLIENT is only set by the signin component when
+    // the refresh token is created.
+    access_token_.clear();
+    request_access_token_retry_timer_.Stop();
+    ongoing_access_token_fetch_.reset();
+    is_auth_in_progress_ = false;
+    if (HasSyncingEngine())
+      engine_->InvalidateCredentials();
+  }
+
   // This notification gets fired when OAuth2TokenService loads the tokens from
   // storage. Initialize the engine if sync is enabled. If the sync token was
   // not loaded, GetCredentials() will generate invalid credentials to cause the
