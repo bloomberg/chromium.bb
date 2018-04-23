@@ -450,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanXYMainThreadJanky) {
                 gfx::Vector2d(45, 45), kShortJankTime);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_PanXYAtXAreaMainThreadJanky DISABLED_PanXYAtXAreaMainThreadJanky
 #else
 #define MAYBE_PanXYAtXAreaMainThreadJanky PanXYAtXAreaMainThreadJanky
