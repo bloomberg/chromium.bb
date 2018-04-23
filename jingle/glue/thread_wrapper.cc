@@ -37,7 +37,7 @@ base::LazyInstance<base::ThreadLocalPointer<JingleThreadWrapper>>::
 // static
 void JingleThreadWrapper::EnsureForCurrentMessageLoop() {
   if (JingleThreadWrapper::current() == nullptr) {
-    base::MessageLoop* message_loop = base::MessageLoop::current();
+    base::MessageLoopCurrent message_loop = base::MessageLoopCurrent::Get();
     std::unique_ptr<JingleThreadWrapper> wrapper =
         JingleThreadWrapper::WrapTaskRunner(message_loop->task_runner());
     message_loop->AddDestructionObserver(wrapper.release());
