@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
@@ -52,7 +53,7 @@ class WaylandClientTest::WaylandWatcher
  public:
   explicit WaylandWatcher(exo::wayland::Server* server)
       : controller_(FROM_HERE), server_(server) {
-    base::MessageLoopForUI::current()->WatchFileDescriptor(
+    base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
         server_->GetFileDescriptor(),
         true,  // persistent
         base::MessagePumpLibevent::WATCH_READ, &controller_, this);
@@ -86,7 +87,7 @@ void WaylandClientTest::SetUp() {
   if (!ui_message_loop_)
     return;
 
-  DCHECK_NE(base::MessageLoop::current(), ui_message_loop_);
+  DCHECK_NE(base::MessageLoopCurrent::Get(), ui_message_loop_);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -101,7 +102,7 @@ void WaylandClientTest::TearDown() {
     return;
 
   DCHECK(ui_message_loop_);
-  DCHECK_NE(base::MessageLoop::current(), ui_message_loop_);
+  DCHECK_NE(base::MessageLoopCurrent::Get(), ui_message_loop_);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
