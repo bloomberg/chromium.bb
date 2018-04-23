@@ -4,6 +4,7 @@
 
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_browsertest.h"
@@ -390,9 +391,14 @@ INSTANTIATE_TEST_CASE_P(
         testing::Range(ui::PAGE_TRANSITION_FIRST,
                        ui::PAGE_TRANSITION_LAST_CORE)));
 
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_MainFrameNavigations DISABLED_MainFrameNavigations
+#else
+#define MAYBE_MainFrameNavigations MainFrameNavigations
+#endif
 IN_PROC_BROWSER_TEST_P(
     BookmarkAppNavigationThrottleExperimentalTransitionBrowserTest,
-    MainFrameNavigations) {
+    MAYBE_MainFrameNavigations) {
   InstallTestBookmarkApp();
 
   GURL target_url =
