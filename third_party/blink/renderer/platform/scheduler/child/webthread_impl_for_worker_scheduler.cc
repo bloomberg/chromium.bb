@@ -69,7 +69,7 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
       new WebSchedulerImpl(non_main_thread_scheduler_.get(),
                            non_main_thread_scheduler_->IdleTaskRunner(),
                            non_main_thread_scheduler_->DefaultTaskQueue()));
-  base::MessageLoop::current()->AddDestructionObserver(this);
+  base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
   completion->Signal();
 }
 

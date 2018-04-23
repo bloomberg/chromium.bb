@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
 
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/threading/thread.h"
 #include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
@@ -29,7 +30,7 @@ class WorkerSchedulerProxy;
 
 class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
     : public WebThreadBase,
-      public base::MessageLoop::DestructionObserver {
+      public base::MessageLoopCurrent::DestructionObserver {
  public:
   explicit WebThreadImplForWorkerScheduler(
       const WebThreadCreationParams& params);
@@ -44,7 +45,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   scheduler::SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
   void Init() override;
 
-  // base::MessageLoop::DestructionObserver implementation.
+  // base::MessageLoopCurrent::DestructionObserver implementation.
   void WillDestroyCurrentMessageLoop() override;
 
   scheduler::NonMainThreadScheduler* GetNonMainThreadScheduler() {
