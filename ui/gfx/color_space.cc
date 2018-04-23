@@ -229,6 +229,10 @@ bool ColorSpace::FullRangeEncodedValues() const {
          transfer_ == TransferID::IEC61966_2_4;
 }
 
+bool ColorSpace::IsParametricAccurate() const {
+  return icc_profile_id_ == 0;
+}
+
 ColorSpace ColorSpace::GetParametricApproximation() const {
   ColorSpace result = *this;
   result.icc_profile_id_ = 0;

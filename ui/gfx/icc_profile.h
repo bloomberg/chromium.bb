@@ -55,11 +55,6 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // created using this ColorSpace will match this ICCProfile precisely.
   ColorSpace GetColorSpace() const;
 
-  // Return a ColorSpace that is the best parametric approximation of this
-  // ICCProfile. The resulting ColorSpace will reference this ICCProfile only
-  // if the parametric approximation is almost exact.
-  ColorSpace GetParametricColorSpace() const;
-
   // Return the data for the profile.
   std::vector<char> GetData() const;
 
