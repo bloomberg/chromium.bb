@@ -2796,8 +2796,6 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     ResizeParams resize_params = std::get<0>(params);
-    EXPECT_EQ(1u,
-              resize_params.auto_resize_sequence_number);  // sequence_number
     EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
     EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
     EXPECT_EQ(1, resize_params.screen_info.device_scale_factor);
@@ -2819,8 +2817,6 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     ResizeParams resize_params = std::get<0>(params);
-    EXPECT_EQ(1u,
-              resize_params.auto_resize_sequence_number);  // sequence_number
     EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
     EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
     EXPECT_EQ(2, resize_params.screen_info.device_scale_factor);
@@ -2867,7 +2863,6 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     ResizeParams resize_params = std::get<0>(params);
-    EXPECT_EQ(1u, resize_params.auto_resize_sequence_number);
     EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
     EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
     EXPECT_EQ(1, resize_params.screen_info.device_scale_factor);
@@ -2888,7 +2883,6 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     ResizeParams resize_params = std::get<0>(params);
-    EXPECT_EQ(1u, resize_params.auto_resize_sequence_number);
     EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
     EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
     EXPECT_EQ(1, resize_params.screen_info.device_scale_factor);

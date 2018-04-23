@@ -522,10 +522,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return max_size_for_auto_resize_;
   }
 
-  // Called to notify the RenderWidget that a viz::LocalSurfaceId was allocated
-  // for the auto-resize request specified by |sequence_number|.
-  void DidAllocateLocalSurfaceIdForAutoResize(uint64_t sequence_number);
-
   void DidReceiveRendererFrame();
 
   // Returns the ID that uniquely describes this component to the latency
@@ -955,7 +951,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   gfx::Size max_size_for_auto_resize_;
 
   uint64_t last_auto_resize_request_number_ = 0ul;
-  uint64_t last_auto_resize_response_number_ = 0ul;
   base::Optional<viz::LocalSurfaceId> last_auto_resize_surface_id_;
 
   bool waiting_for_screen_rects_ack_;

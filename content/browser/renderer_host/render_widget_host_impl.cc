@@ -762,8 +762,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   resize_params->auto_resize_enabled = auto_resize_enabled_;
   resize_params->min_size_for_auto_resize = min_size_for_auto_resize_;
   resize_params->max_size_for_auto_resize = max_size_for_auto_resize_;
-  resize_params->auto_resize_sequence_number =
-      last_auto_resize_response_number_;
+  resize_params->auto_resize_sequence_number = 0;
 
   if (view_) {
     resize_params->new_size = view_->GetRequestedRendererSize();
@@ -869,8 +868,7 @@ void RenderWidgetHostImpl::WasResized(bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because
   // it's web contents is being deleted.
   if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
-      !view_->HasSize() || !renderer_initialized_ || !delegate_ ||
-      last_auto_resize_request_number_ != last_auto_resize_response_number_) {
+      !view_->HasSize() || !renderer_initialized_ || !delegate_) {
     return;
   }
 
@@ -2659,12 +2657,6 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
 void RenderWidgetHostImpl::DetachDelegate() {
   delegate_ = nullptr;
   latency_tracker_.reset_delegate();
-}
-
-void RenderWidgetHostImpl::DidAllocateLocalSurfaceIdForAutoResize(
-    uint64_t sequence_number) {
-  last_auto_resize_response_number_ = sequence_number;
-  WasResized();
 }
 
 void RenderWidgetHostImpl::DidReceiveRendererFrame() {

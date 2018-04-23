@@ -703,7 +703,6 @@ void RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete(
   browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
       child_allocated_local_surface_id);
   browser_compositor_->UpdateForAutoResize(new_size);
-  host()->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
 }
 
 void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {

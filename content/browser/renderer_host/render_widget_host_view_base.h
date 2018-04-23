@@ -609,8 +609,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // LocalSurfaceId.
   virtual void OnSynchronizedDisplayPropertiesChanged() {}
 
-  void OnResizeDueToAutoResizeComplete(uint64_t sequence_number);
-
   gfx::Rect current_display_area_;
 
   uint32_t renderer_frame_number_;

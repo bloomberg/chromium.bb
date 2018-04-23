@@ -2141,10 +2141,6 @@ void RenderWidgetHostViewAura::SyncSurfaceProperties(
   // Note that |host_| will retrieve resize parameters from
   // |delegated_frame_host_|, so it must have WasResized called after.
   host()->WasResized();
-  if (host()->auto_resize_enabled()) {
-    host()->DidAllocateLocalSurfaceIdForAutoResize(
-        host()->last_auto_resize_request_number());
-  }
 }
 
 #if defined(OS_WIN)
