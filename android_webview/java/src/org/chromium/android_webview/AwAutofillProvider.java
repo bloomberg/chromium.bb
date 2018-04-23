@@ -305,7 +305,7 @@ public class AwAutofillProvider extends AutofillProvider {
     public void onTextFieldDidScroll(int index, float x, float y, float width, float height) {
         // crbug.com/730764 - from P and above, Android framework listens to the onScrollChanged()
         // and repositions the autofill UI automatically.
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) return;
+        if (BuildInfo.isAtLeastP()) return;
         if (mRequest == null) return;
 
         short sIndex = (short) index;

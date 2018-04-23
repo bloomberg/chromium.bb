@@ -176,23 +176,17 @@ public class BuildInfo {
     /**
      * Checks if the device is running on a pre-release version of Android P or newer.
      * <p>
-     * <strong>Note:</strong> This method will return {@code false} on devices running release
-     * versions of Android. When Android P is finalized for release, this method will be deprecated
-     * and all calls should be replaced with {@code Build.SDK_INT >= Build.VERSION_CODES#P}.
-     *
      * @return {@code true} if P APIs are available for use, {@code false} otherwise
      */
     public static boolean isAtLeastP() {
-        return VERSION.CODENAME.equals("P") || VERSION.CODENAME.equals("Q");
+        return VERSION.SDK_INT >= 28;
     }
 
     /**
-     * Checks if the application targets pre-release SDK P
+     * Checks if the application targets at least released SDK P
      */
     public static boolean targetsAtLeastP() {
-        return isAtLeastP()
-                && ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion
-                == Build.VERSION_CODES.CUR_DEVELOPMENT;
+        return ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion >= 28;
     }
 
     // End:BuildCompat
