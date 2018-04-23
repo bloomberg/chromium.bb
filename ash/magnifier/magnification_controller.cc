@@ -515,6 +515,10 @@ ui::EventRewriteStatus MagnificationController::RewriteEvent(
     // Jump back to exactly 1.0 if we are just a tiny bit zoomed in.
     if (scale_ < kMinMagnifiedScaleThreshold) {
       SetScale(kNonMagnifiedScale, true /* animate */);
+    } else {
+      // Store current magnifier scale in pref. We don't need to call this if we
+      // call SetScale (the above case) as SetScale does this.
+      Shell::Get()->accessibility_delegate()->SaveScreenMagnifierScale(scale_);
     }
   }
 
