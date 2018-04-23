@@ -5,11 +5,9 @@
 #ifndef GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_ANDROID_HARDWARE_BUFFER_H_
 #define GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_ANDROID_HARDWARE_BUFFER_H_
 
-#include "base/memory/shared_memory.h"
+#include "base/android/scoped_hardware_buffer_handle.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
-
-extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
 
 namespace gpu {
 
@@ -54,9 +52,9 @@ class GPU_EXPORT GpuMemoryBufferImplAndroidHardwareBuffer
       const gfx::Size& size,
       gfx::BufferFormat format,
       const DestructionCallback& callback,
-      const base::SharedMemoryHandle& handle);
+      base::android::ScopedHardwareBufferHandle handle);
 
-  base::SharedMemory shared_memory_;
+  base::android::ScopedHardwareBufferHandle hardware_buffer_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplAndroidHardwareBuffer);
 };

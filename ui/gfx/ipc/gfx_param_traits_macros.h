@@ -57,6 +57,8 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
   IPC_STRUCT_TRAITS_MEMBER(mach_port)
 #elif defined(OS_WIN)
   IPC_STRUCT_TRAITS_MEMBER(dxgi_handle)
+#elif defined(OS_ANDROID)
+  IPC_STRUCT_TRAITS_MEMBER(android_hardware_buffer)
 #endif
 IPC_STRUCT_TRAITS_END()
 

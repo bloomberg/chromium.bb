@@ -26,6 +26,10 @@
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 
+#if defined(OS_ANDROID)
+extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
+#endif
+
 namespace gfx {
 
 class ColorSpace;
@@ -58,6 +62,8 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   ScopedRefCountedIOSurfaceMachPort mach_port;
 #elif defined(OS_WIN)
   IPC::PlatformFileForTransit dxgi_handle;
+#elif defined(OS_ANDROID)
+  AHardwareBuffer* android_hardware_buffer = nullptr;
 #endif
 };
 

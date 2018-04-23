@@ -564,13 +564,13 @@ void VrShellGl::WebVrCreateOrResizeSharedBufferImage(WebXrSharedBuffer* buffer,
       gpu::GpuMemoryBufferImpl::DestructionCallback());
 
   buffer->remote_image = mailbox_bridge_->BindSharedBufferImage(
-      buffer->gmb->GetHandle(), size, format, usage, buffer->remote_texture);
+      buffer->gmb.get(), size, format, usage, buffer->remote_texture);
   DVLOG(2) << ": BindSharedBufferImage, remote_image=" << buffer->remote_image;
 
   scoped_refptr<gl::GLImageAHardwareBuffer> img(
       new gl::GLImageAHardwareBuffer(webvr_surface_size_));
 
-  AHardwareBuffer* ahb = buffer->gmb->GetHandle().handle.GetMemoryObject();
+  AHardwareBuffer* ahb = buffer->gmb->GetHandle().android_hardware_buffer;
   bool ret = img->Initialize(ahb, false /* preserved */);
   if (!ret) {
     DLOG(WARNING) << __FUNCTION__ << ": ERROR: failed to initialize image!";

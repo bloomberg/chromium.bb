@@ -39,6 +39,10 @@
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_sync_message.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_hardware_buffer_handle.h"
+#endif
+
 namespace base {
 class DictionaryValue;
 class FilePath;
@@ -562,8 +566,8 @@ struct COMPONENT_EXPORT(IPC) ParamTraits<base::SharedMemoryHandle> {
 
 #if defined(OS_ANDROID)
 template <>
-struct COMPONENT_EXPORT(IPC) ParamTraits<base::SharedMemoryHandle::Type> {
-  typedef base::SharedMemoryHandle::Type param_type;
+struct COMPONENT_EXPORT(IPC) ParamTraits<AHardwareBuffer*> {
+  typedef AHardwareBuffer* param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

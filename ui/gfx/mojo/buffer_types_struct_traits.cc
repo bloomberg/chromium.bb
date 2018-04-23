@@ -7,6 +7,12 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_hardware_buffer_handle.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/system/scope_to_message_pipe.h"
+#endif
+
 namespace mojo {
 
 // static
@@ -54,8 +60,7 @@ mojo::ScopedSharedBufferHandle
 StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
              gfx::GpuMemoryBufferHandle>::
     shared_memory_handle(const gfx::GpuMemoryBufferHandle& handle) {
-  if (handle.type != gfx::SHARED_MEMORY_BUFFER &&
-      handle.type != gfx::ANDROID_HARDWARE_BUFFER)
+  if (handle.type != gfx::SHARED_MEMORY_BUFFER)
     return mojo::ScopedSharedBufferHandle();
   return mojo::WrapSharedMemoryHandle(
       handle.handle, handle.handle.GetSize(),
@@ -98,6 +103,38 @@ mojo::ScopedHandle StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 }
 #endif
 
+#if defined(OS_ANDROID)
+// static
+gfx::mojom::AHardwareBufferHandlePtr
+StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
+             gfx::GpuMemoryBufferHandle>::
+    android_hardware_buffer_handle(const gfx::GpuMemoryBufferHandle& handle) {
+  if (handle.type != gfx::ANDROID_HARDWARE_BUFFER)
+    return nullptr;
+
+  // Assume ownership of the input AHardwareBuffer.
+  auto scoped_handle = base::android::ScopedHardwareBufferHandle::Adopt(
+      handle.android_hardware_buffer);
+
+  // We must keep a ref to the AHardwareBuffer alive until the receiver has
+  // acquired its own reference. We do this by sending a message pipe handle
+  // along with the buffer. When the receiver deserializes (or even if they
+  // die without ever reading the message) their end of the pipe will be
+  // closed. We will eventually detect this and release the AHB reference.
+  mojo::MessagePipe tracking_pipe;
+  auto wrapped_handle = gfx::mojom::AHardwareBufferHandle::New(
+      mojo::WrapPlatformFile(
+          scoped_handle.SerializeAsFileDescriptor().release()),
+      std::move(tracking_pipe.handle0));
+
+  // Pass ownership of the input handle to our tracking pipe to keep the AHB
+  // alive until it's deserialized.
+  mojo::ScopeToMessagePipe(std::move(scoped_handle),
+                           std::move(tracking_pipe.handle1));
+  return wrapped_handle;
+}
+#endif
+
 bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
                   gfx::GpuMemoryBufferHandle>::
     Read(gfx::mojom::GpuMemoryBufferHandleDataView data,
@@ -105,8 +142,7 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
   if (!data.ReadType(&out->type) || !data.ReadId(&out->id))
     return false;
 
-  if (out->type == gfx::SHARED_MEMORY_BUFFER ||
-      out->type == gfx::ANDROID_HARDWARE_BUFFER) {
+  if (out->type == gfx::SHARED_MEMORY_BUFFER) {
     mojo::ScopedSharedBufferHandle handle = data.TakeSharedMemoryHandle();
     if (handle.is_valid()) {
       MojoResult unwrap_result = mojo::UnwrapSharedMemoryHandle(
@@ -141,6 +177,26 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     if (unwrap_result != MOJO_RESULT_OK)
       return false;
     out->dxgi_handle = IPC::PlatformFileForTransit(handle);
+    out->offset = data.offset();
+    out->stride = data.stride();
+  }
+#endif
+#if defined(OS_ANDROID)
+  if (out->type == gfx::ANDROID_HARDWARE_BUFFER) {
+    gfx::mojom::AHardwareBufferHandlePtr buffer_handle;
+    if (!data.ReadAndroidHardwareBufferHandle(&buffer_handle) || !buffer_handle)
+      return false;
+
+    base::PlatformFile fd;
+    MojoResult unwrap_result =
+        mojo::UnwrapPlatformFile(std::move(buffer_handle->buffer_handle), &fd);
+    base::ScopedFD scoped_fd(fd);
+    if (unwrap_result != MOJO_RESULT_OK || !scoped_fd.is_valid())
+      return false;
+    out->android_hardware_buffer =
+        base::android::ScopedHardwareBufferHandle ::
+            DeserializeFromFileDescriptor(std::move(scoped_fd))
+                .Take();
     out->offset = data.offset();
     out->stride = data.stride();
   }

@@ -209,6 +209,8 @@ jumbo_component("base") {
     "android/path_utils.h",
     "android/record_histogram.cc",
     "android/record_user_action.cc",
+    "android/scoped_hardware_buffer_handle.cc",
+    "android/scoped_hardware_buffer_handle.h",
     "android/scoped_java_ref.cc",
     "android/scoped_java_ref.h",
     "android/statistics_recorder_android.cc",

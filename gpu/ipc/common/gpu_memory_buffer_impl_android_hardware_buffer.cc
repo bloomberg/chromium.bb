@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory_handle.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/geometry/size.h"
@@ -61,9 +60,9 @@ GpuMemoryBufferImplAndroidHardwareBuffer::
         const gfx::Size& size,
         gfx::BufferFormat format,
         const DestructionCallback& callback,
-        const base::SharedMemoryHandle& handle)
+        base::android::ScopedHardwareBufferHandle handle)
     : GpuMemoryBufferImpl(id, size, format, callback),
-      shared_memory_(handle, false) {}
+      hardware_buffer_handle_(std::move(handle)) {}
 
 GpuMemoryBufferImplAndroidHardwareBuffer::
     ~GpuMemoryBufferImplAndroidHardwareBuffer() {}
@@ -88,7 +87,7 @@ GpuMemoryBufferImplAndroidHardwareBuffer::Create(
 
   return base::WrapUnique(new GpuMemoryBufferImplAndroidHardwareBuffer(
       id, size, format, callback,
-      base::SharedMemoryHandle(buffer, 0, base::UnguessableToken::Create())));
+      base::android::ScopedHardwareBufferHandle::Adopt(buffer)));
 }
 
 // static
@@ -99,9 +98,11 @@ GpuMemoryBufferImplAndroidHardwareBuffer::CreateFromHandle(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
-  DCHECK(base::SharedMemory::IsHandleValid(handle.handle));
+  DCHECK(handle.android_hardware_buffer);
   return base::WrapUnique(new GpuMemoryBufferImplAndroidHardwareBuffer(
-      handle.id, size, format, callback, handle.handle));
+      handle.id, size, format, callback,
+      base::android::ScopedHardwareBufferHandle::Adopt(
+          handle.android_hardware_buffer)));
 }
 
 bool GpuMemoryBufferImplAndroidHardwareBuffer::Map() {
@@ -123,8 +124,7 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplAndroidHardwareBuffer::GetHandle()
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::ANDROID_HARDWARE_BUFFER;
   handle.id = id_;
-  handle.handle = shared_memory_.handle();
-
+  handle.android_hardware_buffer = hardware_buffer_handle_.get();
   return handle;
 }
 
@@ -141,8 +141,7 @@ base::Closure GpuMemoryBufferImplAndroidHardwareBuffer::AllocateForTesting(
   AHardwareBuffer_Desc desc = GetBufferDescription(size, format, usage);
   base::AndroidHardwareBufferCompat::GetInstance().Allocate(&desc, &buffer);
   DCHECK(buffer);
-  handle->handle =
-      base::SharedMemoryHandle(buffer, 0, base::UnguessableToken::Create());
+  handle->android_hardware_buffer = buffer;
   return base::DoNothing();
 }
 

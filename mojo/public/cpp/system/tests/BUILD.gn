@@ -11,6 +11,7 @@ source_set("tests") {
     "file_data_pipe_producer_unittest.cc",
     "handle_signal_tracker_unittest.cc",
     "handle_signals_state_unittest.cc",
+    "scope_to_message_pipe_unittest.cc",
     "simple_watcher_unittest.cc",
     "string_data_pipe_producer_unittest.cc",
     "wait_set_unittest.cc",
