@@ -720,9 +720,15 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(DragAndDropBrowserTest);
 };
 
+#if defined(OS_CHROMEOS)
+// Flaky: https://crbug.com/835774
+#define MAYBE_DropTextFromOutside DISABLED_DropTextFromOutside
+#else
+#define MAYBE_DropTextFromOutside DropTextFromOutside
+#endif
 // Scenario: drag text from outside the browser and drop to the right frame.
 // Test coverage: dragover, drop DOM events.
-IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropTextFromOutside) {
+IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropTextFromOutside) {
   std::string frame_site = use_cross_site_subframe() ? "b.com" : "a.com";
   ASSERT_TRUE(NavigateToTestPage("a.com"));
   ASSERT_TRUE(NavigateRightFrame(frame_site, "drop_target.html"));
