@@ -160,7 +160,13 @@ class SessionRestoreObserverTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SessionRestoreObserverTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreObserverTest, SingleTabSessionRestore) {
+#if defined(OS_LINUX)
+#define MAYBE_SingleTabSessionRestore DISABLED_SingleTabSessionRestore
+#else
+#define MAYBE_SingleTabSessionRestore SingleTabSessionRestore
+#endif
+IN_PROC_BROWSER_TEST_F(SessionRestoreObserverTest,
+                       MAYBE_SingleTabSessionRestore) {
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   Browser* new_browser = QuitBrowserAndRestore(browser());
 
