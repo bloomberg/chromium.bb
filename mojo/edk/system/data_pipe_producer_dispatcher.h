@@ -12,8 +12,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/ports/port_ref.h"
@@ -34,7 +35,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   static scoped_refptr<DataPipeProducerDispatcher> Create(
       NodeController* node_controller,
       const ports::PortRef& control_port,
-      scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
+      base::UnsafeSharedMemoryRegion shared_ring_buffer,
       const MojoCreateDataPipeOptions& options,
       uint64_t pipe_id);
 
@@ -75,15 +76,13 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   class PortObserverThunk;
   friend class PortObserverThunk;
 
-  DataPipeProducerDispatcher(
-      NodeController* node_controller,
-      const ports::PortRef& port,
-      scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
-      const MojoCreateDataPipeOptions& options,
-      uint64_t pipe_id);
+  DataPipeProducerDispatcher(NodeController* node_controller,
+                             const ports::PortRef& port,
+                             base::UnsafeSharedMemoryRegion shared_ring_buffer,
+                             const MojoCreateDataPipeOptions& options,
+                             uint64_t pipe_id);
   ~DataPipeProducerDispatcher() override;
 
-  void OnSharedBufferCreated(const scoped_refptr<PlatformSharedBuffer>& buffer);
   bool InitializeNoLock();
   MojoResult CloseNoLock();
   HandleSignalsState GetHandleSignalsStateNoLock() const;
@@ -101,10 +100,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
 
   WatcherSet watchers_;
 
-  bool buffer_requested_ = false;
-
-  scoped_refptr<PlatformSharedBuffer> shared_ring_buffer_;
-  std::unique_ptr<PlatformSharedBufferMapping> ring_buffer_mapping_;
+  base::UnsafeSharedMemoryRegion shared_ring_buffer_;
+  base::WritableSharedMemoryMapping ring_buffer_mapping_;
 
   bool in_transit_ = false;
   bool is_closed_ = false;

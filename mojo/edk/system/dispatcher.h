@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/ports/name.h"
@@ -36,6 +35,7 @@ class UserMessageEvent;
 }
 
 class Dispatcher;
+class PlatformSharedMemoryMapping;
 
 using DispatcherVector = std::vector<scoped_refptr<Dispatcher>>;
 
@@ -104,7 +104,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
       uint64_t offset,
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
-      std::unique_ptr<PlatformSharedBufferMapping>* mapping);
+      std::unique_ptr<PlatformSharedMemoryMapping>* mapping);
 
   virtual MojoResult GetBufferInfo(MojoSharedBufferInfo* info);
 

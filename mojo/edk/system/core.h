@@ -19,7 +19,6 @@
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/handle_table.h"
-#include "mojo/edk/system/mapping_table.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/buffer.h"
@@ -35,6 +34,8 @@ class PortProvider;
 
 namespace mojo {
 namespace edk {
+
+class PlatformSharedMemoryMapping;
 
 // |Core| is an object that implements the Mojo system calls. All public methods
 // are thread-safe.
@@ -53,6 +54,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   NodeController* GetNodeController();
 
   scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
+  scoped_refptr<Dispatcher> GetAndRemoveDispatcher(MojoHandle handle);
 
   void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback);
 
@@ -142,18 +144,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   MojoResult PassWrappedPlatformHandle(MojoHandle wrapper_handle,
                                        ScopedPlatformHandle* platform_handle);
-
-  MojoResult CreateSharedBufferWrapper(
-      base::SharedMemoryHandle shared_memory_handle,
-      size_t num_bytes,
-      bool read_only,
-      MojoHandle* mojo_wrapper_handle);
-
-  MojoResult PassSharedMemoryHandle(
-      MojoHandle mojo_handle,
-      base::SharedMemoryHandle* shared_memory_handle,
-      size_t* num_bytes,
-      bool* read_only);
 
   // Requests that the EDK tear itself down. |callback| will be called once
   // the shutdown process is complete. Note that |callback| is always called
@@ -334,6 +324,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   std::unique_ptr<HandleTable> handles_;
 
   base::Lock mapping_table_lock_;  // Protects |mapping_table_|.
+
+  using MappingTable =
+      std::unordered_map<void*, std::unique_ptr<PlatformSharedMemoryMapping>>;
   MappingTable mapping_table_;
 
   base::Lock property_lock_;

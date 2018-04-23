@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/string_piece.h"
+#include "mojo/edk/system/core.h"
+#include "mojo/edk/system/shared_buffer_dispatcher.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -238,14 +240,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndMapWriteSharedBuffer,
   // Read from the bufer.
   ExpectBufferContents(b, 0, "hello");
 
-  // Extract the shared memory handle and try to map it writable.
-  base::SharedMemoryHandle shm_handle;
-  bool read_only = false;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            PassSharedMemoryHandle(b, &shm_handle, nullptr, &read_only));
-  base::SharedMemory shared_memory(shm_handle, false);
-  EXPECT_TRUE(read_only);
-  EXPECT_FALSE(shared_memory.Map(1234));
+  // Extract the shared memory handle and verify that it is read-only.
+  auto* dispatcher =
+      static_cast<SharedBufferDispatcher*>(Core::Get()->GetDispatcher(b).get());
+  base::subtle::PlatformSharedMemoryRegion& region =
+      dispatcher->GetRegionForTesting();
+  EXPECT_EQ(region.GetMode(),
+            base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly);
 
   EXPECT_EQ("quit", ReadMessage(h));
   WriteMessage(h, "ok");
@@ -301,14 +302,13 @@ TEST_F(SharedBufferTest, MAYBE_CreateAndPassFromChildReadOnlyBuffer) {
     EXPECT_EQ("", ReadMessageWithHandles(h, &b, 1));
     ExpectBufferContents(b, 0, "hello");
 
-    // Extract the shared memory handle and try to map it writable.
-    base::SharedMemoryHandle shm_handle;
-    bool read_only = false;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              PassSharedMemoryHandle(b, &shm_handle, nullptr, &read_only));
-    base::SharedMemory shared_memory(shm_handle, false);
-    EXPECT_TRUE(read_only);
-    EXPECT_FALSE(shared_memory.Map(1234));
+    // Extract the shared memory handle and verify that it is read-only.
+    auto* dispatcher = static_cast<SharedBufferDispatcher*>(
+        Core::Get()->GetDispatcher(b).get());
+    base::subtle::PlatformSharedMemoryRegion& region =
+        dispatcher->GetRegionForTesting();
+    EXPECT_EQ(region.GetMode(),
+              base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly);
 
     WriteMessage(h, "quit");
     EXPECT_EQ("ok", ReadMessage(h));

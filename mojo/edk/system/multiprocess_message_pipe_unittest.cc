@@ -342,7 +342,7 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
     buffer_info.struct_size = sizeof(buffer_info);
     ASSERT_EQ(MOJO_RESULT_OK,
               MojoGetBufferInfo(shared_buffer, nullptr, &buffer_info));
-    EXPECT_EQ(100U, buffer_info.size);
+    EXPECT_GE(buffer_info.size, 100U);
 
     // Send the shared buffer.
     const std::string go1("go 1");
@@ -354,7 +354,7 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
     buffer_info.size = 0;
     ASSERT_EQ(MOJO_RESULT_OK,
               MojoGetBufferInfo(shared_buffer, nullptr, &buffer_info));
-    EXPECT_EQ(100U, buffer_info.size);
+    EXPECT_GE(buffer_info.size, 100U);
     MojoHandle handles[1];
     handles[0] = duplicated_shared_buffer;
     ASSERT_EQ(MOJO_RESULT_OK,

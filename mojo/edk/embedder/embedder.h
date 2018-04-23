@@ -70,30 +70,6 @@ MOJO_SYSTEM_IMPL_EXPORT MojoResult
 PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
                           ScopedPlatformHandle* platform_handle);
 
-// Creates a |MojoHandle| that wraps the given |SharedMemoryHandle| (taking
-// ownership of it). |num_bytes| is the size of the shared memory object, and
-// |read_only| is whether the handle is a read-only handle to shared memory.
-// This |MojoHandle| is a Mojo shared buffer and can be manipulated using the
-// shared buffer functions and transferred over a message pipe.
-MOJO_SYSTEM_IMPL_EXPORT MojoResult
-CreateSharedBufferWrapper(base::SharedMemoryHandle shared_memory_handle,
-                          size_t num_bytes,
-                          bool read_only,
-                          MojoHandle* mojo_wrapper_handle);
-
-// Retrieves the underlying |SharedMemoryHandle| from a shared buffer
-// |MojoHandle| and closes the handle. If successful, |num_bytes| will contain
-// the size of the shared memory buffer and |read_only| will contain whether the
-// buffer handle is read-only. Both |num_bytes| and |read_only| may be null.
-// Note: |shared_memory_handle| may be invalid even if this function returns
-// success.
-// Callers should perform appropriate checks.
-MOJO_SYSTEM_IMPL_EXPORT MojoResult
-PassSharedMemoryHandle(MojoHandle mojo_handle,
-                       base::SharedMemoryHandle* shared_memory_handle,
-                       size_t* num_bytes,
-                       bool* read_only);
-
 // Sets system properties that can be read by the MojoGetProperty() API. See the
 // documentation for MojoPropertyType for supported property types and their
 // corresponding value type.

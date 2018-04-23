@@ -12,9 +12,13 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "build/build_config.h"
+#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/options_validation.h"
+#include "mojo/edk/system/platform_shared_memory_mapping.h"
 
 namespace mojo {
 namespace edk {
@@ -85,29 +89,31 @@ MojoResult SharedBufferDispatcher::Create(
   if (num_bytes > GetConfiguration().max_shared_memory_num_bytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  scoped_refptr<PlatformSharedBuffer> shared_buffer;
+  base::WritableSharedMemoryRegion writable_region;
   if (node_controller) {
-    shared_buffer =
+    writable_region =
         node_controller->CreateSharedBuffer(static_cast<size_t>(num_bytes));
   } else {
-    shared_buffer =
-        PlatformSharedBuffer::Create(static_cast<size_t>(num_bytes));
+    writable_region = base::WritableSharedMemoryRegion::Create(
+        static_cast<size_t>(num_bytes));
   }
-  if (!shared_buffer)
+  if (!writable_region.IsValid())
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  *result = CreateInternal(std::move(shared_buffer));
+  *result = CreateInternal(
+      base::WritableSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(writable_region)));
   return MOJO_RESULT_OK;
 }
 
 // static
-MojoResult SharedBufferDispatcher::CreateFromPlatformSharedBuffer(
-    const scoped_refptr<PlatformSharedBuffer>& shared_buffer,
+MojoResult SharedBufferDispatcher::CreateFromPlatformSharedMemoryRegion(
+    base::subtle::PlatformSharedMemoryRegion region,
     scoped_refptr<SharedBufferDispatcher>* result) {
-  if (!shared_buffer)
+  if (!region.IsValid())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  *result = CreateInternal(shared_buffer);
+  *result = CreateInternal(std::move(region));
   return MOJO_RESULT_OK;
 }
 
@@ -141,29 +147,32 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   base::UnguessableToken guid = base::UnguessableToken::Deserialize(
       serialized_state->guid_high, serialized_state->guid_low);
 
-  bool read_only = (serialized_state->flags & kSerializedStateFlagsReadOnly);
-  scoped_refptr<PlatformSharedBuffer> shared_buffer(
-      PlatformSharedBuffer::CreateFromPlatformHandle(
-          static_cast<size_t>(serialized_state->num_bytes), read_only, guid,
-          std::move(platform_handles[0])));
-  if (!shared_buffer) {
+  // TODO(https://crbug.com/826213): Support proper serialization and
+  // deserialization of writable regions as well.
+  base::subtle::PlatformSharedMemoryRegion::Mode mode =
+      serialized_state->flags & kSerializedStateFlagsReadOnly
+          ? base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly
+          : base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe;
+  auto region = base::subtle::PlatformSharedMemoryRegion::Take(
+      CreateSharedMemoryRegionHandleFromPlatformHandles(
+          std::move(platform_handles[0]), ScopedPlatformHandle()),
+      mode, static_cast<size_t>(serialized_state->num_bytes), guid);
+  if (!region.IsValid()) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes?)";
     return nullptr;
   }
 
-  return CreateInternal(std::move(shared_buffer));
+  return CreateInternal(std::move(region));
 }
 
-scoped_refptr<PlatformSharedBuffer>
-SharedBufferDispatcher::PassPlatformSharedBuffer() {
+base::subtle::PlatformSharedMemoryRegion
+SharedBufferDispatcher::PassPlatformSharedMemoryRegion() {
   base::AutoLock lock(lock_);
-  if (!shared_buffer_ || in_transit_)
-    return nullptr;
+  if (!region_.IsValid() || in_transit_)
+    return base::subtle::PlatformSharedMemoryRegion();
 
-  scoped_refptr<PlatformSharedBuffer> retval = shared_buffer_;
-  shared_buffer_ = nullptr;
-  return retval;
+  return std::move(region_);
 }
 
 Dispatcher::Type SharedBufferDispatcher::GetType() const {
@@ -175,7 +184,7 @@ MojoResult SharedBufferDispatcher::Close() {
   if (in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  shared_buffer_ = nullptr;
+  region_ = base::subtle::PlatformSharedMemoryRegion();
   return MOJO_RESULT_OK;
 }
 
@@ -187,26 +196,53 @@ MojoResult SharedBufferDispatcher::DuplicateBufferHandle(
   if (result != MOJO_RESULT_OK)
     return result;
 
-  // Note: Since this is "duplicate", we keep our ref to |shared_buffer_|.
   base::AutoLock lock(lock_);
   if (in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if ((validated_options.flags &
-       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY) &&
-      (!shared_buffer_->IsReadOnly())) {
-    // If a read-only duplicate is requested and |shared_buffer_| is not
-    // read-only, make a read-only duplicate of |shared_buffer_|.
-    scoped_refptr<PlatformSharedBuffer> read_only_buffer =
-        shared_buffer_->CreateReadOnlyDuplicate();
-    if (!read_only_buffer)
+       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY)) {
+    // If a read-only duplicate is requested and this handle is not already
+    // read-only, we need to make it read-only before duplicating. If it's
+    // unsafe it can't be made read-only, and we must fail instead.
+    if (region_.GetMode() ==
+        base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe) {
       return MOJO_RESULT_FAILED_PRECONDITION;
-    DCHECK(read_only_buffer->IsReadOnly());
-    *new_dispatcher = CreateInternal(std::move(read_only_buffer));
-    return MOJO_RESULT_OK;
+    } else if (region_.GetMode() ==
+               base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
+      region_ = base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          base::WritableSharedMemoryRegion::ConvertToReadOnly(
+              base::WritableSharedMemoryRegion::Deserialize(
+                  std::move(region_))));
+    }
+
+    DCHECK_EQ(region_.GetMode(),
+              base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly);
+  } else {
+    // A writable duplicate was requested. If this is already a read-only handle
+    // we have to reject. Otherwise we have to convert to unsafe to ensure that
+    // no future read-only duplication requests can succeed.
+    if (region_.GetMode() ==
+        base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly) {
+      return MOJO_RESULT_FAILED_PRECONDITION;
+    } else if (region_.GetMode() ==
+               base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
+      auto handle = region_.PassPlatformHandle();
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+    (!defined(OS_MACOSX) || defined(OS_IOS))
+      // On POSIX systems excluding Android, Fuchsia, and OSX, we explicitly
+      // wipe out the secondary (read-only) FD from the platform handle to
+      // repurpose it for exclusive unsafe usage.
+      handle.readonly_fd.reset();
+#endif
+      region_ = base::subtle::PlatformSharedMemoryRegion::Take(
+          std::move(handle),
+          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+          region_.GetSize(), region_.GetGUID());
+    }
   }
 
-  *new_dispatcher = CreateInternal(shared_buffer_);
+  *new_dispatcher = CreateInternal(region_.Duplicate());
   return MOJO_RESULT_OK;
 }
 
@@ -214,25 +250,24 @@ MojoResult SharedBufferDispatcher::MapBuffer(
     uint64_t offset,
     uint64_t num_bytes,
     MojoMapBufferFlags flags,
-    std::unique_ptr<PlatformSharedBufferMapping>* mapping) {
+    std::unique_ptr<PlatformSharedMemoryMapping>* mapping) {
   if (offset > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_bytes > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   base::AutoLock lock(lock_);
-  DCHECK(shared_buffer_);
-  if (in_transit_ ||
-      !shared_buffer_->IsValidMap(static_cast<size_t>(offset),
-                                  static_cast<size_t>(num_bytes))) {
+  DCHECK(region_.IsValid());
+  if (in_transit_ || num_bytes == 0 ||
+      static_cast<size_t>(offset + num_bytes) > region_.GetSize()) {
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
   DCHECK(mapping);
-  *mapping = shared_buffer_->MapNoCheck(static_cast<size_t>(offset),
-                                        static_cast<size_t>(num_bytes));
-  if (!*mapping) {
-    LOG(ERROR) << "Unable to map: read_only" << shared_buffer_->IsReadOnly();
+  *mapping = std::make_unique<PlatformSharedMemoryMapping>(
+      &region_, static_cast<size_t>(offset), static_cast<size_t>(num_bytes));
+  if (!(*mapping)->IsValid()) {
+    LOG(ERROR) << "Failed to map shared memory region.";
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
@@ -244,7 +279,7 @@ MojoResult SharedBufferDispatcher::GetBufferInfo(MojoSharedBufferInfo* info) {
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   base::AutoLock lock(lock_);
-  info->size = shared_buffer_->GetNumBytes();
+  info->size = region_.GetSize();
   return MOJO_RESULT_OK;
 }
 
@@ -262,20 +297,21 @@ bool SharedBufferDispatcher::EndSerialize(void* destination,
   SerializedState* serialized_state =
       static_cast<SerializedState*>(destination);
   base::AutoLock lock(lock_);
-  serialized_state->num_bytes =
-      static_cast<uint64_t>(shared_buffer_->GetNumBytes());
+  serialized_state->num_bytes = region_.GetSize();
   serialized_state->flags =
-      (shared_buffer_->IsReadOnly() ? kSerializedStateFlagsReadOnly : 0);
-  base::UnguessableToken guid = shared_buffer_->GetGUID();
+      region_.GetMode() ==
+              base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly
+          ? kSerializedStateFlagsReadOnly
+          : 0;
+  const base::UnguessableToken& guid = region_.GetGUID();
   serialized_state->guid_high = guid.GetHighForSerialization();
   serialized_state->guid_low = guid.GetLowForSerialization();
   serialized_state->padding = 0;
 
-  handles[0] = shared_buffer_->DuplicatePlatformHandleForIPC();
-  if (!handles[0].is_valid()) {
-    shared_buffer_ = nullptr;
-    return false;
-  }
+  ScopedPlatformHandle ignored_handle;
+  ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+      region_.PassPlatformHandle(), &handles[0], &ignored_handle);
+  region_ = base::subtle::PlatformSharedMemoryRegion();
   return true;
 }
 
@@ -283,31 +319,35 @@ bool SharedBufferDispatcher::BeginTransit() {
   base::AutoLock lock(lock_);
   if (in_transit_)
     return false;
-  in_transit_ = static_cast<bool>(shared_buffer_);
+  in_transit_ = region_.IsValid();
   return in_transit_;
 }
 
 void SharedBufferDispatcher::CompleteTransitAndClose() {
   base::AutoLock lock(lock_);
   in_transit_ = false;
-  shared_buffer_ = nullptr;
-  ignore_result(handle_for_transit_.release());
+  region_ = base::subtle::PlatformSharedMemoryRegion();
 }
 
 void SharedBufferDispatcher::CancelTransit() {
   base::AutoLock lock(lock_);
   in_transit_ = false;
-  handle_for_transit_.reset();
 }
 
 SharedBufferDispatcher::SharedBufferDispatcher(
-    scoped_refptr<PlatformSharedBuffer> shared_buffer)
-    : shared_buffer_(shared_buffer) {
-  DCHECK(shared_buffer_);
+    base::subtle::PlatformSharedMemoryRegion region)
+    : region_(std::move(region)) {
+  DCHECK(region_.IsValid());
 }
 
 SharedBufferDispatcher::~SharedBufferDispatcher() {
-  DCHECK(!shared_buffer_ && !in_transit_);
+  DCHECK(!region_.IsValid() && !in_transit_);
+}
+
+// static
+scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::CreateInternal(
+    base::subtle::PlatformSharedMemoryRegion region) {
+  return base::WrapRefCounted(new SharedBufferDispatcher(std::move(region)));
 }
 
 // static

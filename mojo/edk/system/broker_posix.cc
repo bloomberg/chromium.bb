@@ -10,9 +10,10 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/platform_shared_memory_region.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle_utils.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/channel.h"
@@ -89,7 +90,8 @@ ScopedPlatformHandle Broker::GetInviterPlatformHandle() {
   return std::move(inviter_channel_);
 }
 
-scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
+base::WritableSharedMemoryRegion Broker::GetWritableSharedMemoryRegion(
+    size_t num_bytes) {
   base::AutoLock lock(lock_);
 
   BufferRequestData* buffer_request;
@@ -100,29 +102,45 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
       sync_channel_, out_message->data(), out_message->data_num_bytes());
   if (write_result < 0) {
     PLOG(ERROR) << "Error sending sync broker message";
-    return nullptr;
+    return base::WritableSharedMemoryRegion();
   } else if (static_cast<size_t>(write_result) !=
              out_message->data_num_bytes()) {
     LOG(ERROR) << "Error sending complete broker message";
-    return nullptr;
+    return base::WritableSharedMemoryRegion();
   }
+
+#if !defined(OS_POSIX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+  // Non-POSIX systems, as well as Android, Fuchsia, and non-iOS Mac, only use
+  // a single handle to represent a writable region.
+  constexpr size_t kNumExpectedHandles = 1;
+#else
+  constexpr size_t kNumExpectedHandles = 2;
+#endif
 
   std::vector<ScopedPlatformHandle> incoming_platform_handles;
   Channel::MessagePtr message = WaitForBrokerMessage(
-      sync_channel_, BrokerMessageType::BUFFER_RESPONSE, 2,
+      sync_channel_, BrokerMessageType::BUFFER_RESPONSE, kNumExpectedHandles,
       sizeof(BufferResponseData), &incoming_platform_handles);
   if (message) {
     const BufferResponseData* data;
     if (!GetBrokerMessageData(message.get(), &data))
-      return nullptr;
-    base::UnguessableToken guid =
-        base::UnguessableToken::Deserialize(data->guid_high, data->guid_low);
-    return PlatformSharedBuffer::CreateFromPlatformHandlePair(
-        num_bytes, guid, std::move(incoming_platform_handles[0]),
-        std::move(incoming_platform_handles[1]));
+      return base::WritableSharedMemoryRegion();
+
+    if (incoming_platform_handles.size() == 1)
+      incoming_platform_handles.emplace_back();
+    return base::WritableSharedMemoryRegion::Deserialize(
+        base::subtle::PlatformSharedMemoryRegion::Take(
+            CreateSharedMemoryRegionHandleFromPlatformHandles(
+                std::move(incoming_platform_handles[0]),
+                std::move(incoming_platform_handles[1])),
+            base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,
+            num_bytes,
+            base::UnguessableToken::Deserialize(data->guid_high,
+                                                data->guid_low)));
   }
 
-  return nullptr;
+  return base::WritableSharedMemoryRegion();
 }
 
 }  // namespace edk

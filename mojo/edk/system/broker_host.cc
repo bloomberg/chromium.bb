@@ -7,12 +7,14 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
+#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker_messages.h"
 
@@ -104,24 +106,31 @@ void BrokerHost::SendNamedChannel(const base::StringPiece16& pipe_name) {
 #endif  // defined(OS_WIN)
 
 void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
-  scoped_refptr<PlatformSharedBuffer> read_only_buffer;
-  scoped_refptr<PlatformSharedBuffer> buffer =
-      PlatformSharedBuffer::Create(num_bytes);
-  if (buffer)
-    read_only_buffer = buffer->CreateReadOnlyDuplicate();
-  if (!read_only_buffer)
-    buffer = nullptr;
+  base::subtle::PlatformSharedMemoryRegion region =
+      base::subtle::PlatformSharedMemoryRegion::CreateWritable(num_bytes);
+
+  std::vector<ScopedPlatformHandle> handles(2);
+  if (region.IsValid()) {
+    ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+        region.PassPlatformHandle(), &handles[0], &handles[1]);
+#if !defined(OS_POSIX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+    // Non-POSIX systems, as well as Android, Fuchsia, and non-iOS Mac, only use
+    // a single handle to represent a writable region.
+    DCHECK(!handles[1].is_valid());
+    handles.resize(1);
+#else
+    DCHECK(handles[1].is_valid());
+#endif
+  }
 
   BufferResponseData* response;
   Channel::MessagePtr message = CreateBrokerMessage(
-      BrokerMessageType::BUFFER_RESPONSE, buffer ? 2 : 0, 0, &response);
-  if (buffer) {
-    base::UnguessableToken guid = buffer->GetGUID();
+      BrokerMessageType::BUFFER_RESPONSE, handles.size(), 0, &response);
+  if (!handles.empty()) {
+    base::UnguessableToken guid = region.GetGUID();
     response->guid_high = guid.GetHighForSerialization();
     response->guid_low = guid.GetLowForSerialization();
-    std::vector<ScopedPlatformHandle> handles(2);
-    handles[0] = buffer->PassPlatformHandle();
-    handles[1] = read_only_buffer->PassPlatformHandle();
     PrepareHandlesForClient(&handles);
     message->SetHandles(std::move(handles));
   }

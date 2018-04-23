@@ -14,13 +14,14 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
+#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/process_error_callback.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/configuration.h"
@@ -29,6 +30,7 @@
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
+#include "mojo/edk/system/platform_shared_memory_mapping.h"
 #include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/node.h"
@@ -180,6 +182,13 @@ scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
   return handles_->GetDispatcher(handle);
 }
 
+scoped_refptr<Dispatcher> Core::GetAndRemoveDispatcher(MojoHandle handle) {
+  scoped_refptr<Dispatcher> dispatcher;
+  base::AutoLock lock(handles_->GetLock());
+  handles_->GetAndRemoveDispatcher(handle, &dispatcher);
+  return dispatcher;
+}
+
 void Core::SetDefaultProcessErrorCallback(
     const ProcessErrorCallback& callback) {
   default_process_error_callback_ = callback;
@@ -305,72 +314,6 @@ MojoResult Core::PassWrappedPlatformHandle(
     result = MOJO_RESULT_INVALID_ARGUMENT;
   }
   d->Close();
-  return result;
-}
-
-MojoResult Core::CreateSharedBufferWrapper(
-    base::SharedMemoryHandle shared_memory_handle,
-    size_t num_bytes,
-    bool read_only,
-    MojoHandle* mojo_wrapper_handle) {
-  DCHECK(num_bytes);
-  scoped_refptr<PlatformSharedBuffer> platform_buffer =
-      PlatformSharedBuffer::CreateFromSharedMemoryHandle(num_bytes, read_only,
-                                                         shared_memory_handle);
-  if (!platform_buffer)
-    return MOJO_RESULT_UNKNOWN;
-
-  scoped_refptr<SharedBufferDispatcher> dispatcher;
-  MojoResult result = SharedBufferDispatcher::CreateFromPlatformSharedBuffer(
-      platform_buffer, &dispatcher);
-  if (result != MOJO_RESULT_OK)
-    return result;
-  MojoHandle h = AddDispatcher(dispatcher);
-  if (h == MOJO_HANDLE_INVALID)
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-  *mojo_wrapper_handle = h;
-  return MOJO_RESULT_OK;
-}
-
-MojoResult Core::PassSharedMemoryHandle(
-    MojoHandle mojo_handle,
-    base::SharedMemoryHandle* shared_memory_handle,
-    size_t* num_bytes,
-    bool* read_only) {
-  if (!shared_memory_handle)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  scoped_refptr<Dispatcher> dispatcher;
-  MojoResult result = MOJO_RESULT_OK;
-  {
-    base::AutoLock lock(handles_->GetLock());
-    // Get the dispatcher and check it before removing it from the handle table
-    // to ensure that the dispatcher is of the correct type. This ensures we
-    // don't close and remove the wrong type of dispatcher.
-    dispatcher = handles_->GetDispatcher(mojo_handle);
-    if (!dispatcher || dispatcher->GetType() != Dispatcher::Type::SHARED_BUFFER)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-
-    result = handles_->GetAndRemoveDispatcher(mojo_handle, &dispatcher);
-    if (result != MOJO_RESULT_OK)
-      return result;
-  }
-
-  SharedBufferDispatcher* shm_dispatcher =
-      static_cast<SharedBufferDispatcher*>(dispatcher.get());
-  scoped_refptr<PlatformSharedBuffer> platform_shared_buffer =
-      shm_dispatcher->PassPlatformSharedBuffer();
-
-  if (!platform_shared_buffer)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  if (num_bytes)
-    *num_bytes = platform_shared_buffer->GetNumBytes();
-  if (read_only)
-    *read_only = platform_shared_buffer->IsReadOnly();
-  *shared_memory_handle = platform_shared_buffer->DuplicateSharedMemoryHandle();
-
-  shm_dispatcher->Close();
   return result;
 }
 
@@ -797,10 +740,30 @@ MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  scoped_refptr<PlatformSharedBuffer> ring_buffer =
-      GetNodeController()->CreateSharedBuffer(
-          create_options.capacity_num_bytes);
-  if (!ring_buffer)
+  base::subtle::PlatformSharedMemoryRegion ring_buffer_region =
+      base::WritableSharedMemoryRegion::TakeHandleForSerialization(
+          GetNodeController()->CreateSharedBuffer(
+              create_options.capacity_num_bytes));
+
+  // NOTE: We demote the writable region to an unsafe region so that the
+  // producer handle can be transferred freely. There is no compelling reason
+  // to restrict access rights of consumers since they are the exclusive
+  // consumer of this pipe, and it would be impossible to support such access
+  // control on Android anyway.
+  auto writable_region_handle = ring_buffer_region.PassPlatformHandle();
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+    (!defined(OS_MACOSX) || defined(OS_IOS))
+  // This isn't strictly necessary, but it does make the handle configuration
+  // consistent with regular UnsafeSharedMemoryRegions.
+  writable_region_handle.readonly_fd.reset();
+#endif
+  base::UnsafeSharedMemoryRegion producer_region =
+      base::UnsafeSharedMemoryRegion::Deserialize(
+          base::subtle::PlatformSharedMemoryRegion::Take(
+              std::move(writable_region_handle),
+              base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+              create_options.capacity_num_bytes, ring_buffer_region.GetGUID()));
+  if (!producer_region.IsValid())
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   ports::PortRef port0, port1;
@@ -809,14 +772,17 @@ MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
   DCHECK(data_pipe_producer_handle);
   DCHECK(data_pipe_consumer_handle);
 
+  base::UnsafeSharedMemoryRegion consumer_region = producer_region.Duplicate();
   uint64_t pipe_id = base::RandUint64();
   scoped_refptr<Dispatcher> producer = DataPipeProducerDispatcher::Create(
-      GetNodeController(), port0, ring_buffer, create_options, pipe_id);
+      GetNodeController(), port0, std::move(producer_region), create_options,
+      pipe_id);
   if (!producer)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   scoped_refptr<Dispatcher> consumer = DataPipeConsumerDispatcher::Create(
-      GetNodeController(), port1, ring_buffer, create_options, pipe_id);
+      GetNodeController(), port1, std::move(consumer_region), create_options,
+      pipe_id);
   if (!consumer) {
     producer->Close();
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
@@ -973,12 +939,11 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
                            uint64_t num_bytes,
                            void** buffer,
                            MojoMapBufferFlags flags) {
-  RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(GetDispatcher(buffer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  std::unique_ptr<PlatformSharedBufferMapping> mapping;
+  std::unique_ptr<PlatformSharedMemoryMapping> mapping;
   MojoResult result = dispatcher->MapBuffer(offset, num_bytes, flags, &mapping);
   if (result != MOJO_RESULT_OK)
     return result;
@@ -987,25 +952,30 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
   void* address = mapping->GetBase();
   {
     base::AutoLock locker(mapping_table_lock_);
-    result = mapping_table_.AddMapping(std::move(mapping));
+    if (mapping_table_.size() >= GetConfiguration().max_mapping_table_size)
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+    auto emplace_result = mapping_table_.emplace(address, std::move(mapping));
+    DCHECK(emplace_result.second);
   }
-  if (result != MOJO_RESULT_OK)
-    return result;
 
   *buffer = address;
   return MOJO_RESULT_OK;
 }
 
 MojoResult Core::UnmapBuffer(void* buffer) {
-  RequestContext request_context;
-  std::unique_ptr<PlatformSharedBufferMapping> mapping;
-  MojoResult result;
+  std::unique_ptr<PlatformSharedMemoryMapping> mapping;
   // Destroy |mapping| while not holding the lock.
   {
     base::AutoLock lock(mapping_table_lock_);
-    result = mapping_table_.RemoveMapping(buffer, &mapping);
+    auto iter = mapping_table_.find(buffer);
+    if (iter == mapping_table_.end())
+      return MOJO_RESULT_INVALID_ARGUMENT;
+
+    // Grab a reference so that it gets unmapped outside of this lock.
+    mapping = std::move(iter->second);
+    mapping_table_.erase(iter);
   }
-  return result;
+  return MOJO_RESULT_OK;
 }
 
 MojoResult Core::GetBufferInfo(MojoHandle buffer_handle,
@@ -1062,15 +1032,26 @@ MojoResult Core::WrapPlatformSharedBufferHandle(
       base::UnguessableToken::Deserialize(guid->high, guid->low);
   const bool read_only =
       flags & MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_HANDLE_IS_READ_ONLY;
-  scoped_refptr<PlatformSharedBuffer> platform_buffer =
-      PlatformSharedBuffer::CreateFromPlatformHandle(size, read_only, token,
-                                                     std::move(handle));
-  if (!platform_buffer)
+
+  // TODO(https://crbug.com/826213): Support proper wrapping/unwrapping of
+  // shared memory region handles instead of forcing the wrapped handles to
+  // always be read-only or unsafe. This requires first extending the
+  // wrap/unwrap API to support multiple platform handles as input/output.
+  base::subtle::PlatformSharedMemoryRegion::Mode mode =
+      read_only ? base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly
+                : base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe;
+
+  base::subtle::PlatformSharedMemoryRegion region =
+      base::subtle::PlatformSharedMemoryRegion::Take(
+          CreateSharedMemoryRegionHandleFromPlatformHandles(
+              std::move(handle), ScopedPlatformHandle()),
+          mode, size, token);
+  if (!region.IsValid())
     return MOJO_RESULT_UNKNOWN;
 
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  result = SharedBufferDispatcher::CreateFromPlatformSharedBuffer(
-      platform_buffer, &dispatcher);
+  result = SharedBufferDispatcher::CreateFromPlatformSharedMemoryRegion(
+      std::move(region), &dispatcher);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -1106,23 +1087,31 @@ MojoResult Core::UnwrapPlatformSharedBufferHandle(
 
   SharedBufferDispatcher* shm_dispatcher =
       static_cast<SharedBufferDispatcher*>(dispatcher.get());
-  scoped_refptr<PlatformSharedBuffer> platform_shared_buffer =
-      shm_dispatcher->PassPlatformSharedBuffer();
-  DCHECK(platform_shared_buffer);
-
+  base::subtle::PlatformSharedMemoryRegion region =
+      shm_dispatcher->PassPlatformSharedMemoryRegion();
+  DCHECK(region.IsValid());
   DCHECK(size);
-  *size = platform_shared_buffer->GetNumBytes();
+  *size = region.GetSize();
 
-  base::UnguessableToken token = platform_shared_buffer->GetGUID();
+  base::UnguessableToken token = region.GetGUID();
   guid->high = token.GetHighForSerialization();
   guid->low = token.GetLowForSerialization();
 
   DCHECK(flags);
   *flags = MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE;
-  if (platform_shared_buffer->IsReadOnly())
+  if (region.GetMode() ==
+      base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly) {
     *flags |= MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_HANDLE_IS_READ_ONLY;
+  }
 
-  ScopedPlatformHandle handle = platform_shared_buffer->PassPlatformHandle();
+  ScopedPlatformHandle handle;
+  ScopedPlatformHandle read_only_handle;
+  ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+      region.PassPlatformHandle(), &handle, &read_only_handle);
+
+  // TODO(https://crbug.com/826213): Once we support proper wrapping of shared
+  // memory handles, don't drop |read_only_handle| on the ground.
+
   return ScopedPlatformHandleToMojoPlatformHandle(std::move(handle),
                                                   platform_handle);
 }

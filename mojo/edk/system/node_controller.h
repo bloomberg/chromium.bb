@@ -18,9 +18,9 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/atomic_flag.h"
 #include "mojo/edk/system/node_channel.h"
@@ -116,7 +116,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   int MergeLocalPorts(const ports::PortRef& port0, const ports::PortRef& port1);
 
   // Creates a new shared buffer for use in the current process.
-  scoped_refptr<PlatformSharedBuffer> CreateSharedBuffer(size_t num_bytes);
+  base::WritableSharedMemoryRegion CreateSharedBuffer(size_t num_bytes);
 
   // Request that the Node be shut down cleanly. This may take an arbitrarily
   // long time to complete, at which point |callback| will be called.

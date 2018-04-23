@@ -10,7 +10,6 @@ source_set("embedder_unittests") {
 
   sources = [
     "embedder_unittest.cc",
-    "platform_shared_buffer_unittest.cc",
   ]
 
   if (is_posix) {

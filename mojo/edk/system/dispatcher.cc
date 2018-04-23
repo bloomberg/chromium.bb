@@ -62,7 +62,7 @@ MojoResult Dispatcher::MapBuffer(
     uint64_t offset,
     uint64_t num_bytes,
     MojoMapBufferFlags flags,
-    std::unique_ptr<PlatformSharedBufferMapping>* mapping) {
+    std::unique_ptr<PlatformSharedMemoryMapping>* mapping) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
