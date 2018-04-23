@@ -3044,6 +3044,7 @@ TEST_F(PasswordAutofillAgentTest,
 
 // Tests that password manager sees both autofill assisted and user entered
 // data on saving that is triggered by form submission. Leaks under ASan.
+// Disabled on Win due to https://crbug.com/835865.
 #if defined(ADDRESS_SANITIZER) || defined(OS_WIN)
 #define MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted \
   DISABLED_UsernameChangedAfterPasswordInput_FormSubmitted
