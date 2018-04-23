@@ -1673,25 +1673,17 @@ drm_output_render_pixman(struct drm_output_state *state,
 {
 	struct drm_output *output = state->output;
 	struct weston_compositor *ec = output->base.compositor;
-	pixman_region32_t total_damage, previous_damage;
-
-	pixman_region32_init(&total_damage);
-	pixman_region32_init(&previous_damage);
-
-	pixman_region32_copy(&previous_damage, damage);
-
-	pixman_region32_union(&total_damage, damage, &output->previous_damage);
-	pixman_region32_copy(&output->previous_damage, &previous_damage);
 
 	output->current_image ^= 1;
 
 	pixman_renderer_output_set_buffer(&output->base,
 					  output->image[output->current_image]);
+	pixman_renderer_output_set_hw_extra_damage(&output->base,
+						   &output->previous_damage);
 
-	ec->renderer->repaint_output(&output->base, &total_damage);
+	ec->renderer->repaint_output(&output->base, damage);
 
-	pixman_region32_fini(&total_damage);
-	pixman_region32_fini(&previous_damage);
+	pixman_region32_copy(&output->previous_damage, damage);
 
 	return drm_fb_ref(output->dumb[output->current_image]);
 }

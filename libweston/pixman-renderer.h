@@ -34,7 +34,12 @@ int
 pixman_renderer_output_create(struct weston_output *output);
 
 void
-pixman_renderer_output_set_buffer(struct weston_output *output, pixman_image_t *buffer);
+pixman_renderer_output_set_buffer(struct weston_output *output,
+				  pixman_image_t *buffer);
+
+void
+pixman_renderer_output_set_hw_extra_damage(struct weston_output *output,
+					   pixman_region32_t *extra_damage);
 
 void
 pixman_renderer_output_destroy(struct weston_output *output);

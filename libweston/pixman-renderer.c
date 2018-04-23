@@ -41,6 +41,7 @@ struct pixman_output_state {
 	void *shadow_buffer;
 	pixman_image_t *shadow_image;
 	pixman_image_t *hw_buffer;
+	pixman_region32_t *hw_extra_damage;
 };
 
 struct pixman_surface_state {
@@ -555,15 +556,29 @@ copy_to_hw_buffer(struct weston_output *output, pixman_region32_t *region)
 
 static void
 pixman_renderer_repaint_output(struct weston_output *output,
-			     pixman_region32_t *output_damage)
+			       pixman_region32_t *output_damage)
 {
 	struct pixman_output_state *po = get_output_state(output);
+	pixman_region32_t hw_damage;
 
-	if (!po->hw_buffer)
-		return;
+	if (!po->hw_buffer) {
+		po->hw_extra_damage = NULL;
+ 		return;
+	}
+
+	pixman_region32_init(&hw_damage);
+	if (po->hw_extra_damage) {
+		pixman_region32_union(&hw_damage,
+				      po->hw_extra_damage, output_damage);
+		po->hw_extra_damage = NULL;
+	} else {
+		pixman_region32_copy(&hw_damage, output_damage);
+	}
 
 	repaint_surfaces(output, output_damage);
-	copy_to_hw_buffer(output, output_damage);
+
+	copy_to_hw_buffer(output, &hw_damage);
+	pixman_region32_fini(&hw_damage);
 
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
@@ -862,7 +877,8 @@ pixman_renderer_init(struct weston_compositor *ec)
 }
 
 WL_EXPORT void
-pixman_renderer_output_set_buffer(struct weston_output *output, pixman_image_t *buffer)
+pixman_renderer_output_set_buffer(struct weston_output *output,
+				  pixman_image_t *buffer)
 {
 	struct pixman_output_state *po = get_output_state(output);
 
@@ -874,6 +890,15 @@ pixman_renderer_output_set_buffer(struct weston_output *output, pixman_image_t *
 		output->compositor->read_format = pixman_image_get_format(po->hw_buffer);
 		pixman_image_ref(po->hw_buffer);
 	}
+}
+
+WL_EXPORT void
+pixman_renderer_output_set_hw_extra_damage(struct weston_output *output,
+					   pixman_region32_t *extra_damage)
+{
+	struct pixman_output_state *po = get_output_state(output);
+
+	po->hw_extra_damage = extra_damage;
 }
 
 WL_EXPORT int
