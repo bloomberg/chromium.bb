@@ -117,6 +117,57 @@ int GpuProcessHost::display_compositor_recent_crash_count_ = 0;
 
 namespace {
 
+// This matches base::TerminationStatus.
+// These values are persisted to logs. Entries (except MAX_ENUM) should not be
+// renumbered and numeric values should never be reused. Should also avoid
+// OS-defines in this enum to keep the values consistent on all platforms.
+enum class GpuTerminationStatus {
+  NORMAL_TERMINATION = 0,
+  ABNORMAL_TERMINATION = 1,
+  PROCESS_WAS_KILLED = 2,
+  PROCESS_CRASHED = 3,
+  STILL_RUNNING = 4,
+  PROCESS_WAS_KILLED_BY_OOM = 5,
+  OOM_PROTECTED = 6,
+  LAUNCH_FAILED = 7,
+  OOM = 8,
+  MAX_ENUM = 9,
+};
+
+GpuTerminationStatus ConvertToGpuTerminationStatus(
+    base::TerminationStatus status) {
+  switch (status) {
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+      return GpuTerminationStatus::NORMAL_TERMINATION;
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+      return GpuTerminationStatus::ABNORMAL_TERMINATION;
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      return GpuTerminationStatus::PROCESS_WAS_KILLED;
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      return GpuTerminationStatus::PROCESS_CRASHED;
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+      return GpuTerminationStatus::STILL_RUNNING;
+#if defined(OS_CHROMEOS)
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+      return GpuTerminationStatus::PROCESS_WAS_KILLED_BY_OOM;
+#endif
+#if defined(OS_ANDROID)
+    case base::TERMINATION_STATUS_OOM_PROTECTED:
+      return GpuTerminationStatus::OOM_PROTECTED;
+#endif
+    case base::TERMINATION_STATUS_LAUNCH_FAILED:
+      return GpuTerminationStatus::LAUNCH_FAILED;
+    case base::TERMINATION_STATUS_OOM:
+      return GpuTerminationStatus::OOM;
+    case base::TERMINATION_STATUS_MAX_ENUM:
+      NOTREACHED();
+      return GpuTerminationStatus::MAX_ENUM;
+      // Do not add default.
+  }
+  NOTREACHED();
+  return GpuTerminationStatus::ABNORMAL_TERMINATION;
+}
+
 // Command-line switches to propagate to the GPU process.
 static const char* const kSwitchNames[] = {
     service_manager::switches::kDisableSeccompFilterSandbox,
@@ -632,8 +683,9 @@ GpuProcessHost::~GpuProcessHost() {
   if (!in_process_ && process_launched_) {
     ChildProcessTerminationInfo info =
         process_->GetTerminationInfo(false /* known_dead */);
-    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus", info.status,
-                              base::TERMINATION_STATUS_MAX_ENUM);
+    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus2",
+                              ConvertToGpuTerminationStatus(info.status),
+                              GpuTerminationStatus::MAX_ENUM);
 
     if (info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
         info.status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||

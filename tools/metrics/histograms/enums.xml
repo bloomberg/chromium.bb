@@ -22129,6 +22129,22 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="active, was active"/>
 </enum>
 
+<enum name="GpuTerminationStatus">
+  <summary>
+    Return status re-encoded values from GetTerminationStatus as defined in
+    base/process/kill.h enum TerminationStatus.
+  </summary>
+  <int value="0" label="Normal">NORMAL_TERMINATION</int>
+  <int value="1" label="Abnormal">ABNORMAL_TERMINATION</int>
+  <int value="2" label="Killed">PROCESS_WAS_KILLED</int>
+  <int value="3" label="Crashed">PROCESS_CRASHED</int>
+  <int value="4" label="Still Running">STILL_RUNNING</int>
+  <int value="5" label="Killed by OOM">PROCESS_WAS_KILLED_BY_OOM</int>
+  <int value="6" label="OOM protected">OOM_PROTECTED</int>
+  <int value="7" label="Launch Failed">LAUNCH_FAILED</int>
+  <int value="8" label="OOM">OOM</int>
+</enum>
+
 <enum name="GpuTextureResultR16_L16">
   <summary>
     Keeps track of how many users have R16_EXT or/and LUMINANCE_F16, and also
@@ -43907,6 +43923,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="TerminationStatus">
+  <obsolete>
+    Deprecated April 2018. Replaced by GpuTerminationStatus.
+  </obsolete>
   <summary>
     Return status values from GetTerminationStatus as defined in
     base/process/kill.h enum TerminationStatus. The last couple enums are
