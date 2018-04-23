@@ -30,11 +30,11 @@ class LocalSiteCharacteristicsDataReader
 
  private:
   friend class LocalSiteCharacteristicsDataReaderTest;
+  friend class LocalSiteCharacteristicsDataStoreTest;
+  friend class LocalSiteCharacteristicsDataStore;
 
   // Private constructor, these objects are meant to be created by a site
-  // characteristics data store (not currently implemented).
-  // TODO(sebmarchand): Update this comment once the site characteristics data
-  // store class gets implemented.
+  // characteristics data store.
   explicit LocalSiteCharacteristicsDataReader(
       scoped_refptr<internal::LocalSiteCharacteristicsDataImpl> impl);
 
