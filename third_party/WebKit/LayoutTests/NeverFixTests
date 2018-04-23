@@ -1808,8 +1808,6 @@ external/wpt/css/css-color/lch-007.html [ WontFix ]
 external/wpt/css/css-color/t32-opacity-offscreen-multiple-boxes-1-c.xht [ WontFix ]
 external/wpt/css/css-color/t32-opacity-offscreen-multiple-boxes-2-c.xht [ WontFix ]
 external/wpt/css/css-color/t422-rgba-onscreen-b.xht [ WontFix ]
-external/wpt/css/css-color/t422-rgba-onscreen-multiple-boxes-c.xht [ WontFix ]
-external/wpt/css/css-color/t425-hsla-onscreen-multiple-boxes-c.xht [ WontFix ]
 
 # https://github.com/w3c/web-platform-tests/issues/8547
 external/wpt/css/mediaqueries/device-aspect-ratio-001.html [ WontFix ]
