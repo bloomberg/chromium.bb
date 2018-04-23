@@ -696,6 +696,7 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/hamcrest:hamcrest_core_java",
   ]
   additional_apks = [ "//net/android:net_test_support_apk" ]
 

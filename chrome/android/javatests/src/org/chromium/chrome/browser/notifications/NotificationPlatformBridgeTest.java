@@ -85,11 +85,13 @@ public class NotificationPlatformBridgeTest {
                 mNotificationTestRule.getTestServer().getURL(NOTIFICATION_TEST_PAGE));
     }
 
+    @SuppressWarnings("MissingFail")
     private void waitForTitle(String expectedTitle) throws InterruptedException {
         Tab tab = mNotificationTestRule.getActivity().getActivityTab();
         TabTitleObserver titleObserver = new TabTitleObserver(tab, expectedTitle);
         try {
             titleObserver.waitForTitleUpdate(TITLE_UPDATE_TIMEOUT_SECONDS);
+
         } catch (TimeoutException e) {
             // The title is not as expected, this assertion neatly logs what the difference is.
             Assert.assertEquals(expectedTitle, tab.getTitle());
