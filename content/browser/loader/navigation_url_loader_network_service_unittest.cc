@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -27,6 +28,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
@@ -126,6 +128,10 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext);
     http_test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+    PluginService::GetInstance()->Init();
+#endif
   }
 
   ~NavigationURLLoaderNetworkServiceTest() override {
