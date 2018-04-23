@@ -29,26 +29,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
-// On Mac, menus block in a nested runloop, so any tests that trigger
-// the menu either hang, or pass only because of a race condition with
-// app activation. Disable until either tests can be rewritten or Mac
-// menus are made asynchronous.
-#if defined(OS_MACOSX)
-#define MAYBE_OptionsMenuNeverTranslateLanguage \
-  DISABLED_OptionsMenuNeverTranslateLanguage
-#define MAYBE_OptionsMenuNeverTranslateSite \
-  DISABLED_OptionsMenuNeverTranslateSite
-#define MAYBE_OptionsMenuRespectsBlacklistSite \
-  DISABLED_OptionsMenuRespectsBlacklistSite
-#define MAYBE_AlwaysTranslateLanguageMenuItem \
-  DISABLED_AlwaysTranslateLanguageMenuItem
-#else
-#define MAYBE_OptionsMenuNeverTranslateLanguage \
-  OptionsMenuNeverTranslateLanguage
-#define MAYBE_OptionsMenuNeverTranslateSite OptionsMenuNeverTranslateSite
-#define MAYBE_OptionsMenuRespectsBlacklistSite OptionsMenuRespectsBlacklistSite
-#define MAYBE_AlwaysTranslateLanguageMenuItem AlwaysTranslateLanguageMenuItem
-#endif
 
 namespace {
 
@@ -245,7 +225,7 @@ TEST_F(TranslateBubbleViewTest, TranslateButton) {
   EXPECT_TRUE(mock_model_->translate_called_);
 }
 
-TEST_F(TranslateBubbleViewTest, MAYBE_OptionsMenuNeverTranslateLanguage) {
+TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateLanguage) {
   CreateAndShowBubble();
 
   EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
@@ -262,7 +242,7 @@ TEST_F(TranslateBubbleViewTest, MAYBE_OptionsMenuNeverTranslateLanguage) {
   EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
 }
 
-TEST_F(TranslateBubbleViewTest, MAYBE_OptionsMenuNeverTranslateSite) {
+TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateSite) {
   // NEVER_TRANSLATE_SITE should only show up for sites that can be blacklisted.
   mock_model_->SetCanBlacklistSite(true);
   CreateAndShowBubble();
@@ -433,7 +413,7 @@ TEST_F(TranslateBubbleViewTest, CancelButtonReturningError) {
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_ERROR, bubble_->GetViewState());
 }
 
-TEST_F(TranslateBubbleViewTest, MAYBE_OptionsMenuRespectsBlacklistSite) {
+TEST_F(TranslateBubbleViewTest, OptionsMenuRespectsBlacklistSite) {
   mock_model_->SetCanBlacklistSite(false);
   CreateAndShowBubble();
 
@@ -447,7 +427,7 @@ TEST_F(TranslateBubbleViewTest, MAYBE_OptionsMenuRespectsBlacklistSite) {
             0);
 }
 
-TEST_F(TranslateBubbleViewTest, MAYBE_AlwaysTranslateLanguageMenuItem) {
+TEST_F(TranslateBubbleViewTest, AlwaysTranslateLanguageMenuItem) {
   CreateAndShowBubble();
 
   TriggerOptionsMenu();
