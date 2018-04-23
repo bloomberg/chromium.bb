@@ -9,6 +9,7 @@
 
 #include "base/guid.h"
 #include "crypto/ec_private_key.h"
+#include "device/fido/virtual_u2f_device.h"
 
 namespace content {
 
@@ -26,7 +27,7 @@ void VirtualAuthenticator::AddBinding(
 }
 
 std::unique_ptr<::device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
-  return std::make_unique<::device::VirtualFidoDevice>(state_);
+  return std::make_unique<::device::VirtualU2fDevice>(state_);
 }
 
 void VirtualAuthenticator::GetUniqueId(GetUniqueIdCallback callback) {
