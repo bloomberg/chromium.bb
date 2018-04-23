@@ -460,10 +460,8 @@ void Shell::OnRootWindowAdded(aura::Window* root_window) {
 void Shell::CreateKeyboard() {
   if (keyboard::IsKeyboardEnabled()) {
     if (keyboard::KeyboardController::GetInstance()) {
-      RootWindowControllerList controllers = GetAllRootWindowControllers();
-      for (RootWindowControllerList::iterator iter = controllers.begin();
-           iter != controllers.end(); ++iter) {
-        (*iter)->DeactivateKeyboard(
+      for (auto* const controller : GetAllRootWindowControllers()) {
+        controller->DeactivateKeyboard(
             keyboard::KeyboardController::GetInstance());
       }
     }
@@ -482,10 +480,9 @@ void Shell::DestroyKeyboard() {
   // TODO(jamescook): Move keyboard create and hide into ShellPort.
   keyboard_ui_->Hide();
   if (keyboard::KeyboardController::GetInstance()) {
-    RootWindowControllerList controllers = GetAllRootWindowControllers();
-    for (RootWindowControllerList::iterator iter = controllers.begin();
-         iter != controllers.end(); ++iter) {
-      (*iter)->DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
+    for (auto* const controller : GetAllRootWindowControllers()) {
+      controller->DeactivateKeyboard(
+          keyboard::KeyboardController::GetInstance());
     }
   }
   keyboard::KeyboardController::ResetInstance(nullptr);
