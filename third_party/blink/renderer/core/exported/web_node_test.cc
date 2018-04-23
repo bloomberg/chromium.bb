@@ -8,9 +8,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_element_collection.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 
 namespace blink {
 
@@ -53,6 +56,32 @@ TEST_F(WebNodeTest, GetElementsByHTMLTagName) {
   // The argument should be lower-case.
   collection = Root().GetElementsByHTMLTagName("LABEL");
   EXPECT_EQ(0u, collection.length());
+}
+
+class WebNodeSimTest : public SimTest {};
+
+TEST_F(WebNodeSimTest, IsFocused) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest css_resource("https://example.com/style.css", "text/css");
+
+  LoadURL("https://example.com/test.html");
+  WebView().Resize(WebSize(800, 600));
+
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <link rel=stylesheet href=style.css>
+    <input id=focusable>
+  )HTML");
+
+  css_resource.Start();
+
+  EXPECT_TRUE(GetDocument().GetStyleEngine().HasPendingRenderBlockingSheets());
+
+  WebNode input_node(GetDocument().getElementById("focusable"));
+  EXPECT_FALSE(input_node.IsFocusable());
+
+  css_resource.Complete("dummy {}");
+  EXPECT_TRUE(input_node.IsFocusable());
 }
 
 }  // namespace blink
