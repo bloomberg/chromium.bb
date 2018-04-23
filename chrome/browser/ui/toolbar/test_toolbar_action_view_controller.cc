@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -17,6 +18,8 @@ TestToolbarActionViewController::TestToolbarActionViewController(
       wants_to_run_(false),
       disabled_click_opens_menu_(false),
       execute_action_count_(0) {
+  // Needs a non-empty accessible name to pass accessibility checks.
+  SetAccessibleName(base::ASCIIToUTF16("Default name"));
 }
 
 TestToolbarActionViewController::~TestToolbarActionViewController() {
