@@ -76,6 +76,11 @@ class MemlogBrowserTest : public InProcessBrowserTest,
   }
 };
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_EndToEnd DISABLED_EndToEnd
+#else
+#define MAYBE_EndToEnd EndToEnd
+#endif
 // Ensure invocations via TracingController can generate a valid JSON file with
 // expected data.
 IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
