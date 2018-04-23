@@ -41,13 +41,6 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE);
 }
 
-void SyncConsentScreenHandler::RegisterMessages() {
-  BaseScreenHandler::RegisterMessages();
-
-  AddCallback("syncEverythingChanged",
-              &SyncConsentScreenHandler::HandleSyncEverythingChanged);
-}
-
 void SyncConsentScreenHandler::Bind(SyncConsentScreen* screen) {
   screen_ = screen;
   BaseScreenHandler::SetBaseScreen(screen);
@@ -60,15 +53,5 @@ void SyncConsentScreenHandler::Show() {
 void SyncConsentScreenHandler::Hide() {}
 
 void SyncConsentScreenHandler::Initialize() {}
-
-void SyncConsentScreenHandler::HandleSyncEverythingChanged(
-    bool sync_everything) {
-  screen_->SetSyncAllValue(sync_everything);
-}
-
-void SyncConsentScreenHandler::OnUserPrefKnown(bool sync_everything,
-                                               bool is_managed) {
-  CallJS("onUserSyncPrefsKnown", sync_everything, is_managed);
-}
 
 }  // namespace chromeos

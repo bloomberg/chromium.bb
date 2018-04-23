@@ -24,21 +24,15 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
 
-  // WebUIMessageHandler:
-  void RegisterMessages() override;
-
   // SyncConsentScreenView:
   void Bind(SyncConsentScreen* screen) override;
   void Show() override;
   void Hide() override;
-  void OnUserPrefKnown(bool sync_everything, bool is_managed) override;
 
  private:
   // BaseScreenHandler:
   void Initialize() override;
 
-  // WebUI message handlers:
-  void HandleSyncEverythingChanged(bool sync_everything);
   SyncConsentScreen* screen_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConsentScreenHandler);

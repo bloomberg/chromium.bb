@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen_view.h"
+#include "components/sync/driver/sync_service_observer.h"
+#include "components/user_manager/user.h"
 
 class Profile;
 
@@ -20,7 +22,15 @@ class BaseScreenDelegate;
 
 // This is Sync settings screen that is displayed as a part of user first
 // sign-in flow.
-class SyncConsentScreen : public BaseScreen {
+class SyncConsentScreen : public BaseScreen,
+                          public syncer::SyncServiceObserver {
+ private:
+  enum SyncScreenBehavior {
+    UNKNOWN,  // Not yet known.
+    SHOW,     // Screen should be shown.
+    SKIP      // Skip screen for this user.
+  };
+
  public:
   SyncConsentScreen(BaseScreenDelegate* base_screen_delegate,
                     SyncConsentScreenView* view);
@@ -31,14 +41,28 @@ class SyncConsentScreen : public BaseScreen {
   void Hide() override;
   void OnUserAction(const std::string& action_id) override;
 
-  // Modifies user sync preference on user action.
-  void SetSyncAllValue(bool sync_all);
+  // syncer::SyncServiceObserver:
+  void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
+  // Returns new SyncScreenBehavior value.
+  SyncScreenBehavior GetSyncScreenBehavior() const;
+
+  // Calculates updated |behavior_| and performs required update actions.
+  void UpdateScreen();
+
+  // Controls screen appearance.
+  // Spinner is shown until sync status has been decided.
+  SyncScreenBehavior behavior_ = UNKNOWN;
+
   SyncConsentScreenView* const view_;
 
-  // Profile of the primary user (if screen is shown).
+  // Primary user ind his Profile (if screen is shown).
+  const user_manager::User* user_ = nullptr;
   Profile* profile_ = nullptr;
+
+  // True when screen is shown.
+  bool shown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConsentScreen);
 };
