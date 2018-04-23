@@ -39,13 +39,12 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
   const std::string& launch_intent_uri() const {
     return data_->launch_intent_uri;
   }
-  const std::string& label() const { return data_->label; }
   const base::Optional<std::vector<uint8_t>>& icon_png_data() const {
     return data_->icon_png_data;
   }
 
-  // Apply avatar style to |icon| and use it for SearchResult.
-  void SetIconToAvatarIcon(const gfx::ImageSkia& icon);
+  // Set |icon| to SearchResult. |icon| may be customized based on |data_|.
+  void ApplyIcon(const gfx::ImageSkia& icon);
 
   arc::mojom::AppDataResultPtr data_;
   std::unique_ptr<arc::IconDecodeRequest> icon_decode_request_;
