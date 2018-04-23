@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -43,11 +42,10 @@ constexpr int kDialogWidth = 448;
 
 }  // namespace
 
-void CrostiniInstallerView::Show(const CrostiniAppItem* app_item,
-                                 Profile* profile) {
+void CrostiniInstallerView::Show(Profile* profile) {
   DCHECK(IsExperimentalCrostiniUIAvailable());
   if (!g_crostini_installer_view) {
-    g_crostini_installer_view = new CrostiniInstallerView(app_item, profile);
+    g_crostini_installer_view = new CrostiniInstallerView(profile);
     views::DialogDelegate::CreateDialogWidget(g_crostini_installer_view,
                                               nullptr, nullptr);
   }
@@ -135,9 +133,8 @@ CrostiniInstallerView* CrostiniInstallerView::GetActiveViewForTesting() {
   return g_crostini_installer_view;
 }
 
-CrostiniInstallerView::CrostiniInstallerView(const CrostiniAppItem* app_item,
-                                             Profile* profile)
-    : app_name_(base::ASCIIToUTF16(app_item->name())),
+CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
+    : app_name_(base::ASCIIToUTF16(kCrostiniTerminalAppName)),
       profile_(profile),
       weak_ptr_factory_(this) {
 

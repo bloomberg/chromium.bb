@@ -20,7 +20,6 @@ namespace crostini {
 enum class ConciergeClientResult;
 }  // namespace crostini
 
-class CrostiniAppItem;
 class Profile;
 
 // The Crostini installer. Provides details about Crostini to the user and
@@ -29,7 +28,7 @@ class CrostiniInstallerView
     : public views::DialogDelegateView,
       public crostini::CrostiniManager::RestartObserver {
  public:
-  static void Show(const CrostiniAppItem* app_item, Profile* profile);
+  static void Show(Profile* profile);
 
   // views::DialogDelegateView:
   int GetDialogButtons() const override;
@@ -49,7 +48,7 @@ class CrostiniInstallerView
   static CrostiniInstallerView* GetActiveViewForTesting();
 
  private:
-  CrostiniInstallerView(const CrostiniAppItem* app_item, Profile* profile);
+  explicit CrostiniInstallerView(Profile* profile);
   ~CrostiniInstallerView() override;
 
   void HandleError(const base::string16& error_message);

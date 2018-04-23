@@ -116,6 +116,7 @@ class CrostiniRegistryService : public KeyedService {
   std::vector<std::string> GetRegisteredAppIds() const;
 
   // Return null if |app_id| is not found in the registry.
+  // TODO(timloh): We should probably have an entry for the Terminal app.
   std::unique_ptr<CrostiniRegistryService::Registration> GetRegistration(
       const std::string& app_id) const;
 
