@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -87,6 +89,8 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -140,27 +144,6 @@ class SyncProfileDelegate : public Profile::Delegate {
   base::Callback<void(Profile*)> on_profile_created_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncProfileDelegate);
-};
-
-// Helper class that checks whether a sync test server is running or not.
-class SyncServerStatusChecker : public net::URLFetcherDelegate {
- public:
-  SyncServerStatusChecker() : running_(false) {}
-
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    std::string data;
-    source->GetResponseAsString(&data);
-    running_ =
-        (source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
-         source->GetResponseCode() == 200 &&
-         base::StartsWith(data, "ok", base::CompareCase::SENSITIVE));
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
-  bool running() const { return running_; }
-
- private:
-  bool running_;
 };
 
 bool IsEncryptionComplete(const ProfileSyncService* service) {
@@ -258,8 +241,8 @@ void SyncTest::SetUp() {
     }
     // Decide on password to use.
     password_ = cl->HasSwitch(switches::kSyncPasswordForTest)
-        ? cl->GetSwitchValueASCII(switches::kSyncPasswordForTest)
-        : "password";
+                    ? cl->GetSwitchValueASCII(switches::kSyncPasswordForTest)
+                    : "password";
   }
 
   if (username_.empty() || password_.empty())
@@ -1033,17 +1016,28 @@ bool SyncTest::IsTestServerRunning() {
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   std::string sync_url = cl->GetSwitchValueASCII(switches::kSyncServiceURL);
   GURL sync_url_status(sync_url.append("/healthz"));
-  SyncServerStatusChecker delegate;
-  std::unique_ptr<net::URLFetcher> fetcher =
-      net::URLFetcher::Create(sync_url_status, net::URLFetcher::GET, &delegate,
-                              TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
-                        net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher->SetRequestContext(g_browser_process->system_request_context());
-  fetcher->Start();
-  content::RunMessageLoop();
-  return delegate.running();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = sync_url_status;
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE |
+                                 net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  bool server_running = false;
+  base::RunLoop run_loop;
+  simple_url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      g_browser_process->system_network_context_manager()
+          ->GetURLLoaderFactory(),
+      base::BindLambdaForTesting(
+          [&server_running,
+           &run_loop](std::unique_ptr<std::string> response_body) {
+            server_running =
+                response_body && base::StartsWith(*response_body, "ok",
+                                                  base::CompareCase::SENSITIVE);
+            run_loop.Quit();
+          }));
+  return server_running;
 }
 
 bool SyncTest::TestUsesSelfNotifications() {
