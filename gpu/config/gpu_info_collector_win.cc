@@ -18,6 +18,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/file_version_info_win.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -106,6 +107,7 @@ inline VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
       return VulkanVersion::kVulkanVersionUnknown;
   }
 }
+
 }  // namespace anonymous
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
@@ -313,6 +315,43 @@ void GetGpuSupportedD3D12Version(GPUInfo* gpu_info) {
   base::UnloadNativeLibrary(d3d12_library);
 }
 
+bool BadAMDVulkanDriverVersion(GPUInfo* gpu_info) {
+  bool secondary_gpu_amd = false;
+  for (size_t i = 0; i < gpu_info->secondary_gpus.size(); ++i) {
+    if (gpu_info->secondary_gpus[i].vendor_id == 0x1002) {
+      secondary_gpu_amd = true;
+      break;
+    }
+  }
+
+  // Check both primary and seconday
+  if (gpu_info->gpu.vendor_id == 0x1002 || secondary_gpu_amd) {
+    std::unique_ptr<FileVersionInfoWin> file_version_info(
+        static_cast<FileVersionInfoWin*>(
+            FileVersionInfoWin::CreateFileVersionInfo(
+                base::FilePath(FILE_PATH_LITERAL("amdvlk64.dll")))));
+
+    if (file_version_info) {
+      const int major =
+          HIWORD(file_version_info->fixed_file_info()->dwFileVersionMS);
+      const int minor =
+          LOWORD(file_version_info->fixed_file_info()->dwFileVersionMS);
+      const int minor_1 =
+          HIWORD(file_version_info->fixed_file_info()->dwFileVersionLS);
+
+      // From the Canary crash logs, the broken amdvlk64.dll versions
+      // are 1.0.39.0, 1.0.51.0 and 1.0.54.0. In the manual test, version
+      // 9.2.10.1 dated 12/6/2017 works and version 1.0.54.0 dated 11/2/1017
+      // crashes. All version numbers small than 1.0.54.0 will be marked as
+      // broken.
+      if (major == 1 && minor == 0 && minor_1 <= 54) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
 void GetGpuSupportedVulkanVersion(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "GetGpuSupportedVulkanVersion");
 
@@ -323,6 +362,13 @@ void GetGpuSupportedVulkanVersion(GPUInfo* gpu_info) {
       base::LoadNativeLibrary(base::FilePath(L"vulkan-1.dll"), nullptr);
 
   if (!vulkan_library) {
+    return;
+  }
+
+  // Skip if the system has an older AMD Vulkan driver amdvlk64.dll which
+  // crashes when vkCreateInstance() gets called. This bug is fixed in the
+  // latest driver.
+  if (BadAMDVulkanDriverVersion(gpu_info)) {
     return;
   }
 
