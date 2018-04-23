@@ -23,6 +23,7 @@
 #include "base/memory/memory_coordinator_proxy.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -653,7 +654,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart");
 
   // Create a MessageLoop if one does not already exist for the current thread.
-  if (!base::MessageLoop::current())
+  if (!base::MessageLoopCurrent::Get())
     main_message_loop_.reset(new base::MessageLoopForUI);
 
   InitializeMainThread();
@@ -1176,7 +1177,7 @@ void BrowserMainLoop::InitializeMainThread() {
 
   // Register the main thread. The main thread's task runner should already have
   // been initialized in MainMessageLoopStart() (or before if
-  // MessageLoop::current() was externally provided).
+  // MessageLoopCurrent::Get() was externally provided).
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   main_thread_.reset(new BrowserThreadImpl(
       BrowserThread::UI, base::ThreadTaskRunnerHandle::Get()));
