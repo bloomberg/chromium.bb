@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
@@ -198,7 +198,7 @@ int CountProxyBroadcasts(
 }
 
 void RunUntilIdle() {
-  DCHECK(base::MessageLoop::current());
+  DCHECK(base::MessageLoopCurrent::Get());
   base::RunLoop loop;
   loop.RunUntilIdle();
 }
