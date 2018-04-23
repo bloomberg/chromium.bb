@@ -8,7 +8,6 @@
 #include <sys/resource.h>
 
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -75,19 +74,13 @@ struct CGroups {
 const int kBackgroundPriority = 5;
 #endif  // defined(OS_CHROMEOS)
 
-struct CheckForNicePermission {
-  CheckForNicePermission() : can_reraise_priority(false) {
-    // We won't be able to raise the priority if we don't have the right rlimit.
-    // The limit may be adjusted in /etc/security/limits.conf for PAM systems.
-    struct rlimit rlim;
-    if ((getrlimit(RLIMIT_NICE, &rlim) == 0) &&
-        (20 - kForegroundPriority) <= static_cast<int>(rlim.rlim_cur)) {
-        can_reraise_priority = true;
-    }
-  };
-
-  bool can_reraise_priority;
-};
+bool CanReraisePriority() {
+  // We won't be able to raise the priority if we don't have the right rlimit.
+  // The limit may be adjusted in /etc/security/limits.conf for PAM systems.
+  struct rlimit rlim;
+  return (getrlimit(RLIMIT_NICE, &rlim) == 0) &&
+         (20 - kForegroundPriority) <= static_cast<int>(rlim.rlim_cur);
+}
 
 }  // namespace
 
@@ -98,9 +91,8 @@ bool Process::CanBackgroundProcesses() {
     return true;
 #endif  // defined(OS_CHROMEOS)
 
-  static LazyInstance<CheckForNicePermission>::DestructorAtExit
-      check_for_nice_permission = LAZY_INSTANCE_INITIALIZER;
-  return check_for_nice_permission.Get().can_reraise_priority;
+  static const bool can_reraise_priority = CanReraisePriority();
+  return can_reraise_priority;
 }
 
 bool Process::IsProcessBackgrounded() const {
