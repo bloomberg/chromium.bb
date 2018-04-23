@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "content/public/browser/content_browser_client.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/presentation_connection_message.h"
 
@@ -59,6 +61,7 @@ PresentationServiceImpl::PresentationServiceImpl(
       controller_delegate_(controller_delegate),
       receiver_delegate_(receiver_delegate),
       start_presentation_request_id_(kInvalidRequestId),
+      binding_(this),
       // TODO(imcheng): Consider using RenderFrameHost* directly instead of IDs.
       render_process_id_(render_frame_host->GetProcess()->GetID()),
       render_frame_id_(render_frame_host->GetRoutingID()),
@@ -73,9 +76,6 @@ PresentationServiceImpl::PresentationServiceImpl(
 
   if (auto* delegate = GetPresentationServiceDelegate())
     delegate->AddObserver(render_process_id_, render_frame_id_, this);
-
-  bindings_.set_connection_error_handler(base::BindRepeating(
-      &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
 }
 
 PresentationServiceImpl::~PresentationServiceImpl() {
@@ -92,8 +92,8 @@ PresentationServiceImpl::~PresentationServiceImpl() {
 // static
 std::unique_ptr<PresentationServiceImpl> PresentationServiceImpl::Create(
     RenderFrameHost* render_frame_host) {
-  DVLOG(2) << __func__ << render_frame_host->GetProcess()->GetID() << ", "
-           << render_frame_host->GetRoutingID();
+  DVLOG(2) << __func__ << ": " << render_frame_host->GetProcess()->GetID()
+           << ", " << render_frame_host->GetRoutingID();
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
@@ -115,7 +115,9 @@ std::unique_ptr<PresentationServiceImpl> PresentationServiceImpl::Create(
 
 void PresentationServiceImpl::Bind(
     blink::mojom::PresentationServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
 }
 
 void PresentationServiceImpl::SetController(
@@ -132,9 +134,15 @@ void PresentationServiceImpl::SetController(
 
 void PresentationServiceImpl::SetReceiver(
     blink::mojom::PresentationReceiverPtr receiver) {
-  // The render frame should register a PresentationReceiver only once, and
-  // this should be done when the navigator.presentation.receiver is
-  // initialized.
+  // Presentation receiver virtual layout tests (which have the flag set) has no
+  // ReceiverPresentationServiceDelegate implementation.
+  // TODO(imcheng): Refactor content_browser_client to return a no-op
+  // PresentationService instead.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForcePresentationReceiverForTesting)) {
+    return;
+  }
+
   if (!receiver_delegate_ || !is_main_frame_) {
     mojo::ReportBadMessage(
         "SetReceiver can only be called from a "
@@ -474,7 +482,7 @@ void PresentationServiceImpl::Reset() {
 
   pending_reconnect_presentation_cbs_.clear();
 
-  bindings_.CloseAllBindings();
+  binding_.Close();
   controller_.reset();
   receiver_.reset();
 }

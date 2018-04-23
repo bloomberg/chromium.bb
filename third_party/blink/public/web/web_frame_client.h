@@ -105,7 +105,6 @@ class WebMediaPlayerSource;
 class WebMediaSession;
 class WebServiceWorkerProvider;
 class WebPlugin;
-class WebPresentationClient;
 class WebPushClient;
 class WebRTCPeerConnectionHandler;
 class WebRelatedAppsFetcher;
@@ -531,11 +530,6 @@ class BLINK_EXPORT WebFrameClient {
 
   // Used to access the embedder for the Push API.
   virtual WebPushClient* PushClient() { return nullptr; }
-
-  // Presentation API ----------------------------------------------------
-
-  // Used to access the embedder for the Presentation API.
-  virtual WebPresentationClient* PresentationClient() { return nullptr; }
 
   // InstalledApp API ----------------------------------------------------
 

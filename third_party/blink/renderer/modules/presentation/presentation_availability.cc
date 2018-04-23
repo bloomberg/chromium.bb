@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_availability.h"
 
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"

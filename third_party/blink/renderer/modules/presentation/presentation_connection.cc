@@ -360,22 +360,21 @@ void ReceiverPresentationConnection::DidChangeState(
     receiver_->RemoveConnection(this);
 }
 
-void ReceiverPresentationConnection::OnReceiverTerminated() {
-  // We don't invoke PresentationConnection::DidChangeState here because we do
-  // not want to dispatch an event, as the page might be closing.
-  state_ = mojom::blink::PresentationConnectionState::TERMINATED;
-  if (target_connection_)
-    target_connection_->DidChangeState(state_);
-}
-
 void ReceiverPresentationConnection::DoClose() {
   // No-op
 }
 
 void ReceiverPresentationConnection::DoTerminate() {
-  // This will close the receiver window. At some point later
-  // OnReceiverTerminated() will be invoked.
+  // This will close the receiver window. Change the state to TERMINATED now
+  // since ReceiverPresentationConnection won't get a state change notification.
+  if (state_ == mojom::blink::PresentationConnectionState::TERMINATED)
+    return;
+
   receiver_->Terminate();
+
+  state_ = mojom::blink::PresentationConnectionState::TERMINATED;
+  if (target_connection_)
+    target_connection_->DidChangeState(state_);
 }
 
 void ReceiverPresentationConnection::Trace(blink::Visitor* visitor) {

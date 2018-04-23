@@ -574,7 +574,6 @@ jumbo_component("platform") {
     "exported/web_network_state_notifier.cc",
     "exported/web_prerender.cc",
     "exported/web_prerendering_support.cc",
-    "exported/web_presentation_receiver.cc",
     "exported/web_rtc_answer_options.cc",
     "exported/web_rtc_offer_options.cc",
     "exported/web_rtc_peer_connection_handler_client.cc",

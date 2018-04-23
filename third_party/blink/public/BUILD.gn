@@ -163,8 +163,6 @@ source_set("blink_headers") {
     "platform/modules/payments/web_payment_item.h",
     "platform/modules/payments/web_payment_method_data.h",
     "platform/modules/payments/web_payment_request_event_data.h",
-    "platform/modules/presentation/web_presentation_client.h",
-    "platform/modules/presentation/web_presentation_receiver.h",
     "platform/modules/push_messaging/web_push_client.h",
     "platform/modules/push_messaging/web_push_error.h",
     "platform/modules/push_messaging/web_push_provider.h",

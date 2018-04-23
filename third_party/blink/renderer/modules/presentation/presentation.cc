@@ -53,18 +53,13 @@ void Presentation::setDefaultRequest(PresentationRequest* request) {
 }
 
 PresentationReceiver* Presentation::receiver() {
-  if (!GetFrame() || !GetFrame()->GetSettings())
+  if (!GetFrame() || !GetFrame()->GetSettings() ||
+      !GetFrame()->GetSettings()->GetPresentationReceiver()) {
     return nullptr;
-
-  if (!GetFrame()->GetSettings()->GetPresentationReceiver())
-    return nullptr;
-
-  if (!receiver_) {
-    PresentationController* controller =
-        PresentationController::From(*GetFrame());
-    auto* client = controller ? controller->Client() : nullptr;
-    receiver_ = new PresentationReceiver(GetFrame(), client);
   }
+
+  if (!receiver_)
+    receiver_ = new PresentationReceiver(GetFrame());
 
   return receiver_;
 }

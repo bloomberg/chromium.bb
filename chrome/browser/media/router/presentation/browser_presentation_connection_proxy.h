@@ -28,12 +28,10 @@ class MediaRouter;
 // |target_connection_| to 'connected'.
 //
 // Send message from render frame to media router:
-// PresentationConnection::sendString();
-//     -> PresentationDispatcher::DoSendMessage();
-//         -> PresentationConnectionProxy::SendConnectionMessage();
-//             --> (mojo call to browser side PresentationConnection)
-//                 -> BrowserPresentationConnectionProxy::OnMessage();
-//                      -> MediaRouter::SendRouteMessage();
+// blink::PresentationConnection::send();
+//     -> (mojo call to browser side PresentationConnection)
+//         -> BrowserPresentationConnectionProxy::OnMessage();
+//             -> MediaRouter::SendRouteMessage();
 //
 // Instance of this class is only created for remotely rendered presentations.
 // It is owned by PresentationFrame. When PresentationFrame gets destroyed or

@@ -127,7 +127,6 @@
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
-#include "content/renderer/presentation/presentation_dispatcher.h"
 #include "content/renderer/push_messaging/push_messaging_client.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -1306,7 +1305,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
       web_user_media_client_(nullptr),
-      presentation_dispatcher_(nullptr),
       push_messaging_client_(nullptr),
       render_accessibility_(nullptr),
       previews_state_(PREVIEWS_UNSPECIFIED),
@@ -4999,12 +4997,6 @@ void RenderFrameImpl::ReportFindInPageSelection(
     const blink::WebRect& selection_rect) {
   SendFindReply(request_id, -1 /* match_count */, active_match_ordinal,
                 selection_rect, false /* final_status_update */);
-}
-
-blink::WebPresentationClient* RenderFrameImpl::PresentationClient() {
-  if (!presentation_dispatcher_)
-    presentation_dispatcher_ = new PresentationDispatcher(this);
-  return presentation_dispatcher_;
 }
 
 blink::WebPushClient* RenderFrameImpl::PushClient() {

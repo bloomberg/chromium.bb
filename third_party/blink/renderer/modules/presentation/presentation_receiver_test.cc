@@ -8,12 +8,10 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/modules/presentation/mock_web_presentation_client.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_connection.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_connection_list.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -80,7 +78,7 @@ using testing::StrictMock;
 
 TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
   V8TestingScope scope;
-  auto receiver = new PresentationReceiver(&scope.GetFrame(), nullptr);
+  auto receiver = new PresentationReceiver(&scope.GetFrame());
 
   auto event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
@@ -96,7 +94,7 @@ TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
 
 TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
   V8TestingScope scope;
-  auto receiver = new PresentationReceiver(&scope.GetFrame(), nullptr);
+  auto receiver = new PresentationReceiver(&scope.GetFrame());
 
   auto event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
@@ -117,7 +115,7 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
 
 TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
   V8TestingScope scope;
-  auto receiver = new PresentationReceiver(&scope.GetFrame(), nullptr);
+  auto receiver = new PresentationReceiver(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
@@ -148,7 +146,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
 
 TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   V8TestingScope scope;
-  auto receiver = new PresentationReceiver(&scope.GetFrame(), nullptr);
+  auto receiver = new PresentationReceiver(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
@@ -176,17 +174,6 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   VerifyConnectionListPropertyState(ScriptPromisePropertyBase::kResolved,
                                     receiver);
   VerifyConnectionListSize(2, receiver);
-}
-
-TEST_F(PresentationReceiverTest, CreateReceiver) {
-  MockWebPresentationClient client;
-  EXPECT_CALL(client, SetReceiver(testing::NotNull()));
-
-  V8TestingScope scope;
-  new PresentationReceiver(&scope.GetFrame(), &client);
-  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&client));
-
-  EXPECT_CALL(client, SetReceiver(testing::IsNull()));
 }
 
 }  // namespace blink
