@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/arc_application_notifier_controller_chromeos.h"
+#include "chrome/browser/notifications/arc_application_notifier_controller.h"
 
 #include <set>
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -17,20 +19,40 @@ namespace arc {
 
 namespace {
 constexpr int kArcAppIconSizeInDp = 48;
+
+class ArcAppNotifierShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ArcAppNotifierShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<ArcAppNotifierShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<
+      ArcAppNotifierShutdownNotifierFactory>;
+
+  ArcAppNotifierShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory("ArcAppNotifier") {
+    DependsOn(ArcAppListPrefsFactory::GetInstance());
+  }
+
+  ~ArcAppNotifierShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ArcAppNotifierShutdownNotifierFactory);
+};
+
 }  // namespace
 
-ArcApplicationNotifierControllerChromeOS::
-    ArcApplicationNotifierControllerChromeOS(
-        NotifierController::Observer* observer)
+ArcApplicationNotifierController::ArcApplicationNotifierController(
+    NotifierController::Observer* observer)
     : observer_(observer), last_profile_(nullptr) {}
 
-ArcApplicationNotifierControllerChromeOS::
-    ~ArcApplicationNotifierControllerChromeOS() {
+ArcApplicationNotifierController::~ArcApplicationNotifierController() {
   StopObserving();
 }
 
 std::vector<ash::mojom::NotifierUiDataPtr>
-ArcApplicationNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
+ArcApplicationNotifierController::GetNotifierList(Profile* profile) {
   DCHECK(!profile->IsOffTheRecord());
   package_to_app_ids_.clear();
   icons_.clear();
@@ -44,7 +66,7 @@ ArcApplicationNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
   const std::vector<std::string>& app_ids = app_list->GetAppIds();
 
   last_profile_ = profile;
-  app_list->AddObserver(this);
+  StartObserving();
 
   for (const std::string& app_id : app_ids) {
     const auto app = app_list->GetApp(app_id);
@@ -80,16 +102,23 @@ ArcApplicationNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
   return results;
 }
 
-void ArcApplicationNotifierControllerChromeOS::SetNotifierEnabled(
+void ArcApplicationNotifierController::SetNotifierEnabled(
     Profile* profile,
     const message_center::NotifierId& notifier_id,
     bool enabled) {
-  ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(profile);
-  app_list->SetNotificationsEnabled(notifier_id.id, enabled);
+  ArcAppListPrefs::Get(profile)->SetNotificationsEnabled(notifier_id.id,
+                                                         enabled);
   // OnNotifierEnabledChanged will be invoked via ArcAppListPrefs::Observer.
 }
 
-void ArcApplicationNotifierControllerChromeOS::OnNotificationsEnabledChanged(
+void ArcApplicationNotifierController::OnIconUpdated(ArcAppIcon* icon) {
+  observer_->OnIconImageUpdated(
+      message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
+                                 icon->app_id()),
+      icon->image_skia());
+}
+
+void ArcApplicationNotifierController::OnNotificationsEnabledChanged(
     const std::string& package_name,
     bool enabled) {
   auto it = package_to_app_ids_.find(package_name);
@@ -101,18 +130,20 @@ void ArcApplicationNotifierControllerChromeOS::OnNotificationsEnabledChanged(
       enabled);
 }
 
-void ArcApplicationNotifierControllerChromeOS::OnIconUpdated(ArcAppIcon* icon) {
-  observer_->OnIconImageUpdated(
-      message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
-                                 icon->app_id()),
-      icon->image_skia());
+void ArcApplicationNotifierController::StartObserving() {
+  ArcAppListPrefs::Get(last_profile_)->AddObserver(this);
+  shutdown_notifier_ = ArcAppNotifierShutdownNotifierFactory::GetInstance()
+                           ->Get(last_profile_)
+                           ->Subscribe(base::BindRepeating(
+                               &ArcApplicationNotifierController::StopObserving,
+                               base::Unretained(this)));
 }
 
-void ArcApplicationNotifierControllerChromeOS::StopObserving() {
+void ArcApplicationNotifierController::StopObserving() {
   if (!last_profile_)
     return;
-  ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(last_profile_);
-  app_list->RemoveObserver(this);
+  shutdown_notifier_.reset();
+  ArcAppListPrefs::Get(last_profile_)->RemoveObserver(this);
   last_profile_ = nullptr;
 }
 
