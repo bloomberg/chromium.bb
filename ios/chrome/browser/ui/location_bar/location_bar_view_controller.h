@@ -13,6 +13,8 @@
 @class LocationBarEditView;
 @class OmniboxTextFieldIOS;
 @protocol ActivityServiceCommands;
+@protocol BrowserCommands;
+@protocol ApplicationCommands;
 
 @protocol LocationBarViewControllerDelegate<NSObject>
 
@@ -39,7 +41,9 @@
 @property(nonatomic, strong, readonly) OmniboxTextFieldIOS* textField;
 
 // The dispatcher for the share button action.
-@property(nonatomic, weak) id<ActivityServiceCommands> dispatcher;
+@property(nonatomic, weak)
+    id<ActivityServiceCommands, BrowserCommands, ApplicationCommands>
+        dispatcher;
 
 // Delegate for this location bar view controller.
 @property(nonatomic, weak) id<LocationBarViewControllerDelegate> delegate;
@@ -53,6 +57,10 @@
 - (void)updateLocationIcon:(UIImage*)icon;
 // Updates the location text in the non-editing mode.
 - (void)updateLocationText:(NSString*)text;
+
+// Displays the voice search button instead of the share button in steady state,
+// and adds the voice search button to the empty textfield.
+@property(nonatomic, assign) BOOL voiceSearchEnabled;
 
 @end
 

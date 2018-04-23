@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
 
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_foreground_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
@@ -16,12 +18,24 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+typedef NS_ENUM(int, TrailingButtonState) {
+  kNoButton = 0,
+  kShareButton,
+  kVoiceSearchButton,
+};
+
+}  // namespace
+
 @interface LocationBarViewController ()
 // Location bar view that contains the omnibox and leading/trailing buttons.
 @property(nonatomic, strong) LocationBarEditView* locationBarEditView;
 
 // The view that displays current location when the omnibox is not focused.
 @property(nonatomic, strong) LocationBarSteadyView* locationBarSteadyView;
+
+@property(nonatomic, assign) TrailingButtonState trailingButtonState;
 @end
 
 @implementation LocationBarViewController
@@ -30,6 +44,8 @@
 @synthesize incognito = _incognito;
 @synthesize delegate = _delegate;
 @synthesize dispatcher = _dispatcher;
+@synthesize voiceSearchEnabled = _voiceSearchEnabled;
+@synthesize trailingButtonState = _trailingButtonState;
 
 #pragma mark - public
 
@@ -66,13 +82,35 @@
   self.locationBarEditView.incognito = incognito;
 }
 
-- (void)setDispatcher:(id<ActivityServiceCommands>)dispatcher {
+- (void)setDispatcher:
+    (id<ActivityServiceCommands, BrowserCommands, ApplicationCommands>)
+        dispatcher {
   _dispatcher = dispatcher;
+}
 
-  [self.locationBarSteadyView.trailingButton
-             addTarget:dispatcher
-                action:@selector(sharePage)
-      forControlEvents:UIControlEventTouchUpInside];
+- (void)setVoiceSearchEnabled:(BOOL)enabled {
+  if (_voiceSearchEnabled == enabled) {
+    return;
+  }
+  _voiceSearchEnabled = enabled;
+  [self updateTrailingButton];
+}
+
+- (void)updateTrailingButton {
+  BOOL shouldShowVoiceSearch =
+      self.traitCollection.horizontalSizeClass ==
+          UIUserInterfaceSizeClassRegular ||
+      self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+
+  if (shouldShowVoiceSearch) {
+    if (self.voiceSearchEnabled) {
+      self.trailingButtonState = kVoiceSearchButton;
+    } else {
+      self.trailingButtonState = kNoButton;
+    }
+  } else {
+    self.trailingButtonState = kShareButton;
+  }
 }
 
 #pragma mark - UIViewController
@@ -89,6 +127,11 @@
   AddSameConstraints(self.locationBarSteadyView, self.view);
 
   [self switchToEditing:NO];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [self updateTrailingButton];
+  [super traitCollectionDidChange:previousTraitCollection];
 }
 
 #pragma mark - FullscreenUIElement
@@ -144,6 +187,60 @@
 
 - (void)locationBarSteadyViewTapped {
   [self.delegate locationBarSteadyViewTapped];
+}
+
+- (void)setTrailingButtonState:(TrailingButtonState)state {
+  if (_trailingButtonState == state) {
+    return;
+  }
+
+  _trailingButtonState = state;
+
+  // Cancel previous possible state.
+  [self.locationBarSteadyView.trailingButton
+          removeTarget:self.dispatcher
+                action:@selector(preloadVoiceSearch)
+      forControlEvents:UIControlEventTouchDown];
+  [self.locationBarSteadyView.trailingButton
+          removeTarget:self.dispatcher
+                action:@selector(startVoiceSearch)
+      forControlEvents:UIControlEventTouchUpInside];
+  [self.locationBarSteadyView.trailingButton
+          removeTarget:self.dispatcher
+                action:@selector(sharePage)
+      forControlEvents:UIControlEventTouchUpInside];
+  self.locationBarSteadyView.trailingButton.hidden = NO;
+
+  switch (state) {
+    case kNoButton: {
+      self.locationBarSteadyView.trailingButton.hidden = YES;
+      break;
+    };
+    case kShareButton: {
+      [self.locationBarSteadyView.trailingButton
+                 addTarget:self.dispatcher
+                    action:@selector(sharePage)
+          forControlEvents:UIControlEventTouchUpInside];
+
+      [self.locationBarSteadyView.trailingButton
+          setImage:[UIImage imageNamed:@"toolbar_share"]
+          forState:UIControlStateNormal];
+      break;
+    };
+    case kVoiceSearchButton: {
+      [self.locationBarSteadyView.trailingButton
+                 addTarget:self.dispatcher
+                    action:@selector(preloadVoiceSearch)
+          forControlEvents:UIControlEventTouchDown];
+      [self.locationBarSteadyView.trailingButton
+                 addTarget:self.dispatcher
+                    action:@selector(startVoiceSearch)
+          forControlEvents:UIControlEventTouchUpInside];
+      [self.locationBarSteadyView.trailingButton
+          setImage:[UIImage imageNamed:@"voice_icon"]
+          forState:UIControlStateNormal];
+    }
+  }
 }
 
 @end
