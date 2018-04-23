@@ -9,12 +9,12 @@
 #include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/gcm/instance_id/instance_id_profile_service.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
+#include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
@@ -26,7 +26,7 @@ PushMessagingServiceImpl* PushMessagingServiceFactory::GetForProfile(
     return nullptr;
 
   if (!instance_id::InstanceIDProfileService::IsInstanceIDEnabled(
-          Profile::FromBrowserContext(context))) {
+          Profile::FromBrowserContext(context)->GetPrefs())) {
     LOG(WARNING) << "PushMessagingService could not be built because "
                     "InstanceID is unexpectedly disabled";
     return nullptr;

@@ -7,9 +7,10 @@
 #include <memory>
 
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/gcm/instance_id/instance_id_profile_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/gcm_driver/gcm_profile_service.h"
+#include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace instance_id {
@@ -44,7 +45,10 @@ InstanceIDProfileServiceFactory::~InstanceIDProfileServiceFactory() {
 
 KeyedService* InstanceIDProfileServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new InstanceIDProfileService(Profile::FromBrowserContext(context));
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new InstanceIDProfileService(
+      gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
+      profile->IsOffTheRecord());
 }
 
 content::BrowserContext*

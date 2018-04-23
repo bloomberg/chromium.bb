@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/gcm/instance_id/instance_id_profile_service.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 
 using instance_id::InstanceID;
