@@ -110,7 +110,7 @@ class AudioSinkAudioTrackImpl {
     private static final int MIN_TIMESTAMP_STABILITY_CNT = 3;
     // Minimum time timestamps need to be stable to make it a valid reference point at startup or
     // after an underrun event. This is an additional safeguard.
-    private static final long MIN_TIMESTAMP_STABILITY_TIME_NSEC = SEC_IN_NSEC;
+    private static final long MIN_TIMESTAMP_STABILITY_TIME_NSEC = 150 * USEC_IN_NSEC;
     // After startup, any timestamp deviating more than this amount is ignored.
     private static final long TSTAMP_DEV_THRESHOLD_TO_IGNORE_NSEC = 500 * USEC_IN_NSEC;
     // Don't ignore timestamps for longer than this amount of time.
