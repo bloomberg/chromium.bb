@@ -1044,10 +1044,12 @@ void AppListView::OnTabletModeChanged(bool started) {
 
     // Put app list window in corresponding container based on whether the
     // tablet mode is enabled.
-    aura::Window* root_window = GetWidget()->GetNativeView()->GetRootWindow();
     aura::Window* window = GetWidget()->GetNativeWindow();
-    root_window->GetChildById(ash::kShellWindowId_AppListTabletModeContainer)
-        ->AddChild(window);
+    aura::Window* root_window = window->GetRootWindow();
+    aura::Window* parent_window = root_window->GetChildById(
+        ash::kShellWindowId_AppListTabletModeContainer);
+    if (!parent_window->Contains(window))
+      parent_window->AddChild(window);
 
     // Update background opacity.
     app_list_background_shield_->layer()->SetOpacity(

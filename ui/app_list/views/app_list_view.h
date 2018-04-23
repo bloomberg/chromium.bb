@@ -233,6 +233,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if the home launcher is enabled in tablet mode.
   bool IsHomeLauncherEnabledInTabletMode() const;
 
+  views::View* app_list_background_shield_for_test() {
+    return app_list_background_shield_;
+  }
+
  private:
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.
