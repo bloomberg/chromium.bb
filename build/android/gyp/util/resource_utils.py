@@ -14,12 +14,8 @@ from xml.etree import ElementTree
 
 import util.build_utils as build_utils
 
-# Why normpath():
-# When this module is imported with a ".." in the sys.path that points to it,
-# then __file__ will have a ".." entry in it and dirname() will treat it as a
-# path component.
-_SOURCE_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.dirname(os.path.normpath(__file__))))))
+_SOURCE_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 # Import jinja2 from third_party/jinja2
 sys.path.insert(1, os.path.join(_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
