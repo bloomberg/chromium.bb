@@ -36,9 +36,13 @@ class TabManagerFeaturesTest : public testing::Test {
       int memory_in_gb,
       base::TimeDelta low_occluded_timeout,
       base::TimeDelta moderate_occluded_timeout,
-      base::TimeDelta high_occluded_timeout) {
-    ProactiveTabDiscardParams params = {};
-    GetProactiveTabDiscardParams(&params, memory_in_gb);
+      base::TimeDelta high_occluded_timeout,
+      base::TimeDelta favicon_update_observation_window,
+      base::TimeDelta title_update_observation_window,
+      base::TimeDelta audio_usage_observation_window,
+      base::TimeDelta notifications_usage_observation_window) {
+    ProactiveTabDiscardParams params =
+        GetProactiveTabDiscardParams(memory_in_gb);
 
     EXPECT_EQ(low_loaded_tab_count, params.low_loaded_tab_count);
     EXPECT_EQ(moderate_loaded_tab_count, params.moderate_loaded_tab_count);
@@ -52,6 +56,15 @@ class TabManagerFeaturesTest : public testing::Test {
     EXPECT_EQ(low_occluded_timeout, params.low_occluded_timeout);
     EXPECT_EQ(moderate_occluded_timeout, params.moderate_occluded_timeout);
     EXPECT_EQ(high_occluded_timeout, params.high_occluded_timeout);
+
+    EXPECT_EQ(favicon_update_observation_window,
+              params.favicon_update_observation_window);
+    EXPECT_EQ(title_update_observation_window,
+              params.title_update_observation_window);
+    EXPECT_EQ(audio_usage_observation_window,
+              params.audio_usage_observation_window);
+    EXPECT_EQ(notifications_usage_observation_window,
+              params.notifications_usage_observation_window);
   }
 
   void ExpectDefaultProactiveTabDiscardParams() {
@@ -62,7 +75,11 @@ class TabManagerFeaturesTest : public testing::Test {
         kProactiveTabDiscard_HighLoadedTabCountDefault, memory_in_gb,
         kProactiveTabDiscard_LowOccludedTimeoutDefault,
         kProactiveTabDiscard_ModerateOccludedTimeoutDefault,
-        kProactiveTabDiscard_HighOccludedTimeoutDefault);
+        kProactiveTabDiscard_HighOccludedTimeoutDefault,
+        kProactiveTabDiscard_FaviconUpdateObservationWindow_Default,
+        kProactiveTabDiscard_TitleUpdateObservationWindow_Default,
+        kProactiveTabDiscard_AudioUsageObservationWindow_Default,
+        kProactiveTabDiscard_NotificationsUsageObservationWindow_Default);
   }
 
  private:
@@ -91,6 +108,10 @@ TEST_F(TabManagerFeaturesTest,
   SetParam(kProactiveTabDiscard_LowOccludedTimeoutParam, "---");
   SetParam(kProactiveTabDiscard_ModerateOccludedTimeoutParam, " ");
   SetParam(kProactiveTabDiscard_HighOccludedTimeoutParam, "");
+  SetParam(kProactiveTabDiscard_FaviconUpdateObservationWindow, "    ");
+  SetParam(kProactiveTabDiscard_TitleUpdateObservationWindow, "foo");
+  SetParam(kProactiveTabDiscard_AudioUsageObservationWindow, ".");
+  SetParam(kProactiveTabDiscard_NotificationsUsageObservationWindow, "abc");
   EnableProactiveTabDiscarding();
   ExpectDefaultProactiveTabDiscardParams();
 }
@@ -103,6 +124,10 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabDiscardParams) {
   SetParam(kProactiveTabDiscard_LowOccludedTimeoutParam, "60");
   SetParam(kProactiveTabDiscard_ModerateOccludedTimeoutParam, "120");
   SetParam(kProactiveTabDiscard_HighOccludedTimeoutParam, "247");
+  SetParam(kProactiveTabDiscard_FaviconUpdateObservationWindow, "3600");
+  SetParam(kProactiveTabDiscard_TitleUpdateObservationWindow, "36000");
+  SetParam(kProactiveTabDiscard_AudioUsageObservationWindow, "360000");
+  SetParam(kProactiveTabDiscard_NotificationsUsageObservationWindow, "3600000");
   EnableProactiveTabDiscarding();
 
   // Should snap |moderate_loaded_tab_count| to |low_loaded_tab_count|, when the
@@ -111,7 +136,10 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabDiscardParams) {
   int memory_in_gb_low = 1;
   ExpectProactiveTabDiscardingParams(
       7, 7, 42, memory_in_gb_low, base::TimeDelta::FromSeconds(60),
-      base::TimeDelta::FromSeconds(120), base::TimeDelta::FromSeconds(247));
+      base::TimeDelta::FromSeconds(120), base::TimeDelta::FromSeconds(247),
+      base::TimeDelta::FromSeconds(3600), base::TimeDelta::FromSeconds(36000),
+      base::TimeDelta::FromSeconds(360000),
+      base::TimeDelta::FromSeconds(3600000));
 
   // Should snap |moderate_loaded_tab_count| to |high_loaded_tab_count|, when
   // the amount of physical memory is so high that (|memory_in_gb| *
@@ -119,14 +147,20 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabDiscardParams) {
   int memory_in_gb_high = 100;
   ExpectProactiveTabDiscardingParams(
       7, 42, 42, memory_in_gb_high, base::TimeDelta::FromSeconds(60),
-      base::TimeDelta::FromSeconds(120), base::TimeDelta::FromSeconds(247));
+      base::TimeDelta::FromSeconds(120), base::TimeDelta::FromSeconds(247),
+      base::TimeDelta::FromSeconds(3600), base::TimeDelta::FromSeconds(36000),
+      base::TimeDelta::FromSeconds(360000),
+      base::TimeDelta::FromSeconds(3600000));
 
   // Tests normal case where |memory_in gb| * |moderate_tab_count_per_gb_ram| is
   // in the interval [low_loaded_tab_count, high_loaded_tab_count].
   int memory_in_gb_normal = 4;
   ExpectProactiveTabDiscardingParams(
       7, 16, 42, memory_in_gb_normal, base::TimeDelta::FromSeconds(60),
-      base::TimeDelta::FromSeconds(120), base::TimeDelta::FromSeconds(247));
+      base::TimeDelta::FromSeconds(120), base::TimeDelta::FromSeconds(247),
+      base::TimeDelta::FromSeconds(3600), base::TimeDelta::FromSeconds(36000),
+      base::TimeDelta::FromSeconds(360000),
+      base::TimeDelta::FromSeconds(3600000));
 }
 
 }  // namespace resource_coordinator
