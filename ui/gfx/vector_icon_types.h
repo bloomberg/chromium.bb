@@ -95,10 +95,10 @@ struct VectorIconRep {
 struct VectorIcon {
   VectorIcon() = default;
 
-  bool is_empty() const { return !rep; }
+  bool is_empty() const { return !reps; }
 
-  const VectorIconRep* rep = nullptr;
-  const VectorIconRep* rep_1x = nullptr;
+  const VectorIconRep* const reps = nullptr;
+  size_t reps_size = 0u;
 
   // A human-readable name, useful for debugging, derived from the name of the
   // icon file. This can also be used as an identifier, but vector icon targets

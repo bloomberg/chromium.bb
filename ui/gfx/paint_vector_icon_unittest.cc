@@ -19,6 +19,10 @@ namespace gfx {
 
 namespace {
 
+SkColor GetColorAtTopLeft(const Canvas& canvas) {
+  return canvas.GetBitmap().getColor(0, 0);
+}
+
 class MockCanvas : public SkCanvas {
  public:
   MockCanvas(int width, int height) : SkCanvas(width, height) {}
@@ -46,8 +50,8 @@ TEST(VectorIconTest, RelativeMoveToAfterClose) {
       MOVE_TO, 4, 5, LINE_TO, 10, 11, CLOSE,
       // This move should use (4, 5) as the start point rather than (10, 11).
       R_MOVE_TO, 20, 21, R_LINE_TO, 50, 51};
-  const VectorIconRep icon_rep = {elements, arraysize(elements)};
-  const VectorIcon icon = {&icon_rep};
+  const VectorIconRep rep_list[] = {{elements, arraysize(elements)}};
+  const VectorIcon icon = {rep_list, 1u};
 
   PaintVectorIcon(&canvas, icon, 100, SK_ColorMAGENTA);
   sk_sp<cc::PaintRecord> record = recorder.finishRecordingAsPicture();
@@ -87,8 +91,8 @@ TEST(VectorIconTest, FlipsInRtl) {
                                   R_H_LINE_TO,
                                   -20,
                                   CLOSE};
-  const VectorIconRep icon_rep = {elements, arraysize(elements)};
-  const VectorIcon icon = {&icon_rep};
+  const VectorIconRep rep_list[] = {{elements, arraysize(elements)}};
+  const VectorIcon icon = {rep_list, 1u};
   PaintVectorIcon(&canvas, icon, canvas_size, color);
 
   // Count the number of pixels in the canvas.
@@ -105,6 +109,173 @@ TEST(VectorIconTest, FlipsInRtl) {
   // quarter of the original icon, since each side should be scaled down by a
   // factor of two.
   EXPECT_EQ(100, colored_pixel_count);
+}
+
+TEST(VectorIconTest, CorrectSizePainted) {
+  // Create a set of 5 icons reps, sized {48, 32, 24, 20, 16} for the test icon.
+  // Color each of them differently so they can be differentiated (the parts of
+  // an icon painted with PATH_COLOR_ARGB will not be overwritten by the color
+  // provided to it at creation time).
+  // SK_ColorRED.
+  const PathElement elements48[] = {CANVAS_DIMENSIONS,
+                                    48,
+                                    PATH_COLOR_ARGB,
+                                    0xFF,
+                                    0xFF,
+                                    0x00,
+                                    0x00,
+                                    MOVE_TO,
+                                    0,
+                                    0,
+                                    H_LINE_TO,
+                                    48,
+                                    V_LINE_TO,
+                                    48,
+                                    H_LINE_TO,
+                                    0,
+                                    V_LINE_TO,
+                                    0,
+                                    CLOSE};
+  // SK_ColorGREEN.
+  const PathElement elements32[] = {CANVAS_DIMENSIONS,
+                                    32,
+                                    PATH_COLOR_ARGB,
+                                    0xFF,
+                                    0x00,
+                                    0xFF,
+                                    0x00,
+                                    MOVE_TO,
+                                    0,
+                                    0,
+                                    H_LINE_TO,
+                                    32,
+                                    V_LINE_TO,
+                                    32,
+                                    H_LINE_TO,
+                                    0,
+                                    V_LINE_TO,
+                                    0,
+                                    CLOSE};
+  // SK_ColorBLUE.
+  const PathElement elements24[] = {CANVAS_DIMENSIONS,
+                                    24,
+                                    PATH_COLOR_ARGB,
+                                    0xFF,
+                                    0x00,
+                                    0x00,
+                                    0xFF,
+                                    MOVE_TO,
+                                    0,
+                                    0,
+                                    H_LINE_TO,
+                                    24,
+                                    V_LINE_TO,
+                                    24,
+                                    H_LINE_TO,
+                                    0,
+                                    V_LINE_TO,
+                                    0,
+                                    CLOSE};
+  // SK_ColorYELLOW.
+  const PathElement elements20[] = {CANVAS_DIMENSIONS,
+                                    20,
+                                    PATH_COLOR_ARGB,
+                                    0xFF,
+                                    0xFF,
+                                    0xFF,
+                                    0x00,
+                                    MOVE_TO,
+                                    0,
+                                    0,
+                                    H_LINE_TO,
+                                    20,
+                                    V_LINE_TO,
+                                    20,
+                                    H_LINE_TO,
+                                    0,
+                                    V_LINE_TO,
+                                    0,
+                                    CLOSE};
+  // SK_ColorCYAN.
+  const PathElement elements16[] = {CANVAS_DIMENSIONS,
+                                    16,
+                                    PATH_COLOR_ARGB,
+                                    0xFF,
+                                    0x00,
+                                    0xFF,
+                                    0xFF,
+                                    MOVE_TO,
+                                    0,
+                                    0,
+                                    H_LINE_TO,
+                                    16,
+                                    V_LINE_TO,
+                                    16,
+                                    H_LINE_TO,
+                                    0,
+                                    V_LINE_TO,
+                                    0,
+                                    CLOSE};
+  // VectorIconReps are always sorted in descending order of size.
+  const VectorIconRep rep_list[] = {{elements48, arraysize(elements48)},
+                                    {elements32, arraysize(elements32)},
+                                    {elements24, arraysize(elements24)},
+                                    {elements20, arraysize(elements20)},
+                                    {elements16, arraysize(elements16)}};
+  const VectorIcon icon = {rep_list, 5u};
+
+  // Test exact sizes paint the correctly sized icon, including the largest and
+  // smallest icon.
+  Canvas canvas_100(gfx::Size(100, 100), 1.0, true);
+  PaintVectorIcon(&canvas_100, icon, 48, SK_ColorBLACK);
+  EXPECT_EQ(SK_ColorRED, GetColorAtTopLeft(canvas_100));
+  PaintVectorIcon(&canvas_100, icon, 32, SK_ColorBLACK);
+  EXPECT_EQ(SK_ColorGREEN, GetColorAtTopLeft(canvas_100));
+  PaintVectorIcon(&canvas_100, icon, 16, SK_ColorBLACK);
+  EXPECT_EQ(SK_ColorCYAN, GetColorAtTopLeft(canvas_100));
+
+  // Only the largest icon may be upscaled to a size larger than what it was
+  // designed for.
+  PaintVectorIcon(&canvas_100, icon, 50, SK_ColorBLACK);
+  EXPECT_EQ(SK_ColorRED, GetColorAtTopLeft(canvas_100));
+
+  // All other icons may never be upscaled.
+  PaintVectorIcon(&canvas_100, icon, 27, SK_ColorBLACK);
+  EXPECT_EQ(SK_ColorGREEN, GetColorAtTopLeft(canvas_100));
+  PaintVectorIcon(&canvas_100, icon, 8, SK_ColorBLACK);
+  EXPECT_EQ(SK_ColorCYAN, GetColorAtTopLeft(canvas_100));
+
+  // Test icons at a scale factor < 100%, still with an exact size, paint the
+  // correctly sized icon.
+  Canvas canvas_75(gfx::Size(100, 100), 0.75, true);
+  PaintVectorIcon(&canvas_75, icon, 32, SK_ColorBLACK);  // 32 * 0.75 = 24.
+  EXPECT_EQ(SK_ColorBLUE, GetColorAtTopLeft(canvas_75));
+
+  // Test icons at a scale factor > 100%, still with an exact size, paint the
+  // correctly sized icon.
+  Canvas canvas_125(gfx::Size(100, 100), 1.25, true);
+  PaintVectorIcon(&canvas_125, icon, 16, SK_ColorBLACK);  // 16 * 1.25 = 20.
+  EXPECT_EQ(SK_ColorYELLOW, GetColorAtTopLeft(canvas_125));
+
+  // Inexact sizes at scale factors < 100%.
+  PaintVectorIcon(&canvas_75, icon, 12, SK_ColorBLACK);  // 12 * 0.75 = 9.
+  EXPECT_EQ(SK_ColorCYAN, GetColorAtTopLeft(canvas_75));
+  PaintVectorIcon(&canvas_75, icon, 28, SK_ColorBLACK);  // 28 * 0.75 = 21.
+  EXPECT_EQ(SK_ColorBLUE, GetColorAtTopLeft(canvas_75));
+
+  // Inexact sizes at scale factors > 100%.
+  PaintVectorIcon(&canvas_125, icon, 12, SK_ColorBLACK);  // 12 * 1.25 = 15.
+  EXPECT_EQ(SK_ColorCYAN, GetColorAtTopLeft(canvas_125));
+  PaintVectorIcon(&canvas_125, icon, 28, SK_ColorBLACK);  // 28 * 1.25 = 35.
+  EXPECT_EQ(SK_ColorRED, GetColorAtTopLeft(canvas_125));
+
+  // Painting without a requested size will default to the smallest icon rep.
+  PaintVectorIcon(&canvas_100, icon, SK_ColorBLACK);
+  EXPECT_EQ(SK_ColorCYAN, GetColorAtTopLeft(canvas_100));
+  // But doing this in another scale factor should assume the smallest icon rep
+  // size, then scale it up by the DSF.
+  PaintVectorIcon(&canvas_125, icon, SK_ColorBLACK);  // 16 * 1.25 = 20.
+  EXPECT_EQ(SK_ColorYELLOW, GetColorAtTopLeft(canvas_125));
 }
 
 }  // namespace

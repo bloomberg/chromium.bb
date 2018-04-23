@@ -40,7 +40,7 @@ class TestVectorIcon : public VectorIcon {
 TEST(VectorIcon, SmokeTest) {
   UiScene scene;
   auto icon = std::make_unique<TestVectorIcon>(kMaximumWidth);
-  icon->SetIcon(vector_icons::kClose16Icon);
+  icon->SetIcon(vector_icons::kCloseRoundedIcon);
   UiTexture* texture = icon->GetTexture();
   scene.AddUiElement(kRoot, std::move(icon));
   base::TimeTicks start_time = MsToTicks(1);

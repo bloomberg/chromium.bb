@@ -112,7 +112,7 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
   close_button_ = views::CreateVectorImageButton(this);
   // This is the wrong color, but allows the button's size to be computed
   // correctly.  We'll reset this with the correct color in OnThemeChanged().
-  views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
+  views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
                                 gfx::kPlaceholderColor);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
@@ -216,7 +216,7 @@ void InfoBarView::OnThemeChanged() {
   SetBackground(views::CreateSolidBackground(background_color));
 
   const SkColor text_color = GetColor(kTextColor);
-  views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
+  views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
                                 text_color);
 
   for (int i = 0; i < child_count(); ++i) {

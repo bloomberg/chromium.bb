@@ -76,7 +76,7 @@ ChosenObjectView::ChosenObjectView(
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     delete_button_ = views::CreateVectorImageButton(this);
     views::SetImageFromVectorIcon(
-        delete_button_, vector_icons::kClose16Icon,
+        delete_button_, vector_icons::kCloseRoundedIcon,
         views::style::GetColor(*this, CONTEXT_BODY_TEXT_LARGE,
                                views::style::STYLE_PRIMARY));
 

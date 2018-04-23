@@ -4,6 +4,7 @@
 
 #include "ui/gfx/paint_vector_icon.h"
 
+#include <algorithm>
 #include <map>
 #include <tuple>
 
@@ -26,6 +27,30 @@
 namespace gfx {
 
 namespace {
+
+// Retrieves the specified CANVAS_DIMENSIONS size from a PathElement.
+int GetCanvasDimensions(const PathElement* path) {
+  if (!path)
+    return kReferenceSizeDip;
+  return path[0].command == CANVAS_DIMENSIONS ? path[1].arg : kReferenceSizeDip;
+}
+
+// Retrieves the appropriate icon representation to draw when the pixel size
+// requested is |icon_size_px|. VectorIconReps may only be downscaled, not
+// upscaled (with the exception of the largest VectorIconRep), so the return
+// result will be the smallest VectorIconRep greater or equal to |icon_size_px|.
+const VectorIconRep* GetRepForPxSize(const VectorIcon& icon, int icon_size_px) {
+  if (icon.is_empty())
+    return nullptr;
+
+  // Since |VectorIcon::reps| is sorted in descending order by size, search in
+  // reverse order for an icon that is equal to or greater than |icon_size_px|.
+  for (int i = icon.reps_size - 1; i >= 0; --i) {
+    if (GetCanvasDimensions(icon.reps[i].path) >= icon_size_px)
+      return &icon.reps[i];
+  }
+  return &icon.reps[0];
+}
 
 struct CompareIconDescription {
   bool operator()(const IconDescription& a, const IconDescription& b) const {
@@ -534,11 +559,6 @@ IconDescription::IconDescription(const VectorIcon& icon,
       badge_icon(badge_icon) {
   if (dip_size == 0)
     this->dip_size = GetDefaultSizeOfVectorIcon(icon);
-
-  // If an icon has a .1x.icon version, it should only be rendered at the size
-  // specified in that definition.
-  if (icon.rep_1x)
-    DCHECK_EQ(this->dip_size, GetDefaultSizeOfVectorIcon(icon));
 }
 
 IconDescription::~IconDescription() {}
@@ -559,12 +579,10 @@ void PaintVectorIcon(Canvas* canvas,
                      SkColor color,
                      const base::TimeDelta& elapsed_time) {
   DCHECK(!icon.is_empty());
-  if (icon.rep)
-    DCHECK(icon.rep->path_size > 0);
-  if (icon.rep_1x)
-    DCHECK(icon.rep_1x->path_size > 0);
-  const VectorIconRep* rep =
-      (canvas->image_scale() == 1.f && icon.rep_1x) ? icon.rep_1x : icon.rep;
+  for (size_t i = 0; i < icon.reps_size; ++i)
+    DCHECK(icon.reps[i].path_size > 0);
+  const int px_size = gfx::ToCeiledInt(canvas->image_scale() * dip_size);
+  const VectorIconRep* rep = GetRepForPxSize(icon, px_size);
   PaintPath(canvas, rep->path, rep->path_size, dip_size, color, elapsed_time);
 }
 
@@ -602,15 +620,15 @@ ImageSkia CreateVectorIconFromSource(const std::string& source,
 }
 
 int GetDefaultSizeOfVectorIcon(const VectorIcon& icon) {
-  const PathElement* one_x_path =
-      icon.rep_1x ? icon.rep_1x->path : icon.rep->path;
-  return one_x_path[0].command == CANVAS_DIMENSIONS ? one_x_path[1].arg
-                                                    : kReferenceSizeDip;
+  if (icon.is_empty())
+    return -1;
+  const PathElement* default_icon_path = icon.reps[icon.reps_size - 1].path;
+  return GetCanvasDimensions(default_icon_path);
 }
 
 base::TimeDelta GetDurationOfAnimation(const VectorIcon& icon) {
   base::TimeDelta last_motion;
-  for (PathParser parser(icon.rep->path, icon.rep->path_size);
+  for (PathParser parser(icon.reps[0].path, icon.reps[0].path_size);
        parser.HasCommandsRemaining(); parser.Advance()) {
     if (parser.CurrentCommand() != TRANSITION_END)
       continue;

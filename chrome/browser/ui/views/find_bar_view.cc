@@ -465,6 +465,6 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
                                 base_icon_color);
   views::SetImageFromVectorIcon(find_next_button_, kCaretDownIcon,
                                 base_icon_color);
-  views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
+  views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
                                 base_icon_color);
 }
