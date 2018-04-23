@@ -915,7 +915,7 @@ class TestMain(NetTestCase):
     self._check_output('', '')
     self.assertEqual(0, ret)
 
-  def test_run_raw_cmd(self):
+  def test_trigger_raw_cmd(self):
     # Minimalist use.
     request = {
       'name': u'None/foo=bar',
@@ -967,7 +967,7 @@ class TestMain(NetTestCase):
         '  https://localhost:1/user/task/12300\n',
         '')
 
-  def test_run_raw_cmd_isolated(self):
+  def test_trigger_raw_cmd_isolated(self):
     # Minimalist use.
     request = {
       'name': u'None/foo=bar/' + FILE_HASH,
@@ -1023,7 +1023,7 @@ class TestMain(NetTestCase):
         u'  https://localhost:1/user/task/12300\n',
         u'')
 
-  def test_run_raw_cmd_with_service_account(self):
+  def test_trigger_raw_cmd_with_service_account(self):
     # Minimalist use.
     request = {
       'name': u'None/foo=bar',
@@ -1075,7 +1075,7 @@ class TestMain(NetTestCase):
         '  https://localhost:1/user/task/12300\n',
         '')
 
-  def test_run_isolated_hash(self):
+  def test_trigger_isolated_hash(self):
     # pylint: disable=unused-argument
     self.mock(swarming, 'now', lambda: 123456)
 
@@ -1130,7 +1130,7 @@ class TestMain(NetTestCase):
         '  https://localhost:1/user/task/12300\n',
         '')
 
-  def test_run_isolated_and_json(self):
+  def test_trigger_isolated_and_json(self):
     # pylint: disable=unused-argument
     write_json_calls = []
     self.mock(tools, 'write_json', lambda *args: write_json_calls.append(args))
@@ -1519,6 +1519,69 @@ class TestMain(NetTestCase):
       self.assertEqual(0, ret)
     finally:
       os.chdir(old_cwd)
+
+  def test_run(self):
+    request = {
+      'name': u'None/foo=bar',
+      'parent_task_id': '',
+      'priority': 100,
+      'task_slices': [
+        {
+          'expiration_secs': 21600,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[{'key': 'foo', 'value': 'bar'}],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+        },
+      ],
+      'tags': [],
+      'user': None,
+    }
+    result = gen_request_response(request)
+
+    def stub_collect(
+        swarming_server, task_ids, timeout, decorate, print_status_updates,
+        task_summary_json, task_output_dir, task_output_stdout, include_perf):
+      self.assertEqual('https://localhost:1', swarming_server)
+      self.assertEqual([u'12300'], task_ids)
+      # It is automatically calculated from hard timeout + expiration + 10.
+      self.assertEqual(25210., timeout)
+      self.assertEqual(None, decorate)
+      self.assertEqual(None, print_status_updates)
+      self.assertEqual(None, task_summary_json)
+      self.assertEqual(None, task_output_dir)
+      self.assertSetEqual(set(['console', 'json']), set(task_output_stdout))
+      self.assertEqual(False, include_perf)
+      print('Fake output')
+      return 0
+    self.mock(swarming, 'collect', stub_collect)
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+    ret = self.main_safe([
+        'run',
+        '--swarming', 'https://localhost:1',
+        '--dimension', 'foo', 'bar',
+        '--raw-cmd',
+        '--relative-cwd', 'deeep',
+        '--',
+        'python',
+        '-c',
+        'print(\'hi\')',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (ret, actual, sys.stderr.getvalue()))
+    self._check_output(
+        u'Triggered task: None/foo=bar\nFake output\n', '')
 
   def test_cancel(self):
     self.expected_requests(

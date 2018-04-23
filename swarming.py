@@ -1028,7 +1028,11 @@ def add_trigger_options(parser):
 
 
 def process_trigger_options(parser, options, args):
-  """Processes trigger options and does preparatory steps."""
+  """Processes trigger options and does preparatory steps.
+
+  Returns:
+    NewTaskRequest instance.
+  """
   process_filter_options(parser, options)
   options.env = dict(options.env)
   if args and args[0] == '--':
@@ -1368,7 +1372,6 @@ def CMDcollect(parser, args):
     except (KeyError, TypeError):
       parser.error('Failed to process %s' % options.json)
     if not options.timeout:
-      options.timeout = 0.
       # Take in account all the task slices.
       offset = 0
       for s in data['request']['task_slices']:
@@ -1545,9 +1548,14 @@ def CMDrun(parser, args):
     for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
   ]
   if not options.timeout:
-    options.timeout = (
-        task_request.properties.execution_timeout_secs +
-        task_request.expiration_secs + 10.)
+    offset = 0
+    for s in task_request.task_slices:
+      m = (offset + s['properties'].execution_timeout_secs +
+            s['expiration_secs'])
+      if m > options.timeout:
+        options.timeout = m
+      offset += s['expiration_secs']
+    options.timeout += 10.
   try:
     return collect(
         options.swarming,
