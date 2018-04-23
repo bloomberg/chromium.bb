@@ -30,7 +30,7 @@ _METRIC_TYPE =  models.ObjectNodeType(
 
 _EVENT_TYPE =  models.ObjectNodeType(
     'event',
-    alphabetization=('metric', _LOWERCASE_NAME_FN),
+    alphabetization=[('metric', _LOWERCASE_NAME_FN)],
     attributes=[('name', unicode), ('singular', bool)],
     extra_newlines=(1, 1, 1),
     children=[

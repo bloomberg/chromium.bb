@@ -5695,410 +5695,15 @@ should be able to be added at any place in this file.
   <description>The user dismissed the in-product help.</description>
 </action>
 
-<action name="InProductHelp.NotifyEvent.IPH_BadgedReadingList">
-  <owner>edchin@chromium.org</owner>
-  <owner>gchatz@chromium.org</owner>
-  <description>
-    An event related to the badged reading list in-product help experiment.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_Bookmark">
+<action name="InProductHelp.NotifyEvent.IPH">
+  <owner>dtrainor@@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
   <description>The user triggered an event in in-product help.</description>
 </action>
 
-<action name="InProductHelp.NotifyEvent.IPH_ChromeHomeExpand">
-  <owner>twellington@chromium.org</owner>
-  <owner>mdjones@chromium.org</owner>
-  <description>
-    The user triggered an event related to the Chrome Home cold start in-product
-    help. See //components/feature_engagement/README.md#Configuring-UMA for
-    details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ChromeHomeMenuHeader">
-  <obsolete>Unused as of 03/2018</obsolete>
-  <owner>twellington@chromium.org</owner>
-  <owner>mdjones@chromium.org</owner>
-  <description>
-    The user triggered an event related to the Chrome Home menu header
-    in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ChromeHomePullToRefresh">
-  <owner>twellington@chromium.org</owner>
-  <owner>mdjones@chromium.org</owner>
-  <description>
-    The user triggered an event related to the Chrome Home in-product help that
-    is shown after a pull-to-refresh. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ContextualSearch">
-  <obsolete>
-    Replaced with InProductHelp.NotifyEvent.IPH_ContextualSearchWebSearch.
-  </obsolete>
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered an event related to the Contextual Search in-product
-    help. See //components/feature_engagement/README.md#Configuring-UMA for
-    details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchOptIn">
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered an event related to the opting-in for Contextual Search
-    in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchPanel">
-  <obsolete>
-    Replaced with
-    InProductHelp.NotifyEvent.IPH_ContextualSearchPromotePanelOpen.
-  </obsolete>
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered an event related to opening the Contextual Search panel
-    in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchPromotePanelOpen">
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered an event related to opening the Contextual Search panel
-    in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchPromoteTap">
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered an event related to activation by tap for Contextual
-    Search in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchTap">
-  <obsolete>
-    Replaced with InProductHelp.NotifyEvent.IPH_ContextualSearchPromoteTap.
-  </obsolete>
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered an event related to activation by tap for Contextual
-    Search in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchWebSearch">
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered an event related to the Contextual Search web search
-    in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_ContextualSuggestions">
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered an event related to the contextual suggestions in-product
-    help. See //components/feature_engagement/README.md#Configuring-UMA for
-    details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_DataSaverDetail">
+<action name="InProductHelp.NotifyUsedEvent.IPH">
+  <owner>dtrainor@@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered an event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_DataSaverPreview">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>
-    A event related to the new tab in-product help experiment.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_DownloadHome">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered an event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_DownloadPage">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered an event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_DownloadPageScreenshot">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered an event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_IncognitoWindow">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered an event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_MediaDownload">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered an event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_NewIncognitoTabTip">
-  <owner>edchin@chromium.org</owner>
-  <owner>gchatz@chromium.org</owner>
-  <description>
-    An event related to the new incognito tab tip in-product help experiment.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_NewTab">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered an event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyEvent.IPH_NewTabTip">
-  <owner>edchin@chromium.org</owner>
-  <owner>gchatz@chromium.org</owner>
-  <description>
-    An event related to the new tab tip in-product help experiment.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_BadgedReadingList">
-  <owner>edchin@chromium.org</owner>
-  <owner>gchatz@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_Bookmark">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ChromeHomeExpand">
-  <owner>twellington@chromium.org</owner>
-  <owner>mdjones@chromium.org</owner>
-  <description>
-    The user triggered a used event related to the Chrome Home cold start
-    in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ChromeHomeMenuHeader">
-  <obsolete>Unused as of 03/2018</obsolete>
-  <owner>twellington@chromium.org</owner>
-  <owner>mdjones@chromium.org</owner>
-  <description>
-    The user triggered a used event related to the Chrome Home menu header
-    in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ChromeHomePullToRefresh">
-  <owner>twellington@chromium.org</owner>
-  <owner>mdjones@chromium.org</owner>
-  <description>
-    The user triggered a used event related to the Chrome Home in-product help
-    that is shown after a pull-to-refresh. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearch">
-  <obsolete>
-    Replaced with InProductHelp.NotifyUsedEvent.IPH_ContextualSearchWebSearch.
-  </obsolete>
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered a used event related to the Contextual Search in-product
-    help. See //components/feature_engagement/README.md#Configuring-UMA for
-    details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchOptIn">
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered a used event related to the opting-in for Contextual
-    Search in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPanel">
-  <obsolete>
-    Replaced with
-    InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPromotePanelOpen.
-  </obsolete>
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered a used event related to opening the Contextual Search
-    panel in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action
-    name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPromotePanelOpen">
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered a used event related to opening the Contextual Search
-    panel in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPromoteTap">
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered a used event related to activation by tap for Contextual
-    Search in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchTap">
-  <obsolete>
-    Replaced with InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPromoteTap.
-  </obsolete>
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered a used event related to activation by tap for Contextual
-    Search in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchWebSearch">
-  <owner>donnd@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered a used event related to the Contextual Search in-product
-    help. See //components/feature_engagement/README.md#Configuring-UMA for
-    details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSuggestions">
-  <owner>twellington@chromium.org</owner>
-  <description>
-    The user triggered a used event related to the contextual suggestions
-    in-product help. See
-    //components/feature_engagement/README.md#Configuring-UMA for details.
-  </description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_DataSaverDetail">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_DataSaverPreview">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_DownloadHome">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_DownloadPage">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_DownloadPageScreenshot">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_IncognitoWindow">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_MediaDownload">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_NewIncognitoTabTip">
-  <owner>edchin@chromium.org</owner>
-  <owner>gchatz@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_NewTab">
-  <owner>nyquist@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
-  <description>The user triggered a used event in in-product help.</description>
-</action>
-
-<action name="InProductHelp.NotifyUsedEvent.IPH_NewTabTip">
-  <owner>edchin@chromium.org</owner>
-  <owner>gchatz@chromium.org</owner>
   <description>The user triggered a used event in in-product help.</description>
 </action>
 
@@ -20448,5 +20053,42 @@ should be able to be added at any place in this file.
     to keep a trend of whether the webapp also add meta tags.
   </description>
 </action>
+
+<action-suffix separator="_" ordering="suffix">
+  <suffix name="BadgedReadingList" label="For BadgedReadingList feature."/>
+  <suffix name="Bookmark" label="For Bookmark feature."/>
+  <suffix name="ChromeHomeExpand" label="For ChromeHomeExpand feature."/>
+  <suffix name="ChromeHomeMenuHeader"
+      label="For ChromeHomeMenuHeader feature."/>
+  <suffix name="ChromeHomePullToRefresh"
+      label="For ChromeHomePullToRefresh feature."/>
+  <suffix name="ContextualSearch" label="For ContextualSearch feature."/>
+  <suffix name="ContextualSearchOptIn"
+      label="For ContextualSearchOptIn feature."/>
+  <suffix name="ContextualSearchPanel"
+      label="For ContextualSearchPanel feature."/>
+  <suffix name="ContextualSearchPromotePanelOpen"
+      label="For ContextualSearchPromotePanelOpen feature."/>
+  <suffix name="ContextualSearchPromoteTap"
+      label="For ContextualSearchPromoteTap feature."/>
+  <suffix name="ContextualSearchTap" label="For ContextualSearchTap feature."/>
+  <suffix name="ContextualSearchWebSearch"
+      label="For ContextualSearchWebSearch feature."/>
+  <suffix name="ContextualSuggestions"
+      label="For ContextualSuggestions feature."/>
+  <suffix name="DataSaverDetail" label="For DataSaverDetail feature."/>
+  <suffix name="DataSaverPreview" label="For DataSaverPreview feature."/>
+  <suffix name="DownloadHome" label="For DownloadHome feature."/>
+  <suffix name="DownloadPage" label="For DownloadPage feature."/>
+  <suffix name="DownloadPageScreenshot"
+      label="For DownloadPageScreenshot feature."/>
+  <suffix name="IncognitoWindow" label="For IncognitoWindow feature."/>
+  <suffix name="MediaDownload" label="For MediaDownload feature."/>
+  <suffix name="NewIncognitoTabTip" label="For NewIncognitoTabTip feature."/>
+  <suffix name="NewTab" label="For NewTab feature."/>
+  <suffix name="NewTabTip" label="For NewTabTip feature."/>
+  <affected-action name="InProductHelp.NotifyEvent.IPH"/>
+  <affected-action name="InProductHelp.NotifyUsedEvent.IPH"/>
+</action-suffix>
 
 </actions>

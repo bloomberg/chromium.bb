@@ -67,14 +67,15 @@ TAGS_THAT_ALLOW_SINGLE_LINE = ['summary', 'int', 'owner']
 LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
 
 # Tags whose children we want to alphabetize. The key is the parent tag name,
-# and the value is a pair of the tag name of the children we want to sort,
-# and a key function that maps each child node to the desired sort key.
+# and the value is a list of pairs of tag name and key functions that maps each
+# child node to the desired sort key.
 TAGS_ALPHABETIZATION_RULES = {
-    'histograms': ('histogram', LOWERCASE_NAME_FN),
-    'enums': ('enum', LOWERCASE_NAME_FN),
-    'enum': ('int', lambda n: int(n.attributes['value'].value)),
-    'histogram_suffixes_list': ('histogram_suffixes', LOWERCASE_NAME_FN),
-    'histogram_suffixes': ('affected-histogram', LOWERCASE_NAME_FN),
+    'histograms': [('histogram', LOWERCASE_NAME_FN)],
+    'enums': [('enum', LOWERCASE_NAME_FN)],
+    'enum': [('int', lambda n: int(n.attributes['value'].value))],
+    'histogram_suffixes_list': [('histogram_suffixes', LOWERCASE_NAME_FN)],
+    # TODO(asvitkine): Add suffix alphabetization, as done for actions.
+    'histogram_suffixes': [('affected-histogram', LOWERCASE_NAME_FN)],
 }
 
 

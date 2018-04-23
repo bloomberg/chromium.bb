@@ -5,6 +5,7 @@
 
 import unittest
 
+import action_utils
 import extract_actions
 
 # Empty value to be inserted to |ACTIONS_MOCK|.
@@ -258,24 +259,42 @@ class ActionXmlTest(unittest.TestCase):
     current_xml = ACTIONS_XML.format(owners=owner, description=description,
                                      obsolete=obsolete, comment=comment,
                                      not_user_triggered=not_user_triggered)
-    actions, actions_dict, comments = extract_actions.ParseActionFile(
+    actions_dict, comments, suffixes = extract_actions.ParseActionFile(
         current_xml)
-    for new_action in new_actions:
-      actions.add(new_action)
-    return extract_actions.PrettyPrint(actions, actions_dict, comments)
+    for action_name in new_actions:
+      actions_dict[action_name] = action_utils.Action(action_name, None, [])
+    return extract_actions.PrettyPrint(actions_dict, comments, suffixes)
 
-  def _GetProcessedActionFromActionsXMLString(self, actions_xml):
-    """parses the given actions XML string and pretty prints it.
+  def _ExpandSuffixesInActionsXML(self, actions_xml):
+    """Parses the given actions XML, expands suffixes and pretty prints it.
 
     Args:
       actions_xml: actions XML string.
 
     Returns:
-      An updated and pretty-printed actions XML string.
+      An updated and pretty-printed actions XML string with suffixes expanded.
     """
-    actions, actions_dict, comments = extract_actions.ParseActionFile(
+    actions_dict, comments, suffixes = extract_actions.ParseActionFile(
         actions_xml)
-    return extract_actions.PrettyPrint(actions, actions_dict, comments)
+    # Clear suffixes and mark actions as not coming from suffixes, so that
+    # the returned XML file is the expanded one.
+    suffixes = []
+    for action in actions_dict.itervalues():
+      action.from_suffix = False
+    return extract_actions.PrettyPrint(actions_dict, comments, suffixes)
+
+  def _PrettyPrintActionsXML(self, actions_xml):
+    """Parses the given actions XML and pretty prints it.
+
+    Args:
+      actions_xml: actions XML string.
+
+    Returns:
+      A pretty-printed actions XML string.
+    """
+    actions_dict, comments, suffixes = extract_actions.ParseActionFile(
+        actions_xml)
+    return extract_actions.PrettyPrint(actions_dict, comments, suffixes)
 
   def testNoOwner(self):
     xml_result = self._GetProcessedAction(NO_VALUE, DESCRIPTION, NO_VALUE)
@@ -342,16 +361,58 @@ class ActionXmlTest(unittest.TestCase):
       <owner>name1@chromium.org</owner>
       <description>Description.</description>
     </action>
-    <actions-suffixes>
-    <action-suffix>
+    <action-suffix separator="_">
       <suffix name="suffix1" label="Suffix Description 1." />
       <affected-action name="action1" />
     </action-suffix>
-    </actions-suffixes>
     </actions>
     """
-    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
-    self.assertEqual(BASIC_SUFFIX_EXPECTED_XML, xml_result)
+    xml_result = self._ExpandSuffixesInActionsXML(original_xml)
+    self.assertMultiLineEqual(BASIC_SUFFIX_EXPECTED_XML, xml_result)
+
+  def testSuffixPrettyPrint(self):
+    """Tests that suffixes are preserved when pretty-printing."""
+    original_xml = """
+    <actions>
+    <action name="action1">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <action name="action2">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <action-suffix separator="_">
+      <suffix name="suffix1" label="Suffix Description 1." />
+      <affected-action name="action2"/>
+      <suffix name="suffix2" label="Suffix Description 2."/>
+      <affected-action name="action1" />
+    </action-suffix>
+    </actions>
+    """
+    xml_result = self._PrettyPrintActionsXML(original_xml)
+    expected_pretty_xml = """<actions>
+
+<action name="action1">
+  <owner>name1@chromium.org</owner>
+  <description>Description.</description>
+</action>
+
+<action name="action2">
+  <owner>name1@chromium.org</owner>
+  <description>Description.</description>
+</action>
+
+<action-suffix separator="_">
+  <suffix name="suffix1" label="Suffix Description 1."/>
+  <suffix name="suffix2" label="Suffix Description 2."/>
+  <affected-action name="action1"/>
+  <affected-action name="action2"/>
+</action-suffix>
+
+</actions>
+"""
+    self.assertMultiLineEqual(expected_pretty_xml, xml_result)
 
   def testMultiActionMultiSuffixChain(self):
     original_xml = """
@@ -364,26 +425,24 @@ class ActionXmlTest(unittest.TestCase):
       <owner>name2@chromium.org</owner>
       <description>Description.</description>
     </action>
-    <actions-suffixes>
-    <action-suffix>
+    <action-suffix separator="_">
       <suffix name="suffix1" label="Suffix Description 1." />
       <suffix name="suffix2" label="Suffix Description 2." />
       <affected-action name="action1" />
       <affected-action name="action2" />
     </action-suffix>
-    <action-suffix>
+    <action-suffix separator="_">
       <suffix name="suffix3" label="Suffix Description 3." />
       <affected-action name="action1_suffix2" />
     </action-suffix>
-    <action-suffix>
+    <action-suffix separator="_">
       <suffix name="suffix4" label="Suffix Description 4." />
       <affected-action name="action1_suffix2_suffix3" />
     </action-suffix>
-    </actions-suffixes>
     </actions>
     """
-    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
-    self.assertEqual(MULTI_ACTION_MULTI_SUFFIX_CHAIN, xml_result)
+    xml_result = self._ExpandSuffixesInActionsXML(original_xml)
+    self.assertMultiLineEqual(MULTI_ACTION_MULTI_SUFFIX_CHAIN, xml_result)
 
   def testSuffixCustomSeparator(self):
     original_xml = """
@@ -392,16 +451,14 @@ class ActionXmlTest(unittest.TestCase):
       <owner>name1@chromium.org</owner>
       <description>Description.</description>
     </action>
-    <actions-suffixes>
-    <action-suffix separator='.'>
+    <action-suffix separator=".">
       <suffix name="suffix1" label="Suffix Description 1." />
       <affected-action name="action1" />
     </action-suffix>
-    </actions-suffixes>
     </actions>
     """
-    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
-    self.assertEqual(SUFFIX_CUSTOM_SEPARATOR, xml_result)
+    xml_result = self._ExpandSuffixesInActionsXML(original_xml)
+    self.assertMultiLineEqual(SUFFIX_CUSTOM_SEPARATOR, xml_result)
 
   def testSuffixOrderingPrefix(self):
     original_xml = """
@@ -410,16 +467,14 @@ class ActionXmlTest(unittest.TestCase):
       <owner>name1@chromium.org</owner>
       <description>Description.</description>
     </action>
-    <actions-suffixes>
-    <action-suffix ordering='prefix'>
+    <action-suffix ordering="prefix" separator="_">
       <suffix name="prefix1" label="Prefix Description 1." />
       <affected-action name="action1.remainder" />
     </action-suffix>
-    </actions-suffixes>
     </actions>
     """
-    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
-    self.assertEqual(SUFFIX_OREDERING_PREFIX, xml_result)
+    xml_result = self._ExpandSuffixesInActionsXML(original_xml)
+    self.assertMultiLineEqual(SUFFIX_OREDERING_PREFIX, xml_result)
 
   def testAffectedActionWithSuffixTag(self):
     original_xml = """
@@ -432,8 +487,7 @@ class ActionXmlTest(unittest.TestCase):
       <owner>name2@chromium.org</owner>
       <description>Description.</description>
     </action>
-    <actions-suffixes>
-    <action-suffix>
+    <action-suffix separator="_">
       <suffix name="suffix1" label="Suffix Description 1." />
       <suffix name="suffix2" label="Suffix Description 2." />
       <affected-action name="action1" />
@@ -441,11 +495,10 @@ class ActionXmlTest(unittest.TestCase):
         <with-suffix name="suffix2" />
       </affected-action>
     </action-suffix>
-    </actions-suffixes>
     </actions>
     """
-    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
-    self.assertEqual(AFFECTED_ACTION_WITH_SUFFIX_TAG, xml_result)
+    xml_result = self._ExpandSuffixesInActionsXML(original_xml)
+    self.assertMultiLineEqual(AFFECTED_ACTION_WITH_SUFFIX_TAG, xml_result)
 
   def testErrorActionMissing(self):
     original_xml = """
@@ -454,18 +507,15 @@ class ActionXmlTest(unittest.TestCase):
       <owner>name1@chromium.org</owner>
       <description>Description.</description>
     </action>
-    <actions-suffixes>
     <action-suffix>
       <suffix name="suffix1" label="Suffix Description 1." />
       <affected-action name="action1" />
       <affected-action name="action2" />
     </action-suffix>
-    </actions-suffixes>
     </actions>
     """
-    with self.assertRaises(SystemExit) as cm:
+    with self.assertRaises(action_utils.UndefinedActionItemError) as cm:
       extract_actions.ParseActionFile(original_xml)
-    self.assertEqual(cm.exception.code, 1)
 
   def testErrorSuffixNameMissing(self):
     original_xml = """
@@ -474,17 +524,14 @@ class ActionXmlTest(unittest.TestCase):
       <owner>name1@chromium.org</owner>
       <description>Description.</description>
     </action>
-    <actions-suffixes>
     <action-suffix>
       <suffix label="Suffix Description 1." />
       <affected-action name="action1" />
     </action-suffix>
-    </actions-suffixes>
     </actions>
     """
-    with self.assertRaises(SystemExit) as cm:
+    with self.assertRaises(action_utils.SuffixNameEmptyError) as cm:
       extract_actions.ParseActionFile(original_xml)
-    self.assertEqual(cm.exception.code, 1)
 
   def testErrorBadActionName(self):
     original_xml = """
@@ -493,17 +540,14 @@ class ActionXmlTest(unittest.TestCase):
       <owner>name1@chromium.org</owner>
       <description>Description.</description>
     </action>
-    <actions-suffixes>
-    <action-suffix ordering='prefix'>
+    <action-suffix ordering="prefix">
       <suffix name="prefix1" label="Prefix Description 1." />
       <affected-action name="action1" />
     </action-suffix>
-    </actions-suffixes>
     </actions>
     """
-    with self.assertRaises(SystemExit) as cm:
+    with self.assertRaises(action_utils.InvalidAffecteddActionNameError) as cm:
       extract_actions.ParseActionFile(original_xml)
-    self.assertEqual(cm.exception.code, 1)
 
   def testUserMetricsActionSpanningTwoLines(self):
     code = 'base::UserMetricsAction(\n"Foo.Bar"));'
