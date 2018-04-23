@@ -112,6 +112,8 @@ class FetchHelper {
 
     // TODO(fgorski): flip this to finch controlled setting.
     private final static long MINIMUM_FETCH_DELAY_MILLIS = 2 * 1000; // 2 seconds.
+    private static boolean sDisableDelayForTesting;
+
     private final Delegate mDelegate;
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabModelObserver mTabModelObserver;
@@ -265,7 +267,7 @@ class FetchHelper {
         String url = tabFetchReadinessState.getUrl();
         long remainingFetchDelayMillis =
                 SystemClock.uptimeMillis() - tabFetchReadinessState.getFetchTimeBaselineMillis();
-        if (remainingFetchDelayMillis < MINIMUM_FETCH_DELAY_MILLIS) {
+        if (!sDisableDelayForTesting && remainingFetchDelayMillis < MINIMUM_FETCH_DELAY_MILLIS) {
             postDelayedFetch(
                     url, mCurrentTab, MINIMUM_FETCH_DELAY_MILLIS - remainingFetchDelayMillis);
             return;
@@ -332,5 +334,10 @@ class FetchHelper {
     private TabFetchReadinessState getTabFetchReadinessState(Tab tab) {
         if (tab == null) return null;
         return mObservedTabs.get(tab.getId());
+    }
+
+    @VisibleForTesting
+    static void setDisableDelayForTesting(boolean disable) {
+        sDisableDelayForTesting = disable;
     }
 }
