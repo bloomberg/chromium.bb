@@ -26,6 +26,8 @@ namespace header_names {
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowCredentials[];
 COMPONENT_EXPORT(NETWORK_CPP)
+extern const char kAccessControlAllowExternal[];
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowHeaders[];
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowMethods[];

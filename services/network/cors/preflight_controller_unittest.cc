@@ -188,10 +188,11 @@ class PreflightControllerTest : public testing::Test {
       return response;
 
     response = std::make_unique<net::test_server::BasicHttpResponse>();
-    if (net::test_server::ShouldHandle(request, "/404")) {
-      response->set_code(net::HTTP_NOT_FOUND);
-    } else if (net::test_server::ShouldHandle(request, "/allow")) {
-      response->set_code(net::HTTP_OK);
+    if (net::test_server::ShouldHandle(request, "/404") ||
+        net::test_server::ShouldHandle(request, "/allow")) {
+      response->set_code(net::test_server::ShouldHandle(request, "/404")
+                             ? net::HTTP_NOT_FOUND
+                             : net::HTTP_OK);
       url::Origin origin = url::Origin::Create(test_server_.base_url());
       response->AddCustomHeader(cors::header_names::kAccessControlAllowOrigin,
                                 origin.Serialize());
@@ -201,6 +202,7 @@ class PreflightControllerTest : public testing::Test {
       response->AddCustomHeader(net::HttpRequestHeaders::kCacheControl,
                                 "no-store");
     }
+
     return response;
   }
 

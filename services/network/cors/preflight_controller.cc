@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
@@ -106,6 +107,76 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   return preflight_request;
 }
 
+std::unique_ptr<PreflightResult> CreatePreflightResult(
+    const GURL& final_url,
+    const ResourceResponseHead& head,
+    const ResourceRequest& original_request,
+    base::Optional<mojom::CORSError>* detected_error) {
+  DCHECK(detected_error);
+
+  // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
+  *detected_error = CheckAccess(
+      final_url, head.headers->response_code(),
+      GetHeaderString(head.headers,
+                      cors::header_names::kAccessControlAllowOrigin),
+      GetHeaderString(head.headers,
+                      cors::header_names::kAccessControlAllowCredentials),
+      original_request.fetch_credentials_mode,
+      *original_request.request_initiator, false /* allow_file_origin */);
+  if (*detected_error)
+    return nullptr;
+
+  *detected_error = CheckPreflight(head.headers->response_code());
+  if (*detected_error)
+    return nullptr;
+
+  if (original_request.is_external_request) {
+    *detected_error = CheckExternalPreflight(GetHeaderString(
+        head.headers, header_names::kAccessControlAllowExternal));
+    if (*detected_error)
+      return nullptr;
+  }
+
+  return PreflightResult::Create(
+      original_request.fetch_credentials_mode,
+      GetHeaderString(head.headers, header_names::kAccessControlAllowMethods),
+      GetHeaderString(head.headers, header_names::kAccessControlAllowHeaders),
+      GetHeaderString(head.headers, header_names::kAccessControlMaxAge),
+      detected_error);
+}
+
+base::Optional<mojom::CORSError> CheckPreflightResult(
+    PreflightResult* result,
+    const ResourceRequest& original_request,
+    scoped_refptr<net::HttpResponseHeaders>* error_header) {
+  DCHECK(error_header);
+
+  base::Optional<mojom::CORSError> error =
+      result->EnsureAllowedCrossOriginMethod(original_request.method);
+  if (error)
+    return error;
+
+  std::string detected_error_header;
+  error = result->EnsureAllowedCrossOriginHeaders(original_request.headers,
+                                                  &detected_error_header);
+  if (error) {
+    // Gather information to report the error's details.
+    DCHECK(!detected_error_header.empty());
+    std::string header_value;
+    bool found = original_request.headers.GetHeader(detected_error_header,
+                                                    &header_value);
+    DCHECK(found);
+    // Status line below is dummy to construct a response header instance.
+    *error_header =
+        base::MakeRefCounted<net::HttpResponseHeaders>(base::StringPrintf(
+            "HTTP/1.0 200 OK\n%s: %s", detected_error_header.c_str(),
+            header_value.c_str()));
+    return error;
+  }
+
+  return base::nullopt;
+}
+
 }  // namespace
 
 class PreflightController::PreflightLoader final {
@@ -116,9 +187,7 @@ class PreflightController::PreflightLoader final {
                   const net::NetworkTrafficAnnotationTag& annotation_tag)
       : controller_(controller),
         completion_callback_(std::move(completion_callback)),
-        origin_(*request.request_initiator),
-        url_(request.url),
-        credentials_mode_(request.fetch_credentials_mode) {
+        original_request_(request) {
     loader_ = SimpleURLLoader::Create(CreatePreflightRequest(request),
                                       annotation_tag);
   }
@@ -155,42 +224,32 @@ class PreflightController::PreflightLoader final {
                             const ResourceResponseHead& head) {
     FinalizeLoader();
 
-    base::Optional<mojom::CORSError> error =
-        CheckPreflight(head.headers->response_code());
+    base::Optional<mojom::CORSError> detected_error;
+    std::unique_ptr<PreflightResult> result = CreatePreflightResult(
+        final_url, head, original_request_, &detected_error);
 
-    if (!error) {
-      // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
-      error = CheckAccess(
-          final_url, head.headers->response_code(),
-          GetHeaderString(head.headers,
-                          cors::header_names::kAccessControlAllowOrigin),
-          GetHeaderString(head.headers,
-                          cors::header_names::kAccessControlAllowCredentials),
-          credentials_mode_, origin_, false /* allow_file_origin */);
+    scoped_refptr<net::HttpResponseHeaders> error_header;
+    if (result) {
+      // Preflight succeeded. Check |original_request_| with |result|.
+      DCHECK(!detected_error);
+      detected_error =
+          CheckPreflightResult(result.get(), original_request_, &error_header);
     }
 
-    // TODO(toyoshim): Add remaining checks before or after the following check.
-    // See DocumentThreadableLoader::HandlePreflightResponse() and
-    // CORS::EnsurePreflightResultAndCacheOnSuccess() in Blink.
-
-    if (!error) {
-      result_ = PreflightResult::Create(
-          credentials_mode_,
-          GetHeaderString(head.headers,
-                          header_names::kAccessControlAllowMethods),
-          GetHeaderString(head.headers,
-                          header_names::kAccessControlAllowHeaders),
-          GetHeaderString(head.headers, header_names::kAccessControlMaxAge),
-          &error);
+    // TODO(toyoshim): Check the spec if we cache |result| regardless of
+    // following checks.
+    if (!detected_error) {
+      controller_->AppendToCache(*original_request_.request_initiator,
+                                 original_request_.url, std::move(result));
     }
 
-    if (!error) {
-      DCHECK(result_);
-      controller_->AppendToCache(origin_, url_, std::move(result_));
-      std::move(completion_callback_).Run(base::nullopt);
+    if (detected_error) {
+      std::move(completion_callback_)
+          .Run(CORSErrorStatus(*detected_error, error_header));
     } else {
-      std::move(completion_callback_).Run(CORSErrorStatus(*error));
+      std::move(completion_callback_).Run(base::nullopt);
     }
+
     RemoveFromController();
     // |this| is deleted here.
   }
@@ -211,14 +270,12 @@ class PreflightController::PreflightLoader final {
   // PreflightController owns all PreflightLoader instances, and should outlive.
   PreflightController* const controller_;
 
+  // Holds SimpleURLLoader instance for the CORS-preflight request.
   std::unique_ptr<SimpleURLLoader> loader_;
+
+  // Holds caller's information.
   PreflightController::CompletionCallback completion_callback_;
-
-  const url::Origin origin_;
-  const GURL url_;
-  const mojom::FetchCredentialsMode credentials_mode_;
-
-  std::unique_ptr<PreflightResult> result_;
+  const ResourceRequest original_request_;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightLoader);
 };
