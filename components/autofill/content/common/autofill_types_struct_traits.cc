@@ -588,6 +588,10 @@ bool StructTraits<
     return false;
 
   out->is_enabled = data.is_enabled();
+  out->is_readonly = data.is_readonly();
+  out->is_default = data.is_default();
+  if (!data.ReadValue(&out->typed_value))
+    return false;
 
   if (!data.ReadOptionValues(&out->option_values))
     return false;

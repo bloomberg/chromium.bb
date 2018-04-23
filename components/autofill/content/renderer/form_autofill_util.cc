@@ -1215,6 +1215,46 @@ bool UnownedFormElementsAndFieldSetsToFormData(
       field_value_and_properties_map, extract_mask, form, field);
 }
 
+// Check if a script modified username is suitable for Password Manager to
+// remember.
+bool ScriptModifiedUsernameAcceptable(
+    const base::string16& value,
+    const base::string16& typed_value,
+    const FieldValueAndPropertiesMaskMap& field_value_and_properties_map) {
+  // The minimal size of a field value that will be substring-matched.
+  constexpr size_t kMinMatchSize = 3u;
+  const auto lowercase = base::i18n::ToLower(value);
+  const auto typed_lowercase = base::i18n::ToLower(typed_value);
+  // If the page-generated value is just a completion of the typed value, that's
+  // likely acceptable.
+  if (base::StartsWith(lowercase, typed_lowercase,
+                       base::CompareCase::SENSITIVE)) {
+    return true;
+  }
+  if (typed_lowercase.size() >= kMinMatchSize &&
+      lowercase.find(typed_lowercase) != base::string16::npos) {
+    return true;
+  }
+
+  // If the page-generated value comes from user typed or autofilled values in
+  // other fields, that's also likely OK.
+  for (const auto& map_key : field_value_and_properties_map) {
+    const base::string16* typed_from_key = map_key.second.first.get();
+    if (!typed_from_key)
+      continue;
+    const WebInputElement* input_element = ToWebInputElement(&map_key.first);
+    if (input_element && input_element->IsTextField() &&
+        !input_element->IsPasswordFieldForAutofill() &&
+        typed_from_key->size() >= kMinMatchSize &&
+        lowercase.find(base::i18n::ToLower(*typed_from_key)) !=
+            base::string16::npos) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 ScopedLayoutPreventer::ScopedLayoutPreventer() {
@@ -1475,6 +1515,8 @@ void WebFormControlElementToFormField(
     else if (element.AlignmentForFormData() == "right")
       field->text_direction = base::i18n::RIGHT_TO_LEFT;
     field->is_enabled = element.IsEnabled();
+    field->is_readonly = element.IsReadOnly();
+    field->is_default = element.GetAttribute("value") == element.Value();
   }
 
   if (IsAutofillableInputElement(input_element)) {
@@ -1520,6 +1562,18 @@ void WebFormControlElementToFormField(
   TruncateString(&value, kMaxDataLength);
 
   field->value = value;
+
+  if (field_value_and_properties_map &&
+      field->properties_mask & (FieldPropertiesFlags::USER_TYPED |
+                                FieldPropertiesFlags::AUTOFILLED)) {
+    const base::string16 typed_value =
+        *field_value_and_properties_map->at(element).first;
+
+    if (!ScriptModifiedUsernameAcceptable(value, typed_value,
+                                          *field_value_and_properties_map)) {
+      field->typed_value = typed_value;
+    }
+  }
 }
 
 bool WebFormElementToFormData(

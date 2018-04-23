@@ -2516,4 +2516,63 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, StickyPasswordType) {
   EXPECT_EQ(old_form_data, new_form_data);
 }
 
+// Check that Chrome remembers the value typed by the user in cases when it gets
+// overridden by the page.
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, TypedValuePreserved) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddTextField("fine", "", "username");
+  builder.AddPasswordField("mangled", "", "current-password");
+  builder.AddTextField("completed_for_user", "", nullptr);
+  std::string html = builder.ProduceHTML();
+
+  WebFormElement form;
+  LoadWebFormFromHTML(html, &form, nullptr);
+
+  FieldValueAndPropertiesMaskMap user_input;
+  WebVector<WebFormControlElement> control_elements;
+  form.GetFormControlElements(control_elements);
+
+  ASSERT_EQ(3u, control_elements.size());
+  ASSERT_EQ("fine", control_elements[0].NameForAutofill().Utf8());
+  control_elements[0].SetAutofillValue("same_value");
+  user_input[control_elements[0]] = std::make_pair(
+      std::make_unique<base::string16>(control_elements[0].Value().Utf16()),
+      FieldPropertiesFlags::USER_TYPED);
+
+  ASSERT_EQ("mangled", control_elements[1].NameForAutofill().Utf8());
+  control_elements[1].SetAutofillValue("mangled_value");
+  user_input[control_elements[1]] = std::make_pair(
+      std::make_unique<base::string16>(base::UTF8ToUTF16("original_value")),
+      FieldPropertiesFlags::USER_TYPED);
+
+  ASSERT_EQ("completed_for_user", control_elements[2].NameForAutofill().Utf8());
+  control_elements[2].SetAutofillValue("email@gmail.com");
+  user_input[control_elements[2]] = std::make_pair(
+      std::make_unique<base::string16>(base::UTF8ToUTF16("email")),
+      FieldPropertiesFlags::USER_TYPED);
+
+  std::unique_ptr<PasswordForm> password_form =
+      CreatePasswordFormFromWebForm(form, &user_input, nullptr, nullptr);
+
+  ASSERT_TRUE(password_form);
+
+  EXPECT_EQ(base::UTF8ToUTF16("same_value"), password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("original_value"), password_form->password_value);
+
+  ASSERT_EQ(3u, password_form->form_data.fields.size());
+
+  EXPECT_EQ(base::UTF8ToUTF16("same_value"),
+            password_form->form_data.fields[0].value);
+  EXPECT_EQ(base::string16(), password_form->form_data.fields[0].typed_value);
+
+  EXPECT_EQ(base::UTF8ToUTF16("mangled_value"),
+            password_form->form_data.fields[1].value);
+  EXPECT_EQ(base::UTF8ToUTF16("original_value"),
+            password_form->form_data.fields[1].typed_value);
+
+  EXPECT_EQ(base::UTF8ToUTF16("email@gmail.com"),
+            password_form->form_data.fields[2].value);
+  EXPECT_EQ(base::string16(), password_form->form_data.fields[2].typed_value);
+}
+
 }  // namespace autofill

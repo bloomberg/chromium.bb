@@ -146,6 +146,8 @@ FormFieldData::FormFieldData()
       text_direction(base::i18n::UNKNOWN_DIRECTION),
       properties_mask(0),
       is_enabled(false),
+      is_readonly(false),
+      is_default(false),
       label_source(LabelSource::UNKNOWN) {}
 
 FormFieldData::FormFieldData(const FormFieldData& other) = default;
@@ -166,7 +168,8 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
          is_focusable == field.is_focusable &&
          should_autocomplete == field.should_autocomplete &&
          role == field.role && text_direction == field.text_direction &&
-         is_enabled == field.is_enabled && HaveSameLabel(*this, field);
+         is_enabled == field.is_enabled && is_readonly == field.is_readonly &&
+         is_default == field.is_default && HaveSameLabel(*this, field);
   // The option values/contents which are the list of items in the list
   // of a drop-down are currently not considered part of the identity of
   // a form element. This is debatable, since one might base heuristics
@@ -263,6 +266,14 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (is_enabled < field.is_enabled)
     return true;
   if (is_enabled > field.is_enabled)
+    return false;
+  if (is_readonly < field.is_readonly)
+    return true;
+  if (is_readonly > field.is_readonly)
+    return false;
+  if (is_default < field.is_default)
+    return true;
+  if (is_default > field.is_default)
     return false;
   // See SameFieldAs above for why we don't check option_values/contents.
   return false;
@@ -443,6 +454,9 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
             << "role=" << role_str << " "
             << "text_direction=" << field.text_direction << " "
             << "is_enabled=" << field.is_enabled << " "
+            << "is_readonly=" << field.is_readonly << " "
+            << "is_default=" << field.is_default << " "
+            << "typed_value=" << field.typed_value << " "
             << "properties_mask=" << field.properties_mask << " "
             << "label_source=" << field.label_source;
 }
