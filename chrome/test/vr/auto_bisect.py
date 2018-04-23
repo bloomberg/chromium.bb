@@ -206,9 +206,9 @@ def ParseArgsAndAssertValid():
   # roll. Since bisecting a roll is almost always a product of a normal bisect
   # pointing to a roll anyways, the user should have the good/bad values
   # already.
-  if args.bisect_repo and not (args.good_value and args.bad_value):
+  if args.bisect_repo and (args.good_value is None or args.bad_value is None):
     raise RuntimeError(
-        '--bisect-roll-at requires good and bad values to be set.')
+        '--bisect-repo requires good and bad values to be set.')
 
   return (args, unknown_args)
 
