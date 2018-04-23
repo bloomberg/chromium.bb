@@ -188,6 +188,12 @@ void DockedMagnifierController::StepToNextScaleValue(int delta_index) {
       delta_index, GetScale(), kMinMagnifierScale, kMaxMagnifierScale));
 }
 
+void DockedMagnifierController::SetClient(
+    mojom::DockedMagnifierClientPtr client) {
+  client_ = std::move(client);
+  NotifyClientWithStatusChanged();
+}
+
 void DockedMagnifierController::CenterOnPoint(
     const gfx::Point& point_in_screen) {
   if (!GetEnabled())
@@ -385,6 +391,10 @@ void DockedMagnifierController::SetFullscreenMagnifierEnabled(bool enabled) {
   }
 }
 
+void DockedMagnifierController::FlushClientPtrForTesting() {
+  client_.FlushForTesting();
+}
+
 const views::Widget* DockedMagnifierController::GetViewportWidgetForTesting()
     const {
   return viewport_widget_;
@@ -497,6 +507,7 @@ void DockedMagnifierController::InitFromUserPrefs() {
           base::Unretained(this)));
 
   OnEnabledPrefChanged();
+  NotifyClientWithStatusChanged();
 }
 
 void DockedMagnifierController::OnEnabledPrefChanged() {
@@ -539,6 +550,8 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
   // We use software composited mouse cursor so that it can be mirrored into the
   // magnifier viewport.
   shell->UpdateCursorCompositingEnabled();
+
+  NotifyClientWithStatusChanged();
 }
 
 void DockedMagnifierController::OnScalePrefChanged() {
@@ -566,6 +579,11 @@ void DockedMagnifierController::OnHighContrastEnabledPrefChanged() {
 void DockedMagnifierController::Refresh() {
   DCHECK(GetEnabled());
   CenterOnPoint(GetCursorScreenPoint());
+}
+
+void DockedMagnifierController::NotifyClientWithStatusChanged() {
+  if (client_)
+    client_->OnEnabledStatusChanged(GetEnabled());
 }
 
 void DockedMagnifierController::CreateMagnifierViewport() {
