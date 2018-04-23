@@ -219,9 +219,7 @@ template <typename Strategy>
 TextIteratorAlgorithm<Strategy>::~TextIteratorAlgorithm() {
   if (!handle_shadow_root_)
     return;
-  Document* document = OwnerDocument();
-  if (!document)
-    return;
+  const Document& document = OwnerDocument();
   if (behavior_.ForInnerText())
     UseCounter::Count(document, WebFeature::kInnerTextWithShadowTree);
   if (behavior_.ForSelectionToString())
@@ -830,10 +828,8 @@ EphemeralRangeTemplate<Strategy> TextIteratorAlgorithm<Strategy>::Range()
 }
 
 template <typename Strategy>
-Document* TextIteratorAlgorithm<Strategy>::OwnerDocument() const {
-  if (text_state_.PositionNode())
-    return &text_state_.PositionNode()->GetDocument();
-  return &end_container_->GetDocument();
+const Document& TextIteratorAlgorithm<Strategy>::OwnerDocument() const {
+  return end_container_->GetDocument();
 }
 
 template <typename Strategy>
