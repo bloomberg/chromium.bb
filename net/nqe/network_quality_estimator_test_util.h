@@ -170,7 +170,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // implementation is called.
   base::TimeDelta GetRTTEstimateInternal(
       base::TimeTicks start_time,
-      const base::Optional<NetworkQualityEstimator::Statistic>& statistic,
       nqe::internal::ObservationCategory observation_category,
       int percentile,
       size_t* observations_count) const override;
