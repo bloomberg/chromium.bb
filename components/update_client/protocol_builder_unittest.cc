@@ -28,7 +28,8 @@ TEST(BuildProtocolRequest, SessionIdProdIdVersion) {
       string::npos,
       request.find(" sessionid=\"{15160585-8ADE-4D3C-839B-1281A6035D1F}\" "));
   EXPECT_NE(string::npos,
-            request.find(" version=\"some_prod_id-1.0\" prodversion=\"1.0\" "));
+            request.find(" updater=\"some_prod_id\" updaterversion=\"1.0\" "
+                         "prodversion=\"1.0\" "));
 }
 
 TEST(BuildProtocolRequest, DownloadPreference) {

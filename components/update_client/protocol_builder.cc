@@ -232,11 +232,11 @@ std::string BuildProtocolRequest(
 
   // Chrome version and platform information.
   base::StringAppendF(&request,
-                      "version=\"%s-%s\" prodversion=\"%s\" "
+                      "updater=\"%s\" updaterversion=\"%s\" prodversion=\"%s\" "
                       "lang=\"%s\" updaterchannel=\"%s\" prodchannel=\"%s\" "
                       "os=\"%s\" arch=\"%s\" nacl_arch=\"%s\"",
-                      prod_id.c_str(),  // "version" is prefixed by prod_id.
-                      browser_version.c_str(),
+                      prod_id.c_str(),                    // "updater"
+                      browser_version.c_str(),            // "updaterversion"
                       browser_version.c_str(),            // "prodversion"
                       lang.c_str(),                       // "lang"
                       channel.c_str(),                    // "updaterchannel"
