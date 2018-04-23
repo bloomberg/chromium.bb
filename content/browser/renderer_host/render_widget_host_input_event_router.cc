@@ -1047,7 +1047,7 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
   // target we could just return nullptr for pinch events, but since we know
   // where they are going we return the correct target.
   if (blink::WebInputEvent::IsPinchGestureEventType(gesture_event.GetType()))
-    return {root_view, false, base::nullopt};
+    return {root_view, false, gesture_event.PositionInWidget()};
 
   // Android sends gesture events that have no corresponding touch sequence, so
   // these we hit-test explicitly.
