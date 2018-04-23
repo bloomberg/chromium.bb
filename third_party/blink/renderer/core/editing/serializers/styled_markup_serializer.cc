@@ -359,6 +359,7 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
       }
 
       if (!n->GetLayoutObject() &&
+          (!n->IsElementNode() || !ToElement(n)->HasDisplayContentsStyle()) &&
           !EnclosingElementWithTag(FirstPositionInOrBeforeNode(*n),
                                    selectTag)) {
         next = Strategy::NextSkippingChildren(*n);
