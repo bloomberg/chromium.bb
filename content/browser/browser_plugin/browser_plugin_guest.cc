@@ -1079,12 +1079,6 @@ void BrowserPluginGuest::OnUpdateResizeParams(
                                     resize_params.min_size_for_auto_resize,
                                     resize_params.max_size_for_auto_resize);
 
-  if (render_widget_host->auto_resize_enabled()) {
-    render_widget_host->DidAllocateLocalSurfaceIdForAutoResize(
-        resize_params.auto_resize_sequence_number);
-    return;
-  }
-
   render_widget_host->WasResized();
 }
 

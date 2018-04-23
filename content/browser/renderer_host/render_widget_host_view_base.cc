@@ -342,10 +342,7 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewBase::ResizeDueToAutoResize(
   // It maintains existing behavior while using the suppression style.
   // This will be addressed in a follow-up patch.
   // See https://crbug.com/805073
-  base::OnceCallback<void()> allocation_task =
-      base::BindOnce(&RenderWidgetHostViewBase::OnResizeDueToAutoResizeComplete,
-                     weak_factory_.GetWeakPtr(), sequence_number);
-  return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
+  return viz::ScopedSurfaceIdAllocator(base::DoNothing());
 }
 
 bool RenderWidgetHostViewBase::IsLocalSurfaceIdAllocationSuppressed() const {
@@ -642,12 +639,6 @@ RenderWidgetHostViewBase::GetWindowTreeClientFromRenderer() {
 }
 
 #endif
-
-void RenderWidgetHostViewBase::OnResizeDueToAutoResizeComplete(
-    uint64_t sequence_number) {
-  if (host())
-    host()->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
-}
 
 #if defined(OS_MACOSX)
 bool RenderWidgetHostViewBase::ShouldContinueToPauseForFrame() {
