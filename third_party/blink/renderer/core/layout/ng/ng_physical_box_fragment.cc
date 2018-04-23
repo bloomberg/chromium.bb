@@ -8,6 +8,8 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 
 namespace blink {
@@ -119,19 +121,51 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
     Vector<LayoutRect>* outline_rects,
     const LayoutPoint& additional_offset) const {
   DCHECK(outline_rects);
-  // TODO(kojii): Implement. This is quite incomplete yet.
 
-  // bool include_block_visual_overflow =
-  // layout_object->OutlineRectsShouldIncludeBlockVisualOverflow();
-
-  //
   LayoutRect outline_rect(additional_offset, Size().ToLayoutSize());
-  // LayoutRect outline_rect = VisualRect();
-  // outline_rect.MoveBy(additional_offset);
-  // outline_rect.Inflate(-Style().OutlineOffset());
-  // outline_rect.Inflate(-Style().OutlineWidth());
-
   outline_rects->push_back(outline_rect);
+
+  DCHECK(GetLayoutObject());
+  if (!GetLayoutObject()->IsBox())
+    return;
+  if (!Style().OutlineStyleIsAuto() || GetLayoutObject()->HasOverflowClip() ||
+      ToLayoutBox(GetLayoutObject())->HasControlClip())
+    return;
+
+  // Focus outline includes chidlren
+  for (const auto& child : Children()) {
+    // List markers have no outline
+    if (child->IsListMarker())
+      continue;
+
+    if (child->IsLineBox()) {
+      // Traverse children of the linebox
+      Vector<NGPhysicalFragmentWithOffset> line_children =
+          NGInlineFragmentTraversal::DescendantsOf(
+              ToNGPhysicalLineBoxFragment(*child));
+      for (const auto& line_child : line_children) {
+        Vector<LayoutRect> line_child_rects;
+        line_child_rects.push_back(
+            line_child.RectInContainerBox().ToLayoutRect());
+        DCHECK(line_child.fragment->GetLayoutObject());
+        line_child.fragment->GetLayoutObject()->LocalToAncestorRects(
+            line_child_rects, ToLayoutBoxModelObject(GetLayoutObject()),
+            child->Offset().ToLayoutPoint(), additional_offset);
+        if (!line_child_rects.IsEmpty())
+          outline_rects->push_back(line_child_rects[0]);
+      }
+    } else {
+      DCHECK(child->GetLayoutObject());
+      LayoutObject* child_layout = child->GetLayoutObject();
+      Vector<LayoutRect> child_rects;
+      child_rects.push_back(child->VisualRectWithContents().ToLayoutRect());
+      child_layout->LocalToAncestorRects(
+          child_rects, ToLayoutBoxModelObject(GetLayoutObject()), LayoutPoint(),
+          additional_offset);
+      if (!child_rects.IsEmpty())
+        outline_rects->push_back(child_rects[0]);
+    }
+  }
 }
 
 NGPhysicalOffsetRect NGPhysicalBoxFragment::VisualRectWithContents() const {
