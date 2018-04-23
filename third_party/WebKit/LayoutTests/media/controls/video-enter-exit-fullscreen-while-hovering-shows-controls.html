@@ -11,6 +11,7 @@ video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html</title>
 <script>
 async_test(function(t) {
   var video = document.querySelector("video");
+  enableTestMode(video);
 
   video.oncanplaythrough = t.step_func(function() {
     video.oncanplaythrough = null;
