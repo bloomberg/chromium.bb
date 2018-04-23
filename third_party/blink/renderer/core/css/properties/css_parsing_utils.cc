@@ -1320,8 +1320,7 @@ CSSValue* ConsumeColumnWidth(CSSParserTokenRange& range) {
   // otherwise when used in the 'columns' shorthand property.
   CSSPrimitiveValue* column_width = CSSPropertyParserHelpers::ConsumeLength(
       range, kHTMLStandardMode, kValueRangeNonNegative);
-  if (!column_width ||
-      (!column_width->IsCalculated() && column_width->GetDoubleValue() == 0))
+  if (!column_width)
     return nullptr;
   return column_width;
 }
