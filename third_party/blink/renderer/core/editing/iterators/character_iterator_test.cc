@@ -72,4 +72,43 @@ TEST_F(CharacterIteratorTest, CollapsedSubrange) {
   EXPECT_EQ(Position(text_node, 3), result.EndPosition());
 }
 
+TEST_F(CharacterIteratorTest, GetPositionWithBR) {
+  SetBodyContent("a<br>b");
+
+  const Element& body = *GetDocument().body();
+  CharacterIterator it(EphemeralRange::RangeOfContents(body));
+
+  const Node& text_a = *body.firstChild();
+  const Node& br = *GetDocument().QuerySelector("br");
+  const Node& text_b = *body.lastChild();
+
+  EXPECT_EQ(Position(text_a, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_a, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_a, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_a, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position::BeforeNode(br), it.GetPositionBefore());
+  EXPECT_EQ(Position::AfterNode(br), it.GetPositionAfter());
+  EXPECT_EQ(Position(body, 1), it.StartPosition());
+  EXPECT_EQ(Position(body, 2), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_b, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_b, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_b, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(body, 3), it.GetPositionBefore());
+  EXPECT_EQ(Position(body, 3), it.GetPositionAfter());
+  EXPECT_EQ(Position(body, 3), it.StartPosition());
+  EXPECT_EQ(Position(body, 3), it.EndPosition());
+
+  EXPECT_TRUE(it.AtEnd());
+}
+
 }  // namespace blink
