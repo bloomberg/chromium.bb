@@ -1899,8 +1899,6 @@ crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-003.h
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-row-002.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-row-003.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
-crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_align-items-invalid.html [ Failure ]
-crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_align-self-invalid.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-basis-0percent.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-shorthand-number.html [ Failure ]
 crbug.com/467127 [ Mac Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
