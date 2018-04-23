@@ -88,6 +88,12 @@ void SyncBackendHostImpl::UpdateCredentials(
                             credentials));
 }
 
+void SyncBackendHostImpl::InvalidateCredentials() {
+  sync_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SyncBackendHostCore::DoInvalidateCredentials, core_));
+}
+
 void SyncBackendHostImpl::StartConfiguration() {
   sync_task_runner_->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::DoStartConfiguration, core_));

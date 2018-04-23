@@ -186,7 +186,9 @@ class ServerConnectionManager {
     client_id_.assign(client_id);
   }
 
-  // Sets a new auth token and time.
+  // Sets a new auth token. If |auth_token| is empty, the current token is
+  // invalidated and cleared. Returns false if the server is in authentication
+  // error state.
   bool SetAuthToken(const std::string& auth_token);
 
   bool HasInvalidAuthToken() { return auth_token_.empty(); }

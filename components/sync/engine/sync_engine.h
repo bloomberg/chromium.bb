@@ -98,8 +98,13 @@ class SyncEngine : public ModelTypeConfigurer {
   // Inform the engine to trigger a sync cycle for |types|.
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
 
-  // Updates the engine's SyncCredentials.
+  // Updates the engine's SyncCredentials. The credentials must be fully
+  // specified (account ID, sync token and scope). To invalidate the credentials
+  // use InvalisateCredentials() instead.
   virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;
+
+  // Invalidates the SyncCredentials.
+  virtual void InvalidateCredentials() = 0;
 
   // Switches sync engine into configuration mode. In this mode only initial
   // data for newly enabled types is downloaded from server. No local changes

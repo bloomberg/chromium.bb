@@ -305,6 +305,9 @@ class SyncManager {
   // Update tokens that we're using in Sync. Email must stay the same.
   virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;
 
+  // Clears the authentication tokens.
+  virtual void InvalidateCredentials() = 0;
+
   // Put the syncer in normal mode ready to perform nudges and polls.
   virtual void StartSyncingNormally(base::Time last_poll_time) = 0;
 

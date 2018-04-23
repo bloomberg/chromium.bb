@@ -32,6 +32,8 @@ class FakeSyncEngine : public SyncEngine {
 
   void UpdateCredentials(const SyncCredentials& credentials) override;
 
+  void InvalidateCredentials() override;
+
   void StartConfiguration() override;
 
   void StartSyncingWithServer() override;
