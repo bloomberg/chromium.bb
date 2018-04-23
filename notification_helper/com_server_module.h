@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_NOTIFICATION_HELPER_COM_SERVER_MODULE_H_
-#define CHROME_NOTIFICATION_HELPER_COM_SERVER_MODULE_H_
+#ifndef NOTIFICATION_HELPER_COM_SERVER_MODULE_H_
+#define NOTIFICATION_HELPER_COM_SERVER_MODULE_H_
 
 #include "base/synchronization/waitable_event.h"
 #include "base/win/windows_types.h"
@@ -51,4 +51,4 @@ class ComServerModule {
 
 }  // namespace notification_helper
 
-#endif  // CHROME_NOTIFICATION_HELPER_COM_SERVER_MODULE_H_
+#endif  // NOTIFICATION_HELPER_COM_SERVER_MODULE_H_

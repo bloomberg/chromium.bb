@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_NOTIFICATION_HELPER_NOTIFICATION_ACTIVATOR_H_
-#define CHROME_NOTIFICATION_HELPER_NOTIFICATION_ACTIVATOR_H_
+#ifndef NOTIFICATION_HELPER_NOTIFICATION_ACTIVATOR_H_
+#define NOTIFICATION_HELPER_NOTIFICATION_ACTIVATOR_H_
 
 #include <NotificationActivationCallback.h>
 #include <wrl/implements.h>
@@ -39,4 +39,4 @@ class NotificationActivator
 
 }  // namespace notification_helper
 
-#endif  // CHROME_NOTIFICATION_HELPER_NOTIFICATION_ACTIVATOR_H_
+#endif  // NOTIFICATION_HELPER_NOTIFICATION_ACTIVATOR_H_
