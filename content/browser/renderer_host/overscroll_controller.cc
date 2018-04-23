@@ -17,6 +17,10 @@ namespace content {
 
 namespace {
 
+// Minimum amount of time after an actual scroll, in seconds, after which a
+// pull-to-refresh can start.
+constexpr double kPullToRefreshCoolOffDelaySeconds = .6;
+
 bool IsGestureEventFromTouchpad(const blink::WebInputEvent& event) {
   DCHECK(blink::WebInputEvent::IsGestureEventType(event.GetType()));
   const blink::WebGestureEvent& gesture =
@@ -93,9 +97,6 @@ bool OverscrollController::ShouldIgnoreInertialEvent(
 }
 
 bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
-    ignore_following_inertial_events_ = false;
-
   if (!ShouldProcessEvent(event))
     return false;
 
@@ -104,8 +105,19 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
   if (event.GetType() == blink::WebInputEvent::kMouseWheel)
     return false;
 
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
-      event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+    ignore_following_inertial_events_ = false;
+    time_since_last_ignored_scroll_ =
+        event.TimeStampSeconds() - last_ignored_scroll_time_;
+    // Will handle events when processing ACKs to ensure the correct order.
+    return false;
+  }
+
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
+    if (scroll_state_ == ScrollState::CONTENT_CONSUMING ||
+        overscroll_ignored_) {
+      last_ignored_scroll_time_ = event.TimeStampSeconds();
+    }
     // Will handle events when processing ACKs to ensure the correct order.
     return false;
   }
@@ -473,7 +485,9 @@ bool OverscrollController::ProcessOverscroll(float delta_x,
     if (ptr_mode == OverscrollConfig::PullToRefreshMode::kDisabled ||
         (ptr_mode ==
              OverscrollConfig::PullToRefreshMode::kEnabledTouchschreen &&
-         is_touchpad)) {
+         is_touchpad) ||
+        time_since_last_ignored_scroll_ < kPullToRefreshCoolOffDelaySeconds) {
+      overscroll_ignored_ = true;
       new_mode = OVERSCROLL_NONE;
     }
   }

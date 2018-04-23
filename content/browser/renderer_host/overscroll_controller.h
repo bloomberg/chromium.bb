@@ -165,6 +165,17 @@ class CONTENT_EXPORT OverscrollController {
   // scroll-update events. These events need to be ignored.
   bool ignore_following_inertial_events_ = false;
 
+  // Specifies whether last overscroll was ignored, either due to a command line
+  // flag or because cool off period had not passed.
+  bool overscroll_ignored_ = false;
+
+  // Timestamp for the end of the last ignored scroll sequence, in seconds.
+  double last_ignored_scroll_time_ = 0.;
+
+  // Time between the end of the last ignored scroll sequence and the beginning
+  // of the current one, in seconds.
+  double time_since_last_ignored_scroll_ = 0.;
+
   DISALLOW_COPY_AND_ASSIGN(OverscrollController);
 };
 
