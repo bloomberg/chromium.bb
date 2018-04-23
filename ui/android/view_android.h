@@ -197,6 +197,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   bool OnGestureEvent(const GestureEventAndroid& event);
 
   void RemoveChild(ViewAndroid* child);
+  void RemoveAllChildren();
 
   void OnAttachedToWindow();
   void OnDetachedFromWindow();
