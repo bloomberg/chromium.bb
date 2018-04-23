@@ -265,9 +265,27 @@ void SetValue(std::map<int, T>* map, int tab_id, const T& val) {
 }
 ```
 
-This adds the image to a map, with `tab_id` as the key. Next, we use codesearch
-to look at all places that touch `icon_`. The only place that performs removal
-is
+The icon is being added to a map `icon_`, with `tab_id` as the key. Ah ha!
+Adding elements to a container [and never removing them] is one of the most
+common sources of memory issues.
+
+There are two ways for this memory to be released - the container `icon_` can be
+destroyed, or the element can be removed from the container.
+
+`icon_` is a member of `ExtensionAction`, whose documentation reads:
+```
+// ExtensionAction encapsulates the state of a browser action or page action.
+// Instances can have both global and per-tab state. If a property does not have
+// a per-tab value, the global value is used instead.
+```
+
+This suggests that the lifetime of `icon_` is tied to the lifetime of the
+ExtensionAction, which we can guess is tied to the lifetime of the Extension. As
+long as the extension stays installed and enabled, `icon_` will not be
+destroyed.
+
+Next, we use codesearch to look at all code that removes elements from `icon_`.
+The only place that performs removal is
 
 ```
 void ExtensionAction::ClearAllValuesForTab(int tab_id) {
@@ -278,8 +296,6 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
 ```
 
 This is called by `ExtensionActionAPI::ClearAllValuesForTab`, which is called by
-`TabHelper::DidFinishNavigation`.  Now we've reached the root of the problem.
-The icon is set for [potentially] all tabs, but is only removed when a tab
-"finishes navigation". If instead a tab is closed, then the icon is leaked
-forever.
-
+`TabHelper::DidFinishNavigation`. The name of this method suggests that each
+time a tab is navigated, the previous tab-specific icon is cleared. However,
+that means that if a tab is closed, then the icon is leaked forever.
