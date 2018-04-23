@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "device/fido/virtual_u2f_device.h"
 
 namespace device {
 namespace test {
@@ -26,7 +27,7 @@ class VirtualFidoDeviceDiscovery : public FidoDiscovery {
 
  protected:
   void StartInternal() override {
-    auto device = std::make_unique<VirtualFidoDevice>(state_);
+    auto device = std::make_unique<VirtualU2fDevice>(state_);
     AddDevice(std::move(device));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

@@ -17,7 +17,9 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "device/fido/fido_device.h"
+#include "net/cert/x509_util.h"
 
 namespace crypto {
 class ECPrivateKey;
@@ -49,7 +51,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   // Stores the state of the device. Since |U2fDevice| objects only persist for
   // the lifetime of a single request, keeping state in an external object is
-  // neccessary in order to provide continuity between requests.
+  // necessary in order to provide continuity between requests.
   class COMPONENT_EXPORT(DEVICE_FIDO) State : public base::RefCounted<State> {
    public:
     State();
@@ -93,27 +95,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   State* mutable_state() { return state_.get(); }
 
  protected:
+  static std::vector<uint8_t> GetAttestationKey();
+
+  static bool Sign(crypto::ECPrivateKey* private_key,
+                   base::span<const uint8_t> sign_buffer,
+                   std::vector<uint8_t>* signature);
+
+  // Constructs certificate encoded in X.509 format to be used for packed
+  // attestation statement and FIDO-U2F attestation statement.
+  // https://w3c.github.io/webauthn/#defined-attestation-formats
+  base::Optional<std::vector<uint8_t>> GenerateAttestationCertificate(
+      bool individual_attestation_requested) const;
+
   // FidoDevice:
   void TryWink(WinkCallback cb) override;
-  void Cancel() override;
   std::string GetId() const override;
-  void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
-  base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
  private:
-  base::Optional<std::vector<uint8_t>> DoRegister(
-      uint8_t ins,
-      uint8_t p1,
-      uint8_t p2,
-      base::span<const uint8_t> data);
-
-  base::Optional<std::vector<uint8_t>> DoSign(uint8_t ins,
-                                              uint8_t p1,
-                                              uint8_t p2,
-                                              base::span<const uint8_t> data);
-
-  scoped_refptr<State> state_;
-  base::WeakPtrFactory<FidoDevice> weak_factory_;
+  scoped_refptr<State> state_ = base::MakeRefCounted<State>();
 
   DISALLOW_COPY_AND_ASSIGN(VirtualFidoDevice);
 };
