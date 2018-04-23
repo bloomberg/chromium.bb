@@ -52,8 +52,6 @@ const CGFloat kButtonTrailingSpacing = 10;
     // Setup trailing button.
     _trailingButton = [[UIButton alloc] init];
     _trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [_trailingButton setImage:[UIImage imageNamed:@"toolbar_share"]
-                     forState:UIControlStateNormal];
 
     // Setup label.
     _locationLabel.lineBreakMode = NSLineBreakByTruncatingHead;
@@ -119,15 +117,6 @@ const CGFloat kButtonTrailingSpacing = 10;
     [NSLayoutConstraint activateConstraints:_showButtonConstraints];
   }
   return self;
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  BOOL shouldHide = (self.traitCollection.horizontalSizeClass ==
-                     UIUserInterfaceSizeClassRegular) &&
-                    (self.traitCollection.verticalSizeClass ==
-                     UIUserInterfaceSizeClassRegular);
-  [self hideButton:shouldHide];
 }
 
 - (void)hideButton:(BOOL)hidden {

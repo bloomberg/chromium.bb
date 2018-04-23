@@ -31,6 +31,8 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/web/public/referrer.h"
 #include "url/gurl.h"
@@ -97,8 +99,12 @@ const int kLocationAuthorizationStatusCount = 4;
           tintColor:tintColor];
   self.viewController.incognito = isIncognito;
   self.viewController.delegate = self;
-  self.viewController.dispatcher =
-      static_cast<id<ActivityServiceCommands>>(self.dispatcher);
+  self.viewController.dispatcher = static_cast<
+      id<ActivityServiceCommands, BrowserCommands, ApplicationCommands>>(
+      self.dispatcher);
+  self.viewController.voiceSearchEnabled = ios::GetChromeBrowserProvider()
+                                               ->GetVoiceSearchProvider()
+                                               ->IsVoiceSearchEnabled();
 
   _editController = std::make_unique<WebOmniboxEditControllerImpl>(self);
   _editController->SetURLLoader(self);
