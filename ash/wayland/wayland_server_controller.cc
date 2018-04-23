@@ -10,7 +10,7 @@
 #include "ash/public/cpp/config.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
@@ -23,7 +23,7 @@ class WaylandServerController::WaylandWatcher
  public:
   explicit WaylandWatcher(exo::wayland::Server* server)
       : controller_(FROM_HERE), server_(server) {
-    base::MessageLoopForUI::current()->WatchFileDescriptor(
+    base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
         server_->GetFileDescriptor(),
         true,  // persistent
         base::MessagePumpLibevent::WATCH_READ, &controller_, this);
