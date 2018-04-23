@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -646,7 +647,7 @@ class ByteAtATimeUploadElementReader : public net::UploadElementReader {
     if (!BytesRemaining())
       return net::OK;
 
-    base::MessageLoop::current()->task_runner()->PostTask(
+    base::MessageLoopCurrent::Get()->task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ByteAtATimeUploadElementReader::ReadImpl,
                        base::Unretained(this), base::WrapRefCounted(buf),
