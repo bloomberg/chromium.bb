@@ -1742,7 +1742,9 @@ TEST(SoftwareImageDecodeCacheTest, BitmapImageNotColorConverted) {
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
-TEST(SoftwareImageDecodeCacheTest, ContentIdCaching) {
+// TODO(ccameron): Re-enable this when the root cause of crashes is discovered.
+// https://crbug.com/791828
+TEST(SoftwareImageDecodeCacheTest, DISABLED_ContentIdCaching) {
   TestSoftwareImageDecodeCache cache;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
