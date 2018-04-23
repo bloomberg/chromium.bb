@@ -45,21 +45,12 @@
 
 namespace blink {
 
-// For a SetTarget event, if the relative difference between the current value
-// and the target value is less than this, consider them the same and just
-// output the target value.  This value MUST be larger than the single precision
-// epsilon of 5.960465e-8.  Due to round-off, this value is not achievable in
-// general.  This value can vary across the platforms (CPU) and thus it is
-// determined experimentally.
-const float kSetTargetThreshold = 1.5e-6;
-
-// For a SetTarget event, if the target value is 0, and the current value is
-// less than this threshold, consider the curve to have converged to 0.  We need
-// a separate case from kSetTargetThreshold because that uses relative error,
-// which is never met if the target value is 0, a common case.  This value MUST
-// be larger than least positive normalized single precision
-// value (1.1754944e-38) because we normally operate with flush-to-zero enabled.
-const float kSetTargetZeroThreshold = 1e-20;
+// For a SetTarget event, we want the event to terminate eventually so that
+// we can stop using the timeline to compute the values.  See
+// |HasSetTargetConverged()| for the algorithm.  |kSetTargetThreshold| is
+// exp(-kTimeConstantsToConverge).
+const float kTimeConstantsToConverge = 10;
+const float kSetTargetThreshold = 4.539992976248485e-05;
 
 static bool IsNonNegativeAudioParamTime(double time,
                                         ExceptionState& exception_state,
@@ -1149,31 +1140,28 @@ void AudioParamTimeline::ClampNewEventsToCurrentTime(double current_time) {
 // converged to the target.
 static bool HasSetTargetConverged(float value,
                                   float target,
-                                  float discrete_time_constant) {
-  // Let c = |discrete_time_constant|.  Then SetTarget computes
-  //
-  // new value = value + (target - value) * c
-  //           = value * (1 + (target - value)*c/value)
-  //
-  // We consider the value converged if (target - value) * c is
-  // sufficiently small so as not to change value.  This happens if
-  // (target-value)*c/value is a small value, say, eps.  Thus, we've converged
-  // if
-  //
-  //   |(target-value)*c/value| < eps
-  // or
-  //   |target-value|*c < eps*|value|
-  //
-  // However, if target is zero, we need to be careful:
-  //
-  //   new value = value + (0 - value) * c
-  //             = value * (1 - c)
-  //
-  // So the new value is sufficiently close to zero if |value|*(1-c)
-  // is close enough to zero.
-  return fabs(target - value) * discrete_time_constant <
-             kSetTargetThreshold * fabs(value) ||
-         (target == 0 && fabs(value) < kSetTargetZeroThreshold);
+                                  double current_time,
+                                  double start_time,
+                                  double time_constant) {
+  // Converged if enough time constants (|kTimeConstantsToConverge|) have passed
+  // since the start of the event.
+  if (current_time > start_time + kTimeConstantsToConverge * time_constant) {
+    return true;
+  }
+
+  // If |target| is 0, converged if |value| is less than |kSetTargetThreshold|.
+  if (target == 0 && fabs(value) < kSetTargetThreshold) {
+    return true;
+  }
+
+  // If |target| is not zero, converged if relative difference betwenn |value|
+  // and |target| is small.  That is |target-value|/|target| <
+  // |kSetTargetThreshold|.
+  if (target != 0 && fabs(target - value) < kSetTargetThreshold * fabs(value)) {
+    return true;
+  }
+
+  return false;
 }
 
 bool AudioParamTimeline::HandleAllEventsInThePast(double current_time,
@@ -1198,12 +1186,9 @@ bool AudioParamTimeline::HandleAllEventsInThePast(double current_time,
     // we're at least 5 time constants past the start of the event.  If not, we
     // have to continue processing it.
     if (last_event_type == ParamEvent::kSetTarget) {
-      float discrete_time_constant =
-          static_cast<float>(AudioUtilities::DiscreteTimeConstantForSampleRate(
-              last_event->TimeConstant(), sample_rate));
       if (HasSetTargetConverged(default_value, last_event->Value(),
-                                discrete_time_constant) &&
-          current_time > last_event_time + 5 * last_event->TimeConstant()) {
+                                current_time, last_event_time,
+                                last_event->TimeConstant())) {
         // We've converged. Slam the default value with the target value.
         default_value = last_event->Value();
       } else {
@@ -1571,7 +1556,8 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessSetTarget(
 
   // If the value is close enough to the target, just fill in the data
   // with the target value.
-  if (HasSetTargetConverged(value, target, discrete_time_constant)) {
+  if (HasSetTargetConverged(value, target, current_frame / sample_rate, time1,
+                            time_constant)) {
     for (; write_index < fill_to_frame; ++write_index)
       values[write_index] = target;
   } else {
