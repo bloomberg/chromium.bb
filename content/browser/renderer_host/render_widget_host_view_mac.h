@@ -334,7 +334,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                                             uint32_t* index) override;
   void OnNSViewSyncGetFirstRectForRange(const gfx::Range& requested_range,
                                         gfx::Rect* rect,
-                                        gfx::Range* actual_range) override;
+                                        gfx::Range* actual_range,
+                                        bool* success) override;
   void OnNSViewExecuteEditCommand(const std::string& command) override;
   void OnNSViewUndo() override;
   void OnNSViewRedo() override;

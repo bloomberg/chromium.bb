@@ -1540,7 +1540,13 @@ void RenderWidgetHostViewMac::OnNSViewSyncGetCharacterIndexAtPoint(
 void RenderWidgetHostViewMac::OnNSViewSyncGetFirstRectForRange(
     const gfx::Range& requested_range,
     gfx::Rect* rect,
-    gfx::Range* actual_range) {
+    gfx::Range* actual_range,
+    bool* success) {
+  if (!GetFocusedWidget()) {
+    *success = false;
+    return;
+  }
+  *success = true;
   if (!GetCachedFirstRectForCharacterRange(requested_range, rect,
                                            actual_range)) {
     *rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
