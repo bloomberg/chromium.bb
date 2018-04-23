@@ -210,12 +210,14 @@ class ReceiverPresentationConnection final : public PresentationConnection {
   // PresentationConnection override
   void DidChangeState(mojom::blink::PresentationConnectionState) override;
 
-  // Changes |state_| to TERMINATED and notifies |target_connection_|.
-  void OnReceiverTerminated();
-
  private:
   // PresentationConnection implementation.
   void DoClose() override;
+
+  // Changes the presentation state to TERMINATED and notifies the sender
+  // connection. This method does not dispatch a state change event to the page.
+  // This method is only suitable for use when the presentation receiver frame
+  // containing the connection object is going away.
   void DoTerminate() override;
 
   Member<PresentationReceiver> receiver_;

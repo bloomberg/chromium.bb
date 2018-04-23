@@ -7,7 +7,6 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/presentation/web_presentation_receiver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
@@ -22,7 +21,6 @@ namespace blink {
 class Document;
 class PresentationConnectionList;
 class ReceiverPresentationConnection;
-class WebPresentationClient;
 
 // Implements the PresentationReceiver interface from the Presentation API from
 // which websites can implement the receiving side of a presentation. This needs
@@ -31,7 +29,6 @@ class WebPresentationClient;
 class MODULES_EXPORT PresentationReceiver final
     : public ScriptWrappable,
       public ContextLifecycleObserver,
-      public WebPresentationReceiver,
       public mojom::blink::PresentationReceiver {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
   DEFINE_WRAPPERTYPEINFO();
@@ -41,19 +38,13 @@ class MODULES_EXPORT PresentationReceiver final
                             Member<DOMException>>;
 
  public:
-  PresentationReceiver(LocalFrame*, WebPresentationClient*);
+  explicit PresentationReceiver(LocalFrame*);
   ~PresentationReceiver() = default;
 
   static PresentationReceiver* From(Document&);
 
   // PresentationReceiver.idl implementation
   ScriptPromise connectionList(ScriptState*);
-
-  // WebPresentationReceiver implementation.
-  // Initializes the PresentationReceiver Mojo binding and registers itself as
-  // a receiver with PresentationService. No-ops if already initialized.
-  void Init() override;
-  void OnReceiverTerminated() override;
 
   // mojom::blink::PresentationReceiver
   void OnReceiverConnectionAvailable(
@@ -80,7 +71,6 @@ class MODULES_EXPORT PresentationReceiver final
 
   mojo::Binding<mojom::blink::PresentationReceiver> receiver_binding_;
   mojom::blink::PresentationServicePtr presentation_service_;
-  WebPresentationClient* client_;
 };
 
 }  // namespace blink

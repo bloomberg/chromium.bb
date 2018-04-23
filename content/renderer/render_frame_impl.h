@@ -112,7 +112,6 @@ class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebLayerTreeView;
 class WebLocalFrame;
-class WebPresentationClient;
 class WebPushClient;
 class WebRelatedAppsFetcher;
 class WebSecurityOrigin;
@@ -159,7 +158,6 @@ class MediaPermissionDispatcher;
 class MediaStreamDeviceObserver;
 class NavigationState;
 class PepperPluginInstanceImpl;
-class PresentationDispatcher;
 class PushMessagingClient;
 class RelatedAppsFetcher;
 class RenderAccessibilityImpl;
@@ -718,7 +716,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                  int active_match_ordinal,
                                  const blink::WebRect& sel) override;
   blink::WebPushClient* PushClient() override;
-  blink::WebPresentationClient* PresentationClient() override;
   blink::WebRelatedAppsFetcher* GetRelatedAppsFetcher() override;
   void WillStartUsingPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandler* handler) override;
@@ -1474,10 +1471,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The media permission dispatcher attached to this frame.
   std::unique_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;
-
-  // The presentation dispatcher implementation attached to this frame, lazily
-  // initialized.
-  PresentationDispatcher* presentation_dispatcher_;
 
   // The PushMessagingClient attached to this frame, lazily initialized.
   PushMessagingClient* push_messaging_client_;

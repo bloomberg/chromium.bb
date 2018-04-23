@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 
 #include <memory>
-#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -19,21 +18,12 @@
 
 namespace blink {
 
-PresentationController::PresentationController(LocalFrame& frame,
-                                               WebPresentationClient* client)
+PresentationController::PresentationController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
       ContextLifecycleObserver(frame.GetDocument()),
-      client_(client),
       controller_binding_(this) {}
 
 PresentationController::~PresentationController() = default;
-
-// static
-PresentationController* PresentationController::Create(
-    LocalFrame& frame,
-    WebPresentationClient* client) {
-  return new PresentationController(frame, client);
-}
 
 // static
 const char PresentationController::kSupplementName[] = "PresentationController";
@@ -44,14 +34,8 @@ PresentationController* PresentationController::From(LocalFrame& frame) {
 }
 
 // static
-void PresentationController::ProvideTo(LocalFrame& frame,
-                                       WebPresentationClient* client) {
-  Supplement<LocalFrame>::ProvideTo(
-      frame, PresentationController::Create(frame, client));
-}
-
-WebPresentationClient* PresentationController::Client() {
-  return client_;
+void PresentationController::ProvideTo(LocalFrame& frame) {
+  Supplement<LocalFrame>::ProvideTo(frame, new PresentationController(frame));
 }
 
 // static
@@ -66,14 +50,6 @@ PresentationController* PresentationController::FromContext(
     return nullptr;
 
   return PresentationController::From(*document->GetFrame());
-}
-
-// static
-WebPresentationClient* PresentationController::ClientFromContext(
-    ExecutionContext* execution_context) {
-  PresentationController* controller =
-      PresentationController::FromContext(execution_context);
-  return controller ? controller->Client() : nullptr;
 }
 
 void PresentationController::Trace(blink::Visitor* visitor) {
@@ -151,7 +127,6 @@ void PresentationController::OnDefaultPresentationStarted(
 }
 
 void PresentationController::ContextDestroyed(ExecutionContext*) {
-  client_ = nullptr;
   controller_binding_.Close();
 }
 

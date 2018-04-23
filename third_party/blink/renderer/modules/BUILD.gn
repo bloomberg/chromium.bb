@@ -288,7 +288,6 @@ jumbo_source_set("unit_tests") {
     "peerconnection/rtc_data_channel_test.cc",
     "peerconnection/rtc_peer_connection_test.cc",
     "presentation/mock_presentation_service.h",
-    "presentation/mock_web_presentation_client.h",
     "presentation/presentation_availability_state_test.cc",
     "presentation/presentation_availability_test.cc",
     "presentation/presentation_receiver_test.cc",

@@ -8,7 +8,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -27,8 +26,8 @@ class ControllerPresentationConnection;
 class PresentationAvailabilityObserver;
 class PresentationAvailabilityState;
 
-// The coordinator between the various page exposed properties and the content
-// layer represented via |WebPresentationClient|.
+// Implements the PresentationController interface from the Presentation API
+// from which websites can implement the controlling side of a presentation.
 class MODULES_EXPORT PresentationController
     : public GarbageCollectedFinalized<PresentationController>,
       public Supplement<LocalFrame>,
@@ -42,14 +41,10 @@ class MODULES_EXPORT PresentationController
 
   ~PresentationController() override;
 
-  static PresentationController* Create(LocalFrame&, WebPresentationClient*);
-
   static PresentationController* From(LocalFrame&);
 
-  static void ProvideTo(LocalFrame&, WebPresentationClient*);
+  static void ProvideTo(LocalFrame&);
 
-  WebPresentationClient* Client();
-  static WebPresentationClient* ClientFromContext(ExecutionContext*);
   static PresentationController* FromContext(ExecutionContext*);
 
   // Implementation of Supplement.
@@ -84,7 +79,7 @@ class MODULES_EXPORT PresentationController
   virtual void RemoveAvailabilityObserver(PresentationAvailabilityObserver*);
 
  protected:
-  PresentationController(LocalFrame&, WebPresentationClient*);
+  PresentationController(LocalFrame&);
 
  private:
   // Implementation of ContextLifecycleObserver.
@@ -108,12 +103,6 @@ class MODULES_EXPORT PresentationController
 
   // Lazily-instantiated when the page queries for availability.
   std::unique_ptr<PresentationAvailabilityState> availability_state_;
-
-  // The WebPresentationClient which allows communicating with the embedder.
-  // It is not owned by the PresentationController but the controller will
-  // set it to null when the LocalFrame will be detached at which point the
-  // client can't be used.
-  WebPresentationClient* client_;
 
   // The Presentation instance associated with that frame.
   WeakMember<Presentation> presentation_;

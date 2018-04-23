@@ -170,7 +170,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
-    PresentationController::ProvideTo(frame, client->PresentationClient());
+    PresentationController::ProvideTo(frame);
   if (RuntimeEnabledFeatures::AudioOutputDevicesEnabled()) {
     ProvideAudioOutputDeviceClientTo(frame,
                                      new AudioOutputDeviceClientImpl(frame));
@@ -233,7 +233,8 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
     NavigatorVR::From(document);
   if (RuntimeEnabledFeatures::PresentationEnabled() &&
       settings.GetPresentationReceiver()) {
-    // Call this in order to ensure the object is created.
+    // We eagerly create PresentationReceiver so that the frame creating the
+    // presentation can offer a connection to the presentation receiver.
     PresentationReceiver::From(document);
   }
 }

@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -25,15 +24,16 @@
 
 namespace blink {
 
-PresentationReceiver::PresentationReceiver(LocalFrame* frame,
-                                           WebPresentationClient* client)
+PresentationReceiver::PresentationReceiver(LocalFrame* frame)
     : ContextLifecycleObserver(frame->GetDocument()),
-      receiver_binding_(this),
-      client_(client) {
-  connection_list_ = new PresentationConnectionList(frame->GetDocument());
+      connection_list_(new PresentationConnectionList(frame->GetDocument())),
+      receiver_binding_(this) {
+  auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
+  interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));
 
-  if (client)
-    client->SetReceiver(this);
+  mojom::blink::PresentationReceiverPtr receiver_ptr;
+  receiver_binding_.Bind(mojo::MakeRequest(&receiver_ptr));
+  presentation_service_->SetReceiver(std::move(receiver_ptr));
 }
 
 // static
@@ -61,22 +61,6 @@ ScriptPromise PresentationReceiver::connectionList(ScriptState* script_state) {
     connection_list_property_->Resolve(connection_list_);
 
   return connection_list_property_->Promise(script_state->World());
-}
-
-void PresentationReceiver::Init() {
-  DCHECK(!receiver_binding_.is_bound());
-
-  auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
-  interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));
-
-  mojom::blink::PresentationReceiverPtr receiver_ptr;
-  receiver_binding_.Bind(mojo::MakeRequest(&receiver_ptr));
-  presentation_service_->SetReceiver(std::move(receiver_ptr));
-}
-
-void PresentationReceiver::OnReceiverTerminated() {
-  for (auto& connection : connection_list_->connections())
-    connection->OnReceiverTerminated();
 }
 
 void PresentationReceiver::Terminate() {
@@ -140,10 +124,7 @@ void PresentationReceiver::RecordOriginTypeAccess(
 
 void PresentationReceiver::ContextDestroyed(ExecutionContext*) {
   receiver_binding_.Close();
-  if (client_) {
-    client_->SetReceiver(nullptr);
-    client_ = nullptr;
-  }
+  presentation_service_.reset();
 }
 
 void PresentationReceiver::Trace(blink::Visitor* visitor) {
