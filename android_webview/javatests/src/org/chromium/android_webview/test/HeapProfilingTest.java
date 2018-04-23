@@ -34,4 +34,28 @@ public class HeapProfilingTest {
         Assert.assertTrue(
                 shim.runTestForMode("browser", false, "native-include-thread-names", false, false));
     }
+
+    @Test
+    @MediumTest
+    @SkipSingleProcessTests
+    public void testModeBrowserDynamicPseudo() throws Exception {
+        HeapProfilingTestShim shim = new HeapProfilingTestShim();
+        Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", false, false));
+    }
+
+    @Test
+    @MediumTest
+    @SkipSingleProcessTests
+    public void testModeBrowserDynamicPseudoSampleEverything() throws Exception {
+        HeapProfilingTestShim shim = new HeapProfilingTestShim();
+        Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, true));
+    }
+
+    @Test
+    @MediumTest
+    @SkipSingleProcessTests
+    public void testModeBrowserDynamicPseudoSamplePartial() throws Exception {
+        HeapProfilingTestShim shim = new HeapProfilingTestShim();
+        Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, false));
+    }
 }
