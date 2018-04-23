@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -162,6 +163,8 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
 #if DCHECK_IS_ON()
   bool started_loading_ = false;
 #endif  // DCHECK_IS_ON()
+
+  base::WeakPtrFactory<FileReaderLoader> weak_factory_;
 };
 
 }  // namespace blink
