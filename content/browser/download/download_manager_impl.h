@@ -69,7 +69,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       int render_process_id,
       int render_frame_id,
       std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
-      const ukm::SourceId ukm_source_id,
       const DownloadItemImplCreated& item_created);
 
   // DownloadManager functions.
@@ -198,7 +197,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       int render_process_id,
       int render_frame_id,
       std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
-      const ukm::SourceId ukm_source_id,
       const DownloadItemImplCreated& on_started,
       uint32_t id);
 

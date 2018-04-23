@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -70,6 +71,16 @@ namespace {
 SavePackageId GetNextSavePackageId() {
   static int g_save_package_id = 0;
   return SavePackageId::FromUnsafeValue(g_save_package_id++);
+}
+
+// Gets the unique download id for ukm reporting.
+uint64_t GetUniqueDownloadId() {
+  // Get a new UKM download_id that is not 0.
+  uint64_t download_id = 0;
+  do {
+    download_id = base::RandUint64();
+  } while (download_id == 0);
+  return download_id;
 }
 
 // Default name which will be used when we can not get proper name from
@@ -255,6 +266,12 @@ void SavePackage::InternalInit() {
   DCHECK(download_manager_);
 
   download::RecordSavePackageEvent(download::SAVE_PACKAGE_STARTED);
+
+  ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
+  ukm_download_id_ = GetUniqueDownloadId();
+  download::DownloadUkmHelper::RecordDownloadStarted(
+      ukm_download_id_, ukm_source_id_, download::DownloadContent::TEXT,
+      download::DownloadSource::UNKNOWN);
 }
 
 bool SavePackage::Init(
@@ -277,11 +294,8 @@ bool SavePackage::Init(
   std::unique_ptr<download::DownloadRequestHandleInterface> request_handle(
       new SavePackageRequestHandle(AsWeakPtr()));
 
-  // The download manager keeps ownership but adds us as an observer.
-  ukm::SourceId ukm_source_id = ukm::UkmRecorder::GetNewSourceID();
-
   download::DownloadUkmHelper::UpdateSourceURL(
-      ukm::UkmRecorder::Get(), ukm_source_id,
+      ukm::UkmRecorder::Get(), ukm_source_id_,
       web_contents()->GetLastCommittedURL());
   RenderFrameHost* frame_host = web_contents()->GetMainFrame();
   download_manager_->CreateSavePackageDownloadItem(
@@ -289,7 +303,7 @@ bool SavePackage::Init(
       ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ? "multipart/related"
                                                : "text/html"),
       frame_host->GetProcess()->GetID(), frame_host->GetRoutingID(),
-      std::move(request_handle), std::move(ukm_source_id),
+      std::move(request_handle),
       base::Bind(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
                  download_created_callback));
   return true;
@@ -692,6 +706,10 @@ void SavePackage::Finish() {
 
   // Record finish.
   download::RecordSavePackageEvent(download::SAVE_PACKAGE_FINISHED);
+
+  // TODO(qinmin): report the actual file size and duration for the download.
+  download::DownloadUkmHelper::RecordDownloadCompleted(ukm_download_id_, 1,
+                                                       base::TimeDelta(), 0);
 
   // Record any errors that occurred.
   if (wrote_to_completed_file_)

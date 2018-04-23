@@ -473,9 +473,8 @@ void DownloadManagerImpl::SetDelegate(DownloadManagerDelegate* delegate) {
   // If initialization has not occurred and there's a delegate and cache,
   // initialize and indicate initialization is complete. Else, just indicate it
   // is ok to continue.
-  if (initialized_ || in_progress_cache_initialized_)
-    return;
-
+  // TODO(qinmin): if |delegate_| changes, the logic here is very prone to
+  // errors. DownloadManagerImpl should own the in-progress cache.
   base::RepeatingClosure post_init_callback = base::BindRepeating(
       &DownloadManagerImpl::PostInitialization, weak_factory_.GetWeakPtr(),
       DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE);
@@ -484,6 +483,8 @@ void DownloadManagerImpl::SetDelegate(DownloadManagerDelegate* delegate) {
     download::InProgressCache* in_progress_cache =
         delegate_->GetInProgressCache();
     if (in_progress_cache) {
+      in_progress_download_observer_ =
+          std::make_unique<InProgressDownloadObserver>(in_progress_cache);
       in_progress_cache->Initialize(std::move(post_init_callback));
       return;
     }
@@ -659,15 +660,11 @@ void DownloadManagerImpl::StartDownloadWithId(
             *download, info->request_origin, info->download_source,
             info->fetch_error_body, info->request_headers));
       }
-    }
 
-    if (!in_progress_download_observer_) {
-      in_progress_download_observer_.reset(
-          new InProgressDownloadObserver(delegate_->GetInProgressCache()));
+      // May already observe this item, remove observer first.
+      download->RemoveObserver(in_progress_download_observer_.get());
+      download->AddObserver(in_progress_download_observer_.get());
     }
-    // May already observe this item, remove observer first.
-    download->RemoveObserver(in_progress_download_observer_.get());
-    download->AddObserver(in_progress_download_observer_.get());
   }
 
   std::unique_ptr<download::DownloadFile> download_file;
@@ -750,14 +747,13 @@ void DownloadManagerImpl::CreateSavePackageDownloadItem(
     int render_process_id,
     int render_frame_id,
     std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
-    const ukm::SourceId ukm_source_id,
     const DownloadItemImplCreated& item_created) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetNextId(base::Bind(
-      &DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
-      weak_factory_.GetWeakPtr(), main_file_path, page_url, mime_type,
-      render_process_id, render_frame_id,
-      base::Passed(std::move(request_handle)), ukm_source_id, item_created));
+  GetNextId(
+      base::Bind(&DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
+                 weak_factory_.GetWeakPtr(), main_file_path, page_url,
+                 mime_type, render_process_id, render_frame_id,
+                 base::Passed(std::move(request_handle)), item_created));
 }
 
 void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
@@ -767,7 +763,6 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     int render_process_id,
     int render_frame_id,
     std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
-    const ukm::SourceId ukm_source_id,
     const DownloadItemImplCreated& item_created,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -785,23 +780,6 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     observer.OnDownloadCreated(this, download_item);
   if (!item_created.is_null())
     item_created.Run(download_item);
-
-  // Add download_id and source_id for UKM.
-  auto* delegate = GetDelegate();
-  if (delegate) {
-    download::InProgressCache* in_progress_cache =
-        delegate_->GetInProgressCache();
-    if (in_progress_cache) {
-      base::Optional<download::DownloadEntry> entry_opt =
-          in_progress_cache->RetrieveEntry(download_item->GetGuid());
-      if (!entry_opt.has_value()) {
-        in_progress_cache->AddOrReplaceEntry(CreateDownloadEntryFromItem(
-            *download_item, std::string(),            /* request_origin */
-            download::DownloadSource::UNKNOWN, false, /* fetch_error_body */
-            download::DownloadUrlParameters::RequestHeadersType()));
-      }
-    }
-  }
 }
 
 // Resume a download of a specific URL. We send the request to the
