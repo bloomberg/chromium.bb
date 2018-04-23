@@ -188,39 +188,6 @@ public class FirstRunFlowSequencerTest {
 
     @Test
     @Feature({"FirstRun"})
-    public void testStandardFlowTosSeenOneAccount() {
-        Account[] accounts = new Account[1];
-        accounts[0] = new Account(DEFAULT_ACCOUNT, GOOGLE_ACCOUNT_TYPE);
-        mSequencer.isFirstRunFlowComplete = false;
-        mSequencer.isSignedIn = false;
-        mSequencer.isSyncAllowed = true;
-        mSequencer.googleAccounts = accounts;
-        mSequencer.hasAnyUserSeenToS = true;
-        mSequencer.shouldSkipFirstUseHints = false;
-        mSequencer.shouldShowDataReductionPage = false;
-        mSequencer.initializeSharedState(
-                false /* androidEduDevice */, ChildAccountStatus.NOT_CHILD);
-
-        mSequencer.processFreEnvironmentPreNative();
-        assertTrue(mSequencer.calledOnFlowIsKnown);
-        assertTrue(mSequencer.calledSetDefaultMetricsAndCrashReporting);
-        assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
-
-        Bundle bundle = mSequencer.returnedBundle;
-        assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_WELCOME_PAGE));
-        assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_SIGNIN_PAGE));
-        assertFalse(bundle.getBoolean(FirstRunActivityBase.SHOW_DATA_REDUCTION_PAGE));
-        assertFalse(bundle.getBoolean(FirstRunActivityBase.SHOW_SEARCH_ENGINE_PAGE));
-        assertEquals(ChildAccountStatus.NOT_CHILD,
-                bundle.getInt(AccountFirstRunFragment.CHILD_ACCOUNT_STATUS));
-        assertTrue(bundle.getBoolean(AccountFirstRunFragment.PRESELECT_BUT_ALLOW_TO_CHANGE));
-        assertEquals(
-                DEFAULT_ACCOUNT, bundle.getString(AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO));
-        assertEquals(7, bundle.size());
-    }
-
-    @Test
-    @Feature({"FirstRun"})
     public void testStandardFlowOneChildAccount() {
         Account[] accounts = new Account[1];
         accounts[0] = new Account(DEFAULT_ACCOUNT, GOOGLE_ACCOUNT_TYPE);
@@ -246,10 +213,9 @@ public class FirstRunFlowSequencerTest {
         assertFalse(bundle.getBoolean(FirstRunActivityBase.SHOW_SEARCH_ENGINE_PAGE));
         assertEquals(ChildAccountStatus.REGULAR_CHILD,
                 bundle.getInt(AccountFirstRunFragment.CHILD_ACCOUNT_STATUS));
-        assertFalse(bundle.getBoolean(AccountFirstRunFragment.PRESELECT_BUT_ALLOW_TO_CHANGE));
         assertEquals(
                 DEFAULT_ACCOUNT, bundle.getString(AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO));
-        assertEquals(7, bundle.size());
+        assertEquals(6, bundle.size());
     }
 
     @Test
