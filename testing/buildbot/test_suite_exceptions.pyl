@@ -3478,6 +3478,9 @@
       # TODO(dpranke): Clean up all of the unneeded exceptions on
       # chromium.webkit.
       'WebKit Linux Trusty': {
+        'args': [
+          '--zero-tests-executed-ok',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -3489,6 +3492,7 @@
       'WebKit Linux Trusty (dbg)': {
         'args': [
           '--debug',
+          '--zero-tests-executed-ok',
         ],
         'swarming': {
           'dimension_sets': [
@@ -3506,6 +3510,7 @@
           '--time-out-ms',
           '48000',
           '--enable-sanitizer',
+          '--zero-tests-executed-ok',
         ],
         'swarming': {
           'dimension_sets': [
@@ -3523,6 +3528,7 @@
           '--time-out-ms',
           '48000',
           '--enable-leak-detection',
+          '--zero-tests-executed-ok',
         ],
         'swarming': {
           'dimension_sets': [
@@ -3540,6 +3546,7 @@
           '--time-out-ms',
           '66000',
           '--enable-sanitizer',
+          '--zero-tests-executed-ok',
         ],
         'swarming': {
           'dimension_sets': [
@@ -3559,6 +3566,9 @@
         ],
       },
       'WebKit Win10': {
+        'args': [
+          '--zero-tests-executed-ok',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -3568,6 +3578,9 @@
         },
       },
       'WebKit Win7': {
+        'args': [
+          '--zero-tests-executed-ok',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -3577,6 +3590,9 @@
         },
       },
       'WebKit Win7 (dbg)': {
+        'args': [
+          '--zero-tests-executed-ok',
+        ],
         'swarming': {
           'dimension_sets': [
             {
