@@ -86,8 +86,9 @@
                         android:textAppearance="@style/BlackCaption"
                         tools:text="john.doe@example.com"/>
                 </LinearLayout>
+                <!-- For forced sign-in & consent bump this ImageView shows checkmark icon. -->
                 <ImageView
-                    android:id="@+id/expand_icon"
+                    android:id="@+id/account_picker_end_image"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginStart="16dp"

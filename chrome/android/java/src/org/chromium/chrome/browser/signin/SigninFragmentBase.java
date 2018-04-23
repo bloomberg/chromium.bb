@@ -213,6 +213,14 @@ public abstract class SigninFragmentBase
             onSigninRefused();
         });
 
+        if (mForceSignin) {
+            mView.getAccountPickerEndImageView().setImageResource(
+                    R.drawable.ic_check_googblue_24dp);
+            mView.getAccountPickerEndImageView().setAlpha(1.0f);
+            mView.getRefuseButton().setVisibility(View.GONE);
+            mView.getAcceptButtonEndPadding().setVisibility(View.INVISIBLE);
+        }
+
         updateConsentText();
         return mView;
     }
