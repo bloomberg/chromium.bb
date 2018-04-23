@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "chromecast/media/cma/backend/audio_decoder_for_mixer.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
 #include "chromecast/media/cma/backend/video_decoder_for_mixer.h"
 
@@ -21,10 +22,6 @@ namespace {
 // Threshold where the audio and video pts are far enough apart such that we
 // want to do a small correction.
 const int kSoftCorrectionThresholdUs = 16000;
-
-// Threshold where the audio and video pts are far enough apart such that we
-// want to do a hard correction.
-const int kHardCorrectionThresholdUs = 200000;
 
 // When doing a soft correction, we will do so by changing the rate of video
 // playback. These constants define the multiplier in either direction.
@@ -45,6 +42,9 @@ constexpr base::TimeDelta kPlaybackStatisticsCheckInterval =
     base::TimeDelta::FromSeconds(1);
 #endif
 
+// The amount of time we wait after a correction before we start upkeeping the
+// AV sync.
+const int kMinimumWaitAfterCorrectionUs = 200000;
 }  // namespace
 
 std::unique_ptr<AvSync> AvSync::Create(
@@ -66,60 +66,21 @@ AvSyncVideo::AvSyncVideo(
   DCHECK(backend_);
 }
 
-void AvSyncVideo::NotifyAudioBufferPushed(
-    int64_t buffer_timestamp,
-    MediaPipelineBackend::AudioDecoder::RenderingDelay delay) {
-  if (delay.timestamp_microseconds == INT64_MIN ||
-      buffer_timestamp == INT64_MAX)
-    return;
-
-  audio_pts_->AddSample(delay.timestamp_microseconds,
-                        buffer_timestamp - (delay.delay_microseconds), 1.0);
-
-  if (!setup_video_clock_ && backend_->video_decoder()) {
-    int64_t current_apts = buffer_timestamp + backend_->MonotonicClockNow() -
-                           delay.timestamp_microseconds -
-                           delay.delay_microseconds;
-
-    // TODO(almasrymina): If we don't have a valid delay at the start of
-    // playback, we should push silence to the mixer to get a valid delay
-    // before we start content playback.
-    if (current_apts >= 0) {
-      LOG(INFO) << "Setting up video clock. current_apts=" << current_apts
-                << " buffer_timestamp=" << buffer_timestamp
-                << " delay.timestamp_microseconds="
-                << delay.timestamp_microseconds
-                << " delay.delay_microseconds=" << delay.delay_microseconds;
-
-      backend_->video_decoder()->SetCurrentPts(current_apts);
-      current_video_playback_rate_ = 1.0;
-      backend_->video_decoder()->SetPlaybackRate(current_video_playback_rate_);
-      setup_video_clock_ = true;
-      in_soft_correction_ = false;
-      difference_at_start_of_correction_ = 0;
-
-      video_pts_.reset(
-          new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-      error_.reset(
-          new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-#if DCHECK_IS_ON()
-      // TODO(almasrymina): if this logic turns out to be useful for metrics
-      // recording, keep it and remove this TODO. Otherwise remove it.
-      playback_statistics_timer_.Start(FROM_HERE,
-                                       kPlaybackStatisticsCheckInterval, this,
-                                       &AvSyncVideo::GatherPlaybackStatistics);
-#endif
-    }
-  }
-}
-
 void AvSyncVideo::UpkeepAvSync() {
-  if (!backend_->video_decoder()) {
+  if (backend_->MonotonicClockNow() < av_sync_start_timestamp_) {
+    return;
+  }
+
+  if (!backend_->video_decoder() || !backend_->audio_decoder()) {
     VLOG(4) << "No video decoder available.";
     return;
   }
 
-  if (!setup_video_clock_) {
+  // Currently the audio pipeline doesn't seem to return valid values for the
+  // PTS after changing the playback rate.
+  if (last_correction_timestamp_us != INT64_MIN &&
+      backend_->MonotonicClockNow() - last_correction_timestamp_us <
+          kMinimumWaitAfterCorrectionUs) {
     return;
   }
 
@@ -127,11 +88,22 @@ void AvSyncVideo::UpkeepAvSync() {
   int64_t current_apts = 0;
   double error = 0.0;
 
-  int64_t new_current_vpts = backend_->video_decoder()->GetCurrentPts();
+  int64_t new_current_vpts = 0;
+  int64_t timestamp = 0;
+  backend_->video_decoder()->GetCurrentPts(&timestamp, &new_current_vpts);
   if (new_current_vpts != last_vpts_value_recorded_) {
     video_pts_->AddSample(now, new_current_vpts, 1.0);
     last_vpts_value_recorded_ = new_current_vpts;
   }
+
+  // TODO(almasrymina): using GetCurrentPts is vulnerable to pairing it with an
+  // outdated 'now' if the thread gets descheduled in between. We currently see
+  // extraneous corrections on real hardware and it's probably due to this.
+  //
+  // Consider either going back to a NotifyAudioBufferPushed approach that
+  // works, or improving GetCurrentPts such as it returns the timestamp this
+  // was last updated at.
+  audio_pts_->AddSample(now, backend_->audio_decoder()->GetCurrentPts(), 1.0);
 
   if (video_pts_->num_samples() < 10 || audio_pts_->num_samples() < 20) {
     VLOG(4) << "Linear regression samples too little."
@@ -160,18 +132,17 @@ void AvSyncVideo::UpkeepAvSync() {
   int64_t difference;
   error_->EstimateY(now, &difference, &error);
 
-  VLOG(4) << "Pts_monitor."
+  VLOG(3) << "Pts_monitor."
           << " difference=" << difference / 1000 << " apts_slope=" << apts_slope
-          << " vpts_slope=" << vpts_slope
-          << " current_video_playback_rate_=" << current_video_playback_rate_;
+          << " apts_slope=" << apts_slope
+          << " current_audio_playback_rate_=" << current_audio_playback_rate_
+          << " current_vpts=" << new_current_vpts
+          << " current_apts=" << backend_->audio_decoder()->GetCurrentPts();
 
   av_sync_difference_sum_ += difference;
   ++av_sync_difference_count_;
 
-  // Seems the ideal value here depends on the frame rate.
-  if (abs(difference) > kHardCorrectionThresholdUs) {
-    HardCorrection(now);
-  } else if (abs(difference) > kSoftCorrectionThresholdUs) {
+  if (abs(difference) > kSoftCorrectionThresholdUs) {
     SoftCorrection(now);
   } else {
     InSyncCorrection(now);
@@ -192,30 +163,31 @@ void AvSyncVideo::SoftCorrection(int64_t now) {
   audio_pts_->EstimateSlope(&apts_slope, &error);
   error_->EstimateY(now, &difference, &error);
 
-  if (video_pts_->num_samples() < 50) {
+  if (audio_pts_->num_samples() < 50) {
     VLOG(4) << "Not enough vpts samples=" << video_pts_->num_samples();
     return;
   }
 
   if (in_soft_correction_ &&
       std::abs(difference) < difference_at_start_of_correction_) {
-    VLOG(4) << " difference=" << difference
+    VLOG(4) << " difference=" << difference / 1000
             << " difference_at_start_of_correction_="
-            << difference_at_start_of_correction_;
+            << difference_at_start_of_correction_ / 1000;
     return;
   }
 
-  double factor = current_vpts > current_apts ? kRateReduceMultiplier
+  double factor = current_apts > current_vpts ? kRateReduceMultiplier
                                               : kRateIncreaseMultiplier;
-  current_video_playback_rate_ *= (apts_slope * factor / vpts_slope);
+  current_audio_playback_rate_ *= (vpts_slope * factor / apts_slope);
 
-  backend_->video_decoder()->SetPlaybackRate(current_video_playback_rate_);
+  current_audio_playback_rate_ =
+      backend_->audio_decoder()->SetPlaybackRate(current_audio_playback_rate_);
 
   number_of_soft_corrections_++;
   in_soft_correction_ = true;
   difference_at_start_of_correction_ = abs(difference);
 
-  video_pts_.reset(
+  audio_pts_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
   error_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
@@ -225,7 +197,9 @@ void AvSyncVideo::SoftCorrection(int64_t now) {
             << " apts_slope=" << apts_slope << " vpts_slope=" << vpts_slope
             << " current_apts=" << current_apts
             << " current_vpts=" << current_vpts
-            << " current_video_playback_rate_=" << current_video_playback_rate_;
+            << " current_audio_playback_rate_=" << current_audio_playback_rate_;
+
+  last_correction_timestamp_us = backend_->MonotonicClockNow();
 }
 
 // This method only does anything if in_soft_correction_ == true, which is the
@@ -240,7 +214,7 @@ void AvSyncVideo::SoftCorrection(int64_t now) {
 // between them. This method will have it so that vpts_slope == apts_slope, and
 // the content should continue to play in sync from here on out.
 void AvSyncVideo::InSyncCorrection(int64_t now) {
-  if (video_pts_->num_samples() < 50 || !in_soft_correction_) {
+  if (audio_pts_->num_samples() < 50 || !in_soft_correction_) {
     return;
   }
 
@@ -256,12 +230,13 @@ void AvSyncVideo::InSyncCorrection(int64_t now) {
   video_pts_->EstimateSlope(&vpts_slope, &error);
   audio_pts_->EstimateSlope(&apts_slope, &error);
 
-  current_video_playback_rate_ *= apts_slope / vpts_slope;
-  backend_->video_decoder()->SetPlaybackRate(current_video_playback_rate_);
+  current_audio_playback_rate_ *= vpts_slope / apts_slope;
+  current_audio_playback_rate_ =
+      backend_->audio_decoder()->SetPlaybackRate(current_audio_playback_rate_);
   in_soft_correction_ = false;
   difference_at_start_of_correction_ = 0;
 
-  video_pts_.reset(
+  audio_pts_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
   error_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
@@ -271,42 +246,9 @@ void AvSyncVideo::InSyncCorrection(int64_t now) {
             << " apts_slope=" << apts_slope << " vpts_slope=" << vpts_slope
             << " current_apts=" << current_apts
             << " current_vpts=" << current_vpts
-            << " current_video_playback_rate_=" << current_video_playback_rate_;
-}
+            << " current_audio_playback_rate_=" << current_audio_playback_rate_;
 
-void AvSyncVideo::HardCorrection(int64_t now) {
-  int64_t current_apts = 0;
-  int64_t current_vpts = 0;
-  int64_t difference = 0;
-  double error = 0.0;
-  double apts_slope = 0.0;
-  double vpts_slope = 0.0;
-
-  video_pts_->EstimateY(now, &current_vpts, &error);
-  audio_pts_->EstimateY(now, &current_apts, &error);
-  video_pts_->EstimateSlope(&vpts_slope, &error);
-  audio_pts_->EstimateSlope(&apts_slope, &error);
-  error_->EstimateY(now, &difference, &error);
-
-  backend_->video_decoder()->SetCurrentPts(current_apts);
-  current_video_playback_rate_ *= (apts_slope / vpts_slope);
-  backend_->video_decoder()->SetPlaybackRate(current_video_playback_rate_);
-
-  number_of_hard_corrections_++;
-  in_soft_correction_ = false;
-  difference_at_start_of_correction_ = 0;
-
-  video_pts_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  error_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-
-  LOG(INFO) << "Hard Correction."
-            << " difference=" << difference / 1000
-            << " apts_slope=" << apts_slope << " vpts_slope=" << vpts_slope
-            << " current_apts=" << current_apts
-            << " current_vpts=" << current_vpts
-            << " current_video_playback_rate_=" << current_video_playback_rate_;
+  last_correction_timestamp_us = backend_->MonotonicClockNow();
 }
 
 void AvSyncVideo::GatherPlaybackStatistics() {
@@ -394,15 +336,19 @@ void AvSyncVideo::StopAvSync() {
   playback_statistics_timer_.Stop();
 }
 
-void AvSyncVideo::NotifyStart() {
+void AvSyncVideo::NotifyStart(int64_t timestamp) {
   number_of_soft_corrections_ = 0;
   number_of_hard_corrections_ = 0;
+  in_soft_correction_ = false;
+  difference_at_start_of_correction_ = 0;
+  av_sync_start_timestamp_ = timestamp;
+
   StartAvSync();
 }
 
 void AvSyncVideo::NotifyStop() {
   StopAvSync();
-  setup_video_clock_ = false;
+  av_sync_start_timestamp_ = INT64_MIN;
 }
 
 void AvSyncVideo::NotifyPause() {
@@ -416,6 +362,13 @@ void AvSyncVideo::NotifyResume() {
 void AvSyncVideo::StartAvSync() {
   upkeep_av_sync_timer_.Start(FROM_HERE, kAvSyncUpkeepInterval, this,
                               &AvSyncVideo::UpkeepAvSync);
+#if DCHECK_IS_ON()
+  // TODO(almasrymina): if this logic turns out to be useful for metrics
+  // recording, keep it and remove this TODO. Otherwise remove it.
+  playback_statistics_timer_.Start(FROM_HERE, kPlaybackStatisticsCheckInterval,
+                                   this,
+                                   &AvSyncVideo::GatherPlaybackStatistics);
+#endif
 }
 
 AvSyncVideo::~AvSyncVideo() = default;

@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/cma/backend/av_sync.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
@@ -84,7 +83,6 @@ AudioDecoderForMixer::AudioDecoderForMixer(
       pending_output_frames_(kNoPendingOutput),
       volume_multiplier_(1.0f),
       pool_(new ::media::AudioBufferMemoryPool()),
-      av_sync_(AvSync::Create(backend->GetTaskRunner(), backend)),
       weak_factory_(this) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(backend_);
@@ -121,12 +119,13 @@ void AudioDecoderForMixer::Initialize() {
   last_mixer_delay_.delay_microseconds = 0;
 }
 
-bool AudioDecoderForMixer::Start(int64_t start_pts) {
+bool AudioDecoderForMixer::Start(int64_t playback_start_timestamp) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(IsValidConfig(config_));
   mixer_input_.reset(new BufferingMixerSource(
       this, config_.samples_per_second, backend_->Primary(),
-      backend_->DeviceId(), backend_->ContentType(), config_.playout_channel));
+      backend_->DeviceId(), backend_->ContentType(), config_.playout_channel,
+      playback_start_timestamp));
 
   mixer_input_->SetVolumeMultiplier(volume_multiplier_);
   // Create decoder_ if necessary. This can happen if Stop() was called, and
@@ -137,7 +136,7 @@ bool AudioDecoderForMixer::Start(int64_t start_pts) {
   if (!rate_shifter_) {
     CreateRateShifter(config_.samples_per_second);
   }
-  av_sync_->NotifyStart();
+  playback_start_timestamp_ = playback_start_timestamp;
   return true;
 }
 
@@ -147,7 +146,6 @@ void AudioDecoderForMixer::Stop() {
   mixer_input_.reset();
   rate_shifter_.reset();
   weak_factory_.InvalidateWeakPtrs();
-  av_sync_->NotifyStop();
 
   Initialize();
 }
@@ -157,7 +155,6 @@ bool AudioDecoderForMixer::Pause() {
   DCHECK(mixer_input_);
   mixer_input_->SetPaused(true);
   paused_pts_ = GetCurrentPts();
-  av_sync_->NotifyPause();
   return true;
 }
 
@@ -166,11 +163,10 @@ bool AudioDecoderForMixer::Resume() {
   DCHECK(mixer_input_);
   paused_pts_ = kInvalidTimestamp;
   mixer_input_->SetPaused(false);
-  av_sync_->NotifyResume();
   return true;
 }
 
-bool AudioDecoderForMixer::SetPlaybackRate(float rate) {
+float AudioDecoderForMixer::SetPlaybackRate(float rate) {
   if (std::abs(rate - 1.0) < kPlaybackRateEpsilon) {
     // AudioRendererAlgorithm treats values close to 1 as exactly 1.
     rate = 1.0f;
@@ -190,7 +186,7 @@ bool AudioDecoderForMixer::SetPlaybackRate(float rate) {
   }
 
   rate_shifter_info_.push_back(RateShifterInfo(rate));
-  return true;
+  return rate;
 }
 
 int64_t AudioDecoderForMixer::GetCurrentPts() const {
@@ -275,7 +271,8 @@ bool AudioDecoderForMixer::SetConfig(const AudioConfig& config) {
     mixer_input_.reset();
     mixer_input_.reset(new BufferingMixerSource(
         this, config.samples_per_second, backend_->Primary(),
-        backend_->DeviceId(), backend_->ContentType(), config.playout_channel));
+        backend_->DeviceId(), backend_->ContentType(), config.playout_channel,
+        playback_start_timestamp_));
     mixer_input_->SetVolumeMultiplier(volume_multiplier_);
     pending_output_frames_ = kNoPendingOutput;
   }
@@ -422,7 +419,7 @@ void AudioDecoderForMixer::OnBufferDecoded(
         DCHECK(!pushed_eos_);
         pushed_eos_ = true;
       }
-      WritePcmWrapper(decoded);
+      mixer_input_->WritePcm(decoded);
       return;
     }
 
@@ -493,7 +490,7 @@ void AudioDecoderForMixer::PushRateShifted() {
 
       scoped_refptr<DecoderBufferBase> eos_buffer(
           new DecoderBufferAdapter(::media::DecoderBuffer::CreateEOSBuffer()));
-      WritePcmWrapper(eos_buffer);
+      mixer_input_->WritePcm(eos_buffer);
     }
     return;
   }
@@ -524,7 +521,7 @@ void AudioDecoderForMixer::PushRateShifted() {
            rate_shifter_output_->channel(c), channel_data_size);
   }
   pending_output_frames_ = out_frames;
-  WritePcmWrapper(output_buffer);
+  mixer_input_->WritePcm(output_buffer);
 
   if (rate_shifter_info_.size() > 1 &&
       rate_info->output_frames == possible_output_frames) {
@@ -594,14 +591,6 @@ void AudioDecoderForMixer::OnMixerError(MixerError error) {
 void AudioDecoderForMixer::OnEos() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   delegate_->OnEndOfStream();
-}
-
-void AudioDecoderForMixer::WritePcmWrapper(
-    const scoped_refptr<DecoderBufferBase>& buffer) {
-  av_sync_->NotifyAudioBufferPushed(
-      buffer->end_of_stream() ? INT64_MAX : buffer->timestamp(),
-      GetRenderingDelay());
-  mixer_input_->WritePcm(buffer);
 }
 
 }  // namespace media

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "chromecast/media/cma/backend/av_sync.h"
 
 namespace chromecast {
 namespace media {
@@ -36,8 +35,6 @@ void MockAudioDecoderForMixer::PushBufferPeriodic() {
   MediaPipelineBackend::AudioDecoder::RenderingDelay delay(
       audio_play_delay, (now_ticks - base::TimeTicks()).InMicroseconds());
 
-  av_sync_->NotifyAudioBufferPushed(buffer_timestamp, delay);
-
   VLOG(4) << "audio_buffer_pushed"
           << " current_audio_pts_=" << current_audio_pts_
           << " buffer_timestamp=" << buffer_timestamp
@@ -57,9 +54,9 @@ void MockAudioDecoderForMixer::PlayAudio() {
 
 void MockAudioDecoderForMixer::Initialize() {}
 
-bool MockAudioDecoderForMixer::Start(int64_t start_pts) {
-  next_push_buffer_pts_ = start_pts;
-  current_audio_pts_ = start_pts;
+bool MockAudioDecoderForMixer::Start(int64_t timestamp) {
+  next_push_buffer_pts_ = 0;
+  current_audio_pts_ = 0;
   data_push_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromMicroseconds(audio_push_buffer_internal_us_), this,
@@ -67,7 +64,6 @@ bool MockAudioDecoderForMixer::Start(int64_t start_pts) {
   audio_play_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMicroseconds(audio_play_interval_us_),
       this, &MockAudioDecoderForMixer::PlayAudio);
-  av_sync_->NotifyStart();
   return true;
 }
 
@@ -75,13 +71,11 @@ void MockAudioDecoderForMixer::Stop() {
   next_push_buffer_pts_ = INT64_MIN;
   data_push_timer_.Stop();
   audio_play_timer_.Stop();
-  av_sync_->NotifyStop();
 }
 
 bool MockAudioDecoderForMixer::Pause() {
   data_push_timer_.Stop();
   audio_play_timer_.Stop();
-  av_sync_->NotifyPause();
   return true;
 }
 
@@ -93,12 +87,11 @@ bool MockAudioDecoderForMixer::Resume() {
   audio_play_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMicroseconds(audio_play_interval_us_),
       this, &MockAudioDecoderForMixer::PlayAudio);
-  av_sync_->NotifyResume();
   return true;
 }
 
-bool MockAudioDecoderForMixer::SetPlaybackRate(float rate) {
-  return true;
+float MockAudioDecoderForMixer::SetPlaybackRate(float rate) {
+  return 1.0;
 }
 
 int64_t MockAudioDecoderForMixer::GetCurrentPts() const {

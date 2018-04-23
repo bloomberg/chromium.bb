@@ -29,10 +29,7 @@ class AvSyncVideo : public AvSync {
   ~AvSyncVideo() override;
 
   // AvSync implementation:
-  void NotifyAudioBufferPushed(
-      int64_t buffer_timestamp,
-      MediaPipelineBackend::AudioDecoder::RenderingDelay delay) override;
-  void NotifyStart() override;
+  void NotifyStart(int64_t timestamp) override;
   void NotifyStop() override;
   void NotifyPause() override;
   void NotifyResume() override;
@@ -63,7 +60,6 @@ class AvSyncVideo : public AvSync {
   void GatherPlaybackStatistics();
 
   void SoftCorrection(int64_t now);
-  void HardCorrection(int64_t now);
   void InSyncCorrection(int64_t now);
 
   Delegate* delegate_ = nullptr;
@@ -73,7 +69,6 @@ class AvSyncVideo : public AvSync {
 
   base::RepeatingTimer upkeep_av_sync_timer_;
   base::RepeatingTimer playback_statistics_timer_;
-  bool setup_video_clock_ = false;
   bool in_soft_correction_ = false;
   int64_t difference_at_start_of_correction_ = 0;
 
@@ -85,15 +80,16 @@ class AvSyncVideo : public AvSync {
   std::unique_ptr<WeightedMovingLinearRegression> audio_pts_;
   std::unique_ptr<WeightedMovingLinearRegression> video_pts_;
   std::unique_ptr<WeightedMovingLinearRegression> error_;
-  double current_video_playback_rate_ = 1.0;
+  double current_audio_playback_rate_ = 1.0;
 
   int64_t last_gather_timestamp_us_ = 0;
   int64_t last_repeated_frames_ = 0;
   int64_t last_dropped_frames_ = 0;
   int64_t number_of_hard_corrections_ = 0;
   int64_t number_of_soft_corrections_ = 0;
-
   int64_t last_vpts_value_recorded_ = 0;
+  int64_t last_correction_timestamp_us = INT64_MIN;
+  int64_t av_sync_start_timestamp_ = INT64_MIN;
 
   MediaPipelineBackendForMixer* const backend_;
 };

@@ -28,7 +28,6 @@ class AudioRendererAlgorithm;
 
 namespace chromecast {
 namespace media {
-class AvSync;
 class DecoderBufferBase;
 class MediaPipelineBackendForMixer;
 
@@ -42,11 +41,11 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   ~AudioDecoderForMixer() override;
 
   virtual void Initialize();
-  virtual bool Start(int64_t start_pts);
+  virtual bool Start(int64_t timestamp);
   virtual void Stop();
   virtual bool Pause();
   virtual bool Resume();
-  virtual bool SetPlaybackRate(float rate);
+  virtual float SetPlaybackRate(float rate);
   virtual int64_t GetCurrentPts() const;
 
   // MediaPipelineBackend::AudioDecoder implementation:
@@ -88,7 +87,6 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   bool BypassDecoder() const;
   bool ShouldStartClock() const;
   void UpdateStatistics(Statistics delta);
-  void WritePcmWrapper(const scoped_refptr<DecoderBufferBase>& buffer);
 
   MediaPipelineBackendForMixer* const backend_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -122,7 +120,7 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
 
   scoped_refptr<::media::AudioBufferMemoryPool> pool_;
 
-  std::unique_ptr<AvSync> av_sync_;
+  int64_t playback_start_timestamp_ = 0;
 
   base::WeakPtrFactory<AudioDecoderForMixer> weak_factory_;
 

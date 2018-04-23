@@ -67,7 +67,8 @@ class BufferingMixerSource : public MixerInput::Source,
                        bool primary,
                        const std::string& device_id,
                        AudioContentType content_type,
-                       int playout_channel);
+                       int playout_channel,
+                       int64_t playback_start_timestamp);
 
   // Queues some PCM data to be mixed. |data| must be in planar float format.
   // If the buffer can accept more data, the delegate's OnWritePcmCompletion()
@@ -205,6 +206,7 @@ class BufferingMixerSource : public MixerInput::Source,
   const int max_queued_frames_;
   // Minimum number of frames buffered before starting to fill data.
   const int start_threshold_frames_;
+  const int64_t playback_start_timestamp_;
 
   LockedMembers locked_members_;
 

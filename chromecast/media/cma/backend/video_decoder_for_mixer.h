@@ -54,7 +54,7 @@ class VideoDecoderForMixer : public MediaPipelineBackend::VideoDecoder {
 
   // Returns the current video PTS. This will typically be the pts of the last
   // video frame displayed.
-  virtual int64_t GetCurrentPts() const = 0;
+  virtual bool GetCurrentPts(int64_t* timestamp, int64_t* pts) const = 0;
 
   // Set the playback rate. This is used to sync the audio to the video. This
   // call will change the rate of play of video in the following manner:
@@ -71,7 +71,7 @@ class VideoDecoderForMixer : public MediaPipelineBackend::VideoDecoder {
   // than the current pts, all video frames in this pts range will be repeated.
   // Implementation is encouraged to smooth out this transition, such that
   // minimal jitter in the video is shown, but that is not necessary.
-  virtual bool SetCurrentPts(int64_t pts) = 0;
+  virtual bool SetPts(int64_t timestamp, int64_t pts) = 0;
 
   // Returns number of frames dropped since the last call to Start(). This is
   // used to estimate video playback smoothness.
