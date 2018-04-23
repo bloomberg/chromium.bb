@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 
 namespace resource_coordinator {
 
@@ -86,27 +87,6 @@ class LocalSiteCharacteristicsDataImpl
   }
   static int64_t TimeDeltaToInternalRepresentation(base::TimeDelta delta) {
     return delta.InSeconds();
-  }
-
-  // Returns the minimum observation time before considering a feature as
-  // unused.
-  // TODO(sebmarchand): Make these experimentally configurable, define the
-  // experiment variables in tab_manager_features.h.
-  static constexpr base::TimeDelta
-  GetUpdatesFaviconInBackgroundMinObservationWindow() {
-    return base::TimeDelta::FromHours(2);
-  }
-  static constexpr base::TimeDelta
-  GetUpdatesTitleInBackgroundMinObservationWindow() {
-    return base::TimeDelta::FromHours(2);
-  }
-  static constexpr base::TimeDelta
-  GetUsesAudioInBackgroundMinObservationWindow() {
-    return base::TimeDelta::FromHours(2);
-  }
-  static constexpr base::TimeDelta
-  GetUsesNotificationsInBackgroundMinObservationWindow() {
-    return base::TimeDelta::FromHours(2);
   }
 
   virtual ~LocalSiteCharacteristicsDataImpl();

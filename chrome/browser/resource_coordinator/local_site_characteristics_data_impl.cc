@@ -75,27 +75,31 @@ void LocalSiteCharacteristicsDataImpl::NotifySiteUnloaded() {
 
 SiteFeatureUsage LocalSiteCharacteristicsDataImpl::UpdatesFaviconInBackground()
     const {
-  return GetFeatureUsage(site_characteristics_.updates_favicon_in_background(),
-                         GetUpdatesFaviconInBackgroundMinObservationWindow());
+  return GetFeatureUsage(
+      site_characteristics_.updates_favicon_in_background(),
+      GetStaticProactiveTabDiscardParams().favicon_update_observation_window);
 }
 
 SiteFeatureUsage LocalSiteCharacteristicsDataImpl::UpdatesTitleInBackground()
     const {
-  return GetFeatureUsage(site_characteristics_.updates_title_in_background(),
-                         GetUpdatesTitleInBackgroundMinObservationWindow());
+  return GetFeatureUsage(
+      site_characteristics_.updates_title_in_background(),
+      GetStaticProactiveTabDiscardParams().title_update_observation_window);
 }
 
 SiteFeatureUsage LocalSiteCharacteristicsDataImpl::UsesAudioInBackground()
     const {
-  return GetFeatureUsage(site_characteristics_.uses_audio_in_background(),
-                         GetUsesAudioInBackgroundMinObservationWindow());
+  return GetFeatureUsage(
+      site_characteristics_.uses_audio_in_background(),
+      GetStaticProactiveTabDiscardParams().audio_usage_observation_window);
 }
 
 SiteFeatureUsage
 LocalSiteCharacteristicsDataImpl::UsesNotificationsInBackground() const {
   return GetFeatureUsage(
       site_characteristics_.uses_notifications_in_background(),
-      GetUsesNotificationsInBackgroundMinObservationWindow());
+      GetStaticProactiveTabDiscardParams()
+          .notifications_usage_observation_window);
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyUpdatesFaviconInBackground() {
