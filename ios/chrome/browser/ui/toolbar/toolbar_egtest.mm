@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
@@ -99,8 +100,10 @@ using chrome_test_util::OmniboxText;
       performAction:grey_typeText(@"foo")];
 
   id<GREYMatcher> cancelButton =
-      grey_allOf(chrome_test_util::CancelButton(),
-                 grey_not(grey_accessibilityID(@"Typing Shield")), nil);
+      IsUIRefreshPhase1Enabled()
+          ? grey_accessibilityID(kToolbarCancelOmniboxEditButtonIdentifier)
+          : grey_allOf(chrome_test_util::CancelButton(),
+                       grey_not(grey_accessibilityID(@"Typing Shield")), nil);
   [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -364,8 +367,8 @@ using chrome_test_util::OmniboxText;
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText("foo")];
 
-  id<GREYMatcher> CancelButton = grey_accessibilityLabel(@"Clear Text");
-  [[EarlGrey selectElementWithMatcher:CancelButton] performAction:grey_tap()];
+  id<GREYMatcher> cancelButton = grey_accessibilityLabel(@"Clear Text");
+  [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText("")];
@@ -494,11 +497,22 @@ using chrome_test_util::OmniboxText;
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  NSString* cancelButtonText = l10n_util::GetNSString(IDS_CANCEL);
-  NSString* typingShield = @"Hide keyboard";
-  NSString* clearText = IsIPadIdiom() ? typingShield : cancelButtonText;
+  id<GREYMatcher> cancelButton = nil;
+  if (IsUIRefreshPhase1Enabled()) {
+    cancelButton =
+        grey_accessibilityID(kToolbarCancelOmniboxEditButtonIdentifier);
+  } else if (IsIPadIdiom()) {
+    NSString* typingShield = @"Hide keyboard";
+    cancelButton = grey_accessibilityLabel(typingShield);
+  } else {
+    NSString* cancelText = l10n_util::GetNSString(IDS_CANCEL);
+    cancelButton = grey_accessibilityLabel(cancelText);
+  }
+  DCHECK(cancelButton);
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(clearText)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(cancelButton,
+                                          grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText("")];

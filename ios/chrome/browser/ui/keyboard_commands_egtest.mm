@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -118,6 +119,12 @@ using chrome_test_util::SettingsDoneButton;
   BOOL success = chrome_test_util::ClearBookmarks();
   GREYAssert(success, @"Not all bookmarks were removed.");
 
+  // Load a webpage because the NTP is not always bookmarkable.
+  web::test::SetUpFileBasedHttpServer();
+  GURL URL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/pony.html");
+  [ChromeEarlGrey loadURL:URL];
+
   // Bookmark page
   if (IsIPadIdiom()) {
     id<GREYMatcher> bookmarkMatcher =
@@ -126,7 +133,10 @@ using chrome_test_util::SettingsDoneButton;
         performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];
-    id<GREYMatcher> bookmarkMatcher = grey_accessibilityLabel(@"Add Bookmark");
+    id<GREYMatcher> bookmarkMatcher =
+        IsUIRefreshPhase1Enabled()
+            ? grey_accessibilityID(kToolsMenuAddToBookmarks)
+            : grey_accessibilityLabel(@"Add Bookmark");
     [[EarlGrey selectElementWithMatcher:bookmarkMatcher]
         performAction:grey_tap()];
   }

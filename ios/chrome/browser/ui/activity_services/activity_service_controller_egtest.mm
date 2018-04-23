@@ -123,6 +123,13 @@ id<GREYMatcher> PrintButton() {
 }
 
 - (void)testActivityServiceControllerIsDisabled {
+  // TODO(crbug.com/835871): There is no share button on phone when the
+  // UIRefreshPhase1 flag is enabled.
+  if (IsCompactWidth() && IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Share button is not yet implemented on compact phone.");
+  }
+
   // Open an un-shareable page.
   GURL kURL("chrome://version");
   [ChromeEarlGrey loadURL:kURL];
