@@ -24,6 +24,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
@@ -72,7 +73,7 @@ int AwBrowserMainParts::PreEarlyInitialization() {
   // Android specific MessageLoop. Also see MainMessageLoopRun.
   DCHECK(!main_message_loop_.get());
   main_message_loop_.reset(new base::MessageLoopForUI);
-  base::MessageLoopForUI::current()->Start();
+  base::MessageLoopCurrentForUI::Get()->Start();
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
