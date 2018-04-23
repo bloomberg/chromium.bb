@@ -15,23 +15,41 @@
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
 
 namespace resource_coordinator {
+
+class LocalSiteCharacteristicsDataStore;
+class LocalSiteCharacteristicsDataReaderTest;
+
 namespace internal {
 
-// Tracks observations for a given site. This class shouldn't be used
-// directly, it's meant to be used internally by the local site heuristic
-// database.
+// Internal class used to read/write site characteristics. This is a wrapper
+// class around a SiteCharacteristicsProto object and offers various to query
+// and/or modify it. This class shouldn't be used directly, instead it should be
+// created by a LocalSiteCharacteristicsDataStore that will serve reader and
+// writer objects.
+//
+// Reader and writers objects that are interested in reading/writing information
+// about the same origin will share a unique ref counted instance of this
+// object, because of this all the operations done on these objects should be
+// done on the same thread, this class isn't thread safe.
 class LocalSiteCharacteristicsDataImpl
     : public base::RefCounted<LocalSiteCharacteristicsDataImpl> {
  public:
-  explicit LocalSiteCharacteristicsDataImpl(const std::string& origin_str);
+  // Interface that should be implemented in order to receive notifications when
+  // this object is about to get destroyed.
+  class OnDestroyDelegate {
+   public:
+    // Called when this object is about to get destroyed.
+    virtual void OnLocalSiteCharacteristicsDataImplDestroyed(
+        LocalSiteCharacteristicsDataImpl* impl) = 0;
+  };
 
   // Must be called when a load event is received for this site, this can be
-  // invoked several time if instances of this class are shared between
+  // invoked several times if instances of this class are shared between
   // multiple tabs.
   void NotifySiteLoaded();
 
   // Must be called when an unload event is received for this site, this can be
-  // invoked several time if instances of this class are shared between
+  // invoked several times if instances of this class are shared between
   // multiple tabs.
   void NotifySiteUnloaded();
 
@@ -54,6 +72,11 @@ class LocalSiteCharacteristicsDataImpl
  protected:
   friend class base::RefCounted<LocalSiteCharacteristicsDataImpl>;
   friend class LocalSiteCharacteristicsDataImplTest;
+  friend class resource_coordinator::LocalSiteCharacteristicsDataReaderTest;
+  friend class resource_coordinator::LocalSiteCharacteristicsDataStore;
+
+  LocalSiteCharacteristicsDataImpl(const std::string& origin_str,
+                                   OnDestroyDelegate* delegate);
 
   // Helper functions to convert from/to the internal representation that is
   // used to store TimeDelta values in the |SiteCharacteristicsProto| protobuf.
@@ -67,6 +90,8 @@ class LocalSiteCharacteristicsDataImpl
 
   // Returns the minimum observation time before considering a feature as
   // unused.
+  // TODO(sebmarchand): Make these experimentally configurable, define the
+  // experiment variables in tab_manager_features.h.
   static constexpr base::TimeDelta
   GetUpdatesFaviconInBackgroundMinObservationWindow() {
     return base::TimeDelta::FromHours(2);
@@ -86,7 +111,7 @@ class LocalSiteCharacteristicsDataImpl
 
   virtual ~LocalSiteCharacteristicsDataImpl();
 
-  // Returns the observation duration for a given feature, this is the sum of
+  // Returns for how long a given feature has been observed, this is the sum of
   // the recorded observation duration and the current observation duration
   // since this site has been loaded (if applicable). If a feature has been
   // used then it returns 0.
@@ -102,6 +127,8 @@ class LocalSiteCharacteristicsDataImpl
   const SiteCharacteristicsProto& site_characteristics_for_testing() const {
     return site_characteristics_;
   }
+
+  const std::string& origin_str() const { return origin_str_; }
 
   static const int64_t kZeroIntervalInternalRepresentation;
 
@@ -138,6 +165,10 @@ class LocalSiteCharacteristicsDataImpl
   // will allow to properly update the observation time (starts when the first
   // tab gets loaded, stops when the last one gets unloaded).
   size_t active_webcontents_count_;
+
+  // The delegate that should get notified when this object is about to get
+  // destroyed.
+  OnDestroyDelegate* const delegate_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataImpl);

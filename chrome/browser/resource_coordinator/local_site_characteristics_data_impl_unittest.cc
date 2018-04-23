@@ -7,7 +7,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -22,17 +24,20 @@ constexpr base::TimeDelta kInitialTimeSinceEpoch =
 class TestLocalSiteCharacteristicsDataImpl
     : public LocalSiteCharacteristicsDataImpl {
  public:
+  using LocalSiteCharacteristicsDataImpl::FeatureObservationDuration;
   using LocalSiteCharacteristicsDataImpl::
       GetUsesAudioInBackgroundMinObservationWindow;
   using LocalSiteCharacteristicsDataImpl::
       GetUsesNotificationsInBackgroundMinObservationWindow;
-  using LocalSiteCharacteristicsDataImpl::FeatureObservationDuration;
+  using LocalSiteCharacteristicsDataImpl::last_loaded_time_for_testing;
+  using LocalSiteCharacteristicsDataImpl::OnDestroyDelegate;
   using LocalSiteCharacteristicsDataImpl::site_characteristics_for_testing;
   using LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation;
-  using LocalSiteCharacteristicsDataImpl::last_loaded_time_for_testing;
 
-  explicit TestLocalSiteCharacteristicsDataImpl(const std::string& origin_str)
-      : LocalSiteCharacteristicsDataImpl(origin_str) {}
+  explicit TestLocalSiteCharacteristicsDataImpl(
+      const std::string& origin_str,
+      LocalSiteCharacteristicsDataImpl::OnDestroyDelegate* delegate)
+      : LocalSiteCharacteristicsDataImpl(origin_str, delegate) {}
 
   base::TimeDelta FeatureObservationTimestamp(
       const SiteCharacteristicsFeatureProto& feature_proto) {
@@ -40,12 +45,12 @@ class TestLocalSiteCharacteristicsDataImpl
   }
 
  protected:
-  ~TestLocalSiteCharacteristicsDataImpl() override{};
+  ~TestLocalSiteCharacteristicsDataImpl() override {}
 };
 
 }  // namespace
 
-class LocalSiteCharacteristicsDataImplTest : public testing::Test {
+class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
  public:
   LocalSiteCharacteristicsDataImplTest()
       : scoped_set_tick_clock_for_testing_(&test_clock_) {}
@@ -60,11 +65,17 @@ class LocalSiteCharacteristicsDataImplTest : public testing::Test {
  protected:
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
+  // Use a NiceMock as there's no need to add expectations in these tests,
+  // there's a dedicated test that ensure that the delegate works as expected.
+  ::testing::NiceMock<
+      testing::MockLocalSiteCharacteristicsDataImplOnDestroyDelegate>
+      destroy_delegate_;
 };
 
 TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
   auto local_site_data =
-      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(kDummyOrigin);
+      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
+          kDummyOrigin, &destroy_delegate_);
 
   local_site_data->NotifySiteLoaded();
 
@@ -120,7 +131,8 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
 
 TEST_F(LocalSiteCharacteristicsDataImplTest, LastLoadedTime) {
   auto local_site_data =
-      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(kDummyOrigin);
+      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
+          kDummyOrigin, &destroy_delegate_);
   // Create a second instance of this object, simulates having several tab
   // owning it.
   auto local_site_data2(local_site_data);
@@ -150,7 +162,8 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, LastLoadedTime) {
 
 TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
   auto local_site_data =
-      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(kDummyOrigin);
+      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
+          kDummyOrigin, &destroy_delegate_);
 
   local_site_data->NotifySiteLoaded();
   local_site_data->NotifyUsesAudioInBackground();
@@ -203,7 +216,8 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   // This test helps making sure that the observation/timestamp fields get saved
   // for all the features being tracked.
   auto local_site_data =
-      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(kDummyOrigin);
+      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
+          kDummyOrigin, &destroy_delegate_);
 
   const base::TimeDelta kInterval = base::TimeDelta::FromSeconds(1);
   const auto kIntervalInternalRepresentation =
@@ -264,6 +278,22 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   EXPECT_EQ(
       expected_proto.SerializeAsString(),
       local_site_data->site_characteristics_for_testing().SerializeAsString());
+}
+
+// Verify that the OnDestroyDelegate gets notified when a
+// LocalSiteCharacteristicsDataImpl object gets destroyed.
+TEST_F(LocalSiteCharacteristicsDataImplTest, DestroyNotifiesDelegate) {
+  ::testing::StrictMock<
+      testing::MockLocalSiteCharacteristicsDataImplOnDestroyDelegate>
+      strict_delegate;
+  {
+    auto local_site_data =
+        base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
+            kDummyOrigin, &strict_delegate);
+    EXPECT_CALL(strict_delegate, OnLocalSiteCharacteristicsDataImplDestroyed(
+                                     local_site_data.get()));
+  }
+  ::testing::Mock::VerifyAndClear(&strict_delegate);
 }
 
 }  // namespace internal

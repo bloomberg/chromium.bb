@@ -8,18 +8,23 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
 
-class LocalSiteCharacteristicsDataReaderTest : public testing::Test {
- public:
+class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
+ protected:
+  // The constructors needs to call 'new' directly rather than using the
+  // base::MakeRefCounted helper function because the constructor of
+  // LocalSiteCharacteristicsDataImpl is protected and not visible to
+  // base::MakeRefCounted.
   LocalSiteCharacteristicsDataReaderTest()
       : scoped_set_tick_clock_for_testing_(&test_clock_),
-        test_impl_(
-            base::MakeRefCounted<internal::LocalSiteCharacteristicsDataImpl>(
-                "foo.com")) {
+        test_impl_(base::WrapRefCounted(
+            new internal::LocalSiteCharacteristicsDataImpl("foo.com",
+                                                           &delegate_))) {
     test_impl_->NotifySiteLoaded();
     LocalSiteCharacteristicsDataReader* reader =
         new LocalSiteCharacteristicsDataReader(test_impl_.get());
@@ -28,9 +33,10 @@ class LocalSiteCharacteristicsDataReaderTest : public testing::Test {
 
   ~LocalSiteCharacteristicsDataReaderTest() override {
     test_impl_->NotifySiteUnloaded();
+    reader_.reset();
+    test_impl_ = nullptr;
   }
 
- protected:
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
 
@@ -40,6 +46,13 @@ class LocalSiteCharacteristicsDataReaderTest : public testing::Test {
   // A LocalSiteCharacteristicsDataReader object associated with the origin used
   // to create this object.
   std::unique_ptr<LocalSiteCharacteristicsDataReader> reader_;
+
+  // The mock delegate used by the LocalSiteCharacteristicsDataImpl objects
+  // created by this class, NiceMock is used to avoid having to set expectations
+  // in test cases that don't care about this.
+  ::testing::NiceMock<
+      testing::MockLocalSiteCharacteristicsDataImplOnDestroyDelegate>
+      delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataReaderTest);
 };

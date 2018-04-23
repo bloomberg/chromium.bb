@@ -39,17 +39,6 @@ const int64_t
         LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation(
             base::TimeDelta());
 
-LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
-    const std::string& origin_str)
-    : origin_str_(origin_str), active_webcontents_count_(0U) {
-  // Initialize the features element with the default value, this is required
-  // because some fields might otherwise never be initialized.
-  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
-    InitSiteCharacteristicsFeatureProtoWithDefaultValues(iter);
-
-  site_characteristics_.set_last_loaded(kZeroIntervalInternalRepresentation);
-}
-
 void LocalSiteCharacteristicsDataImpl::NotifySiteLoaded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Update the last loaded time when this origin gets loaded for the first
@@ -128,6 +117,21 @@ void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
       site_characteristics_.mutable_uses_notifications_in_background());
 }
 
+LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
+    const std::string& origin_str,
+    OnDestroyDelegate* delegate)
+    : origin_str_(origin_str),
+      active_webcontents_count_(0U),
+      delegate_(delegate) {
+  DCHECK_NE(nullptr, delegate_);
+  // Initialize the feature elements with the default value, this is required
+  // because some fields might otherwise never be initialized.
+  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
+    InitSiteCharacteristicsFeatureProtoWithDefaultValues(iter);
+
+  site_characteristics_.set_last_loaded(kZeroIntervalInternalRepresentation);
+}
+
 base::TimeDelta LocalSiteCharacteristicsDataImpl::FeatureObservationDuration(
     const SiteCharacteristicsFeatureProto& feature_proto) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -156,6 +160,9 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
   // object.
   // TODO(sebmarchand): Check if this is a valid assumption.
   DCHECK_EQ(0U, active_webcontents_count_);
+
+  DCHECK_NE(nullptr, delegate_);
+  delegate_->OnLocalSiteCharacteristicsDataImplDestroyed(this);
 }
 
 // static:
