@@ -16,6 +16,7 @@
 
 #include "base/numerics/safe_math.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace memory_instrumentation {
 
@@ -73,6 +74,9 @@ bool GetDyldRegions(std::vector<VMRegion>* regions) {
     uint64_t next_command = reinterpret_cast<uint64_t>(header + 1);
     uint64_t command_end = next_command + header->sizeofcmds;
     uint64_t slide = 0;
+
+    std::vector<VMRegion> temp_regions;
+    std::string debug_id;
     for (unsigned int j = 0; j < header->ncmds; ++j) {
       // Ensure that next_command doesn't run past header->sizeofcmds.
       if (next_command + sizeof(struct load_command) > command_end)
@@ -117,11 +121,24 @@ bool GetDyldRegions(std::vector<VMRegion>* regions) {
         region.protection_flags = protection_flags;
         region.mapped_file = image_name;
         region.start_address = slide + seg->vmaddr;
-
-        // We intentionally avoid setting any page information, which is not
-        // available from dyld. The fields will be populated later.
-        regions->push_back(region);
+        temp_regions.push_back(std::move(region));
       }
+
+      if (load_cmd->cmd == LC_UUID) {
+        if (load_cmd->cmdsize < sizeof(uuid_command))
+          return false;
+        const uuid_command* uuid_cmd =
+            reinterpret_cast<const uuid_command*>(load_cmd);
+        // The ID is comprised of the UUID concatenated with the module's "age"
+        // value which is always 0.
+        debug_id =
+            base::HexEncode(&uuid_cmd->uuid, sizeof(uuid_cmd->uuid)) + "0";
+      }
+    }
+
+    for (VMRegion& region : temp_regions) {
+      region.module_debugid = debug_id;
+      regions->push_back(region);
     }
   }
   return true;
