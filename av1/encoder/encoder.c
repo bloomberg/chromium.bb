@@ -94,10 +94,6 @@ FILE *yuv_rec_file;
 #define FILE_NAME_LEN 100
 #endif
 
-#if CONFIG_INTERNAL_STATS
-typedef enum { Y, U, V, ALL } STAT_TYPE;
-#endif  // CONFIG_INTERNAL_STATS
-
 static INLINE void Scale2Ratio(AOM_SCALING mode, int *hr, int *hs) {
   switch (mode) {
     case NORMAL:
@@ -2751,13 +2747,14 @@ void av1_remove_compressor(AV1_COMP *cpi) {
                  "%7.3f\t%7.3f\t%7.3f\t%7.3f\t"
                  "%7.3f\t%7.3f\t%7.3f\t%7.3f\t"
                  "%7.3f\t%7.3f\t%7.3f",
-                 dr, cpi->psnr.stat[ALL] / cpi->count, total_psnr,
-                 cpi->psnr.stat[ALL] / cpi->count, total_psnr, total_ssim,
-                 total_ssim, cpi->fastssim.stat[ALL] / cpi->count,
-                 cpi->psnrhvs.stat[ALL] / cpi->count, cpi->psnr.worst,
+                 dr, cpi->psnr.stat[STAT_ALL] / cpi->count, total_psnr,
+                 cpi->psnr.stat[STAT_ALL] / cpi->count, total_psnr, total_ssim,
+                 total_ssim, cpi->fastssim.stat[STAT_ALL] / cpi->count,
+                 cpi->psnrhvs.stat[STAT_ALL] / cpi->count, cpi->psnr.worst,
                  cpi->worst_ssim, cpi->fastssim.worst, cpi->psnrhvs.worst,
-                 cpi->psnr.stat[Y] / cpi->count, cpi->psnr.stat[U] / cpi->count,
-                 cpi->psnr.stat[V] / cpi->count);
+                 cpi->psnr.stat[STAT_Y] / cpi->count,
+                 cpi->psnr.stat[STAT_U] / cpi->count,
+                 cpi->psnr.stat[STAT_V] / cpi->count);
 
         if (cpi->b_calculate_blockiness) {
           SNPRINT(headings, "\t  Block\tWstBlck");
@@ -5213,10 +5210,10 @@ extern double av1_get_blockiness(const unsigned char *img1, int img1_pitch,
 
 static void adjust_image_stat(double y, double u, double v, double all,
                               ImageStat *s) {
-  s->stat[Y] += y;
-  s->stat[U] += u;
-  s->stat[V] += v;
-  s->stat[ALL] += all;
+  s->stat[STAT_Y] += y;
+  s->stat[STAT_U] += u;
+  s->stat[STAT_V] += v;
+  s->stat[STAT_ALL] += all;
   s->worst = AOMMIN(s->worst, all);
 }
 
