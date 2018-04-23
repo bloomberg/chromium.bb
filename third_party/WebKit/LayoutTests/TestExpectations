@@ -249,6 +249,7 @@ crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-gi
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-003.html [ Failure ]
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-004.html [ Failure ]
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-005.html [ Failure ]
+crbug.com/694374 external/wpt/css/css-tables/anonymous-table-ws-001.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
 
@@ -2303,7 +2304,6 @@ crbug.com/833215 [ Linux ] external/wpt/accelerometer/Accelerometer.https.html [
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-tables/anonymous-table-ws-001.html [ Failure ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ Skip ]
 crbug.com/626703 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-003a.html [ Failure ]
