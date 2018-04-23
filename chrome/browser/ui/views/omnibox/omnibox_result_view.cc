@@ -293,7 +293,7 @@ void OmniboxSuggestionView::LayoutEntity() {
   int x = GetIconAlignmentOffset() + HorizontalPadding() +
           LocationBarView::GetBorderThicknessDip();
   int y = GetVerticalInsets(text_height_, is_answer_).top();
-  int image_edge_length = text_height_ + description_view_->GetLineHeight();
+  int image_edge_length = text_height_ * 2;
   image_view_->SetImageSize(gfx::Size(image_edge_length, image_edge_length));
   image_view_->SetBounds(x, y, image_edge_length, image_edge_length);
   x += image_edge_length + HorizontalPadding();
