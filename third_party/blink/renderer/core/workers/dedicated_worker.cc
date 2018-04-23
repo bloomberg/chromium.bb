@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
@@ -258,6 +259,23 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
     settings = WorkerSettings::Copy(worker_global_scope->GetWorkerSettings());
   }
 
+  BeginFrameProviderParams begin_frame_provider_params;
+  if (GetExecutionContext()->IsDocument()) {
+    LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
+    WebLayerTreeView* layer_tree_view = nullptr;
+    // TODO(fserb): what to do when there's no frame?
+    if (frame) {
+      layer_tree_view =
+          frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
+      begin_frame_provider_params.parent_frame_sink_id =
+          layer_tree_view->GetFrameSinkId();
+    }
+    begin_frame_provider_params.frame_sink_id =
+        Platform::Current()->GenerateFrameSinkId();
+  } else if (GetExecutionContext()->IsWorkerGlobalScope()) {
+    // TODO(fserb): copies parent/frame sink_id into new worker or reset it.
+  }
+
   return std::make_unique<GlobalScopeCreationParams>(
       script_url_, GetExecutionContext()->UserAgent(),
       GetExecutionContext()->GetContentSecurityPolicy()->Headers().get(),
@@ -268,7 +286,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
       devtools_worker_token, std::move(settings), kV8CacheOptionsDefault,
       module_fetch_coordinator_.Get(),
       ConnectToWorkerInterfaceProvider(GetExecutionContext(),
-                                       SecurityOrigin::Create(script_url_)));
+                                       SecurityOrigin::Create(script_url_)),
+      std::move(begin_frame_provider_params));
 }
 
 const AtomicString& DedicatedWorker::InterfaceName() const {

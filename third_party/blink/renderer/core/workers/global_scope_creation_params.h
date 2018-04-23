@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
+#include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -47,7 +48,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       std::unique_ptr<WorkerSettings>,
       V8CacheOptions,
       WorkerOrWorkletModuleFetchCoordinator*,
-      service_manager::mojom::blink::InterfaceProviderPtrInfo = {});
+      service_manager::mojom::blink::InterfaceProviderPtrInfo = {},
+      BeginFrameProviderParams begin_frame_provider_params = {});
 
   ~GlobalScopeCreationParams() = default;
 
@@ -112,6 +114,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       module_fetch_coordinator;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider;
+
+  BeginFrameProviderParams begin_frame_provider_params;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };

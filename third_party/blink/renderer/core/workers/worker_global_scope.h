@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/core/frame/dom_window_base64.h"
+#include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
@@ -149,6 +150,10 @@ class CORE_EXPORT WorkerGlobalScope
   // FontFaceSource on the IDL.
   FontFaceSet* fonts();
 
+  WorkerAnimationFrameProvider* GetAnimationFrameProvider() {
+    return animation_frame_provider_;
+  }
+
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,
@@ -215,6 +220,7 @@ class CORE_EXPORT WorkerGlobalScope
   int last_pending_error_event_id_ = 0;
 
   Member<OffscreenFontSelector> font_selector_;
+  Member<WorkerAnimationFrameProvider> animation_frame_provider_;
 
   service_manager::InterfaceProvider interface_provider_;
 };
