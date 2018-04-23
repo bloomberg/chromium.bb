@@ -178,6 +178,8 @@ void TracingObserver::MemoryMapsAsValueInto(
     if (region->module_timestamp)
       value->SetString("ts",
                        base::StringPrintf(kHexFmt, region->module_timestamp));
+    if (!region->module_debugid.empty())
+      value->SetString("id", region->module_debugid);
     value->SetInteger("pf", region->protection_flags);
 
     // The module path will be the basename when argument filtering is
