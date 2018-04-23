@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/time/time.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/entity_change.h"
@@ -35,6 +36,10 @@ using syncer::ModelTypeSyncBridge;
 
 // Maximum number of favicons to sync.
 const int kMaxSyncFavicons = 200;
+
+// Default time without activity after which a session is considered stale and
+// becomes a candidate for garbage collection.
+const base::TimeDelta kStaleSessionThreshold = base::TimeDelta::FromDays(14);
 
 std::unique_ptr<syncer::EntityData> MoveToEntityData(
     const std::string& client_name,
@@ -409,9 +414,29 @@ void SessionSyncBridge::DeleteForeignSessionFromUI(const std::string& tag) {
 }
 
 void SessionSyncBridge::DoGarbageCollection() {
-  // TODO(crbug.com/681921): Implement logic and also run
-  // foreign_sessions_updated_callback_ if needed.
-  NOTIMPLEMENTED();
+  if (!syncing_) {
+    return;
+  }
+
+  std::unique_ptr<SessionStore::WriteBatch> batch =
+      CreateSessionStoreWriteBatch();
+
+  // Iterate through all the sessions and delete any with age older than
+  // |kStaleSessionThreshold|.
+  for (const auto* session :
+       syncing_->store->tracker()->LookupAllForeignSessions(
+           SyncedSessionTracker::RAW)) {
+    const base::TimeDelta session_age =
+        base::Time::Now() - session->modified_time;
+    if (session_age > kStaleSessionThreshold) {
+      const std::string session_tag = session->session_tag;
+      DVLOG(1) << "Found stale session " << session_tag << " with age "
+               << session_age.InDays() << " days, deleting.";
+      DeleteForeignSessionWithBatch(session_tag, batch.get());
+    }
+  }
+
+  SessionStore::WriteBatch::Commit(std::move(batch));
 }
 
 void SessionSyncBridge::DeleteForeignSessionWithBatch(
