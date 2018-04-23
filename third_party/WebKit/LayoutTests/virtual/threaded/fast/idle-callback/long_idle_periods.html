@@ -14,7 +14,7 @@ async_test(function() {
   // in a separate file for isolation (if rAF is requested, renderer will
   // become non-idle for all tests.
   var previous_deadline;
-  var idle_callbacks_remaining = 10;
+  var idle_callbacks_remaining = 5;
   var self = this;
   requestIdleCallback(this.step_func(function rIC(deadline) {
     var remaining = deadline.timeRemaining();
