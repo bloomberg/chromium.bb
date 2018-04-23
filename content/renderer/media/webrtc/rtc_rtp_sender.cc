@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
-#include "content/renderer/media/webrtc/rtc_error.h"
 #include "content/renderer/media/webrtc/rtc_rtp_parameters.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
 
@@ -23,8 +22,8 @@ void OnReplaceTrackCompleted(blink::WebRTCVoidRequest request, bool result) {
   if (result)
     request.RequestSucceeded();
   else
-    request.RequestFailed(blink::WebRTCError(
-        blink::WebRTCErrorType::kInvalidModification, blink::WebString()));
+    request.RequestFailed(
+        webrtc::RTCError(webrtc::RTCErrorType::INVALID_MODIFICATION));
 }
 
 void OnSetParametersCompleted(blink::WebRTCVoidRequest request,
@@ -32,7 +31,7 @@ void OnSetParametersCompleted(blink::WebRTCVoidRequest request,
   if (result.ok())
     request.RequestSucceeded();
   else
-    request.RequestFailed(ConvertToWebKitRTCError(result));
+    request.RequestFailed(result);
 }
 
 }  // namespace

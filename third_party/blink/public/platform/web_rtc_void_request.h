@@ -33,8 +33,8 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
-#include "third_party/blink/public/platform/web_rtc_error.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/webrtc/api/rtcerror.h"
 
 namespace blink {
 
@@ -57,7 +57,7 @@ class WebRTCVoidRequest {
   bool IsNull() const { return private_.IsNull(); }
 
   BLINK_PLATFORM_EXPORT void RequestSucceeded() const;
-  BLINK_PLATFORM_EXPORT void RequestFailed(WebRTCError) const;
+  BLINK_PLATFORM_EXPORT void RequestFailed(const webrtc::RTCError&) const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebRTCVoidRequest(RTCVoidRequest*);

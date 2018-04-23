@@ -51,7 +51,7 @@ void WebRTCVoidRequest::RequestSucceeded() const {
     private_->RequestSucceeded();
 }
 
-void WebRTCVoidRequest::RequestFailed(WebRTCError error) const {
+void WebRTCVoidRequest::RequestFailed(const webrtc::RTCError& error) const {
   if (private_.Get()) {
     private_->RequestFailed(error);
   }

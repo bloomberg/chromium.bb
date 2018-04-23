@@ -5,14 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_ERROR_UTIL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_ERROR_UTIL_H_
 
-#include "third_party/blink/public/platform/web_rtc_error.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/webrtc/api/rtcerror.h"
 
 namespace blink {
 
 class DOMException;
 
-DOMException* CreateDOMExceptionFromWebRTCError(const WebRTCError&);
+DOMException* CreateDOMExceptionFromRTCError(const webrtc::RTCError&);
 
 }  // namespace blink
 

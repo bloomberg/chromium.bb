@@ -726,8 +726,6 @@ target(link_target_type, "renderer") {
       "media/webrtc/rtc_data_channel_handler.h",
       "media/webrtc/rtc_dtmf_sender_handler.cc",
       "media/webrtc/rtc_dtmf_sender_handler.h",
-      "media/webrtc/rtc_error.cc",
-      "media/webrtc/rtc_error.h",
       "media/webrtc/rtc_event_log_output_sink.h",
       "media/webrtc/rtc_event_log_output_sink_proxy.cc",
       "media/webrtc/rtc_event_log_output_sink_proxy.h",

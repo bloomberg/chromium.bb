@@ -48,7 +48,6 @@
 #include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
-#include "third_party/blink/public/platform/web_rtc_error.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
@@ -769,8 +768,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setConfiguration) {
   // TODO(perkj): Test that the parameters in |config| can be translated when a
   // WebRTCConfiguration can be constructed. It's WebKit class and can't be
   // initialized from a test.
-  EXPECT_EQ(blink::WebRTCErrorType::kNone,
-            pc_handler_->SetConfiguration(config));
+  EXPECT_EQ(webrtc::RTCErrorType::NONE, pc_handler_->SetConfiguration(config));
 }
 
 // Test that when an error occurs in SetConfiguration, it's converted to a
@@ -782,7 +780,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setConfigurationError) {
       webrtc::RTCErrorType::INVALID_MODIFICATION);
   EXPECT_CALL(*mock_tracker_.get(),
               TrackSetConfiguration(pc_handler_.get(), _));
-  EXPECT_EQ(blink::WebRTCErrorType::kInvalidModification,
+  EXPECT_EQ(webrtc::RTCErrorType::INVALID_MODIFICATION,
             pc_handler_->SetConfiguration(config));
 }
 

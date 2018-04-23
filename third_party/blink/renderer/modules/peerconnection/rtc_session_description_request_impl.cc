@@ -75,12 +75,13 @@ void RTCSessionDescriptionRequestImpl::RequestSucceeded(
   Clear();
 }
 
-void RTCSessionDescriptionRequestImpl::RequestFailed(const WebRTCError& error) {
+void RTCSessionDescriptionRequestImpl::RequestFailed(
+    const webrtc::RTCError& error) {
   bool should_fire_callback =
       requester_ ? requester_->ShouldFireDefaultCallbacks() : false;
   if (should_fire_callback && error_callback_) {
     error_callback_->InvokeAndReportException(
-        nullptr, CreateDOMExceptionFromWebRTCError(error));
+        nullptr, CreateDOMExceptionFromRTCError(error));
   }
   Clear();
 }

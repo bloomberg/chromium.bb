@@ -35,6 +35,10 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
+namespace webrtc {
+enum class RTCErrorType;
+}
+
 namespace blink {
 
 class WebMediaConstraints;
@@ -42,7 +46,6 @@ class WebMediaStream;
 class WebMediaStreamTrack;
 class WebRTCAnswerOptions;
 class WebRTCDataChannelHandler;
-enum class WebRTCErrorType;
 class WebRTCOfferOptions;
 class WebRTCRtpSender;
 class WebRTCSessionDescription;
@@ -74,7 +77,7 @@ class WebRTCPeerConnectionHandler {
                                     const WebRTCSessionDescription&) = 0;
   virtual WebRTCSessionDescription LocalDescription() = 0;
   virtual WebRTCSessionDescription RemoteDescription() = 0;
-  virtual WebRTCErrorType SetConfiguration(const WebRTCConfiguration&) = 0;
+  virtual webrtc::RTCErrorType SetConfiguration(const WebRTCConfiguration&) = 0;
 
   // DEPRECATED
   virtual bool AddICECandidate(scoped_refptr<WebRTCICECandidate>) {

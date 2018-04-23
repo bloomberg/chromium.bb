@@ -46,7 +46,6 @@
 #include "third_party/blink/public/platform/web_rtc_configuration.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
-#include "third_party/blink/public/platform/web_rtc_error.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
 #include "third_party/blink/public/platform/web_rtc_offer_options.h"
@@ -931,10 +930,10 @@ void RTCPeerConnection::setConfiguration(
     return;
   }
 
-  WebRTCErrorType error = peer_handler_->SetConfiguration(configuration);
-  if (error != WebRTCErrorType::kNone) {
+  webrtc::RTCErrorType error = peer_handler_->SetConfiguration(configuration);
+  if (error != webrtc::RTCErrorType::NONE) {
     // All errors besides InvalidModification should have been detected above.
-    if (error == WebRTCErrorType::kInvalidModification) {
+    if (error == webrtc::RTCErrorType::INVALID_MODIFICATION) {
       exception_state.ThrowDOMException(
           kInvalidModificationError,
           "Attempted to modify the PeerConnection's "

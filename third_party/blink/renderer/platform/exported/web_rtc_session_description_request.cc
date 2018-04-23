@@ -56,7 +56,7 @@ void WebRTCSessionDescriptionRequest::RequestSucceeded(
 }
 
 void WebRTCSessionDescriptionRequest::RequestFailed(
-    const WebRTCError& error) const {
+    const webrtc::RTCError& error) const {
   DCHECK(private_.Get());
   private_->RequestFailed(error);
 }

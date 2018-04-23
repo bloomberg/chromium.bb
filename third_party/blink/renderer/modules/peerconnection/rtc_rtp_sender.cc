@@ -32,8 +32,8 @@ class ReplaceTrackRequest : public RTCVoidRequest {
     resolver_->Resolve();
   }
 
-  void RequestFailed(const WebRTCError& error) override {
-    resolver_->Reject(CreateDOMExceptionFromWebRTCError(error));
+  void RequestFailed(const webrtc::RTCError& error) override {
+    resolver_->Reject(CreateDOMExceptionFromRTCError(error));
   }
 
   void Trace(blink::Visitor* visitor) override {

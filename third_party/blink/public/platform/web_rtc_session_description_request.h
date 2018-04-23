@@ -33,8 +33,11 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
-#include "third_party/blink/public/platform/web_rtc_error.h"
 #include "third_party/blink/public/platform/web_string.h"
+
+namespace webrtc {
+class RTCError;
+}
 
 namespace blink {
 
@@ -63,7 +66,7 @@ class WebRTCSessionDescriptionRequest {
 
   BLINK_PLATFORM_EXPORT void RequestSucceeded(
       const WebRTCSessionDescription&) const;
-  BLINK_PLATFORM_EXPORT void RequestFailed(const WebRTCError& error) const;
+  BLINK_PLATFORM_EXPORT void RequestFailed(const webrtc::RTCError& error) const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebRTCSessionDescriptionRequest(
