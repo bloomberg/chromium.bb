@@ -71,7 +71,7 @@ typedef struct AV1Decoder {
   AVxWorker *frame_worker_owner;  // frame_worker that owns this pbi.
   AVxWorker lf_worker;
   AVxWorker *tile_workers;
-  int num_tile_workers;
+  int num_workers;
   DecWorkerData *thread_data;
   ThreadData td;
   TileDataDec *tile_data;

@@ -138,9 +138,16 @@ void av1_decoder_remove(AV1Decoder *pbi) {
 
   aom_get_worker_interface()->end(&pbi->lf_worker);
   aom_free(pbi->lf_worker.data1);
-  aom_free(pbi->thread_data);
 
-  for (i = 0; i < pbi->num_tile_workers; ++i) {
+  if (pbi->thread_data) {
+    for (int worker_idx = 0; worker_idx < pbi->max_threads - 1; worker_idx++) {
+      DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
+      aom_free(thread_data->td);
+    }
+    aom_free(pbi->thread_data);
+  }
+
+  for (i = 0; i < pbi->num_workers; ++i) {
     AVxWorker *const worker = &pbi->tile_workers[i];
     aom_get_worker_interface()->end(worker);
   }
@@ -302,7 +309,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
     // Synchronize all threads immediately as a subsequent decode call may
     // cause a resize invalidating some allocations.
     winterface->sync(&pbi->lf_worker);
-    for (i = 0; i < pbi->num_tile_workers; ++i) {
+    for (i = 0; i < pbi->num_workers; ++i) {
       winterface->sync(&pbi->tile_workers[i]);
     }
 
