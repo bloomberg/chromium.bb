@@ -148,6 +148,14 @@ function FileManagerUI(providersModel, element, launchParam) {
   this.toolbar = queryRequiredElement('.dialog-header', this.element);
 
   /**
+   * The actionbar which contains buttons to perform actions on selected
+   * file(s).
+   * @type {!HTMLElement}
+   * @const
+   */
+  this.actionbar = queryRequiredElement('#action-bar', this.toolbar);
+
+  /**
    * The navigation list.
    * @type {!HTMLElement}
    * @const
