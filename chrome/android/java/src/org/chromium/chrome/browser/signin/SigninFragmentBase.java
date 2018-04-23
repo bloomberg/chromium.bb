@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -161,8 +164,18 @@ public abstract class SigninFragmentBase
 
         mConsentTextTracker = new ConsentTextTracker(getResources());
 
+        ProfileDataCache.BadgeConfig badgeConfig = null;
+        if (ChildAccountStatus.isChild(mChildAccountStatus)) {
+            Bitmap badge =
+                    BitmapFactory.decodeResource(getResources(), R.drawable.ic_account_child_20dp);
+            int badgePositionX = getResources().getDimensionPixelOffset(R.dimen.badge_position_x);
+            int badgePositionY = getResources().getDimensionPixelOffset(R.dimen.badge_position_y);
+            int badgeBorderSize = getResources().getDimensionPixelSize(R.dimen.badge_border_size);
+            badgeConfig = new ProfileDataCache.BadgeConfig(
+                    badge, new Point(badgePositionX, badgePositionY), badgeBorderSize);
+        }
         mProfileDataCache = new ProfileDataCache(getActivity(),
-                getResources().getDimensionPixelSize(R.dimen.signin_account_image_size));
+                getResources().getDimensionPixelSize(R.dimen.user_picture_size), badgeConfig);
 
         // TODO(https://crbug.com/814728): Disable controls until account is preselected.
         mPreselectedAccount = false;
