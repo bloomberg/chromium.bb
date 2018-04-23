@@ -77,6 +77,11 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
 
   void AddOverflowFromChildren() override;
 
+  void AddOutlineRects(
+      Vector<LayoutRect>&,
+      const LayoutPoint& additional_offset,
+      LayoutObject::IncludeBlockVisualOverflowOrNot) const override;
+
   const NGPhysicalBoxFragment* CurrentFragment() const override;
 
   const NGBaseline* FragmentBaseline(NGBaselineAlgorithmType) const;
