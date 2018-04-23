@@ -25,6 +25,7 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/proto/wire/feed/content_id.proto",
   "src/src/main/proto/search/now/proto/wire/feed/data_operation.proto",
   "src/src/main/proto/search/now/proto/wire/feed/feature.proto",
+  "src/src/main/proto/search/now/proto/wire/feed/feed_action_query_data.proto",
   "src/src/main/proto/search/now/proto/wire/feed/feed_card.proto",
   "src/src/main/proto/search/now/proto/wire/feed/feed_query.proto",
   "src/src/main/proto/search/now/proto/wire/feed/feed_request.proto",
