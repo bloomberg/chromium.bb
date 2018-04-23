@@ -601,7 +601,6 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
   EXPECT_EQ(nqe::internal::InvalidRTT(),
             estimator.GetRTTEstimateInternal(
                 base::TimeTicks(),
-                base::Optional<NetworkQualityEstimator::Statistic>(),
                 nqe::internal::ObservationCategory::kHttp, 100, nullptr));
   EXPECT_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
             estimator.GetDownlinkThroughputKbpsEstimateInternal(
@@ -627,7 +626,6 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
               0);
     EXPECT_LT(estimator.GetRTTEstimateInternal(
                   base::TimeTicks(),
-                  base::Optional<NetworkQualityEstimator::Statistic>(),
                   nqe::internal::ObservationCategory::kHttp, i, nullptr),
               base::TimeDelta::Max());
 
@@ -641,11 +639,9 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
       // RTT percentiles are in increasing order.
       EXPECT_GE(estimator.GetRTTEstimateInternal(
                     base::TimeTicks(),
-                    base::Optional<NetworkQualityEstimator::Statistic>(),
                     nqe::internal::ObservationCategory::kHttp, i, nullptr),
                 estimator.GetRTTEstimateInternal(
                     base::TimeTicks(),
-                    base::Optional<NetworkQualityEstimator::Statistic>(),
                     nqe::internal::ObservationCategory::kHttp, i - 1, nullptr));
     }
   }
@@ -937,64 +933,6 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
   }
 }
 
-// Tests that default transport RTT thresholds for different effective
-// connection types are correctly set.
-TEST(NetworkQualityEstimatorTest, DefaultTransportRTTBasedThresholds) {
-  const struct {
-    bool override_defaults_using_variation_params;
-    int32_t transport_rtt_msec;
-    EffectiveConnectionType expected_conn_type;
-  } tests[] = {
-      // When the variation params do not override connection thresholds,
-      // default values should be used.
-      {false, 5000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {false, 4000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {false, 3000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {false, 2000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {false, 1500, EFFECTIVE_CONNECTION_TYPE_2G},
-      {false, 1000, EFFECTIVE_CONNECTION_TYPE_3G},
-      {false, 100, EFFECTIVE_CONNECTION_TYPE_4G},
-      {false, 20, EFFECTIVE_CONNECTION_TYPE_4G},
-      // Override default thresholds using variation params.
-      {true, 5000, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
-      {true, 4000, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
-      {true, 3000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {true, 2000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {true, 1500, EFFECTIVE_CONNECTION_TYPE_2G},
-      {true, 1000, EFFECTIVE_CONNECTION_TYPE_2G},
-      {true, 20, EFFECTIVE_CONNECTION_TYPE_4G},
-  };
-
-  for (const auto& test : tests) {
-    std::map<std::string, std::string> variation_params;
-    variation_params["effective_connection_type_algorithm"] =
-        "TransportRTTOrDownstreamThroughput";
-    if (test.override_defaults_using_variation_params) {
-      variation_params["Offline.ThresholdMedianTransportRTTMsec"] = "4000";
-      variation_params["Slow2G.ThresholdMedianTransportRTTMsec"] = "2000";
-      variation_params["2G.ThresholdMedianTransportRTTMsec"] = "1000";
-    }
-
-    TestNetworkQualityEstimator estimator(variation_params);
-
-    // Simulate the connection type as Wi-Fi so that GetEffectiveConnectionType
-    // does not return Offline if the device is offline.
-    estimator.SimulateNetworkChange(NetworkChangeNotifier::CONNECTION_WIFI,
-                                    "test");
-
-    estimator.SetStartTimeNullTransportRtt(
-        base::TimeDelta::FromMilliseconds(test.transport_rtt_msec));
-    estimator.set_recent_transport_rtt(
-        base::TimeDelta::FromMilliseconds(test.transport_rtt_msec));
-    estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
-    estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
-    // Run one main frame request to force recomputation of effective connection
-    // type.
-    estimator.RunOneRequest();
-    EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
-  }
-}
-
 // Tests that default HTTP RTT thresholds for different effective
 // connection types are correctly set.
 TEST(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
@@ -1044,62 +982,6 @@ TEST(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
         base::TimeDelta::FromMilliseconds(test.http_rtt_msec));
     estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
     estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
-    EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
-  }
-}
-
-// Tests that |GetEffectiveConnectionType| returns correct connection type when
-// only transport RTT thresholds are specified in the variation params.
-#if defined(OS_IOS)
-// Flaky on iOS: crbug.com/672917.
-#define MAYBE_ObtainThresholdsOnlyTransportRTT \
-  DISABLED_ObtainThresholdsOnlyTransportRTT
-#else
-#define MAYBE_ObtainThresholdsOnlyTransportRTT ObtainThresholdsOnlyTransportRTT
-#endif
-TEST(NetworkQualityEstimatorTest, MAYBE_ObtainThresholdsOnlyTransportRTT) {
-  std::map<std::string, std::string> variation_params;
-  variation_params["effective_connection_type_algorithm"] =
-      "TransportRTTOrDownstreamThroughput";
-
-  variation_params["Offline.ThresholdMedianTransportRTTMsec"] = "4000";
-  variation_params["Slow2G.ThresholdMedianTransportRTTMsec"] = "2000";
-  variation_params["2G.ThresholdMedianTransportRTTMsec"] = "1000";
-  variation_params["3G.ThresholdMedianTransportRTTMsec"] = "500";
-
-  TestNetworkQualityEstimator estimator(variation_params);
-
-  // Simulate the connection type as Wi-Fi so that GetEffectiveConnectionType
-  // does not return Offline if the device is offline.
-  estimator.SimulateNetworkChange(NetworkChangeNotifier::CONNECTION_WIFI,
-                                  "test");
-
-  const struct {
-    int32_t transport_rtt_msec;
-    EffectiveConnectionType expected_conn_type;
-  } tests[] = {
-      {5000, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
-      {4000, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
-      {3000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {2000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {1500, EFFECTIVE_CONNECTION_TYPE_2G},
-      {1000, EFFECTIVE_CONNECTION_TYPE_2G},
-      {700, EFFECTIVE_CONNECTION_TYPE_3G},
-      {500, EFFECTIVE_CONNECTION_TYPE_3G},
-      {400, EFFECTIVE_CONNECTION_TYPE_4G},
-      {300, EFFECTIVE_CONNECTION_TYPE_4G},
-      {200, EFFECTIVE_CONNECTION_TYPE_4G},
-      {100, EFFECTIVE_CONNECTION_TYPE_4G},
-      {20, EFFECTIVE_CONNECTION_TYPE_4G},
-  };
-
-  for (const auto& test : tests) {
-    estimator.set_recent_transport_rtt(
-        base::TimeDelta::FromMilliseconds(test.transport_rtt_msec));
-    estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
-    estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
-    estimator.SetStartTimeNullTransportRtt(
-        base::TimeDelta::FromMilliseconds(test.transport_rtt_msec));
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -1163,68 +1045,6 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsHttpRTTandThroughput) {
     // Run one main frame request to force recomputation of effective connection
     // type.
     estimator.RunOneRequest();
-    EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
-  }
-}
-
-// Tests that |GetEffectiveConnectionType| returns correct connection type when
-// both transport RTT and throughput thresholds are specified in the variation
-// params.
-TEST(NetworkQualityEstimatorTest, ObtainThresholdsTransportRTTandThroughput) {
-  std::map<std::string, std::string> variation_params;
-  variation_params["effective_connection_type_algorithm"] =
-      "TransportRTTOrDownstreamThroughput";
-
-  variation_params["Offline.ThresholdMedianTransportRTTMsec"] = "4000";
-  variation_params["Slow2G.ThresholdMedianTransportRTTMsec"] = "2000";
-  variation_params["2G.ThresholdMedianTransportRTTMsec"] = "1000";
-  variation_params["3G.ThresholdMedianTransportRTTMsec"] = "500";
-
-  variation_params["Offline.ThresholdMedianKbps"] = "10";
-  variation_params["Slow2G.ThresholdMedianKbps"] = "100";
-  variation_params["2G.ThresholdMedianKbps"] = "300";
-  variation_params["3G.ThresholdMedianKbps"] = "500";
-
-  TestNetworkQualityEstimator estimator(variation_params);
-
-  // Simulate the connection type as Wi-Fi so that GetEffectiveConnectionType
-  // does not return Offline if the device is offline.
-  estimator.SimulateNetworkChange(NetworkChangeNotifier::CONNECTION_WIFI,
-                                  "test");
-
-  const struct {
-    int32_t transport_rtt_msec;
-    int32_t downlink_throughput_kbps;
-    EffectiveConnectionType expected_conn_type;
-  } tests[] = {
-      // Set RTT to a very low value to observe the effect of throughput.
-      // Throughput is the bottleneck.
-      {1, 5, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
-      {1, 10, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
-      {1, 50, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {1, 100, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {1, 150, EFFECTIVE_CONNECTION_TYPE_2G},
-      {1, 300, EFFECTIVE_CONNECTION_TYPE_2G},
-      {1, 400, EFFECTIVE_CONNECTION_TYPE_3G},
-      {1, 500, EFFECTIVE_CONNECTION_TYPE_3G},
-      {1, 700, EFFECTIVE_CONNECTION_TYPE_4G},
-      {1, 1000, EFFECTIVE_CONNECTION_TYPE_4G},
-      {1, 1500, EFFECTIVE_CONNECTION_TYPE_4G},
-      {1, 2500, EFFECTIVE_CONNECTION_TYPE_4G},
-      // Set both RTT and throughput. RTT is the bottleneck.
-      {3000, 25000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {700, 25000, EFFECTIVE_CONNECTION_TYPE_3G},
-  };
-
-  for (const auto& test : tests) {
-    estimator.set_recent_transport_rtt(
-        base::TimeDelta::FromMilliseconds(test.transport_rtt_msec));
-    estimator.set_start_time_null_downlink_throughput_kbps(
-        test.downlink_throughput_kbps);
-    estimator.set_recent_downlink_throughput_kbps(
-        test.downlink_throughput_kbps);
-    estimator.SetStartTimeNullTransportRtt(
-        base::TimeDelta::FromMilliseconds(test.transport_rtt_msec));
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -2440,50 +2260,32 @@ TEST(NetworkQualityEstimatorTest,
 
 // Test that the typical network qualities are set correctly.
 TEST(NetworkQualityEstimatorTest, TypicalNetworkQualities) {
-  const struct {
-    bool use_transport_rtt;
-  } tests[] = {
-      {
-          false,
-      },
-      {
-          true,
-      },
-  };
+  TestNetworkQualityEstimator estimator;
+  TestDelegate test_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_quality_estimator(&estimator);
+  context.Init();
 
-  for (const auto& test : tests) {
-    std::map<std::string, std::string> variation_params;
-    if (test.use_transport_rtt) {
-      variation_params["effective_connection_type_algorithm"] =
-          "TransportRTTOrDownstreamThroughput";
-    }
-    TestNetworkQualityEstimator estimator(variation_params);
-    TestDelegate test_delegate;
-    TestURLRequestContext context(true);
-    context.set_network_quality_estimator(&estimator);
-    context.Init();
+  for (size_t effective_connection_type = EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+       effective_connection_type <= EFFECTIVE_CONNECTION_TYPE_4G;
+       ++effective_connection_type) {
+    // Set the RTT and throughput values to the typical values for
+    // |effective_connection_type|. The effective connection type should be
+    // computed as |effective_connection_type|.
+    estimator.SetStartTimeNullHttpRtt(
+        estimator.params_
+            ->TypicalNetworkQuality(
+                static_cast<EffectiveConnectionType>(effective_connection_type))
+            .http_rtt());
+    estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
+    estimator.SetStartTimeNullTransportRtt(
+        estimator.params_
+            ->TypicalNetworkQuality(
+                static_cast<EffectiveConnectionType>(effective_connection_type))
+            .transport_rtt());
 
-    for (size_t effective_connection_type = EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-         effective_connection_type <= EFFECTIVE_CONNECTION_TYPE_4G;
-         ++effective_connection_type) {
-      // Set the RTT and throughput values to the typical values for
-      // |effective_connection_type|. The effective connection type should be
-      // computed as |effective_connection_type|.
-      estimator.SetStartTimeNullHttpRtt(
-          estimator.params_
-              ->TypicalNetworkQuality(static_cast<EffectiveConnectionType>(
-                  effective_connection_type))
-              .http_rtt());
-      estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
-      estimator.SetStartTimeNullTransportRtt(
-          estimator.params_
-              ->TypicalNetworkQuality(static_cast<EffectiveConnectionType>(
-                  effective_connection_type))
-              .transport_rtt());
-
-      EXPECT_EQ(effective_connection_type,
-                static_cast<size_t>(estimator.GetEffectiveConnectionType()));
-    }
+    EXPECT_EQ(effective_connection_type,
+              static_cast<size_t>(estimator.GetEffectiveConnectionType()));
   }
 }
 
@@ -2505,8 +2307,6 @@ TEST(NetworkQualityEstimatorTest, OnPrefsRead) {
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_4G);
 
   std::map<std::string, std::string> variation_params;
-  variation_params["effective_connection_type_algorithm"] =
-      "TransportRTTOrDownstreamThroughput";
   variation_params["persistent_cache_reading_enabled"] = "true";
   variation_params["add_default_platform_observations"] = "false";
   // Disable default platform values so that the effect of cached estimates
@@ -2617,8 +2417,6 @@ TEST(NetworkQualityEstimatorTest, OnPrefsReadWithReadingDisabled) {
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_4G);
 
   std::map<std::string, std::string> variation_params;
-  variation_params["effective_connection_type_algorithm"] =
-      "TransportRTTOrDownstreamThroughput";
   variation_params["persistent_cache_reading_enabled"] = "false";
   variation_params["add_default_platform_observations"] = "false";
 
@@ -2824,8 +2622,6 @@ TEST(NetworkQualityEstimatorTest,
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_2G);
 
   std::map<std::string, std::string> variation_params;
-  variation_params["effective_connection_type_algorithm"] =
-      "TransportRTTOrDownstreamThroughput";
   variation_params["persistent_cache_reading_enabled"] = "true";
   variation_params["add_default_platform_observations"] = "false";
   // Disable default platform values so that the effect of cached estimates

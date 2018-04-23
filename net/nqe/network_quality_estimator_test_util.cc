@@ -220,7 +220,6 @@ bool TestNetworkQualityEstimator::GetRecentDownlinkThroughputKbps(
 
 base::TimeDelta TestNetworkQualityEstimator::GetRTTEstimateInternal(
     base::TimeTicks start_time,
-    const base::Optional<NetworkQualityEstimator::Statistic>& statistic,
     nqe::internal::ObservationCategory observation_category,
     int percentile,
     size_t* observations_count) const {
@@ -228,8 +227,7 @@ base::TimeDelta TestNetworkQualityEstimator::GetRTTEstimateInternal(
     return rtt_estimate_internal_.value();
 
   return NetworkQualityEstimator::GetRTTEstimateInternal(
-      start_time, statistic, observation_category, percentile,
-      observations_count);
+      start_time, observation_category, percentile, observations_count);
 }
 
 void TestNetworkQualityEstimator::SetAccuracyRecordingIntervals(

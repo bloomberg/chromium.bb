@@ -303,8 +303,7 @@ void ObtainConnectionThresholds(
           // Set to the 66th percentile of 2G RTT observations on Android.
           kHttpRttEffectiveConnectionTypeThresholds
               [EFFECTIVE_CONNECTION_TYPE_SLOW_2G],
-          base::TimeDelta::FromMilliseconds(1870),
-          nqe::internal::INVALID_RTT_THROUGHPUT);
+          nqe::internal::InvalidRTT(), nqe::internal::INVALID_RTT_THROUGHPUT);
 
   DCHECK_LT(
       base::TimeDelta(),
@@ -314,8 +313,7 @@ void ObtainConnectionThresholds(
           // Set to the 50th percentile of RTT observations on Android.
           kHttpRttEffectiveConnectionTypeThresholds
               [EFFECTIVE_CONNECTION_TYPE_2G],
-          base::TimeDelta::FromMilliseconds(1280),
-          nqe::internal::INVALID_RTT_THROUGHPUT);
+          nqe::internal::InvalidRTT(), nqe::internal::INVALID_RTT_THROUGHPUT);
 
   DCHECK_LT(
       base::TimeDelta(),
@@ -325,8 +323,7 @@ void ObtainConnectionThresholds(
           // Set to the 50th percentile of 3G RTT observations on Android.
           kHttpRttEffectiveConnectionTypeThresholds
               [EFFECTIVE_CONNECTION_TYPE_3G],
-          base::TimeDelta::FromMilliseconds(204),
-          nqe::internal::INVALID_RTT_THROUGHPUT);
+          nqe::internal::InvalidRTT(), nqe::internal::INVALID_RTT_THROUGHPUT);
 
   // Connection threshold should not be set for 4G effective connection type
   // since it is the fastest.
@@ -358,11 +355,7 @@ void ObtainConnectionThresholds(
                 .InMilliseconds())));
 
     connection_thresholds[i].set_transport_rtt(
-        base::TimeDelta::FromMilliseconds(GetValueForVariationParam(
-            params, connection_type_name + ".ThresholdMedianTransportRTTMsec",
-            default_effective_connection_type_thresholds[i]
-                .transport_rtt()
-                .InMilliseconds())));
+        default_effective_connection_type_thresholds[i].transport_rtt());
 
     connection_thresholds[i].set_downstream_throughput_kbps(
         GetValueForVariationParam(
@@ -505,15 +498,6 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
   DCHECK_GE(1.0, weight_multiplier_per_signal_strength_level_);
   DCHECK_LE(0.0, weight_multiplier_per_signal_strength_level_);
 
-  const auto algorithm_it = params_.find("effective_connection_type_algorithm");
-  effective_connection_type_algorithm_ =
-      GetEffectiveConnectionTypeAlgorithmFromString(
-          algorithm_it == params_.end() ? std::string() : algorithm_it->second);
-
-  DCHECK_NE(EffectiveConnectionTypeAlgorithm::
-                EFFECTIVE_CONNECTION_TYPE_ALGORITHM_LAST,
-            effective_connection_type_algorithm_);
-
   ObtainDefaultObservations(params_, default_observations_);
   ObtainTypicalNetworkQualities(params_, typical_network_quality_);
   ObtainConnectionThresholds(params_, connection_thresholds_);
@@ -545,38 +529,6 @@ NetworkQualityEstimatorParams::GetForcedEffectiveConnectionType(
     return EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
   }
   return base::nullopt;
-}
-
-// static
-NetworkQualityEstimatorParams::EffectiveConnectionTypeAlgorithm
-NetworkQualityEstimatorParams::GetEffectiveConnectionTypeAlgorithmFromString(
-    const std::string& algorithm_param_value) {
-  // The default algorithm to be used if the algorithm value is not available
-  // through field trial parameters.
-  static const EffectiveConnectionTypeAlgorithm
-      kDefaultEffectiveConnectionTypeAlgorithm =
-          EffectiveConnectionTypeAlgorithm::HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT;
-
-  if (algorithm_param_value.empty())
-    return kDefaultEffectiveConnectionTypeAlgorithm;
-
-  if (algorithm_param_value == "HttpRTTAndDownstreamThroughput") {
-    return EffectiveConnectionTypeAlgorithm::HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT;
-  }
-  if (algorithm_param_value == "TransportRTTOrDownstreamThroughput") {
-    return EffectiveConnectionTypeAlgorithm::
-        TRANSPORT_RTT_OR_DOWNSTREAM_THROUGHOUT;
-  }
-  static_assert(
-      static_cast<int>(EffectiveConnectionTypeAlgorithm::
-                           TRANSPORT_RTT_OR_DOWNSTREAM_THROUGHOUT) +
-              1 ==
-          static_cast<int>(EffectiveConnectionTypeAlgorithm::
-                               EFFECTIVE_CONNECTION_TYPE_ALGORITHM_LAST),
-      "Not all algorithms are accounted for.");
-
-  NOTREACHED();
-  return kDefaultEffectiveConnectionTypeAlgorithm;
 }
 
 size_t NetworkQualityEstimatorParams::throughput_min_requests_in_flight()
@@ -614,12 +566,6 @@ NetworkQualityEstimatorParams::ConnectionThreshold(
     EffectiveConnectionType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return connection_thresholds_[type];
-}
-
-NetworkQualityEstimatorParams::EffectiveConnectionTypeAlgorithm
-NetworkQualityEstimatorParams::GetEffectiveConnectionTypeAlgorithm() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return effective_connection_type_algorithm_;
 }
 
 }  // namespace net
