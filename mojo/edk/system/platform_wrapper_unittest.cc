@@ -14,7 +14,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"

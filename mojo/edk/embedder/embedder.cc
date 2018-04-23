@@ -64,24 +64,6 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
                                                 platform_handle);
 }
 
-MojoResult CreateSharedBufferWrapper(
-    base::SharedMemoryHandle shared_memory_handle,
-    size_t num_bytes,
-    bool read_only,
-    MojoHandle* mojo_wrapper_handle) {
-  return Core::Get()->CreateSharedBufferWrapper(shared_memory_handle, num_bytes,
-                                                read_only, mojo_wrapper_handle);
-}
-
-MojoResult PassSharedMemoryHandle(
-    MojoHandle mojo_handle,
-    base::SharedMemoryHandle* shared_memory_handle,
-    size_t* num_bytes,
-    bool* read_only) {
-  return Core::Get()->PassSharedMemoryHandle(mojo_handle, shared_memory_handle,
-                                             num_bytes, read_only);
-}
-
 MojoResult SetProperty(MojoPropertyType type, const void* value) {
   return Core::Get()->SetProperty(type, value);
 }

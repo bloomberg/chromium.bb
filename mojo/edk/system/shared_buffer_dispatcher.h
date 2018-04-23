@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -19,7 +19,9 @@
 namespace mojo {
 
 namespace edk {
+
 class NodeController;
+class PlatformSharedMemoryMapping;
 
 class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
  public:
@@ -48,8 +50,8 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       scoped_refptr<SharedBufferDispatcher>* result);
 
   // Create a |SharedBufferDispatcher| from |shared_buffer|.
-  static MojoResult CreateFromPlatformSharedBuffer(
-      const scoped_refptr<PlatformSharedBuffer>& shared_buffer,
+  static MojoResult CreateFromPlatformSharedMemoryRegion(
+      base::subtle::PlatformSharedMemoryRegion region,
       scoped_refptr<SharedBufferDispatcher>* result);
 
   // The "opposite" of SerializeAndClose(). Called by Dispatcher::Deserialize().
@@ -61,9 +63,14 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       ScopedPlatformHandle* platform_handles,
       size_t num_handles);
 
-  // Passes the underlying platform shared buffer. This dispatcher must be
+  // Passes the underlying PlatformSharedMemoryRegion. This dispatcher must be
   // closed after calling this function.
-  scoped_refptr<PlatformSharedBuffer> PassPlatformSharedBuffer();
+  base::subtle::PlatformSharedMemoryRegion PassPlatformSharedMemoryRegion();
+
+  // NOTE: This is not thread-safe. Definitely never use it outside of tests.
+  base::subtle::PlatformSharedMemoryRegion& GetRegionForTesting() {
+    return region_;
+  }
 
   // Dispatcher:
   Type GetType() const override;
@@ -75,7 +82,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       uint64_t offset,
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
-      std::unique_ptr<PlatformSharedBufferMapping>* mapping) override;
+      std::unique_ptr<PlatformSharedMemoryMapping>* mapping) override;
   MojoResult GetBufferInfo(MojoSharedBufferInfo* info) override;
   void StartSerialize(uint32_t* num_bytes,
                       uint32_t* num_ports,
@@ -88,15 +95,12 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
   void CancelTransit() override;
 
  private:
-  static scoped_refptr<SharedBufferDispatcher> CreateInternal(
-      scoped_refptr<PlatformSharedBuffer> shared_buffer) {
-    return base::WrapRefCounted(
-        new SharedBufferDispatcher(std::move(shared_buffer)));
-  }
-
   explicit SharedBufferDispatcher(
-      scoped_refptr<PlatformSharedBuffer> shared_buffer);
+      base::subtle::PlatformSharedMemoryRegion region);
   ~SharedBufferDispatcher() override;
+
+  static scoped_refptr<SharedBufferDispatcher> CreateInternal(
+      base::subtle::PlatformSharedMemoryRegion region);
 
   // Validates and/or sets default options for
   // |MojoDuplicateBufferHandleOptions|. If non-null, |in_options| must point to
@@ -107,16 +111,11 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       const MojoDuplicateBufferHandleOptions* in_options,
       MojoDuplicateBufferHandleOptions* out_options);
 
-  // Guards access to |shared_buffer_|.
+  // Guards access to the fields below.
   base::Lock lock_;
 
   bool in_transit_ = false;
-
-  // We keep a copy of the buffer's platform handle during transit so we can
-  // close it if something goes wrong.
-  ScopedPlatformHandle handle_for_transit_;
-
-  scoped_refptr<PlatformSharedBuffer> shared_buffer_;
+  base::subtle::PlatformSharedMemoryRegion region_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcher);
 };

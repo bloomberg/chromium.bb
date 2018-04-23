@@ -277,7 +277,7 @@ TEST(CoreAPITest, BasicSharedBuffer) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoGetBufferInfo(h0, nullptr, nullptr));
   ASSERT_EQ(MOJO_RESULT_OK, MojoGetBufferInfo(h0, nullptr, &buffer_info));
-  EXPECT_EQ(100U, buffer_info.size);
+  EXPECT_GE(buffer_info.size, 100U);
 
   // Map everything.
   void* pointer = nullptr;
@@ -315,7 +315,7 @@ TEST(CoreAPITest, BasicSharedBuffer) {
 
   buffer_info.size = 0;
   ASSERT_EQ(MOJO_RESULT_OK, MojoGetBufferInfo(h1, nullptr, &buffer_info));
-  EXPECT_EQ(100U, buffer_info.size);
+  EXPECT_GE(buffer_info.size, 100U);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 }

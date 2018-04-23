@@ -17,7 +17,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/unsafe_shared_memory_region.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
@@ -31,6 +33,8 @@
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/peer_connection.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/system/core.h"
+#include "mojo/edk/system/shared_buffer_dispatcher.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/core.h"
@@ -42,6 +46,31 @@
 namespace mojo {
 namespace edk {
 namespace {
+
+template <typename T>
+MojoResult CreateSharedBufferFromRegion(T&& region, MojoHandle* handle) {
+  scoped_refptr<SharedBufferDispatcher> buffer;
+  MojoResult result =
+      SharedBufferDispatcher::CreateFromPlatformSharedMemoryRegion(
+          T::TakeHandleForSerialization(std::move(region)), &buffer);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  *handle = Core::Get()->AddDispatcher(std::move(buffer));
+  return MOJO_RESULT_OK;
+}
+
+template <typename T>
+MojoResult ExtractRegionFromSharedBuffer(MojoHandle handle, T* region) {
+  scoped_refptr<Dispatcher> dispatcher =
+      Core::Get()->GetAndRemoveDispatcher(handle);
+  if (!dispatcher || dispatcher->GetType() != Dispatcher::Type::SHARED_BUFFER)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  auto* buffer = static_cast<SharedBufferDispatcher*>(dispatcher.get());
+  *region = T::Deserialize(buffer->PassPlatformSharedMemoryRegion());
+  return MOJO_RESULT_OK;
+}
 
 // The multiprocess tests that use these don't compile on iOS.
 #if !defined(OS_IOS)
@@ -275,17 +304,12 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessChannelsClient,
 
 TEST_F(EmbedderTest, MultiprocessBaseSharedMemory) {
   RunTestClient("MultiprocessSharedMemoryClient", [&](MojoHandle server_mp) {
-    // 1. Create a base::SharedMemory object and create a mojo shared buffer
-    // from it.
-    base::SharedMemoryCreateOptions options;
-    options.size = 123;
-    base::SharedMemory shared_memory;
-    ASSERT_TRUE(shared_memory.Create(options));
-    base::SharedMemoryHandle shm_handle =
-        base::SharedMemory::DuplicateHandle(shared_memory.handle());
+    // 1. Create a shared memory region and wrap it as a Mojo object.
+    auto shared_memory = base::UnsafeSharedMemoryRegion::Create(123);
+    ASSERT_TRUE(shared_memory.IsValid());
     MojoHandle sb1;
     ASSERT_EQ(MOJO_RESULT_OK,
-              CreateSharedBufferWrapper(shm_handle, 123, false, &sb1));
+              CreateSharedBufferFromRegion(shared_memory.Duplicate(), &sb1));
 
     // 2. Map |sb1| and write something into it.
     char* buffer = nullptr;
@@ -308,9 +332,9 @@ TEST_F(EmbedderTest, MultiprocessBaseSharedMemory) {
 
     // 6. Map the original base::SharedMemory and expect it contains the
     // expected value.
-    ASSERT_TRUE(shared_memory.Map(123));
-    EXPECT_EQ(kByeWorld,
-              std::string(static_cast<char*>(shared_memory.memory())));
+    auto mapping = shared_memory.Map();
+    ASSERT_TRUE(mapping.IsValid());
+    EXPECT_EQ(kByeWorld, std::string(static_cast<char*>(mapping.memory())));
 
     ASSERT_EQ(MOJO_RESULT_OK, MojoClose(sb1));
   });
@@ -339,62 +363,19 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient,
 
   // 5. Extract the shared memory handle and ensure we can map it and read the
   // contents.
-  base::SharedMemoryHandle shm_handle;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            PassSharedMemoryHandle(sb1, &shm_handle, nullptr, nullptr));
-  base::SharedMemory shared_memory(shm_handle, false);
-  ASSERT_TRUE(shared_memory.Map(123));
-  EXPECT_NE(buffer, shared_memory.memory());
-  EXPECT_EQ(kByeWorld, std::string(static_cast<char*>(shared_memory.memory())));
+  base::UnsafeSharedMemoryRegion shared_memory;
+  ASSERT_EQ(MOJO_RESULT_OK, ExtractRegionFromSharedBuffer(sb1, &shared_memory));
+  auto mapping = shared_memory.Map();
+  ASSERT_TRUE(mapping.IsValid());
+  EXPECT_NE(buffer, mapping.memory());
+  EXPECT_EQ(kByeWorld, std::string(static_cast<char*>(mapping.memory())));
 
-  // 6. Close |sb1|. Should fail because |PassSharedMemoryHandle()| should have
-  // closed the handle.
+  // 6. Close |sb1|. Should fail because |ExtractRegionFromSharedBuffer()|
+  // should have closed the handle.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(sb1));
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-TEST_F(EmbedderTest, MultiprocessMachSharedMemory) {
-  RunTestClient("MultiprocessSharedMemoryClient", [&](MojoHandle server_mp) {
-    // 1. Create a Mach base::SharedMemory object and create a mojo shared
-    // buffer from it.
-    base::SharedMemoryCreateOptions options;
-    options.size = 123;
-    base::SharedMemory shared_memory;
-    ASSERT_TRUE(shared_memory.Create(options));
-    base::SharedMemoryHandle shm_handle =
-        base::SharedMemory::DuplicateHandle(shared_memory.handle());
-    MojoHandle sb1;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              CreateSharedBufferWrapper(shm_handle, 123, false, &sb1));
-
-    // 2. Map |sb1| and write something into it.
-    char* buffer = nullptr;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoMapBuffer(sb1, 0, 123, reinterpret_cast<void**>(&buffer), 0));
-    ASSERT_TRUE(buffer);
-    memcpy(buffer, kHelloWorld, sizeof(kHelloWorld));
-
-    // 3. Duplicate |sb1| into |sb2| and pass to |server_mp|.
-    MojoHandle sb2 = MOJO_HANDLE_INVALID;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoDuplicateBufferHandle(sb1, 0, &sb2));
-    EXPECT_NE(MOJO_HANDLE_INVALID, sb2);
-    WriteMessageWithHandles(server_mp, "hello", &sb2, 1);
-
-    // 4. Read a message from |server_mp|.
-    EXPECT_EQ("bye", ReadMessage(server_mp));
-
-    // 5. Expect that the contents of the shared buffer have changed.
-    EXPECT_EQ(kByeWorld, std::string(buffer));
-
-    // 6. Map the original base::SharedMemory and expect it contains the
-    // expected value.
-    ASSERT_TRUE(shared_memory.Map(123));
-    EXPECT_EQ(kByeWorld,
-              std::string(static_cast<char*>(shared_memory.memory())));
-
-    ASSERT_EQ(MOJO_RESULT_OK, MojoClose(sb1));
-  });
-}
 
 enum class HandleType {
   POSIX,
@@ -428,13 +409,13 @@ TEST_F(EmbedderTest, MultiprocessMixMachAndFds) {
             PlatformHandle(static_cast<mach_port_t>(MACH_PORT_NULL)));
         EXPECT_EQ(PlatformHandle::Type::MACH, scoped_handle.get().type);
       } else {
-        base::SharedMemoryCreateOptions options;
-        options.size = kShmSize;
-        base::SharedMemory shared_memory;
-        ASSERT_TRUE(shared_memory.Create(options));
-        base::SharedMemoryHandle shm_handle =
-            base::SharedMemory::DuplicateHandle(shared_memory.handle());
-        scoped_handle.reset(PlatformHandle(shm_handle.GetMemoryObject()));
+        auto shared_memory = base::UnsafeSharedMemoryRegion::Create(kShmSize);
+        ASSERT_TRUE(shared_memory.IsValid());
+        auto shm_handle =
+            base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+                std::move(shared_memory))
+                .PassPlatformHandle();
+        scoped_handle.reset(PlatformHandle(shm_handle.release()));
         EXPECT_EQ(PlatformHandle::Type::MACH, scoped_handle.get().type);
       }
       ASSERT_EQ(MOJO_RESULT_OK,

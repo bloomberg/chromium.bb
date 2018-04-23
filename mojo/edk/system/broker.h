@@ -7,13 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace mojo {
 namespace edk {
-
-class PlatformSharedBuffer;
 
 // The Broker is a channel to the broker process, which allows synchronous IPCs
 // to fulfill shared memory allocation requests on some platforms.
@@ -30,7 +29,8 @@ class Broker {
   ScopedPlatformHandle GetInviterPlatformHandle();
 
   // Request a shared buffer from the broker process. Blocks the current thread.
-  scoped_refptr<PlatformSharedBuffer> GetSharedBuffer(size_t num_bytes);
+  base::WritableSharedMemoryRegion GetWritableSharedMemoryRegion(
+      size_t num_bytes);
 
  private:
   // Handle to the broker process, used for synchronous IPCs.

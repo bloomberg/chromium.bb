@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
+#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/data_pipe_control_message.h"
 #include "mojo/edk/system/node_controller.h"
@@ -74,12 +74,13 @@ class DataPipeConsumerDispatcher::PortObserverThunk
 scoped_refptr<DataPipeConsumerDispatcher> DataPipeConsumerDispatcher::Create(
     NodeController* node_controller,
     const ports::PortRef& control_port,
-    scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
+    base::UnsafeSharedMemoryRegion shared_ring_buffer,
     const MojoCreateDataPipeOptions& options,
     uint64_t pipe_id) {
   scoped_refptr<DataPipeConsumerDispatcher> consumer =
       new DataPipeConsumerDispatcher(node_controller, control_port,
-                                     shared_ring_buffer, options, pipe_id);
+                                     std::move(shared_ring_buffer), options,
+                                     pipe_id);
   base::AutoLock lock(consumer->lock_);
   if (!consumer->InitializeNoLock())
     return nullptr;
@@ -101,7 +102,7 @@ MojoResult DataPipeConsumerDispatcher::ReadData(void* elements,
                                                 MojoReadDataFlags flags) {
   base::AutoLock lock(lock_);
 
-  if (!shared_ring_buffer_ || in_transit_)
+  if (!shared_ring_buffer_.IsValid() || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if (in_two_phase_read_)
@@ -155,7 +156,8 @@ MojoResult DataPipeConsumerDispatcher::ReadData(void* elements,
   }
 
   if (!discard) {
-    uint8_t* data = static_cast<uint8_t*>(ring_buffer_mapping_->GetBase());
+    const uint8_t* data =
+        static_cast<const uint8_t*>(ring_buffer_mapping_.memory());
     CHECK(data);
 
     uint8_t* destination = static_cast<uint8_t*>(elements);
@@ -192,7 +194,7 @@ MojoResult DataPipeConsumerDispatcher::BeginReadData(const void** buffer,
                                                      uint32_t* buffer_num_bytes,
                                                      MojoReadDataFlags flags) {
   base::AutoLock lock(lock_);
-  if (!shared_ring_buffer_ || in_transit_)
+  if (!shared_ring_buffer_.IsValid() || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if (in_two_phase_read_)
@@ -219,8 +221,8 @@ MojoResult DataPipeConsumerDispatcher::BeginReadData(const void** buffer,
   uint32_t bytes_to_read =
       std::min(bytes_available_, options_.capacity_num_bytes - read_offset_);
 
-  CHECK(ring_buffer_mapping_);
-  uint8_t* data = static_cast<uint8_t*>(ring_buffer_mapping_->GetBase());
+  CHECK(ring_buffer_mapping_.IsValid());
+  uint8_t* data = static_cast<uint8_t*>(ring_buffer_mapping_.memory());
   CHECK(data);
 
   in_two_phase_read_ = true;
@@ -242,7 +244,7 @@ MojoResult DataPipeConsumerDispatcher::EndReadData(uint32_t num_bytes_read) {
   if (in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  CHECK(shared_ring_buffer_);
+  CHECK(shared_ring_buffer_.IsValid());
 
   MojoResult rv;
   if (num_bytes_read > two_phase_max_bytes_read_ ||
@@ -316,14 +318,20 @@ bool DataPipeConsumerDispatcher::EndSerialize(
   state->bytes_available = bytes_available_;
   state->flags = peer_closed_ ? kFlagPeerClosed : 0;
 
-  base::UnguessableToken guid = shared_ring_buffer_->GetGUID();
+  auto region_handle =
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(shared_ring_buffer_));
+  const base::UnguessableToken& guid = region_handle.GetGUID();
   state->buffer_guid_high = guid.GetHighForSerialization();
   state->buffer_guid_low = guid.GetLowForSerialization();
 
   ports[0] = control_port_.name();
 
-  platform_handles[0] = shared_ring_buffer_->DuplicatePlatformHandle();
-  if (!platform_handles[0].is_valid())
+  ScopedPlatformHandle ignored_handle;
+  ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+      region_handle.PassPlatformHandle(), &platform_handles[0],
+      &ignored_handle);
+  if (!platform_handles[0].is_valid() || ignored_handle.is_valid())
     return false;
 
   return true;
@@ -378,22 +386,27 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
   if (node_controller->node()->GetPort(ports[0], &port) != ports::OK)
     return nullptr;
 
-  base::UnguessableToken guid = base::UnguessableToken::Deserialize(
-      state->buffer_guid_high, state->buffer_guid_low);
   ScopedPlatformHandle buffer_handle;
   std::swap(buffer_handle, handles[0]);
-  scoped_refptr<PlatformSharedBuffer> ring_buffer =
-      PlatformSharedBuffer::CreateFromPlatformHandle(
-          state->options.capacity_num_bytes, false /* read_only */, guid,
-          std::move(buffer_handle));
-  if (!ring_buffer) {
+  auto region_handle = CreateSharedMemoryRegionHandleFromPlatformHandles(
+      std::move(buffer_handle), ScopedPlatformHandle());
+  auto region = base::subtle::PlatformSharedMemoryRegion::Take(
+      std::move(region_handle),
+      base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+      state->options.capacity_num_bytes,
+      base::UnguessableToken::Deserialize(state->buffer_guid_high,
+                                          state->buffer_guid_low));
+  auto ring_buffer =
+      base::UnsafeSharedMemoryRegion::Deserialize(std::move(region));
+  if (!ring_buffer.IsValid()) {
     DLOG(ERROR) << "Failed to deserialize shared buffer handle.";
     return nullptr;
   }
 
   scoped_refptr<DataPipeConsumerDispatcher> dispatcher =
-      new DataPipeConsumerDispatcher(node_controller, port, ring_buffer,
-                                     state->options, state->pipe_id);
+      new DataPipeConsumerDispatcher(node_controller, port,
+                                     std::move(ring_buffer), state->options,
+                                     state->pipe_id);
 
   {
     base::AutoLock lock(dispatcher->lock_);
@@ -412,7 +425,7 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
 DataPipeConsumerDispatcher::DataPipeConsumerDispatcher(
     NodeController* node_controller,
     const ports::PortRef& control_port,
-    scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
+    base::UnsafeSharedMemoryRegion shared_ring_buffer,
     const MojoCreateDataPipeOptions& options,
     uint64_t pipe_id)
     : options_(options),
@@ -420,24 +433,23 @@ DataPipeConsumerDispatcher::DataPipeConsumerDispatcher(
       control_port_(control_port),
       pipe_id_(pipe_id),
       watchers_(this),
-      shared_ring_buffer_(shared_ring_buffer) {}
+      shared_ring_buffer_(std::move(shared_ring_buffer)) {}
 
 DataPipeConsumerDispatcher::~DataPipeConsumerDispatcher() {
-  DCHECK(is_closed_ && !shared_ring_buffer_ && !ring_buffer_mapping_ &&
-         !in_transit_);
+  DCHECK(is_closed_ && !shared_ring_buffer_.IsValid() &&
+         !ring_buffer_mapping_.IsValid() && !in_transit_);
 }
 
 bool DataPipeConsumerDispatcher::InitializeNoLock() {
   lock_.AssertAcquired();
-  if (!shared_ring_buffer_)
+  if (!shared_ring_buffer_.IsValid())
     return false;
 
-  DCHECK(!ring_buffer_mapping_);
-  ring_buffer_mapping_ =
-      shared_ring_buffer_->Map(0, options_.capacity_num_bytes);
-  if (!ring_buffer_mapping_) {
+  DCHECK(!ring_buffer_mapping_.IsValid());
+  ring_buffer_mapping_ = shared_ring_buffer_.Map();
+  if (!ring_buffer_mapping_.IsValid()) {
     DLOG(ERROR) << "Failed to map shared buffer.";
-    shared_ring_buffer_ = nullptr;
+    shared_ring_buffer_ = base::UnsafeSharedMemoryRegion();
     return false;
   }
 
@@ -453,8 +465,8 @@ MojoResult DataPipeConsumerDispatcher::CloseNoLock() {
   if (is_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
   is_closed_ = true;
-  ring_buffer_mapping_.reset();
-  shared_ring_buffer_ = nullptr;
+  ring_buffer_mapping_ = base::WritableSharedMemoryMapping();
+  shared_ring_buffer_ = base::UnsafeSharedMemoryRegion();
 
   watchers_.NotifyClosed();
   if (!transferred_) {
@@ -470,18 +482,18 @@ HandleSignalsState DataPipeConsumerDispatcher::GetHandleSignalsStateNoLock()
   lock_.AssertAcquired();
 
   HandleSignalsState rv;
-  if (shared_ring_buffer_ && bytes_available_) {
+  if (shared_ring_buffer_.IsValid() && bytes_available_) {
     if (!in_two_phase_read_) {
       rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_READABLE;
       if (new_data_available_)
         rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE;
     }
     rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_READABLE;
-  } else if (!peer_closed_ && shared_ring_buffer_) {
+  } else if (!peer_closed_ && shared_ring_buffer_.IsValid()) {
     rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_READABLE;
   }
 
-  if (shared_ring_buffer_) {
+  if (shared_ring_buffer_.IsValid()) {
     if (new_data_available_ || !peer_closed_)
       rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE;
   }

@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_EMBEDDER_PLATFORM_HANDLE_UTILS_H_
 #define MOJO_EDK_EMBEDDER_PLATFORM_HANDLE_UTILS_H_
 
+#include "base/memory/platform_shared_memory_region.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -26,6 +27,21 @@ MOJO_SYSTEM_IMPL_EXPORT inline void CloseAllPlatformHandles(
 // invalid |ScopedPlatformHandle| on failure.)
 MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle
 DuplicatePlatformHandle(PlatformHandle platform_handle);
+
+// Converts a base shared memory platform handle into one (maybe two on POSIX)
+// EDK ScopedPlatformHandles.
+MOJO_SYSTEM_IMPL_EXPORT void ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+    base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle handle,
+    ScopedPlatformHandle* extracted_handle,
+    ScopedPlatformHandle* extracted_readonly_handle);
+
+// Converts one (maybe two on POSIX) EDK ScopedPlatformHandles to a base
+// shared memory platform handle.
+MOJO_SYSTEM_IMPL_EXPORT
+base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle
+CreateSharedMemoryRegionHandleFromPlatformHandles(
+    ScopedPlatformHandle handle,
+    ScopedPlatformHandle readonly_handle);
 
 }  // namespace edk
 }  // namespace mojo

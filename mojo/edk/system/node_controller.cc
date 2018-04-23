@@ -303,15 +303,15 @@ int NodeController::MergeLocalPorts(const ports::PortRef& port0,
   return node_->MergeLocalPorts(port0, port1);
 }
 
-scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
+base::WritableSharedMemoryRegion NodeController::CreateSharedBuffer(
     size_t num_bytes) {
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
   // Shared buffer creation failure is fatal, so always use the broker when we
   // have one; unless of course the embedder forces us not to.
   if (!GetConfiguration().force_direct_shared_memory_allocation && broker_)
-    return broker_->GetSharedBuffer(num_bytes);
+    return broker_->GetWritableSharedMemoryRegion(num_bytes);
 #endif
-  return PlatformSharedBuffer::Create(num_bytes);
+  return base::WritableSharedMemoryRegion::Create(num_bytes);
 }
 
 void NodeController::RequestShutdown(const base::Closure& callback) {
