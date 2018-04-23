@@ -380,6 +380,8 @@ crbug.com/714962 virtual/layout_ng/fast/inline/002.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/long-wrapped-line.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/percentage-margins.html [ Failure ]
 
+crbug.com/835810 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
+
 ### Image/text failures
 #crbug.com/714962 virtual/layout_ng/fast/inline/001.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/br-text-decoration.html [ Crash Failure ]
