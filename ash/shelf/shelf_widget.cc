@@ -43,9 +43,12 @@ views::View* FindFirstOrLastFocusableChild(views::View* root,
   views::FocusTraversable* dummy_focus_traversable;
   views::View* dummy_focus_traversable_view;
   return search.FindNextFocusableView(
-      root, find_last_child, views::FocusSearch::DOWN,
-      false /*check_starting_view*/, &dummy_focus_traversable,
-      &dummy_focus_traversable_view);
+      root,
+      find_last_child ? views::FocusSearch::SearchDirection::kBackwards
+                      : views::FocusSearch::SearchDirection::kForwards,
+      views::FocusSearch::TraversalDirection::kDown,
+      views::FocusSearch::StartingViewPolicy::kSkipStartingView,
+      &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
 }  // namespace
