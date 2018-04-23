@@ -1234,10 +1234,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Download to default folder?
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_NO_SD_CARD" desc="Title for download location dialog in the case that the SD card is not found.">
-        No SD card found
+       SD card not found
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_NO_SD_CARD_SNACKBAR" desc="Text for the snackbar that shows up in downloads home to let the user know that since the SD card is not found, some of the files may be missing.">
-        No SD card found. Some of your files may be missing.
+        SD card not found. Some of your files may be missing.
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_NO_AVAILABLE_LOCATIONS" desc="Text that indicates to the user that there are no download locations available.">
+        No available download locations
       </message>
 
       <!-- About Chrome preferences -->
