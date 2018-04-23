@@ -8,6 +8,7 @@
 
 #include "base/guid.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
+#include "content/browser/background_fetch/background_fetch_metrics.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/storage_partition_impl.h"
@@ -76,17 +77,12 @@ void BackgroundFetchServiceImpl::Fetch(
     const SkBitmap& icon,
     FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!ValidateDeveloperId(developer_id)) {
+  if (!ValidateDeveloperId(developer_id) || !ValidateRequests(requests)) {
     std::move(callback).Run(
         blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
         base::nullopt /* registration */);
-    return;
-  }
-
-  if (!ValidateRequests(requests)) {
-    std::move(callback).Run(
-        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
-        base::nullopt /* registration */);
+    background_fetch::RecordRegistrationCreatedError(
+        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
     return;
   }
 

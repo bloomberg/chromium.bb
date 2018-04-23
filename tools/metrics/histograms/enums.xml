@@ -2714,6 +2714,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Foregrounded"/>
 </enum>
 
+<enum name="BackgroundFetchError">
+  <int value="0" label="None"/>
+  <int value="1" label="Duplicate developer ID"/>
+  <int value="2" label="Invalid argument"/>
+  <int value="3" label="Invalid ID"/>
+  <int value="4" label="Storage error"/>
+</enum>
+
 <enum name="BackgroundFetchEventDispatchResult">
   <int value="0" label="Success"/>
   <int value="1" label="Cannot find worker"/>

@@ -413,6 +413,8 @@ jumbo_source_set("browser") {
     "background_fetch/background_fetch_event_dispatcher.h",
     "background_fetch/background_fetch_job_controller.cc",
     "background_fetch/background_fetch_job_controller.h",
+    "background_fetch/background_fetch_metrics.cc",
+    "background_fetch/background_fetch_metrics.h",
     "background_fetch/background_fetch_registration_id.cc",
     "background_fetch/background_fetch_registration_id.h",
     "background_fetch/background_fetch_registration_notifier.cc",

@@ -8,6 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
+#include "content/browser/background_fetch/background_fetch_metrics.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_registration_notifier.h"
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
@@ -18,26 +19,6 @@
 #include "storage/browser/blob/blob_data_handle.h"
 
 namespace content {
-
-namespace {
-
-void IgnoreError(blink::mojom::BackgroundFetchError) {
-  // TODO(johnme): Log errors to UMA.
-}
-
-// Records the |error| status issued by the DataManager after it was requested
-// to create and store a new Background Fetch registration.
-void RecordRegistrationCreatedError(blink::mojom::BackgroundFetchError error) {
-  // TODO(peter): Add UMA.
-}
-
-// Records the |error| status issued by the DataManager after the storage
-// associated with a registration has been completely deleted.
-void RecordRegistrationDeletedError(blink::mojom::BackgroundFetchError error) {
-  // TODO(peter): Add UMA.
-}
-
-}  // namespace
 
 BackgroundFetchContext::BackgroundFetchContext(
     BrowserContext* browser_context,
@@ -130,7 +111,7 @@ void BackgroundFetchContext::DidCreateRegistration(
     std::unique_ptr<BackgroundFetchRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  RecordRegistrationCreatedError(error);
+  background_fetch::RecordRegistrationCreatedError(error);
   if (error != blink::mojom::BackgroundFetchError::NONE) {
     std::move(callback).Run(error, base::nullopt);
     return;
@@ -199,8 +180,9 @@ void BackgroundFetchContext::CreateController(
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
                           base::Unretained(registration_notifier_.get())),
-      base::BindOnce(&BackgroundFetchContext::DidFinishJob,
-                     weak_factory_.GetWeakPtr(), base::Bind(&IgnoreError)));
+      base::BindOnce(
+          &BackgroundFetchContext::DidFinishJob, weak_factory_.GetWeakPtr(),
+          base::Bind(&background_fetch::RecordSchedulerFinishedError)));
 
   // TODO(delphick): This assumes that fetches are always started afresh in
   // each browser session. We need to initialize the number of downloads using
@@ -338,7 +320,8 @@ void BackgroundFetchContext::LastObserverGarbageCollected(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   data_manager_.DeleteRegistration(
-      registration_id, base::BindOnce(&RecordRegistrationDeletedError));
+      registration_id,
+      base::BindOnce(&background_fetch::RecordRegistrationDeletedError));
 }
 
 }  // namespace content

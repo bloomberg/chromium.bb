@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
@@ -98,6 +99,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     DCHECK(out_error);
     DCHECK(out_registration);
 
+    base::HistogramTester histogram_tester;
     base::RunLoop run_loop;
     service_->Fetch(
         service_worker_registration_id, developer_id, requests, options, icon,
@@ -106,6 +108,10 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
                        out_error, out_registration));
 
     run_loop.Run();
+
+    histogram_tester.ExpectBucketCount(
+        "BackgroundFetch.RegistrationCreatedError",
+        static_cast<int32_t>(*out_error), 1);
 
     if (*out_error != blink::mojom::BackgroundFetchError::NONE)
       return BackgroundFetchRegistrationId();
@@ -139,6 +145,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
              blink::mojom::BackgroundFetchError* out_error) {
     DCHECK(out_error);
 
+    base::HistogramTester histogram_tester;
     base::RunLoop run_loop;
     service_->Abort(service_worker_registration_id, developer_id, unique_id,
                     base::BindOnce(&BackgroundFetchServiceTest::DidGetError,
@@ -146,6 +153,17 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
                                    run_loop.QuitClosure(), out_error));
 
     run_loop.Run();
+
+    // We only delete the registration if we successfully abort.
+    if (*out_error == blink::mojom::BackgroundFetchError::NONE) {
+      // The error passed to the histogram counter is not related to this
+      // |*out_error|, but the result of
+      // BackgroundFetchDataManager::DeleteRegistration. For the purposes these
+      // tests, the deletion is always successful.
+      histogram_tester.ExpectBucketCount(
+          "BackgroundFetch.RegistrationDeletedError",
+          0 /* blink::mojom::BackgroundFetchError::NONE */, 1);
+    }
   }
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::GetRegistration().
