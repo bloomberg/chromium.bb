@@ -9,6 +9,7 @@
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
+    <script src="../resources/audio-param.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -48,8 +49,7 @@
         //
         // So find t such that exp(-t/tau) <= eps.  Thus t >= - tau * log(eps).
         //
-        // For eps, use 1e-20 (kSetTargetZeroThreshold in
-        // AudioParamTimeline.cpp).
+        // For eps, use exp(-10).
 
         let sampleRate = 48000;
 
@@ -62,7 +62,7 @@
         // kSetTargetZeroThreshold (1e-20) in AudioParamTimeline.cpp.  This is
         // to account for round-off in the actual implementation (which uses a
         // filter and not the formula.)
-        let limitThreshold = 1e-21;
+        let limitThreshold = Math.exp(-10);
 
         runTest(should, {
           sampleRate: sampleRate,
@@ -71,9 +71,42 @@
           timeConstant: timeConstant,
           eps: limitThreshold,
           // Experimentally determined
-          threshold: 1.3e-7,
-          tailThreshold: {absoluteThreshold: 9.7950e-22}
+          threshold: 4.7470e-8,
+          tailThreshold: {absoluteThreshold: 2.3310e-5}
         }).then(() => task.done());
+      });
+
+      audit.define('crbug.com/835294', (task, should) => {
+        let sampleRate = 8000;
+        let duration = 8;
+        let context = new OfflineAudioContext({
+          length: duration * sampleRate,
+          sampleRate: sampleRate});
+
+        let src = new ConstantSourceNode(context);
+        let gain = new GainNode(context);
+
+        src.connect(gain).connect(context.destination);
+
+        let targetValue = 0.8;
+        let targetStartTime = 0;
+        let timeConstant = 2;
+        gain.gain.setValueAtTime(0, 0);
+        gain.gain.setTargetAtTime(targetValue, targetStartTime, timeConstant);
+        src.start();
+
+        context.startRendering()
+          .then(renderedBuffer => {
+             // The output should be a simple exponential approach to 0.8
+             // starting at 0 at time 0.1.
+             let actual = renderedBuffer.getChannelData(0);
+             let expected = createExponentialApproachArray(targetStartTime,
+               duration, 0, targetValue, context.sampleRate, timeConstant);
+
+             should(actual, 'Output')
+              .beCloseToArray(expected, {absoluteThreshold: 9.8172e-7});
+          })
+          .then(() => task.done());
       });
 
       function findLimitTime(v0, v1, timeConstant, eps) {
