@@ -50,7 +50,6 @@ TAGS_THAT_HAVE_EXTRA_NEWLINE = {
 # Tags that we allow to be squished into a single line for brevity.
 TAGS_THAT_ALLOW_SINGLE_LINE = ['obsolete', 'owner', 'description']
 
-NAME_FN = lambda n: n.attributes['name'].value
 LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
 
 # Tags whose children we want to alphabetize. The key is the parent tag name,
@@ -58,7 +57,7 @@ LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
 # child node to the desired sort key.
 TAGS_ALPHABETIZATION_RULES = {
     'actions': [
-        ('action', NAME_FN),  # TODO(asvitkine): Use LOWERCASE_NAME_FN fn.
+        ('action', LOWERCASE_NAME_FN),
         ('action-suffix', lambda n: None),
     ],
     'action-suffix': [
