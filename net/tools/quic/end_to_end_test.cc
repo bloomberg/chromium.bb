@@ -30,6 +30,7 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_sleep.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string.h"
@@ -275,7 +276,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
         server_hostname_("test.example.com"),
         client_writer_(nullptr),
         server_writer_(nullptr),
-        server_started_(false),
         negotiated_version_(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
         chlo_multiplier_(0),
         stream_factory_(nullptr),
@@ -462,12 +462,9 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     }
 
     server_thread_->Start();
-    server_started_ = true;
   }
 
   void StopServer() {
-    if (!server_started_)
-      return;
     if (server_thread_) {
       server_thread_->Quit();
       server_thread_->Join();
@@ -584,7 +581,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   std::unique_ptr<QuicTestClient> client_;
   PacketDroppingTestWriter* client_writer_;
   PacketDroppingTestWriter* server_writer_;
-  bool server_started_;
   QuicConfig client_config_;
   QuicConfig server_config_;
   ParsedQuicVersionVector client_supported_versions_;
@@ -1169,8 +1165,8 @@ TEST_P(EndToEndTestWithTls,
   EXPECT_FALSE(resume_writes_alarm->IsSet());
 }
 
-// TODO(fkastenholz): this test seems to cause net_unittests timeouts
-// reverted from EndToEndTestWithTls to EndToEndTest
+// TODO(nharper): Needs to get turned back to EndToEndTestWithTls
+// when we figure out why the test doesn't work on chrome.
 TEST_P(EndToEndTest, InvalidStream) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
@@ -1255,8 +1251,8 @@ TEST_P(EndToEndTestWithTls, DISABLED_MultipleTermination) {
   EXPECT_QUIC_BUG(client_->SendData("eep", true), "Fin already buffered");
 }
 
-// TODO(fkastenholz): this test seems to cause net_unittests timeouts
-// reverted from EndToEndTestWithTls to EndToEndTest
+// TODO(nharper): Needs to get turned back to EndToEndTestWithTls
+// when we figure out why the test doesn't work on chrome.
 TEST_P(EndToEndTest, Timeout) {
   client_config_.SetIdleNetworkTimeout(QuicTime::Delta::FromMicroseconds(500),
                                        QuicTime::Delta::FromMicroseconds(500));
@@ -1493,8 +1489,8 @@ TEST_P(EndToEndTestWithTls, ResetConnection) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
-// TODO(fkastenholz): this test seems to cause net_unittests timeouts
-// reverted from EndToEndTestWithTls to EndToEndTest
+// TODO(nharper): Needs to get turned back to EndToEndTestWithTls
+// when we figure out why the test doesn't work on chrome.
 TEST_P(EndToEndTest, MaxStreamsUberTest) {
   if (!BothSidesSupportStatelessRejects()) {
     // Connect with lower fake packet loss than we'd like to test.  Until
@@ -2121,7 +2117,7 @@ TEST_P(EndToEndTestWithTls, BadPacketHeaderTruncated) {
       client_->client()->network_helper()->GetLatestClientAddress().host(),
       server_address_, nullptr);
   // Give the server time to process the packet.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  QuicSleep(QuicTime::Delta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
   server_thread_->Pause();
   QuicDispatcher* dispatcher =
@@ -2172,7 +2168,7 @@ TEST_P(EndToEndTestWithTls, BadPacketHeaderFlags) {
       client_->client()->network_helper()->GetLatestClientAddress().host(),
       server_address_, nullptr);
   // Give the server time to process the packet.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  QuicSleep(QuicTime::Delta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
   server_thread_->Pause();
   QuicDispatcher* dispatcher =
@@ -2208,7 +2204,7 @@ TEST_P(EndToEndTestWithTls, BadEncryptedData) {
       client_->client()->network_helper()->GetLatestClientAddress().host(),
       server_address_, nullptr);
   // Give the server time to process the packet.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  QuicSleep(QuicTime::Delta::FromMilliseconds(100));
   // This error is sent to the connection's OnError (which ignores it), so the
   // dispatcher doesn't see it.
   // Pause the server so we can access the server's internals without races.
