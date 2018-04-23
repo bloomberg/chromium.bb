@@ -4102,3 +4102,6 @@ crbug.com/833658 [ Linux Win Mac ] media/video-controls-focus-movement-on-hide.h
 crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Failure ]
 
 crbug.com/834446 [ Linux ] http/tests/misc/performance-memory.html [ Pass Failure ]
+
+# Sheriff 2018-04-23
+crbug.com/833331 [ Win10 ] inspector-protocol/page/pageNavigateToFragment.js [ Pass Failure ]
