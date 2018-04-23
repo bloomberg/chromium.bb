@@ -10,7 +10,8 @@
        "requires": {
          "*": [ "app" ],
          "content_browser": [ "font_loader" ],
-         "service_manager": [ "service_manager:all_users" ]
+         "service_manager": [ "service_manager:all_users" ],
+         "ui": [ "discardable_memory" ]
        }
      }
   }
