@@ -142,12 +142,9 @@ class NotificationPlatformBridgeWinUITest : public InProcessBrowserTest {
             base::Unretained(this), run_loop.QuitClosure()));
 
     // Simulate clicks on the toast.
-    NotificationPlatformBridgeWin* bridge = GetBridge();
-    ASSERT_TRUE(bridge);
-
     base::CommandLine command_line = base::CommandLine::FromString(L"");
     command_line.AppendSwitchASCII(switches::kNotificationLaunchId, launch_id);
-    ASSERT_TRUE(bridge->HandleActivation(command_line));
+    ASSERT_TRUE(NotificationPlatformBridgeWin::HandleActivation(command_line));
 
     run_loop.Run();
   }
