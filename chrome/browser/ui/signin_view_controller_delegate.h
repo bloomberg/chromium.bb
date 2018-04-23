@@ -61,7 +61,8 @@ class SigninViewControllerDelegate
       signin_metrics::AccessPoint access_point);
   static SigninViewControllerDelegate* CreateSyncConfirmationDelegateCocoa(
       SigninViewController* signin_view_controller,
-      Browser* browser);
+      Browser* browser,
+      bool is_consent_bump = false);
   static SigninViewControllerDelegate* CreateSigninErrorDelegateCocoa(
       SigninViewController* signin_view_controller,
       Browser* browser);
