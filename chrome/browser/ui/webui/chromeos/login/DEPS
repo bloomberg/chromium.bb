@@ -27,11 +27,9 @@ specific_include_rules = {
   "signin_screen_handler\.cc": [
     "+ash/detachable_base",
     "+ash/shell.h",
-    "+ash/wallpaper/wallpaper_controller.h",
   ],
   "signin_screen_handler\.h": [
     "+ash/detachable_base/detachable_base_observer.h",
-    "+ash/wallpaper/wallpaper_controller_observer.h",
   ],
   "signin_userlist_unittest\.cc": [
     "+ash/test/ash_test_base.h"

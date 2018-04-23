@@ -14,6 +14,14 @@ namespace ash {
 // fails or is disabled (e.g. from command line, lock/login screens).
 constexpr SkColor kInvalidWallpaperColor = SK_ColorTRANSPARENT;
 
+// The width and height of small/large resolution wallpapers. When screen size
+// is smaller than |kSmallWallpaperMaxWidth| and |kSmallWallpaperMaxHeight|,
+// the small wallpaper is used. Otherwise, use the large wallpaper.
+constexpr int kSmallWallpaperMaxWidth = 1366;
+constexpr int kSmallWallpaperMaxHeight = 800;
+constexpr int kLargeWallpaperMaxWidth = 2560;
+constexpr int kLargeWallpaperMaxHeight = 1700;
+
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered,

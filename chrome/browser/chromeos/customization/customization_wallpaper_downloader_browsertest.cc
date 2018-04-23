@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/public/interfaces/wallpaper.mojom.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -26,6 +25,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 
 namespace chromeos {
 
@@ -54,10 +54,6 @@ constexpr char kServicesManifest[] =
     "  }\n"
     "}";
 
-std::string ManifestForURL(const std::string& url) {
-  return base::StringPrintf(kServicesManifest, url.c_str());
-}
-
 // Expected minimal wallpaper download retry interval in milliseconds.
 constexpr int kDownloadRetryIntervalMS = 100;
 
@@ -67,6 +63,10 @@ constexpr int kDownloadRetryIntervalMS = 100;
 constexpr int kWallpaperSize = 2;
 
 constexpr SkColor kCustomizedDefaultWallpaperColor = SK_ColorDKGRAY;
+
+std::string ManifestForURL(const std::string& url) {
+  return base::StringPrintf(kServicesManifest, url.c_str());
+}
 
 // Returns true if the color at the center of |image| is close to
 // |expected_color|. (The center is used so small wallpaper images can be
@@ -100,6 +100,22 @@ bool ImageIsNearColor(gfx::ImageSkia image, SkColor expected_color) {
     return false;
   }
 
+  return true;
+}
+
+// Creates compressed JPEG image of solid color. Result bytes are written to
+// |output|. Returns true on success.
+bool CreateJPEGImage(int width,
+                     int height,
+                     SkColor color,
+                     std::vector<unsigned char>* output) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(width, height);
+  bitmap.eraseColor(color);
+  if (!gfx::JPEGCodec::Encode(bitmap, 80 /*quality=*/, output)) {
+    LOG(ERROR) << "Unable to encode " << width << "x" << height << " bitmap";
+    return false;
+  }
   return true;
 }
 
@@ -154,9 +170,9 @@ class CustomizationWallpaperDownloaderBrowserTest
     InProcessBrowserTest::SetUpOnMainThread();
 
     std::vector<unsigned char> oem_wallpaper;
-    ASSERT_TRUE(ash::WallpaperController::CreateJPEGImageForTesting(
-        kWallpaperSize, kWallpaperSize, kCustomizedDefaultWallpaperColor,
-        &oem_wallpaper));
+    ASSERT_TRUE(CreateJPEGImage(kWallpaperSize, kWallpaperSize,
+                                kCustomizedDefaultWallpaperColor,
+                                &oem_wallpaper));
     jpeg_data_.resize(oem_wallpaper.size());
     std::copy(oem_wallpaper.begin(), oem_wallpaper.end(), jpeg_data_.begin());
 
