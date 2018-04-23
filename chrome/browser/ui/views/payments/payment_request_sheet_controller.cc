@@ -92,7 +92,9 @@ class SheetView : public views::View, public views::FocusTraversable {
       views::FocusTraversable* dummy_focus_traversable;
       views::View* dummy_focus_traversable_view;
       first_focusable = focus_search_->FindNextFocusableView(
-          nullptr, false, views::FocusSearch::DOWN, false,
+          nullptr, views::FocusSearch::SearchDirection::kForwards,
+          views::FocusSearch::TraversalDirection::kDown,
+          views::FocusSearch::StartingViewPolicy::kSkipStartingView,
           &dummy_focus_traversable, &dummy_focus_traversable_view);
     }
 

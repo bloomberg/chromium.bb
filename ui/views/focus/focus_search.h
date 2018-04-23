@@ -21,9 +21,19 @@ class VIEWS_EXPORT FocusSearch {
   // goal is to switch to focusable views on the same level when using the arrow
   // keys (ala Windows: in a dialog box, arrow keys typically move between the
   // dialog OK, Cancel buttons).
-  enum Direction {
-    UP = 0,
-    DOWN
+  enum class TraversalDirection {
+    kUp,
+    kDown,
+  };
+
+  enum class SearchDirection {
+    kForwards,
+    kBackwards,
+  };
+
+  enum class StartingViewPolicy {
+    kSkipStartingView,
+    kCheckStartingView,
   };
 
   // Constructor.
@@ -52,20 +62,22 @@ class VIEWS_EXPORT FocusSearch {
   // - |starting_view| is the view that should be used as the starting point
   //   when looking for the previous/next view. It may be NULL (in which case
   //   the first/last view should be used depending if normal/reverse).
-  // - |reverse| whether we should find the next (reverse is false) or the
-  //   previous (reverse is true) view.
-  // - |direction| specifies whether we are traversing down (meaning we should
-  //   look into child views) or traversing up (don't look at child views).
-  // - |check_starting_view| is true if starting_view may obtain the next focus.
+  // - |search_direction| whether we should find the next (kForwards) or
+  //   previous (kReverse) view.
+  // - |traversal_direction| specifies whether we are traversing down (meaning
+  //   we should look into child views) or traversing up (don't look at
+  //   child views).
+  // - |check_starting_view| indicated if starting_view may obtain the next
+  //   focus.
   // - |focus_traversable| is set to the focus traversable that should be
   //   traversed if one is found (in which case the call returns NULL).
   // - |focus_traversable_view| is set to the view associated with the
   //   FocusTraversable set in the previous parameter (it is used as the
   //   starting view when looking for the next focusable view).
   virtual View* FindNextFocusableView(View* starting_view,
-                                      bool reverse,
-                                      Direction direction,
-                                      bool check_starting_view,
+                                      SearchDirection search_direction,
+                                      TraversalDirection traversal_direction,
+                                      StartingViewPolicy check_starting_view,
                                       FocusTraversable** focus_traversable,
                                       View** focus_traversable_view);
 
@@ -102,7 +114,7 @@ class VIEWS_EXPORT FocusSearch {
   // traversal of the views hierarchy. |skip_group_id| specifies a group_id,
   // -1 means no group. All views from a group are traversed in one pass.
   View* FindNextFocusableViewImpl(View* starting_view,
-                                  bool check_starting_view,
+                                  StartingViewPolicy check_starting_view,
                                   bool can_go_up,
                                   bool can_go_down,
                                   int skip_group_id,
@@ -111,7 +123,7 @@ class VIEWS_EXPORT FocusSearch {
 
   // Same as FindNextFocusableViewImpl but returns the previous focusable view.
   View* FindPreviousFocusableViewImpl(View* starting_view,
-                                      bool check_starting_view,
+                                      StartingViewPolicy check_starting_view,
                                       bool can_go_up,
                                       bool can_go_down,
                                       int skip_group_id,

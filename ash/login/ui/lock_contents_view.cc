@@ -109,7 +109,11 @@ views::View* FindFirstOrLastFocusableChild(views::View* root, bool reverse) {
   views::FocusTraversable* dummy_focus_traversable;
   views::View* dummy_focus_traversable_view;
   return search.FindNextFocusableView(
-      root, reverse, views::FocusSearch::DOWN, false /*check_starting_view*/,
+      root,
+      reverse ? views::FocusSearch::SearchDirection::kBackwards
+              : views::FocusSearch::SearchDirection::kForwards,
+      views::FocusSearch::TraversalDirection::kDown,
+      views::FocusSearch::StartingViewPolicy::kSkipStartingView,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 

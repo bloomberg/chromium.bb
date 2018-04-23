@@ -25,8 +25,9 @@ class AccessiblePaneViewFocusSearch : public FocusSearch {
 
  protected:
   View* GetParent(View* v) override {
-    return accessible_pane_view_->ContainsForFocusSearch(root(), v) ?
-        accessible_pane_view_->GetParentForFocusSearch(v) : NULL;
+    return accessible_pane_view_->ContainsForFocusSearch(root(), v)
+               ? accessible_pane_view_->GetParentForFocusSearch(v)
+               : nullptr;
   }
 
   // Returns true if |v| is contained within the hierarchy rooted at |root|.
@@ -43,7 +44,7 @@ class AccessiblePaneViewFocusSearch : public FocusSearch {
 AccessiblePaneView::AccessiblePaneView()
     : pane_has_focus_(false),
       allow_deactivate_on_esc_(false),
-      focus_manager_(NULL),
+      focus_manager_(nullptr),
       home_key_(ui::VKEY_HOME, ui::EF_NONE),
       end_key_(ui::VKEY_END, ui::EF_NONE),
       escape_key_(ui::VKEY_ESCAPE, ui::EF_NONE),
@@ -109,7 +110,7 @@ bool AccessiblePaneView::SetPaneFocusAndFocusDefault() {
 }
 
 views::View* AccessiblePaneView::GetDefaultFocusableChild() {
-  return NULL;
+  return nullptr;
 }
 
 View* AccessiblePaneView::GetParentForFocusSearch(View* v) {
@@ -135,7 +136,9 @@ views::View* AccessiblePaneView::GetFirstFocusableChild() {
   FocusTraversable* dummy_focus_traversable;
   views::View* dummy_focus_traversable_view;
   return focus_search_->FindNextFocusableView(
-      NULL, false, views::FocusSearch::DOWN, false,
+      nullptr, FocusSearch::SearchDirection::kForwards,
+      FocusSearch::TraversalDirection::kDown,
+      FocusSearch::StartingViewPolicy::kSkipStartingView,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
@@ -143,7 +146,9 @@ views::View* AccessiblePaneView::GetLastFocusableChild() {
   FocusTraversable* dummy_focus_traversable;
   views::View* dummy_focus_traversable_view;
   return focus_search_->FindNextFocusableView(
-      this, true, views::FocusSearch::DOWN, false,
+      this, FocusSearch::SearchDirection::kBackwards,
+      FocusSearch::TraversalDirection::kDown,
+      FocusSearch::StartingViewPolicy::kSkipStartingView,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
@@ -154,7 +159,7 @@ views::FocusTraversable* AccessiblePaneView::GetPaneFocusTraversable() {
   if (pane_has_focus_)
     return this;
   else
-    return NULL;
+    return nullptr;
 }
 
 bool AccessiblePaneView::AcceleratorPressed(
@@ -247,12 +252,12 @@ views::FocusSearch* AccessiblePaneView::GetFocusSearch() {
 
 views::FocusTraversable* AccessiblePaneView::GetFocusTraversableParent() {
   DCHECK(pane_has_focus_);
-  return NULL;
+  return nullptr;
 }
 
 views::View* AccessiblePaneView::GetFocusTraversableParentView() {
   DCHECK(pane_has_focus_);
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace views

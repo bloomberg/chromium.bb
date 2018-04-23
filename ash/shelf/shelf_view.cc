@@ -126,12 +126,13 @@ class ShelfFocusSearch : public views::FocusSearch {
   ~ShelfFocusSearch() override = default;
 
   // views::FocusSearch:
-  View* FindNextFocusableView(View* starting_view,
-                              bool reverse,
-                              Direction direction,
-                              bool check_starting_view,
-                              views::FocusTraversable** focus_traversable,
-                              View** focus_traversable_view) override {
+  View* FindNextFocusableView(
+      View* starting_view,
+      FocusSearch::SearchDirection search_direction,
+      FocusSearch::TraversalDirection traversal_direction,
+      FocusSearch::StartingViewPolicy check_starting_view,
+      views::FocusTraversable** focus_traversable,
+      View** focus_traversable_view) override {
     int index = view_model_->GetIndexOfView(starting_view);
     // The back button (item with index 0 on the model) only exists in tablet
     // mode, so punt focus to the app list button (item with index 1 on the
@@ -143,7 +144,7 @@ class ShelfFocusSearch : public views::FocusSearch {
     // Increment or decrement index based on the cycle, unless we are at either
     // edge, then we loop to the back or front. Skip the back button (item with
     // index 0) when not in tablet mode.
-    if (reverse) {
+    if (search_direction == FocusSearch::SearchDirection::kBackwards) {
       --index;
       if (index < 0 || (index == 0 && !tablet_mode))
         index = view_model_->view_size() - 1;
