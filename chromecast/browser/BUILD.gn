@@ -27,7 +27,6 @@ cast_source_set("browser") {
     "cast_browser_process.h",
     "cast_content_browser_client.cc",
     "cast_content_browser_client.h",
-    "cast_content_window.h",
     "cast_download_manager_delegate.cc",
     "cast_download_manager_delegate.h",
     "cast_http_user_agent_settings.cc",
@@ -49,7 +48,6 @@ cast_source_set("browser") {
     "cast_web_contents_manager.cc",
     "cast_web_contents_manager.h",
     "cast_web_view.cc",
-    "cast_web_view.h",
     "cast_web_view_default.cc",
     "cast_web_view_default.h",
     "cast_web_view_factory.cc",
@@ -88,6 +86,10 @@ cast_source_set("browser") {
       "pref_service_helper_simple.cc",
     ]
   }
+
+  public_deps = [
+    ":public",
+  ]
 
   deps = [
     "//base",
@@ -264,6 +266,28 @@ cast_source_set("browser") {
   }
 
   configs += [ "//media/audio:platform_config" ]
+}
+
+# Lightweight target for Cast interfaces that wrap //content/public/browser.
+# This target should only include interfaces which are required for unit tests.
+cast_source_set("public") {
+  sources = [
+    "cast_content_window.h",
+    "cast_web_view.h",
+  ]
+
+  # Need to expose this so that internal public_configs are propagated.
+  public_deps = [
+    "//content/public/browser",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/graphics",
+    "//content",
+    "//ui/events",
+    "//url",
+  ]
 }
 
 # This target generates an "overlay" interface spec, allowing the Cast build to
