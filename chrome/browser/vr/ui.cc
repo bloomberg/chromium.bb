@@ -250,8 +250,8 @@ void Ui::SetDialogLocation(float x, float y) {
   model_->hosted_platform_ui.rect.set_x(x);
 }
 
-void Ui::SetDialogFloating() {
-  model_->hosted_platform_ui.floating = true;
+void Ui::SetDialogFloating(bool floating) {
+  model_->hosted_platform_ui.floating = floating;
 }
 
 void Ui::ShowPlatformToast(const base::string16& text) {

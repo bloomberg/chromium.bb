@@ -886,8 +886,8 @@ void VrShellGl::SetDialogLocation(float x, float y) {
   ui_->SetDialogLocation(x, y);
 }
 
-void VrShellGl::SetDialogFloating() {
-  ui_->SetDialogFloating();
+void VrShellGl::SetDialogFloating(bool floating) {
+  ui_->SetDialogFloating(floating);
 }
 
 void VrShellGl::ShowToast(const base::string16& text) {
