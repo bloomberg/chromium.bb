@@ -71,3 +71,29 @@ TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
   EXPECT_EQ(kTestBeaconSeedEndTimeMillis,
             output.beacon_seeds[0].end_time_millis());
 }
+
+TEST(DeviceSyncMojomEnumTraitsTest, SoftwareFeature) {
+  static constexpr cryptauth::SoftwareFeature kTestSoftwareFeatures[] = {
+      cryptauth::SoftwareFeature::UNKNOWN_FEATURE,
+      cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+      cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
+      cryptauth::SoftwareFeature::EASY_UNLOCK_HOST,
+      cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
+      cryptauth::SoftwareFeature::MAGIC_TETHER_HOST,
+      cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT,
+      cryptauth::SoftwareFeature::SMS_CONNECT_HOST,
+      cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT};
+
+  for (auto feature_in : kTestSoftwareFeatures) {
+    cryptauth::SoftwareFeature feature_out;
+
+    chromeos::device_sync::mojom::SoftwareFeature serialized_feature =
+        mojo::EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
+                         cryptauth::SoftwareFeature>::ToMojom(feature_in);
+    ASSERT_TRUE((mojo::EnumTraits<
+                 chromeos::device_sync::mojom::SoftwareFeature,
+                 cryptauth::SoftwareFeature>::FromMojom(serialized_feature,
+                                                        &feature_out)));
+    EXPECT_EQ(feature_in, feature_out);
+  }
+}
