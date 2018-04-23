@@ -96,6 +96,10 @@ class CronetMetricsDelegate : public net::MetricsDelegate {
   // the client. If there is no metrics data for the passed task, this returns
   // nullptr.
   static std::unique_ptr<Metrics> MetricsForTask(NSURLSessionTask* task);
+
+  // Used by tests to query the size of the |task_metrics_map_| map.
+  static size_t GetMetricsMapSize();
+
  private:
   static NSObject* task_metrics_map_lock_;
   static std::map<NSURLSessionTask*, std::unique_ptr<Metrics>>
