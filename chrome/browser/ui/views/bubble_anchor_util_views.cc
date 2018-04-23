@@ -30,6 +30,7 @@ views::View* GetPageInfoAnchorView(Browser* browser, Anchor anchor) {
     return browser_view->GetLocationBarView()->GetSecurityBubbleAnchorView();
   }
   // Fall back to menu button if no location bar present.
+
   return browser_view->toolbar_button_provider()->GetAppMenuButton();
 }
 
