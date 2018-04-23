@@ -191,7 +191,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // Custom Elements
     // https://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-register
     // FIXME: The registerElement return type should be Function.
-    [CallWith=ScriptState, CustomElementCallbacks, RaisesException, MeasureAs=DocumentRegisterElement] CustomElementConstructor registerElement(DOMString type, optional ElementRegistrationOptions options);
+    [RuntimeEnabled=CustomElementsV0, CallWith=ScriptState, CustomElementCallbacks, RaisesException, MeasureAs=DocumentRegisterElement] CustomElementConstructor registerElement(DOMString type, optional ElementRegistrationOptions options);
     // https://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-instantiate
     // FIXME: The typeExtension arguments should not be nullable.
     [CustomElementCallbacks, PerWorldBindings, RaisesException, ImplementedAs=CreateElementForBinding] Element createElement(DOMString localName, (DOMString or Dictionary)? options);
