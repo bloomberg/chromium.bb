@@ -211,6 +211,7 @@ source_set("ios_web_general_unittests") {
     "test/web_test_unittest.mm",
     "url_scheme_util_unittest.mm",
     "url_util_unittest.cc",
+    "web_client_unittest.mm",
   ]
 }
 
