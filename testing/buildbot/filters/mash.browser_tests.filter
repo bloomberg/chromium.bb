@@ -331,6 +331,7 @@
 -OpenFileDialog/FileManagerBrowserTest.*
 -GearMenu/FileManagerBrowserTest.Test/3
 -GearMenu/FileManagerBrowserTest.Test/0
+-CreateNewFolder/FileManagerBrowserTest.*
 -TabindexFocusDownloads/FileManagerBrowserTestWithLegacyEventDispatch.Test/0
 -TabindexFocusDownloads/FileManagerBrowserTestWithLegacyEventDispatch.Test/1
 -DeclarativeNetRequestResourceTypeBrowserTest.Test1/1
