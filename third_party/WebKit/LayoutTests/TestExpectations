@@ -4104,3 +4104,4 @@ crbug.com/834446 [ Linux ] http/tests/misc/performance-memory.html [ Pass Failur
 
 # Sheriff 2018-04-23
 crbug.com/833331 [ Win10 ] inspector-protocol/page/pageNavigateToFragment.js [ Pass Failure ]
+crbug.com/831796 virtual/mouseevent_fractional/fast/events/autoscroll-in-textfield.html [ Failure Pass ]
