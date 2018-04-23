@@ -13,7 +13,7 @@
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
@@ -106,7 +106,7 @@ class CountingPolicyTest : public testing::Test {
     policy->ReadFilteredData(
         extension_id, type, api_name, page_url, arg_url, day,
         base::BindOnce(&CountingPolicyTest::CheckWrapper, std::move(checker),
-                       base::MessageLoop::current()->QuitWhenIdleClosure()));
+                       base::MessageLoopCurrent::Get()->QuitWhenIdleClosure()));
 
     // Set up a timeout for receiving results; if we haven't received anything
     // when the timeout triggers then assume that the test is broken.

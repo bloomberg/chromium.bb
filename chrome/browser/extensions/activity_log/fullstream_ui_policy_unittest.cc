@@ -12,7 +12,7 @@
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -97,7 +97,7 @@ class FullStreamUIPolicyTest : public testing::Test {
         extension_id, type, api_name, page_url, arg_url, days_ago,
         base::BindOnce(&FullStreamUIPolicyTest::CheckWrapper,
                        std::move(checker),
-                       base::MessageLoop::current()->QuitWhenIdleClosure()));
+                       base::MessageLoopCurrent::Get()->QuitWhenIdleClosure()));
 
     // Set up a timeout for receiving results; if we haven't received anything
     // when the timeout triggers then assume that the test is broken.
@@ -749,7 +749,7 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
   policy->Flush();
   GetActivityLogTaskRunner()->PostTaskAndReply(
       FROM_HERE, base::DoNothing(),
-      base::MessageLoop::current()->QuitWhenIdleClosure());
+      base::MessageLoopCurrent::Get()->QuitWhenIdleClosure());
   base::RunLoop().Run();
 
   CheckReadFilteredData(
