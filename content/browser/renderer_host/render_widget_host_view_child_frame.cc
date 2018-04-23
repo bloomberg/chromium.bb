@@ -437,9 +437,14 @@ void RenderWidgetHostViewChildFrame::Destroy() {
 
 void RenderWidgetHostViewChildFrame::SetTooltipText(
     const base::string16& tooltip_text) {
-  frame_connector_->GetRootRenderWidgetHostView()
-      ->GetCursorManager()
-      ->SetTooltipTextForView(this, tooltip_text);
+  if (!frame_connector_)
+    return;
+
+  auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
+  if (!root_view)
+    return;
+
+  root_view->GetCursorManager()->SetTooltipTextForView(this, tooltip_text);
 }
 
 RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetParentView() {
