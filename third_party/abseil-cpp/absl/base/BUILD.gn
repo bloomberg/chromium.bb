@@ -210,44 +210,46 @@ source_set("pretty_function") {
   visibility += [ "../*" ]
 }
 
-source_set("exception_safety_testing") {
-  testonly = true
-  configs += [
-    "//third_party/abseil-cpp:absl_test_cflags_cc",
-  ]
+# TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
+# source_set("exception_safety_testing") {
+#   testonly = true
+#   configs += [
+#     "//third_party/abseil-cpp:absl_test_cflags_cc",
+#   ]
 
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/exception_safety_testing.cc",
-  ]
-  public = [
-    "internal/exception_safety_testing.h",
-  ]
-  deps = [
-    ":base",
-    ":config",
-    ":pretty_function",
-    "../memory",
-    "../meta:type_traits",
-    "../strings",
-    "../types:optional",
-  ]
-}
+#   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+#   sources = [
+#     "internal/exception_safety_testing.cc",
+#   ]
+#   public = [
+#     "internal/exception_safety_testing.h",
+#   ]
+#   deps = [
+#     ":base",
+#     ":config",
+#     ":pretty_function",
+#     "../memory",
+#     "../meta:type_traits",
+#     "../strings",
+#     "../types:optional",
+#   ]
+# }
 
-source_set("spinlock_test_common") {
-  testonly = true
-  configs += [ "//third_party/abseil-cpp:absl_test_cflags_cc" ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "spinlock_test_common.cc",
-  ]
-  deps = [
-    ":base",
-    ":core_headers",
-    ":spinlock_wait",
-    "../synchronization",
-  ]
-}
+# TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
+# source_set("spinlock_test_common") {
+#   testonly = true
+#   configs += [ "//third_party/abseil-cpp:absl_test_cflags_cc" ]
+#   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+#   sources = [
+#     "spinlock_test_common.cc",
+#   ]
+#   deps = [
+#     ":base",
+#     ":core_headers",
+#     ":spinlock_wait",
+#     "../synchronization",
+#   ]
+# }
 
 source_set("endian") {
   configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
