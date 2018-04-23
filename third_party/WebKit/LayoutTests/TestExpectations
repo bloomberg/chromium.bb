@@ -2247,9 +2247,6 @@ crbug.com/604875 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
 
 crbug.com/808834 [ Linux Win ] external/wpt/css/css-pseudo/first-letter-001.html [ Failure ]
 
-crbug.com/808837 [ Linux ] external/wpt/css/css-pseudo/first-letter-002.html [ Failure ]
-crbug.com/808837 [ Linux ] external/wpt/css/css-pseudo/first-letter-003.html [ Failure ]
-
 crbug.com/655458 crbug.com/721814 external/wpt/mediacapture-image/idlharness.html [ Skip ]
 crbug.com/626703 external/wpt/web-nfc/idlharness.https.html [ Skip ]
 
