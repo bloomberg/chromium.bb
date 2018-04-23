@@ -18,10 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/window/dialog_client_view.h"
 
-namespace {
-constexpr char kCrostiniTerminalAppName[] = "Terminal";
-}  // namespace
-
 class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
  public:
   CrostiniInstallerViewBrowserTest() {}
@@ -30,8 +26,6 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
   void ShowUi(const std::string& name) override {
     AppListServiceImpl* service = test::GetAppListServiceImpl();
     AppListClientImpl* client = service->GetAppListClient();
-    const std::string kCrostiniTerminalId =
-        crx_file::id_util::GenerateId(kCrostiniTerminalAppName);
     client->ActivateItem(kCrostiniTerminalId, 0);
   }
 

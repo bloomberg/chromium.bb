@@ -189,7 +189,8 @@ bool CrostiniRegistryService::IsCrostiniShelfAppId(
   if (base::StartsWith(shelf_app_id, kCrostiniAppIdPrefix,
                        base::CompareCase::SENSITIVE))
     return true;
-  // TODO(timloh): Return true for the default Terminal app.
+  if (shelf_app_id == kCrostiniTerminalId)
+    return true;
   // TODO(timloh): We need to handle desktop files that have been removed.
   // For example, running windows with a no-longer-valid app id will try to
   // use the ExtensionContextMenuModel.
