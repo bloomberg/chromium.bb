@@ -270,10 +270,10 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
 
   EXPECT_NE(string::npos, request.find("<hw physmemory="));
 
-  // Tests that the progid is injected correctly from the configurator.
-  EXPECT_NE(
-      string::npos,
-      request.find(" version=\"fake_prodid-30.0\" prodversion=\"30.0\" "));
+  // Tests that the product id is injected correctly from the configurator.
+  EXPECT_NE(string::npos,
+            request.find(" updater=\"fake_prodid\" updaterversion=\"30.0\" "
+                         "prodversion=\"30.0\" "));
 
   // Tests that there is a sessionid attribute.
   EXPECT_NE(string::npos, request.find(" sessionid="));
