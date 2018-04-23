@@ -3,7 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""//testing/scripts wrapper for the network traffic annotations checks."""
+"""//testing/scripts wrapper for the network traffic annotations checks.
+This script is used to run check_annotations.py on the trybots to ensure that
+all network traffic annotations have correct syntax and semantics, and all
+functions requiring annotations have one."""
 
 import json
 import os

@@ -905,7 +905,7 @@
       },
       'linux-annotator-rel': {
         'test_suites': {
-          'scripts': 'check_network_annotation_auditor_script',
+          'scripts': 'test_traffic_annotation_auditor_script',
         }
       },
       'mac-views-rel': {
