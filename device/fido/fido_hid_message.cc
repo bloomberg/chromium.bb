@@ -10,7 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
@@ -140,9 +140,9 @@ FidoHidMessage::FidoHidMessage(uint32_t channel_id,
   data = data.subspan(init_data.size());
 
   for (auto cont_data :
-       u2f_parsing_utils::SplitSpan(data, kHidContinuationPacketDataSize)) {
+       fido_parsing_utils::SplitSpan(data, kHidContinuationPacketDataSize)) {
     packets_.push_back(std::make_unique<FidoHidContinuationPacket>(
-        channel_id, sequence++, u2f_parsing_utils::Materialize(cont_data)));
+        channel_id, sequence++, fido_parsing_utils::Materialize(cont_data)));
   }
 }
 

@@ -14,10 +14,10 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_parsing_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,9 +58,9 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAssertionSuccess) {
       test_data::kTestGetAssertionResponse);
 
   CtapGetAssertionRequest request_param(
-      kRpId, u2f_parsing_utils::Materialize(kClientDataHash));
+      kRpId, fido_parsing_utils::Materialize(kClientDataHash));
   request_param.SetAllowList({{to_string(CredentialType::kPublicKey),
-                               u2f_parsing_utils::Materialize(
+                               fido_parsing_utils::Materialize(
                                    test_data::kTestGetAssertionCredentialId)}});
 
   auto task = std::make_unique<GetAssertionTask>(
@@ -90,7 +90,7 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAssertionInvalidCredential) {
   auto task = std::make_unique<GetAssertionTask>(
       device.get(),
       CtapGetAssertionRequest(kRpId,
-                              u2f_parsing_utils::Materialize(kClientDataHash)),
+                              fido_parsing_utils::Materialize(kClientDataHash)),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -116,7 +116,7 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAsserionIncorrectUserEntity) {
   auto task = std::make_unique<GetAssertionTask>(
       device.get(),
       CtapGetAssertionRequest(kRpId,
-                              u2f_parsing_utils::Materialize(kClientDataHash)),
+                              fido_parsing_utils::Materialize(kClientDataHash)),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -140,7 +140,7 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAsserionIncorrectRpIdHash) {
   auto task = std::make_unique<GetAssertionTask>(
       device.get(),
       CtapGetAssertionRequest(kRpId,
-                              u2f_parsing_utils::Materialize(kClientDataHash)),
+                              fido_parsing_utils::Materialize(kClientDataHash)),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -163,7 +163,7 @@ TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {
   auto task = std::make_unique<GetAssertionTask>(
       device.get(),
       CtapGetAssertionRequest(kRpId,
-                              u2f_parsing_utils::Materialize(kClientDataHash)),
+                              fido_parsing_utils::Materialize(kClientDataHash)),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -182,7 +182,7 @@ TEST_F(FidoGetAssertionTaskTest, TestIncompatibleUserVerificationSetting) {
       test_data::kTestGetInfoResponseWithoutUvSupport);
 
   auto request = CtapGetAssertionRequest(
-      kRpId, u2f_parsing_utils::Materialize(kClientDataHash));
+      kRpId, fido_parsing_utils::Materialize(kClientDataHash));
   request.SetUserVerification(UserVerificationRequirement::kRequired);
 
   auto task = std::make_unique<GetAssertionTask>(

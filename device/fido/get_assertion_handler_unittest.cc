@@ -10,12 +10,12 @@
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/get_assertion_request_handler.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_parsing_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,10 +42,10 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     ForgeNextHidDiscovery();
 
     CtapGetAssertionRequest request_param(
-        kRpId, u2f_parsing_utils::Materialize(kClientDataHash));
+        kRpId, fido_parsing_utils::Materialize(kClientDataHash));
     request_param.SetAllowList(
         {{to_string(CredentialType::kPublicKey),
-          u2f_parsing_utils::Materialize(
+          fido_parsing_utils::Materialize(
               test_data::kTestGetAssertionCredentialId)}});
 
     return std::make_unique<GetAssertionRequestHandler>(

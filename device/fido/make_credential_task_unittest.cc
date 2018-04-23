@@ -13,11 +13,11 @@
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/make_credential_task.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_parsing_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,11 +47,12 @@ class FidoMakeCredentialTaskTest : public testing::Test {
   std::unique_ptr<MakeCredentialTask> CreateMakeCredentialTask(
       FidoDevice* device) {
     PublicKeyCredentialRpEntity rp(kRpId);
-    PublicKeyCredentialUserEntity user(u2f_parsing_utils::Materialize(kUserId));
+    PublicKeyCredentialUserEntity user(
+        fido_parsing_utils::Materialize(kUserId));
     return std::make_unique<MakeCredentialTask>(
         device,
         CtapMakeCredentialRequest(
-            u2f_parsing_utils::Materialize(kClientDataHash), std::move(rp),
+            fido_parsing_utils::Materialize(kClientDataHash), std::move(rp),
             std::move(user),
             PublicKeyCredentialParams(
                 std::vector<PublicKeyCredentialParams::CredentialInfo>(1))),
@@ -63,11 +64,12 @@ class FidoMakeCredentialTaskTest : public testing::Test {
       FidoDevice* device,
       AuthenticatorSelectionCriteria criteria) {
     PublicKeyCredentialRpEntity rp(kRpId);
-    PublicKeyCredentialUserEntity user(u2f_parsing_utils::Materialize(kUserId));
+    PublicKeyCredentialUserEntity user(
+        fido_parsing_utils::Materialize(kUserId));
     return std::make_unique<MakeCredentialTask>(
         device,
         CtapMakeCredentialRequest(
-            u2f_parsing_utils::Materialize(kClientDataHash), std::move(rp),
+            fido_parsing_utils::Materialize(kClientDataHash), std::move(rp),
             std::move(user),
             PublicKeyCredentialParams(
                 std::vector<PublicKeyCredentialParams::CredentialInfo>(1))),

@@ -12,12 +12,12 @@
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/make_credential_request_handler.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_parsing_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,12 +46,13 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   std::unique_ptr<MakeCredentialRequestHandler> CreateMakeCredentialHandler() {
     ForgeNextHidDiscovery();
     PublicKeyCredentialRpEntity rp(kRpId);
-    PublicKeyCredentialUserEntity user(u2f_parsing_utils::Materialize(kUserId));
+    PublicKeyCredentialUserEntity user(
+        fido_parsing_utils::Materialize(kUserId));
     PublicKeyCredentialParams credential_params(
         std::vector<PublicKeyCredentialParams::CredentialInfo>(1));
 
     auto request_parameter = CtapMakeCredentialRequest(
-        u2f_parsing_utils::Materialize(kClientDataHash), std::move(rp),
+        fido_parsing_utils::Materialize(kClientDataHash), std::move(rp),
         std::move(user), std::move(credential_params));
 
     return std::make_unique<MakeCredentialRequestHandler>(

@@ -16,8 +16,8 @@
 #include "device/fido/fake_hid_impl_for_testing.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_hid_device.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_parsing_utils.h"
 #include "device/fido/u2f_request.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -53,9 +53,9 @@ constexpr uint8_t kInitResponsePrefix[] = {
 std::vector<uint8_t> CreateMockInitResponse(
     base::span<const uint8_t> nonce,
     base::span<const uint8_t> channel_id) {
-  auto init_response = u2f_parsing_utils::Materialize(kInitResponsePrefix);
-  u2f_parsing_utils::Append(&init_response, nonce);
-  u2f_parsing_utils::Append(&init_response, channel_id);
+  auto init_response = fido_parsing_utils::Materialize(kInitResponsePrefix);
+  fido_parsing_utils::Append(&init_response, nonce);
+  fido_parsing_utils::Append(&init_response, channel_id);
   init_response.resize(64);
   return init_response;
 }
@@ -63,8 +63,8 @@ std::vector<uint8_t> CreateMockInitResponse(
 // Returns HID keep alive message encoded into HID packet format.
 std::vector<uint8_t> GetKeepAliveHidMessage(
     base::span<const uint8_t> channel_id) {
-  auto response = u2f_parsing_utils::Materialize(channel_id);
-  u2f_parsing_utils::Append(&response, kMockKeepAliveResponseSuffix);
+  auto response = fido_parsing_utils::Materialize(channel_id);
+  fido_parsing_utils::Append(&response, kMockKeepAliveResponseSuffix);
   response.resize(64);
   return response;
 }
@@ -73,8 +73,8 @@ std::vector<uint8_t> GetKeepAliveHidMessage(
 std::vector<uint8_t> CreateMockResponse(
     base::span<const uint8_t> channel_id,
     base::span<const uint8_t> response_buffer) {
-  auto response = u2f_parsing_utils::Materialize(channel_id);
-  u2f_parsing_utils::Append(&response, response_buffer);
+  auto response = fido_parsing_utils::Materialize(channel_id);
+  fido_parsing_utils::Append(&response, response_buffer);
   response.resize(64);
   return response;
 }
@@ -240,9 +240,9 @@ TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
   device::mojom::HidConnectionPtr connection_client;
-  MockHidConnection mock_connection(hid_device.Clone(),
-                                    mojo::MakeRequest(&connection_client),
-                                    u2f_parsing_utils::Materialize(kChannelId));
+  MockHidConnection mock_connection(
+      hid_device.Clone(), mojo::MakeRequest(&connection_client),
+      fido_parsing_utils::Materialize(kChannelId));
 
   // Initial write for establishing a channel ID.
   mock_connection.ExpectWriteHidInit();
@@ -306,9 +306,9 @@ TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
   device::mojom::HidConnectionPtr connection_client;
-  MockHidConnection mock_connection(hid_device.Clone(),
-                                    mojo::MakeRequest(&connection_client),
-                                    u2f_parsing_utils::Materialize(kChannelId));
+  MockHidConnection mock_connection(
+      hid_device.Clone(), mojo::MakeRequest(&connection_client),
+      fido_parsing_utils::Materialize(kChannelId));
 
   // Initial write for establishing channel ID.
   mock_connection.ExpectWriteHidInit();
@@ -375,9 +375,9 @@ TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
   device::mojom::HidConnectionPtr connection_client;
-  MockHidConnection mock_connection(hid_device.Clone(),
-                                    mojo::MakeRequest(&connection_client),
-                                    u2f_parsing_utils::Materialize(kChannelId));
+  MockHidConnection mock_connection(
+      hid_device.Clone(), mojo::MakeRequest(&connection_client),
+      fido_parsing_utils::Materialize(kChannelId));
 
   // Initial write for establishing channel ID.
   mock_connection.ExpectWriteHidInit();
@@ -441,9 +441,9 @@ TEST_F(FidoHidDeviceTest, TestCancel) {
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
   device::mojom::HidConnectionPtr connection_client;
-  MockHidConnection mock_connection(hid_device.Clone(),
-                                    mojo::MakeRequest(&connection_client),
-                                    u2f_parsing_utils::Materialize(kChannelId));
+  MockHidConnection mock_connection(
+      hid_device.Clone(), mojo::MakeRequest(&connection_client),
+      fido_parsing_utils::Materialize(kChannelId));
 
   // Initial write for establishing channel ID.
   mock_connection.ExpectWriteHidInit();

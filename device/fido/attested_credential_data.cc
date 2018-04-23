@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/numerics/safe_math.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/opaque_public_key.h"
 #include "device/fido/public_key.h"
-#include "device/fido/u2f_parsing_utils.h"
 
 namespace device {
 
@@ -22,12 +22,12 @@ AttestedCredentialData::DecodeFromCtapResponse(
     return base::nullopt;
 
   std::array<uint8_t, kAaguidLength> aaguid;
-  if (!u2f_parsing_utils::ExtractArray(buffer, 0, &aaguid))
+  if (!fido_parsing_utils::ExtractArray(buffer, 0, &aaguid))
     return base::nullopt;
 
   std::array<uint8_t, kCredentialIdLengthLength> credential_id_length_array;
-  if (!u2f_parsing_utils::ExtractArray(buffer, kAaguidLength,
-                                       &credential_id_length_array)) {
+  if (!fido_parsing_utils::ExtractArray(buffer, kAaguidLength,
+                                        &credential_id_length_array)) {
     return base::nullopt;
   }
 
@@ -36,7 +36,7 @@ AttestedCredentialData::DecodeFromCtapResponse(
       (base::strict_cast<size_t>(credential_id_length_array[0]) << 8) |
       base::strict_cast<size_t>(credential_id_length_array[1]);
 
-  auto credential_id = u2f_parsing_utils::Extract(
+  auto credential_id = fido_parsing_utils::Extract(
       buffer, kAaguidLength + kCredentialIdLengthLength, credential_id_length);
   if (credential_id.empty())
     return base::nullopt;
@@ -60,8 +60,8 @@ AttestedCredentialData::CreateFromU2fRegisterResponse(
   // TODO(crbug/799075): Introduce a CredentialID class to do this extraction.
   // Extract the length of the credential (i.e. of the U2FResponse key
   // handle). Length is big endian.
-  std::vector<uint8_t> extracted_length = u2f_parsing_utils::Extract(
-      u2f_data, u2f_parsing_utils::kU2fResponseKeyHandleLengthPos, 1);
+  std::vector<uint8_t> extracted_length = fido_parsing_utils::Extract(
+      u2f_data, fido_parsing_utils::kU2fResponseKeyHandleLengthPos, 1);
 
   if (extracted_length.empty()) {
     return base::nullopt;
@@ -76,8 +76,8 @@ AttestedCredentialData::CreateFromU2fRegisterResponse(
       0, extracted_length[0]};
 
   // Extract the credential id (i.e. key handle).
-  std::vector<uint8_t> credential_id = u2f_parsing_utils::Extract(
-      u2f_data, u2f_parsing_utils::kU2fResponseKeyHandleStartPos,
+  std::vector<uint8_t> credential_id = fido_parsing_utils::Extract(
+      u2f_data, fido_parsing_utils::kU2fResponseKeyHandleStartPos,
       base::strict_cast<size_t>(credential_id_length[1]));
 
   if (credential_id.empty()) {
@@ -103,13 +103,13 @@ void AttestedCredentialData::DeleteAaguid() {
 
 std::vector<uint8_t> AttestedCredentialData::SerializeAsBytes() const {
   std::vector<uint8_t> attestation_data;
-  u2f_parsing_utils::Append(&attestation_data,
-                            base::make_span(aaguid_.data(), kAaguidLength));
-  u2f_parsing_utils::Append(
+  fido_parsing_utils::Append(&attestation_data,
+                             base::make_span(aaguid_.data(), kAaguidLength));
+  fido_parsing_utils::Append(
       &attestation_data,
       base::make_span(credential_id_length_.data(), kCredentialIdLengthLength));
-  u2f_parsing_utils::Append(&attestation_data, credential_id_);
-  u2f_parsing_utils::Append(&attestation_data, public_key_->EncodeAsCOSEKey());
+  fido_parsing_utils::Append(&attestation_data, credential_id_);
+  fido_parsing_utils::Append(&attestation_data, public_key_->EncodeAsCOSEKey());
   return attestation_data;
 }
 

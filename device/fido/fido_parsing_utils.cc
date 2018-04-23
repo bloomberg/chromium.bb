@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 #include "base/logging.h"
 
 namespace device {
-namespace u2f_parsing_utils {
+namespace fido_parsing_utils {
 
 namespace {
 
@@ -79,5 +79,5 @@ std::vector<base::span<const uint8_t>> SplitSpan(base::span<const uint8_t> span,
   return chunks;
 }
 
-}  // namespace u2f_parsing_utils
+}  // namespace fido_parsing_utils
 }  // namespace device

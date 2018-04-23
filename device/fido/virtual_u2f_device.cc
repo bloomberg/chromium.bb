@@ -20,11 +20,11 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/sha2.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
-using u2f_parsing_utils::Append;
+using fido_parsing_utils::Append;
 
 namespace {
 
@@ -167,7 +167,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   std::tie(std::ignore, did_insert) = mutable_state()->registrations.emplace(
       std::move(key_handle),
       RegistrationData(std::move(private_key),
-                       u2f_parsing_utils::Materialize(application_parameter),
+                       fido_parsing_utils::Materialize(application_parameter),
                        1));
   DCHECK(did_insert);
 
@@ -197,7 +197,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
 
   // Check if this is our key_handle and it's for this appId.
   auto it = mutable_state()->registrations.find(
-      u2f_parsing_utils::Materialize(key_handle));
+      fido_parsing_utils::Materialize(key_handle));
 
   if (it == mutable_state()->registrations.end()) {
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);

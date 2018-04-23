@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "components/cbor/cbor_writer.h"
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
@@ -32,12 +32,12 @@ std::unique_ptr<ECPublicKey> ECPublicKey::ExtractFromU2fRegistrationResponse(
     return nullptr;
 
   std::vector<uint8_t> x =
-      u2f_parsing_utils::Extract(u2f_data, kHeaderLength, kKeyLength);
+      fido_parsing_utils::Extract(u2f_data, kHeaderLength, kKeyLength);
 
   if (x.empty())
     return nullptr;
 
-  std::vector<uint8_t> y = u2f_parsing_utils::Extract(
+  std::vector<uint8_t> y = fido_parsing_utils::Extract(
       u2f_data, kHeaderLength + kKeyLength, kKeyLength);
 
   if (y.empty())

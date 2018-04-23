@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
-namespace u2f_parsing_utils {
+namespace fido_parsing_utils {
 
 namespace {
 constexpr uint8_t kOne[] = {0x01};
@@ -188,5 +188,5 @@ TEST(U2fParsingUtils, SplitSpan) {
       ::testing::ElementsAre(::testing::ElementsAreArray(kOneTwoThree)));
 }
 
-}  // namespace u2f_parsing_utils
+}  // namespace fido_parsing_utils
 }  // namespace device
