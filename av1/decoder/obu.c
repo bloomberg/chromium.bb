@@ -368,33 +368,33 @@ static void read_metadata_scalability(const uint8_t *data, size_t sz) {
 
 static void read_metadata_timecode(const uint8_t *data, size_t sz) {
   struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  aom_rb_read_literal(&rb, 5);
-  int full_timestamp_flag = aom_rb_read_bit(&rb);
-  aom_rb_read_bit(&rb);
-  aom_rb_read_literal(&rb, 5);
-  aom_rb_read_bit(&rb);
-  aom_rb_read_literal(&rb, 9);
+  aom_rb_read_literal(&rb, 5);                     // counting_type f(5)
+  int full_timestamp_flag = aom_rb_read_bit(&rb);  // full_timestamp_flag f(1)
+  aom_rb_read_bit(&rb);                            // discontinuity_flag (f1)
+  aom_rb_read_bit(&rb);                            // cnt_dropped_flag f(1)
+  aom_rb_read_literal(&rb, 9);                     // n_frames f(9)
   if (full_timestamp_flag) {
-    aom_rb_read_literal(&rb, 6);
-    aom_rb_read_literal(&rb, 6);
-    aom_rb_read_literal(&rb, 5);
+    aom_rb_read_literal(&rb, 6);  // seconds_value f(6)
+    aom_rb_read_literal(&rb, 6);  // minutes_value f(6)
+    aom_rb_read_literal(&rb, 5);  // hours_value f(5)
   } else {
-    int seconds_flag = aom_rb_read_bit(&rb);
+    int seconds_flag = aom_rb_read_bit(&rb);  // seconds_flag f(1)
     if (seconds_flag) {
-      aom_rb_read_literal(&rb, 6);
-      int minutes_flag = aom_rb_read_bit(&rb);
+      aom_rb_read_literal(&rb, 6);              // seconds_value f(6)
+      int minutes_flag = aom_rb_read_bit(&rb);  // minutes_flag f(1)
       if (minutes_flag) {
-        aom_rb_read_literal(&rb, 6);
-        int hours_flag = aom_rb_read_bit(&rb);
+        aom_rb_read_literal(&rb, 6);            // minutes_value f(6)
+        int hours_flag = aom_rb_read_bit(&rb);  // hours_flag f(1)
         if (hours_flag) {
-          aom_rb_read_literal(&rb, 5);
+          aom_rb_read_literal(&rb, 5);  // hours_value f(5)
         }
       }
     }
   }
+  // time_offset_length f(5)
   int time_offset_length = aom_rb_read_literal(&rb, 5);
   if (time_offset_length) {
-    aom_rb_read_literal(&rb, time_offset_length);
+    aom_rb_read_literal(&rb, time_offset_length);  // f(time_offset_length)
   }
 }
 
