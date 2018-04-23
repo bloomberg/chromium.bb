@@ -117,7 +117,6 @@ FileGrid.GridSize = 180; // px
 /**
  * Sets list thumbnail loader.
  * @param {ListThumbnailLoader} listThumbnailLoader A list thumbnail loader.
- * @private
  */
 FileGrid.prototype.setListThumbnailLoader = function(listThumbnailLoader) {
   if (this.listThumbnailLoader_) {

@@ -15,7 +15,7 @@ var FilesConfirmDialog = function(parentNode) {
 FilesConfirmDialog.prototype.__proto__ = cr.ui.dialogs.ConfirmDialog.prototype;
 
 /**
- * @private
+ * @protected
  * @override
  */
 FilesConfirmDialog.prototype.initDom_ = function() {

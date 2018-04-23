@@ -268,10 +268,11 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
 
   if (!this.ignoreCurrentDirectoryDeletion_) {
     // If the change is deletion of currentDir, move up to its parent directory.
-    directoryEntry.getDirectory(directoryEntry.fullPath, {create: false},
-        function() {},
+    directoryEntry.getDirectory(
+        directoryEntry.fullPath, {create: false}, function() {},
         function() {
-          var volumeInfo = this.volumeManager_.getVolumeInfo(directoryEntry);
+          var volumeInfo =
+              this.volumeManager_.getVolumeInfo(assert(directoryEntry));
           if (volumeInfo) {
             volumeInfo.resolveDisplayRoot().then(function(displayRoot) {
               this.changeDirectoryEntry(displayRoot);
@@ -1156,8 +1157,8 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   // When the volume where we are is unmounted, fallback to the default volume's
   // root. If current directory path is empty, stop the fallback
   // since the current directory is initializing now.
-  if (this.getCurrentDirEntry() &&
-      !this.volumeManager_.getVolumeInfo(this.getCurrentDirEntry())) {
+  var entry = this.getCurrentDirEntry();
+  if (entry && !this.volumeManager_.getVolumeInfo(entry)) {
     this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
       this.changeDirectoryEntry(displayRoot);
     }.bind(this));

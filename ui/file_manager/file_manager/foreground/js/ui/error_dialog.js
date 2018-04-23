@@ -17,7 +17,7 @@ ErrorDialog.prototype = {
 
 /**
  * One-time initialization of DOM.
- * @private
+ * @protected
  */
 ErrorDialog.prototype.initDom_ = function() {
   cr.ui.dialogs.BaseDialog.prototype.initDom_.call(this);

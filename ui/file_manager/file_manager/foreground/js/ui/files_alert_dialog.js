@@ -15,7 +15,7 @@ var FilesAlertDialog = function(parentNode) {
 FilesAlertDialog.prototype.__proto__ = cr.ui.dialogs.AlertDialog.prototype;
 
 /**
- * @private
+ * @protected
  * @override
  */
 FilesAlertDialog.prototype.initDom_ = function() {

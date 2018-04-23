@@ -40,13 +40,11 @@ function ImageEditorMode(name, title) {
 
   /**
    * @type {Viewport}
-   * @private
    */
   this.viewport_ = null;
 
   /**
    * @type {HTMLElement}
-   * @private
    */
   this.button_ = null;
 
@@ -58,7 +56,6 @@ function ImageEditorMode(name, title) {
 
   /**
    * @type {boolean}
-   * @private
    */
   this.updated_ = false;
 
@@ -67,7 +64,7 @@ function ImageEditorMode(name, title) {
    * @private
    */
   this.imageView_ = null;
-};
+}
 
 ImageEditorMode.prototype = {
   __proto__: ImageBuffer.Overlay.prototype

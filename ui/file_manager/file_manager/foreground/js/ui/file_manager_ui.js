@@ -121,7 +121,6 @@ function FileManagerUI(providersModel, element, launchParam) {
   /**
    * The container element of the dialog.
    * @type {!HTMLElement}
-   * @private
    */
   this.dialogContainer =
       queryRequiredElement('.dialog-container', this.element);
@@ -197,7 +196,7 @@ function FileManagerUI(providersModel, element, launchParam) {
 
   /**
    * Ripple effect of sort button.
-   * @private {!FilesToggleRipple}
+   * @type {!FilesToggleRipple}
    * @const
    */
   this.sortButtonToggleRipple =
@@ -550,7 +549,7 @@ FileManagerUI.prototype.decorateSplitter_ = function(splitterElement,
     }
   };
 
-  customSplitter.decorate(splitterElement);
+  /** @type Object */ (customSplitter).decorate(splitterElement);
   splitterElement.resizeNextElement = !!opt_resizeNextElement;
 };
 

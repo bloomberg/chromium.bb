@@ -178,7 +178,7 @@ importer.TaskQueue.Task.prototype.run;
  * @param {string} taskId
  */
 importer.TaskQueue.BaseTask = function(taskId) {
-  /** @private {string} */
+  /** @protected {string} */
   this.taskId_ = taskId;
   /** @private {!Array<!importer.TaskQueue.Task.Observer>} */
   this.observers_ = [];

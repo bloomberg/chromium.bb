@@ -25,7 +25,7 @@ CWSWidgetContainerErrorDialog.prototype.shown = function() {
 
 /**
  * One-time initialization of DOM.
- * @private
+ * @protected
  */
 CWSWidgetContainerErrorDialog.prototype.initDom_ = function() {
   cr.ui.dialogs.BaseDialog.prototype.initDom_.call(this);

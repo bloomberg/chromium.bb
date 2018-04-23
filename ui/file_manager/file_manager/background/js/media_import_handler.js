@@ -242,7 +242,7 @@ importer.MediaImportHandler.ImportTask = function(
     tracker) {
 
   importer.TaskQueue.BaseTask.call(this, taskId);
-  /** @private {string} */
+  /** @protected {string} */
   this.taskId_ = taskId;
 
   /** @private {!importer.Destination} */

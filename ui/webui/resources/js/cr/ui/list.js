@@ -873,9 +873,8 @@ cr.define('cr.ui', function() {
      * possibility that the lead item may be a different height.
      * @param {number} index The index to find the top height of.
      * @return {{top: number, height: number}} The heights for the given index.
-     * @private
      */
-    getHeightsForIndex_: function(index) {
+    getHeightsForIndex: function(index) {
       var itemHeight = this.getItemHeightByIndex_(index);
       var top = this.getItemTop(index);
       return {top: top, height: itemHeight};
@@ -901,7 +900,7 @@ cr.define('cr.ui', function() {
       // If offset exceeds the height of list.
       var lastHeight = 0;
       if (this.dataModel.length) {
-        var h = this.getHeightsForIndex_(this.dataModel.length - 1);
+        var h = this.getHeightsForIndex(this.dataModel.length - 1);
         lastHeight = h.top + h.height;
       }
       if (lastHeight < offset)
@@ -914,7 +913,7 @@ cr.define('cr.ui', function() {
 
       // Searchs the correct index.
       do {
-        var heights = this.getHeightsForIndex_(estimatedIndex);
+        var heights = this.getHeightsForIndex(estimatedIndex);
         var top = heights.top;
         var height = heights.height;
 

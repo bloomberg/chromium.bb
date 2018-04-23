@@ -324,7 +324,6 @@ util.createChild = function(parent, opt_className, opt_tag) {
  * returns it.
  * @param {string} query Query for the element.
  * @param {function(new: T, ...)} type Type used to decorate.
- * @private
  * @template T
  * @return {!T} Decorated element.
  */
