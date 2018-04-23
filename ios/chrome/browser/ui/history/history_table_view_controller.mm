@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
@@ -79,12 +80,21 @@ const int kMaxFetchCount = 100;
 @property(nonatomic, assign, getter=isSearching) BOOL searching;
 // This ViewController's searchController;
 @property(nonatomic, strong) UISearchController* searchController;
+// NavigationController UIToolbar Buttons.
+@property(nonatomic, strong) UIBarButtonItem* cancelButton;
+@property(nonatomic, strong) UIBarButtonItem* clearBrowsingDataButton;
+@property(nonatomic, strong) UIBarButtonItem* deleteButton;
+@property(nonatomic, strong) UIBarButtonItem* editButton;
 @end
 
 @implementation HistoryTableViewController
 @synthesize browserState = _browserState;
+@synthesize cancelButton = _cancelButton;
+@synthesize clearBrowsingDataButton = _clearBrowsingDataButton;
 @synthesize contextMenuCoordinator = _contextMenuCoordinator;
 @synthesize currentQuery = _currentQuery;
+@synthesize deleteButton = _deleteButton;
+@synthesize editButton = _editButton;
 @synthesize empty = _empty;
 @synthesize entryInserter = _entryInserter;
 @synthesize filterQueryResult = _filterQueryResult;
@@ -110,6 +120,7 @@ const int kMaxFetchCount = 100;
   self.tableView.estimatedSectionHeaderHeight = 56;
   self.tableView.sectionFooterHeight = 0.0;
   self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
+  self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.clearsSelectionOnViewWillAppear = NO;
 
   // ContextMenu gesture recognizer.
@@ -124,25 +135,11 @@ const int kMaxFetchCount = 100;
   // margin inset on the |_tableViewController| subview.
   self.extendedLayoutIncludesOpaqueBars = YES;
 
-  // Init the searchController with nil so the results are displayed on the same
-  // TableView.
-  self.searchController =
-      [[UISearchController alloc] initWithSearchResultsController:nil];
-  self.searchController.dimsBackgroundDuringPresentation = NO;
-
-  // Navigation controller configuration.
+  // NavigationController configuration.
   self.title = l10n_util::GetNSString(IDS_HISTORY_TITLE);
-
-  // For iOS 11 and later, place the search bar in the navigation bar. Otherwise
-  // place the search bar in the table view's header.
-  if (@available(iOS 11, *)) {
-    self.navigationItem.searchController = self.searchController;
-    self.navigationItem.hidesSearchBarWhenScrolling = NO;
-  } else {
-    self.tableView.tableHeaderView = self.searchController.searchBar;
-  }
-
-  // Adds the "Done" button and hooks it up to |stop|.
+  // Configures NavigationController Toolbar buttons.
+  [self configureViewsForNonEditModeWithAnimation:NO];
+  // Adds the "Done" button and hooks it up to |dismissHistory|.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
@@ -151,28 +148,20 @@ const int kMaxFetchCount = 100;
       setAccessibilityIdentifier:kTableViewNavigationDismissButtonId];
   self.navigationItem.rightBarButtonItem = dismissButton;
 
-  // Set up the bottom toolbar buttons.
-  NSString* leadingButtonString = l10n_util::GetNSStringWithFixup(
-      IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
-  NSString* trailingButtonString =
-      l10n_util::GetNSString(IDS_HISTORY_START_EDITING_BUTTON);
-  UIBarButtonItem* leadingButton =
-      [[UIBarButtonItem alloc] initWithTitle:leadingButtonString
-                                       style:UIBarButtonItemStylePlain
-                                      target:nil
-                                      action:nil];
-  UIBarButtonItem* trailingButton =
-      [[UIBarButtonItem alloc] initWithTitle:trailingButtonString
-                                       style:UIBarButtonItemStylePlain
-                                      target:nil
-                                      action:nil];
-  UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
-                           target:nil
-                           action:nil];
-  leadingButton.tintColor = [UIColor redColor];
-  [self setToolbarItems:@[ leadingButton, spaceButton, trailingButton ]
-               animated:NO];
+  // SearchController Configuration.
+  // Init the searchController with nil so the results are displayed on the same
+  // TableView.
+  self.searchController =
+      [[UISearchController alloc] initWithSearchResultsController:nil];
+  self.searchController.dimsBackgroundDuringPresentation = NO;
+  // For iOS 11 and later, place the search bar in the navigation bar. Otherwise
+  // place the search bar in the table view's header.
+  if (@available(iOS 11, *)) {
+    self.navigationItem.searchController = self.searchController;
+    self.navigationItem.hidesSearchBarWhenScrolling = NO;
+  } else {
+    self.tableView.tableHeaderView = self.searchController.searchBar;
+  }
 }
 
 // TODO(crbug.com/805190): These methods are supposed to be public, though we
@@ -243,6 +232,7 @@ const int kMaxFetchCount = 100;
   // history entries were found.
   if (results.empty() && self.empty) {
     [self updateEntriesStatusMessage];
+    [self updateToolbarButtons];
     return;
   }
 
@@ -272,6 +262,9 @@ const int kMaxFetchCount = 100;
       item.timestamp = entry.time;
       [resultsItems addObject:item];
     }
+
+    [self updateToolbarButtons];
+
     if (([self isSearching] && [searchQuery length] > 0 &&
          [self.currentQuery isEqualToString:searchQuery]) ||
         self.filterQueryResult) {
@@ -382,16 +375,49 @@ const int kMaxFetchCount = 100;
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(tableView, self.tableView);
   if (self.isEditing) {
+    [self updateToolbarButtons];
   } else {
-    HistoryEntryItem* item = base::mac::ObjCCastStrict<HistoryEntryItem>(
-        [self.tableViewModel itemAtIndexPath:indexPath]);
-    [self openURL:item.URL];
-    if (self.isSearching) {
-      base::RecordAction(
-          base::UserMetricsAction("HistoryPage_SearchResultClick"));
-    } else {
-      base::RecordAction(base::UserMetricsAction("HistoryPage_EntryLinkClick"));
+    TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+    if (item.type == ItemTypeHistoryEntry) {
+      HistoryEntryItem* historyItem =
+          base::mac::ObjCCastStrict<HistoryEntryItem>(item);
+      [self openURL:historyItem.URL];
+      if (self.isSearching) {
+        base::RecordAction(
+            base::UserMetricsAction("HistoryPage_SearchResultClick"));
+      } else {
+        base::RecordAction(
+            base::UserMetricsAction("HistoryPage_EntryLinkClick"));
+      }
     }
+  }
+}
+
+- (void)tableView:(UITableView*)tableView
+    didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
+  DCHECK_EQ(tableView, self.tableView);
+  if (self.editing)
+    [self updateToolbarButtons];
+}
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cellToReturn =
+      [super tableView:tableView cellForRowAtIndexPath:indexPath];
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type == ItemTypeEntriesStatus) {
+    cellToReturn.userInteractionEnabled = NO;
+  }
+  return cellToReturn;
+}
+
+- (BOOL)tableView:(UITableView*)tableView
+    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type == ItemTypeEntriesStatus) {
+    return NO;
+  } else {
+    return YES;
   }
 }
 
@@ -548,6 +574,51 @@ const int kMaxFetchCount = 100;
   // TODO(crbug.com/805190): Migrate.
 }
 
+#pragma mark Navigation Toolbar Configuration
+
+// Animates the view configuration after flipping the current status of |[self
+// setEditing]|.
+- (void)animateViewsConfigurationForEditingChange {
+  if (self.isEditing) {
+    [self configureViewsForNonEditModeWithAnimation:YES];
+  } else {
+    [self configureViewsForEditModeWithAnimation:YES];
+  }
+}
+
+// Default TableView and NavigationBar UIToolbar configuration.
+- (void)configureViewsForNonEditModeWithAnimation:(BOOL)animated {
+  [self setEditing:NO animated:animated];
+  UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+  [self setToolbarItems:@[
+    self.clearBrowsingDataButton, spaceButton, self.editButton
+  ]
+               animated:animated];
+  [self updateToolbarButtons];
+}
+
+// Configures the TableView and NavigationBar UIToolbar for edit mode.
+- (void)configureViewsForEditModeWithAnimation:(BOOL)animated {
+  [self setEditing:YES animated:animated];
+  UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+  [self setToolbarItems:@[ self.deleteButton, spaceButton, self.cancelButton ]
+               animated:animated];
+  [self updateToolbarButtons];
+}
+
+// Updates the NavigationBar UIToolbar buttons.
+- (void)updateToolbarButtons {
+  self.deleteButton.enabled =
+      [[self.tableView indexPathsForSelectedRows] count];
+  self.editButton.enabled = !self.empty;
+}
+
 #pragma mark Context Menu
 
 // Displays context menu on cell pressed with gestureRecognizer.
@@ -664,6 +735,62 @@ const int kMaxFetchCount = 100;
 // Dismisses this ViewController.
 - (void)dismissHistory {
   [self.localDispatcher dismissHistoryWithCompletion:nil];
+}
+
+#pragma mark Setter & Getters
+
+- (UIBarButtonItem*)cancelButton {
+  if (!_cancelButton) {
+    NSString* titleString =
+        l10n_util::GetNSString(IDS_HISTORY_CANCEL_EDITING_BUTTON);
+    _cancelButton = [[UIBarButtonItem alloc]
+        initWithTitle:titleString
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:@selector(animateViewsConfigurationForEditingChange)];
+  }
+  return _cancelButton;
+}
+
+- (UIBarButtonItem*)clearBrowsingDataButton {
+  if (!_clearBrowsingDataButton) {
+    NSString* titleString = l10n_util::GetNSStringWithFixup(
+        IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
+    _clearBrowsingDataButton =
+        [[UIBarButtonItem alloc] initWithTitle:titleString
+                                         style:UIBarButtonItemStylePlain
+                                        target:nil
+                                        action:nil];
+    _clearBrowsingDataButton.tintColor = [UIColor redColor];
+  }
+  return _clearBrowsingDataButton;
+}
+
+- (UIBarButtonItem*)deleteButton {
+  if (!_deleteButton) {
+    NSString* titleString =
+        l10n_util::GetNSString(IDS_HISTORY_DELETE_SELECTED_ENTRIES_BUTTON);
+    _deleteButton =
+        [[UIBarButtonItem alloc] initWithTitle:titleString
+                                         style:UIBarButtonItemStylePlain
+                                        target:nil
+                                        action:nil];
+    _deleteButton.tintColor = [UIColor redColor];
+  }
+  return _deleteButton;
+}
+
+- (UIBarButtonItem*)editButton {
+  if (!_editButton) {
+    NSString* titleString =
+        l10n_util::GetNSString(IDS_HISTORY_START_EDITING_BUTTON);
+    _editButton = [[UIBarButtonItem alloc]
+        initWithTitle:titleString
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:@selector(animateViewsConfigurationForEditingChange)];
+  }
+  return _editButton;
 }
 
 @end
