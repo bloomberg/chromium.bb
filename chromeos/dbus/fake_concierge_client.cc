@@ -30,8 +30,11 @@ void FakeConciergeClient::CreateDiskImage(
     const vm_tools::concierge::CreateDiskImageRequest& request,
     DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse> callback) {
   create_disk_image_called_ = true;
+  vm_tools::concierge::CreateDiskImageResponse response;
+  response.set_status(vm_tools::concierge::DISK_STATUS_CREATED);
+  response.set_disk_path("foo");
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
 }
 
 void FakeConciergeClient::DestroyDiskImage(
@@ -39,38 +42,50 @@ void FakeConciergeClient::DestroyDiskImage(
     DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
         callback) {
   destroy_disk_image_called_ = true;
+  vm_tools::concierge::DestroyDiskImageResponse response;
+  response.set_status(vm_tools::concierge::DISK_STATUS_DESTROYED);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
 }
 
 void FakeConciergeClient::StartTerminaVm(
     const vm_tools::concierge::StartVmRequest& request,
     DBusMethodCallback<vm_tools::concierge::StartVmResponse> callback) {
   start_termina_vm_called_ = true;
+  vm_tools::concierge::StartVmResponse response;
+  response.set_success(true);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
 }
 
 void FakeConciergeClient::StopVm(
     const vm_tools::concierge::StopVmRequest& request,
     DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback) {
   stop_vm_called_ = true;
+  vm_tools::concierge::StopVmResponse response;
+  response.set_success(true);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
 }
 
 void FakeConciergeClient::StartContainer(
     const vm_tools::concierge::StartContainerRequest& request,
     DBusMethodCallback<vm_tools::concierge::StartContainerResponse> callback) {
   start_container_called_ = true;
-  std::move(callback).Run(base::nullopt);
+  vm_tools::concierge::StartContainerResponse response;
+  response.set_status(vm_tools::concierge::CONTAINER_STATUS_RUNNING);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
 }
 
 void FakeConciergeClient::LaunchContainerApplication(
     const vm_tools::concierge::LaunchContainerApplicationRequest& request,
     DBusMethodCallback<vm_tools::concierge::LaunchContainerApplicationResponse>
         callback) {
-  std::move(callback).Run(base::nullopt);
+  vm_tools::concierge::LaunchContainerApplicationResponse response;
+  response.set_success(true);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
 }
 
 void FakeConciergeClient::WaitForServiceToBeAvailable(

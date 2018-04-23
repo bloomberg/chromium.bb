@@ -40,6 +40,12 @@ std::string ContainerUserNameForProfile(Profile* profile) {
   return container_username.substr(0, container_username.find('@'));
 }
 
+std::string CryptohomeIdForProfile(Profile* profile) {
+  std::string id = chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
+  // Empty id means we're running in a test.
+  return id.empty() ? "test" : id;
+}
+
 class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
  public:
   CrostiniRestarter(std::string vm_name,
@@ -51,15 +57,51 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
         cryptohome_id_(std::move(cryptohome_id)),
         container_name_(std::move(container_name)),
         container_username_(std::move(container_username)),
-        callback_(std::move(callback)) {}
+        callback_(std::move(callback)),
+        restart_id_(next_restart_id_) {
+    restarter_map_[next_restart_id_++] = base::WrapRefCounted(this);
+  }
 
   void Restart() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    g_browser_process->platform_part()->cros_component_manager()->Load(
-        "cros-termina",
-        component_updater::CrOSComponentManager::MountPolicy::kMount,
-        base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinished,
-                       base::WrapRefCounted(this)));
+    if (is_aborted_)
+      return;
+    auto* cros_component_manager =
+        g_browser_process->platform_part()->cros_component_manager();
+    if (cros_component_manager) {
+      g_browser_process->platform_part()->cros_component_manager()->Load(
+          "cros-termina",
+          component_updater::CrOSComponentManager::MountPolicy::kMount,
+          base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinished,
+                         base::WrapRefCounted(this)));
+    } else {
+      // Running in test.
+      InstallImageLoaderFinishedOnUIThread(
+          component_updater::CrOSComponentManager::Error::NONE,
+          base::FilePath());
+    }
+  }
+
+  void AddObserver(CrostiniManager::RestartObserver* observer) {
+    observer_list_.AddObserver(observer);
+  }
+
+  CrostiniManager::RestartId GetRestartId() { return restart_id_; }
+
+  static void Abort(CrostiniManager::RestartId restart_id) {
+    auto it = restarter_map_.find(restart_id);
+    if (it != restarter_map_.end()) {
+      it->second->is_aborted_ = true;
+      restarter_map_.erase(it);
+    }
+  }
+
+  void UnrefAndRunCallback(ConciergeClientResult result) {
+    auto it = restarter_map_.find(restart_id_);
+    if (it != restarter_map_.end()) {
+      restarter_map_.erase(it);
+    }
+    std::move(callback_).Run(result);
   }
 
  private:
@@ -76,6 +118,8 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       component_updater::CrOSComponentManager::Error error,
       const base::FilePath& result) {
     DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    if (restarter->is_aborted_)
+      return;
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinishedOnUIThread,
@@ -85,11 +129,21 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
   void InstallImageLoaderFinishedOnUIThread(
       component_updater::CrOSComponentManager::Error error,
       const base::FilePath& result) {
-    if (error != component_updater::CrOSComponentManager::Error::NONE) {
+    ConciergeClientResult client_result =
+        error == component_updater::CrOSComponentManager::Error::NONE
+            ? ConciergeClientResult::SUCCESS
+            : ConciergeClientResult::CONTAINER_START_FAILED;
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnComponentLoaded(client_result);
+    }
+    if (is_aborted_)
+      return;
+    if (client_result != ConciergeClientResult::SUCCESS) {
       LOG(ERROR)
           << "Failed to install the cros-termina component with error code: "
           << static_cast<int>(error);
-      std::move(callback_).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+      UnrefAndRunCallback(client_result);
       return;
     }
     CrostiniManager::GetInstance()->StartVmConcierge(
@@ -98,9 +152,18 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
 
   void ConciergeStarted(bool is_started) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    ConciergeClientResult client_result =
+        is_started ? ConciergeClientResult::SUCCESS
+                   : ConciergeClientResult::CONTAINER_START_FAILED;
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnConciergeStarted(client_result);
+    }
+    if (is_aborted_)
+      return;
     if (!is_started) {
       LOG(ERROR) << "Failed to start Concierge service.";
-      std::move(callback_).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+      UnrefAndRunCallback(client_result);
       return;
     }
     CrostiniManager::GetInstance()->CreateDiskImage(
@@ -112,9 +175,15 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
   void CreateDiskImageFinished(ConciergeClientResult result,
                                const base::FilePath& result_path) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnDiskImageCreated(result);
+    }
+    if (is_aborted_)
+      return;
     if (result != ConciergeClientResult::SUCCESS) {
       LOG(ERROR) << "Failed to create disk image.";
-      std::move(callback_).Run(result);
+      UnrefAndRunCallback(result);
       return;
     }
     CrostiniManager::GetInstance()->StartTerminaVm(
@@ -124,9 +193,15 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
 
   void StartTerminaVmFinished(ConciergeClientResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnVmStarted(result);
+    }
+    if (is_aborted_)
+      return;
     if (result != ConciergeClientResult::SUCCESS) {
       LOG(ERROR) << "Failed to Start Termina VM.";
-      std::move(callback_).Run(result);
+      UnrefAndRunCallback(result);
       return;
     }
     CrostiniManager::GetInstance()->StartContainer(
@@ -139,7 +214,9 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     if (result != ConciergeClientResult::SUCCESS) {
       LOG(ERROR) << "Failed to start container.";
     }
-    std::move(callback_).Run(result);
+    if (is_aborted_)
+      return;
+    UnrefAndRunCallback(result);
   }
 
   std::string vm_name_;
@@ -147,7 +224,18 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
   std::string container_name_;
   std::string container_username_;
   CrostiniManager::RestartCrostiniCallback callback_;
+  base::ObserverList<CrostiniManager::RestartObserver> observer_list_;
+  CrostiniManager::RestartId restart_id_;
+  bool is_aborted_ = false;
+
+  static CrostiniManager::RestartId next_restart_id_;
+  static std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>
+      restarter_map_;
 };
+
+CrostiniManager::RestartId CrostiniRestarter::next_restart_id_ = 0;
+std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>
+    CrostiniRestarter::restarter_map_;
 
 }  // namespace
 
@@ -439,20 +527,29 @@ void CrostiniManager::LaunchContainerTerminal(
   OpenApplicationWindow(launch_params, vsh_in_crosh_url);
 }
 
-void CrostiniManager::RestartCrostini(Profile* profile,
-                                      std::string vm_name,
-                                      std::string container_name,
-                                      RestartCrostiniCallback callback) {
+CrostiniManager::RestartId CrostiniManager::RestartCrostini(
+    Profile* profile,
+    std::string vm_name,
+    std::string container_name,
+    RestartCrostiniCallback callback,
+    RestartObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::string cryptohome_id = chromeos::ProfileHelper::Get()
-                                  ->GetUserByProfile(profile)
-                                  ->username_hash();
+  std::string cryptohome_id = CryptohomeIdForProfile(profile);
   std::string container_username = ContainerUserNameForProfile(profile);
 
   auto crostini_restarter = base::MakeRefCounted<CrostiniRestarter>(
       std::move(vm_name), std::move(cryptohome_id), std::move(container_name),
       std::move(container_username), std::move(callback));
+  if (observer) {
+    crostini_restarter->AddObserver(observer);
+  }
   crostini_restarter->Restart();
+  return crostini_restarter->GetRestartId();
+}
+
+void CrostiniManager::AbortRestartCrostini(
+    CrostiniManager::RestartId restart_id) {
+  CrostiniRestarter::Abort(restart_id);
 }
 
 void CrostiniManager::OnCreateDiskImage(
@@ -591,7 +688,6 @@ void CrostiniManager::OnLaunchContainerApplication(
         ConciergeClientResult::LAUNCH_CONTAINER_APPLICATION_FAILED);
     return;
   }
-
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
 }
 
