@@ -515,7 +515,12 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameSessionWithExistingSessionName) {
   EXPECT_EQ(expected, *ExtractSessionsList());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameSessionInvalidName) {
+#if defined(OS_WIN)
+#define MAYBE_RenameSessionInvalidName DISABLED_RenameSessionInvalidName
+#else
+#define MAYBE_RenameSessionInvalidName RenameSessionInvalidName
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, MAYBE_RenameSessionInvalidName) {
   CreateMultipleSessionFiles(3);
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
   EXPECT_EQ("2", ExtractSinglePolicyValue("SessionId"));
