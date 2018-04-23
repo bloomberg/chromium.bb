@@ -12,6 +12,7 @@
 // TableViewURLItem contains the model data for a TableViewURLCell.
 @interface TableViewURLItem : TableViewItem
 
+// Sets the faviconView in the cell. If nil, will use the default favicon.
 @property(nonatomic, readwrite, strong) UIImage* favicon;
 @property(nonatomic, readwrite, copy) NSString* title;
 @property(nonatomic, readwrite, copy) NSString* URL;
@@ -36,6 +37,9 @@
 
 // Optional metadata that is displayed at the trailing edge of the cell.
 @property(nonatomic, readonly, strong) UILabel* metadataLabel;
+
+// Sets the faviconView image. If nil passed, then default favicon image used.
+- (void)setFavicon:(UIImage*)favicon;
 
 @end
 

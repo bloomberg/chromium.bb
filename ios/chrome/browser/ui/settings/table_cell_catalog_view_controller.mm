@@ -77,20 +77,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // SectionIdentifierURL.
   TableViewURLItem* item =
       [[TableViewURLItem alloc] initWithType:ItemTypeURLNoMetadata];
-  item.favicon = [UIImage imageNamed:@"default_favicon"];
   item.title = @"Google Design";
   item.URL = @"design.google.com";
   [model addItem:item toSectionWithIdentifier:SectionIdentifierURL];
 
   item = [[TableViewURLItem alloc] initWithType:ItemTypeURLWithTimestamp];
-  item.favicon = [UIImage imageNamed:@"default_favicon"];
   item.title = @"Google";
   item.URL = @"google.com";
   item.metadata = @"3:42 PM";
   [model addItem:item toSectionWithIdentifier:SectionIdentifierURL];
 
   item = [[TableViewURLItem alloc] initWithType:ItemTypeURLWithSize];
-  item.favicon = [UIImage imageNamed:@"default_favicon"];
   item.title = @"World Series 2017: Houston Astros Defeat Someone Else";
   item.URL = @"m.bbc.com";
   item.metadata = @"176 KB";
