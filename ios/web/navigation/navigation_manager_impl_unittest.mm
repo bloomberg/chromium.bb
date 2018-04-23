@@ -2293,6 +2293,74 @@ TEST_P(NavigationManagerTest, GoToIndexDifferentDocument) {
   }
 }
 
+// Tests navigation between different documents with pending item that has the
+// same-document as destigation navigation item. Test case for crbug.com/832734.
+TEST_P(NavigationManagerTest,
+       GoToIndexDifferentDocumentPassingThroghSameDocument) {
+  if (GetParam() != TEST_LEGACY_NAVIGATION_MANAGER) {
+    // crbug.com/832734 could not happen with WK-based navigation manager.
+    return;
+  }
+
+  // First and second items are same documents. Third one is a different
+  // document.
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/#hash"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  navigation_manager()->GetPendingItemImpl()->SetIsCreatedFromHashChange(true);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/#hash"
+                  backListURLs:@[ @"http://www.url.com" ]
+               forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  [mock_wk_list_
+        setCurrentURL:@"http://www.url2.com"
+         backListURLs:@[ @"http://www.url.com", @"http://www.url.com/#hash" ]
+      forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  // Simulate pending navigation to the second item (different document
+  // navigation).
+  [session_controller() setPendingItemIndex:1];
+
+  // Navigate to first item, which is still a different document navigation.
+  EXPECT_EQ(2, navigation_manager()->GetLastCommittedItemIndex());
+  EXPECT_EQ(1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_FALSE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
+               ui::PAGE_TRANSITION_FORWARD_BACK);
+
+  EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
+  EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
+  EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType())
+      .Times(0);
+
+  EXPECT_CALL(navigation_manager_delegate(),
+              OnGoToIndexSameDocumentNavigation(
+                  NavigationInitiationType::USER_INITIATED))
+      .Times(0);
+  EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem());
+
+  navigation_manager()->GoToIndex(0);
+  EXPECT_TRUE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
+              ui::PAGE_TRANSITION_FORWARD_BACK);
+
+  // Since LoadCurrentItem() is noop in test, verify that the pending item index
+  // has been updated to the GoToIndex() destination.
+  EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
+}
+
 // Tests that LoadCurrentItem() is not exercised for same-document navigation.
 TEST_P(NavigationManagerTest, GoToIndexSameDocument) {
   navigation_manager()->AddPendingItem(

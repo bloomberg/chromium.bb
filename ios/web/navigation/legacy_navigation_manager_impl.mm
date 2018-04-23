@@ -311,7 +311,7 @@ void LegacyNavigationManagerImpl::FinishGoToIndex(
     NavigationInitiationType type) {
   const ScopedNavigationItemImplList& items = [session_controller_ items];
   NavigationItem* to_item = items[index].get();
-  NavigationItem* previous_item = [session_controller_ currentItem];
+  NavigationItem* previous_item = GetLastCommittedItem();
 
   to_item->SetTransitionType(ui::PageTransitionFromInt(
       to_item->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
