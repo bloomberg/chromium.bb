@@ -72,7 +72,8 @@ def get_source_dir():
 
 
 def get_typ_dir():
-    return os.path.join(get_chromium_src_dir(), 'third_party', 'typ')
+    return os.path.join(get_chromium_src_dir(), 'third_party', 'catapult',
+                        'third_party', 'typ')
 
 
 def get_blinkpy_thirdparty_dir():

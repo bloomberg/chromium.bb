@@ -1019,6 +1019,7 @@ if (!is_ios) {
       "//third_party/catapult/devil/",
       "//third_party/catapult/dependency_manager/",
       "//third_party/catapult/third_party/zipfile/",
+      "//third_party/catapult/third_party/typ/",
       "//third_party/depot_tools/pylint.py",
       "//third_party/depot_tools/pylintrc",
       "//third_party/depot_tools/third_party/logilab/",
@@ -1026,7 +1027,6 @@ if (!is_ios) {
       "//third_party/depot_tools/third_party/pylint.py",
       "//third_party/ply/",
       "//third_party/pymock/",
-      "//third_party/typ/",
       "//tools/idl_parser/",
     ]
   }
