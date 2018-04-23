@@ -309,8 +309,14 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
   EXPECT_TRUE(destroyed1);
 }
 
+#if defined(OS_MACOSX)
+#define MAYBE_CallbackNotCalledAfterUnregister \
+  DISABLED_CallbackNotCalledAfterUnregister
+#else
+#define MAYBE_CallbackNotCalledAfterUnregister CallbackNotCalledAfterUnregister
+#endif
 IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
-                       CallbackNotCalledAfterUnregister) {
+                       MAYBE_CallbackNotCalledAfterUnregister) {
   ProfileDestructionWatcher watcher;
   Browser* otr_browser = nullptr;
   Profile* otr_profile = nullptr;
