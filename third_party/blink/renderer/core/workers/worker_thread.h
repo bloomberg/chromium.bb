@@ -157,7 +157,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Only callable on the main thread.
   void AppendDebuggerTask(CrossThreadClosure);
 
-  // Only callable on the main thread.
+  // Callable on both the main thread and the worker thread.
   const base::UnguessableToken& GetDevToolsWorkerToken() const {
     return devtools_worker_token_;
   }
@@ -310,7 +310,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   TimeDelta forcible_termination_delay_;
 
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
-  base::UnguessableToken devtools_worker_token_;
+  const base::UnguessableToken devtools_worker_token_;
 
   // Created on the main thread, passed to the worker thread but should kept
   // being accessed only on the main thread.
