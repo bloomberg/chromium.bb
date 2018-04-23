@@ -33,7 +33,7 @@ constexpr auto kFadeDuration = base::TimeDelta::FromMilliseconds(150);
 constexpr auto kPointMoveDuration = base::TimeDelta::FromMilliseconds(400);
 constexpr auto kPointMoveDurationLong = base::TimeDelta::FromMilliseconds(500);
 
-const SkColor kExitLabelColor = SkColorSetARGBInline(255, 138, 138, 138);
+const SkColor kExitLabelColor = SkColorSetARGB(255, 138, 138, 138);
 constexpr int kExitLabelWidth = 300;
 constexpr int kExitLabelHeight = 20;
 
@@ -59,7 +59,7 @@ constexpr int kTapLabelHeight = 48;
 constexpr int kTapLabelWidth = 80;
 
 const SkColor kHintLabelTextColor = SK_ColorBLACK;
-const SkColor kHintSublabelTextColor = SkColorSetARGBInline(255, 161, 161, 161);
+const SkColor kHintSublabelTextColor = SkColorSetARGB(255, 161, 161, 161);
 
 const SkColor kInnerCircleColor = SK_ColorWHITE;
 const SkColor kOuterCircleColor = SkColorSetA(kInnerCircleColor, 255 * 0.2);
@@ -75,11 +75,10 @@ constexpr int kTouchTargetHeight = kTouchTargetWidth + kTouchTargetWidth / 2;
 
 constexpr float kTouchTargetVerticalOffsetFactor = 11.f / 24.f;
 
-const SkColor kTouchTargetInnerCircleColor =
-    SkColorSetARGBInline(255, 66, 133, 244);
+const SkColor kTouchTargetInnerCircleColor = SkColorSetARGB(255, 66, 133, 244);
 const SkColor kTouchTargetOuterCircleColor =
     SkColorSetA(kTouchTargetInnerCircleColor, 255 * 0.2);
-const SkColor kHandIconColor = SkColorSetARGBInline(255, 201, 201, 201);
+const SkColor kHandIconColor = SkColorSetARGB(255, 201, 201, 201);
 constexpr float kHandIconHorizontalOffsetFactor = 7.f / 32.f;
 
 // Returns the initialization params for the widget that contains the touch

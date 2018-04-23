@@ -118,8 +118,8 @@ void AccessibilityFocusRingLayer::OnPaintLayer(
   SkColor base_color =
       has_custom_color()
           ? custom_color()
-          : SkColorSetARGBMacro(255, kFocusRingColorRed, kFocusRingColorGreen,
-                                kFocusRingColorBlue);
+          : SkColorSetARGB(255, kFocusRingColorRed, kFocusRingColorGreen,
+                           kFocusRingColorBlue);
 
   SkPath path;
   gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();

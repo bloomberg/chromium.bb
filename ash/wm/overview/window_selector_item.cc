@@ -135,9 +135,9 @@ constexpr int kCloseButtonOffsetDp = 8;
 
 // The colors of the close button ripple.
 constexpr SkColor kCloseButtonInkDropRippleColor =
-    SkColorSetARGBMacro(0x0F, 0xFF, 0xFF, 0xFF);
+    SkColorSetARGB(0x0F, 0xFF, 0xFF, 0xFF);
 constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
-    SkColorSetARGBMacro(0x14, 0xFF, 0xFF, 0xFF);
+    SkColorSetARGB(0x14, 0xFF, 0xFF, 0xFF);
 
 // The font delta of the overview window title.
 constexpr int kLabelFontDelta = 2;
@@ -146,7 +146,7 @@ constexpr int kShadowElevation = 16;
 
 // Values of the backdrop.
 constexpr int kBackdropRoundingDp = 4;
-constexpr SkColor kBackdropColor = SkColorSetARGBMacro(0x24, 0xFF, 0xFF, 0xFF);
+constexpr SkColor kBackdropColor = SkColorSetARGB(0x24, 0xFF, 0xFF, 0xFF);
 
 // Windows in tablet have different animations. Overview headers do not
 // translate when entering or exiting overview mode. Title bars also do not

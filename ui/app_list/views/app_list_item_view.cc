@@ -60,7 +60,7 @@ constexpr int kTouchLongpressDelayInMs = 300;
 constexpr SkColor kFolderGridTitleColor = SK_ColorBLACK;
 
 // The color of the selected item view within folder.
-constexpr SkColor kFolderGridSelectedColor = SkColorSetARGBMacro(31, 0, 0, 0);
+constexpr SkColor kFolderGridSelectedColor = SkColorSetARGB(31, 0, 0, 0);
 
 }  // namespace
 

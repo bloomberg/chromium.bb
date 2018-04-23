@@ -71,8 +71,7 @@ constexpr int kTabstripRightSpacing = 10;
 // to hit easily.
 constexpr int kTabShadowHeight = 4;
 
-constexpr SkColor kMdWebUIFrameColor =
-    SkColorSetARGBMacro(0xff, 0x25, 0x4f, 0xae);
+constexpr SkColor kMdWebUIFrameColor = SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
 
 // How long to wait before starting the titlebar animation.
 constexpr base::TimeDelta kTitlebarAnimationDelay =

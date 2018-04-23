@@ -52,7 +52,7 @@ constexpr int kPaddingSearchResult = 16;
 constexpr int kSearchBoxBorderWidth = 4;
 
 constexpr SkColor kSearchBoxBorderColor =
-    SkColorSetARGBMacro(0x3D, 0xFF, 0xFF, 0xFF);
+    SkColorSetARGB(0x3D, 0xFF, 0xFF, 0xFF);
 
 constexpr int kSearchBoxBorderCornerRadiusSearchResult = 4;
 constexpr int kCloseIconSize = 24;

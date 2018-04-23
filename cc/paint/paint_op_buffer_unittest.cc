@@ -1196,12 +1196,9 @@ std::vector<PaintFlags> test_flags = {
 };
 
 std::vector<SkColor> test_colors = {
-    SkColorSetARGBInline(0, 0, 0, 0),
-    SkColorSetARGBInline(255, 255, 255, 255),
-    SkColorSetARGBInline(0, 255, 10, 255),
-    SkColorSetARGBInline(255, 0, 20, 255),
-    SkColorSetARGBInline(30, 255, 0, 255),
-    SkColorSetARGBInline(255, 40, 0, 0),
+    SkColorSetARGB(0, 0, 0, 0),      SkColorSetARGB(255, 255, 255, 255),
+    SkColorSetARGB(0, 255, 10, 255), SkColorSetARGB(255, 0, 20, 255),
+    SkColorSetARGB(30, 255, 0, 255), SkColorSetARGB(255, 40, 0, 0),
 };
 
 std::vector<std::string> test_strings = {

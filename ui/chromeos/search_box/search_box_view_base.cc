@@ -46,7 +46,7 @@ constexpr int kLightVibrantBlendAlpha = 0xE6;
 
 // Color of placeholder text in zero query state.
 constexpr SkColor kZeroQuerySearchboxColor =
-    SkColorSetARGBMacro(0x8A, 0x00, 0x00, 0x00);
+    SkColorSetARGB(0x8A, 0x00, 0x00, 0x00);
 
 }  // namespace
 

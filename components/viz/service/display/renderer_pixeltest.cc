@@ -3963,9 +3963,9 @@ TEST_P(ColorTransformPixelTest, Basic) {
     color.set_y(std::min(std::max(0.f, color.y()), 1.f));
     color.set_z(std::min(std::max(0.f, color.z()), 1.f));
     expected_output_colors[i] =
-        SkColorSetARGBInline(255, static_cast<size_t>(255.f * color.x() + 0.5f),
-                             static_cast<size_t>(255.f * color.y() + 0.5f),
-                             static_cast<size_t>(255.f * color.z() + 0.5f));
+        SkColorSetARGB(255, static_cast<size_t>(255.f * color.x() + 0.5f),
+                       static_cast<size_t>(255.f * color.y() + 0.5f),
+                       static_cast<size_t>(255.f * color.z() + 0.5f));
   }
 
   int id = 1;

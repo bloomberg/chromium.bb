@@ -27,7 +27,7 @@ namespace {
 // The id prefix to identify a Play Store search result.
 constexpr char kPlayAppPrefix[] = "play://";
 // Badge icon color, #000 at 54% opacity.
-constexpr SkColor kBadgeColor = SkColorSetARGBMacro(0x8A, 0x00, 0x00, 0x00);
+constexpr SkColor kBadgeColor = SkColorSetARGB(0x8A, 0x00, 0x00, 0x00);
 
 bool LaunchIntent(const std::string& intent_uri, int64_t display_id) {
   auto* arc_service_manager = arc::ArcServiceManager::Get();

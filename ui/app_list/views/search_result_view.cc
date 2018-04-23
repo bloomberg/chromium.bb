@@ -34,16 +34,13 @@ constexpr int kTextTrailPadding = 16;
 constexpr int kActionButtonRightMargin = 8;
 
 // Matched text color, #000 87%.
-constexpr SkColor kMatchedTextColor =
-    SkColorSetARGBMacro(0xDE, 0x00, 0x00, 0x00);
+constexpr SkColor kMatchedTextColor = SkColorSetARGB(0xDE, 0x00, 0x00, 0x00);
 // Default text color, #000 54%.
-constexpr SkColor kDefaultTextColor =
-    SkColorSetARGBMacro(0x8A, 0x00, 0x00, 0x00);
+constexpr SkColor kDefaultTextColor = SkColorSetARGB(0x8A, 0x00, 0x00, 0x00);
 // URL color.
-constexpr SkColor kUrlColor = SkColorSetARGBMacro(0xFF, 0x33, 0x67, 0xD6);
+constexpr SkColor kUrlColor = SkColorSetARGB(0xFF, 0x33, 0x67, 0xD6);
 // Row selected color, #000 8%.
-constexpr SkColor kRowHighlightedColor =
-    SkColorSetARGBMacro(0x14, 0x00, 0x00, 0x00);
+constexpr SkColor kRowHighlightedColor = SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
 
 int GetIconViewWidth() {
   return kListIconSize + 2 * kIconLeftRightPadding;

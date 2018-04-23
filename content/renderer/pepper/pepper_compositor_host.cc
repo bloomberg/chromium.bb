@@ -265,11 +265,9 @@ void PepperCompositorHost::UpdateLayer(
   }
 
   if (new_layer->color) {
-    layer->SetBackgroundColor(SkColorSetARGBMacro(
-        new_layer->color->alpha * 255,
-        new_layer->color->red * 255,
-        new_layer->color->green * 255,
-        new_layer->color->blue * 255));
+    layer->SetBackgroundColor(SkColorSetARGB(
+        new_layer->color->alpha * 255, new_layer->color->red * 255,
+        new_layer->color->green * 255, new_layer->color->blue * 255));
     return;
   }
 

@@ -21,7 +21,7 @@ constexpr char kLoginPublicAccountUserViewClassName[] =
 
 // Color of the user domain text.
 constexpr SkColor kArrowButtonBackground =
-    SkColorSetARGBMacro(0x2B, 0xFF, 0xFF, 0xFF);
+    SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 
 // Distance from the top of the user view to the user icon.
 constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 54;

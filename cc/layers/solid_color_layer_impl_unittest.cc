@@ -188,7 +188,7 @@ TEST(SolidColorLayerImplTest, VerifyNeedsBlending) {
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   EXPECT_FALSE(layer->contents_opaque());
-  layer->SetBackgroundColor(SkColorSetARGBInline(255, 10, 20, 30));
+  layer->SetBackgroundColor(SkColorSetARGB(255, 10, 20, 30));
   EXPECT_TRUE(layer->contents_opaque());
   {
     DebugScopedSetImplThread scoped_impl_thread(host->GetTaskRunnerProvider());
@@ -215,7 +215,7 @@ TEST(SolidColorLayerImplTest, VerifyNeedsBlending) {
   }
 
   EXPECT_TRUE(layer->contents_opaque());
-  layer->SetBackgroundColor(SkColorSetARGBInline(254, 10, 20, 30));
+  layer->SetBackgroundColor(SkColorSetARGB(254, 10, 20, 30));
   EXPECT_FALSE(layer->contents_opaque());
   {
     DebugScopedSetImplThread scoped_impl_thread(host->GetTaskRunnerProvider());

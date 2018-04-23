@@ -34,8 +34,7 @@ class HorizontalSeparator : public views::View {
 
   void OnPaint(gfx::Canvas* canvas) override {
     gfx::Rect contents_bounds(GetContentsBounds());
-    constexpr SkColor kSeparatorColor =
-        SkColorSetARGBMacro(0x0F, 0x00, 0x00, 0x00);
+    constexpr SkColor kSeparatorColor = SkColorSetARGB(0x0F, 0x00, 0x00, 0x00);
     canvas->FillRect(contents_bounds, kSeparatorColor);
     View::OnPaint(canvas);
   }
@@ -64,7 +63,7 @@ void KeyboardShortcutItemListView::AddCategoryLabel(
     const base::string16& text) {
   constexpr int kLabelTopPadding = 44;
   constexpr int kLabelBottomPadding = 20;
-  constexpr SkColor kLabelColor = SkColorSetARGBMacro(0xFF, 0x42, 0x85, 0xF4);
+  constexpr SkColor kLabelColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
 
   views::Label* category_label = new views::Label(text);
   category_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
