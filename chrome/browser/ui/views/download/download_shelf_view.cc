@@ -342,7 +342,7 @@ void DownloadShelfView::UpdateColorsFromTheme() {
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
 
   views::SetImageFromVectorIcon(
-      close_button_, vector_icons::kClose16Icon,
+      close_button_, vector_icons::kCloseRoundedIcon,
       DownloadItemView::GetTextColorForThemeProvider(GetThemeProvider()));
 }
 

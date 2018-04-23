@@ -22,13 +22,11 @@ class VectorIconTexture : public UiTexture {
 
   SkColor GetColor() const { return color_; }
 
-  void SetIcon(const gfx::VectorIcon* icon) {
-    SetAndDirty(&icon_no_1x_.rep, icon ? icon->rep : nullptr);
-  }
+  void SetIcon(const gfx::VectorIcon* icon) { SetAndDirty(&icon_, icon); }
 
  private:
   void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override {
-    if (icon_no_1x_.is_empty())
+    if (icon_ == nullptr || icon_->is_empty())
       return;
     cc::SkiaPaintCanvas paint_canvas(sk_canvas);
     gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
@@ -39,12 +37,12 @@ class VectorIconTexture : public UiTexture {
     float icon_size = size_.height();
     float icon_corner_offset = (size_.height() - icon_size) / 2;
     VectorIcon::DrawVectorIcon(
-        &gfx_canvas, icon_no_1x_, icon_size,
+        &gfx_canvas, *icon_, icon_size,
         gfx::PointF(icon_corner_offset, icon_corner_offset), color_);
   }
 
   gfx::SizeF size_;
-  gfx::VectorIcon icon_no_1x_{};
+  const gfx::VectorIcon* icon_ = nullptr;
   SkColor color_ = SK_ColorWHITE;
   DISALLOW_COPY_AND_ASSIGN(VectorIconTexture);
 };
@@ -91,12 +89,9 @@ void VectorIcon::DrawVectorIcon(gfx::Canvas* canvas,
   canvas->Translate(
       {static_cast<int>(corner.x()), static_cast<int>(corner.y())});
 
-  // Explicitly cut out the 1x version of the icon, as PaintVectorIcon draws the
-  // 1x version if device scale factor isn't set. See crbug.com/749146. If all
-  // icons end up being drawn via VectorIcon instances, this will not be
-  // required (the 1x version is automatically elided by this class).
-  gfx::VectorIcon icon_no_1x{icon.rep};
-  PaintVectorIcon(canvas, icon_no_1x, size_px, color);
+  // Don't use CreateVectorIcon() because its icon caching is not thread safe.
+  // Instead, just redraw the VectorIcon.
+  PaintVectorIcon(canvas, icon, size_px, color);
 }
 
 }  // namespace vr

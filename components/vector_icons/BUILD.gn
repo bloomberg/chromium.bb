@@ -14,7 +14,7 @@ aggregate_vector_icons("components_vector_icons") {
     "business.icon",
     "check_circle.icon",
     "close.icon",
-    "close_16.icon",
+    "close_rounded.icon",
     "edit.icon",
     "folder.icon",
     "folder_managed.icon",

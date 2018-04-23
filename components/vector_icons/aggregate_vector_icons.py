@@ -28,21 +28,29 @@ def CamelCase(name, suffix):
   return "k" + "".join(words) + suffix
 
 
-def GetPathName(name, append_1x=False):
-  return CamelCase(name, "Path1x" if append_1x else "Path")
+def GetPathName(name, size=None):
+  return CamelCase(name, "{}Path".format(size) if size != None else "Path")
 
 
-def GetRepName(name, append_1x=False):
-  return CamelCase(name, "Rep1x" if append_1x else "Rep")
+def GetRepListName(name):
+  return CamelCase(name, "RepList")
 
 
 def GetIconName(name):
   return CamelCase(name, "Icon")
 
 
+def AddIconToDictionary(icon_file, new_icon, icon_size, icon_index):
+  if icon_size in icon_index:
+    Error("Duplicate icon of size {} found in {}.".format(icon_size, icon_file))
+  icon_index[icon_size] = "\n".join(new_icon)
+  return icon_index
+
+
 def ExtractIconReps(icon_file_name):
-  """Reads the contents of the given icon file and returns a list of vector
-     commands for different icon representations stored in that file.
+  """Reads the contents of the given icon file and returns a dictionary of icon
+     sizes to vector commands for different icon representations stored in that
+     file.
 
   Args:
       icon_file_name: The file path of the icon file to read.
@@ -50,9 +58,10 @@ def ExtractIconReps(icon_file_name):
   with open(icon_file_name, "r") as icon_file:
     icon_file_contents = icon_file.readlines()
 
+  current_icon_size = REFERENCE_SIZE_DIP
   icon_sizes = []
   current_icon_representation = []
-  icon_representation_list = []
+  icon_representations = {}
   for line in icon_file_contents:
     # Strip comments and empty lines.
     line = line.partition(CPP_COMMENT_DELIMITER)[0].strip()
@@ -63,28 +72,34 @@ def ExtractIconReps(icon_file_name):
     if line.startswith(CANVAS_DIMENSIONS):
       sizes = re.findall(r"\d+", line)
       if len(sizes) != 1:
-        Error("Malformed {} line found in {} - it should only specify one size."
+        Error("Malformed {} line in {} - it should specify exactly one size."
               .format(CANVAS_DIMENSIONS, icon_file_name))
       icon_sizes.append(int(sizes[0]))
 
       # All icons except the first / default icon must start with
       # "CANVAS_DIMENSIONS", so rely on it here as a icon delimiter.
       if current_icon_representation:
-        icon_representation_list.append("\n".join(current_icon_representation))
+        icon_representations = AddIconToDictionary(
+            icon_file_name, current_icon_representation, current_icon_size,
+            icon_representations)
         current_icon_representation = []
+      current_icon_size = icon_sizes[-1]
+
     current_icon_representation.append(line)
   if current_icon_representation:
-    icon_representation_list.append("\n".join(current_icon_representation))
+    icon_representations = AddIconToDictionary(
+        icon_file_name, current_icon_representation, current_icon_size,
+        icon_representations)
 
-  if not icon_representation_list:
+  if not icon_representations:
     Error("Didn't find any icons in {}.".format(icon_file_name))
 
-  if len(icon_representation_list) != len(icon_sizes):
+  if len(icon_representations) != len(icon_sizes):
     icon_sizes.insert(0, REFERENCE_SIZE_DIP)
   if sorted(icon_sizes, reverse=True) != icon_sizes:
     Error("The icons in {} should be sorted in descending order of size."
           .format(icon_file_name))
-  return icon_representation_list
+  return icon_representations
 
 
 def AggregateVectorIcons(working_directory, file_list, output_cc, output_h):
@@ -157,34 +172,24 @@ def AggregateVectorIcons(working_directory, file_list, output_cc, output_h):
       (icon_name, extension) = os.path.splitext(
                                os.path.basename(path_map[icon]))
 
-      # Store the vector-drawing commands for foo_bar.icon in the temporary
-      # variable kFooBarPath.
-      icon_representation_list = ExtractIconReps(path_map[icon])
-      (vector_commands, vector_commands_1x) = None, None
-      if len(icon_representation_list) >= 1:
-        vector_commands = icon_representation_list[0]
-      if len(icon_representation_list) >= 2:
-        vector_commands_1x = icon_representation_list[1]
-      if len(icon_representation_list) >= 3:
-        print "Warning: " + path_map[icon] + " has more than two icon", \
-              "representations. Support for this is still a WIP - see", \
-              "crbug.com/647286. For now, only the first two will be used."
-      output_cc.write("VECTOR_ICON_REP_TEMPLATE({}, {}, {})\n".format(
-          GetPathName(icon_name), GetRepName(icon_name), vector_commands))
+      icon_representations = ExtractIconReps(path_map[icon])
+      icon_representation_strings = []
+      for i, size in enumerate(sorted(icon_representations, reverse=True)):
+        vector_commands = icon_representations[size]
+        icon_path_name = GetPathName(icon_name, size if i != 0 else None)
+        # Store the vector-drawing commands for foo_bar.icon in the temporary
+        # variable kFooBarPath.
+        output_cc.write("VECTOR_ICON_REP_TEMPLATE({}, {})\n".format(
+            icon_path_name, vector_commands))
+        icon_representation_strings.append(
+            "{{{0}, arraysize({0})}}".format(icon_path_name))
 
-      # Store the vector-drawing commands for foo_bar.icon's 1x version in the
-      # temporary variable kFooBarPath1x, if it exists.
-      if vector_commands_1x:
-        output_cc.write("VECTOR_ICON_REP_TEMPLATE({}, {}, {})\n".format(
-            GetPathName(icon_name, True), GetRepName(icon_name, True),
-            vector_commands_1x))
-        output_cc.write("VECTOR_ICON_TEMPLATE2({}, {}, {})\n".format(
-            GetIconName(icon_name), GetRepName(icon_name),
-            GetRepName(icon_name, True)))
-      else:
-        # Define the value of kFooBarIcon.
-        output_cc.write("VECTOR_ICON_TEMPLATE({}, {})\n".format(
-            GetIconName(icon_name), GetRepName(icon_name)))
+      # Another temporary variable kFooBarRepList is used to create all the
+      # VectorIconReps inline, with a pointer to it in the final VectorIcon.
+      output_cc.write("VECTOR_ICON_TEMPLATE_CC({}, {}, {})\n".format(
+          GetRepListName(icon_name), GetIconName(icon_name),
+          ", ".join(icon_representation_strings)))
+
   output_cc.close()
 
 
