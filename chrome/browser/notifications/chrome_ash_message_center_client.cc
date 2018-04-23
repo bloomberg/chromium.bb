@@ -8,7 +8,7 @@
 #include "base/i18n/string_compare.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/notifications/arc_application_notifier_controller_chromeos.h"
+#include "chrome/browser/notifications/arc_application_notifier_controller.h"
 #include "chrome/browser/notifications/extension_notifier_controller.h"
 #include "chrome/browser/notifications/web_page_notifier_controller.h"
 #include "components/user_manager/user_manager.h"
@@ -70,18 +70,16 @@ ChromeAshMessageCenterClient::ChromeAshMessageCenterClient(
     controller_->SetClient(std::move(ptr_info));
   }
 
-  sources_.insert(std::make_pair(NotifierId::APPLICATION,
-                                 std::unique_ptr<NotifierController>(
-                                     new ExtensionNotifierController(this))));
+  sources_.insert(
+      std::make_pair(NotifierId::APPLICATION,
+                     std::make_unique<ExtensionNotifierController>(this)));
 
-  sources_.insert(std::make_pair(NotifierId::WEB_PAGE,
-                                 std::unique_ptr<NotifierController>(
-                                     new WebPageNotifierController(this))));
+  sources_.insert(std::make_pair(
+      NotifierId::WEB_PAGE, std::make_unique<WebPageNotifierController>(this)));
 
   sources_.insert(std::make_pair(
       NotifierId::ARC_APPLICATION,
-      std::unique_ptr<NotifierController>(
-          new arc::ArcApplicationNotifierControllerChromeOS(this))));
+      std::make_unique<arc::ArcApplicationNotifierController>(this)));
 }
 
 ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {
