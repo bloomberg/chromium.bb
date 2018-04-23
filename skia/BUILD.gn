@@ -86,7 +86,11 @@ config("skia_config") {
     if (enable_vulkan) {
       include_dirs += [ "//third_party/skia/include/gpu/vk/" ]
     }
-    defines += [ "SK_SUPPORT_GPU=1" ]
+    workaround_header = "gpu/config/gpu_driver_bug_workaround_autogen.h"
+    defines += [
+      "SK_SUPPORT_GPU=1",
+      "SK_GPU_WORKAROUNDS_HEADER=\"$workaround_header\"",
+    ]
   } else {
     defines += [ "SK_SUPPORT_GPU=0" ]
   }
@@ -225,6 +229,7 @@ config("skia_library_config") {
 }
 
 component("skia") {
+  deps = []
   sources = [
     # Chrome sources.
     "config/SkUserConfig.h",
@@ -357,6 +362,7 @@ component("skia") {
     if (enable_vulkan) {
       sources += skia_vk_sources
     }
+    deps += [ "//gpu/config:workaround_list" ]
   }
 
   # Remove unused util sources.
@@ -484,7 +490,7 @@ component("skia") {
   ]
   public_configs = [ ":skia_config" ]
 
-  deps = [
+  deps += [
     ":skia_opts",
     "//base",
     "//base/third_party/dynamic_annotations",
