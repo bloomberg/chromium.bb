@@ -27,9 +27,6 @@ class SyncConsentScreenView {
 
   // Hides the contents of the screen.
   virtual void Hide() = 0;
-
-  // Updates view state after user sync preferences are known.
-  virtual void OnUserPrefKnown(bool sync_everything, bool is_managed) = 0;
 };
 
 }  // namespace chromeos
