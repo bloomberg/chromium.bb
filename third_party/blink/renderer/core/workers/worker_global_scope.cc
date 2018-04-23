@@ -354,7 +354,9 @@ WorkerGlobalScope::WorkerGlobalScope(
       thread_(thread),
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),
-      font_selector_(OffscreenFontSelector::Create(this)) {
+      font_selector_(OffscreenFontSelector::Create(this)),
+      animation_frame_provider_(WorkerAnimationFrameProvider::Create(
+          creation_params->begin_frame_provider_params)) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
   scoped_refptr<SecurityOrigin> security_origin = SecurityOrigin::Create(url_);
@@ -419,6 +421,7 @@ void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(timers_);
   visitor->Trace(pending_error_events_);
   visitor->Trace(font_selector_);
+  visitor->Trace(animation_frame_provider_);
   WorkerOrWorkletGlobalScope::Trace(visitor);
   Supplementable<WorkerGlobalScope>::Trace(visitor);
 }

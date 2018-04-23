@@ -24,7 +24,8 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     V8CacheOptions v8_cache_options,
     WorkerOrWorkletModuleFetchCoordinator* module_fetch_coordinator,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
-        interface_provider_info)
+        interface_provider_info,
+    BeginFrameProviderParams begin_frame_provider_params)
     : script_url(script_url.Copy()),
       user_agent(user_agent.IsolatedCopy()),
       referrer_policy(referrer_policy),
@@ -36,7 +37,8 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       worker_settings(std::move(worker_settings)),
       v8_cache_options(v8_cache_options),
       module_fetch_coordinator(module_fetch_coordinator),
-      interface_provider(std::move(interface_provider_info)) {
+      interface_provider(std::move(interface_provider_info)),
+      begin_frame_provider_params(std::move(begin_frame_provider_params)) {
   this->content_security_policy_parsed_headers =
       std::make_unique<Vector<CSPHeaderAndType>>();
   if (content_security_policy_parsed_headers) {

@@ -820,6 +820,8 @@ jumbo_component("platform") {
     "geometry/transform_state.h",
     "graphics/accelerated_static_bitmap_image.cc",
     "graphics/accelerated_static_bitmap_image.h",
+    "graphics/begin_frame_provider.cc",
+    "graphics/begin_frame_provider.h",
     "graphics/bitmap_image.cc",
     "graphics/bitmap_image.h",
     "graphics/bitmap_image_metrics.cc",
