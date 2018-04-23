@@ -1725,7 +1725,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeSuccess) {
 
 // Push subscriptions used to be non-InstanceID GCM registrations. Still need
 // to be able to unsubscribe these, even though new ones are no longer created.
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, LegacyUnsubscribeSuccess) {
+// Flaky on some Win and Linux buildbots.  See crbug.com/835382.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_LegacyUnsubscribeSuccess DISABLED_LegacyUnsubscribeSuccess
+#else
+#define MAYBE_LegacyUnsubscribeSuccess LegacyUnsubscribeSuccess
+#endif
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       MAYBE_LegacyUnsubscribeSuccess) {
   std::string script_result;
 
   std::string subscription_id1;
