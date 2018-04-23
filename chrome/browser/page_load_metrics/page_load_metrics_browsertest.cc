@@ -1845,8 +1845,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   ExpectFirstPaintMetricsTotalCount(1);
 }
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_InitialForegroundTabChanged DISABLED_InitialForegroundTabChanged
+#else
+#define MAYBE_InitialForegroundTabChanged InitialForegroundTabChanged
+#endif
 IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
-                       InitialForegroundTabChanged) {
+                       MAYBE_InitialForegroundTabChanged) {
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GetTestURL(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
