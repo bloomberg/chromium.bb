@@ -67,8 +67,12 @@ namespace autotestPrivate {
 
   dictionary Printer {
     DOMString printerName;
-    DOMString printerId;
-    DOMString printerType;
+    DOMString? printerId;
+    DOMString? printerType;
+    DOMString? printerDesc;
+    DOMString? printerMakeAndModel;
+    DOMString? printerUri;
+    DOMString? printerPpd;
   };
   callback PrinterArrayCallback = void (Printer[] printers);
 
@@ -147,6 +151,12 @@ namespace autotestPrivate {
 
     // Get list of available printers
     static void getPrinterList(PrinterArrayCallback callback);
+
+    // Update printer. Printer with empty ID is considered new.
+    static void updatePrinter(Printer printer);
+
+    // Remove printer.
+    static void removePrinter(DOMString printerId);
 
     // Enable/disable the Play Store.
     // |enabled|: if set, enable the Play Store.

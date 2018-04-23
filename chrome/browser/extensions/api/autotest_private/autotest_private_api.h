@@ -242,6 +242,32 @@ class AutotestPrivateGetPrinterListFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(AutotestPrivateGetPrinterListFunction);
 };
 
+class AutotestPrivateUpdatePrinterFunction : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateUpdatePrinterFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.updatePrinter",
+                             AUTOTESTPRIVATE_UPDATEPRINTER)
+
+ private:
+  ~AutotestPrivateUpdatePrinterFunction() override;
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateUpdatePrinterFunction);
+};
+
+class AutotestPrivateRemovePrinterFunction : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateRemovePrinterFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.removePrinter",
+                             AUTOTESTPRIVATE_REMOVEPRINTER)
+
+ private:
+  ~AutotestPrivateRemovePrinterFunction() override;
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateRemovePrinterFunction);
+};
+
 // Don't kill the browser when we're in a browser test.
 void SetAutotestPrivateTest();
 
