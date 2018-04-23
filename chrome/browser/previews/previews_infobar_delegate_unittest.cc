@@ -12,7 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
@@ -195,10 +195,10 @@ class PreviewsInfoBarDelegateUnitTest
         std::make_unique<TestPreviewsLogger>();
     previews_logger_ = previews_logger.get();
     previews_io_data_ = std::make_unique<previews::PreviewsIOData>(
-        base::MessageLoop::current()->task_runner(),
-        base::MessageLoop::current()->task_runner());
+        base::MessageLoopCurrent::Get()->task_runner(),
+        base::MessageLoopCurrent::Get()->task_runner());
     previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(
-        previews_io_data_.get(), base::MessageLoop::current()->task_runner(),
+        previews_io_data_.get(), base::MessageLoopCurrent::Get()->task_runner(),
         nullptr /* previews_opt_out_store */, nullptr /* previews_opt_guide */,
         base::Bind(&IsPreviewsEnabled), std::move(previews_logger));
     base::RunLoop().RunUntilIdle();
