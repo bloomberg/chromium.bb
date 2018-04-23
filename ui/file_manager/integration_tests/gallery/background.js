@@ -66,21 +66,21 @@ var testcase = {};
  */
 window.addEventListener('load', function() {
   var steps = [
-    // Check for the guest mode.
+    // Request the guest mode state.
     function() {
       chrome.test.sendMessage(
           JSON.stringify({name: 'isInGuestMode'}), steps.shift());
     },
-    // Obtain the test case name.
-    function(result) {
-      if (JSON.parse(result) != chrome.extension.inIncognitoContext)
+    // Request the root entry paths.
+    function(mode) {
+      if (JSON.parse(mode) != chrome.extension.inIncognitoContext)
         return;
       chrome.test.sendMessage(
           JSON.stringify({name: 'getRootPaths'}), steps.shift());
     },
-    // Obtain the root entry paths.
-    function(result) {
-      var roots = JSON.parse(result);
+    // Request the test case name.
+    function(paths) {
+      var roots = JSON.parse(paths);
       RootPath.DOWNLOADS = roots.downloads;
       RootPath.DRIVE = roots.drive;
       chrome.test.sendMessage(
@@ -88,16 +88,23 @@ window.addEventListener('load', function() {
     },
     // Run the test case.
     function(testCaseName) {
-      var targetTest = testcase[testCaseName];
-      if (!targetTest) {
-        chrome.test.fail(testCaseName + ' is not found.');
+      // Get the test function from testcase namespace testCaseName.
+      var test = testcase[testCaseName];
+      // Verify test is an unnamed (aka 'anonymous') Function.
+      if (!test instanceof Function || test.name) {
+        chrome.test.fail('[' + testCaseName + '] not found.');
         return;
       }
-      // Specify the name of test to the test system.
-      targetTest.generatedName = testCaseName;
-      chrome.test.runTests([function() {
-        return testPromiseAndApps(targetTest(), [gallery]);
-      }]);
+      // Define the test case and its name for chrome.test logging.
+      test.generatedName = testCaseName;
+      var testCaseSymbol = Symbol(testCaseName);
+      var testCase = {
+        [testCaseSymbol] :() => {
+          return testPromiseAndApps(test(), [gallery]);
+        },
+      };
+      // Run the test.
+      chrome.test.runTests([testCase[testCaseSymbol]]);
     }
   ];
   steps.shift()();
