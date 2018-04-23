@@ -3644,8 +3644,11 @@
                     "name": "Enabled",
                     "params": {
                         "EffectiveConnectionType1": "3G",
+                        "EffectiveConnectionType2": "4G",
                         "MaxDelayableRequests1": "14",
-                        "NonDelayableWeight1": "2.0"
+                        "MaxDelayableRequests2": "18",
+                        "NonDelayableWeight1": "3.0",
+                        "NonDelayableWeight2": "3.0"
                     },
                     "enable_features": [
                         "ThrottleDelayable"
