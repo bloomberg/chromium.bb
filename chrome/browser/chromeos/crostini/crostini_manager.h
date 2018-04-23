@@ -65,6 +65,15 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   using RestartCrostiniCallback =
       base::OnceCallback<void(ConciergeClientResult result)>;
 
+  // Observer class for the Crostini restart flow.
+  class RestartObserver {
+   public:
+    virtual void OnComponentLoaded(ConciergeClientResult result) = 0;
+    virtual void OnConciergeStarted(ConciergeClientResult result) = 0;
+    virtual void OnDiskImageCreated(ConciergeClientResult result) = 0;
+    virtual void OnVmStarted(ConciergeClientResult result) = 0;
+  };
+
   // Checks if the cros-termina component is installed.
   static bool IsCrosTerminaInstalled();
 
@@ -127,8 +136,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // Asynchronously launches an app as specified by its desktop file id.
   // |callback| is called with SUCCESS when the relevant process is started
   // or LAUNCH_CONTAINER_APPLICATION_FAILED if there was an error somewhere.
-  //
-  // TODO(nverne): Start the VM and Container if not already running.
   void LaunchContainerApplication(std::string vm_name,
                                   std::string container_name,
                                   std::string desktop_file_id,
@@ -140,10 +147,17 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
                                const std::string& vm_name,
                                const std::string& container_name);
 
-  void RestartCrostini(Profile* profile,
-                       std::string vm_name,
-                       std::string container_name,
-                       RestartCrostiniCallback callback);
+  using RestartId = int;
+  static const RestartId kUninitializedRestartId = -1;
+  // Runs all the steps required to restart the given crostini vm and container.
+  // The optional |observer| tracks progress.
+  RestartId RestartCrostini(Profile* profile,
+                            std::string vm_name,
+                            std::string container_name,
+                            RestartCrostiniCallback callback,
+                            RestartObserver* observer = nullptr);
+
+  void AbortRestartCrostini(RestartId id);
 
   // ConciergeClient::Observer:
   void OnContainerStarted(

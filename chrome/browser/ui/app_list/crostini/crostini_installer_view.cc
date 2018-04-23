@@ -29,6 +29,8 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 
+using crostini::ConciergeClientResult;
+
 namespace {
 CrostiniInstallerView* g_crostini_installer_view = nullptr;
 
@@ -104,8 +106,22 @@ bool CrostiniInstallerView::Accept() {
 
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 
-  InstallImageLoader();
+  // Kick off the Crostini Restart sequence. We will be added as an observer.
+  restart_id_ = crostini::CrostiniManager::GetInstance()->RestartCrostini(
+      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&CrostiniInstallerView::StartContainerFinished,
+                     weak_ptr_factory_.GetWeakPtr()),
+      this);
   return false;
+}
+
+bool CrostiniInstallerView::Cancel() {
+  if (restart_id_ != crostini::CrostiniManager::kUninitializedRestartId) {
+    // Abort the long-running flow, and prevent our RestartObserver methods
+    // being called after "this" has been destroyed.
+    crostini::CrostiniManager::GetInstance()->AbortRestartCrostini(restart_id_);
+  }
+  return true;  // Should close the dialog
 }
 
 gfx::Size CrostiniInstallerView::CalculatePreferredSize() const {
@@ -123,14 +139,7 @@ CrostiniInstallerView::CrostiniInstallerView(const CrostiniAppItem* app_item,
                                              Profile* profile)
     : app_name_(base::ASCIIToUTF16(app_item->name())),
       profile_(profile),
-      cryptohome_id_(chromeos::ProfileHelper::Get()
-                         ->GetUserByProfile(profile)
-                         ->username_hash()),
       weak_ptr_factory_(this) {
-  // Get rid of the @domain.name in the container_user_name_ (an email address).
-  container_user_name_ = profile_->GetProfileUserName();
-  container_user_name_ =
-      container_user_name_.substr(0, container_user_name_.find('@'));
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -178,85 +187,38 @@ void CrostiniInstallerView::HandleError(const base::string16& error_message) {
   GetWidget()->UpdateWindowTitle();
 }
 
-void CrostiniInstallerView::InstallImageLoader() {
-  VLOG(1) << "Installing cros-termina component";
+void CrostiniInstallerView::OnComponentLoaded(ConciergeClientResult result) {
   DCHECK_EQ(state_, State::INSTALL_START);
   state_ = State::INSTALL_IMAGE_LOADER;
-  g_browser_process->platform_part()->cros_component_manager()->Load(
-      "cros-termina",
-      component_updater::CrOSComponentManager::MountPolicy::kMount,
-      base::BindOnce(InstallImageLoaderFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CrostiniInstallerView::InstallImageLoaderFinished(
-    base::WeakPtr<CrostiniInstallerView> weak_ptr,
-    component_updater::CrOSComponentManager::Error error,
-    const base::FilePath& result) {
-  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &CrostiniInstallerView::InstallImageLoaderFinishedOnUIThread,
-          weak_ptr, error, result));
-}
-
-void CrostiniInstallerView::InstallImageLoaderFinishedOnUIThread(
-    component_updater::CrOSComponentManager::Error error,
-    const base::FilePath& result) {
-  if (error != component_updater::CrOSComponentManager::Error::NONE) {
-    LOG(ERROR)
-        << "Failed to install the cros-termina component with error code: "
-        << static_cast<int>(error);
+  if (result != ConciergeClientResult::SUCCESS) {
+    LOG(ERROR) << "Failed to install the cros-termina component";
     HandleError(
         l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR));
     return;
   }
   VLOG(1) << "cros-termina install success";
   StepProgress();
-  StartVmConcierge();
 }
 
-void CrostiniInstallerView::StartVmConcierge() {
+void CrostiniInstallerView::OnConciergeStarted(ConciergeClientResult result) {
   DCHECK_EQ(state_, State::INSTALL_IMAGE_LOADER);
   state_ = State::START_CONCIERGE;
-
-  crostini::CrostiniManager::GetInstance()->StartVmConcierge(
-      base::BindOnce(&CrostiniInstallerView::StartVmConciergeFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CrostiniInstallerView::StartVmConciergeFinished(bool success) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!success) {
-    LOG(ERROR) << "Failed to install start Concierge";
+  if (result != ConciergeClientResult::SUCCESS) {
+    LOG(ERROR) << "Failed to install start Concierge with error code: "
+               << static_cast<int>(result);
     HandleError(l10n_util::GetStringUTF16(
         IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR));
     return;
   }
   VLOG(1) << "VmConcierge service started";
   StepProgress();
-  CreateDiskImage();
 }
 
-void CrostiniInstallerView::CreateDiskImage() {
-  DCHECK_EQ(state_, State::START_CONCIERGE);
+void CrostiniInstallerView::OnDiskImageCreated(ConciergeClientResult result) {
+  DCHECK_EQ(state_, State::INSTALL_IMAGE_LOADER);
   state_ = State::CREATE_DISK_IMAGE;
-
-  VLOG(1) << "Creating crostini disk image";
-  crostini::CrostiniManager::GetInstance()->CreateDiskImage(
-      cryptohome_id_, base::FilePath(kCrostiniDefaultVmName),
-      vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
-      base::BindOnce(&CrostiniInstallerView::CreateDiskImageFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CrostiniInstallerView::CreateDiskImageFinished(
-    crostini::ConciergeClientResult result,
-    const base::FilePath& result_path) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result != crostini::ConciergeClientResult::SUCCESS) {
-    LOG(ERROR) << "Failed to create disk image with error code: "
+  if (result != ConciergeClientResult::SUCCESS) {
+    LOG(ERROR) << "Failed to create disk imagewith error code: "
                << static_cast<int>(result);
     HandleError(l10n_util::GetStringUTF16(
         IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR));
@@ -264,24 +226,12 @@ void CrostiniInstallerView::CreateDiskImageFinished(
   }
   VLOG(1) << "Created crostini disk image";
   StepProgress();
-  StartTerminaVm(result_path);
 }
 
-void CrostiniInstallerView::StartTerminaVm(const base::FilePath& result_path) {
+void CrostiniInstallerView::OnVmStarted(ConciergeClientResult result) {
   DCHECK_EQ(state_, State::CREATE_DISK_IMAGE);
   state_ = State::START_TERMINA_VM;
-
-  VLOG(1) << "Starting Termina VM";
-  crostini::CrostiniManager::GetInstance()->StartTerminaVm(
-      kCrostiniDefaultVmName, result_path,
-      base::BindOnce(&CrostiniInstallerView::StartTerminaVmFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CrostiniInstallerView::StartTerminaVmFinished(
-    crostini::ConciergeClientResult result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result != crostini::ConciergeClientResult::SUCCESS) {
+  if (result != ConciergeClientResult::SUCCESS) {
     LOG(ERROR) << "Failed to start Termina VM with error code: "
                << static_cast<int>(result);
     HandleError(l10n_util::GetStringUTF16(
@@ -290,26 +240,12 @@ void CrostiniInstallerView::StartTerminaVmFinished(
   }
   VLOG(1) << "Started Termina VM successfully";
   StepProgress();
-  StartContainer();
-}
-
-void CrostiniInstallerView::StartContainer() {
-  DCHECK_EQ(state_, State::START_TERMINA_VM);
-  state_ = State::START_CONTAINER;
-  VLOG(1) << "In vm " << kCrostiniDefaultVmName << ", starting container "
-          << kCrostiniDefaultContainerName << " as user "
-          << container_user_name_;
-  crostini::CrostiniManager::GetInstance()->StartContainer(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      container_user_name_,
-      base::BindOnce(&CrostiniInstallerView::StartContainerFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniInstallerView::StartContainerFinished(
-    crostini::ConciergeClientResult result) {
+    ConciergeClientResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result != crostini::ConciergeClientResult::SUCCESS) {
+  if (result != ConciergeClientResult::SUCCESS) {
     LOG(ERROR) << "Failed to start container with error code: "
                << static_cast<int>(result);
     HandleError(l10n_util::GetStringUTF16(
