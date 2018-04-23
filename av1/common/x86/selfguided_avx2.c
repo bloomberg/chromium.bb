@@ -64,14 +64,31 @@ static __m256i scan_32(__m256i x) {
 //
 // A+1 and B+1 should be aligned to 32 bytes. buf_stride should be a multiple
 // of 8.
+
+static void *memset_zero_avx(void *dest, const __m256i *zero, size_t count) {
+  unsigned int i = 0;
+  for (i = 0; i < (count & 0xffffffe0); i += 32) {
+    _mm256_storeu_si256((__m256i *)((int *)dest + i), *zero);
+    _mm256_storeu_si256((__m256i *)((int *)dest + i + 8), *zero);
+    _mm256_storeu_si256((__m256i *)((int *)dest + i + 16), *zero);
+    _mm256_storeu_si256((__m256i *)((int *)dest + i + 24), *zero);
+  }
+  for (; i < (count & 0xfffffff8); i += 8) {
+    _mm256_storeu_si256((__m256i *)((int *)dest + i), *zero);
+  }
+  for (; i < count; i++) {
+    *(int *)dest = 0;
+  }
+  return dest;
+}
+
 static void integral_images(const uint8_t *src, int src_stride, int width,
                             int height, int32_t *A, int32_t *B,
                             int buf_stride) {
-  // Write out the zero top row
-  memset(A, 0, sizeof(*A) * (width + 1));
-  memset(B, 0, sizeof(*B) * (width + 1));
-
   const __m256i zero = _mm256_setzero_si256();
+  // Write out the zero top row
+  memset_zero_avx(A, &zero, (width + 1));
+  memset_zero_avx(B, &zero, (width + 1));
   for (int i = 0; i < height; ++i) {
     // Zero the left column.
     A[(i + 1) * buf_stride] = B[(i + 1) * buf_stride] = 0;
@@ -115,11 +132,11 @@ static void integral_images(const uint8_t *src, int src_stride, int width,
 static void integral_images_highbd(const uint16_t *src, int src_stride,
                                    int width, int height, int32_t *A,
                                    int32_t *B, int buf_stride) {
-  // Write out the zero top row
-  memset(A, 0, sizeof(*A) * (width + 1));
-  memset(B, 0, sizeof(*B) * (width + 1));
-
   const __m256i zero = _mm256_setzero_si256();
+  // Write out the zero top row
+  memset_zero_avx(A, &zero, (width + 1));
+  memset_zero_avx(B, &zero, (width + 1));
+
   for (int i = 0; i < height; ++i) {
     // Zero the left column.
     A[(i + 1) * buf_stride] = B[(i + 1) * buf_stride] = 0;
@@ -534,7 +551,8 @@ void av1_selfguided_restoration_avx2(const uint8_t *dgd8, int width, int height,
 
   DECLARE_ALIGNED(32, int32_t,
                   buf[4 * ALIGN_POWER_OF_TWO(RESTORATION_PROC_UNIT_PELS, 3)]);
-  memset(buf, 0, sizeof(buf));
+  // we don't need memset below because all buf fields are filled in later
+  // memset(buf, 0, sizeof(buf));
 
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
