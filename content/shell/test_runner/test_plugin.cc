@@ -318,8 +318,7 @@ bool TestPlugin::PrepareTransferableResource(
                                                  shared_bitmap_);
 
     *resource = viz::TransferableResource::MakeSoftware(
-        shared_bitmap_->id(), /*sequence_number=*/0, shared_bitmap_->size(),
-        viz::RGBA_8888);
+        shared_bitmap_->id(), shared_bitmap_->size(), viz::RGBA_8888);
     *release_callback = viz::SingleReleaseCallback::Create(
         base::BindOnce(&ReleaseSharedMemory, std::move(shared_bitmap_),
                        std::move(registration)));

@@ -784,8 +784,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   image_data_->Unmap();
 
   *transferable_resource = viz::TransferableResource::MakeSoftware(
-      shared_bitmap->id(), /*sequence_number=*/0, pixel_image_size,
-      viz::RGBA_8888);
+      shared_bitmap->id(), pixel_image_size, viz::RGBA_8888);
   *release_callback = viz::SingleReleaseCallback::Create(base::BindOnce(
       &PepperGraphics2DHost::ReleaseSoftwareCallback, this->AsWeakPtr(),
       std::move(shared_bitmap), std::move(registration)));

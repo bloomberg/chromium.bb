@@ -300,10 +300,7 @@ void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
   } else {
     transferable = viz::TransferableResource::MakeSoftware(
         resource.resource_->software_backing()->shared_bitmap_id,
-        // Not needed since this software resource's SharedBitmapId was
-        // notified to the display compositor through the CompositorFrameSink.
-        /*sequence_number=*/0, resource.resource_->size(),
-        resource.resource_->format());
+        resource.resource_->size(), resource.resource_->format());
   }
   transferable.format = resource.resource_->format();
   transferable.buffer_format = viz::BufferFormat(transferable.format);

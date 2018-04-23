@@ -149,7 +149,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
       return false;
 
     *out_resource = viz::TransferableResource::MakeSoftware(
-        registered.bitmap->id(), /*sequence_number=*/0, size, viz::RGBA_8888);
+        registered.bitmap->id(), size, viz::RGBA_8888);
     auto func = WTF::Bind(&ImageLayerBridge::ResourceReleasedSoftware,
                           WrapWeakPersistent(this), std::move(registered));
     *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));

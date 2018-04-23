@@ -51,11 +51,6 @@ struct StructTraits<viz::mojom::TransferableResourceDataView,
     return resource.is_software;
   }
 
-  static uint32_t shared_bitmap_sequence_number(
-      const viz::TransferableResource& resource) {
-    return resource.shared_bitmap_sequence_number;
-  }
-
   static bool is_overlay_candidate(const viz::TransferableResource& resource) {
     return resource.is_overlay_candidate;
   }

@@ -1079,7 +1079,6 @@ TEST_F(StructTraitsTest, TransferableResource) {
   const uint32_t texture_target = 1337;
   const bool read_lock_fences_enabled = true;
   const bool is_software = false;
-  const uint32_t shared_bitmap_sequence_number = 123456;
   const bool is_overlay_candidate = true;
 
   gpu::MailboxHolder mailbox_holder;
@@ -1096,7 +1095,6 @@ TEST_F(StructTraitsTest, TransferableResource) {
   input.mailbox_holder = mailbox_holder;
   input.read_lock_fences_enabled = read_lock_fences_enabled;
   input.is_software = is_software;
-  input.shared_bitmap_sequence_number = shared_bitmap_sequence_number;
   input.is_overlay_candidate = is_overlay_candidate;
 
   TransferableResource output;
@@ -1112,8 +1110,6 @@ TEST_F(StructTraitsTest, TransferableResource) {
             output.mailbox_holder.texture_target);
   EXPECT_EQ(read_lock_fences_enabled, output.read_lock_fences_enabled);
   EXPECT_EQ(is_software, output.is_software);
-  EXPECT_EQ(shared_bitmap_sequence_number,
-            output.shared_bitmap_sequence_number);
   EXPECT_EQ(is_overlay_candidate, output.is_overlay_candidate);
 }
 

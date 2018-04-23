@@ -874,7 +874,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       SoftwarePlaneResource* software_resource = plane_resource->AsSoftware();
       external_resources.type = VideoFrameResourceType::RGBA_PREMULTIPLIED;
       transferable_resource = viz::TransferableResource::MakeSoftware(
-          software_resource->shared_bitmap_id(), 0 /* sequence_number */,
+          software_resource->shared_bitmap_id(),
           software_resource->resource_size(),
           plane_resource->resource_format());
     } else {

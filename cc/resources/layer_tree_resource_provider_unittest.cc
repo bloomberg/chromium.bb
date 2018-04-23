@@ -58,8 +58,6 @@ class LayerTreeResourceProviderTest : public testing::TestWithParam<bool> {
       r.mailbox_holder.sync_token = SyncTokenFromUInt(sync_token_value);
       r.mailbox_holder.texture_target = 6;
     }
-    if (!gpu)
-      r.shared_bitmap_sequence_number = sync_token_value;
     return r;
   }
 
@@ -131,8 +129,6 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceSendToParent) {
   EXPECT_EQ(exported[0].mailbox_holder.sync_token, verified_sync_token);
   EXPECT_EQ(exported[0].mailbox_holder.texture_target,
             tran.mailbox_holder.texture_target);
-  EXPECT_EQ(exported[0].shared_bitmap_sequence_number,
-            tran.shared_bitmap_sequence_number);
   EXPECT_EQ(exported[0].buffer_format, tran.buffer_format);
 
   // Exported resources are not released when removed, until the export returns.
@@ -184,8 +180,6 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceSendTwoToParent) {
     EXPECT_EQ(exported[i].mailbox_holder.sync_token, verified_sync_token);
     EXPECT_EQ(exported[i].mailbox_holder.texture_target,
               tran[i].mailbox_holder.texture_target);
-    EXPECT_EQ(exported[i].shared_bitmap_sequence_number,
-              tran[i].shared_bitmap_sequence_number);
     EXPECT_EQ(exported[i].buffer_format, tran[i].buffer_format);
   }
 }
