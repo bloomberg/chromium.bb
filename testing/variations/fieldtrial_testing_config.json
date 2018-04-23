@@ -1476,6 +1476,21 @@
             ]
         }
     ],
+    "HomePageButtonForceEnabled": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "HomePageButtonForceEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
     "Html5ByDefault": [
         {
             "platforms": [
