@@ -32,6 +32,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -42,6 +43,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "net/base/filename_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/message_center/message_center.h"
@@ -492,6 +494,63 @@ ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
   }
 #endif
   return RespondNow(OneArgument(std::move(values)));
+}
+
+AutotestPrivateUpdatePrinterFunction::AutotestPrivateUpdatePrinterFunction() =
+    default;
+AutotestPrivateUpdatePrinterFunction::~AutotestPrivateUpdatePrinterFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateUpdatePrinterFunction::Run() {
+  std::unique_ptr<api::autotest_private::UpdatePrinter::Params> params(
+      api::autotest_private::UpdatePrinter::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateUpdatePrinterFunction";
+#if defined(OS_CHROMEOS)
+  const api::autotest_private::Printer& js_printer = params->printer;
+  chromeos::Printer printer(js_printer.printer_id ? *js_printer.printer_id
+                                                  : "");
+  printer.set_display_name(js_printer.printer_name);
+  if (js_printer.printer_desc)
+    printer.set_description(*js_printer.printer_desc);
+
+  if (js_printer.printer_make_and_model)
+    printer.set_make_and_model(*js_printer.printer_make_and_model);
+
+  if (js_printer.printer_uri)
+    printer.set_uri(*js_printer.printer_uri);
+
+  if (js_printer.printer_ppd) {
+    const GURL ppd =
+        net::FilePathToFileURL(base::FilePath(*js_printer.printer_ppd));
+    if (ppd.is_valid())
+      printer.mutable_ppd_reference()->user_supplied_ppd_url = ppd.spec();
+    else
+      LOG(ERROR) << "Invalid ppd path: " << *js_printer.printer_ppd;
+  }
+  auto printers_manager = chromeos::CupsPrintersManager::Create(
+      ProfileManager::GetActiveUserProfile());
+  printers_manager->UpdateConfiguredPrinter(printer);
+#endif
+  return RespondNow(NoArguments());
+}
+
+AutotestPrivateRemovePrinterFunction::AutotestPrivateRemovePrinterFunction() =
+    default;
+AutotestPrivateRemovePrinterFunction::~AutotestPrivateRemovePrinterFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateRemovePrinterFunction::Run() {
+  std::unique_ptr<api::autotest_private::RemovePrinter::Params> params(
+      api::autotest_private::RemovePrinter::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateRemovePrinterFunction";
+#if defined(OS_CHROMEOS)
+  auto printers_manager = chromeos::CupsPrintersManager::Create(
+      ProfileManager::GetActiveUserProfile());
+  printers_manager->RemoveConfiguredPrinter(params->printer_id);
+#endif
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction

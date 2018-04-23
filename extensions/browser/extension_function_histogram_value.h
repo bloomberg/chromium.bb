@@ -1305,6 +1305,8 @@ enum HistogramValue {
   CECPRIVATE_SENDSTANDBY,
   CECPRIVATE_SENDWAKEUP,
   WEBSTOREPRIVATE_GETREFERRERCHAIN,
+  AUTOTESTPRIVATE_UPDATEPRINTER,
+  AUTOTESTPRIVATE_REMOVEPRINTER,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
