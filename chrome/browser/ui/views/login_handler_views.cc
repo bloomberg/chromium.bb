@@ -80,6 +80,9 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
     dialog_ = NULL;
     ResetModel();
 
+    // This Release is the counter-point to the AddRef() in BuildViewImpl().
+    Release();
+
     ReleaseSoon();
   }
 
@@ -119,6 +122,11 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
     // manager. The view listens for model destruction and unobserves
     // accordingly.
     login_view_ = new LoginView(authority, explanation, login_model_data);
+
+    // Views requires the WidgetDelegate [this instance] live longer than the
+    // Widget. To enforce this, we AddRef() here and Release() in
+    // DeleteDelegate().
+    AddRef();
 
     // Scary thread safety note: This can potentially be called *after* SetAuth
     // or CancelAuth (say, if the request was cancelled before the UI thread got
