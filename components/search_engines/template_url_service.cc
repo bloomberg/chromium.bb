@@ -4,36 +4,24 @@
 
 #include "components/search_engines/template_url_service.h"
 
-#include <algorithm>
-#include <utility>
-
 #include "base/auto_reset.h"
 #include "base/callback.h"
-#include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/default_clock.h"
-#include "base/time/time.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/search_engines/search_host_to_urls_map.h"
 #include "components/search_engines/search_terms_data.h"
-#include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service_client.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/search_engines/util.h"
-#include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -278,51 +266,20 @@ TemplateURLService::TemplateURLService(
       google_url_tracker_(google_url_tracker),
       rappor_service_(rappor_service),
       dsp_change_callback_(dsp_change_callback),
-      provider_map_(new SearchHostToURLsMap),
-      loaded_(false),
-      load_failed_(false),
-      disable_load_(false),
-      load_handle_(0),
-      default_search_provider_(nullptr),
-      next_id_(kInvalidTemplateURLID + 1),
-      clock_(new base::DefaultClock),
-      models_associated_(false),
-      processing_syncer_changes_(false),
-      dsp_change_origin_(DSP_CHANGE_OTHER),
       default_search_manager_(
           prefs_,
           base::BindRepeating(&TemplateURLService::ApplyDefaultSearchChange,
-                              base::Unretained(this))),
-      outstanding_scoper_handles_(0),
-      model_mutated_notification_pending_(false) {
+                              base::Unretained(this))) {
   DCHECK(search_terms_data_);
   Init(nullptr, 0);
 }
 
 TemplateURLService::TemplateURLService(const Initializer* initializers,
                                        const int count)
-    : prefs_(nullptr),
-      search_terms_data_(new SearchTermsData),
-      web_data_service_(nullptr),
-      google_url_tracker_(nullptr),
-      rappor_service_(nullptr),
-      provider_map_(new SearchHostToURLsMap),
-      loaded_(false),
-      load_failed_(false),
-      disable_load_(false),
-      load_handle_(0),
-      default_search_provider_(nullptr),
-      next_id_(kInvalidTemplateURLID + 1),
-      clock_(new base::DefaultClock),
-      models_associated_(false),
-      processing_syncer_changes_(false),
-      dsp_change_origin_(DSP_CHANGE_OTHER),
-      default_search_manager_(
+    : default_search_manager_(
           prefs_,
           base::BindRepeating(&TemplateURLService::ApplyDefaultSearchChange,
-                              base::Unretained(this))),
-      outstanding_scoper_handles_(0),
-      model_mutated_notification_pending_(false) {
+                              base::Unretained(this))) {
   Init(initializers, count);
 }
 
@@ -773,7 +730,8 @@ void TemplateURLService::Load() {
 }
 
 std::unique_ptr<TemplateURLService::Subscription>
-TemplateURLService::RegisterOnLoadedCallback(const base::Closure& callback) {
+TemplateURLService::RegisterOnLoadedCallback(
+    const base::RepeatingClosure& callback) {
   return loaded_ ? std::unique_ptr<TemplateURLService::Subscription>()
                  : on_loaded_callbacks_.Add(callback);
 }
