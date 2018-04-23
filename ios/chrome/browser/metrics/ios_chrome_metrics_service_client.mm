@@ -334,8 +334,8 @@ void IOSChromeMetricsServiceClient::OnIncognitoWebStateRemoved() {
   UpdateRunningServices();
 }
 
-bool IOSChromeMetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
-  return SyncDisableObserver::IsHistorySyncEnabledOnAllProfiles();
+bool IOSChromeMetricsServiceClient::SyncStateAllowsUkm() {
+  return SyncDisableObserver::SyncStateAllowsUkm();
 }
 
 bool IOSChromeMetricsServiceClient::

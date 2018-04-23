@@ -78,7 +78,7 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
       override;
   base::TimeDelta GetStandardUploadInterval() override;
   void OnRendererProcessCrash() override;
-  bool IsHistorySyncEnabledOnAllProfiles() override;
+  bool SyncStateAllowsUkm() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
 
   // ukm::HistoryDeleteObserver:

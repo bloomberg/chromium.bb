@@ -75,9 +75,9 @@ void SyncDisableObserver::ObserveServiceForSyncDisables(
 }
 
 void SyncDisableObserver::UpdateAllProfileEnabled(bool must_purge) {
-  bool all_enabled = CheckHistorySyncOnAllProfiles();
+  bool all_enabled = CheckSyncStateOnAllProfiles();
   bool all_extensions_enabled =
-      all_enabled && CheckExtensionSyncOnAllProfiles();
+      all_enabled && CheckSyncStateForExtensionsOnAllProfiles();
   // Any change in sync settings needs to call OnSyncPrefsChanged so that the
   // new settings take effect.
   if (must_purge || (all_enabled != all_histories_enabled_) ||
@@ -88,7 +88,7 @@ void SyncDisableObserver::UpdateAllProfileEnabled(bool must_purge) {
   }
 }
 
-bool SyncDisableObserver::CheckHistorySyncOnAllProfiles() {
+bool SyncDisableObserver::CheckSyncStateOnAllProfiles() {
   if (previous_states_.empty())
     return false;
   for (const auto& kv : previous_states_) {
@@ -112,7 +112,7 @@ bool SyncDisableObserver::CheckHistorySyncOnAllProfiles() {
   return true;
 }
 
-bool SyncDisableObserver::CheckExtensionSyncOnAllProfiles() {
+bool SyncDisableObserver::CheckSyncStateForExtensionsOnAllProfiles() {
   if (previous_states_.empty())
     return false;
   for (const auto& kv : previous_states_) {
@@ -148,11 +148,11 @@ void SyncDisableObserver::OnSyncShutdown(syncer::SyncService* sync) {
   UpdateAllProfileEnabled(false);
 }
 
-bool SyncDisableObserver::IsHistorySyncEnabledOnAllProfiles() {
+bool SyncDisableObserver::SyncStateAllowsUkm() {
   return all_histories_enabled_;
 }
 
-bool SyncDisableObserver::IsExtensionSyncEnabledOnAllProfiles() {
+bool SyncDisableObserver::SyncStateAllowsExtensionUkm() {
   return all_extensions_enabled_;
 }
 

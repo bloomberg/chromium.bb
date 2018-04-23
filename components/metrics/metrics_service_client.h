@@ -119,11 +119,13 @@ class MetricsServiceClient {
   // Returns whether cellular logic is enabled for metrics reporting.
   virtual bool IsUMACellularUploadLogicEnabled();
 
-  // Returns whether history sync is enabled on all active profiles.
-  virtual bool IsHistorySyncEnabledOnAllProfiles();
+  // Returns true iff sync is in a state that allows UKM to be enabled.
+  // See //components/ukm/observers/sync_disable_observer.h for details.
+  virtual bool SyncStateAllowsUkm();
 
-  // Returns if extensions sync is enabled on all active profiles.
-  virtual bool IsExtensionSyncEnabledOnAllProfiles();
+  // Returns true iff sync is in a state that allows UKM to capture extensions.
+  // See //components/ukm/observers/sync_disable_observer.h for details.
+  virtual bool SyncStateAllowsExtensionUkm();
 
   // Returns whether UKM notification listeners were attached to all profiles.
   virtual bool AreNotificationListenersEnabledOnAllProfiles();

@@ -25,11 +25,15 @@ class SyncDisableObserver : public syncer::SyncServiceObserver {
   // Starts observing a service for sync disables.
   void ObserveServiceForSyncDisables(syncer::SyncService* sync_service);
 
-  // Returns if history sync is enabled on all active profiles.
-  virtual bool IsHistorySyncEnabledOnAllProfiles();
+  // Returns true iff sync is in a state that allows UKM to be enabled.
+  // This means that for all profiles, sync is initialized, connected, has the
+  // HISTORY_DELETE_DIRECTIVES data type enabled, and does not have a secondary
+  // passphrase enabled.
+  virtual bool SyncStateAllowsUkm();
 
-  // Returns if history sync is enabled on all active profiles.
-  virtual bool IsExtensionSyncEnabledOnAllProfiles();
+  // Returns true iff sync is in a state that allows UKM to capture extensions.
+  // This means that all profiles have EXTENSIONS data type enabled for syncing.
+  virtual bool SyncStateAllowsExtensionUkm();
 
  protected:
   // Called after state changes and some profile has sync disabled.
@@ -45,13 +49,13 @@ class SyncDisableObserver : public syncer::SyncServiceObserver {
   // Recomputes all_profiles_enabled_ state from previous_states_;
   void UpdateAllProfileEnabled(bool must_purge);
 
-  // Returns true iff all profile histories are enabled in previous_states_.
+  // Returns true iff all sync states in previous_states_ allow UKM.
   // If there are no profiles being observed, this returns false.
-  bool CheckHistorySyncOnAllProfiles();
+  bool CheckSyncStateOnAllProfiles();
 
-  // Returns true iff all profile extensions are enabled in previous_states_.
+  // Returns true iff all sync states in previous_states_ allow extension UKM.
   // If there are no profiles being observed, this returns false.
-  bool CheckExtensionSyncOnAllProfiles();
+  bool CheckSyncStateForExtensionsOnAllProfiles();
 
   // Tracks observed history services, for cleanup.
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>

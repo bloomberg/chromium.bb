@@ -87,8 +87,8 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   bool IsReportingPolicyManaged() override;
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
   bool IsUMACellularUploadLogicEnabled() override;
-  bool IsHistorySyncEnabledOnAllProfiles() override;
-  bool IsExtensionSyncEnabledOnAllProfiles() override;
+  bool SyncStateAllowsUkm() override;
+  bool SyncStateAllowsExtensionUkm() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
   std::string GetAppPackageName() override;
   static void SetNotificationListenerSetupFailedForTesting(
