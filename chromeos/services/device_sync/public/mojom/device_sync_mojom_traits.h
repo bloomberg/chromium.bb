@@ -12,6 +12,7 @@
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device.h"
+#include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {
@@ -50,6 +51,16 @@ class StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
 
   static bool Read(chromeos::device_sync::mojom::RemoteDeviceDataView in,
                    cryptauth::RemoteDevice* out);
+};
+
+template <>
+class EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
+                 cryptauth::SoftwareFeature> {
+ public:
+  static chromeos::device_sync::mojom::SoftwareFeature ToMojom(
+      cryptauth::SoftwareFeature input);
+  static bool FromMojom(chromeos::device_sync::mojom::SoftwareFeature input,
+                        cryptauth::SoftwareFeature* out);
 };
 
 }  // namespace mojo

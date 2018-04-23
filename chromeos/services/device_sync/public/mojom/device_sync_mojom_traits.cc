@@ -4,6 +4,7 @@
 
 #include "chromeos/services/device_sync/public/mojom/device_sync_mojom_traits.h"
 
+#include "base/logging.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
 namespace mojo {
@@ -130,6 +131,74 @@ bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
   out->LoadBeaconSeeds(beacon_seeds_out);
 
   return true;
+}
+
+chromeos::device_sync::mojom::SoftwareFeature EnumTraits<
+    chromeos::device_sync::mojom::SoftwareFeature,
+    cryptauth::SoftwareFeature>::ToMojom(cryptauth::SoftwareFeature input) {
+  switch (input) {
+    case cryptauth::SoftwareFeature::UNKNOWN_FEATURE:
+      return chromeos::device_sync::mojom::SoftwareFeature::UNKNOWN_FEATURE;
+    case cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST:
+      return chromeos::device_sync::mojom::SoftwareFeature::
+          BETTER_TOGETHER_HOST;
+    case cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT:
+      return chromeos::device_sync::mojom::SoftwareFeature::
+          BETTER_TOGETHER_CLIENT;
+    case cryptauth::SoftwareFeature::EASY_UNLOCK_HOST:
+      return chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_HOST;
+    case cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT:
+      return chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_CLIENT;
+    case cryptauth::SoftwareFeature::MAGIC_TETHER_HOST:
+      return chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_HOST;
+    case cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT:
+      return chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_CLIENT;
+    case cryptauth::SoftwareFeature::SMS_CONNECT_HOST:
+      return chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_HOST;
+    case cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT:
+      return chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_CLIENT;
+  }
+
+  NOTREACHED();
+  return chromeos::device_sync::mojom::SoftwareFeature::UNKNOWN_FEATURE;
+}
+
+bool EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
+                cryptauth::SoftwareFeature>::
+    FromMojom(chromeos::device_sync::mojom::SoftwareFeature input,
+              cryptauth::SoftwareFeature* out) {
+  switch (input) {
+    case chromeos::device_sync::mojom::SoftwareFeature::UNKNOWN_FEATURE:
+      *out = cryptauth::SoftwareFeature::UNKNOWN_FEATURE;
+      return true;
+    case chromeos::device_sync::mojom::SoftwareFeature::BETTER_TOGETHER_HOST:
+      *out = cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST;
+      return true;
+    case chromeos::device_sync::mojom::SoftwareFeature::BETTER_TOGETHER_CLIENT:
+      *out = cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT;
+      return true;
+    case chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_HOST:
+      *out = cryptauth::SoftwareFeature::EASY_UNLOCK_HOST;
+      return true;
+    case chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_CLIENT:
+      *out = cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT;
+      return true;
+    case chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_HOST:
+      *out = cryptauth::SoftwareFeature::MAGIC_TETHER_HOST;
+      return true;
+    case chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_CLIENT:
+      *out = cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT;
+      return true;
+    case chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_HOST:
+      *out = cryptauth::SoftwareFeature::SMS_CONNECT_HOST;
+      return true;
+    case chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_CLIENT:
+      *out = cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace mojo

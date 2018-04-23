@@ -6,6 +6,37 @@ module chromeos.device_sync.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 
+// Enumeration of software features which can be enabled/disabled for a given
+// device. Each feature has a host and client portion; here, "host" refers to
+// the associated phone which provides the feature (at most one host per
+// account), and "client" refers to the Chromebook which consumes the feature
+// (multiple clients allowed per account).
+enum SoftwareFeature {
+  UNKNOWN_FEATURE,
+
+  // The Better Together (MultiDevice) setup flow feature allows users to go
+  // through a unified setup flow which enrolls the device for all multi-device
+  // features.
+  BETTER_TOGETHER_HOST,
+  BETTER_TOGETHER_CLIENT,
+
+  // EasyUnlock gives users the ability to unlock their Chromebooks with their
+  // phone instead of by typing a password.
+  EASY_UNLOCK_HOST,
+  EASY_UNLOCK_CLIENT,
+
+  // Magic Tether (Instant Tethering) gives users the ability to use their
+  // phone's Internet connectivity on their Chromebooks via an automated flow
+  // which does not require any phone-side interaction.
+  MAGIC_TETHER_HOST,
+  MAGIC_TETHER_CLIENT,
+
+  // SMS Connect gives users the ability to read and reply to their text
+  // messages from their Chromebooks.
+  SMS_CONNECT_HOST,
+  SMS_CONNECT_CLIENT
+};
+
 // Used to generate rotating BLE advertisement data, which is necessary to
 // establish a BLE communication channel between two devices. To
 // create the BLE channel, both devices must possess the other's BeaconSeeds.
