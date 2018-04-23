@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/notification_helper/com_server_module.h"
+#include "notification_helper/com_server_module.h"
 
 #include <memory>
 

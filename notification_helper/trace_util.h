@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_NOTIFICATION_HELPER_TRACE_UTIL_H_
-#define CHROME_NOTIFICATION_HELPER_TRACE_UTIL_H_
+#ifndef NOTIFICATION_HELPER_TRACE_UTIL_H_
+#define NOTIFICATION_HELPER_TRACE_UTIL_H_
 
 #if defined(NDEBUG)
 #define Trace(format, ...) ((void)0)
@@ -12,4 +12,4 @@
 void TraceImpl(const wchar_t* format, ...);
 #endif  // defined(NDEBUG)
 
-#endif  // CHROME_NOTIFICATION_HELPER_TRACE_UTIL_H_
+#endif  // NOTIFICATION_HELPER_TRACE_UTIL_H_

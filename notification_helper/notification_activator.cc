@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/notification_helper/notification_activator.h"
+#include "notification_helper/notification_activator.h"
 
 #include <shellapi.h>
 
@@ -10,8 +10,8 @@
 #include "base/strings/string16.h"
 #include "base/win/windows_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/notification_helper/notification_helper_util.h"
-#include "chrome/notification_helper/trace_util.h"
+#include "notification_helper/notification_helper_util.h"
+#include "notification_helper/trace_util.h"
 
 namespace {
 

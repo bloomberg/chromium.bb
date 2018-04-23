@@ -15,10 +15,10 @@
 #include "base/win/scoped_winrt_initializer.h"
 #include "chrome/install_static/product_install_details.h"
 #include "chrome/install_static/user_data_dir.h"
-#include "chrome/notification_helper/com_server_module.h"
-#include "chrome/notification_helper/notification_helper_crash_reporter_client.h"
-#include "chrome/notification_helper/notification_helper_util.h"
-#include "chrome/notification_helper/trace_util.h"
+#include "notification_helper/com_server_module.h"
+#include "notification_helper/notification_helper_crash_reporter_client.h"
+#include "notification_helper/notification_helper_util.h"
+#include "notification_helper/trace_util.h"
 
 extern "C" int WINAPI wWinMain(HINSTANCE instance,
                                HINSTANCE prev_instance,
