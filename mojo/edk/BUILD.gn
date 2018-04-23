@@ -220,9 +220,12 @@ if (is_chromeos || is_linux) {
       "//build/config:exe_and_shlib_deps",
       "//mojo/public/c/system:headers",
     ]
-    if (!is_component_build) {
-      public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
-    }
+    configs += [ ":export_only_thunks_api" ]
+  }
+
+  config("export_only_thunks_api") {
+    ldflags = [ "-Wl,--version-script=" +
+                rebase_path("//mojo/edk/export_only_thunks_api.lst") ]
   }
 
   test("mojo_core_unittests") {
