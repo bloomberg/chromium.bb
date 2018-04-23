@@ -13,7 +13,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -626,7 +626,7 @@ class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
                 // 'PostNonNestable' is required to make sure the next one
                 // shot capture timer is already pushed when forwaring the
                 // virtual time by the next pending task delay.
-                base::MessageLoop::current()
+                base::MessageLoopCurrent::Get()
                     ->task_runner()
                     ->PostNonNestableTask(
                         FROM_HERE,
