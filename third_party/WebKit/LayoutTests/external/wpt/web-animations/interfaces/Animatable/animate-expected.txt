@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 140 tests; 130 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 140 tests; 132 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -138,7 +138,7 @@ PASS Element.animate() correctly sets the id attribute
 PASS Element.animate() correctly sets the Animation's timeline
 PASS Element.animate() correctly sets the Animation's timeline when triggered on an element in a different document
 FAIL Element.animate() calls play on the Animation assert_equals: expected "running" but got "pending"
-FAIL CSSPseudoElement.animate() creates an Animation object assert_equals: expected (string) "::before" but got (undefined) undefined
-FAIL CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object assert_equals: expected (string) "::before" but got (undefined) undefined
+PASS CSSPseudoElement.animate() creates an Animation object
+PASS CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object
 Harness: the test ran to completion.
 
