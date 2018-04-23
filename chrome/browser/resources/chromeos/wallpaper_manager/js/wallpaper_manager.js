@@ -935,13 +935,21 @@ WallpaperManager.prototype.setCustomWallpaperSelectedOnNewPicker_ = function(
   // Read the image data from |filePath| and set the wallpaper with the data.
   chrome.wallpaperPrivate.getLocalImageData(
       selectedItem.filePath, imageData => {
-        var onPreviewCustomWallpaperFailure = function() {
-          console.error('The attempt to preview custom wallpaper failed.');
-          // TODO(crbug.com/810892): Show an error message to user.
-        };
-
         if (chrome.runtime.lastError || !imageData) {
-          onPreviewCustomWallpaperFailure();
+          this.showError_(str('accessFileFailure'));
+          return;
+        }
+        var previewMode = this.shouldPreviewWallpaper_();
+        if (!previewMode) {
+          chrome.wallpaperPrivate.setCustomWallpaper(
+              imageData, selectedItem.layout, false /*generateThumbnail=*/,
+              selectedItem.baseURL, false /*previewMode=*/,
+              optThumbnailData => {
+                if (chrome.runtime.lastError)
+                  this.showError_(str('accessFileFailure'));
+                else
+                  successCallback(imageData, optThumbnailData);
+              });
           return;
         }
 
@@ -950,31 +958,28 @@ WallpaperManager.prototype.setCustomWallpaperSelectedOnNewPicker_ = function(
             console.error('Wallpaper layout ' + layout + ' is not supported.');
             return;
           }
-
-          var previewCallback = optThumbnailData => {
-            if (chrome.runtime.lastError) {
-              onPreviewCustomWallpaperFailure();
-            } else {
-              this.onPreviewModeStarted_(
-                  Constants.WallpaperSourceEnum.Custom,
-                  successCallback.bind(null, imageData, optThumbnailData));
-            }
-          };
-
           var layoutButton = this.document_.querySelector(
               layout == 'CENTER' ? '.center-button' : '.center-cropped-button');
           var newLayoutButton = layoutButton.cloneNode(true);
           layoutButton.parentNode.replaceChild(newLayoutButton, layoutButton);
           newLayoutButton.addEventListener('click', () => {
             chrome.wallpaperPrivate.setCustomWallpaper(
-                imageData, layout, true /*generateThumbnail=*/,
+                imageData, layout, false /*generateThumbnail=*/,
                 selectedItem.baseURL, true /*previewMode=*/,
                 optThumbnailData => {
-                  this.document_.querySelector('.center-button')
-                      .classList.toggle('disabled', layout == 'CENTER');
-                  this.document_.querySelector('.center-cropped-button')
-                      .classList.toggle('disabled', layout == 'CENTER_CROPPED');
-                  previewCallback(optThumbnailData);
+                  if (chrome.runtime.lastError) {
+                    this.showError_(str('accessFileFailure'));
+                  } else {
+                    this.document_.querySelector('.center-button')
+                        .classList.toggle('disabled', layout == 'CENTER');
+                    this.document_.querySelector('.center-cropped-button')
+                        .classList.toggle(
+                            'disabled', layout == 'CENTER_CROPPED');
+                    this.onPreviewModeStarted_(
+                        Constants.WallpaperSourceEnum.Custom,
+                        successCallback.bind(
+                            null, imageData, optThumbnailData));
+                  }
                 });
           });
         };
@@ -1044,7 +1049,7 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
 
   var wallpaperUrl = selectedItem.baseURL + str('highResolutionSuffix');
   var selectedGridItem = this.wallpaperGrid_.getListItem(selectedItem);
-  var previewMode = this.useNewWallpaperPicker_;
+  var previewMode = this.shouldPreviewWallpaper_();
 
   chrome.wallpaperPrivate.setWallpaperIfExists(
       wallpaperUrl, selectedItem.layout, previewMode, exists => {
@@ -1705,6 +1710,17 @@ WallpaperManager.prototype.toggleNoImagesVisibility_ = function(visible) {
     return;
   this.document_.body.classList.toggle('no-images', visible);
   this.placeWallpaperPicker_();
+};
+
+/**
+ * Returns if wallpaper should be previewed before being set.
+ * @return {boolean} If wallpaper should be previewed.
+ * @private
+ */
+WallpaperManager.prototype.shouldPreviewWallpaper_ = function() {
+  return this.useNewWallpaperPicker_ &&
+      (chrome.app.window.current().isFullscreen() ||
+       chrome.app.window.current().isMaximized());
 };
 
 })();
