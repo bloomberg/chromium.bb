@@ -112,7 +112,7 @@ class MockPresentationConnectionProxy
                void(const content::PresentationConnectionMessage&,
                     OnMessageCallback&));
   MOCK_METHOD1(DidChangeState,
-               void(content::PresentationConnectionState state));
+               void(blink::mojom::PresentationConnectionState state));
   MOCK_METHOD0(RequestClose, void());
 };
 

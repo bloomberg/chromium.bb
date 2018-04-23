@@ -39,6 +39,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using blink::mojom::PresentationConnectionState;
 using testing::_;
 using testing::AtMost;
 using testing::Eq;
@@ -940,7 +941,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
   {
     base::RunLoop run_loop;
     content::PresentationConnectionStateChangeInfo closed_info(
-        content::PRESENTATION_CONNECTION_STATE_CLOSED);
+        PresentationConnectionState::CLOSED);
     closed_info.close_reason =
         blink::mojom::PresentationConnectionCloseReason::WENT_AWAY;
     closed_info.message = "Foo";
@@ -949,21 +950,20 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     router()->OnPresentationConnectionClosed(
         route_id,
-        media_router::mojom::MediaRouter::PresentationConnectionCloseReason::
-            WENT_AWAY,
+        mojom::MediaRouter::PresentationConnectionCloseReason::WENT_AWAY,
         "Foo");
     run_loop.Run();
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(&callback));
   }
 
   content::PresentationConnectionStateChangeInfo terminated_info(
-      content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+      PresentationConnectionState::TERMINATED);
   {
     base::RunLoop run_loop;
     EXPECT_CALL(callback, Run(StateChangeInfoEquals(terminated_info)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     router()->OnPresentationConnectionStateChanged(
-        route_id, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+        route_id, mojom::MediaRouter::PresentationConnectionState::TERMINATED);
     run_loop.Run();
 
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(&callback));
@@ -985,7 +985,7 @@ TEST_F(MediaRouterMojoImplTest,
 
   EXPECT_CALL(callback, Run(_)).Times(0);
   router()->OnPresentationConnectionStateChanged(
-      route_id, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+      route_id, mojom::MediaRouter::PresentationConnectionState::TERMINATED);
   base::RunLoop().RunUntilIdle();
 }
 

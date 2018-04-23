@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
+using blink::mojom::PresentationConnectionState;
 using testing::_;
 using testing::Expectation;
 using testing::Return;
@@ -69,7 +70,7 @@ TEST_F(MediaRouterAndroidTest, DetachRoute) {
   base::MockCallback<content::PresentationConnectionStateChangedCallback>
       callback;
   content::PresentationConnectionStateChangeInfo change_info_closed(
-      content::PRESENTATION_CONNECTION_STATE_CLOSED);
+      PresentationConnectionState::CLOSED);
   change_info_closed.close_reason =
       blink::mojom::PresentationConnectionCloseReason::CLOSED;
   change_info_closed.message = "Remove route";
@@ -101,7 +102,7 @@ TEST_F(MediaRouterAndroidTest, OnRouteClosed) {
   base::MockCallback<content::PresentationConnectionStateChangedCallback>
       callback;
   content::PresentationConnectionStateChangeInfo change_info_terminated(
-      content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+      PresentationConnectionState::TERMINATED);
   EXPECT_CALL(callback, Run(StateChangeInfoEquals(change_info_terminated)));
 
   Expectation createRouteExpectation =

@@ -63,7 +63,8 @@ class BrowserPresentationConnectionProxy
 
   // Underlying media route is always connected. Media route class does not
   // support state change.
-  void DidChangeState(content::PresentationConnectionState state) override {}
+  void DidChangeState(
+      blink::mojom::PresentationConnectionState state) override {}
 
   // Underlying media route is always connected. Media route class does not
   // support state change.

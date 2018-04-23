@@ -23,6 +23,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/presentation_connection_message.h"
 
+using blink::mojom::PresentationConnectionState;
 using blink::mojom::PresentationError;
 using blink::mojom::PresentationErrorPtr;
 using blink::mojom::PresentationErrorType;
@@ -392,7 +393,7 @@ void PresentationServiceImpl::OnConnectionStateChanged(
   if (!controller_)
     return;
 
-  if (info.state == PRESENTATION_CONNECTION_STATE_CLOSED) {
+  if (info.state == PresentationConnectionState::CLOSED) {
     controller_->OnConnectionClosed(connection, info.close_reason,
                                     info.message);
   } else {

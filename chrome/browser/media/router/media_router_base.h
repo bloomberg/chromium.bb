@@ -61,7 +61,7 @@ class MediaRouterBase : public MediaRouter {
 
   void NotifyPresentationConnectionStateChange(
       const MediaRoute::Id& route_id,
-      content::PresentationConnectionState state);
+      blink::mojom::PresentationConnectionState state);
   void NotifyPresentationConnectionClose(
       const MediaRoute::Id& route_id,
       blink::mojom::PresentationConnectionCloseReason reason,

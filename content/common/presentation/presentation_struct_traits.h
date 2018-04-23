@@ -19,46 +19,6 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<blink::mojom::PresentationConnectionState,
-                  content::PresentationConnectionState> {
-  static blink::mojom::PresentationConnectionState ToMojom(
-      content::PresentationConnectionState input) {
-    switch (input) {
-      case content::PRESENTATION_CONNECTION_STATE_CONNECTING:
-        return blink::mojom::PresentationConnectionState::CONNECTING;
-      case content::PRESENTATION_CONNECTION_STATE_CONNECTED:
-        return blink::mojom::PresentationConnectionState::CONNECTED;
-      case content::PRESENTATION_CONNECTION_STATE_CLOSED:
-        return blink::mojom::PresentationConnectionState::CLOSED;
-      case content::PRESENTATION_CONNECTION_STATE_TERMINATED:
-        return blink::mojom::PresentationConnectionState::TERMINATED;
-    }
-    NOTREACHED() << "Unknown content::PresentationConnectionState "
-                 << static_cast<int>(input);
-    return blink::mojom::PresentationConnectionState::TERMINATED;
-  }
-
-  static bool FromMojom(blink::mojom::PresentationConnectionState input,
-                        content::PresentationConnectionState* output) {
-    switch (input) {
-      case blink::mojom::PresentationConnectionState::CONNECTING:
-        *output = content::PRESENTATION_CONNECTION_STATE_CONNECTING;
-        return true;
-      case blink::mojom::PresentationConnectionState::CONNECTED:
-        *output = content::PRESENTATION_CONNECTION_STATE_CONNECTED;
-        return true;
-      case blink::mojom::PresentationConnectionState::CLOSED:
-        *output = content::PRESENTATION_CONNECTION_STATE_CLOSED;
-        return true;
-      case blink::mojom::PresentationConnectionState::TERMINATED:
-        *output = content::PRESENTATION_CONNECTION_STATE_TERMINATED;
-        return true;
-    }
-    return false;
-  }
-};
-
-template <>
 struct StructTraits<blink::mojom::PresentationInfoDataView,
                     content::PresentationInfo> {
   static const GURL& url(const content::PresentationInfo& presentation_info) {
