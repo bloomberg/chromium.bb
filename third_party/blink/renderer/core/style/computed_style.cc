@@ -407,19 +407,6 @@ bool ComputedStyle::IsStyleAvailable() const {
   return this != StyleResolver::StyleNotYetAvailable();
 }
 
-bool ComputedStyle::HasUniquePseudoStyle() const {
-  if (!cached_pseudo_styles_ || StyleType() != kPseudoIdNone)
-    return false;
-
-  for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
-    const ComputedStyle& pseudo_style = *cached_pseudo_styles_->at(i);
-    if (pseudo_style.Unique())
-      return true;
-  }
-
-  return false;
-}
-
 ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
   if (!cached_pseudo_styles_ || !cached_pseudo_styles_->size())
     return nullptr;

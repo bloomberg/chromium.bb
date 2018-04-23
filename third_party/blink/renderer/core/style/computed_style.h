@@ -2079,7 +2079,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasAnyPublicPseudoStyles() const;
   bool HasPseudoStyle(PseudoId) const;
   void SetHasPseudoStyle(PseudoId);
-  bool HasUniquePseudoStyle() const;
   bool HasPseudoElementStyle() const;
 
   // Note: CanContainAbsolutePositionObjects should return true if
