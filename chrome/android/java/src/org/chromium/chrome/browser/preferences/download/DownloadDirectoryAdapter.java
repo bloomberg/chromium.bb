@@ -73,6 +73,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
 
     private List<DirectoryOption> mCanonicalOptions = new ArrayList<>();
     private List<DirectoryOption> mAdditionalOptions = new ArrayList<>();
+    private List<DirectoryOption> mErrorOptions = new ArrayList<>();
 
     public DownloadDirectoryAdapter(@NonNull Context context) {
         super(context, android.R.layout.simple_spinner_item);
@@ -85,12 +86,18 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
 
     @Override
     public int getCount() {
-        return mCanonicalOptions.size() + mAdditionalOptions.size();
+        return mCanonicalOptions.size() + mAdditionalOptions.size() + mErrorOptions.size();
     }
 
     @Nullable
     @Override
     public Object getItem(int position) {
+        if (!mErrorOptions.isEmpty()) {
+            assert position == 0;
+            assert getCount() == 1;
+            return mErrorOptions.get(position);
+        }
+
         if (position < mCanonicalOptions.size()) {
             return mCanonicalOptions.get(position);
         } else {
@@ -147,7 +154,11 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         } else {
             TextViewCompat.setTextAppearance(titleText, R.style.BlackDisabledText1);
             TextViewCompat.setTextAppearance(summaryText, R.style.BlackDisabledText3);
-            summaryText.setText(mContext.getText(R.string.download_location_not_enough_space));
+            if (mErrorOptions.isEmpty()) {
+                summaryText.setText(mContext.getText(R.string.download_location_not_enough_space));
+            } else {
+                summaryText.setVisibility(View.GONE);
+            }
         }
 
         TintedImageView imageView = (TintedImageView) view.findViewById(R.id.icon_view);
@@ -167,6 +178,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
      *          NO_SELECTED_ITEM_ID if no item matches the default path.
      */
     public int getSelectedItemId() {
+        if (!mErrorOptions.isEmpty()) return 0;
         String defaultLocation = PrefServiceBridge.getInstance().getDownloadDefaultDirectory();
         for (int i = 0; i < getCount(); i++) {
             DirectoryOption option = (DirectoryOption) getItem(i);
@@ -194,13 +206,19 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
             }
         }
 
-        // TODO(jming): Update behavior with UX suggestions.
-        throw new AssertionError("No selected item ID.");
+        // Display an option that says there are no available download locations.
+        adjustErrorDirectoryOption();
+        return 0;
+    }
+
+    boolean hasAvailableLocations() {
+        return mErrorOptions.isEmpty();
     }
 
     private void refreshData() {
         setCanonicalDirectoryOptions();
         setAdditionalDirectoryOptions();
+        adjustErrorDirectoryOption();
     }
 
     private void setCanonicalDirectoryOptions() {
@@ -241,6 +259,16 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
 
             mAdditionalOptions.add(new DirectoryOption(directoryName, dir, dir.getUsableSpace()));
             numOtherAdditionalDirectories++;
+        }
+    }
+
+    private void adjustErrorDirectoryOption() {
+        if ((mCanonicalOptions.size() + mAdditionalOptions.size()) > 0) {
+            mErrorOptions.clear();
+        } else {
+            mErrorOptions.add(new DirectoryOption(
+                    mContext.getString(R.string.download_location_no_available_locations), null,
+                    0));
         }
     }
 }

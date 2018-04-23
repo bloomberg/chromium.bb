@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences.download;
 
 import static org.chromium.chrome.browser.preferences.download.DownloadDirectoryAdapter.NO_SELECTED_ITEM_ID;
 
+import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -48,6 +49,12 @@ public class DownloadPreferences
         if (selectedItemId == NO_SELECTED_ITEM_ID) {
             selectedItemId = mDirectoryAdapter.getFirstSelectableItemId();
         }
+        mDirectoryAdapter.registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onChanged() {
+                mLocationChangePref.setEnabled(mDirectoryAdapter.hasAvailableLocations());
+            }
+        });
         mLocationChangePref.setAdapter(mDirectoryAdapter, selectedItemId);
 
         updateData();
@@ -92,9 +99,11 @@ public class DownloadPreferences
         } else if (PREF_LOCATION_CHANGE.equals(preference.getKey())) {
             DownloadDirectoryAdapter.DirectoryOption option =
                     (DownloadDirectoryAdapter.DirectoryOption) newValue;
-            PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
-                    option.getLocation().getAbsolutePath());
-            updateData();
+            if (option.getLocation() != null) {
+                PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
+                        option.getLocation().getAbsolutePath());
+                updateData();
+            }
         }
         return true;
     }
