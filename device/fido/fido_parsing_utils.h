@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_U2F_PARSING_UTILS_H_
-#define DEVICE_FIDO_U2F_PARSING_UTILS_H_
+#ifndef DEVICE_FIDO_FIDO_PARSING_UTILS_H_
+#define DEVICE_FIDO_FIDO_PARSING_UTILS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,7 +16,7 @@
 #include "base/optional.h"
 
 namespace device {
-namespace u2f_parsing_utils {
+namespace fido_parsing_utils {
 
 // U2FResponse offsets. The format of a U2F response is defined in
 // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-response-message-success
@@ -81,7 +81,7 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 std::vector<base::span<const uint8_t>> SplitSpan(base::span<const uint8_t> span,
                                                  size_t max_chunk_size);
 
-}  // namespace u2f_parsing_utils
+}  // namespace fido_parsing_utils
 }  // namespace device
 
-#endif  // DEVICE_FIDO_U2F_PARSING_UTILS_H_
+#endif  // DEVICE_FIDO_FIDO_PARSING_UTILS_H_

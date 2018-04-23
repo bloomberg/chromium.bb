@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
@@ -73,7 +73,7 @@ FidoBleFrame::ToFragments(size_t max_fragment_size) const {
 
   // Subtract 1 to account for SEQ byte.
   for (auto cont_data :
-       u2f_parsing_utils::SplitSpan(data_view, max_fragment_size - 1)) {
+       fido_parsing_utils::SplitSpan(data_view, max_fragment_size - 1)) {
     // High bit must stay cleared.
     other_fragments.emplace(cont_data, other_fragments.size() & 0x7F);
   }

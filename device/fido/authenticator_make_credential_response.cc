@@ -11,7 +11,7 @@
 #include "device/fido/authenticator_data.h"
 #include "device/fido/ec_public_key.h"
 #include "device/fido/fido_attestation_statement.h"
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
@@ -21,7 +21,7 @@ AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
     const std::vector<uint8_t>& relying_party_id_hash,
     base::span<const uint8_t> u2f_data) {
   auto public_key = ECPublicKey::ExtractFromU2fRegistrationResponse(
-      u2f_parsing_utils::kEs256, u2f_data);
+      fido_parsing_utils::kEs256, u2f_data);
   if (!public_key)
     return base::nullopt;
 

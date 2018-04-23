@@ -10,7 +10,7 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "crypto/sha2.h"
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
@@ -92,7 +92,7 @@ VirtualFidoDevice::~VirtualFidoDevice() = default;
 
 // static
 std::vector<uint8_t> VirtualFidoDevice::GetAttestationKey() {
-  return u2f_parsing_utils::Materialize(kAttestationKey);
+  return fido_parsing_utils::Materialize(kAttestationKey);
 }
 
 // static
@@ -120,6 +120,7 @@ VirtualFidoDevice::GenerateAttestationCertificate(
     DVLOG(2) << "Failed to create attestation certificate";
     return base::nullopt;
   }
+
   return std::vector<uint8_t>(attestation_cert.begin(), attestation_cert.end());
 }
 

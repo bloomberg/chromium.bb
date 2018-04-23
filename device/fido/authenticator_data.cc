@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "device/fido/attested_credential_data.h"
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
@@ -69,14 +69,14 @@ void AuthenticatorData::DeleteDeviceAaguid() {
 
 std::vector<uint8_t> AuthenticatorData::SerializeToByteArray() const {
   std::vector<uint8_t> authenticator_data;
-  u2f_parsing_utils::Append(&authenticator_data, application_parameter_);
+  fido_parsing_utils::Append(&authenticator_data, application_parameter_);
   authenticator_data.insert(authenticator_data.end(), flags_);
-  u2f_parsing_utils::Append(&authenticator_data, counter_);
+  fido_parsing_utils::Append(&authenticator_data, counter_);
   if (attested_data_) {
     // Attestations are returned in registration responses but not in assertion
     // responses.
-    u2f_parsing_utils::Append(&authenticator_data,
-                              attested_data_->SerializeAsBytes());
+    fido_parsing_utils::Append(&authenticator_data,
+                               attested_data_->SerializeAsBytes());
   }
   return authenticator_data;
 }

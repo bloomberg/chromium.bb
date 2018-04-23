@@ -18,11 +18,11 @@
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_attestation_statement.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_parsing_utils.h"
 #include "device/fido/virtual_u2f_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,30 +95,30 @@ constexpr uint8_t kAuthDataCBOR[] = {
 
 // Helpers for testing U2f register responses.
 std::vector<uint8_t> GetTestECPublicKeyCOSE() {
-  return u2f_parsing_utils::Materialize(test_data::kTestECPublicKeyCOSE);
+  return fido_parsing_utils::Materialize(test_data::kTestECPublicKeyCOSE);
 }
 
 std::vector<uint8_t> GetTestRegisterResponse() {
-  return u2f_parsing_utils::Materialize(test_data::kTestU2fRegisterResponse);
+  return fido_parsing_utils::Materialize(test_data::kTestU2fRegisterResponse);
 }
 
 std::vector<uint8_t> GetTestRegisterRequest() {
-  return u2f_parsing_utils::Materialize(test_data::kU2fRegisterCommandApdu);
+  return fido_parsing_utils::Materialize(test_data::kU2fRegisterCommandApdu);
 }
 
 std::vector<uint8_t> GetTestCredentialRawIdBytes() {
-  return u2f_parsing_utils::Materialize(test_data::kU2fSignKeyHandle);
+  return fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle);
 }
 
 std::vector<uint8_t> GetU2fAttestationStatementCBOR() {
-  return u2f_parsing_utils::Materialize(
+  return fido_parsing_utils::Materialize(
       test_data::kU2fAttestationStatementCBOR);
 }
 
 std::vector<uint8_t> GetTestAttestedCredentialDataBytes() {
   // Combine kTestAttestedCredentialDataPrefix and kTestECPublicKeyCOSE.
   auto test_attested_data =
-      u2f_parsing_utils::Materialize(kTestAttestedCredentialDataPrefix);
+      fido_parsing_utils::Materialize(kTestAttestedCredentialDataPrefix);
   test_attested_data.insert(test_attested_data.end(),
                             std::begin(test_data::kTestECPublicKeyCOSE),
                             std::end(test_data::kTestECPublicKeyCOSE));
@@ -128,7 +128,7 @@ std::vector<uint8_t> GetTestAttestedCredentialDataBytes() {
 std::vector<uint8_t> GetTestAuthenticatorDataBytes() {
   // Build the test authenticator data.
   auto test_authenticator_data =
-      u2f_parsing_utils::Materialize(kTestAuthenticatorDataPrefix);
+      fido_parsing_utils::Materialize(kTestAuthenticatorDataPrefix);
   std::vector<uint8_t> test_attested_data =
       GetTestAttestedCredentialDataBytes();
   test_authenticator_data.insert(test_authenticator_data.end(),
@@ -139,7 +139,7 @@ std::vector<uint8_t> GetTestAuthenticatorDataBytes() {
 
 std::vector<uint8_t> GetTestAttestationObjectBytes() {
   auto test_authenticator_object =
-      u2f_parsing_utils::Materialize(kFormatFidoU2fCBOR);
+      fido_parsing_utils::Materialize(kFormatFidoU2fCBOR);
   test_authenticator_object.insert(test_authenticator_object.end(),
                                    std::begin(kAttStmtCBOR),
                                    std::end(kAttStmtCBOR));
@@ -185,8 +185,8 @@ class U2fRegisterTest : public ::testing::Test {
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         registered_keys,
-        u2f_parsing_utils::Materialize(test_data::kChallengeParameter),
-        u2f_parsing_utils::Materialize(test_data::kApplicationParameter),
+        fido_parsing_utils::Materialize(test_data::kChallengeParameter),
+        fido_parsing_utils::Materialize(test_data::kApplicationParameter),
         kNoIndividualAttestation, register_callback_receiver_.callback());
   }
 
@@ -198,9 +198,9 @@ class U2fRegisterTest : public ::testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::vector<uint8_t> application_parameter_ =
-      u2f_parsing_utils::Materialize(test_data::kApplicationParameter);
+      fido_parsing_utils::Materialize(test_data::kApplicationParameter);
   std::vector<uint8_t> challenge_parameter_ =
-      u2f_parsing_utils::Materialize(test_data::kChallengeParameter);
+      fido_parsing_utils::Materialize(test_data::kChallengeParameter);
   std::vector<std::vector<uint8_t>> key_handles_;
   base::flat_set<FidoTransportProtocol> protocols_;
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
@@ -369,8 +369,8 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
 TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   // Simulate three unknown key handles.
   auto request = CreateRegisterRequestWithRegisteredKeys(
-      {u2f_parsing_utils::Materialize(test_data::kKeyHandleAlpha),
-       u2f_parsing_utils::Materialize(test_data::kKeyHandleBeta)});
+      {fido_parsing_utils::Materialize(test_data::kKeyHandleAlpha),
+       fido_parsing_utils::Materialize(test_data::kKeyHandleBeta)});
   request->Start();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
@@ -383,14 +383,14 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   // call, MockFidoDevice::NoErrorRegister will be invoked after registration.
   EXPECT_CALL(*device.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(
       *device.get(),
-      DeviceTransactPtr(u2f_parsing_utils::Materialize(
+      DeviceTransactPtr(fido_parsing_utils::Materialize(
                             test_data::kU2fCheckOnlySignCommandApduWithKeyBeta),
                         _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
@@ -419,9 +419,9 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
 TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   // Simulate three unknown key handles.
   auto request = CreateRegisterRequestWithRegisteredKeys(
-      {u2f_parsing_utils::Materialize(test_data::kKeyHandleAlpha),
-       u2f_parsing_utils::Materialize(test_data::kKeyHandleBeta),
-       u2f_parsing_utils::Materialize(test_data::kKeyHandleGamma)});
+      {fido_parsing_utils::Materialize(test_data::kKeyHandleAlpha),
+       fido_parsing_utils::Materialize(test_data::kKeyHandleBeta),
+       fido_parsing_utils::Materialize(test_data::kKeyHandleGamma)});
   request->Start();
 
   auto device0 = std::make_unique<MockFidoDevice>();
@@ -432,21 +432,21 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   // MockFidoDevice::NotSatisfied.
   EXPECT_CALL(*device0.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(
       *device0.get(),
-      DeviceTransactPtr(u2f_parsing_utils::Materialize(
+      DeviceTransactPtr(fido_parsing_utils::Materialize(
                             test_data::kU2fCheckOnlySignCommandApduWithKeyBeta),
                         _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(*device0.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyGamma),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
@@ -468,21 +468,21 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   // successful registration.
   EXPECT_CALL(*device1.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(
       *device1.get(),
-      DeviceTransactPtr(u2f_parsing_utils::Materialize(
+      DeviceTransactPtr(fido_parsing_utils::Materialize(
                             test_data::kU2fCheckOnlySignCommandApduWithKeyBeta),
                         _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(*device1.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyGamma),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
@@ -513,9 +513,9 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
 TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   // Simulate three unknown key handles followed by a duplicate key.
   auto request = CreateRegisterRequestWithRegisteredKeys(
-      {u2f_parsing_utils::Materialize(test_data::kKeyHandleAlpha),
-       u2f_parsing_utils::Materialize(test_data::kKeyHandleBeta),
-       u2f_parsing_utils::Materialize(test_data::kKeyHandleGamma)});
+      {fido_parsing_utils::Materialize(test_data::kKeyHandleAlpha),
+       fido_parsing_utils::Materialize(test_data::kKeyHandleBeta),
+       fido_parsing_utils::Materialize(test_data::kKeyHandleGamma)});
   request->Start();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
@@ -528,27 +528,27 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   // MockFidoDevice::NoErrorRegister.
   EXPECT_CALL(*device.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(
       *device.get(),
-      DeviceTransactPtr(u2f_parsing_utils::Materialize(
+      DeviceTransactPtr(fido_parsing_utils::Materialize(
                             test_data::kU2fCheckOnlySignCommandApduWithKeyBeta),
                         _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(*device.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyGamma),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorSign));
 
   EXPECT_CALL(*device.get(),
-              DeviceTransactPtr(u2f_parsing_utils::Materialize(
+              DeviceTransactPtr(fido_parsing_utils::Materialize(
                                     test_data::kU2fFakeRegisterCommand),
                                 _))
       .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
@@ -572,9 +572,9 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
 TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   // Simulate two unknown key handles followed by a duplicate key.
   auto request = CreateRegisterRequestWithRegisteredKeys(
-      {u2f_parsing_utils::Materialize(test_data::kKeyHandleAlpha),
-       u2f_parsing_utils::Materialize(test_data::kKeyHandleBeta),
-       u2f_parsing_utils::Materialize(test_data::kKeyHandleGamma)});
+      {fido_parsing_utils::Materialize(test_data::kKeyHandleAlpha),
+       fido_parsing_utils::Materialize(test_data::kKeyHandleBeta),
+       fido_parsing_utils::Materialize(test_data::kKeyHandleGamma)});
   request->Start();
 
   // Since the first device did not create any of the key handles provided in
@@ -585,21 +585,21 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
   EXPECT_CALL(*device0.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(
       *device0.get(),
-      DeviceTransactPtr(u2f_parsing_utils::Materialize(
+      DeviceTransactPtr(fido_parsing_utils::Materialize(
                             test_data::kU2fCheckOnlySignCommandApduWithKeyBeta),
                         _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(*device0.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyGamma),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
@@ -618,27 +618,27 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(::testing::Return("device1"));
   EXPECT_CALL(*device1.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(
       *device1.get(),
-      DeviceTransactPtr(u2f_parsing_utils::Materialize(
+      DeviceTransactPtr(fido_parsing_utils::Materialize(
                             test_data::kU2fCheckOnlySignCommandApduWithKeyBeta),
                         _))
       .WillOnce(::testing::Invoke(MockFidoDevice::WrongData));
 
   EXPECT_CALL(*device1.get(),
               DeviceTransactPtr(
-                  u2f_parsing_utils::Materialize(
+                  fido_parsing_utils::Materialize(
                       test_data::kU2fCheckOnlySignCommandApduWithKeyGamma),
                   _))
       .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorSign));
 
   EXPECT_CALL(*device1.get(),
-              DeviceTransactPtr(u2f_parsing_utils::Materialize(
+              DeviceTransactPtr(fido_parsing_utils::Materialize(
                                     test_data::kU2fFakeRegisterCommand),
                                 _))
       .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
@@ -659,7 +659,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
 TEST_F(U2fRegisterTest, TestSerializedPublicKey) {
   std::unique_ptr<ECPublicKey> public_key =
       ECPublicKey::ExtractFromU2fRegistrationResponse(
-          u2f_parsing_utils::kEs256, GetTestRegisterResponse());
+          fido_parsing_utils::kEs256, GetTestRegisterResponse());
   EXPECT_EQ(GetTestECPublicKeyCOSE(), public_key->EncodeAsCOSEKey());
 }
 
@@ -678,7 +678,7 @@ TEST_F(U2fRegisterTest, TestU2fAttestationStatementCBOR) {
 TEST_F(U2fRegisterTest, TestAttestedCredentialData) {
   std::unique_ptr<ECPublicKey> public_key =
       ECPublicKey::ExtractFromU2fRegistrationResponse(
-          u2f_parsing_utils::kEs256, GetTestRegisterResponse());
+          fido_parsing_utils::kEs256, GetTestRegisterResponse());
   base::Optional<AttestedCredentialData> attested_data =
       AttestedCredentialData::CreateFromU2fRegisterResponse(
           GetTestRegisterResponse(), std::move(public_key));
@@ -691,7 +691,7 @@ TEST_F(U2fRegisterTest, TestAttestedCredentialData) {
 TEST_F(U2fRegisterTest, TestAuthenticatorData) {
   std::unique_ptr<ECPublicKey> public_key =
       ECPublicKey::ExtractFromU2fRegistrationResponse(
-          u2f_parsing_utils::kEs256, GetTestRegisterResponse());
+          fido_parsing_utils::kEs256, GetTestRegisterResponse());
   base::Optional<AttestedCredentialData> attested_data =
       AttestedCredentialData::CreateFromU2fRegisterResponse(
           GetTestRegisterResponse(), std::move(public_key));
@@ -701,7 +701,7 @@ TEST_F(U2fRegisterTest, TestAuthenticatorData) {
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
 
   AuthenticatorData authenticator_data(
-      u2f_parsing_utils::Materialize(test_data::kApplicationParameter), flags,
+      fido_parsing_utils::Materialize(test_data::kApplicationParameter), flags,
       std::vector<uint8_t>(4) /* counter */, std::move(attested_data));
 
   EXPECT_EQ(GetTestAuthenticatorDataBytes(),
@@ -712,7 +712,7 @@ TEST_F(U2fRegisterTest, TestAuthenticatorData) {
 TEST_F(U2fRegisterTest, TestU2fAttestationObject) {
   std::unique_ptr<ECPublicKey> public_key =
       ECPublicKey::ExtractFromU2fRegistrationResponse(
-          u2f_parsing_utils::kEs256, GetTestRegisterResponse());
+          fido_parsing_utils::kEs256, GetTestRegisterResponse());
   base::Optional<AttestedCredentialData> attested_data =
       AttestedCredentialData::CreateFromU2fRegisterResponse(
           GetTestRegisterResponse(), std::move(public_key));
@@ -721,7 +721,7 @@ TEST_F(U2fRegisterTest, TestU2fAttestationObject) {
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
   AuthenticatorData authenticator_data(
-      u2f_parsing_utils::Materialize(test_data::kApplicationParameter), flags,
+      fido_parsing_utils::Materialize(test_data::kApplicationParameter), flags,
       std::vector<uint8_t>(4) /* counter */, std::move(attested_data));
 
   // Construct the attestation statement.
@@ -741,7 +741,7 @@ TEST_F(U2fRegisterTest, TestU2fAttestationObject) {
 TEST_F(U2fRegisterTest, TestRegisterResponseData) {
   base::Optional<AuthenticatorMakeCredentialResponse> response =
       AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
-          u2f_parsing_utils::Materialize(test_data::kApplicationParameter),
+          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
           GetTestRegisterResponse());
   EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_credential_id());
   EXPECT_EQ(GetTestAttestationObjectBytes(),

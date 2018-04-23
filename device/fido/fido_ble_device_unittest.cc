@@ -9,9 +9,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/mock_fido_ble_connection.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_parsing_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -100,7 +100,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest_Failure_WriteFailed) {
       }));
 
   TestDeviceCallbackReceiver callback_receiver;
-  auto payload = u2f_parsing_utils::Materialize(kTestData);
+  auto payload = fido_parsing_utils::Materialize(kTestData);
   device()->SendPing(std::move(payload), callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
@@ -116,7 +116,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest_Failure_NoResponse) {
       }));
 
   TestDeviceCallbackReceiver callback_receiver;
-  const auto payload = u2f_parsing_utils::Materialize(kTestData);
+  const auto payload = fido_parsing_utils::Materialize(kTestData);
   device()->SendPing(payload, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
@@ -132,7 +132,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest_Failure_SlowResponse) {
       }));
 
   TestDeviceCallbackReceiver callback_receiver;
-  auto payload = u2f_parsing_utils::Materialize(kTestData);
+  auto payload = fido_parsing_utils::Materialize(kTestData);
   device()->SendPing(payload, callback_receiver.callback());
   callback_receiver.WaitForCallback();
   EXPECT_FALSE(callback_receiver.value());
@@ -158,7 +158,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest) {
       }));
 
   TestDeviceCallbackReceiver callback_receiver;
-  const auto payload = u2f_parsing_utils::Materialize(kTestData);
+  const auto payload = fido_parsing_utils::Materialize(kTestData);
   device()->SendPing(payload, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
@@ -174,7 +174,7 @@ TEST_F(FidoBleDeviceTest, SendCancelTest) {
   ConnectWithLength(kControlPointLength);
   EXPECT_CALL(*connection(),
               WriteControlPointPtr(
-                  u2f_parsing_utils::Materialize(kBleCancelCommand), _));
+                  fido_parsing_utils::Materialize(kBleCancelCommand), _));
 
   device()->Cancel();
   scoped_task_environment_.FastForwardUntilNoTasksRemain();

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "device/fido/u2f_parsing_utils.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
