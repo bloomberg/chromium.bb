@@ -535,6 +535,12 @@ class CronetHttpProtocolHandlerDelegate
                          userInfo:userInfo];
 }
 
+// Used by tests to query the size of the map that contains metrics for
+// individual NSURLSession tasks.
++ (size_t)getMetricsMapSize {
+  return cronet::CronetMetricsDelegate::GetMetricsMapSize();
+}
+
 // Static class initializer.
 + (void)initialize {
   gChromeNet.Get().reset();

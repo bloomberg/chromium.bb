@@ -319,6 +319,50 @@ TEST_F(CronetEnabledMetricsTest, ReusedConnection) {
   }
 }
 
+// Checks that there is no crash if the session delegate is not set when a
+// NSURLSession is created. Also checks that the internal metrics map is cleaned
+// and contains 0 records at the end of the request. This is a regression test
+// for http://crbug/834401.
+TEST_F(CronetEnabledMetricsTest, SessionWithoutDelegate) {
+  if (@available(iOS 10, *)) {
+    NSURLSessionConfiguration* default_config =
+        [NSURLSessionConfiguration defaultSessionConfiguration];
+    [Cronet installIntoSessionConfiguration:default_config];
+    NSURLSession* default_session =
+        [NSURLSession sessionWithConfiguration:default_config];
+    NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
+    NSURLRequest* request = [NSURLRequest requestWithURL:url];
+
+    __block BOOL no_error = NO;
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    NSURLSessionDataTask* task = [default_session
+        dataTaskWithRequest:request
+          completionHandler:^(NSData* data, NSURLResponse* response,
+                              NSError* error) {
+            EXPECT_TRUE(error == nil)
+                << base::SysNSStringToUTF8([error description]);
+            no_error = YES;
+            dispatch_semaphore_signal(semaphore);
+          }];
+    __block BOOL block_used = NO;
+    [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
+      block_used = YES;
+      EXPECT_EQ(request.URL, url);
+      return YES;
+    }];
+
+    [task resume];
+    long wait_result = dispatch_semaphore_wait(
+        semaphore, dispatch_time(DISPATCH_TIME_NOW, 10 * NSEC_PER_SEC));
+
+    // Check results
+    EXPECT_EQ(0, wait_result);
+    EXPECT_TRUE(block_used);
+    EXPECT_TRUE(no_error);
+    EXPECT_EQ(0UL, [Cronet getMetricsMapSize]);
+  }
+}
+
 // Tests that the metrics disable switch works.
 TEST_F(CronetDisabledMetricsTest, MetricsDisabled) {
   if (@available(iOS 10, *)) {

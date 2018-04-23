@@ -16,6 +16,7 @@ test("cronet_test") {
     "cronet_pkp_test.mm",
     "cronet_prefs_test.mm",
     "cronet_quic_test.mm",
+    "cronet_test_base.h",
     "cronet_test_base.mm",
     "cronet_test_runner.mm",
     "get_stream_engine.mm",

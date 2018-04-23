@@ -176,6 +176,15 @@ CronetTransactionMetrics* NativeToIOSMetrics(Metrics& metrics)
 
 }  // namespace
 
+// A blank implementation of NSURLSessionDelegate that contains no methods.
+// It is used as a substitution for a session delegate when the client
+// either creates a session without a delegate or passes 'nil' as its value.
+@interface BlankNSURLSessionDelegate : NSObject<NSURLSessionDelegate>
+@end
+
+@implementation BlankNSURLSessionDelegate : NSObject
+@end
+
 // In order for Cronet to use the iOS metrics collection API, it needs to
 // replace the normal NSURLSession mechanism for calling into the delegate
 // (so it can provide metrics from net/, instead of the empty metrics that iOS
@@ -199,7 +208,15 @@ CronetTransactionMetrics* NativeToIOSMetrics(Metrics& metrics)
 // As this is a proxy delegate, it needs to be initialized with a real client
 // delegate, to whom all of the method invocations will eventually get passed.
 - (instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate {
-  _delegate = delegate;
+  // If the client passed a real delegate, use it. Otherwise, create a blank
+  // delegate that will handle method invocations that are forwarded by this
+  // proxy implementation. It is incorrect to forward calls to a 'nil' object.
+  if (delegate) {
+    _delegate = delegate;
+  } else {
+    _delegate = [[BlankNSURLSessionDelegate alloc] init];
+  }
+
   _respondsToDidFinishCollectingMetrics =
       [_delegate respondsToSelector:@selector
                  (URLSession:task:didFinishCollectingMetrics:)];
@@ -249,6 +266,17 @@ CronetTransactionMetrics* NativeToIOSMetrics(Metrics& metrics)
                                didFinishCollectingMetrics:metrics];
     }
   }
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+  // Regardless whether the underlying session delegate handles
+  // URLSession:task:didFinishCollectingMetrics: or not, always
+  // return 'YES' for that selector. Otherwise, the method may
+  // not be called, causing unbounded growth of |task_metrics_map_|.
+  if (aSelector == @selector(URLSession:task:didFinishCollectingMetrics:)) {
+    return YES;
+  }
+  return [_delegate respondsToSelector:aSelector];
 }
 
 @end
@@ -312,6 +340,12 @@ void CronetMetricsDelegate::OnStopNetRequest(std::unique_ptr<Metrics> metrics) {
       if (metrics_search != task_metrics_map_.end())
         metrics_search->second = std::move(metrics);
     }
+  }
+}
+
+size_t CronetMetricsDelegate::GetMetricsMapSize() {
+  @synchronized(task_metrics_map_lock_) {
+    return task_metrics_map_.size();
   }
 }
 

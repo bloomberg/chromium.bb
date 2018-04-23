@@ -32,6 +32,7 @@ typedef void (^BlockType)(void);
 + (void)setEnablePublicKeyPinningBypassForLocalTrustAnchors:(BOOL)enable;
 + (base::SingleThreadTaskRunner*)getFileThreadRunnerForTesting;
 + (base::SingleThreadTaskRunner*)getNetworkThreadRunnerForTesting;
++ (size_t)getMetricsMapSize;
 @end
 
 // NSURLSessionDataDelegate delegate implementation used by the tests to
