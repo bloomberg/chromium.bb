@@ -79,6 +79,10 @@ Transform for the output, which can be rotated in 90-degree steps
 and possibly flipped. Possible values are
 .BR normal ", " 90 ", " 180 ", " 270 ", "
 .BR flipped ", " flipped-90 ", " flipped-180 ", and " flipped-270 .
+.TP
+\fBpixman-shadow\fR=\fIboolean\fR
+If using the Pixman-renderer, use shadow framebuffers. Defaults to
+.BR true .
 .
 .\" ***************************************************************
 .SH OPTIONS

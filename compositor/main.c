@@ -1286,6 +1286,7 @@ load_drm_backend(struct weston_compositor *c,
 	struct weston_drm_backend_config config = {{ 0, }};
 	struct weston_config_section *section;
 	struct wet_compositor *wet = to_wet_compositor(c);
+	int use_shadow;
 	int ret = 0;
 
 	wet->drm_use_current_mode = false;
@@ -1306,6 +1307,8 @@ load_drm_backend(struct weston_compositor *c,
 					 NULL);
 	weston_config_section_get_uint(section, "pageflip-timeout",
 	                               &config.pageflip_timeout, 0);
+	weston_config_section_get_bool(section, "pixman-shadow", &use_shadow, 1);
+	config.use_pixman_shadow = use_shadow;
 
 	config.base.struct_version = WESTON_DRM_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_drm_backend_config);
