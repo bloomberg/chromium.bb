@@ -38,8 +38,6 @@ if (is_win || is_linux || is_mac) {
       "serial_device_enumerator_win.h",
       "serial_io_handler.cc",
       "serial_io_handler.h",
-      "serial_io_handler_posix.cc",
-      "serial_io_handler_posix.h",
       "serial_io_handler_win.cc",
       "serial_io_handler_win.h",
     ]
@@ -58,6 +56,12 @@ if (is_win || is_linux || is_mac) {
       "//third_party/re2",
     ]
 
+    if (is_posix) {
+      sources += [
+        "serial_io_handler_posix.cc",
+        "serial_io_handler_posix.h",
+      ]
+    }
     if (use_udev) {
       deps += [ "//device/udev_linux" ]
     }
