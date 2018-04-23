@@ -67,6 +67,11 @@ crbug.com/821547 [ Linux ] virtual/threaded/animations/composition/backdrop-filt
 crbug.com/821547 [ Linux ] virtual/threaded/animations/interpolation/backdrop-filter-interpolation.html [ Pass Leak ]
 crbug.com/821547 [ Linux ] virtual/threaded/animations/interpolation/filter-interpolation-003.html [ Pass Leak ]
 
+# -----------------------------------------------------------------
+# Sheriff 2018-04-23
+# -----------------------------------------------------------------
+crbug.com/835802 [ Linux ] fast/loader/scroll-position-restored-on-back-at-load-event.html [ Pass Leak ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
