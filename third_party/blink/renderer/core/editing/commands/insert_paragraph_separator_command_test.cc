@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/core/editing/commands/insert_paragraph_separator_command.h"
 
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/testing/selection_sample.h"
 
 namespace blink {
 
@@ -53,6 +55,34 @@ TEST_F(InsertParagraphSeparatorCommandTest,
       "    </colgroup>"
       "</table>",
       GetSelectionTextFromBody());
+}
+
+// https://crbug.com/835020
+TEST_F(InsertParagraphSeparatorCommandTest, CrashWithCaptionBeforeBody) {
+  // The bug reproduces only with |designMode == 'on'|
+  GetDocument().setDesignMode("on");
+  InsertStyleElement("");
+  SetBodyContent("<style>*{max-width:inherit;display:initial;}</style>");
+
+  // Insert <caption> between head and body
+  Element* caption = GetDocument().CreateElementForBinding("caption");
+  caption->SetInnerHTMLFromString("AxBxC");
+  GetDocument().documentElement()->insertBefore(caption, GetDocument().body());
+
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(EphemeralRange::RangeOfContents(*caption))
+          .Build(),
+      SetSelectionOptions());
+
+  InsertParagraphSeparatorCommand* command =
+      InsertParagraphSeparatorCommand::Create(GetDocument());
+  // Shouldn't crash inside.
+  EXPECT_FALSE(command->Apply());
+  EXPECT_EQ(
+      "<body><style><br>|*{max-width:inherit;display:initial;}</style></body>",
+      SelectionSample::GetSelectionText(*GetDocument().documentElement(),
+                                        Selection().GetSelectionInDOMTree()));
 }
 
 }  // namespace blink
