@@ -30,10 +30,6 @@ TEST(ICCProfile, SRGB) {
   EXPECT_EQ(icc_profile.GetColorSpace(), ColorSpace::CreateSRGB());
   EXPECT_EQ(icc_profile.GetColorSpace().ToSkColorSpace().get(),
             sk_color_space.get());
-  // The parametric generating code should recognize that this is SRGB.
-  EXPECT_EQ(icc_profile.GetParametricColorSpace(), ColorSpace::CreateSRGB());
-  EXPECT_EQ(icc_profile.GetParametricColorSpace().ToSkColorSpace().get(),
-            sk_color_space.get());
   // The generated color space should recognize that this is SRGB.
   EXPECT_EQ(color_space.ToSkColorSpace().get(), sk_color_space.get());
 }
@@ -74,7 +70,7 @@ TEST(ICCProfile, ParametricVersusExactInaccurate) {
   // This ICC profile has three transfer functions that differ enough that the
   // parametric color space is considered inaccurate.
   ICCProfile multi_tr_fn = ICCProfileForTestingNoAnalyticTrFn();
-  EXPECT_NE(multi_tr_fn.GetColorSpace(), multi_tr_fn.GetParametricColorSpace());
+  EXPECT_FALSE(multi_tr_fn.GetColorSpace().IsParametricAccurate());
 
   // Fails to get parametric color space because the space is not parametric.
   ICCProfile profile;
@@ -83,7 +79,8 @@ TEST(ICCProfile, ParametricVersusExactInaccurate) {
 
   // The Mac cache does not find the parametric approximation, because the cache
   // only has the original.
-  profile = ICCProfile::FromCacheMac(multi_tr_fn.GetParametricColorSpace());
+  profile = ICCProfile::FromCacheMac(
+      multi_tr_fn.GetColorSpace().GetParametricApproximation());
   EXPECT_FALSE(profile.IsValid());
 
   // The Mac cache does find the original.
@@ -93,7 +90,7 @@ TEST(ICCProfile, ParametricVersusExactInaccurate) {
 
   // We are capable of generating a parametric approximation.
   profile = ICCProfile::FromParametricColorSpace(
-      multi_tr_fn.GetParametricColorSpace());
+      multi_tr_fn.GetColorSpace().GetParametricApproximation());
   EXPECT_TRUE(profile.IsValid());
   EXPECT_NE(profile, multi_tr_fn);
 }
@@ -102,7 +99,7 @@ TEST(ICCProfile, ParametricVersusExactOvershoot) {
   // This ICC profile has a transfer function with T(1) that is greater than 1
   // in the approximation, but is still close enough to be considered accurate.
   ICCProfile overshoot = ICCProfileForTestingOvershoot();
-  EXPECT_EQ(overshoot.GetColorSpace(), overshoot.GetParametricColorSpace());
+  EXPECT_TRUE(overshoot.GetColorSpace().IsParametricAccurate());
 
   ICCProfile profile;
   profile = ICCProfile::FromCacheMac(overshoot.GetColorSpace());
@@ -117,7 +114,7 @@ TEST(ICCProfile, ParametricVersusExactOvershoot) {
 TEST(ICCProfile, ParametricVersusExactAdobe) {
   // This ICC profile is precisely represented by the parametric color space.
   ICCProfile accurate = ICCProfileForTestingAdobeRGB();
-  EXPECT_EQ(accurate.GetColorSpace(), accurate.GetParametricColorSpace());
+  EXPECT_TRUE(accurate.GetColorSpace().IsParametricAccurate());
 
   ICCProfile profile;
   profile = ICCProfile::FromCacheMac(accurate.GetColorSpace());
@@ -149,12 +146,10 @@ TEST(ICCProfile, GarbageData) {
       ICCProfile::FromData(bad_data.data(), bad_data.size());
   EXPECT_FALSE(garbage_profile.IsValid());
   EXPECT_FALSE(garbage_profile.GetColorSpace().IsValid());
-  EXPECT_FALSE(garbage_profile.GetParametricColorSpace().IsValid());
 
   ICCProfile default_ctor_profile;
   EXPECT_FALSE(default_ctor_profile.IsValid());
   EXPECT_FALSE(default_ctor_profile.GetColorSpace().IsValid());
-  EXPECT_FALSE(default_ctor_profile.GetParametricColorSpace().IsValid());
 }
 
 TEST(ICCProfile, GenericRGB) {

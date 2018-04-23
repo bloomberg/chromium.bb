@@ -216,31 +216,14 @@ ColorSpace ICCProfile::GetColorSpace() const {
   if (!internals_->is_valid_)
     return ColorSpace();
 
-  if (internals_->is_parametric_)
-    return GetParametricColorSpace();
-
   // TODO(ccameron): Compute a reasonable approximation instead of always
   // falling back to sRGB.
-  ColorSpace color_space = ColorSpace::CreateCustom(
-      internals_->to_XYZD50_, ColorSpace::TransferID::IEC61966_2_1);
-  color_space.icc_profile_id_ = internals_->id_;
-  return color_space;
-}
-
-ColorSpace ICCProfile::GetParametricColorSpace() const {
-  if (!internals_)
-    return ColorSpace();
-
-  if (!internals_->is_valid_)
-    return ColorSpace();
-
   ColorSpace color_space =
       internals_->sk_color_space_->isSRGB()
           ? ColorSpace::CreateSRGB()
           : ColorSpace::CreateCustom(internals_->to_XYZD50_,
                                      internals_->transfer_fn_);
-  if (internals_->is_parametric_)
-    color_space.icc_profile_id_ = internals_->id_;
+  color_space.icc_profile_id_ = internals_->id_;
   return color_space;
 }
 
