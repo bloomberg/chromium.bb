@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1006017844123154345">Obre en línia</translation>
+<translation id="1021684790657589338">No s'ha trobat cap targeta SD</translation>
 <translation id="1036727731225946849">S'està afegint <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De llocs web</translation>
 <translation id="1049743911850919806">Incògnit</translation>
@@ -184,6 +185,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2625189173221582860">S'ha copiat la contrasenya</translation>
 <translation id="2631006050119455616">Dades desades</translation>
 <translation id="2647434099613338025">Afegir un idioma</translation>
+<translation id="2650751991977523696">Vols tornar a baixar el fitxer?</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2677748264148917807">Surt</translation>
 <translation id="2704606927547763573">Copiada</translation>
@@ -220,6 +222,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="3029613699374795922">S'han baixat <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Les frases de contrasenya no coincideixen</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obteniu ajuda<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Mostra més suggeriments com aquest de Google</translation>
 <translation id="305593374596241526">La ubicació està desactivada; activa-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Aviat es mostraran més articles. Que tinguis un bon matí.</translation>
 <translation id="3089395242580810162">Obre en una pestanya d'incògnit</translation>
@@ -245,7 +248,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="32895400574683172">Es permeten les notificacions</translation>
 <translation id="3295602654194328831">Amaga la informació</translation>
 <translation id="3303414029551471755">Voleu baixar el contingut?</translation>
-<translation id="3328801116991980348">Informació del lloc</translation>
+<translation id="3328801116991980348">Informació del lloc web</translation>
 <translation id="3341058695485821946">Consulta la quantitat de dades que has estalviat</translation>
 <translation id="3350687908700087792">Tanca totes les pestanyes d'incògnit</translation>
 <translation id="3365671512111106261">No està disponible quan l'extensió Economitzador de dades està activada</translation>
@@ -410,6 +413,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4876188919622883022">Visualització simplificada</translation>
 <translation id="4878404682131129617">S'ha produït un error en establir un túnel mitjançant el servidor intermediari</translation>
 <translation id="4881695831933465202">Obre</translation>
+<translation id="488187801263602086">Canvia el nom del fitxer</translation>
 <translation id="4885273946141277891">No s'admet aquest nombre d'instàncies de Chrome.</translation>
 <translation id="4910889077668685004">Aplicacions de pagament</translation>
 <translation id="4913161338056004800">Restableix les estadístiques</translation>
@@ -503,6 +507,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5676636989614905379">No es pot reproduir el vídeo a <ph name="SCREEN_NAME" /></translation>
 <translation id="5677928146339483299">Bloquejades</translation>
 <translation id="5684874026226664614">Aquesta pàgina no s'ha pogut traduir.</translation>
+<translation id="5686790454216892815">El nom del fitxer és massa llarg</translation>
 <translation id="5689516760719285838">Ubicació</translation>
 <translation id="5719837394786370183">Les pàgines que visualitzeu a les pestanyes d'incògnit no quedaran registrades a l'historial del navegador, al magatzem de galetes ni a l'historial de cerques un cop tanqueu totes les pestanyes d'incògnit. Tots els fitxers que baixeu o les adreces d'interès que creeu es conservaran.
 
@@ -695,6 +700,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7437998757836447326">Tanca la sessió de Chrome</translation>
 <translation id="7445411102860286510">Permet que els llocs reprodueixin automàticament vídeos silenciats (opció recomanada)</translation>
 <translation id="7453467225369441013">Et tanca la sessió de la majoria de llocs web, però no la del compte de Google.</translation>
+<translation id="7454641608352164238">No hi ha prou espai</translation>
 <translation id="7455923816558154057">Toca per veure-ho</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7475192538862203634">Si això passa sovint, proveu aquests <ph name="BEGIN_LINK" />suggeriments<ph name="END_LINK" />.</translation>
@@ -826,6 +832,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8636825310635137004">Activeu la sincronització per accedir a les vostres pestanyes des dels altres dispositius que tingueu.</translation>
 <translation id="8641930654639604085">Prova de bloquejar els llocs per a adults</translation>
 <translation id="8662811608048051533">Et tanca la sessió de la majoria de llocs.</translation>
+<translation id="8664979001105139458">El nom del fitxer ja existeix</translation>
 <translation id="8676374126336081632">Esborra l'entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensitat del senyal: # barra}other{Intensitat del senyal: # barres}}</translation>
 <translation id="869891660844655955">Data de caducitat</translation>
@@ -854,6 +861,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8942627711005830162">Obre en una altra finestra</translation>
 <translation id="8951232171465285730">Chrome t'ha estalviat <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">No es pot accedir a la navegació: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Vols baixar el fitxer a la carpeta predeterminada?</translation>
 <translation id="8979405271719829084">Baixa vídeos per mirar-los més tard</translation>
 <translation id="8981454092730389528">Controls d'activitat de Google</translation>
 <translation id="8986494364107987395">Envia automàticament estadístiques d'ús i informes d'error a Google</translation>

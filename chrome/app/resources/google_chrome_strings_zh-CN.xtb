@@ -25,7 +25,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> 存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="1619887657840448962">为了提高 Chrome 的安全性，我们停用了以下扩展程序（该扩展程序未列在<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并且可能是在您不知情的情况下添加的）。</translation>
 <translation id="1628000112320670027">获取有关 Chrome 的帮助</translation>
-<translation id="163860049029591106">Chrome 操作系统使用入门</translation>
 <translation id="1674870198290878346">在 Chrome 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="1682634494516646069">Google Chrome 无法对其数据目录 <ph name="USER_DATA_DIRECTORY" /> 执行读写操作</translation>
 <translation id="1698376642261615901">Google Chrome 浏览器是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Google Chrome 浏览器内置的恶意软件和网上诱骗防护功能可让您更安全地浏览网页。</translation>
@@ -207,7 +206,6 @@
 <translation id="6989339256997917931">Google Chrome 浏览器已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
 <translation id="7106741999175697885">任务管理器 - Google Chrome</translation>
-<translation id="7161904924553537242">欢迎使用 Google Chrome</translation>
 <translation id="7164397146364144019">您可以选择自动向 Google 报告可能出现的安全事件详情，以帮助我们提高 Chrome 的安全性和易用性。</translation>
 <translation id="7242029209006116544">您目前登录的帐号是一个托管帐号，该帐号的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐号信息中心删除这些数据，但无法将这些数据与其他帐号相关联。您可以选择创建新的个人资料来单独存储现有的 Chrome 数据。<ph name="LEARN_MORE" /></translation>
 <translation id="7308322188646931570">Chrome 需要获得存储空间使用权限，才能下载文件</translation>

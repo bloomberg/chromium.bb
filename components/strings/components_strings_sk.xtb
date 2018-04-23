@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Žiadne}=1{1 web}few{# weby}many{# webu}other{# webov}}</translation>
 <translation id="1927235823738766038">Akceptované kreditné a debetné karty</translation>
 <translation id="194030505837763158">Prejdite na stránku <ph name="LINK" /></translation>
+<translation id="1945968466830820669">Môžete stratiť prístup do účtu svojej organizácie alebo vám niekto môže ukradnúť totožnosť. Chromium odporúča, aby ste si ihneď zmenili heslo.</translation>
 <translation id="1948773908305951926">Akceptované predplatené karty</translation>
 <translation id="1962204205936693436">Záložky (<ph name="DOMAIN" />)</translation>
 <translation id="1973335181906896915">Chyba serializácie</translation>
@@ -457,7 +458,6 @@
 <translation id="4171400957073367226">Nesprávny overovací podpis</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ďalšia položka}few{<ph name="ITEM_COUNT" /> ďalšie položky}many{<ph name="ITEM_COUNT" /> ďalšej položky}other{<ph name="ITEM_COUNT" /> ďalších položiek}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Ak ste heslo organizácie <ph name="ORG_NAME" /> použili na inom webe, Chrome odporúča, aby ste ho obnovili.</translation>
 <translation id="4196861286325780578">&amp;Znova presunúť</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Skontrolovať konfiguráciu brány firewall a antivírusového softvéru<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Zlyhania</translation>
@@ -587,6 +587,7 @@
 <translation id="5141240743006678641">Šifrovať synchronizované heslá pomocou poverení Google</translation>
 <translation id="5145883236150621069">V odpovedi na pravidlo sa nachádza kód chyby</translation>
 <translation id="5159010409087891077">Otvorte stránku v novom okne inkognito (⇧⌘N)</translation>
+<translation id="5169827969064885044">Môžete stratiť prístup do účtu svojej organizácie alebo vám niekto môže ukradnúť totožnosť. Chrome odporúča, aby ste si ihneď zmenili heslo.</translation>
 <translation id="5171045022955879922">Vyhľadajte alebo zadajte webovú adresu</translation>
 <translation id="5172758083709347301">Počítač</translation>
 <translation id="5179510805599951267">Text sa nezobrazil v jazyku <ph name="ORIGINAL_LANGUAGE" />? Nahláste túto chybu</translation>
@@ -687,7 +688,6 @@
 <translation id="5869405914158311789">K tomuto webu sa nedá pripojiť</translation>
 <translation id="5869522115854928033">Uložené heslá</translation>
 <translation id="5893752035575986141">Kreditné karty sú akceptované.</translation>
-<translation id="5898382028489516745">Ak ste heslo organizácie <ph name="ORG_NAME" /> použili na inom webe, Chromium odporúča, aby ste ho obnovili.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronizované)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Používa sa 1}few{Používajú sa #}many{Používa sa #}other{Používa sa #}}</translation>
 <translation id="5939518447894949180">Resetovať</translation>
@@ -851,6 +851,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Overenie karty</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
+<translation id="7407424307057130981">&lt;p&gt;Táto chyba sa zobrazí, keď máte v počítači so systémom Windows softvér Superfish.&lt;/p&gt;
+    &lt;p&gt;Postupujte podľa týchto krokov a softvér dočasne zakážte, aby ste mohli prejsť na daný web. Budete potrebovať oprávnenia správcu.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Kliknite na položku &lt;strong&gt;Štart&lt;/strong&gt;, potom vyhľadajte a vyberte položku &lt;strong&gt;Zobraziť lokálne služby&lt;/strong&gt;.
+    &lt;li&gt;Vyberte položku &lt;strong&gt;VisualDiscovery&lt;/strong&gt;.
+    &lt;li&gt;V časti &lt;strong&gt;Typ spúšťania&lt;/strong&gt; vyberte možnosť &lt;strong&gt;Vypnuté&lt;/strong&gt;.
+    &lt;li&gt;V časti &lt;strong&gt;Stav služby&lt;/strong&gt; kliknite na možnosť &lt;strong&gt;Zastaviť&lt;/strong&gt;.
+    &lt;li&gt;Kliknite na možnosť &lt;strong&gt;Použiť&lt;/strong&gt;, potom na &lt;strong&gt;OK&lt;/strong&gt;.
+    &lt;li&gt;Ďalšie informácie o tom, ako natrvalo odstrániť softvér z počítača, nájdete v &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;centre pomoci Chromu&lt;/a&gt;.
+    &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Cesta profilu</translation>
 <translation id="7437289804838430631">Pridať kontaktné informácie</translation>
 <translation id="7441627299479586546">Chybný predmet pravidla</translation>

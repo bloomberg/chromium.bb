@@ -145,6 +145,7 @@
 <translation id="4207623512727273241">הפעל את המתקין לפני שתמשיך.</translation>
 <translation id="4227991223508142681">Host Provisioning Utility</translation>
 <translation id="4240294130679914010">‏מסיר ההתקנה של מארח Chromoting</translation>
+<translation id="4249741460382919890">תיקונים כלליים ושיפורי יציבות.</translation>
 <translation id="4277463233460010382">‏מחשב זה מוגדר לאפשר ללקוח אחד או יותר להתחבר מבלי להזין PIN.</translation>
 <translation id="4277736576214464567">קוד הגישה אינו חוקי. נסה שוב.</translation>
 <translation id="4361728918881830843">‏כדי להפעיל חיבורים מרחוק למחשב אחר, התקן את 'שולחן עבודה מרוחק של Chrome' במחשב האחר ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
@@ -190,6 +191,7 @@ Chrome
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (לא מקוון)</translation>
 <translation id="5070121137485264635">‏המארח המרוחק דורש שתבצע אימות מול אתר של צד שלישי. כדי להמשיך, עליך להעניק לשולחן העבודה המרוחק של Chrome הרשאות נוספות כדי לגשת לכתובת זו:</translation>
 <translation id="507204348399810022">האם אתה בטוח שברצונך להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">לא ניתן לתקשר עם השרת: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">‏הזן את אותו PIN בשתי התיבות.</translation>
 <translation id="5170982930780719864">מזהה מארח לא חוקי.</translation>
 <translation id="518094545883702183">המידע הזה משמש רק לאבחון הבעיה שדיווחת עליה. הוא זמין רק למי שבוחן את הדוח, ונשמר למשך זמן של 30 ימים לכל היותר.</translation>

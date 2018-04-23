@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1006017844123154345">Abrir versión online</translation>
+<translation id="1021684790657589338">No se ha encontrado ninguna tarjeta SD</translation>
 <translation id="1036727731225946849">Añadiendo <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De sitios web</translation>
 <translation id="1049743911850919806">Incógnito</translation>
@@ -184,6 +185,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2625189173221582860">Se ha copiado la contraseña</translation>
 <translation id="2631006050119455616">Ahorrados</translation>
 <translation id="2647434099613338025">Añadir idioma</translation>
+<translation id="2650751991977523696">¿Quieres descargar el archivo de nuevo?</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Salir</translation>
 <translation id="2704606927547763573">Copiado</translation>
@@ -220,6 +222,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="3029613699374795922">kB descargados: <ph name="KBS" /></translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Ver más sugerencias de Google como esta</translation>
 <translation id="305593374596241526">La ubicación está desactivada. Actívala en los <ph name="BEGIN_LINK" />Ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Próximamente se mostrarán más artículos. Disfruta de la mañana.</translation>
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
@@ -300,6 +303,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3819178904835489326">Descargas eliminadas: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">¿Borrar almacenamiento web?</translation>
 <translation id="3859306556332390985">Buscar hacia delante</translation>
+<translation id="3871936494901781193">Cuando te desplazas hacia arriba, se muestran enlaces rápidos a páginas relacionadas.</translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
 <translation id="3895926599014793903">Forzar zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +311,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="393697183122708255">La búsqueda por voz no está disponible</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
 <translation id="395206256282351086">Sugerencias de sitios web y búsqueda inhabilitadas</translation>
+<translation id="3952533382939530115">Esta función usa la <ph name="BEGIN_LINK" />sincronización<ph name="END_LINK" />. Las URL de las páginas que visitas se envían a Google.</translation>
 <translation id="3967822245660637423">Descarga completa</translation>
 <translation id="397583555483684758">La sincronización ha dejado de funcionar</translation>
 <translation id="3976396876660209797">Quita esta combinación de teclas y vuelve a crearla</translation>
@@ -410,6 +415,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4876188919622883022">Vista simplificada</translation>
 <translation id="4878404682131129617">No se ha podido establecer conexión a través del servidor proxy</translation>
 <translation id="4881695831933465202">Abrir</translation>
+<translation id="488187801263602086">Cambiar nombre de archivo</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
 <translation id="4910889077668685004">Aplicaciones para pagar</translation>
 <translation id="4913161338056004800">Restablecer estadísticas</translation>
@@ -503,6 +509,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="5676636989614905379">No se puede reproducir el vídeo en <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Con bloqueo</translation>
 <translation id="5684874026226664614">¡Vaya! No se ha podido traducir esta página.</translation>
+<translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5689516760719285838">Ubicación</translation>
 <translation id="5719837394786370183">Las páginas que visites a través de las pestañas de incógnito no se mostrarán en el historial del navegador, en el almacén de cookies ni en el historial de búsquedas una vez que cierres todas las pestañas de incógnito. Sí se conservarán los archivos que descargues y los marcadores que crees.
 
@@ -695,6 +702,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7437998757836447326">Cerrar sesión en Chrome</translation>
 <translation id="7445411102860286510">Permite que los sitios web reproduzcan automáticamente los vídeos silenciados (recomendado)</translation>
 <translation id="7453467225369441013">Cierra tu sesión en la mayoría de los sitios web. No se cerrará la sesión en tu cuenta de Google.</translation>
+<translation id="7454641608352164238">No hay espacio suficiente</translation>
 <translation id="7455923816558154057">Toca para ver</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7475192538862203634">Si este mensaje aparece con frecuencia, prueba estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>
@@ -773,6 +781,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8087000398470557479">Este contenido procede de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
 <translation id="8100932616285851614">Panel de navegación cerrado</translation>
 <translation id="8103578431304235997">Pestaña de incógnito</translation>
+<translation id="8105951947646329362">Sugerir páginas relacionadas</translation>
 <translation id="8116925261070264013">Silenciados</translation>
 <translation id="813082847718468539">Ver información del sitio</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
@@ -826,6 +835,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8636825310635137004">Activa la sincronización para ver las pestañas de tus otros dispositivos.</translation>
 <translation id="8641930654639604085">Intentar bloquear sitios web para adultos</translation>
 <translation id="8662811608048051533">Cierra tu sesión en la mayoría de los sitios web.</translation>
+<translation id="8664979001105139458">El nombre del archivo ya existe</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de intensidad de la señal: # barra}other{Nivel de intensidad de la señal: # barras}}</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
@@ -854,6 +864,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8942627711005830162">Abrir en otra ventana</translation>
 <translation id="8951232171465285730">Chrome te ha permitido ahorrar <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">No se puede realizar la navegación: <ph name="URL" /></translation>
+<translation id="8972098258593396643">¿Quieres descargarlo en la carpeta predeterminada?</translation>
 <translation id="8979405271719829084">Descarga vídeos para verlos más tarde</translation>
 <translation id="8981454092730389528">Gestión de tu actividad en Google</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>

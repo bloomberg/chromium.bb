@@ -145,6 +145,7 @@
 <translation id="4207623512727273241">請先執行安裝程式，然後再繼續操作。</translation>
 <translation id="4227991223508142681">主機帳戶管理公用程式</translation>
 <translation id="4240294130679914010">Chromoting 主機解除安裝程式</translation>
+<translation id="4249741460382919890">修正一般錯誤並提升穩定性。</translation>
 <translation id="4277463233460010382">這台電腦已設為允許一或多個用戶端可不輸入 PIN 進行連線。</translation>
 <translation id="4277736576214464567">存取碼無效，請再試一次。</translation>
 <translation id="4361728918881830843">如要為其他電腦啟用遠端連線，請在你想要連線的電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>
@@ -171,7 +172,7 @@
 支援
 電腦
 PC</translation>
-<translation id="4736223761657662401">連線紀錄</translation>
+<translation id="4736223761657662401">連線記錄</translation>
 <translation id="4741792197137897469">驗證失敗，請重新登入 Chrome。</translation>
 <translation id="477305884757156764">應用程式的運作速度過慢。</translation>
 <translation id="4784508858340177375">X 伺服器當機或無法啟動。</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (離線)</translation>
 <translation id="5070121137485264635">遠端主機要求你向第三方網站進行驗證。如要繼續，你必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
 <translation id="507204348399810022">您確定要停用與「<ph name="HOSTNAME" />」之間的遠端連線嗎？</translation>
+<translation id="5081343395220691640">無法與伺服器通訊：<ph name="ERROR" /></translation>
 <translation id="5156271271724754543">請在兩個方塊中輸入相同的 PIN。</translation>
 <translation id="5170982930780719864">主機 ID 無效。</translation>
 <translation id="518094545883702183">這些資訊只會用於診斷您所回報的問題，並且僅供相關調查人員存取。此外，系統會在 30 天後刪除這些資訊。</translation>
@@ -243,7 +245,7 @@ PC</translation>
 <translation id="6502629188777329097">安全存取你的電腦</translation>
 <translation id="652218476070540101">正在更新這台電腦的 PIN...</translation>
 <translation id="6527303717912515753">分享</translation>
-<translation id="6541219117979389420">應用程式紀錄可能含有私人資訊，包括您的身分 (電子郵件地址)，以及 Google 雲端硬碟檔案與資料夾的名稱和屬性。</translation>
+<translation id="6541219117979389420">應用程式記錄可能含有私人資訊，包括您的身分 (電子郵件地址)，以及 Google 雲端硬碟檔案與資料夾的名稱和屬性。</translation>
 <translation id="6542902059648396432">回報問題…</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6570205395680337606">重設應用程式。所有未儲存的變更都會遺失。</translation>
@@ -254,7 +256,7 @@ PC</translation>
 <translation id="6668065415969892472">你的 PIN 已更新。</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. 保留所有權利。</translation>
 <translation id="6705482892455291412">對方輸入存取碼後，系統會提示你接受連線，展開共用工作階段。</translation>
-<translation id="6746493157771801606">清除紀錄</translation>
+<translation id="6746493157771801606">清除記錄</translation>
 <translation id="6748108480210050150">寄件者</translation>
 <translation id="677755392401385740">已為下列使用者啟動主機：<ph name="HOST_USERNAME" />。</translation>
 <translation id="6865175692670882333">檢視/編輯</translation>
@@ -317,7 +319,7 @@ PC</translation>
 <translation id="8244400547700556338">瞭解詳情</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8355326866731426344">這個存取碼將於 <ph name="TIMEOUT" /> 後失效</translation>
-<translation id="8355485110405946777">包括應用程式紀錄，以協助我們解決您的問題 (紀錄可能含有私人資訊)。</translation>
+<translation id="8355485110405946777">包括應用程式記錄，以協助我們解決您的問題 (記錄可能含有私人資訊)。</translation>
 <translation id="837021510621780684">從這台電腦</translation>
 <translation id="8383794970363966105">你必須在裝置上新增 Google 帳戶，才能使用 Chromoting。</translation>
 <translation id="8386846956409881180">用於設定主機的 OAuth 憑證無效。</translation>

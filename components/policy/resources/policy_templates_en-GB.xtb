@@ -51,6 +51,7 @@
 <translation id="1152117524387175066">Report the state of the device's dev switch at boot.
 
       If the policy is set to false, the state of the dev switch will not be reported.</translation>
+<translation id="1160479894929412407">Allow QUIC protocol</translation>
 <translation id="1160939557934457296">Disable proceeding from the Safe Browsing warning page</translation>
 <translation id="1198465924256827162">How frequently device status uploads are sent, in milliseconds.
 
@@ -64,6 +65,7 @@
 
       Default is RollbackDisabled.</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
+<translation id="1223789468190631420">Safe Browsing enable state for trusted sources</translation>
 <translation id="123081309365616809">Enable casting content to the device</translation>
 <translation id="1257550411839719984">Set default download directory</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
@@ -88,6 +90,7 @@
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
+<translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
@@ -145,8 +148,10 @@
 
           For more detailed examples, visit:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="1502843533062797703">Enable third-party software injection blocking</translation>
 <translation id="1504431521196476721">Remote Attestation</translation>
 <translation id="1509692106376861764">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 29.</translation>
+<translation id="1514888685242892912">Enable <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Allow sites to track the users' physical location</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
@@ -157,8 +162,23 @@
 
       If this setting is disabled or not configured then enterprise users are
       unable to use ARC.</translation>
+<translation id="1561183922461862993">
+      This policy applies to the sign-in screen. Please also see the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended that you set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites that you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
+      If the policy is not configured, the user will be able to change this setting.
+      </translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
+<translation id="1574554504290354326">This setting is deprecated – use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
+
+      Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
+
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
@@ -198,6 +218,7 @@
 <translation id="1797233582739332495">Show a recurring prompt to the user indicating that a relaunch is required</translation>
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
+<translation id="1810261428246410396">Allow Instant Tethering to be used.</translation>
 <translation id="1827523283178827583">Use fixed proxy servers</translation>
 <translation id="1843117931376765605">Refresh rate for user policy</translation>
 <translation id="1844620919405873871">Configures quick unlock related policies.</translation>
@@ -206,6 +227,7 @@
           This policy is optional. If not set, instant search request will be sent using the GET method.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="1852294065645015766">Allow media auto-play</translation>
 <translation id="1859859319036806634">Warning: The TLS version fallback will be removed from <ph name="PRODUCT_NAME" /> after version 52 (around September 2016) and this policy will stop working then.
 
       When a TLS handshake fails, <ph name="PRODUCT_NAME" /> would previously retry the connection with a lesser version of TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
@@ -242,6 +264,22 @@
       If set to false, metrics and diagnostic data reporting will be disabled.
 
       If not configured, metrics and diagnostic data reporting will be disabled on unmanaged devices, and enabled on managed devices.</translation>
+<translation id="1929709556673267855">Provides configurations for enterprise printers bound to devices.
+
+      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME" /> devices.  The format is the same as the NativePrinters dictionary, with an additional required 'id' or 'guid' field per printer for whitelisting or blacklisting.
+
+      The size of the file must not exceed 5 MB and must be encoded in JSON.  It is estimated that a file containing approximately 21,000 printers will encode as a 5 MB file. The cryptographic hash is used to verify the integrity of the download.
+
+      The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download the file for printer configurations and make printers available in accordance with <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> and <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
+
+      This policy is additive to the <ph name="BULK_PRINTERS_POLICY" />.
+
+      If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> policies will be ignored.
+      </translation>
 <translation id="193259052151668190">Whitelist of USB detachable devices</translation>
 <translation id="1933378685401357864">Wallpaper image</translation>
 <translation id="1956493342242507974">Configure power management on the log-in screen in <ph name="PRODUCT_OS_NAME" />.
@@ -263,6 +301,7 @@
 <translation id="1988371335297483117">Auto-update payloads on <ph name="PRODUCT_OS_NAME" /> can be downloaded via HTTP instead of HTTPS. This allows transparent HTTP caching of HTTP downloads.
 
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will attempt to download auto-update payloads via HTTP. If the policy is set to false or not set, HTTPS will be used for downloading auto-update payloads.</translation>
+<translation id="199764499252435679">Enable component updates in <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Power management</translation>
 <translation id="201557587962247231">Frequency of device status report uploads</translation>
 <translation id="2018836497795982119">Specifies the period in milliseconds at which the device management service is queried for user policy information.
@@ -273,9 +312,25 @@
 
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
 <translation id="2024476116966025075">Configure the required domain name for remote access clients</translation>
+<translation id="202757291638965203">Configures a list of printers.
+
+      This policy allows administrators to provide printer configurations for
+      their users.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> and <ph name="PRINTER_DESCRIPTION" /> are free form strings that can be customised for ease of printer selection. <ph name="PRINTER_MANUFACTURER" /> and <ph name="PRINTER_MODEL" /> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI" /> should be an address reachable from a client computer including the <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> and <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optional. If provided, it is used to help deduplicate <ph name="ZEROCONF_DISCOVERY" /> printers.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> must match one of the strings which represent a <ph name="PRODUCT_NAME" /> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
+
+      Printer setup is completed upon the first use of a printer. PPDs are not downloaded until the printer is used. After that time, frequently used PPDs are cached.
+
+      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
+
+      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE" /> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE" />, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Note that the position is zero-based.
+      </translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="203096360153626918">This policy has no effect on the Android apps. They will be able to enter full screen mode even if this policy is set to <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Disabled enterprise printers</translation>
+<translation id="2057317273526988987">Allow access to a list of URLs</translation>
 <translation id="206623763829450685">Specifies which HTTP authentication schemes are supported by <ph name="PRODUCT_NAME" />.
 
           Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
@@ -287,6 +342,7 @@
       This policy setting enables notifications to inform the user that a browser relaunch is recommended or required. If not set, <ph name="PRODUCT_NAME" /> indicates to the user that a relaunch is needed via subtle changes to its menu. If set to 'Recommended', a recurring warning will be shown to the user that a relaunch is recommended. The user can dismiss this warning to defer the relaunch. If set to 'Required', a recurring warning will be shown to the user indicating that a browser relaunch will be forced once the notification period passes. This period is seven days by default, and may be configured via the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> policy setting.
 
       The user's session is restored following the relaunch.</translation>
+<translation id="2073552873076775140">Allow sign-in to <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2077273864382355561">Screen off delay when running on battery power</translation>
 <translation id="2082205219176343977">Configure minimum allowed Chrome version for the device.</translation>
@@ -390,13 +446,6 @@
 
 The contents of the list 'URLs to open at start-up' are ignored unless you select 'Open a list of URLs' in 'Action on start-up'.</translation>
 <translation id="2327252517317514801">Define domains allowed to access G Suite</translation>
-<translation id="2334591568684482454">Configures availability and behaviour of <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality.
-
-      Individual settings can be specified in JSON properties:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update.
-
-      If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality will not be available.</translation>
 <translation id="2337466621458842053">Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultImagesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -538,10 +587,25 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is not set, the default is true and NTLMv2 is enabled.</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="2627554163382448569">Provides configurations for enterprise printers.
+
+      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME" /> devices. The format is the same as the NativePrinters dictionary, with an additional required 'id' or 'guid' field per printer for whitelisting or blacklisting.
+
+      The size of the file must not exceed 5 MB and must be encoded in JSON. It is estimated that a file containing approximately 21,000 printers will encode as a 5 MB file. The cryptographic hash is used to verify the integrity of the download.
+
+      The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download the file for printer configurations and make printers available in accordance with <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> and <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      If you set this policy, users cannot change or override it.
+
+      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
+      </translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
 <translation id="2646290749315461919">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
 
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.</translation>
+<translation id="2647069081229792812">Enable or disable bookmark editing</translation>
 <translation id="2650049181907741121">Action to take when the user closes the lid</translation>
 <translation id="2655233147335439767">Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER" />', which will be replaced at query time by the terms the user is searching for.
 
@@ -580,6 +644,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
 <translation id="2787173078141616821">Report information about status of Android</translation>
 <translation id="2793923553868251161">Origins to be treated as secure context.</translation>
+<translation id="2799297758492717491">Allow media auto-play on a whitelist of URL patterns</translation>
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
 
       If this policy is set to False, users will not be able to play the dinosaur Easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur Easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.</translation>
@@ -600,6 +665,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2823870601012066791">Windows registry location for <ph name="PRODUCT_OS_NAME" /> clients:</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
 <translation id="2838830882081735096">Disallow data migration and ARC</translation>
+<translation id="2840269525054388612">Specifies the printers which a user can use.
+
+      This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
+
+      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the 'id' or 'guid' fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2844404652289407061">Enables the availability of Touch to Search in <ph name="PRODUCT_NAME" />'s content view.
 
       If you enable this setting, Touch to Search will be available to the user and they can choose to turn the feature on or off.
@@ -727,6 +798,16 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="3219421230122020860">Incognito mode available.</translation>
 <translation id="3220624000494482595">If the kiosk app is an Android app, it will have no control over the <ph name="PRODUCT_OS_NAME" /> version, even if this policy is set to <ph name="TRUE" />.</translation>
+<translation id="3229833076897893450">
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds; isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites that you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
+      If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended that you also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      </translation>
 <translation id="3236046242843493070">URL patterns to allow extension, app, and user script installs from</translation>
 <translation id="3240609035816615922">Printer configuration access policy.</translation>
 <translation id="3243309373265599239">Specifies the length of time without user input after which the screen is dimmed when running on AC power.
@@ -808,9 +889,32 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="350797926066071931">Enable Translate</translation>
 <translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
+<translation id="3519934027321156158">
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains; e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
+      If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended that you also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      </translation>
 <translation id="3524204464536655762">Do not allow any site to request access to USB devices via the WebUSB API</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
+<translation id="3556806727696701427">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing feature and prevents users from changing this setting.
+
+      If you enable this setting, Safe Browsing is always active.
+
+      If you disable this setting, Safe Browsing is never active.
+
+      If you enable or disable this setting, users cannot change or override the 'Enable phishing and malware protection' setting in <ph name="PRODUCT_NAME" />.
+
+      If this policy is left not set, this will be enabled, but the user will be able to change it.
+
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.
+
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
@@ -837,6 +941,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       Leaving these policies unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3758249152301468420">Disable Developer Tools</translation>
+<translation id="3764248359515129699">Disables enforcing Certificate Transparency requirements for a list of Legacy Certificate Authorities.
+
+      This policy allows disabling Certificate Transparency disclosure requirements for certificate chains that contain certificates with one of the specified subjectPublicKeyInfo hashes. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used for Enterprise hosts.
+
+      In order for Certificate Transparency enforcement to be disabled when this policy is set, the hash must be of a subjectPublicKeyInfo appearing in a CA certificate that is recognised as a Legacy Certificate Authority (CA). A Legacy CA is a CA that has been publicly trusted by one or more operating systems supported by <ph name="PRODUCT_NAME" />, but is not trusted by the Android Open Source Project or <ph name="PRODUCT_OS_NAME" />.
+
+      A subjectPublicKeyInfo hash is specified by concatenating the hash algorithm name, the '/' character and the Base64 encoding of that hash algorithm applied to the DER-encoded subjectPublicKeyInfo of the specified certificate. This Base64 encoding is the same format as an SPKI Fingerprint, as defined in RFC 7469, Section 2.4. Unrecognised hash algorithms are ignored. The only supported hash algorithm at this time is 'sha256'.
+
+      If this policy is not set, any certificate that is required to be disclosed via Certificate Transparency will be treated as untrusted if it is not disclosed according to the Certificate Transparency policy.</translation>
 <translation id="3765260570442823273">Duration of the idle log-out warning message</translation>
 <translation id="377044054160169374">Abusive Experience Intervention Enforce</translation>
 <translation id="3780152581321609624">Include non-standard port in Kerberos SPN</translation>
@@ -957,6 +1070,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is set to true, monitoring network packets (so-called <ph name="HEARTBEATS_TERM" />) will be sent.
       If set to false or unset, no packets will be sent.</translation>
+<translation id="3958586912393694012">Allow Smart Lock to be used</translation>
 <translation id="3963602271515417124">If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
 
           If it is set to false, or if it is not set, no certificate will be generated and calls to the enterprise.platformKeys extension API will fail.</translation>
@@ -969,6 +1083,16 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to true or left not set, users will be able to redeem offers through Chrome OS Registration.
 
       If this policy is set to false, user will not be able to redeem offers.</translation>
+<translation id="4002183184444060875">
+      This policy applies to the sign-in screen. Please also see the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended that you set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains; e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
+      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
+      </translation>
 <translation id="4010738624545340900">Allow invocation of file selection dialogues</translation>
 <translation id="4012737788880122133">Disables automatic updates when set to True.
 
@@ -1004,7 +1128,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Otherwise it may be set to one of the following values: 'tls1.2' or 'tls1.3'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
+<translation id="412697421478384751">Enable users to set weak PINs for the lock screen PIN</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
+<translation id="4157594634940419685">Allow access to native CUPS printers</translation>
 <translation id="4183229833636799228">Default <ph name="FLASH_PLUGIN_NAME" /> setting</translation>
 <translation id="4192388905594723944">URL for validating remote access client authentication token</translation>
 <translation id="4203389617541558220">Limit the device uptime by scheduling automatic reboots.
@@ -1031,6 +1157,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4239720644496144453">The cache is not used for Android apps. If multiple users install the same Android app, it will be downloaded anew for each user.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Device sign-in screen locale</translation>
+<translation id="427220754384423013">Specifies the printers which a user can use.
+
+      This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the 'id' or 'guid' fields in the file specified in <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="427632463972968153">Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
 
           This policy is optional. If not set, image search request will be sent using the GET method.
@@ -1071,6 +1203,8 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
 <translation id="437791893267799639">Policy unset, disallow data migration and ARC</translation>
 <translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
+<translation id="4410236409016356088">Enable throttling network bandwidth</translation>
+<translation id="441217499641439905">Disable Google Drive over mobile connections in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="4418726081189202489">Setting this policy to false stops <ph name="PRODUCT_NAME" /> from occasionally sending queries to a Google server to retrieve an accurate timestamp. These queries will be enabled if this policy is set to True or is not set.</translation>
 <translation id="4423597592074154136">Manually specify proxy settings</translation>
 <translation id="4429220551923452215">Enables or disables the apps shortcut in the bookmark bar.
@@ -1091,6 +1225,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       </translation>
 <translation id="4442582539341804154">Enable lock when the device become idle or suspended</translation>
 <translation id="4449545651113180484">Rotate screen clockwise by 270 degrees</translation>
+<translation id="4454820008017317557">Show the <ph name="PRODUCT_NAME" /> toolbar icon</translation>
 <translation id="4467952432486360968">Block third-party cookies</translation>
 <translation id="4474167089968829729">Enable saving passwords to the password manager</translation>
 <translation id="4476769083125004742">If this policy is set to <ph name="BLOCK_GEOLOCATION_SETTING" />, Android apps cannot access location information. If you set this policy to any other value or leave it unset, the user is asked to consent when an Android app wants to access location information.</translation>
@@ -1104,6 +1239,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
 
       Leaving this policy unset will allow the user to choose whether to show the home button.</translation>
+<translation id="4483649828988077221">Disable Auto Update</translation>
 <translation id="4485425108474077672">Configure the New Tab page URL</translation>
 <translation id="4492287494009043413">Disable taking screenshots</translation>
 <translation id="4497968613298501984">Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
@@ -1188,6 +1324,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           By default, users will get a warning, not error, if the PIN is considered weak.</translation>
 <translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
 <translation id="4725528134735324213">Enable Android Backup Service</translation>
+<translation id="4725801978265372736">Require that the name of the local user and the remote access host owner match</translation>
 <translation id="4733471537137819387">Policies related to integrated HTTP authentication.</translation>
 <translation id="4744190513568488164">Servers that <ph name="PRODUCT_NAME" /> may delegate to.
 
@@ -1245,27 +1382,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is set to false, screen wake lock requests will be ignored.</translation>
 <translation id="487460824085252184">Migrate automatically, don’t ask for user consent.</translation>
 <translation id="4876805738539874299">Maximum SSL version enabled</translation>
-<translation id="4881315447528084360">Specifies a list of apps and extensions that are installed silently,
-          without user interaction, and which cannot be uninstalled nor
-          disabled by the user. All permissions requested by the
-          apps/extensions are granted implicitly, without user interaction,
-          including any additional permissions requested by future versions of
-          the app/extension. Furthermore, permissions are granted for the
-          enterprise.deviceAttributes and enterprise.platformKeys extension
-          APIs. (These two APIs are not available to apps/extensions that are
-          not force-installed.)
-
-          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
-
-          For Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
-
-          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> policy should be set.
-
-          Each list item of the policy is a string that contains an extension ID and an 'update' URL separated by a semicolon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string found for example on <ph name="CHROME_EXTENSIONS_LINK" /> when in developer mode. The 'update' URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. Note that the 'update' URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest.
-
-          For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4897928009230106190">Specifies the parameters used when doing suggestion search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
           This policy is optional. If not set, suggest search request will be sent using the GET method.
@@ -1305,6 +1421,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5056708224511062314">Screen magnifier disabled</translation>
+<translation id="5058573563327660283">Select the strategy used to free up disk space during automatic clean-up (deprecated)</translation>
 <translation id="5067143124345820993">Login user white list</translation>
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
@@ -1338,6 +1455,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is unset, the default interval is 3 minutes. The minimum
       interval is 30 seconds and the maximum interval is 24 hours – values
       outside of this range will be clamped to this range.</translation>
+<translation id="5163002264923337812">Enable the old web-based sign-in flow</translation>
 <translation id="5182055907976889880">Configure Google Drive in <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Allows you to specify which extensions are not subject to the blacklist.
 
@@ -1415,10 +1533,18 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5366977351895725771">If set to false, supervised-user creation by this user will be disabled. Any existing supervised users will still be available.
 
           If set to true or not configured, supervised users can be created and managed by this user.</translation>
+<translation id="5370279767682621504">Enable HTTP/0.9 support on non-default ports</translation>
 <translation id="5378985487213287085">Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.
 
           If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.</translation>
 <translation id="538108065117008131">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types.</translation>
+<translation id="5391363090783552279">If this policy is set to true, <ph name="PRODUCT_NAME" /> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4913 private addresses.
+
+          If this policy is set to false, <ph name="PRODUCT_NAME" /> will connect to Cast devices on RFC1918/RFC4913 private addresses only.
+
+          If this policy is not set, <ph name="PRODUCT_NAME" /> will connect to Cast devices on RFC1918/RFC4913 private addresses only, unless the CastAllowAllIPs feature is enabled.
+
+          If the policy 'EnableMediaRouter' is set to false, then this policy's value would have no effect.</translation>
 <translation id="5392172595902933844">Information about the status of Android is sent back to the
       server.
 
@@ -1759,6 +1885,8 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you choose to auto detect the proxy server, the script URL "http://wpad/wpad.dat" is provided to Android apps. No other part of the proxy auto-detection protocol is used.
 
           If you choose to use a .pac proxy script, the script URL is provided to Android apps.</translation>
+<translation id="6440051664870270040">Allow sites to simultaneously navigate and open pop-ups</translation>
+<translation id="645425387487868471">Enable force sign-in for <ph name="PRODUCT_NAME" /></translation>
 <translation id="6473623140202114570">Configure the list of domains on which Safe Browsing will not trigger warnings.</translation>
 <translation id="6491139795995924304">Allow bluetooth on device</translation>
 <translation id="6520802717075138474">Import search engines from default browser on first run</translation>
@@ -1823,9 +1951,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set, network prediction will be enabled but the user will be able to change it.</translation>
 <translation id="6658245400435704251">Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.</translation>
+<translation id="6665670272107384733">Set how often user has to enter password to use quick unlock</translation>
 <translation id="6689792153960219308">Report hardware status</translation>
 <translation id="6698071416141001300">Password protection at-risk account flagging is triggered by password reuse</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
+<translation id="6702257826895463228">Allows sites to simultaneously navigate and open pop-ups.
+
+      For a full explanation, see https://www.chromestatus.com/features/5675755719622656.
+      If this policy is enabled, sites will be allowed to simultaneously navigate and open new windows/tabs.
+      If this policy is disabled or not set, sites will be prevented from simultaneously navigating and opening a new window/tab.</translation>
 <translation id="6724842112053619797">If you enable this setting, the settings stored in <ph name="PRODUCT_NAME" /> profiles like bookmarks, auto-fill data, passwords, etc. will also be written to a file stored in the roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> policy. Enabling this policy disables cloud sync.
 
       If this policy is disabled or left not set, only the regular local profiles will be used.
@@ -1886,6 +2020,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Users cannot change or override this setting.</translation>
 <translation id="6908640907898649429">Configures the default search provider. You can specify the default search provider that the user will use or choose to disable default search.</translation>
+<translation id="6913068954484253496">Allow <ph name="PRODUCT_NAME" /> to connect to Cast devices on all IP addresses.</translation>
 <translation id="6915442654606973733">Enable the spoken feedback accessibility feature.
 
           If this policy is set to true, spoken feedback will always be enabled.
@@ -1983,6 +2118,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to False, background mode is disabled and cannot be controlled by the user in the browser settings.
 
       If this policy is left unset, background mode is initially disabled and can be controlled by the user in the browser settings.</translation>
+<translation id="7126716959063786004">Enable ending processes in Task Manager</translation>
 <translation id="7127892035367404455">Roll back to target version</translation>
 <translation id="7128918109610518786">Lists the application identifiers <ph name="PRODUCT_OS_NAME" /> shows as pinned apps in the launcher bar.
 
@@ -2013,6 +2149,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           Automatic playback is only allowed for domains explicitly listed in the <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> policy. If you want to enabled automatic playback for all sites, consider adding http://* and https://* to this list.
 
           If this policy is left not set, the user will be able to change this setting manually.</translation>
+<translation id="723103540848640830">Set the minimum length of the lock screen PIN</translation>
 <translation id="7234280155140786597">Names of the forbidden native messaging hosts (or * for all)</translation>
 <translation id="7236775576470542603">Set the default type of screen magnifier that is enabled on the login screen.
 
@@ -2073,6 +2210,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
 <translation id="7343497214039883642">Enterprise printer configuration file for devices</translation>
+<translation id="7367028210010532881">The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
+
+      If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
+
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="7417972229667085380">Percentage by which to scale the idle delay in presentation mode (deprecated)</translation>
 <translation id="7421483919690710988">Set media disk cache size in bytes</translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
@@ -2092,6 +2234,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="749556411189861380">Report OS and firmware version of enrolled devices.
 
       If this setting is not set or set to True, enrolled devices will report the OS and firmware version periodically. If this setting is set to False, version info will not be reported.</translation>
+<translation id="7498946151094347510">Specifies the printers which a user cannot use.
+
+      This policy is only used if <ph name="PRINTERS_BLACKLIST" /> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the 'id' or 'guid' fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="7511361072385293666">If this policy is set to true or not set usage of QUIC protocol in <ph name="PRODUCT_NAME" /> is allowed.
       If this policy is set to false usage of QUIC protocol is disallowed.</translation>
 <translation id="7519251620064708155">Allow key generation on these sites</translation>
@@ -2106,6 +2254,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If set to GAIA, login will be done via the normal GAIA authentication flow.
 
       If set to SAML_INTERSTITIAL, login will show an interstitial screen offering the user the option to go forward with authentication via the SAML IdP of the device's enrolment domain or go back to the normal GAIA login flow.</translation>
+<translation id="755951849901630953">Enables component updates for all components in <ph name="PRODUCT_NAME" /> when not set or set to True.
+
+      If set to False, updates to components are disabled. However, some components are exempt from this policy: updates to any component that does not contain executable code, does not significantly alter the behaviour of the browser or is critical for its security will not be disabled.
+      Examples of such components include the certificate revocation lists and Safe Browsing data.
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="757395965347379751">When this setting is enabled, <ph name="PRODUCT_NAME" /> allows SHA-1 signed certificates as long as they successfully validate and chain to a locally-installed CA certificates.
 
       Note that this policy depends on the operating system certificate verification stack allowing SHA-1 signatures. If an OS update changes the OS handling of SHA-1 certificates, this policy may no longer have effect. Furthermore, this policy is intended as a temporary workaround to give enterprises more time to move away from SHA-1. This policy will be removed on or around 1 January 2019.
@@ -2132,6 +2285,21 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable this setting, <ph name="PRODUCT_NAME" /> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
 
       If this setting is disabled or not set, <ph name="PRODUCT_NAME" /> uses either the user-specified preferred locale (if configured), the system locale or the default locale 'en-US'.</translation>
+<translation id="7641363659597330616">Configures the type of downloads that <ph name="PRODUCT_NAME" /> will completely block, without letting users override the security decision.
+
+      If you set this policy, <ph name="PRODUCT_NAME" /> will prevent certain types of downloads and won't let users bypass the security warnings.
+
+      When the 'Block dangerous downloads' option is chosen, all downloads are allowed, except for those that carry Safe Browsing warnings.
+
+      When the 'Block potentially dangerous downloads' option is chosen, all downloads are allowed, except for those that carry Safe Browsing warnings of potentially dangerous downloads.
+
+      When the 'Block all downloads' option is chosen, all downloads are blocked.
+
+      When this policy is not set, (or the 'No special restrictions' option is chosen), the downloads will go through the usual security restrictions based on Safe Browsing analysis results.
+
+      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option. These restrictions do not apply to the save/download of the currently displayed page, nor do they apply to saving as PDF from the printing options.
+
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="7643883929273267746">Restrict accounts that are visible in <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be unavailable.</translation>
 <translation id="7683777542468165012">Dynamic Policy Refresh</translation>
@@ -2208,6 +2376,18 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this setting is configured then users are not able change it themselves.
 
       If this setting is not configured then users are able to turn Android Backup Service on and off in the Android Settings app.</translation>
+<translation id="780603170519840350">Disables enforcing Certificate Transparency requirements for a list of subjectPublicKeyInfo hashes.
+
+      This policy allows disabling Certificate Transparency disclosure requirements for certificate chains that contain certificates with one of the specified subjectPublicKeyInfo hashes. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used for Enterprise hosts.
+
+      In order for Certificate Transparency enforcement to be disabled when this policy is set, one of the following conditions must be met:
+      1. The hash is of the server certificate's subjectPublicKeyInfo.
+      2. The hash is of a subjectPublicKeyInfo that appears in a CA certificate in the certificate chain, that CA certificate is constrained via the X.509v3 nameConstraints extension, one or more directoryName nameConstraints are present in the permittedSubtrees, and the directoryName contains an organizationName attribute.
+      3. The hash is of a subjectPublicKeyInfo that appears in a CA certificate in the certificate chain, the CA certificate has one or more organizationName attributes in the certificate Subject, and the server's certificate contains the same number of organizationName attributes, in the same order, and with byte-for-byte identical values.
+
+      A subjectPublicKeyInfo hash is specified by concatenating the hash algorithm name, the '/' character and the Base64 encoding of that hash algorithm applied to the DER-encoded subjectPublicKeyInfo of the specified certificate. This Base64 encoding is the same format as an SPKI Fingerprint, as defined in RFC 7469, Section 2.4. Unrecognised hash algorithms are ignored. The only supported hash algorithm at this time is 'sha256'.
+
+      If this policy is not set, any certificate that is required to be disclosed via Certificate Transparency will be treated as untrusted if it is not disclosed according to the Certificate Transparency policy.</translation>
 <translation id="7818131573217430250">Set the default state of high contrast mode on the login screen</translation>
 <translation id="7822837118545582721">When this policy is set to true, users cannot write anything to external storage devices.
 
@@ -2246,6 +2426,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
 <translation id="7953256619080733119">Managed user manual exception hosts</translation>
+<translation id="7961779417826583251">Disable Certificate Transparency enforcement for a list of Legacy Certificate Authorities</translation>
 <translation id="7974114691960514888">This policy is no longer supported.
           Enables usage of STUN and relay servers when connecting to a remote client.
 
@@ -2384,6 +2565,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this policy is left not set or disabled the PDF plug-in will be used to open PDF files, unless the user disables it.</translation>
 <translation id="8402079500086185021">Always Open PDF files externally</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
+<translation id="8417305981081876834">Set the maximum length of the lock screen PIN</translation>
 <translation id="841977920223099909">Password protection warning trigger</translation>
 <translation id="8424255554404582727">Set default display rotation, reapplied on every reboot</translation>
 <translation id="8426231401662877819">Rotate screen clockwise by 90 degrees</translation>
@@ -2426,6 +2608,12 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
+<translation id="8586528890725660268">Specifies the printers which a user cannot use.
+
+      This policy is only used if <ph name="PRINTERS_BLACKLIST" /> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the 'id' or 'guid' fields in the file specified in <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="8587229956764455752">Allow creation of new user accounts</translation>
 <translation id="8598350264853261122">If the policy is set to false, unaffiliated users will not be allowed to use ARC.
 
@@ -2456,6 +2644,19 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="8731693562790917685">Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.</translation>
+<translation id="8733448613597049197">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing Extended Reporting and prevents users from changing this setting.
+
+      Extended Reporting sends some system information and page content to Google servers to help detect dangerous apps and sites.
+
+      If the setting is set to true, then reports will be created and sent whenever necessary (such as when a security interstitial is shown).
+
+      If the setting is set to false, reports will never be sent.
+
+      If this policy is set to true or false, the user will not be able to modify the setting.
+
+      If this policy is left unset, the user will be able to change the setting and decide whether to send reports or not.
+
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="8736538322216687231">Force minimum YouTube Restricted Mode</translation>
 <translation id="8749370016497832113">Enables deleting browser history and download history in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
 
@@ -2491,6 +2692,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> caches Apps and Extensions for installation by multiple users of a single device to avoid re-downloading them for each user.
       If this policy is not configured or the value is lower than 1 MB, <ph name="PRODUCT_OS_NAME" /> will use the default cache size.</translation>
 <translation id="8858642179038618439">Force YouTube Safety Mode</translation>
+<translation id="8860342862142842017">Disable Certificate Transparency enforcement for a list of subjectPublicKeyInfo hashes</translation>
 <translation id="8864975621965365890">Suppresses the turn-down prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8867464911288727016">Enables the integrated Google Translate service on <ph name="PRODUCT_NAME" />.
 
@@ -2608,6 +2810,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="915194831143859291">If this policy is set to false or not configured, <ph name="PRODUCT_OS_NAME" /> will allow the user to shut down the device.
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME" /> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.</translation>
 <translation id="9158929520101169054">Allow Multiple Sign-in Within the Browser</translation>
+<translation id="9167719789236691545">Disable Drive in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="9187743794267626640">Disable mounting of external storage</translation>
 <translation id="9197740283131855199">Percentage by which to scale the screen dim delay if the user becomes active after dimming</translation>
 <translation id="9200828125069750521">Parameters for image URL which uses POST</translation>
@@ -2626,13 +2829,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="922540222991413931">Configure extension, app, and user script install sources</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME" /> user data directory</translation>
-<translation id="938916311528680351">Allows you to control whether virtual machines are allowed to run on Chrome OS.
-
-      If the policy is set to True, the device is allowed to run virtual machines.
-      If the policy is set to False, the device will not be allowed to run virtual machines.
-      When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
-      When this policy is not set on a managed device, the device is allowed to run virtual machines.
-      Unmanaged devices are allowed to run virtual machines.</translation>
 <translation id="944817693306670849">Set disk cache size</translation>
 <translation id="982497069985795632">Enable spellcheck</translation>
 </translationbundle>

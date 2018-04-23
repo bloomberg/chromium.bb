@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="1006017844123154345">Avaa verkkoversio</translation>
+<translation id="1021684790657589338">SD-korttia ei löytynyt</translation>
 <translation id="1036727731225946849">Lisätään <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Verkkosivustoilta</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -184,6 +185,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2625189173221582860">Salasana kopioitu</translation>
 <translation id="2631006050119455616">Säästetty</translation>
 <translation id="2647434099613338025">Lisää kieli</translation>
+<translation id="2650751991977523696">Ladataanko tiedosto uudelleen?</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2677748264148917807">Poistu</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
@@ -220,6 +222,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="3029613699374795922">Ladattu: <ph name="KBS" /> kt</translation>
 <translation id="3029704984691124060">Tunnuslauseet eivät vastaa toisiaan.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Tutustu ohjeisiin<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Näytä samankaltaista sisältöä Googlesta</translation>
 <translation id="305593374596241526">Sijainti on pois käytöstä. Voit ottaa sen käyttöön <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Muita artikkeleita ilmestyy pian. Nauti aamustasi!</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
@@ -300,6 +303,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> latausta poistettiin.</translation>
 <translation id="3822502789641063741">Poistetaanko tiedot?</translation>
 <translation id="3859306556332390985">Kelaa eteenpäin</translation>
+<translation id="3871936494901781193">Kun vierität ylös, näet pikalinkkejä aiheeseen liittyville sivuille.</translation>
 <translation id="3894427358181296146">Lisää kansio</translation>
 <translation id="3895926599014793903">Ota zoomaus käyttöön</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +311,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="393697183122708255">Puhehaku ei ole käytössä</translation>
 <translation id="3950820424414687140">Kirjaudu sisään</translation>
 <translation id="395206256282351086">Haku- ja sivustoehdotukset on poistettu käytöstä.</translation>
+<translation id="3952533382939530115">Tämä ominaisuus käyttää <ph name="BEGIN_LINK" />synkronointia<ph name="END_LINK" />. Avaamiesi sivujen URL-osoitteet lähetetään Googlelle.</translation>
 <translation id="3967822245660637423">Lataus on valmis</translation>
 <translation id="397583555483684758">Synkronointi on lakannut toimimasta.</translation>
 <translation id="3976396876660209797">Poista tämä pikakuvake ja luo se uudelleen.</translation>
@@ -410,6 +415,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4876188919622883022">Yksinkertaistettu näkymä</translation>
 <translation id="4878404682131129617">Tunnelin muodostaminen välityspalvelimen kautta epäonnistui</translation>
 <translation id="4881695831933465202">Avaa</translation>
+<translation id="488187801263602086">Nimeä tiedosto uudelleen</translation>
 <translation id="4885273946141277891">Chromen versioiden määrää ei tueta.</translation>
 <translation id="4910889077668685004">Maksusovellukset</translation>
 <translation id="4913161338056004800">Nollaa tilastot</translation>
@@ -503,6 +509,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="5676636989614905379">Videon toisto näytöllä <ph name="SCREEN_NAME" /> epäonnistui.</translation>
 <translation id="5677928146339483299">Estetty</translation>
 <translation id="5684874026226664614">Hups, tätä sivua ei voi kääntää.</translation>
+<translation id="5686790454216892815">Tiedoston nimi on liian pitkä</translation>
 <translation id="5689516760719285838">Sijainti</translation>
 <translation id="5719837394786370183">Incognito-välilehdillä avaamasi sivut eivät jää selaimen historiaan, evästeisiin tai hakuhistoriaan, kun olet sulkenut kaikki incognito-välilehdet. Kaikki lataamasi tiedostot ja luomasi kirjanmerkit säilytetään.
 
@@ -695,6 +702,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7437998757836447326">Uloskirjautuminen Chromesta</translation>
 <translation id="7445411102860286510">Salli sivustoille mykistettyjen videoiden automaattinen toisto (suositus)</translation>
 <translation id="7453467225369441013">Tämä kirjaa sinut ulos useimmilta sivustoilta. Sinua ei kirjata ulos Google-tililtäsi.</translation>
+<translation id="7454641608352164238">Tallennustila ei riitä</translation>
 <translation id="7455923816558154057">Napauta, niin linkki avataan</translation>
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="7475192538862203634">Jos näet tämän ilmoituksen usein, kokeile näitä <ph name="BEGIN_LINK" />ehdotuksia<ph name="END_LINK" />.</translation>
@@ -773,6 +781,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8087000398470557479">Google on toimittanut tämän sisällön osoitteesta <ph name="DOMAIN_NAME" />.</translation>
 <translation id="8100932616285851614">Navigointipalkki suljettu</translation>
 <translation id="8103578431304235997">Incognito-välilehti</translation>
+<translation id="8105951947646329362">Ehdota aiheeseen liittyviä sivuja</translation>
 <translation id="8116925261070264013">Mykistetty</translation>
 <translation id="813082847718468539">Näytä sivuston tiedot</translation>
 <translation id="8137558756159375272">Koskettamalla hakeminen lähettää valitun sanan ja nykyisen sivun Google-haulle haun kontekstina. Voit poistaa ominaisuuden käytöstä <ph name="BEGIN_LINK" />asetuksissa<ph name="END_LINK" />.</translation>
@@ -826,6 +835,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8636825310635137004">Ota synkronointi käyttöön, niin voit käyttää välilehtiäsi kaikilla laitteilla.</translation>
 <translation id="8641930654639604085">Pyri estämään aikuisille tarkoitetut sivustot</translation>
 <translation id="8662811608048051533">Kirjaa sinut ulos useimmilta sivustoilta.</translation>
+<translation id="8664979001105139458">Tiedoston nimi on jo käytössä</translation>
 <translation id="8676374126336081632">Tyhjennä teksti</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signaalin voimakkuus: # palkki}other{Signaalin voimakkuus: # palkkia}}</translation>
 <translation id="869891660844655955">Vanhenemispäivämäärä</translation>
@@ -854,6 +864,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8942627711005830162">Avaa uudessa ikkunassa</translation>
 <translation id="8951232171465285730">Chrome on säästänyt <ph name="MEGABYTES" /> Mt tilaa</translation>
 <translation id="8959122750345127698">Kohde ei ole saatavilla: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Ladataanko tiedosto oletuskansioon?</translation>
 <translation id="8979405271719829084">Lataa videoita myöhemmin katsottavaksi.</translation>
 <translation id="8981454092730389528">Googlen toimintojen hallinta</translation>
 <translation id="8986494364107987395">Lähetä Googlelle käyttötilastoja ja virheraportteja automaattisesti</translation>

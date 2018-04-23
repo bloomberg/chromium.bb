@@ -145,6 +145,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="4207623512727273241">Rulați programul de instalare înainte de a continua.</translation>
 <translation id="4227991223508142681">Utilitarul de configurare a gazdei</translation>
 <translation id="4240294130679914010">Program de dezinstalare a gazdei Chromoting</translation>
+<translation id="4249741460382919890">Remedieri generale și stabilitate îmbunătățită.</translation>
 <translation id="4277463233460010382">Acest computer este configurat să permită conectarea unuia sau a mai multor clienți fără introducerea unui PIN.</translation>
 <translation id="4277736576214464567">Codul de acces este greșit. Încercați din nou.</translation>
 <translation id="4361728918881830843">Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME" />”.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare aplicației Desktop la distanță Chrome pentru a accesa această adresă:</translation>
 <translation id="507204348399810022">Sigur dorești să dezactivezi conexiunile la distanță la <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">Nu s-a reușit comunicarea cu serverul: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Introduceți același cod PIN în ambele casete.</translation>
 <translation id="5170982930780719864">ID de gazdă nevalid.</translation>
 <translation id="518094545883702183">Această informație este folosită numai pentru diagnosticarea problemei pe care o raportezi, este disponibilă numai pentru persoana care îți examinează raportul și nu este păstrată pentru mai mult de 30 de zile.</translation>

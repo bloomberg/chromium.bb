@@ -145,6 +145,7 @@
 <translation id="4207623512727273241">계속하기 전에 설치 프로그램을 실행하세요.</translation>
 <translation id="4227991223508142681">호스트 프로비저닝 유틸리티</translation>
 <translation id="4240294130679914010">Chromoting 호스트 제거 프로그램</translation>
+<translation id="4249741460382919890">일반적인 수정 및 안정성 개선</translation>
 <translation id="4277463233460010382">이 컴퓨터는 한 개 이상의 클라이언트가 PIN을 입력하지 않고도 연결할 수 있도록 구성되었습니다.</translation>
 <translation id="4277736576214464567">액세스 코드가 잘못되었습니다. 다시 시도해 주세요.</translation>
 <translation id="4361728918881830843">다른 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />(오프라인)</translation>
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> 원격 연결을 사용 중지하시겠습니까?</translation>
+<translation id="5081343395220691640">다음 서버와의 통신에 실패했습니다. <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">두 입력란에 같은 PIN을 입력하세요.</translation>
 <translation id="5170982930780719864">호스트 ID가 잘못되었습니다.</translation>
 <translation id="518094545883702183">이 정보는 보고된 문제를 진단하는 데만 사용되고 보고서 조사 담당자만 볼 수 있으며, 30일 이내에 폐기됩니다.</translation>

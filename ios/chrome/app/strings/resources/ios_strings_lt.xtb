@@ -137,6 +137,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="3393920035788932672">Iššok. l. leidžiami</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Padalytas rodinys</translation>
+<translation id="3469166899695866866">Sustabdyti atsisiuntimą?</translation>
 <translation id="3474624961160222204">Tęsti kaip <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formos užpildytos.</translation>
 <translation id="3478058380795961209">Gal. pab. mėnuo</translation>
@@ -150,6 +151,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="3588820906588687999">Atidaryti vaizdą naujo skirtuko lape</translation>
 <translation id="3603009562372709545">Kopijuoti nuorodos URL</translation>
 <translation id="3607167657931203000">Autom. pild. duom.</translation>
+<translation id="3609785682760573515">Sinchronizuojama...</translation>
 <translation id="3628119975092896051">Skaitymo sąrašas pasiekiamas neprisijungus. Kad pridėtumėte puslapį prie skaitymo sąrašo, palieskite <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Iš anksto įk. tinkl.</translation>
 <translation id="3691593122358196899">Sukurta „<ph name="FOLDER_TITLE" />“ žymė</translation>
@@ -304,7 +306,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6445981559479772097">Pran. išsiųstas.</translation>
 <translation id="6464071786529933911">Atid. nauj. ink. skirtuk.</translation>
 <translation id="6482629121755362506">Ištrinta elementų: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
-<translation id="6528048372317642110">Galima atsisiųsti failą</translation>
 <translation id="6541915733953096570">Pastaroji valanda</translation>
 <translation id="6570040839871198836">Aut. pild. f.</translation>
 <translation id="6656103420185847513">Redaguoti aplanką</translation>
@@ -338,6 +339,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7159472599653637159">Užkl. dėl svet. v. mobil.</translation>
 <translation id="7167621057293532233">Duomenų tipai</translation>
 <translation id="7175593937868963913">El. laiško kūrimas</translation>
+<translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7189598951263744875">Bendrinti...</translation>
 <translation id="7203585745079012652">Sakyti atsakymus</translation>
 <translation id="722055596168483966">„Google“ paslaugų suasmeninimas</translation>
@@ -380,6 +382,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8023878949384262191">Išplečia skiltį.</translation>
 <translation id="8059533439631660104">Sutraukia skiltį.</translation>
 <translation id="806745655614357130">Duomenis laikyti atskirai</translation>
+<translation id="8073670137947914548">Atsisiuntimas užbaigtas</translation>
 <translation id="8076014560081431679">Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Uždaryti visus skirtukus</translation>
 <translation id="8205564605687841303">Atšaukti</translation>

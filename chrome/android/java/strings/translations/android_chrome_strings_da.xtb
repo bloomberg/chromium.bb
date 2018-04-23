@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1006017844123154345">Åbn på nettet</translation>
+<translation id="1021684790657589338">Der blev ikke fundet noget SD-kort</translation>
 <translation id="1036727731225946849">Tilføjer <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Fra websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -184,6 +185,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2625189173221582860">Adgangskoden er kopieret</translation>
 <translation id="2631006050119455616">Gemt</translation>
 <translation id="2647434099613338025">Tilføj sprog</translation>
+<translation id="2650751991977523696">Vil du downloade filen igen?</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2677748264148917807">Forlad</translation>
 <translation id="2704606927547763573">Kopieret</translation>
@@ -220,6 +222,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="3029613699374795922">Der er downloadet <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Adgangssætningerne stemmer ikke overens</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Få flere lignende forslag fra Google</translation>
 <translation id="305593374596241526">Placering er slået fra. Du kan aktivere den i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Der vises snart flere artikler. Hav en god formiddag!</translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
@@ -300,6 +303,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads blev slettet</translation>
 <translation id="3822502789641063741">Vil du rydde websitelagerpladsen?</translation>
 <translation id="3859306556332390985">Spol fremad</translation>
+<translation id="3871936494901781193">Vis hurtige links til relaterede sider, når du ruller op.</translation>
 <translation id="3894427358181296146">Tilføj mappe</translation>
 <translation id="3895926599014793903">Tving aktivering af zoom</translation>
 <translation id="3927692899758076493">Sans serif</translation>
@@ -307,6 +311,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="393697183122708255">Aktiveret talesøgning ikke tilgængelig</translation>
 <translation id="3950820424414687140">Log ind</translation>
 <translation id="395206256282351086">Søge- og websiteforslag er deaktiveret</translation>
+<translation id="3952533382939530115">Denne funktion anvender <ph name="BEGIN_LINK" />synkronisering<ph name="END_LINK" />. Webadresserne på de sider, du går til, sendes til Google.</translation>
 <translation id="3967822245660637423">Download gennemført</translation>
 <translation id="397583555483684758">Synkroniseringen fungerer ikke mere</translation>
 <translation id="3976396876660209797">Fjern og genskab denne genvej</translation>
@@ -410,6 +415,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4876188919622883022">Enkel visning</translation>
 <translation id="4878404682131129617">Der kunne ikke etableres en tunnel via proxyserver</translation>
 <translation id="4881695831933465202">Åbn</translation>
+<translation id="488187801263602086">Omdøb fil</translation>
 <translation id="4885273946141277891">Der er flere forekomster af Chrome, end der understøttes.</translation>
 <translation id="4910889077668685004">Betalingsapps</translation>
 <translation id="4913161338056004800">Nulstil statistik</translation>
@@ -503,6 +509,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="5676636989614905379">Videoen kan ikke afspilles på <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blokeret</translation>
 <translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
+<translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5689516760719285838">Placering</translation>
 <translation id="5719837394786370183">De sider, du ser på inkognitofaner, gemmes ikke i browserhistorikken, cookielageret eller søgehistorikken, når du har lukket alle dine inkognitofaner. Alle de filer, du downloader, eller bogmærker, du opretter, vil blive gemt.
 
@@ -695,6 +702,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7437998757836447326">Log ud af Chrome</translation>
 <translation id="7445411102860286510">Tillad, at websites automatisk afspiller videoer med lyden slået fra (anbefales)</translation>
 <translation id="7453467225369441013">Logger dig ud af de fleste websites. Du bliver ikke logget ud af din Google-konto.</translation>
+<translation id="7454641608352164238">Der er ikke nok plads</translation>
 <translation id="7455923816558154057">Tryk for at se</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7475192538862203634">Hvis du ser dette jævnligt, kan du prøve disse <ph name="BEGIN_LINK" />forslag<ph name="END_LINK" />.</translation>
@@ -773,6 +781,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8087000398470557479">Dette indhold er fra <ph name="DOMAIN_NAME" />, som leveres af Google.</translation>
 <translation id="8100932616285851614">Navigationspanelet er lukket</translation>
 <translation id="8103578431304235997">Inkognitofane</translation>
+<translation id="8105951947646329362">Foreslå relaterede sider</translation>
 <translation id="8116925261070264013">Websites, hvor lyden er slået fra</translation>
 <translation id="813082847718468539">Se websiteoplysninger</translation>
 <translation id="8137558756159375272">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan slå den fra under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
@@ -826,6 +835,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8636825310635137004">Aktivér synkronisering for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="8641930654639604085">Prøv at blokere websites med indhold for voksne</translation>
 <translation id="8662811608048051533">Logger dig ud af de fleste websites.</translation>
+<translation id="8664979001105139458">Filnavnet findes allerede</translation>
 <translation id="8676374126336081632">Ryd indtastning</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkeniveau: # søjle}one{Signalstyrkeniveau: # søjle}other{Signalstyrkeniveau: # søjler}}</translation>
 <translation id="869891660844655955">Udløbsdato</translation>
@@ -854,6 +864,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8942627711005830162">Åbn i et andet vindue</translation>
 <translation id="8951232171465285730">Chrome har sparet dig <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Navigationen er ikke mulig: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Vil du downloade til standardmappen?</translation>
 <translation id="8979405271719829084">Download videoer, som du vil se senere</translation>
 <translation id="8981454092730389528">Administration af aktivitet på Google</translation>
 <translation id="8986494364107987395">Send automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>

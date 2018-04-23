@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1005145902654145231">সেশনটির নতুন নাম দেওয়া যায়নি।</translation>
 <translation id="1008557486741366299">এখনই নয়</translation>
 <translation id="1015730422737071372">অতিরিক্ত বিবরণ দিন</translation>
 <translation id="1021110881106174305">এই কার্ডগুলি গ্রহণ করা হয়</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">ভুল সত্তা সনাক্তকারী</translation>
 <translation id="1232569758102978740">শিরোনামহীন</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (সিঙ্ক হয়েছে)</translation>
+<translation id="1256368399071562588">&lt;p&gt;আপনি যে ওয়েবসাইটে যেতে চান সেটি যদি না খোলে তাহলে প্রথমে এই ধাপগুলি অনুসরণ করে সমস্যাটির সমাধান করার চেষ্টা করুন:&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;ইউআরএলে কিছু ভুল টাইপ করেছেন কিনা দেখুন।&lt;/li&gt;
+    &lt;li&gt;ইন্টারনেট কানেকশন ঠিক আছে কিনা দেখুন।&lt;/li&gt;
+    &lt;li&gt;ওয়েবসাইটের মালিকের সাথে যোগাযোগ করুন।&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">পড়ার তালিকা</translation>
 <translation id="1264126396475825575">ক্র্যাশ প্রতিবেদন <ph name="CRASH_TIME" /> এ ক্যাপচার করা হয়েছে (এখনো আপলোড করা বা উপেক্ষা করা হয়নি)</translation>
 <translation id="1270502636509132238">পিক-আপের পদ্ধতি</translation>
 <translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
+<translation id="1292701964462482250">"আপনার কম্পিউটারের সফ্টওয়্যার Chrome-কে নিরাপদে ইন্টারনেটে কানেক্ট করতে বাধা দিচ্ছে" (শুধুমাত্র Windows কম্পিউটারের জন্য)</translation>
 <translation id="1294154142200295408">কম্যান্ড লাইনে বিভিন্ন পরিবর্তন</translation>
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />আপনার কুকিজ সাফ করে দেখুন<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">বেছে নেওয়া সেশনটির অস্তিত্ব নেই।</translation>
+<translation id="1323433172918577554">আরও দেখুন</translation>
 <translation id="1333989956347591814">এগুলিতে আপনার কার্যকলাপ <ph name="BEGIN_EMPHASIS" />এখনও দেখা যেতে পারে<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />যে ওয়েবসাইট আপনি দেখেছেন
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">যে সাইট খুলতে চলেছেন সেটিতে বিপজ্জনক অ্যাপ আছে</translation>
 <translation id="1374468813861204354">প্রস্তাবনাগুলি</translation>
 <translation id="1375198122581997741">ভার্সন সম্পর্কে</translation>
+<translation id="1376836354785490390">কম দেখুন</translation>
 <translation id="1377321085342047638">কার্ড নম্বর</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> কোনো তথ্য পাঠায়নি।</translation>
 <translation id="1407135791313364759">সব খুলুন</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">প্রিন্ট</translation>
 <translation id="1484290072879560759">শিপিং ঠিকানা বেছে নিন</translation>
 <translation id="1506687042165942984">এই পৃষ্ঠার একটি সংরক্ষিত প্রতিলিপি (অর্থাৎ,তারিখ সীমার বাইরে হিসাবে পরিচিত) প্রদর্শন করুন৷</translation>
+<translation id="1507202001669085618">&lt;p&gt;আপনি যদি এমন কোনও ওয়াই-ফাই পোর্টাল ব্যবহার করেন যেখানে অনলাইন হওয়ার জন্য সাইন-ইন করতে হয়, তাহলে এই সমস্যাটি হতে পারে।&lt;/p&gt;
+    &lt;p&gt;এই সমস্যার সমাধান করতে, যে পৃষ্ঠাটি খুলতে চান সেটিতে &lt;strong&gt;কানেক্ট করুন&lt;/strong&gt; বোতামে ক্লিক করুন।&lt;/p&gt;</translation>
 <translation id="1517433312004943670">ফোন নম্বর আবশ্যক</translation>
 <translation id="1517500485252541695">ক্রেডিট এবং ডেবিট কার্ড গ্রহণ করা হয়</translation>
 <translation id="1519264250979466059">নির্মাণের তারিখ</translation>
@@ -133,6 +146,7 @@
 <translation id="1898423065542865115">ফিল্টার হচ্ছে</translation>
 <translation id="1916770123977586577">আপডেট করা সেটিংস এই সাইটে প্রয়োগ করতে পৃষ্ঠাটি আবার লোড করুন</translation>
 <translation id="1919345977826869612">বিজ্ঞাপন</translation>
+<translation id="1919367280705858090">কোনও নির্দিষ্ট সমস্যার মেসেজের বিষয়ে সাহায্য পান</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{কিছুই নয়}=1{১টি সাইট}one{#টি সাইট}other{#টি সাইট}}</translation>
 <translation id="1927235823738766038">এই ক্রেডিট এবং ডেবিট কার্ডগুলি গ্রহণ করা হয়</translation>
 <translation id="194030505837763158"><ph name="LINK" /> এ যান</translation>
@@ -422,6 +436,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{কিছুই নয়}=1{১টি সাইট থেকে }one{#টি সাইট থেকে }other{#টি সাইট থেকে }}</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> অবরুদ্ধ হয়ে রয়েছে</translation>
+<translation id="3984550557525787191">এই নামের সেশন আগে থেকেই আছে।</translation>
 <translation id="3987940399970879459">১ MB এর কম</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{আশেপাশের ১টি ওয়েবপৃষ্ঠা}one{আশেপাশের #টি ওয়েবপৃষ্ঠা}other{আশেপাশের #টি ওয়েবপৃষ্ঠা}}</translation>
 <translation id="4030383055268325496">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
@@ -447,11 +462,27 @@
 <translation id="4171400957073367226">খারাপ যাচাইকরণের স্বাক্ষর</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{আরও <ph name="ITEM_COUNT" />টি আইটেম}one{আরও <ph name="ITEM_COUNT" />টি আইটেম}other{আরও <ph name="ITEM_COUNT" />টি আইটেম}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome-এর নীতি অনুযায়ী আপনার <ph name="ORG_NAME" /> পাসওয়ার্ড বদলে ফেলা উচিত যদি আপনি সেটি অন্য কোনও সাইটে ব্যবহার করে থাকেন।</translation>
 <translation id="4196861286325780578">&amp;সরানোর কাজটি আবার করুন</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ফায়ারওয়াল এবং অ্যান্টিভাইরাস কনফিগারেশন পরীক্ষা করে দেখুন<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">ক্র্যাশেস</translation>
 <translation id="422022731706691852"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> এর আক্রমণকারীরা আপনাকে এমন সফ্টওয়্যার ইনস্টল করার জন্য প্রতারিত করার চেষ্টা করতে পারে যার ফলে আপনার ব্রাউজিংয়ে অভিজ্ঞতা খারাপ হতে পারে (যেমন আপনার হোমপেজ পরিবর্তন করা বা আপনি যে সাইটগুলিতে যান সেগুলিতে অতিরিক্ত বিজ্ঞাপন দেখানো)। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;ধাপ ১: পোর্টালে সাইন-ইন করুন&lt;/h4&gt;
+    &lt;p&gt;ক্যাফে অথবা এয়ারপোর্টের মতো জায়গায় ওয়াই-ফাই নেটওয়ার্কে সাইন-ইন করার প্রয়োজন হয়। সাইন-ইন পৃষ্ঠাটি দেখতে এমন কোনও পৃষ্ঠায় যান যেটিতে &lt;code&gt;http://&lt;/code&gt; ব্যবহার করা হয়।&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;এমন কোনও ওয়েবসাইটে যান যেটির ইউআরএল &lt;code&gt;http://&lt;/code&gt; দিয়ে শুরু হয়, যেমন &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;।&lt;/li&gt;
+    &lt;li&gt;যে সাইন-ইন পৃষ্ঠা খুলবে, ইন্টারনেট ব্যবহার করার জন্য সেটিতে সাইন-ইন করুন।&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;ধাপ ২: ছদ্মবেশী মোডে পৃষ্ঠাটি খুলুন (শুধুমাত্র কম্পিউটারের জন্য)&lt;/h4&gt;
+    &lt;p&gt;আগে যে পৃষ্ঠাটি দেখছিলেন সেটি ছদ্মবেশী মোডে খুলুন।&lt;/p&gt;
+    &lt;p&gt;যদি পৃষ্ঠাটি খোলে, তাহলে বুঝতে হবে Chrome-এর কোনও একটি এক্সটেনশন ঠিকভাবে কাজ করছে না। সমস্যাটির সমাধানের জন্য এক্সটেনশনটি বন্ধ করে দিন।&lt;/p&gt;
+    &lt;h4&gt;ধাপ ৩: অপারেটিং সিস্টেম আপডেট করুন&lt;/h4&gt;
+    &lt;p&gt;আপনার ডিভাইস আপ-টু-ডেট আছে কিনা নিশ্চিত করুন।&lt;/p&gt;
+    &lt;h4&gt;ধাপ ৪: অ্যান্টিভাইরাস সাময়িকভাবে বন্ধ রাখুন&lt;/h4&gt;
+    &lt;p&gt;আপনার ডিভাইসে যদি এমন কোনও অ্যান্টিভাইরাস থাকে যা "HTTPS সুরক্ষা" অথবা "HTTPS স্ক্যানিং"-এর পরিষেবা দেয়, তাহলে এই সমস্যাটি হবে। তাহলে বুঝতে হবে অ্যান্টিভাইরাসটি Chrome-কে নিরাপত্তা দেওয়ার ক্ষেত্রে বাধা দিচ্ছে।&lt;/p&gt;
+    &lt;p&gt;সমাধানের জন্য অ্যান্টিভাইরাস সফ্টওয়্যারটি বন্ধ করুন। বন্ধ করার পরে যদি পৃষ্ঠাটি খোলা যায় তাহলে নিরাপদ সাইট ব্রাউজ করার সময় সফ্টওয়্যারটি বন্ধই রাখবেন।&lt;/p&gt;
+    &lt;p&gt;কাজ হলে গেলে মনে করে অ্যান্টিভাইরাস সফ্টওয়্যারটি আবার চালু করে নিন।&lt;/p&gt;
+    &lt;h4&gt;ধাপ ৫: আরও সাহায্য পান&lt;/h4&gt;
+    &lt;p&gt;এই ধাপগুলি অনুসরণ করার পরেও যদি একই সমস্যা হতে থাকে তাহলে ওয়েবসাইটের মালিকের সাথে যোগযোগ করুন।&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />নেটওয়ার্ক ডায়গনিস্টিক্স চালিয়ে দেখুন<ph name="END_LINK" />।</translation>
 <translation id="4235360514405112390">সঠিক</translation>
 <translation id="4250431568374086873">এই সাইটে আপনার সংযোগ সম্পূর্ণরূপে নিরাপদ নয়</translation>
@@ -567,6 +598,7 @@
 <translation id="5205222826937269299">নাম প্রয়োজন</translation>
 <translation id="5222812217790122047">ইমেল প্রয়োজন</translation>
 <translation id="5230733896359313003">শিপিংয়ের ঠিকানা</translation>
+<translation id="5250209940322997802">"নেটওয়ার্কে কানেক্ট করুন"</translation>
 <translation id="5251803541071282808">ক্লাউড</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />সফ্টওয়্যারটি সাময়িকভাবে নিষ্ক্রিয় করার জন্য এই পদক্ষেপগুলি অনুসরণ করুন যাতে আপনি ওয়েবে যেতে পারেন। আপনার প্রশাসকের অধিকার প্রয়োজন হবে।<ph name="END_PARAGRAPH" />
 
@@ -590,6 +622,7 @@
 <translation id="5332219387342487447">শিপিংয়ের মাধ্যম</translation>
 <translation id="5355557959165512791">ওয়েবসাইটটির শংসাপত্র তুলে নেওয়ার কারণে আপনি এখন <ph name="SITE" /> এ যেতে পারবেন না। নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত সাময়িকভাবে হয়, তাই এই পৃষ্ঠাটি সম্ভবত পরে কাজ করবে।</translation>
 <translation id="536296301121032821">নীতি সেটিংস সংরক্ষণ করতে ব্যর্থ হয়েছে</translation>
+<translation id="5377026284221673050">"আপনার ঘড়ি লেটে চলছে" অথবা "আপনার ঘড়ি ফাস্ট আছে" অথবা "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">এই সাইটের শংসাপত্র শৃঙ্খলে SHA-1 ব্যবহার করে স্বাক্ষর করা একটি শংসাপত্র রয়েছে।</translation>
 <translation id="5402410679244714488">মেয়াদোত্তীর্ণ: <ph name="EXPIRATION_DATE_ABBR" />, এক বছরেরও বেশি সময় পূর্বে সর্বশেষ ব্যবহার করা হয়েছে</translation>
 <translation id="540969355065856584">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা শংসাপত্র এই সময়ে বৈধ নয়। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
@@ -657,7 +690,6 @@
 <translation id="5869405914158311789">এই সাইটটিতে পৌছানো যাচ্ছে না</translation>
 <translation id="5869522115854928033">সংরক্ষিত পাসওয়ার্ড</translation>
 <translation id="5893752035575986141">ক্রেডিট কার্ড গ্রহণ করা হয়।</translation>
-<translation id="5898382028489516745">Chromium-এর নীতি অনুযায়ী আপনার <ph name="ORG_NAME" /> পাসওয়ার্ড বদলে ফেলা উচিত যদি আপনি সেটি অন্য কোনও সাইটে ব্যবহার করে থাকেন।</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (সিঙ্ক হয়েছে)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{১টি ব্যবহৃত হচ্ছে}one{#টি ব্যবহৃত হচ্ছে}other{#টি ব্যবহৃত হচ্ছে}}</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
@@ -842,6 +874,7 @@
 <translation id="7542403920425041731">আপনি নিশ্চিত করলে আপনার কার্ডের বিবরণ এই সাইটের সাথে শেয়ার করা হবে।</translation>
 <translation id="7542995811387359312">স্বয়ংক্রিয় ক্রেডিট কার্ড পূরণটি অক্ষম রয়েছে কারণ এই ফর্মটি কোনও সুরক্ষিত সংযোগ ব্যবহার করে না৷</translation>
 <translation id="7543525346216957623">আপনার বাবা-মাকে জিজ্ঞাসা করুন</translation>
+<translation id="7548892272833184391">কানেকশনের সমস্যার সমাধান করুন</translation>
 <translation id="7549584377607005141">এই ওয়েবপৃষ্ঠার এমন ডেটার দরকার যা আপনি ঠিকভাবে প্রদর্শিত হওয়ার জন্য আগেই প্রবেশ করেছেন৷ আপনি এই ডেটাটি আবার পাঠাতে পারেন, কিন্তু এমনটি করে আপনি যেকোনো পদক্ষেপের পুনরাবৃত্তি করবেন যা এই পৃষ্ঠাটি আগেই সম্পাদনা করেছে৷</translation>
 <translation id="7552846755917812628">নিম্নোল্লিখিত টিপ্স ব্যবহার করে দেখুন:</translation>
 <translation id="7554791636758816595">নতুন ট্যাব</translation>
@@ -849,6 +882,7 @@
 <translation id="7567204685887185387">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা শংসাপত্র প্রতারণাপূর্ণভাবে ইস্যু করা হয়ে থাকতে পারে। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
 <translation id="7568593326407688803">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE" />ভাষাতে আছে আপনি কি এটিকে অনুবাদ করতে চাইবেন?</translation>
 <translation id="7569952961197462199">Chrome থেকে ক্রেডিট কার্ড সরাবেন?</translation>
+<translation id="7575800019233204241">"আপনার কানেকশন গোপন নয়" অথবা "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" অথবা "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" বা "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" অথবা "SSL সার্টিফিকেটে সমস্যা"</translation>
 <translation id="7578104083680115302">আপনি Google এর সাথে সংরক্ষণ করেছেন এমন কার্ড ব্যবহার করে ডিভাইস জুড়ে সাইট এবং অ্যাপ্লিকেশানগুলিতে দ্রুত অর্থ পরিশোধ করুন।</translation>
 <translation id="7588950540487816470">বাস্তবিক ওয়েব</translation>
 <translation id="7592362899630581445">সার্ভারের শংসাপত্র, নামের সীমাবদ্ধতাগুলি লঙ্ঘন করে৷</translation>
@@ -1070,6 +1104,8 @@
 <translation id="973773823069644502">ডেলিভারি ঠিকানা যোগ করুন</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{কিছুই নয়}=1{১টি আইটেম}one{#টি আইটেম}other{#টি আইটেম}}</translation>
 <translation id="981121421437150478">অফলাইন</translation>
+<translation id="985199708454569384">&lt;p&gt;আপনার কম্পিউটার অথবা মোবাইল ডিভাইসে সঠিক তারিখ এবং সময় সেট করা না থাকলে এই সমস্যাটি হতে পারে।&lt;/p&gt;
+    &lt;p&gt;এই সমস্যার সমাধান করতে, ডিভাইসের ঘড়িতে যান। সঠিক তারিখ এবং সময় সেট করুন।&lt;/p&gt;</translation>
 <translation id="988159990683914416">ডেভেলপার বিল্ড</translation>
 <translation id="989988560359834682">ঠিকানা সম্পাদনা করুন</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

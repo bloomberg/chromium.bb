@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">Escala de apresentação</translation>
 <translation id="2303600792989757991">Ativar/desativar vista geral das janelas</translation>
 <translation id="2338501278241028356">Ativar o Bluetooth para detetar dispositivos próximos</translation>
+<translation id="2339073806695260576">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã, utilizar o ponteiro de laser ou a lupa.</translation>
 <translation id="2351266942280602854">Idioma e introdução</translation>
 <translation id="2352467521400612932">Definições da caneta stylus</translation>
 <translation id="2354174487190027830">A ativar <ph name="NAME" /></translation>
@@ -273,7 +274,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira esquerda)</translation>
 <translation id="7131634465328662194">A sessão será terminada automaticamente.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
-<translation id="7165511658052620796">(TEMP) Mostrar o início de sessão da WebUI; se utilizou o erro de ficheiro (crbug.com) ou os comentários (alt+shift+i)</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
 <translation id="726276584504105859">Arraste para aqui para utilizar o ecrã dividido</translation>

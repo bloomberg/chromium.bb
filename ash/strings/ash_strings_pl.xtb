@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">Skala wyświetlania</translation>
 <translation id="2303600792989757991">Przełącz widok ogólny okna</translation>
 <translation id="2338501278241028356">Włącz Bluetooth, by wykryć urządzenia w pobliżu</translation>
+<translation id="2339073806695260576">Kliknij przycisk rysika na półce, by zrobić notatkę lub zrzut ekranu albo użyć wskaźnika laserowego bądź lupy.</translation>
 <translation id="2351266942280602854">Język i wprowadzanie</translation>
 <translation id="2352467521400612932">Ustawienia rysika</translation>
 <translation id="2354174487190027830">Aktywuję <ph name="NAME" /></translation>
@@ -274,7 +275,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7098389117866926363">Urządzenie USB-C (lewy port z tyłu)</translation>
 <translation id="7131634465328662194">Nastąpi automatyczne wylogowanie.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
-<translation id="7165511658052620796">(TYMCZASOWO) Pokaż login interfejsu webui; jeśli jest używany, zgłoś błąd (crbug.com) lub opinię (Alt+Shift+I)</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Tylny mikrofon</translation>
 <translation id="726276584504105859">Przeciągnij tutaj, by podzielić ekran</translation>

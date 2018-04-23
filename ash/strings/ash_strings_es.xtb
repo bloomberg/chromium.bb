@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">Escala de pantalla</translation>
 <translation id="2303600792989757991">Activar descripción general de ventanas</translation>
 <translation id="2338501278241028356">Activa el Bluetooth para encontrar dispositivos cercanos</translation>
+<translation id="2339073806695260576">Toca el botón del lápiz óptico situado en la estantería para tomar una nota, hacer una captura de pantalla o utilizar el puntero láser o la lupa.</translation>
 <translation id="2351266942280602854">Idioma y entrada</translation>
 <translation id="2352467521400612932">Configuración del lápiz óptico</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
@@ -273,7 +274,6 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
 <translation id="7131634465328662194">Tu sesión se cerrará automáticamente.</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>
-<translation id="7165511658052620796">(TEMP) Show webui login; if used file bug (crbug.com) or feedback (alt+shift+i)</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para utilizar la pantalla dividida</translation>
@@ -329,7 +329,7 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: volviendo a conectar...</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
-<translation id="8649101189709089199">Escuchar Selección</translation>
+<translation id="8649101189709089199">Enunciar Selección</translation>
 <translation id="8652175077544655965">Cerrar ajustes</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>

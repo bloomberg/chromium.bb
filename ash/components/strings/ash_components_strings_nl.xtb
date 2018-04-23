@@ -3,7 +3,6 @@
 <translationbundle lang="nl">
 <translation id="104962181688258143">De app Bestanden openen</translation>
 <translation id="1122869341872663659">Er worden <ph name="N" /> zoekresultaten voor <ph name="QUERY" /> getoond</translation>
-<translation id="1134347825771908369">Volume dempen</translation>
 <translation id="1195667586424773550">Sleep de link naar de adresbalk van het tabblad</translation>
 <translation id="1204450209689312104">Een nieuw venster openen in de incognitomodus</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -15,6 +14,7 @@
 <translation id="152892567002884378">Volume omhoog</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, en dan <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Naar het begin van het vorige woord gaan</translation>
+<translation id="1671169355475348905">Schakelen naar de taalinvoermethode van de vorige taal</translation>
 <translation id="1679841710523778799">Helderheid verhogen</translation>
 <translation id="168356808214100546">Houd <ph name="ALT" /> ingedrukt en tik op <ph name="TAB" /> totdat het venster verschijnt dat je wilt openen. Laat de toetsen vervolgens los.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -32,6 +32,7 @@
 <translation id="2185166372312820725">Naar het vorige tabblad gaan</translation>
 <translation id="2194790690264064655">Druk op <ph name="CTRL" /> en klik op een link</translation>
 <translation id="2382644247745281995">Niet ondersteund met de huidige toetsenbordindeling</translation>
+<translation id="2397416548179033562">Chrome-menu weergeven</translation>
 <translation id="2424073332829844142">Caps Lock in- en uitschakelen</translation>
 <translation id="2441202986792279177">Snel schakelen tussen vensters</translation>
 <translation id="2478303094958140141">ChromeVox (gesproken feedback) in- of uitschakelen</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">Schermresolutie resetten naar standaardinstellingen</translation>
 <translation id="2596078834055697711">Een screenshot van het venster maken</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, en dan <ph name="TAB" /> of <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">Schakelen naar de taalinvoermethode van de volgende taal</translation>
 <translation id="2699509451653686398">De huidige webpagina als bladwijzer opslaan</translation>
 <translation id="2750942583782703988">De huidige pagina opnieuw laden</translation>
 <translation id="2764005613199379871">De focus in de zoek-/adresbalk plaatsen</translation>
@@ -49,6 +51,7 @@
 <translation id="2872353916818027657">Primaire monitor omwisselen</translation>
 <translation id="2914313326123580426">Het deelvenster 'Hulpprogramma's voor ontwikkelaars' weergeven of verbergen</translation>
 <translation id="292495055542441795">Volledig scherm in-/uitschakelen</translation>
+<translation id="3020183492814296499">Snelkoppelingen</translation>
 <translation id="3084301071537457911">Het volgende item op de plank markeren</translation>
 <translation id="309173601632226815">De Launcher-knop op de plank markeren</translation>
 <translation id="3105917916468784889">Screenshot maken</translation>
@@ -147,7 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> of <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Een app losmaken</translation>
 <translation id="7439718573248533901">De volgende letter verwijderen (vooruit verwijderen)</translation>
-<translation id="7449669175878568981">Dictaat starten of stoppen (typen wat je zegt)</translation>
+<translation id="7611271430932669992">De focus naar pop-ups en dialoogvensters verplaatsen</translation>
 <translation id="766326951329901120">Content vanaf het klembord plakken als platte tekst</translation>
 <translation id="7724603315864178912">Knip</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, en dan <ph name="SPACE" /> of <ph name="ENTER" /></translation>
@@ -156,7 +159,6 @@
 <translation id="7952165122793773711">Naar tabblad 1 tot en met 8 gaan</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> of <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Browsegegevens wissen</translation>
-<translation id="8104889575691864804">App-menu weergeven</translation>
 <translation id="8130528849632411619">Naar het begin van het document gaan</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> of <ph name="E" /></translation>
 <translation id="8232835244134740473">Focus schakelen tussen: statusgedeelte (waar je accountafbeelding wordt weergegeven), Launcher, adresbalk, bladwijzerbalk (indien zichtbaar), de geopende webpagina en de downloadbalk (indien zichtbaar).</translation>

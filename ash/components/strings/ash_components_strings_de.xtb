@@ -3,7 +3,6 @@
 <translationbundle lang="de">
 <translation id="104962181688258143">App "Dateien" öffnen</translation>
 <translation id="1122869341872663659"><ph name="N" /> Suchergebnisse für <ph name="QUERY" /> werden angezeigt</translation>
-<translation id="1134347825771908369">Stummschalten</translation>
 <translation id="1195667586424773550">Link in Adressleiste des Tabs ziehen</translation>
 <translation id="1204450209689312104">Neues Fenster im Inkognitomodus öffnen</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -32,6 +31,7 @@
 <translation id="2185166372312820725">Auf den vorherigen Tab klicken</translation>
 <translation id="2194790690264064655">"<ph name="CTRL" />" gedrückt halten und auf einen Link klicken</translation>
 <translation id="2382644247745281995">Wird nicht vom aktuellen Tastaturlayout unterstützt</translation>
+<translation id="2397416548179033562">Chrome-Menü anzeigen</translation>
 <translation id="2424073332829844142">Feststelltaste aktivieren und deaktivieren</translation>
 <translation id="2441202986792279177">Schnell zwischen Fenstern wechseln</translation>
 <translation id="2478303094958140141">ChromeVox für gesprochenes Feedback aktivieren oder deaktivieren</translation>
@@ -42,13 +42,14 @@
 <translation id="2685170433750953446">"<ph name="SHIFT" />" <ph name="SEPARATOR1" /> "<ph name="ALT" />" <ph name="SEPARATOR2" /> "<ph name="L" />", dann "<ph name="TAB" />" oder "<ph name="RIGHT" />"</translation>
 <translation id="2699509451653686398">Aktuelle Webseite als Lesezeichen speichern</translation>
 <translation id="2750942583782703988">Aktuelle Seite neu laden</translation>
-<translation id="2764005613199379871">Fokus auf Such- und Adressleiste legen</translation>
+<translation id="2764005613199379871">Fokus auf Such- und Adressleiste setzen</translation>
 <translation id="2789868185375229787">Seite herauszoomen</translation>
 <translation id="2804480015716812239">"<ph name="ALT" />" gedrückt halten und auf einen Link klicken</translation>
 <translation id="2830827904629746450">Fenster rechts andocken</translation>
 <translation id="2872353916818027657">Hauptmonitor tauschen</translation>
 <translation id="2914313326123580426">Steuerfeld für Entwicklertools ein- oder ausblenden</translation>
 <translation id="292495055542441795">Vollbildmodus an oder aus</translation>
+<translation id="3020183492814296499">Tastenkombinationen</translation>
 <translation id="3084301071537457911">Nächstes Element in der Ablage markieren</translation>
 <translation id="309173601632226815">Launcher-Symbol in der Ablage markieren</translation>
 <translation id="3105917916468784889">Screenshot aufnehmen</translation>
@@ -147,7 +148,6 @@
 <translation id="7379254767514753910">"<ph name="ALT" />" oder "<ph name="SEARCH" />" <ph name="SEPARATOR" /> "<ph name="UP" />"</translation>
 <translation id="743754632698445141">App loslösen</translation>
 <translation id="7439718573248533901">Nächsten Buchstaben löschen (vorwärts löschen)</translation>
-<translation id="7449669175878568981">Diktierfunktion starten oder stoppen (Spracheingabe)</translation>
 <translation id="766326951329901120">Inhalt aus der Zwischenablage als unformatierten Text einfügen</translation>
 <translation id="7724603315864178912">Ausschneiden</translation>
 <translation id="7730490981846175479">"<ph name="SHIFT" />" <ph name="SEPARATOR1" /> "<ph name="ALT" />" <ph name="SEPARATOR2" /> "<ph name="L" />", dann "<ph name="SPACE" />" oder "<ph name="ENTER" />"</translation>
@@ -156,10 +156,9 @@
 <translation id="7952165122793773711">Zu den Tabs 1 bis 8 wechseln</translation>
 <translation id="8025696740288105292">"<ph name="CTRL" />" <ph name="SEPARATOR1" /> "<ph name="SHIFT" />" <ph name="SEPARATOR2" /> "<ph name="PLUS" />" oder "<ph name="MINUS" />"</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>
-<translation id="8104889575691864804">App-Menü einblenden</translation>
 <translation id="8130528849632411619">Zum Anfang des Dokuments springen</translation>
 <translation id="8147954207400281792">"<ph name="CTRL" />" <ph name="SEPARATOR" /> "<ph name="K" />" oder "<ph name="E" />"</translation>
-<translation id="8232835244134740473">Fokus wechseln zwischen vorherigen und nächsten Wörtern: Statusbereich (Bereich mit Kontobild), Launcher-Adressleiste, Lesezeichenleiste (falls sichtbar), offene Webseite und Downloadleiste (falls sichtbar).</translation>
+<translation id="8232835244134740473">Fokus wechseln zwischen vorherigen und nächsten Wörtern: Statusbereich (Bereich mit Kontobild), Launcher, Adressleiste, Lesezeichenleiste (falls sichtbar), offene Webseite und Downloadleiste (falls sichtbar).</translation>
 <translation id="8234414138295101081">Bildschirm um 90 Grad drehen</translation>
 <translation id="8264941229485248811">Entwicklertools-Inspector ein- oder ausblenden</translation>
 <translation id="836869401750819675">Seite "Downloads" öffnen</translation>

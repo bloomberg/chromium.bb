@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Няма}=1{1 сайт}other{# сайта}}</translation>
 <translation id="1927235823738766038">Приемани кредитни и дебитни карти</translation>
 <translation id="194030505837763158">Към <ph name="LINK" /></translation>
+<translation id="1945968466830820669">Възможно е да загубите достъп до профила си в организацията или самоличността ви да бъде открадната. Chromium препоръчва да промените паролата си сега.</translation>
 <translation id="1948773908305951926">Приемани предплатени карти</translation>
 <translation id="1962204205936693436">Отметки от <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Грешка при сериализирането</translation>
@@ -461,7 +462,6 @@
 <translation id="4171400957073367226">Невалиден подпис за потвърждаване</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{още <ph name="ITEM_COUNT" /> елемент}other{още <ph name="ITEM_COUNT" /> елемента}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> – <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome препоръчва да зададете повторно паролата си за <ph name="ORG_NAME" />, ако сте я използвали и на други сайтове.</translation>
 <translation id="4196861286325780578">&amp;Възстановяване на преместването</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверете конфигурацията на защитната стена и антивирусния софтуер<ph name="END_LINK" />.</translation>
 <translation id="4220128509585149162">Сривове</translation>
@@ -591,6 +591,7 @@
 <translation id="5141240743006678641">Синхронизираните пароли да се шифроват с идентификационните ви данни за Google</translation>
 <translation id="5145883236150621069">В отговора за правилото присъства код на грешка</translation>
 <translation id="5159010409087891077">Отворете страницата в нов прозорец в режим „инкогнито“ (⇧⌘N).</translation>
+<translation id="5169827969064885044">Възможно е да загубите достъп до профила си в организацията или самоличността ви да бъде открадната. Chrome препоръчва да промените паролата си сега.</translation>
 <translation id="5171045022955879922">Търсете или въведете URL адрес</translation>
 <translation id="5172758083709347301">Машината</translation>
 <translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE" />? Подайте сигнал за тази грешка</translation>
@@ -691,7 +692,6 @@
 <translation id="5869405914158311789">Няма достъп до този сайт</translation>
 <translation id="5869522115854928033">Запазени пароли</translation>
 <translation id="5893752035575986141">Приемат се кредитни карти.</translation>
-<translation id="5898382028489516745">Chromium препоръчва да зададете повторно паролата си за <ph name="ORG_NAME" />, ако сте я използвали и на други сайтове.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронизирано)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Използва се 1}other{Използват се #}}</translation>
 <translation id="5939518447894949180">Нулиране</translation>
@@ -856,6 +856,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Потвърждаване на картата</translation>
 <translation id="7400418766976504921">URL адрес</translation>
+<translation id="7407424307057130981">&lt;p&gt;Ще виждате това съобщение за грешка, ако софтуерът Superfish е инсталиран на компютъра ви с Windows.&lt;/p&gt;
+&lt;p&gt;Изпълнете следните стъпки, за да деактивирате временно софтуера, така че да можете да се свържете с мрежата. Ще са ви необходими администраторски права.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Кликнете върху &lt;strong&gt;Старт&lt;/strong&gt;, след което потърсете и изберете &lt;strong&gt;Преглед на локални услуги&lt;/strong&gt;.
+&lt;li&gt;Изберете &lt;strong&gt;VisualDiscovery&lt;/strong&gt;.
+&lt;li&gt;За &lt;strong&gt;Startup type&lt;/strong&gt; изберете &lt;strong&gt;Disabled&lt;/strong&gt;.
+&lt;li&gt;Под &lt;strong&gt;Service status&lt;/strong&gt; кликнете върху &lt;strong&gt;Stop&lt;/strong&gt;.
+&lt;li&gt;Кликнете върху &lt;strong&gt;Приложи&lt;/strong&gt; и след това – върху &lt;strong&gt;OK&lt;/strong&gt;.
+&lt;li&gt;Посетете &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Помощния център на Chrome&lt;/a&gt;, за да научите как да премахнете за постоянно софтуера от компютъра си.
+&lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Път на потребителския профил</translation>
 <translation id="7437289804838430631">Добавяне на информация за връзка</translation>
 <translation id="7441627299479586546">Грешен предмет на правилото</translation>

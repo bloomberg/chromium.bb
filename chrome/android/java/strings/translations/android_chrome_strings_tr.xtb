@@ -300,6 +300,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3819178904835489326">İndirilen <ph name="NUMBER_OF_DOWNLOADS" /> dosya silindi</translation>
 <translation id="3822502789641063741">Site depo. silinsin mi?</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
+<translation id="3871936494901781193">Görünümü yukarı kaydırdığınızda, ilgili sayfaların hızlı bağlantıları gösterilir.</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
 <translation id="3895926599014793903">Yakınlaştırmayı etkinleştirmeye zorla</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +308,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="393697183122708255">Kullanılabilir etkin sesli arama yok</translation>
 <translation id="3950820424414687140">Oturum açın</translation>
 <translation id="395206256282351086">Arama ve site önerileri devre dışı bırakıldı</translation>
+<translation id="3952533382939530115">Bu özellik <ph name="BEGIN_LINK" />senkronizasyonu<ph name="END_LINK" /> kullanıyor. Ziyaret ettiğiniz sayfaların URL'leri Google'a gönderiliyor.</translation>
 <translation id="3967822245660637423">İndirme tamamlandı</translation>
 <translation id="397583555483684758">Senkronizasyonun çalışması durdu</translation>
 <translation id="3976396876660209797">Bu kısayolu kaldırıp yeniden oluşturun</translation>
@@ -321,7 +323,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4056223980640387499">Sepya Tonu</translation>
 <translation id="4062305924942672200">Yasal bilgiler</translation>
 <translation id="4084682180776658562">Yer İşareti</translation>
-<translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> web sitesinden – <ph name="BEGIN_DEEMPHASIZED" />Google tarafından yayınlandı<ph name="END_DEEMPHASIZED" /></translation>
+<translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> web sitesinden - <ph name="BEGIN_DEEMPHASIZED" />Google tarafından yayınlandı<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">İndirilenler <ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">Bu özellik, operatörünüz tarafından sağlanan birinci sınıf veri hizmetlerine erişime engel olabilir.</translation>
 <translation id="4095146165863963773">Uygulama verileri silinsin mi?</translation>
@@ -773,6 +775,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8087000398470557479">Bu içerik Google tarafından <ph name="DOMAIN_NAME" /> adresinden sağlanmaktadır.</translation>
 <translation id="8100932616285851614">Gezinme paneli kapatıldı</translation>
 <translation id="8103578431304235997">Gizli Sekme</translation>
+<translation id="8105951947646329362">İlgili sayfalar öner</translation>
 <translation id="8116925261070264013">Ses kapatıldı</translation>
 <translation id="813082847718468539">Site bilgilerini görüntüle</translation>
 <translation id="8137558756159375272">Dokun ve Ara, seçilen kelimeyi ve geçerli sayfayı Google Arama'ya bağlam olarak gönderir. Bu özelliği <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'da kapatabilirsiniz.</translation>

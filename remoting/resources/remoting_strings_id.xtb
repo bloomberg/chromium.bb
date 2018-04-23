@@ -145,6 +145,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="4207623512727273241">Jalankan pemasang sebelum melanjutkan.</translation>
 <translation id="4227991223508142681">Utilitas Penyediaan Host</translation>
 <translation id="4240294130679914010">Pencopot Pemasangan Host Chromoting</translation>
+<translation id="4249741460382919890">Perbaikan umum dan peningkatan stabilitas.</translation>
 <translation id="4277463233460010382">Komputer ini dikonfigurasi untuk mengizinkan satu atau beberapa klien terhubung tanpa memasukkan PIN</translation>
 <translation id="4277736576214464567">Kode akses tidak valid. Harap coba lagi.</translation>
 <translation id="4361728918881830843">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, instal Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="507204348399810022">Yakin ingin menonaktifkan sambungan jarak jauh ke <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">Gagal berkomunikasi dengan server: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Masukkan PIN yang sama di kedua kotak.</translation>
 <translation id="5170982930780719864">ID host tidak valid.</translation>
 <translation id="518094545883702183">Informasi ini hanya digunakan untuk mendiagnosis masalah yang Anda laporkan, hanya tersedia untuk orang yang menyelidiki laporan, dan dipertahankan selama tidak lebih dari 30 hari.</translation>

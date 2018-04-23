@@ -40,10 +40,10 @@
 <translation id="1580783302095112590">已傳送郵件。</translation>
 <translation id="1582732959743469162">目前所有下載進度都會因此停止。</translation>
 <translation id="1612730193129642006">顯示分頁方格</translation>
-<translation id="1644574205037202324">歷史紀錄</translation>
+<translation id="1644574205037202324">歷史記錄</translation>
 <translation id="1646446875146297738">啟用「不追蹤」選項後，您的瀏覽流量會置入一項特定的要求，其作用則視網站是否回應要求，以及網站解讀要求的方式而定。
 
-舉例來說，部分網站可能會以隨機顯示廣告的方式回應這類要求，而這些廣告並非根據您所造訪的其他網站紀錄而產生。許多網站仍會收集並使用您的瀏覽資料，藉此提升安全性、提供網站上的內容、服務、廣告和推薦項目，以及產生報告統計資料。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
+舉例來說，部分網站可能會以隨機顯示廣告的方式回應這類要求，而這些廣告並非根據您所造訪的其他網站記錄而產生。許多網站仍會收集並使用您的瀏覽資料，藉此提升安全性、提供網站上的內容、服務、廣告和推薦項目，以及產生報告統計資料。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">您尚未連上網路，因此無法分享。</translation>
 <translation id="165877110639533037">沒有開啟的分頁</translation>
 <translation id="1687475363370981210">全部標示為已讀取</translation>
@@ -137,6 +137,7 @@
 <translation id="3393920035788932672">已允許的彈出式視窗</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> 分鐘</translation>
 <translation id="3448016392200048164">分割檢視</translation>
+<translation id="3469166899695866866">要停止下載嗎？</translation>
 <translation id="3474624961160222204">以「<ph name="NAME" />」的身分繼續使用</translation>
 <translation id="3474649192738347024">表單填寫完成。</translation>
 <translation id="3478058380795961209">到期月份</translation>
@@ -150,6 +151,7 @@
 <translation id="3588820906588687999">在新分頁中開啟圖片</translation>
 <translation id="3603009562372709545">複製連結網址</translation>
 <translation id="3607167657931203000">自動填入資料</translation>
+<translation id="3609785682760573515">同步處理中...</translation>
 <translation id="3628119975092896051">閱讀清單可供離線存取。如要將網頁加入閱讀清單，請輕觸 <ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
@@ -209,7 +211,7 @@
 <translation id="4904877109095351937">標示為已讀取</translation>
 <translation id="4930268273022498155">刪除現有資料。你可以切換回 <ph name="USER_EMAIL1" />，重新取得現有資料。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的項目時發生問題。</translation>
-<translation id="4979397965658815378">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史紀錄和其他設定。</translation>
+<translation id="4979397965658815378">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史記錄和其他設定。</translation>
 <translation id="5005498671520578047">複製密碼</translation>
 <translation id="5010803260590204777">透過新開啟的無痕式分頁以私密模式瀏覽網頁。</translation>
 <translation id="5011684439661633295"><ph name="FULL_ACCOUNT_NAME" />，您好：</translation>
@@ -294,7 +296,7 @@
 <translation id="6380866119319257197">如果您忘記通關密語，或是想變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6406506848690869874">同步</translation>
-<translation id="6417838470969808600">你有來自 <ph name="USER_EMAIL1" /> 的書籤、歷史紀錄、密碼和其他設定。</translation>
+<translation id="6417838470969808600">你有來自 <ph name="USER_EMAIL1" /> 的書籤、歷史記錄、密碼和其他設定。</translation>
 <translation id="641799622251403418">目前登入的帳戶是 <ph name="EMAIL" />。
 
 您已在 <ph name="TIME" />使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
@@ -304,7 +306,6 @@
 <translation id="6445981559479772097">訊息已送出。</translation>
 <translation id="6464071786529933911">在新無痕式分頁中開啟</translation>
 <translation id="6482629121755362506">已刪除 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
-<translation id="6528048372317642110">可下載檔案</translation>
 <translation id="6541915733953096570">過去 1 小時</translation>
 <translation id="6570040839871198836">自動填入表單</translation>
 <translation id="6656103420185847513">編輯資料夾</translation>
@@ -315,7 +316,7 @@
 <translation id="6762156594045689028">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">郵遞區號</translation>
 <translation id="6785453220513215166">正在傳送當機報告...</translation>
-<translation id="679325081238418596">您在任何裝置上都能取得自己的書籤、歷史紀錄、密碼和其他設定</translation>
+<translation id="679325081238418596">您在任何裝置上都能取得自己的書籤、歷史記錄、密碼和其他設定</translation>
 <translation id="6797885426782475225">語音搜尋</translation>
 <translation id="6807889908376551050">全部顯示...</translation>
 <translation id="681368974849482173">項目已建立</translation>
@@ -338,6 +339,7 @@
 <translation id="7159472599653637159">切換為行動版網站</translation>
 <translation id="7167621057293532233">資料類型</translation>
 <translation id="7175593937868963913">撰寫電子郵件</translation>
+<translation id="7180611975245234373">重新整理</translation>
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7203585745079012652">語音答覆</translation>
 <translation id="722055596168483966">享有個人化的 Google 服務</translation>
@@ -346,7 +348,7 @@
 <translation id="7336264872878993241">已下載 <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">好，我知道了</translation>
 <translation id="7400418766976504921">網址</translation>
-<translation id="7425346204213733349">您更改過的書籤、歷史紀錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
+<translation id="7425346204213733349">您更改過的書籤、歷史記錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
 <translation id="744343212394640790">不是 <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">州/縣</translation>
 <translation id="7456847797759667638">開啟位置...</translation>
@@ -368,7 +370,7 @@
 <translation id="7772032839648071052">確認通關密語</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7856733331829174190">無法下載</translation>
-<translation id="7859704718976024901">瀏覽紀錄</translation>
+<translation id="7859704718976024901">瀏覽記錄</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">匯出密碼...</translation>
 <translation id="7947953824732555851">接受並登入</translation>
@@ -380,6 +382,7 @@
 <translation id="8023878949384262191">展開這個專區。</translation>
 <translation id="8059533439631660104">收合這個專區。</translation>
 <translation id="806745655614357130">分開保留我的資料</translation>
+<translation id="8073670137947914548">下載完成</translation>
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">關閉所有分頁</translation>
 <translation id="8205564605687841303">取消</translation>
@@ -388,7 +391,7 @@
 <translation id="8272426682713568063">信用卡</translation>
 <translation id="8281781826761538115">預設 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">關閉全部</translation>
-<translation id="8381750437846184350">控管 Google 使用您瀏覽紀錄的方式，針對 Google 所提供的個人化搜尋服務、廣告內容和其他各項 Google 服務調整相關設定</translation>
+<translation id="8381750437846184350">控管 Google 使用您瀏覽記錄的方式，針對 Google 所提供的個人化搜尋服務、廣告內容和其他各項 Google 服務調整相關設定</translation>
 <translation id="842017693807136194">目前登入身分</translation>
 <translation id="8428045167754449968">鄉/鎮/市/區</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -410,7 +413,7 @@
 <translation id="8721297211384281569">工具選單</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>
-<translation id="8741995161408053644">您仍可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 存取 Google 帳戶中保存的各種瀏覽紀錄。</translation>
+<translation id="8741995161408053644">您仍可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 存取 Google 帳戶中保存的各種瀏覽記錄。</translation>
 <translation id="8775144690796719618">網址無效</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="8840513115188359703">您不會因此登出 Google 帳戶。</translation>
@@ -421,8 +424,8 @@
 <translation id="8971089644512329999">好，我知道了</translation>
 <translation id="8981454092730389528">Google 活動控制項</translation>
 <translation id="8985320356172329008">已使用下列帳戶登入 Google：</translation>
-<translation id="902659348151742535">Google 可能會使用您的瀏覽紀錄，為您提供個人化的搜尋服務、廣告內容和其他各項 Google 服務。</translation>
-<translation id="9034759925968272072">您並不會因此登出 Google 帳戶，不過帳戶中可能仍保留了其他類型的瀏覽紀錄 (可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 查詢)。</translation>
+<translation id="902659348151742535">Google 可能會使用您的瀏覽記錄，為您提供個人化的搜尋服務、廣告內容和其他各項 Google 服務。</translation>
+<translation id="9034759925968272072">您並不會因此登出 Google 帳戶，不過帳戶中可能仍保留了其他類型的瀏覽記錄 (可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 查詢)。</translation>
 <translation id="9039373489628511875">頻寬</translation>
 <translation id="9055772144595778347">無法登入</translation>
 <translation id="9065203028668620118">編輯</translation>
@@ -435,7 +438,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">當機報告已送出。</translation>
 <translation id="932327136139879170">首頁</translation>
-<translation id="935490618240037774">您的書籤、歷史紀錄、密碼和其他設定都會在您的 Google 帳戶中保持同步，以便您在所有個人裝置上使用。</translation>
+<translation id="935490618240037774">您的書籤、歷史記錄、密碼和其他設定都會在您的 Google 帳戶中保持同步，以便您在所有個人裝置上使用。</translation>
 <translation id="939598580284253335">請輸入通關密語</translation>
 <translation id="976982866697960176">管理同步資料…</translation>
 <translation id="988141524645182168">其他裝置</translation>

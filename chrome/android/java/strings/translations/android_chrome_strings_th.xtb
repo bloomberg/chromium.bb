@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1006017844123154345">เปิดแบบออนไลน์</translation>
+<translation id="1021684790657589338">ไม่พบการ์ด SD</translation>
 <translation id="1036727731225946849">กำลังเพิ่ม <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">จากเว็บไซต์</translation>
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
@@ -184,6 +185,7 @@
 <translation id="2625189173221582860">คัดลอกรหัสผ่านแล้ว</translation>
 <translation id="2631006050119455616">ประหยัดได้</translation>
 <translation id="2647434099613338025">เพิ่มภาษา</translation>
+<translation id="2650751991977523696">ดาวน์โหลดไฟล์อีกครั้งใช่ไหม</translation>
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2677748264148917807">ออก</translation>
 <translation id="2704606927547763573">คัดลอกแล้ว</translation>
@@ -220,6 +222,7 @@
 <translation id="3029613699374795922">ดาวน์โหลดแล้ว <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">รหัสผ่านไม่ตรงกัน</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">ดูคำแนะนำแบบนี้จาก Google อีก</translation>
 <translation id="305593374596241526">ตอนนี้ตำแหน่งปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามเช้า</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
@@ -300,6 +303,7 @@
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
+<translation id="3871936494901781193">เมื่อคุณเลื่อนขึ้น คำแนะนำจะแสดงลิงก์ด่วนไปยังหน้าเว็บที่เกี่ยวข้อง</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +311,7 @@
 <translation id="393697183122708255">ไม่มีการเปิดใช้การค้นหาด้วยเสียง</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
 <translation id="395206256282351086">ปิดใช้คำแนะนำการค้นหาและเว็บไซต์แล้ว</translation>
+<translation id="3952533382939530115">ฟีเจอร์นี้ใช้<ph name="BEGIN_LINK" />การซิงค์<ph name="END_LINK" /> ระบบจะส่ง URL ของหน้าเว็บที่คุณเข้าชมไปที่ Google</translation>
 <translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="397583555483684758">การซิงค์หยุดทำงานแล้ว</translation>
 <translation id="3976396876660209797">นำทางลัดนี้ออกแล้วสร้างใหม่</translation>
@@ -410,6 +415,7 @@
 <translation id="4876188919622883022">มุมมองอย่างง่าย</translation>
 <translation id="4878404682131129617">สร้างช่องทางผ่านพร็อกซีเซิร์ฟเวอร์ไม่ได้</translation>
 <translation id="4881695831933465202">เปิด</translation>
+<translation id="488187801263602086">เปลี่ยนชื่อไฟล์</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
 <translation id="4910889077668685004">แอปชำระเงิน</translation>
 <translation id="4913161338056004800">รีเซ็ตสถิติ</translation>
@@ -503,6 +509,7 @@
 <translation id="5676636989614905379">ไม่สามารถเล่นวิดีโอบน <ph name="SCREEN_NAME" /></translation>
 <translation id="5677928146339483299">ถูกบล็อก</translation>
 <translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
+<translation id="5686790454216892815">ชื่อไฟล์ยาวเกินไป</translation>
 <translation id="5689516760719285838">ตำแหน่ง</translation>
 <translation id="5719837394786370183">หน้าที่คุณดูในแท็บแบบไม่ระบุตัวตนจะไม่เก็บอยู่ในประวัติของเบราว์เซอร์ การจัดเก็บคุกกี้ หรือประวัติการค้นหาหลังจากที่คุณปิดแท็บที่ไม่ระบุตัวตนทั้งหมดแล้ว แต่จะมีการเก็บไฟล์ใดๆ ที่คุณดาวน์โหลดหรือบุ๊กมาร์กที่คุณสร้างไว้
 
@@ -695,6 +702,7 @@
 <translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="7445411102860286510">อนุญาตให้เว็บไซต์เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติ (แนะนำ)</translation>
 <translation id="7453467225369441013">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google</translation>
+<translation id="7454641608352164238">พื้นที่ว่างไม่พอ</translation>
 <translation id="7455923816558154057">แตะเพื่อดู</translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="7475192538862203634">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>
@@ -773,6 +781,7 @@
 <translation id="8087000398470557479">เนื้อหานี้มาจาก <ph name="DOMAIN_NAME" /> และนำส่งโดย Google</translation>
 <translation id="8100932616285851614">ปิดแผงการนำทางแล้ว</translation>
 <translation id="8103578431304235997">แท็บที่ไม่ระบุตัวตน</translation>
+<translation id="8105951947646329362">แนะนำหน้าเว็บที่เกี่ยวข้อง</translation>
 <translation id="8116925261070264013">ปิดเสียง</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
 <translation id="8137558756159375272">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณสามารถปิดฟีเจอร์นี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
@@ -826,6 +835,7 @@
 <translation id="8636825310635137004">เปิดการซิงค์เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="8641930654639604085">พยายามบล็อกไซต์สำหรับผู้ใหญ่</translation>
 <translation id="8662811608048051533">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
+<translation id="8664979001105139458">มีชื่อไฟล์นี้อยู่แล้ว</translation>
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{ระดับความแรงของสัญญาณ: # แถบ}other{ระดับความแรงของสัญญาณ: # แถบ}}</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
@@ -854,6 +864,7 @@
 <translation id="8942627711005830162">เปิดในหน้าต่างอื่น</translation>
 <translation id="8951232171465285730">Chrome ได้ประหยัดพื้นที่ให้คุณไป <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">ไม่สามารถเข้าถึงการนำทางได้: <ph name="URL" /></translation>
+<translation id="8972098258593396643">ดาวน์โหลดลงโฟลเดอร์เริ่มต้นใช่ไหม</translation>
 <translation id="8979405271719829084">ดาวน์โหลดวิดีโอไว้ดูภายหลัง</translation>
 <translation id="8981454092730389528">ส่วนควบคุมกิจกรรมของ Google</translation>
 <translation id="8986494364107987395">ส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>

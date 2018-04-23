@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1006017844123154345">Åpne på nettet</translation>
+<translation id="1021684790657589338">Finner ikke noe SD-kort</translation>
 <translation id="1036727731225946849">Legger til <ph name="WEBAPK_NAME" /> …</translation>
 <translation id="1041308826830691739">Fra nettsteder</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -184,6 +185,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2625189173221582860">Passordet er kopiert</translation>
 <translation id="2631006050119455616">Spart</translation>
 <translation id="2647434099613338025">Legg til språk</translation>
+<translation id="2650751991977523696">Vil du laste ned filen på nytt?</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2677748264148917807">Gå ut</translation>
 <translation id="2704606927547763573">Kopiert</translation>
@@ -220,6 +222,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="3029613699374795922"><ph name="KBS" /> kB er lastet ned</translation>
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Se mer som dette fra Google</translation>
 <translation id="305593374596241526">Posisjon er slått av. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Flere artikler kommer snart. Ha en fin morgen.</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
@@ -410,6 +413,7 @@ Google-kontoen din kan ha andre former for nettlesingslogg, for eksempel søk og
 <translation id="4876188919622883022">Forenklet visning</translation>
 <translation id="4878404682131129617">Kunne ikke opprette tunnel via proxy-tjener.</translation>
 <translation id="4881695831933465202">Åpne</translation>
+<translation id="488187801263602086">Endre navnet på filen</translation>
 <translation id="4885273946141277891">For mange Chrome-forekomster.</translation>
 <translation id="4910889077668685004">Betalingsapper</translation>
 <translation id="4913161338056004800">Tilbakestill statistikken</translation>
@@ -503,6 +507,7 @@ Google-kontoen din kan ha andre former for nettlesingslogg, for eksempel søk og
 <translation id="5676636989614905379">Kunne ikke spille av videoen på <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blokkert</translation>
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
+<translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5689516760719285838">Sted</translation>
 <translation id="5719837394786370183">Når du åpner sider i inkognitofaner, lagres de ikke i nettleser- eller søkeloggen, og eventuelle informasjonskapsler slettes. Filer du laster ned og bokmerker du oppretter, beholdes.
 
@@ -695,6 +700,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7437998757836447326">Logg av Chrome</translation>
 <translation id="7445411102860286510">Gi nettsteder tillatelse til automatisk avspilling av videoer med kuttet lyd (anbefales)</translation>
 <translation id="7453467225369441013">Logger deg av de fleste nettsteder. Du blir ikke logget av Google-kontoen din.</translation>
+<translation id="7454641608352164238">Det er ikke nok plass</translation>
 <translation id="7455923816558154057">Trykk for å se</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7475192538862203634">Hvis du ser dette ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
@@ -826,6 +832,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8636825310635137004">For å få fanene dine fra de andre enhetene du bruker, slå på synkronisering.</translation>
 <translation id="8641930654639604085">Prøv å blokkere nettsteder med voksent innhold</translation>
 <translation id="8662811608048051533">Logger deg av de fleste nettsteder.</translation>
+<translation id="8664979001105139458">Filnavnet finnes allerede</translation>
 <translation id="8676374126336081632">Slett teksten</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkenivå: # stolpe}other{Signalstyrkenivå: # stolper}}</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
@@ -854,6 +861,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8942627711005830162">Åpne i et annet vindu</translation>
 <translation id="8951232171465285730">Chrome har spart deg for <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Vil du laste ned til standardmappen?</translation>
 <translation id="8979405271719829084">Last ned videoer du vil se senere</translation>
 <translation id="8981454092730389528">Google Aktivitetslagring</translation>
 <translation id="8986494364107987395">Send bruksstatistikk og programstopprapporter automatisk til Google</translation>

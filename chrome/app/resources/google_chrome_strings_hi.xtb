@@ -25,7 +25,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> खरतरनाक है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>
 <translation id="1619887657840448962">Chrome को अधिक सुरक्षित बनाने के लिए, हमने निम्न एक्सटेंशन को अक्षम कर दिया है जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं है और आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
 <translation id="1628000112320670027">Chrome में सहायता प्राप्त करें</translation>
-<translation id="163860049029591106">Chrome OS के साथ आरंभ करना</translation>
 <translation id="1674870198290878346">Chrome गु&amp;प्त विंडो में लिंक खोलें</translation>
 <translation id="1682634494516646069">Google Chrome अपनी डेटा निर्देशिका को पढ़ और उस पर लिख नहीं सकता :\n\n<ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome एक ऐसा वेब ब्राउज़र है, जो वेब पेज और ऐप्स  को बिजली की गति से चलाता है. यह तेज़, स्थिर, और उपयोग में आसान है. Google Chrome में अंतर्निहित मैलवेयर और फ़िशिंग सुरक्षा के साथ अधिक सुरक्षित रूप से वेब ब्राउज़ करें.</translation>
@@ -208,7 +207,6 @@
 <translation id="6989339256997917931">Google Chrome को अपडेट कर दिया गया  है, लेकिन आपने इसका कम से कम 30 दिन से उपयोग नहीं किया है.</translation>
 <translation id="7098166902387133879">Google Chrome आपके माइक्रोफ़ोन का उपयोग कर रहा है.</translation>
 <translation id="7106741999175697885">काम का प्रबंधक - Google Chrome</translation>
-<translation id="7161904924553537242">Google Chrome में आपका स्वागत है</translation>
 <translation id="7164397146364144019">आप Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करके Chrome को अधिक सुरक्षित और आसान बनाने में सहायता कर सकते हैं.</translation>
 <translation id="7242029209006116544">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE" /></translation>
 <translation id="7308322188646931570">Chrome को फ़ाइलें डाउनलोड करने के लिए मेमोरी एक्‍सेस की ज़रूरत होगी</translation>

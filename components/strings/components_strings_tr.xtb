@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Yok}=1{1 site}other{# site}}</translation>
 <translation id="1927235823738766038">Kabul Edilen Kredi ve Banka Kartları</translation>
 <translation id="194030505837763158"><ph name="LINK" /> adresine git</translation>
+<translation id="1945968466830820669">Kuruluşunuzun hesabına erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chromium, şifrenizi hemen değiştirmenizi önerir.</translation>
 <translation id="1948773908305951926">Kabul edilen ön ödemeli kartlar</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Yer İşaretleri</translation>
 <translation id="1973335181906896915">Serileştirme hatası</translation>
@@ -461,7 +462,6 @@
 <translation id="4171400957073367226">Geçersiz doğrulama imzası</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> öğe daha}other{<ph name="ITEM_COUNT" /> öğe daha}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome, <ph name="ORG_NAME" /> şifrenizi başka sitelerde kullandıysanız sıfırlamanızı önerir.</translation>
 <translation id="4196861286325780578">Taşımayı &amp;yeniden yap</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Güvenlik duvarı ve virüsten korunma yapılandırmalarını kontrol etme<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Kilitlenmeler</translation>
@@ -498,7 +498,7 @@
 <translation id="4325863107915753736">Makale bulunamadı</translation>
 <translation id="4326324639298822553">Son kullanma tarihini kontrol edip tekrar deneyin</translation>
 <translation id="4331708818696583467">Güvenli Değil</translation>
-<translation id="4340982228985273705">Bu bilgisayarın şirket tarafından yönetilmediği algılandığı için politika yalnızca Chrome Web Mağazası'nda barındırılan uzantıları otomatik olarak yükleyebilir. Chrome Web Mağazası'nın güncelleme URL'si "<ph name="CWS_UPDATE_URL" />" şeklindedir.</translation>
+<translation id="4340982228985273705">Bu bilgisayarın kurumsal olarak yönetilmediği algılandığı için politika yalnızca Chrome Web Mağazası'nda barındırılan uzantıları otomatik olarak yükleyebilir. Chrome Web Mağazası'nın güncelleme URL'si "<ph name="CWS_UPDATE_URL" />" şeklindedir.</translation>
 <translation id="4346197816712207223">Kabul Edilen Kredi Kartları</translation>
 <translation id="4356973930735388585">Bu sitedeki saldırganlar, bilgilerinizi (örneğin fotoğraflar, şifreler, mesajlar ve kredi kartları) çalacak veya silecek tehlikeli programları bilgisayarınıza yüklemeyi deneyebilir.</translation>
 <translation id="4372948949327679948">Beklenen <ph name="VALUE_TYPE" /> değeri.</translation>
@@ -591,6 +591,7 @@
 <translation id="5141240743006678641">Senkronize edilen şifreleri Google kimlik bilgilerinizle şifreleyin</translation>
 <translation id="5145883236150621069">Politika yanıtında hata kodu var</translation>
 <translation id="5159010409087891077">Sayfayı yeni Gizli pencerede açın (⇧⌘N)</translation>
+<translation id="5169827969064885044">Kuruluşunuzun hesabına erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chrome, şifrenizi hemen değiştirmenizi önerir.</translation>
 <translation id="5171045022955879922">Arayın veya URL'yi yazın</translation>
 <translation id="5172758083709347301">Makine</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> dilinde değil mi? Bu hatayı bildirin</translation>
@@ -691,7 +692,6 @@
 <translation id="5869405914158311789">Bu siteye ulaşılamıyor</translation>
 <translation id="5869522115854928033">Kayıtlı şifreler</translation>
 <translation id="5893752035575986141">Kredi kartları kabul edilir.</translation>
-<translation id="5898382028489516745">Chromium, <ph name="ORG_NAME" /> şifrenizi başka sitelerde kullandıysanız sıfırlamanızı önerir.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (senkronize edildi)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 çerez kullanımda}other{# çerez kullanımda}}</translation>
 <translation id="5939518447894949180">Sıfırla</translation>

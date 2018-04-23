@@ -3,7 +3,6 @@
 <translationbundle lang="it">
 <translation id="104962181688258143">Apre l'app File</translation>
 <translation id="1122869341872663659">Sono visualizzati <ph name="N" /> risultati di ricerca relativi a <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Disattiva volume audio</translation>
 <translation id="1195667586424773550">Trascina il link nella barra degli indirizzi della scheda</translation>
 <translation id="1204450209689312104">Apre una nuova finestra in modalità di navigazione in incognito</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /> <ph name="SEPARATOR1" /> <ph name="MODIFIER2" /> <ph name="SEPARATOR2" /> <ph name="MODIFIER3" /> <ph name="SEPARATOR3" /> <ph name="KEY" /></translation>
@@ -15,6 +14,7 @@
 <translation id="152892567002884378">Alza il volume</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Passa all'inizio della parola precedente</translation>
+<translation id="1671169355475348905">Consente di passare al metodo di immissione della lingua precedente</translation>
 <translation id="1679841710523778799">Aumenta la luminosità</translation>
 <translation id="168356808214100546">Tieni premuto <ph name="ALT" />, tocca <ph name="TAB" /> fin quando arrivi alla finestra che vuoi aprire, quindi rilascia.</translation>
 <translation id="169515659049020177">Maiusc</translation>
@@ -23,7 +23,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Passa alla scheda successiva</translation>
 <translation id="2010818616644390445">Passa all'ultima scheda della finestra</translation>
-<translation id="2040706009561734834">Consente di aprire/chiudere Avvio applicazioni</translation>
+<translation id="2040706009561734834">Consente di aprire/chiudere Avvio app</translation>
 <translation id="2088054208777350526">Cerca scorciatoie da tastiera</translation>
 <translation id="2125211348069077981"><ph name="ALT" /> <ph name="SEPARATOR" /> <ph name="E" /> o <ph name="F" /></translation>
 <translation id="2145908266289632567">Modifica del testo</translation>
@@ -32,6 +32,7 @@
 <translation id="2185166372312820725">Passa alla scheda precedente</translation>
 <translation id="2194790690264064655">Premi <ph name="CTRL" /> e fai clic su un link</translation>
 <translation id="2382644247745281995">Non supportato dal layout di tastiera attuale</translation>
+<translation id="2397416548179033562">Mostra il menu Chrome</translation>
 <translation id="2424073332829844142">Attiva e disattiva BLOC MAIUSC</translation>
 <translation id="2441202986792279177">Passa velocemente da una finestra all'altra</translation>
 <translation id="2478303094958140141">Attiva o disattiva ChromeVox (funzione di lettura vocale)</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">Ripristina la risoluzione schermo predefinita</translation>
 <translation id="2596078834055697711">Consente di acquisire uno screenshot della finestra</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="TAB" /> o <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">Consente di passare al metodo di immissione della lingua successiva</translation>
 <translation id="2699509451653686398">Salva la pagina web corrente nei Preferiti</translation>
 <translation id="2750942583782703988">Carica di nuovo la pagina corrente</translation>
 <translation id="2764005613199379871">Consente di impostare lo stato attivo nella barra degli indirizzi di ricerca</translation>
@@ -49,6 +51,7 @@
 <translation id="2872353916818027657">Consente di invertire il monitor principale</translation>
 <translation id="2914313326123580426">Mostra o nasconde il riquadro Strumenti per sviluppatori</translation>
 <translation id="292495055542441795">Attiva/disattiva lo schermo intero</translation>
+<translation id="3020183492814296499">Scorciatoie</translation>
 <translation id="3084301071537457911">Mette in evidenza l'elemento successivo sulla shelf</translation>
 <translation id="309173601632226815">Mette in evidenza il pulsante Avvio applicazioni nella shelf</translation>
 <translation id="3105917916468784889">Acquisisce uno screenshot</translation>
@@ -147,7 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Consente di sbloccare un'app</translation>
 <translation id="7439718573248533901">Elimina la lettera successiva (eliminazione in avanti)</translation>
-<translation id="7449669175878568981">Consente di avviare o interrompere la dettatura (digitazione delle parole pronunciate)</translation>
+<translation id="7611271430932669992">Consente di spostare lo stato attivo su finestre di dialogo e popup</translation>
 <translation id="766326951329901120">Incolla i contenuti dagli appunti come testo normale</translation>
 <translation id="7724603315864178912">Taglia</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="SPACE" /> o <ph name="ENTER" /></translation>
@@ -156,7 +159,6 @@
 <translation id="7952165122793773711">Consente di accedere alle schede da 1 a 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> o <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
-<translation id="8104889575691864804">Consente di mostrare il menu dell'app</translation>
 <translation id="8130528849632411619">Passa all'inizio del documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
 <translation id="8232835244134740473">Consente di spostare lo stato attivo tra: l'area di stato (dove è visualizzata l'immagine del tuo account), Avvio applicazioni, la barra degli indirizzi, la barra dei Preferiti (se visibile), la pagina web aperta e la barra dei download (se visibile).</translation>

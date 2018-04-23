@@ -460,7 +460,6 @@
 <translation id="4171400957073367226">መጥፎ የማረጋገጫ ፊርማ</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ተጨማሪ ንጥል}one{<ph name="ITEM_COUNT" /> ተጨማሪ ንጥሎች}other{<ph name="ITEM_COUNT" /> ተጨማሪ ንጥሎች}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome የእርስዎን የ<ph name="ORG_NAME" /> የይለፍ ቃል በሌሎች ጣቢያዎች ላይ ዳግመኛ ከተጠቀሙበት እንደገና እንዲያዋቅሩት ይመክራል።</translation>
 <translation id="4196861286325780578">&amp;ውሰድን ድገም</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />የኬላ እና የጸረ-ቫይረስ ውቅረቶችን መፈተሽ<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">ብልሽቶች</translation>
@@ -690,7 +689,6 @@
 <translation id="5869405914158311789">ይህ ጣቢያ ሊደረስበት አይችልም</translation>
 <translation id="5869522115854928033">የተቀመጡ የይለፍ ቃሎች</translation>
 <translation id="5893752035575986141">ክሬዲት ካርዶች ተቀባይነት አላቸው።</translation>
-<translation id="5898382028489516745">Chromium የእርስዎን የ<ph name="ORG_NAME" /> የይለፍ ቃል በሌሎች ጣቢያዎች ላይ ዳግመኛ ከተጠቀሙበት እንደገና እንዲያዋቅሩት ይመክራል።</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (ሰምሯል)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 ጥቅም ላይ ያለ}one{# ጥቅም ላይ ያለ}other{# ጥቅም ላይ}}</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
@@ -855,6 +853,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">ካርድ ያረጋግጡ</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;በWindows ኮምፒውተርዎ ላይ የSuperfish ሶፍትዌር ካለዎት ይህን ስህተት ያዩታል።&lt;/p&gt;
+    &lt;p&gt;ወደ ድሩ መሄድ እንዲችሉ ሶፍትዌሩን ለጊዜው ለማሰናከል እነዚህን ደረጃዎች ይከተሉ። የአስተዳዳሪ ልዩ መብቶች ያስፈልገዎታል።&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;&lt;strong&gt;ጀምር&lt;/strong&gt;ን ጠቅ ያድርጉ፣ ከዚያ &lt;strong&gt;«አካባቢያዊ አገልግሎቶችን ይመልከቱ»&lt;/strong&gt;ን ይምረጡ
+    &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt;ን ይምረጡ
+    &lt;li&gt;በ&lt;strong&gt;የጅምር አይነት&lt;/strong&gt; ስር &lt;strong&gt;ተሰናክሏል&lt;/strong&gt;ን ይምረጡ
+    &lt;li&gt;በ&lt;strong&gt;የአገልግሎት ሁኔታ&lt;/strong&gt; ስር &lt;strong&gt;አቁም&lt;/strong&gt;ን ጠቅ ያድርጉ
+    &lt;li&gt;&lt;strong&gt;ተግብር&lt;/strong&gt;ን ጠቅ ያድርጉ፣ ከዚያ &lt;strong&gt;እሺ&lt;/strong&gt;ን ጠቅ ያድርጉ
+    &lt;li&gt;እንዴት ሶፍትዌሩን ከኮምፒውተርዎ እስከመጨረሻው ማስወገድ እንደሚችሉ ለማወቅ &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;የChrome እገዛ ማዕከል&lt;/a&gt;ን ይጎብኙ
+    &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">የመገለጫ ዱካ</translation>
 <translation id="7437289804838430631">የእውቂያ መረጃ አክል</translation>
 <translation id="7441627299479586546">የተሳሳተ የመምሪያ ርዕሰ ጉዳይ</translation>

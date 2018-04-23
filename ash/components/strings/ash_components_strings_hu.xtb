@@ -3,7 +3,6 @@
 <translationbundle lang="hu">
 <translation id="104962181688258143">A Fájlok alkalmazás megnyitása</translation>
 <translation id="1122869341872663659"><ph name="N" /> keresési találat megjelenítve a következőre: <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Hangerő némítása</translation>
 <translation id="1195667586424773550">A link húzása a lap címsávjára</translation>
 <translation id="1204450209689312104">Új ablak megnyitása inkognitómódban</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -15,6 +14,7 @@
 <translation id="152892567002884378">Hangerő növelése</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, majd <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Ugrás az előző szó elejére</translation>
+<translation id="1671169355475348905">Váltás az előző nyelv beviteli módszerére</translation>
 <translation id="1679841710523778799">Fényerő növelése</translation>
 <translation id="168356808214100546">Tartsa lenyomva az <ph name="ALT" /> billentyűt, majd nyomja meg a <ph name="TAB" /> billentyűt, amíg nem jut el addig az ablakig, amelyet meg szeretne nyitni, majd engedje fel.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -32,6 +32,7 @@
 <translation id="2185166372312820725">Ugrás az előző lapra</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />+kattintás a linkre</translation>
 <translation id="2382644247745281995">Nem támogatja a jelenlegi billentyűzetkiosztás</translation>
+<translation id="2397416548179033562">A Chrome-menü megjelenítése</translation>
 <translation id="2424073332829844142">A Caps Lock be- és kikapcsolása</translation>
 <translation id="2441202986792279177">Gyors váltás ablakok között</translation>
 <translation id="2478303094958140141">A ChromeVox (hangos visszajelzés) be- vagy kikapcsolása</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">A képernyőfelbontás visszaállítása az alapértelmezett értékre</translation>
 <translation id="2596078834055697711">Képernyőkép készítése az ablakról</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, majd <ph name="TAB" /> vagy <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">Váltás a következő nyelv beviteli módszerére</translation>
 <translation id="2699509451653686398">Az aktuális weboldal elmentése könyvjelzőként</translation>
 <translation id="2750942583782703988">Az aktuális oldal újratöltése</translation>
 <translation id="2764005613199379871">Váltás a keresési címsávra</translation>
@@ -49,6 +51,7 @@
 <translation id="2872353916818027657">Elsődleges monitor felcserélése</translation>
 <translation id="2914313326123580426">A Fejlesztői eszközök panel megjelenítése vagy elrejtése</translation>
 <translation id="292495055542441795">Váltás teljes képernyős módra</translation>
+<translation id="3020183492814296499">Parancsikonok</translation>
 <translation id="3084301071537457911">A következő elem kiemelése a polcon</translation>
 <translation id="309173601632226815">Az indító gomb kiemelése a polcon</translation>
 <translation id="3105917916468784889">Képernyőkép készítése</translation>
@@ -147,7 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> vagy <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Az adott alkalmazás rögzítésének megszüntetése</translation>
 <translation id="7439718573248533901">Következő betű törlése (előre törlés)</translation>
-<translation id="7449669175878568981">Diktálás elindítása vagy leállítása (beszédének begépelése)</translation>
+<translation id="7611271430932669992">A fókusz áthelyezése az előugró és párbeszédablakokra</translation>
 <translation id="766326951329901120">Tartalom beillesztése a vágólapról egyszerű szövegként</translation>
 <translation id="7724603315864178912">Kivágás</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, majd <ph name="SPACE" /> vagy <ph name="ENTER" /></translation>
@@ -156,7 +159,6 @@
 <translation id="7952165122793773711">Ugrás az 1–8. lapokra</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> vagy <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Böngészési adatok törlése</translation>
-<translation id="8104889575691864804">Az alkalmazásmenü megjelenítése</translation>
 <translation id="8130528849632411619">Ugrás a dokumentum elejére</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> vagy <ph name="E" /></translation>
 <translation id="8232835244134740473">Fókuszváltás a következők között: állapotsor (ahol a fiókjához tartozó kép jelenik meg), Indító, címsáv, könyvjelzősáv (ha látható), a megnyitott weboldal és a letöltéssáv (ha látható).</translation>

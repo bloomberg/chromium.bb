@@ -145,6 +145,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="4207623512727273241">Please run the installer before continuing.</translation>
 <translation id="4227991223508142681">Host Provisioning Utility</translation>
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
+<translation id="4249741460382919890">General fixes and stability improvements.</translation>
 <translation id="4277463233460010382">This computer is configured to allow one or more clients to connect without entering a PIN.</translation>
 <translation id="4277736576214464567">The access code is invalid. Please try again.</translation>
 <translation id="4361728918881830843">To enable remote connections to a different computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME" />”.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">The remote host requires you to authenticate to a third-party website. To continue, you must grant Chrome Remote Desktop additional permissions to access this address:</translation>
 <translation id="507204348399810022">Are you sure that you want to disable remote connections to <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">Failed to communicate with the server: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Please enter the same PIN in both boxes.</translation>
 <translation id="5170982930780719864">Invalid host id.</translation>
 <translation id="518094545883702183">This information is used only for diagnosing the problem that you are reporting, is available only to someone investigating your report, and is retained for no more than 30 days.</translation>

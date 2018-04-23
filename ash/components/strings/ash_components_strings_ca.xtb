@@ -3,7 +3,6 @@
 <translationbundle lang="ca">
 <translation id="104962181688258143">Obre l'aplicació Fitxers</translation>
 <translation id="1122869341872663659">Es mostren <ph name="N" /> resultats de cerca per a <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Desactiva el so</translation>
 <translation id="1195667586424773550">Arrossega l'enllaç a la barra d'adreces de la pestanya</translation>
 <translation id="1204450209689312104">Obre una finestra nova en mode d'incògnit</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -32,6 +31,7 @@
 <translation id="2185166372312820725">Ves a la pestanya anterior</translation>
 <translation id="2194790690264064655">Prem <ph name="CTRL" /> i fes clic en un enllaç</translation>
 <translation id="2382644247745281995">No és compatible amb la disposició actual del teclat</translation>
+<translation id="2397416548179033562">Mostra el menú de Chrome</translation>
 <translation id="2424073332829844142">Activa i desactiva el bloqueig de majúscules</translation>
 <translation id="2441202986792279177">Canvia de finestra ràpidament</translation>
 <translation id="2478303094958140141">Activa o desactiva ChromeVox (comentaris de veu)</translation>
@@ -42,13 +42,14 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> i després <ph name="TAB" /> o <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">Desa la pàgina web actual a les adreces d'interès</translation>
 <translation id="2750942583782703988">Torna a carregar la pàgina actual</translation>
-<translation id="2764005613199379871">Situa el focus a la barra d'adreces de cerca</translation>
+<translation id="2764005613199379871">Situa el focus a la barra d'adreces i de cerca</translation>
 <translation id="2789868185375229787">Redueix la pàgina</translation>
 <translation id="2804480015716812239">Prem <ph name="ALT" /> i fes clic en un enllaç</translation>
 <translation id="2830827904629746450">Fixa una finestra a la dreta</translation>
 <translation id="2872353916818027657">Canvia el monitor principal</translation>
 <translation id="2914313326123580426">Mostra o amaga el tauler d'eines per a desenvolupadors</translation>
 <translation id="292495055542441795">Activa/desactiva la pantalla completa</translation>
+<translation id="3020183492814296499">Dreceres</translation>
 <translation id="3084301071537457911">Destaca l'element següent del prestatge</translation>
 <translation id="309173601632226815">Destaca el botó del menú d'aplicacions al prestatge</translation>
 <translation id="3105917916468784889">Fes una captura de pantalla</translation>
@@ -147,7 +148,6 @@
 <translation id="7379254767514753910"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Deixa de fixar una aplicació</translation>
 <translation id="7439718573248533901">Suprimeix la lletra següent (supressió cap endavant)</translation>
-<translation id="7449669175878568981">Inicia o atura el dictat (escriu el que pronuncies)</translation>
 <translation id="766326951329901120">Enganxa el contingut del porta-retalls com a text sense format</translation>
 <translation id="7724603315864178912">Retalla</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> i després <ph name="SPACE" /> o <ph name="ENTER" /></translation>
@@ -156,7 +156,6 @@
 <translation id="7952165122793773711">Ves a les pestanyes de l'1 a la 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> o <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Esborra les dades de navegació</translation>
-<translation id="8104889575691864804">Mostra el menú d'aplicacions</translation>
 <translation id="8130528849632411619">Ves al principi del document</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
 <translation id="8232835244134740473">Canvia el focus entre l'àrea d'estat (en què es mostra la imatge del compte), el menú d'aplicacions, la barra d'adreces, la barra d'adreces d'interès (si és visible), la pàgina web que està oberta i la barra de baixades (si és visible).</translation>

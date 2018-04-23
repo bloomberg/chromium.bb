@@ -145,6 +145,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="4207623512727273241">Ejecuta el instalador antes de continuar.</translation>
 <translation id="4227991223508142681">Utilidad de aprovisionamiento de host</translation>
 <translation id="4240294130679914010">Desinstalador del host de Chromoting</translation>
+<translation id="4249741460382919890">Se corrigieron errores generales y mejoró la estabilidad.</translation>
 <translation id="4277463233460010382">Esta computadora está configurada para permitir que uno o más clientes se conecten sin ingresar un PIN.</translation>
 <translation id="4277736576214464567">El código de acceso no es válido. Vuelve a intentarlo.</translation>
 <translation id="4361728918881830843">Para habilitar conexiones remotas con otra computadora, instala allí Escritorio remoto de Chrome y haz clic en “<ph name="BUTTON_NAME" />”.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (sin conexión)</translation>
 <translation id="5070121137485264635">El host remoto requiere la autenticación de un sitio web de terceros. Para continuar, debes otorgar permisos adicionales al Escritorio remoto de Chrome para acceder a la siguiente dirección:</translation>
 <translation id="507204348399810022">¿Seguro que deseas inhabilitar las conexiones remotas a <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">No se pudo establecer la comunicación con el servidor: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Ingresa el mismo PIN en ambos cuadros.</translation>
 <translation id="5170982930780719864">ID de host no válido</translation>
 <translation id="518094545883702183">Esta información solo se usa con el fin de diagnosticar el problema informado, solo está disponible para la persona que investiga el informe y se guarda por no más de 30 días.</translation>

@@ -145,6 +145,7 @@
 <translation id="4207623512727273241">请先运行该安装程序，再继续操作。</translation>
 <translation id="4227991223508142681">主机配置实用程序</translation>
 <translation id="4240294130679914010">Chrome 远程访问主机卸载程序</translation>
+<translation id="4249741460382919890">进行了一些常规的修复操作并提高了稳定性。</translation>
 <translation id="4277463233460010382">此计算机已配置为允许一个或多个客户端无需输入 PIN 即可进行连接。</translation>
 <translation id="4277736576214464567">访问代码无效，请重试。</translation>
 <translation id="4361728918881830843">要启用到另一台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME" />”。</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（离线）</translation>
 <translation id="5070121137485264635">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="507204348399810022">确定要停用与“<ph name="HOSTNAME" />”的远程连接吗？</translation>
+<translation id="5081343395220691640">无法与服务器进行通信：<ph name="ERROR" /></translation>
 <translation id="5156271271724754543">请在两个框中输入相同的 PIN。</translation>
 <translation id="5170982930780719864">主机 ID 无效。</translation>
 <translation id="518094545883702183">这些信息仅用于诊断您报告的问题，并且只有负责对您报告的问题进行调查的人员才可使用。这些信息的保留时间不会超过 30 天。</translation>

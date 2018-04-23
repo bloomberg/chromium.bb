@@ -3,7 +3,6 @@
 <translationbundle lang="vi">
 <translation id="104962181688258143">Mở ứng dụng Tệp</translation>
 <translation id="1122869341872663659">Hiển thị <ph name="N" /> kết quả tìm kiếm cho <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Tắt tiếng</translation>
 <translation id="1195667586424773550">Kéo liên kết vào thanh địa chỉ của tab</translation>
 <translation id="1204450209689312104">Mở cửa sổ mới ở chế độ ẩn danh</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -15,6 +14,7 @@
 <translation id="152892567002884378">Tăng âm lượng</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Di chuyển tới phần đầu của từ trước</translation>
+<translation id="1671169355475348905">Chuyển sang phương thức nhập của ngôn ngữ trước</translation>
 <translation id="1679841710523778799">Tăng độ sáng</translation>
 <translation id="168356808214100546">Nhấn và giữ <ph name="ALT" /> rồi nhấn <ph name="TAB" /> cho đến khi chuyển đến cửa sổ mà bạn muốn mở, sau đó thả tổ hợp phím ra.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -32,6 +32,7 @@
 <translation id="2185166372312820725">Quay về tab trước</translation>
 <translation id="2194790690264064655">Nhấn <ph name="CTRL" /> rồi nhấp vào một liên kết</translation>
 <translation id="2382644247745281995">Bố cục bàn phím hiện tại chưa được hỗ trợ</translation>
+<translation id="2397416548179033562">Hiển thị menu Chrome</translation>
 <translation id="2424073332829844142">Bật và tắt Caps Lock</translation>
 <translation id="2441202986792279177">Chuyển nhanh giữa các cửa sổ</translation>
 <translation id="2478303094958140141">Bật hoặc tắt ChromeVox (phản hồi bằng giọng nói)</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">Đặt lại độ phân giải màn hình về mặc định</translation>
 <translation id="2596078834055697711">Chụp ảnh màn hình cửa sổ</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="TAB" /> hoặc <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">Chuyển sang phương thức nhập của ngôn ngữ tiếp theo</translation>
 <translation id="2699509451653686398">Lưu trang web hiện tại làm dấu trang</translation>
 <translation id="2750942583782703988">Tải lại trang hiện tại</translation>
 <translation id="2764005613199379871">Đặt tiêu điểm vào thanh địa chỉ tìm kiếm</translation>
@@ -49,6 +51,7 @@
 <translation id="2872353916818027657">Hoán đổi màn hình chính</translation>
 <translation id="2914313326123580426">Hiển thị hoặc ẩn bảng Công cụ dành cho nhà phát triển</translation>
 <translation id="292495055542441795">Bật/tắt chế độ toàn màn hình</translation>
+<translation id="3020183492814296499">Phím tắt</translation>
 <translation id="3084301071537457911">Đánh dấu mục tiếp theo trên giá</translation>
 <translation id="309173601632226815">Đánh dấu nút trình khởi chạy trên giá</translation>
 <translation id="3105917916468784889">Chụp ảnh màn hình</translation>
@@ -141,13 +144,13 @@
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="7020813747703216897">Không tìm thấy kết quả phù hợp nào</translation>
 <translation id="7025325401470358758">Ngăn tiếp theo</translation>
-<translation id="7077383985738259936">Lấy tiêu điểm hoặc đánh dấu thanh dấu trang (nếu hiển thị)</translation>
+<translation id="7077383985738259936">Đặt tiêu điểm vào hoặc đánh dấu thanh dấu trang (nếu hiển thị)</translation>
 <translation id="7237562915163138771">Nhập địa chỉ web vào thanh địa chỉ, sau đó nhấn <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Đặt thiết bị ở chế độ ngủ (tạm ngưng)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> hoặc <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Bỏ ghim ứng dụng</translation>
 <translation id="7439718573248533901">Xóa chữ cái tiếp theo (xóa tiến)</translation>
-<translation id="7449669175878568981">Bắt đầu hoặc dừng ghi chép (nhập lời nói của bạn)</translation>
+<translation id="7611271430932669992">Di chuyển tiêu điểm đến cửa sổ bật lên và hộp thoại</translation>
 <translation id="766326951329901120">Dán nội dung từ khay nhớ tạm dưới dạng văn bản thuần túy</translation>
 <translation id="7724603315864178912">Cắt</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="SPACE" /> hoặc <ph name="ENTER" /></translation>
@@ -156,7 +159,6 @@
 <translation id="7952165122793773711">Chuyển đến các tab từ 1 đến 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> hoặc <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
-<translation id="8104889575691864804">Hiển thị menu ứng dụng</translation>
 <translation id="8130528849632411619">Chuyển tới đầu tài liệu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> hoặc <ph name="E" /></translation>
 <translation id="8232835244134740473">Chuyển đổi tiêu điểm giữa: Khu vực trạng thái (nơi hiển thị ảnh tài khoản), Trình chạy, Thanh địa chỉ, Thanh dấu trang (nếu hiển thị), Trang web đang mở và Thanh tài nguyên đã tải xuống (nếu hiển thị).</translation>
@@ -178,7 +180,7 @@
 <translation id="8924883688469390268">Chuyển về người dùng trước</translation>
 <translation id="8951768610999698672">Phóng to hoặc thu nhỏ các mục trên màn hình</translation>
 <translation id="8977648847395357314">Chọn nội dung trong thanh địa chỉ</translation>
-<translation id="8982190978301344584">Hiện menu hiển thị danh sách IME sử dụng được</translation>
+<translation id="8982190978301344584">Hiện menu hiển thị danh sách trình chỉnh sửa phương thức nhập có sẵn</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 đến 8</translation>
 <translation id="9005984960510803406">Mở cửa sổ Crosh</translation>
 <translation id="9041599225465145264">Dán nội dung từ khay nhớ tạm</translation>

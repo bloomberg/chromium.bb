@@ -145,6 +145,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="4207623512727273241">Execute o instalador antes de continuar.</translation>
 <translation id="4227991223508142681">Utilitário de aprovisionamento de host</translation>
 <translation id="4240294130679914010">Desinstalador do host do Chromoting</translation>
+<translation id="4249741460382919890">Correções gerais e melhorias de estabilidade.</translation>
 <translation id="4277463233460010382">Este computador está configurado para permitir que um ou mais clientes se conectem sem ter que inserir um PIN.</translation>
 <translation id="4277736576214464567">Código de acesso inválido. Tente novamente.</translation>
 <translation id="4361728918881830843">Para ativar conexões remotas a um computador diferente, instale a Área de trabalho remota do Google Chrome no computador desejado e clique em "<ph name="BUTTON_NAME" />".</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (off-line)</translation>
 <translation id="5070121137485264635">O host remoto requer a autenticação em um website de terceiros. Para continuar, você deve conceder à Área de trabalho remota do Google Chrome acesso a permissões adicionais para acessar este endereço:</translation>
 <translation id="507204348399810022">Tem certeza que quer desativar conexões remotas para <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">Falha ao se comunicar com o servidor: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Digite o mesmo PIN nas duas caixas.</translation>
 <translation id="5170982930780719864">ID de host inválido.</translation>
 <translation id="518094545883702183">Essa informação é usada apenas para diagnosticar o problema que você está relatando, está disponível apenas para as pessoas que estão investigando seu relatório e só fica retida por até 30 dias.</translation>

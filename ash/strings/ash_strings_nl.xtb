@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">Weergaveschaal</translation>
 <translation id="2303600792989757991">Overzicht venster in-/uitschakelen</translation>
 <translation id="2338501278241028356">Schakel Bluetooth in om apparaten in de buurt te vinden</translation>
+<translation id="2339073806695260576">Tik op de stylusknop op de plank om een notitie of screenshot te maken, of om de Assistent, de laserpen of het vergrootglas te gebruiken.</translation>
 <translation id="2351266942280602854">Taal en invoer</translation>
 <translation id="2352467521400612932">Stylusinstellingen</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> activeren</translation>
@@ -273,7 +274,6 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
 <translation id="7131634465328662194">Je wordt automatisch uitgelogd.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
-<translation id="7165511658052620796">(TEMP) Show webui login; if used file bug (crbug.com) or feedback (alt+shift+i)</translation>
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfoon aan achterzijde</translation>
 <translation id="726276584504105859">Sleep hier naartoe om het scherm te splitsen</translation>

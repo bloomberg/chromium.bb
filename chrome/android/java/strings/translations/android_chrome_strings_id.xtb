@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1006017844123154345">Buka versi Online</translation>
+<translation id="1021684790657589338">Tidak ditemukan kartu SD</translation>
 <translation id="1036727731225946849">Menambahkan <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Dari situs</translation>
 <translation id="1049743911850919806">Penyamaran</translation>
@@ -184,6 +185,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2625189173221582860">Sandi disalin</translation>
 <translation id="2631006050119455616">Dihemat</translation>
 <translation id="2647434099613338025">Tambah bahasa</translation>
+<translation id="2650751991977523696">Download file lagi?</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2677748264148917807">Keluar</translation>
 <translation id="2704606927547763573">Disalin</translation>
@@ -220,6 +222,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="3029613699374795922">Terdownload <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Frasa sandi tidak cocok</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Lihat hal lain yang seperti ini dari Google</translation>
 <translation id="305593374596241526">Lokasi nonaktif, aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Artikel lainnya akan segera muncul. Selamat beraktivitas pagi!</translation>
 <translation id="3089395242580810162">Buka di tab penyamaran</translation>
@@ -300,6 +303,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> download dihapus</translation>
 <translation id="3822502789641063741">Kosongkan penyimpanan situs?</translation>
 <translation id="3859306556332390985">Cari maju</translation>
+<translation id="3871936494901781193">Saat Anda scroll ke atas, tindakan tersebut akan menampilkan link cepat ke halaman yang terkait.</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
 <translation id="3895926599014793903">Memaksa pengaktifan zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +311,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="393697183122708255">Tidak ada penelusuran suara yang aktif</translation>
 <translation id="3950820424414687140">Masuk</translation>
 <translation id="395206256282351086">Saran situs dan penelusuran dinonaktifkan</translation>
+<translation id="3952533382939530115">Fitur ini menggunakan <ph name="BEGIN_LINK" />sinkronisasi<ph name="END_LINK" />. URL halaman yang Anda buka dikirim ke Google.</translation>
 <translation id="3967822245660637423">Download selesai</translation>
 <translation id="397583555483684758">Sinkronisasi berhenti berfungsi</translation>
 <translation id="3976396876660209797">Hapus dan buat ulang pintasan ini</translation>
@@ -338,7 +343,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4226663524361240545">Notifikasi dapat membuat perangkat bergetar</translation>
 <translation id="4242533952199664413">Buka setelan</translation>
 <translation id="424864128008805179">Keluar dari Chrome?</translation>
-<translation id="4256782883801055595">Lisensi sumber terbuka</translation>
+<translation id="4256782883801055595">Lisensi open source</translation>
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Terjadi kesalahan sinkronisasi, ketuk untuk melihat detailnya.</translation>
 <translation id="4269820728363426813">Salin URL</translation>
@@ -410,6 +415,7 @@ Akun Google Anda mungkin memiliki bentuk histori browsing lain seperti penelusur
 <translation id="4876188919622883022">Tampilan sederhana</translation>
 <translation id="4878404682131129617">Gagal membentuk saluran melalui server proxy</translation>
 <translation id="4881695831933465202">Buka</translation>
+<translation id="488187801263602086">Ganti nama file</translation>
 <translation id="4885273946141277891">Jumlah kemunculan Chrome tidak didukung.</translation>
 <translation id="4910889077668685004">Aplikasi pembayaran</translation>
 <translation id="4913161338056004800">Setel ulang statistik</translation>
@@ -503,6 +509,7 @@ Akun Google Anda mungkin memiliki bentuk histori browsing lain seperti penelusur
 <translation id="5676636989614905379">Tidak dapat memutar video di <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Dicekal</translation>
 <translation id="5684874026226664614">Ups. Halaman ini tidak dapat diterjemahkan.</translation>
+<translation id="5686790454216892815">Nama file terlalu panjang</translation>
 <translation id="5689516760719285838">Lokasi</translation>
 <translation id="5719837394786370183">Halaman yang Anda lihat dalam tab penyamaran tidak akan disimpan di histori, penyimpanan cookie, atau histori penelusuran browser setelah semua tab penyamaran ditutup. File apa pun yang didownload atau bookmark yang dibuat akan tetap tersimpan.
 
@@ -695,6 +702,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7437998757836447326">Keluar dari Chrome</translation>
 <translation id="7445411102860286510">Izinkan situs untuk otomatis memutar video yang dibisukan (disarankan)</translation>
 <translation id="7453467225369441013">Membuat Anda logout dari sebagian besar situs. Anda tidak akan logout dari Akun Google.</translation>
+<translation id="7454641608352164238">Tidak cukup ruang</translation>
 <translation id="7455923816558154057">Tap untuk melihat</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="7475192538862203634">Jika masalah ini sering terjadi, coba <ph name="BEGIN_LINK" />saran<ph name="END_LINK" /> berikut.</translation>
@@ -773,6 +781,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8087000398470557479">Konten ini dari <ph name="DOMAIN_NAME" />, dikirimkan oleh Google.</translation>
 <translation id="8100932616285851614">Panel navigasi ditutup</translation>
 <translation id="8103578431304235997">Tab Penyamaran</translation>
+<translation id="8105951947646329362">Sarankan halaman terkait</translation>
 <translation id="8116925261070264013">Dinonaktifkan</translation>
 <translation id="813082847718468539">Lihat informasi situs</translation>
 <translation id="8137558756159375272">Sentuh untuk Menelusuri mengirimkan kata yang dipilih dan halaman yang dibuka sebagai konteks ke Google Penelusuran. Anda dapat menonaktifkannya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
@@ -826,6 +835,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang did
 <translation id="8636825310635137004">Untuk mendapatkan tab dari perangkat lainnya, aktifkan sinkronisasi.</translation>
 <translation id="8641930654639604085">Coba blokir situs dewasa</translation>
 <translation id="8662811608048051533">Membuat Anda logout dari sebagian besar situs.</translation>
+<translation id="8664979001105139458">Nama file sudah ada</translation>
 <translation id="8676374126336081632">Hapus masukan</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Tingkat Kekuatan Sinyal: # batang}other{Tingkat Kekuatan Sinyal: # batang}}</translation>
 <translation id="869891660844655955">Masa berlaku</translation>
@@ -854,6 +864,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang did
 <translation id="8942627711005830162">Buka di jendela lain</translation>
 <translation id="8951232171465285730">Chrome telah menghemat <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Navigasi tidak dapat dijangkau: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Download ke folder default?</translation>
 <translation id="8979405271719829084">Download video untuk ditonton nanti</translation>
 <translation id="8981454092730389528">Kontrol Aktivitas Google</translation>
 <translation id="8986494364107987395">Kirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis</translation>

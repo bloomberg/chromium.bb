@@ -150,6 +150,7 @@
 <translation id="3588820906588687999">ಚಿತ್ರವನ್ನು ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3603009562372709545">ಲಿಂಕ್ URL ನಕಲಿಸಿ</translation>
 <translation id="3607167657931203000">ಸ್ವಯಂಭರ್ತಿ ಡೇಟಾ</translation>
+<translation id="3609785682760573515">ಸಿಂಕ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3628119975092896051">ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಯು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿದೆ. ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಗೆ ಪುಟವನ್ನು ಸೇರಿಸಲು, <ph name="SHARE_OPENING_ICON" /> ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="3638472932233958418">ವೆಬ್ ಪುಟಗಳನ್ನು ಪೂರ್ವಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ಗೆ ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಲಾಗಿದೆ</translation>
@@ -304,7 +305,6 @@
 <translation id="6445981559479772097">ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ.</translation>
 <translation id="6464071786529933911">ಹೊಸ ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ಐಟಂಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ</translation>
-<translation id="6528048372317642110">ಫೈಲ್‌ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡುವಿಕೆ ಲಭ್ಯವಿದೆ</translation>
 <translation id="6541915733953096570">ಕಳೆದ ಗಂಟೆ</translation>
 <translation id="6570040839871198836">ಸ್ವಯಂತುಂಬುವಿಕೆ ಫಾರ್ಮ್‌ಗಳು</translation>
 <translation id="6656103420185847513">ಫೋಲ್ಡರ್ ಎಡಿಟ್ ಮಾಡಿ</translation>
@@ -338,6 +338,7 @@
 <translation id="7159472599653637159">ಮೊಬೈಲ್ ಸೈಟ್‌ಗೆ ವಿನಂತಿಸಿ</translation>
 <translation id="7167621057293532233">ಡೇಟಾ ವಿಧಾನಗಳು</translation>
 <translation id="7175593937868963913">ಇಮೇಲ್‌ ರಚಿಸಿ</translation>
+<translation id="7180611975245234373">ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
 <translation id="7189598951263744875">ಹಂಚಿ...</translation>
 <translation id="7203585745079012652">ಉತ್ತರಗಳನ್ನು ಮತ್ತೆ ಮಾತನಾಡಿ</translation>
 <translation id="722055596168483966">Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಿ</translation>

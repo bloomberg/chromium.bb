@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Ei mitään}=1{1 sivusto}other{# sivustoa}}</translation>
 <translation id="1927235823738766038">Hyväksytyt luotto- ja maksukortit</translation>
 <translation id="194030505837763158">Siirry osoitteeseen <ph name="LINK" /></translation>
+<translation id="1945968466830820669">Voit menettää organisaatiosi tilin käyttöoikeuden tai joutua identiteettivarkauden uhriksi. Chromium suosittelee vaihtamaan salasanan välittömästi.</translation>
 <translation id="1948773908305951926">Hyväksytyt prepaid-kortit</translation>
 <translation id="1962204205936693436">Verkkotunnuksen <ph name="DOMAIN" /> kirjanmerkit</translation>
 <translation id="1973335181906896915">Sarjaesittämisen virhe</translation>
@@ -462,7 +463,6 @@
 <translation id="4171400957073367226">Virheellinen vahvistusallekirjoitus.</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> toinen kohde}other{<ph name="ITEM_COUNT" /> muuta kohdetta}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome suosittelee palvelun <ph name="ORG_NAME" /> salasanan vaihtamista, jos olet käyttänyt sitä muilla sivustoilla.</translation>
 <translation id="4196861286325780578">&amp;Toista siirto</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Tarkista palomuurin ja virustorjuntaohjelmiston määritykset.<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Kaatuu</translation>
@@ -592,6 +592,7 @@
 <translation id="5141240743006678641">Salaa synkronoidut salasanat Google-kirjautumistietojesi avulla</translation>
 <translation id="5145883236150621069">Käytäntövastaus sisältää virhekoodin</translation>
 <translation id="5159010409087891077">Avaa sivu uudessa incognito-ikkunassa (⇧ + ⌘ + N).</translation>
+<translation id="5169827969064885044">Voit menettää organisaatiosi tilin käyttöoikeuden tai joutua identiteettivarkauden uhriksi. Chrome suosittelee vaihtamaan salasanan välittömästi.</translation>
 <translation id="5171045022955879922">Kirjoita hakusanoja tai URL-osoite</translation>
 <translation id="5172758083709347301">Kaikki tietokoneen käyttäjät</translation>
 <translation id="5179510805599951267">Eikö kieli ole <ph name="ORIGINAL_LANGUAGE" />? Ilmoita virheestä</translation>
@@ -692,7 +693,6 @@
 <translation id="5869405914158311789">Sivustoon ei saada yhteyttä</translation>
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
 <translation id="5893752035575986141">Luottokortit hyväksytään.</translation>
-<translation id="5898382028489516745">Chromium suosittelee palvelun <ph name="ORG_NAME" /> salasanan vaihtamista, jos olet käyttänyt sitä muilla sivustoilla.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkronoitu)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 käytössä}other{# käytössä}}</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
@@ -857,6 +857,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Vahvista kortti</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
+<translation id="7407424307057130981">&lt;p&gt;Näet tämän virheen, jos Superfish-ohjelmisto on asennettuna Windows-tietokoneellesi.&lt;/p&gt;
+      &lt;p&gt;Voit poistaa ohjelmiston väliaikaisesti käytöstä ja päästä verkkoon noudattamalla näitä ohjeita. Nämä vaiheet edellyttävät järjestelmänvalvojan oikeuksia.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;Klikkaa &lt;strong&gt;Käynnistä&lt;/strong&gt; ja hae ja valitse sen jälkeen &lt;strong&gt;Näytä paikalliset palvelut&lt;/strong&gt;.
+      &lt;li&gt;Valitse &lt;strong&gt;VisualDiscovery&lt;/strong&gt;.
+      &lt;li&gt;Valitse &lt;strong&gt;Käynnistystapa&lt;/strong&gt;-kohdasta &lt;strong&gt;Ei käytössä&lt;/strong&gt;.
+      &lt;li&gt;Siirry &lt;strong&gt;Palvelun tila&lt;/strong&gt; ‑kohtaan ja valitse &lt;strong&gt;Pysäytä&lt;/strong&gt;.
+      &lt;li&gt;Valitse &lt;strong&gt;Käytä&lt;/strong&gt; ja sen jälkeen &lt;strong&gt;OK&lt;/strong&gt;.
+      &lt;li&gt;Saat ohjeita ohjelmiston pysyvään poistamiseen tietokoneelta &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome-ohjekeskuksesta&lt;/a&gt;.
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Profiilin polku</translation>
 <translation id="7437289804838430631">Lisää yhteystieto</translation>
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>

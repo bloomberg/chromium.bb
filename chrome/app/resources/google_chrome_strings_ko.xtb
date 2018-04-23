@@ -27,7 +27,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" />은(는) 위험하므로 Chrome에서 차단했습니다.</translation>
 <translation id="1619887657840448962">Google에서는 Chrome의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자가 모르게 추가되었을 수 있는 다음 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="1628000112320670027">Chrome 도움말 보기</translation>
-<translation id="163860049029591106">Chrome OS 시작하기</translation>
 <translation id="1674870198290878346">Chrome 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="1682634494516646069">Chrome에서 다음 데이터 디렉토리를 읽고 쓸 수 없습니다.
 
@@ -214,7 +213,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6989339256997917931">Chrome이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
 <translation id="7098166902387133879">Chrome에서 마이크를 사용 중입니다.</translation>
 <translation id="7106741999175697885">작업 관리자 - Chrome</translation>
-<translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>
 <translation id="7164397146364144019">Google에 발생할 수 있는 보안 문제에 대한 세부정보를 자동으로 보고하도록 설정하면 Chrome을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
 <translation id="7242029209006116544">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chrome 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="7308322188646931570">파일을 다운로드하려면 Chrome에 저장소 액세스 권한이 있어야 합니다</translation>

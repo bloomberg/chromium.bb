@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1006017844123154345">온라인 열기</translation>
+<translation id="1021684790657589338">SD 카드 없음</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> 추가 중...</translation>
 <translation id="1041308826830691739">웹사이트 알림</translation>
 <translation id="1049743911850919806">시크릿</translation>
@@ -184,6 +185,7 @@
 <translation id="2625189173221582860">비밀번호 복사됨</translation>
 <translation id="2631006050119455616">절약</translation>
 <translation id="2647434099613338025">언어 추가</translation>
+<translation id="2650751991977523696">파일을 다시 다운로드하시겠습니까?</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="2677748264148917807">나가기</translation>
 <translation id="2704606927547763573">복사됨</translation>
@@ -220,6 +222,7 @@
 <translation id="3029613699374795922"><ph name="KBS" />KB 다운로드됨</translation>
 <translation id="3029704984691124060">암호가 일치하지 않습니다.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Google에서 비슷한 항목 더 확인하기</translation>
 <translation id="305593374596241526">위치가 사용 중지되었습니다. <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 사용 설정하세요.</translation>
 <translation id="307908932405420782">더 많은 콘텐츠가 표시될 예정이니 기대해 주세요. 즐거운 아침 시간 보내세요.</translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
@@ -300,6 +303,7 @@
 <translation id="3819178904835489326">다운로드 <ph name="NUMBER_OF_DOWNLOADS" />개 삭제됨</translation>
 <translation id="3822502789641063741">사이트 저장공간을 삭제하시겠습니까?</translation>
 <translation id="3859306556332390985">앞으로 탐색</translation>
+<translation id="3871936494901781193">위로 스크롤하면 관련 페이지의 빠른 링크가 표시됩니다.</translation>
 <translation id="3894427358181296146">폴더 추가</translation>
 <translation id="3895926599014793903">확대/축소 강제 사용</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +311,7 @@
 <translation id="393697183122708255">사용 가능한 음성 검색이 없습니다.</translation>
 <translation id="3950820424414687140">로그인</translation>
 <translation id="395206256282351086">검색 및 사이트 추천이 사용 중지됨</translation>
+<translation id="3952533382939530115"><ph name="BEGIN_LINK" />동기화<ph name="END_LINK" />를 사용하는 기능입니다. 방문한 페이지의 URL이 Google로 전송됩니다.</translation>
 <translation id="3967822245660637423">다운로드 완료</translation>
 <translation id="397583555483684758">동기화가 중지되었습니다.</translation>
 <translation id="3976396876660209797">이 바로가기 삭제하고 다시 만들기</translation>
@@ -410,6 +415,7 @@
 <translation id="4876188919622883022">간단히 보기</translation>
 <translation id="4878404682131129617">프록시 서버를 통한 터널 설정에 실패했습니다</translation>
 <translation id="4881695831933465202">열기</translation>
+<translation id="488187801263602086">파일 이름 변경</translation>
 <translation id="4885273946141277891">지원되지 않는 Chrome 인스턴스 수입니다.</translation>
 <translation id="4910889077668685004">결제 앱</translation>
 <translation id="4913161338056004800">통계 재설정</translation>
@@ -503,6 +509,7 @@
 <translation id="5676636989614905379"><ph name="SCREEN_NAME" />에서 동영상을 재생할 수 없습니다.</translation>
 <translation id="5677928146339483299">차단됨</translation>
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
+<translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
 <translation id="5689516760719285838">위치</translation>
 <translation id="5719837394786370183">시크릿 탭을 모두 닫으면 시크릿 탭에서 본 페이지는 브라우저 방문 기록, 쿠키 저장소 또는 방문 기록 어디에도 흔적이 남지 않습니다. 단, 다운로드한 파일이나 생성한 북마크는 유지됩니다.
 
@@ -695,6 +702,7 @@
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="7445411102860286510">사이트에서 음소거된 동영상을 자동재생하도록 허용(권장)</translation>
 <translation id="7453467225369441013">대부분의 사이트에서 로그아웃됩니다. Google 계정에서는 로그아웃되지 않습니다.</translation>
+<translation id="7454641608352164238">저장공간 부족</translation>
 <translation id="7455923816558154057">탭하여 보기</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7475192538862203634">이 메시지가 자주 표시된다면 다음 <ph name="BEGIN_LINK" />권장사항<ph name="END_LINK" />을 시도해 보세요.</translation>
@@ -773,6 +781,7 @@
 <translation id="8087000398470557479">이 콘텐츠의 출처는 Google에서 제공하는 <ph name="DOMAIN_NAME" />입니다.</translation>
 <translation id="8100932616285851614">탐색 패널이 닫힘</translation>
 <translation id="8103578431304235997">시크릿 탭</translation>
+<translation id="8105951947646329362">관련 페이지 추천</translation>
 <translation id="8116925261070264013">음소거됨</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8137558756159375272">터치하여 검색에서 선택한 단어와 현재 페이지를 Google 검색에 컨텍스트로 발송하세요. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>
@@ -826,6 +835,7 @@
 <translation id="8636825310635137004">다른 기기에서 탭을 가져오려면 동기화를 사용 설정하세요.</translation>
 <translation id="8641930654639604085">성인용 사이트 차단 시도</translation>
 <translation id="8662811608048051533">대부분의 사이트에서 로그아웃됩니다.</translation>
+<translation id="8664979001105139458">이미 존재하는 이름입니다.</translation>
 <translation id="8676374126336081632">입력내용 지우기</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{신호 강도: 막대 #개}other{신호 강도: 막대 #개}}</translation>
 <translation id="869891660844655955">유효기간</translation>
@@ -854,6 +864,7 @@
 <translation id="8942627711005830162">다른 창에서 열기</translation>
 <translation id="8951232171465285730">Chrome을 통해 <ph name="MEGABYTES" />MB를 절약했습니다.</translation>
 <translation id="8959122750345127698">탐색할 수 없음: <ph name="URL" /></translation>
+<translation id="8972098258593396643">기본 폴더에 다운로드하시겠습니까?</translation>
 <translation id="8979405271719829084">나중에 볼 동영상 다운로드</translation>
 <translation id="8981454092730389528">Google 활동 제어</translation>
 <translation id="8986494364107987395">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 보내기</translation>

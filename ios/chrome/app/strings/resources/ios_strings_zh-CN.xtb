@@ -137,6 +137,7 @@
 <translation id="3393920035788932672">允许显示弹出式窗口</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
 <translation id="3448016392200048164">分割视图</translation>
+<translation id="3469166899695866866">是否停止下载？</translation>
 <translation id="3474624961160222204">继续以<ph name="NAME" />的身份使用</translation>
 <translation id="3474649192738347024">表单已填好。</translation>
 <translation id="3478058380795961209">到期月份</translation>
@@ -150,6 +151,7 @@
 <translation id="3588820906588687999">在新标签页中打开图片</translation>
 <translation id="3603009562372709545">复制链接网址</translation>
 <translation id="3607167657931203000">自动填充数据</translation>
+<translation id="3609785682760573515">正在同步…</translation>
 <translation id="3628119975092896051">您的阅读清单可供离线访问。要将某个网页添加到该清单中，请依次点按<ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="3638472932233958418">预先加载网页</translation>
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
@@ -304,7 +306,6 @@
 <translation id="6445981559479772097">短信已发送。</translation>
 <translation id="6464071786529933911">在新的无痕式标签页中打开</translation>
 <translation id="6482629121755362506">删除了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
-<translation id="6528048372317642110">可下载文件</translation>
 <translation id="6541915733953096570">过去 1 小时</translation>
 <translation id="6570040839871198836">自动填充表单</translation>
 <translation id="6656103420185847513">修改文件夹</translation>
@@ -338,6 +339,7 @@
 <translation id="7159472599653637159">请求移动版网站</translation>
 <translation id="7167621057293532233">数据类型</translation>
 <translation id="7175593937868963913">邮件内容</translation>
+<translation id="7180611975245234373">刷新</translation>
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7203585745079012652">说出答案</translation>
 <translation id="722055596168483966">对 Google 服务进行个性化设置</translation>
@@ -380,6 +382,7 @@
 <translation id="8023878949384262191">展开此部分。</translation>
 <translation id="8059533439631660104">合拢此部分。</translation>
 <translation id="806745655614357130">单独保存我的数据</translation>
+<translation id="8073670137947914548">已下载完毕</translation>
 <translation id="8076014560081431679">已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">关闭所有标签页</translation>
 <translation id="8205564605687841303">取消</translation>

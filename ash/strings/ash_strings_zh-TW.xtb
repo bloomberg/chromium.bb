@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">顯示比例</translation>
 <translation id="2303600792989757991">切換視窗總覽</translation>
 <translation id="2338501278241028356">開啟藍牙即可偵測附近的裝置</translation>
+<translation id="2339073806695260576">輕觸檔案櫃的觸控筆圖示即可做筆記、擷取螢幕畫面，以及使用雷射筆或放大鏡。</translation>
 <translation id="2351266942280602854">語言和輸入</translation>
 <translation id="2352467521400612932">觸控筆設定</translation>
 <translation id="2354174487190027830">正在啟用 <ph name="NAME" /></translation>
@@ -174,7 +175,7 @@
 <translation id="4804818685124855865">中斷連線</translation>
 <translation id="4849058404725798627">醒目顯示鍵盤焦點所在物件</translation>
 <translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
-<translation id="4890187583552566966">你的管理員停用了 Google 個人助理。</translation>
+<translation id="4890187583552566966">你的管理員停用了 Google 助理。</translation>
 <translation id="4895488851634969361">電池電量已滿。</translation>
 <translation id="4905614135390995787">切換高對比模式的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="4918086044614829423">接受</translation>
@@ -186,7 +187,7 @@
 <translation id="523505283826916779">協助工具設定</translation>
 <translation id="5313326810920013265">藍牙設定</translation>
 <translation id="5331975486040154427">USB-C 裝置 (左後方連接埠)</translation>
-<translation id="5397578532367286026">管理員 (<ph name="MANAGER_EMAIL" />) 可以在 chrome.com 瞭解這名使用者的使用情形和紀錄。</translation>
+<translation id="5397578532367286026">管理員 (<ph name="MANAGER_EMAIL" />) 可以在 chrome.com 瞭解這名使用者的使用情形和記錄。</translation>
 <translation id="5430931332414098647">即時網路共用</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
@@ -227,7 +228,7 @@
 <translation id="607652042414456612">你的電腦已開放附近的藍牙裝置搜尋，顯示名稱為「<ph name="NAME" />」，位址則是 <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">正在為「<ph name="POWER_SOURCE" />」充電</translation>
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
-<translation id="6164005077879661055">將這位受監管的使用者移除後，系統即會永久刪除所有與該使用者相關的檔案和本機資料。管理員仍可前往 <ph name="MANAGEMENT_URL" /> 查看這位受監管使用者的網頁瀏覽紀錄和設定。</translation>
+<translation id="6164005077879661055">將這位受監管的使用者移除後，系統即會永久刪除所有與該使用者相關的檔案和本機資料。管理員仍可前往 <ph name="MANAGEMENT_URL" /> 查看這位受監管使用者的網頁瀏覽記錄和設定。</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6267036997247669271"><ph name="NAME" />：正在啟用...</translation>
 <translation id="6284232397434400372">解析度已變更</translation>
@@ -273,7 +274,6 @@
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
 <translation id="7131634465328662194">系統會自動將你登出。</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
-<translation id="7165511658052620796">(TEMP) Show webui login; if used file bug (crbug.com) or feedback (alt+shift+i)</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
 <translation id="726276584504105859">拖曳到這裡即可使用分割畫面</translation>
@@ -295,12 +295,12 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7692480393933218409">正在為連接的 USB-C 裝置充電</translation>
 <translation id="776344839111254542">按一下即可查看更新詳細資料</translation>
-<translation id="7796353162336583443">輕觸檔案櫃的觸控筆圖示即可寫筆記、擷取螢幕畫面，以及使用 Google 個人助理、雷射筆和放大鏡。</translation>
+<translation id="7796353162336583443">輕觸檔案櫃的觸控筆圖示即可寫筆記、擷取螢幕畫面，以及使用 Google 助理、雷射筆和放大鏡。</translation>
 <translation id="7798302898096527229">按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="7829386189513694949">訊號穩定</translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
-<translation id="7933084174919150729">Google 個人助理僅適用於主要設定檔。</translation>
+<translation id="7933084174919150729">Google 助理僅適用於主要設定檔。</translation>
 <translation id="79341161159229895">這個帳戶是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
 <translation id="7977927628060636163">正在搜尋行動網路...</translation>
 <translation id="7982789257301363584">網路</translation>
@@ -345,7 +345,7 @@
 <translation id="8850991929411075241">搜尋鍵 + Esc 鍵</translation>
 <translation id="8870509716567206129">這個應用程式不支援分割畫面。</translation>
 <translation id="8878886163241303700">延伸螢幕</translation>
-<translation id="8921624153894383499">Google 個人助理不支援這個語言。</translation>
+<translation id="8921624153894383499">Google 助理不支援這個語言。</translation>
 <translation id="8938800817013097409">USB-C 裝置 (背面右側連接埠)</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>

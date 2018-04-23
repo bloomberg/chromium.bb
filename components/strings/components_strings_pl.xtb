@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Brak}=1{1 witryna}few{# witryny}many{# witryn}other{# witryny}}</translation>
 <translation id="1927235823738766038">Akceptowane karty kredytowe i debetowe</translation>
 <translation id="194030505837763158">Wejdź na <ph name="LINK" /></translation>
+<translation id="1945968466830820669">Możesz stracić dostęp do swojego konta organizacji lub paść ofiarą kradzieży tożsamości. Chromium zaleca natychmiastową zmianę hasła.</translation>
 <translation id="1948773908305951926">Akceptowane karty przedpłacone</translation>
 <translation id="1962204205936693436">Zakładki z <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Podczas przekształcania do postaci szeregowej wystąpił błąd</translation>
@@ -461,7 +462,6 @@
 <translation id="4171400957073367226">Nieprawidłowy podpis weryfikujący</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Jeszcze <ph name="ITEM_COUNT" /> element}few{Jeszcze <ph name="ITEM_COUNT" /> elementy}many{Jeszcze <ph name="ITEM_COUNT" /> elementów}other{Jeszcze <ph name="ITEM_COUNT" /> elementu}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome zaleca zresetowanie hasła, którego używasz w: <ph name="ORG_NAME" />, jeśli zostało użyte na innej stronie.</translation>
 <translation id="4196861286325780578">&amp;Ponów przeniesienie</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sprawdź konfigurację zapory sieciowej i oprogramowania antywirusowego<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Awarie</translation>
@@ -591,6 +591,7 @@
 <translation id="5141240743006678641">Szyfruj synchronizowane hasła za pomocą danych logowania Google</translation>
 <translation id="5145883236150621069">W odebranej polityce znajduje się kod błędu</translation>
 <translation id="5159010409087891077">Otwórz stronę w nowym oknie incognito (⇧⌘N)</translation>
+<translation id="5169827969064885044">Możesz stracić dostęp do swojego konta organizacji lub paść ofiarą kradzieży tożsamości. Chrome zaleca natychmiastową zmianę hasła.</translation>
 <translation id="5171045022955879922">Wyszukaj lub wpisz URL</translation>
 <translation id="5172758083709347301">Komputer</translation>
 <translation id="5179510805599951267">Jeśli to nie jest język <ph name="ORIGINAL_LANGUAGE" />, zgłoś błąd</translation>
@@ -691,7 +692,6 @@
 <translation id="5869405914158311789">Ta witryna jest nieosiągalna</translation>
 <translation id="5869522115854928033">Zapisane hasła</translation>
 <translation id="5893752035575986141">Karty kredytowe są akceptowane.</translation>
-<translation id="5898382028489516745">Chromium zaleca zresetowanie hasła, którego używasz w: <ph name="ORG_NAME" />, jeśli zostało użyte na innej stronie.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (zsynchronizowane)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{W użyciu: 1}few{W użyciu: #}many{W użyciu: #}other{W użyciu: #}}</translation>
 <translation id="5939518447894949180">Resetuj</translation>
@@ -856,6 +856,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Potwierdź kartę</translation>
 <translation id="7400418766976504921">Adres URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;Ten błąd występuje, jeśli na komputerze z systemem Windows masz zainstalowane oprogramowanie Superfish.&lt;/p&gt;
+      &lt;p&gt;Wykonaj te czynności, by tymczasowo wyłączyć to oprogramowanie i połączyć się z internetem. Będziesz potrzebować uprawnień administratora.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;Kliknij &lt;strong&gt;Start&lt;/strong&gt; i wyszukaj albo wybierz opcję &lt;strong&gt;„Wyświetl usługi lokalne”&lt;/strong&gt;.
+      &lt;li&gt;Wybierz &lt;strong&gt;VisualDiscovery&lt;/strong&gt;.
+      &lt;li&gt;W sekcji &lt;strong&gt;Typ uruchomienia&lt;/strong&gt; wybierz &lt;strong&gt;Wyłączony&lt;/strong&gt;.
+      &lt;li&gt;W sekcji &lt;strong&gt;Stan usługi&lt;/strong&gt; kliknij &lt;strong&gt;Zatrzymaj&lt;/strong&gt;.
+      &lt;li&gt;Kliknij &lt;strong&gt;Zastosuj&lt;/strong&gt;, a potem kliknij &lt;strong&gt;OK&lt;/strong&gt;.
+      &lt;li&gt;W &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Centrum pomocy Chrome&lt;/a&gt; dowiesz się, jak trwale usunąć to oprogramowanie z komputera.
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Ścieżka profilu</translation>
 <translation id="7437289804838430631">Dodaj dane kontaktowe</translation>
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>

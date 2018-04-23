@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Nenhum}=1{1 site}other{# sites}}</translation>
 <translation id="1927235823738766038">Cartões de crédito e de débito aceites</translation>
 <translation id="194030505837763158">Aceder a <ph name="LINK" /></translation>
+<translation id="1945968466830820669">Pode perder o acesso à conta da sua entidade ou ser vítima de roubo de identidade. O Chromium recomenda a alteração da palavra-passe agora.</translation>
 <translation id="1948773908305951926">Cartões pré-pagos admitidos</translation>
 <translation id="1962204205936693436">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Erro de serialização</translation>
@@ -461,7 +462,6 @@
 <translation id="4171400957073367226">Assinatura de verificação incorreta</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Mais <ph name="ITEM_COUNT" /> item}other{Mais <ph name="ITEM_COUNT" /> itens}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">O Chrome recomenda a reposição da palavra-passe do serviço <ph name="ORG_NAME" /> se a tiver reutilizado noutros sites.</translation>
 <translation id="4196861286325780578">&amp;Refazer movimentação</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Verificar as configurações da firewall e de antivírus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Erros</translation>
@@ -591,6 +591,7 @@
 <translation id="5141240743006678641">Encriptar palavras-passe sincronizadas com as credenciais Google</translation>
 <translation id="5145883236150621069">Código de erro presente na resposta da política</translation>
 <translation id="5159010409087891077">Abrir a página numa nova janela de navegação anónima (⇧⌘N)</translation>
+<translation id="5169827969064885044">Pode perder o acesso à conta da sua entidade ou ser vítima de roubo de identidade. O Chrome recomenda a alteração da palavra-passe agora.</translation>
 <translation id="5171045022955879922">Pesquisar ou escrever URL</translation>
 <translation id="5172758083709347301">Equipamento</translation>
 <translation id="5179510805599951267">Não está em <ph name="ORIGINAL_LANGUAGE" />? Comunicar este erro</translation>
@@ -691,7 +692,6 @@
 <translation id="5869405914158311789">Não é possível aceder a este site</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
 <translation id="5893752035575986141">Os cartões de crédito são admitidos.</translation>
-<translation id="5898382028489516745">O Chromium recomenda a reposição da palavra-passe do serviço <ph name="ORG_NAME" /> se a tiver reutilizado noutros sites.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizados)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 em utilização}other{# em utilização}}</translation>
 <translation id="5939518447894949180">Repor</translation>
@@ -856,6 +856,15 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Confirmar cartão</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;Este erro é apresentado se tiver software Superfish no seu computador com Windows.&lt;/p&gt;
+      &lt;p&gt;Siga estes passos para desativar temporariamente o software para que possa aceder à Web. Vai precisar de privilégios de administrador.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;Clique em &lt;strong&gt;Iniciar&lt;/strong&gt; e, em seguida, pesquise e selecione &lt;strong&gt;"Ver serviços locais"&lt;/strong&gt;.
+      &lt;li&gt;Selecione &lt;strong&gt;VisualDiscovery&lt;/strong&gt;.
+      &lt;li&gt;Em &lt;strong&gt;Tipo de arranque&lt;/strong&gt;, selecione &lt;strong&gt;Desativado&lt;/strong&gt;.
+      &lt;li&gt;Em &lt;strong&gt;Estado do serviço&lt;/strong&gt;, clique em &lt;strong&gt;Parar&lt;/strong&gt;.
+      &lt;li&gt;Clique em &lt;strong&gt;Aplicar&lt;/strong&gt; e, de seguida, em &lt;strong&gt;OK&lt;/strong&gt;.
+      &lt;li&gt;Visite o &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Centro de Ajuda do Chrome&lt;/a&gt; para saber como remover permanentemente o software do computador.      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Caminho do Perfil</translation>
 <translation id="7437289804838430631">Adicionar informações de contacto</translation>
 <translation id="7441627299479586546">Assunto da política incorreto</translation>

@@ -57,7 +57,7 @@
 <translation id="2081529251031312395">$1 kan stadig logge ind senere.</translation>
 <translation id="2122028596993374965">Stop med at caste <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
-<translation id="2135456203358955318">Lup for fast visning</translation>
+<translation id="2135456203358955318">Fastgjort lupvindue</translation>
 <translation id="2144487987174258011">Genstart for at opdatere Adobe Flash Player</translation>
 <translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
 <translation id="2220572644011485463">Pin- eller adgangskode</translation>
@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">Visningsskala</translation>
 <translation id="2303600792989757991">Skift vinduesoversigt</translation>
 <translation id="2338501278241028356">Slå Bluetooth til for at opdage enheder i nærheden</translation>
+<translation id="2339073806695260576">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge lasermarkøren og luppen.</translation>
 <translation id="2351266942280602854">Sprog og indtastning</translation>
 <translation id="2352467521400612932">Penneindstillinger</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME" /></translation>
@@ -274,7 +275,6 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
 <translation id="7131634465328662194">Du logges automatisk ud.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
-<translation id="7165511658052620796">(TEMP) Vis webui-login; hvis der er brugt filrettelse (crbug.com), eller feedback (alt + shift + i)</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7256634071279256947">Mikrofon på bagsiden</translation>
 <translation id="726276584504105859">Træk hertil for at bruge delt skærm</translation>

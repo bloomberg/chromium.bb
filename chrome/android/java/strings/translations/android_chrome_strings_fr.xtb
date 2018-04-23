@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1006017844123154345">Ouvrir la version en ligne</translation>
+<translation id="1021684790657589338">Aucune carte SD n'a été détectée</translation>
 <translation id="1036727731225946849">Ajout de <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">À partir de sites Web</translation>
 <translation id="1049743911850919806">Navigation privée</translation>
@@ -184,6 +185,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2625189173221582860">Mot de passe copié</translation>
 <translation id="2631006050119455616">Enregistrées</translation>
 <translation id="2647434099613338025">Ajouter une langue</translation>
+<translation id="2650751991977523696">Télécharger de nouveau le fichier ?</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2704606927547763573">Copié</translation>
@@ -220,6 +222,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="3029613699374795922"><ph name="KBS" /> Ko téléchargé(s)</translation>
 <translation id="3029704984691124060">Les phrases secrètes ne correspondent pas.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Afficher plus de suggestions</translation>
 <translation id="305593374596241526">La localisation est désactivée. Activez-la dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">D'autres articles vous seront bientôt proposés. Bonne matinée !</translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
@@ -300,6 +303,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
 <translation id="3859306556332390985">Avance rapide</translation>
+<translation id="3871936494901781193">Lorsque vous faites défiler vers le haut, des liens rapides s'affichent vers des pages associées.</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +311,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="393697183122708255">Aucune recherche vocale activée dispo.</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
 <translation id="395206256282351086">Suggestions de recherches et de sites désactivées</translation>
+<translation id="3952533382939530115">Cette fonctionnalité utilise la <ph name="BEGIN_LINK" />synchronisation<ph name="END_LINK" />. Les URL des pages que vous visitez sont envoyées à Google.</translation>
 <translation id="3967822245660637423">Téléchargement terminé</translation>
 <translation id="397583555483684758">La synchronisation s'est arrêtée.</translation>
 <translation id="3976396876660209797">Supprimez et recréez ce raccourci</translation>
@@ -410,6 +415,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4876188919622883022">Vue simplifiée</translation>
 <translation id="4878404682131129617">Échec de l'établissement d'un tunnel via un serveur proxy</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
+<translation id="488187801263602086">Renommer le fichier</translation>
 <translation id="4885273946141277891">Le nombre d'instances de Chrome n'est pas compatible.</translation>
 <translation id="4910889077668685004">Applications de paiement</translation>
 <translation id="4913161338056004800">Réinitialiser les statistiques</translation>
@@ -503,6 +509,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="5676636989614905379">Impossible de lire la vidéo sur "<ph name="SCREEN_NAME" />".</translation>
 <translation id="5677928146339483299">Bloqué</translation>
 <translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
+<translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5689516760719285838">Position</translation>
 <translation id="5719837394786370183">Les pages consultées dans les onglets de navigation privée ne sont pas enregistrées dans l'historique de votre navigateur, dans les cookies ni dans l'historique des recherches une fois que vous avez fermé tous les onglets de navigation privée. Les fichiers téléchargés et les favoris ajoutés sont conservés.
 
@@ -695,6 +702,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>
 <translation id="7445411102860286510">Autoriser les sites à lire automatiquement des vidéos dont le son est coupé (recommandé)</translation>
 <translation id="7453467225369441013">Vous déconnecte de la plupart des sites. Vous ne serez cependant pas déconnecté de votre compte Google.</translation>
+<translation id="7454641608352164238">Espace insuffisant</translation>
 <translation id="7455923816558154057">Appuyer pour afficher</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7475192538862203634">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
@@ -773,6 +781,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8087000398470557479">Ce contenu est issu de <ph name="DOMAIN_NAME" />. Il est diffusé par Google.</translation>
 <translation id="8100932616285851614">Panneau de navigation fermé</translation>
 <translation id="8103578431304235997">Onglet de navigation privée</translation>
+<translation id="8105951947646329362">Suggérer des pages associées</translation>
 <translation id="8116925261070264013">Son coupé</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
 <translation id="8137558756159375272">La fonction "Appuyer pour rechercher" transmet le mot sélectionné et la page actuelle en tant que contexte vers la fonction de recherche Google. Vous pouvez la désactiver dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
@@ -826,6 +835,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8636825310635137004">Activez la synchronisation pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="8641930654639604085">Essayer de bloquer les sites réservés aux adultes</translation>
 <translation id="8662811608048051533">Vous déconnecte de la plupart des sites.</translation>
+<translation id="8664979001105139458">Nom de fichier déjà attribué</translation>
 <translation id="8676374126336081632">Effacer la saisie</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensité du signal : # barre}one{Intensité du signal : # barre}other{Intensité du signal : # barres}}</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
@@ -854,6 +864,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8942627711005830162">Ouvrir dans une autre fenêtre</translation>
 <translation id="8951232171465285730">Chrome vous a permis de gagner <ph name="MEGABYTES" /> Mo</translation>
 <translation id="8959122750345127698">Impossible d'accéder à <ph name="URL" />.</translation>
+<translation id="8972098258593396643">Télécharger dans le dossier par défaut ?</translation>
 <translation id="8979405271719829084">Téléchargez des vidéos à regarder plus tard</translation>
 <translation id="8981454092730389528">Commandes Google relatives à l'activité</translation>
 <translation id="8986494364107987395">Envoyer automatiquement les statistiques d'utilisation et les rapports d'erreur à Google</translation>

@@ -145,6 +145,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="4207623512727273241">Paleiskite diegimo programą prieš tęsdami.</translation>
 <translation id="4227991223508142681">Prieglobos aprūpinimo paslaugų programa</translation>
 <translation id="4240294130679914010">„Chrome“ nuotolinio ryšio prieglobos pašalinimo priemonė</translation>
+<translation id="4249741460382919890">Bendrieji pataisymai ir stabilumo patobulinimai.</translation>
 <translation id="4277463233460010382">Šis kompiuteris sukonfigūruotas leisti vienam ar keliems klientams prisijungti neįvedus PIN kodo.</translation>
 <translation id="4277736576214464567">Netinkamas prieigos kodas. Bandykite dar kartą.</translation>
 <translation id="4361728918881830843">Jei norite įgalinti nuotolinį ryšį su kitu kompiuteriu, jame įdiekite „Chrome“ nuotolinį kompiuterio valdymą ir spustelėkite „<ph name="BUTTON_NAME" />“.</translation>
@@ -190,6 +191,7 @@ AK</translation>
 <translation id="5064360042339518108">„<ph name="HOSTNAME" />“ (neprisijungta)</translation>
 <translation id="5070121137485264635">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio kompiuterio valdymo programai papildomas teises pasiekti šį adresą</translation>
 <translation id="507204348399810022">Ar tikrai norite išjungti nuotolinį ryšį su „<ph name="HOSTNAME" />“?</translation>
+<translation id="5081343395220691640">Nepavyko užmegzti ryšio su serveriu: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Įveskite tą patį PIN kodą abiejuose laukeliuose.</translation>
 <translation id="5170982930780719864">Netinkamas prieglobos ID.</translation>
 <translation id="518094545883702183">Ši informacija naudojama tik problemos, apie kurią pranešate, diagnozavimo tikslais, ji pasiekiama tik ataskaitą nagrinėjančiam asmeniui ir saugoma ne ilgiau nei 30 dienų.</translation>

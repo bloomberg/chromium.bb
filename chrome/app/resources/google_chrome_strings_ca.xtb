@@ -25,7 +25,6 @@
 <translation id="1587325591171447154">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
 <translation id="1619887657840448962">Per tal que Chrome sigui més segur, hem desactivat algunes de les extensions que no figuren a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="1628000112320670027">Obtén ajuda per a Chrome</translation>
-<translation id="163860049029591106">Introducció a Chrome OS</translation>
 <translation id="1674870198290878346">Obre l'enllaç en una finestra d'incò&amp;gnit a Chrome</translation>
 <translation id="1682634494516646069">Google Chrome no pot llegir ni escriure en el directori de dades: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome és un navegador web que executa pàgines web i aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu d'una manera més segura pel web amb la protecció contra programari maliciós i llocs de pesca integrada a Google Chrome.</translation>
@@ -206,7 +205,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="6989339256997917931">Google Chrome està actualitzat, però no l'heu utilitzat durant un mínim de 30 dies.</translation>
 <translation id="7098166902387133879">Google Chrome està utilitzant el micròfon.</translation>
 <translation id="7106741999175697885">Gestor de tasques - Google Chrome</translation>
-<translation id="7161904924553537242">Us donem la benvinguda a Google Chrome.</translation>
 <translation id="7164397146364144019">Si voleu col·laborar perquè Chrome sigui més segur i fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidències de seguretat.</translation>
 <translation id="7242029209006116544">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Google Chrome a l'administrador corresponent. Les vostres dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chrome a part. <ph name="LEARN_MORE" /></translation>
 <translation id="7308322188646931570">Chrome necessita accedir a l'emmagatzematge per baixar fitxers</translation>

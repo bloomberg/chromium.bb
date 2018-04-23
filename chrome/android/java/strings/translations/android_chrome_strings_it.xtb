@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1006017844123154345">Apri online</translation>
+<translation id="1021684790657589338">Nessuna scheda SD trovata</translation>
 <translation id="1036727731225946849">Aggiunta di <ph name="WEBAPK_NAME" /> in corso…</translation>
 <translation id="1041308826830691739">Da siti web</translation>
 <translation id="1049743911850919806">In incognito</translation>
@@ -184,6 +185,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2625189173221582860">Password copiata</translation>
 <translation id="2631006050119455616">Risparmiati</translation>
 <translation id="2647434099613338025">Aggiungi lingua</translation>
+<translation id="2650751991977523696">Scaricare nuovamente il file?</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2704606927547763573">Copiata</translation>
@@ -220,6 +222,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="3029613699374795922">Sono stati scricati <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Le passphrase non corrispondono</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Visualizza altri contenuti simili da Google</translation>
 <translation id="305593374596241526">La geolocalizzazione non è attiva; attivala nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">A breve verranno visualizzati altri articoli. Buona giornata.</translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
@@ -300,6 +303,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> download eliminati</translation>
 <translation id="3822502789641063741">Cancellare memoria usata da siti?</translation>
 <translation id="3859306556332390985">Posiziona avanti</translation>
+<translation id="3871936494901781193">Quando scorri verso l'alto, ti vengono mostrati i link diretti alle pagine correlate.</translation>
 <translation id="3894427358181296146">Aggiungi cartella</translation>
 <translation id="3895926599014793903">Attivazione forzata dello zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +311,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="393697183122708255">Nessuna ricerca vocale attiva disponib.</translation>
 <translation id="3950820424414687140">Accedi</translation>
 <translation id="395206256282351086">Suggerimenti di ricerche e siti disattivati</translation>
+<translation id="3952533382939530115">Questa funzione utilizza la <ph name="BEGIN_LINK" />sincronizzazione<ph name="END_LINK" />. Gli URL delle pagine che visiti vengono inviati a Google.</translation>
 <translation id="3967822245660637423">Download completato</translation>
 <translation id="397583555483684758">La sincronizzazione si è interrotta</translation>
 <translation id="3976396876660209797">Rimuovi e ricrea la scorciatoia</translation>
@@ -410,6 +415,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4876188919622883022">Visualizzazione semplificata</translation>
 <translation id="4878404682131129617">Creazione di un tunnel tramite server proxy non riuscita</translation>
 <translation id="4881695831933465202">Apri</translation>
+<translation id="488187801263602086">Rinomina file</translation>
 <translation id="4885273946141277891">Numero di istanze di Chrome non supportato.</translation>
 <translation id="4910889077668685004">App di pagamento</translation>
 <translation id="4913161338056004800">Reimposta statistiche</translation>
@@ -503,6 +509,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="5676636989614905379">Impossibile riprodurre il video su <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Bloccati</translation>
 <translation id="5684874026226664614">Spiacenti. Impossibile tradurre questa pagina.</translation>
+<translation id="5686790454216892815">Nome file troppo lungo</translation>
 <translation id="5689516760719285838">Posizione</translation>
 <translation id="5719837394786370183">Le pagine visualizzate nelle schede in incognito non vengono memorizzate nella cronologia del browser, nell'archivio di cookie o nella cronologia delle ricerche dopo aver chiuso tutte le schede. I file da te scaricati o i Preferiti da te creati vengono mantenuti.
 
@@ -695,6 +702,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7437998757836447326">Esci da Chrome</translation>
 <translation id="7445411102860286510">Consenti ai siti di riprodurre automaticamente i video con audio disattivato (opzione consigliata)</translation>
 <translation id="7453467225369441013">Verrai scollegato dalla maggior parte dei siti, ma non dal tuo account Google.</translation>
+<translation id="7454641608352164238">Spazio insufficiente</translation>
 <translation id="7455923816558154057">Tocca per visualizzare</translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="7475192538862203634">Se il problema si verifica di frequente, prova questi <ph name="BEGIN_LINK" />suggerimenti<ph name="END_LINK" />.</translation>
@@ -773,6 +781,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8087000398470557479">Questi contenuti derivano da <ph name="DOMAIN_NAME" /> e sono offerti da Google.</translation>
 <translation id="8100932616285851614">Riquadro di navigazione chiuso</translation>
 <translation id="8103578431304235997">Scheda di navigazione in incognito</translation>
+<translation id="8105951947646329362">Suggerisci pagine correlate</translation>
 <translation id="8116925261070264013">Con audio disattivato</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8137558756159375272">La funzione Tocca per cercare invia la parola selezionata e la pagina corrente come contesto alla Ricerca Google. Puoi disattivare la funzione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
@@ -826,6 +835,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="8636825310635137004">Attiva la sincronizzazione per trovare le tue schede degli altri dispositivi.</translation>
 <translation id="8641930654639604085">Prova a bloccare siti per adulti</translation>
 <translation id="8662811608048051533">Vieni scollegato dalla maggior parte dei siti.</translation>
+<translation id="8664979001105139458">Nome file già esistente</translation>
 <translation id="8676374126336081632">Cancella testo inserito</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensità del segnale: # barra}other{Intensità del segnale: # barre}}</translation>
 <translation id="869891660844655955">Data di scadenza</translation>
@@ -854,6 +864,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="8942627711005830162">Apri nell'altra finestra</translation>
 <translation id="8951232171465285730">Chrome ti ha fatto risparmiare <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Navigazione inaccessibile: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Scaricare nella cartella predefinita?</translation>
 <translation id="8979405271719829084">Scarica video da guardare in seguito</translation>
 <translation id="8981454092730389528">Gestione attività di Google</translation>
 <translation id="8986494364107987395">Invia automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali</translation>

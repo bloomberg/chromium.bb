@@ -3,7 +3,6 @@
 <translationbundle lang="sr">
 <translation id="104962181688258143">Отворите апликацију Датотеке</translation>
 <translation id="1122869341872663659">Приказује резултате претраге (<ph name="N" />) за упит <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Искључи звук</translation>
 <translation id="1195667586424773550">Превуците линк у траку за адресу картице</translation>
 <translation id="1204450209689312104">Отворите нови прозор у режиму без архивирања</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -15,6 +14,7 @@
 <translation id="152892567002884378">Појачајте звук</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Померите на почетак претходне речи</translation>
+<translation id="1671169355475348905">Пређите на метод уноса претходног језика</translation>
 <translation id="1679841710523778799">Повећајте осветљеност</translation>
 <translation id="168356808214100546">Притисните и задржите <ph name="ALT" />, додирујте <ph name="TAB" /> док не дођете до прозора који желите да отворите, па отпустите.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -32,6 +32,7 @@
 <translation id="2185166372312820725">Идите на претходну картицу</translation>
 <translation id="2194790690264064655">Притисните <ph name="CTRL" /> и кликните на линк</translation>
 <translation id="2382644247745281995">Није подржано са актуелним распоредом тастатуре</translation>
+<translation id="2397416548179033562">Приказ Chrome менија</translation>
 <translation id="2424073332829844142">Укључите или искључите тастер Caps Lock</translation>
 <translation id="2441202986792279177">Брзо прелазите са једног прозора на други</translation>
 <translation id="2478303094958140141">Укључите или искључите ChromeVox (говорне повратне информације)</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">Ресетујте резолуцију екрана на подразумевану вредност</translation>
 <translation id="2596078834055697711">Направите снимак екрана прозора</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="TAB" /> или <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">Пређите на метод уноса наредног језика</translation>
 <translation id="2699509451653686398">Сачувајте тренутну веб-страницу као обележивач</translation>
 <translation id="2750942583782703988">Поново учитајте тренутну страницу</translation>
 <translation id="2764005613199379871">Поставите фокус на траку за адресу и претрагу</translation>
@@ -49,6 +51,7 @@
 <translation id="2872353916818027657">Замена примарног монитора</translation>
 <translation id="2914313326123580426">Прикажите или сакријте таблу Алатке за програмере</translation>
 <translation id="292495055542441795">Укључите/искључите приказивање на целом екрану</translation>
+<translation id="3020183492814296499">Пречице</translation>
 <translation id="3084301071537457911">Истакните следећу ставку на полици</translation>
 <translation id="309173601632226815">Истакните дугме покретача на полици</translation>
 <translation id="3105917916468784889">Сними екран</translation>
@@ -104,7 +107,7 @@
 <translation id="5563050856984839829">Притисните <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> и кликните на линк</translation>
 <translation id="561814908794220892">Отворите веб-страницу на новој картици</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> или <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
-<translation id="5757111373163288447">Отворите линк на картици</translation>
+<translation id="5757111373163288447">Отворите линк у картици</translation>
 <translation id="5757474750054631686">Смањите осветљеност тастатуре (само за тастатуре са позадинским осветљењем)</translation>
 <translation id="587531134027443617">Избришите претходну реч</translation>
 <translation id="5899919361772749550">Прикажите или сакријте конзолу Алатке за програмере</translation>
@@ -147,7 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Откачите апликацију</translation>
 <translation id="7439718573248533901">Избришите следеће слово (брисање унапред)</translation>
-<translation id="7449669175878568981">Покреће или зауставља диктирање (уноси оно што говорите)</translation>
+<translation id="7611271430932669992">Померите фокус на искачуће прозоре и дијалоге</translation>
 <translation id="766326951329901120">Налепите садржај из привремене меморије као обичан текст</translation>
 <translation id="7724603315864178912">Исеци</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="SPACE" /> или <ph name="ENTER" /></translation>
@@ -156,7 +159,6 @@
 <translation id="7952165122793773711">Идите на картице од 1 до 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> или <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Обришите податке прегледања</translation>
-<translation id="8104889575691864804">Прикажите мени апликације</translation>
 <translation id="8130528849632411619">Идите на почетак документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> или <ph name="E" /></translation>
 <translation id="8232835244134740473">Пребацујте фокус између: области статуса (где се приказује слика налога), Покретача, траке за адресу, траке са обележивачима (ако је видљива), веб-странице која је отворена и траке са преузимањима (ако је видљива).</translation>

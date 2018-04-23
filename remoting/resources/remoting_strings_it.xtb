@@ -145,6 +145,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="4207623512727273241">Esegui il programma di installazione prima di continuare.</translation>
 <translation id="4227991223508142681">Utilità di provisioning degli host</translation>
 <translation id="4240294130679914010">Programma di disinstallazione host Chromoting</translation>
+<translation id="4249741460382919890">Correzioni generali e miglioramenti di stabilità.</translation>
 <translation id="4277463233460010382">Questo computer è configurato per consentire la connessione di uno o più client senza l'inserimento di un codice PIN.</translation>
 <translation id="4277736576214464567">Il codice di accesso non è valido. Riprova.</translation>
 <translation id="4361728918881830843">Per attivare le connessioni remote su un altro computer, installa Chrome Remote Desktop sul computer e fai clic su "<ph name="BUTTON_NAME" />".</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chrome Remote Desktop ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="507204348399810022">Vuoi disattivare le connessioni remote a <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">Impossibile comunicare con il server: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Inserisci lo stesso PIN in entrambe le caselle.</translation>
 <translation id="5170982930780719864">ID host non valido.</translation>
 <translation id="518094545883702183">Queste informazioni vengono utilizzate soltanto per identificare il problema segnalato, sono disponibili soltanto a chi effettua accertamenti in merito alla tua segnalazione e vengono conservate per massimo 30 giorni.</translation>

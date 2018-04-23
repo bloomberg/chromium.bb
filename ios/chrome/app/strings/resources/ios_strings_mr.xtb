@@ -137,6 +137,7 @@
 <translation id="3393920035788932672">पॉप-अपला अनुमती</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनिटे</translation>
 <translation id="3448016392200048164">विभाजित दृश्य</translation>
+<translation id="3469166899695866866">डाउनलोड थांबवायचे?</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> म्हणून सुरु ठेवा</translation>
 <translation id="3474649192738347024">फॉर्म भरले.</translation>
 <translation id="3478058380795961209">कालबाह्यता महिना:</translation>
@@ -150,6 +151,7 @@
 <translation id="3588820906588687999">नवीन टॅबमध्ये प्रतिमा उघडा</translation>
 <translation id="3603009562372709545">दुवा URL कॉपी करा</translation>
 <translation id="3607167657931203000">स्वयं-भरण डेटा</translation>
+<translation id="3609785682760573515">संकालन करत आहे...</translation>
 <translation id="3628119975092896051">आपली वाचन सूची ऑफलाइन उपलब्ध आहे. आपल्या वाचन सूचीमध्‍ये एक पृष्‍ठ जोडण्‍यासाठी, <ph name="SHARE_OPENING_ICON" /> टॅप करा.</translation>
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
@@ -159,6 +161,7 @@
 <translation id="3789841737615482174">स्थापना करा</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3897092660631435901">मेनू</translation>
+<translation id="3915450441834151894">साइट माहिती</translation>
 <translation id="3928666092801078803">माझा डेटा एकत्र करा</translation>
 <translation id="3950820424414687140">साइन इन करा</translation>
 <translation id="3963231839620026525">नवीन गुप्त टॅब</translation>
@@ -224,6 +227,7 @@
 <translation id="5197255632782567636">इंटरनेट</translation>
 <translation id="5228579091201413441">संकालन सक्षम करा</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> वर संकालित करीत आहे</translation>
+<translation id="527973086555161537">खाजगीरीत्‍या वेब ब्राउझ करण्‍यासाठी एक टॅब उघडा.</translation>
 <translation id="5300589172476337783">दर्शवा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5327248766486351172">नाव</translation>
@@ -336,6 +340,7 @@
 <translation id="7159472599653637159">मोबाइल साइटची विनंती करा</translation>
 <translation id="7167621057293532233">डेटा प्रकार</translation>
 <translation id="7175593937868963913">ईमेल तयार करा</translation>
+<translation id="7180611975245234373">रिफ्रेश करा</translation>
 <translation id="7189598951263744875">सामयिक करा...</translation>
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
 <translation id="722055596168483966">Google सेेव वैयक्तिकृत करा</translation>
@@ -378,6 +383,7 @@
 <translation id="8023878949384262191">विभाग विस्तृत करते.</translation>
 <translation id="8059533439631660104">विभाग संकुचित करा.</translation>
 <translation id="806745655614357130">माझा डेटा स्वतंत्र ठेवा</translation>
+<translation id="8073670137947914548">डाउनलोड पूर्ण झाले</translation>
 <translation id="8076014560081431679">जतन केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">सर्व टॅब बंद करा</translation>
 <translation id="8205564605687841303">रद्द करा</translation>

@@ -3,7 +3,6 @@
 <translationbundle lang="es">
 <translation id="104962181688258143">Abrir la aplicación Archivos</translation>
 <translation id="1122869341872663659">Mostrando <ph name="N" /> resultados de búsqueda de <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Silenciar volumen</translation>
 <translation id="1195667586424773550">Arrastra el enlace a la barra de direcciones de la pestaña</translation>
 <translation id="1204450209689312104">Abrir una ventana nueva en modo incógnito</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -15,6 +14,7 @@
 <translation id="152892567002884378">Subir el volumen</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Desplazarse al principio de la palabra anterior</translation>
+<translation id="1671169355475348905">Cambiar al método de introducción del idioma anterior</translation>
 <translation id="1679841710523778799">Aumentar el brillo</translation>
 <translation id="168356808214100546">Mantén pulsada la tecla <ph name="ALT" />, pulsa <ph name="TAB" /> hasta llegar a la ventana que quieras abrir y suelta las teclas.</translation>
 <translation id="169515659049020177">Mayús</translation>
@@ -32,6 +32,7 @@
 <translation id="2185166372312820725">Ir a la pestaña anterior</translation>
 <translation id="2194790690264064655">Pulsa <ph name="CTRL" /> y haz clic en un enlace</translation>
 <translation id="2382644247745281995">No compatible con el diseño de teclado actual</translation>
+<translation id="2397416548179033562">Mostrar menú de Chrome</translation>
 <translation id="2424073332829844142">Activar y desactivar la función de bloqueo de mayúsculas</translation>
 <translation id="2441202986792279177">Pasar de una ventana a otra rápidamente</translation>
 <translation id="2478303094958140141">Activar o desactivar ChromeVox (mensajes de voz)</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">Recuperar la resolución de pantalla predeterminada</translation>
 <translation id="2596078834055697711">Hacer una captura de pantalla de la ventana</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="TAB" /> o <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">Cambiar al método de introducción del siguiente idioma</translation>
 <translation id="2699509451653686398">Guardar la página web actual en los marcadores</translation>
 <translation id="2750942583782703988">Volver a cargar la página actual</translation>
 <translation id="2764005613199379871">Seleccionar la barra de direcciones</translation>
@@ -49,6 +51,7 @@
 <translation id="2872353916818027657">Cambiar monitor principal</translation>
 <translation id="2914313326123580426">Mostrar u ocultar el panel de herramientas para desarrolladores</translation>
 <translation id="292495055542441795">Activar pantalla completa</translation>
+<translation id="3020183492814296499">Combinaciones de teclas</translation>
 <translation id="3084301071537457911">Destacar el siguiente elemento de la estantería</translation>
 <translation id="309173601632226815">Destacar el botón del menú de aplicaciones de la estantería</translation>
 <translation id="3105917916468784889">Hacer una captura de pantalla</translation>
@@ -147,7 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">No fijar una aplicación</translation>
 <translation id="7439718573248533901">Eliminar la letra siguiente (eliminar hacia delante)</translation>
-<translation id="7449669175878568981">Iniciar o detener el dictado (escribir lo que dices)</translation>
+<translation id="7611271430932669992">Mover el enfoque a ventanas emergentes y cuadros de diálogo</translation>
 <translation id="766326951329901120">Pegar el contenido del portapapeles como texto sin formato</translation>
 <translation id="7724603315864178912">Cortar</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="SPACE" /> o <ph name="ENTER" /></translation>
@@ -156,7 +159,6 @@
 <translation id="7952165122793773711">Ir a una pestaña de la 1 a la 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> o <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
-<translation id="8104889575691864804">Mostrar menú de aplicación</translation>
 <translation id="8130528849632411619">Ir al principio del documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
 <translation id="8232835244134740473">Alternar el elemento seleccionado entre la barra de estado (donde aparece la imagen de la cuenta), el menú de aplicaciones, la barra de direcciones, la barra de marcadores (si está visible), la página web que está abierta y la barra de descargas (si está visible).</translation>

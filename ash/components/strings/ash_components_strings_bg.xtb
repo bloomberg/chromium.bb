@@ -3,7 +3,6 @@
 <translationbundle lang="bg">
 <translation id="104962181688258143">Отваряне на приложението Файлове</translation>
 <translation id="1122869341872663659">Показват се <ph name="N" /> резултата от търсенето на „<ph name="QUERY" />“</translation>
-<translation id="1134347825771908369">Заглушаване на звука</translation>
 <translation id="1195667586424773550">Преместете с плъзгане връзката в адресната лента на раздела</translation>
 <translation id="1204450209689312104">Отваряне на нов прозорец в режим „инкогнито“</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /> <ph name="SEPARATOR1" /> <ph name="MODIFIER2" /> <ph name="SEPARATOR2" /> <ph name="MODIFIER3" /> <ph name="SEPARATOR3" /> <ph name="KEY" /></translation>
@@ -15,6 +14,7 @@
 <translation id="152892567002884378">Увеличаване на силата на звука</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> и след това <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Преместване в началото на предишната дума</translation>
+<translation id="1671169355475348905">Превключване към метода на въвеждане за предишния език</translation>
 <translation id="1679841710523778799">Увеличаване на яркостта</translation>
 <translation id="168356808214100546">Натиснете и задръжте <ph name="ALT" />, използвайте <ph name="TAB" />, за да стигнете до желания прозорец, и освободете клавишите.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -32,6 +32,7 @@
 <translation id="2185166372312820725">Към предишния раздел</translation>
 <translation id="2194790690264064655">Натиснете <ph name="CTRL" /> и кликнете върху връзка</translation>
 <translation id="2382644247745281995">Не се поддържа за текущата клавиатурна подредба</translation>
+<translation id="2397416548179033562">Показване на менюто на Chrome</translation>
 <translation id="2424073332829844142">Включване и изключване на Caps Lock</translation>
 <translation id="2441202986792279177">Бързо превключване между прозорците</translation>
 <translation id="2478303094958140141">Включване или изключване на ChromeVox (обратна връзка с говор)</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">Задаване на стандартната разделителна способност на екрана</translation>
 <translation id="2596078834055697711">Правене на екранна снимка на прозореца</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> и след това <ph name="TAB" /> или <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">Превключване към метода на въвеждане за следващия език</translation>
 <translation id="2699509451653686398">Запазване на текущата уеб страница като отметка</translation>
 <translation id="2750942583782703988">Презареждане на текущата страница</translation>
 <translation id="2764005613199379871">Поставяне на фокуса в адресната лента за търсене</translation>
@@ -49,6 +51,7 @@
 <translation id="2872353916818027657">Размяна на основния монитор</translation>
 <translation id="2914313326123580426">Показване или скриване на панела с инструменти за програмисти</translation>
 <translation id="292495055542441795">Превключване на режима на цял екран</translation>
+<translation id="3020183492814296499">Клавишни комбинации</translation>
 <translation id="3084301071537457911">Поставяне на фокуса върху следващия елемент в лавицата</translation>
 <translation id="309173601632226815">Поставяне на фокуса върху бутона на стартовия панел в лавицата</translation>
 <translation id="3105917916468784889">Създаване на екранна снимка</translation>
@@ -147,7 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Освобождаване на приложение</translation>
 <translation id="7439718573248533901">Изтриване на следващата буква (изтриване напред)</translation>
-<translation id="7449669175878568981">Стартиране или спиране на режима на диктуване (въвеждане на това, което казвате)</translation>
+<translation id="7611271430932669992">Преместване на фокуса към изскачащите и диалоговите прозорци</translation>
 <translation id="766326951329901120">Поставяне на съдържанието от буферната памет като неформатиран текст</translation>
 <translation id="7724603315864178912">Изрязване</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> и след това <ph name="SPACE" /> или <ph name="ENTER" /></translation>
@@ -156,7 +159,6 @@
 <translation id="7952165122793773711">Преминаване към раздел от 1 до 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> или <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Изчистване на данните за сърфирането</translation>
-<translation id="8104889575691864804">Показване на менюто на приложението</translation>
 <translation id="8130528849632411619">Към началото на документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> или <ph name="E" /></translation>
 <translation id="8232835244134740473">Превключване на фокуса между лентата на състоянието (където се показва снимката на профила ви), стартовия панел, адресната лента, лентата на отметките (ако се вижда), отворената уеб страница и лентата на изтеглянето (ако се вижда).</translation>

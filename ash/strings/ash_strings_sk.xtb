@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">Hustota zobrazenia</translation>
 <translation id="2303600792989757991">Prepnúť prehľad okien</translation>
 <translation id="2338501278241028356">Ak chcete nájsť zariadenia v okolí, zapnite Bluetooth</translation>
+<translation id="2339073806695260576">Klepnite na tlačidlo dotykového pera na poličke a vytvorte poznámku, snímku obrazovky, laserový ukazovateľ alebo lupu.</translation>
 <translation id="2351266942280602854">Jazyk a vstup</translation>
 <translation id="2352467521400612932">Nastavenia dotykového pera</translation>
 <translation id="2354174487190027830">Aktivujte sa sieť <ph name="NAME" /></translation>
@@ -273,7 +274,6 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="7098389117866926363">Zariadenie USB-C (ľavý port vzadu)</translation>
 <translation id="7131634465328662194">Odhlásenie prebehne automaticky.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
-<translation id="7165511658052620796">(TEMP) Zobraziť prihlásenie webui; ak bol použitý prehľad chýb súboru (crbug.com) alebo spätná väzba (alt+shift+i)</translation>
 <translation id="7168224885072002358">Vrátenie starého rozlíšenia prebehne o <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Zadný mikrofóm</translation>
 <translation id="726276584504105859">Presuňte okno sem a použite tak rozdelenú obrazovku</translation>

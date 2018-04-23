@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">માફ કરશો, તમારો પાસવર્ડ હજી ચકાસી શકાયો નથી. નોંધ: જો તમે તાજેતરમાં તમારો પાસવર્ડ બદલ્યો હોય, તો તમારો નવો પાસવર્ડ તમે એક વાર સાઇન આઉટ કરી લો તે પછી લાગુ થશે, કૃપા કરીને અહીં જૂના પાસવર્ડનો ઉપયોગ કરો.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> બાકી</translation>
 <translation id="1698760176351776263">IPv6 સરનામું: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">ઉપકરણ વ્યવસ્થાપક તમારી પ્રવૃત્તિનું નિયમન કરી શકે છે.</translation>
 <translation id="1734367976349034509">આ ઉપકરણ એન્ટરપ્રાઇઝ દ્વારા સંચાલિત થાય છે</translation>
 <translation id="1746730358044914197">ઇનપુટ પદ્ધતિઓને તમારા વ્યવસ્થાપક દ્વારા ગોઠવવામાં આવી છે.</translation>
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">ઓવરફ્લો બટન</translation>
 <translation id="1951012854035635156">સહાયક</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">તમારી ભાષા સેટ કરો</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">પાવર બંધ કરો</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2675319268637823299">વ્યવસ્થાપકે <ph name="USER_EMAIL" /> માટે બહુવિધ સાઇન ઇનને નામંજૂર કર્યું છે.
     ચાલુ રાખવા માટે બધા વપરાશકર્તાઓએ સાઇન આઉટ કરવું જરૂરી છે.</translation>
+<translation id="2696763960464195425">જ્યારે તમે સાઇન આઉટ કરશો, ત્યારે તમારી માહિતી કાઢી નાખવામાં આવશે. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">તમારું કીબોર્ડ સેટ કરો</translation>
 <translation id="2718395828230677721">રાત્રિ પ્રકાશ</translation>
 <translation id="2727977024730340865">નિમ્ન-પાવર ચાર્જરમાં પ્લગ કરેલું છે. બૅટરી ચાર્જિંગ વિશ્વસનીય હશે નહીં.</translation>
 <translation id="2761704814324807722">સ્થિતિ ટ્રે, સમય <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -329,6 +333,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">નિમ્ન-પાવર ચાર્જર કનેક્ટ કર્યું છે</translation>
 <translation id="8734991477317290293">તે તમારા કીસ્ટ્રોકની ચોરી કરવાનો પ્રયાસ કરતું હોઈ શકે છે</translation>
+<translation id="8809737090443522491">ઍપ અથવા દસ્તાવેજનું નામ લખો</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">વિંડોઝને બીજા ડેસ્કટૉપમાં ખસેડવાનું પરિણામ અનપેક્ષિત વર્તણૂક આવી શકે છે.
 

@@ -145,6 +145,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="4207623512727273241">Ponovo pokrenite instalacijski program prije nastavka.</translation>
 <translation id="4227991223508142681">Uslužni program za pružanje usluge hosta</translation>
 <translation id="4240294130679914010">Program za deinstaliranje usluge Chromoting</translation>
+<translation id="4249741460382919890">Općeniti ispravci programskih pogrešaka i poboljšanja stabilnosti.</translation>
 <translation id="4277463233460010382">To je računalo konfigurirano tako da dozvoljava povezivanje jednog ili više klijenata bez unosa PIN-a.</translation>
 <translation id="4277736576214464567">Pristupni je kôd nevažeći. Pokušajte ponovo.</translation>
 <translation id="4361728918881830843">Da biste omogućili povezivanje s različitim udaljenim računalima, na njima instalirajte Udaljenu radnu površinu Chrome pa kliknite gumb "<ph name="BUTTON_NAME" />".</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (van mreže)</translation>
 <translation id="5070121137485264635">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Udaljenoj radnoj površini Chrome dodatne dozvole za pristup ovoj adresi:</translation>
 <translation id="507204348399810022">Jeste li sigurni da želite onemogućiti daljinske veze s hostom <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">Komunikacija s poslužiteljem nije uspjela: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Unesite isti PIN u oba polja.</translation>
 <translation id="5170982930780719864">Nevažeći ID hosta.</translation>
 <translation id="518094545883702183">Informacije se upotrebljavaju samo za dijagnosticiranje problema koji prijavljujete, dostupne su samo osobi koja istražuje vaše izvješće i ne zadržavaju se dulje od 30 dana.</translation>

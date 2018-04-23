@@ -145,6 +145,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="4207623512727273241">Před pokračováním prosím spusťte stažený instalační program.</translation>
 <translation id="4227991223508142681">Nástroj pro správu hostitele</translation>
 <translation id="4240294130679914010">Nástroj k odinstalaci hostitele funkce Chromoting</translation>
+<translation id="4249741460382919890">Různé opravy a vylepšení stability.</translation>
 <translation id="4277463233460010382">Tento počítač je nakonfigurován tak, aby jednomu nebo více klientům umožnil připojení bez zadávání kódu PIN.</translation>
 <translation id="4277736576214464567">Přístupový kód je neplatný. Zkuste to prosím znovu.</translation>
 <translation id="4361728918881830843">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj Vzdálenou plochu Chrome a poté klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Vzdálený hostitelský server vyžaduje, abyste provedli ověření na stránce třetí strany. Aby bylo možné pokračovat, je nutné udělit Vzdálené ploše Chrome dodatečná oprávnění k přístupu na tuto adresu:</translation>
 <translation id="507204348399810022">Opravdu chcete vzdálená připojení k počítači <ph name="HOSTNAME" /> zakázat?</translation>
+<translation id="5081343395220691640">Se serverem se nepodařilo navázat komunikaci: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Zadejte do obou polí stejný kód PIN.</translation>
 <translation id="5170982930780719864">Neplatné ID hostitele.</translation>
 <translation id="518094545883702183">Tyto informace jsou využity pouze při diagnostikování problému, který jste nahlásili, jsou dostupné pouze osobě, která vaši zprávu prošetřuje, a nejsou uchovávány déle než 30 dní.</translation>

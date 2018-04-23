@@ -460,7 +460,6 @@
 <translation id="4171400957073367226">Ungültige Bestätigungssignatur</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> weiteres Element}other{<ph name="ITEM_COUNT" /> weitere Elemente}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome empfiehlt, Ihr Passwort für <ph name="ORG_NAME" /> zurückzusetzen, wenn Sie es auf anderen Websites verwendet haben.</translation>
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Firewall und Antivirenkonfiguration prüfen<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Abstürze</translation>
@@ -690,7 +689,6 @@
 <translation id="5869405914158311789">Diese Website ist nicht erreichbar</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="5893752035575986141">Kreditkarten werden akzeptiert.</translation>
-<translation id="5898382028489516745">Chromium empfiehlt, Ihr Passwort für <ph name="ORG_NAME" /> zurückzusetzen, wenn Sie es auf anderen Websites verwendet haben.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronisiert)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 wird verwendet}other{# werden verwendet}}</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
@@ -790,7 +788,7 @@
 <translation id="6757797048963528358">Ihr Gerät ist im Ruhemodus.</translation>
 <translation id="6778737459546443941">Dein Elternteil hat die Berechtigung noch nicht erteilt</translation>
 <translation id="679355240208270552">Ignoriert, da die Standardsuchmaschine durch die Richtlinie deaktiviert ist.</translation>
-<translation id="681021252041861472">Erforderliches Feld</translation>
+<translation id="681021252041861472">Pflichtfeld</translation>
 <translation id="6810899417690483278">Personalisierungs-ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Fehler beim Laden der Regionsdaten</translation>
@@ -855,6 +853,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Karte bestätigen</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;Sie erhalten diese Fehlermeldung, wenn auf Ihrem Windows-Computer Superfish-Software installiert ist.&lt;/p&gt;
+      &lt;p&gt;Gehen Sie folgendermaßen vor, um die Software vorübergehend zu deaktivieren und auf das Web zuzugreifen. Wenn Sie die Software deaktivieren möchten, benötigen Sie Administratorrechte.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;Klicken Sie auf &lt;strong&gt;Start&lt;/strong&gt;, suchen Sie nach &lt;strong&gt;Lokale Dienste anzeigen&lt;/strong&gt; und wählen Sie die Option aus.
+      &lt;li&gt;Wählen Sie &lt;strong&gt;VisualDiscovery&lt;/strong&gt; aus.
+      &lt;li&gt;Wählen Sie unter &lt;strong&gt;Starttyp&lt;/strong&gt; die Option &lt;strong&gt;Deaktiviert&lt;/strong&gt; aus.
+      &lt;li&gt;Klicken Sie unter &lt;strong&gt;Dienststatus&lt;/strong&gt; auf &lt;strong&gt;Beenden&lt;/strong&gt;.
+      &lt;li&gt;Klicken Sie auf &lt;strong&gt;Übernehmen&lt;/strong&gt; und dann auf &lt;strong&gt;OK&lt;/strong&gt;.
+      &lt;li&gt;In der &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome-Hilfe&lt;/a&gt; finden Sie eine Anleitung dazu, wie Sie die Software von Ihrem Computer entfernen.
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Profilpfad</translation>
 <translation id="7437289804838430631">Kontaktdaten hinzufügen</translation>
 <translation id="7441627299479586546">Falsche(r) Nutzername/Domain der Richtlinie</translation>

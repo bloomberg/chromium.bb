@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">Skala på skärmen</translation>
 <translation id="2303600792989757991">Växla fönsteröversikt</translation>
 <translation id="2338501278241028356">Aktivera Bluetooth så att det går att upptäcka enheter i närheten</translation>
+<translation id="2339073806695260576">När du har tryckt på e-pennan på hyllan kan du anteckna, ta en skärmdump eller använda laserpekaren eller förstoringsglaset.</translation>
 <translation id="2351266942280602854">Språk och inmatning</translation>
 <translation id="2352467521400612932">Inställningar för e-penna</translation>
 <translation id="2354174487190027830">Aktiverar <ph name="NAME" /></translation>
@@ -273,7 +274,6 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7098389117866926363">USB-C-enhet (vänstra porten på baksidan)</translation>
 <translation id="7131634465328662194">Du loggas ut automatiskt.</translation>
 <translation id="7165278925115064263">Alt + Skift + K</translation>
-<translation id="7165511658052620796">(TEMPORÄRT) Visa inloggning i webbgränssnitt. Om använt rapporterar du fel (crbug.com) eller lämnar feedback (alt+shift+i)</translation>
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofonen på baksidan</translation>
 <translation id="726276584504105859">Dra hit för att dela upp skärmen</translation>

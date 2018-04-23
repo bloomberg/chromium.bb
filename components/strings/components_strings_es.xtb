@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Ninguno}=1{1 sitio web}other{# sitios web}}</translation>
 <translation id="1927235823738766038">Tarjetas de débito y crédito aceptadas</translation>
 <translation id="194030505837763158">Ir a <ph name="LINK" /></translation>
+<translation id="1945968466830820669">Podrías perder el acceso a la cuenta de tu organización o tener problemas de suplantación de identidad. Chromium te recomienda que cambies tu contraseña ahora.</translation>
 <translation id="1948773908305951926">Tarjetas prepago aceptadas</translation>
 <translation id="1962204205936693436">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Error de serialización</translation>
@@ -461,7 +462,6 @@
 <translation id="4171400957073367226">La firma de verificación no es válida</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> elemento más}other{<ph name="ITEM_COUNT" /> elementos más}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome te recomienda que cambies tu contraseña de <ph name="ORG_NAME" /> si la has vuelto a utilizar en otros sitios web.</translation>
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar la configuración del cortafuegos y del antivirus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">La página no responde o se cierra</translation>
@@ -591,6 +591,7 @@
 <translation id="5141240743006678641">Cifrar contraseñas sincronizadas con tus credenciales de Google</translation>
 <translation id="5145883236150621069">Código de error presente en respuesta de la política</translation>
 <translation id="5159010409087891077">Abre una página en una nueva ventana de incógnito (⇧ + ⌘ + N)</translation>
+<translation id="5169827969064885044">Podrías perder el acceso a la cuenta de tu organización o tener problemas de suplantación de identidad. Chrome te recomienda que cambies tu contraseña ahora.</translation>
 <translation id="5171045022955879922">Busca o escribe una URL</translation>
 <translation id="5172758083709347301">Equipo</translation>
 <translation id="5179510805599951267">¿Esta página no está escrita en <ph name="ORIGINAL_LANGUAGE" />? Informa de este error.</translation>
@@ -691,7 +692,6 @@
 <translation id="5869405914158311789">No se puede acceder a este sitio web</translation>
 <translation id="5869522115854928033">Contraseñas guardadas</translation>
 <translation id="5893752035575986141">Se aceptan tarjetas de crédito.</translation>
-<translation id="5898382028489516745">Chromium te recomienda que cambies tu contraseña de <ph name="ORG_NAME" /> si la has vuelto a utilizar en otros sitios web.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en uso}other{# en uso}}</translation>
 <translation id="5939518447894949180">Restablecer</translation>
@@ -856,6 +856,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Confirmar tarjeta</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;Este error se muestra si tu ordenador Windows tiene software SuperFish.&lt;/p&gt;
+      &lt;p&gt;Sigue estos pasos para inhabilitar temporalmente este software en tu ordenador y acceder a Internet. Necesitarás privilegios de administrador.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;Haz clic en &lt;strong&gt;Inicio&lt;/strong&gt; y selecciona &lt;strong&gt;Ver servicios locales&lt;/strong&gt;
+      &lt;li&gt;Selecciona &lt;strong&gt;VisualDiscovery&lt;/strong&gt;
+      &lt;li&gt;En &lt;strong&gt;Tipo de inicio&lt;/strong&gt;, selecciona &lt;strong&gt;Deshabilitado&lt;/strong&gt;
+      &lt;li&gt;En &lt;strong&gt;Estado del servicio&lt;/strong&gt;, haz clic en &lt;strong&gt;Detener&lt;/strong&gt;
+      &lt;li&gt;Haz clic en &lt;strong&gt;Aplicar&lt;/strong&gt; y, a continuación, en &lt;strong&gt;Aceptar&lt;/strong&gt;
+      &lt;li&gt;Visita el &lt;a href="https://support.google.com/chrome/answer/6098869?hl=es"&gt;Centro de Ayuda de Chrome&lt;/a&gt; para consultar cómo eliminar el software de forma permanente de tu ordenador
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
 <translation id="7437289804838430631">Añade la información de contacto</translation>
 <translation id="7441627299479586546">Asunto de política incorrecto</translation>

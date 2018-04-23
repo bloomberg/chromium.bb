@@ -461,7 +461,6 @@
 <translation id="4171400957073367226">امضای تأیید نامناسب</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> مورد دیگر}one{<ph name="ITEM_COUNT" /> مورد دیگر}other{<ph name="ITEM_COUNT" /> مورد دیگر}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">‏Chrome توصیه می‌کند گذرواژه <ph name="ORG_NAME" /> خود را درصورت استفاده مجدد از آن در سایر سایت‌ها بازنشانی کنید.</translation>
 <translation id="4196861286325780578">&amp;انجام مجدد انتقال</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />بررسی پیکربندی آنتی‌ویروس و دیوار آتش<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">خرابی ها</translation>
@@ -691,7 +690,6 @@
 <translation id="5869405914158311789">دسترسی به این سایت امکان‌پذیر نیست</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5893752035575986141">کارت‌های اعتباری پذیرفته می‌شوند.</translation>
-<translation id="5898382028489516745">‏Chromium توصیه می‌کند گذرواژه <ph name="ORG_NAME" /> خود را درصورت استفاده مجدد از آن در سایر سایت‌ها بازنشانی کنید.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (همگام‌سازی‌شده)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{۱ کوکی درحال استفاده}one{# کوکی درحال استفاده}other{# کوکی درحال استفاده}}</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
@@ -856,6 +854,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">تأیید کارت</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
+<translation id="7407424307057130981">‏&lt;p&gt;اگر در رایانه Windows نرم‌افزار Superfish داشته باشید، این خطا را می‌بینید.&lt;/p&gt;
+    &lt;p&gt;برای غیرفعال کردن موقت این نرم‌افزار و دسترسی به وب، این مراحل را دنبال کنید. لازم است امتیازهای سرپرست را داشته باشید.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;روی &lt;strong&gt;شروع&lt;/strong&gt; کلیک کنید و سپس &lt;strong&gt;«مشاهده سرویس‌های محلی»&lt;/strong&gt; را جستجو و انتخاب کنید
+    &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt; را انتخاب کنید
+    &lt;li&gt;در بخش &lt;strong&gt;نوع راه‌اندازی&lt;/strong&gt; ،&lt;strong&gt;غیرفعال&lt;/strong&gt; را انتخاب کنید
+    &lt;li&gt;در بخش &lt;strong&gt;وضعیت سرویس&lt;/strong&gt;، روی&lt;strong&gt;توقف&lt;/strong&gt; کلیک کنید
+    &lt;li&gt;روی &lt;strong&gt;اعمال&lt;/strong&gt; و سپس &lt;strong&gt;تأیید&lt;/strong&gt; کلیک کنید
+    &lt;li&gt;برای آشنایی با نحوه برداشتن دائم نرم‌افزار از رایانه، از &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;مرکز راهنمای ‏Chrome‏&lt;/a&gt; بازدید کنید
+    &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">مسیر نمایه</translation>
 <translation id="7437289804838430631">افرودن اطلاعات تماس</translation>
 <translation id="7441627299479586546">موضوع خط‌مشی اشتباه است</translation>

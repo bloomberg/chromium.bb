@@ -27,7 +27,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is dangerous, so Chrome has blocked it.</translation>
 <translation id="1619887657840448962">To make Chrome safer, we disabled the following extension that isn't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="1628000112320670027">Get help with Chrome</translation>
-<translation id="163860049029591106">Get Started with Chrome OS</translation>
 <translation id="1674870198290878346">Open Link in Chrome Inco&amp;gnito Window</translation>
 <translation id="1682634494516646069">Google Chrome cannot read and write to its data directory:
 
@@ -214,7 +213,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
-<translation id="7161904924553537242">Welcome to Google Chrome</translation>
 <translation id="7164397146364144019">You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.</translation>
 <translation id="7242029209006116544">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chrome data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="7308322188646931570">Chrome needs storage access to download files</translation>

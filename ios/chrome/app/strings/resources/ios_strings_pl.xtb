@@ -137,6 +137,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="3393920035788932672">Pop-upy akceptowane</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Widok dzielony</translation>
+<translation id="3469166899695866866">Czy zatrzymać pobieranie?</translation>
 <translation id="3474624961160222204">Nadal używaj konta użytkownika <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formularze wypełnione.</translation>
 <translation id="3478058380795961209">Miesiąc utraty ważności</translation>
@@ -150,6 +151,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="3588820906588687999">Otwórz grafikę w nowej karcie</translation>
 <translation id="3603009562372709545">Kopiuj URL linku</translation>
 <translation id="3607167657931203000">Autouzupełnianie</translation>
+<translation id="3609785682760573515">Synchronizuję...</translation>
 <translation id="3628119975092896051">Twoja lista Do przeczytania jest dostępna offline. Aby dodać do niej stronę, kliknij <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Wstępne wczytywanie stron</translation>
 <translation id="3691593122358196899">Utworzono zakładkę w folderze <ph name="FOLDER_TITLE" /></translation>
@@ -304,7 +306,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6445981559479772097">Wiadomość została wysłana.</translation>
 <translation id="6464071786529933911">Otwórz w karcie incognito</translation>
 <translation id="6482629121755362506">Usunięte elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
-<translation id="6528048372317642110">Plik do pobrania jest dostępny</translation>
 <translation id="6541915733953096570">Ostatnia godzina</translation>
 <translation id="6570040839871198836">Autouzupełniaj formularze</translation>
 <translation id="6656103420185847513">Folder edytora</translation>
@@ -338,6 +339,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7159472599653637159">Żądaj strony mobilnej</translation>
 <translation id="7167621057293532233">Typy danych</translation>
 <translation id="7175593937868963913">Napisz e-maila</translation>
+<translation id="7180611975245234373">Odśwież</translation>
 <translation id="7189598951263744875">Udostępnij...</translation>
 <translation id="7203585745079012652">Odczytuj odpowiedzi</translation>
 <translation id="722055596168483966">Dostosowywanie usług Google</translation>
@@ -380,6 +382,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8023878949384262191">Rozwija sekcję.</translation>
 <translation id="8059533439631660104">Zwija sekcję.</translation>
 <translation id="806745655614357130">Przechowuj dane oddzielnie</translation>
+<translation id="8073670137947914548">Zakończono pobieranie</translation>
 <translation id="8076014560081431679">Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Zamknij wszystkie karty</translation>
 <translation id="8205564605687841303">Anuluj</translation>

@@ -137,6 +137,7 @@
 <translation id="3393920035788932672">Дозвољени искачући прозори</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Подељени приказ</translation>
+<translation id="3469166899695866866">Зауставити преузимање?</translation>
 <translation id="3474624961160222204">Настави као <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Обрасци су попуњени.</translation>
 <translation id="3478058380795961209">Месец истека</translation>
@@ -150,6 +151,7 @@
 <translation id="3588820906588687999">Отвори слику у новој картици</translation>
 <translation id="3603009562372709545">Копирај URL адресу линка</translation>
 <translation id="3607167657931203000">Подаци аутоматског попуњавања</translation>
+<translation id="3609785682760573515">Синхронизовање...</translation>
 <translation id="3628119975092896051">Листа за читање је доступна офлајн. Да бисте додали страницу на листу за читање, додирните <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Унап. учитај веб-странице</translation>
 <translation id="3691593122358196899">Обележивач је додат у <ph name="FOLDER_TITLE" /></translation>
@@ -255,7 +257,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5869029295770560994">Важи</translation>
 <translation id="5871497086027727873">1 ставка је премештена</translation>
 <translation id="5911030830365207728">Google преводилац</translation>
-<translation id="5916664084637901428">Укључи</translation>
+<translation id="5916664084637901428">Укључено</translation>
 <translation id="5938160824633642847">Уређај је скоро пун. Ослободите простор и пробајте поново.</translation>
 <translation id="5948291296578561264">Ово вам омогућава да чувате слике у фототеци.</translation>
 <translation id="5955891643922670672">Прегледате офлајн верзију</translation>
@@ -304,7 +306,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6445981559479772097">Порука је послата.</translation>
 <translation id="6464071786529933911">Отвори у новој картици без архивирања</translation>
 <translation id="6482629121755362506">Број избрисаних ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
-<translation id="6528048372317642110">Преузимање датотека је доступно</translation>
 <translation id="6541915733953096570">Претходни сат</translation>
 <translation id="6570040839871198836">Аутом. попуњ. образаца</translation>
 <translation id="6656103420185847513">Измена директоријума</translation>
@@ -338,6 +339,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7159472599653637159">Захтевај мобилни сајт</translation>
 <translation id="7167621057293532233">Типови података</translation>
 <translation id="7175593937868963913">Нови имејл</translation>
+<translation id="7180611975245234373">Освежи</translation>
 <translation id="7189598951263744875">Дели...</translation>
 <translation id="7203585745079012652">Изговарај одговоре</translation>
 <translation id="722055596168483966">Персонализујте Google услуге</translation>
@@ -380,6 +382,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8023878949384262191">Проширује одељак.</translation>
 <translation id="8059533439631660104">Скупља одељак.</translation>
 <translation id="806745655614357130">Не обједињуј моје податке</translation>
+<translation id="8073670137947914548">Преузимање је завршено</translation>
 <translation id="8076014560081431679">Нећемо избрисати сачувана подешавања сајтова и она могу да одражавају ваше навике при прегледању. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Затвори све картице</translation>
 <translation id="8205564605687841303">Откажи</translation>

@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{None}=1{1 site}other{# sites}}</translation>
 <translation id="1927235823738766038">Accepted Credit and Debit Cards</translation>
 <translation id="194030505837763158">Go to <ph name="LINK" /></translation>
+<translation id="1945968466830820669">You could lose access to your organisation's account or experience identity theft. Chromium recommends changing your password now.</translation>
 <translation id="1948773908305951926">Accepted prepaid cards</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Bookmarks</translation>
 <translation id="1973335181906896915">Serialisation error</translation>
@@ -461,7 +462,6 @@
 <translation id="4171400957073367226">Bad verification signature</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> more item}other{<ph name="ITEM_COUNT" /> more items}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome recommends resetting your <ph name="ORG_NAME" /> password if you reused it on other sites.</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Crashes</translation>
@@ -591,6 +591,7 @@
 <translation id="5141240743006678641">Encrypt synced passwords with your Google credentials</translation>
 <translation id="5145883236150621069">Error code present in the policy response</translation>
 <translation id="5159010409087891077">Open page in a new Incognito window (⇧⌘N)</translation>
+<translation id="5169827969064885044">You could lose access to your organisation's account or experience identity theft. Chrome recommends changing your password now.</translation>
 <translation id="5171045022955879922">Search or type URL</translation>
 <translation id="5172758083709347301">Machine</translation>
 <translation id="5179510805599951267">Not in <ph name="ORIGINAL_LANGUAGE" />? Report this error</translation>
@@ -691,7 +692,6 @@
 <translation id="5869405914158311789">This site can’t be reached</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="5893752035575986141">Credit cards are accepted.</translation>
-<translation id="5898382028489516745">Chromium recommends resetting your <ph name="ORG_NAME" /> password if you reused it on other sites.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synced)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in use}other{# in use}}</translation>
 <translation id="5939518447894949180">Reset</translation>
@@ -856,6 +856,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Confirm Card</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;You'll see this error if you have Superfish software on your Windows computer.&lt;/p&gt;
+      &lt;p&gt;Follow these steps to temporarily disable the software so that you can get on the web. You'll need administrator privileges.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;Click &lt;strong&gt;Start&lt;/strong&gt;, then search for and select &lt;strong&gt;'View local services'&lt;/strong&gt;
+      &lt;li&gt;Select &lt;strong&gt;VisualDiscovery&lt;/strong&gt;
+      &lt;li&gt;Under &lt;strong&gt;Startup type&lt;/strong&gt;, select &lt;strong&gt;Disabled&lt;/strong&gt;
+      &lt;li&gt;Under &lt;strong&gt;Service status&lt;/strong&gt;, click &lt;strong&gt;Stop&lt;/strong&gt;
+      &lt;li&gt;Click &lt;strong&gt;Apply&lt;/strong&gt;, then click &lt;strong&gt;OK&lt;/strong&gt;
+      &lt;li&gt;Visit the &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome help centre&lt;/a&gt; to find out how to permanently remove the software from your computer
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Profile Path</translation>
 <translation id="7437289804838430631">Add contact info</translation>
 <translation id="7441627299479586546">Wrong policy subject</translation>

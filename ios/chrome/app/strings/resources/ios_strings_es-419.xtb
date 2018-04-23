@@ -137,6 +137,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="3393920035788932672">Ventanas permitidas</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
+<translation id="3469166899695866866">¿Deseas detener la descarga?</translation>
 <translation id="3474624961160222204">Continuar como <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formularios completos</translation>
 <translation id="3478058380795961209">Mes vencimiento</translation>
@@ -150,6 +151,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="3588820906588687999">Abrir imagen en nueva pestaña</translation>
 <translation id="3603009562372709545">Copiar URL del vínculo</translation>
 <translation id="3607167657931203000">Autocompletar datos</translation>
+<translation id="3609785682760573515">Sincronizando…</translation>
 <translation id="3628119975092896051">Tu lista de lectura está disponible sin conexión. Para agregar una página, presiona <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Precargar pág. web</translation>
 <translation id="3691593122358196899">Se agregó a favoritos en <ph name="FOLDER_TITLE" /></translation>
@@ -304,7 +306,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6445981559479772097">Mensaje enviado</translation>
 <translation id="6464071786529933911">Abrir en una pestaña de incógnito nueva</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
-<translation id="6528048372317642110">La descarga del archivo está disponible</translation>
 <translation id="6541915733953096570">La última hora</translation>
 <translation id="6570040839871198836">Autocompletar</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>
@@ -338,6 +339,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7159472599653637159">Solicitar sitio móvil</translation>
 <translation id="7167621057293532233">Tipos de datos</translation>
 <translation id="7175593937868963913">Redactar un correo</translation>
+<translation id="7180611975245234373">Actualizar</translation>
 <translation id="7189598951263744875">Compartir...</translation>
 <translation id="7203585745079012652">Decir las respuestas</translation>
 <translation id="722055596168483966">Personalizar los servicios de Google</translation>
@@ -380,6 +382,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8023878949384262191">Expande la sección.</translation>
 <translation id="8059533439631660104">Contrae la sección.</translation>
 <translation id="806745655614357130">Mantener mis datos separados</translation>
+<translation id="8073670137947914548">Descarga completa</translation>
 <translation id="8076014560081431679">Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Cerrar todas las pestañas</translation>
 <translation id="8205564605687841303">Cancelar</translation>

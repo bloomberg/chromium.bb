@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="1006017844123154345">Fungua Mtandaoni</translation>
+<translation id="1021684790657589338">Hakuna kadi ya SD iliyopatikana</translation>
 <translation id="1036727731225946849">Inaongeza <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Kutoka kwenye tovuti</translation>
 <translation id="1049743911850919806">Kichupo fiche</translation>
@@ -184,6 +185,7 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="2625189173221582860">Nenosiri limenakiliwa</translation>
 <translation id="2631006050119455616">Iliyookolewa</translation>
 <translation id="2647434099613338025">Ongeza lugha</translation>
+<translation id="2650751991977523696">Ungependa kupakua faili tena?</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
 <translation id="2677748264148917807">Ondoka</translation>
 <translation id="2704606927547763573">Imenakiliwa</translation>
@@ -220,6 +222,7 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="3029613699374795922">Umepakua KB <ph name="KBS" /></translation>
 <translation id="3029704984691124060">Kaulisiri hazilingani</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Pata usaidizi<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Angalia mapendekezo mengine yanayofanana na hili kwenye Google</translation>
 <translation id="305593374596241526">Kipengele cha mahali kimezimwa; kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Makala zaidi yataonekana hivi karibuni. Asubuhi njema!</translation>
 <translation id="3089395242580810162">Fungua kwenye kichupo fiche</translation>
@@ -410,6 +413,7 @@ Huenda akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="4876188919622883022">Mwonekano rahisi</translation>
 <translation id="4878404682131129617">Imeshindwa kuanzisha mkondo kupitia seva mbadala</translation>
 <translation id="4881695831933465202">Fungua</translation>
+<translation id="488187801263602086">Badilisha jina la faili</translation>
 <translation id="4885273946141277891">Idadi ya matukio ya Chrome isiyoweza kutumika.</translation>
 <translation id="4910889077668685004">Programu za malipo</translation>
 <translation id="4913161338056004800">Weka takwimu upya</translation>
@@ -503,6 +507,7 @@ Huenda akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="5676636989614905379">Haiwezi kucheza video kwenye <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Vilivyozuiwa</translation>
 <translation id="5684874026226664614">Lo!  Ukurasa huu haukuweza kutafsiriwa.</translation>
+<translation id="5686790454216892815">Jina la faili ni ndefu mno</translation>
 <translation id="5689516760719285838">Mahali</translation>
 <translation id="5719837394786370183">Kurasa unazoziangalia katika vichupo fiche hazitaendelea kuwepo katika historia ya kivinjari, hifadhi ya vidakuzi, au historia yako ya utafutaji ukishafunga vichupo vyako vyote fiche. Faili zozote unazopakua au alamisho unazounda hazitafutwa.
 
@@ -695,6 +700,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7437998757836447326">Ondoka kwenye Chrome</translation>
 <translation id="7445411102860286510">Ruhusu tovuti zicheze video kiotomatiki bila sauti (inapendekezwa)</translation>
 <translation id="7453467225369441013">Hukuondoa kwenye akaunti za tovuti nyingi. Hutaondolewa kwenye Akaunti ya Google.</translation>
+<translation id="7454641608352164238">Nafasi haitoshi</translation>
 <translation id="7455923816558154057">Gusa ili uangalie</translation>
 <translation id="7473891865547856676">La Asante</translation>
 <translation id="7475192538862203634">Ikiwa unaona hili kila mara, jaribu <ph name="BEGIN_LINK" />mapendekezo<ph name="END_LINK" /> haya.</translation>
@@ -826,6 +832,7 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="8636825310635137004">Ili upate vichupo kutoka kwenye vifaa vyako vingine, washa kipengele cha usawazishaji.</translation>
 <translation id="8641930654639604085">Jaribu kuzuia tovuti zilizo na maudhui ya watu wazima</translation>
 <translation id="8662811608048051533">Hukuondoa kwenye tovuti nyingi.</translation>
+<translation id="8664979001105139458">Jina la faili tayari lipo</translation>
 <translation id="8676374126336081632">Futa uingizaji wa maandishi</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Kiwango cha Udhibiti wa Mawimbi: upau #}other{Kiwango cha Udhibiti wa Mawimbi: pau #}}</translation>
 <translation id="869891660844655955">Muda wake unakwisha tarehe</translation>
@@ -854,6 +861,7 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="8942627711005830162">Fungua katika dirisha jingine</translation>
 <translation id="8951232171465285730">Chrome imekuokolea MB <ph name="MEGABYTES" /></translation>
 <translation id="8959122750345127698">Kudurusu hakufikiki: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Ungependa kupakua kwenye folda chaguomsingi?</translation>
 <translation id="8979405271719829084">Pakua video za kutazama baadaye</translation>
 <translation id="8981454092730389528">Vidhibiti vya Shughuli za Google</translation>
 <translation id="8986494364107987395">Tumia Google takwimu za matumizi na ripoti za mara ambazo kivinjari kinaacha kufanya kazi, moja kwa moja</translation>

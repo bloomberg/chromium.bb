@@ -145,6 +145,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="4207623512727273241">Executeu l'instal·lador abans de continuar.</translation>
 <translation id="4227991223508142681">Utilitat de l'administració de l'amfitrió</translation>
 <translation id="4240294130679914010">Programa de desinstal·lació de Chromoting Host</translation>
+<translation id="4249741460382919890">Correccions generals i millores d'estabilitat</translation>
 <translation id="4277463233460010382">La configuració d'aquest ordinador permet que un o més clients es connectin sense introduir cap PIN.</translation>
 <translation id="4277736576214464567">El codi d'accés no és vàlid. Torneu-ho a provar.</translation>
 <translation id="4361728918881830843">Per activar les connexions remotes a un altre ordinador, instal·leu-hi l'escriptori remot de Chrome i feu clic a <ph name="BUTTON_NAME" />.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (fora de línia)</translation>
 <translation id="5070121137485264635">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a l'escriptori remot de Chrome per accedir a aquesta adreça:</translation>
 <translation id="507204348399810022">Confirmes que vols desactivar les connexions remotes a <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">No s'ha pogut comunicar amb el servidor: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Introduïu el mateix PIN als dos quadres.</translation>
 <translation id="5170982930780719864">L'identificador de l'amfitrió no és vàlid.</translation>
 <translation id="518094545883702183">Aquesta informació només s'utilitza per diagnosticar el problema de què esteu informant. Només hi poden accedir les persones que analitzen l'informe i es conserva com a màxim durant 30 dies.</translation>
