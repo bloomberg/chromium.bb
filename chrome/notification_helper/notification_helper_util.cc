@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "notification_helper/notification_helper_util.h"
+#include "chrome/notification_helper/notification_helper_util.h"
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
