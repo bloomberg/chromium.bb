@@ -37,7 +37,6 @@ function EntryListWatcher(list) {
 /**
  * Obtains entry from ArrayDataModel's item.
  * @param {*} item Item in ArrayDataModel.
- * @protected
  * @return {!FileEntry}
  */
 EntryListWatcher.prototype.getEntry = function(item) {

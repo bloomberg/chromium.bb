@@ -666,7 +666,6 @@ ImageView.prototype.replace = function(
  *     transformation.
  * @param {ImageView.Effect=} opt_effect The effect to apply.
  * @param {number=} opt_duration Transition duration.
- * @private
  */
 ImageView.prototype.setTransform_ = function(
     element, viewport, opt_effect, opt_duration) {

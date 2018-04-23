@@ -29,8 +29,8 @@ var background = new BackgroundBase();
  * Gallery app window wrapper.
  * @type {!SingletonAppWindowWrapper}
  */
-var gallery = new SingletonAppWindowWrapper('gallery.html',
-    windowCreateOptions);
+var galleryWrapper =
+    new SingletonAppWindowWrapper('gallery.html', windowCreateOptions);
 
 /**
  * Opens gallery window.
@@ -39,41 +39,46 @@ var gallery = new SingletonAppWindowWrapper('gallery.html',
  */
 function openGalleryWindow(urls) {
   return new Promise(function(fulfill, reject) {
-    util.URLsToEntries(urls).then(function(result) {
-      fulfill(util.entriesToURLs(result.entries));
-    }).catch(reject);
-  }).then(function(urls) {
-    if (urls.length === 0)
-      return Promise.reject('No file to open.');
+           util.URLsToEntries(urls)
+               .then(function(result) {
+                 fulfill(util.entriesToURLs(result.entries));
+               })
+               .catch(reject);
+         })
+      .then(function(urls) {
+        if (urls.length === 0)
+          return Promise.reject('No file to open.');
 
-    // Opens a window.
-    return new Promise(function(fulfill, reject) {
-      gallery.launch(
-          {urls: urls},
-          false,
-          fulfill.bind(null, gallery));
-    }).then(function(gallery) {
-      var galleryDocument = gallery.rawAppWindow.contentWindow.document;
-      if (galleryDocument.readyState == 'complete')
-        return gallery;
+        // Opens a window.
+        return new Promise(function(fulfill, reject) {
+                 galleryWrapper.launch(
+                     {urls: urls}, false, fulfill.bind(null, galleryWrapper));
+               })
+            .then(function(galleryWrapper) {
+              var galleryWrapperDocument =
+                  galleryWrapper.rawAppWindow.contentWindow.document;
+              if (galleryWrapperDocument.readyState == 'complete')
+                return galleryWrapper;
 
-      return new Promise(function(fulfill, reject) {
-        galleryDocument.addEventListener(
-            'DOMContentLoaded', fulfill.bind(null, gallery));
+              return new Promise(function(fulfill, reject) {
+                galleryWrapperDocument.addEventListener(
+                    'DOMContentLoaded', fulfill.bind(null, galleryWrapper));
+              });
+            });
+      })
+      .then(function(galleryWrapper) {
+        // If the window is minimized, we need to restore it first.
+        if (galleryWrapper.rawAppWindow.isMinimized())
+          galleryWrapper.rawAppWindow.restore();
+
+        galleryWrapper.rawAppWindow.show();
+
+        return galleryWrapper.rawAppWindow.contentWindow.appID;
+      })
+      .catch(function(error) {
+        console.error('Launch failed' + error.stack || error);
+        return Promise.reject(error);
       });
-    });
-  }).then(function(gallery) {
-    // If the window is minimized, we need to restore it first.
-    if (gallery.rawAppWindow.isMinimized())
-      gallery.rawAppWindow.restore();
-
-    gallery.rawAppWindow.show();
-
-    return gallery.rawAppWindow.contentWindow.appID;
-  }).catch(function(error) {
-    console.error('Launch failed' + error.stack || error);
-    return Promise.reject(error);
-  });
 }
 
 background.setLaunchHandler(openGalleryWindow);

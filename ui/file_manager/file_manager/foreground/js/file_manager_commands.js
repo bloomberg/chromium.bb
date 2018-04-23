@@ -548,7 +548,7 @@ CommandHandler.COMMANDS_['format'] = /** @type {Command} */ ({
     if (!root)
       root = directoryModel.getCurrentDirEntry();
 
-    var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
+    var volumeInfo = fileManager.volumeManager.getVolumeInfo(assert(root));
     if (volumeInfo) {
       fileManager.ui.confirmDialog.show(
           loadTimeData.getString('FORMATTING_WARNING'),
@@ -1051,8 +1051,9 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
         event.target instanceof DirectoryItem) {
       var isRemovableRoot = false;
       var entry = CommandUtil.getCommandEntry(event.target);
+      var volumeInfo = null;
       if (entry) {
-        var volumeInfo = fileManager.volumeManager.getVolumeInfo(entry);
+        volumeInfo = fileManager.volumeManager.getVolumeInfo(entry);
         // Checks whether the target is actually external drive or just a folder
         // inside the drive.
         if (volumeInfo &&

@@ -482,7 +482,7 @@ FileTable.decorate = function(
     var currentSelection = [];
     var bottom = y + (opt_height || 0);
     for (var i = 0; i < this.selectionModel_.length; i++) {
-      var itemMetrics = this.getHeightsForIndex_(i);
+      var itemMetrics = this.getHeightsForIndex(i);
       if (itemMetrics.top < bottom && itemMetrics.top + itemMetrics.height >= y)
         currentSelection.push(i);
     }

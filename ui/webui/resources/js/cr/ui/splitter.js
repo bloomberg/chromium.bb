@@ -229,7 +229,6 @@ cr.define('cr.ui', function() {
     /**
      * Handles start of the splitter dragging. Saves current width of the
      * element being resized.
-     * @protected
      */
     handleSplitterDragStart: function() {
       // Use the computed width style as the base so that we can ignore what
@@ -247,7 +246,6 @@ cr.define('cr.ui', function() {
     /**
      * Handles splitter moves. Updates width of the element being resized.
      * @param {number} deltaX The change of splitter horizontal position.
-     * @protected
      */
     handleSplitterDragMove: function(deltaX) {
       var targetElement = this.getResizeTarget_();
@@ -259,7 +257,6 @@ cr.define('cr.ui', function() {
     /**
      * Handles end of the splitter dragging. This fires a 'resize' event if the
      * size changed.
-     * @protected
      */
     handleSplitterDragEnd: function() {
       // Check if the size changed.

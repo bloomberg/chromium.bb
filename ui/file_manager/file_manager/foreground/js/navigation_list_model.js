@@ -200,7 +200,7 @@ function NavigationListModel(
 
   this.shortcutList_ = [];
   for (var i = 0; i < this.shortcutListModel_.length; i++) {
-    var shortcutEntry = /** @type {Entry} */ (this.shortcutListModel_.item(i));
+    var shortcutEntry = /** @type {!Entry} */ (this.shortcutListModel_.item(i));
     var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutEntry);
     this.shortcutList_.push(entryToModelItem(shortcutEntry));
   }

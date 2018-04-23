@@ -244,7 +244,7 @@ ListThumbnailLoader.prototype.continue_ = function() {
   var entry = /** @type {Entry} */ (this.dataModel_.item(this.cursor_));
 
   // Check volume type for optimizing the parameters.
-  var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+  var volumeInfo = this.volumeManager_.getVolumeInfo(assert(entry));
   this.currentVolumeType_ = volumeInfo ? volumeInfo.volumeType : null;
 
   // If tasks are running full or all items are scanned, do nothing.

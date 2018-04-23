@@ -35,7 +35,7 @@ cr.define('cr.ui.dialogs', function() {
    */
   BaseDialog.ANIMATE_STABLE_DURATION = 500;
 
-  /** @private */
+  /** @protected */
   BaseDialog.prototype.initDom_ = function() {
     var doc = this.document_;
     this.container_ = doc.createElement('div');
@@ -94,7 +94,7 @@ cr.define('cr.ui.dialogs', function() {
   /** @private {Function|undefined} */
   BaseDialog.prototype.onCancel_ = null;
 
-  /** @private */
+  /** @protected */
   BaseDialog.prototype.onContainerKeyDown_ = function(event) {
     // Handle Escape.
     if (event.keyCode == 27 && !this.cancelButton_.disabled) {

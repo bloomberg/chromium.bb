@@ -554,7 +554,7 @@ Banners.prototype.privateOnDirectoryChanged_ = function(event) {
   if (!this.directoryModel_.getCurrentDirEntry())
     return;
 
-  var currentDirEntry = this.directoryModel_.getCurrentDirEntry();
+  var currentDirEntry = assert(this.directoryModel_.getCurrentDirEntry());
   var currentVolume = currentDirEntry &&
       this.volumeManager_.getVolumeInfo(currentDirEntry);
   var eventVolume = this.volumeManager_.getVolumeInfo(event.entry);
@@ -592,10 +592,9 @@ Banners.prototype.maybeShowLowSpaceWarning_ = function(volume) {
     return;
 
   chrome.fileManagerPrivate.getSizeStats(
-      volume.volumeId,
-      function(sizeStats) {
+      volume.volumeId, function(sizeStats) {
         var currentVolume = this.volumeManager_.getVolumeInfo(
-            this.directoryModel_.getCurrentDirEntry());
+            assert(this.directoryModel_.getCurrentDirEntry()));
         if (volume !== currentVolume) {
           // This happens when the current directory is moved during requesting
           // the file system size. Just ignore it.

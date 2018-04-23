@@ -133,7 +133,7 @@ ShareDialog.prototype.setOverrideURLForTesting = function(url) {
 
 /**
  * One-time initialization of DOM.
- * @private
+ * @protected
  */
 ShareDialog.prototype.initDom_ = function() {
   FileManagerDialogBase.prototype.initDom_.call(this);
