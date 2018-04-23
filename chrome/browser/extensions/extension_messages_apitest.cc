@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest, MessagingBackgroundOnly) {
 // Tests whether an extension in an interstitial page can send messages to the
 // background page.
 IN_PROC_BROWSER_TEST_P(MessagingApiTest, MessagingInterstitial) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // TODO(https://crbug.com/833429): Intermittent timeouts when run with
   // --site-per-process on Windows.
   if (content::AreAllSitesIsolatedForTesting())
