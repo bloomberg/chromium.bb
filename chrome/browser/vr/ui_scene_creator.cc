@@ -888,7 +888,9 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   element->set_bounds_contain_children(true);
   element->SetTransitionedProperties({OPACITY});
   element->AddBinding(
-      VR_BIND(bool, Model, model_, !model->hosted_platform_ui.hosted_ui_enabled,
+      VR_BIND(bool, Model, model_,
+              !model->hosted_platform_ui.hosted_ui_enabled ||
+                  model->hosted_platform_ui.floating,
               UiElement, element.get(),
               view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
   scene_->AddUiElement(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
