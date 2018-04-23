@@ -91,9 +91,10 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
     case views::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
       return kHarmonyLayoutUnit * 7;
     case views::DISTANCE_RELATED_LABEL_HORIZONTAL:
-    case DISTANCE_RELATED_LABEL_HORIZONTAL_LIST:
     case views::DISTANCE_TABLE_CELL_HORIZONTAL_MARGIN:
       return 3 * kHarmonyLayoutUnit / 4;
+    case DISTANCE_RELATED_LABEL_HORIZONTAL_LIST:
+      return kHarmonyLayoutUnit / 2;
     case views::DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT:
       return kHarmonyLayoutUnit * 12;
     case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
