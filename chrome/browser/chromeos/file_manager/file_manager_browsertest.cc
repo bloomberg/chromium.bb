@@ -18,22 +18,25 @@
 
 namespace file_manager {
 
-// Parameter of FileManagerBrowserTest.
-// The second value is the case name of JavaScript.
+// FileManagerBrowserTest parameters: first controls IN_GUEST_MODE or not, the
+// second is the JS test case name.
 typedef std::tuple<GuestMode, const char*> TestParameter;
 
-// Test fixture class for normal (not multi-profile related) tests.
+// Test class FileManager browser tests.
 class FileManagerBrowserTest :
       public FileManagerBrowserTestBase,
       public ::testing::WithParamInterface<TestParameter> {
+ public:
   GuestMode GetGuestModeParam() const override {
     return std::get<0>(GetParam());
   }
-  const char* GetTestManifestName() const override {
-    return "file_manager_test_manifest.json";
-  }
+
   const char* GetTestCaseNameParam() const override {
     return std::get<1>(GetParam());
+  }
+
+  const char* GetTestManifestName() const override {
+    return "file_manager_test_manifest.json";
   }
 };
 
@@ -41,10 +44,11 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
   StartTest();
 }
 
-// Test fixture class for tests that rely on deprecated event dispatch that send
-// tests.
+// Test class for FileManager browser tests that rely on deprecated event
+// dispatch that send tests.
 class FileManagerBrowserTestWithLegacyEventDispatch
     : public FileManagerBrowserTest {
+ public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     FileManagerBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("disable-blink-features",
