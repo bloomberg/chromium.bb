@@ -7,7 +7,6 @@
 #include <memory>
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
-#include "third_party/blink/public/platform/web_rtc_error.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
@@ -88,9 +87,9 @@ WebRTCSessionDescription MockWebRTCPeerConnectionHandler::RemoteDescription() {
   return WebRTCSessionDescription();
 }
 
-WebRTCErrorType MockWebRTCPeerConnectionHandler::SetConfiguration(
+webrtc::RTCErrorType MockWebRTCPeerConnectionHandler::SetConfiguration(
     const WebRTCConfiguration&) {
-  return WebRTCErrorType::kNone;
+  return webrtc::RTCErrorType::NONE;
 }
 
 void MockWebRTCPeerConnectionHandler::GetStats(const WebRTCStatsRequest&) {}

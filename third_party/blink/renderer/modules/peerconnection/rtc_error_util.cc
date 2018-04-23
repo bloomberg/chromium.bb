@@ -8,27 +8,26 @@
 
 namespace blink {
 
-DOMException* CreateDOMExceptionFromWebRTCError(const WebRTCError& error) {
-  switch (error.GetType()) {
-    case WebRTCErrorType::kNone:
+DOMException* CreateDOMExceptionFromRTCError(const webrtc::RTCError& error) {
+  switch (error.type()) {
+    case webrtc::RTCErrorType::NONE:
       // This should never happen.
       NOTREACHED();
       break;
-    case WebRTCErrorType::kSyntaxError:
+    case webrtc::RTCErrorType::SYNTAX_ERROR:
       return DOMException::Create(kSyntaxError, error.message());
-      break;
-    case WebRTCErrorType::kInvalidModification:
+    case webrtc::RTCErrorType::INVALID_MODIFICATION:
       return DOMException::Create(kInvalidModificationError, error.message());
-      break;
-    case WebRTCErrorType::kNetworkError:
+    case webrtc::RTCErrorType::NETWORK_ERROR:
       return DOMException::Create(kNetworkError, error.message());
-      break;
-    case WebRTCErrorType::kOperationError:
+    case webrtc::RTCErrorType::UNSUPPORTED_PARAMETER:
+    case webrtc::RTCErrorType::UNSUPPORTED_OPERATION:
+    case webrtc::RTCErrorType::RESOURCE_EXHAUSTED:
+    case webrtc::RTCErrorType::INTERNAL_ERROR:
       return DOMException::Create(kOperationError, error.message());
-      break;
-    case WebRTCErrorType::kInvalidState:
+    case webrtc::RTCErrorType::INVALID_STATE:
       return DOMException::Create(kInvalidStateError, error.message());
-    case WebRTCErrorType::kInvalidParameter:
+    case webrtc::RTCErrorType::INVALID_PARAMETER:
       // One use of this value is to signal invalid SDP syntax.
       // According to spec, this should return an RTCError with name
       // "RTCError" and detail "sdp-syntax-error", with
@@ -36,14 +35,11 @@ DOMException* CreateDOMExceptionFromWebRTCError(const WebRTCError& error) {
       // occured.
       // TODO(https://crbug.com/821806): Implement the RTCError object.
       return DOMException::Create(kInvalidAccessError, error.message());
-    case WebRTCErrorType::kInternalError:
-      // Not a straightforward mapping, but used as a fallback at lower layers.
-      return DOMException::Create(kOperationError, error.message());
-      break;
-    case WebRTCErrorType::kUnsupportedParameter:
-    case WebRTCErrorType::kInvalidRange:
-      LOG(ERROR) << "Got unhandled WebRTC error "
-                 << static_cast<int>(error.GetType());
+    case webrtc::RTCErrorType::INVALID_RANGE:
+      return DOMException::Create(kV8RangeError, error.message());
+    default:
+      LOG(ERROR) << "Got unhandled RTC error "
+                 << static_cast<int>(error.type());
       // No DOM equivalent. Needs per-error evaluation.
       NOTREACHED();
       break;

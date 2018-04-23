@@ -38,7 +38,7 @@ class WebRTCDataChannelHandler;
 class WebRTCLegacyStats;
 class WebRTCOfferOptions;
 class WebRTCPeerConnectionHandlerClient;
-}
+}  // namespace blink
 
 namespace content {
 
@@ -50,8 +50,7 @@ class RtcDataChannelHandler;
 class CONTENT_EXPORT LocalRTCStatsResponse : public rtc::RefCountInterface {
  public:
   explicit LocalRTCStatsResponse(const blink::WebRTCStatsResponse& impl)
-      : impl_(impl) {
-  }
+      : impl_(impl) {}
 
   virtual blink::WebRTCStatsResponse webKitStatsResponse() const;
   virtual void addStats(const blink::WebRTCLegacyStats& stats);
@@ -131,7 +130,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   blink::WebRTCSessionDescription LocalDescription() override;
   blink::WebRTCSessionDescription RemoteDescription() override;
 
-  blink::WebRTCErrorType SetConfiguration(
+  webrtc::RTCErrorType SetConfiguration(
       const blink::WebRTCConfiguration& configuration) override;
   bool AddICECandidate(
       scoped_refptr<blink::WebRTCICECandidate> candidate) override;
@@ -205,8 +204,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnRemoveRemoteTrack(
       scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver);
   void OnDataChannel(std::unique_ptr<RtcDataChannelHandler> handler);
-  void OnIceCandidate(const std::string& sdp, const std::string& sdp_mid,
-      int sdp_mline_index, int component, int address_family);
+  void OnIceCandidate(const std::string& sdp,
+                      const std::string& sdp_mid,
+                      int sdp_mline_index,
+                      int component,
+                      int address_family);
 
  private:
   // Record info about the first SessionDescription from the local and
@@ -222,7 +224,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   };
 
   webrtc::SessionDescriptionInterface* CreateNativeSessionDescription(
-      const std::string& sdp, const std::string& type,
+      const std::string& sdp,
+      const std::string& type,
       webrtc::SdpParseError* error);
 
   // Report to UMA whether an IceConnectionState has occurred. It only records
@@ -234,9 +237,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // constructor as well as after Ice Restart.
   void ResetUMAStats();
 
-  void ReportFirstSessionDescriptions(
-      const FirstSessionDescription& local,
-      const FirstSessionDescription& remote);
+  void ReportFirstSessionDescriptions(const FirstSessionDescription& local,
+                                      const FirstSessionDescription& remote);
 
   std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSender(uintptr_t id);
 

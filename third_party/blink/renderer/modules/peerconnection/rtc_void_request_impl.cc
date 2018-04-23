@@ -69,12 +69,12 @@ void RTCVoidRequestImpl::RequestSucceeded() {
   Clear();
 }
 
-void RTCVoidRequestImpl::RequestFailed(const WebRTCError& error) {
+void RTCVoidRequestImpl::RequestFailed(const webrtc::RTCError& error) {
   bool should_fire_callback =
       requester_ && requester_->ShouldFireDefaultCallbacks();
   if (should_fire_callback && error_callback_.Get()) {
     error_callback_->InvokeAndReportException(
-        nullptr, CreateDOMExceptionFromWebRTCError(error));
+        nullptr, CreateDOMExceptionFromRTCError(error));
   }
 
   Clear();

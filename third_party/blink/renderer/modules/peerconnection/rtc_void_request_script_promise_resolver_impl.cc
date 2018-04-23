@@ -31,8 +31,8 @@ void RTCVoidRequestScriptPromiseResolverImpl::RequestSucceeded() {
 }
 
 void RTCVoidRequestScriptPromiseResolverImpl::RequestFailed(
-    const WebRTCError& error) {
-  resolver_->Reject(CreateDOMExceptionFromWebRTCError(error));
+    const webrtc::RTCError& error) {
+  resolver_->Reject(CreateDOMExceptionFromRTCError(error));
 }
 
 void RTCVoidRequestScriptPromiseResolverImpl::Trace(blink::Visitor* visitor) {

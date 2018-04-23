@@ -48,9 +48,9 @@ void RTCSessionDescriptionRequestPromiseImpl::RequestSucceeded(
 }
 
 void RTCSessionDescriptionRequestPromiseImpl::RequestFailed(
-    const WebRTCError& error) {
+    const webrtc::RTCError& error) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
-    resolver_->Reject(CreateDOMExceptionFromWebRTCError(error));
+    resolver_->Reject(CreateDOMExceptionFromRTCError(error));
   } else {
     // This is needed to have the resolver release its internal resources
     // while leaving the associated promise pending as specified.
