@@ -1293,6 +1293,10 @@ jumbo_component("base") {
         "trace_event/cfi_backtrace_android.h",
       ]
     }
+
+    # This is actually a linker script, but it can be added to the link in the
+    # same way as a library.
+    libs = [ "android/library_loader/anchor_functions.lds" ]
   }
 
   # Chromeos.
