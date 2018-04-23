@@ -8,7 +8,6 @@ assert(is_android)
 
 shared_library("chromium_android_linker") {
   sources = [
-    "android_dlext.h",
     "legacy_linker_jni.cc",
     "legacy_linker_jni.h",
     "linker_jni.cc",
