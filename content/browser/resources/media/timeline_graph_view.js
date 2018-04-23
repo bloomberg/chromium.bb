@@ -149,9 +149,13 @@ var TimelineGraphView = (function() {
     },
 
     /**
-     * Draws the graph on |canvas_|.
+     * Draws the graph on |canvas_| when visible.
      */
     repaint: function() {
+      if (this.canvas_.offsetParent === null) {
+        return; // do not repaint graphs that are not visible.
+      }
+
       this.repaintTimerRunning_ = false;
 
       var width = this.canvas_.width;
