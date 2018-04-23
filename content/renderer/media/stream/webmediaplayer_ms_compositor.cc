@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/hash.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "cc/paint/skia_paint_canvas.h"
@@ -140,7 +141,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       dropped_frame_count_(0),
       stopped_(true),
       render_started_(!stopped_) {
-  main_message_loop_ = base::MessageLoop::current();
+  main_message_loop_ = base::MessageLoopCurrent::Get();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   if (!web_stream.IsNull())
