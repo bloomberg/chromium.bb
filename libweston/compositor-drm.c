@@ -4109,7 +4109,8 @@ drm_output_init_pixman(struct drm_output *output, struct drm_backend *b)
 			goto err;
 	}
 
-	if (pixman_renderer_output_create(&output->base) < 0)
+	if (pixman_renderer_output_create(&output->base,
+					  PIXMAN_RENDERER_OUTPUT_USE_SHADOW) < 0)
 		goto err;
 
 	pixman_region32_init_rect(&output->previous_damage,

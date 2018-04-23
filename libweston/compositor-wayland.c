@@ -782,7 +782,8 @@ cleanup_window:
 static int
 wayland_output_init_pixman_renderer(struct wayland_output *output)
 {
-	return pixman_renderer_output_create(&output->base);
+	return pixman_renderer_output_create(&output->base,
+				     PIXMAN_RENDERER_OUTPUT_USE_SHADOW);
 }
 
 static void

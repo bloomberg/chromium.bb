@@ -849,7 +849,8 @@ x11_output_switch_mode(struct weston_output *base, struct weston_mode *mode)
 			return -1;
 		}
 
-		if (pixman_renderer_output_create(&output->base) < 0) {
+		if (pixman_renderer_output_create(&output->base,
+				PIXMAN_RENDERER_OUTPUT_USE_SHADOW) < 0) {
 			weston_log("Failed to create pixman renderer for output\n");
 			x11_output_deinit_shm(b, output);
 			return -1;
@@ -1021,7 +1022,8 @@ x11_output_enable(struct weston_output *base)
 			weston_log("Failed to initialize SHM for the X11 output\n");
 			goto err;
 		}
-		if (pixman_renderer_output_create(&output->base) < 0) {
+		if (pixman_renderer_output_create(&output->base,
+				PIXMAN_RENDERER_OUTPUT_USE_SHADOW) < 0) {
 			weston_log("Failed to create pixman renderer for output\n");
 			x11_output_deinit_shm(b, output);
 			goto err;

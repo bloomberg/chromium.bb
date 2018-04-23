@@ -172,7 +172,8 @@ headless_output_enable(struct weston_output *base)
 							 output->image_buf,
 							 output->base.current_mode->width * 4);
 
-		if (pixman_renderer_output_create(&output->base) < 0)
+		if (pixman_renderer_output_create(&output->base,
+					PIXMAN_RENDERER_OUTPUT_USE_SHADOW) < 0)
 			goto err_renderer;
 
 		pixman_renderer_output_set_buffer(&output->base,
