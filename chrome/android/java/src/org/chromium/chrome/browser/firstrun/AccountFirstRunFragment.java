@@ -26,7 +26,6 @@ public class AccountFirstRunFragment
         extends Fragment implements FirstRunFragment, AccountSigninView.Delegate {
     // Per-page parameters:
     public static final String FORCE_SIGNIN_ACCOUNT_TO = "ForceSigninAccountTo";
-    public static final String PRESELECT_BUT_ALLOW_TO_CHANGE = "PreselectButAllowToChange";
     public static final String CHILD_ACCOUNT_STATUS = "ChildAccountStatus";
 
     private AccountSigninView mView;
@@ -101,14 +100,8 @@ public class AccountFirstRunFragment
     public boolean interceptBackPressed() {
         Bundle freProperties = getPageDelegate().getProperties();
         boolean forceSignin = freProperties.getString(FORCE_SIGNIN_ACCOUNT_TO) != null;
-        if (!mView.isInConfirmationScreen()
-                || (forceSignin && !freProperties.getBoolean(PRESELECT_BUT_ALLOW_TO_CHANGE))) {
+        if (!mView.isInConfirmationScreen() || forceSignin) {
             return false;
-        }
-
-        if (forceSignin && freProperties.getBoolean(PRESELECT_BUT_ALLOW_TO_CHANGE)) {
-            // Don't force signin if Activity is recreated.
-            freProperties.remove(FORCE_SIGNIN_ACCOUNT_TO);
         }
 
         mView.cancelConfirmationScreen();
