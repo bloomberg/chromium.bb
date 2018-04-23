@@ -479,8 +479,8 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
               ReleaseSharedBitmapCallback, shared_bitmap_id, release_called,
               release_sync_token, lost_resource));
       return child_resource_provider_->ImportResource(
-          viz::TransferableResource::MakeSoftware(
-              shared_bitmap_id, /*sequence_number=*/0, size, format),
+          viz::TransferableResource::MakeSoftware(shared_bitmap_id, size,
+                                                  format),
           std::move(callback));
     }
   }
@@ -1296,8 +1296,8 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
   std::unique_ptr<viz::SingleReleaseCallback> callback =
       viz::SingleReleaseCallback::Create(
           base::Bind(&ReleaseCallback, &release_sync_token, &lost_resource));
-  auto resource = viz::TransferableResource::MakeSoftware(
-      shared_bitmap_id, /*sequence_number=*/0, size, format);
+  auto resource =
+      viz::TransferableResource::MakeSoftware(shared_bitmap_id, size, format);
 
   viz::ResourceId resource_id =
       child_resource_provider->ImportResource(resource, std::move(callback));

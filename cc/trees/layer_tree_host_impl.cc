@@ -4691,7 +4691,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
             shared_memory.get(), upload_size, format);
     layer_tree_frame_sink_->DidAllocateSharedBitmap(std::move(memory_handle),
                                                     shared_bitmap_id);
-    transferable = viz::TransferableResource::MakeSoftware(shared_bitmap_id, 0,
+    transferable = viz::TransferableResource::MakeSoftware(shared_bitmap_id,
                                                            upload_size, format);
   }
   transferable.color_space = color_space;

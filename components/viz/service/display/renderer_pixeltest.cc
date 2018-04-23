@@ -179,7 +179,7 @@ void CreateTestTwoColoredTextureDrawQuad(
         AllocateAndRegisterSharedBitmapMemory(shared_bitmap_id, rect.size(),
                                               shared_bitmap_manager);
     resource = child_resource_provider->ImportResource(
-        TransferableResource::MakeSoftware(shared_bitmap_id, 0, rect.size(),
+        TransferableResource::MakeSoftware(shared_bitmap_id, rect.size(),
                                            RGBA_8888),
         SingleReleaseCallback::Create(base::DoNothing()));
 
@@ -240,7 +240,7 @@ void CreateTestTextureDrawQuad(
         AllocateAndRegisterSharedBitmapMemory(shared_bitmap_id, rect.size(),
                                               shared_bitmap_manager);
     resource = child_resource_provider->ImportResource(
-        TransferableResource::MakeSoftware(shared_bitmap_id, 0, rect.size(),
+        TransferableResource::MakeSoftware(shared_bitmap_id, rect.size(),
                                            RGBA_8888),
         SingleReleaseCallback::Create(base::DoNothing()));
 

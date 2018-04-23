@@ -137,8 +137,8 @@ struct CommonResourceObjects {
     release_callback3_ =
         base::Bind(&MockReleaseCallback::Release2,
                    base::Unretained(&mock_callback_), shared_bitmap_id_);
-    resource3_ = viz::TransferableResource::MakeSoftware(
-        shared_bitmap_id_, /*sequence_number=*/0, size, viz::RGBA_8888);
+    resource3_ = viz::TransferableResource::MakeSoftware(shared_bitmap_id_,
+                                                         size, viz::RGBA_8888);
   }
 
   using RepeatingReleaseCallback =
@@ -1446,7 +1446,7 @@ class SoftwareTextureLayerSwitchTreesTest : public SoftwareTextureLayerTest {
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id_, 0, gfx::Size(1, 1),
+            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
                                                     viz::RGBA_8888),
             viz::SingleReleaseCallback::Create(
                 base::BindOnce([](const gpu::SyncToken&, bool) {})));
@@ -1554,7 +1554,7 @@ class SoftwareTextureLayerMultipleRegisterTest
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id1_, 0, gfx::Size(1, 1),
+            viz::TransferableResource::MakeSoftware(id1_, gfx::Size(1, 1),
                                                     viz::RGBA_8888),
             viz::SingleReleaseCallback::Create(
                 base::BindOnce([](const gpu::SyncToken&, bool) {})));
@@ -1656,7 +1656,7 @@ class SoftwareTextureLayerRegisterUnregisterTest
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id1_, 0, gfx::Size(1, 1),
+            viz::TransferableResource::MakeSoftware(id1_, gfx::Size(1, 1),
                                                     viz::RGBA_8888),
             viz::SingleReleaseCallback::Create(
                 base::BindOnce([](const gpu::SyncToken&, bool) {})));
@@ -1744,7 +1744,7 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id_, 0, gfx::Size(1, 1),
+            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
                                                     viz::RGBA_8888),
             viz::SingleReleaseCallback::Create(
                 base::BindOnce([](const gpu::SyncToken&, bool) {})));
@@ -1764,7 +1764,7 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
         // VizDisplayCompositor.
         texture_layer_->ClearClient();
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id_, 0, gfx::Size(1, 1),
+            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
                                                     viz::RGBA_8888),
             viz::SingleReleaseCallback::Create(
                 base::BindOnce([](const gpu::SyncToken&, bool) {})));
@@ -1854,7 +1854,7 @@ class SoftwareTextureLayerUnregisterRegisterTest
         // Give the TextureLayer a resource so it contributes to the frame. It
         // doesn't need to register the SharedBitmapId otherwise.
         texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id_, 0, gfx::Size(1, 1),
+            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
                                                     viz::RGBA_8888),
             viz::SingleReleaseCallback::Create(
                 base::BindOnce([](const gpu::SyncToken&, bool) {})));

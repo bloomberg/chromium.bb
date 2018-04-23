@@ -359,7 +359,7 @@ void DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   }
 
   *out_resource = viz::TransferableResource::MakeSoftware(
-      registered.bitmap->id(), /*sequence_number=*/0, size_, viz::RGBA_8888);
+      registered.bitmap->id(), size_, viz::RGBA_8888);
   out_resource->color_space = storage_color_space_;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the

@@ -436,8 +436,8 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
               ReleaseSharedBitmapCallback, shared_bitmap_id, release_called,
               release_sync_token, lost_resource));
       return child_resource_provider_->ImportResource(
-          viz::TransferableResource::MakeSoftware(
-              shared_bitmap_id, /*sequence_number=*/0, size, format),
+          viz::TransferableResource::MakeSoftware(shared_bitmap_id, size,
+                                                  format),
           std::move(callback));
     }
   }
