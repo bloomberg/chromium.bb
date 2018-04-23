@@ -802,66 +802,69 @@ public class AwContents implements SmartClipProvider {
             InternalAccessDelegate internalAccessAdapter,
             NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory, AwContentsClient contentsClient,
             AwSettings settings, DependencyFactory dependencyFactory) {
-        mRendererPriority = RendererPriority.HIGH;
-        updateDefaultLocale();
-        settings.updateAcceptLanguages();
+        try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwContents.constructor")) {
+            mRendererPriority = RendererPriority.HIGH;
+            updateDefaultLocale();
+            settings.updateAcceptLanguages();
 
-        mBrowserContext = browserContext;
+            mBrowserContext = browserContext;
 
-        // setWillNotDraw(false) is required since WebView draws it's own contents using it's
-        // container view. If this is ever not the case we should remove this, as it removes
-        // Android's gatherTransparentRegion optimization for the view.
-        mContainerView = containerView;
-        mContainerView.setWillNotDraw(false);
+            // setWillNotDraw(false) is required since WebView draws it's own contents using it's
+            // container view. If this is ever not the case we should remove this, as it removes
+            // Android's gatherTransparentRegion optimization for the view.
+            mContainerView = containerView;
+            mContainerView.setWillNotDraw(false);
 
-        mHandler = new Handler();
-        mContext = context;
-        mAutofillProvider = dependencyFactory.createAutofillProvider(context, mContainerView);
-        mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
-        mInternalAccessAdapter = internalAccessAdapter;
-        mNativeDrawGLFunctorFactory = nativeDrawGLFunctorFactory;
-        mInitialFunctor = new AwGLFunctor(mNativeDrawGLFunctorFactory, mContainerView);
-        mCurrentFunctor = mInitialFunctor;
-        mContentsClient = contentsClient;
-        mContentsClient.getCallbackHelper().setCancelCallbackPoller(
-                () -> AwContents.this.isDestroyedOrNoOperation(NO_WARN));
-        mAwViewMethods = new AwViewMethodsImpl();
-        mFullScreenTransitionsState = new FullScreenTransitionsState(
-                mContainerView, mInternalAccessAdapter, mAwViewMethods);
-        mLayoutSizer = dependencyFactory.createLayoutSizer();
-        mSettings = settings;
-        mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
-        mWebContentsDelegate = new AwWebContentsDelegateAdapter(
-                this, contentsClient, settings, mContext, mContainerView);
-        mContentsClientBridge = new AwContentsClientBridge(mContext, contentsClient,
-                AwContentsStatics.getClientCertLookupTable());
-        mZoomControls = new AwZoomControls(this);
-        mBackgroundThreadClient = new BackgroundThreadClientImpl();
-        mIoThreadClient = new IoThreadClientImpl();
-        mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
-        mDisplayObserver = new AwDisplayAndroidObserver();
-        mUpdateVisibilityRunnable = () -> updateContentViewCoreVisibility();
+            mHandler = new Handler();
+            mContext = context;
+            mAutofillProvider = dependencyFactory.createAutofillProvider(context, mContainerView);
+            mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
+            mInternalAccessAdapter = internalAccessAdapter;
+            mNativeDrawGLFunctorFactory = nativeDrawGLFunctorFactory;
+            mInitialFunctor = new AwGLFunctor(mNativeDrawGLFunctorFactory, mContainerView);
+            mCurrentFunctor = mInitialFunctor;
+            mContentsClient = contentsClient;
+            mContentsClient.getCallbackHelper().setCancelCallbackPoller(
+                    () -> AwContents.this.isDestroyedOrNoOperation(NO_WARN));
+            mAwViewMethods = new AwViewMethodsImpl();
+            mFullScreenTransitionsState = new FullScreenTransitionsState(
+                    mContainerView, mInternalAccessAdapter, mAwViewMethods);
+            mLayoutSizer = dependencyFactory.createLayoutSizer();
+            mSettings = settings;
+            mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
+            mWebContentsDelegate = new AwWebContentsDelegateAdapter(
+                    this, contentsClient, settings, mContext, mContainerView);
+            mContentsClientBridge = new AwContentsClientBridge(
+                    mContext, contentsClient, AwContentsStatics.getClientCertLookupTable());
+            mZoomControls = new AwZoomControls(this);
+            mBackgroundThreadClient = new BackgroundThreadClientImpl();
+            mIoThreadClient = new IoThreadClientImpl();
+            mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
+            mDisplayObserver = new AwDisplayAndroidObserver();
+            mUpdateVisibilityRunnable = () -> updateContentViewCoreVisibility();
 
-        AwSettings.ZoomSupportChangeListener zoomListener =
-                (supportsDoubleTapZoom, supportsMultiTouchZoom) -> {
-                    if (isDestroyedOrNoOperation(NO_WARN)) return;
-                    mContentViewCore.updateDoubleTapSupport(supportsDoubleTapZoom);
-                    mContentViewCore.updateMultiTouchZoomSupport(supportsMultiTouchZoom);
-                };
-        mSettings.setZoomListener(zoomListener);
-        mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
-        mSettings.setDefaultVideoPosterURL(
-                mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
-        mScrollOffsetManager =
-                dependencyFactory.createScrollOffsetManager(new AwScrollOffsetManagerDelegate());
-        mScrollAccessibilityHelper = new ScrollAccessibilityHelper(mContainerView);
+            AwSettings.ZoomSupportChangeListener zoomListener =
+                    (supportsDoubleTapZoom, supportsMultiTouchZoom) -> {
+                if (isDestroyedOrNoOperation(NO_WARN)) return;
+                mContentViewCore.updateDoubleTapSupport(supportsDoubleTapZoom);
+                mContentViewCore.updateMultiTouchZoomSupport(supportsMultiTouchZoom);
+            };
+            mSettings.setZoomListener(zoomListener);
+            mDefaultVideoPosterRequestHandler =
+                    new DefaultVideoPosterRequestHandler(mContentsClient);
+            mSettings.setDefaultVideoPosterURL(
+                    mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
+            mScrollOffsetManager = dependencyFactory.createScrollOffsetManager(
+                    new AwScrollOffsetManagerDelegate());
+            mScrollAccessibilityHelper = new ScrollAccessibilityHelper(mContainerView);
 
-        setOverScrollMode(mContainerView.getOverScrollMode());
-        setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
+            setOverScrollMode(mContainerView.getOverScrollMode());
+            setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
 
-        setNewAwContents(nativeInit(mBrowserContext));
+            setNewAwContents(nativeInit(mBrowserContext));
 
-        onContainerViewChanged();
+            onContainerViewChanged();
+        }
     }
 
     private void createContentViewCore(ViewAndroidDelegate viewDelegate,

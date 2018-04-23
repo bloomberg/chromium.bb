@@ -104,7 +104,7 @@ public final class AwBrowserProcess {
      * Note: it is up to the caller to ensure this is only called once.
      */
     public static void start() {
-        try (ScopedSysTraceEvent event = ScopedSysTraceEvent.scoped("AwBrowserProcess.start")) {
+        try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwBrowserProcess.start")) {
             final Context appContext = ContextUtils.getApplicationContext();
             tryObtainingDataDirLock();
             // We must post to the UI thread to cover the case that the user
@@ -122,9 +122,13 @@ public final class AwBrowserProcess {
                 CombinedPolicyProvider.get().registerProvider(new AwPolicyProvider(appContext));
 
                 // Check android settings but only when safebrowsing is enabled.
-                AwSafeBrowsingConfigHelper.maybeEnableSafeBrowsingFromManifest(appContext);
+                try (ScopedSysTraceEvent e2 =
+                                ScopedSysTraceEvent.scoped("AwBrowserProcess.maybeEnable")) {
+                    AwSafeBrowsingConfigHelper.maybeEnableSafeBrowsingFromManifest(appContext);
+                }
 
-                try {
+                try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
+                             "AwBrowserProcess.startBrowserProcessesSync")) {
                     BrowserStartupController.get(LibraryProcessType.PROCESS_WEBVIEW)
                             .startBrowserProcessesSync(!multiProcess);
                 } catch (ProcessInitException e) {
@@ -150,34 +154,38 @@ public final class AwBrowserProcess {
     }
 
     private static void tryObtainingDataDirLock() {
-        // Many existing apps rely on this even though it's known to be unsafe.
-        // Make it fatal when on P for apps that target P or higher
-        boolean dieOnFailure = BuildInfo.isAtLeastP() && BuildInfo.targetsAtLeastP();
+        try (ScopedSysTraceEvent e1 =
+                        ScopedSysTraceEvent.scoped("AwBrowserProcess.tryObtainingDataDirLock")) {
+            // Many existing apps rely on this even though it's known to be unsafe.
+            // Make it fatal when on P for apps that target P or higher
+            boolean dieOnFailure = BuildInfo.isAtLeastP() && BuildInfo.targetsAtLeastP();
 
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            String dataPath = PathUtils.getDataDirectory();
-            File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
-            boolean success = false;
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             try {
-                // Note that the file is kept open intentionally.
-                sLockFile = new RandomAccessFile(lockFile, "rw");
-                sExclusiveFileLock = sLockFile.getChannel().tryLock();
-                success = sExclusiveFileLock != null;
-            } catch (IOException e) {
-                Log.w(TAG, "Failed to create lock file " + lockFile, e);
-            }
-            if (!success) {
-                final String error = "Using WebView from more than one process at once with the "
-                        + "same data directory is not supported. https://crbug.com/558377";
-                if (dieOnFailure) {
-                    throw new RuntimeException(error);
-                } else {
-                    Log.w(TAG, error);
+                String dataPath = PathUtils.getDataDirectory();
+                File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
+                boolean success = false;
+                try {
+                    // Note that the file is kept open intentionally.
+                    sLockFile = new RandomAccessFile(lockFile, "rw");
+                    sExclusiveFileLock = sLockFile.getChannel().tryLock();
+                    success = sExclusiveFileLock != null;
+                } catch (IOException e) {
+                    Log.w(TAG, "Failed to create lock file " + lockFile, e);
                 }
+                if (!success) {
+                    final String error =
+                            "Using WebView from more than one process at once with the "
+                            + "same data directory is not supported. https://crbug.com/558377";
+                    if (dieOnFailure) {
+                        throw new RuntimeException(error);
+                    } else {
+                        Log.w(TAG, error);
+                    }
+                }
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
             }
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 
@@ -206,7 +214,7 @@ public final class AwBrowserProcess {
      * Android Checkbox toggle.
      */
     public static void handleMinidumpsAndSetMetricsConsent(final boolean updateMetricsConsent) {
-        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+        try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped(
                      "AwBrowserProcess.handleMinidumpsAndSetMetricsConsent")) {
             final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
                     CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
