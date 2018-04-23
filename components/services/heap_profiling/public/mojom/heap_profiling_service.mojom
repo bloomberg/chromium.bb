@@ -6,7 +6,6 @@ module heap_profiling.mojom;
 
 import "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom";
 import "mojo/public/mojom/base/process_id.mojom";
-import "mojo/common/values.mojom";
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
