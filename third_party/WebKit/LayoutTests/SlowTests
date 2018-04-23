@@ -403,9 +403,7 @@ crbug.com/660492 storage/indexeddb/structured-clone.html [ Slow ]
 # which can be very slow.
 
 # Media controls tests have to wait for panel to fade out.
-crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Slow ]
 crbug.com/722825 media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Slow ]
-crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Slow ]
 crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Slow ]
 
 crbug.com/719298 fast/dnd/dropEffect-for-effectAllowed.html [ Slow ]
