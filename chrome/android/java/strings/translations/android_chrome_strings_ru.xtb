@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1006017844123154345">Открыть в Интернете</translation>
+<translation id="1021684790657589338">SD-карта не обнаружена</translation>
 <translation id="1036727731225946849">Добавление файла "<ph name="WEBAPK_NAME" />"…</translation>
 <translation id="1041308826830691739">От сайтов</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
@@ -184,6 +185,7 @@
 <translation id="2625189173221582860">Пароль скопирован</translation>
 <translation id="2631006050119455616">Сэкономлено</translation>
 <translation id="2647434099613338025">Добавить язык</translation>
+<translation id="2650751991977523696">Скачать файл ещё раз?</translation>
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2677748264148917807">Закрыть</translation>
 <translation id="2704606927547763573">Скопировано</translation>
@@ -220,6 +222,7 @@
 <translation id="3029613699374795922">Скачано <ph name="KBS" /> КБ</translation>
 <translation id="3029704984691124060">Кодовые фразы не совпадают</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Показать похожие результаты</translation>
 <translation id="305593374596241526">Определение местоположения отключено. Включите его в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Другие статьи скоро появятся. Хорошего утра!</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
@@ -300,6 +303,7 @@
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
 <translation id="3859306556332390985">Перемотать вперед</translation>
+<translation id="3871936494901781193">Прокручивая страницу вверх, вы будете видеть ссылки на похожие ресурсы.</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
 <translation id="3895926599014793903">Принудительно изменять масштаб</translation>
 <translation id="3927692899758076493">Без засечек</translation>
@@ -307,6 +311,7 @@
 <translation id="393697183122708255">Голосовой поиск недоступен</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="395206256282351086">Подсказки запросов и сайтов отключены</translation>
+<translation id="3952533382939530115">Для этой функции используется <ph name="BEGIN_LINK" />синхронизация<ph name="END_LINK" />. Адреса URL посещаемых вами страниц будут отправлены в Google.</translation>
 <translation id="3967822245660637423">Скачивание завершено</translation>
 <translation id="397583555483684758">Ошибка синхронизации</translation>
 <translation id="3976396876660209797">Удалите этот ярлык и создайте его заново</translation>
@@ -410,6 +415,7 @@
 <translation id="4876188919622883022">Упрощенный просмотр</translation>
 <translation id="4878404682131129617">Не удалось создать туннель через прокси-сервер.</translation>
 <translation id="4881695831933465202">Открыть</translation>
+<translation id="488187801263602086">Необходимо переименовать файл</translation>
 <translation id="4885273946141277891">Конфликт версий Chrome</translation>
 <translation id="4910889077668685004">Платежные приложения</translation>
 <translation id="4913161338056004800">Сбросить статистику</translation>
@@ -503,6 +509,7 @@
 <translation id="5676636989614905379">Не удается воспроизвести видео на устройстве "<ph name="SCREEN_NAME" />"</translation>
 <translation id="5677928146339483299">Заблокировано</translation>
 <translation id="5684874026226664614">Не удалось перевести страницу</translation>
+<translation id="5686790454216892815">Имя файла слишком длинное</translation>
 <translation id="5689516760719285838">Геоданные</translation>
 <translation id="5719837394786370183">Страницы, открытые в этом окне, не останутся в истории браузера или поиска. Они не оставят на компьютере следов, таких как файлы cookie, после того как вы закроете все вкладки инкогнито. Скачанные вами файлы и добавленные закладки будут сохранены.
 
@@ -695,6 +702,7 @@
 <translation id="7437998757836447326">Выход из Chrome</translation>
 <translation id="7445411102860286510">Разрешить сайтам автоматически воспроизводить видео без звука (рекомендуется)</translation>
 <translation id="7453467225369441013">Вы выйдете из аккаунтов на большинстве сайтов, но останетесь в аккаунте Google.</translation>
+<translation id="7454641608352164238">Недостаточно места</translation>
 <translation id="7455923816558154057">Нажмите, чтобы посмотреть</translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="7475192538862203634">Если эта проблема возникает часто, узнайте, <ph name="BEGIN_LINK" />как ее решить<ph name="END_LINK" />.</translation>
@@ -773,6 +781,7 @@
 <translation id="8087000398470557479">Контент с сайта <ph name="DOMAIN_NAME" />. Получен с помощью Google.</translation>
 <translation id="8100932616285851614">Панель навигации закрыта</translation>
 <translation id="8103578431304235997">Вкладка инкогнито</translation>
+<translation id="8105951947646329362">Предлагать похожие страницы</translation>
 <translation id="8116925261070264013">Сайты с отключенным звуком</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8137558756159375272">Функция "Нажмите для поиска" отправляет в Google выбранное слово, а также текущую страницу в качестве контекста. Включить или отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
@@ -826,6 +835,7 @@
 <translation id="8636825310635137004">Чтобы получить доступ к вкладкам на всех ваших устройствах, включите синхронизацию.</translation>
 <translation id="8641930654639604085">Блокировать сайты для взрослых</translation>
 <translation id="8662811608048051533">Вы автоматически выйдете из учетных записей на большинстве сайтов.</translation>
+<translation id="8664979001105139458">Файл с таким именем уже существует</translation>
 <translation id="8676374126336081632">Очистить</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Уровень сигнала: # линия}one{Уровень сигнала: # линия}few{Уровень сигнала: # линии}many{Уровень сигнала: # линий}other{Уровень сигнала: # линии}}</translation>
 <translation id="869891660844655955">Срок действия</translation>
@@ -854,6 +864,7 @@
 <translation id="8942627711005830162">Открыть в новом окне</translation>
 <translation id="8951232171465285730">Благодаря Chrome вы сэкономили <ph name="MEGABYTES" /> МБ свободного места</translation>
 <translation id="8959122750345127698">Страница не найдена: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Скачать в папку по умолчанию?</translation>
 <translation id="8979405271719829084">Скачивайте видео для просмотра</translation>
 <translation id="8981454092730389528">Отслеживание действий в Google</translation>
 <translation id="8986494364107987395">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>

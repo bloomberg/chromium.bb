@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">Skala prikaza</translation>
 <translation id="2303600792989757991">Prebaci na prozor pregleda</translation>
 <translation id="2338501278241028356">Uključite Bluetooth da biste otkrili uređaje u blizini</translation>
+<translation id="2339073806695260576">Dodirnite gumb pisaljke na polici da biste napisali bilješku, izradili snimku zaslona, upotrijebili laserski pokazivač ili povećalo.</translation>
 <translation id="2351266942280602854">Jezik i unos</translation>
 <translation id="2352467521400612932">Postavke pisaljke</translation>
 <translation id="2354174487190027830">Aktiviranje mreže <ph name="NAME" /></translation>
@@ -273,7 +274,6 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="7098389117866926363">USB-C uređaj (lijevi priključak sa stražnje strane)</translation>
 <translation id="7131634465328662194">Odjavit ćete se automatski.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
-<translation id="7165511658052620796">(TEMP) Prikaži prijavu u sučelje WebUI; ako je korištena programska pogreška datoteke (crbug.com) ili povratne informacije (alt+shift+i)</translation>
 <translation id="7168224885072002358">Vraćanje na staru razlučivost za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Stražnji mikrofon</translation>
 <translation id="726276584504105859">Povucite ovdje da biste upotrebljavali podijeljeni zaslon</translation>

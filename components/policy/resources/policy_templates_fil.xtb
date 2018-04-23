@@ -51,6 +51,7 @@
 <translation id="1152117524387175066">Iulat ang katayuan ng dev switch ng device sa pag-boot.
 
       Kung nakatakda ang patakaran sa false, hindi iuulat ang katayuan ng dev switch.</translation>
+<translation id="1160479894929412407">Payagan ang QUIC protocol</translation>
 <translation id="1160939557934457296">Huwag paganahin ang pagpapatuloy mula sa pahina ng babala sa Ligtas na Pag-browse</translation>
 <translation id="1198465924256827162">Kung gaano kadalas ipinapadala ang mga pag-upload ng status ng device, sa mga millisecond.
 
@@ -64,6 +65,7 @@
 
       Ang default ay RollbackDisabled.</translation>
 <translation id="1221359380862872747">Mag-load ng mga tinukoy na url sa pag-login sa demo</translation>
+<translation id="1223789468190631420">Status na naka-enable ang Ligtas na Pag-browse para sa mga pinagkakatiwalaang source</translation>
 <translation id="123081309365616809">I-enable ang pag-cast ng content sa device</translation>
 <translation id="1257550411839719984">Itakda ang default na directory sa pag-download</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>
@@ -88,6 +90,7 @@
 
       Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> na magsimula ang mga profile ng bisita.</translation>
 <translation id="1363275621236827384">I-enable ang mga query sa Quirks Server para sa mga profile sa hardware</translation>
+<translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
@@ -145,8 +148,10 @@
 
           Para sa higit pang mga detalyadong halimbawa, bisitahin ang:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="1502843533062797703">I-enable ang pag-block sa pagpasok ng third party software</translation>
 <translation id="1504431521196476721">Malayuang Pagpapatunay</translation>
 <translation id="1509692106376861764">Hindi na ginagamit ang patakarang ito simula sa <ph name="PRODUCT_NAME" /> bersyon 29.</translation>
+<translation id="1514888685242892912">I-enable ang <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Payagan ang mga site na subaybayan ang aktwal na lokasyon ng mga user</translation>
 <translation id="152657506688053119">Listahan ng mga kahaliling URL para sa default na search provider</translation>
 <translation id="1530812829012954197">Palaging i-render ang mga sumusunod na pattern ng URL sa browser ng host</translation>
@@ -157,8 +162,23 @@
 
       Kung idi-disable o hindi iko-configure ang setting na ito, hindi magagamit ng
       mga user ng enterprise ang ARC.</translation>
+<translation id="1561183922461862993">
+      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa parehong value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+      Maaari mong tingnan ang setting ng patakaran ng IsolateOrigins para parehong
+      masulit ang pag-isolate at pagkakaroon ng limitadong epekto sa mga user sa pamamagitan ng paggamit ng
+      IsolateOrigins na may listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na ito na
+      SitePerProcess ang lahat ng site.
+      Kung naka-enable ang patakaran, tatakbo ang bawat site sa sarili nitong proseso.
+      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso bago ang Pag-isolate ng Site, at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Magagawa pa rin ng mga user na manual na i-enable ang SitePerProcess.
+      Kung hindi na-configure ang patakaran, mababago ng user ang setting na ito.
+      </translation>
 <translation id="1561424797596341174">Mga pag-override ng patakaran para sa Mga build sa pag-debug ng host ng malayuang access</translation>
 <translation id="1561967320164410511">U2F kasama ang mga extension para sa pagpapatunay ng indibidwal</translation>
+<translation id="1574554504290354326">Hindi na ginagamit ang setting na ito, gamitin na lang ang SafeBrowsingExtendedReportingEnabled. Katumbas ng pag-enable o pag-disable ng SafeBrowsingExtendedReportingEnabled ang pagtakda ng SafeBrowsingExtendedReportingOptInAllowed sa False.
+
+      Kapag itinakda ang patakarang ito sa false, mapipigilan ang mga user na piliing magpadala ng ilang impormasyon ng system at content ng page sa mga server ng Google. Kung ang setting na ito ay true o hindi na-configure, papayagan ang mga user na magpadala ng ilang impormasyon ng system at content ng page sa Ligtas na Pag-browse para makatulong sa pag-detect ng mga mapanganib na app at site.
+
+      Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon sa Ligtas na Pag-browse.</translation>
 <translation id="1583248206450240930">Gamitin ang <ph name="PRODUCT_FRAME_NAME" /> bilang default</translation>
 <translation id="1608755754295374538">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng audio nang walang prompt</translation>
 <translation id="1617235075406854669">Paganahin ang pagtatanggal ng browser at kasaysayan ng pag-download</translation>
@@ -196,6 +216,7 @@
 <translation id="1797233582739332495">Magpakita sa user ng umuulit na prompt na nagsasaad na kinakailangan ang muling paglulunsad</translation>
 <translation id="1803646570632580723">Listahan ng mga na-pin na app na ipapakita sa launcher</translation>
 <translation id="1808715480127969042">I-block ang cookies sa mga site na ito</translation>
+<translation id="1810261428246410396">Payagang gamitin ang Instant na Pag-tether.</translation>
 <translation id="1827523283178827583">Gumamit ng mga nakapirming proxy server</translation>
 <translation id="1843117931376765605">I-refresh ang pag-rate para sa patakaran ng user</translation>
 <translation id="1844620919405873871">Kino-configure ang mga patakarang nauugnay sa mabilisang pag-unlock.</translation>
@@ -204,6 +225,7 @@
           Opsyonal ang patakarang ito. Kung hindi nakatakda, ipapadala ang mga kahilingan sa instant na paghahanap gamit ang GET na paraan.
 
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
+<translation id="1852294065645015766">Payagan ang pag-autoplay ng media</translation>
 <translation id="1859859319036806634">Babala: Aalisin na ang fallback na bersyon ng TLS mula sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 52 (bandang Setyembre 2016) at hindi na gagana ang patakarang ito pagkatapos noon.
 
       Kapag hindi nakumpleto ang isang TLS handshake, susubukang muli ng <ph name="PRODUCT_NAME" /> ang koneksyon gamit ang mas mababang bersyon ng TLS upang makahanap ng paraan sa mga bug sa mga HTTPS server. Kino-configure ng setting na ito ang bersyon kung saan hihinto ang fallback na prosesong ito. Kung maisasagawa nang tama ng isang server ang paghahanap ng kompromiso sa bersyon (ibig sabihin, nang hindi nawawala ang koneksyon), hindi malalapat ang setting na ito. Anuman ang mangyari, dapat pa ring sumusunod sa SSLVersionMin ang magreresultang koneksyon.
@@ -240,6 +262,22 @@
       Kung itatakda sa false, madi-disable ang pag-uulat ng mga sukatan at diagnostic na data.
 
       Kung hindi iko-configure, idi-disable ang pag-uulat ng mga sukatan at diagnostic na data sa mga hindi pinamamahalaang device at ie-enable ito sa mga pinamamahalaang device.</translation>
+<translation id="1929709556673267855">Nagbibigay ng mga configuration para sa mga printer ng enterprise na naka-bind sa mga device.
+
+      Nabibigyang-daan ka ng patakarang ito na magbigay ng mga configuration ng printer sa mga <ph name="PRODUCT_OS_NAME" /> device.  Pareho ang format sa diksyunaryo ng NativePrinters, nang may karagdagang kinakailangang field na "id" o "guid" bawat printer para sa pag-whitelist o pag-blacklist.
+
+      Hindi dapat lumampas sa 5MB ang laki ng file at dapat naka-encode ito sa JSON.  Tinatayang ang isang file na naglalaman ng humigit-kumulang 21,000 printer ay mae-encode bilang 5MB na file.  Ginagamit ang cryptographic hash para i-verify ang integridad ng download.
+
+      Na-download at na-cache ang file. Muli itong mada-download sa tuwing magbabago ang URL o ang hash.
+
+      Kung itatakda ang patakarang ito, ida-download ng <ph name="PRODUCT_OS_NAME" /> ang file para sa mga configuration ng printer at gagawin nitong available ang mga printer alinsunod sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" />, at <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Walang epekto ang patakarang ito kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Nilalayon itong maging karagdagan sa configuration ng mga printer ng mga indibidwal na user.
+
+      Ang patakarang ito ay karagdagan sa <ph name="BULK_PRINTERS_POLICY" />.
+
+      Kung hindi nakatakda ang patakarang ito, hindi magkakaroon ng device printer at babalewalain ang iba pang patakaran ng <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />.
+      </translation>
 <translation id="193259052151668190">Whitelist ng mga nade-detach na USB device</translation>
 <translation id="1933378685401357864">Larawan na wallpaper</translation>
 <translation id="1956493342242507974">Kino-configure ang pamamahala sa power sa screen sa pag-login sa <ph name="PRODUCT_OS_NAME" />.
@@ -261,6 +299,7 @@
 <translation id="1988371335297483117">Ang mga auto-update payload sa <ph name="PRODUCT_OS_NAME" /> ay maaaring i-download sa pamamagitan ng HTTP sa halip na HTTPS. Nagbibigay-daan ito sa transparent na pagka-cache ng HTTP ng mga download ng HTTP.
 
       Kung itinakda sa true ang patakarang ito, susubukang i-download ng <ph name="PRODUCT_OS_NAME" /> ang mga auto-update payload sa pamamagitan ng HTTP. Kung itinakda sa false ang patakarang ito o hindi nakatakda, gagamitin ang HTTPS sa pagda-download ng mga auto-update payload.</translation>
+<translation id="199764499252435679">I-enable ang mga pag-update ng bahagi sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Pamamahala ng power</translation>
 <translation id="201557587962247231">Dalas ng pag-upload ng mga ulat ng status ng device</translation>
 <translation id="2018836497795982119">Tinutukoy ang tagal sa mga millisecond kung gaano katagal na-query ang serbisyo ng pamamahala sa device para sa impormasyon ng patakaran ng user.
@@ -271,9 +310,25 @@
 
       Tandaan na kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras (nang hindi pinapansin ang lahat ng default at ang value ng patakarang ito) dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran, kaya hindi na kailangang madalas na mag-refresh.</translation>
 <translation id="2024476116966025075">I-configure ang kinakailangang domain name para sa mga client ng malayuang pag-access</translation>
+<translation id="202757291638965203">Nagko-configure ng listahan ng mga printer.
+
+      Nabibigyang-daan ng patakarang ito ang mga administrator na magbigay ng mga configuration ng printer para sa
+      kanilang mga user.
+
+      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga free form na string na maaaring i-customize para sa mas madaling pagpili ng printer. Pinapadali ng <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ang pagtukoy ng printer ng mga end user. Kinakatawan ng mga ito ang manufacturer at modelo ng printer. Ang <ph name="PRINTER_URI" /> ay dapat isang address na mapupuntahan mula sa isang client na computer kabilang ang <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />. Opsyonal ang <ph name="PRINTER_UUID" />.  Kung ibibigay, gagamitin ito para makatulong na mag-deduplicate ng mga printer sa <ph name="ZEROCONF_DISCOVERY" />.
+
+      Tumutugma dapat ang <ph name="PRINTER_EFFECTIVE_MODEL" /> sa isa sa mga string na kumakatawan sa isang printer na sinusuportahan ng <ph name="PRODUCT_NAME" />. Gagamitin ang string para tukuyin at i-install ang naaangkop na PPD para sa printer. Makakahanap ng higit pang impormasyon sa https://support.google.com/chrome?p=noncloudprint.
+
+      Makukumpleto ang pag-set up ng printer sa unang paggamit ng printer.  Hindi mada-download ang mga PPD hanggang magamit ang printer.  Pagkatapos ng oras na iyon, maka-cache ang mga PPD na madalas gamitin.
+
+      Walang epekto ang patakarang ito kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Nilalayon itong maging karagdagan sa configuration ng mga printer ng mga indibidwal na user.
+
+      Para sa mga device na pinapamahalaan ng Active Directory, sinusuportahan ng patakarang ito ang pag-expand ng <ph name="MACHINE_NAME_VARIABLE" /> sa pangalan ng machine ng Active Directory o isang substring nito. Halimbawa, kung ang pangalan ng machine ay <ph name="MACHINE_NAME_EXAMPLE" />, mapapalitan ang <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ng 4 na character simula pagkatapos ng ika-6 na posisyon, ibig sabihin, ang <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tandaang ang posisyon ay zero-based.
+      </translation>
 <translation id="2030905906517501646">Default na keyword ng provider ng paghahanap</translation>
 <translation id="203096360153626918">Ang patakarang ito ay walang epekto sa mga Android app. Makakapunta ang mga ito sa fullscreen mode kahit na nakatakda ang patakaran sa <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Mga naka-disable na printer ng enterprise</translation>
+<translation id="2057317273526988987">Payagan ang pag-access sa isang listahan ng mga URL</translation>
 <translation id="206623763829450685">Tinutukoy kung aling mga scheme ng pagpapatotoo ng HTTP ang sinusuportahan ng <ph name="PRODUCT_NAME" />.
 
           Ang mga posibleng value ay 'basic,' 'digest,' 'ntlm' at 'negotiate.' Paghiwa-hiwalayin ang maraming value gamit ang mga kuwit.
@@ -285,6 +340,7 @@
       Ine-enable ng setting ng patakarang ito ang mga notification upang ipaalam sa user na inirerekomenda o kinakailangan ang muling paglulunsad ng browser. Kung hindi nakatakda, ipapaalam ng <ph name="PRODUCT_NAME" /> sa user na kinakailangan ang muling paglulunsad sa pamamagitan ng maliliit na pagbabago sa menu nito. Kung nakatakda sa 'Inirerekomenda,' magpapakita ng umuulit na babala sa user na inirerekomenda ang muling paglulunsad. Maaaring i-dismiss ng user ang babalang ito upang ipagpaliban ang muling paglulunsad. Kung nakatakda sa 'Kinakailangan,' magpapakita ng umuulit na babala sa user na nagsasaad na sapilitang magsasagawa ng muling paglulunsad ng browser kapag lumampas na sa panahon ng notification. Bilang default, may pitong araw ang panahong ito at maaari itong i-configure sa pamamagitan ng setting ng patakarang <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Ire-restore ang session ng user pagkatapos ng muling paglulunsad.</translation>
+<translation id="2073552873076775140">Payagan ang pag-sign in sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Gamitin ang pagpapabilis ng hardware kapag available</translation>
 <translation id="2077273864382355561">Delay ng pag-off ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="2082205219176343977">I-configure ang minimum na pinapayagang bersyon ng Chrome para sa device.</translation>
@@ -386,13 +442,6 @@
 <translation id="2309390639296060546">Default na setting ng geolocation</translation>
 <translation id="2312134445771258233">Pinapayagan kang i-configure ang mga pahina na na-load sa startup. Ang mga nilalaman ng listahan ng 'Mga URL upang buksan sa startup' ay binabalewala maliban kung piliin mo ang 'Magbukas ng listahan ng mga URL' sa 'Pagkilos sa startup'.</translation>
 <translation id="2327252517317514801">Tumutukoy sa mga domain na pinapayagang i-access ang G Suite</translation>
-<translation id="2334591568684482454">Nagko-configure ng availability at gawi ng functionality ng pag-update sa firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Maaaring tumukoy ng mga indibidwal na setting sa mga property ng JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Kung nakatakda sa <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, mati-trigger ng mga user ang powerwash flow upang mag-install ng update sa firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Kung hindi nakatakda ang patakaran, magiging hindi available ang functionality ng pag-update sa firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" />.</translation>
 <translation id="2337466621458842053">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url  na tumutukoy sa mga site na pinapayagang magpakita ng mga larawan.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultImagesSetting' kung nakatakda ito, o kung hindi man, ang personal na configuration ng user.</translation>
@@ -534,10 +583,25 @@
           Kung hindi nakatakda ang patakarang ito, ang default ay true at naka-enable ang NTLMv2.</translation>
 <translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="2627554163382448569">Nagbibigay ng mga configuration para sa mga printer ng enterprise.
+
+      Nabibigyang-daan ka ng patakarang ito na magbigay ng mga configuration ng printer sa mga device na <ph name="PRODUCT_OS_NAME" />.  Pareho ang format sa diksyunaryo ng NativePrinters, nang may karagdagang kinakailangang field na "id" o "guid" bawat printer para sa pag-whitelist o pag-blacklist.
+
+      Hindi dapat lumampas sa 5MB ang laki ng file at dapat naka-encode ito sa JSON.  Tinatayang ang isang file na naglalaman ng humigit-kumulang 21,000 printer ay mae-encode bilang 5MB na file.  Ginagamit ang cryptographic hash para i-verify ang integridad ng download.
+
+      Na-download at na-cache ang file. Muli itong mada-download sa tuwing magbabago ang URL o ang hash.
+
+      Kung itatakda ang patakarang ito, ida-download ng <ph name="PRODUCT_OS_NAME" /> ang file para sa mga configuration ng printer at gagawin nitong available ang mga printer alinsunod sa <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" />, at <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Kung itatakda mo ang patakarang ito, hindi ito maaaring baguhin o i-override ng mga user.
+
+      Walang epekto ang patakarang ito kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Nilalayon itong maging karagdagan sa configuration ng mga printer ng mga indibidwal na user.
+      </translation>
 <translation id="2633084400146331575">Paganahin ang pasalitang feedback</translation>
 <translation id="2646290749315461919">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na subaybayan ang pisikal na lokasyon ng mga user. Maaaring payagan bilang default, tanggihan bilang ang pagsubaybay sa pisikal na lokasyon ng mga user, o maaaring tanungin ang user sa bawat pagkakataong humiling ng pisikal na lokasyon ang isang website.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskGeolocation' at magagawa itong baguhin ng user.</translation>
+<translation id="2647069081229792812">I-enable o i-disable ang pag-edit ng bookmark</translation>
 <translation id="2650049181907741121">Pagkilos na gagawin kapag isinara ng user ang takip</translation>
 <translation id="2655233147335439767">Tinutukoy ang URL ng search engine na ginagamit kapag nagsasagawa ng isang default na paghahanap. Ang URL ay dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER" />,' na papalitan sa panahon ng query ng mga terminong hinahanap ng user.
 
@@ -576,6 +640,7 @@
 <translation id="2769952903507981510">I-configure ang kinakailangang domain name para sa mga host ng malayuang pag-access</translation>
 <translation id="2787173078141616821">Ulat ng impormasyon tungkol sa status ng Android</translation>
 <translation id="2793923553868251161">Ituturing bilang secure na konteksto ang mga pinagmulan.</translation>
+<translation id="2799297758492717491">Payagan ang pag-autoplay ng media sa isang whitelist ng mga pattern ng URL</translation>
 <translation id="2801230735743888564">Nagbibigay-daan sa mga user na makapaglaro ng dinosaur easter egg game kapag offline ang device.
 
       Kung itatakda sa False ang patakarang ito, kapag naka-offline ang device, hindi makakapaglaro ng dinosaur easter egg game ang mga user. Kung itatakda naman sa True ang setting na ito, makakapaglaro ng dinosaur game ang mga user. Kung hindi itatakda ang patakarang ito, hindi makakapaglaro ng dinosaur easter egg game ang mga user na naka-enroll sa Chrome OS, ngunit sa ibang mga pagkakataon, maaari itong malaro ng mga user.</translation>
@@ -596,6 +661,12 @@
 <translation id="2823870601012066791">Lokasyon ng registry ng Windows para sa mga <ph name="PRODUCT_OS_NAME" /> client:</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="2838830882081735096">Huwag payagan ang paglipat ng data at ARC</translation>
+<translation id="2840269525054388612">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
+
+      Gagamitin lang ang patakarang ito kung napili ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
+
+      Kung gagamitin ang patakarang ito, ang mga printer lang na may mga id na tumutugma sa mga value sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa mga field na "id" o "guid" sa file na natukoy sa <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2844404652289407061">Ine-enable ang availability ng Pindutin upang Hanapin sa view ng content ng <ph name="PRODUCT_NAME" />.
 
       Kung ie-enable mo ang setting na ito, magagamit ng user ang Pindutin upang Hanapin at magagawa niyang i-on o i-off ang feature.
@@ -722,6 +793,16 @@
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="3219421230122020860">Available ang mode na incognito</translation>
 <translation id="3220624000494482595">Kung ang kiosk app ay isang Android app, wala itong kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" />, kahit na nakatakda ang patakarang ito sa <ph name="TRUE" />.</translation>
+<translation id="3229833076897893450">
+      Maaari mong tingnan ang setting ng patakaran ng IsolateOrigins para
+      parehong masulit ang pag-isolate at pagkakaroon ng limitadong epekto sa mga user sa pamamagitan ng paggamit ng
+      IsolateOrigins na may listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na ito na
+      SitePerProcess ang lahat ng site.
+      Kung naka-enable ang patakaran, tatakbo ang bawat site sa sarili nitong proseso.
+      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso bago ang Pag-isolate ng Site, at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Magagawa pa rin ng mga user na manual na i-enable ang SitePerProcess.
+      Kung hindi na-configure ang patakaran, mababago ng user ang setting na ito.
+      Inirerekomenda sa <ph name="PRODUCT_OS_NAME" /> na itakda rin ang patakaran sa device na <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sa parehong value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+      </translation>
 <translation id="3236046242843493070">Mga pattern ng URL na bibigyang-daan ang mga manggagaling na pag-install ng extension, app, at script ng user</translation>
 <translation id="3240609035816615922">Patakaran sa pag-access ng configuration ng printer</translation>
 <translation id="3243309373265599239">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay idi-dim ang screen kapag tumatakbo habang nakasaksak sa kuryente.
@@ -803,9 +884,32 @@
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="350797926066071931">Paganahin ang I-translate</translation>
 <translation id="3512226956150568738">Kung sinusuportahan na ng modelo ng device ng kliyente ang ARC bago kailanganin ang paglipat sa ext4 upang mapatakbo ang ARC at kung nakatakda sa true ang patakarang ArcEnabled, gagana ang opsyong ito bilang AskUser (value 3). Sa lahat ng iba pang sitwasyon (kung hindi sinusuportahan ng modelo ng device ang ARC dati, o kung nakatakda sa false ang patakarang ArcEnabled), ang value na ito ay katumbas ng DisallowArc (value 0).</translation>
+<translation id="3519934027321156158">
+      Kung naka-enable ang patakaran, tatakbo sa sarili nitong proseso ang bawat isa sa mga pinangalanang pinagmulan sa isang
+      comma-separated list. Ia-isolate din nito ang mga
+      pinagmulang pinangalanan ng mga subdomain; hal. kapag tinukoy ang https://example.com/,
+      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
+      site na https://example.com/.
+      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso bago ang Pag-isolate ng Site, at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Magagawa pa rin ng mga user na manual na i-enable ang SitePerProcess.
+      Kung hindi na-configure ang patakaran, mababago ng user ang setting na ito.
+      Inirerekomenda sa <ph name="PRODUCT_OS_NAME" /> na itakda rin ang patakaran sa device na <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sa parehong value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+      </translation>
 <translation id="3524204464536655762">Huwag payagan ang anumang site na humiling ng access sa mga USB device sa pamamagitan ng WebUSB API</translation>
 <translation id="3528000905991875314">Paganahin ang mga kahaliling pahina ng error</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
+<translation id="3556806727696701427">Ine-enable ang feature na Ligtas na Pag-browse ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Kung ie-enable mo ang setting na ito, magiging aktibo sa lahat ng oras ang Ligtas na Pag-browse.
+
+      Kung idi-disable mo ang setting na ito, hindi kailanman magiging aktibo ang Ligtas na Pag-browse.
+
+      Kung ie-enable o idi-disable mo ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na "I-enable ang proteksyon sa phishing at malware" sa <ph name="PRODUCT_NAME" />.
+
+      Kung hahayaang hindi nakatakda ang patakarang ito, mae-enable ito ngunit mababago ito ng user.
+
+      Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon sa Ligtas na Pag-browse.
+
+      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="3577251398714997599">Setting ng mga ad para sa mga site na may mga nakakasagabal na ad</translation>
 <translation id="3591584750136265240">I-configure ang gawi sa pagpapatotoo sa pag-log in</translation>
 <translation id="3627678165642179114">Paganahin o huwag paganahin ang spell checking na serbisyo sa web</translation>
@@ -832,6 +936,15 @@
 
       Kapag hinayaang hindi nakatakda ang patakarang ito, mabibigyang-daan ang mga user na sila mismo ang pumili ng mga setting ng proxy.</translation>
 <translation id="3758249152301468420">Huwag paganahin ang Mga Tool ng Nag-develop</translation>
+<translation id="3764248359515129699">Dini-disable ang pagpapatupad ng mga kinakailangan sa Transparency ng Certificate para sa isang listahan ng Legacy na Awtoridad sa Certificate.
+
+      Pinapayagan ng patakarang ito ang pag-disable ng mga kinakailangan sa paghahayag ng Transparency ng Certificate para sa mga chain ng certificate na naglalaman ng mga certificate na may isa sa mga natukoy na hash ng subjectPublicKeyInfo. Pinapayagan nito ang mga certificate na maaaring hindi pagkatiwalaan, dahil hindi wastong naihayag ang mga ito sa publiko, para patuloy na magamit para sa mga host ng Enterprise.
+
+      Para ma-disable ang pagpapatupad ng Transparency ng Certificate kapag nakatakda ang patakarang ito, dapat ay mula sa isang subjectPublicKeyInfo ang hash na lumalabas sa isang CA certificate na kinikilala bilang Legacy Certificate Authority (CA). Ang Legacy CA ay isang CA na pampublikong nang pinagkakatiwalaan bilang default ng isa o higit pang operating system na sinusuportahan ng <ph name="PRODUCT_NAME" />, ngunit hindi pinagkakatiwalaan ng Android Open Source Project o <ph name="PRODUCT_OS_NAME" />.
+
+      Ang isang subjectPublicKeyInfo na hash ay matutukoy sa pamamagitan ng pagdugtong ng pangalan ng hash algorithm, ng character na "/", at ng Base64 na pag-encode ng hash algorithm na iyon na ilalapat sa DER-encoded na subjectPublicKeyInfo ng natukoy na certificate. Ang Base64 na pag-encode na ito ay kapareho ng format ng SPKI Fingerprint, gaya ng inilalarawan sa RFC 7469, Seksyon 2.4. Babalewalain ang mga hindi kilalang hash algorithm. Ang tanging sinusuportahang hash algorithm sa panahong ito ay "sha256".
+
+      Kung hindi itatakda ang patakarang ito, ituturing na hindi pinagkakatiwalaan ang anumang certificate na kinakailangang ihayag sa pamamagitan ng Transparency ng Certificate kung hindi ito ihahayag nang naaayon sa patakaran sa Transparency ng Certificate.</translation>
 <translation id="3765260570442823273">Tagal ng babalang mensahe ng pag-log-out ng idle</translation>
 <translation id="377044054160169374">Ipatupad ang Intervention sa Mapang-abusong Karanasan</translation>
 <translation id="3780152581321609624">Isama sa Kerberos SPN ang port na hindi karaniwan</translation>
@@ -946,6 +1059,7 @@
 
       Kung nakatakda ang patakarang ito sa true, ipapadala ang mga sinusubaybayang network packet (na tinatawag na <ph name="HEARTBEATS_TERM" />).
       Kung nakatakda sa false o hindi nakatakda, walang ipapadalang mga packet.</translation>
+<translation id="3958586912393694012">Payagang gamitin ang Smart Lock</translation>
 <translation id="3963602271515417124">Kung true, pinapahintulutan ang remote na pagpapatotoo para sa device at awtomatikong mabubuo at maa-upload ang isang certificate sa Server ng Pamamahala sa Device.
 
           Kung nakatakda sa false, o kung hindi ito nakatakda, walang certificate na bubuuin at mabibigo ang mga tawag sa enterprise.platformKeys extension API.</translation>
@@ -958,6 +1072,16 @@
       Kung itinakda sa true o iniwang hindi nakatakda ang patakarang ito, makakakuha ng mga alok ang mga user sa pamamagitan ng Pagpaparehistro ng Chrome OS.
 
       Kung itinakda sa false ang patakarang ito, hindi makakakuha ng mga alok ang user.</translation>
+<translation id="4002183184444060875">
+      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa parehong value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user
+      Kung naka-enable ang patakaran, tatakbo sa sarili nitong proseso ang bawat isa sa mga pinangalanang pinagmulan sa
+      isang comma-separated list. Ia-isolate din nito ang
+      mga pinagmulang pinangalanan ng mga subdomain; hal. kapag tinukoy ang https://example.com/,
+      maa-isolate din ang https://foo.example.com/ bilang bahagi ng site na
+      https://example.com/.
+      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso bago ang Pag-isolate ng Site, at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Magagawa pa rin ng mga user na manual na i-enable ang SitePerProcess.
+      Kung hindi na-configure ang patakaran, gagamitin ang mga default na setting ng pag-isolate ng site ng platform para sa screen ng pag-sign in.
+      </translation>
 <translation id="4010738624545340900">Payagan ang invocation ng mga dialog sa pagpili ng file</translation>
 <translation id="4012737788880122133">Dini-disable ang awtomatikong pag-update kapag nakatakda sa True.
 
@@ -993,7 +1117,9 @@
 
       Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1.2" o "tls1.3." Kapag naitakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas bago kaysa sa tinukoy na bersyon. Babalewalain ang hindi kilalang value.</translation>
 <translation id="4121350739760194865">Pigilan ang paglitaw ng mga pag-promote ng app sa pahina ng bagong tab</translation>
+<translation id="412697421478384751">I-enable ang mga user na magtakda ng madadaling hulaang PIN para sa PIN ng lock screen</translation>
 <translation id="4157003184375321727">I-ulat ang bersyon ng OS at firmware.</translation>
+<translation id="4157594634940419685">Payagan ang pag-access sa mga native na CUPS printer</translation>
 <translation id="4183229833636799228">Default na setting ng <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para sa pagva-validate ng token ng pagpapatotoo ng client sa malayuang pag-access</translation>
 <translation id="4203389617541558220">Limitahan ang uptime ng device sa pamamagitan ng pagse-schedule ng mga awtomatikong reboot.
@@ -1020,6 +1146,12 @@
 <translation id="4239720644496144453">Hindi ginagamit ang cache para sa mga Android app. Kung ii-install ng maraming user ang parehong Android app, ida-download itong muli para sa bawat user.</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4261820385751181068">Lokal ng screen sa pag-sign in ng device</translation>
+<translation id="427220754384423013">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
+
+      Gagamitin lang ang patakarang ito kung napili ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Kung gagamitin ang patakarang ito, ang mga printer lang na may mga id na tumutugma sa mga value sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa mga field na "id" o "guid" sa file na natukoy sa <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="427632463972968153">Tinutukoy ang mga parameter na ginamit kapag nagsasagawa ng paghahanap ng larawan gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {imageThumbnail} sa halimbawa sa itaas, papalitan ito ng data ng tunay na thumbnail ng larawan.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, ipapadala ang kahilingan sa paghahanap ng larawan gamit ang GET na paraan.
@@ -1060,6 +1192,8 @@
 <translation id="4377599627073874279">Payagan ang lahat ng mga site na ipakita ang lahat ng mga larawan</translation>
 <translation id="437791893267799639">Hindi nakatakda ang patakaran, huwag payagan ang paglipat ng data at ARC</translation>
 <translation id="4389091865841123886">I-configure ang malayuang pagpapatunay gamit ang mekanismo ng TPM.</translation>
+<translation id="4410236409016356088">I-enable ang pag-throttle sa bandwidth ng network</translation>
+<translation id="441217499641439905">I-disable ang Google Drive sa mga cellular na koneksyon sa app na Mga File ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4418726081189202489">Kapag itinakda ang patakarang ito sa false, pipigilan ang <ph name="PRODUCT_NAME" /> na paminsan-minsang magpadala ng mga query sa isang server ng Google upang kumuha ng tumpak na timestamp. Ie-enable ang mga query na ito kung nakatakda sa True ang patakarang ito o kung hindi ito nakatakda.</translation>
 <translation id="4423597592074154136">Manu-manong tukuyin ang mga setting ng proxy</translation>
 <translation id="4429220551923452215">Ini-enable o dini-disable ang shortcut ng mga app bar ng bookmark.
@@ -1080,6 +1214,7 @@
       </translation>
 <translation id="4442582539341804154">Paganahin ang lock kapag naging idle o nasuspinde ang device.</translation>
 <translation id="4449545651113180484">I-rotate ang screen pakanan nang 270 degrees</translation>
+<translation id="4454820008017317557">Ipakita ang icon ng toolbar ng <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">I-block ang cookies ng third party</translation>
 <translation id="4474167089968829729">I-enable ang pagse-save ng mga password sa password manager</translation>
 <translation id="4476769083125004742">Kung nakatakda ang patakarang ito sa <ph name="BLOCK_GEOLOCATION_SETTING" />, hindi maaaring i-access ng mga Android app ang impormasyon ng lokasyon. Kung itatakda mo ang patakarang ito sa anumang iba pang value o iiwan mo itong hindi nakatakda, hihilingin sa user na magbigay ng pahintulot kapag gusto ng Android app na i-access ang impormasyon ng lokasyon.</translation>
@@ -1093,6 +1228,7 @@
       Kung pinagana mo o hindi mo pinagana ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
 
       Bibigyang-daan ng pag-iwan sa patakarang ito na hindi nakatakda ang user na pumili kung ipapakita o hindi ang button na home.</translation>
+<translation id="4483649828988077221">I-disable ang Awtomatikong Pag-update</translation>
 <translation id="4485425108474077672">I-configure ang URL ng page ng Bagong Tab</translation>
 <translation id="4492287494009043413">Huwag paganahin ang pagkuha ng mga screenshot</translation>
 <translation id="4497968613298501984">Nagko-configure sa listahan ng mga login URL ng enterprise (mga HTTP at HTTPS scheme lang). Ika-capture ang fingerprint ng password sa mga URL na ito at gagamitin ito para sa pag-detect ng muling paggamit ng password.
@@ -1177,6 +1313,7 @@
           Bilang default, makakatanggap ng babala ang mga user, hindi ng error, kung itinuturing na madaling mahulaan ang PIN.</translation>
 <translation id="4723829699367336876">Paganahin ang firewall traversal mula sa client ng malayuang pag-access</translation>
 <translation id="4725528134735324213">I-enable ang Android Backup Service</translation>
+<translation id="4725801978265372736">Hilingin na kailangang magkatugma ang pangalan ng lokal na user at ng may-ari ng host ng malayuang pag-access</translation>
 <translation id="4733471537137819387">Mga patakarang kaugnay ng pinagsamang pagpapatotoo ng HTTP.</translation>
 <translation id="4744190513568488164">Ang mga server kung saan maaaring maglaan ang <ph name="PRODUCT_NAME" />.
 
@@ -1234,27 +1371,6 @@
           Kung nakatakda sa false ang patakarang ito, babalewalain ang mga kahilingan sa lock ng pagpapagana ng screen.</translation>
 <translation id="487460824085252184">Awtomatikong nagma-migrate, hindi humihingi ng pahintulot mula sa user.</translation>
 <translation id="4876805738539874299">Naka-enable ang maximum na bersyon ng SSL</translation>
-<translation id="4881315447528084360">Tumutukoy ng listahan ng mga app at extension na na-install nang walang tunog,
-          nang walang pakikipag-ugnayan sa user, at na hindi maa-uninstall o
-          madi-disable ng user. Ang lahat ng pahintulot na hiniling
-          ng mga app/extension ay ibinibigay nang tuwiran, nang walang pakikipag-ugnayan sa user,
-          kabilang ang anumang karagdagang pahintulot na hihilingin ng mga darating na bersyon ng
-          app/extension. Dagdag pa rito, ibinibigay ang mga pahintulot para sa
-          enterprise.deviceAttributes at enterprise.platformKeys extension
-          API. (Ang dalawang API na ito ay hindi available sa mga app/extension na
-          hindi sapilitang na-install.)
-
-          Mananaig ang patakarang ito sa posibleng sumalungat na patakaran ng <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kung inalis sa listahang ito ang isang app o extension na kamakailang sapilitang na-install, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME" />.
-
-          Para sa mga instance ng Windows na hindi nasali sa isang <ph name="MS_AD_NAME" /> domain, nalilimitahan ang sapilitang pag-install sa mga app at extension na nakalista sa Chrome Web Store.
-
-          Tandaang maaaring baguhin ng mga user ang source code ng anumang extension sa pamamagitan ng Mga Tool ng Developer (posibleng nagre-render upang hindi gumana nang maayos ang extension). Kung inaalala mo ito, dapat itakda ang patakaran ng <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Ang bawat item ng listahan ng patakaran ay isang string na may extension ID at URL ng "update" na pinaghihiwalay ng semicolon (<ph name="SEMICOLON" />). Ang extension ID ang 32 titik na string na makikita kapag ang <ph name="CHROME_EXTENSIONS_LINK" /> ay nasa developer mode. Dapat humantong ang URL ng "update" sa isang Update Manifest XML document gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />. Tandaang ginagamit lang ang URL ng "update" na itinakda sa patakarang ito para sa unang pag-install; ine-employ ng mga susunod na update ng extension ang URL ng update na nakalagay sa manifest ng extension.
-
-          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE" /> ang <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app mula sa karaniwang Chrome Web Store "update" URL. Para sa higit pang impormasyon tungkol sa pag-host ng mga extension, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito, walang app o extension ang awtomatikong ii-install at maa-uninstall ng user ang anumang app o extension sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4897928009230106190">Tinutukoy ang mga parameter na ginamit kapag gumagawa ng paghahanap ng mungkahi gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {searchTerms} sa halimbawa sa itaas, papalitan ito ng data ng tunay na mga termino para sa paghahanap.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, ipapadala ang mga kahilingan sa paghahanap ng mungkahi gamit ang GET na paraan.
@@ -1294,6 +1410,7 @@
 
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="5056708224511062314">Naka-disable ang magnifier ng screen</translation>
+<translation id="5058573563327660283">Piliin ang diskarteng gagamitin para magbakante ng espasyo sa disk sa panahon ng awtomatikong pag-clean-up (hindi na ginagamit)</translation>
 <translation id="5067143124345820993">White list ng user sa pag-login</translation>
 <translation id="5068140065960598044">Ino-override ng patakaran sa cloud ng <ph name="PRODUCT_NAME" /> ang patakaran sa Machine.</translation>
 <translation id="5085647276663819155">Huwag paganahin ang Preview ng Pag-print</translation>
@@ -1327,6 +1444,7 @@
       Kung hindi nakatakda ang patakarang ito, ang default na pagitan ay 3 minuto.
       Ang minimum na pagitan ay 30 segundo at 24 na oras ang maximum na pagitan -
       ang mga value sa labas ng saklaw na ito ay maka-clamp sa saklaw na ito.</translation>
+<translation id="5163002264923337812">I-enable ang lumang web-based na flow ng pag-sign in</translation>
 <translation id="5182055907976889880">I-configure ang Google Drive sa <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Pinapayagan kang tukuyin kung aling mga extension ang hindi sumasailalim sa blacklist. Nangangahulugan ang halaga ng blacklist ng* na naka-blacklist ang lahat ng mga extension at mai-install lamang ng mga user ang mga extension na nakalista sa whitelist. Bilang default, naka-whitelist ang lahat ng mga extension, ngunit kung na-blacklist ang lahat ng mga extension ng patakaran, magagamit ang whitelist upang i-override ang patakarang iyon.</translation>
 <translation id="519247340330463721">I-configure ang mga patakarang nauugnay sa Ligtas na Pag-browse.</translation>
@@ -1400,10 +1518,18 @@
 <translation id="5366977351895725771">Kung nakatakda sa false, idi-disable ang paggawa ng pinapangasiwaang user para sa user na ito. Magiging available pa rin ang sinumang mga umiiral na pinapangasiwaang user.
 
           Kung nakatakda sa true o hindi naka-configure, maaaring gumawa at mamahala ng mga pinapangasiwaang user ang user na ito.</translation>
+<translation id="5370279767682621504">I-enable ang suporta sa HTTP/0.9 sa mga hindi default na port</translation>
 <translation id="5378985487213287085">Binibigyang-daan kang magtakda kung pinapayagan o hindi ang mga website na magpakita ng mga notification sa desktop. Maaaring payagan bilang default, tanggihan bilang default ang pagpapakita ng mga notification sa desktop o maaaring tanungin ang user sa bawat pagkakataong gustong ipakita ng isang website ang mga notification sa desktop.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskNotifications' at magagawa ng user na baguhin ito.</translation>
 <translation id="538108065117008131">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pamahalaan ang mga sumusunod na uri ng nilalaman.</translation>
+<translation id="5391363090783552279">Kung itatakda ang patakarang ito sa true, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa lahat ng IP address, hindi lang sa mga pribadong address ng RFC1918/RFC4913.
+
+          Kung nakatakda ang patakarang ito sa false, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa mga pribadong address ng RFC1918/RFC4913 lang.
+
+          Kung hindi nakatakda ang patakarang ito, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa mga pribadong address ng RFC1918/RFC4913 lang, maliban na lang kung naka-enable ang feature na CastAllowAllIPs.
+
+          Kung nakatakda ang patakarang "EnableMediaRouter" sa false, walang magiging epekto ang value ng patakarang ito.</translation>
 <translation id="5392172595902933844">Ibinabalik ang impormasyon tungkol sa status ng Android sa server.
 
       Kung itatakda sa false o hahayaang hindi nakatakda ang patakaran, walang iuulat na impormasyon ng status.
@@ -1748,6 +1874,8 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pipiliin mong awtomatikong i-detect ang proxy server, ibibigay sa mga Android app ang script URL na "http://wpad/wpad.dat." Walang gagamiting ibang bahagi ng protocol ng awtomatikong pag-detect ng proxy.
 
           Kung pipiliin mong gumamit ng isang .pac proxy script, ibibigay sa mga Android app ang script URL.</translation>
+<translation id="6440051664870270040">Payagan ang mga site na sabay na mag-navigate at magbukas ng mga pop-up</translation>
+<translation id="645425387487868471">I-enable ang pwersahang pag-sign in para sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="6473623140202114570">I-configure ang listahan ng mga domain kung saan hindi magti-trigger ng mga babala ang Ligtas na Pag-browse.</translation>
 <translation id="6491139795995924304">Payagan ang bluetooth sa device</translation>
 <translation id="6520802717075138474">Mag-import ng mga search engine mula sa default na browser sa unang pagtakbo</translation>
@@ -1812,9 +1940,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung maiiwang hindi nakatakda ang patakaran na ito, mae-enable ang panghuhula ng network ngunit magagawa ng user na baguhin ito.</translation>
 <translation id="6658245400435704251">Tinutukoy ang bilang ng mga segundo kung kailan maaaring random na antalahin ng device ang pag-download ng isang update mula sa panahon kung kailan unang na-push out ang update sa server. Maaaring hintayin ng device ang isang bahagi ng panahong ito sa pamamagitan ng oras sa orasan at ng mga natitirang bahagi sa pamamagitan ng dami ng mga pagtingin ng update. Sa anumang sitwasyon, ang scatter ay nililimitahan sa itaas sa iisang parehong tagal ng panahon upang hindi maantala nang matagal ang isang device sa paghihintay na mag-download ng isang update.</translation>
+<translation id="6665670272107384733">Itakda kung gaano kadalas kailangang ilagay ng user ang password para magamit ang mabilisang pag-unlock</translation>
 <translation id="6689792153960219308">Iulat ang status ng hardware</translation>
 <translation id="6698071416141001300">Ang pag-flag ng account na may nakompromisong proteksyon sa password ay nati-trigger ng muling paggamit ng password</translation>
 <translation id="6699880231565102694">Paganahin ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access</translation>
+<translation id="6702257826895463228">Pinapayagan ang mga site na sabay na mag-navigate at magbukas ng mga pop-up.
+
+      Para sa kumpletong pagpapaliwanag, tingnan sa https://www.chromestatus.com/features/5675755719622656.
+      Kung naka-enable ang patakarang ito, papayagan ang mga site na sabay na mag-navigate at magbukas ng mga bagong window/tab.
+      Kung naka-disable o hindi nakatakda ang patakarang ito, hindi papayagan ang mga site na sabay na mag-navigate at magbukas ng bagong window/tab.</translation>
 <translation id="6724842112053619797">Kung ie-enable mo ang setting na ito, ang mga setting na naka-store sa mga profile sa <ph name="PRODUCT_NAME" /> tulad ng mga bookmark, data ng autofill, mga password, atbp. ay ira-write din sa isang file na naka-store sa folder ng profile ng user ng Roaming o sa isang lokasyong tinukoy ng Administrator sa pamamagitan ng patakarang <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Madi-disable ang pag-sync sa cloud kapag na-enable ang patakarang ito.
 
       Kung idi-disable ang patakarang ito o kaya ay hahayaang hindi nakatakda, ang mga regular na lokal na profile lang ang gagamitin.
@@ -1875,6 +2009,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Hindi mababago o mao-override ng mga user ang setting na ito.</translation>
 <translation id="6908640907898649429">I-configure ang default ng provider ng paghahanap. Matutukoy mo ang default na provider ng paghahanap na gagamitin o pipiliin ng user upang hindi paganahin ang default na paghahanap.</translation>
+<translation id="6913068954484253496">Payagan ang <ph name="PRODUCT_NAME" /> na kumonekta sa mga Cast device sa lahat ng IP address.</translation>
 <translation id="6915442654606973733">I-enable ang tampok sa pagiging naa-access ng sinasalitang feedback.
 
           Kung nakatakda sa true ang patakarang ito, palaging naka-enable ang sinasalitang feedback.
@@ -1972,6 +2107,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung nakatakda sa to False ang patakarang ito, idi-disable ang background mode at hindi makokontrol ng user sa mga setting ng browser.
 
       Kung hindi itinakda ang patakarang ito, paunang idi-disable ang background mode at maaaring makontrol ng user sa mga setting ng browser.</translation>
+<translation id="7126716959063786004">I-enable ang pagtapos ng mga proseso sa Task Manager</translation>
 <translation id="7127892035367404455">Pag-roll back sa target na bersyon</translation>
 <translation id="7128918109610518786">Nililista ang mga tagatukoy ng application na ipinapakita ng <ph name="PRODUCT_OS_NAME" /> bilang mga na-pin na app sa bar ng launcher
 
@@ -2002,6 +2138,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Pinapayagan lang ang awtomatikong pag-playback para sa mga domain na tahasang nakalista sa patakarang <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Kung gusto mong i-enable ang awtomatikong pag-playback para sa lahat ng site, pag-isipang magdagdag ng http://* at https://* sa listahang ito.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, manual na mababago ng user ang setting na ito.</translation>
+<translation id="723103540848640830">Itakda ang minimum na haba ng PIN ng lock screen</translation>
 <translation id="7234280155140786597">Mga pangalan ng ipinagbabawal na mga host ng native na pagmemensahe (o * para sa lahat)</translation>
 <translation id="7236775576470542603">Piliin ang default na uri ng magnifier ng screen na naka-enable sa screen sa pag-login.
 
@@ -2062,6 +2199,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
 <translation id="7343497214039883642">File ng configuration para sa mga device ng printer ng enterprise</translation>
+<translation id="7367028210010532881">Nagpapakita ang serbisyo ng Ligtas na Pag-browse ng page ng babala kapag nag-navigate ang mga user sa mga site na naka-flag bilang posibleng nakakahamak. Kapag na-enable ang setting na ito, mapipigilan ang mga user na tumuloy pa rin sa nakakahamak na site mula sa page ng babala.
+
+      Kung naka-disable o hindi naka-configure ang setting na ito, maaaring piliin ng mga user na tumuloy sa naka-flag na site pagkatapos mabigyan ng babala.
+
+      Tingnan sa https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
 <translation id="7417972229667085380">Porsyento ng pag-scale ng idle delay kapag nasa presentation mode (hindi na ginagamit)</translation>
 <translation id="7421483919690710988">Itakda ang laki ng cache ng disk ng media sa bytes</translation>
 <translation id="7424751532654212117">Listahan ng mga pagbubukod sa listahan ng hindi pinaganang mga plugin</translation>
@@ -2081,6 +2223,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="749556411189861380">Iulat ang bersyon ng OS at firmware ng mga naka-enroll na device.
 
       Kung hindi nakatakda ang setting na ito o nakatakda ang ito sa True, iuulat paminsan-minsan ng mga naka-enroll na device ang bersyon ng OS at firmware. Kung nakatakda ang setting na ito sa False, hindi iuulat ang impormasyon ng bersyon.</translation>
+<translation id="7498946151094347510">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
+
+      Gagamitin lang ang patakarang ito kung napili ang <ph name="PRINTERS_BLACKLIST" /> para sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      Kung gagamitin ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito. Dapat tumugma ang mga id sa mga field na "id" o "guid" sa file na natukoy sa <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="7511361072385293666">Kung nakatakda ang patakaran na ito sa true o hindi ito nakatakda, ang paggamit ng QUIC protocol sa <ph name="PRODUCT_NAME" /> ay pinapayagan.
       Kung ang patakaran na ito ay nakatakda sa false, ang paggamit ng QUIC protocol ay hindi pinapayagan.</translation>
 <translation id="7519251620064708155">Payagan ang pagbuo ng key sa mga site na ito</translation>
@@ -2095,6 +2243,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung itatakda sa GAIA, gagawin ang pag-log in sa pamamagitan ng normal na daloy ng pagpapatotoo ng GAIA.
 
       Kung itatakda sa SAML_INTERSTITIAL, makikita sa log in ang isang interstitial na screen na nag-aalok sa user na magpatuloy sa pagpapatotoo sa pamamagitan ng SAML IdP ng domain ng pag-enroll ng device, o bumalik sa normal na daloy ng pag-log in sa GAIA.</translation>
+<translation id="755951849901630953">Ine-enable ang mga pag-update sa bahagi para sa lahat ng bahagi sa <ph name="PRODUCT_NAME" /> kapag hindi nakatakda o nakatakda sa True.
+
+      Kung nakatakda sa False, idi-disable ang mga pag-update sa mga bahagi. Gayunpaman, nakabukod ang ilang bahagi sa patakarang ito: hindi idi-disable ang anumang bahagi na hindi naglalaman ng executable code, o hindi kapansin-pansing binabago ang pagkilos ng browser, o mahalaga sa seguridad nito.
+     Kabilang sa mga halimbawa ng mga naturang bahagi ang mga listahan ng pagpapawalang-bisa ng certificate at data ng Ligtas na Pag-browse.
+      Tingnan sa https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
 <translation id="757395965347379751">Kapag naka-enable ang setting na ito, pinapayagan ng <ph name="PRODUCT_NAME" /> ang mga SHA-1 signed certificate hanggang matagumpay silang nakakapagpatotoo at nakakabit sa isang lokal na naka-install na mga CA certificate.
 
       Tandaan na nakadepende ang patakarang ito sa operating system certificate verification stack na pumapayag sa mga SHA-1 signature. Kung mabago ng isang update sa OS ang pangangasiwa ng OS sa mga SHA-1 certificate, maaaring mawalan na nang bisa ang patakarang ito.  Bukod pa rito, maaaring nilayon ang patakarang ito na maging isang pansamantalang remedyo upang mabigyan ang mga kumpanya ng higit pang oras upang makalipat mula sa SHA-1.  Aalisin ang patakarang ito sa petsa o malapit sa petsang ika-1 ng Enero, 2019.
@@ -2121,6 +2274,21 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinagana mo ang setting na ito, ginagamit ng <ph name="PRODUCT_NAME" /> ang tinukoy na lokal. Kung hindi sinusuportahan ang naka-configure na lokal, gagamitin na lang ang 'en-US.'
 
       Kung hindi pinagana o hindi nakatakda ang setting na ito, ginagamit ng <ph name="PRODUCT_NAME" /> ang piniling lokal na tinukoy ng user (kung na-configure), ang lokal ng system o ang fallback na lokal na 'en-US'.</translation>
+<translation id="7641363659597330616">Kino-configure ang uri ng mga pag-download na ganap na iba-block ng <ph name="PRODUCT_NAME" />, nang hindi hinahayaan ang mga user na i-override ang pasya ukol sa seguridad.
+
+      Kung itatakda mo ang patakarang ito, pipigilan ng <ph name="PRODUCT_NAME" /> ang ilang partikular na uri ng mga pag-download, at hindi nito hahayaan ang user na i-bypass ang mga babala sa seguridad.
+
+      Kapag pinili ang opsyong 'I-block ang mga mapanganib na pag-download,' papayagan ang lahat ng pag-download, maliban iyong may mga babala sa Ligtas na Pag-browse.
+
+      Kapag pinili ang opsyong 'I-block ang mga posibleng mapanganib na pag-download', papayagan ang lahat ng pag-download, hindi kasama iyong may mga babala ng mga posibleng mapanganib na pag-download sa Ligtas na Pag-browse.
+
+      Kapag pinili ang opsyong 'I-block ang lahat ng pag-download', maba-block ang lahat ng pag-download.
+
+      Kapag hindi nakatakda ang patakarang ito, (o pinili ang opsyong 'Walang espesyal na paghihigpit'), sasailalim ang mga pag-download sa mga karaniwang paghihigpit sa seguridad batay sa mga resulta ng pagsusuri sa Ligtas na Pag-browse.
+
+      Tandaang nalalapat ang mga paghihigpit na ito sa mga pag-download na na-trigger mula sa content ng web page, gayundin ang opsyon sa menu ng konteksto na 'link sa pag-download...'. Hindi nalalapat ang mga paghihigpit na ito sa pag-save / pag-download ng kasalukuyang ipinapakitang page, at hindi rin ito nalalapat sa pag-save bilang PDF mula sa mga opsyon sa pag-print.
+
+      Tingnan sa https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
 <translation id="7643883929273267746">Pinaghihigpitan ang mga account na nakikita sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Tinutukoy kung dapat paganahin ang roaming ng data para sa device. Kung nakatakda sa true, pinapayagan ang roaming ng data. Kung iniwang hindi naka-configure o nakatakda sa false, hindi magiging available ang roaming ng data.</translation>
 <translation id="7683777542468165012">Dynamic na Patakaran sa Pag-refresh</translation>
@@ -2198,6 +2366,18 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung na-configure ang setting na ito, hindi magagawa ng mga user na baguhin ang mga ito nang sila lang.
 
       Kung hindi na-configure ang setting na ito, magagawang i-on at i-off ng mga user ang Android Backup Service sa app na Mga Setting ng Android.</translation>
+<translation id="780603170519840350">Dini-disable ang pagpapatupad ng mga kinakailangan sa Transparency ng Certificate para sa isang listahan ng mga hash ng subjectPublicKeyInfo.
+
+      Pinapayagan ng patakarang ito ang pag-disable ng mga kinakailangan sa paghahayag ng Transparency ng Certificate para sa mga chain ng certificate na naglalaman ng mga certificate na may isa sa mga natukoy na hash ng subjectPublicKeyInfo. Pinapayagan nito ang mga certificate na maaaring hindi pagkatiwalaan, dahil hindi wastong inihayag ang mga ito sa publiko, para patuloy na magamit para sa mga host ng Enterprise.
+
+      Para ma-disable ang pagpapatupad sa Transparency ng Certificate kapag nakatakda ang patakarang ito, dapat matugunan ang isa sa mga sumusunod na kundisyon:
+      1. Ang hash ay mula sa subjectPublicKeyInfo ng certificate ng server.
+      2. Ang hash ay mula sa isang subjectPublicKeyInfo na lumalabas sa isang CA certificate na nasa chain ng certificate, ang CA certificate na iyon ay limitado sa pamamagitan ng extension na X.509v3 nameConstraints, makikita ang isa o higit pang directoryName nameConstraints sa permittedSubtrees, at naglalaman ang directoryName ng attribute ng organizationName.
+      3. Ang hash ay mula sa isang subjectPublicKeyInfo na lumalabas sa isang CA certificate na nasa chain ng certificate, ang CA certificate ay may isa o higit pang attribute ng organizationName sa Paksa ng certificate, at naglalaman ang certificate ng server ng parehong bilang ng mga attribute ng organizationName, sa parehong pagkakasunod-sunod, at may mga byte-for-byte na magkakatulad na value.
+
+      Ang isang hash ng subjectPublicKeyInfo ay matutukoy sa pamamagitan ng pagdugtong ng pangalan ng hash algorithm, ng character na "/", at ng Base64 na pag-encode ng hash algorithm na iyon na nalalapat sa DER-encoded na subjectPublicKeyInfo ng natukoy na certificate. Ang Base64 na pag-encode na ito ay kapareho ng format ng SPKI Fingerprint, gaya ng inilalarawan sa RFC 7469, Seksyon 2.4. Babalewalain ang mga hindi kilalang hash algorithm. Ang sinusuportahan lang na hash algorithm sa panahong ito ay "sha256".
+
+      Kung hindi itatakda ang patakarang ito, ituturing na hindi mapagkakatiwalaan ang anumang certificate na kinakailangang ihayag sa pamamagitan ng Transparency ng Certificate kung hindi ito ihahayag nang naaayon sa patakaran sa Transparency ng Certificate.</translation>
 <translation id="7818131573217430250">Itakda ang default na katayuan ng mode na may mataas na contrast sa screen sa pag-login</translation>
 <translation id="7822837118545582721">Kapag nakatakda sa true ang patakaran na ito, hindi maaaring mag-write ang mga user ng anumang bagay sa mga external na storage device.
 
@@ -2236,6 +2416,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7937766917976512374">Payagan o tanggihan ang pagkuha ng video</translation>
 <translation id="7941975817681987555">Huwag hulaan ang mga pagkilos sa network sa anumang koneksyon sa network</translation>
 <translation id="7953256619080733119">Mga pinapamahalaang host ng manu-manong exception ng user</translation>
+<translation id="7961779417826583251">I-disable ang pagpapatupad ng Transparency ng Certificate para sa isang listahan ng Mga Legacy Certificate Authority</translation>
 <translation id="7974114691960514888">Hindi na sinusuportahan ang patakarang ito.
           Pinapagana ang paggamit ng STUN at mga relay server kapag kumokonekta sa isang malayuang client.
 
@@ -2374,6 +2555,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung iiwanang hindi nakatakda o naka-disable ang patakarang ito, gagamitin ang PDF plugin upang magbukas ng mga PDF file maliban na lang kung idi-disable ito ng user.</translation>
 <translation id="8402079500086185021">Palaging Magbukas ng mga PDF file nang external</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
+<translation id="8417305981081876834">Itakda ang maximum na haba ng PIN ng lock screen</translation>
 <translation id="841977920223099909">Trigger sa babala ng proteksyon sa password</translation>
 <translation id="8424255554404582727">Itakda ang default na pag-rotate ng display, muling ilalapat sa bawat pag-reboot</translation>
 <translation id="8426231401662877819">I-rotate ang screen pakanan nang 90 degrees</translation>
@@ -2416,6 +2598,12 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
+<translation id="8586528890725660268">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
+
+      Gagamitin lang ang patakarang ito kung napili ang <ph name="PRINTERS_BLACKLIST" /> para sa <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Kung gagamitin ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito. Dapat tumugma ang mga id sa mga field na "id" o "guid" sa file na natukoy sa <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="8587229956764455752">Payagan ang paglikha ng mga bagong user account</translation>
 <translation id="8598350264853261122">Kung nakatakda ang patakaran sa false, hindi papayagan ang mga hindi affiliate na user na gamitin ang ARC.
 
@@ -2446,6 +2634,19 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
           Isinasaalang-alang lamang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled'.</translation>
 <translation id="8731693562790917685">Pinapayagan ka ng Mga Setting ng Nilalaman na tukuyin kung paano pinamamahalaan ang mga nilalaman ng tukoy na uri (halimbawa Cookies, Mga Larawan o JavaScript).</translation>
+<translation id="8733448613597049197">Ine-enable ang Pinalawak na Pag-uulat sa Ligtas na Pag-browse ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Nagpapadala ang Pinalawak na Pag-uulat ng ilang impormasyon ng system at content ng page sa mga server ng Google para matulungang matukoy ang mga mapanganib na app at site.
+
+      Kung nakatakda ang setting na ito sa true, magagawa ang mga ulat at maipapadala kung kinakailangan (tulad na lang kapag ipinapakita ang isang security interstitial).
+
+      Kung nakatakda ang setting na ito sa false, hindi kailanman ipapadala ang mga ulat.
+
+      Kung nakatakada ang patakarang ito sa true o false, hindi mababago ng user ang setting.
+
+      Kung hinayaang hindi nakatakda ang patakarang ito, mababago ng user ang setting at makapagpapasya kung magpapadala ng mga ulat o hindi.
+
+      Tingnan sa https://developers.google.com/safe-browsing para sa higit pang impormasyon sa Ligtas na Pag-browse.</translation>
 <translation id="8736538322216687231">Ipuwersa ang minimum na Restricted Mode sa Youtube</translation>
 <translation id="8749370016497832113">Pinapagana ang pagtatanggal ng kasaysayan ng browser at kasaysayan ng pag-download sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -2479,6 +2680,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8838303810937202360">Nagka-cache ang <ph name="PRODUCT_OS_NAME" /> ng Mga App at Extension para sa pag-install ng maraming user ng iisang device upang maiwasan ang pagda-download muli para sa bawat user.
       Kung hindi naka-configure ang patakaran na ito o ang value ay mas mababa sa 1 MB, gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang default na laki ng cache.</translation>
 <translation id="8858642179038618439">Puwersahin ang YouTube Safety Mode</translation>
+<translation id="8860342862142842017">I-disable ang pagpapatupad ng Transparency ng Certificate para sa isang listahan ng mga hash ng subjectPublicKeyInfo</translation>
 <translation id="8864975621965365890">Pinipigilan ang turndown na prompt na lumilitaw kapag na-render ang isang site ng <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8867464911288727016">Nag-e-enable sa isinamang serbisyo ng Google Translate sa <ph name="PRODUCT_NAME" />.
 
@@ -2596,6 +2798,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="915194831143859291">Kung nakatakda sa false o hindi naka-configure ang patakarang ito, papayagan ng <ph name="PRODUCT_OS_NAME" /> ang user na i-shut down ang device.
       Kung nakatakda sa true ang patakarang ito, magti-trigger ang <ph name="PRODUCT_OS_NAME" /> ng reboot kapag i-shut down ng user ang device. Papalitan ng <ph name="PRODUCT_OS_NAME" /> ang lahat ng button ng pag-shutdown sa UI ng mga button sa pag-reboot. Kung i-shut down ng user ang device gamit ang button ng power, hindi ito awtomatikong magre-reboot, kahit na naka-enable ang patakaran.</translation>
 <translation id="9158929520101169054">Payagan ang Maraming Pag-sign Sa Browser</translation>
+<translation id="9167719789236691545">I-disable ang Drive sa app na Mga File ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Huwag paganahin ang pag-mount ng panlabas na storage</translation>
 <translation id="9197740283131855199">Porsyento na nase-scale ang pagkaantala ng pagdilim ng screen kapag naging aktibo ang user pagkatapos ng pagdilim</translation>
 <translation id="9200828125069750521">Mga parameter para sa URL ng larawan na gumagamit ng POST</translation>
@@ -2614,13 +2817,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="922540222991413931">Mag-configure ng mga pinagmulan ng pag-install ng extension, app, at script ng user</translation>
 <translation id="924557436754151212">Mag-import ng mga naka-save na password mula sa default na browser sa unang pagtakbo</translation>
 <translation id="930930237275114205">Itakda ang direktoryo ng data ng user ng <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="938916311528680351">Nagbibigay-daan sa iyong pamahalaan kung papayagan ang mga virtual machine na tumakbo sa Chrome OS.
-
-      Kung nakatakda ang patakaran sa True, pinapayagan ang device na magpatakbo ng mga virtual machine.
-      Kung nakatakda ang patakaran sa False, hindi papayagan ang device na magpatakbo ng mga virtual machine.
-      Kapag ginawang False ang patakarang ito, nalalapat ito sa pagsisimula ng mga bagong virtual machine ngunit hindi nito isa-shut down ang mga tumatakbo nang virtual machine.
-      Kapag hindi nakatakda ang patakarang ito sa isang pinamamahalaang device, pinapayagan ang device na magpatakbo ng mga virtual machine. 
-      Pinapayagan ang mga hindi pinamamahalaang device na magpatakbo ng mga virtual machine.</translation>
 <translation id="944817693306670849">Itakda ang laki ng cache ng disk</translation>
 <translation id="982497069985795632">Ine-enable ang spellcheck</translation>
 </translationbundle>

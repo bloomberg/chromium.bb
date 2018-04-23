@@ -43,7 +43,7 @@
 <translation id="1228893227497259893">实体标识符有误</translation>
 <translation id="1232569758102978740">无标题</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />、<ph name="TYPE_2" />（已同步）</translation>
-<translation id="1256368399071562588">&lt;p&gt;如果您尝试访问某个网站，但无法打开，请先尝试按照以下问题排查步骤操作，修正该错误：&lt;/p&gt;
+<translation id="1256368399071562588">&lt;p&gt;如果您尝试访问某个网站，但无法打开它，可以按照以下问题排查步骤操作，尝试解决问题：&lt;/p&gt;
     &lt;ol&gt;
     &lt;li&gt;检查网址是否有拼写错误。&lt;/li&gt;
     &lt;li&gt;确保您的互联网连接正常。&lt;/li&gt;
@@ -80,7 +80,7 @@
 <translation id="1430915738399379752">打印</translation>
 <translation id="1484290072879560759">选择送货地址</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
-<translation id="1507202001669085618">&lt;p&gt;如果您正在使用一个必须登录才能访问互联网的 Wi-Fi 门户，您就会看到这条错误消息。&lt;/p&gt;
+<translation id="1507202001669085618">&lt;p&gt;如果您使用的 Wi-Fi 门户网站必须登录才能连接网络，您就会看到这条错误消息。&lt;/p&gt;
     &lt;p&gt;要修正该错误，请在您尝试打开的网页上点击&lt;strong&gt;连接&lt;/strong&gt;。&lt;/p&gt;</translation>
 <translation id="1517433312004943670">必须提供电话号码</translation>
 <translation id="1517500485252541695">接受的信用卡和借记卡</translation>
@@ -145,10 +145,11 @@
 <translation id="1898423065542865115">过滤</translation>
 <translation id="1916770123977586577">要将您更新后的设置应用到此网站，请重新加载此页面</translation>
 <translation id="1919345977826869612">广告</translation>
-<translation id="1919367280705858090">获取具体错误消息的有关帮助</translation>
+<translation id="1919367280705858090">了解如何解决特定错误消息指出的错误</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{无}=1{1 个网站}other{# 个网站}}</translation>
 <translation id="1927235823738766038">接受的信用卡和借记卡</translation>
 <translation id="194030505837763158">请访问<ph name="LINK" /></translation>
+<translation id="1945968466830820669">您可能会无法再访问所属组织的帐号，或被他人盗用身份信息。Chromium 建议您立即更改密码。</translation>
 <translation id="1948773908305951926">接受的预付卡</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" />书签</translation>
 <translation id="1973335181906896915">序列化错误</translation>
@@ -458,26 +459,25 @@
 <translation id="4171400957073367226">验证签名无效</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{另外 <ph name="ITEM_COUNT" /> 项}other{另外 <ph name="ITEM_COUNT" /> 项}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> - <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">如果您在其他网站上重复使用了您的 <ph name="ORG_NAME" /> 密码，Chrome 建议您重置该密码。</translation>
 <translation id="4196861286325780578">恢复移动(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />检查防火墙和防病毒配置<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">崩溃</translation>
 <translation id="422022731706691852"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻击者可能会试图骗您安装有损浏览体验的程序（例如更改您的主页或在您访问的网站上显示额外的广告）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="4221630205957821124">&lt;h4&gt;第 1 步：登录门户&lt;/h4&gt;
-    &lt;p&gt;咖啡馆或机场等地方的 Wi-Fi 网络会要求用户进行登录。您只需随意访问一个采用 &lt;code&gt;http://&lt;/code&gt; 作为网址开头的网页，即可看到登录页面。&lt;/p&gt;
+<translation id="4221630205957821124">&lt;h4&gt;第 1 步：登录门户网站&lt;/h4&gt;
+    &lt;p&gt;咖啡馆或机场等地方的 Wi-Fi 网络会要求用户进行登录。您只需随意访问一个以 &lt;code&gt;http://&lt;/code&gt; 开头的网页，即可看到登录页面。&lt;/p&gt;
     &lt;ol&gt;
-    &lt;li&gt;前往任一个采用 &lt;code&gt;http://&lt;/code&gt; 作为网址开头的网站，例如 &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;。&lt;/li&gt;
+    &lt;li&gt;前往任意一个以 &lt;code&gt;http://&lt;/code&gt; 开头的网站，例如 &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;。&lt;/li&gt;
     &lt;li&gt;在随即打开的登录页面中，登录以使用互联网。&lt;/li&gt;
     &lt;/ol&gt;
     &lt;h4&gt;第 2 步：在无痕模式下打开该网页（仅限计算机）&lt;/h4&gt;
     &lt;p&gt;在无痕式窗口中打开您在第 1 步中访问的那个网页。&lt;/p&gt;
-    &lt;p&gt;如果该页面顺利打开了，则说明某款 Chrome 扩展程序出现了异常。要想修正该错误，请关闭这款扩展程序。&lt;/p&gt;
+    &lt;p&gt;如果该页面顺利打开了，则说明某个 Chrome 扩展程序出现了异常。要想解决该问题，请关闭这款扩展程序。&lt;/p&gt;
     &lt;h4&gt;第 3 步：更新您的操作系统&lt;/h4&gt;
     &lt;p&gt;确保您的设备运行的是最新版操作系统。&lt;/p&gt;
-    &lt;h4&gt;第 4 步：暂时关闭您的防病毒软件&lt;/h4&gt;
-    &lt;p&gt;如果您安装了可提供“HTTPS 保护”或“HTTPS 扫描”功能的防病毒软件，您就会看到这条错误消息。此类防病毒软件会阻止 Chrome 提供安全保护。&lt;/p&gt;
-    &lt;p&gt;要想解决该问题，请关闭您的防病毒软件。如果关闭防病毒软件后该网页可以正常打开，那么当您使用安全网站时，请一定关闭此软件。&lt;/p&gt;
-    &lt;p&gt;事后请记得要重新开启您的防病毒程序。&lt;/p&gt;
+    &lt;h4&gt;第 4 步：暂时关闭您的杀毒软件&lt;/h4&gt;
+    &lt;p&gt;如果您安装了可提供“HTTPS 保护”或“HTTPS 扫描”功能的杀毒软件，您就会看到这条错误消息。此类杀毒软件会阻止 Chrome 提供安全保护。&lt;/p&gt;
+    &lt;p&gt;要想解决该问题，请关闭您的杀毒软件。如果关闭杀毒软件后该网页可以正常打开，那么当您使用安全网站时，请一定关闭此软件。&lt;/p&gt;
+    &lt;p&gt;事后请记得要重新开启您的杀毒程序。&lt;/p&gt;
     &lt;h4&gt;第 5 步：获取额外帮助&lt;/h4&gt;
     &lt;p&gt;如果您仍会看到这条错误消息，请与网站所有者联系。&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />尝试运行网络诊断<ph name="END_LINK" />。</translation>
@@ -588,6 +588,7 @@
 <translation id="5141240743006678641">使用您的 Google 凭据加密已同步的密码</translation>
 <translation id="5145883236150621069">策略响应中存在错误代码</translation>
 <translation id="5159010409087891077">在新的无痕式窗口中打开网页 (⇧⌘N)</translation>
+<translation id="5169827969064885044">您可能会无法再访问所属组织的帐号，或被他人盗用身份信息。Chrome 建议您立即更改密码。</translation>
 <translation id="5171045022955879922">搜索或输入网址</translation>
 <translation id="5172758083709347301">本机</translation>
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE" />？报告此错误</translation>
@@ -688,7 +689,6 @@
 <translation id="5869405914158311789">无法访问此网站</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="5893752035575986141">接受信用卡。</translation>
-<translation id="5898382028489516745">如果您在其他网站上重复使用了您的 <ph name="ORG_NAME" /> 密码，Chromium 建议您重置该密码。</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />（已同步）</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{正在使用 1 个}other{正在使用 # 个}}</translation>
 <translation id="5939518447894949180">重置</translation>
@@ -852,6 +852,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">确认信用卡</translation>
 <translation id="7400418766976504921">网址</translation>
+<translation id="7407424307057130981">&lt;p&gt;如果您的 Windows 计算机上装有 SuperFish 软件，您将会看到这条错误消息。&lt;/p&gt;
+      &lt;p&gt;您可以按照下述步骤暂时停用该软件，以便连接到网络。您需要拥有管理员权限才能执行下列操作。&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;点击&lt;strong&gt;开始&lt;/strong&gt;，然后搜索并选择&lt;strong&gt;“查看本地服务”&lt;/strong&gt;
+      &lt;li&gt;选择 &lt;strong&gt;VisualDiscovery&lt;/strong&gt;
+      &lt;li&gt;在&lt;strong&gt;启动类型&lt;/strong&gt;下方，选择&lt;strong&gt;已停用&lt;/strong&gt;
+      &lt;li&gt;在&lt;strong&gt;服务状态&lt;/strong&gt;下方，点击&lt;strong&gt;停止&lt;/strong&gt;
+      &lt;li&gt;依次点击&lt;strong&gt;应用&lt;/strong&gt;和&lt;strong&gt;确定&lt;/strong&gt;
+      &lt;li&gt;访问 &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome 帮助中心&lt;/a&gt;，了解如何从您的计算机中永久移除该软件
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">个人资料路径</translation>
 <translation id="7437289804838430631">添加联系信息</translation>
 <translation id="7441627299479586546">策略主题有误</translation>

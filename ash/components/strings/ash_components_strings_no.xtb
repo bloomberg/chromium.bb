@@ -3,7 +3,6 @@
 <translationbundle lang="no">
 <translation id="104962181688258143">Åpne Filer-appen</translation>
 <translation id="1122869341872663659">Viser <ph name="N" /> søkeresultater for <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Kutt lyden</translation>
 <translation id="1195667586424773550">Dra linken til adressefeltet i fanen</translation>
 <translation id="1204450209689312104">Åpne et nytt vindu i inkognitomodus</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -32,6 +31,7 @@
 <translation id="2185166372312820725">Gå til forrige fane</translation>
 <translation id="2194790690264064655">Trykk på <ph name="CTRL" /> og klikk på en link</translation>
 <translation id="2382644247745281995">Støttes ikke med det gjeldende tastaturoppsettet</translation>
+<translation id="2397416548179033562">Vis Chrome-menyen</translation>
 <translation id="2424073332829844142">Slå Caps Lock av og på</translation>
 <translation id="2441202986792279177">Bytt raskt mellom vinduer</translation>
 <translation id="2478303094958140141">Slå ChromeVox (taletilbakemelding) på eller av</translation>
@@ -49,6 +49,7 @@
 <translation id="2872353916818027657">Bytt hovedskjerm</translation>
 <translation id="2914313326123580426">Vis eller skjul panelet for utviklerverktøy</translation>
 <translation id="292495055542441795">Slå av/på fullskjerm</translation>
+<translation id="3020183492814296499">Snarveier</translation>
 <translation id="3084301071537457911">Fremhev neste element på hyllen</translation>
 <translation id="309173601632226815">Fremhev knappen for appoversikten på hyllen</translation>
 <translation id="3105917916468784889">Ta skjermdump</translation>
@@ -147,7 +148,6 @@
 <translation id="7379254767514753910"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Løsne en app</translation>
 <translation id="7439718573248533901">Slett neste bokstav (slett fremover)</translation>
-<translation id="7449669175878568981">Starter eller stopper dikteringen (skriv inn hva du sier)</translation>
 <translation id="766326951329901120">Lim inn innholdet fra utklippstavlen som ren tekst</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="SPACE" /> eller <ph name="ENTER" /></translation>
@@ -156,7 +156,6 @@
 <translation id="7952165122793773711">Gå til fane 1–8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> eller <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Slett nettlesingsdata</translation>
-<translation id="8104889575691864804">Vis appmenyen</translation>
 <translation id="8130528849632411619">Gå til begynnelsen av dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
 <translation id="8232835244134740473">Bytt fokus mellom statusområdet (hvor kontobildet ditt vises), appoversikten, adressefeltet, bokmerkeraden (hvis den er synlig), nettsiden som er åpen, og nedlastingsraden (hvis den er synlig).</translation>

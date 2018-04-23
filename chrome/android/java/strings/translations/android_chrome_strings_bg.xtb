@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1006017844123154345">Отваряне онлайн</translation>
+<translation id="1021684790657589338">Не е намерена SD карта</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> се добавя...</translation>
 <translation id="1041308826830691739">От уебсайтове</translation>
 <translation id="1049743911850919806">„Инкогнито“</translation>
@@ -184,6 +185,7 @@
 <translation id="2625189173221582860">Паролата е копирана</translation>
 <translation id="2631006050119455616">Спестени</translation>
 <translation id="2647434099613338025">Добавяне на език</translation>
+<translation id="2650751991977523696">Да се изтегли ли отново файлът?</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2677748264148917807">Излизане</translation>
 <translation id="2704606927547763573">Копирано</translation>
@@ -220,6 +222,7 @@
 <translation id="3029613699374795922">Изтеглено: <ph name="KBS" /> КБ</translation>
 <translation id="3029704984691124060">Пропуските не са идентични</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Вижте още подобни предложения от Google</translation>
 <translation id="305593374596241526">Местоположението е изключено. Включете го от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Скоро ще се покажат още статии. Приятна сутрин!</translation>
 <translation id="3089395242580810162">Отваряне в раздел „инкогнито“</translation>
@@ -300,6 +303,7 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> изтегляния бяха изтрити</translation>
 <translation id="3822502789641063741">Изчистване на данните?</translation>
 <translation id="3859306556332390985">Придвижване напред</translation>
+<translation id="3871936494901781193">При превъртане нагоре се показват връзки за бърз достъп до сродни страници.</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
 <translation id="3895926599014793903">Принудително активиране на промяната на мащаба</translation>
 <translation id="3927692899758076493">Безсерифен</translation>
@@ -307,6 +311,7 @@
 <translation id="393697183122708255">Не е налице активирано гласово търсене</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="395206256282351086">Предложенията за търсене и сайтове са деактивирани</translation>
+<translation id="3952533382939530115">Тази функция използва <ph name="BEGIN_LINK" />синхронизиране<ph name="END_LINK" />. URL адресите на посещаваните от вас страници се изпращат до Google.</translation>
 <translation id="3967822245660637423">Изтеглянето завърши</translation>
 <translation id="397583555483684758">Синхронизирането спря да работи</translation>
 <translation id="3976396876660209797">Премахнете и създайте отново този пряк път</translation>
@@ -410,6 +415,7 @@
 <translation id="4876188919622883022">Опростен изглед</translation>
 <translation id="4878404682131129617">Създаването на тунел през прокси сървъра не бе успешно</translation>
 <translation id="4881695831933465202">Отваряне</translation>
+<translation id="488187801263602086">Преименуване на файла</translation>
 <translation id="4885273946141277891">Неподдържан брой екземпляри на Chrome.</translation>
 <translation id="4910889077668685004">Приложения за плащане</translation>
 <translation id="4913161338056004800">Нулиране на статистическите данни</translation>
@@ -503,6 +509,7 @@
 <translation id="5676636989614905379">Видеоклипът не може да се възпроизведе на „<ph name="SCREEN_NAME" />“.</translation>
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5684874026226664614">Ами сега! Тази страница не можа да се преведе.</translation>
+<translation id="5686790454216892815">Името на файла е твърде дълго</translation>
 <translation id="5689516760719285838">Местоположение</translation>
 <translation id="5719837394786370183">След като затворите всички раздели в режим „инкогнито“, преглежданите в тях страници няма да останат в историята или хранилището за „бисквитки“ на браузъра ви, нито в историята на търсенето. Ще се запазят всички файлове, които изтеглите, или отметки, които създадете.
 
@@ -695,6 +702,7 @@
 <translation id="7437998757836447326">Изход от Chrome</translation>
 <translation id="7445411102860286510">Разрешаване на сайтовете автоматично да възпроизвеждат видеоклипове със заглушен звук (препоръчително)</translation>
 <translation id="7453467225369441013">Ще излезете от повечето сайтове, но не и от профила си в Google.</translation>
+<translation id="7454641608352164238">Няма достатъчно място</translation>
 <translation id="7455923816558154057">Докоснете за преглед</translation>
 <translation id="7473891865547856676">Не, благодаря</translation>
 <translation id="7475192538862203634">Ако виждате това често, изпробвайте тези <ph name="BEGIN_LINK" />предложения<ph name="END_LINK" />.</translation>
@@ -773,6 +781,7 @@
 <translation id="8087000398470557479">Това съдържание се показва от Google, а източникът му е <ph name="DOMAIN_NAME" />.</translation>
 <translation id="8100932616285851614">Затворихте панела за навигация</translation>
 <translation id="8103578431304235997">Раздел в режим „инкогнито“</translation>
+<translation id="8105951947646329362">Предложения за сродни страници</translation>
 <translation id="8116925261070264013">Заглушени</translation>
 <translation id="813082847718468539">Преглед на информацията за сайта</translation>
 <translation id="8137558756159375272">При търсене с докосване избраната дума и текущата страница се изпращат като контекст до Google Търсене. Можете да изключите функцията от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
@@ -826,6 +835,7 @@
 <translation id="8636825310635137004">Включете синхронизирането, за да получите разделите си от другите си устройства.</translation>
 <translation id="8641930654639604085">Опит за блокиране на сайтовете за пълнолетни</translation>
 <translation id="8662811608048051533">Ще излезете от повечето сайтове.</translation>
+<translation id="8664979001105139458">Името на файла вече съществува</translation>
 <translation id="8676374126336081632">Изчистване на въведеното</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сила на сигнала: # чертичка}other{Сила на сигнала: # чертички}}</translation>
 <translation id="869891660844655955">Дата на валидност</translation>
@@ -854,6 +864,7 @@
 <translation id="8942627711005830162">Отваряне в другия прозорец</translation>
 <translation id="8951232171465285730">Chrome ви спести <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8959122750345127698">Навигирането не е възможно: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Да се изтегли ли файлът в стандартната папка?</translation>
 <translation id="8979405271719829084">Изтегляйте видеоклипове, за да ги гледате по-късно</translation>
 <translation id="8981454092730389528">Контроли за активността в Google</translation>
 <translation id="8986494364107987395">Автоматично изпращане до Google на статистически данни за използването на Chrome и сигнали за сривове</translation>

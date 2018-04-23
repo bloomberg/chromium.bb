@@ -243,7 +243,7 @@
 <translation id="6490471652906364588">Dispositivo USB-C (puerto derecho)</translation>
 <translation id="6501401484702599040">Transmitiendo pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Entrada de escritura a mano</translation>
-<translation id="6528179044667508675">No molestar</translation>
+<translation id="6528179044667508675">No interrumpir</translation>
 <translation id="6537270692134705506">Captura total de pantalla</translation>
 <translation id="6580955892089546165">Esta función te permite alternar de forma rápida entre los usuarios que hayan accedido a su cuenta, sin necesidad de escribir la contraseña.
 
@@ -273,7 +273,6 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (puerto izquierdo en la parte posterior)</translation>
 <translation id="7131634465328662194">Tu sesión se cerrará automáticamente.</translation>
 <translation id="7165278925115064263">Alt+mayúscula+K</translation>
-<translation id="7165511658052620796">(TEMP) Mostrar el inicio de sesión de webui; si se usó el error de archivo (crbug.com) o comentarios (alt+mayúsculas+i)</translation>
 <translation id="7168224885072002358">Se revertirá a la resolución anterior en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="7256634071279256947">Micrófono posterior</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para usar la pantalla dividida</translation>

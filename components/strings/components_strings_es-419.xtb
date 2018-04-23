@@ -462,16 +462,15 @@
 <translation id="4171400957073367226">La firma de verificación no es válida.</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> elemento más}other{<ph name="ITEM_COUNT" /> elementos más}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome te recomienda que restablezcas la contraseña de <ph name="ORG_NAME" /> si la volviste a usar en otros sitios.</translation>
 <translation id="4196861286325780578">&amp;Rehacer Mover</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar las configuraciones de firewall y antivirus<ph name="END_LINK" />.</translation>
 <translation id="4220128509585149162">Fallos</translation>
 <translation id="422022731706691852">Es posible que los atacantes en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> intenten engañarte para que instales programas que dañen tu experiencia de navegación (p. ej., al cambiar la página principal o mostrar anuncios adicionales en los sitios que visitas). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4221630205957821124">&lt;h4&gt;Paso 1: Accede al portal&lt;/h4&gt;
-    &lt;p&gt;Para acceder a las redes Wi‑Fi de sitios como cafeterías o aeropuertos, tienes que iniciar sesión. Para ver la página de acceso, visita una página con &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
+    &lt;p&gt;Para acceder a las redes Wi‑Fi de sitios como cafeterías o aeropuertos, tienes que ingresar. Para ver la página de acceso, visita una página con &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
     &lt;ol&gt;
     &lt;li&gt;Visita cualquier sitio web que comience con &lt;code&gt;http://&lt;/code&gt;, como &lt;a href="http://example.com" target="_blank"&gt;http://ejemplo.com&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;En la página de acceso que se abre, inicia sesión para usar Internet.&lt;/li&gt;
+    &lt;li&gt;En la página de acceso que se abre, accede para usar Internet.&lt;/li&gt;
     &lt;/ol&gt;
     &lt;h4&gt;Paso 2: Abre la página en el modo de navegación incógnito (solo en computadoras)&lt;/h4&gt;
     &lt;p&gt;Abre la página que visitaste en una ventana de incógnito.&lt;/p&gt;
@@ -692,7 +691,6 @@
 <translation id="5869405914158311789">No se puede acceder a este sitio</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
 <translation id="5893752035575986141">Se aceptan tarjetas de crédito.</translation>
-<translation id="5898382028489516745">Chromium te recomienda que restablezcas la contraseña de <ph name="ORG_NAME" /> si la volviste a usar en otros sitios.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en uso}other{# en uso}}</translation>
 <translation id="5939518447894949180">Restablecer</translation>
@@ -857,6 +855,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Confirmar tarjeta</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;Se muestra este error si tienes el software Superfish en tu computadora con Windows.&lt;/p&gt;
+      &lt;p&gt;Realiza estos pasos para inhabilitar el software de forma temporal a fin de que puedas acceder a la Web. Necesitarás privilegios de administrador.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;Haz clic en &lt;strong&gt;Inicio&lt;/strong&gt;, busca &lt;strong&gt;"Ver servicios locales"&lt;/strong&gt; y selecciónalo.
+      &lt;li&gt;Selecciona &lt;strong&gt;VisualDiscovery&lt;/strong&gt;.
+      &lt;li&gt;En &lt;strong&gt;Tipo de inicio&lt;/strong&gt;, selecciona &lt;strong&gt;Inhabilitado&lt;/strong&gt;.
+      &lt;li&gt;En &lt;strong&gt;Estado del servicio&lt;/strong&gt;, haz clic en &lt;strong&gt;Detener&lt;/strong&gt;.
+      &lt;li&gt;Haz clic en &lt;strong&gt;Aplicar&lt;/strong&gt; y, luego, en &lt;strong&gt;Aceptar&lt;/strong&gt;.
+      &lt;li&gt;Visita el &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Centro de ayuda de Chrome&lt;/a&gt; para obtener información sobre cómo quitar el software de forma permanente de tu computadora.
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
 <translation id="7437289804838430631">Agregar información de contacto</translation>
 <translation id="7441627299479586546">Nombre de usuario o dominio de política incorrecto</translation>

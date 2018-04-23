@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
+<translation id="1005145902654145231">सेशनचे नाव बदलू शकलो नाही.</translation>
 <translation id="1008557486741366299">सध्या नाही</translation>
 <translation id="1015730422737071372">अतिरिक्त तपशील प्रदान करा</translation>
 <translation id="1021110881106174305">स्वीकारलेली कार्ड</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">चुकीचा अस्तित्व ओळखकर्ता</translation>
 <translation id="1232569758102978740">अशीर्षकांकित</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (सिंक केलेले)</translation>
+<translation id="1256368399071562588">&lt;p&gt;जर तुम्ही एखाद्या वेबसाइटला भेट देण्याचा प्रयत्न केला आणि ती उघडली नाही, तर सगळ्यात आधी ट्रबलशूटिंग पायऱ्यांद्वारे या एररवर उपाय काढण्याचा प्रयत्न करा:&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;अक्षरांतील चुकांसाठी वेब अॅड्रेस तपासा.&lt;/li&gt;
+    &lt;li&gt;तुमचे इंटरनेट कनेक्शन नेहमीप्रमाणे चालत असल्याची खात्री करा.&lt;/li&gt;
+    &lt;li&gt;वेबसाइटच्या मालकाशी संपर्क साधा.&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">वाचन सूची</translation>
 <translation id="1264126396475825575"><ph name="CRASH_TIME" /> वाजता क्रॅश अहवाल कॅप्चर केला (अद्याप अपलोड केलेला नाही किंवा दुर्लक्ष केले)</translation>
 <translation id="1270502636509132238">घेण्याची पद्धत</translation>
 <translation id="1285320974508926690">या साइटचा कधीही भाषांतर करु नका</translation>
+<translation id="1292701964462482250">"तुमच्या कॉंप्युटरवरील सॉफ्टवेअर Chrome ला सुरक्षितपणे वेबशी कनेक्ट होण्यापासून थांबवत आहे" (फक्‍त Windows कॉंप्युटरसाठी)</translation>
 <translation id="1294154142200295408">विविध कमांड-लाइन</translation>
 <translation id="129553762522093515">अलीकडे बंद केलेले</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />आपल्या कुकीज साफ करून पहा<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">निवडलेले सेशन अस्तित्वात नाही.</translation>
+<translation id="1323433172918577554">अधिक दाखवा</translation>
 <translation id="1333989956347591814">आपले पुढील क्रियाकलाप <ph name="BEGIN_EMPHASIS" />अद्याप दिसतील<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />आपण पाहत असलेल्या वेबसाइट
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">पुढील साइटमध्ये धोकादायक अॅप आहे</translation>
 <translation id="1374468813861204354">सूचना</translation>
 <translation id="1375198122581997741">आवृत्तीबद्दल</translation>
+<translation id="1376836354785490390">कमी दर्शवा</translation>
 <translation id="1377321085342047638">कार्ड नंबर</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> नी कोणताही डेटा पाठविला नाही.</translation>
 <translation id="1407135791313364759">सर्व उघडा</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">प्रिंट</translation>
 <translation id="1484290072879560759">पाठवण्याचा पत्ता निवडा</translation>
 <translation id="1506687042165942984">या पृष्ठाची जतन केलेली (उदा. कालबाह्य होणारे ज्ञात) प्रत दर्शवा.</translation>
+<translation id="1507202001669085618">&lt;p&gt;ऑनलाइन येण्यापूर्वी तुम्हाला साइन इन करावे लागेल अशी व्यवस्था असलेले वाय-फाय पोर्टल वापरत असल्यास तुम्हाला हा एरर दिसून येईल.&lt;/p&gt;
+    &lt;p&gt;एरर निघून जाण्यासाठी, तुम्ही उघडण्याचा प्रयत्न करत असलेल्या पेजवर &lt;strong&gt;कनेक्ट&lt;/strong&gt; वर क्लिक करा.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">फोन नंबर आवश्यक आहे</translation>
 <translation id="1517500485252541695">स्वीकारली जाणारी क्रेडिट आणि डेबिट कार्डे</translation>
 <translation id="1519264250979466059">बिल्ड तारीख</translation>
@@ -132,9 +145,11 @@
 <translation id="1898423065542865115">फिल्टर करणे</translation>
 <translation id="1916770123977586577">तुमच्या सेटिंग्ज या साइटवर लागू करण्यासाठी, हे पेज रीलोड करा</translation>
 <translation id="1919345977826869612">जाहिराती</translation>
+<translation id="1919367280705858090">विशिष्ट एरर संदेशाच्या बाबतीत मदत मिळवा</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{काहीही नाही}=1{1 साइट}one{# साइट}other{# साइट}}</translation>
 <translation id="1927235823738766038">स्वीकारली जाणारी क्रेडिट आणि डेबिट कार्डे</translation>
 <translation id="194030505837763158"><ph name="LINK" /> दुव्याकडे जा</translation>
+<translation id="1945968466830820669">तुम्ही तुमच्या संस्थेच्या खात्याचा अॅक्सेस गमावू शकता किंवा तुमची संवेदनशील माहिती चोरीला जाऊ शकते. Chromium लगेच तुमचा पासवर्ड बदलण्याची शिफारस करत आहे.</translation>
 <translation id="1948773908305951926">स्वीकारली जाणारी प्रीपेड कार्डे</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="1973335181906896915">क्रमीकरण एरर</translation>
@@ -421,6 +436,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{काहीही नाही}=1{1 साइटकडून }one{# साइटकडून }other{# साइटकडून }}</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> अवरोधित केले आहे</translation>
+<translation id="3984550557525787191">या सेशनचे नाव आधीपासून अस्तित्वात आहे.</translation>
 <translation id="3987940399970879459">1 MB पेक्षा कमी</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{जवळपास 1 वेब पृष्‍ठ}one{जवळपास # वेब पृष्‍ठ}other{जवळपास # वेब पृष्ठे}}</translation>
 <translation id="4030383055268325496">&amp;जोडा पूर्ववत करा</translation>
@@ -446,11 +462,27 @@
 <translation id="4171400957073367226">खराब पडताळणी स्वाक्षरी</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{आणखी <ph name="ITEM_COUNT" /> आयटम}one{आणखी <ph name="ITEM_COUNT" /> आयटम}other{आणखी <ph name="ITEM_COUNT" /> आयटम}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">अन्य साइटवर तुमचा <ph name="ORG_NAME" /> पासवर्ड पुन्हा वापरल्यास Chrome तो रीसेट करण्याची शिफारस करतो.</translation>
 <translation id="4196861286325780578">&amp;हलवा पुन्हा करा</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल आणि अँटीव्हायरस कॉन्फिगरेशन तपासणे<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">क्रॅश होते</translation>
 <translation id="422022731706691852"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वरील हल्लेखोर कदाचित तुमच्या ब्राउझ करण्याच्या अनुभवाला हानिकारक असे प्रोग्राम (उदाहरणार्थ, तुमचे होमपेज बदलणे किंवा तुम्ही भेट दिलेल्या साइटवर जास्तीच्या जाहिराती दाखवणे) इंस्टॉल करण्यासाठी तुम्हाला फसवण्याचा प्रयत्न करू शकतात. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;पायरी १: पोर्टलमध्ये साइन इन करा&lt;/h4&gt;
+    &lt;p&gt;कॅफे किंवा एअरपोर्टवर असणाऱ्या वाय-फाय नेटवर्कसाठी तुम्ही साइन इन करणे आवश्यक असते. साइन इन पेज पाहण्यासाठी, &lt;code&gt;http://&lt;/code&gt; वापरत असलेल्या पेजला भेट द्या.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;&lt;code&gt;http://&lt;/code&gt;, उदा: &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt; ने सुरुवात होणाऱ्या कोणत्याही वेबसाइटवर जा.&lt;/li&gt;
+    &lt;li&gt;उघडणाऱ्या साइन इन पेजवर, इंटरनेट वापरण्यासाठी साइन इन करा.&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;पायरी २: पेज गुप्त मोडमध्ये उघडा (फक्त कॉंप्युटरसाठी)&lt;/h4&gt;
+    &lt;p&gt;असे पेज उघडा, ज्‍यावर तुम्‍ही गुप्‍त मोड विंडोमध्‍ये आला होतात.&lt;/p&gt;
+    &lt;p&gt;जर पेज उघडले, तर समजावे की, lChrome एक्स्टेंशन योग्यरीत्या काम करत नाही. हा एरर निघून जाण्यासाठी, एक्स्टेंशन बंद करा.&lt;/p&gt;
+    &lt;h4&gt;पायरी ३: तुमची ऑपरेटिंग सिस्टम अपडेट करा&lt;/h4&gt;
+    &lt;p&gt;तुमचे डिव्हाइस अप-टू-डेट असल्याची खात्री करा.&lt;/p&gt;
+    &lt;h4&gt;पायरी ४: तुमचेे अँटीव्हायरस तात्‍पुरते बंद करा&lt;/h4&gt;
+    &lt;p&gt;जर तुमचे अँटीव्हायरस सॉफ्टवेअर "HTTPS सुरक्षा" किंवा "HTTPS स्कॅनिंग" सुविधा देणारे असेल, तर तुम्हाला हा एरर दिसेल. Chrome ला सुरक्षा पुरवण्यापासून अँटीव्हायरसद्वारे प्रतिबंध केला जात आहे.&lt;/p&gt;
+    &lt;p&gt;यावर उपाय म्हणून, अँटीव्हायरस सॉफ्टवेअर बंद करा. जर सॉफ्टवेअर बंद केल्यानंतर तुमचे पेज उघडले, तर जेव्हा तुम्ही सुरक्षित साइट वापरता, तेव्हा हे सॉफ्टवेअर बंद करा.&lt;/p&gt;
+    &lt;p&gt;तुमचे काम पूर्ण झाले की, तुमचा अँटीव्हायरस प्रोग्राम पुन्हा सुरू करण्याचे लक्षात ठेवा.&lt;/p&gt;
+    &lt;h4&gt;पायरी ५: आणखी मदत मिळवा&lt;/h4&gt;
+    &lt;p&gt;जर अजूनही तुम्हाला हाच एरर दिसत असेल, तर वेबसाइटच्या मालकाशी संपर्क करा.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />नेटवर्क निदान चालवून पहा<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">वैध</translation>
 <translation id="4250431568374086873">या साइटवरील आपले कनेक्शन पूर्णपणे सुरक्षित नाही</translation>
@@ -466,6 +498,7 @@
 <translation id="4325863107915753736">लेख शोधण्यात अयशस्वी</translation>
 <translation id="4326324639298822553">आपली कालबाह्यता तारीख तपासा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="4331708818696583467">सुरक्षित नाही</translation>
+<translation id="4340982228985273705">हा कॉंम्पुटर एंटरप्राइझ व्यवस्थापित म्हणून आढळला नाही म्हणून धोरण फक्त Chrome वेबस्टोअरवर होस्ट केलेले एक्सटेंशन आपोआप इंस्टॉल करू शकते. Chrome वेबस्टोअर अपडेट URL <ph name="CWS_UPDATE_URL" /> ही आहे.</translation>
 <translation id="4346197816712207223">स्वीकारली जाणारी क्रेडिट कार्डे</translation>
 <translation id="4356973930735388585">या साइट वरील आक्रमणकर्ते आपली माहिती (उदाहरणार्थ, फोटो, पासवर्ड, संदेश आणि क्रेडिट कार्ड) चोरणारे किंवा हटविणारे धोकादायक प्रोग्राम आपल्या संगणकावर इंस्टॉल करण्‍याचा प्रयत्न करू शकतात.</translation>
 <translation id="4372948949327679948">अपेक्षित <ph name="VALUE_TYPE" /> मूल्य.</translation>
@@ -558,6 +591,7 @@
 <translation id="5141240743006678641">आपल्या Google क्रेडेन्शियलसह संंकालित केलेले पासवर्ड कूटबद्ध करा</translation>
 <translation id="5145883236150621069">धोरण प्रतिसादामध्ये एरर कोड अस्तित्वात आहे</translation>
 <translation id="5159010409087891077">नवीन गुप्त विंडोमध्ये पेज उघडा (⇧⌘N)</translation>
+<translation id="5169827969064885044">तुम्ही तुमच्या संस्थेच्या खात्याचा अॅक्सेस गमावू शकता किंवा तुमची संवेदनशील माहिती चोरीला जाऊ शकते. Chrome लगेच तुमचा पासवर्ड बदलण्याची शिफारस करत आहे.</translation>
 <translation id="5171045022955879922">URL शोधा किंवा टाइप करा</translation>
 <translation id="5172758083709347301">मशीन</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> मध्ये नाही? या त्रुटीचा अहवाल नोंदवा</translation>
@@ -566,6 +600,7 @@
 <translation id="5205222826937269299">नाव आवश्यक आहे</translation>
 <translation id="5222812217790122047">ईमेल आवश्यक आहे</translation>
 <translation id="5230733896359313003">पाठविण्याचा पत्ता</translation>
+<translation id="5250209940322997802">"नेटवर्कशी कनेक्ट करा"</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />सॉफ्टवेअर तात्पुरते बंद करून ठेवण्यासाठी खालील पायर्‍यांचे फॉलो करा, ज्यामुळे तुम्ही वेबशी कनेक्ट होऊ शकाल. तुम्हाला प्रशासकीय हक्क असणे आवश्यक असेल.<ph name="END_PARAGRAPH" />
 
@@ -589,6 +624,7 @@
 <translation id="5332219387342487447">पाठविण्‍याची पद्धत</translation>
 <translation id="5355557959165512791">तुम्ही आत्ता <ph name="SITE" /> ला भेट देऊ शकत नाही कारण तिचे प्रमाणपत्र निरस्त केले गेले आहे. नेटवर्क एरर आणि आक्रमणे शक्यतो तात्पुरती असतात, त्यामुळे हे पेज नंतर पाहता येईल.</translation>
 <translation id="536296301121032821">धोरण सेटिंग्ज संचयित करण्यात अयशस्वी</translation>
+<translation id="5377026284221673050">"तुमचे क्लॉक मागे पडले आहे" किंवा "तुमचे क्लॉक वेळेपेक्षा पुढे आहे" किंवा "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">या साइटसाठी असलेल्या प्रमाणपत्र श्रृंखलेत SHA-1 वापरून स्वाक्षरी केलेले प्रमाणपत्र असते.</translation>
 <translation id="5402410679244714488">कालबाह्यता: <ph name="EXPIRATION_DATE_ABBR" />, एका वर्षापूर्वी अखेरचे वापरले</translation>
 <translation id="540969355065856584">हा सर्व्हर <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र यावेळी वैध नाही. हे कदाचित चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्ता आपले कनेक्शन आंतरखंडित करीत असल्‍यामुळे होऊ शकते.</translation>
@@ -656,7 +692,6 @@
 <translation id="5869405914158311789">या साइटवर पोहचणे शक्य नाही</translation>
 <translation id="5869522115854928033">सेव्ह केलेले पासवर्ड</translation>
 <translation id="5893752035575986141">क्रेडिट कार्डे स्वीकारली जातात.</translation>
-<translation id="5898382028489516745">अन्य साइटवर तुमचा <ph name="ORG_NAME" /> पासवर्ड पुन्हा वापरल्यास Chromium तो रीसेट करण्याची शिफारस करतो.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (सिंक केलेले)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 वापरात आहे}one{# वापरात आहे}other{# वापरात आहेत}}</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
@@ -822,6 +857,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">कार्डची पुष्टी करा</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;जर तुमच्या Windows कॉंप्युटरवर Superfish सॉफ्टवेअर असेल, तर तुम्हाला हा एरर दिसेल.&lt;/p&gt;
+    &lt;p&gt;सॉफ्टवेअरला तात्पुरत्या स्वरुपात बंद करण्यासाठी या पायऱ्यांनुसार कृती करा, जेणेकरून तुम्‍ही ते वेबवर मिळवू शकाल. तुमच्याकडे अॅडमिनिस्ट्रेटरचे अधिकार असणे आवश्यक आहे.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;&lt;strong&gt;सुरू&lt;/strong&gt; वर क्लिक करा, मग स्थानिक सेवा शोधा आणि&lt;strong&gt;"स्थानिक सेवा पाहा"&lt;/strong&gt; निवडा
+    &lt;li&gt;&lt;strong&gt;व्हिज्युअल डिस्कव्हरी&lt;/strong&gt; निवडा
+    &lt;li&gt;&lt;strong&gt;स्टार्टअप प्रकार&lt;/strong&gt; मध्‍ये, &lt;strong&gt;बंद&lt;/strong&gt; निवडा
+    &lt;li&gt;&lt;strong&gt;सेवा स्थिती&lt;/strong&gt; मध्‍ये, &lt;strong&gt;थांबवा&lt;/strong&gt; वर क्लिक करा
+    &lt;li&gt;&lt;strong&gt;लागू करा&lt;/strong&gt; वर क्लिक करा, मग &lt;strong&gt;ओके&lt;/strong&gt; वर क्लिक करा
+    &lt;li&gt;तुमच्या कॉंप्युटरवरून सॉफ्टवेअर कायमस्वरूपी कसे काढून टाकावे याबाबत शिकण्यासाठी&lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome मदत केंद्र&lt;/a&gt; ला भेट द्या.
+    &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">प्रोफाइल पथ</translation>
 <translation id="7437289804838430631">संपर्क माहिती जोडा</translation>
 <translation id="7441627299479586546">चुकीचे धोरण विषय</translation>
@@ -843,6 +888,7 @@
 <translation id="7542403920425041731">तुम्ही निश्चित केल्यावर, तुमचे कार्ड तपशील या साइटसह शेअर केले जातील.</translation>
 <translation id="7542995811387359312">स्वयंचलित क्रेडिट कार्ड भरणे अक्षम झाले आहे कारण हा फॉर्म सुरक्षित कनेक्शन वापरत नाही.</translation>
 <translation id="7543525346216957623">आपल्या पालकास विचारा</translation>
+<translation id="7548892272833184391">कनेक्शन एररवर निश्चित करा</translation>
 <translation id="7549584377607005141">हे वेबपृष्ठ योग्यरितीने प्रदर्शित केले जाण्यासाठी आपण पूर्वी एंटर केलेला डेटा आवश्यक आहे. आपण हा डेटा पुन्हा पाठवू शकता, परंतु असे केल्याने या पृष्ठाने मागे केलेली कोणत्याही क्रियेची पुनरावृत्ती आपण कराल.</translation>
 <translation id="7552846755917812628">खालील टिपा वापरून पहा:</translation>
 <translation id="7554791636758816595">नवीन टॅब</translation>
@@ -850,6 +896,7 @@
 <translation id="7567204685887185387">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र कदाचित लबाडीने जारी केले असावे. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
 <translation id="7568593326407688803">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE" />मध्ये आहे आपण याचा भाषांतर करु इच्छिता?</translation>
 <translation id="7569952961197462199">Chrome मधून क्रेडिट कार्ड काढायचे?</translation>
+<translation id="7575800019233204241">"तुमचे कनेक्शन खाजगी नाही" किंवा "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" किंवा "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" किंवा "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" किंवा "SSL सर्टिफिकेट एरर"</translation>
 <translation id="7578104083680115302">आपण Google सह जतन केलेल्या कार्डचा वापर करून डिव्‍हाइसेसवरून द्रुतपणे साइट आणि अॅप्सवर देय द्या.</translation>
 <translation id="7588950540487816470">भौतिक वेब</translation>
 <translation id="7592362899630581445">सर्व्हरचे प्रमाणपत्र नाव मर्यादांचे उल्लंघन करते.</translation>
@@ -1071,6 +1118,8 @@
 <translation id="973773823069644502">वितरणाचा पत्ता जोडा</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{काहीही नाही}=1{1 आयटम}one{# आयटम}other{# आयटम}}</translation>
 <translation id="981121421437150478">ऑफलाइन</translation>
+<translation id="985199708454569384">&lt;p&gt;जर तुमच्या कॉंप्युटर किंवा मोबाइल डिव्हाइसची तारीख आणि वेळ चुकीची असेल, तर तुम्हाला हा एरर दिसेल.&lt;/p&gt;
+    &lt;p&gt;या एररला घालवण्यासाठी, तुमच्या डिव्हाइसचे क्लॉक उघडा. वेळ आणि तारीख अचूक असल्याची खात्री करा.&lt;/p&gt;</translation>
 <translation id="988159990683914416">विकसक बिल्ड</translation>
 <translation id="989988560359834682">पत्ता संपादित करा</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

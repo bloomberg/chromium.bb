@@ -3,7 +3,6 @@
 <translationbundle lang="gu">
 <translation id="104962181688258143">Files ઍપ ખોલો</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> માટે <ph name="N" /> શોધ પરિણામો ડિસ્પ્લે કરી રહ્યાં છીએ</translation>
-<translation id="1134347825771908369">વૉલ્યૂમ મ્યૂટ કરો</translation>
 <translation id="1195667586424773550">ટૅબના ઍડ્રેસ બારમાં લિંકને ખેંચો</translation>
 <translation id="1204450209689312104">છૂપા મોડમાં એક નવી વિંડો ખોલો</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -32,6 +31,7 @@
 <translation id="2185166372312820725">પાછળના ટૅબ પર જાઓ</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />ને દબાવો અને લિંકને ક્લિક કરો</translation>
 <translation id="2382644247745281995">વર્તમાન કીબોર્ડ લેઆઉટ સાથે સમર્થિત નથી</translation>
+<translation id="2397416548179033562">Chrome મેનૂ દર્શાવો</translation>
 <translation id="2424073332829844142">Caps Lock ચાલુ અને બંધ કરો</translation>
 <translation id="2441202986792279177">વિંડોને ઝડપથી સ્વિચ કરો</translation>
 <translation id="2478303094958140141">ChromeVox (બોલાયેલ પ્રતિસાદ) ચાલુ અથવા બંધ કરો</translation>
@@ -42,6 +42,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="TAB" /> અથવા <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">તમારા વર્તમાન વેબપેજને બુકમાર્ક તરીકે સાચવો</translation>
 <translation id="2750942583782703988">તમારું વર્તમાન પેજ ફરીથી લોડ કરો</translation>
+<translation id="2764005613199379871">શોધ ઍડ્રેસ બારમાં ફોકસ કરો</translation>
 <translation id="2789868185375229787">આ પેજ પર ઝૂમ ઘટાડો</translation>
 <translation id="2804480015716812239"><ph name="ALT" />ને દબાવો અને લિંકને ક્લિક કરો</translation>
 <translation id="2830827904629746450">જમણી બાજુની વિંડોને ડૉક કરો</translation>
@@ -53,6 +54,7 @@
 <translation id="3105917916468784889">સ્ક્રીનશૉટ લો</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">સરનામાં બાર પર ફોકસ કરો</translation>
+<translation id="3256109297135787951">તમારા શેલ્ફ પર આઇટમમાંથી હાઇલાઇટ કાઢી નાખો</translation>
 <translation id="3288816184963444640">વર્તમાન વિંડો બંધ કરો</translation>
 <translation id="3407560819924487926">કાર્ય મેનેજર લાવો</translation>
 <translation id="3422679037938588196">તમારી શોધ માટેના પાછલા મેળ પર જાઓ</translation>
@@ -67,6 +69,7 @@
 <translation id="3720939646656082033">લિંકને નવા ટૅબમાં ખોલો અને નવા ટૅબ પર સ્વિચ કરો</translation>
 <translation id="3725795051337497754">વર્તમાન ટૅબ બંધ કરો</translation>
 <translation id="3751033133896282964">તમારી છેલ્લી ક્રિયા રદ કરો</translation>
+<translation id="3792178297143798024">તમારા શેલ્ફ પરની હાઇલાઇટ કરેલી આઇટમ ખોલો</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 થી 8</translation>
 <translation id="3837047332182291558">કીબોર્ડને બ્રાઇટ બનાવો (માત્ર બૅકલિટ કીબોર્ડ માટે)</translation>
 <translation id="3976863468609830880">તમારા શેલ્ફ પરના છેલ્લા આઇકન પર ક્લિક કરો</translation>
@@ -124,6 +127,7 @@
 <translation id="6435207348963613811">તમારા શેલ્ફ પરની પાછલી આઇટમને હાઇલાઇટ કરો</translation>
 <translation id="6445033640292336367">ટૅબને તેની ઑરિજિનલ સ્થિતિમાં પાછું લાવો</translation>
 <translation id="649811797655257835">ફાઇલ પસંદ કરો, પછી <ph name="SPACE" /> દબાવો</translation>
+<translation id="6556040137485212400">સૌથી લાંબા સમયથી ઉપયોગમાં ન લેવાઈ હોય તે વિંડો ખોલો</translation>
 <translation id="666343722268997814">હાઇલાઇટ કરેલ આઇટમ માટે રાઇટ-ક્લિક મેનૂ ખોલો</translation>
 <translation id="6671538777808758331">તમારી શોધ માટેના આગલા મેળ પર જાઓ</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> અથવા <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
@@ -143,17 +147,17 @@
 <translation id="7379254767514753910"><ph name="ALT" /> અથવા <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">ઍપને અનપિન કરો</translation>
 <translation id="7439718573248533901">આગલો અક્ષર ડિલીટ કરો (ફૉર્વર્ડ ડિલીટ કરો)</translation>
-<translation id="7449669175878568981">શ્રુતલેખન (તમે બોલો તે લખે) શરૂ કરે છે અથવા રોકે છે</translation>
 <translation id="766326951329901120">ક્લિપબોર્ડમાંના કન્ટેન્ટને સાદી ટેક્સ્ટ તરીકે પેસ્ટ કરો</translation>
 <translation id="7724603315864178912">કાપો</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="SPACE" /> અથવા <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">બ્રાઉઝરમાં ફાઇલ ખોલો</translation>
 <translation id="7917881398263220094">તમારા વર્તમાન પેજને લોડ કરવાનું રોકો</translation>
+<translation id="7952165122793773711">ટૅબ 1 થી 8માં જાઓ</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> અથવા <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
-<translation id="8104889575691864804">ઍપ મેનૂ બતાવો</translation>
 <translation id="8130528849632411619">દસ્તાવેજની શરૂઆત પર જાઓ</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> અથવા <ph name="E" /></translation>
+<translation id="8232835244134740473">આની વચ્ચે ફોકસ સ્વિચ કરો: સ્ટેટસ એરિયા (જ્યાં તમારા એકાઉન્ટનું ચિત્ર દેખાય છે), લૉન્ચર, ઍડ્રેસ બાર, બુકમાર્ક બાર (જો દૃશ્યક્ષમ હોય, તો), ખુલ્લું છે તે વેબપેજ અને ડાઉનલોડ બાર (જો દૃશ્યક્ષમ હોય, તો).</translation>
 <translation id="8234414138295101081">સ્ક્રીનને 90 ડિગ્રીએ ફેરવો</translation>
 <translation id="8264941229485248811">ડેવલપર સાધનો ઇન્સ્પેક્ટર બતાવો અથવા છુપાવો</translation>
 <translation id="836869401750819675">ડાઉનલોડ પેજ ખોલો</translation>

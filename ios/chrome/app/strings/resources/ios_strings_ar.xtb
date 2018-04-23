@@ -41,7 +41,7 @@
 <translation id="1582732959743469162">سيؤدي ذلك إلى إيقاف تقدّم جميع عمليات التنزيل الحالية.</translation>
 <translation id="1612730193129642006">عرض شبكة علامة التبويب</translation>
 <translation id="1644574205037202324">السجل</translation>
-<translation id="1646446875146297738">إن تمكين "عدم التتبع" يعني تضمين طلب في حركة بيانات التصفح. ويعتمد أي تأثير يحدث على ما إذا كان موقع الويب سيستجيب للطلب، وكيفية تفسيره للطلب.
+<translation id="1646446875146297738">إن تفعيل "عدم التتبع" يعني تضمين طلب في حركة بيانات التصفح. ويعتمد أي تأثير يحدث على ما إذا كان موقع الويب سيستجيب للطلب، وكيفية تفسيره للطلب.
 
 على سبيل المثال، قد تستجيب بعض مواقع الويب لهذا الطلب عبر عرض إعلانات لا تستند إلى مواقع ويب أخرى زرتها. ولكن ستظل العديد من مواقع الويب تجمع بيانات تصفحك وتستخدمها - على سبيل المثال، لتحسين الأمان وتقديم محتوى وخدمات وإعلانات واقتراحات على مواقع الويب ولإعداد تقارير الإحصاءات. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">تعذّرت المشاركة بسبب عدم اتصالك بالشبكة.</translation>
@@ -137,6 +137,7 @@
 <translation id="3393920035788932672">النوافذ المنبثقة المسموح بها</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقيقة</translation>
 <translation id="3448016392200048164">تقسيم العرض</translation>
+<translation id="3469166899695866866">هل تريد إيقاف التنزيل؟</translation>
 <translation id="3474624961160222204">المتابعة باسم <ph name="NAME" /></translation>
 <translation id="3474649192738347024">تم ملء النماذج.</translation>
 <translation id="3478058380795961209">شهر انتهاء الصلاحية</translation>
@@ -150,6 +151,7 @@
 <translation id="3588820906588687999">فتح صورة في علامة تبويب جديدة</translation>
 <translation id="3603009562372709545">‏نسخ عنوان URL للرابط</translation>
 <translation id="3607167657931203000">ملء البيانات تلقائيًا</translation>
+<translation id="3609785682760573515">جارٍ المزامنة...</translation>
 <translation id="3628119975092896051">قائمة القراءة متاحة بلا اتصال بالإنترنت. لإضافة صفحة إلى قائمة القراءة، انقر على <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">تحميل صفحات الويب مسبقًا</translation>
 <translation id="3691593122358196899">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_TITLE" /></translation>
@@ -176,7 +178,7 @@
 <translation id="418156467088430727">عرض إصدار بلا إنترنت في علامة تبويب جديدة</translation>
 <translation id="4237682350741091554">‏إدارة مزامنة Chrome والتخصيص في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">إدخال عبارة المرور</translation>
-<translation id="4272631900155121838">لمسح رمز الاستجابة السريعة ضوئيًا، يمكنك تمكين الكاميرا من الإعدادات</translation>
+<translation id="4272631900155121838">لمسح رمز الاستجابة السريعة ضوئيًا، يمكنك تفعيل الكاميرا من الإعدادات</translation>
 <translation id="4281844954008187215">شروط الخدمة</translation>
 <translation id="430793432425771671">مزامنة كل شيء</translation>
 <translation id="4342284590510997375">جديدة</translation>
@@ -222,7 +224,7 @@
 <translation id="5186185447130319458">خاص</translation>
 <translation id="5190835502935405962">شريط الإشارات</translation>
 <translation id="5197255632782567636">الإنترنت</translation>
-<translation id="5228579091201413441">تمكين المزامنة</translation>
+<translation id="5228579091201413441">تفعيل المزامنة</translation>
 <translation id="5244474230056479698">المزامنة مع <ph name="EMAIL" /></translation>
 <translation id="527973086555161537">يمكنك فتح علامة تبويب جديدة لتصفّح الويب بخصوصية.</translation>
 <translation id="5300589172476337783">عرض</translation>
@@ -235,7 +237,7 @@
 <translation id="5525269841082836315">إنشاء عبارة مرور</translation>
 <translation id="5548760955356983418">‏يتيح لك Handoff بدء تصفح موقع على هذا الجهاز ثم متابعة التصفح بسهولة على جهاز Mac. سيظهر الموقع المفتوح حاليًا على Dock بـ Mac.
 
-لابد من تمكين Handoff كذلك في القسم العام من الإعدادات، ولابد من استخدام أجهزتك لنفس حساب iCloud.</translation>
+لابد من تفعيل Handoff كذلك في القسم العام من الإعدادات، ولابد من استخدام أجهزتك لنفس حساب iCloud.</translation>
 <translation id="5556459405103347317">إعادة تحميل</translation>
 <translation id="5619279135193775234">البريد</translation>
 <translation id="5626245204502895507">تعذر تنزيل الملف في الوقت الحالي.</translation>
@@ -304,7 +306,6 @@
 <translation id="6445981559479772097">تم إرسال الرسالة.</translation>
 <translation id="6464071786529933911">فتح في علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
-<translation id="6528048372317642110">تنزيل الملف متاح.</translation>
 <translation id="6541915733953096570">الساعة الماضية</translation>
 <translation id="6570040839871198836">ملء النماذج تلقائيًا</translation>
 <translation id="6656103420185847513">تعديل مجلد</translation>
@@ -338,6 +339,7 @@
 <translation id="7159472599653637159">طلب موقع ويب متوافق مع الجوّال</translation>
 <translation id="7167621057293532233">أنواع البيانات</translation>
 <translation id="7175593937868963913">إنشاء بريد إلكتروني</translation>
+<translation id="7180611975245234373">تحديث</translation>
 <translation id="7189598951263744875">مشاركة...</translation>
 <translation id="7203585745079012652">النطق بالإجابات</translation>
 <translation id="722055596168483966">‏تخصيص خدمات Google</translation>
@@ -380,13 +382,14 @@
 <translation id="8023878949384262191">توسيع القسم.</translation>
 <translation id="8059533439631660104">طي القسم.</translation>
 <translation id="806745655614357130">الحفاظ على البيانات التابعة لي منفصلة</translation>
+<translation id="8073670137947914548">اكتمل التنزيل</translation>
 <translation id="8076014560081431679">لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">إغلاق جميع علامات التبويب</translation>
 <translation id="8205564605687841303">إلغاء</translation>
 <translation id="8225985093977202398">الصور والملفات المُخزنة مؤقتًا</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8272426682713568063">بطاقات ائتمان</translation>
-<translation id="8281781826761538115">الافتراضي - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8281781826761538115">التلقائي - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">إغلاق الكل</translation>
 <translation id="8381750437846184350">‏التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث، والإعلانات، وخدمات Google الأخرى</translation>
 <translation id="842017693807136194">تم تسجيل الدخول باستخدام</translation>

@@ -137,6 +137,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3393920035788932672">Finestres emergents permeses</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Visualització dividida</translation>
+<translation id="3469166899695866866">Vols aturar la baixada?</translation>
 <translation id="3474624961160222204">Continua com a <ph name="NAME" /></translation>
 <translation id="3474649192738347024">S'han emplenat els formularis.</translation>
 <translation id="3478058380795961209">Mes de caducitat</translation>
@@ -150,6 +151,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3588820906588687999">Obre la imatge en una pestanya nova</translation>
 <translation id="3603009562372709545">Copia l'URL de l'enllaç</translation>
 <translation id="3607167657931203000">Dades d'Emplenament automàtic</translation>
+<translation id="3609785682760573515">S'està sincronitzant...</translation>
 <translation id="3628119975092896051">La llista de lectura està disponible sense connexió. Per afegir-hi una pàgina, toca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Càrrega prèvia de pàgines web</translation>
 <translation id="3691593122358196899">Adreça d'interès afegida a <ph name="FOLDER_TITLE" /></translation>
@@ -304,7 +306,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6445981559479772097">Missatge enviat.</translation>
 <translation id="6464071786529933911">Obre en una pestanya d'incògnit</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements suprimits</translation>
-<translation id="6528048372317642110">La baixada de fitxers està disponible</translation>
 <translation id="6541915733953096570">L'última hora</translation>
 <translation id="6570040839871198836">Emplenament automàtic</translation>
 <translation id="6656103420185847513">Edició de la carpeta</translation>
@@ -338,6 +339,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7159472599653637159">Sol·licita lloc per a mòbils</translation>
 <translation id="7167621057293532233">Tipus de dades</translation>
 <translation id="7175593937868963913">Redacta un correu electrònic</translation>
+<translation id="7180611975245234373">Actualitza</translation>
 <translation id="7189598951263744875">Comparteix...</translation>
 <translation id="7203585745079012652">Pronuncia les respostes</translation>
 <translation id="722055596168483966">Personalitzeu els serveis de Google</translation>
@@ -370,7 +372,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7856733331829174190">No s'ha pogut baixar</translation>
 <translation id="7859704718976024901">Historial de navegació</translation>
 <translation id="7938254975914653459">FaceTime</translation>
-<translation id="7939128259257418052">Exporta contrasenyes</translation>
+<translation id="7939128259257418052">Exporta les contrasenyes</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Bloqueig de finestres emerg.</translation>
@@ -380,6 +382,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8023878949384262191">Desplega la secció.</translation>
 <translation id="8059533439631660104">Replega la secció.</translation>
 <translation id="806745655614357130">Mantén les meves dades separades</translation>
+<translation id="8073670137947914548">La baixada ha finalitzat</translation>
 <translation id="8076014560081431679">La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Tanca totes les pestanyes</translation>
 <translation id="8205564605687841303">Cancel·la</translation>

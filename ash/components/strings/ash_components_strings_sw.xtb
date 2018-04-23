@@ -3,7 +3,6 @@
 <translationbundle lang="sw">
 <translation id="104962181688258143">Fungua programu ya Faili</translation>
 <translation id="1122869341872663659">Inaonyesha matokeo <ph name="N" /> ya utafutaji wa <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Zima sauti</translation>
 <translation id="1195667586424773550">Buruta kiungo hadi kwenye sehemu ya anwani katika kichupo</translation>
 <translation id="1204450209689312104">Fungua dirisha jipya katika hali fiche</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -32,6 +31,7 @@
 <translation id="2185166372312820725">Nenda kwenye kichupo cha awali</translation>
 <translation id="2194790690264064655">Bonyeza <ph name="CTRL" /> na ubofye kiungo</translation>
 <translation id="2382644247745281995">Haitumiki kwenye mpangilio wa sasa wa kibodi</translation>
+<translation id="2397416548179033562">Onyesha Menyu ya Chrome</translation>
 <translation id="2424073332829844142">Washa au uzime Caps Lock</translation>
 <translation id="2441202986792279177">Badilisha madirisha haraka</translation>
 <translation id="2478303094958140141">Washa au uzime ChromeVox (maelezo yanayotamkwa)</translation>
@@ -49,6 +49,7 @@
 <translation id="2872353916818027657">Papasa kiwambo msingi</translation>
 <translation id="2914313326123580426">Onyesha au ufiche kidirisha cha Zana za Wasanidi Programu</translation>
 <translation id="292495055542441795">Tumia skrini nzima</translation>
+<translation id="3020183492814296499">Njia za mkato</translation>
 <translation id="3084301071537457911">Angazia kipengee kinachofuata kwenye rafu yako</translation>
 <translation id="309173601632226815">Angazia kitufe cha kifungua programu kwenye rafu yako</translation>
 <translation id="3105917916468784889">Piga picha ya skrini</translation>
@@ -147,7 +148,6 @@
 <translation id="7379254767514753910"><ph name="ALT" /> au <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Bandua programu</translation>
 <translation id="7439718573248533901">Futa herufi inayofuata (futa kuelekea mbele)</translation>
-<translation id="7449669175878568981">Anza au usitishe matamshi (kuandika unachotamka)</translation>
 <translation id="766326951329901120">Bandika maudhui kutoka ubao wa kunakili katika muundo wa maandishi dhahiri</translation>
 <translation id="7724603315864178912">Kata</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kisha <ph name="SPACE" /> au <ph name="ENTER" /></translation>
@@ -156,7 +156,6 @@
 <translation id="7952165122793773711">Nenda kwenye vichupo vya 1 hadi 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> au <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Futa data ya kuvinjari</translation>
-<translation id="8104889575691864804">Onyesha menyu ya programu</translation>
 <translation id="8130528849632411619">Nenda kwenye mwanzo wa hati</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> au <ph name="E" /></translation>
 <translation id="8232835244134740473">Badilisha ulengaji kati ya: Eneo la hali (sehemu ambapo picha ya akaunti huonekana) Kifungua Programu, Sehemu ya Anwani, Sehemu ya Alamisho (kama inaonekana), ukurasa wa wavuti ambao umefunguka na Upau wa Vipakuliwa (kama unaonekana).</translation>

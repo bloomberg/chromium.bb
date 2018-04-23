@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{कुछ नहीं}=1{1 साइट}one{# साइट}other{# साइट}}</translation>
 <translation id="1927235823738766038">स्वीकार किए जाने वाले क्रेडिट और डेबिट कार्ड</translation>
 <translation id="194030505837763158"><ph name="LINK" /> पर जाएं</translation>
+<translation id="1945968466830820669">आप अपने संगठन के खाते का एक्सेस खो सकते हैं या आपकी पहचान चोरी हो सकती है. Chromium आपको इसी समय अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="1948773908305951926">स्वीकृत प्रीपेड कार्ड</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="1973335181906896915">क्रमबद्ध करने में गड़बड़ी</translation>
@@ -461,7 +462,6 @@
 <translation id="4171400957073367226">गलत सत्यापन हस्ताक्षर</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> और आइटम}one{<ph name="ITEM_COUNT" /> और आइटम}other{<ph name="ITEM_COUNT" /> और आइटम}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">अगर आपने अपने <ph name="ORG_NAME" /> पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो Chrome आपको उसे रीसेट करने का सुझाव देता है.</translation>
 <translation id="4196861286325780578">&amp;ले जाना फिर से करें</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल और एंटीवायरस कॉन्फ़िगरेशन की जाँच करें<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">क्रैश</translation>
@@ -591,6 +591,7 @@
 <translation id="5141240743006678641">समन्वयित पासवर्ड अपने Google प्रमाणिकता के साथ एन्क्रिप्ट करें</translation>
 <translation id="5145883236150621069">नीति प्रतिसाद में गड़बड़ी कोड मौजूद है</translation>
 <translation id="5159010409087891077">पेज को नई गुप्त विंडो में खोलें (⇧⌘N)</translation>
+<translation id="5169827969064885044">आप अपने संगठन के खाते का एक्सेस खो सकते हैं या आपकी पहचान चोरी हो सकती है. Chrome आपको इसी समय अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="5171045022955879922">URL खोजें या लिखें</translation>
 <translation id="5172758083709347301">मशीन</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> में नहीं है? इस गड़बड़ी की रिपोर्ट करें</translation>
@@ -691,7 +692,6 @@
 <translation id="5869405914158311789">इस साइट तक नहीं पहुंचा जा सकता</translation>
 <translation id="5869522115854928033">सहेजे गए पासवर्ड</translation>
 <translation id="5893752035575986141">क्रेडिट कार्ड स्वीकार किए जाते हैं.</translation>
-<translation id="5898382028489516745">अगर आपने अपने <ph name="ORG_NAME" /> पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो क्रोमियम आपको उसे रीसेट करने का सुझाव देता है.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (सिंक किया गया)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 उपयोग में है}one{# उपयोग में हैं}other{# उपयोग में हैं}}</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
@@ -856,6 +856,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">कार्ड की पुष्टि करें</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;अगर आपके Windows कंप्यूटर पर Superfish सॉफ़्टवेयर है, तो आपको यह गड़बड़ी दिखाई देगी.&lt;/p&gt;
+      &lt;p&gt;आगे बताए गए कदम उठाकर सॉफ़्टवेयर को कुछ देर के लिए बंद कर दें ताकि आप वेब पर जा सकें. आपको एडमिन विशेषाधिकार चाहिए होंगे.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;&lt;strong&gt;शुरू करें&lt;/strong&gt; पर क्लिक करें, उसके बाद &lt;strong&gt;"स्थानीय सेवाएं देखें"&lt;/strong&gt; को खोजें और चुनें
+      &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt; चुनें
+      &lt;li&gt;&lt;strong&gt;स्टार्टअप प्रकार&lt;/strong&gt; में, &lt;strong&gt;बंद किया गया&lt;/strong&gt; चुनें
+      &lt;li&gt;&lt;strong&gt;सेवा स्थिति&lt;/strong&gt; में, &lt;strong&gt;रोकें&lt;/strong&gt; पर क्लिक करें
+      &lt;li&gt;&lt;strong&gt;लागू करें&lt;/strong&gt; पर क्लिक करें, फिर &lt;strong&gt;ठीक है&lt;/strong&gt; पर क्लिक करें
+      &lt;li&gt;&lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome सहायता केंद्र&lt;/a&gt; पर जाकर अपने कंप्यूटर से सॉफ़्टवेयर को हमेशा के लिए हटाने का तरीका जानें
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">प्रोफ़ाइल पथ</translation>
 <translation id="7437289804838430631">संपर्क जानकारी जोड़ें</translation>
 <translation id="7441627299479586546">गलत नीति विषय</translation>

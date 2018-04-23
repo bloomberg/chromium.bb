@@ -150,6 +150,7 @@
 <translation id="3588820906588687999">പുതിയ ടാബിൽ ചിത്രം തുറക്കുക</translation>
 <translation id="3603009562372709545">ലിങ്ക് URL പകർത്തുക</translation>
 <translation id="3607167657931203000">ഓട്ടോഫിൽ ഡാറ്റ</translation>
+<translation id="3609785682760573515">സമന്വയിപ്പിക്കുന്നു...</translation>
 <translation id="3628119975092896051">നിങ്ങളുടെ വായന ലിസ്‌റ്റ് ഓഫ്‌ലൈനിൽ ലഭ്യമാണ്. വായന ലിസ്‌റ്റിൽ ഒരു പേജ് ചേർക്കാൻ, <ph name="SHARE_OPENING_ICON" /> ടാപ്പുചെയ്യുക.</translation>
 <translation id="3638472932233958418">മുമ്പ് ലോഡുചെയ്‌ത വെബ്‌പേജുകൾ</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ഫോൾഡറിലേക്ക് ബുക്ക്മാർക്ക് ചെയ്‌തു</translation>
@@ -304,7 +305,6 @@
 <translation id="6445981559479772097">സന്ദേശം അയച്ചു.</translation>
 <translation id="6464071786529933911">പുതിയ ആൾമാറാട്ട ടാബിൽ തുറക്കുക</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ഇനങ്ങൾ ഇല്ലാതാക്കി</translation>
-<translation id="6528048372317642110">ഫയൽ ഡൗൺലോഡ് ലഭ്യമാണ്</translation>
 <translation id="6541915733953096570">കഴിഞ്ഞ ഒരു മണിക്കൂറിലെ</translation>
 <translation id="6570040839871198836">ഓട്ടോഫിൽ ഫോമുകൾ</translation>
 <translation id="6656103420185847513">ഫോൾഡർ എഡിറ്റുചെയ്യുക</translation>
@@ -338,6 +338,7 @@
 <translation id="7159472599653637159">മൊബൈൽ സൈറ്റ് അഭ്യർത്ഥിക്കുക</translation>
 <translation id="7167621057293532233">ഡാറ്റ തരങ്ങള്‍</translation>
 <translation id="7175593937868963913">ഇമെയിൽ രചിക്കുക</translation>
+<translation id="7180611975245234373">പുതുക്കുക</translation>
 <translation id="7189598951263744875">പങ്കിടുക...</translation>
 <translation id="7203585745079012652">മറുപടിയായി ഉത്തരങ്ങൾ പറയുക</translation>
 <translation id="722055596168483966">Google സേവനങ്ങൾ വ്യക്തിപരമാക്കുക</translation>

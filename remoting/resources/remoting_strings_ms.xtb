@@ -145,6 +145,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="4207623512727273241">Sila jalankan pemasang sebelum meneruskan.</translation>
 <translation id="4227991223508142681">Utiliti Peruntukan Hos</translation>
 <translation id="4240294130679914010">Penyahpasang Hos Chromoting</translation>
+<translation id="4249741460382919890">Pembetulan umum dan peningkatan kestabilan.</translation>
 <translation id="4277463233460010382">Komputer ini dikonfigurasi untuk membenarkan satu atau beberapa klien bersambung tanpa memasukkan PIN.</translation>
 <translation id="4277736576214464567">Kod akses tidak sah. Sila cuba lagi.</translation>
 <translation id="4361728918881830843">Untuk mendayakan sambungan jauh pada komputer lain, pasang Desktop Jauh Chrome pada komputer tersebut dan klik “<ph name="BUTTON_NAME" />”.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (luar talian)</translation>
 <translation id="5070121137485264635">Hos jauh memerlukan anda membuat pengesahan pada tapak web pihak ketiga. Untuk meneruskan, anda hendaklah memberikan Desktop Jauh Chrome kebenaran tambahan untuk mengakses alamat ini:</translation>
 <translation id="507204348399810022">Adakah anda pasti mahu melumpuhkan sambungan jauh ke <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">Gagal berkomunikasi dengan pelayan: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Sila masukkan PIN yang sama dalam kedua-dua kotak.</translation>
 <translation id="5170982930780719864">Id hos tidak sah.</translation>
 <translation id="518094545883702183">Maklumat ini hanya digunakan untuk mendiagnosis masalah yang anda laporkan, hanya tersedia kepada seseorang yang menyiasat laporan anda dan dikekalkan selama tidak lebih daripada 30 hari.</translation>

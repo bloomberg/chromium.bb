@@ -3,7 +3,6 @@
 <translationbundle lang="am">
 <translation id="104962181688258143">የፋይሎች መተግበሪያን ይክፈቱ</translation>
 <translation id="1122869341872663659"><ph name="N" /> ፍለጋ ውጤቶችን ለ<ph name="QUERY" /> በማሳየት ላይ</translation>
-<translation id="1134347825771908369">ድምጹን ይዝጉት</translation>
 <translation id="1195667586424773550">አገናኙን ወደ የትሩ አድራሻ አሞሌ ይጎትቱት</translation>
 <translation id="1204450209689312104">አዲስ ትር ማንነት በማያሳውቅ ሁነታ ውስጥ ይክፈቱ</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -32,6 +31,7 @@
 <translation id="2185166372312820725">ወደ ቀዳሚው ትር ሂድ</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> ይጫኑ እና አገናኝ ጠቅ ያድርጉ</translation>
 <translation id="2382644247745281995">በአሁኑ የቁልፍ ሰሌዳ አቀማመጥ አይደገፍም</translation>
+<translation id="2397416548179033562">የChrome ምናሌ አሳይ</translation>
 <translation id="2424073332829844142">Caps Lock ያብሩ እና ያጥፉ</translation>
 <translation id="2441202986792279177">በመስኮቶች መካከል በፍጥነት ይቀያይሩ</translation>
 <translation id="2478303094958140141">ChromeVox (የሚነገር ግብረመልስ) አብራ ወይም አጥፋ</translation>
@@ -49,6 +49,7 @@
 <translation id="2872353916818027657">ዋና ማሳያውን ቀይር</translation>
 <translation id="2914313326123580426">የገንቢ መሣሪያዎች ፓነልን አሳይ ወይም ደብቅ</translation>
 <translation id="292495055542441795">ሙሉ ማያ ገጽ ቀያይር</translation>
+<translation id="3020183492814296499">አቋራጮች</translation>
 <translation id="3084301071537457911">በእርስዎ መደርደሪያ ላይ ቀጣዩን ንጥል ያድምቁ</translation>
 <translation id="309173601632226815">በእርስዎ መደርደሪያ ላይ አስጀማሪ አዝራሩን ያድምቁ</translation>
 <translation id="3105917916468784889">ቅጽበታዊ ገጽ እይታን ያነሳል</translation>
@@ -147,7 +148,6 @@
 <translation id="7379254767514753910"><ph name="ALT" /> ወይም <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">አንድ መተግበሪያን ይንቀሉ</translation>
 <translation id="7439718573248533901">ቀጣዩን ፊደል ይሰርዙ (ወደፊት ስረዛ)</translation>
-<translation id="7449669175878568981">በቃል ማስጻፍን ያስጀምራል ወይም ያቆማል (የሚናገሩትን ነገር ይተይቡ)</translation>
 <translation id="766326951329901120">ይዘትን ከቅንጥብ ሰሌዳው ላይ እንደ ዝርግ ጽሑፍ ለጥፍ</translation>
 <translation id="7724603315864178912">ቁረጥ</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />፣ ከዚያ <ph name="SPACE" /> ወይም <ph name="ENTER" /></translation>
@@ -156,7 +156,6 @@
 <translation id="7952165122793773711">ከትር 1 እስከ 8 ይሂዱ</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ወይም <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">የአሰሳ ውሂብ አጽዳ</translation>
-<translation id="8104889575691864804">የመተግበሪያ ምናሌን አሳይ</translation>
 <translation id="8130528849632411619">ወደ የሰነድ መጀመሪያ ይሂዱ</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ወይም <ph name="E" /></translation>
 <translation id="8232835244134740473">በእነዚህ መካከል ትኩረትን ቀያይር፦ የሁኔታ አካባቢ (የእርስዎ መለያ ሥዕል ብቅ የሚልበት ቦታ) አስጀማሪ፣ የአድራሻ አሞሌ፣ የእልባቶች አሞሌ (የሚታይ ከሆነ)፣ የተከፈተው ድረ-ገጽ፣ የውርዶች አሞሌ (የሚታይ ከሆነ)።</translation>

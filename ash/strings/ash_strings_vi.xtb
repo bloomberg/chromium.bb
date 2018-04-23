@@ -67,6 +67,7 @@
 <translation id="2292698582925480719">Tỷ lệ hiển thị</translation>
 <translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
 <translation id="2338501278241028356">Bật Bluetooth để khám phá các thiết bị lân cận</translation>
+<translation id="2339073806695260576">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng con trỏ laser hoặc kính lúp.</translation>
 <translation id="2351266942280602854">Ngôn ngữ và phương thức nhập</translation>
 <translation id="2352467521400612932">Cài đặt bút cảm ứng</translation>
 <translation id="2354174487190027830">Kích hoạt <ph name="NAME" /></translation>
@@ -78,14 +79,14 @@
 <translation id="2501920221385095727">Phím cố định</translation>
 <translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
 <translation id="2532589005999780174">Chế độ tương phản cao</translation>
-<translation id="2597972630681408282">Đèn đọc sách: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2597972630681408282">Chế độ ánh sáng ban đêm: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Thẻ SIM bị khóa</translation>
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2675319268637823299">Quản trị viên không cho phép đăng nhập nhiều tài khoản đối với <ph name="USER_EMAIL" />.
     Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="2696763960464195425">Thông tin sẽ bị xóa khi bạn đăng xuất. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Đặt bàn phím</translation>
-<translation id="2718395828230677721">Đèn đọc sách</translation>
+<translation id="2718395828230677721">Chế độ ánh sáng ban đêm</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2761704814324807722">Khay trạng thái, thời gian <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Đang kết nối lại với <ph name="NAME" /></translation>
@@ -274,7 +275,6 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
 <translation id="7131634465328662194">Bạn sẽ tự động bị đăng xuất.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
-<translation id="7165511658052620796">(TẠM THỜI) Hiển thị thông tin đăng nhập webui; nếu đã sử dụng lỗi tệp (crbug.com) hoặc phản hồi (alt+shift+i)</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="726276584504105859">Kéo vào đây để sử dụng chế độ chia đôi màn hình</translation>

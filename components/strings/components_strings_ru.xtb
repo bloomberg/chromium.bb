@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Нет}=1{1 сайт}one{# сайт}few{# сайта}many{# сайтов}other{# сайта}}</translation>
 <translation id="1927235823738766038">Дебетовые и кредитные карты, которые принимаются к оплате</translation>
 <translation id="194030505837763158">Перейдите по ссылке: <ph name="LINK" /></translation>
+<translation id="1945968466830820669">Возможно, кто-то пытается получить доступ к вашим личным данным или корпоративному аккаунту. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="1948773908305951926">Карты предоплаты, которые принимаются к оплате</translation>
 <translation id="1962204205936693436">Закладки <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Не удалось выполнить сериализацию</translation>
@@ -460,7 +461,6 @@
 <translation id="4171400957073367226">Подтверждающая подпись недействительна</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Ещё <ph name="ITEM_COUNT" /> товар}one{Ещё <ph name="ITEM_COUNT" /> товар}few{Ещё <ph name="ITEM_COUNT" /> товара}many{Ещё <ph name="ITEM_COUNT" /> товаров}other{Ещё <ph name="ITEM_COUNT" /> товара}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Рекомендуем сбросить пароль в домене <ph name="ORG_NAME" />, если вы используете его на других сайтах.</translation>
 <translation id="4196861286325780578">&amp;Повторить перемещение</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверьте настройки брандмауэра и антивирусного ПО<ph name="END_LINK" />.</translation>
 <translation id="4220128509585149162">Завершение работы программы</translation>
@@ -590,6 +590,7 @@
 <translation id="5141240743006678641">Шифровать синхронизированные пароли с помощью учетных данных Google</translation>
 <translation id="5145883236150621069">При проверке политики возвращен код ошибки</translation>
 <translation id="5159010409087891077">Открыть страницу в новом окне в режиме инкогнито (⇧ + ⌘ + N)</translation>
+<translation id="5169827969064885044">Возможно, кто-то пытается получить доступ к вашим личным данным или корпоративному аккаунту. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="5171045022955879922">Введите запрос или URL</translation>
 <translation id="5172758083709347301">Локальный компьютер</translation>
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE" />? Сообщите об ошибке</translation>
@@ -690,7 +691,6 @@
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5893752035575986141">Принимаются кредитные карты.</translation>
-<translation id="5898382028489516745">Рекомендуем сбросить пароль в домене <ph name="ORG_NAME" />, если вы используете его на других сайтах.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (данные синхронизируются)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Используется 1 файл cookie}one{Используется # файл cookie}few{Используется # файла cookie}many{Используется # файлов cookie}other{Используется # файла cookie}}</translation>
 <translation id="5939518447894949180">Сбросить</translation>
@@ -855,6 +855,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Подтвердите карту</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;Эта проблема возникает, когда на компьютере с Windows установлено ПО Superfish.&lt;/p&gt;
+    &lt;p&gt;Чтобы временно отключить ПО и установить соединение с Интернетом, следуйте инструкциям ниже. Вам потребуются права администратора.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Нажмите &lt;strong&gt;Пуск&lt;/strong&gt; и выполните поиск по запросу &lt;strong&gt;Просмотр локальных служб&lt;/strong&gt;.
+    &lt;li&gt;Выберите &lt;strong&gt;VisualDiscovery&lt;/strong&gt;.
+    &lt;li&gt;В поле &lt;strong&gt;Тип запуска&lt;/strong&gt; нажмите &lt;strong&gt;Отключена&lt;/strong&gt;.
+    &lt;li&gt;В разделе &lt;strong&gt;Состояние&lt;/strong&gt; выберите &lt;strong&gt;Остановить&lt;/strong&gt;.
+    &lt;li&gt;Нажмите &lt;strong&gt;Применить&lt;/strong&gt;, а затем &lt;strong&gt;ОК&lt;/strong&gt;.
+    &lt;li&gt;О том, как удалить ПО с компьютера, читайте в &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Справочном центре Chrome&lt;/a&gt;.
+    &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Путь к профилю</translation>
 <translation id="7437289804838430631">Добавить контактные данные</translation>
 <translation id="7441627299479586546">Неверный субъект политики</translation>

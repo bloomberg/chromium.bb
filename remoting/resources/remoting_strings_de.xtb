@@ -145,6 +145,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="4207623512727273241">Führen Sie das Installationsprogramm aus, bevor Sie fortfahren.</translation>
 <translation id="4227991223508142681">Host Provisioning-Dienstprogramm</translation>
 <translation id="4240294130679914010">Chromoting Host-Deinstallationsprogramm</translation>
+<translation id="4249741460382919890">Allgemeine Fehlerkorrekturen und Stabilitätsverbesserungen.</translation>
 <translation id="4277463233460010382">Dieser Computer wird konfiguriert, um einem oder mehreren Clients das Herstellen einer Verbindung ohne Eingabe einer PIN zu ermöglichen.</translation>
 <translation id="4277736576214464567">Der Zugriffscode ist ungültig. Bitte versuchen Sie es erneut.</translation>
 <translation id="4361728918881830843">Um Remote-Verbindungen zu einem anderen Computer zu ermöglichen, installieren Sie Chrome Remote Desktop auf dem betreffenden Computer und klicken Sie auf "<ph name="BUTTON_NAME" />".</translation>
@@ -190,6 +191,7 @@ pc</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chrome Remote Desktop zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="507204348399810022">Möchten Sie die Remote-Verbindungen zu <ph name="HOSTNAME" /> wirklich deaktivieren?</translation>
+<translation id="5081343395220691640">Kommunikation mit Server fehlgeschlagen: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Die PIN muss in beiden Feldern identisch sein.</translation>
 <translation id="5170982930780719864">Ungültige Host-ID</translation>
 <translation id="518094545883702183">Diese Informationen werden nur zur Diagnose des gemeldeten Problems verwendet. Dabei kann nur die Person auf sie zugreifen, die Ihren Bericht untersucht. Die Informationen werden nach spätestens 30 Tagen gelöscht.</translation>

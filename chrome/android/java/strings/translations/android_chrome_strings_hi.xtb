@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="1006017844123154345">ऑनलाइन खोलें</translation>
+<translation id="1021684790657589338">कोई SD कार्ड नहीं मिला</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> जोड़ा जा रहा है...</translation>
 <translation id="1041308826830691739">वेबसाइटों से</translation>
 <translation id="1049743911850919806">गुप्त</translation>
@@ -184,6 +185,7 @@
 <translation id="2625189173221582860">पासवर्ड कॉपी किया गया</translation>
 <translation id="2631006050119455616">बचाया गया</translation>
 <translation id="2647434099613338025">भाषा जोड़ें</translation>
+<translation id="2650751991977523696">फ़ाइल दोबारा डाउनलोड करें?</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2677748264148917807">छोड़ें</translation>
 <translation id="2704606927547763573">कॉपी किया गया</translation>
@@ -220,6 +222,7 @@
 <translation id="3029613699374795922"><ph name="KBS" /> केबी डाउनलोड किया गया</translation>
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Google के ज़रिए इसी तरह के और भी देखें</translation>
 <translation id="305593374596241526">स्थान सेवा बंद है, उसे <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में चालू करें.</translation>
 <translation id="307908932405420782">जल्द ही और लेख दिखाई देंगे. अपनी सुबह का आनंद लें!</translation>
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
@@ -300,6 +303,7 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> डाउनलोड हटाए गए</translation>
 <translation id="3822502789641063741">साइट मेमोरी साफ़ करें?</translation>
 <translation id="3859306556332390985">आगे जाएं</translation>
+<translation id="3871936494901781193">जब आप स्क्रोल करें, तो मिलते-जुलते पेज के तेज़ी से पहुंचने वाले लिंक दिखाएं.</translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
 <translation id="3895926599014793903">बलपूर्वक ज़ूम सक्षम करें</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +311,7 @@
 <translation id="393697183122708255">कोई सक्षम बोलकर खोजें उपलब्‍ध नहीं</translation>
 <translation id="3950820424414687140">प्रवेश करें</translation>
 <translation id="395206256282351086">सर्च और साइट सुझाव बंद हैं</translation>
+<translation id="3952533382939530115">यह फ़ीचर <ph name="BEGIN_LINK" />सिंक<ph name="END_LINK" /> का इस्तेमाल करता है. आप जिस पेज पर जाते हैं उसके यूआरएल Google को भेजे जाते हैं.</translation>
 <translation id="3967822245660637423">डाउनलोड पूर्ण</translation>
 <translation id="397583555483684758">समन्‍वयन ने कार्य करना बंद कर दिया है</translation>
 <translation id="3976396876660209797">इस शॉर्टकट को निकालें और इसे फिर से बनाएं</translation>
@@ -410,6 +415,7 @@
 <translation id="4876188919622883022">सरल बनाया गया व्यू</translation>
 <translation id="4878404682131129617">प्रॉक्सी सर्वर के ज़रिए सुरंग बनाना विफल रहा</translation>
 <translation id="4881695831933465202">खोलें</translation>
+<translation id="488187801263602086">फ़ाइल का नाम बदलें</translation>
 <translation id="4885273946141277891">Chrome इंस्टेंस की असमर्थित संख्या.</translation>
 <translation id="4910889077668685004">भुगतान ऐप्लिकेशन</translation>
 <translation id="4913161338056004800">आंकड़े रीसेट करें</translation>
@@ -503,6 +509,7 @@
 <translation id="5676636989614905379"><ph name="SCREEN_NAME" /> पर वीडियो नहीं चलाया जा सकता.</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
 <translation id="5684874026226664614">ओह. इस पेज का अनुवाद नहीं किया जा सका.</translation>
+<translation id="5686790454216892815">फ़ाइल का नाम बहुत लंबा है</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="5719837394786370183">आपके द्वारा अपने सभी गुप्त टैब बंद करने के बाद आपको गुप्त टैब में दिखाई देने वाले पेज आपके ब्राउज़र के इतिहास, कुकी स्टोर, या खोज इतिहास में नहीं बने रहेंगे. आप जो भी फ़ाइल डाउनलोड करते हैं या जो भी बुकमार्क बनाते हैं उन्हें रखा जाएगा.
 
@@ -695,6 +702,7 @@
 <translation id="7437998757836447326">Chrome से प्रस्थान करें</translation>
 <translation id="7445411102860286510">साइटों को म्यूट किए गए वीडियो अपने आप चलाने की अनुमति दें (अनुशंसित)</translation>
 <translation id="7453467225369441013">आपको ज़्यादातर साइटों से साइन आउट कर देता है. आप अपने Google खाते से साइन आउट नहीं होंगे.</translation>
+<translation id="7454641608352164238">जगह काफ़ी नहीं है</translation>
 <translation id="7455923816558154057">देखने के लिए टैप करें</translation>
 <translation id="7473891865547856676">जी रहने दें</translation>
 <translation id="7475192538862203634">यदि आपको यह बार-बार दिखाई दे रहा हो, तो इन <ph name="BEGIN_LINK" />सुझावों<ph name="END_LINK" /> को आज़माएं.</translation>
@@ -773,6 +781,7 @@
 <translation id="8087000398470557479">यह सामग्री <ph name="DOMAIN_NAME" /> की है जिसे Google के द्वारा वितरित किया गया है.</translation>
 <translation id="8100932616285851614">मार्गदर्शक फलक बंद है</translation>
 <translation id="8103578431304235997">गुप्त टैब</translation>
+<translation id="8105951947646329362">मिलते-जुलते पेज सुझाएं</translation>
 <translation id="8116925261070264013">आवाज़ बंद की गई</translation>
 <translation id="813082847718468539">साइट जानकारी देखें</translation>
 <translation id="8137558756159375272">खोजने के लिए स्‍पर्श करें चयनित शब्‍द और वर्तमान पृष्‍ठ को संदर्भ के रूप में Google खोज पर भेजती है. आप उसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में बंद कर सकते हैं.</translation>
@@ -826,6 +835,7 @@
 <translation id="8636825310635137004">अपने अन्य डिवाइस से अपने टैब प्राप्त करने के लिए, समन्वयन चालू करें.</translation>
 <translation id="8641930654639604085">वयस्क साइटें अवरुद्ध करने की कोशिश करें</translation>
 <translation id="8662811608048051533">आपको ज़्यादातर साइट से साइन आउट कर देता है.</translation>
+<translation id="8664979001105139458">फ़ाइल का नाम पहले से मौजूद है</translation>
 <translation id="8676374126336081632">इनपुट साफ़ करें</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{सिग्नल सशक्तता का स्तर: # बार}one{सिग्नल सशक्तता का स्तर: # बार}other{सिग्नल सशक्तता का स्तर: # बार}}</translation>
 <translation id="869891660844655955">समय समाप्ति दिनांक</translation>
@@ -854,6 +864,7 @@
 <translation id="8942627711005830162">अन्य विंडो में खोलें</translation>
 <translation id="8951232171465285730">Chrome ने आपके <ph name="MEGABYTES" /> MB की बचत की</translation>
 <translation id="8959122750345127698">मार्गदर्शक तक नहीं पहुंचा जा सकता: <ph name="URL" /></translation>
+<translation id="8972098258593396643">डिफ़ॉल्ट फ़ोल्डर में डाउनलोड करें?</translation>
 <translation id="8979405271719829084">बाद में देखने के लिए वीडियो डाउनलोड करें</translation>
 <translation id="8981454092730389528">Google गतिविधि नियंत्रण</translation>
 <translation id="8986494364107987395">उपयोग संबंधी आंकड़े और क्रैश रिपोर्ट अपने आप Google को भेजने की अनुमति दें</translation>

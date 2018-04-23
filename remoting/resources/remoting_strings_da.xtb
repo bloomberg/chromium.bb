@@ -145,6 +145,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="4207623512727273241">Kør installationsprogrammet, før du fortsætter.</translation>
 <translation id="4227991223508142681">Host-værktøj til oprettelse</translation>
 <translation id="4240294130679914010">Afinstallationsprogram til Chromoting-host</translation>
+<translation id="4249741460382919890">Generelle rettelser og forbedret stabilitet</translation>
 <translation id="4277463233460010382">Denne computer er konfigureret til at tillade, at en eller flere klienter opretter forbindelse uden at angive en pinkode.</translation>
 <translation id="4277736576214464567">Adgangskoden er ugyldig. Prøv igen.</translation>
 <translation id="4361728918881830843">Hvis du vil aktivere fjernforbindelser til en anden computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på "<ph name="BUTTON_NAME" />".</translation>
@@ -190,6 +191,7 @@ Pc</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="507204348399810022">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">Der kunne ikke kommunikeres med serveren: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Indtast den samme pinkode i begge felter.</translation>
 <translation id="5170982930780719864">Ugyldigt host-id.</translation>
 <translation id="518094545883702183">Disse oplysninger bruges kun til diagnosticering af det problem, du rapporterer, de er kun tilgængelige for personer, der undersøger din rapport, og de tilbageholdes i højst 30 dage.</translation>

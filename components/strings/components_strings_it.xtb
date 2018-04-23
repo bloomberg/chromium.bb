@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Nessuno}=1{1 sito}other{# siti}}</translation>
 <translation id="1927235823738766038">Carte di credito e di debito accettate</translation>
 <translation id="194030505837763158">Vai al link: <ph name="LINK" /></translation>
+<translation id="1945968466830820669">Potresti perdere l'accesso all'account della tua organizzazione oppure subire un furto d'identità. Chromium ti consiglia di cambiare subito la password.</translation>
 <translation id="1948773908305951926">Carte prepagate accettate</translation>
 <translation id="1962204205936693436">Segnalibri di <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Errore di serializzazione</translation>
@@ -458,7 +459,6 @@
 <translation id="4171400957073367226">Firma di verifica non valida</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> altro elemento}other{Altri <ph name="ITEM_COUNT" /> elementi}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome ti consiglia di reimpostare la password di <ph name="ORG_NAME" /> se l'hai utilizzata su altri siti.</translation>
 <translation id="4196861286325780578">&amp;Ripeti spostamento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controllare le configurazioni del firewall e antivirus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Arresti anomali</translation>
@@ -588,6 +588,7 @@
 <translation id="5141240743006678641">Cripta le password sincronizzate con le tue credenziali Google</translation>
 <translation id="5145883236150621069">Codice di errore presente nella risposta del criterio</translation>
 <translation id="5159010409087891077">Apri la pagina in un'altra finestra di navigazione in incognito (⇧⌘N)</translation>
+<translation id="5169827969064885044">Potresti perdere l'accesso all'account della tua organizzazione o subire un furto d'identità. Chrome ti consiglia di cambiare subito la password.</translation>
 <translation id="5171045022955879922">Cerca o digita un URL</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Non in <ph name="ORIGINAL_LANGUAGE" />? Segnala questo errore</translation>
@@ -688,7 +689,6 @@
 <translation id="5869405914158311789">Impossibile raggiungere il sito</translation>
 <translation id="5869522115854928033">Password salvate</translation>
 <translation id="5893752035575986141">Le carte di credito sono accettate.</translation>
-<translation id="5898382028489516745">Chromium ti consiglia di reimpostare la password di <ph name="ORG_NAME" /> se l'hai utilizzata su altri siti.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizzati)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in uso}other{# in uso}}</translation>
 <translation id="5939518447894949180">Ripristina</translation>
@@ -852,6 +852,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Conferma della carta</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;Vedrai questo errore se sul tuo computer Windows è installato il software Superfish.&lt;/p&gt;
+    &lt;p&gt;Segui questi passaggi per disattivare temporaneamente il software in modo da riuscire a connetterti a Internet. Devi disporre dei privilegi di amministratore.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Fai clic su &lt;strong&gt;Start&lt;/strong&gt;, quindi cerca e seleziona &lt;strong&gt;"Visualizza servizi locali"&lt;/strong&gt;.
+    &lt;li&gt;Seleziona &lt;strong&gt;VisualDiscovery&lt;/strong&gt;.
+    &lt;li&gt;Nella colonna &lt;strong&gt;Tipo di avvio&lt;/strong&gt;, seleziona &lt;strong&gt;Disattivato&lt;/strong&gt;.
+    &lt;li&gt;Nella colonna &lt;strong&gt;Stato del servizio&lt;/strong&gt;, fai clic su &lt;strong&gt;Interrompi&lt;/strong&gt;.
+    &lt;li&gt;Fai clic su &lt;strong&gt;Applica&lt;/strong&gt;, quindi su &lt;strong&gt;OK&lt;/strong&gt;.
+    &lt;li&gt;Visita il &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Centro assistenza Chrome&lt;/a&gt; per avere informazioni su come rimuovere definitivamente il software dal computer.
+    &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Percorso profilo</translation>
 <translation id="7437289804838430631">Aggiungi informazioni di contatto</translation>
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>

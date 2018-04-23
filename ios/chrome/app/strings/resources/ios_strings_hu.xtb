@@ -137,6 +137,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="3393920035788932672">Pop-up megengedett</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> perc</translation>
 <translation id="3448016392200048164">Osztott nézet</translation>
+<translation id="3469166899695866866">Leállítja a letöltést?</translation>
 <translation id="3474624961160222204">Folytatás mint <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Mezők kitöltve.</translation>
 <translation id="3478058380795961209">Lejárat hónapja</translation>
@@ -150,6 +151,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="3588820906588687999">Kép megnyitása új lapon</translation>
 <translation id="3603009562372709545">Link URL-jének másolása</translation>
 <translation id="3607167657931203000">Automatikus kitöltés adatai</translation>
+<translation id="3609785682760573515">Szinkronizálás...</translation>
 <translation id="3628119975092896051">Olvasási listája hozzáférhető offline módban. Ha szeretne hozzáadni oldalakat a listához, koppintson a következőkre: <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Weboldalak előtöltése</translation>
 <translation id="3691593122358196899">Könyvjelzők közé téve itt: <ph name="FOLDER_TITLE" /></translation>
@@ -304,7 +306,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6445981559479772097">Üzenet elküldve.</translation>
 <translation id="6464071786529933911">Megnyitás új inkognitólapon</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem törölve</translation>
-<translation id="6528048372317642110">Nem lehetséges a fájlletöltés</translation>
 <translation id="6541915733953096570">Elmúlt óra</translation>
 <translation id="6570040839871198836">Űrlapok automatikus kitöltése</translation>
 <translation id="6656103420185847513">Mappa szerkesztése</translation>
@@ -338,6 +339,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7159472599653637159">Mobilwebhely kérése</translation>
 <translation id="7167621057293532233">Adattípusok</translation>
 <translation id="7175593937868963913">Levélírás</translation>
+<translation id="7180611975245234373">Frissítés</translation>
 <translation id="7189598951263744875">Megosztás...</translation>
 <translation id="7203585745079012652">Mondja ki a válaszokat</translation>
 <translation id="722055596168483966">A Google-szolgáltatások személyre szabása</translation>
@@ -380,6 +382,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8023878949384262191">Kibontja a panelt.</translation>
 <translation id="8059533439631660104">Összecsukja a panelt.</translation>
 <translation id="806745655614357130">Maradjanak elkülönítve az adataim</translation>
+<translation id="8073670137947914548">Sikeres letöltés</translation>
 <translation id="8076014560081431679">A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Összes lap bezárása</translation>
 <translation id="8205564605687841303">Mégse</translation>

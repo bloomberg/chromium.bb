@@ -3,7 +3,6 @@
 <translationbundle lang="ar">
 <translation id="104962181688258143">فتح تطبيق الملفات</translation>
 <translation id="1122869341872663659">الاطّلاع <ph name="N" /> على نتائج بحث <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">كتم الصوت</translation>
 <translation id="1195667586424773550">اسحب الرابط إلى شريط عناوين علامة التبويب</translation>
 <translation id="1204450209689312104">فتح نافذة جديدة في وضع التصفح المتخفي</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -32,13 +31,14 @@
 <translation id="2185166372312820725">الانتقال إلى علامة التبويب السابقة</translation>
 <translation id="2194790690264064655">اضغط على <ph name="CTRL" /> وانقر على رابط</translation>
 <translation id="2382644247745281995">غير متاح مع التنسيق الحالي للوحة المفاتيح</translation>
+<translation id="2397416548179033562">‏لإظهار قائمة Chrome</translation>
 <translation id="2424073332829844142">‏تفعيل مفتاح Caps Lock وإيقافه</translation>
 <translation id="2441202986792279177">التبديل بين النوافذ بسرعة</translation>
 <translation id="2478303094958140141">‏تفعيل ChromeVox (التعليقات والملاحظات المنطوقة) أو إيقافه</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">التمرير إلى أسفل صفحة الويب</translation>
 <translation id="2568632782096378307">إعادة تعيين مستوى دقة الشاشة على الخيار التلقائي</translation>
-<translation id="2596078834055697711">التقاط لقطة شاشة للنافذة</translation>
+<translation id="2596078834055697711">أخذ لقطة شاشة للنافذة</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />، ثم <ph name="TAB" /> أو <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">حفظ صفحة الويب الحالية كإشارة مرجعية</translation>
 <translation id="2750942583782703988">إعادة تحميل الصفحة الحالية</translation>
@@ -49,6 +49,7 @@
 <translation id="2872353916818027657">تبديل الشاشة الرئيسية</translation>
 <translation id="2914313326123580426">عرض لوحة أدوات المطوِّرين أو إخفاؤها</translation>
 <translation id="292495055542441795">تبديل وضع ملء الشاشة</translation>
+<translation id="3020183492814296499">الاختصارات</translation>
 <translation id="3084301071537457911">تحديد العنصر التالي على الرف</translation>
 <translation id="309173601632226815">‏تحديد الزر Launcher على الرف</translation>
 <translation id="3105917916468784889">أخذ لقطة شاشة</translation>
@@ -141,13 +142,12 @@
 <translation id="6981982820502123353">إمكانية الدخول</translation>
 <translation id="7020813747703216897">لم يتم العثور على أي نتائج مطابقة.</translation>
 <translation id="7025325401470358758">الجزء التالي</translation>
-<translation id="7077383985738259936">التركيز على "شريط الإشارات" أو تمييزه (إذا كان مرئيًا)</translation>
+<translation id="7077383985738259936">التركيز على شريط الإشارات أو تمييزه (إذا كان مرئيًا)</translation>
 <translation id="7237562915163138771">اكتب عنوان الويب في شريط العناوين، ثم اضغط على <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">تعيين الجهاز على وضع السكون (تعليق)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> أو <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
-<translation id="743754632698445141">إزالة تثبيت تطبيق</translation>
+<translation id="743754632698445141">إلغاء حالة التثبيت عن تطبيق</translation>
 <translation id="7439718573248533901">حذف الحرف التالي (حذف باتجاه الأمام)</translation>
-<translation id="7449669175878568981">بدء الإملاء أو إيقافها (كتابة ما تنطقه)</translation>
 <translation id="766326951329901120">لصق المحتوى من الحافظة كنص عادي</translation>
 <translation id="7724603315864178912">قص</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />، ثم <ph name="SPACE" /> أو <ph name="ENTER" /></translation>
@@ -156,7 +156,6 @@
 <translation id="7952165122793773711">الانتقال من علامة التبويب الأولى إلى الثامنة</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> أو <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
-<translation id="8104889575691864804">عرض قائمة التطبيقات</translation>
 <translation id="8130528849632411619">الانتقال إلى بداية المستند</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> أو <ph name="E" /></translation>
 <translation id="8232835244134740473">يمكنك تبديل التركيز بين: منطقة الحالة (في مكان ظهور صورة حسابك) ومشغِّل التطبيقات وشريط العناوين وشريط الإشارات (إن كان ظاهرًا) وصفحة الويب المفتوحة وشريط التنزيلات (إن كان ظاهرًا).</translation>
@@ -189,6 +188,6 @@
 <translation id="9179672198516322668">الاختصارات الشائعة</translation>
 <translation id="93603345341560814">اضغط على <ph name="SHIFT" /> وانقر على الرابط</translation>
 <translation id="945383118875625837">اسحب الرابط إلى شريط الإشارات</translation>
-<translation id="969054500339500113">التركيز على "شريط القوائم"</translation>
+<translation id="969054500339500113">التركيز على شريط القوائم</translation>
 <translation id="98120814841227350">الانتقال إلى نهاية المستند</translation>
 </translationbundle>

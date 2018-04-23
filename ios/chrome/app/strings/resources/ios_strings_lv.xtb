@@ -137,6 +137,7 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="3393920035788932672">Uznir. logi atļauti</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Dalītais skats</translation>
+<translation id="3469166899695866866">Vai apturēt lejupielādi?</translation>
 <translation id="3474624961160222204">Turpināt kā: <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Veidlapas aizpildītas.</translation>
 <translation id="3478058380795961209">Der. term. mēn.</translation>
@@ -150,6 +151,7 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="3588820906588687999">Atvērt attēlu jaunā cilnē</translation>
 <translation id="3603009562372709545">Kopēt saites URL</translation>
 <translation id="3607167657931203000">Aut. aizpildes dati</translation>
+<translation id="3609785682760573515">Notiek sinhronizēšana...</translation>
 <translation id="3628119975092896051">Jūsu lasīšanas saraksts ir pieejams bezsaistē. Lai tam pievienotu kādu lapu, pieskarieties ikonai <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pirmsiel. tīm. lapas</translation>
 <translation id="3691593122358196899">Grāmatzīme saglabāta mapē <ph name="FOLDER_TITLE" /></translation>
@@ -304,7 +306,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="6445981559479772097">Īsziņa ir nosūtīta.</translation>
 <translation id="6464071786529933911">Atvērt jaunā inkogn. cilnē</translation>
 <translation id="6482629121755362506">Dzēsti vienumi: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
-<translation id="6528048372317642110">Pieejama failu lejupielāde</translation>
 <translation id="6541915733953096570">Iepriekšējā stunda</translation>
 <translation id="6570040839871198836">Autom. aizpilde</translation>
 <translation id="6656103420185847513">Mapes rediģēšana</translation>
@@ -338,6 +339,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7159472599653637159">Pieprasīt mobilo vietni</translation>
 <translation id="7167621057293532233">Datu tipi</translation>
 <translation id="7175593937868963913">Rakstīt e-pasta ziņojumu</translation>
+<translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="7189598951263744875">Kopīgot...</translation>
 <translation id="7203585745079012652">Izrunāt atbildes skaļi</translation>
 <translation id="722055596168483966">Google pakalpojumu personalizēšana</translation>
@@ -380,6 +382,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8023878949384262191">Izvērš sadaļu.</translation>
 <translation id="8059533439631660104">Sakļauj sadaļu.</translation>
 <translation id="806745655614357130">Glabāt datus atsevišķi</translation>
+<translation id="8073670137947914548">Lejupielāde ir pabeigta</translation>
 <translation id="8076014560081431679">Saglabātie vietņu iestatījumi netiks dzēsti, un tie var atspoguļot jūsu pārlūkošanas ieradumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="8080028325999236607">Aizvērt visas cilnes</translation>
 <translation id="8205564605687841303">Atcelt</translation>

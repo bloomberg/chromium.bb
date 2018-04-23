@@ -137,6 +137,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3393920035788932672">Pop-up Diizinkan</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> mnt</translation>
 <translation id="3448016392200048164">Layar Terpisah</translation>
+<translation id="3469166899695866866">Berhenti Download?</translation>
 <translation id="3474624961160222204">Lanjutkan sebagai <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Formulir terisi.</translation>
 <translation id="3478058380795961209">Bulan Masa Berlaku Habis</translation>
@@ -150,6 +151,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3588820906588687999">Buka Gambar di Tab Baru</translation>
 <translation id="3603009562372709545">Salin URL Tautan</translation>
 <translation id="3607167657931203000">Data Isi-Otomatis</translation>
+<translation id="3609785682760573515">Menyinkronkan...</translation>
 <translation id="3628119975092896051">Daftar bacaan Anda tersedia secara offline. Untuk menambahkan halaman ke daftar bacaan, tap <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Dibookmark ke <ph name="FOLDER_TITLE" /></translation>
@@ -304,7 +306,6 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="6445981559479772097">Pesan terkirim.</translation>
 <translation id="6464071786529933911">Buka di Tab Penyamaran Baru</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dihapus</translation>
-<translation id="6528048372317642110">Download file tersedia</translation>
 <translation id="6541915733953096570">Satu Jam Terakhir</translation>
 <translation id="6570040839871198836">Formulir Isi-Otomatis</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
@@ -338,6 +339,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7159472599653637159">Minta Situs Seluler</translation>
 <translation id="7167621057293532233">Jenis Data</translation>
 <translation id="7175593937868963913">Tulis Email</translation>
+<translation id="7180611975245234373">Segarkan</translation>
 <translation id="7189598951263744875">Bagikan...</translation>
 <translation id="7203585745079012652">Ucapkan Jawabannya</translation>
 <translation id="722055596168483966">Personalisasi layanan Google</translation>
@@ -380,6 +382,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="8023878949384262191">Luaskan bagian.</translation>
 <translation id="8059533439631660104">Ciutkan bagian.</translation>
 <translation id="806745655614357130">Tetap pisahkan data saya</translation>
+<translation id="8073670137947914548">Download selesai</translation>
 <translation id="8076014560081431679">Setelan situs yang disimpan tidak akan dihapus dan dapat mencerminkan kebiasaan penjelajahan Anda. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Tutup Semua Tab</translation>
 <translation id="8205564605687841303">Batal</translation>
@@ -396,7 +399,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="8487700953926739672">Tersedia secara offline</translation>
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="850600235656508448">Buka di Penyamaran</translation>
-<translation id="8517375800490286174">Lisensi Sumber Terbuka</translation>
+<translation id="8517375800490286174">Lisensi Open Source</translation>
 <translation id="8524799873541103884">Tab <ph name="FIRST_VISIBLE_TAB" /> hingga <ph name="LAST_VISIBLE_TAB" /> dari <ph name="NUMBER_OF_OPEN_TABS" /> dalam mode <ph name="INCOGNITO" /></translation>
 <translation id="8532105204136943229">Tahun Masa Berlaku Habis</translation>
 <translation id="8534481786647257214">Kirim Google+ selesai.</translation>

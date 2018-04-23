@@ -3,7 +3,6 @@
 <translationbundle lang="zh-CN">
 <translation id="104962181688258143">打开“文件”应用</translation>
 <translation id="1122869341872663659">目前显示的是与“<ph name="QUERY" />”相符的 <ph name="N" /> 条搜索结果</translation>
-<translation id="1134347825771908369">静音</translation>
 <translation id="1195667586424773550">将链接拖到标签页的地址栏中</translation>
 <translation id="1204450209689312104">在无痕模式下打开新窗口</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -15,6 +14,7 @@
 <translation id="152892567002884378">调高音量</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="ESC" /> 键</translation>
 <translation id="1652741121070700329">移到上一个字词的开头</translation>
+<translation id="1671169355475348905">切换到上一种语言的输入法</translation>
 <translation id="1679841710523778799">调高亮度</translation>
 <translation id="168356808214100546">在按住 <ph name="ALT" /> 键的同时，多次点按 <ph name="TAB" /> 键直到切换至您要打开的窗口，然后松开手指。</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -32,6 +32,7 @@
 <translation id="2185166372312820725">转到上一个标签页</translation>
 <translation id="2194790690264064655">在按住 <ph name="CTRL" /> 键的同时点击链接</translation>
 <translation id="2382644247745281995">当前键盘布局不支持使用此键</translation>
+<translation id="2397416548179033562">显示 Chrome 菜单</translation>
 <translation id="2424073332829844142">开启/关闭大写锁定</translation>
 <translation id="2441202986792279177">快速切换窗口</translation>
 <translation id="2478303094958140141">开启或关闭 ChromeVox（语音反馈）</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">将屏幕分辨率重置为默认设置</translation>
 <translation id="2596078834055697711">截取窗口屏幕截图</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="TAB" /> 键或<ph name="RIGHT" />键</translation>
+<translation id="2687057317448262550">切换到下一种语言的输入法</translation>
 <translation id="2699509451653686398">将当前网页保存为书签</translation>
 <translation id="2750942583782703988">重新加载当前网页</translation>
 <translation id="2764005613199379871">聚焦于搜索地址栏</translation>
@@ -49,6 +51,7 @@
 <translation id="2872353916818027657">切换主显示器</translation>
 <translation id="2914313326123580426">显示或隐藏开发者工具面板</translation>
 <translation id="292495055542441795">开启/关闭全屏模式</translation>
+<translation id="3020183492814296499">快捷键</translation>
 <translation id="3084301071537457911">突出显示任务栏中的下一项</translation>
 <translation id="309173601632226815">突出显示任务栏中的启动器按钮</translation>
 <translation id="3105917916468784889">生成屏幕截图</translation>
@@ -147,7 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> 键或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">取消固定应用</translation>
 <translation id="7439718573248533901">删除下一个字母（前向删除）</translation>
-<translation id="7449669175878568981">开始或停止语音输入（输入您所说的内容）</translation>
+<translation id="7611271430932669992">将焦点移至弹出式窗口和对话框</translation>
 <translation id="766326951329901120">以纯文本形式粘贴剪贴板中的内容</translation>
 <translation id="7724603315864178912">剪切</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按<ph name="SPACE" />或 <ph name="ENTER" /> 键</translation>
@@ -156,7 +159,6 @@
 <translation id="7952165122793773711">前往第 1 至 8 个标签页</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> 或 <ph name="MINUS" /> 键</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
-<translation id="8104889575691864804">显示应用菜单</translation>
 <translation id="8130528849632411619">转到文档开头处</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> 或 <ph name="E" /> 键</translation>
 <translation id="8232835244134740473">在以下窗格之间切换焦点：状态区（其中显示了您的帐号头像）、启动器、地址栏、书签栏（若显示）、打开的网页、下载内容栏（若显示）。</translation>

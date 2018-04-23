@@ -150,6 +150,7 @@
 <translation id="3588820906588687999">নতুন ট্যাবে ছবি খুলুন</translation>
 <translation id="3603009562372709545">লিঙ্ক URL কপি করুন</translation>
 <translation id="3607167657931203000">ডেটা স্বতঃপূর্ণ করুন</translation>
+<translation id="3609785682760573515">সিঙ্ক হচ্ছে...</translation>
 <translation id="3628119975092896051">আপনার পড়ার তালিকা অফলাইনে উপলব্ধ। আপনার পড়ার তালিকায় কোনো পৃষ্ঠা যোগ করতে <ph name="SHARE_OPENING_ICON" /> আলতো চাপুন।</translation>
 <translation id="3638472932233958418">পূর্বলোড ওয়েবপৃষ্ঠা</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> এ বুকমার্ক করা হয়েছে</translation>
@@ -159,6 +160,7 @@
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3897092660631435901">মেনু</translation>
+<translation id="3915450441834151894">সাইটের তথ্য</translation>
 <translation id="3928666092801078803">আমার ডেটা একত্রিত করুন</translation>
 <translation id="3950820424414687140">প্রবেশ করুন</translation>
 <translation id="3963231839620026525">নতুন ছদ্মবেশী ট্যাব</translation>
@@ -223,6 +225,7 @@
 <translation id="5197255632782567636">ইন্টারনেট</translation>
 <translation id="5228579091201413441">সিঙ্ক সক্ষম করুন</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> এ সিঙ্ক হচ্ছে</translation>
+<translation id="527973086555161537">গোপনে ইন্টারনেট ব্রাউজ করতে একটি ট্যাব খুলুন।</translation>
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5327248766486351172">নাম</translation>
@@ -336,6 +339,7 @@
 <translation id="7159472599653637159">মোবাইল সাইটের জন্য অনুরোধ করুন</translation>
 <translation id="7167621057293532233">ডেটা প্রকার</translation>
 <translation id="7175593937868963913">ইমেল লিখুন</translation>
+<translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7189598951263744875">শেয়ার করুন...</translation>
 <translation id="7203585745079012652">আবার উত্তরগুলি বলে</translation>
 <translation id="722055596168483966">Google পরিষেবাগুলিকে ব্যক্তিগত করুন</translation>

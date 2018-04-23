@@ -3,7 +3,6 @@
 <translationbundle lang="pt-BR">
 <translation id="104962181688258143">Abrir o app Arquivos</translation>
 <translation id="1122869341872663659">Exibindo <ph name="N" /> resultados da pesquisa para <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Desativar volume</translation>
 <translation id="1195667586424773550">Arrastar o link até a barra de endereço da guia</translation>
 <translation id="1204450209689312104">Abrir uma nova janela no modo de navegação anônima</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -15,6 +14,7 @@
 <translation id="152892567002884378">Aumentar volume</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Mover para o início da palavra anterior</translation>
+<translation id="1671169355475348905">Mudar para o método de entrada do idioma anterior</translation>
 <translation id="1679841710523778799">Aumentar o brilho</translation>
 <translation id="168356808214100546">Pressione <ph name="ALT" /> e mantenha a tecla pressionada, toque em <ph name="TAB" /> até chegar à janela que você quer abrir e depois solte.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -32,6 +32,7 @@
 <translation id="2185166372312820725">Ir para a guia anterior</translation>
 <translation id="2194790690264064655">Pressione <ph name="CTRL" /> e clique em um link</translation>
 <translation id="2382644247745281995">Não compatível com o layout de teclado atual</translation>
+<translation id="2397416548179033562">Exibir o menu do Google Chrome</translation>
 <translation id="2424073332829844142">Ativar e desativar a tecla Caps Lock</translation>
 <translation id="2441202986792279177">Alternar rapidamente entre janelas</translation>
 <translation id="2478303094958140141">Ativar ou desativar o ChromeVox (feedback falado)</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">Redefinir resolução da tela para o padrão</translation>
 <translation id="2596078834055697711">Fazer captura de tela da janela</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="TAB" /> ou <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">Mudar para o método de entrada do próximo idioma</translation>
 <translation id="2699509451653686398">Salvar a página da Web atual nos favoritos</translation>
 <translation id="2750942583782703988">Atualizar a página atual</translation>
 <translation id="2764005613199379871">Colocar o foco na barra de endereço de pesquisa</translation>
@@ -49,6 +51,7 @@
 <translation id="2872353916818027657">Trocar monitor primário</translation>
 <translation id="2914313326123580426">Mostrar ou ocultar o painel Ferramentas do desenvolvedor</translation>
 <translation id="292495055542441795">Alternar para tela cheia</translation>
+<translation id="3020183492814296499">Atalhos</translation>
 <translation id="3084301071537457911">Destacar o próximo item na estante</translation>
 <translation id="309173601632226815">Destacar o botão de tela de início na estante</translation>
 <translation id="3105917916468784889">Faça uma captura de tela</translation>
@@ -147,7 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> ou <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Liberar um app</translation>
 <translation id="7439718573248533901">Excluir a próxima letra (excluir para frente)</translation>
-<translation id="7449669175878568981">Iniciar ou interromper o ditado (digita o que você fala)</translation>
+<translation id="7611271430932669992">Mover o foco para pop-ups e caixas de diálogo</translation>
 <translation id="766326951329901120">Colar conteúdo da área de transferência como texto simples</translation>
 <translation id="7724603315864178912">Recortar</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="SPACE" /> ou <ph name="ENTER" /></translation>
@@ -156,7 +159,6 @@
 <translation id="7952165122793773711">Ir para as guias 1 a 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ou <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
-<translation id="8104889575691864804">Mostrar menu de apps</translation>
 <translation id="8130528849632411619">Ir para o início do documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
 <translation id="8232835244134740473">Alternar foco entre: a área de status (onde a imagem da sua conta é exibida), o acesso rápido, a barra de endereço, a barra de favoritos (se estiver visível), a página da Web que está aberta e a barra de downloads (se estiver visível).</translation>

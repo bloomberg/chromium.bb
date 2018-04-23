@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">सॉरी, तुमच्या पासवर्डची पडताळणी अजूनही झालेली नाही. टीप: तुम्ही तुमचा पासवर्ड अलीकडेच बदलला असल्यास, तुम्ही साइन आउट केल्यानंतर तुमचा नवीन पासवर्ड लागू केला जाईल, कृपया येथे जुना पासवर्ड वापरा.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शिल्लक</translation>
 <translation id="1698760176351776263">IPv6 पत्ता: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">डिव्हाइस प्रशासक तुमची अ‍ॅक्टिव्हिटी नियंत्रित करू शकतो.</translation>
 <translation id="1734367976349034509">या डिव्हाइसला संस्थेेने व्यवस्थापित केेले आहे</translation>
 <translation id="1746730358044914197">तुमच्या प्रशासकाद्वारे कॉन्फिगर केलेल्या इनपुट पद्धती.</translation>
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">ओव्हरफ्लो बटण</translation>
 <translation id="1951012854035635156">साहाय्यक</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">तुमची भाषा सेट करा</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">बंद करा</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -65,6 +67,7 @@
 <translation id="2292698582925480719">स्केल दाखवा</translation>
 <translation id="2303600792989757991">विंडो विहंगावलोकन टॉगल करा</translation>
 <translation id="2338501278241028356">जवळपासचे डिव्हाइस शोधण्यासाठी ब्लुटूथ चालू करा</translation>
+<translation id="2339073806695260576">नोट व स्क्रीनशॉट घेण्यासाठी, तसेच लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
 <translation id="2351266942280602854">भाषा आणि इनपुट</translation>
 <translation id="2352467521400612932">लेखणी सेटिंग्ज</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय करत आहे</translation>
@@ -81,6 +84,8 @@
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2675319268637823299">अॅडमिनिस्ट्रेटरने <ph name="USER_EMAIL" /> साठी एकाधिक साइन इनची अनुमती दिली नाही.
 सुरू ठेवण्यासाठी सर्व वापरकर्त्यांनी साइन आउट करणे आवश्यक आहे.</translation>
+<translation id="2696763960464195425">तुम्ही साइन आउट करता तेव्हा तुमची माहिती काढली जाईल. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">तुमचा कीबोर्ड सेट करा</translation>
 <translation id="2718395828230677721">रात्रीचा प्रकाश</translation>
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
 <translation id="2761704814324807722">स्थिती ट्रे, वेळ <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -329,6 +334,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">निम्न-उर्जेचे चार्जर कनेक्ट केले</translation>
 <translation id="8734991477317290293">तो कदाचित तुमचे कीस्ट्रोक चोरण्याचा प्रयत्न करत असेल.</translation>
+<translation id="8809737090443522491">अ‍ॅप किंवा दस्तऐवजाचे नाव टाइप करा</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">दुसऱ्या डेस्कटॉपवर विंडो हलविण्याने अनपेक्षित वर्तन घडू शकते.
 

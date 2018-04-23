@@ -3,7 +3,6 @@
 <translationbundle lang="ro">
 <translation id="104962181688258143">Deschide aplicația Fișiere</translation>
 <translation id="1122869341872663659">Se afișează <ph name="N" /> rezultate ale căutării pentru <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">Dezactivează sunetul</translation>
 <translation id="1195667586424773550">Trage linkul în bara de adrese a filei</translation>
 <translation id="1204450209689312104">Deschide o fereastră nouă în modul incognito</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -32,6 +31,7 @@
 <translation id="2185166372312820725">Accesează fila anterioară</translation>
 <translation id="2194790690264064655">Apasă pe <ph name="CTRL" /> și dă clic pe un link</translation>
 <translation id="2382644247745281995">Nu se acceptă pentru structura actuală a tastaturii</translation>
+<translation id="2397416548179033562">Afișează meniul Chrome</translation>
 <translation id="2424073332829844142">Activează și dezactivează Caps Lock</translation>
 <translation id="2441202986792279177">Comută rapid între ferestre</translation>
 <translation id="2478303094958140141">Activează sau dezactivează ChromeVox (feedback rostit)</translation>
@@ -49,6 +49,7 @@
 <translation id="2872353916818027657">Schimbați monitorul principal</translation>
 <translation id="2914313326123580426">Afișează sau ascunde panoul Instrumente pentru dezvoltatori</translation>
 <translation id="292495055542441795">Activează/dezactivează ecranul complet</translation>
+<translation id="3020183492814296499">Comenzi rapide</translation>
 <translation id="3084301071537457911">Evidențiază elementul următor de pe raft</translation>
 <translation id="309173601632226815">Evidențiază butonul lansator de pe raft</translation>
 <translation id="3105917916468784889">Realizează o captură de ecran</translation>
@@ -147,7 +148,6 @@
 <translation id="7379254767514753910"><ph name="ALT" /> sau <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Anulează fixarea unei aplicații</translation>
 <translation id="7439718573248533901">Șterge litera următoare (ștergere înainte)</translation>
-<translation id="7449669175878568981">Pornește sau oprește dictarea (tastează ce rostești)</translation>
 <translation id="766326951329901120">Inserează conținutul din clipboard ca text simplu</translation>
 <translation id="7724603315864178912">Decupează</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, apoi <ph name="SPACE" /> sau <ph name="ENTER" /></translation>
@@ -156,10 +156,9 @@
 <translation id="7952165122793773711">Accesează filele 1 – 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> sau <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Șterge datele de navigare</translation>
-<translation id="8104889575691864804">Afișează meniul aplicației</translation>
 <translation id="8130528849632411619">Navighează la începutul documentului</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> sau <ph name="E" /></translation>
-<translation id="8232835244134740473">Comută focalizarea între: zona Stare (unde apare fotografia contului), Lansator, bara de adrese, bara de marcaje (dacă este vizibilă), pagina web deschisă și bara de descărcări (dacă este vizibilă).</translation>
+<translation id="8232835244134740473">Comută focalizarea între: zona de stare (unde apare fotografia contului), Lansator, bara de adrese, bara de marcaje (dacă este vizibilă), pagina web deschisă și bara de descărcări (dacă este vizibilă).</translation>
 <translation id="8234414138295101081">Rotește ecranul la 90 de grade</translation>
 <translation id="8264941229485248811">Afișează sau ascunde inspectorul Developer Tools</translation>
 <translation id="836869401750819675">Deschide pagina Descărcări</translation>

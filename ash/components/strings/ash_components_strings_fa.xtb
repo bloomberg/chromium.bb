@@ -3,7 +3,6 @@
 <translationbundle lang="fa">
 <translation id="104962181688258143">‏باز کردن برنامه Files</translation>
 <translation id="1122869341872663659">درحال نمایش <ph name="N" /> نتیجه جستجو برای <ph name="QUERY" /></translation>
-<translation id="1134347825771908369">بی‌صدا کردن</translation>
 <translation id="1195667586424773550">کشیدن پیوند به نوار نشانی برگه</translation>
 <translation id="1204450209689312104">باز کردن پنجره جدید در حالت ناشناس</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -32,6 +31,7 @@
 <translation id="2185166372312820725">رفتن به برگه قبلی</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> را فشار دهید و روی پیوند کلیک کنید</translation>
 <translation id="2382644247745281995">با طرح‌بندی صفحه‌کلید کنونی پشتیبانی نمی‌شود</translation>
+<translation id="2397416548179033562">‏نمایش منوی Chrome</translation>
 <translation id="2424073332829844142">‏روشن و خاموش کردن Caps Lock</translation>
 <translation id="2441202986792279177">جابه‌جا شدن سریع بین پنجره‌ها</translation>
 <translation id="2478303094958140141">‏روشن یا خاموش کردن ChromeVox (بازخورد گفتاری)</translation>
@@ -49,6 +49,7 @@
 <translation id="2872353916818027657">تعویض مانیتور اصلی</translation>
 <translation id="2914313326123580426">نمایش یا پنهان کردن پنل ابزارهای برنامه‌نویس</translation>
 <translation id="292495055542441795">جابه‌جایی به حالت تمام صفحه</translation>
+<translation id="3020183492814296499">میان‌برها</translation>
 <translation id="3084301071537457911">برجسته‌سازی مورد بعدی روی قفسه شما</translation>
 <translation id="309173601632226815">برجسته کردن دکمه راه‌انداز در قفسه</translation>
 <translation id="3105917916468784889">گرفتن عکس صفحه‌نمایش</translation>
@@ -147,7 +148,6 @@
 <translation id="7379254767514753910"><ph name="ALT" /> یا <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">برداشتن پین برنامه</translation>
 <translation id="7439718573248533901">حذف حرف بعدی (حذف بعدی)</translation>
-<translation id="7449669175878568981">شروع یا توقف املا (تایپ کردن آنچه می‌گویید)</translation>
 <translation id="766326951329901120">جای‌گذاری محتوا از کلیپ‌بورد به عنوان نوشتار ساده</translation>
 <translation id="7724603315864178912">برش</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> و سپس <ph name="SPACE" /> یا <ph name="ENTER" /></translation>
@@ -156,7 +156,6 @@
 <translation id="7952165122793773711">رفتن به برگه‌های ۱ تا ۸</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> یا <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
-<translation id="8104889575691864804">نمایش منوی برنامه</translation>
 <translation id="8130528849632411619">رفتن به ابتدای سند</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> یا <ph name="E" /></translation>
 <translation id="8232835244134740473">جابه‌جایی تمرکز بین: ناحیه نشانگر وضعیت (جایی‌که تصویر حساب نمایان می‌شود)، راه‌انداز، نوار نشانی، نوار نشانک‌ها (اگر قابل مشاهده باشد)، صفحه وبی که باز است و نوار بارگیری‌ها (اگر قابل مشاهده باشد).</translation>

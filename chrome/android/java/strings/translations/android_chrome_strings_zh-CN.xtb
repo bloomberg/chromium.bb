@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1006017844123154345">在线打开</translation>
+<translation id="1021684790657589338">未找到 SD 卡</translation>
 <translation id="1036727731225946849">正在添加<ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">来自网站</translation>
 <translation id="1049743911850919806">隐身</translation>
@@ -184,6 +185,7 @@
 <translation id="2625189173221582860">已复制密码</translation>
 <translation id="2631006050119455616">已节省</translation>
 <translation id="2647434099613338025">添加语言</translation>
+<translation id="2650751991977523696">是否重新下载文件？</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2677748264148917807">离开</translation>
 <translation id="2704606927547763573">已复制</translation>
@@ -220,6 +222,7 @@
 <translation id="3029613699374795922">已下载 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">查看 Google 推荐的更多类似内容</translation>
 <translation id="305593374596241526">位置信息功能现处于关闭状态；请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启此项功能。</translation>
 <translation id="307908932405420782">我们很快将会为您奉上更多文章，伴您度过美好的晨间时光！</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
@@ -300,6 +303,7 @@
 <translation id="3819178904835489326">已删除 <ph name="NUMBER_OF_DOWNLOADS" /> 项下载内容</translation>
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
 <translation id="3859306556332390985">前进</translation>
+<translation id="3871936494901781193">当您向上滚动屏幕时，系统会显示指向相关页面的快速链接。</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -307,6 +311,7 @@
 <translation id="393697183122708255">无法启用语音搜索功能</translation>
 <translation id="3950820424414687140">登录</translation>
 <translation id="395206256282351086">搜索和网站建议已停用</translation>
+<translation id="3952533382939530115">此功能会进行<ph name="BEGIN_LINK" />同步<ph name="END_LINK" />处理。您所访问的网页的网址均会被发送到 Google。</translation>
 <translation id="3967822245660637423">下载完毕</translation>
 <translation id="397583555483684758">同步功能已停止工作</translation>
 <translation id="3976396876660209797">移除并重新创建此快捷方式</translation>
@@ -410,6 +415,7 @@
 <translation id="4876188919622883022">简化版视图</translation>
 <translation id="4878404682131129617">未能成功通过代理服务器建立隧道</translation>
 <translation id="4881695831933465202">打开</translation>
+<translation id="488187801263602086">重命名文件</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
 <translation id="4910889077668685004">付款应用</translation>
 <translation id="4913161338056004800">重置统计信息</translation>
@@ -503,6 +509,7 @@
 <translation id="5676636989614905379">无法在<ph name="SCREEN_NAME" />上播放视频。</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
+<translation id="5686790454216892815">文件名过长</translation>
 <translation id="5689516760719285838">位置</translation>
 <translation id="5719837394786370183">在您关闭所有隐身标签页后，您在这些标签页中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
 
@@ -695,6 +702,7 @@
 <translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="7445411102860286510">允许网站自动播放静音的视频（推荐）</translation>
 <translation id="7453467225369441013">您会从大多数网站退出，但不会退出自己的 Google 帐号。</translation>
+<translation id="7454641608352164238">空间不足</translation>
 <translation id="7455923816558154057">点按即可查看</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7475192538862203634">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
@@ -773,6 +781,7 @@
 <translation id="8087000398470557479">此内容来自 <ph name="DOMAIN_NAME" />（由 Google 提供）。</translation>
 <translation id="8100932616285851614">已关闭导航面板</translation>
 <translation id="8103578431304235997">隐身标签页</translation>
+<translation id="8105951947646329362">提供相关页面建议</translation>
 <translation id="8116925261070264013">已静音的网站</translation>
 <translation id="813082847718468539">查看网站信息</translation>
 <translation id="8137558756159375272">“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中停用此功能。</translation>
@@ -826,6 +835,7 @@
 <translation id="8636825310635137004">要在您的其他设备上访问您的标签页，请开启同步功能。</translation>
 <translation id="8641930654639604085">尽量屏蔽成人网站</translation>
 <translation id="8662811608048051533">您会从大多数网站退出。</translation>
+<translation id="8664979001105139458">文件名已存在</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{信号强度：# 格}other{信号强度：# 格}}</translation>
 <translation id="869891660844655955">截止日期</translation>
@@ -854,6 +864,7 @@
 <translation id="8942627711005830162">在其他窗口中打开</translation>
 <translation id="8951232171465285730">Chrome 已为您保存的数据量：<ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
+<translation id="8972098258593396643">是否下载到默认文件夹？</translation>
 <translation id="8979405271719829084">您可下载视频以供日后观看</translation>
 <translation id="8981454092730389528">Google 活动控件</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>

@@ -145,6 +145,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="4207623512727273241">Suorita asennusohjelma ennen kuin jatkat.</translation>
 <translation id="4227991223508142681">Isäntien hallintatyökalu</translation>
 <translation id="4240294130679914010">Chromoting-isännän asennuksen poisto</translation>
+<translation id="4249741460382919890">Yleisiä korjauksia ja vakausparannuksia</translation>
 <translation id="4277463233460010382">Tämä tietokone on määritetty sallimaan vähintään yhden asiakkaan yhteys ilman PIN-koodia.</translation>
 <translation id="4277736576214464567">Käyttökoodi on virheellinen. Yritä uudelleen.</translation>
 <translation id="4361728918881830843">Ota etäyhteys käyttöön asentamalla toiselle tietokoneelle Chrome-etäkäyttö ja valitsemalla <ph name="BUTTON_NAME" />.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Etäisäntä edellyttää todennusta kolmannen osapuolen sivustossa. Jos haluat jatkaa, anna Chrome-etäkäytölle lisäkäyttölupia tämän osoitteen avaamiseksi:</translation>
 <translation id="507204348399810022">Haluatko varmasti poistaa käytöstä etäyhteydet kohteeseen <ph name="HOSTNAME" />?</translation>
+<translation id="5081343395220691640">Kommunikointi palvelimen kanssa epäonnistui: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Kirjoita sama PIN-koodi molempiin ruutuihin.</translation>
 <translation id="5170982930780719864">Isännän tunnus on virheellinen.</translation>
 <translation id="518094545883702183">Näitä tietoja käytetään vain ilmoittamasi ongelman diagnosointiin, näytetään vain ongelmaasi selvittävälle henkilölle ja säilytetään korkeintaan 30 päivää.</translation>

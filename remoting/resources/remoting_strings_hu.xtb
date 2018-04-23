@@ -145,6 +145,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="4207623512727273241">Kérjük, futtassa a telepítőt a folytatás előtt.</translation>
 <translation id="4227991223508142681">Gazdagép-ellátási segédprogram</translation>
 <translation id="4240294130679914010">Chromoting gazdagép eltávolítóprogramja</translation>
+<translation id="4249741460382919890">Általános javítások és stabilitással kapcsolatos fejlesztések.</translation>
 <translation id="4277463233460010382">Ez a számítógép úgy van konfigurálva, hogy egy vagy több kliens PIN megadása nélkül csatlakozhasson.</translation>
 <translation id="4277736576214464567">A hozzáférési kód érvénytelen. Kérjük, próbálja újra.</translation>
 <translation id="4361728918881830843">Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy másik számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME" />”.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chrome távoliasztal-szolgáltatásnak a cím eléréséhez:</translation>
 <translation id="507204348399810022">Biztosan szeretné letiltani a távoli kapcsolatokat a(z) <ph name="HOSTNAME" /> gazdagéppel?</translation>
+<translation id="5081343395220691640">Nem sikerült kommunikálni a szerverrel: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Kérjük, ugyanazt a PIN kódot adja meg mindkét mezőben.</translation>
 <translation id="5170982930780719864">Érvénytelen gazdagép-azonosító</translation>
 <translation id="518094545883702183">Ezt az információt csak az Ön által jelentett probléma diagnosztizálására használjuk. Az adatok csak a jelentés vizsgálója számára érhetők el, és a rendszerünk nem őrzi meg őket 30 napnál tovább.</translation>

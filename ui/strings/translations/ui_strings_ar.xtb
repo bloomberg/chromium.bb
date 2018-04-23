@@ -10,7 +10,7 @@
 <translation id="1306549533752902673">تطبيقات مقترحة</translation>
 <translation id="1368832886055348810">من اليسار لليمين</translation>
 <translation id="1398853756734560583">تكبير</translation>
-<translation id="1413622004203049571">تعطيل الإشعارات من <ph name="NOTIFIER_NAME" /></translation>
+<translation id="1413622004203049571">إيقاف الإشعارات من <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{دقيقة واحدة و }zero{# من الدقائق و }two{دقيقتان (#) و }few{# دقائق و }many{# دقيقة و }other{# من الدقائق و }}</translation>
 <translation id="1643823602425662293">الإشعار</translation>
 <translation id="1710340000377843106">الآن</translation>
@@ -86,6 +86,7 @@
 <translation id="5266161281976477809">مثلث الإفصاح</translation>
 <translation id="528468243742722775">‏مفتاح End</translation>
 <translation id="5329858601952122676">&amp;حذف</translation>
+<translation id="5463830097259460683">الرموز التعبيرية والرموز</translation>
 <translation id="5476505524087279545">إزالة علامة الاختيار</translation>
 <translation id="5574202486608032840">نظام <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -99,7 +100,7 @@
 <translation id="6012623610530968780">صفحة <ph name="SELECTED_PAGE" /> من <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">محو نص مربع البحث</translation>
 <translation id="6040143037577758943">إغلاق</translation>
-<translation id="6119846243427417423">تنشيط</translation>
+<translation id="6119846243427417423">تفعيل</translation>
 <translation id="6129953537138746214">مسافة</translation>
 <translation id="6135826906199951471">‏مفتاح Del (حذف)</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> بايت/ثانية</translation>
@@ -162,7 +163,7 @@
 <translation id="8725488761726303204"><ph name="NUMBER" />+ أخرى</translation>
 <translation id="8730621377337864115">تم</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{ساعة واحدة}zero{# ساعة}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# ساعة}}</translation>
-<translation id="8798099450830957504">الافتراضي</translation>
+<translation id="8798099450830957504">التلقائي</translation>
 <translation id="8806053966018712535">مجلد <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">إضافة تعليق توضيحي على الصورة</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> كيلوبايت</translation>

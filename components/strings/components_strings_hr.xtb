@@ -149,6 +149,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Nijedna}=1{1 web-lokacija}one{# web-lokacija}few{# web-lokacije}other{# web-lokacija}}</translation>
 <translation id="1927235823738766038">Prihvaćene kreditne i debitne kartice</translation>
 <translation id="194030505837763158">Posjetite <ph name="LINK" /></translation>
+<translation id="1945968466830820669">Mogli biste izgubiti pristup računu svoje organizacije ili bi netko mogao ukrasti vaš identitet. Chromium preporučuje da odmah promijenite zaporku.</translation>
 <translation id="1948773908305951926">Prihvaćene pretplatne kartice</translation>
 <translation id="1962204205936693436">Oznake s domene <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Pogreška postavljanja u seriju</translation>
@@ -460,7 +461,6 @@
 <translation id="4171400957073367226">Potpis za potvrdu nije ispravan.</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Još <ph name="ITEM_COUNT" /> stavka}one{Još <ph name="ITEM_COUNT" /> stavka}few{Još <ph name="ITEM_COUNT" /> stavke}other{Još <ph name="ITEM_COUNT" /> stavki}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4192549185358213268">Chrome preporučuje poništavanje zaporke za <ph name="ORG_NAME" /> ako ste je upotrebljavali za druge web-lokacije.</translation>
 <translation id="4196861286325780578">&amp;Ponovi premještanje</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />provjerite vatrozid i konfiguraciju antivirusnog programa<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Padovi programa</translation>
@@ -590,6 +590,7 @@
 <translation id="5141240743006678641">Šifriranje sinkroniziranih zaporki s vjerodajnicama za Google</translation>
 <translation id="5145883236150621069">Odgovor na pravilo sadrži kôd pogreške</translation>
 <translation id="5159010409087891077">Otvorite stranicu u novom anonimnom prozoru (⇧⌘N)</translation>
+<translation id="5169827969064885044">Mogli biste izgubiti pristup računu svoje organizacije ili bi netko mogao ukrasti vaš identitet. Chrome preporučuje da odmah promijenite zaporku.</translation>
 <translation id="5171045022955879922">Pretražite ili upišite URL</translation>
 <translation id="5172758083709347301">Strojno</translation>
 <translation id="5179510805599951267">Nije <ph name="ORIGINAL_LANGUAGE" /> jezik? Prijavite tu pogrešku</translation>
@@ -690,7 +691,6 @@
 <translation id="5869405914158311789">Web-lokacija ne može se dohvatiti</translation>
 <translation id="5869522115854928033">Spremljene zaporke</translation>
 <translation id="5893752035575986141">Prihvaćaju se kreditne kartice.</translation>
-<translation id="5898382028489516745">Chromium preporučuje poništavanje zaporke za <ph name="ORG_NAME" /> ako ste je upotrebljavali za druge web-lokacije.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sinkronizirano)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 u upotrebi}one{# u upotrebi}few{# u upotrebi}other{# u upotrebi}}</translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
@@ -855,6 +855,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Potvrda kartice</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;Ta će se pogreška prikazati ako na Windows računalu imate softver Superfish.&lt;/p&gt;
+      &lt;p&gt;Privremeno onemogućite softver prema ovim uputama da biste se povezali s webom. Potrebne su vam administratorske povlastice.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;Kliknite &lt;strong&gt;Start&lt;/strong&gt;, a zatim potražite i odaberite &lt;strong&gt;"Prikaz lokalnih usluga"&lt;/strong&gt;
+      &lt;li&gt;Odaberite &lt;strong&gt;VisualDiscovery&lt;/strong&gt;
+      &lt;li&gt;U odjeljku &lt;strong&gt;Vrsta pokretanja&lt;/strong&gt; odaberite &lt;strong&gt;Onemogućeno&lt;/strong&gt;
+      &lt;li&gt;U odjeljku &lt;strong&gt;Status usluge&lt;/strong&gt; kliknite &lt;strong&gt;Zaustavi&lt;/strong&gt;
+      &lt;li&gt;Kliknite &lt;strong&gt;Primijeni&lt;/strong&gt;, a zatim kliknite &lt;strong&gt;U redu&lt;/strong&gt;
+      &lt;li&gt;U &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;centru za pomoć za Chrome&lt;/a&gt; možete saznati kako trajno ukloniti softver s računala
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Putanja profila</translation>
 <translation id="7437289804838430631">Dodajte podatke za kontakt</translation>
 <translation id="7441627299479586546">Pogrešan predmet pravila</translation>

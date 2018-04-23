@@ -137,6 +137,7 @@ Kwa mfano, tovuti nyingine zinaweza kujibu ombi hili kwa kukuonyesha matangazo y
 <translation id="3393920035788932672">Ibukizi zimeruhusiwa</translation>
 <translation id="3445288400492335833">Dakika <ph name="MINUTES" /></translation>
 <translation id="3448016392200048164">Mwonekano wa Madirisha Mawili</translation>
+<translation id="3469166899695866866">Ungependa Kuacha Kupakua?</translation>
 <translation id="3474624961160222204">Endelea ukitumia <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Fomu zimejazwa.</translation>
 <translation id="3478058380795961209">Mwezi wa Muda wa Matumizi Kuisha</translation>
@@ -150,6 +151,7 @@ Kwa mfano, tovuti nyingine zinaweza kujibu ombi hili kwa kukuonyesha matangazo y
 <translation id="3588820906588687999">Fungua Picha Katika Kichupo Kipya</translation>
 <translation id="3603009562372709545">Nakili URL ya Kiungo</translation>
 <translation id="3607167657931203000">Jaza Data Kiotomatiki</translation>
+<translation id="3609785682760573515">Inasawazisha...</translation>
 <translation id="3628119975092896051">Orodha yako ya kusoma inapatikana nje ya mtandao. Ili kuongeza ukurasa kwenye orodha yako ya kusoma, gusa <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pakia Kurasa za wavuti Mapema</translation>
 <translation id="3691593122358196899">Imetiwa alamisho kwenye <ph name="FOLDER_TITLE" /></translation>
@@ -304,7 +306,6 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="6445981559479772097">Ujumbe umetumwa.</translation>
 <translation id="6464071786529933911">Fungua katika Kichupo Fiche Kipya</translation>
 <translation id="6482629121755362506">Vifaa <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> vimefutwa</translation>
-<translation id="6528048372317642110">Kipengele cha kupakua faili kinapatikana</translation>
 <translation id="6541915733953096570">Saa Moja Iliyopita</translation>
 <translation id="6570040839871198836">Jaza Fomu Kiotomatiki</translation>
 <translation id="6656103420185847513">Badilisha Folda</translation>
@@ -338,6 +339,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7159472599653637159">Omba Tovuti ya Kifaa cha Mkononi</translation>
 <translation id="7167621057293532233">Aina za Data</translation>
 <translation id="7175593937868963913">Tunga Barua Pepe</translation>
+<translation id="7180611975245234373">Onyesha upya</translation>
 <translation id="7189598951263744875">Shiriki...</translation>
 <translation id="7203585745079012652">Itamke Majibu</translation>
 <translation id="722055596168483966">Badilisha huduma za Google zikufae</translation>
@@ -380,6 +382,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="8023878949384262191">Hupanua sehemu.</translation>
 <translation id="8059533439631660104">Hukunja sehemu.</translation>
 <translation id="806745655614357130">Weka data yangu katika sehemu tofauti</translation>
+<translation id="8073670137947914548">Imemaliza kupakua</translation>
 <translation id="8076014560081431679">Mipangilio ya tovuti iliyohifadhiwa haitafutwa na inaweza kuonyesha mtindo wako wa kuvinjari. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Funga Vichupo Vyote</translation>
 <translation id="8205564605687841303">Ghairi</translation>

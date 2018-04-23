@@ -6,7 +6,7 @@
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">‏هل تستخدم التعليقات والملاحظات المنطوقة في ChromeVox لأول مرة؟ يشرح هذا البرنامج التعليمي السريع أساسيات بدء استخدام ChromeVox.</translation>
 <translation id="1023866615269196768">تم مد الخلية.</translation>
-<translation id="1025074108959230262">تم تعطيل الوضع الثابت</translation>
+<translation id="1025074108959230262">تم إيقاف الوضع الثابت</translation>
 <translation id="1031961866430398710">ثم</translation>
 <translation id="1038643060055067718">الأسطر:</translation>
 <translation id="1038795173450935438">للانتقال للأمام بين العناصر في إحدى الصفحات، اضغط على بحث + السهم الأيمن، أو بحث + السهم الأيسر للرجوع بسرعة. للانتقال إلى السطر التالي، اضغط على بحث + السهم لأسفل. وللوصول إلى السطر السابق، استخدم بحث + السهم لأعلى. وإذا وصلت إلى العنصر الذي تريد النقر عليه، فاضغط على بحث + مسافة.</translation>
@@ -244,7 +244,7 @@
 <translation id="3312997241656799641">الرابط التالي الذي تم الانتقال إليه</translation>
 <translation id="3313245066383501820">‏مفتاح تعديل ChromeVox</translation>
 <translation id="3317212938060708859">شريط تمرير</translation>
-<translation id="3321460131042519426">تمكين التفاف الكلمات</translation>
+<translation id="3321460131042519426">تفعيل التفاف الكلمات</translation>
 <translation id="3322936298410871309">عنوان المستوى الأول السابق</translation>
 <translation id="3323447499041942178">مربع نص</translation>
 <translation id="3338224621010291843">شريط تمرير <ph name="VALUE" /> <ph name="NAME" /></translation>
@@ -326,7 +326,7 @@
 <translation id="3716845769494773620">متعدد الأسطر</translation>
 <translation id="3731746171184829332">ليس هناك عنوان سابق.</translation>
 <translation id="3735039640698208086">عند تشغيل الصوت...</translation>
-<translation id="3755561384917041694">يُرجى تمكين لوحة المفاتيح على الشاشة ضمن علبة الحالة، وإمكانية الوصول لاستخدام أوامر لغة برايل الموسَّعة.</translation>
+<translation id="3755561384917041694">يُرجى تفعيل لوحة المفاتيح على الشاشة ضمن علبة الحالة، وإمكانية الوصول لاستخدام أوامر لغة برايل الموسَّعة.</translation>
 <translation id="3762198587642264450">الانتقال إلى نهاية الصف الحالي</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">تم إنهاء مربع الحوار.</translation>
@@ -367,7 +367,7 @@
 <translation id="4158704014418536539">حساس لحالة الأحرف.</translation>
 <translation id="4161663686871496107">‏تعليقات ChromeVox المنطوقة جاهزة</translation>
 <translation id="4173994908659439270">ليس هناك حقل تالٍ قابل للتعديل.</translation>
-<translation id="4176463684765177261">معطل</translation>
+<translation id="4176463684765177261">غير مفعّل</translation>
 <translation id="4188530942454211480">الجملة السابقة</translation>
 <translation id="4191918948604314587">زر</translation>
 <translation id="419265409837491189">انتقِل إلى العمود السابق.</translation>
@@ -428,10 +428,10 @@
 <translation id="4729095194763193578">صف الجدول السابق</translation>
 <translation id="4736221692378411923">آب (أغسطس)</translation>
 <translation id="4740661827607246557">أوامر المساعدة</translation>
-<translation id="4755857887974653209">‏تعطيل ChromeVox</translation>
+<translation id="4755857887974653209">‏إيقاف ChromeVox</translation>
 <translation id="4763296182459741068">التفاف إلى أسفل</translation>
 <translation id="4763480195061959176">فيديو</translation>
-<translation id="4764692524839457597">افتراضي</translation>
+<translation id="4764692524839457597">تلقائي</translation>
 <translation id="479989351350248267">بحث</translation>
 <translation id="481165870889056555">الإعلان عن عنوان الصفحة الحالية</translation>
 <translation id="4826415162591436065">التنقل للأمام</translation>
@@ -445,7 +445,7 @@
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">العنصر المماثل السابق.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
-<translation id="4867316986324544967">‏تمكين تسجيل TTS</translation>
+<translation id="4867316986324544967">‏تفعيل تسجيل TTS</translation>
 <translation id="4877261390094455813">الدخول إلى طلب بحث.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">رابط داخلي</translation>
@@ -495,7 +495,7 @@
 <translation id="5291783959063340370">الهدف</translation>
 <translation id="5304943142864553931">علامة التبويب <ph name="TITLE" /></translation>
 <translation id="5310788376443009632">تمت إزالة:</translation>
-<translation id="5320727453979144100">تم تمكين الوضع الثابت</translation>
+<translation id="5320727453979144100">تم تفعيل الوضع الثابت</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{فاصلة واحدة}zero{# commas}two{فاصلتان (#)}few{# فواصل}many{# فاصلة}other{# من الفواصل}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />، مربع النص</translation>
 <translation id="5330443287809544590">الرابط <ph name="NAME" /></translation>
@@ -534,7 +534,7 @@
 <translation id="5597170376237141345">مربع الاختيار التالي</translation>
 <translation id="5597933780944041114">ليس هناك عنوان تالٍ.</translation>
 <translation id="5598905979683743333">تم إلغاء تحديد زر الاختيار <ph name="NAME" /></translation>
-<translation id="5601172225407283979">تنفيذ إجراء افتراضي</translation>
+<translation id="5601172225407283979">تنفيذ إجراء تلقائي</translation>
 <translation id="5608798115546226984">إكمال تلقائي مضمن</translation>
 <translation id="561939826962581046">الوقت</translation>
 <translation id="5623778242535476823">rbtn</translation>
@@ -577,7 +577,7 @@
 <translation id="5867591286054666064">أثناء هذا البرنامج التعليمي، اضغط على أي مفتاح لسماع اسمه.</translation>
 <translation id="5869546221129391014">شبكة</translation>
 <translation id="5876817486144482042">خفض مستوى صوت النطق</translation>
-<translation id="5887397643266327462">تم تمكين تسميات برايل التوضيحية.</translation>
+<translation id="5887397643266327462">تم تفعيل تسميات برايل التوضيحية.</translation>
 <translation id="5891934789323004067">جدول</translation>
 <translation id="5899860758576822363">‏التشغيل بصوت منخفض أثناء تحدُّث ChromeVox</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{علامة تساوي واحدة}zero{# equal signs}two{علامتا تساوي (#)}few{# علامات تساوي}many{# علامة تساوي}other{# من علامات التساوي}}</translation>
@@ -643,7 +643,7 @@
 <translation id="6550720799683018100">يمكن تغيير مخطط المفاتيح الحالي عبر تحديد خيار من القائمة أدناه.</translation>
 <translation id="6561818612645211875">الانتقال إلى بداية الصف الحالي</translation>
 <translation id="6587021927234520429">ليس هناك عنوان تالٍ من المستوى الرابع.</translation>
-<translation id="6601344353291556895">تمكين الأوصاف المطوَّلة.</translation>
+<translation id="6601344353291556895">تفعيل الأوصاف المطوَّلة.</translation>
 <translation id="6615602925644411249">بحث في الصفحة.</translation>
 <translation id="6633350132811819843">ليس هناك جدول تالٍ.</translation>
 <translation id="6637586476836377253">log</translation>
@@ -709,7 +709,7 @@
 <translation id="7289186959554153431">العنوان الثالث</translation>
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
 <translation id="731121099745151312">tritm</translation>
-<translation id="731576946540457939">تم تعطيل تسميات برايل التوضيحية.</translation>
+<translation id="731576946540457939">تم إيقاف تسميات برايل التوضيحية.</translation>
 <translation id="7318872822751139669">استخدم الماوس لتغيير التركيز.</translation>
 <translation id="7322388933135261569">شباط (فبراير)</translation>
 <translation id="7332592614823088566">صف <ph name="ROWINDEX" /> من <ph name="ROWTOTAL" />، عمود <ph name="COLINDEX" /> من <ph name="COLTOTAL" /></translation>
@@ -755,7 +755,7 @@
 <translation id="7770823902658038748">مربع نص كلمة المرور <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
 <translation id="7773125101284285285">نهاية النص الذي تحته خط</translation>
 <translation id="7776293189010177726">‏فتح قوائم ChromeVox</translation>
-<translation id="7805247615045262757">التنقل الافتراضي</translation>
+<translation id="7805247615045262757">التنقل التلقائي</translation>
 <translation id="7805768142964895445">الحالة</translation>
 <translation id="7810781339813764006">المجموعة التالية</translation>
 <translation id="7819187121850078213">نافذة علامة التبويب <ph name="TITLE" /></translation>
@@ -821,7 +821,7 @@
 <translation id="8520472399088452386">زر الدوران</translation>
 <translation id="8538744478902126321">إجراء تخمين في عنوان الصف للخلية الحالية</translation>
 <translation id="8540054775867439484">التفاف إلى أعلى</translation>
-<translation id="8542271685829952264">‏لاستكشاف جميع أوامر ChromeVox واختصاراته، اضغط على "Search + Period"، ثم استخدم مفاتيح الأسهم للتنقل خلال القوائم، ومفتاح Enter لتنشيط أحد الأوامر. ويمكنك العودة هنا من خلال الضغط على "Search+o" ثم "t".</translation>
+<translation id="8542271685829952264">‏لاستكشاف جميع أوامر ChromeVox واختصاراته، اضغط على "Search + Period"، ثم استخدم مفاتيح الأسهم للتنقل خلال القوائم، ومفتاح Enter لتفعيل أحد الأوامر. ويمكنك العودة هنا من خلال الضغط على "Search+o" ثم "t".</translation>
 <translation id="8548973727659841685">حرف</translation>
 <translation id="8561322612995434619">له نافذة منبثقة</translation>
 <translation id="8571096049907249734">multsel</translation>
@@ -849,7 +849,7 @@
 <translation id="8808582214901541005">آذار (مارس)</translation>
 <translation id="8825828890761629845">bnr</translation>
 <translation id="8851136666856101339">main</translation>
-<translation id="8856538297388979332">‏اضغط على السهم لأعلى أو لأسفل لمراجعة الأوامر، واضغط على enter للتنشيط</translation>
+<translation id="8856538297388979332">‏اضغط على السهم لأعلى أو لأسفل لمراجعة الأوامر، واضغط على enter للتفعيل</translation>
 <translation id="8864099967139188018">ليس هناك عنوان تالٍ من المستوى السادس.</translation>
 <translation id="8882002077197914455">عنوان الصف</translation>
 <translation id="8883850400338911892">‏URL ببرايل 8 نقاط</translation>
@@ -892,7 +892,7 @@
 <translation id="930275611743429116">بدء أو إنهاء التحديد.</translation>
 <translation id="948171205378458592">خفض تقييم النطق</translation>
 <translation id="962913030769097253">عنوان المستوى الأول التالي</translation>
-<translation id="973955474346881951">تمكين/تعطيل الوضع الثابت</translation>
+<translation id="973955474346881951">تفعيل/إيقاف الوضع الثابت</translation>
 <translation id="976849232629612000">لا توجد عناصر.</translation>
 <translation id="995852680044449248">بداية النص الذي يتوسطه خط</translation>
 </translationbundle>

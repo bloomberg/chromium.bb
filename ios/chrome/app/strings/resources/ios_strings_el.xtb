@@ -137,6 +137,7 @@
 <translation id="3393920035788932672">Επιτρέπ. τα αναδυόμ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> λεπτά</translation>
 <translation id="3448016392200048164">Προβολή διαχωρισμού οθόνης</translation>
+<translation id="3469166899695866866">Διακοπή λήψης;</translation>
 <translation id="3474624961160222204">Συνέχεια <ph name="NAME" /></translation>
 <translation id="3474649192738347024">Οι φόρμες συμπληρώθηκαν.</translation>
 <translation id="3478058380795961209">Μήνας λήξης</translation>
@@ -150,6 +151,7 @@
 <translation id="3588820906588687999">Άνοιγμα εικόνας σε νέα καρτέλα</translation>
 <translation id="3603009562372709545">Αντιγραφή διεύθυνσης URL συνδέσμου</translation>
 <translation id="3607167657931203000">Δεδομένα Αυτόματης συμπλήρωσης</translation>
+<translation id="3609785682760573515">Συγχρονισμός…</translation>
 <translation id="3628119975092896051">Η λίστα ανάγνωσης είναι διαθέσιμη εκτός σύνδεσης. Για να προσθέσετε μια σελίδα στη λίστα ανάγνωσης, πατήστε το εικονίδιο <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Προφόρτ. ιστοσελίδων</translation>
 <translation id="3691593122358196899">Ο σελιδοδείκτης είναι στο "<ph name="FOLDER_TITLE" />"</translation>
@@ -304,7 +306,6 @@
 <translation id="6445981559479772097">Το μήνυμα εστάλη.</translation>
 <translation id="6464071786529933911">Άνοιγ. σε καρτ. αν. περ.</translation>
 <translation id="6482629121755362506">Διαγράφηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
-<translation id="6528048372317642110">Η λήψη αρχείου είναι διαθέσιμη</translation>
 <translation id="6541915733953096570">Τελευταία ώρα</translation>
 <translation id="6570040839871198836">Φόρμες αυτ.συμ.</translation>
 <translation id="6656103420185847513">Επεξεργασία φακέλου</translation>
@@ -338,6 +339,7 @@
 <translation id="7159472599653637159">Αίτηση ιστότ. για κινητά</translation>
 <translation id="7167621057293532233">Τύποι δεδομένων</translation>
 <translation id="7175593937868963913">Σύνταξη μηνύματος ηλεκτρονικού ταχυδρομείου</translation>
+<translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7189598951263744875">Μοιραστείτε…</translation>
 <translation id="7203585745079012652">Εκφώνηση απαντήσεων</translation>
 <translation id="722055596168483966">Εξατομίκευση υπηρεσιών Google</translation>
@@ -380,6 +382,7 @@
 <translation id="8023878949384262191">Ανάπτυξη ενότητας.</translation>
 <translation id="8059533439631660104">Σύμπτυξη ενότητας.</translation>
 <translation id="806745655614357130">Διατήρηση των δεδομένων μου ξεχωριστά</translation>
+<translation id="8073670137947914548">Η λήψη ολοκληρώθηκε</translation>
 <translation id="8076014560081431679">Οι αποθηκευμένες ρυθμίσεις ιστότοπου δεν θα διαγραφούν και ενδέχεται να υποδεικνύουν τις συνήθειες περιήγησής σας. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Κλείσ. όλων των καρτελών</translation>
 <translation id="8205564605687841303">Ακύρωση</translation>
