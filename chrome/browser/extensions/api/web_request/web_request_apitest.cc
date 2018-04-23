@@ -1419,8 +1419,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
 
 // Tests that the webRequest events aren't dispatched when the URL of the
 // request is protected by policy.
+// Disabled because it is flaky. See https://crbug.com/835155
 IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
-                       UrlProtectedByPolicy) {
+                       DISABLED_UrlProtectedByPolicy) {
   // Host protected by policy.
   const std::string protected_domain = "example.com";
 
