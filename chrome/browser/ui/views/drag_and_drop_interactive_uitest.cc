@@ -817,9 +817,12 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragStartInFrame) {
   SimulateMouseUp();
 }
 
+#if defined(OS_WIN)
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
-#if defined(OS_WIN)
+#define MAYBE_DragImageBetweenFrames DISABLED_DragImageBetweenFrames
+#elif defined(OS_CHROMEOS)
+// Flakiness on CrOS tracked by https://crbug.com/835573.
 #define MAYBE_DragImageBetweenFrames DISABLED_DragImageBetweenFrames
 #else
 #define MAYBE_DragImageBetweenFrames DragImageBetweenFrames
@@ -1032,9 +1035,13 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step3(
                    {"dragstart", "dragleave", "dragenter", "dragend"}));
 }
 
+#if defined(OS_WIN)
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#define MAYBE_DragImageFromDisappearingFrame \
+  DISABLED_DragImageFromDisappearingFrame
+#elif defined(OS_CHROMEOS)
+// Flakiness on CrOS tracked by https://crbug.com/835572.
 #define MAYBE_DragImageFromDisappearingFrame \
   DISABLED_DragImageFromDisappearingFrame
 #else
