@@ -481,6 +481,9 @@ class TemplateURLRef {
 // is made a friend so that it can be the exception to this pattern.
 class TemplateURL {
  public:
+  using TemplateURLVector = std::vector<TemplateURL*>;
+  using OwnedTemplateURLVector = std::vector<std::unique_ptr<TemplateURL>>;
+
   enum Type {
     // Regular search engine.
     NORMAL,

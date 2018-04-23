@@ -30,10 +30,10 @@ TemplateURLTableModel::~TemplateURLTableModel() {
 }
 
 void TemplateURLTableModel::Reload() {
-  TemplateURLService::TemplateURLVector urls =
+  TemplateURL::TemplateURLVector urls =
       template_url_service_->GetTemplateURLs();
 
-  TemplateURLService::TemplateURLVector default_entries, other_entries,
+  TemplateURL::TemplateURLVector default_entries, other_entries,
       extension_entries;
   // Keywords that can be made the default first.
   for (auto* template_url : urls) {

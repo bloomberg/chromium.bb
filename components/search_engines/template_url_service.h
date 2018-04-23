@@ -7,36 +7,26 @@
 
 #include <stddef.h>
 
-#include <list>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/keyword_web_data_service.h"
+#include "components/search_engines/search_host_to_urls_map.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_id.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
 class GURL;
 class PrefService;
-class SearchHostToURLsMap;
-class SearchTermsData;
-class TemplateURL;
 class TemplateURLServiceClient;
 class TemplateURLServiceObserver;
 struct TemplateURLData;
@@ -78,8 +68,8 @@ class TemplateURLService : public WebDataServiceConsumer,
                            public syncer::SyncableService {
  public:
   using QueryTerms = std::map<std::string, std::string>;
-  using TemplateURLVector = std::vector<TemplateURL*>;
-  using OwnedTemplateURLVector = std::vector<std::unique_ptr<TemplateURL>>;
+  using TemplateURLVector = TemplateURL::TemplateURLVector;
+  using OwnedTemplateURLVector = TemplateURL::OwnedTemplateURLVector;
   using SyncDataMap = std::map<std::string, syncer::SyncData>;
   using Subscription = base::CallbackList<void(void)>::Subscription;
 
@@ -111,7 +101,7 @@ class TemplateURLService : public WebDataServiceConsumer,
       std::unique_ptr<TemplateURLServiceClient> client,
       GoogleURLTracker* google_url_tracker,
       rappor::RapporServiceImpl* rappor_service,
-      const base::Closure& dsp_change_callback);
+      const base::RepeatingClosure& dsp_change_callback);
   // The following is for testing.
   TemplateURLService(const Initializer* initializers, const int count);
   ~TemplateURLService() override;
@@ -310,7 +300,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   //
   // If the service has already loaded, this function does nothing.
   std::unique_ptr<Subscription> RegisterOnLoadedCallback(
-      const base::Closure& callback);
+      const base::RepeatingClosure& callback);
 
 #if defined(UNIT_TEST)
   void set_loaded(bool value) { loaded_ = value; }
@@ -715,24 +705,24 @@ class TemplateURLService : public WebDataServiceConsumer,
   bool HasDuplicateKeywords() const;
 
   // ---------- Browser state related members ---------------------------------
-  PrefService* prefs_;
+  PrefService* prefs_ = nullptr;
 
-  std::unique_ptr<SearchTermsData> search_terms_data_;
+  std::unique_ptr<SearchTermsData> search_terms_data_ =
+      std::make_unique<SearchTermsData>();
 
   // ---------- Dependencies on other components ------------------------------
   // Service used to store entries.
-  scoped_refptr<KeywordWebDataService> web_data_service_;
+  scoped_refptr<KeywordWebDataService> web_data_service_ = nullptr;
 
   std::unique_ptr<TemplateURLServiceClient> client_;
 
-  GoogleURLTracker* google_url_tracker_;
+  GoogleURLTracker* google_url_tracker_ = nullptr;
 
   // ---------- Metrics related members ---------------------------------------
-  rappor::RapporServiceImpl* rappor_service_;
+  rappor::RapporServiceImpl* rappor_service_ = nullptr;
 
   // This closure is run when the default search provider is set to Google.
-  base::Closure dsp_change_callback_;
-
+  base::RepeatingClosure dsp_change_callback_;
 
   PrefChangeRegistrar pref_change_registrar_;
 
@@ -758,23 +748,22 @@ class TemplateURLService : public WebDataServiceConsumer,
   base::ObserverList<TemplateURLServiceObserver> model_observers_;
 
   // Maps from host to set of TemplateURLs whose search url host is host.
-  // NOTE: This is always non-NULL; we use a std::unique_ptr<> to avoid circular
-  // header dependencies.
-  std::unique_ptr<SearchHostToURLsMap> provider_map_;
+  std::unique_ptr<SearchHostToURLsMap> provider_map_ =
+      std::make_unique<SearchHostToURLsMap>();
 
   // Whether the keywords have been loaded.
-  bool loaded_;
+  bool loaded_ = false;
 
   // Set when the web data service fails to load properly.  This prevents
   // further communication with sync or writing to prefs, so we don't persist
   // inconsistent state data anywhere.
-  bool load_failed_;
+  bool load_failed_ = false;
 
   // Whether Load() is disabled. True only in testing contexts.
-  bool disable_load_;
+  bool disable_load_ = false;
 
   // If non-zero, we're waiting on a load.
-  KeywordWebDataService::Handle load_handle_;
+  KeywordWebDataService::Handle load_handle_ = 0;
 
   // All visits that occurred before we finished loading. Once loaded
   // UpdateKeywordSearchTermsForURL is invoked for each element of the vector.
@@ -782,7 +771,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Once loaded, the default search provider.  This is a pointer to a
   // TemplateURL owned by |template_urls_|.
-  TemplateURL* default_search_provider_;
+  TemplateURL* default_search_provider_ = nullptr;
 
   // A temporary location for the DSE until Web Data has been loaded and it can
   // be merged into |template_urls_|.
@@ -793,20 +782,20 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // ID assigned to next TemplateURL added to this model. This is an ever
   // increasing integer that is initialized from the database.
-  TemplateURLID next_id_;
+  TemplateURLID next_id_ = kInvalidTemplateURLID + 1;
 
   // Used to retrieve the current time, in base::Time units.
-  std::unique_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_ = std::make_unique<base::DefaultClock>();
 
   // Do we have an active association between the TemplateURLs and sync models?
   // Set in MergeDataAndStartSyncing, reset in StopSyncing. While this is not
   // set, we ignore any local search engine changes (when we start syncing we
   // will look up the most recent values anyways).
-  bool models_associated_;
+  bool models_associated_ = false;
 
   // Whether we're currently processing changes from the syncer. While this is
   // true, we ignore any local search engine changes, since we triggered them.
-  bool processing_syncer_changes_;
+  bool processing_syncer_changes_ = false;
 
   // Sync's syncer::SyncChange handler. We push all our changes through this.
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
@@ -824,7 +813,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // This is used to log the origin of changes to the default search provider.
   // We set this value to increasingly specific values when we know what is the
   // cause/origin of a default search change.
-  DefaultSearchChangeOrigin dsp_change_origin_;
+  DefaultSearchChangeOrigin dsp_change_origin_ = DSP_CHANGE_OTHER;
 
   // Stores a list of callbacks to be run after TemplateURLService has loaded.
   base::CallbackList<void(void)> on_loaded_callbacks_;
@@ -838,12 +827,12 @@ class TemplateURLService : public WebDataServiceConsumer,
   // This tracks how many Scoper handles exist. When the number of handles drops
   // to zero, a notification is made to observers if
   // |model_mutated_notification_pending_| is true.
-  int outstanding_scoper_handles_;
+  int outstanding_scoper_handles_ = 0;
 
   // Used to track if a notification is necessary due to the model being
   // mutated. The outermost Scoper handles, can be used to defer notifications,
   // but if no model mutation occurs, the deferred notification can be skipped.
-  bool model_mutated_notification_pending_;
+  bool model_mutated_notification_pending_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };
