@@ -3604,7 +3604,7 @@
     Install critical update
   </message>
   <message name="IDS_ENCRYPTION_MIGRATION_READY_DESCRIPTION" desc="Description shown in encryption migration screen, which asks the user to install an OS update.">
-    To download and use Android apps, first you need to install this required update. While your Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is updating, you can’t use it. After installation completes, your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will restart.
+    To download and use Android apps, first you need to install this required update. While your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is updating, you can’t use it. After installation completes, your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will restart.
   </message>
   <message name="IDS_ENCRYPTION_MIGRATION_MIGRATING_TITLE" desc="Title shown in encryption migration screen when the migration is ongoing.">
     Installing OS update
