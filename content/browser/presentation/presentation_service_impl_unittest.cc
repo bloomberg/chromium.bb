@@ -26,6 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
+using blink::mojom::PresentationConnectionState;
 using blink::mojom::PresentationError;
 using blink::mojom::PresentationErrorType;
 using blink::mojom::ScreenAvailability;
@@ -489,9 +490,9 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
 
   EXPECT_CALL(mock_controller_, OnConnectionStateChanged(
                                     InfoEquals(presentation_connection),
-                                    PRESENTATION_CONNECTION_STATE_TERMINATED));
+                                    PresentationConnectionState::TERMINATED));
   state_changed_cb.Run(PresentationConnectionStateChangeInfo(
-      PRESENTATION_CONNECTION_STATE_TERMINATED));
+      PresentationConnectionState::TERMINATED));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -506,7 +507,7 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionClose) {
   // |mock_controller_|.
   PresentationInfo presentation_connection(presentation_url1_, kPresentationId);
   PresentationConnectionStateChangeInfo closed_info(
-      PRESENTATION_CONNECTION_STATE_CLOSED);
+      PresentationConnectionState::CLOSED);
   closed_info.close_reason = PresentationConnectionCloseReason::WENT_AWAY;
   closed_info.message = "Foo";
 

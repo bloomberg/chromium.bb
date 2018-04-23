@@ -270,7 +270,7 @@ void MediaRouterAndroid::OnRouteRequestError(const std::string& error_text,
 void MediaRouterAndroid::OnRouteClosed(const MediaRoute::Id& route_id) {
   RemoveRoute(route_id);
   NotifyPresentationConnectionStateChange(
-      route_id, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+      route_id, blink::mojom::PresentationConnectionState::TERMINATED);
 }
 
 void MediaRouterAndroid::OnRouteClosedWithError(const MediaRoute::Id& route_id,

@@ -16,6 +16,8 @@
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
 #endif  // !defined(OS_ANDROID)
 
+using blink::mojom::PresentationConnectionState;
+
 namespace media_router {
 
 // A MediaRoutesObserver that maintains state about the current set of media
@@ -105,9 +107,9 @@ std::string MediaRouterBase::CreatePresentationId() {
 
 void MediaRouterBase::NotifyPresentationConnectionStateChange(
     const MediaRoute::Id& route_id,
-    content::PresentationConnectionState state) {
+    PresentationConnectionState state) {
   // We should call NotifyPresentationConnectionClose() for the CLOSED state.
-  DCHECK_NE(state, content::PRESENTATION_CONNECTION_STATE_CLOSED);
+  DCHECK_NE(state, PresentationConnectionState::CLOSED);
 
   auto it = presentation_connection_state_callbacks_.find(route_id);
   if (it == presentation_connection_state_callbacks_.end())
@@ -125,7 +127,7 @@ void MediaRouterBase::NotifyPresentationConnectionClose(
     return;
 
   content::PresentationConnectionStateChangeInfo info(
-      content::PRESENTATION_CONNECTION_STATE_CLOSED);
+      PresentationConnectionState::CLOSED);
   info.close_reason = reason;
   info.message = message;
   it->second->Notify(info);

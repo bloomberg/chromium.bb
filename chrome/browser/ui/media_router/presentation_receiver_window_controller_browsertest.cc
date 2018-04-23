@@ -107,7 +107,8 @@ class FakeControllerConnection final
   }
   MOCK_METHOD1(OnMessageMock,
                void(content::PresentationConnectionMessage message));
-  void DidChangeState(content::PresentationConnectionState state) override {}
+  void DidChangeState(
+      blink::mojom::PresentationConnectionState state) override {}
   void RequestClose() override {}
 
   blink::mojom::PresentationConnectionRequest MakeConnectionRequest() {

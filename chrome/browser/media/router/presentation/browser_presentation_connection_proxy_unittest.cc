@@ -51,7 +51,7 @@ class BrowserPresentationConnectionProxyTest : public ::testing::Test {
     EXPECT_CALL(mock_router_, RegisterRouteMessageObserver(_));
     EXPECT_CALL(
         *mock_controller_connection_proxy_,
-        DidChangeState(content::PRESENTATION_CONNECTION_STATE_CONNECTED));
+        DidChangeState(blink::mojom::PresentationConnectionState::CONNECTED));
 
     blink::mojom::PresentationConnectionPtr receiver_connection_ptr;
 
@@ -111,11 +111,11 @@ TEST_F(BrowserPresentationConnectionProxyTest, TestOnMessageBinaryMessage) {
 
   base::MockCallback<base::OnceCallback<void(bool)>> mock_on_message_callback;
   EXPECT_CALL(*mock_router(), SendRouteBinaryMessageInternal(_, _, _))
-      .WillOnce(Invoke(
-          [&expected_data](
-              const MediaRoute::Id& route_id, std::vector<uint8_t>* data,
-              const BrowserPresentationConnectionProxy::OnMessageCallback&
-                  callback) { EXPECT_EQ(*data, expected_data); }));
+      .WillOnce(Invoke([&expected_data](const MediaRoute::Id& route_id,
+                                        std::vector<uint8_t>* data,
+                                        const OnMessageCallback& callback) {
+        EXPECT_EQ(*data, expected_data);
+      }));
 
   browser_connection_proxy()->OnMessage(std::move(connection_message),
                                         mock_on_message_callback.Get());

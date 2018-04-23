@@ -31,14 +31,14 @@ using DefaultPresentationConnectionCallback =
 
 struct PresentationConnectionStateChangeInfo {
   explicit PresentationConnectionStateChangeInfo(
-      PresentationConnectionState state)
+      blink::mojom::PresentationConnectionState state)
       : state(state),
         close_reason(
             blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR) {
   }
   ~PresentationConnectionStateChangeInfo() = default;
 
-  PresentationConnectionState state;
+  blink::mojom::PresentationConnectionState state;
 
   // |close_reason| and |messsage| are only used for state change to CLOSED.
   blink::mojom::PresentationConnectionCloseReason close_reason;

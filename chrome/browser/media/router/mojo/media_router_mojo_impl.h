@@ -342,7 +342,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                                  SinkAvailability availability) override;
   void OnPresentationConnectionStateChanged(
       const std::string& route_id,
-      content::PresentationConnectionState state) override;
+      media_router::mojom::MediaRouter::PresentationConnectionState state)
+      override;
   void OnPresentationConnectionClosed(
       const std::string& route_id,
       media_router::mojom::MediaRouter::PresentationConnectionCloseReason

@@ -35,7 +35,7 @@ BrowserPresentationConnectionProxy::BrowserPresentationConnectionProxy(
 
   binding_.Bind(std::move(receiver_connection_request));
   target_connection_ptr_->DidChangeState(
-      content::PRESENTATION_CONNECTION_STATE_CONNECTED);
+      blink::mojom::PresentationConnectionState::CONNECTED);
 }
 
 BrowserPresentationConnectionProxy::~BrowserPresentationConnectionProxy() {}

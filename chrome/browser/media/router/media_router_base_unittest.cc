@@ -11,6 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using blink::mojom::PresentationConnectionState;
 using testing::_;
 using testing::SaveArg;
 
@@ -80,22 +81,22 @@ TEST_F(MediaRouterBaseTest, NotifyCallbacks) {
                                                             callback2.Get());
 
   content::PresentationConnectionStateChangeInfo change_info_connected(
-      content::PRESENTATION_CONNECTION_STATE_CONNECTED);
+      PresentationConnectionState::CONNECTED);
   content::PresentationConnectionStateChangeInfo change_info_terminated(
-      content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+      PresentationConnectionState::TERMINATED);
   content::PresentationConnectionStateChangeInfo change_info_closed(
-      content::PRESENTATION_CONNECTION_STATE_CLOSED);
+      PresentationConnectionState::CLOSED);
   change_info_closed.close_reason =
       blink::mojom::PresentationConnectionCloseReason::WENT_AWAY;
   change_info_closed.message = "Test message";
 
   EXPECT_CALL(callback1, Run(StateChangeInfoEquals(change_info_connected)));
   router_.NotifyPresentationConnectionStateChange(
-      route_id1, content::PRESENTATION_CONNECTION_STATE_CONNECTED);
+      route_id1, PresentationConnectionState::CONNECTED);
 
   EXPECT_CALL(callback2, Run(StateChangeInfoEquals(change_info_connected)));
   router_.NotifyPresentationConnectionStateChange(
-      route_id2, content::PRESENTATION_CONNECTION_STATE_CONNECTED);
+      route_id2, PresentationConnectionState::CONNECTED);
 
   EXPECT_CALL(callback1, Run(StateChangeInfoEquals(change_info_closed)));
   router_.NotifyPresentationConnectionClose(
@@ -105,15 +106,15 @@ TEST_F(MediaRouterBaseTest, NotifyCallbacks) {
   // be called.
   subscription1.reset();
   router_.NotifyPresentationConnectionStateChange(
-      route_id1, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+      route_id1, PresentationConnectionState::TERMINATED);
 
   EXPECT_CALL(callback2, Run(StateChangeInfoEquals(change_info_terminated)));
   router_.NotifyPresentationConnectionStateChange(
-      route_id2, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+      route_id2, PresentationConnectionState::TERMINATED);
 
   subscription2.reset();
   router_.NotifyPresentationConnectionStateChange(
-      route_id2, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+      route_id2, PresentationConnectionState::TERMINATED);
 }
 
 TEST_F(MediaRouterBaseTest, GetCurrentRoutes) {

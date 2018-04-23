@@ -12,13 +12,6 @@
 
 namespace content {
 
-enum PresentationConnectionState {
-  PRESENTATION_CONNECTION_STATE_CONNECTING,
-  PRESENTATION_CONNECTION_STATE_CONNECTED,
-  PRESENTATION_CONNECTION_STATE_CLOSED,
-  PRESENTATION_CONNECTION_STATE_TERMINATED
-};
-
 // Represents a presentation that has been established via either
 // browser actions or Presentation API.
 struct CONTENT_EXPORT PresentationInfo {

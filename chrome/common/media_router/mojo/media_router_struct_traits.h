@@ -446,58 +446,6 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
   }
 };
 
-// PresentationConnectionState
-
-template <>
-struct EnumTraits<media_router::mojom::MediaRouter::PresentationConnectionState,
-                  content::PresentationConnectionState> {
-  static media_router::mojom::MediaRouter::PresentationConnectionState ToMojom(
-      content::PresentationConnectionState state) {
-    switch (state) {
-      case content::PRESENTATION_CONNECTION_STATE_CONNECTING:
-        return media_router::mojom::MediaRouter::PresentationConnectionState::
-            CONNECTING;
-      case content::PRESENTATION_CONNECTION_STATE_CONNECTED:
-        return media_router::mojom::MediaRouter::PresentationConnectionState::
-            CONNECTED;
-      case content::PRESENTATION_CONNECTION_STATE_CLOSED:
-        return media_router::mojom::MediaRouter::PresentationConnectionState::
-            CLOSED;
-      case content::PRESENTATION_CONNECTION_STATE_TERMINATED:
-        return media_router::mojom::MediaRouter::PresentationConnectionState::
-            TERMINATED;
-    }
-    NOTREACHED() << "Unknown PresentationConnectionState "
-                 << static_cast<int>(state);
-    return media_router::mojom::MediaRouter::PresentationConnectionState::
-        TERMINATED;
-  }
-
-  static bool FromMojom(
-      media_router::mojom::MediaRouter::PresentationConnectionState input,
-      content::PresentationConnectionState* state) {
-    switch (input) {
-      case media_router::mojom::MediaRouter::PresentationConnectionState::
-          CONNECTING:
-        *state = content::PRESENTATION_CONNECTION_STATE_CONNECTING;
-        return true;
-      case media_router::mojom::MediaRouter::PresentationConnectionState::
-          CONNECTED:
-        *state = content::PRESENTATION_CONNECTION_STATE_CONNECTED;
-        return true;
-      case media_router::mojom::MediaRouter::PresentationConnectionState::
-          CLOSED:
-        *state = content::PRESENTATION_CONNECTION_STATE_CLOSED;
-        return true;
-      case media_router::mojom::MediaRouter::PresentationConnectionState::
-          TERMINATED:
-        *state = content::PRESENTATION_CONNECTION_STATE_TERMINATED;
-        return true;
-    }
-    return false;
-  }
-};
-
 // RouteRequestResultCode
 
 template <>

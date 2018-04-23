@@ -54,21 +54,36 @@ void RunRouteRequestCallbacks(
 // presentation.mojom types here.
 blink::mojom::PresentationConnectionCloseReason
 PresentationConnectionCloseReasonToBlink(
-    media_router::mojom::MediaRouter::PresentationConnectionCloseReason
-        reason) {
+    mojom::MediaRouter::PresentationConnectionCloseReason reason) {
   switch (reason) {
-    case media_router::mojom::MediaRouter::PresentationConnectionCloseReason::
+    case mojom::MediaRouter::PresentationConnectionCloseReason::
         CONNECTION_ERROR:
       return blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR;
-    case media_router::mojom::MediaRouter::PresentationConnectionCloseReason::
-        CLOSED:
+    case mojom::MediaRouter::PresentationConnectionCloseReason::CLOSED:
       return blink::mojom::PresentationConnectionCloseReason::CLOSED;
-    case media_router::mojom::MediaRouter::PresentationConnectionCloseReason::
-        WENT_AWAY:
+    case mojom::MediaRouter::PresentationConnectionCloseReason::WENT_AWAY:
       return blink::mojom::PresentationConnectionCloseReason::WENT_AWAY;
   }
   NOTREACHED() << "Unknown PresentationConnectionCloseReason " << reason;
   return blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR;
+}
+
+// TODO(crbug.com/831416): Delete temporary code once we can use
+// presentation.mojom types here.
+blink::mojom::PresentationConnectionState PresentationConnectionStateToBlink(
+    mojom::MediaRouter::PresentationConnectionState state) {
+  switch (state) {
+    case mojom::MediaRouter::PresentationConnectionState::CONNECTING:
+      return blink::mojom::PresentationConnectionState::CONNECTING;
+    case mojom::MediaRouter::PresentationConnectionState::CONNECTED:
+      return blink::mojom::PresentationConnectionState::CONNECTED;
+    case mojom::MediaRouter::PresentationConnectionState::CLOSED:
+      return blink::mojom::PresentationConnectionState::CLOSED;
+    case mojom::MediaRouter::PresentationConnectionState::TERMINATED:
+      return blink::mojom::PresentationConnectionState::TERMINATED;
+  }
+  NOTREACHED() << "Unknown PresentationConnectionState " << state;
+  return blink::mojom::PresentationConnectionState::CONNECTING;
 }
 
 }  // namespace
@@ -832,8 +847,9 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
 
 void MediaRouterMojoImpl::OnPresentationConnectionStateChanged(
     const std::string& route_id,
-    content::PresentationConnectionState state) {
-  NotifyPresentationConnectionStateChange(route_id, state);
+    media_router::mojom::MediaRouter::PresentationConnectionState state) {
+  NotifyPresentationConnectionStateChange(
+      route_id, PresentationConnectionStateToBlink(state));
 }
 
 void MediaRouterMojoImpl::OnPresentationConnectionClosed(
