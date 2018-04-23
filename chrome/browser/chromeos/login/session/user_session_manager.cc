@@ -79,6 +79,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
@@ -129,6 +130,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "rlz/buildflags/buildflags.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -1194,11 +1196,17 @@ void UserSessionManager::InitProfilePreferences(
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing
     // profiles that might not have it set yet).
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(profile);
-    signin_manager->SetAuthenticatedAccountInfo(
-        gaia_id, user_context.GetAccountId().GetUserEmail());
-    std::string account_id = signin_manager->GetAuthenticatedAccountId();
+    // TODO(https://crbug.com/814787): Change this flow to go through a
+    // mainstream Identity Service API once that API exists. Note that this
+    // might require supplying a valid refresh token here as opposed to an
+    // empty string.
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    identity_manager->SetPrimaryAccountSynchronously(
+        gaia_id, user_context.GetAccountId().GetUserEmail(),
+        /*refresh_token=*/std::string());
+    std::string account_id =
+        identity_manager->GetPrimaryAccountInfo().account_id;
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
     bool is_child = user->GetType() == user_manager::USER_TYPE_CHILD;
@@ -1206,8 +1214,9 @@ void UserSessionManager::InitProfilePreferences(
            (user_context.GetUserType() == user_manager::USER_TYPE_CHILD));
     AccountTrackerServiceFactory::GetForProfile(profile)->SetIsChildAccount(
         account_id, is_child);
-    VLOG(1) << "Seed SigninManagerBase with the authenticated account info"
-            << ", success=" << signin_manager->IsAuthenticated();
+    VLOG(1) << "Seed IdentityManager and SigninManagerBase with the "
+            << "authenticated account info, success="
+            << SigninManagerFactory::GetForProfile(profile)->IsAuthenticated();
 
     // Backfill GAIA ID in user prefs stored in Local State.
     std::string tmp_gaia_id;
