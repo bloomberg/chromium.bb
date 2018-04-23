@@ -2660,6 +2660,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"password-search", flag_descriptions::kPasswordSearchMobileName,
      flag_descriptions::kPasswordSearchMobileDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordSearchMobile)},
+    {"passwords-keyboard-accessory",
+     flag_descriptions::kPasswordsKeyboardAccessoryName,
+     flag_descriptions::kPasswordsKeyboardAccessoryDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kPasswordsKeyboardAccessory)},
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"enable-experimental-accessibility-features",

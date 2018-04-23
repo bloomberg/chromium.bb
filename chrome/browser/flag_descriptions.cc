@@ -1204,6 +1204,12 @@ const char kPasswordSearchMobileName[] = "Password search";
 const char kPasswordSearchMobileDescription[] =
     "Search functionality in password settings.";
 
+const char kPasswordsKeyboardAccessoryName[] =
+    "Add password-related functions to keyboard accessory";
+const char kPasswordsKeyboardAccessoryDescription[] =
+    "Adds password generation button and toggle for the passwords bottom sheet "
+    "to the keyboard accessory. Replaces password generation popups.";
+
 const char kPdfIsolationName[] = "PDF Isolation";
 const char kPdfIsolationDescription[] =
     "Render PDF files from different origins in different plugin processes.";
