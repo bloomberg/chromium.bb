@@ -41,6 +41,13 @@
 #include "ipc/handle_fuchsia.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_hardware_buffer_handle.h"
+#include "ipc/ipc_mojo_handle_attachment.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/system/scope_to_message_pipe.h"
+#endif
+
 namespace IPC {
 
 namespace {
@@ -567,31 +574,76 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_ANDROID)
-void ParamTraits<base::SharedMemoryHandle::Type>::Write(base::Pickle* m,
-                                                        const param_type& p) {
-  DCHECK(static_cast<int>(p) >= 0 && p <= base::SharedMemoryHandle::Type::LAST);
-  m->WriteInt(static_cast<int>(p));
+void ParamTraits<AHardwareBuffer*>::Write(base::Pickle* m,
+                                          const param_type& p) {
+  const bool is_valid = p != nullptr;
+  WriteParam(m, is_valid);
+  if (!is_valid)
+    return;
+
+  // Assume ownership of the input AHardwareBuffer.
+  auto handle = base::android::ScopedHardwareBufferHandle::Adopt(p);
+
+  // We must keep a ref to the AHardwareBuffer alive until the receiver has
+  // acquired its own reference. We do this by sending a message pipe handle
+  // along with the buffer. When the receiver deserializes (or even if they
+  // die without ever reading the message) their end of the pipe will be
+  // closed. We will eventually detect this and release the AHB reference.
+  mojo::MessagePipe tracking_pipe;
+  m->WriteAttachment(new internal::MojoHandleAttachment(
+      mojo::ScopedHandle::From(std::move(tracking_pipe.handle0))));
+  WriteParam(m,
+             base::FileDescriptor(handle.SerializeAsFileDescriptor().release(),
+                                  true /* auto_close */));
+
+  // Pass ownership of the input handle to our tracking pipe to keep the AHB
+  // alive long enough to be deserialized by the receiver.
+  mojo::ScopeToMessagePipe(std::move(handle), std::move(tracking_pipe.handle1));
 }
 
-bool ParamTraits<base::SharedMemoryHandle::Type>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  int value;
-  if (!iter->ReadInt(&value))
+bool ParamTraits<AHardwareBuffer*>::Read(const base::Pickle* m,
+                                         base::PickleIterator* iter,
+                                         param_type* r) {
+  *r = nullptr;
+
+  bool is_valid;
+  if (!ReadParam(m, iter, &is_valid))
     return false;
-  if (value < 0 ||
-      value > static_cast<int>(base::SharedMemoryHandle::Type::LAST))
+  if (!is_valid)
+    return true;
+
+  scoped_refptr<base::Pickle::Attachment> tracking_pipe_attachment;
+  if (!m->ReadAttachment(iter, &tracking_pipe_attachment))
     return false;
-  *r = static_cast<param_type>(value);
+
+  // We keep this alive until the AHB is safely deserialized below. When this
+  // goes out of scope, the sender holding the other end of this pipe will treat
+  // this handle closure as a signal that it's safe to release their AHB
+  // keepalive ref.
+  mojo::ScopedHandle tracking_pipe =
+      static_cast<MessageAttachment*>(tracking_pipe_attachment.get())
+          ->TakeMojoHandle();
+
+  base::FileDescriptor descriptor;
+  if (!ReadParam(m, iter, &descriptor))
+    return false;
+
+  // NOTE: It is valid to deserialize an invalid FileDescriptor, so the success
+  // of |ReadParam()| above does not imply that |descriptor| is valid.
+  base::ScopedFD scoped_fd(descriptor.fd);
+  if (!scoped_fd.is_valid())
+    return false;
+
+  *r = base::android::ScopedHardwareBufferHandle::DeserializeFromFileDescriptor(
+           std::move(scoped_fd))
+           .Take();
   return true;
 }
 
-void ParamTraits<base::SharedMemoryHandle::Type>::Log(const param_type& p,
-                                                      std::string* l) {
-  l->append(base::IntToString(static_cast<int>(p)));
+void ParamTraits<AHardwareBuffer*>::Log(const param_type& p, std::string* l) {
+  l->append(base::StringPrintf("AHardwareBuffer(%p)", p));
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
                                                   const param_type& p) {
@@ -614,10 +666,6 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
   WriteParam(m, handle_fuchsia);
 #else
 #if defined(OS_ANDROID)
-  // Android transfers both ashmem and AHardwareBuffer SharedMemoryHandle
-  // subtypes, both are transferred via file descriptor but need to be handled
-  // differently by the receiver. Write the type to distinguish.
-  WriteParam(m, p.GetType());
   WriteParam(m, p.IsReadOnly());
 
   // Ensure the region is read-only before sending it through IPC.
@@ -676,14 +724,9 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
     return false;
 #else
 #if defined(OS_ANDROID)
-  // Android uses both ashmen and AHardwareBuffer subtypes, get the actual type
-  // for use as a constructor argument alongside the file descriptor.
-  base::SharedMemoryHandle::Type android_subtype;
   bool is_read_only = false;
-  if (!ReadParam(m, iter, &android_subtype) ||
-      !ReadParam(m, iter, &is_read_only)) {
+  if (!ReadParam(m, iter, &is_read_only))
     return false;
-  }
 #endif
   scoped_refptr<base::Pickle::Attachment> attachment;
   if (!m->ReadAttachment(iter, &attachment))
@@ -711,16 +754,6 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
 #elif defined(OS_FUCHSIA)
   *r = base::SharedMemoryHandle(handle_fuchsia.get_handle(),
                                 static_cast<size_t>(size), guid);
-#elif defined(OS_ANDROID)
-  *r = base::SharedMemoryHandle(
-      android_subtype,
-      base::FileDescriptor(
-          static_cast<internal::PlatformFileAttachment*>(attachment.get())
-              ->TakePlatformFile(),
-          true),
-      static_cast<size_t>(size), guid);
-  if (is_read_only)
-    r->SetReadOnly();
 #else
   *r = base::SharedMemoryHandle(
       base::FileDescriptor(
@@ -728,6 +761,11 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
               ->TakePlatformFile(),
           true),
       static_cast<size_t>(size), guid);
+#endif
+
+#if defined(OS_ANDROID)
+  if (is_read_only)
+    r->SetReadOnly();
 #endif
 
   return true;

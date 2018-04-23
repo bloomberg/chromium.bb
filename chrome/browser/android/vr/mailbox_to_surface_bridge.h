@@ -20,7 +20,7 @@ class SurfaceTexture;
 }  // namespace gl
 
 namespace gfx {
-struct GpuMemoryBufferHandle;
+class GpuMemoryBuffer;
 }
 
 namespace gpu {
@@ -90,10 +90,10 @@ class MailboxToSurfaceBridge {
   // Unbinds the texture from the mailbox and destroys it.
   void DestroyMailboxTexture(const gpu::Mailbox& mailbox, uint32_t texture_id);
 
-  // Creates a GLImage from the handle's GpuMemoryBuffer and binds it to
-  // the supplied texture_id in the GPU process. Returns the image ID in the
-  // command buffer context.
-  uint32_t BindSharedBufferImage(const gfx::GpuMemoryBufferHandle&,
+  // Creates a GLImage from the |buffer| and binds it to the supplied texture_id
+  // in the GPU process. Returns the image ID in the command buffer context.
+  // Does not take ownership of |buffer| or retain any references to it.
+  uint32_t BindSharedBufferImage(gfx::GpuMemoryBuffer* buffer,
                                  const gfx::Size& size,
                                  gfx::BufferFormat format,
                                  gfx::BufferUsage usage,

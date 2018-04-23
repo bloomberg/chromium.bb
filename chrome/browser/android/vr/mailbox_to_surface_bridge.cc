@@ -360,17 +360,13 @@ void MailboxToSurfaceBridge::DestroyMailboxTexture(const gpu::Mailbox& mailbox,
 }
 
 uint32_t MailboxToSurfaceBridge::BindSharedBufferImage(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBuffer* buffer,
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     uint32_t texture_id) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(IsConnected());
-
-  auto buffer = gpu::GpuMemoryBufferImplAndroidHardwareBuffer::CreateFromHandle(
-      handle, size, format, usage,
-      gpu::GpuMemoryBufferImpl::DestructionCallback());
 
   auto img = gl_->CreateImageCHROMIUM(buffer->AsClientBuffer(), size.width(),
                                       size.height(), GL_RGBA);

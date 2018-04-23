@@ -24,10 +24,6 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-#if defined(OS_ANDROID)
-extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
-#endif
-
 namespace base {
 
 // SharedMemoryHandle is the smallest possible IPC-transportable "reference" to
@@ -149,32 +145,6 @@ class BASE_EXPORT SharedMemoryHandle {
 #endif
 
 #if defined(OS_ANDROID)
-  enum class Type {
-    // The SharedMemoryHandle is not backed by a handle. This is used for
-    // a default-constructed SharedMemoryHandle() or for a failed duplicate.
-    // The other types are assumed to be valid.
-    INVALID,
-    // The SharedMemoryHandle is backed by a valid fd for ashmem.
-    ASHMEM,
-    // The SharedMemoryHandle is backed by a valid AHardwareBuffer object.
-    ANDROID_HARDWARE_BUFFER,
-
-    LAST = ANDROID_HARDWARE_BUFFER
-  };
-  Type GetType() const { return type_; }
-  SharedMemoryHandle(AHardwareBuffer* buffer,
-                     size_t size,
-                     const base::UnguessableToken& guid);
-  // Constructs a handle from file descriptor and type. Both ASHMEM and
-  // AHardwareBuffer types are transported via file descriptor for IPC, so the
-  // type field is needed to distinguish them. The generic file descriptor
-  // constructor below assumes type ASHMEM.
-  SharedMemoryHandle(Type type,
-                     const base::FileDescriptor& file_descriptor,
-                     size_t size,
-                     const base::UnguessableToken& guid);
-  AHardwareBuffer* GetMemoryObject() const;
-
   // Marks the current file descriptor as read-only, for the purpose of
   // mapping. This is independent of the region's read-only status.
   void SetReadOnly() { read_only_ = true; }
@@ -237,13 +207,7 @@ class BASE_EXPORT SharedMemoryHandle {
 #elif defined(OS_ANDROID)
   friend class SharedMemory;
 
-  // Each instance of a SharedMemoryHandle is either INVALID, or backed by an
-  // ashmem fd, or backed by an AHardwareBuffer. |type_| determines the backing
-  // member.
-  Type type_ = Type::INVALID;
   FileDescriptor file_descriptor_;
-  AHardwareBuffer* memory_object_ = nullptr;
-  bool ownership_passes_to_ipc_ = false;
   bool read_only_ = false;
 #elif defined(OS_FUCHSIA)
   zx_handle_t handle_ = ZX_HANDLE_INVALID;

@@ -9,6 +9,8 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#elif defined(OS_ANDROID)
+#include "base/android/android_hardware_buffer_compat.h"
 #endif
 
 namespace gfx {
@@ -51,7 +53,11 @@ GpuMemoryBufferHandle CloneHandleForIPC(
       gfx::GpuMemoryBufferHandle handle;
       handle.type = gfx::ANDROID_HARDWARE_BUFFER;
       handle.id = source_handle.id;
-      handle.handle = base::SharedMemory::DuplicateHandle(source_handle.handle);
+#if defined(OS_ANDROID)
+      base::AndroidHardwareBufferCompat::GetInstance().Acquire(
+          source_handle.android_hardware_buffer);
+      handle.android_hardware_buffer = source_handle.android_hardware_buffer;
+#endif
       return handle;
     }
     case gfx::IO_SURFACE_BUFFER:
