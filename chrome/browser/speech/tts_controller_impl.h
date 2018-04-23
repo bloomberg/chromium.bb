@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/speech/tts_controller.h"
+#include "components/prefs/testing_pref_service.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -56,6 +57,8 @@ class TtsControllerImpl : public TtsController {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestGetMatchingVoice);
+  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest,
+                           TestTtsControllerUtteranceDefaults);
 
   // Get the platform TTS implementation (or injected mock).
   TtsPlatformImpl* GetPlatformImpl();
@@ -79,6 +82,11 @@ class TtsControllerImpl : public TtsController {
   int GetMatchingVoice(const Utterance* utterance,
                        std::vector<VoiceData>& voices);
 
+  // Updates the utterance to have default values for rate, pitch, and
+  // volume if they have not yet been set. On Chrome OS, defaults are
+  // pulled from user prefs, and may not be the same as other platforms.
+  void UpdateUtteranceDefaults(Utterance* utterance);
+
   friend struct base::DefaultSingletonTraits<TtsControllerImpl>;
 
   // The current utterance being spoken.
@@ -99,6 +107,9 @@ class TtsControllerImpl : public TtsController {
 
   // The delegate that processes TTS requests with user-installed extensions.
   TtsEngineDelegate* tts_engine_delegate_;
+
+  // A mock pref service that should be used for testing only.
+  PrefService* pref_service_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };
