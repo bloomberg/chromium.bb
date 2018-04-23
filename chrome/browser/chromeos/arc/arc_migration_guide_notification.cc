@@ -101,7 +101,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
           message, gfx::Image(), base::string16(), GURL(), notifier_id,
           message_center::RichNotificationData(), std::move(delegate),
           ash::kNotificationSettingsIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, *notification);
