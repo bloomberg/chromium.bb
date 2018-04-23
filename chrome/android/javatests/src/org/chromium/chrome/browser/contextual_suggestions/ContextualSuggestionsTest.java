@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 
 import org.junit.After;
 import org.junit.Before;
@@ -42,7 +41,6 @@ import org.chromium.content.browser.test.util.TestWebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -76,7 +74,7 @@ public class ContextualSuggestionsTest {
     public void setUp() throws Exception {
         mContextualSuggestionsDeps.getFactory().suggestionsSource =
                 new FakeContextualSuggestionsSource();
-        mContextualSuggestionsDeps.getFactory().fetchHelper = new FakeFetchHelper();
+        FetchHelper.setDisableDelayForTesting(true);
 
         FakeEnabledStateMonitor stateMonitor = new FakeEnabledStateMonitor();
         mContextualSuggestionsDeps.getFactory().enabledStateMonitor = new FakeEnabledStateMonitor();
@@ -98,21 +96,13 @@ public class ContextualSuggestionsTest {
     @After
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
+        FetchHelper.setDisableDelayForTesting(false);
     }
 
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
     public void testOpenContextualSuggestionsBottomSheet() {
-        assertEquals("Sheet should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
-                mBottomSheet.getSheetState());
-        assertTrue("Title text should be empty, but was " + mModel.getTitle(),
-                TextUtils.isEmpty(mModel.getTitle()));
-        assertEquals("Cluster list should be empty.", 0, mModel.getClusterList().getItemCount());
-
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mMediator.requestSuggestions("http://www.testurl.com"));
-
         assertTrue("Bottom sheet should contain suggestions content",
                 mBottomSheet.getCurrentSheetContent()
                                 instanceof ContextualSuggestionsBottomSheetContent);
@@ -149,7 +139,7 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
-    public void testCloseFromPeek() {
+    public void testCloseFromPeek() throws InterruptedException, TimeoutException {
         forceShowSuggestions();
         simulateClickOnCloseButton();
     }
@@ -157,7 +147,7 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
-    public void testCloseFromOpen() {
+    public void testCloseFromOpen() throws InterruptedException, TimeoutException {
         forceShowSuggestions();
         openSheet();
         simulateClickOnCloseButton();
@@ -166,10 +156,15 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
-    public void testTriggerMultipleTimes() {
+    public void testTriggerMultipleTimes() throws InterruptedException, TimeoutException {
+        // Show one time and close.
         forceShowSuggestions();
         openSheet();
         simulateClickOnCloseButton();
+
+        // Show a second time.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mMediator.requestSuggestions("http://www.testurl.com"));
         forceShowSuggestions();
         openSheet();
     }
@@ -205,7 +200,7 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
-    public void testOpenArticleInNewTab() throws InterruptedException, ExecutionException {
+    public void testOpenArticleInNewTab() throws Exception {
         forceShowSuggestions();
         openSheet();
 
@@ -222,8 +217,7 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
-    public void testOpenSuggestionInNewTabIncognito()
-            throws InterruptedException, ExecutionException {
+    public void testOpenSuggestionInNewTabIncognito() throws Exception {
         forceShowSuggestions();
         openSheet();
 
@@ -241,7 +235,7 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
-    public void testEnterTabSwitcher() throws InterruptedException, ExecutionException {
+    public void testEnterTabSwitcher() throws Exception {
         forceShowSuggestions();
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -261,9 +255,12 @@ public class ContextualSuggestionsTest {
                 mBottomSheet.getSheetState());
     }
 
-    private void forceShowSuggestions() {
+    private void forceShowSuggestions() throws InterruptedException, TimeoutException {
+        assertEquals("Model has incorrect number of items.",
+                (int) FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT,
+                mModel.getClusterList().getItemCount());
+
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mMediator.requestSuggestions("http://www.testurl.com");
             mMediator.showContentInSheetForTesting();
             mBottomSheet.endAnimations();
 
