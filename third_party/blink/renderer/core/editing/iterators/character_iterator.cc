@@ -58,7 +58,7 @@ void CharacterIteratorAlgorithm<Strategy>::Initialize() {
 }
 
 template <typename Strategy>
-Document* CharacterIteratorAlgorithm<Strategy>::OwnerDocument() const {
+const Document& CharacterIteratorAlgorithm<Strategy>::OwnerDocument() const {
   return text_iterator_.OwnerDocument();
 }
 

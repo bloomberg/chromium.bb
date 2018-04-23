@@ -74,7 +74,7 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   EphemeralRangeTemplate<Strategy> Range() const;
   const Node* GetNode() const;
 
-  Document* OwnerDocument() const;
+  const Document& OwnerDocument() const;
   const Node* CurrentContainer() const;
   int StartOffsetInCurrentContainer() const;
   int EndOffsetInCurrentContainer() const;
