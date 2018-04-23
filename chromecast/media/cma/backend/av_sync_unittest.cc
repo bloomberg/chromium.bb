@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/backend/av_sync.h"
 
 #include <cmath>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
@@ -42,9 +43,6 @@ class AvSyncTest : public testing::Test, public AvSyncVideo::Delegate {
 
     backend_->Initialize();
     backend_->Start(0);
-
-    static_cast<AvSyncVideo*>(backend_->audio_decoder()->av_sync_.get())
-        ->SetDelegate(this);
   }
 
   void NotifyAvSyncPlaybackStatistics(

@@ -68,15 +68,15 @@ bool VideoDecoderNull::Resume() {
   return true;
 }
 
-int64_t VideoDecoderNull::GetCurrentPts() const {
-  return 0;
+bool VideoDecoderNull::GetCurrentPts(int64_t* timestamp, int64_t* pts) const {
+  return false;
 }
 
 bool VideoDecoderNull::SetPlaybackRate(float rate) {
   return true;
 }
 
-bool VideoDecoderNull::SetCurrentPts(int64_t pts) {
+bool VideoDecoderNull::SetPts(int64_t timestamp, int64_t pts) {
   return true;
 }
 

@@ -41,9 +41,9 @@ class MockVideoDecoderForMixer : public VideoDecoderForTest {
   void Stop() override;
   bool Pause() override;
   bool Resume() override;
-  int64_t GetCurrentPts() const override;
+  bool GetCurrentPts(int64_t* timestamp, int64_t* pts) const override;
   bool SetPlaybackRate(float rate) override;
-  bool SetCurrentPts(int64_t pts) override;
+  bool SetPts(int64_t timestamp, int64_t pts) override;
   int64_t GetDroppedFrames() override;
   int64_t GetRepeatedFrames() override;
   int64_t GetOutputRefreshRate() override;

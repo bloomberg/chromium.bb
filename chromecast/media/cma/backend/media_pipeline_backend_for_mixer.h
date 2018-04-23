@@ -21,6 +21,7 @@ class SingleThreadTaskRunner;
 namespace chromecast {
 namespace media {
 
+class AvSync;
 class AudioDecoderForMixer;
 class VideoDecoderForMixer;
 
@@ -67,6 +68,8 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   State state_;
 
   const MediaPipelineDeviceParams params_;
+
+  std::unique_ptr<AvSync> av_sync_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendForMixer);
 };

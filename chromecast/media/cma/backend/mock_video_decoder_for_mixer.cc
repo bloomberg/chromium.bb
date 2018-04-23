@@ -63,8 +63,11 @@ bool MockVideoDecoderForMixer<CRN, CRD, CF>::Resume() {
 }
 
 template <int64_t CRN, int64_t CRD, int64_t CF>
-int64_t MockVideoDecoderForMixer<CRN, CRD, CF>::GetCurrentPts() const {
-  return last_displayed_frame_pts_;
+bool MockVideoDecoderForMixer<CRN, CRD, CF>::GetCurrentPts(int64_t* timestamp,
+                                                           int64_t* pts) const {
+  *timestamp = 0;
+  *pts = last_displayed_frame_pts_;
+  return true;
 }
 
 template <int64_t CRN, int64_t CRD, int64_t CF>
@@ -74,7 +77,8 @@ bool MockVideoDecoderForMixer<CRN, CRD, CF>::SetPlaybackRate(float rate) {
 }
 
 template <int64_t CRN, int64_t CRD, int64_t CF>
-bool MockVideoDecoderForMixer<CRN, CRD, CF>::SetCurrentPts(int64_t pts) {
+bool MockVideoDecoderForMixer<CRN, CRD, CF>::SetPts(int64_t timestamp,
+                                                    int64_t pts) {
   current_video_pts_ = pts;
   return true;
 }

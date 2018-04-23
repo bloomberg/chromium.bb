@@ -141,7 +141,8 @@ BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
                                            bool primary,
                                            const std::string& device_id,
                                            AudioContentType content_type,
-                                           int playout_channel)
+                                           int playout_channel,
+                                           int64_t playback_start_timestamp)
     : delegate_(delegate),
       num_channels_(kNumOutputChannels),
       input_samples_per_second_(input_samples_per_second),
@@ -155,6 +156,7 @@ BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
       max_queued_frames_(MaxQueuedFrames(device_id, input_samples_per_second)),
       start_threshold_frames_(
           StartThreshold(device_id, input_samples_per_second)),
+      playback_start_timestamp_(playback_start_timestamp),
       locked_members_(this, input_samples_per_second, num_channels_),
       weak_factory_(this) {
   LOG(INFO) << "Create " << device_id_ << " (" << this
@@ -276,6 +278,21 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
   DCHECK(buffer);
   DCHECK_EQ(num_channels_, buffer->channels());
   DCHECK_GE(buffer->frames(), num_frames);
+
+  int64_t playback_absolute_timestamp = rendering_delay.delay_microseconds +
+                                        rendering_delay.timestamp_microseconds;
+
+  // Don't write to the mixer yet if it's not time to start playback yet.
+  //
+  // TODO(almasrymina): mixer behaviour has playback_absolute_timestamp go up
+  // in chunks of 10ms, so we're going to start playback at
+  // playback_start_timestamp_ accurate to +10ms. Improve this to be sample
+  // accurate by writing a partial silence buffer when it's time to start
+  // playback.
+  if (playback_absolute_timestamp != INT64_MIN &&
+      playback_absolute_timestamp < playback_start_timestamp_) {
+    return 0;
+  }
 
   int filled = 0;
   bool queued_more_data = false;

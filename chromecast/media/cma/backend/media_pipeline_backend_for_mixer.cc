@@ -7,9 +7,11 @@
 #include <time.h>
 #include <limits>
 
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/cma/backend/audio_decoder_for_mixer.h"
+#include "chromecast/media/cma/backend/av_sync.h"
 #include "chromecast/media/cma/backend/video_decoder_for_mixer.h"
 
 #if defined(OS_LINUX)
@@ -19,6 +21,10 @@
 #if defined(OS_FUCHSIA)
 #include <zircon/syscalls.h>
 #endif  // defined(OS_FUCHSIA)
+
+namespace {
+int64_t kSyncedPlaybackStartDelayUs = 200000;
+}  // namespace
 
 namespace chromecast {
 namespace media {
@@ -35,6 +41,9 @@ MediaPipelineBackendForMixer::CreateAudioDecoder() {
   if (audio_decoder_)
     return nullptr;
   audio_decoder_ = std::make_unique<AudioDecoderForMixer>(this);
+  if (video_decoder_ && !av_sync_) {
+    av_sync_ = AvSync::Create(GetTaskRunner(), this);
+  }
   return audio_decoder_.get();
 }
 
@@ -45,6 +54,9 @@ MediaPipelineBackendForMixer::CreateVideoDecoder() {
     return nullptr;
   video_decoder_ = VideoDecoderForMixer::Create(params_);
   DCHECK(video_decoder_.get());
+  if (audio_decoder_ && !av_sync_) {
+    av_sync_ = AvSync::Create(GetTaskRunner(), this);
+  }
   return video_decoder_.get();
 }
 
@@ -58,10 +70,19 @@ bool MediaPipelineBackendForMixer::Initialize() {
 
 bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   DCHECK_EQ(kStateInitialized, state_);
-  if (audio_decoder_ && !audio_decoder_->Start(start_pts))
+  int64_t start_playback_timestamp_us =
+      MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
+
+  if (audio_decoder_ && !audio_decoder_->Start(start_playback_timestamp_us))
     return false;
   if (video_decoder_ && !video_decoder_->Start(start_pts, true))
     return false;
+  if (video_decoder_ &&
+      !video_decoder_->SetPts(start_playback_timestamp_us, start_pts))
+    return false;
+  if (av_sync_) {
+    av_sync_->NotifyStart(start_playback_timestamp_us);
+  }
 
   state_ = kStatePlaying;
   return true;
@@ -74,6 +95,9 @@ void MediaPipelineBackendForMixer::Stop() {
     audio_decoder_->Stop();
   if (video_decoder_)
     video_decoder_->Stop();
+  if (av_sync_) {
+    av_sync_->NotifyStop();
+  }
 
   state_ = kStateInitialized;
 }
@@ -84,6 +108,9 @@ bool MediaPipelineBackendForMixer::Pause() {
     return false;
   if (video_decoder_ && !video_decoder_->Pause())
     return false;
+  if (av_sync_) {
+    av_sync_->NotifyPause();
+  }
 
   state_ = kStatePaused;
   return true;
@@ -95,6 +122,9 @@ bool MediaPipelineBackendForMixer::Resume() {
     return false;
   if (video_decoder_ && !video_decoder_->Resume())
     return false;
+  if (av_sync_) {
+    av_sync_->NotifyResume();
+  }
 
   state_ = kStatePlaying;
   return true;
