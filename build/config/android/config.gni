@@ -5,8 +5,14 @@
 # This file contains common system config stuff for the Android build.
 
 if (is_android) {
+  import("//build/config/gclient_args.gni")
   import("//build_overrides/build.gni")
   import("abi.gni")
+
+  if (defined(checkout_android)) {
+    assert(checkout_android,
+           "target_os in your .gclient configuration must include android.")
+  }
 
   has_chrome_android_internal =
       exec_script("//build/dir_exists.py",
