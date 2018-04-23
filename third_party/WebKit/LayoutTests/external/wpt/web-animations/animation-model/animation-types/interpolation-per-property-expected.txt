@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 722 tests; 628 PASS, 94 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 722 tests; 631 PASS, 91 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with effect easing
@@ -228,9 +228,9 @@ PASS contain uses discrete animation when animating between "strict" and "none" 
 PASS contain uses discrete animation when animating between "strict" and "none" with effect easing
 PASS contain uses discrete animation when animating between "strict" and "none" with keyframe easing
 PASS content (type: discrete) has testInterpolation function
-FAIL content uses discrete animation when animating between ""a"" and ""b"" with linear easing assert_equals: expected (string) "::before" but got (undefined) undefined
-FAIL content uses discrete animation when animating between ""a"" and ""b"" with effect easing assert_equals: expected (string) "::before" but got (undefined) undefined
-FAIL content uses discrete animation when animating between ""a"" and ""b"" with keyframe easing assert_equals: expected (string) "::before" but got (undefined) undefined
+PASS content uses discrete animation when animating between ""a"" and ""b"" with linear easing
+PASS content uses discrete animation when animating between ""a"" and ""b"" with effect easing
+PASS content uses discrete animation when animating between ""a"" and ""b"" with keyframe easing
 PASS counter-increment (type: discrete) has testInterpolation function
 PASS counter-increment uses discrete animation when animating between "ident-1 1" and "ident-2 2" with linear easing
 PASS counter-increment uses discrete animation when animating between "ident-1 1" and "ident-2 2" with effect easing
