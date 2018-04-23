@@ -306,6 +306,10 @@ TEST_F(ContentElementInputEditingTest, IndicesUpdated) {
 // request the text state, because for example, it may be for a different text
 // field.
 TEST_F(ContentElementInputEditingTest, PendingRequestStateCleared) {
+  // Initial keyboard state.
+  content_delegate_->OnWebInputEdited(
+      EditedText(GetInputInfo("a", 1, 1), TextInputInfo()), false);
+
   content_delegate_->OnWebInputIndicesChanged(
       2, 2, -1, -1, base::BindOnce([](const TextInputInfo& info) {}));
   EXPECT_TRUE(input_forwarder_->text_state_requested());
@@ -319,7 +323,7 @@ TEST_F(ContentElementInputEditingTest, PendingRequestStateCleared) {
 
   input_forwarder_->Reset();
   content_delegate_->OnWebInputIndicesChanged(
-      2, 2, -1, -1, base::BindOnce([](const TextInputInfo& info) {}));
+      0, 0, -1, -1, base::BindOnce([](const TextInputInfo& info) {}));
   // We should request the current text state this time because the call to
   // OnWebInputIndicesChanged this time can be for a different reason.
   EXPECT_TRUE(input_forwarder_->text_state_requested());
