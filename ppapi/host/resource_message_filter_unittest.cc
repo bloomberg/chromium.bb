@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -77,7 +78,7 @@ class MyResourceHost : public ResourceHost {
   void SendReply(const ReplyMessageContext& context,
                  const IPC::Message& msg) override {
     last_reply_msg_ = msg;
-    last_reply_message_loop_ = base::MessageLoop::current();
+    last_reply_message_loop_ = base::MessageLoopCurrent::Get();
     g_handler_completion.Signal();
   }
 
@@ -123,7 +124,7 @@ class MyResourceFilter : public ResourceMessageFilter {
       const IPC::Message& msg,
       HostMessageContext* context) override {
     last_handled_msg_ = msg;
-    last_message_loop_ = base::MessageLoop::current();
+    last_message_loop_ = base::MessageLoopCurrent::Get();
     if (msg.type() == msg_type_) {
       context->reply_msg = IPC::Message(0, reply_msg_type_,
                                         IPC::Message::PRIORITY_NORMAL);
