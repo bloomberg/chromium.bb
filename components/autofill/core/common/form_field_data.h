@@ -118,7 +118,13 @@ struct FormFieldData {
   RoleAttribute role;
   base::i18n::TextDirection text_direction;
   FieldPropertiesMask properties_mask;
-  bool is_enabled;  // Used for parsing only, not serialised for storage.
+
+  // Data members from the next block are used for parsing only, they are not
+  // serialised for storage.
+  bool is_enabled;
+  bool is_readonly;
+  bool is_default;
+  base::string16 typed_value;
 
   // For the HTML snippet |<option value="US">United States</option>|, the
   // value is "US" and the contents are "United States".

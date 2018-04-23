@@ -194,6 +194,18 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.is_enabled;
   }
 
+  static bool is_readonly(const autofill::FormFieldData& r) {
+    return r.is_readonly;
+  }
+
+  static bool is_default(const autofill::FormFieldData& r) {
+    return r.is_default;
+  }
+
+  static const base::string16& typed_value(const autofill::FormFieldData& r) {
+    return r.typed_value;
+  }
+
   static const std::vector<base::string16>& option_values(
       const autofill::FormFieldData& r) {
     return r.option_values;

@@ -897,7 +897,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
 
   if (!WebFormElementToFormData(
           web_form, blink::WebFormControlElement(),
-          field_value_and_properties_map, form_util::EXTRACT_NONE,
+          field_value_and_properties_map, form_util::EXTRACT_VALUE,
           &password_form->form_data, nullptr /* FormFieldData */)) {
     return nullptr;
   }
@@ -929,7 +929,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
   if (!UnownedPasswordFormElementsAndFieldSetsToFormData(
           fieldsets, synthetic_form.control_elements, nullptr,
           frame.GetDocument(), field_value_and_properties_map,
-          form_util::EXTRACT_NONE, &password_form->form_data,
+          form_util::EXTRACT_VALUE, &password_form->form_data,
           nullptr /* FormFieldData */)) {
     return nullptr;
   }
