@@ -9,11 +9,28 @@
 #include <psapi.h>
 #include <tchar.h>
 
+#include <base/strings/stringprintf.h>
 #include <base/strings/sys_string_conversions.h>
 #include <base/win/pe_image.h>
 #include <base/win/win_util.h>
 
 namespace memory_instrumentation {
+
+namespace {
+
+// Gets the unique build ID for a module. Windows build IDs are created by a
+// concatenation of a GUID and AGE fields found in the headers of a module. The
+// GUID is stored in the first 16 bytes and the AGE is stored in the last 4
+// bytes. Returns the empty string if the function fails to get the build ID.
+std::string MakeDebugID(const GUID& guid, DWORD age) {
+  return base::StringPrintf("%08lX%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X%ld",
+                            guid.Data1, guid.Data2, guid.Data3, guid.Data4[0],
+                            guid.Data4[1], guid.Data4[2], guid.Data4[3],
+                            guid.Data4[4], guid.Data4[5], guid.Data4[6],
+                            guid.Data4[7], age);
+}
+
+}  // namespace
 
 // static
 bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
@@ -61,6 +78,12 @@ std::vector<mojom::VmRegionPtr> OSMetrics::GetProcessMemoryMaps(
     base::win::PEImage pe_image(module_info.lpBaseOfDll);
     region->module_timestamp =
         pe_image.GetNTHeaders()->FileHeader.TimeDateStamp;
+
+    GUID module_guid;
+    DWORD module_age;
+    if (pe_image.GetDebugId(&module_guid, &module_age)) {
+      region->module_debugid = MakeDebugID(module_guid, module_age);
+    }
 
     maps.push_back(std::move(region));
   }
