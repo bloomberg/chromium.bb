@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
 #include "net/base/net_errors.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -417,6 +418,10 @@ class CONTENT_EXPORT SavePackage
 
   // Unique ID for this SavePackage.
   const SavePackageId unique_id_;
+
+  // UKM IDs for reporting.
+  ukm::SourceId ukm_source_id_;
+  uint64_t ukm_download_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackage);
 };

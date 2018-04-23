@@ -119,10 +119,6 @@ class MockDownloadItemFactory
   // we don't keep dangling pointers.
   void RemoveItem(int id);
 
-  // Sets |has_observer_calls_| to reflect whether we expect to add/remove
-  // observers during the CreateActiveItem.
-  void SetHasObserverCalls(bool observer_calls);
-
   // Overridden methods from DownloadItemFactory.
   download::DownloadItemImpl* CreatePersistedItem(
       download::DownloadItemImplDelegate* delegate,
@@ -168,13 +164,11 @@ class MockDownloadItemFactory
  private:
   std::map<uint32_t, download::MockDownloadItemImpl*> items_;
   download::DownloadItemImplDelegate item_delegate_;
-  bool has_observer_calls_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDownloadItemFactory);
 };
 
-MockDownloadItemFactory::MockDownloadItemFactory()
-    : has_observer_calls_(false) {}
+MockDownloadItemFactory::MockDownloadItemFactory() {}
 
 MockDownloadItemFactory::~MockDownloadItemFactory() {}
 
@@ -198,10 +192,6 @@ download::MockDownloadItemImpl* MockDownloadItemFactory::PopItem() {
 void MockDownloadItemFactory::RemoveItem(int id) {
   DCHECK(items_.find(id) != items_.end());
   items_.erase(id);
-}
-
-void MockDownloadItemFactory::SetHasObserverCalls(bool has_observer_calls) {
-  has_observer_calls_ = has_observer_calls;
 }
 
 download::DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
@@ -258,12 +248,6 @@ download::DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
   // Active items are created and then immediately are called to start
   // the download.
   EXPECT_CALL(*result, MockStart(_, _));
-
-  // In the StartDownload case, expect the remove/add observer calls.
-  if (has_observer_calls_) {
-    EXPECT_CALL(*result, RemoveObserver(_));
-    EXPECT_CALL(*result, AddObserver(_));
-  }
 
   return result;
 }
@@ -456,10 +440,6 @@ class DownloadManagerTest : public testing::Test {
             base::Unretained(this)));
   }
 
-  void SetHasObserverCalls(bool has_observer_calls) {
-    mock_download_item_factory_->SetHasObserverCalls(has_observer_calls);
-  }
-
  protected:
   // Key test variable; we'll keep it available to sub-classes.
   std::unique_ptr<DownloadManagerImpl> download_manager_;
@@ -488,8 +468,6 @@ class DownloadManagerTest : public testing::Test {
 
 // Confirm the appropriate invocations occur when you start a download.
 TEST_F(DownloadManagerTest, StartDownload) {
-  SetHasObserverCalls(true);
-
   std::unique_ptr<download::DownloadCreateInfo> info(
       new download::DownloadCreateInfo);
   std::unique_ptr<ByteStreamReader> stream(new MockByteStreamReader);
@@ -521,8 +499,6 @@ TEST_F(DownloadManagerTest, StartDownload) {
       std::move(info), std::move(input_stream), nullptr,
       download::DownloadUrlParameters::OnStartedCallback());
   EXPECT_TRUE(download_manager_->GetDownload(local_id));
-
-  SetHasObserverCalls(false);
 }
 
 // Confirm that calling DetermineDownloadTarget behaves properly if the delegate
