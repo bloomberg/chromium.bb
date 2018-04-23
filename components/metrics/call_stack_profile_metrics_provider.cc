@@ -36,10 +36,6 @@ namespace metrics {
 
 namespace {
 
-// Interval for periodic (post-startup) sampling, when enabled.
-constexpr base::TimeDelta kPeriodicSamplingInterval =
-    base::TimeDelta::FromSeconds(1);
-
 // Provide a mapping from the C++ "enum" definition of various process mile-
 // stones to the equivalent protobuf "enum" definition. This table-lookup
 // conversion allows for the implementation to evolve and still be compatible
@@ -55,24 +51,6 @@ const ProcessPhase
 
         ProcessPhase::SHUTDOWN_START,
 };
-
-// Parameters for UI thread of browser process sampling. Not const since these
-// may be changed when transitioning from start-up profiling to periodic
-// profiling.
-CallStackProfileParams g_ui_thread_sampling_params(
-    CallStackProfileParams::BROWSER_PROCESS,
-    CallStackProfileParams::MAIN_THREAD,
-    CallStackProfileParams::PROCESS_STARTUP,
-    CallStackProfileParams::MAY_SHUFFLE);
-
-// Parameters for IO thread of browser process sampling. Not const since these
-// may be changed when transitioning from start-up profiling to periodic
-// profiling.
-CallStackProfileParams g_io_thread_sampling_params(
-    CallStackProfileParams::BROWSER_PROCESS,
-    CallStackProfileParams::IO_THREAD,
-    CallStackProfileParams::PROCESS_STARTUP,
-    CallStackProfileParams::MAY_SHUFFLE);
 
 // ProfilesState --------------------------------------------------------------
 
@@ -141,11 +119,6 @@ class PendingProfiles {
   PendingProfiles();
   ~PendingProfiles();
 
-  // Attemps to merge |profile_state| with existing |to_profile_state|. Returns
-  // true if merged.
-  bool TryProfileMerge(const ProfilesState& profile_state,
-                       ProfilesState* to_profile_state);
-
   mutable base::Lock lock_;
 
   // If true, profiles provided to CollectProfilesIfCollectionEnabled should be
@@ -202,20 +175,6 @@ void PendingProfiles::CollectProfilesIfCollectionEnabled(
     return;
   }
 
-  if (profiles.params.trigger == CallStackProfileParams::PERIODIC_COLLECTION) {
-    DCHECK_EQ(1U, profiles.profiles.size());
-    profiles.profiles[0].sampling_period = kPeriodicSamplingInterval;
-    // Use the process uptime as the collection time to indicate when this
-    // profile was collected. This is useful to account for uptime bias during
-    // analysis.
-    profiles.profiles[0].profile_duration = internal::GetUptime();
-  }
-
-  for (ProfilesState& profile_state : profiles_) {
-    if (TryProfileMerge(profiles, &profile_state))
-      return;
-  }
-
   profiles_.push_back(std::move(profiles));
 }
 
@@ -236,63 +195,6 @@ PendingProfiles::PendingProfiles() : collection_enabled_(true) {}
 
 PendingProfiles::~PendingProfiles() {}
 
-bool PendingProfiles::TryProfileMerge(const ProfilesState& profile_state,
-                                      ProfilesState* to_profile_state) {
-  if (profile_state.profiles.empty() || to_profile_state->profiles.empty())
-    return false;
-
-  const auto& params = profile_state.params;
-  // Only periodic profile merging is supported.
-  if (params.trigger != CallStackProfileParams::PERIODIC_COLLECTION)
-    return false;
-
-  const auto& to_params = to_profile_state->params;
-  if (to_params.trigger != params.trigger ||
-      to_params.process != params.process ||
-      to_params.thread != params.thread) {
-    return false;
-  }
-  DCHECK_EQ(1U, profile_state.profiles.size());
-  DCHECK_EQ(1U, to_profile_state->profiles.size());
-  const auto& from_profile = profile_state.profiles[0];
-  auto* to_profile = &to_profile_state->profiles[0];
-
-  // Create a mapping from module id to index.
-  std::map<std::string, size_t> module_id_to_index;
-  for (const auto& module : to_profile->modules) {
-    module_id_to_index.insert(
-        std::make_pair(module.id, module_id_to_index.size()));
-  }
-
-  for (const auto& base_sample : from_profile.samples) {
-    // Make a copy of the sample so we can update its module indexes.
-    StackSamplingProfiler::Sample sample = base_sample;
-    for (StackSamplingProfiler::Frame& frame : sample.frames) {
-      if (frame.module_index ==
-          base::StackSamplingProfiler::Frame::kUnknownModuleIndex) {
-        continue;
-      }
-      const auto& module = from_profile.modules[frame.module_index];
-      auto it = module_id_to_index.find(module.id);
-      if (it == module_id_to_index.end()) {
-        module_id_to_index.insert(
-            std::make_pair(module.id, module_id_to_index.size()));
-        to_profile->modules.push_back(module);
-        frame.module_index = module_id_to_index.size() - 1;
-      } else {
-        frame.module_index = it->second;
-      }
-    }
-
-    to_profile->samples.push_back(sample);
-  }
-
-  // Update the profile duration, which stores uptime for periodic profiles.
-  to_profile->profile_duration = from_profile.profile_duration;
-
-  return true;
-}
-
 // Functions to process completed profiles ------------------------------------
 
 // Will be invoked on either the main thread or the profiler's thread. Provides
@@ -303,27 +205,6 @@ ReceiveCompletedProfilesImpl(
     StackSamplingProfiler::CallStackProfiles profiles) {
   PendingProfiles::GetInstance()->CollectProfilesIfCollectionEnabled(
       ProfilesState(*params, std::move(profiles)));
-
-  // Now, schedule periodic sampling every 1s, if enabled by trial.
-  // TODO(asvitkine): Support periodic sampling for non-browser processes.
-  // TODO(asvitkine): In the future, we may want to have finer grained control
-  // over this, for example ending sampling after some amount of time.
-  if (CallStackProfileMetricsProvider::IsPeriodicSamplingEnabled() &&
-      params->process == CallStackProfileParams::BROWSER_PROCESS &&
-      (params->thread == CallStackProfileParams::MAIN_THREAD ||
-       params->thread == CallStackProfileParams::IO_THREAD)) {
-    params->trigger = CallStackProfileParams::PERIODIC_COLLECTION;
-    params->start_timestamp = base::TimeTicks::Now();
-
-    StackSamplingProfiler::SamplingParams sampling_params;
-    sampling_params.initial_delay = kPeriodicSamplingInterval;
-    sampling_params.bursts = 1;
-    sampling_params.samples_per_burst = 1;
-    // Below are unused:
-    sampling_params.burst_interval = base::TimeDelta::FromMilliseconds(0);
-    sampling_params.sampling_interval = base::TimeDelta::FromMilliseconds(0);
-    return sampling_params;
-  }
   return base::Optional<StackSamplingProfiler::SamplingParams>();
 }
 
@@ -513,36 +394,6 @@ SampledProfile::TriggerEvent ToSampledProfileTriggerEvent(
 
 }  // namespace
 
-namespace internal {
-
-base::TimeDelta GetUptime() {
-  static base::Time process_creation_time;
-// base::CurrentProcessInfo::CreationTime() is only defined on some platforms.
-#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN) || \
-    defined(OS_LINUX)
-  if (process_creation_time.is_null())
-    process_creation_time = base::CurrentProcessInfo::CreationTime();
-#else
-  NOTREACHED();
-#endif
-  DCHECK(!process_creation_time.is_null());
-  return base::Time::Now() - process_creation_time;
-}
-
-StackSamplingProfiler::CompletedCallback GetProfilerCallback(
-    CallStackProfileParams* params) {
-  // Ignore the profiles if the collection is disabled. If the collection state
-  // changes while collecting, this will be detected by the callback and
-  // profiles will be ignored at that point.
-  if (!PendingProfiles::GetInstance()->IsCollectionEnabled())
-    return base::Bind(&IgnoreCompletedProfiles);
-
-  params->start_timestamp = base::TimeTicks::Now();
-  return base::Bind(&ReceiveCompletedProfilesImpl, params);
-}
-
-}  // namespace internal
-
 // CallStackProfileMetricsProvider --------------------------------------------
 
 const base::Feature CallStackProfileMetricsProvider::kEnableReporting = {
@@ -557,17 +408,14 @@ CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {
 StackSamplingProfiler::CompletedCallback
 CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess(
     CallStackProfileParams* params) {
-  return internal::GetProfilerCallback(params);
-}
+  // Ignore the profiles if the collection is disabled. If the collection state
+  // changes while collecting, this will be detected by the callback and
+  // profiles will be ignored at that point.
+  if (!PendingProfiles::GetInstance()->IsCollectionEnabled())
+    return base::Bind(&IgnoreCompletedProfiles);
 
-StackSamplingProfiler::CompletedCallback CallStackProfileMetricsProvider::
-    GetProfilerCallbackForBrowserProcessUIThreadStartup() {
-  return internal::GetProfilerCallback(&g_ui_thread_sampling_params);
-}
-
-StackSamplingProfiler::CompletedCallback CallStackProfileMetricsProvider::
-    GetProfilerCallbackForBrowserProcessIOThreadStartup() {
-  return internal::GetProfilerCallback(&g_io_thread_sampling_params);
+  params->start_timestamp = base::TimeTicks::Now();
+  return base::Bind(&ReceiveCompletedProfilesImpl, params);
 }
 
 // static
@@ -575,30 +423,6 @@ void CallStackProfileMetricsProvider::ReceiveCompletedProfiles(
     CallStackProfileParams* params,
     base::StackSamplingProfiler::CallStackProfiles profiles) {
   ReceiveCompletedProfilesImpl(params, std::move(profiles));
-}
-
-// static
-bool CallStackProfileMetricsProvider::IsPeriodicSamplingEnabled() {
-  // Ensure FeatureList has been initialized before calling into an API that
-  // calls base::FeatureList::IsEnabled() internally. While extremely unlikely,
-  // it is possible that the profiler callback and therefore this function get
-  // called before FeatureList initialization (e.g. if machine was suspended).
-  //
-  // The result is cached in a static to avoid a shutdown hang calling into the
-  // API while FieldTrialList is being destroyed. See also the comment below in
-  // Init().
-  static const bool is_enabled = base::FeatureList::GetInstance() != nullptr &&
-                                 base::GetFieldTrialParamByFeatureAsBool(
-                                     kEnableReporting, "periodic", false);
-  return is_enabled;
-}
-
-void CallStackProfileMetricsProvider::Init() {
-  // IsPeriodicSamplingEnabled() caches the result in a local static, so that
-  // future calls will return it directly. Calling it in Init() will cache the
-  // result, which will ensure we won't call into FieldTrialList during
-  // shutdown which can hang if it's in the middle of being destroyed.
-  CallStackProfileMetricsProvider::IsPeriodicSamplingEnabled();
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {
