@@ -24,8 +24,8 @@
                 "href": "/extensions/manifest"
               },
               {
-                "title": "Event Pages",
-                "href": "/extensions/event_pages"
+                "title": "Manage Events",
+                "href": "/extensions/background_pages"
               },
               {
                 "title": "Content Scripts",
