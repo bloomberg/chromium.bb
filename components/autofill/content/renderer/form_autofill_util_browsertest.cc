@@ -392,3 +392,33 @@ TEST_F(FormAutofillUtilsTest, IsDefault) {
     EXPECT_EQ(kExpectedFields[i].is_default, target.fields[i].is_default);
   }
 }
+
+TEST_F(FormAutofillUtilsTest, IsFocusable) {
+  LoadHTML(
+      "<input type='text' id='name1' value='123'>"
+      "<input type='text' id='name2' style='display:none'>");
+
+  const std::vector<blink::WebElement> dummy_fieldsets;
+
+  WebLocalFrame* web_frame = GetMainFrame();
+  ASSERT_TRUE(web_frame);
+
+  std::vector<blink::WebFormControlElement> control_elements;
+  control_elements.push_back(web_frame->GetDocument()
+                                 .GetElementById("name1")
+                                 .To<blink::WebFormControlElement>());
+  control_elements.push_back(web_frame->GetDocument()
+                                 .GetElementById("name2")
+                                 .To<blink::WebFormControlElement>());
+
+  autofill::FormData target;
+  EXPECT_TRUE(
+      autofill::form_util::UnownedPasswordFormElementsAndFieldSetsToFormData(
+          dummy_fieldsets, control_elements, nullptr, web_frame->GetDocument(),
+          nullptr, autofill::form_util::EXTRACT_NONE, &target, nullptr));
+  ASSERT_EQ(2u, target.fields.size());
+  EXPECT_EQ(base::UTF8ToUTF16("name1"), target.fields[0].name);
+  EXPECT_TRUE(target.fields[0].is_focusable);
+  EXPECT_EQ(base::UTF8ToUTF16("name2"), target.fields[1].name);
+  EXPECT_FALSE(target.fields[1].is_focusable);
+}
