@@ -38,6 +38,16 @@ class MediaControlPanelElementTest : public PageTestBase {
 
   void ExpectPanelIsNotDisplayed() { EXPECT_FALSE(GetPanel().IsWanted()); }
 
+  void EventListenerNotCreated() { EXPECT_FALSE(GetPanel().event_listener_); }
+
+  void EventListenerAttached() {
+    EXPECT_TRUE(GetPanel().EventListenerIsAttachedForTest());
+  }
+
+  void EventListenerDetached() {
+    EXPECT_FALSE(GetPanel().EventListenerIsAttachedForTest());
+  }
+
   MediaControlPanelElement& GetPanel() { return *panel_element_.Get(); }
 
  private:
@@ -52,16 +62,31 @@ class MediaControlPanelElementTest : public PageTestBase {
 };
 
 TEST_F(MediaControlPanelElementTest, StateTransitions) {
+  // Make sure we are displayed (we are already opaque).
   GetPanel().SetIsDisplayed(true);
-  GetPanel().MakeOpaque();
-
   ExpectPanelIsDisplayed();
-  SimulateTransitionEnd();
 
+  // Ensure the event listener has not been created and make the panel
+  // transparent.
+  EventListenerNotCreated();
   GetPanel().MakeTransparent();
 
+  // The event listener should now be attached so we should simulate the
+  // transition end and the panel will be hidden.
+  EventListenerAttached();
   SimulateTransitionEnd();
   ExpectPanelIsNotDisplayed();
+
+  // The event listener should be detached. We should now make the panel
+  // opaque again.
+  EventListenerDetached();
+  GetPanel().MakeOpaque();
+
+  // The event listener should now be attached so we should simulate the
+  // transition end event and the panel will be hidden.
+  EventListenerAttached();
+  SimulateTransitionEnd();
+  ExpectPanelIsDisplayed();
 }
 
 }  // namespace blink
