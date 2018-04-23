@@ -128,11 +128,11 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
                                 bool minimal_changes) {
   TRACE_EVENT0("omnibox", "ZeroSuggestProvider::Start");
   matches_.clear();
+  Stop(true, false);
   if (!input.from_omnibox_focus() || client()->IsOffTheRecord() ||
       input.type() == metrics::OmniboxInputType::INVALID)
     return;
 
-  Stop(true, false);
   result_type_running_ = NONE;
   set_field_trial_triggered(false);
   set_field_trial_triggered_in_session(false);

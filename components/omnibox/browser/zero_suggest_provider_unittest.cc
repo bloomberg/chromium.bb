@@ -272,6 +272,33 @@ TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
   EXPECT_FALSE(fetcher);
 }
 
+TEST_F(ZeroSuggestProviderTest, TestStartWillStopForSomeInput) {
+  CreatePersonalizedFieldTrial();
+
+  std::string input_url("http://www.cnn.com/");
+  AutocompleteInput input(base::ASCIIToUTF16(input_url),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_current_url(GURL(input_url));
+  input.set_from_omnibox_focus(true);
+
+  provider_->Start(input, false);
+  EXPECT_FALSE(provider_->done_);
+
+  // Make sure input stops the provider.
+  input.set_from_omnibox_focus(false);
+  provider_->Start(input, false);
+  EXPECT_TRUE(provider_->done_);
+
+  // Make sure invalid input stops the provider.
+  input.set_from_omnibox_focus(true);
+  provider_->Start(input, false);
+  EXPECT_FALSE(provider_->done_);
+  AutocompleteInput input2;
+  provider_->Start(input2, false);
+  EXPECT_TRUE(provider_->done_);
+}
+
 TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
   CreateMostVisitedFieldTrial();
 

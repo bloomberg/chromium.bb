@@ -67,6 +67,8 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   void ResetSession() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
+                           TestStartWillStopForSomeInput);
   ZeroSuggestProvider(AutocompleteProviderClient* client,
                       HistoryURLProvider* history_url_provider,
                       AutocompleteProviderListener* listener);
