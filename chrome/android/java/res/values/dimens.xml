@@ -373,8 +373,8 @@
     <dimen name="ntp_suggestions_footer_padding_top">40dp</dimen>
     <dimen name="ntp_suggestions_footer_padding_bottom">18dp</dimen>
     <dimen name="chrome_home_logo_minimum_height">1dp</dimen>
-    <dimen name="chrome_home_suggestions_footer_padding_top">24dp</dimen>
-    <dimen name="chrome_home_suggestions_footer_padding_bottom">24dp</dimen>
+    <dimen name="modern_suggestions_footer_padding_top">24dp</dimen>
+    <dimen name="modern_suggestions_footer_padding_bottom">24dp</dimen>
     <dimen name="content_suggestions_card_modern_margin">16dp</dimen>
     <dimen name="content_suggestions_card_modern_corner_radius">10dp</dimen>
     <dimen name="content_suggestions_card_modern_badge_size">18dp</dimen>

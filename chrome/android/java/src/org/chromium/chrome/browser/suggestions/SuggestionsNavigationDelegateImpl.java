@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.download.DownloadMetrics;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -193,6 +194,14 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         }
 
         return loadingTab;
+    }
+
+    @Override
+    public void showFeedback() {
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+        HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, Profile.getLastUsedProfile(),
+                currentTab != null ? currentTab.getUrl() : null,
+                /* categoryTag = */ null);
     }
 
     private boolean openRecentTabSnippet(SnippetArticle article) {

@@ -21,8 +21,9 @@ public class FakeContextualSuggestionsSource extends ContextualSuggestionsSource
     final static String TEST_TOOLBAR_TITLE = "Test toolbar title";
     final static Integer NUMBER_OF_CLUSTERS = 3;
     final static Integer ARTICLES_PER_CLUSTER = 3;
-    // There should be 12 items in the cluster list - 3 articles and a title per cluster.
-    final static Integer TOTAL_ITEM_COUNT = 12;
+    // There should be 13 items in the cluster list - 3 articles and a title per cluster,
+    // and a footer. TODO(twellington): Drop down to 12 after footer is removed.
+    final static Integer TOTAL_ITEM_COUNT = 13;
 
     FakeContextualSuggestionsSource() {
         super(null);

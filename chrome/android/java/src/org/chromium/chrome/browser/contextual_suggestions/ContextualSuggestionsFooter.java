@@ -1,9 +1,10 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp.cards;
+package org.chromium.chrome.browser.contextual_suggestions;
 
+import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,16 +12,19 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
+import org.chromium.chrome.browser.ntp.cards.ItemViewType;
+import org.chromium.chrome.browser.ntp.cards.Leaf;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
-import org.chromium.ui.text.SpanApplier;
 
 /**
- * A footer to show some text and a link to learn more.
+ * A footer to show some a "Send Feedback" link.
+ * TODO(twellington): Remove when feedback link is moved into overflow menu
+ * (https://crbug.com/831782).
  */
-public class Footer extends OptionalLeaf {
-
+public class ContextualSuggestionsFooter extends Leaf {
     @Override
     @ItemViewType
     protected int getItemViewType() {
@@ -33,12 +37,8 @@ public class Footer extends OptionalLeaf {
     }
 
     @Override
-    public void visitOptionalItem(NodeVisitor visitor) {
+    public void visitItems(NodeVisitor visitor) {
         visitor.visitFooter();
-    }
-
-    public void setVisible(boolean visible) {
-        setVisibilityInternal(visible);
     }
 
     /**
@@ -47,29 +47,22 @@ public class Footer extends OptionalLeaf {
     public static class ViewHolder extends NewTabPageViewHolder {
         public ViewHolder(ViewGroup root, final SuggestionsNavigationDelegate navigationDelegate) {
             super(LayoutInflater.from(root.getContext())
-                            .inflate(R.layout.new_tab_page_footer, root, false));
+                            .inflate(R.layout.contextual_suggestions_footer, root, false));
 
             NoUnderlineClickableSpan link = new NoUnderlineClickableSpan() {
                 @Override
                 public void onClick(View view) {
-                    navigationDelegate.navigateToHelpPage();
+                    navigationDelegate.showFeedback();
                 }
             };
 
-            TextView textView = (TextView) itemView.findViewById(R.id.text);
-            textView.setText(SpanApplier.applySpans(
-                    root.getResources().getString(R.string.ntp_learn_more_about_suggested_content),
-                    new SpanApplier.SpanInfo("<link>", "</link>", link)));
-            textView.setMovementMethod(LinkMovementMethod.getInstance());
+            SpannableString text = new SpannableString(
+                    root.getResources().getString(R.string.sad_tab_send_feedback_label));
+            text.setSpan(link, 0, text.length(), 0);
 
-            if (SuggestionsConfig.useModernLayout()) {
-                itemView.setPadding(itemView.getPaddingLeft(),
-                        root.getResources().getDimensionPixelSize(
-                                R.dimen.modern_suggestions_footer_padding_top),
-                        itemView.getPaddingRight(),
-                        root.getResources().getDimensionPixelSize(
-                                R.dimen.modern_suggestions_footer_padding_bottom));
-            }
+            TextView textView = (TextView) itemView.findViewById(R.id.text);
+            textView.setText(text);
+            textView.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 }
