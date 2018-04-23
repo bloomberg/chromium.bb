@@ -117,7 +117,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       context_provider = base::MakeRefCounted<VizProcessContextProvider>(
           gpu_service_, surface_handle, gpu_memory_buffer_manager_.get(),
           image_factory_, gpu_channel_manager_delegate_,
-          gpu::SharedMemoryLimits(), nullptr /* shared_context */);
+          gpu::SharedMemoryLimits());
       context_result = context_provider->BindToCurrentThread();
 
       // TODO(crbug.com/819474): Don't crash here, instead fallback to software

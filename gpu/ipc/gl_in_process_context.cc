@@ -49,7 +49,6 @@ class GLInProcessContextImpl
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
       SurfaceHandle window,
-      GLInProcessContext* share_context,
       const ContextCreationAttribs& attribs,
       const SharedMemoryLimits& mem_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -138,7 +137,6 @@ ContextResult GLInProcessContextImpl::Initialize(
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
     SurfaceHandle window,
-    GLInProcessContext* share_context,
     const ContextCreationAttribs& attribs,
     const SharedMemoryLimits& mem_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -157,19 +155,8 @@ ContextResult GLInProcessContextImpl::Initialize(
 
   command_buffer_ = std::make_unique<InProcessCommandBuffer>(service);
 
-  scoped_refptr<gles2::ShareGroup> share_group;
-  InProcessCommandBuffer* share_command_buffer = nullptr;
-  if (share_context) {
-    GLInProcessContextImpl* impl =
-        static_cast<GLInProcessContextImpl*>(share_context);
-    share_group = impl->gles2_implementation_->share_group();
-    share_command_buffer = impl->command_buffer_.get();
-    DCHECK(share_group);
-    DCHECK(share_command_buffer);
-  }
-
   auto result = command_buffer_->Initialize(
-      surface, is_offscreen, window, attribs, share_command_buffer,
+      surface, is_offscreen, window, attribs, /*share_command_buffer=*/nullptr,
       gpu_memory_buffer_manager, image_factory, gpu_channel_manager_delegate,
       std::move(task_runner));
   if (result != ContextResult::kSuccess) {
@@ -197,7 +184,7 @@ ContextResult GLInProcessContextImpl::Initialize(
   // Create the object exposing the OpenGL API.
   gles2_implementation_ =
       std::make_unique<skia_bindings::GLES2ImplementationWithGrContextSupport>(
-          gles2_helper_.get(), share_group.get(), transfer_buffer_.get(),
+          gles2_helper_.get(), /*share_group=*/nullptr, transfer_buffer_.get(),
           bind_generates_resource, attribs.lose_context_when_out_of_memory,
           support_client_side_arrays, command_buffer_.get());
 

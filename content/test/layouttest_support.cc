@@ -401,7 +401,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
           GURL("chrome://gpu/"
                "LayoutTestDependenciesImpl::CreateOutputSurface"),
           automatic_flushes, support_locking, support_grcontext,
-          gpu::SharedMemoryLimits(), attributes, nullptr,
+          gpu::SharedMemoryLimits(), attributes,
           ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
       context_result = context_provider->BindToCurrentThread();
 

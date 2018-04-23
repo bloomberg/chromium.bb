@@ -392,7 +392,7 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext/" +
            ui::command_buffer_metrics::ContextTypeToString(type)),
       automatic_flushes, support_locking, support_grcontext, limits, attributes,
-      nullptr /* share_context */, type);
+      type);
 }
 
 // Hook that allows single-sample metric code from //components/metrics to
@@ -2125,8 +2125,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
           gpu_channel_host, GetGpuMemoryBufferManager(), kGpuStreamIdDefault,
           kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle, url,
           automatic_flushes, support_locking, support_grcontext, limits,
-          attributes, nullptr /* share_context */,
-          ui::command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
+          attributes, ui::command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
   if (layout_test_deps_) {
     if (!layout_test_deps_->UseDisplayCompositorPixelDump()) {

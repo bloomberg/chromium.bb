@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -53,22 +55,20 @@ VizProcessContextProvider::VizProcessContextProvider(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-    const gpu::SharedMemoryLimits& limits,
-    VizProcessContextProvider* shared_context)
+    const gpu::SharedMemoryLimits& limits)
     : attributes_(CreateAttributes()),
       context_(gpu::GLInProcessContext::CreateWithoutInit()),
-      context_result_(context_->Initialize(
-          std::move(service),
-          nullptr,
-          (surface_handle == gpu::kNullSurfaceHandle),
-          surface_handle,
-          (shared_context ? shared_context->context_.get() : nullptr),
-          attributes_,
-          limits,
-          gpu_memory_buffer_manager,
-          image_factory,
-          gpu_channel_manager_delegate,
-          base::ThreadTaskRunnerHandle::Get())),
+      context_result_(
+          context_->Initialize(std::move(service),
+                               nullptr,
+                               (surface_handle == gpu::kNullSurfaceHandle),
+                               surface_handle,
+                               attributes_,
+                               limits,
+                               gpu_memory_buffer_manager,
+                               image_factory,
+                               gpu_channel_manager_delegate,
+                               base::ThreadTaskRunnerHandle::Get())),
       cache_controller_(std::make_unique<ContextCacheController>(
           context_->GetImplementation(),
           base::ThreadTaskRunnerHandle::Get())) {}

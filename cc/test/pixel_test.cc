@@ -195,7 +195,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
   enable_pixel_output_ = std::make_unique<gl::DisableNullDrawGLBindings>();
 
   auto context_provider = base::MakeRefCounted<TestInProcessContextProvider>(
-      nullptr, /*enable_oop_rasterization=*/false,
+      /*enable_oop_rasterization=*/false,
       /*support_gles2_interface=*/true);
   output_surface_ = std::make_unique<PixelTestOutputSurface>(
       std::move(context_provider), flipped_output_surface);
@@ -208,7 +208,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
       output_surface_->context_provider(), shared_bitmap_manager_.get());
 
   child_context_provider_ = base::MakeRefCounted<TestInProcessContextProvider>(
-      nullptr, /*enable_oop_rasterization=*/false,
+      /*enable_oop_rasterization=*/false,
       /*support_gles2_interface=*/true);
   child_context_provider_->BindToCurrentThread();
   child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(

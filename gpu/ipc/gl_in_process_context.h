@@ -45,7 +45,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
       SurfaceHandle window,
-      GLInProcessContext* share_context,
       const ContextCreationAttribs& attribs,
       const SharedMemoryLimits& memory_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,

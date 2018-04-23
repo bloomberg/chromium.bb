@@ -6,6 +6,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -1106,8 +1107,7 @@ GpuProcessTransportFactory::CreateContextCommon(
   return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(), stream_id,
       stream_priority, surface_handle, url, automatic_flushes, support_locking,
-      support_grcontext, gpu::SharedMemoryLimits(), attributes,
-      nullptr /* share_context */, type);
+      support_grcontext, gpu::SharedMemoryLimits(), attributes, type);
 }
 
 }  // namespace content

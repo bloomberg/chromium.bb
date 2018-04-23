@@ -67,7 +67,7 @@ static void CreateContextProviderOnMainThread(
   Platform::GraphicsInfo graphics_info;
   auto context_provider =
       Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-          context_attributes, WebURL(), nullptr, &graphics_info);
+          context_attributes, WebURL(), &graphics_info);
   if (context_provider) {
     *wrapper = std::make_unique<WebGraphicsContext3DProviderWrapper>(
         std::move(context_provider));

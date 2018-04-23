@@ -5,6 +5,7 @@
 #include "content/browser/compositor/viz_process_transport_factory.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
@@ -73,7 +74,7 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextProviderImpl(
       std::move(gpu_channel_host), gpu_memory_buffer_manager,
       kGpuStreamIdDefault, kGpuStreamPriorityUI, gpu::kNullSurfaceHandle,
       std::move(url), kAutomaticFlushes, support_locking, support_grcontext,
-      gpu::SharedMemoryLimits(), attributes, nullptr /* share_context */, type);
+      gpu::SharedMemoryLimits(), attributes, type);
 }
 
 bool IsContextLost(viz::ContextProvider* context_provider) {

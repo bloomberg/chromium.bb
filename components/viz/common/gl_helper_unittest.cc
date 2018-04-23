@@ -6,14 +6,17 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <cmath>
-#include <string>
-#include <tuple>
-#include <vector>
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+
+#include <algorithm>
+#include <cmath>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -67,7 +70,6 @@ class GLHelperTest : public testing::Test {
                              nullptr,                 /* surface */
                              true,                    /* offscreen */
                              gpu::kNullSurfaceHandle, /* window */
-                             nullptr,                 /* share_context */
                              attributes, gpu::SharedMemoryLimits(),
                              nullptr, /* gpu_memory_buffer_manager */
                              nullptr, /* image_factory */

@@ -28,11 +28,11 @@
 
 namespace cc {
 
-// static
-std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
+namespace {
+
+std::unique_ptr<gpu::GLInProcessContext> CreateGLInProcessContext(
     viz::TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
     TestImageFactory* image_factory,
-    gpu::GLInProcessContext* shared_context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     bool oop_raster) {
   const bool is_offscreen = true;
@@ -48,29 +48,29 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
 
   auto context = gpu::GLInProcessContext::CreateWithoutInit();
   auto result = context->Initialize(
-      nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle, shared_context,
-      attribs, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager,
-      image_factory, nullptr, std::move(task_runner));
+      nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle, attribs,
+      gpu::SharedMemoryLimits(), gpu_memory_buffer_manager, image_factory,
+      nullptr, std::move(task_runner));
 
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   return context;
 }
 
+}  // namespace
+
 std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
-  return CreateTestInProcessContext(nullptr, nullptr, nullptr,
-                                    base::ThreadTaskRunnerHandle::Get(), false);
+  return CreateGLInProcessContext(nullptr, nullptr,
+                                  base::ThreadTaskRunnerHandle::Get(), false);
 }
 
 TestInProcessContextProvider::TestInProcessContextProvider(
-    TestInProcessContextProvider* shared_context,
     bool enable_oop_rasterization,
     bool support_gles2_interface) {
   if (support_gles2_interface) {
     // TODO(enne): make this always support oop rasterization.  Some tests
     // fail to create the context when oop rasterization is turned on.
-    gles2_context_ = CreateTestInProcessContext(
+    gles2_context_ = CreateGLInProcessContext(
         &gpu_memory_buffer_manager_, &image_factory_,
-        (shared_context ? shared_context->gles2_context_.get() : nullptr),
         base::ThreadTaskRunnerHandle::Get(), enable_oop_rasterization);
     cache_controller_.reset(
         new viz::ContextCacheController(gles2_context_->GetImplementation(),

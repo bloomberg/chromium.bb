@@ -49,7 +49,6 @@ class YUVReadbackTest : public testing::Test {
                              nullptr,                 /* surface */
                              true,                    /* offscreen */
                              gpu::kNullSurfaceHandle, /* window */
-                             nullptr,                 /* share_context */
                              attributes, gpu::SharedMemoryLimits(),
                              nullptr, /* gpu_memory_buffer_manager */
                              nullptr, /* image_factory */

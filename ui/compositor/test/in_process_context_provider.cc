@@ -25,15 +25,14 @@ namespace ui {
 // static
 scoped_refptr<InProcessContextProvider> InProcessContextProvider::Create(
     const gpu::ContextCreationAttribs& attribs,
-    InProcessContextProvider* shared_context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
     gpu::SurfaceHandle window,
     const std::string& debug_name,
     bool support_locking) {
-  return new InProcessContextProvider(attribs, shared_context,
-                                      gpu_memory_buffer_manager, image_factory,
-                                      window, debug_name, support_locking);
+  return new InProcessContextProvider(attribs, gpu_memory_buffer_manager,
+                                      image_factory, window, debug_name,
+                                      support_locking);
 }
 
 // static
@@ -41,7 +40,6 @@ scoped_refptr<InProcessContextProvider>
 InProcessContextProvider::CreateOffscreen(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
-    InProcessContextProvider* shared_context,
     bool support_locking) {
   gpu::ContextCreationAttribs attribs;
   attribs.alpha_size = 8;
@@ -54,14 +52,13 @@ InProcessContextProvider::CreateOffscreen(
   attribs.sample_buffers = 0;
   attribs.fail_if_major_perf_caveat = false;
   attribs.bind_generates_resource = false;
-  return new InProcessContextProvider(
-      attribs, shared_context, gpu_memory_buffer_manager, image_factory,
-      gpu::kNullSurfaceHandle, "Offscreen", support_locking);
+  return new InProcessContextProvider(attribs, gpu_memory_buffer_manager,
+                                      image_factory, gpu::kNullSurfaceHandle,
+                                      "Offscreen", support_locking);
 }
 
 InProcessContextProvider::InProcessContextProvider(
     const gpu::ContextCreationAttribs& attribs,
-    InProcessContextProvider* shared_context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
     gpu::SurfaceHandle window,
@@ -69,7 +66,6 @@ InProcessContextProvider::InProcessContextProvider(
     bool support_locking)
     : support_locking_(support_locking),
       attribs_(attribs),
-      shared_context_(shared_context),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       image_factory_(image_factory),
       window_(window),
@@ -104,8 +100,7 @@ gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
       nullptr,  /* service */
       nullptr,  /* surface */
       !window_, /* is_offscreen */
-      window_, (shared_context_ ? shared_context_->context_.get() : nullptr),
-      attribs_, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_,
+      window_, attribs_, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_,
       image_factory_, nullptr /* gpu_channel_manager_delegate */,
       base::ThreadTaskRunnerHandle::Get());
 
