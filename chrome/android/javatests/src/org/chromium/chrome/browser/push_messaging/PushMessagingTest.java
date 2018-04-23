@@ -335,6 +335,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
         mMessageHandledHelper.waitForCallback(mMessageHandledHelper.getCallCount());
     }
 
+    @SuppressWarnings("MissingFail")
     private void waitForTitle(Tab tab, String expectedTitle) throws InterruptedException {
         TabTitleObserver titleObserver = new TabTitleObserver(tab, expectedTitle);
         try {

@@ -7,6 +7,7 @@ package org.chromium.base;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -198,6 +199,7 @@ public class PromiseTest {
         try {
             promise.reject(new NegativeArraySizeException(message));
             ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+            fail();
         } catch (UnhandledRejectionException e) {
             assertTrue(e.getCause() instanceof NegativeArraySizeException);
             assertEquals(e.getCause().getMessage(), message);
