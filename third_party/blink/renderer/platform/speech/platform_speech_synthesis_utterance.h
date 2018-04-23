@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SPEECH_PLATFORM_SPEECH_SYNTHESIS_UTTERANCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SPEECH_PLATFORM_SPEECH_SYNTHESIS_UTTERANCE_H_
 
+#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_voice.h"
@@ -83,9 +84,9 @@ class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final
   String text_;
   String lang_;
   scoped_refptr<PlatformSpeechSynthesisVoice> voice_;
-  float volume_;
-  float rate_;
-  float pitch_;
+  float volume_ = SpeechSynthesisConstants::kDoublePrefNotSet;
+  float rate_ = SpeechSynthesisConstants::kDoublePrefNotSet;
+  float pitch_ = SpeechSynthesisConstants::kDoublePrefNotSet;
   double start_time_;
 };
 
