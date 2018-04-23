@@ -152,6 +152,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains,
     &password_manager::features::kPasswordExport,
     &password_manager::features::kPasswordSearchMobile,
+    &password_manager::features::kPasswordsKeyboardAccessory,
     &signin::kUnifiedConsent,
     &subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI,
     &safe_browsing::kDispatchSafetyNetCheckOffThread,

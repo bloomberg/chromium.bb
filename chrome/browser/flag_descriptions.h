@@ -751,6 +751,9 @@ extern const char kPasswordImportDescription[];
 extern const char kPasswordSearchMobileName[];
 extern const char kPasswordSearchMobileDescription[];
 
+extern const char kPasswordsKeyboardAccessoryName[];
+extern const char kPasswordsKeyboardAccessoryDescription[];
+
 extern const char kPdfIsolationName[];
 extern const char kPdfIsolationDescription[];
 

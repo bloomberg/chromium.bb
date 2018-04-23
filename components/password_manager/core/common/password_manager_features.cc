@@ -69,6 +69,10 @@ const base::Feature kPasswordImport = {"PasswordImport",
 const base::Feature kPasswordSearchMobile = {"PasswordSearchMobile",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Adds password-related features to the keyboard accessory on mobile devices.
+const base::Feature kPasswordsKeyboardAccessory = {
+    "PasswordsKeyboardAccessory", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
