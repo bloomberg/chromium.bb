@@ -198,6 +198,23 @@ int GetSwitchValueNonNegativeInt(const std::string& switch_name,
   return value;
 }
 
+double GetSwitchValueDouble(const std::string& switch_name,
+                            const double default_value) {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switch_name)) {
+    return default_value;
+  }
+
+  double arg_value;
+  if (!base::StringToDouble(command_line->GetSwitchValueASCII(switch_name),
+                            &arg_value)) {
+    LOG(DFATAL) << "--" << switch_name << " only accepts numbers as arguments";
+    return default_value;
+  }
+  return arg_value;
+}
+
 uint32_t GetSwitchValueColor(const std::string& switch_name,
                              const uint32_t default_value) {
   const base::CommandLine* command_line =

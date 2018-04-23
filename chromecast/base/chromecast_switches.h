@@ -102,6 +102,12 @@ int GetSwitchValueInt(const std::string& switch_name, const int default_value);
 int GetSwitchValueNonNegativeInt(const std::string& switch_name,
                                  const int default_value);
 
+// Gets a floating point value from switch |switch_name|. If the switch is not
+// present in the command line, or the value is not a number, the
+// |default_value| is returned.
+double GetSwitchValueDouble(const std::string& switch_name,
+                            const double default_value);
+
 // Gets a color value from the format "#AARRGGBB" (hex).
 uint32_t GetSwitchValueColor(const std::string& switch_name,
                              const uint32_t default_value);
