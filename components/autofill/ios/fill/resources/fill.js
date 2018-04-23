@@ -238,6 +238,8 @@ __gCrWeb.fill.setInputElementValue = function(
  *
  * @param {string} value The value the input element will be set.
  * @param {Element} input The input element of which the value is set.
+ * @return {boolean} Whether value of the field changed; Used for marking the
+ *     field as autofilled.
  */
 function setInputElementValue_(value, input) {
   var propertyName = (input.type === 'checkbox' || input.type === 'radio') ?
@@ -316,6 +318,9 @@ function setInputElementValue_(value, input) {
       input[propertyName] = value;
     }
   }
+
+  // Return true whether or not we succeeded in setting the value.
+  return true;
 }
 
 /**
