@@ -64,21 +64,10 @@ from blinkpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
-
-# TODO(https://crbug.com/787020): Remove dependency on msttcorefonts.
-MS_TRUETYPE_FONTS_DIR = '/usr/share/fonts/truetype/msttcorefonts/'
-MS_TRUETYPE_FONTS_PACKAGE = 'ttf-mscorefonts-installer'
-
 # Path relative to the build directory.
 CONTENT_SHELL_FONTS_DIR = "test_fonts"
 
 FONT_FILES = [
-    [[MS_TRUETYPE_FONTS_DIR], 'Comic_Sans_MS.ttf', MS_TRUETYPE_FONTS_PACKAGE],
-    [[MS_TRUETYPE_FONTS_DIR], 'Comic_Sans_MS_Bold.ttf', MS_TRUETYPE_FONTS_PACKAGE],
-    [[MS_TRUETYPE_FONTS_DIR], 'Impact.ttf', MS_TRUETYPE_FONTS_PACKAGE],
-    # The Microsoft font EULA
-    [['/usr/share/doc/ttf-mscorefonts-installer/'], 'READ_ME!.gz', MS_TRUETYPE_FONTS_PACKAGE],
-
     # Other fonts: Arabic, CJK, Indic, Thai, etc.
     [[CONTENT_SHELL_FONTS_DIR], 'Arimo-Bold.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Arimo-BoldItalic.ttf', None],
