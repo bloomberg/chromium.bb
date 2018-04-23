@@ -606,7 +606,8 @@ void LockContentsView::SetAvatarForUser(const AccountId& account_id,
     return;
   }
 
-  LoginUserView* user = users_list_->GetUserView(account_id);
+  LoginUserView* user =
+      users_list_ ? users_list_->GetUserView(account_id) : nullptr;
   if (user) {
     user->UpdateForUser(replace(user->current_user()), false /*animate*/);
     return;
