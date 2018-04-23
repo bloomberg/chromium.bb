@@ -30,7 +30,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/containers/circular_deque.h"
+#include "base/containers/linked_list.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
 #include "base/macros.h"
@@ -588,7 +588,9 @@ const unsigned HostResolverImpl::kMaximumDnsFailures = 16;
 // Holds the data for a request that could not be completed synchronously.
 // It is owned by a Job. Canceled Requests are only marked as canceled rather
 // than removed from the Job's |requests_| list.
-class HostResolverImpl::RequestImpl : public HostResolver::Request {
+class HostResolverImpl::RequestImpl
+    : public HostResolver::Request,
+      public base::LinkNode<HostResolverImpl::RequestImpl> {
  public:
   RequestImpl(const NetLogWithSource& source_net_log,
               const RequestInfo& info,
@@ -1254,14 +1256,13 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB);
     }
     // else CompleteRequests logged EndEvent.
-    if (!requests_.empty()) {
+    while (!requests_.empty()) {
       // Log any remaining Requests as cancelled.
-      for (RequestImpl* req : requests_) {
-        DCHECK_EQ(this, req->job());
-        LogCancelRequest(req->source_net_log(), req->info());
-        req->OnJobCancelled(this);
-      }
-      requests_.clear();
+      RequestImpl* req = requests_.head()->value();
+      req->RemoveFromList();
+      DCHECK_EQ(this, req->job());
+      LogCancelRequest(req->source_net_log(), req->info());
+      req->OnJobCancelled(this);
     }
   }
 
@@ -1301,7 +1302,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     if (!request->info().is_speculative())
       had_non_speculative_request_ = true;
 
-    requests_.push_back(request);
+    requests_.Append(request);
 
     UpdatePriority();
   }
@@ -1331,19 +1332,13 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     if (num_active_requests() > 0) {
       UpdatePriority();
-      RemoveRequest(request);
+      request->RemoveFromList();
     } else {
       // If we were called from a Request's callback within CompleteRequests,
       // that Request could not have been cancelled, so num_active_requests()
       // could not be 0. Therefore, we are not in CompleteRequests().
       CompleteRequestsWithError(OK /* cancelled */);
     }
-  }
-
-  void RemoveRequest(RequestImpl* request) {
-    auto it = std::find(requests_.begin(), requests_.end(), request);
-    DCHECK(it != requests_.end());
-    requests_.erase(it);
   }
 
   // Called from AbortAllInProgressJobs. Completes all requests and destroys
@@ -1381,8 +1376,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   bool ServeFromHosts() {
     DCHECK_GT(num_active_requests(), 0u);
     AddressList addr_list;
-    if (resolver_->ServeFromHosts(key(),
-                                  requests_.front()->info(),
+    if (resolver_->ServeFromHosts(key(), requests_.head()->value()->info(),
                                   &addr_list)) {
       // This will destroy the Job.
       CompleteRequests(
@@ -1452,7 +1446,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   AddressList MakeAddressListForRequest(const AddressList& list) const {
     if (requests_.empty())
       return list;
-    return AddressList::CopyWithPort(list, requests_.front()->info().port());
+    return AddressList::CopyWithPort(list,
+                                     requests_.head()->value()->info().port());
   }
 
   void UpdatePriority() {
@@ -1792,8 +1787,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     // Complete all of the requests that were attached to the job and
     // detach them.
     while (!requests_.empty()) {
-      RequestImpl* req = requests_.front();
-      requests_.pop_front();
+      RequestImpl* req = requests_.head()->value();
+      req->RemoveFromList();
       DCHECK_EQ(this, req->job());
       // Update the net log and notify registered observers.
       LogFinishRequest(req->source_net_log(), req->info(), entry.error());
@@ -1865,7 +1860,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   std::unique_ptr<DnsTask> dns_task_;
 
   // All Requests waiting for the result of this Job. Some can be canceled.
-  base::circular_deque<RequestImpl*> requests_;
+  base::LinkedList<RequestImpl> requests_;
 
   // A handle used in |HostResolverImpl::dispatcher_|.
   PrioritizedDispatcher::Handle handle_;
