@@ -930,7 +930,7 @@
     },
     {
       name: "PictureInPictureAPI",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "PreciseMemoryInfo",
