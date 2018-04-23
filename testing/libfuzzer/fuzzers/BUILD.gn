@@ -373,6 +373,7 @@ fuzzer_test("angle_translator_fuzzer") {
     "//third_party/angle:translator_fuzzer",
   ]
   libfuzzer_options = [ "max_len=1000" ]
+  dict = "dicts/webgl-glsl.dict"
 }
 
 if (target_cpu == "x86" || target_cpu == "x64") {
