@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -157,7 +158,7 @@ void ConnectionManager::OnNewConnection(base::ProcessId pid,
   // back to the current thread with weak pointers.
   AllocationTracker::CompleteCallback complete_cb =
       base::BindOnce(&ConnectionManager::OnConnectionCompleteThunk,
-                     base::MessageLoop::current()->task_runner(),
+                     base::MessageLoopCurrent::Get()->task_runner(),
                      weak_factory_.GetWeakPtr(), pid);
 
   auto connection = std::make_unique<Connection>(
@@ -251,7 +252,7 @@ void ConnectionManager::DumpProcessesForTracing(
   tracking->results.reserve(connections_.size());
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::MessageLoop::current()->task_runner();
+      base::MessageLoopCurrent::Get()->task_runner();
 
   for (auto& it : connections_) {
     base::ProcessId pid = it.first;
@@ -364,7 +365,7 @@ void ConnectionManager::DoDumpOneProcessForTracing(
                                                             std::move(buffer)));
 
                      },
-                     reply_size, base::MessageLoop::current()->task_runner(),
+                     reply_size, base::MessageLoopCurrent::Get()->task_runner(),
                      std::move(finished_callback)));
 }
 
