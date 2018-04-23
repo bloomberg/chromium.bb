@@ -1776,6 +1776,7 @@
       },
       {
         "args": [
+          "--zero-tests-executed-ok",
           "--debug",
           "--target",
           "Debug_x64"
@@ -3013,6 +3014,7 @@
       },
       {
         "args": [
+          "--zero-tests-executed-ok",
           "--debug",
           "--time-out-ms",
           "60000"

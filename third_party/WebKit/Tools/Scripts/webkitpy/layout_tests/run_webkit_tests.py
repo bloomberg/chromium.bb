@@ -490,6 +490,11 @@ def parse_args(args):
                 '-w', '--watch',
                 action='store_true',
                 help='Re-run tests quickly (e.g. avoid restarting the server)'),
+            optparse.make_option(
+                '--zero-tests-executed-ok',
+                action='store_true',
+                help='If set, exit with a success code when no tests are run.'
+                ' Used on trybots when layout tests are retried without patch.')
         ]))
 
     # FIXME: Move these into json_results_generator.py.
