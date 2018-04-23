@@ -29,6 +29,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/display/screen.h"
 #include "ui/events/android/drag_event_android.h"
+#include "ui/events/android/gesture_event_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image_skia.h"
@@ -103,14 +104,16 @@ WebContentsViewAndroid::WebContentsViewAndroid(
     WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate),
-      view_(this, ui::ViewAndroid::LayoutType::NORMAL),
+      view_(ui::ViewAndroid::LayoutType::NORMAL),
       synchronous_compositor_client_(nullptr) {
   view_.SetLayer(cc::Layer::Create());
+  view_.set_event_handler(this);
 }
 
 WebContentsViewAndroid::~WebContentsViewAndroid() {
   if (view_.GetLayer())
     view_.GetLayer()->RemoveFromParent();
+  view_.set_event_handler(nullptr);
 }
 
 void WebContentsViewAndroid::SetSelectPopup(
