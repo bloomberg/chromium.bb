@@ -84,12 +84,10 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
                               ash::PowerStatus::Get()->GetBatteryPercent() <
                                   kMigrationMinimumBatteryPercent;
 
-  const base::string16 message =
+  const base::string16 message = ui::SubstituteChromeOSDeviceType(
       is_low_battery
-          ? ui::SubstituteChromeOSDeviceType(
-                IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_LOW_BATTERY_MESSAGE)
-          : l10n_util::GetStringUTF16(
-                IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE);
+          ? IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_LOW_BATTERY_MESSAGE
+          : IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE);
 
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
