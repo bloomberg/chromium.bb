@@ -67,7 +67,6 @@ math        \x003C        126                 <                   LESS-THAN SIGN
 math        \x003D        2356                =                   EQUALS SIGN
 math        \x003E        345                 >                   GREATER-THAN SIGN
 punctuation \x003F        26                  ?                   QUESTION MARK
-punctuation \x0060        4                   `                   GRAVE ACCENT
 sign        \x007C        456                 |                   VERTICAL LINE
 
 
@@ -121,9 +120,11 @@ sign        \x005C        3456-1256           \                   REVERSE SOLIDU
 punctuation \x005D        6-356               ]                   RIGHT SQUARE BRACKET
 sign        \x005E        6-45                ^                   CIRCUMFLEX ACCENT
 sign        \x005F        6-36                _                   LOW LINE
+punctuation \x0060        45-4                `                   GRAVE ACCENT
 math        \x007B        46-236              {                   LEFT CURLY BRACKET
 math        \x007D        46-356              }                   RIGHT CURLY BRACKET
 math        \x007E        6-5                 ~                   TILDE
+sign        \x007F        6-3                                     DELETE
 
 
 # ----------------------------------------------------------------------------------------------
