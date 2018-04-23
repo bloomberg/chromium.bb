@@ -257,6 +257,7 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
           // error or a clock is inaccurate). Just ignore the deletion for now.
           DLOG(WARNING) << "Local session data deleted. Ignoring until next "
                         << "local navigation event.";
+          syncing_->local_data_out_of_sync = true;
         } else {
           batch->DeleteForeignEntityAndUpdateTracker(change.storage_key());
         }
@@ -265,19 +266,20 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
       case syncer::EntityChange::ACTION_UPDATE: {
         const SessionSpecifics& specifics = change.data().specifics.session();
 
-        if (!SessionStore::AreValidSpecifics(specifics) ||
-            change.data().client_tag_hash !=
-                GenerateSyncableHash(syncer::SESSIONS,
-                                     SessionStore::GetClientTag(specifics))) {
-          continue;
-        }
-
         if (syncing_->store->StorageKeyMatchesLocalSession(
                 change.storage_key())) {
           // We should only ever receive a change to our own machine's session
           // info if encryption was turned on. In that case, the data is still
           // the same, so we can ignore.
           DLOG(WARNING) << "Dropping modification to local session.";
+          syncing_->local_data_out_of_sync = true;
+          continue;
+        }
+
+        if (!SessionStore::AreValidSpecifics(specifics) ||
+            change.data().client_tag_hash !=
+                GenerateSyncableHash(syncer::SESSIONS,
+                                     SessionStore::GetClientTag(specifics))) {
           continue;
         }
 
@@ -341,6 +343,19 @@ SessionSyncBridge::ApplyDisableSyncChanges(
 std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>
 SessionSyncBridge::CreateLocalSessionWriteBatch() {
   DCHECK(syncing_);
+
+  // If a remote client mangled with our local session (typically deleted
+  // entities due to garbage collection), we resubmit all local entities at this
+  // point (i.e. local changes observed).
+  if (syncing_->local_data_out_of_sync) {
+    syncing_->local_data_out_of_sync = false;
+    // We use PostTask() to avoid interferring with the ongoing handling of
+    // local changes that triggered this function.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&SessionSyncBridge::ResubmitLocalSession,
+                                  base::AsWeakPtr(this)));
+  }
+
   return std::make_unique<LocalSessionWriteBatch>(
       syncing_->store->local_session_info(), CreateSessionStoreWriteBatch(),
       change_processor());
@@ -473,8 +488,30 @@ void SessionSyncBridge::DeleteForeignSessionWithBatch(
 std::unique_ptr<SessionStore::WriteBatch>
 SessionSyncBridge::CreateSessionStoreWriteBatch() {
   DCHECK(syncing_);
+
   return syncing_->store->CreateWriteBatch(
       base::BindOnce(&SessionSyncBridge::ReportError, base::AsWeakPtr(this)));
+}
+
+void SessionSyncBridge::ResubmitLocalSession() {
+  if (!syncing_) {
+    return;
+  }
+
+  std::unique_ptr<SessionStore::WriteBatch> write_batch =
+      CreateSessionStoreWriteBatch();
+  std::unique_ptr<syncer::DataBatch> read_batch =
+      syncing_->store->GetAllSessionData();
+  while (read_batch->HasNext()) {
+    syncer::KeyAndData key_and_data = read_batch->Next();
+    if (syncing_->store->StorageKeyMatchesLocalSession(key_and_data.first)) {
+      change_processor()->Put(key_and_data.first,
+                              std::move(key_and_data.second),
+                              write_batch->GetMetadataChangeList());
+    }
+  }
+
+  SessionStore::WriteBatch::Commit(std::move(write_batch));
 }
 
 void SessionSyncBridge::ReportError(const syncer::ModelError& error) {

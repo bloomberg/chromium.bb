@@ -98,6 +98,7 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   std::unique_ptr<SessionStore::WriteBatch> CreateSessionStoreWriteBatch();
   void DeleteForeignSessionWithBatch(const std::string& session_tag,
                                      SessionStore::WriteBatch* batch);
+  void ResubmitLocalSession();
   void ReportError(const syncer::ModelError& error);
 
   SyncSessionsClient* const sessions_client_;
@@ -117,6 +118,15 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
     std::unique_ptr<SessionStore> store;
     std::unique_ptr<OpenTabsUIDelegateImpl> open_tabs_ui_delegate;
     std::unique_ptr<LocalSessionEventHandlerImpl> local_session_event_handler;
+
+    // Tracks whether our local representation of which sync nodes map to what
+    // tabs (belonging to the current local session) is inconsistent.  This can
+    // happen if a foreign client deems our session as "stale" and decides to
+    // delete it. Rather than respond by bullishly re-creating our nodes
+    // immediately, which could lead to ping-pong sequences, we give the benefit
+    // of the doubt and hold off until another local navigation occurs, which
+    // proves that we are still relevant.
+    bool local_data_out_of_sync = false;
   };
 
   base::Optional<SyncingState> syncing_;
