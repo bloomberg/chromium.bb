@@ -1051,12 +1051,12 @@ void ChromeMetricsServiceClient::SetIsProcessRunningForTesting(
   g_is_process_running = func;
 }
 
-bool ChromeMetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
-  return SyncDisableObserver::IsHistorySyncEnabledOnAllProfiles();
+bool ChromeMetricsServiceClient::SyncStateAllowsUkm() {
+  return SyncDisableObserver::SyncStateAllowsUkm();
 }
 
-bool ChromeMetricsServiceClient::IsExtensionSyncEnabledOnAllProfiles() {
-  return SyncDisableObserver::IsExtensionSyncEnabledOnAllProfiles();
+bool ChromeMetricsServiceClient::SyncStateAllowsExtensionUkm() {
+  return SyncDisableObserver::SyncStateAllowsExtensionUkm();
 }
 
 bool g_notification_listeners_failed = false;

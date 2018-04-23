@@ -36,11 +36,11 @@ std::string MetricsServiceClient::GetInsecureMetricsServerUrl() {
   return kNewMetricsServerUrlInsecure;
 }
 
-bool MetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
+bool MetricsServiceClient::SyncStateAllowsUkm() {
   return false;
 }
 
-bool MetricsServiceClient::IsExtensionSyncEnabledOnAllProfiles() {
+bool MetricsServiceClient::SyncStateAllowsExtensionUkm() {
   return false;
 }
 
