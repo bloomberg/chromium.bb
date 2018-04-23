@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
@@ -261,7 +262,13 @@ std::string PolicyToolUITest::ExtractSinglePolicyValue(
   return value->GetString();
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyToolUITest, CreatingSessionFiles) {
+// Flaky on Win buildbots. See crbug.com/832673.
+#if defined(OS_WIN)
+#define MAYBE_CreatingSessionFiles DISABLED_CreatingSessionFiles
+#else
+#define MAYBE_CreatingSessionFiles CreatingSessionFiles
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, MAYBE_CreatingSessionFiles) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // Check that the directory is not created yet.
   EXPECT_FALSE(PathExists(GetSessionsDir()));
