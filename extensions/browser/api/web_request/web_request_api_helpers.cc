@@ -49,7 +49,7 @@ namespace extension_web_request_api_helpers {
 
 namespace {
 
-using ParsedResponseCookies = std::vector<linked_ptr<net::ParsedCookie>>;
+using ParsedResponseCookies = std::vector<std::unique_ptr<net::ParsedCookie>>;
 
 // Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
 // CHANGE THEIR MEANING.
@@ -838,7 +838,7 @@ static ParsedResponseCookies GetResponseCookies(
   std::string value;
   while (override_response_headers->EnumerateHeader(&iter, "Set-Cookie",
                                                     &value)) {
-    result.push_back(make_linked_ptr(new net::ParsedCookie(value)));
+    result.push_back(std::make_unique<net::ParsedCookie>(value));
   }
   return result;
 }
@@ -849,9 +849,9 @@ static void StoreResponseCookies(
     const ParsedResponseCookies& cookies,
     scoped_refptr<net::HttpResponseHeaders> override_response_headers) {
   override_response_headers->RemoveHeader("Set-Cookie");
-  for (ParsedResponseCookies::const_iterator i = cookies.begin();
-       i != cookies.end(); ++i) {
-    override_response_headers->AddHeader("Set-Cookie: " + (*i)->ToCookieLine());
+  for (const std::unique_ptr<net::ParsedCookie>& cookie : cookies) {
+    override_response_headers->AddHeader("Set-Cookie: " +
+                                         cookie->ToCookieLine());
   }
 }
 
@@ -947,10 +947,9 @@ static bool MergeAddResponseCookieModifications(
         continue;
       // Cookie names are not unique in response cookies so we always append
       // and never override.
-      linked_ptr<net::ParsedCookie> cookie(
-          new net::ParsedCookie(std::string()));
+      auto cookie = std::make_unique<net::ParsedCookie>(std::string());
       ApplyResponseCookieModification((*mod)->modification.get(), cookie.get());
-      cookies->push_back(cookie);
+      cookies->push_back(std::move(cookie));
       modified = true;
     }
   }
@@ -974,12 +973,10 @@ static bool MergeEditResponseCookieModifications(
       if ((*mod)->type != EDIT || !(*mod)->modification.get())
         continue;
 
-      for (ParsedResponseCookies::iterator cookie = cookies->begin();
-           cookie != cookies->end(); ++cookie) {
-        if (DoesResponseCookieMatchFilter(cookie->get(),
-                                          (*mod)->filter.get())) {
+      for (const std::unique_ptr<net::ParsedCookie>& cookie : *cookies) {
+        if (DoesResponseCookieMatchFilter(cookie.get(), (*mod)->filter.get())) {
           modified |= ApplyResponseCookieModification(
-              (*mod)->modification.get(), cookie->get());
+              (*mod)->modification.get(), cookie.get());
         }
       }
     }
