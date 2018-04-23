@@ -140,7 +140,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 
   void OnSyntheticGestureCompleted(SyntheticGesture::Result result) {
     EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
-    runner_->Quit();
+    run_loop_->Quit();
   }
 
  protected:
@@ -238,7 +238,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     params2.anchor = gfx::PointF(25, 125);
     params2.distances.push_back(gfx::Vector2dF(-50, 0));
 
-    runner_ = new MessageLoopRunner();
+    run_loop_ = std::make_unique<base::RunLoop>();
 
     std::unique_ptr<SyntheticSmoothScrollGesture> gesture1(
         new SyntheticSmoothScrollGesture(params1));
@@ -258,8 +258,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
                        base::Unretained(this)));
 
     // Runs until we get the OnSyntheticGestureCompleted callback
-    runner_->Run();
-    runner_ = nullptr;
+    run_loop_->Run();
+    run_loop_.reset();
 
     CheckScrollOffset(wait_until_scrolled,
                       expected_scroll_position_after_scroll);
@@ -284,7 +284,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     params.anchor = gfx::PointF(point);
     params.distances.push_back(-distance);
 
-    runner_ = new MessageLoopRunner();
+    run_loop_ = std::make_unique<base::RunLoop>();
 
     std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
         new SyntheticSmoothScrollGesture(params));
@@ -297,8 +297,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
       JankMainThread(jank_time);
 
     // Runs until we get the OnSyntheticGestureCompleted callback
-    runner_->Run();
-    runner_ = nullptr;
+    run_loop_->Run();
+    run_loop_.reset();
 
     CheckScrollOffset(wait_until_scrolled,
                       expected_scroll_position_after_scroll);
@@ -337,7 +337,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
   }
 
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
-  scoped_refptr<MessageLoopRunner> runner_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionBrowserTest);
 };
