@@ -292,4 +292,15 @@ TEST_F(StyledMarkupSerializerTest, AcrossInvisibleElements) {
   EXPECT_EQ("", SerializePart<EditingInFlatTreeStrategy>(start_ict, end_ict));
 }
 
+TEST_F(StyledMarkupSerializerTest, DisplayContentsStyle) {
+  const char* body_content = "1<span style='display: contents'>2</span>3";
+  const char* expected_result =
+      "<span style=\"display: inline !important; float: none;\">1</span><span "
+      "style=\"display: contents;\">2</span><span style=\"display: inline "
+      "!important; float: none;\">3</span>";
+  SetBodyContent(body_content);
+  EXPECT_EQ(expected_result, Serialize<EditingStrategy>());
+  EXPECT_EQ(expected_result, Serialize<EditingInFlatTreeStrategy>());
+}
+
 }  // namespace blink
