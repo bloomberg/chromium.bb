@@ -151,22 +151,6 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerHttpAuth) {
   NavigateAndWaitForAuth(url);
 }
 
-// Make sure that HTTP auth dialog is displayed from shared worker context.
-// http://crbug.com/33344
-//
-// TODO(davidben): HTTP auth dialogs are no longer displayed on shared workers,
-// but this test only tests that the delegate is called. Move handling the
-// WebContentsless case from chrome/ to content/ and adjust the test
-// accordingly.
-IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerHttpAuth) {
-  if (!SupportsSharedWorker())
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/workers/shared_worker_auth.html");
-  NavigateAndWaitForAuth(url);
-}
-
 // Tests that TLS client auth prompts for normal workers's importScripts.
 IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerTlsClientAuthImportScripts) {
   // Launch HTTPS server.

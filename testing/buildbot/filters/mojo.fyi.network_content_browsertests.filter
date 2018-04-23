@@ -67,10 +67,6 @@
 # service process crash.
 -ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_Cancelled
 
-# http://crbug.com/783990
-# Add support for http auth.
--WorkerTest.SharedWorkerHttpAuth
-
 # http://crbug.com/787614
 -ResourceDispatcherHostBrowserTest.ContentDispositionEmpty
 -ResourceDispatcherHostBrowserTest.ContentDispositionInline
