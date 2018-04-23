@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 581 tests; 394 PASS, 187 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 581 tests; 396 PASS, 185 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
 PASS align-content: "flex-start" onto "flex-end"
@@ -188,8 +188,8 @@ PASS contain (type: discrete) has testAccumulation function
 PASS contain: "none" onto "strict"
 PASS contain: "strict" onto "none"
 PASS content (type: discrete) has testAccumulation function
-FAIL content: ""b"" onto ""a"" assert_equals: expected (string) "::before" but got (undefined) undefined
-FAIL content: ""a"" onto ""b"" assert_equals: expected (string) "::before" but got (undefined) undefined
+PASS content: ""b"" onto ""a""
+PASS content: ""a"" onto ""b""
 PASS counter-increment (type: discrete) has testAccumulation function
 PASS counter-increment: "ident-2 2" onto "ident-1 1"
 PASS counter-increment: "ident-1 1" onto "ident-2 2"
