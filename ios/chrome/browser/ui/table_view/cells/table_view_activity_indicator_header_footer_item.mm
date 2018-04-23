@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,10 +67,9 @@
     verticalStack.spacing = kTableViewVerticalLabelStackSpacing;
 
     // Activity Indicator.
-    UIActivityIndicatorView* activityIndicator =
-        [[UIActivityIndicatorView alloc]
-            initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
-    activityIndicator.color = [UIColor blueColor];
+    MDCActivityIndicator* activityIndicator =
+        [[MDCActivityIndicator alloc] init];
+    activityIndicator.cycleColors = @[ [[MDCPalette cr_bluePalette] tint500] ];
     [activityIndicator startAnimating];
     [activityIndicator
         setContentHuggingPriority:UILayoutPriorityDefaultHigh
