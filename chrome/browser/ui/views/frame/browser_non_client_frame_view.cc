@@ -260,9 +260,9 @@ void BrowserNonClientFrameView::PaintToolbarBackground(
                      tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 
+  gfx::ScopedCanvas scoped_canvas(canvas);
   if (TabStrip::ShouldDrawStrokes()) {
     // Top stroke.
-    gfx::ScopedCanvas scoped_canvas(canvas);
     gfx::Rect tabstrip_bounds =
         GetMirroredRect(GetBoundsForTabStrip(browser_view()->tabstrip()));
     canvas->ClipRect(tabstrip_bounds, SkClipOp::kDifference);
@@ -270,11 +270,11 @@ void BrowserNonClientFrameView::PaintToolbarBackground(
     separator_rect.set_y(tabstrip_bounds.bottom());
     BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
                                         separator_rect, true);
-    // Toolbar/content separator.
-    BrowserView::Paint1pxHorizontalLine(
-        canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
-        toolbar_bounds, true);
   }
+  // Toolbar/content separator.
+  BrowserView::Paint1pxHorizontalLine(
+      canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
+      toolbar_bounds, true);
 }
 
 void BrowserNonClientFrameView::ViewHierarchyChanged(
