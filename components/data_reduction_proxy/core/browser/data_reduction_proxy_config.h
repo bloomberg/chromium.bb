@@ -206,6 +206,11 @@ class DataReductionProxyConfig
       std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
   GetInFlightWarmupProxyDetails() const;
 
+  void set_get_network_id_task_runner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    get_network_id_task_runner_ = task_runner;
+  }
+
  protected:
   virtual base::TimeTicks GetTicksNow() const;
 
@@ -272,6 +277,13 @@ class DataReductionProxyConfig
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
+  // Invoked to continue network changed handling after the network id is
+  // retrieved. If |get_network_id_task_runner_| is set, the network id is
+  // fetched on the worker thread. Otherwise, OnNetworkChanged calls this
+  // directly. This is a workaround for https://crbug.com/821607 where
+  // net::GetWifiSSID() call gets stuck.
+  void ContinueNetworkChanged(const std::string& network_id);
+
   // Requests the secure proxy check URL. Upon completion, returns the results
   // to the caller via the |fetcher_callback|. Virtualized for unit testing.
   virtual void SecureProxyCheck(SecureProxyCheckerCallback fetcher_callback);
@@ -334,6 +346,9 @@ class DataReductionProxyConfig
   std::unique_ptr<DataReductionProxyConfigValues> config_values_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // Optional task runner for GetCurrentNetworkID.
+  scoped_refptr<base::SingleThreadTaskRunner> get_network_id_task_runner_;
 
   // The caller must ensure that the |net_log_|, if set, outlives this instance.
   // It is used to create new instances of |net_log_with_source_| on secure

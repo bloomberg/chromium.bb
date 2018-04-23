@@ -24,6 +24,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -117,6 +118,52 @@ void RecordWarmupURLFetchAttemptEvent(
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.WarmupURL.FetchAttemptEvent",
                             warmup_url_fetch_event,
                             WarmupURLFetchAttemptEvent::kCount);
+}
+
+std::string DoGetCurrentNetworkID() {
+  // It is possible that the connection type changed between when
+  // GetConnectionType() was called and when the API to determine the
+  // network name was called. Check if that happened and retry until the
+  // connection type stabilizes. This is an imperfect solution but should
+  // capture majority of cases, and should not significantly affect estimates
+  // (that are approximate to begin with).
+
+  while (true) {
+    net::NetworkChangeNotifier::ConnectionType connection_type =
+        net::NetworkChangeNotifier::GetConnectionType();
+    std::string ssid_mccmnc;
+
+    switch (connection_type) {
+      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN:
+      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE:
+      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_BLUETOOTH:
+      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET:
+        break;
+      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI:
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
+        ssid_mccmnc = net::GetWifiSSID();
+#endif
+        break;
+      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_2G:
+      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G:
+      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_4G:
+#if defined(OS_ANDROID)
+        ssid_mccmnc = net::android::GetTelephonyNetworkOperator();
+#endif
+        break;
+    }
+
+    if (connection_type == net::NetworkChangeNotifier::GetConnectionType()) {
+      if (connection_type >= net::NetworkChangeNotifier::CONNECTION_2G &&
+          connection_type <= net::NetworkChangeNotifier::CONNECTION_4G) {
+        // No need to differentiate cellular connections by the exact
+        // connection type.
+        return "cell," + ssid_mccmnc;
+      }
+      return base::IntToString(connection_type) + "," + ssid_mccmnc;
+    }
+  }
+  NOTREACHED();
 }
 
 }  // namespace
@@ -627,7 +674,22 @@ void DataReductionProxyConfig::OnNetworkChanged(
 
   connection_type_ = type;
   RecordNetworkChangeEvent(NETWORK_CHANGED);
-  network_properties_manager_->OnChangeInNetworkID(GetCurrentNetworkID());
+
+  if (!get_network_id_task_runner_) {
+    ContinueNetworkChanged(GetCurrentNetworkID());
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      get_network_id_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&DoGetCurrentNetworkID),
+      base::BindOnce(&DataReductionProxyConfig::ContinueNetworkChanged,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void DataReductionProxyConfig::ContinueNetworkChanged(
+    const std::string& network_id) {
+  network_properties_manager_->OnChangeInNetworkID(network_id);
 
   ReloadConfig();
 
@@ -804,50 +866,7 @@ DataReductionProxyConfig::GetProxiesForHttp() const {
 
 std::string DataReductionProxyConfig::GetCurrentNetworkID() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // It is possible that the connection type changed between when
-  // GetConnectionType() was called and when the API to determine the
-  // network name was called. Check if that happened and retry until the
-  // connection type stabilizes. This is an imperfect solution but should
-  // capture majority of cases, and should not significantly affect estimates
-  // (that are approximate to begin with).
-
-  while (true) {
-    net::NetworkChangeNotifier::ConnectionType connection_type =
-        net::NetworkChangeNotifier::GetConnectionType();
-    std::string ssid_mccmnc;
-
-    switch (connection_type) {
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_BLUETOOTH:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET:
-        break;
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI:
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
-        ssid_mccmnc = net::GetWifiSSID();
-#endif
-        break;
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_2G:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_4G:
-#if defined(OS_ANDROID)
-        ssid_mccmnc = net::android::GetTelephonyNetworkOperator();
-#endif
-        break;
-    }
-
-    if (connection_type == net::NetworkChangeNotifier::GetConnectionType()) {
-      if (connection_type >= net::NetworkChangeNotifier::CONNECTION_2G &&
-          connection_type <= net::NetworkChangeNotifier::CONNECTION_4G) {
-        // No need to differentiate cellular connections by the exact
-        // connection type.
-        return "cell," + ssid_mccmnc;
-      }
-      return base::IntToString(connection_type) + "," + ssid_mccmnc;
-    }
-  }
-  NOTREACHED();
+  return DoGetCurrentNetworkID();
 }
 
 const NetworkPropertiesManager&

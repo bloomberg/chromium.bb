@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/logging_network_change_observer.h"
@@ -133,6 +134,19 @@ NetworkService::NetworkService(
       std::make_unique<net::NetworkQualityEstimatorParams>(
           network_quality_estimator_params),
       net_log_);
+
+#if defined(OS_CHROMEOS)
+  // Set a task runner for the get network id call for NetworkQualityEstimator
+  // to workaround https://crbug.com/821607 where AddressTrackerLinux stucks
+  // with a recv() call and blocks IO thread. Using SingleThreadTaskRunner so
+  // that task scheduler does not create too many worker threads when the
+  // problem happens.
+  // TODO(https://crbug.com/821607): Remove after the bug is resolved.
+  network_quality_estimator_->set_get_network_id_task_runner(
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
+#endif
 
   host_resolver_ = CreateHostResolver();
 }

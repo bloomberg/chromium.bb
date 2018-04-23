@@ -158,6 +158,46 @@ void RecordEffectiveConnectionTypeAccuracy(
   histogram->Add(std::abs(metric));
 }
 
+nqe::internal::NetworkID DoGetCurrentNetworkID() {
+  // It is possible that the connection type changed between when
+  // GetConnectionType() was called and when the API to determine the
+  // network name was called. Check if that happened and retry until the
+  // connection type stabilizes. This is an imperfect solution but should
+  // capture majority of cases, and should not significantly affect estimates
+  // (that are approximate to begin with).
+  while (true) {
+    nqe::internal::NetworkID network_id(
+        NetworkChangeNotifier::GetConnectionType(), std::string(), INT32_MIN);
+
+    switch (network_id.type) {
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_NONE:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_BLUETOOTH:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET:
+        break;
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI:
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
+        network_id.id = GetWifiSSID();
+#endif
+        break;
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_2G:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_3G:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_4G:
+#if defined(OS_ANDROID)
+        network_id.id = android::GetTelephonyNetworkOperator();
+#endif
+        break;
+      default:
+        NOTREACHED() << "Unexpected connection type = " << network_id.type;
+        break;
+    }
+
+    if (network_id.type == NetworkChangeNotifier::GetConnectionType())
+      return network_id;
+  }
+  NOTREACHED();
+}
+
 }  // namespace
 
 NetworkQualityEstimator::NetworkQualityEstimator(
@@ -662,8 +702,36 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
 
 void NetworkQualityEstimator::GatherEstimatesForNextConnectionType() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!get_network_id_task_runner_) {
+    ContinueGatherEstimatesForNextConnectionType(GetCurrentNetworkID());
+    return;
+  }
+
+  // Doing PostTaskAndReplyWithResult by handle because it requires the result
+  // type have a default constructor and nqe::internal::NetworkID does not have
+  // that.
+  get_network_id_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<base::TaskRunner> reply_task_runner,
+             base::OnceCallback<void(const nqe::internal::NetworkID&)>
+                 reply_callback) {
+            reply_task_runner->PostTask(
+                FROM_HERE, base::BindOnce(std::move(reply_callback),
+                                          DoGetCurrentNetworkID()));
+          },
+          base::ThreadTaskRunnerHandle::Get(),
+          base::BindOnce(&NetworkQualityEstimator::
+                             ContinueGatherEstimatesForNextConnectionType,
+                         weak_ptr_factory_.GetWeakPtr())));
+}
+
+void NetworkQualityEstimator::ContinueGatherEstimatesForNextConnectionType(
+    const nqe::internal::NetworkID& network_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Update the local state as part of preparation for the new connection.
-  current_network_id_ = GetCurrentNetworkID();
+  current_network_id_ = network_id;
   RecordNetworkIDAvailability();
 
   // Read any cached estimates for the new network. If cached estimates are
@@ -1264,43 +1332,7 @@ nqe::internal::NetworkID NetworkQualityEstimator::GetCurrentNetworkID() const {
   // TODO(tbansal): crbug.com/498068 Add NetworkQualityEstimatorAndroid class
   // that overrides this method on the Android platform.
 
-  // It is possible that the connection type changed between when
-  // GetConnectionType() was called and when the API to determine the
-  // network name was called. Check if that happened and retry until the
-  // connection type stabilizes. This is an imperfect solution but should
-  // capture majority of cases, and should not significantly affect estimates
-  // (that are approximate to begin with).
-  while (true) {
-    nqe::internal::NetworkID network_id(
-        NetworkChangeNotifier::GetConnectionType(), std::string(), INT32_MIN);
-
-    switch (network_id.type) {
-      case NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN:
-      case NetworkChangeNotifier::ConnectionType::CONNECTION_NONE:
-      case NetworkChangeNotifier::ConnectionType::CONNECTION_BLUETOOTH:
-      case NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET:
-        break;
-      case NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI:
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
-        network_id.id = GetWifiSSID();
-#endif
-        break;
-      case NetworkChangeNotifier::ConnectionType::CONNECTION_2G:
-      case NetworkChangeNotifier::ConnectionType::CONNECTION_3G:
-      case NetworkChangeNotifier::ConnectionType::CONNECTION_4G:
-#if defined(OS_ANDROID)
-        network_id.id = android::GetTelephonyNetworkOperator();
-#endif
-        break;
-      default:
-        NOTREACHED() << "Unexpected connection type = " << network_id.type;
-        break;
-    }
-
-    if (network_id.type == NetworkChangeNotifier::GetConnectionType())
-      return network_id;
-  }
-  NOTREACHED();
+  return DoGetCurrentNetworkID();
 }
 
 bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {

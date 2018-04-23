@@ -41,6 +41,7 @@
 
 namespace base {
 class TickClock;
+class TaskRunner;
 }  // namespace base
 
 namespace net {
@@ -215,6 +216,11 @@ class NET_EXPORT NetworkQualityEstimator
 
   typedef nqe::internal::Observation Observation;
   typedef nqe::internal::ObservationBuffer ObservationBuffer;
+
+  void set_get_network_id_task_runner(
+      scoped_refptr<base::TaskRunner> task_runner) {
+    get_network_id_task_runner_ = task_runner;
+  }
 
  protected:
   // NetworkChangeNotifier::ConnectionTypeObserver implementation:
@@ -492,6 +498,14 @@ class NET_EXPORT NetworkQualityEstimator
   // in the connection type.
   void GatherEstimatesForNextConnectionType();
 
+  // Invoked to continue GatherEstimatesForNextConnectionType work after getting
+  // network id. If |get_network_id_task_runner_| is set, the network id is
+  // fetched on a worker thread. Otherwise, GatherEstimatesForNextConnectionType
+  // calls this directly. This is a workaround for https://crbug.com/821607
+  // where net::GetWifiSSID() call gets stuck.
+  void ContinueGatherEstimatesForNextConnectionType(
+      const nqe::internal::NetworkID& network_id);
+
   // Updates the value of |cached_estimate_applied_| if |observation| is
   // computed from a cached estimate. |buffer| is the observation buffer to
   // which the cached estimate is being added to.
@@ -621,6 +635,9 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Time when the last RTT observation from a socket watcher was received.
   base::TimeTicks last_socket_watcher_rtt_notification_;
+
+  // Optional task runner to get network id.
+  scoped_refptr<base::TaskRunner> get_network_id_task_runner_;
 
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_;
 
