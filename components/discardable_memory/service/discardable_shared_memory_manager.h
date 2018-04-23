@@ -23,6 +23,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -49,7 +50,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
     : public base::DiscardableMemoryAllocator,
       public base::trace_event::MemoryDumpProvider,
       public base::MemoryCoordinatorClient,
-      public base::MessageLoop::DestructionObserver {
+      public base::MessageLoopCurrent::DestructionObserver {
  public:
   DiscardableSharedMemoryManager();
   ~DiscardableSharedMemoryManager() override;
@@ -120,7 +121,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   void OnMemoryStateChange(base::MemoryState state) override;
   void OnPurgeMemory() override;
 
-  // base::MessageLoop::DestructionObserver implementation:
+  // base::MessageLoopCurrent::DestructionObserver implementation:
   void WillDestroyCurrentMessageLoop() override;
 
   void AllocateLockedDiscardableSharedMemory(
