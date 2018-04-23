@@ -521,7 +521,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerLoginTest, BrailleOnLoginScreen) {
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityManagerLoginTest, Login) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_Login DISABLED_Login
+#else
+#define MAYBE_Login Login
+#endif
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerLoginTest, MAYBE_Login) {
   WaitForSigninScreen();
   EXPECT_FALSE(IsLargeCursorEnabled());
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
