@@ -8277,8 +8277,8 @@
   "linux-annotator-rel": {
     "scripts": [
       {
-        "name": "check_network_annotation_auditor",
-        "script": "check_network_annotation_auditor.py"
+        "name": "test_traffic_annotation_auditor",
+        "script": "test_traffic_annotation_auditor.py"
       }
     ]
   },

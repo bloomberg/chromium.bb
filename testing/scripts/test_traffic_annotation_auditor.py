@@ -3,8 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""//testing/scripts wrapper for the network traffic annotation auditor
-checks."""
+"""//testing/scripts wrapper for the network traffic annotation auditor checks.
+This script is used to run traffic_annotation_auditor_tests.py on an FYI bot to
+check that traffic_annotation_auditor has the same results when heuristics that
+help it run fast and spam free on trybots are disabled."""
 
 import json
 import os

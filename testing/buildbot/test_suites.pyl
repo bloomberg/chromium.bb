@@ -328,9 +328,9 @@
     }
   },
 
-  'check_network_annotation_auditor_script': {
-    'check_network_annotation_auditor': {
-      'script': 'check_network_annotation_auditor.py',
+  'test_traffic_annotation_auditor_script': {
+    'test_traffic_annotation_auditor': {
+      'script': 'test_traffic_annotation_auditor.py',
     },
   },
 
