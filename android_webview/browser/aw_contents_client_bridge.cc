@@ -14,7 +14,7 @@
 #include "base/android/jni_string.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_frame_host.h"
@@ -377,7 +377,7 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(const base::string16& url,
     // Tell the chromium message loop to not perform any tasks after the current
     // one - we want to make sure we return to Java cleanly without first making
     // any new JNI calls.
-    base::MessageLoopForUI::current()->Abort();
+    base::MessageLoopCurrentForUI::Get()->Abort();
     // If we crashed we don't want to continue the navigation.
     *ignore_navigation = true;
     return false;
