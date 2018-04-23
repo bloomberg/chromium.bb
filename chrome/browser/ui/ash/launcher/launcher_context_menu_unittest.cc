@@ -10,8 +10,10 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -91,6 +93,21 @@ class LauncherContextMenuTest : public ash::AshTestBase {
     exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
                                         window_app_id);
     return widget;
+  }
+
+  std::unique_ptr<ui::MenuModel> GetContextMenu(
+      ash::ShelfItemDelegate* item_delegate,
+      int64_t display_id) {
+    base::RunLoop run_loop;
+    std::unique_ptr<ui::MenuModel> menu;
+    item_delegate->GetContextMenu(
+        display_id, base::BindLambdaForTesting(
+                        [&](std::unique_ptr<ui::MenuModel> created_menu) {
+                          menu = std::move(created_menu);
+                          run_loop.Quit();
+                        }));
+    run_loop.Run();
+    return menu;
   }
 
   void TearDown() override {
@@ -197,7 +214,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
 
   const int64_t display_id = GetPrimaryDisplay().id();
   std::unique_ptr<ui::MenuModel> menu =
-      item_delegate->GetContextMenu(display_id);
+      GetContextMenu(item_delegate, display_id);
   ASSERT_TRUE(menu);
 
   // ARC app is pinned but not running.
@@ -220,7 +237,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   ASSERT_EQ(1U, menu_list.size());
   EXPECT_EQ(base::UTF8ToUTF16(app_name), menu_list[0]->label);
 
-  menu = item_delegate->GetContextMenu(display_id);
+  menu = GetContextMenu(item_delegate, display_id);
   ASSERT_TRUE(menu);
 
   EXPECT_FALSE(
@@ -247,7 +264,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   ASSERT_EQ(1U, menu_list.size());
   EXPECT_EQ(base::UTF8ToUTF16(app_name2), menu_list[0]->label);
 
-  menu = item_delegate2->GetContextMenu(display_id);
+  menu = GetContextMenu(item_delegate2, display_id);
   ASSERT_TRUE(menu);
 
   EXPECT_FALSE(
@@ -289,7 +306,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
         model()->GetShelfItemDelegate(shelf_id3);
     ASSERT_TRUE(item_delegate3);
 
-    menu = item_delegate3->GetContextMenu(display_id);
+    menu = GetContextMenu(item_delegate3, display_id);
     ASSERT_TRUE(menu);
 
     EXPECT_FALSE(
@@ -339,7 +356,7 @@ TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
       model()->GetShelfItemDelegate(shelf_id1);
   ASSERT_TRUE(item_delegate);
   std::unique_ptr<ui::MenuModel> menu =
-      item_delegate->GetContextMenu(0 /* display_id */);
+      GetContextMenu(item_delegate, 0 /* display_id */);
   ASSERT_TRUE(menu);
 
   EXPECT_FALSE(
@@ -349,7 +366,7 @@ TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
 
   item_delegate = model()->GetShelfItemDelegate(shelf_id2);
   ASSERT_TRUE(item_delegate);
-  menu = item_delegate->GetContextMenu(0 /* display_id */);
+  menu = GetContextMenu(item_delegate, 0 /* display_id */);
   ASSERT_TRUE(menu);
 
   EXPECT_FALSE(

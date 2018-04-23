@@ -54,11 +54,13 @@ void ArcAppDeferredLauncherItemController::ExecuteCommand(
   NOTIMPLEMENTED();
 }
 
-std::unique_ptr<ui::MenuModel>
-ArcAppDeferredLauncherItemController::GetContextMenu(int64_t display_id) {
+void ArcAppDeferredLauncherItemController::GetContextMenu(
+    int64_t display_id,
+    GetMenuModelCallback callback) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   const ash::ShelfItem* item = controller->GetItem(shelf_id());
-  return LauncherContextMenu::Create(controller, item, display_id);
+  std::move(callback).Run(
+      LauncherContextMenu::Create(controller, item, display_id));
 }
 
 void ArcAppDeferredLauncherItemController::Close() {

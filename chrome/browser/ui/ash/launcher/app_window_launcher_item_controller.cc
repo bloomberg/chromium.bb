@@ -101,11 +101,13 @@ void AppWindowLauncherItemController::ItemSelected(
       action, GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
 }
 
-std::unique_ptr<ui::MenuModel> AppWindowLauncherItemController::GetContextMenu(
-    int64_t display_id) {
+void AppWindowLauncherItemController::GetContextMenu(
+    int64_t display_id,
+    GetMenuModelCallback callback) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   const ash::ShelfItem* item = controller->GetItem(shelf_id());
-  return LauncherContextMenu::Create(controller, item, display_id);
+  std::move(callback).Run(
+      LauncherContextMenu::Create(controller, item, display_id));
 }
 
 void AppWindowLauncherItemController::Close() {
