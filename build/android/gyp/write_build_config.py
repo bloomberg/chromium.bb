@@ -259,6 +259,10 @@ this target.
 List of all resource zip files belonging to all resource dependencies for this
 target.
 
+* `deps_info['owned_resource_srcjars']`:
+List of all .srcjar files belonging to all resource dependencies for this
+target.
+
 * `deps_info['javac']`:
 A dictionary containing information about the way the sources in this library
 are compiled. Appears also on other Java-related targets. See the [dedicated
@@ -453,12 +457,6 @@ Its `.build_config` only keeps a list of dependencies in its
 This dictionary appears in Java-related targets (e.g. `java_library`,
 `android_apk` and others), and contains information related to the compilation
 of Java sources, class files, and jars.
-
-* `javac['srcjars']`
-For `java_library` targets, this is the list of all `deps_info['srcjar_path']`
-from all resource dependencies for the current target (and these contain
-corresponding R.java source files). For other target types, this is an empty
-list.
 
 * `javac['resource_packages']`
 For `java_library` targets, this is the list of package names for all resource
@@ -905,8 +903,6 @@ def main(argv):
 
   direct_library_deps = deps.Direct('java_library')
   all_library_deps = deps.All('java_library')
-
-  direct_resources_deps = deps.Direct('android_resources')
   all_resources_deps = deps.All('android_resources')
 
   # Initialize some common config.
@@ -971,8 +967,8 @@ def main(argv):
     config['jni']['all_source'] = all_java_sources
 
   if is_java_target:
-    deps_info['requires_android'] = options.requires_android
-    deps_info['supports_android'] = options.supports_android
+    deps_info['requires_android'] = bool(options.requires_android)
+    deps_info['supports_android'] = bool(options.supports_android)
 
     if not options.bypass_platform_checks:
       deps_require_android = (all_resources_deps +
@@ -1004,25 +1000,6 @@ def main(argv):
           options.incremental_install_json_path)
       deps_info['non_native_packed_relocations'] = str(
           options.non_native_packed_relocations)
-
-    if options.type == 'java_library':
-      # android_resources targets use this srcjars field to expose R.java files.
-      # Since there is no java_library associated with an android_resources(),
-      # Each java_library recompiles the R.java files.
-      # junit_binary and android_apk create their own R.java srcjars, so should
-      # not pull them in from deps here.
-      config['javac']['srcjars'] = [
-          c['srcjar'] for c in all_resources_deps if 'srcjar' in c]
-
-      # Used to strip out R.class for android_prebuilt()s.
-      config['javac']['resource_packages'] = [
-          c['package_name'] for c in all_resources_deps if 'package_name' in c]
-    else:
-      # Apks will get their resources srcjar explicitly passed to the java step
-      config['javac']['srcjars'] = []
-      # Gradle may need to generate resources for some apks.
-      gradle['srcjars'] = [
-          c['srcjar'] for c in direct_resources_deps if 'srcjar' in c]
 
   if options.type == 'android_assets':
     all_asset_sources = []
@@ -1060,11 +1037,11 @@ def main(argv):
       for gyp_list in options.resource_dirs:
         deps_info['resources_dirs'].extend(build_utils.ParseGnList(gyp_list))
 
-  if options.supports_android and options.type in ('android_apk',
-                                                   'java_library'):
+  if options.requires_android and is_java_target:
     # Lint all resources that are not already linted by a dependent library.
     owned_resource_dirs = set()
     owned_resource_zips = set()
+    owned_resource_srcjars = set()
     for c in all_resources_deps:
       # Always use resources_dirs in favour of resources_zips so that lint error
       # messages have paths that are closer to reality (and to avoid needing to
@@ -1073,13 +1050,29 @@ def main(argv):
         owned_resource_dirs.update(c['resources_dirs'])
       else:
         owned_resource_zips.add(c['resources_zip'])
+      srcjar = c.get('srcjar')
+      if srcjar:
+        owned_resource_srcjars.add(srcjar)
 
     for c in all_library_deps:
-      if c['supports_android']:
+      if c['requires_android']:
         owned_resource_dirs.difference_update(c['owned_resources_dirs'])
         owned_resource_zips.difference_update(c['owned_resources_zips'])
+        # Many .aar files include R.class files in them, as it makes it easier
+        # for IDEs to resolve symbols. However, including them is not required
+        # and not all prebuilts do. Rather than try to detect their presense,
+        # just assume they are not there. The only consequence is redundant
+        # compilation of the R.class.
+        if not c['is_prebuilt']:
+          owned_resource_srcjars.difference_update(c['owned_resource_srcjars'])
     deps_info['owned_resources_dirs'] = sorted(owned_resource_dirs)
     deps_info['owned_resources_zips'] = sorted(owned_resource_zips)
+    deps_info['owned_resource_srcjars'] = sorted(owned_resource_srcjars)
+
+    if options.type == 'java_library':
+      # Used to strip out R.class for android_prebuilt()s.
+      config['javac']['resource_packages'] = [
+          c['package_name'] for c in all_resources_deps if 'package_name' in c]
 
   if options.type in (
       'android_resources', 'android_apk', 'junit_binary', 'resource_rewriter',
