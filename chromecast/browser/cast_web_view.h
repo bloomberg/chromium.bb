@@ -16,6 +16,7 @@
 #include "chromecast/graphics/cast_window_manager.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 namespace chromecast {
 

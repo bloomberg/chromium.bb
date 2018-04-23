@@ -13,10 +13,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/events/event.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace chromecast {
 namespace shell {
 
