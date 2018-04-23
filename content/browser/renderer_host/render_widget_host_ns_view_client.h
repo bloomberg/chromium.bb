@@ -128,11 +128,13 @@ class RenderWidgetHostNSViewClient {
 
   // Synchronously query the composition character boundary rectangle and return
   // it in |*rect|. Set |*actual_range| to the range actually used for the
-  // returned rectangle.
+  // returned rectangle. If there was no focused RenderWidgetHost to query,
+  // then set |*success| to false.
   virtual void OnNSViewSyncGetFirstRectForRange(
       const gfx::Range& requested_range,
       gfx::Rect* rect,
-      gfx::Range* actual_range) = 0;
+      gfx::Range* actual_range,
+      bool* success) = 0;
 
   // Forward the corresponding edit menu command to the RenderWidgetHost's
   // delegate.

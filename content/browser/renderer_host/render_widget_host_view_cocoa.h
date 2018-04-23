@@ -199,8 +199,6 @@ struct DidOverscrollParams;
 // Confirm ongoing composition.
 - (void)finishComposingText;
 - (void)updateCursor:(NSCursor*)cursor;
-- (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
-                             actualRange:(NSRangePointer)actualRange;
 - (void)tabletEvent:(NSEvent*)theEvent;
 - (void)quickLookWithEvent:(NSEvent*)event;
 - (void)showLookUpDictionaryOverlayFromRange:(NSRange)range;

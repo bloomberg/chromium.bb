@@ -107,7 +107,8 @@ class NoopClient : public RenderWidgetHostNSViewClient {
                                             uint32_t* index) override {}
   void OnNSViewSyncGetFirstRectForRange(const gfx::Range& requested_range,
                                         gfx::Rect* rect,
-                                        gfx::Range* actual_range) override {}
+                                        gfx::Range* actual_range,
+                                        bool* success) override {}
   void OnNSViewExecuteEditCommand(const std::string& command) override {}
   void OnNSViewUndo() override {}
   void OnNSViewRedo() override {}
@@ -1487,34 +1488,28 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   return NSUInteger(char_index);
 }
 
-- (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
-                             actualRange:(NSRangePointer)actualRange {
+- (NSRect)firstRectForCharacterRange:(NSRange)theRange
+                         actualRange:(NSRangePointer)actualRange {
   gfx::Rect gfxRect;
   gfx::Range gfxActualRange;
+  bool success = false;
   if (actualRange)
     gfxActualRange = gfx::Range(*actualRange);
   client_->OnNSViewSyncGetFirstRectForRange(gfx::Range(theRange), &gfxRect,
-                                            &gfxActualRange);
+                                            &gfxActualRange, &success);
+  if (!success) {
+    // The call to cancelComposition comes from https://crrev.com/350261.
+    [self cancelComposition];
+    return NSZeroRect;
+  }
   if (actualRange)
     *actualRange = gfxActualRange.ToNSRange();
 
   // The returned rectangle is in WebKit coordinates (upper left origin), so
   // flip the coordinate system.
   NSRect viewFrame = [self frame];
-  NSRect flippedRect = NSRectFromCGRect(gfxRect.ToCGRect());
-  flippedRect.origin.y = NSHeight(viewFrame) - NSMaxY(flippedRect);
-  return flippedRect;
-}
-
-- (NSRect)firstRectForCharacterRange:(NSRange)theRange
-                         actualRange:(NSRangePointer)actualRange {
-  if ([self clientIsDisconnected]) {
-    [self cancelComposition];
-    return NSZeroRect;
-  }
-
-  NSRect rect =
-      [self firstViewRectForCharacterRange:theRange actualRange:actualRange];
+  NSRect rect = NSRectFromCGRect(gfxRect.ToCGRect());
+  rect.origin.y = NSHeight(viewFrame) - NSMaxY(rect);
 
   // Convert into screen coordinates for return.
   rect = [self convertRect:rect toView:nil];
