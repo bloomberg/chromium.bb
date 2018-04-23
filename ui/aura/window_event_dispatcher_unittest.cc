@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -2150,30 +2149,27 @@ class WindowEventDispatcherTestWithMessageLoop
     // (e.g. mouse-move events if the mouse cursor is over the window).
     handler_.Reset();
 
+    base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
+
     // Start a nested message-loop, post an event to be dispatched, and then
     // terminate the message-loop. When the message-loop unwinds and gets back,
     // the reposted event should not have fired.
     std::unique_ptr<ui::MouseEvent> mouse(new ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(10, 10),
         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
-    message_loop()->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
             &WindowEventDispatcherTestWithMessageLoop::RepostEventHelper,
             host()->dispatcher(), std::move(mouse)));
-    message_loop()->task_runner()->PostTask(
-        FROM_HERE, message_loop()->QuitWhenIdleClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitWhenIdleClosure());
 
-    base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
     loop.Run();
     EXPECT_EQ(0, handler_.num_mouse_events());
 
     // Let the current message-loop run. The event-handler will terminate the
     // message-loop when it receives the reposted event.
-  }
-
-  base::MessageLoop* message_loop() {
-    return base::MessageLoopForUI::current();
   }
 
  protected:
@@ -2205,7 +2201,7 @@ TEST_P(WindowEventDispatcherTestWithMessageLoop, EventRepostedInNonNestedLoop) {
   ASSERT_FALSE(base::RunLoop::IsRunningOnCurrentThread());
   // Perform the test in a callback, so that it runs after the message-loop
   // starts.
-  message_loop()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&WindowEventDispatcherTestWithMessageLoop::RunTest,
                      base::Unretained(this)));
@@ -3206,7 +3202,7 @@ class NestedLocationDelegate : public test::TestWindowDelegate {
     // at this point). The second RunLoop (created in InInitialMessageLoop())
     // is considered the first nested loop.
     base::RunLoop run_loop;
-    base::MessageLoop::current()->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&NestedLocationDelegate::InInitialMessageLoop,
                                   base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -3217,7 +3213,7 @@ class NestedLocationDelegate : public test::TestWindowDelegate {
     // See comments in OnMouseEvent() for details on which this creates another
     // RunLoop.
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    base::MessageLoop::current()->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&NestedLocationDelegate::InRunMessageLoop,
                                   base::Unretained(this), &run_loop));
     run_loop.Run();
