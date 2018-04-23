@@ -87,14 +87,9 @@ ViewAndroid::ViewAndroid(LayoutType layout_type)
 ViewAndroid::ViewAndroid() : ViewAndroid(LayoutType::NORMAL) {}
 
 ViewAndroid::~ViewAndroid() {
+  RemoveAllChildren();
   observer_list_.Clear();
   RemoveFromParent();
-
-  for (std::list<ViewAndroid*>::iterator it = children_.begin();
-       it != children_.end(); it++) {
-    DCHECK_EQ((*it)->parent_, this);
-    (*it)->parent_ = nullptr;
-  }
 }
 
 void ViewAndroid::SetDelegate(const JavaRef<jobject>& delegate) {
@@ -254,6 +249,18 @@ gfx::PointF ViewAndroid::GetLocationOnScreen(float x, float y) {
   float loc_x = Java_ViewAndroidDelegate_getXLocationOnScreen(env, delegate);
   float loc_y = Java_ViewAndroidDelegate_getYLocationOnScreen(env, delegate);
   return gfx::PointF(x + loc_x, y + loc_y);
+}
+
+void ViewAndroid::RemoveAllChildren() {
+  bool has_window = GetWindowAndroid();
+  auto it = children_.begin();
+  while (it != children_.end()) {
+    if (has_window)
+      (*it)->OnDetachedFromWindow();
+    (*it)->parent_ = nullptr;
+    // erase returns a new iterator for the element following the ereased one.
+    it = children_.erase(it);
+  }
 }
 
 void ViewAndroid::RemoveChild(ViewAndroid* child) {
