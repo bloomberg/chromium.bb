@@ -203,7 +203,7 @@ TEST_F(DownloadShelfControllerTest, MAYBE_AddAndRemoveWithActiveItem) {
 
 // DownloadShelf::Unhide() should cause the shelf to be displayed if there are
 // active downloads on it.
-TEST_F(DownloadShelfControllerTest, HideAndUnhide) {
+TEST_F(DownloadShelfControllerTest, DISABLED_HideAndUnhide) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
   [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
