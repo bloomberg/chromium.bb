@@ -25,7 +25,6 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
-#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -189,14 +188,16 @@ bool DrawAndScaleImage(const DrawImage& draw_image, SkPixmap* target_pixmap) {
 // Returns the GL texture ID backing the given SkImage.
 GrGLuint GlIdFromSkImage(SkImage* image) {
   DCHECK(image->isTextureBacked());
-  GrBackendObject handle =
-      image->getTextureHandle(true /* flushPendingGrContextIO */);
-  if (!handle)
+  GrBackendTexture backend_texture =
+      image->getBackendTexture(true /* flushPendingGrContextIO */);
+  if (!backend_texture.isValid())
     return 0;
-  const GrGLTextureInfo* info = skia::GrBackendObjectToGrGLTextureInfo(handle);
-  if (!info)
+
+  GrGLTextureInfo info;
+  if (!backend_texture.getGLTextureInfo(&info))
     return 0;
-  return info->fID;
+
+  return info.fID;
 }
 
 // Takes ownership of the backing texture of an SkImage. This allows us to
@@ -209,7 +210,7 @@ sk_sp<SkImage> TakeOwnershipOfSkImageBacking(GrContext* context,
   }
 
   GrSurfaceOrigin origin;
-  image->getTextureHandle(false /* flushPendingGrContextIO */, &origin);
+  image->getBackendTexture(false /* flushPendingGrContextIO */, &origin);
   SkColorType color_type = image->colorType();
   if (color_type == kUnknown_SkColorType) {
     return nullptr;
