@@ -59,6 +59,7 @@ class MediaControlPopupMenuElement::KeyboardEventListener final
   void handleEvent(ExecutionContext*, Event* event) final {
     if (event->type() == EventTypeNames::keydown && event->IsKeyboardEvent()) {
       KeyboardEvent* keyboard_event = ToKeyboardEvent(event);
+      bool handled = true;
 
       switch (keyboard_event->keyCode()) {
         case VKEY_TAB:
@@ -78,10 +79,14 @@ class MediaControlPopupMenuElement::KeyboardEventListener final
         case VKEY_SPACE:
           ToElement(event->target()->ToNode())->DispatchSimulatedClick(event);
           break;
+        default:
+          handled = false;
       }
 
-      event->stopPropagation();
-      event->SetDefaultHandled();
+      if (handled) {
+        event->stopPropagation();
+        event->SetDefaultHandled();
+      }
     }
   }
 
