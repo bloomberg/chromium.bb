@@ -199,6 +199,14 @@ const int kMaxFetchCount = 100;
   // Add initial info section as header.
   [self.tableViewModel
       addSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+  // TODO(crbug.com/833623): Temporary loading indicator, will update once we
+  // decide on a standard.
+  TableViewTextItem* entriesStatusItem =
+      [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
+  entriesStatusItem.text = @"Loading";
+  [self.tableViewModel addItem:entriesStatusItem
+       toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+
   _entryInserter =
       [[HistoryEntryInserter alloc] initWithModel:self.tableViewModel];
   _entryInserter.delegate = self;
@@ -456,9 +464,65 @@ const int kMaxFetchCount = 100;
 }
 
 // Updates header section to provide relevant information about the currently
-// displayed history entries.
+// displayed history entries. There should only ever be at most one item in this
+// section.
 - (void)updateEntriesStatusMessage {
-  // TODO(crbug.com/805190): Migrate.
+  NSString* messageText = nil;
+  if (self.empty) {
+    messageText = self.isSearching
+                      ? l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS)
+                      : l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS);
+  } else if (self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory) {
+    messageText =
+        l10n_util::GetNSString(IDS_IOS_HISTORY_OTHER_FORMS_OF_HISTORY);
+  }
+
+  // Get the number of items currently at the StatusMessageSection.
+  NSArray* items = [self.tableViewModel
+      itemsInSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+  DCHECK([items count] <= 1);
+
+  // If no message remove message cell/item if exists, then return.
+  if (messageText == nil) {
+    if ([items count]) {
+      NSIndexPath* statusMessageIndexPath = [self.tableViewModel
+          indexPathForItemType:ItemTypeEntriesStatus
+             sectionIdentifier:kEntriesStatusSectionIdentifier];
+      [self.tableViewModel removeItemWithType:ItemTypeEntriesStatus
+                    fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+      [self.tableView deleteRowsAtIndexPaths:@[ statusMessageIndexPath ]
+                            withRowAnimation:UITableViewRowAnimationNone];
+    }
+    return;
+  }
+
+  if ([items count]) {
+    // If a previous item exists, update its message.
+    TableViewItem* oldEntriesStatusItem = items[0];
+    TableViewTextItem* oldEntriesStatusTextItem =
+        base::mac::ObjCCastStrict<TableViewTextItem>(oldEntriesStatusItem);
+    // If its the same message there's no need to update the item or reload the
+    // table.
+    if ([messageText isEqualToString:oldEntriesStatusTextItem.text])
+      return;
+    oldEntriesStatusTextItem.text = messageText;
+    NSIndexPath* statusMessageIndexPath = [self.tableViewModel
+        indexPathForItemType:ItemTypeEntriesStatus
+           sectionIdentifier:kEntriesStatusSectionIdentifier];
+    [self.tableView reloadRowsAtIndexPaths:@[ statusMessageIndexPath ]
+                          withRowAnimation:UITableViewRowAnimationNone];
+  } else {
+    // If a previous item doesn't exist it create a new one and insert it.
+    TableViewTextItem* entriesStatusItem =
+        [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
+    entriesStatusItem.text = messageText;
+    [self.tableViewModel addItem:entriesStatusItem
+         toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+    NSIndexPath* statusMessageIndexPath =
+        [self.tableViewModel indexPathForItem:entriesStatusItem];
+    [self.tableView insertRowsAtIndexPaths:@[ statusMessageIndexPath ]
+                          withRowAnimation:UITableViewRowAnimationNone];
+  }
 }
 
 // Removes selected items from the tableView, but does not delete them from
