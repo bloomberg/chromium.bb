@@ -818,6 +818,13 @@ bool FuzzyForSoftwareOnlyPixelComparator<SoftwareRenderer>::Compare(
 }
 
 template <>
+bool FuzzyForSoftwareOnlyPixelComparator<SkiaRenderer>::Compare(
+    const SkBitmap& actual_bmp,
+    const SkBitmap& expected_bmp) const {
+  return fuzzy_.Compare(actual_bmp, expected_bmp);
+}
+
+template <>
 bool FuzzyForSoftwareOnlyPixelComparator<
     cc::SoftwareRendererWithExpandedViewport>::
     Compare(const SkBitmap& actual_bmp, const SkBitmap& expected_bmp) const {
@@ -1804,7 +1811,7 @@ TEST_F(VideoGLRendererPixelTest, TwoColorY16Rect) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(NonSkiaRendererPixelTest, FastPassColorFilterAlpha) {
+TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -1882,7 +1889,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, FastPassColorFilterAlpha) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(NonSkiaRendererPixelTest, FastPassSaturateFilter) {
+TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -1942,7 +1949,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, FastPassSaturateFilter) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(NonSkiaRendererPixelTest, FastPassFilterChain) {
+TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2004,7 +2011,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, FastPassFilterChain) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(NonSkiaRendererPixelTest, FastPassColorFilterAlphaTranslation) {
+TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
