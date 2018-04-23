@@ -41,7 +41,8 @@ class TaskTracker;
 //
 // This class is thread-safe.
 class BASE_EXPORT SchedulerWorker
-    : public RefCountedThreadSafe<SchedulerWorker> {
+    : public RefCountedThreadSafe<SchedulerWorker>,
+      public PlatformThread::Delegate {
  public:
   // Delegate interface for SchedulerWorker. All methods except
   // OnCanScheduleSequence() (inherited from CanScheduleSequenceObserver) are
@@ -140,25 +141,50 @@ class BASE_EXPORT SchedulerWorker
   friend class RefCountedThreadSafe<SchedulerWorker>;
   class Thread;
 
-  ~SchedulerWorker();
+  ~SchedulerWorker() override;
 
   bool ShouldExit() const;
 
-  // Synchronizes access to |thread_| (read+write) and |started_| (read+write).
+  // Returns the thread priority to use based on the priority hint, current
+  // shutdown state, and platform capabilities.
+  ThreadPriority GetDesiredThreadPriority() const;
+
+  // Changes the thread priority to |desired_thread_priority|. Must be called on
+  // the thread managed by |this|.
+  void UpdateThreadPriority(ThreadPriority desired_thread_priority);
+
+  // PlatformThread::Delegate:
+  void ThreadMain() override;
+
+  // Self-reference to prevent destruction of |this| while the thread is alive.
+  // Set in Start() before creating the thread. Reset in ThreadMain() before the
+  // thread exits. No lock required because the first access occurs before the
+  // thread is created and the second access occurs on the thread.
+  scoped_refptr<SchedulerWorker> self_;
+
+  // Synchronizes access to |thread_handle_|.
   mutable SchedulerLock thread_lock_;
 
-  // The underlying thread for this SchedulerWorker.
-  // The thread object will be cleaned up by the running thread unless we join
-  // against the thread. Joining requires the thread object to remain alive for
-  // the Thread::Join() call.
-  std::unique_ptr<Thread> thread_;
+  // Handle for the thread managed by |this|.
+  PlatformThreadHandle thread_handle_;
 
+  // Event to wake up the thread managed by |this|.
+  WaitableEvent wake_up_event_{WaitableEvent::ResetPolicy::AUTOMATIC,
+                               WaitableEvent::InitialState::NOT_SIGNALED};
+
+  // Whether the thread should exit. Set by Cleanup().
   AtomicFlag should_exit_;
-
-  const ThreadPriority priority_hint_;
 
   const std::unique_ptr<Delegate> delegate_;
   const TrackedRef<TaskTracker> task_tracker_;
+
+  // Desired thread priority.
+  const ThreadPriority priority_hint_;
+
+  // Actual thread priority. Can be different than |priority_hint_| depending on
+  // system capabilities and shutdown state. No lock required because all post-
+  // construction accesses occur on the thread.
+  ThreadPriority current_thread_priority_;
 
 #if defined(OS_WIN) && !defined(COM_INIT_CHECK_HOOK_ENABLED)
   const SchedulerBackwardCompatibility backward_compatibility_;
