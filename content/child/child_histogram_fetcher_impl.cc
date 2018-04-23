@@ -37,7 +37,7 @@ void ChildHistogramFetcherFactoryImpl::CreateFetcher(
   const MojoResult result = mojo::UnwrapSharedMemoryHandle(
       std::move(buffer_handle), &memory_handle, &memory_size, nullptr);
 
-  if (result == MOJO_RESULT_OK) {
+  if (result == MOJO_RESULT_OK && memory_handle.IsValid()) {
     // This message must be received only once. Multiple calls to create a
     // global allocator will cause a CHECK() failure.
     base::GlobalHistogramAllocator::CreateWithSharedMemoryHandle(memory_handle,
