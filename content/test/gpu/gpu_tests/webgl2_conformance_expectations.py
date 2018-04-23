@@ -65,9 +65,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
     self.Fail('conformance2/glsl3/array-length-side-effects.html',
         bug=2142) # angle bug ID
-    self.Fail('conformance2/attribs/' +
-        'gl-bindAttribLocation-aliasing-inactive.html',
-        bug=829541)
 
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
