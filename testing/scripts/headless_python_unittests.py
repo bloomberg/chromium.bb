@@ -14,7 +14,7 @@ import common
 def main_run(args):
   typ_path = os.path.abspath(os.path.join(
       os.path.dirname(__file__), os.path.pardir, os.path.pardir,
-      'third_party', 'typ'))
+      'third_party', 'catapult', 'third_party', 'typ'))
   _AddToPathIfNeeded(typ_path)
   import typ
 
