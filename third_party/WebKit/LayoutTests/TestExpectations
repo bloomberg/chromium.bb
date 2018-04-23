@@ -238,6 +238,8 @@ crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-left.h
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top-absolute-child.html [ Failure ]
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top.html [ Failure ]
 
+crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
+crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 
 #### crbug.com/783229 overflow
 crbug.com/724697 overflow/overflow-basic-002.html [ Failure ]
