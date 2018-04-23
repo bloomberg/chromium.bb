@@ -107,4 +107,14 @@ bool WebClient::IsSlimNavigationManagerEnabled() const {
   }
 }
 
+void WebClient::PrepareErrorPage(NSError* error,
+                                 bool is_post,
+                                 bool is_off_the_record,
+                                 NSString** error_html) {
+  DCHECK(error);
+  if (error_html) {
+    *error_html = error.localizedDescription;
+  }
+}
+
 }  // namespace web

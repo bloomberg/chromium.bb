@@ -169,6 +169,15 @@ class WebClient {
       bool overridable,
       const base::Callback<void(bool)>& callback);
 
+  // Returns the information to display when a navigation error occurs.
+  // |error| and |error_html| are always valid pointers. Embedder may set
+  // |error_html| to an HTML page containing the details of the error and maybe
+  // links to more info.
+  virtual void PrepareErrorPage(NSError* error,
+                                bool is_post,
+                                bool is_off_the_record,
+                                NSString** error_html);
+
   // Allows upper layers to inject experimental flags to the web layer.
   // TODO(crbug.com/734150): Clean up this flag after experiment. If need for a
   // second flag arises before clean up, consider generalizing to an experiment
