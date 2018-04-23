@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "chromecast/base/cast_features.h"
@@ -191,11 +190,10 @@ void URLRequestContextFactory::InitializeOnUIThread(net::NetLog* net_log) {
   // Proxy config service should be initialized in UI thread, since
   // ProxyConfigServiceDelegate on Android expects UI thread.
   pref_proxy_config_tracker_impl_ =
-      base::WrapUnique<PrefProxyConfigTrackerImpl>(
-          new PrefProxyConfigTrackerImpl(
-              CastBrowserProcess::GetInstance()->pref_service(),
-              content::BrowserThread::GetTaskRunnerForThread(
-                  content::BrowserThread::IO)));
+      std::make_unique<PrefProxyConfigTrackerImpl>(
+          CastBrowserProcess::GetInstance()->pref_service(),
+          content::BrowserThread::GetTaskRunnerForThread(
+              content::BrowserThread::IO));
 
   proxy_config_service_ =
       pref_proxy_config_tracker_impl_->CreateTrackingProxyConfigService(
@@ -261,7 +259,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   DCHECK(proxy_config_service_);
   proxy_resolution_service_ =
       net::ProxyResolutionService::CreateUsingSystemProxyResolver(
-          std::move(proxy_config_service_), NULL);
+          std::move(proxy_config_service_), nullptr);
   system_dependencies_initialized_ = true;
 }
 
@@ -279,12 +277,12 @@ void URLRequestContextFactory::InitializeMainContextDependencies(
   for (content::ProtocolHandlerMap::iterator it = protocol_handlers->begin();
        it != protocol_handlers->end();
        ++it) {
-    set_protocol = job_factory->SetProtocolHandler(
-        it->first, base::WrapUnique(it->second.release()));
+    set_protocol =
+        job_factory->SetProtocolHandler(it->first, std::move(it->second));
     DCHECK(set_protocol);
   }
   set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, base::WrapUnique(new net::DataProtocolHandler));
+      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -210,8 +210,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     // In that case, the headers should be removed in HeadlessNetworkDelegate.
     bool has_http_handler = false;
     for (auto& pair : protocol_handlers_) {
-      builder.SetProtocolHandler(pair.first,
-                                 base::WrapUnique(pair.second.release()));
+      builder.SetProtocolHandler(pair.first, std::move(pair.second));
       if (pair.first == url::kHttpScheme || pair.first == url::kHttpsScheme)
         has_http_handler = true;
     }

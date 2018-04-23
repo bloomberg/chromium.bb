@@ -32,9 +32,8 @@ WebRunnerURLRequestContextGetter::GetURLRequestContext() {
     builder.set_net_log(net_log_);
 
     for (auto& protocol_handler : protocol_handlers_) {
-      builder.SetProtocolHandler(
-          protocol_handler.first,
-          base::WrapUnique(protocol_handler.second.release()));
+      builder.SetProtocolHandler(protocol_handler.first,
+                                 std::move(protocol_handler.second));
     }
     protocol_handlers_.clear();
 
