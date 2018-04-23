@@ -116,9 +116,12 @@ SigninViewControllerDelegateMac::CreateGaiaWebContents(
 // static
 std::unique_ptr<content::WebContents>
 SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
-    Browser* browser) {
+    Browser* browser,
+    bool is_consent_bump) {
   return CreateDialogWebContents(
-      browser, chrome::kChromeUISyncConfirmationURL,
+      browser,
+      is_consent_bump ? chrome::kChromeUISyncConsentBumpURL
+                      : chrome::kChromeUISyncConfirmationURL,
       GetSyncConfirmationDialogPreferredHeight(browser->profile()),
       GetSyncConfirmationDialogPreferredWidth(browser->profile()));
 }
@@ -250,11 +253,12 @@ SigninViewControllerDelegate::CreateModalSigninDelegateCocoa(
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateSyncConfirmationDelegateCocoa(
     SigninViewController* signin_view_controller,
-    Browser* browser) {
+    Browser* browser,
+    bool is_consent_bump) {
   return new SigninViewControllerDelegateMac(
       signin_view_controller,
       SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
-          browser),
+          browser, is_consent_bump),
       browser,
       NSMakeRect(0, 0,
                  GetSyncConfirmationDialogPreferredWidth(browser->profile()),

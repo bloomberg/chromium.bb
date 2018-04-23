@@ -250,7 +250,8 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
     bool is_consent_bump) {
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa()) {
-    return CreateSyncConfirmationDelegateCocoa(signin_view_controller, browser);
+    return CreateSyncConfirmationDelegateCocoa(signin_view_controller, browser,
+                                               is_consent_bump);
   }
 #endif
   return new SigninViewControllerDelegateViews(

@@ -46,7 +46,8 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
       signin_metrics::AccessPoint access_point);
 
   static std::unique_ptr<content::WebContents>
-  CreateSyncConfirmationWebContents(Browser* browser);
+  CreateSyncConfirmationWebContents(Browser* browser,
+                                    bool is_consent_bump = false);
 
   static std::unique_ptr<content::WebContents> CreateSigninErrorWebContents(
       Browser* browser);
