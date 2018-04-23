@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -387,6 +388,12 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
 #if defined(USE_AURA)
       ADD_FAILURE() << "This infobar is not supported on this toolkit.";
 #else
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+      if (!views_mode_controller::IsViewsBrowserCocoa()) {
+        ADD_FAILURE() << "This infobar is unsupported in the MacViews browser.";
+        return;
+      }
+#endif
       ChromeTranslateClient::CreateForWebContents(GetWebContents());
       ChromeTranslateClient* translate_client =
           ChromeTranslateClient::FromWebContents(GetWebContents());
@@ -568,6 +575,11 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_page_info) {
 
 #if !defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_translate) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  // The translate infobar is not supported in Mac Views mode.
+  if (!views_mode_controller::IsViewsBrowserCocoa())
+    return;
+#endif
   ShowAndVerifyUi();
 }
 #endif
