@@ -109,6 +109,11 @@ class ContentInputDelegate {
   void ClearTextInputState();
 
  private:
+  enum TextRequestState {
+    kNoPendingRequest,
+    kRequested,
+    kResponseReceived,
+  };
   void UpdateGesture(const gfx::PointF& normalized_content_hit_point,
                      blink::WebGestureEvent& gesture);
   void SendGestureToContent(std::unique_ptr<blink::WebInputEvent> event);
@@ -127,6 +132,7 @@ class ContentInputDelegate {
   PlatformController* controller_ = nullptr;
 
   EditedText last_keyboard_edit_;
+  TextRequestState pending_text_request_state_ = kNoPendingRequest;
   TextInputInfo pending_text_input_info_;
   std::queue<base::OnceCallback<void(const TextInputInfo&)>>
       update_state_callbacks_;
