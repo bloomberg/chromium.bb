@@ -137,7 +137,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                           command_buffer_id->route_id));
 #elif defined(OS_WIN)
   return D3D11VideoDecoder::Create(
-      gpu_task_runner_, gpu_preferences_,
+      gpu_task_runner_, gpu_preferences_, gpu_workarounds_,
       base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
                           command_buffer_id->channel_token,
                           command_buffer_id->route_id));

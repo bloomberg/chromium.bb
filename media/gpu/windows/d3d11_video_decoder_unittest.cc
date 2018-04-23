@@ -49,6 +49,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     // Set up some sane defaults.
     gpu_preferences_.enable_zero_copy_dxgi_video = true;
     gpu_preferences_.use_passthrough_cmd_decoder = false;
+    gpu_workarounds_.disable_dxgi_zero_copy_video = false;
     supported_config_ = TestVideoConfig::NormalH264(H264PROFILE_MAIN);
   }
 
@@ -65,8 +66,8 @@ class D3D11VideoDecoderTest : public ::testing::Test {
 
     gpu_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-    decoder_ = std::unique_ptr<VideoDecoder>(new D3D11VideoDecoder(
-        gpu_task_runner_, gpu_preferences_, std::move(impl)));
+    decoder_ = base::WrapUnique<VideoDecoder>(new D3D11VideoDecoder(
+        gpu_task_runner_, gpu_preferences_, gpu_workarounds_, std::move(impl)));
   }
 
   enum InitExpectation {
@@ -100,6 +101,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
 
   std::unique_ptr<VideoDecoder> decoder_;
   gpu::GpuPreferences gpu_preferences_;
+  gpu::GpuDriverBugWorkarounds gpu_workarounds_;
   MockD3D11VideoDecoderImpl* impl_ = nullptr;
   VideoDecoderConfig supported_config_;
 
@@ -131,6 +133,12 @@ TEST_F(D3D11VideoDecoderTest, RequiresZeroCopyPreference) {
 
 TEST_F(D3D11VideoDecoderTest, FailsIfUsingPassthroughDecoder) {
   gpu_preferences_.use_passthrough_cmd_decoder = true;
+  CreateDecoder();
+  InitializeDecoder(supported_config_, kExpectFailure);
+}
+
+TEST_F(D3D11VideoDecoderTest, FailsIfZeroCopyWorkaround) {
+  gpu_workarounds_.disable_dxgi_zero_copy_video = true;
   CreateDecoder();
   InitializeDecoder(supported_config_, kExpectFailure);
 }

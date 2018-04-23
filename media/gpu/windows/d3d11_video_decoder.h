@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/media_gpu_export.h"
@@ -31,6 +33,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
       base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
 
   // VideoDecoder implementation:
@@ -49,9 +52,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
 
-  // Return true if |config| definitely isn't going to work, so that we can fail
+  // Return false |config| definitely isn't going to work, so that we can fail
   // init without bothering with a thread hop.
-  bool IsUnsupported(const VideoDecoderConfig& config);
+  bool IsPotentiallySupported(const VideoDecoderConfig& config);
 
  protected:
   // Owners should call Destroy(). This is automatic via
@@ -64,6 +67,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
 
   D3D11VideoDecoder(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
                     const gpu::GpuPreferences& gpu_preferences,
+                    const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
                     std::unique_ptr<D3D11VideoDecoderImpl> impl);
 
   // The implementation, which we trampoline to the impl thread.
@@ -77,6 +81,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
   scoped_refptr<base::SequencedTaskRunner> impl_task_runner_;
 
   gpu::GpuPreferences gpu_preferences_;
+  gpu::GpuDriverBugWorkarounds gpu_workarounds_;
 
   base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_;
 
