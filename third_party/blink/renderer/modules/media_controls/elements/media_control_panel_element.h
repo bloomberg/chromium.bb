@@ -33,8 +33,16 @@ class MODULES_EXPORT MediaControlPanelElement final
 
   virtual void Trace(blink::Visitor*);
 
+ protected:
+  friend class MediaControlPanelElementTest;
+
+  bool EventListenerIsAttachedForTest() const;
+
  private:
   class TransitionEventListener;
+
+  void EnsureTransitionEventListener();
+  void DetachTransitionEventListener();
 
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;
