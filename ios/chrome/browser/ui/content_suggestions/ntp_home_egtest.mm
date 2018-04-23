@@ -492,7 +492,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           FakeOmniboxAccessibilityID())]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-  GREYAssertTrue(offsetAfterTap.y >= origin.y + headerHeight - 60,
+  // TODO(crbug.com/826369) This should use collectionView.safeAreaInsets.top
+  // instead of -StatusBarHeight once iOS10 is dropped and the NTP is out of
+  // native content.
+  CGFloat top = IsUIRefreshPhase1Enabled() ? StatusBarHeight() : 0;
+  GREYAssertTrue(offsetAfterTap.y >= origin.y + headerHeight - (60 + top),
                  @"The collection has not moved.");
 
   // Unfocus the omnibox.
