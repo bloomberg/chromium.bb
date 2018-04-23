@@ -10,7 +10,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -80,7 +80,7 @@ class StateStoreTest : public PlatformStateStoreTestBase {
 
   void SetUp() override {
     PlatformStateStoreTestBase::SetUp();
-    base::MessageLoop::current()->SetTaskRunner(task_runner_);
+    base::MessageLoopCurrent::Get()->SetTaskRunner(task_runner_);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(profile_manager_.SetUp());
     CreateProfile();
