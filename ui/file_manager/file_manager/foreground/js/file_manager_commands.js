@@ -1761,6 +1761,25 @@ CommandHandler.COMMANDS_['open-gear-menu'] = /** @type {Command} */ ({
 });
 
 /**
+ * Focus the first button visible on action bar (at the top).
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['focus-action-bar'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    fileManager.ui.actionbar.querySelector('button:not([hidden])').focus();
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: CommandUtil.canExecuteAlways
+});
+
+/**
  * Handle back button.
  * @type {Command}
  */

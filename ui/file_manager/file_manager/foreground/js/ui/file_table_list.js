@@ -139,6 +139,7 @@ filelist.decorateListItem = function(li, entry, metadataModel) {
   // Overriding the default role 'list' to 'listbox' for better
   // accessibility on ChromeOS.
   li.setAttribute('role', 'option');
+  li.setAttribute('aria-describedby', 'more-actions-info');
 
   Object.defineProperty(li, 'selected', {
     /**

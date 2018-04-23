@@ -1305,6 +1305,9 @@
   <message name="IDS_FILE_BROWSER_FAILED_SPACE_INFO" desc="Menu item, saying that FileBrowser is failed to retrieve space information.">
     Failed to retrieve space info
   </message>
+  <message name="IDS_FILE_BROWSER_SEE_MENU_FOR_ACTIONS" desc="Text to be used by screen reader to indicate users that there are more options on the action bar.">
+    More options available on the action bar. Press Alt + A to focus the action bar.
+  </message>
 
 <!-- Common for Audio player and Media player -->
   <message name="IDS_MEDIA_PLAYER_PLAY_BUTTON_LABEL" desc="Label for the Play button of media players (audio player / video player).">

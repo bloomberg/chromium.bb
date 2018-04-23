@@ -1680,6 +1680,11 @@ body.check-select #list-container list li[selected] .detail-thumbnail
       url(../images/files/ui/2x/person_add.png) 2x);
 }
 
+#action-bar {
+  display: flex;
+  flex: none;
+}
+
 .detail-name > * {
   align-items: center;
   display: flex;
