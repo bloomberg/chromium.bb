@@ -263,6 +263,7 @@ struct drm_backend {
 	bool atomic_modeset;
 
 	int use_pixman;
+	bool use_pixman_shadow;
 
 	struct udev_input input;
 
@@ -4082,6 +4083,7 @@ drm_output_init_pixman(struct drm_output *output, struct drm_backend *b)
 	uint32_t format = output->gbm_format;
 	uint32_t pixman_format;
 	unsigned int i;
+	uint32_t flags = 0;
 
 	switch (format) {
 		case GBM_FORMAT_XRGB8888:
@@ -4109,9 +4111,14 @@ drm_output_init_pixman(struct drm_output *output, struct drm_backend *b)
 			goto err;
 	}
 
-	if (pixman_renderer_output_create(&output->base,
-					  PIXMAN_RENDERER_OUTPUT_USE_SHADOW) < 0)
-		goto err;
+	if (b->use_pixman_shadow)
+		flags |= PIXMAN_RENDERER_OUTPUT_USE_SHADOW;
+
+	if (pixman_renderer_output_create(&output->base, flags) < 0)
+ 		goto err;
+ 
+	weston_log("DRM: output %s %s shadow framebuffer.\n", output->base.name,
+		   b->use_pixman_shadow ? "uses" : "does not use");
 
 	pixman_region32_init_rect(&output->previous_damage,
 				  output->base.x, output->base.y, output->base.width, output->base.height);
@@ -6048,6 +6055,7 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->compositor = compositor;
 	b->use_pixman = config->use_pixman;
 	b->pageflip_timeout = config->pageflip_timeout;
+	b->use_pixman_shadow = config->use_pixman_shadow;
 
 	compositor->backend = &b->base;
 
@@ -6207,6 +6215,7 @@ err_compositor:
 static void
 config_init_to_defaults(struct weston_drm_backend_config *config)
 {
+	config->use_pixman_shadow = true;
 }
 
 WL_EXPORT int

@@ -146,6 +146,9 @@ struct weston_drm_backend_config {
 	 * based on seat names and boot_vga to find the right device.
 	 */
 	char *specific_device;
+
+	/** Use shadow buffer if using Pixman-renderer. */
+	bool use_pixman_shadow;
 };
 
 #ifdef  __cplusplus
