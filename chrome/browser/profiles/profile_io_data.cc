@@ -17,7 +17,6 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -150,8 +149,6 @@
 #include "components/user_manager/user_manager.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
-#include "net/cert/caching_cert_verifier.h"
-#include "net/cert/multi_threaded_cert_verifier.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_NSS_CERTS)
@@ -823,8 +820,8 @@ void ProfileIOData::InstallProtocolHandlers(
            protocol_handlers->begin();
        it != protocol_handlers->end();
        ++it) {
-    bool set_protocol = job_factory->SetProtocolHandler(
-        it->first, base::WrapUnique(it->second.release()));
+    bool set_protocol =
+        job_factory->SetProtocolHandler(it->first, std::move(it->second));
     DCHECK(set_protocol);
   }
   protocol_handlers->clear();
@@ -835,9 +832,8 @@ void ProfileIOData::AddProtocolHandlersToBuilder(
     net::URLRequestContextBuilder* builder,
     content::ProtocolHandlerMap* protocol_handlers) {
   for (auto& protocol_handler : *protocol_handlers) {
-    builder->SetProtocolHandler(
-        protocol_handler.first,
-        base::WrapUnique(protocol_handler.second.release()));
+    builder->SetProtocolHandler(protocol_handler.first,
+                                std::move(protocol_handler.second));
   }
   protocol_handlers->clear();
 }
@@ -1478,6 +1474,5 @@ std::unique_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
 std::unique_ptr<net::NetworkDelegate> ProfileIOData::ConfigureNetworkDelegate(
     IOThread* io_thread,
     std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate) const {
-  return base::WrapUnique<net::NetworkDelegate>(
-      chrome_network_delegate.release());
+  return std::move(chrome_network_delegate);
 }
