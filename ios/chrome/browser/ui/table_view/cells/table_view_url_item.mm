@@ -45,7 +45,7 @@ const CGFloat kFaviconViewSize = 56.0;
 
   TableViewURLCell* cell =
       base::mac::ObjCCastStrict<TableViewURLCell>(tableCell);
-  cell.faviconView.image = self.favicon;
+  [cell setFavicon:self.favicon];
   cell.titleLabel.text = self.title;
   cell.URLLabel.text = self.URL;
   cell.metadataLabel.text = self.metadata;
@@ -143,6 +143,20 @@ const CGFloat kFaviconViewSize = 56.0;
     ]];
   }
   return self;
+}
+
+- (void)setFavicon:(UIImage*)favicon {
+  if (favicon) {
+    self.faviconView.image = favicon;
+  } else {
+    self.faviconView.image = [UIImage imageNamed:@"default_favicon"];
+  }
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  // Reset favicon to default.
+  [self setFavicon:nil];
 }
 
 @end

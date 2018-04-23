@@ -249,7 +249,7 @@ const int kRelativeTimeMaxHours = 4;
     // Configure and add the Item.
     TableViewURLItem* recentlyClosedTab =
         [[TableViewURLItem alloc] initWithType:ItemTypeRecentlyClosed];
-    recentlyClosedTab.favicon = [UIImage imageNamed:@"default_favicon"];
+
     recentlyClosedTab.title = entryTitle;
     recentlyClosedTab.URL = entryURL;
     [self.tableViewModel addItem:recentlyClosedTab
@@ -317,7 +317,6 @@ const int kRelativeTimeMaxHours = 4;
 
     TableViewURLItem* sessionTabItem =
         [[TableViewURLItem alloc] initWithType:ItemTypeSessionTabData];
-    sessionTabItem.favicon = [UIImage imageNamed:@"default_favicon"];
     sessionTabItem.title = title;
     sessionTabItem.URL = base::SysUTF8ToNSString(url.host());
     [model addItem:sessionTabItem
