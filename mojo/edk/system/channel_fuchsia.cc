@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
@@ -185,7 +186,7 @@ class MessageView {
 };
 
 class ChannelFuchsia : public Channel,
-                       public base::MessageLoop::DestructionObserver,
+                       public base::MessageLoopCurrent::DestructionObserver,
                        public base::MessagePumpForIO::ZxHandleWatcher {
  public:
   ChannelFuchsia(Delegate* delegate,
@@ -284,17 +285,17 @@ class ChannelFuchsia : public Channel,
   void StartOnIOThread() {
     DCHECK(!read_watch_);
 
-    base::MessageLoop::current()->AddDestructionObserver(this);
+    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
     read_watch_.reset(
         new base::MessagePumpForIO::ZxHandleWatchController(FROM_HERE));
-    base::MessageLoopForIO::current()->WatchZxHandle(
+    base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
         handle_.get().as_handle(), true /* persistent */,
         ZX_CHANNEL_READABLE | ZX_CHANNEL_PEER_CLOSED, read_watch_.get(), this);
   }
 
   void ShutDownOnIOThread() {
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
+    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
 
     read_watch_.reset();
     if (leak_handle_)
@@ -305,7 +306,7 @@ class ChannelFuchsia : public Channel,
     self_ = nullptr;
   }
 
-  // base::MessageLoop::DestructionObserver:
+  // base::MessageLoopCurrent::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (self_)
