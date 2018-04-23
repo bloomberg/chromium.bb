@@ -48,6 +48,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
@@ -57,6 +58,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
+#include "content/public/common/webplugininfo.h"
 #include "mojo/common/values_struct_traits.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_content_disposition.h"
@@ -65,11 +67,13 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 
 namespace content {
 
@@ -794,10 +798,6 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               response_loader_binding_.Unbind());
     }
 
-    scoped_refptr<network::ResourceResponse> response(
-        new network::ResourceResponse());
-    response->head = head;
-
     bool is_download;
     bool is_stream;
     std::unique_ptr<NavigationData> cloned_navigation_data;
@@ -805,15 +805,28 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       DCHECK(url_chain_.empty() || url_ == url_chain_.back());
       bool is_cross_origin =
           navigation_loader_util::IsCrossOriginRequest(url_, initiator_origin_);
-      is_download = !response_intercepted &&
-                    navigation_loader_util::IsDownload(
-                        url_, head.headers.get(), head.mime_type,
-                        suggested_filename_.has_value(), is_cross_origin);
-      if (is_download && suggested_filename_.has_value() && is_cross_origin &&
+      bool must_download = navigation_loader_util::MustDownload(
+          url_, head.headers.get(), head.mime_type,
+          suggested_filename_.has_value(), is_cross_origin);
+      if (must_download && suggested_filename_.has_value() && is_cross_origin &&
           (!head.headers || !HasContentDispositionAttachment(*head.headers))) {
         download::RecordDownloadCount(
             download::CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
       }
+      bool known_mime_type = blink::IsSupportedMimeType(head.mime_type);
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+      if (!response_intercepted && !must_download && !known_mime_type) {
+        CheckPluginAndContinueOnReceiveResponse(
+            head, std::move(downloaded_file),
+            std::move(url_loader_client_endpoints),
+            std::vector<WebPluginInfo>());
+        return;
+      }
+#endif
+
+      is_download =
+          !response_intercepted && (must_download || !known_mime_type);
       is_stream = false;
     } else {
       ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
@@ -862,6 +875,60 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
             sw_provider_host->controller());
       }
     }
+
+    CallOnReceivedResponse(head, std::move(downloaded_file),
+                           std::move(url_loader_client_endpoints),
+                           std::move(cloned_navigation_data), is_download,
+                           is_stream);
+  }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  void CheckPluginAndContinueOnReceiveResponse(
+      const network::ResourceResponseHead& head,
+      network::mojom::DownloadedTempFilePtr downloaded_file,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      const std::vector<WebPluginInfo>& plugins) {
+    bool stale;
+    WebPluginInfo plugin;
+    // It's ok to pass -1 for the render process and frame ID since that's
+    // only used for plugin overridding. We don't actually care if we get an
+    // overridden plugin or not, since all we care about is the presence of a
+    // plugin. Note that this is what the MimeSniffingResourceHandler code
+    // path does as well for navigations.
+    bool has_plugin = PluginService::GetInstance()->GetPluginInfo(
+        -1 /* render_process_id */, -1 /* render_frame_id */, resource_context_,
+        resource_request_->url, url::Origin(), head.mime_type,
+        false /* allow_wildcard */, &stale, &plugin, nullptr);
+
+    if (stale) {
+      // Refresh the plugins asynchronously.
+      PluginService::GetInstance()->GetPlugins(base::BindOnce(
+          &URLLoaderRequestController::CheckPluginAndContinueOnReceiveResponse,
+          weak_factory_.GetWeakPtr(), head, std::move(downloaded_file),
+          std::move(url_loader_client_endpoints)));
+      return;
+    }
+
+    bool is_download =
+        !has_plugin &&
+        (!head.headers || head.headers->response_code() / 100 == 2);
+
+    CallOnReceivedResponse(head, std::move(downloaded_file),
+                           std::move(url_loader_client_endpoints), nullptr,
+                           is_download, false /* is_stream */);
+  }
+#endif
+
+  void CallOnReceivedResponse(
+      const network::ResourceResponseHead& head,
+      network::mojom::DownloadedTempFilePtr downloaded_file,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      std::unique_ptr<NavigationData> cloned_navigation_data,
+      bool is_download,
+      bool is_stream) {
+    scoped_refptr<network::ResourceResponse> response(
+        new network::ResourceResponse());
+    response->head = head;
 
     // Make a copy of the ResourceResponse before it is passed to another
     // thread.

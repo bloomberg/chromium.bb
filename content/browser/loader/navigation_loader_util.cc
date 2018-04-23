@@ -15,14 +15,11 @@
 namespace content {
 namespace navigation_loader_util {
 
-// TODO(arthursonzogni): IsDownload can't be determined only by the response's
-// headers. The response's body might contain information to guess it.
-// See MimeSniffingResourceHandler.
-bool IsDownload(const GURL& url,
-                net::HttpResponseHeaders* headers,
-                const std::string& mime_type,
-                bool have_suggested_filename,
-                bool is_cross_origin) {
+bool MustDownload(const GURL& url,
+                  net::HttpResponseHeaders* headers,
+                  const std::string& mime_type,
+                  bool have_suggested_filename,
+                  bool is_cross_origin) {
   if (headers) {
     std::string disposition;
     if (headers->GetNormalizedHeader("content-disposition", &disposition) &&
@@ -44,6 +41,19 @@ bool IsDownload(const GURL& url,
     }
     // TODO(qinmin): Check whether this is special-case user script that needs
     // to be downloaded.
+  }
+
+  return false;
+}
+
+bool IsDownload(const GURL& url,
+                net::HttpResponseHeaders* headers,
+                const std::string& mime_type,
+                bool have_suggested_filename,
+                bool is_cross_origin) {
+  if (MustDownload(url, headers, mime_type, have_suggested_filename,
+                   is_cross_origin)) {
+    return true;
   }
 
   if (blink::IsSupportedMimeType(mime_type))
