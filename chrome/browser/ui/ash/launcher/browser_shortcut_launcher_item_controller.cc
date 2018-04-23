@@ -243,11 +243,13 @@ ash::MenuItemList BrowserShortcutLauncherItemController::GetAppMenuItems(
   return items;
 }
 
-std::unique_ptr<ui::MenuModel>
-BrowserShortcutLauncherItemController::GetContextMenu(int64_t display_id) {
+void BrowserShortcutLauncherItemController::GetContextMenu(
+    int64_t display_id,
+    GetMenuModelCallback callback) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   const ash::ShelfItem* item = controller->GetItem(shelf_id());
-  return LauncherContextMenu::Create(controller, item, display_id);
+  std::move(callback).Run(
+      LauncherContextMenu::Create(controller, item, display_id));
 }
 
 void BrowserShortcutLauncherItemController::ExecuteCommand(

@@ -8,12 +8,13 @@
 #include <utility>
 
 #include "ash/public/cpp/menu_utils.h"
+#include "base/bind.h"
 #include "ui/base/models/menu_model.h"
 
 namespace ash {
 
 ShelfItemDelegate::ShelfItemDelegate(const ShelfID& shelf_id)
-    : shelf_id_(shelf_id), binding_(this), image_set_by_controller_(false) {}
+    : shelf_id_(shelf_id), binding_(this), weak_ptr_factory_(this) {}
 
 ShelfItemDelegate::~ShelfItemDelegate() = default;
 
@@ -27,10 +28,10 @@ MenuItemList ShelfItemDelegate::GetAppMenuItems(int event_flags) {
   return MenuItemList();
 }
 
-std::unique_ptr<ui::MenuModel> ShelfItemDelegate::GetContextMenu(
-    int64_t display_id) {
+void ShelfItemDelegate::GetContextMenu(int64_t display_id,
+                                       GetMenuModelCallback callback) {
   // Shelf items do not have any custom context menu entries by default.
-  return nullptr;
+  std::move(callback).Run(nullptr);
 }
 
 AppWindowLauncherItemController*
@@ -54,7 +55,16 @@ bool ShelfItemDelegate::ExecuteContextMenuCommand(int64_t command_id,
 void ShelfItemDelegate::GetContextMenuItems(
     int64_t display_id,
     GetContextMenuItemsCallback callback) {
-  context_menu_ = GetContextMenu(display_id);
+  GetContextMenu(
+      display_id,
+      base::BindOnce(&ShelfItemDelegate::OnGetContextMenu,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ShelfItemDelegate::OnGetContextMenu(
+    GetContextMenuItemsCallback callback,
+    std::unique_ptr<ui::MenuModel> menu_model) {
+  context_menu_ = std::move(menu_model);
   std::move(callback).Run(
       menu_utils::GetMojoMenuItemsFromModel(context_menu_.get()));
 }
