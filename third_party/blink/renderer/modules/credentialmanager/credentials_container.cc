@@ -200,8 +200,9 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   if (!relying_party_id.IsNull()) {
     OriginAccessEntry access_entry(origin->Protocol(), relying_party_id,
                                    blink::OriginAccessEntry::kAllowSubdomains);
-    if (access_entry.MatchesDomain(*origin) !=
-        blink::OriginAccessEntry::kMatchesOrigin) {
+    if (relying_party_id.IsEmpty() ||
+        access_entry.MatchesDomain(*origin) !=
+            blink::OriginAccessEntry::kMatchesOrigin) {
       resolver->Reject(DOMException::Create(
           kSecurityError,
           "The relying party ID '" + relying_party_id +
