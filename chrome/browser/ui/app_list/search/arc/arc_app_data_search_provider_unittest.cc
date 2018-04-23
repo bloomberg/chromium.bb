@@ -58,14 +58,20 @@ TEST_F(ArcAppDataSearchProviderTest, Basic) {
 
   provider->Start(base::UTF8ToUTF16(kQuery));
   const auto& results = provider->results();
-  EXPECT_EQ(kMaxResults, results.size());
-  // Check that information is correctly set in each result.
-  for (size_t i = 0; i < results.size(); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Testing result %zu", i));
-    EXPECT_EQ(base::UTF16ToUTF8(results[i]->title()),
-              base::StringPrintf("Label %s %zu", kQuery, i));
-    EXPECT_EQ(ash::SearchResultDisplayType::kTile, results[i]->display_type());
-  }
+  EXPECT_EQ(2u, results.size());
+  // Verify Person search result.
+  int i = 0;
+  EXPECT_EQ(base::StringPrintf("Label %s %d", kQuery, i),
+            base::UTF16ToUTF8(results[i]->title()));
+  EXPECT_EQ(ash::SearchResultDisplayType::kTile, results[i]->display_type());
+  EXPECT_TRUE(results[i]->details().empty());
+  // Verify Note document search result.
+  ++i;
+  EXPECT_EQ(base::StringPrintf("Label %s %d", kQuery, i),
+            base::UTF16ToUTF8(results[i]->title()));
+  EXPECT_EQ(ash::SearchResultDisplayType::kList, results[i]->display_type());
+  EXPECT_EQ(base::StringPrintf("Text %s %d", kQuery, i),
+            base::UTF16ToUTF8(results[i]->details()));
 }
 
 }  // namespace app_list

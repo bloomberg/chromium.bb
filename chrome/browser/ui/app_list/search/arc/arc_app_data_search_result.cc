@@ -82,18 +82,24 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
       profile_(profile),
       list_controller_(list_controller),
       weak_ptr_factory_(this) {
-  set_title(base::UTF8ToUTF16(label()));
+  set_title(base::UTF8ToUTF16(data_->label));
   set_id(kAppDataSearchPrefix + launch_intent_uri());
-  set_display_type(ash::SearchResultDisplayType::kTile);
+
+  if (data_->type == arc::mojom::AppDataResultType::PERSON) {
+    set_display_type(ash::SearchResultDisplayType::kTile);
+  } else if (data_->type == arc::mojom::AppDataResultType::NOTE_DOCUMENT) {
+    set_details(base::UTF8ToUTF16(data_->text));
+    set_display_type(ash::SearchResultDisplayType::kList);
+  }
 
   // TODO(warx): set default images when icon_png_data() is not available.
   if (!icon_png_data()) {
-    SetIconToAvatarIcon(gfx::ImageSkia());
+    SetIcon(gfx::ImageSkia());
     return;
   }
 
   icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
-      base::BindOnce(&ArcAppDataSearchResult::SetIconToAvatarIcon,
+      base::BindOnce(&ArcAppDataSearchResult::ApplyIcon,
                      weak_ptr_factory_.GetWeakPtr()),
       kGridIconDimension);
   icon_decode_request_->StartWithOptions(icon_png_data().value());
@@ -118,9 +124,14 @@ void ArcAppDataSearchResult::Open(int event_flags) {
   LaunchIntent(launch_intent_uri(), list_controller_->GetAppListDisplayId());
 }
 
-void ArcAppDataSearchResult::SetIconToAvatarIcon(const gfx::ImageSkia& icon) {
-  SetIcon(gfx::ImageSkia(std::make_unique<AvatarImageSource>(icon, kAvatarSize),
-                         gfx::Size(kAvatarSize, kAvatarSize)));
+void ArcAppDataSearchResult::ApplyIcon(const gfx::ImageSkia& icon) {
+  if (data_->type == arc::mojom::AppDataResultType::PERSON) {
+    SetIcon(
+        gfx::ImageSkia(std::make_unique<AvatarImageSource>(icon, kAvatarSize),
+                       gfx::Size(kAvatarSize, kAvatarSize)));
+    return;
+  }
+  SetIcon(icon);
 }
 
 }  // namespace app_list
