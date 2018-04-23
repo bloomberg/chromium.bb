@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
@@ -78,12 +79,12 @@ void WebThreadBase::RemoveTaskTimeObserver(
 
 void WebThreadBase::AddTaskObserverInternal(
     base::MessageLoop::TaskObserver* observer) {
-  base::MessageLoop::current()->AddTaskObserver(observer);
+  base::MessageLoopCurrent::Get()->AddTaskObserver(observer);
 }
 
 void WebThreadBase::RemoveTaskObserverInternal(
     base::MessageLoop::TaskObserver* observer) {
-  base::MessageLoop::current()->RemoveTaskObserver(observer);
+  base::MessageLoopCurrent::Get()->RemoveTaskObserver(observer);
 }
 
 // static
