@@ -825,31 +825,23 @@ EphemeralRangeTemplate<Strategy> TextIteratorAlgorithm<Strategy>::Range()
   }
 
   // otherwise, return the end of the overall range we were given
-  if (end_container_)
-    return EphemeralRangeTemplate<Strategy>(
-        PositionTemplate<Strategy>(end_container_, end_offset_));
-
-  return EphemeralRangeTemplate<Strategy>();
+  return EphemeralRangeTemplate<Strategy>(
+      PositionTemplate<Strategy>(end_container_, end_offset_));
 }
 
 template <typename Strategy>
 Document* TextIteratorAlgorithm<Strategy>::OwnerDocument() const {
   if (text_state_.PositionNode())
     return &text_state_.PositionNode()->GetDocument();
-  if (end_container_)
-    return &end_container_->GetDocument();
-  return nullptr;
+  return &end_container_->GetDocument();
 }
 
 template <typename Strategy>
 const Node* TextIteratorAlgorithm<Strategy>::GetNode() const {
-  if (text_state_.PositionNode() || end_container_) {
-    const Node* node = CurrentContainer();
-    if (node->IsCharacterDataNode())
-      return node;
-    return Strategy::ChildAt(*node, StartOffsetInCurrentContainer());
-  }
-  return nullptr;
+  const Node* node = CurrentContainer();
+  if (node->IsCharacterDataNode())
+    return node;
+  return Strategy::ChildAt(*node, StartOffsetInCurrentContainer());
 }
 
 template <typename Strategy>
@@ -858,7 +850,6 @@ int TextIteratorAlgorithm<Strategy>::StartOffsetInCurrentContainer() const {
     text_state_.FlushPositionOffsets();
     return text_state_.PositionStartOffset();
   }
-  DCHECK(end_container_);
   return end_offset_;
 }
 
@@ -868,7 +859,6 @@ int TextIteratorAlgorithm<Strategy>::EndOffsetInCurrentContainer() const {
     text_state_.FlushPositionOffsets();
     return text_state_.PositionEndOffset();
   }
-  DCHECK(end_container_);
   return end_offset_;
 }
 
@@ -877,7 +867,6 @@ const Node* TextIteratorAlgorithm<Strategy>::CurrentContainer() const {
   if (text_state_.PositionNode()) {
     return text_state_.PositionNode();
   }
-  DCHECK(end_container_);
   return end_container_;
 }
 
