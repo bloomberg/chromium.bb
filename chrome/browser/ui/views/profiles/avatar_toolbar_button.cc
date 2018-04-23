@@ -57,20 +57,23 @@ void AvatarToolbarButton::UpdateIcon() {
   // TODO(pbos): Move these constants to LayoutProvider or LayoutConstants.
   const int icon_size = is_touch ? 24 : 20;
 
+  const SkColor icon_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+
   gfx::Image avatar_icon;
-  // TODO(pbos): Account for incognito by either changing the icon and
-  // effectively disabling the menu or by not showing it at all in incognito.
-  if (AvatarMenu::GetImageForMenuButton(profile_->GetPath(), &avatar_icon) ==
-      AvatarMenu::ImageLoadStatus::LOADED) {
+  if (IsIncognito()) {
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(kIncognitoIcon, icon_size, icon_color));
+  } else if (AvatarMenu::GetImageForMenuButton(profile_->GetPath(),
+                                               &avatar_icon) ==
+             AvatarMenu::ImageLoadStatus::LOADED) {
     avatar_icon = profiles::GetSizedAvatarIcon(
         avatar_icon, true, icon_size, icon_size, profiles::SHAPE_CIRCLE);
     SetImage(views::Button::STATE_NORMAL, avatar_icon.ToImageSkia());
   } else {
     SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
-                              GetThemeProvider()->GetColor(
-                                  ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)));
+        gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size, icon_color));
   }
 }
 
