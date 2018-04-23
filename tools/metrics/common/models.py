@@ -76,9 +76,9 @@ class NodeType(object):
     extra_newlines: None or a triple of integers describing the number of
         newlines that should be printed (after_open, before_close, after_close)
     single_line: True iff this node may be squashed into a single line.
-    alphabetization: A (tag, keyfn) pair, which specifies the tag of the
-       children that should be sorted, and a function to get the sort key from
-       the xml node.
+    alphabetization: A list of [(tag, keyfn)] pairs, which specify the tags of
+       the children that should be sorted, and the functions to get sort keys
+       from xml nodes.
   """
   __metaclass__ = abc.ABCMeta
 

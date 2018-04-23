@@ -39,15 +39,22 @@ class Action(object):
     owners: list of action owners
     not_user_triggered: if action is not user triggered
     obsolete: explanation on why user action is not being used anymore
+    from_suffix: If True, this action was computed via a suffix.
   """
 
-  def __init__(self, name, description, owners,
-               not_user_triggered=False, obsolete=None):
+  def __init__(self,
+               name,
+               description,
+               owners,
+               not_user_triggered=False,
+               obsolete=None,
+               from_suffix=False):
     self.name = name
     self.description = description
     self.owners = owners
     self.not_user_triggered = not_user_triggered
     self.obsolete = obsolete
+    self.from_suffix = from_suffix
 
 
 class Suffix(object):
@@ -219,8 +226,10 @@ def _CreateActionFromSuffix(actions_dict, action, suffix):
 
   new_action_description = action.description + ' ' + suffix.description
 
-  actions_dict[new_action_name] = Action(new_action_name,
-                                         new_action_description,
-                                         list(action.owners),
-                                         action.not_user_triggered,
-                                         action.obsolete)
+  actions_dict[new_action_name] = Action(
+      new_action_name,
+      new_action_description,
+      list(action.owners),
+      action.not_user_triggered,
+      action.obsolete,
+      from_suffix=True)
