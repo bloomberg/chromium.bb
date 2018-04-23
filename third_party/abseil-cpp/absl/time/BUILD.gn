@@ -15,43 +15,45 @@ if (build_with_chromium) {
   visibility = [ "*" ]
 }
 
-source_set("time") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "clock.cc",
-    "duration.cc",
-    "format.cc",
-    "internal/get_current_time_ios.inc",
-    "internal/get_current_time_posix.inc",
-    "internal/get_current_time_windows.inc",
-    "time.cc",
-  ]
-  public = [
-    "clock.h",
-    "time.h",
-  ]
-  deps = [
-    "../base",
-    "../base:core_headers",
-    "../numeric:int128",
-  ]
-}
+# TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
+# source_set("time") {
+#   configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+#   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+#   sources = [
+#     "clock.cc",
+#     "duration.cc",
+#     "format.cc",
+#     "internal/get_current_time_ios.inc",
+#     "internal/get_current_time_posix.inc",
+#     "internal/get_current_time_windows.inc",
+#     "time.cc",
+#   ]
+#   public = [
+#     "clock.h",
+#     "time.h",
+#   ]
+#   deps = [
+#     "../base",
+#     "../base:core_headers",
+#     "../numeric:int128",
+#   ]
+# }
 
-source_set("test_util") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/test_util.cc",
-    "internal/zoneinfo.inc",
-  ]
-  public = [
-    "internal/test_util.h",
-  ]
-  deps = [
-    ":time",
-    "../base",
-  ]
-  visibility = []
-  visibility += [ "../time:*" ]
-}
+# TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
+# source_set("test_util") {
+#   configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+#   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+#   sources = [
+#     "internal/test_util.cc",
+#     "internal/zoneinfo.inc",
+#   ]
+#   public = [
+#     "internal/test_util.h",
+#   ]
+#   deps = [
+#     ":time",
+#     "../base",
+#   ]
+#   visibility = []
+#   visibility += [ "../time:*" ]
+# }
