@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
 #include "chrome/renderer/autofill/fake_password_manager_client.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
@@ -3043,7 +3044,7 @@ TEST_F(PasswordAutofillAgentTest,
 
 // Tests that password manager sees both autofill assisted and user entered
 // data on saving that is triggered by form submission. Leaks under ASan.
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(OS_WIN)
 #define MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted \
   DISABLED_UsernameChangedAfterPasswordInput_FormSubmitted
 #else
