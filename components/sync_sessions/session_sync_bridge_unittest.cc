@@ -84,12 +84,22 @@ MATCHER_P(EntityDataHasSpecifics, session_specifics_matcher, "") {
 }
 
 syncer::EntityDataPtr SpecificsToEntity(
-    const sync_pb::SessionSpecifics& specifics) {
+    const sync_pb::SessionSpecifics& specifics,
+    base::Time mtime = base::Time::Now()) {
   syncer::EntityData data;
   data.client_tag_hash = syncer::GenerateSyncableHash(
       syncer::SESSIONS, SessionStore::GetClientTag(specifics));
   *data.specifics.mutable_session() = specifics;
+  data.modification_time = mtime;
   return data.PassToPtr();
+}
+
+syncer::UpdateResponseData SpecificsToUpdateResponse(
+    const sync_pb::SessionSpecifics& specifics,
+    base::Time mtime = base::Time::Now()) {
+  syncer::UpdateResponseData data;
+  data.entity = SpecificsToEntity(specifics, mtime);
+  return data;
 }
 
 std::map<std::string, std::unique_ptr<EntityData>> BatchToEntityDataMap(
@@ -115,6 +125,36 @@ syncer::CommitResponseData CreateSuccessResponse(
       syncer::GenerateSyncableHash(syncer::SESSIONS, client_tag);
   response.sequence_number = 1;
   return response;
+}
+
+sync_pb::SessionSpecifics CreateHeaderSpecificsWithOneTab(
+    const std::string& session_tag,
+    int window_id,
+    int tab_id) {
+  sync_pb::SessionSpecifics specifics;
+  specifics.set_session_tag(session_tag);
+  specifics.mutable_header()->set_client_name("Some client name");
+  specifics.mutable_header()->set_device_type(
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  sync_pb::SessionWindow* window = specifics.mutable_header()->add_window();
+  window->set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
+  window->set_window_id(window_id);
+  window->add_tab(tab_id);
+  return specifics;
+}
+
+sync_pb::SessionSpecifics CreateTabSpecifics(const std::string& session_tag,
+                                             int window_id,
+                                             int tab_id,
+                                             int tab_node_id,
+                                             const std::string& url) {
+  sync_pb::SessionSpecifics specifics;
+  specifics.set_session_tag(session_tag);
+  specifics.set_tab_node_id(tab_node_id);
+  specifics.mutable_tab()->add_navigation()->set_virtual_url("http://baz.com/");
+  specifics.mutable_tab()->set_window_id(window_id);
+  specifics.mutable_tab()->set_tab_id(tab_id);
+  return specifics;
 }
 
 class SessionSyncBridgeTest : public ::testing::Test {
@@ -182,8 +222,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
     state.set_initial_sync_done(true);
     syncer::UpdateResponseDataList initial_updates;
     for (const SessionSpecifics& specifics : remote_data) {
-      initial_updates.push_back(syncer::UpdateResponseData());
-      initial_updates.back().entity = SpecificsToEntity(specifics);
+      initial_updates.push_back(SpecificsToUpdateResponse(specifics));
     }
     real_processor_->OnUpdateReceived(state, initial_updates);
   }
@@ -600,9 +639,8 @@ TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
 
 // Starting sync with no local data should just store the foreign entities in
 // the store and expose them via OpenTabsUIDelegate.
-TEST_F(SessionSyncBridgeTest, ShouldMergForeignSession) {
+TEST_F(SessionSyncBridgeTest, ShouldMergeForeignSession) {
   const std::string kForeignSessionTag = "foreignsessiontag";
-  const std::string kForeignClientName = "Foreign Client Name";
   const int kForeignWindowId = 2000001;
   const int kForeignTabId = 2000002;
   const int kForeignTabNodeId = 2003;
@@ -611,25 +649,12 @@ TEST_F(SessionSyncBridgeTest, ShouldMergForeignSession) {
   EXPECT_CALL(mock_processor(), DoPut(_, _, _)).Times(0);
   InitializeBridge();
 
-  sync_pb::SessionSpecifics foreign_header;
-  foreign_header.set_session_tag(kForeignSessionTag);
-  foreign_header.mutable_header()->set_client_name(kForeignClientName);
-  foreign_header.mutable_header()->set_device_type(
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
-  sync_pb::SessionWindow* foreign_window =
-      foreign_header.mutable_header()->add_window();
-  foreign_window->set_browser_type(
-      sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
-  foreign_window->set_window_id(kForeignWindowId);
-  foreign_window->add_tab(kForeignTabId);
-
-  sync_pb::SessionSpecifics foreign_tab;
-  foreign_tab.set_session_tag(kForeignSessionTag);
-  foreign_tab.set_tab_node_id(kForeignTabNodeId);
-  foreign_tab.mutable_tab()->add_navigation()->set_virtual_url(
-      "http://baz.com/");
-  foreign_tab.mutable_tab()->set_window_id(kForeignWindowId);
-  foreign_tab.mutable_tab()->set_tab_id(kForeignTabId);
+  const sync_pb::SessionSpecifics foreign_header =
+      CreateHeaderSpecificsWithOneTab(kForeignSessionTag, kForeignWindowId,
+                                      kForeignTabId);
+  const sync_pb::SessionSpecifics foreign_tab =
+      CreateTabSpecifics(kForeignSessionTag, kForeignWindowId, kForeignTabId,
+                         kForeignTabNodeId, "http://baz.com/");
 
   EXPECT_CALL(
       mock_processor(),
@@ -650,33 +675,18 @@ TEST_F(SessionSyncBridgeTest, ShouldMergForeignSession) {
 
 TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
   const std::string kForeignSessionTag = "foreignsessiontag";
-  const std::string kForeignClientName = "Foreign Client Name";
   const int kForeignWindowId = 2000001;
   const int kForeignTabId = 2000002;
   const int kForeignTabNodeId = 2003;
 
   InitializeBridge();
 
-  sync_pb::SessionSpecifics foreign_header;
-  foreign_header.set_session_tag(kForeignSessionTag);
-  foreign_header.mutable_header()->set_client_name(kForeignClientName);
-  foreign_header.mutable_header()->set_device_type(
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
-  sync_pb::SessionWindow* foreign_window =
-      foreign_header.mutable_header()->add_window();
-  foreign_window->set_browser_type(
-      sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
-  foreign_window->set_window_id(kForeignWindowId);
-  foreign_window->add_tab(kForeignTabId);
-
-  sync_pb::SessionSpecifics foreign_tab;
-  foreign_tab.set_session_tag(kForeignSessionTag);
-  foreign_tab.set_tab_node_id(kForeignTabNodeId);
-  foreign_tab.mutable_tab()->add_navigation()->set_virtual_url(
-      "http://baz.com/");
-  foreign_tab.mutable_tab()->set_window_id(kForeignWindowId);
-  foreign_tab.mutable_tab()->set_tab_id(kForeignTabId);
-
+  const sync_pb::SessionSpecifics foreign_header =
+      CreateHeaderSpecificsWithOneTab(kForeignSessionTag, kForeignWindowId,
+                                      kForeignTabId);
+  const sync_pb::SessionSpecifics foreign_tab =
+      CreateTabSpecifics(kForeignSessionTag, kForeignWindowId, kForeignTabId,
+                         kForeignTabNodeId, "http://baz.com/");
   StartSyncing({foreign_header, foreign_tab});
 
   const sessions::SessionTab* foreign_session_tab = nullptr;
@@ -771,33 +781,18 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreRemoteDeletionOfLocalTab) {
 // UI (via OpenTabsUIDelegate).
 TEST_F(SessionSyncBridgeTest, ShouldDeleteForeignSessionFromUI) {
   const std::string kForeignSessionTag = "foreignsessiontag";
-  const std::string kForeignClientName = "Foreign Client Name";
   const int kForeignWindowId = 2000001;
   const int kForeignTabId = 2000002;
   const int kForeignTabNodeId = 2003;
 
   InitializeBridge();
 
-  sync_pb::SessionSpecifics foreign_header;
-  foreign_header.set_session_tag(kForeignSessionTag);
-  foreign_header.mutable_header()->set_client_name(kForeignClientName);
-  foreign_header.mutable_header()->set_device_type(
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
-  sync_pb::SessionWindow* foreign_window =
-      foreign_header.mutable_header()->add_window();
-  foreign_window->set_browser_type(
-      sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
-  foreign_window->set_window_id(kForeignWindowId);
-  foreign_window->add_tab(kForeignTabId);
-
-  sync_pb::SessionSpecifics foreign_tab;
-  foreign_tab.set_session_tag(kForeignSessionTag);
-  foreign_tab.set_tab_node_id(kForeignTabNodeId);
-  foreign_tab.mutable_tab()->add_navigation()->set_virtual_url(
-      "http://baz.com/");
-  foreign_tab.mutable_tab()->set_window_id(kForeignWindowId);
-  foreign_tab.mutable_tab()->set_tab_id(kForeignTabId);
-
+  const sync_pb::SessionSpecifics foreign_header =
+      CreateHeaderSpecificsWithOneTab(kForeignSessionTag, kForeignWindowId,
+                                      kForeignTabId);
+  const sync_pb::SessionSpecifics foreign_tab =
+      CreateTabSpecifics(kForeignSessionTag, kForeignWindowId, kForeignTabId,
+                         kForeignTabNodeId, "http://baz.com/");
   StartSyncing({foreign_header, foreign_tab});
 
   const std::string foreign_header_storage_key =
@@ -859,6 +854,55 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreLocalSessionDeletionFromUI) {
   EXPECT_THAT(session, NotNull());
   EXPECT_THAT(GetData(SessionStore::GetHeaderStorageKey(kLocalSessionTag)),
               NotNull());
+}
+
+TEST_F(SessionSyncBridgeTest, ShouldDoGarbageCollection) {
+  // We construct two identical sessions, one modified recently, one modified
+  // more than |kStaleSessionThreshold| ago (14 days ago).
+  const base::Time stale_mtime =
+      base::Time::Now() - base::TimeDelta::FromDays(15);
+  const base::Time recent_mtime =
+      base::Time::Now() - base::TimeDelta::FromDays(13);
+  const std::string kStaleSessionTag = "stalesessiontag";
+  const std::string kRecentSessionTag = "recentsessiontag";
+  const int kWindowId = 2000001;
+  const int kTabId = 2000002;
+  const int kTabNodeId = 2003;
+
+  InitializeBridge();
+  StartSyncing();
+
+  // Construct a remote update.
+  sync_pb::ModelTypeState state;
+  state.set_initial_sync_done(true);
+  syncer::UpdateResponseDataList updates;
+  // Two entities belong to a recent session.
+  updates.push_back(SpecificsToUpdateResponse(
+      CreateHeaderSpecificsWithOneTab(kStaleSessionTag, kWindowId, kTabId),
+      stale_mtime));
+  updates.push_back(SpecificsToUpdateResponse(
+      CreateTabSpecifics(kStaleSessionTag, kWindowId, kTabId, kTabNodeId,
+                         "http://baz.com/"),
+      stale_mtime));
+  updates.push_back(SpecificsToUpdateResponse(
+      CreateHeaderSpecificsWithOneTab(kRecentSessionTag, kWindowId, kTabId),
+      recent_mtime));
+  updates.push_back(SpecificsToUpdateResponse(
+      CreateTabSpecifics(kRecentSessionTag, kWindowId, kTabId, kTabNodeId,
+                         "http://baz.com/"),
+      recent_mtime));
+  real_processor()->OnUpdateReceived(state, updates);
+
+  // During garbage collection, we expect |kStaleSessionTag| to be deleted.
+  EXPECT_CALL(mock_processor(),
+              Delete(SessionStore::GetHeaderStorageKey(kStaleSessionTag), _));
+  EXPECT_CALL(
+      mock_processor(),
+      Delete(SessionStore::GetTabStorageKey(kStaleSessionTag, kTabNodeId), _));
+  EXPECT_CALL(mock_foreign_sessions_updated_callback(), Run());
+
+  bridge()->ScheduleGarbageCollection();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace
