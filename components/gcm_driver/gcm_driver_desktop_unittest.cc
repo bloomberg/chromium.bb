@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
@@ -78,8 +79,8 @@ void FakeGCMConnectionObserver::OnDisconnected() {
 }
 
 void PumpCurrentLoop() {
-  base::MessageLoop::ScopedNestableTaskAllower
-      nestable_task_allower(base::MessageLoop::current());
+  base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
+      base::MessageLoopCurrent::Get());
   base::RunLoop().RunUntilIdle();
 }
 
