@@ -432,13 +432,13 @@ CompositedSelection RenderedPosition::ComputeCompositedSelection(
     return {};
 
   CompositedSelection selection;
-  selection.start = StartPositionInGraphicsLayerBacking(
-      PositionWithAffinity(visible_selection.ComputeStartPosition()));
+  selection.start = StartPositionInGraphicsLayerBacking(PositionWithAffinity(
+      visible_selection.ComputeStartPosition(), visible_selection.Affinity()));
   if (!selection.start.layer)
     return {};
 
-  selection.end = EndPositionInGraphicsLayerBacking(
-      PositionWithAffinity(visible_selection.ComputeEndPosition()));
+  selection.end = EndPositionInGraphicsLayerBacking(PositionWithAffinity(
+      visible_selection.ComputeEndPosition(), visible_selection.Affinity()));
   if (!selection.end.layer)
     return {};
 
