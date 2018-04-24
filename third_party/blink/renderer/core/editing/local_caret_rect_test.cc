@@ -920,4 +920,24 @@ TEST_P(ParameterizedLocalCaretRectTest,
   EXPECT_EQ(LayoutRect(0, 0, 1, 10), caret_rect);
 }
 
+// http://crbug.com/835779
+TEST_P(ParameterizedLocalCaretRectTest, NextLineWithoutLeafChild) {
+  LoadAhem();
+  InsertStyleElement("div { font: 10px/10px Ahem; width: 30px }");
+  SetBodyContent(
+      "<div>"
+      "<br>"
+      "<span style=\"border-left: 50px solid\"></span>"
+      "foo"
+      "</div>");
+
+  const Element& br = *GetDocument().QuerySelector("br");
+  EXPECT_EQ(
+      // TODO(xiaochengh): Should return the same result for legacy and
+      // LayoutNG.
+      LayoutNGEnabled() ? LayoutRect(50, 10, 1, 10) : LayoutRect(0, 20, 1, 10),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position::AfterNode(br)))
+          .rect);
+}
+
 }  // namespace blink
