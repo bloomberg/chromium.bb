@@ -39,6 +39,7 @@ class GlobalErrorBubbleView : public views::BubbleDialogDelegateView,
   void UpdateButton(views::LabelButton* button, ui::DialogButton type) override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   int GetDialogButtons() const override;
+  int GetDefaultDialogButton() const override;
   views::View* CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;

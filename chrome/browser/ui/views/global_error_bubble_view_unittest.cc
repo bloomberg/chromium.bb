@@ -131,8 +131,6 @@ TEST_F(GlobalErrorBubbleViewTest, Basic) {
   EXPECT_CALL(*mock_global_error_with_standard_bubble_,
               GetBubbleViewAcceptButtonLabel());
   EXPECT_CALL(*mock_global_error_with_standard_bubble_,
-              GetBubbleViewCancelButtonLabel());
-  EXPECT_CALL(*mock_global_error_with_standard_bubble_,
               ShouldAddElevationIconToAcceptButton())
       .WillOnce(Return(false));
   view_->UpdateButton(&button_, ui::DIALOG_BUTTON_OK);

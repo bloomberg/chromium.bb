@@ -251,6 +251,12 @@ extern const base::Feature kExperimentalCrostiniUI{
 const base::Feature kExperimentalKeyboardLockUI{
     "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
+// parameter value controls which |ExternalInstallBubbleAlert| button is the
+// default.
+const base::Feature kExternalExtensionDefaultButtonControl{
+    "ExternalExtensionDefaultButtonControl", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(ENABLE_VR)
 // Controls features related to VR browsing that are under development.
 const base::Feature kVrBrowsingExperimentalFeatures{

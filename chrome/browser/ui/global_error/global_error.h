@@ -85,6 +85,10 @@ class GlobalErrorWithStandardBubble
   // Returns the cancel button label for the bubble view. To hide the cancel
   // button return an empty string.
   virtual base::string16 GetBubbleViewCancelButtonLabel() = 0;
+  // Returns the default dialog button. Default behavior is to return
+  // ui::DIALOG_BUTTON_OK. Do not return ui::DIALOG_BUTTON_CANCEL if hiding the
+  // cancel button.
+  virtual int GetDefaultDialogButton() const;
   // Called when the bubble view is closed. |browser| is the Browser that the
   // bubble view was shown on.
   virtual void BubbleViewDidClose(Browser* browser);
