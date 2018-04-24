@@ -34,8 +34,7 @@ BluetoothGattServiceBlueZ::DBusErrorToServiceError(std::string error_name) {
     code = GATT_ERROR_IN_PROGRESS;
   } else if (error_name == bluetooth_gatt_service::kErrorInvalidValueLength) {
     code = GATT_ERROR_INVALID_LENGTH;
-  } else if (error_name == bluetooth_gatt_service::kErrorReadNotPermitted ||
-             error_name == bluetooth_gatt_service::kErrorWriteNotPermitted) {
+  } else if (error_name == bluetooth_gatt_service::kErrorNotPermitted) {
     code = GATT_ERROR_NOT_PERMITTED;
   } else if (error_name == bluetooth_gatt_service::kErrorNotAuthorized) {
     code = GATT_ERROR_NOT_AUTHORIZED;
