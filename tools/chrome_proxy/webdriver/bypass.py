@@ -5,6 +5,7 @@
 import common
 from common import TestDriver
 from common import IntegrationTest
+from decorators import ChromeVersionEqualOrAfterM
 
 
 class Bypass(IntegrationTest):
@@ -102,6 +103,47 @@ class Bypass(IntegrationTest):
       for response in responses:
         self.assertHasChromeProxyViaHeader(response)
 
+  # Verify that Chrome does not bypass the proxy when a response gets a missing
+  # via header.
+  @ChromeVersionEqualOrAfterM(67)
+  def testMissingViaHeaderNoBypassExperiment(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.AddChromeArg('--enable-features=DataReductionProxyRobustConnection'
+        '<DataReductionProxyRobustConnection')
+      t.AddChromeArg('--force-fieldtrials=DataReductionProxyRobustConnection/'
+        'Enabled')
+      t.AddChromeArg('--force-fieldtrial-params='
+        'DataReductionProxyRobustConnection.Enabled:'
+        'warmup_fetch_callback_enabled/true/'
+        'bypass_missing_via_disabled/true')
+      t.AddChromeArg('--disable-data-reduction-proxy-warmup-url-fetch')
+      t.AddChromeArg('--data-reduction-proxy-http-proxies='
+        # The chromeproxy-test server is a simple HTTP server. If it is served a
+        # proxy-request, it will respond with a 404 error page. It will not set
+        # the Via header on the response.
+        'https://chromeproxy-test.appspot.com;http://compress.googlezip.net')
+
+      # Loading this URL should not hit the actual check.googlezip.net origin.
+      # Instead, the test server proxy should fully handle the request and will
+      # respond with an error page.
+      t.LoadURL("http://check.googlezip.net/test.html")
+      for response in t.GetHTTPResponses():
+        self.assertNotHasChromeProxyViaHeader(response)
+
+      # Check the via bypass histograms are empty.
+      histogram = t.GetHistogram(
+        'DataReductionProxy.BypassedBytes.MissingViaHeader4xx')
+      self.assertEqual(0, len(histogram))
+      histogram = t.GetHistogram(
+        'DataReductionProxy.BypassedBytes.MissingViaHeaderOther')
+      self.assertEqual(0, len(histogram))
+
+      # Check that the fetch used the proxy.
+      histogram = t.GetHistogram('DataReductionProxy.ProxySchemeUsed')
+      self.assertEqual(histogram['buckets'][0]['low'], 2)
+      self.assertEqual(histogram['buckets'][0]['high'], 3)
+
   # Verify that when Chrome receives a 4xx response through a Data Reduction
   # Proxy that doesn't set a proper via header, Chrome bypasses all proxies and
   # retries the request over direct.
@@ -180,26 +222,26 @@ class Bypass(IntegrationTest):
   def testBadHTTPSFallback(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      # Set the primary (HTTPS) proxy to a bad one.  
+      # Set the primary (HTTPS) proxy to a bad one.
       # That will force Data Saver to the HTTP proxy for normal page requests.
       test_driver.AddChromeArg('--spdy-proxy-auth-origin='
-                               'https://nonexistent.googlezip.net')          
+                               'https://nonexistent.googlezip.net')
       test_driver.AddChromeArg('--data-reduction-proxy-http-proxies='
-                               'http://compress.googlezip.net')  
-          
-      test_driver.LoadURL('http://check.googlezip.net/fallback/')
-      responses = test_driver.GetHTTPResponses()      
-      self.assertNotEqual(0, len(responses))
-      for response in responses:        
-        self.assertEqual(80, response.port)        
+                               'http://compress.googlezip.net')
 
-  # Get the client type with the first request, then check bypass on the 
+      test_driver.LoadURL('http://check.googlezip.net/fallback/')
+      responses = test_driver.GetHTTPResponses()
+      self.assertNotEqual(0, len(responses))
+      for response in responses:
+        self.assertEqual(80, response.port)
+
+  # Get the client type with the first request, then check bypass on the
   # appropriate test page
-  def testClientTypeBypass(self):    
+  def testClientTypeBypass(self):
     clientType = ''
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      # Page that should not bypass.  
+      # Page that should not bypass.
       test_driver.LoadURL('http://check.googlezip.net/test.html')
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
@@ -210,14 +252,14 @@ class Bypass(IntegrationTest):
         for directive in chrome_proxy_directives:
             if 'c=' in directive:
                 clientType = directive[3:]
-      
+
     clients = ['android', 'webview', 'ios', 'linux', 'win', 'chromeos']
-    for client in clients:  
-      with TestDriver() as test_driver:                      
+    for client in clients:
+      with TestDriver() as test_driver:
         test_driver.LoadURL('http://check.googlezip.net/chrome-proxy-header/'
                           'c_%s/' %client)
         responses = test_driver.GetHTTPResponses()
-        self.assertEqual(2, len(responses))      
+        self.assertEqual(2, len(responses))
         for response in responses:
           if client in clientType:
             self.assertNotHasChromeProxyViaHeader(response)
