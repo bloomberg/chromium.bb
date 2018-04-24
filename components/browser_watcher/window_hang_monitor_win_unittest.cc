@@ -11,6 +11,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -174,7 +175,7 @@ class MonitoredProcessClient {
                             LPARAM lparam,
                             LRESULT* result) {
     EXPECT_EQ(message_window_thread_.message_loop(),
-              base::MessageLoop::current());
+              base::MessageLoopCurrent::Get());
     return false;  // Pass through to DefWindowProc.
   }
 
