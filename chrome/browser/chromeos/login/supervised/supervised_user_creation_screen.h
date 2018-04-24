@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/login/secure_module_util_chromeos.h"
@@ -32,7 +31,6 @@ class SupervisedUserCreationScreen
     : public BaseScreen,
       public SupervisedUserCreationScreenHandler::Delegate,
       public SupervisedUserCreationController::StatusConsumer,
-      public SupervisedUserSyncServiceObserver,
       public ImageDecoder::ImageRequest,
       public NetworkPortalDetector::Observer,
       public CameraPresenceNotifier::Observer {
@@ -68,12 +66,6 @@ class SupervisedUserCreationScreen
 
   // CameraPresenceNotifier::Observer implementation:
   void OnCameraPresenceCheckDone(bool is_camera_present) override;
-
-  // SupervisedUserSyncServiceObserver implementation
-  void OnSupervisedUserAcknowledged(
-      const std::string& supervised_user_id) override {}
-  void OnSupervisedUsersSyncingStopped() override {}
-  void OnSupervisedUsersChanged() override;
 
   // BaseScreen implementation:
   void Show() override;
@@ -122,7 +114,6 @@ class SupervisedUserCreationScreen
 
  private:
   void ApplyPicture();
-  void OnGetSupervisedUsers(const base::DictionaryValue* users);
   void UpdateSecureModuleMessages(::login::SecureModuleUsed secure_module_used);
 
   SupervisedUserCreationScreenHandler* view_;
@@ -133,8 +124,6 @@ class SupervisedUserCreationScreen
   bool on_error_screen_;
   bool manager_signin_in_progress_;
   std::string last_page_;
-
-  SupervisedUserSyncService* sync_service_;
 
   gfx::ImageSkia user_photo_;
   bool apply_photo_after_decoding_;

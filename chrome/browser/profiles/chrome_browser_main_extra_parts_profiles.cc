@@ -161,7 +161,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
@@ -278,9 +277,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserServiceFactory::GetInstance();
-#if !defined(OS_ANDROID)
-  SupervisedUserSyncServiceFactory::GetInstance();
-#endif
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)

@@ -4067,11 +4067,6 @@ jumbo_split_static_library("browser") {
       "supervised_user/legacy/custodian_profile_downloader_service.h",
       "supervised_user/legacy/custodian_profile_downloader_service_factory.cc",
       "supervised_user/legacy/custodian_profile_downloader_service_factory.h",
-      "supervised_user/legacy/supervised_user_sync_service.cc",
-      "supervised_user/legacy/supervised_user_sync_service.h",
-      "supervised_user/legacy/supervised_user_sync_service_factory.cc",
-      "supervised_user/legacy/supervised_user_sync_service_factory.h",
-      "supervised_user/legacy/supervised_user_sync_service_observer.h",
       "supervised_user/supervised_user_theme.cc",
       "supervised_user/supervised_user_theme.h",
     ]

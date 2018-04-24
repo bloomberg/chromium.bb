@@ -38,8 +38,6 @@ class SigninSupervisedUserImportHandler : public content::WebUIMessageHandler {
   FRIEND_TEST_ALL_PREFIXES(SigninSupervisedUserImportHandlerTest, AuthError);
   FRIEND_TEST_ALL_PREFIXES(SigninSupervisedUserImportHandlerTest,
                            CustodianIsSupervised);
-  FRIEND_TEST_ALL_PREFIXES(SigninSupervisedUserImportHandlerTest,
-                           SendExistingSupervisedUsers);
   // Assigns a new |webui_callback_id_|. Ensures that previous in-flight request
   // has been fulfilled.
   void AssignWebUICallbackId(const base::ListValue* args);
@@ -71,18 +69,6 @@ class SigninSupervisedUserImportHandler : public content::WebUIMessageHandler {
   base::string16 GetLocalErrorMessage() const;
 
   base::string16 GetAuthErrorMessage(Profile* profile) const;
-
-  // Sends an array of supervised users to WebUI. Each entry is of the form:
-  //   supervisedProfile = {
-  //     id: "Supervised User ID",
-  //     name: "Supervised User Name",
-  //     iconURL: "chrome://path/to/icon/image",
-  //     onCurrentDevice: true or false,
-  //   }
-  // The array holds all existing supervised users attached to the
-  // custodian's profile which initiated the request.
-  void SendExistingSupervisedUsers(Profile* profile,
-                                   const base::DictionaryValue* dict);
 
   bool IsAccountConnected(Profile* profile) const;
   bool HasAuthError(Profile* profile) const;

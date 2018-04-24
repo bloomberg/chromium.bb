@@ -88,8 +88,6 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
@@ -404,8 +402,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
           AsWeakPtr();
 #if !defined(OS_ANDROID)
     case syncer::SUPERVISED_USERS:
-      return SupervisedUserSyncServiceFactory::GetForProfile(profile_)->
-          AsWeakPtr();
+      return nullptr;
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
       return nullptr;
 #endif  // !defined(OS_ANDROID)
@@ -656,9 +653,6 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
   sync_service->RegisterDataTypeController(
       std::make_unique<SupervisedUserSyncDataTypeController>(
           syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
-  sync_service->RegisterDataTypeController(
-      std::make_unique<SupervisedUserSyncDataTypeController>(
-          syncer::SUPERVISED_USERS, error_callback, this, profile_));
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if defined(OS_CHROMEOS)
