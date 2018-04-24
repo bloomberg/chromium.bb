@@ -38,7 +38,6 @@ static_library("os_crypt") {
     "keychain_password_mac.mm",
     "os_crypt.h",
     "os_crypt_mac.mm",
-    "os_crypt_posix.cc",
     "os_crypt_switches.cc",
     "os_crypt_switches.h",
     "os_crypt_win.cc",
@@ -52,8 +51,8 @@ static_library("os_crypt") {
     "//crypto:platform",
   ]
 
-  if (is_mac || is_ios) {
-    sources -= [ "os_crypt_posix.cc" ]
+  if (is_posix && !is_mac && !is_ios && (!is_desktop_linux || is_chromecast)) {
+    sources += [ "os_crypt_posix.cc" ]
   }
 
   if (is_ios) {
@@ -71,7 +70,6 @@ static_library("os_crypt") {
   }
 
   if (is_desktop_linux && !is_chromecast) {
-    sources -= [ "os_crypt_posix.cc" ]
     sources += [
       "key_storage_config_linux.cc",
       "key_storage_config_linux.h",
