@@ -11,6 +11,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "base/debug/alias.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -87,7 +88,7 @@ void LoginScreenController::AuthenticateUser(const AccountId& account_id,
                                              OnAuthenticateCallback callback) {
   // It is an error to call this function while an authentication is in
   // progress.
-  LOG_IF(ERROR, authentication_stage_ == AuthenticationStage::kIdle)
+  LOG_IF(ERROR, authentication_stage_ != AuthenticationStage::kIdle)
       << "Authentication stage is " << static_cast<int>(authentication_stage_);
   CHECK_EQ(authentication_stage_, AuthenticationStage::kIdle);
 
@@ -420,7 +421,12 @@ LoginDataDispatcher* LoginScreenController::DataDispatcher() const {
 
 void LoginScreenController::OnShow() {
   SetSystemTrayVisibility(SystemTrayVisibility::kPrimary);
-  CHECK_EQ(authentication_stage_, AuthenticationStage::kIdle);
+  if (authentication_stage_ != AuthenticationStage::kIdle) {
+    AuthenticationStage authentication_stage = authentication_stage_;
+    base::debug::Alias(&authentication_stage);
+    LOG(FATAL) << "Unexpected authentication stage "
+               << static_cast<int>(authentication_stage_);
+  }
 }
 
 }  // namespace ash

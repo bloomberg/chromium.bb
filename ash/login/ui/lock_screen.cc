@@ -100,6 +100,14 @@ bool LockScreen::IsShown() {
 }
 
 void LockScreen::Destroy() {
+  LoginScreenController::AuthenticationStage authentication_stage =
+      ash::Shell::Get()->login_screen_controller()->authentication_stage();
+  base::debug::Alias(&authentication_stage);
+  if (ash::Shell::Get()->login_screen_controller()->authentication_stage() !=
+      authentication_stage) {
+    LOG(FATAL) << "Unexpected authentication stage "
+               << static_cast<int>(authentication_stage);
+  }
   CHECK_EQ(instance_, this);
 
   // Restore the initial wallpaper bluriness if they were changed.
