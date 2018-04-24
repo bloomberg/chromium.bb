@@ -1204,7 +1204,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // The window of widget_ is a container window. It doesn't handle pointer
   // events.
   window->SetEventTargetingPolicy(
-      ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+      ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   window->SetEventTargeter(base::WrapUnique(
       new CustomWindowTargeter(widget_, client_controlled_move_resize_)));
   SetApplicationId(window, application_id_);
