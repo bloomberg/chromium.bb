@@ -7,20 +7,18 @@
 namespace blink {
 
 EffectPaintPropertyNode* EffectPaintPropertyNode::Root() {
-  DEFINE_STATIC_REF(
-      EffectPaintPropertyNode, root,
-      (EffectPaintPropertyNode::Create(
-          nullptr, TransformPaintPropertyNode::Root(),
-          ClipPaintPropertyNode::Root(), kColorFilterNone,
-          CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver)));
+  DEFINE_STATIC_REF(EffectPaintPropertyNode, root,
+                    (EffectPaintPropertyNode::Create(
+                        nullptr, State{TransformPaintPropertyNode::Root(),
+                                       ClipPaintPropertyNode::Root()})));
   return root;
 }
 
 FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& input_rect) const {
   FloatRect rect = input_rect;
-  rect.MoveBy(-paint_offset_);
-  FloatRect result = filter_.MapRect(rect);
-  result.MoveBy(paint_offset_);
+  rect.MoveBy(-state_.paint_offset);
+  FloatRect result = state_.filter.MapRect(rect);
+  result.MoveBy(state_.paint_offset);
   return result;
 }
 
@@ -29,26 +27,27 @@ std::unique_ptr<JSONObject> EffectPaintPropertyNode::ToJSON() const {
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
   json->SetString("localTransformSpace",
-                  String::Format("%p", local_transform_space_.get()));
-  json->SetString("outputClip", String::Format("%p", output_clip_.get()));
-  if (color_filter_ != kColorFilterNone)
-    json->SetInteger("colorFilter", color_filter_);
-  if (!filter_.IsEmpty())
-    json->SetString("filter", filter_.ToString());
-  if (opacity_ != 1.0f)
-    json->SetDouble("opacity", opacity_);
-  if (blend_mode_ != SkBlendMode::kSrcOver)
-    json->SetString("blendMode", SkBlendMode_Name(blend_mode_));
-  if (direct_compositing_reasons_ != CompositingReason::kNone) {
-    json->SetString("directCompositingReasons",
-                    CompositingReason::ToString(direct_compositing_reasons_));
+                  String::Format("%p", state_.local_transform_space.get()));
+  json->SetString("outputClip", String::Format("%p", state_.output_clip.get()));
+  if (state_.color_filter != kColorFilterNone)
+    json->SetInteger("colorFilter", state_.color_filter);
+  if (!state_.filter.IsEmpty())
+    json->SetString("filter", state_.filter.ToString());
+  if (state_.opacity != 1.0f)
+    json->SetDouble("opacity", state_.opacity);
+  if (state_.blend_mode != SkBlendMode::kSrcOver)
+    json->SetString("blendMode", SkBlendMode_Name(state_.blend_mode));
+  if (state_.direct_compositing_reasons != CompositingReason::kNone) {
+    json->SetString(
+        "directCompositingReasons",
+        CompositingReason::ToString(state_.direct_compositing_reasons));
   }
-  if (compositor_element_id_) {
+  if (state_.compositor_element_id) {
     json->SetString("compositorElementId",
-                    compositor_element_id_.ToString().c_str());
+                    state_.compositor_element_id.ToString().c_str());
   }
-  if (paint_offset_ != FloatPoint())
-    json->SetString("paintOffset", paint_offset_.ToString());
+  if (state_.paint_offset != FloatPoint())
+    json->SetString("paintOffset", state_.paint_offset.ToString());
   return json;
 }
 

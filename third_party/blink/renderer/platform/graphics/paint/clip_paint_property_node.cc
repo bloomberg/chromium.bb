@@ -9,10 +9,11 @@
 namespace blink {
 
 ClipPaintPropertyNode* ClipPaintPropertyNode::Root() {
-  DEFINE_STATIC_REF(ClipPaintPropertyNode, root,
-                    (ClipPaintPropertyNode::Create(
-                        nullptr, TransformPaintPropertyNode::Root(),
-                        FloatRoundedRect(LayoutRect::InfiniteIntRect()))));
+  DEFINE_STATIC_REF(
+      ClipPaintPropertyNode, root,
+      (ClipPaintPropertyNode::Create(
+          nullptr, State{TransformPaintPropertyNode::Root(),
+                         FloatRoundedRect(LayoutRect::InfiniteIntRect())})));
   return root;
 }
 
@@ -21,18 +22,19 @@ std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
   json->SetString("localTransformSpace",
-                  String::Format("%p", local_transform_space_.get()));
-  json->SetString("rect", clip_rect_.ToString());
-  if (clip_rect_excluding_overlay_scrollbars_ != clip_rect_) {
+                  String::Format("%p", state_.local_transform_space.get()));
+  json->SetString("rect", state_.clip_rect.ToString());
+  if (state_.clip_rect_excluding_overlay_scrollbars) {
     json->SetString("rectExcludingOverlayScrollbars",
-                    clip_rect_excluding_overlay_scrollbars_.ToString());
+                    state_.clip_rect_excluding_overlay_scrollbars->ToString());
   }
-  if (clip_path_) {
+  if (state_.clip_path) {
     json->SetBoolean("hasClipPath", true);
   }
-  if (direct_compositing_reasons_ != CompositingReason::kNone) {
-    json->SetString("directCompositingReasons",
-                    CompositingReason::ToString(direct_compositing_reasons_));
+  if (state_.direct_compositing_reasons != CompositingReason::kNone) {
+    json->SetString(
+        "directCompositingReasons",
+        CompositingReason::ToString(state_.direct_compositing_reasons));
   }
   return json;
 }

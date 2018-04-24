@@ -16,6 +16,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #endif
 
+#include <iosfwd>
+
 namespace blink {
 
 class ClipPaintPropertyNode;

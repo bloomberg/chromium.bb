@@ -544,7 +544,10 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
   EXPECT_EQ(FrameScrollTranslation(),
             transform_properties->PaintOffsetTranslation()->Parent());
 
-  EXPECT_TRUE(transform_properties->Transform()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_TRUE(
+        transform_properties->Transform()->HasDirectCompositingReasons());
+  }
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(173, 556, 400, 300),
                           transform->GetLayoutObject(),
@@ -586,7 +589,10 @@ TEST_P(PaintPropertyTreeBuilderTest, Preserve3D3DTransformedDescendant) {
       preserve->GetLayoutObject()->FirstFragment().PaintProperties();
 
   EXPECT_TRUE(preserve_properties->Transform());
-  EXPECT_TRUE(preserve_properties->Transform()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_TRUE(
+        preserve_properties->Transform()->HasDirectCompositingReasons());
+  }
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Perspective3DTransformedDescendant) {
@@ -605,12 +611,17 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective3DTransformedDescendant) {
       perspective->GetLayoutObject()->FirstFragment().PaintProperties();
 
   EXPECT_TRUE(perspective_properties->Transform());
-  EXPECT_TRUE(
-      perspective_properties->Transform()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_TRUE(
+        perspective_properties->Transform()->HasDirectCompositingReasons());
+  }
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
        TransformNodeWithActiveAnimationHasDirectCompositingReason) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   LoadTestData("transform-animation.html");
   EXPECT_TRUE(PaintPropertiesForElement("target")
                   ->Transform()
@@ -625,8 +636,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
 TEST_P(PaintPropertyTreeBuilderTest,
        EffectNodeWithActiveAnimationHasDirectCompositingReason) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   LoadTestData("opacity-animation.html");
@@ -661,7 +671,10 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
     EXPECT_EQ(TransformationMatrix().Translate(50, 100),
               transform_properties->PaintOffsetTranslation()->Matrix());
   }
-  EXPECT_TRUE(transform_properties->Transform()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_TRUE(
+        transform_properties->Transform()->HasDirectCompositingReasons());
+  }
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(50, 100, 400, 300),
                           transform->GetLayoutObject(),
@@ -2637,10 +2650,12 @@ TEST_P(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext) {
       b->FirstFragment().PaintProperties();
   ASSERT_TRUE(a_properties->Transform() && b_properties->Transform());
   EXPECT_NE(a_properties->Transform(), b_properties->Transform());
-  EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
-  EXPECT_TRUE(b_properties->Transform()->HasRenderingContext());
-  EXPECT_EQ(a_properties->Transform()->RenderingContextId(),
-            b_properties->Transform()->RenderingContextId());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
+    EXPECT_TRUE(b_properties->Transform()->HasRenderingContext());
+    EXPECT_EQ(a_properties->Transform()->RenderingContextId(),
+              b_properties->Transform()->RenderingContextId());
+  }
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 30, 40), a,
                           frame_view->GetLayoutView());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 48, 20, 10), b,
@@ -2681,8 +2696,10 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatTransformStyleEndsRenderingContext) {
 
   // #a should participate in a rendering context (due to its parent), but its
   // child #b should not.
-  EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
-  EXPECT_FALSE(b_properties->Transform()->HasRenderingContext());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
+    EXPECT_FALSE(b_properties->Transform()->HasRenderingContext());
+  }
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 30, 40), a,
                           frame_view->GetLayoutView());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 20), b,
@@ -2716,10 +2733,12 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedRenderingContexts) {
   // child does preserve 3D, but since #a does not, #a's rendering context is
   // not passed on to its children. Thus #b ends up in a separate rendering
   // context rooted at its parent.
-  EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
-  EXPECT_TRUE(b_properties->Transform()->HasRenderingContext());
-  EXPECT_NE(a_properties->Transform()->RenderingContextId(),
-            b_properties->Transform()->RenderingContextId());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
+    EXPECT_TRUE(b_properties->Transform()->HasRenderingContext());
+    EXPECT_NE(a_properties->Transform()->RenderingContextId(),
+              b_properties->Transform()->RenderingContextId());
+  }
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 50, 60), a,
                           frame_view->GetLayoutView());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 20), b,
@@ -4429,6 +4448,9 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        TransformNodeNotAnimatedStillHasCompositorElementId) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   SetBodyInnerHTML("<div id='target' style='transform: translateX(2em)'></div");
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   EXPECT_TRUE(properties->Transform());
@@ -4438,8 +4460,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
 TEST_P(PaintPropertyTreeBuilderTest,
        EffectNodeNotAnimatedStillHasCompositorElementId) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   SetBodyInnerHTML("<div id='target' style='opacity: 0.5'></div");
@@ -4451,6 +4472,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
 TEST_P(PaintPropertyTreeBuilderTest,
        TransformNodeAnimatedHasCompositorElementId) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   LoadTestData("transform-animation.html");
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   EXPECT_TRUE(properties->Transform());
@@ -4460,8 +4484,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   LoadTestData("opacity-animation.html");
@@ -4500,6 +4523,9 @@ TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ScrollNodeHasCompositorElementId) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <div id='target' style='overflow: auto; width: 100px; height: 100px'>
       <div style='width: 200px; height: 200px'></div>
@@ -5336,7 +5362,8 @@ TEST_P(PaintPropertyTreeBuilderTest, RootHasCompositedScrolling) {
   )HTML");
 
   // When the root scrolls, there should be direct compositing reasons.
-  EXPECT_TRUE(FrameScrollTranslation()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_TRUE(FrameScrollTranslation()->HasDirectCompositingReasons());
 
   // Remove scrolling from the root.
   Element* force_scroll_element = GetDocument().getElementById("forceScroll");
@@ -5361,7 +5388,8 @@ TEST_P(PaintPropertyTreeBuilderTest, IframeDoesNotRequireCompositedScrolling) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(FrameScrollTranslation()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_TRUE(FrameScrollTranslation()->HasDirectCompositingReasons());
 
   // When the child iframe scrolls, there should not be direct compositing
   // reasons because only the root frame needs scrolling compositing reasons.

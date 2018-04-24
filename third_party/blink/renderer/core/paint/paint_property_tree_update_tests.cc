@@ -589,7 +589,8 @@ TEST_P(PaintPropertyTreeUpdateTest,
   Element* target = GetDocument().getElementById("target");
   const ObjectPaintProperties* properties =
       target->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
 
   // Removing the animation should remove the transform node.
   target->removeAttribute(HTMLNames::classAttr);
@@ -605,7 +606,8 @@ TEST_P(PaintPropertyTreeUpdateTest,
   Element* target = GetDocument().getElementById("target");
   const ObjectPaintProperties* properties =
       target->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_TRUE(properties->Effect()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_TRUE(properties->Effect()->HasDirectCompositingReasons());
 
   // Removing the animation should remove the effect node.
   target->removeAttribute(HTMLNames::classAttr);
@@ -616,6 +618,9 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
 TEST_P(PaintPropertyTreeUpdateTest,
        TransformNodeDoesNotLoseCompositorElementIdWhenAnimationRemoved) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   LoadTestData("transform-animation.html");
 
   Element* target = GetDocument().getElementById("target");
@@ -636,6 +641,9 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
 TEST_P(PaintPropertyTreeUpdateTest,
        EffectNodeDoesNotLoseCompositorElementIdWhenAnimationRemoved) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   LoadTestData("opacity-animation.html");
 
   Element* target = GetDocument().getElementById("target");
@@ -1053,20 +1061,24 @@ TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
 
   target->setAttribute(HTMLNames::styleAttr, "transform: translateX(11px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_TRUE(transform->HasDirectCompositingReasons());
-  EXPECT_TRUE(transform->RequiresCompositingForAnimation());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_TRUE(transform->HasDirectCompositingReasons());
+    EXPECT_TRUE(transform->RequiresCompositingForAnimation());
+  }
   EXPECT_FALSE(filter->HasDirectCompositingReasons());
 
   target->setAttribute(HTMLNames::styleAttr,
                        "transform: translateX(11px); filter: opacity(40%)");
   GetDocument().View()->UpdateAllLifecyclePhases();
   // The transform animation still continues.
-  EXPECT_TRUE(transform->HasDirectCompositingReasons());
-  EXPECT_TRUE(transform->RequiresCompositingForAnimation());
-  // The filter node should have correct direct compositing reasons, not
-  // shadowed by the transform animation.
-  EXPECT_TRUE(filter->HasDirectCompositingReasons());
-  EXPECT_TRUE(filter->RequiresCompositingForAnimation());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_TRUE(transform->HasDirectCompositingReasons());
+    EXPECT_TRUE(transform->RequiresCompositingForAnimation());
+    // The filter node should have correct direct compositing reasons, not
+    // shadowed by the transform animation.
+    EXPECT_TRUE(filter->HasDirectCompositingReasons());
+    EXPECT_TRUE(filter->RequiresCompositingForAnimation());
+  }
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, SVGViewportContainerOverflowChange) {

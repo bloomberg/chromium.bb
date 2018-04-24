@@ -12,11 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
-#include <iosfwd>
 
 namespace blink {
 
@@ -45,10 +41,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     bool operator==(const State& o) const {
       return matrix == o.matrix && origin == o.origin &&
              flattens_inherited_transform == o.flattens_inherited_transform &&
-             (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-              (rendering_context_id == o.rendering_context_id &&
-               direct_compositing_reasons == o.direct_compositing_reasons &&
-               compositor_element_id == o.compositor_element_id)) &&
+             rendering_context_id == o.rendering_context_id &&
+             direct_compositing_reasons == o.direct_compositing_reasons &&
+             compositor_element_id == o.compositor_element_id &&
              scroll == o.scroll;
     }
   };
@@ -59,19 +54,19 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
   static scoped_refptr<TransformPaintPropertyNode> Create(
       scoped_refptr<const TransformPaintPropertyNode> parent,
-      const State& state) {
+      State&& state) {
     return base::AdoptRef(
-        new TransformPaintPropertyNode(std::move(parent), state));
+        new TransformPaintPropertyNode(std::move(parent), std::move(state)));
   }
 
   bool Update(scoped_refptr<const TransformPaintPropertyNode> parent,
-              const State& state) {
+              State&& state) {
     bool parent_changed = SetParent(parent);
     if (state == state_)
       return parent_changed;
 
     SetChanged();
-    state_ = state;
+    state_ = std::move(state);
     Validate();
     return true;
   }
@@ -118,7 +113,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a transform node before it has been updated, to later detect changes.
   scoped_refptr<TransformPaintPropertyNode> Clone() const {
-    return base::AdoptRef(new TransformPaintPropertyNode(Parent(), state_));
+    return base::AdoptRef(
+        new TransformPaintPropertyNode(Parent(), State(state_)));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
@@ -133,8 +129,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
  private:
   TransformPaintPropertyNode(
       scoped_refptr<const TransformPaintPropertyNode> parent,
-      const State& state)
-      : PaintPropertyNode(std::move(parent)), state_(state) {
+      State&& state)
+      : PaintPropertyNode(std::move(parent)), state_(std::move(state)) {
     Validate();
   }
 
