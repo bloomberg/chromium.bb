@@ -36,28 +36,11 @@ WebPluginInfo::WebPluginInfo()
       pepper_permissions(0) {
 }
 
-WebPluginInfo::WebPluginInfo(const WebPluginInfo& rhs)
-    : name(rhs.name),
-      path(rhs.path),
-      version(rhs.version),
-      desc(rhs.desc),
-      mime_types(rhs.mime_types),
-      type(rhs.type),
-      pepper_permissions(rhs.pepper_permissions) {
-}
+WebPluginInfo::WebPluginInfo(const WebPluginInfo& rhs) = default;
 
 WebPluginInfo::~WebPluginInfo() {}
 
-WebPluginInfo& WebPluginInfo::operator=(const WebPluginInfo& rhs) {
-  name = rhs.name;
-  path = rhs.path;
-  version = rhs.version;
-  desc = rhs.desc;
-  mime_types = rhs.mime_types;
-  type = rhs.type;
-  pepper_permissions = rhs.pepper_permissions;
-  return *this;
-}
+WebPluginInfo& WebPluginInfo::operator=(const WebPluginInfo& rhs) = default;
 
 WebPluginInfo::WebPluginInfo(const base::string16& fake_name,
                              const base::FilePath& fake_path,

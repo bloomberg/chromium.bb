@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 
@@ -35,8 +36,9 @@ class WebPluginContainerImpl;
 
 class CORE_EXPORT PluginDocument final : public HTMLDocument {
  public:
-  static PluginDocument* Create(const DocumentInit& initializer) {
-    return new PluginDocument(initializer);
+  static PluginDocument* Create(const DocumentInit& initializer,
+                                Color background_color) {
+    return new PluginDocument(initializer, background_color);
   }
 
   void SetPluginNode(HTMLPlugInElement* plugin_node) {
@@ -51,11 +53,12 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
   virtual void Trace(blink::Visitor*);
 
  private:
-  explicit PluginDocument(const DocumentInit&);
+  PluginDocument(const DocumentInit&, Color background_color);
 
   DocumentParser* CreateParser() override;
 
   Member<HTMLPlugInElement> plugin_node_;
+  const Color background_color_;
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(PluginDocument);

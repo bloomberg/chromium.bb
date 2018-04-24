@@ -847,7 +847,8 @@ void RendererBlinkPlatformImpl::GetPluginList(
   for (const WebPluginInfo& plugin : plugins) {
     builder->AddPlugin(WebString::FromUTF16(plugin.name),
                        WebString::FromUTF16(plugin.desc),
-                       blink::FilePathToWebString(plugin.path.BaseName()));
+                       blink::FilePathToWebString(plugin.path.BaseName()),
+                       plugin.background_color);
 
     for (const WebPluginMimeType& mime_type : plugin.mime_types) {
       builder->AddMediaTypeToLastPlugin(

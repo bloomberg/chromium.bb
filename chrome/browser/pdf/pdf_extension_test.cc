@@ -1685,3 +1685,22 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   // from the RenderProcessHost, we should verify the ViewMsg_PluginActionAt
   // message is sent with the same coordinates as in the ContextMenuParams.
 }
+
+// The plugin document and the mime handler should both use the same background
+// color.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BackgroundColor) {
+  WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ASSERT_TRUE(guest_contents);
+  const std::string script =
+      "window.domAutomationController.send("
+      "    window.getComputedStyle(document.body, null)."
+      "    getPropertyValue('background-color'))";
+  std::string outer;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(GetActiveWebContents(),
+                                                     script, &outer));
+  std::string inner;
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractString(guest_contents, script, &inner));
+  EXPECT_EQ(inner, outer);
+}

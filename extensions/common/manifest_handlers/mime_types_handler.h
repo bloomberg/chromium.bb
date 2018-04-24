@@ -11,6 +11,7 @@
 
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class MimeTypesHandler {
  public:
@@ -50,6 +51,9 @@ class MimeTypesHandler {
   // If HasPlugin() returns true, this will return the plugin path for the
   // plugin associated with this MimeTypesHandler.
   base::FilePath GetPluginPath() const;
+
+  // Returns the background color used by the mime handler.
+  SkColor GetBackgroundColor() const;
 
  private:
   // The id for the extension this action belongs to (as defined in the

@@ -21,6 +21,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_DATA_H_
 
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -59,7 +60,10 @@ class PLATFORM_EXPORT PluginInfo final
  public:
   void Trace(blink::Visitor*);
 
-  PluginInfo(const String& name, const String& filename, const String& desc);
+  PluginInfo(const String& name,
+             const String& filename,
+             const String& desc,
+             Color background_color);
 
   void AddMimeType(MimeClassInfo*);
 
@@ -71,6 +75,7 @@ class PLATFORM_EXPORT PluginInfo final
   const String& Name() const { return name_; }
   const String& Filename() const { return filename_; }
   const String& Description() const { return description_; }
+  Color BackgroundColor() const { return background_color_; }
 
  private:
   friend class MimeClassInfo;
@@ -80,6 +85,7 @@ class PLATFORM_EXPORT PluginInfo final
   String name_;
   String filename_;
   String description_;
+  Color background_color_;
   HeapVector<Member<MimeClassInfo>> mimes_;
 };
 
@@ -99,7 +105,7 @@ class PLATFORM_EXPORT PluginData final
   void ResetPluginData();
 
   bool SupportsMimeType(const String& mime_type) const;
-  String PluginNameForMimeType(const String& mime_type) const;
+  Color PluginBackgroundColorForMimeType(const String& mime_type) const;
 
   // refreshBrowserSidePluginCache doesn't update existent instances of
   // PluginData.

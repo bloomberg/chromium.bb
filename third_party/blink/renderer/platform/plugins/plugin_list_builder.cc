@@ -36,9 +36,12 @@ namespace blink {
 
 void PluginListBuilder::AddPlugin(const WebString& name,
                                   const WebString& description,
-                                  const WebString& file_name) {
-  if (results_)
-    results_->push_back(new PluginInfo(name, file_name, description));
+                                  const WebString& file_name,
+                                  WebColor background_color) {
+  if (results_) {
+    results_->push_back(
+        new PluginInfo(name, file_name, description, background_color));
+  }
 }
 
 void PluginListBuilder::AddMediaTypeToLastPlugin(const WebString& name,
