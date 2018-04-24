@@ -68,7 +68,7 @@ SyncEngine::Status FakeSyncEngine::GetDetailedStatus() {
   return SyncEngine::Status();
 }
 
-bool FakeSyncEngine::HasUnsyncedItems() const {
+bool FakeSyncEngine::HasUnsyncedItemsForTest() const {
   return false;
 }
 

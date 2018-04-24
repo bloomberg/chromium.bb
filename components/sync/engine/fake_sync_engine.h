@@ -68,7 +68,7 @@ class FakeSyncEngine : public SyncEngine {
 
   Status GetDetailedStatus() override;
 
-  bool HasUnsyncedItems() const override;
+  bool HasUnsyncedItemsForTest() const override;
 
   bool IsCryptographerReady(const BaseTransaction* trans) const override;
 

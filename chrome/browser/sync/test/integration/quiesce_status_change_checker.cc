@@ -137,7 +137,7 @@ void ProgressMarkerWatcher::UpdateHasLatestProgressMarkers() {
   const syncer::SyncCycleSnapshot& snap = service_->GetLastCycleSnapshot();
   probably_has_latest_progress_markers_ =
       snap.model_neutral_state().num_successful_commits == 0 &&
-      !service_->HasUnsyncedItems();
+      !service_->HasUnsyncedItemsForTest();
 }
 
 bool ProgressMarkerWatcher::HasLatestProgressMarkers() {

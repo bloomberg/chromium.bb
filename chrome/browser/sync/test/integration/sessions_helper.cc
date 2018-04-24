@@ -366,6 +366,9 @@ bool WindowsMatchImpl(const T1& win1, const T2& win2) {
     for (size_t t = 0; t < i->second->wrapped_window.tabs.size(); ++t) {
       client0_tab = i->second->wrapped_window.tabs[t].get();
       client1_tab = j->second->wrapped_window.tabs[t].get();
+      if (client0_tab->navigations.size() != client1_tab->navigations.size()) {
+        return false;
+      }
       for (size_t n = 0; n < client0_tab->navigations.size(); ++n) {
         if (!NavigationEquals(client0_tab->navigations[n],
                               client1_tab->navigations[n])) {

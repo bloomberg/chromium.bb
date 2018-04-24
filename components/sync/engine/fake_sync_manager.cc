@@ -218,7 +218,7 @@ bool FakeSyncManager::ReceivedExperiment(Experiments* experiments) {
   return false;
 }
 
-bool FakeSyncManager::HasUnsyncedItems() {
+bool FakeSyncManager::HasUnsyncedItemsForTest() {
   NOTIMPLEMENTED();
   return false;
 }

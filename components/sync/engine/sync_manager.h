@@ -377,9 +377,8 @@ class SyncManager {
   // Note: opens a transaction.  May be called on any thread.
   virtual bool ReceivedExperiment(Experiments* experiments) = 0;
 
-  // Uses a read-only transaction to determine if the directory being synced has
-  // any remaining unsynced items.  May be called on any thread.
-  virtual bool HasUnsyncedItems() = 0;
+  // Returns whether there are remaining unsynced items.
+  virtual bool HasUnsyncedItemsForTest() = 0;
 
   // Returns the SyncManager's encryption handler.
   virtual SyncEncryptionHandler* GetEncryptionHandler() = 0;

@@ -186,11 +186,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest, DeleteIdleSession) {
 
   // Client 1 now deletes client 0's tabs. This frees the memory of sessions1.
   DeleteForeignSession(1, sessions1[0]->session_tag);
+  ASSERT_FALSE(GetClient(0)->service()->HasUnsyncedItemsForTest());
+  ASSERT_TRUE(GetClient(1)->service()->HasUnsyncedItemsForTest());
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  ASSERT_FALSE(GetSessionData(1, &sessions1));
+  EXPECT_FALSE(GetSessionData(1, &sessions1));
 }
 
-// Fails all release trybots. crbug.com/263369.
 IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest, DeleteActiveSession) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -207,12 +208,15 @@ IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest, DeleteActiveSession) {
 
   // Client 1 now deletes client 0's tabs. This frees the memory of sessions1.
   DeleteForeignSession(1, sessions1[0]->session_tag);
+  ASSERT_FALSE(GetClient(0)->service()->HasUnsyncedItemsForTest());
+  ASSERT_TRUE(GetClient(1)->service()->HasUnsyncedItemsForTest());
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 
   // Client 0 becomes active again with a new tab.
   ASSERT_TRUE(OpenTab(0, GURL(kURL2)));
   WaitForForeignSessionsToSync(0, 1);
+  EXPECT_TRUE(GetSessionData(1, &sessions1));
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest, MultipleWindowsMultipleTabs) {
