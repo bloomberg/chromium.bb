@@ -151,18 +151,40 @@
     </enum>
 
     <enum name="scale_factor">
+      <entry name="0400" value="400"/>
       <entry name="0500" value="500"/>
+      <entry name="0550" value="550"/>
       <entry name="0600" value="600"/>
       <entry name="0625" value="625"/>
+      <entry name="0650" value="650"/>
+      <entry name="0700" value="700"/>
       <entry name="0750" value="750"/>
       <entry name="0800" value="800"/>
+      <entry name="0850" value="850"/>
+      <entry name="0900" value="900"/>
+      <entry name="0950" value="950"/>
       <entry name="1000" value="1000"/>
+      <entry name="1100" value="1100"/>
+      <entry name="1150" value="1150"/>
       <entry name="1125" value="1125"/>
       <entry name="1200" value="1200"/>
       <entry name="1250" value="1250"/>
+      <entry name="1300" value="1300"/>
+      <entry name="1400" value="1400"/>
+      <entry name="1450" value="1450"/>
       <entry name="1500" value="1500"/>
       <entry name="1600" value="1600"/>
+      <entry name="1750" value="1750"/>
+      <entry name="1800" value="1800"/>
       <entry name="2000" value="2000"/>
+      <entry name="2250" value="2250"/>
+      <entry name="2500" value="2500"/>
+      <entry name="2750" value="2750"/>
+      <entry name="3000" value="3000"/>
+      <entry name="3500" value="3500"/>
+      <entry name="4000" value="4000"/>
+      <entry name="4500" value="4500"/>
+      <entry name="5000" value="5000"/>
     </enum>
 
     <event name="scale" since="2">
