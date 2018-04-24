@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "net/cert/cert_database.h"
+#include "net/http/http_proxy_client_socket.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket_impl.h"
 #include "net/socket/tcp_client_socket.h"
@@ -62,6 +63,22 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
       const SSLClientSocketContext& context) override {
     return std::unique_ptr<SSLClientSocket>(new SSLClientSocketImpl(
         std::move(transport_socket), host_and_port, ssl_config, context));
+  }
+
+  std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
+      std::unique_ptr<ClientSocketHandle> transport_socket,
+      const std::string& user_agent,
+      const HostPortPair& endpoint,
+      HttpAuthController* http_auth_controller,
+      bool tunnel,
+      bool using_spdy,
+      NextProto negotiated_protocol,
+      bool is_https_proxy,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override {
+    return std::make_unique<HttpProxyClientSocket>(
+        std::move(transport_socket), user_agent, endpoint, http_auth_controller,
+        tunnel, using_spdy, negotiated_protocol, is_https_proxy,
+        traffic_annotation);
   }
 
   void ClearSSLSessionCache() override { SSLClientSocket::ClearSessionCache(); }

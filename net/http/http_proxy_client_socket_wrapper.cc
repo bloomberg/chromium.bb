@@ -19,6 +19,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/quic/chromium/quic_http_utils.h"
 #include "net/quic/chromium/quic_proxy_client_socket.h"
+#include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_tag.h"
 #include "net/spdy/chromium/spdy_proxy_client_socket.h"
@@ -568,10 +569,12 @@ int HttpProxyClientSocketWrapper::DoHttpProxyConnect() {
   }
 
   // Add a HttpProxy connection on top of the tcp socket.
-  transport_socket_.reset(new HttpProxyClientSocket(
-      std::move(transport_socket_handle_), user_agent_, endpoint_,
-      http_auth_controller_.get(), tunnel_, using_spdy_, negotiated_protocol_,
-      ssl_params_.get() != nullptr, traffic_annotation_));
+  transport_socket_ =
+      transport_pool_->client_socket_factory()->CreateProxyClientSocket(
+          std::move(transport_socket_handle_), user_agent_, endpoint_,
+          http_auth_controller_.get(), tunnel_, using_spdy_,
+          negotiated_protocol_, ssl_params_.get() != nullptr,
+          traffic_annotation_);
   return transport_socket_->Connect(base::Bind(
       &HttpProxyClientSocketWrapper::OnIOComplete, base::Unretained(this)));
 }

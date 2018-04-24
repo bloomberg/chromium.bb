@@ -300,6 +300,15 @@ void StaticSocketDataProvider::Reset() {
   helper_.Reset();
 }
 
+ProxyClientSocketDataProvider::ProxyClientSocketDataProvider(IoMode mode,
+                                                             int result)
+    : connect(mode, result) {}
+
+ProxyClientSocketDataProvider::ProxyClientSocketDataProvider(
+    const ProxyClientSocketDataProvider& other) = default;
+
+ProxyClientSocketDataProvider::~ProxyClientSocketDataProvider() = default;
+
 SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
     : connect(mode, result),
       next_proto(kProtoUnknown),
@@ -718,6 +727,11 @@ void MockClientSocketFactory::AddSSLSocketDataProvider(
   mock_ssl_data_.Add(data);
 }
 
+void MockClientSocketFactory::AddProxyClientSocketDataProvider(
+    ProxyClientSocketDataProvider* data) {
+  mock_proxy_data_.Add(data);
+}
+
 void MockClientSocketFactory::ResetNextMockIndexes() {
   mock_data_.ResetNextIndex();
   mock_ssl_data_.ResetNextIndex();
@@ -767,6 +781,29 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
   }
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
       std::move(transport_socket), host_and_port, ssl_config, next_ssl_data));
+}
+
+std::unique_ptr<ProxyClientSocket>
+MockClientSocketFactory::CreateProxyClientSocket(
+    std::unique_ptr<ClientSocketHandle> transport_socket,
+    const std::string& user_agent,
+    const HostPortPair& endpoint,
+    HttpAuthController* http_auth_controller,
+    bool tunnel,
+    bool using_spdy,
+    NextProto negotiated_protocol,
+    bool is_https_proxy,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  if (use_mock_proxy_client_sockets_) {
+    ProxyClientSocketDataProvider* next_proxy_data = mock_proxy_data_.GetNext();
+    return std::make_unique<MockProxyClientSocket>(
+        std::move(transport_socket), http_auth_controller, next_proxy_data);
+  } else {
+    return GetDefaultFactory()->CreateProxyClientSocket(
+        std::move(transport_socket), user_agent, endpoint, http_auth_controller,
+        tunnel, using_spdy, negotiated_protocol, is_https_proxy,
+        traffic_annotation);
+  }
 }
 
 void MockClientSocketFactory::ClearSSLSessionCache() {
@@ -1129,6 +1166,169 @@ int MockTCPClientSocket::ReadIfReadyImpl(IOBuffer* buf,
     }
   }
   return result;
+}
+
+MockProxyClientSocket::MockProxyClientSocket(
+    std::unique_ptr<ClientSocketHandle> transport_socket,
+    HttpAuthController* auth_controller,
+    ProxyClientSocketDataProvider* data)
+    : net_log_(transport_socket->socket()->NetLog()),
+      transport_(std::move(transport_socket)),
+      data_(data),
+      auth_controller_(auth_controller),
+      weak_factory_(this) {
+  DCHECK(data_);
+}
+
+MockProxyClientSocket::~MockProxyClientSocket() {
+  Disconnect();
+}
+
+const HttpResponseInfo* MockProxyClientSocket::GetConnectResponseInfo() const {
+  return nullptr;
+}
+
+std::unique_ptr<HttpStream>
+MockProxyClientSocket::CreateConnectResponseStream() {
+  return nullptr;
+}
+
+const scoped_refptr<HttpAuthController>&
+MockProxyClientSocket::GetAuthController() const {
+  return auth_controller_;
+}
+
+int MockProxyClientSocket::RestartWithAuth(CompletionOnceCallback callback) {
+  return net::ERR_NOT_IMPLEMENTED;
+}
+bool MockProxyClientSocket::IsUsingSpdy() const {
+  return false;
+}
+
+NextProto MockProxyClientSocket::GetProxyNegotiatedProtocol() const {
+  return kProtoUnknown;
+}
+
+int MockProxyClientSocket::Read(IOBuffer* buf,
+                                int buf_len,
+                                const CompletionCallback& callback) {
+  return transport_->socket()->Read(buf, buf_len, callback);
+}
+
+int MockProxyClientSocket::ReadIfReady(IOBuffer* buf,
+                                       int buf_len,
+                                       const CompletionCallback& callback) {
+  return transport_->socket()->ReadIfReady(buf, buf_len, callback);
+}
+
+int MockProxyClientSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  return transport_->socket()->Write(buf, buf_len, callback,
+                                     traffic_annotation);
+}
+
+int MockProxyClientSocket::Connect(const CompletionCallback& callback) {
+  DCHECK(transport_->socket()->IsConnected());
+  if (data_->connect.mode == ASYNC) {
+    RunCallbackAsync(callback, data_->connect.result);
+    return ERR_IO_PENDING;
+  }
+  return data_->connect.result;
+}
+
+void MockProxyClientSocket::Disconnect() {
+  if (transport_->socket() != NULL)
+    transport_->socket()->Disconnect();
+}
+
+bool MockProxyClientSocket::IsConnected() const {
+  return transport_->socket()->IsConnected();
+}
+
+bool MockProxyClientSocket::IsConnectedAndIdle() const {
+  return transport_->socket()->IsConnectedAndIdle();
+}
+
+bool MockProxyClientSocket::WasEverUsed() const {
+  return transport_->socket()->WasEverUsed();
+}
+
+int MockProxyClientSocket::GetLocalAddress(IPEndPoint* address) const {
+  *address = IPEndPoint(IPAddress(192, 0, 2, 33), 123);
+  return OK;
+}
+
+int MockProxyClientSocket::GetPeerAddress(IPEndPoint* address) const {
+  return transport_->socket()->GetPeerAddress(address);
+}
+
+bool MockProxyClientSocket::WasAlpnNegotiated() const {
+  return false;
+}
+
+NextProto MockProxyClientSocket::GetNegotiatedProtocol() const {
+  NOTIMPLEMENTED();
+  return kProtoUnknown;
+}
+
+bool MockProxyClientSocket::GetSSLInfo(SSLInfo* requested_ssl_info) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void MockProxyClientSocket::ApplySocketTag(const SocketTag& tag) {
+  return transport_->socket()->ApplySocketTag(tag);
+}
+
+const NetLogWithSource& MockProxyClientSocket::NetLog() const {
+  return net_log_;
+}
+
+void MockProxyClientSocket::GetConnectionAttempts(
+    ConnectionAttempts* out) const {
+  NOTIMPLEMENTED();
+  out->clear();
+}
+
+int64_t MockProxyClientSocket::GetTotalReceivedBytes() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+int MockProxyClientSocket::SetReceiveBufferSize(int32_t size) {
+  return OK;
+}
+
+int MockProxyClientSocket::SetSendBufferSize(int32_t size) {
+  return OK;
+}
+
+void MockProxyClientSocket::OnReadComplete(const MockRead& data) {
+  NOTIMPLEMENTED();
+}
+
+void MockProxyClientSocket::OnWriteComplete(int rv) {
+  NOTIMPLEMENTED();
+}
+
+void MockProxyClientSocket::OnConnectComplete(const MockConnect& data) {
+  NOTIMPLEMENTED();
+}
+
+void MockProxyClientSocket::RunCallbackAsync(const CompletionCallback& callback,
+                                             int result) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&MockProxyClientSocket::RunCallback,
+                                weak_factory_.GetWeakPtr(), callback, result));
+}
+
+void MockProxyClientSocket::RunCallback(const CompletionCallback& callback,
+                                        int result) {
+  if (!callback.is_null())
+    callback.Run(result);
 }
 
 // static
@@ -1782,10 +1982,10 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
     ClientSocketFactory* socket_factory)
     : TransportClientSocketPool(max_sockets,
                                 max_sockets_per_group,
-                                NULL,
-                                NULL,
-                                NULL,
-                                NULL),
+                                nullptr /* host_resolver */,
+                                socket_factory,
+                                nullptr /* socket_performance_watcher_factory*/,
+                                nullptr /* netlog */),
       client_socket_factory_(socket_factory),
       last_request_priority_(DEFAULT_PRIORITY),
       release_count_(0),

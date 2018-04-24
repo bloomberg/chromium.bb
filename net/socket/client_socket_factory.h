@@ -9,9 +9,11 @@
 #include <string>
 
 #include "net/base/net_export.h"
+#include "net/http/proxy_client_socket.h"
 #include "net/socket/datagram_socket.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/transport_client_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -24,6 +26,8 @@ struct NetLogSource;
 class SSLClientSocket;
 struct SSLClientSocketContext;
 struct SSLConfig;
+class ProxyClientSocket;
+class HttpAuthController;
 
 // An interface used to instantiate StreamSocket objects.  Used to facilitate
 // testing code with mock socket implementations.
@@ -52,6 +56,17 @@ class NET_EXPORT ClientSocketFactory {
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) = 0;
+
+  virtual std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
+      std::unique_ptr<ClientSocketHandle> transport_socket,
+      const std::string& user_agent,
+      const HostPortPair& endpoint,
+      HttpAuthController* http_auth_controller,
+      bool tunnel,
+      bool using_spdy,
+      NextProto negotiated_protocol,
+      bool is_https_proxy,
+      const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Clears cache used for SSL session resumption.
   virtual void ClearSSLSessionCache() = 0;

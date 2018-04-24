@@ -166,6 +166,20 @@ std::unique_ptr<SSLClientSocket> FuzzedSocketFactory::CreateSSLClientSocket(
   return std::make_unique<FailingSSLClientSocket>();
 }
 
+std::unique_ptr<ProxyClientSocket> FuzzedSocketFactory::CreateProxyClientSocket(
+    std::unique_ptr<ClientSocketHandle> transport_socket,
+    const std::string& user_agent,
+    const HostPortPair& endpoint,
+    HttpAuthController* http_auth_controller,
+    bool tunnel,
+    bool using_spdy,
+    NextProto negotiated_protocol,
+    bool is_https_proxy,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void FuzzedSocketFactory::ClearSSLSessionCache() {}
 
 }  // namespace net

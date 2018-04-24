@@ -484,7 +484,8 @@ TransportClientSocketPool::TransportClientSocketPool(
             new TransportConnectJobFactory(client_socket_factory,
                                            host_resolver,
                                            socket_performance_watcher_factory,
-                                           net_log)) {
+                                           net_log)),
+      client_socket_factory_(client_socket_factory) {
   base_.EnableConnectBackupJobs();
 }
 
