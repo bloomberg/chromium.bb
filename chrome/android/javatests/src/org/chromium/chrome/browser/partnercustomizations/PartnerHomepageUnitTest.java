@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -134,10 +135,12 @@ public class PartnerHomepageUnitTest {
 
     /**
      * Everything is enabled for using partner homepage, except that there is no actual provider.
+     * Flaky : http://crbug.com/836110
      */
     @Test
     @SmallTest
     @Feature({"Homepage"})
+    @DisabledTest
     public void testNoProvider() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
         mHomepageManager.setPrefHomepageUseDefaultUri(true);
