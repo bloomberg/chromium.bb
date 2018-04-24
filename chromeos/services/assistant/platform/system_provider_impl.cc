@@ -13,29 +13,50 @@
 namespace chromeos {
 namespace assistant {
 
-SystemProviderImpl::SystemProviderImpl() = default;
+SystemProviderImpl::SystemProviderImpl()
+    : board_name_(base::SysInfo::GetLsbReleaseBoard()),
+      device_model_id_(base::StringPrintf("cros-%s", board_name_.c_str())) {
+  embedder_build_info_ = chromeos::version_loader::GetVersion(
+      chromeos::version_loader::VERSION_FULL);
+}
 
 SystemProviderImpl::~SystemProviderImpl() = default;
 
-assistant_client::MicMuteState SystemProviderImpl::GetMicMuteState() {
-  // TODO(xiaohuic): implement mic mute state.
-  return assistant_client::MicMuteState::MICROPHONE_ENABLED;
+std::string SystemProviderImpl::GetDeviceModelId() {
+  return device_model_id_;
 }
 
-void SystemProviderImpl::RegisterMicMuteChangeCallback(
-    ConfigChangeCallback callback) {
-  // TODO(xiaohuic): implement mic mute state.
+int SystemProviderImpl::GetDeviceModelRevision() {
+  return 0;
 }
 
-assistant_client::PowerManagerProvider*
-SystemProviderImpl::GetPowerManagerProvider() {
-  // TODO(xiaohuic): implement power manager provider
-  return nullptr;
+std::string SystemProviderImpl::GetEmbedderBuildInfo() {
+  return embedder_build_info_;
 }
 
-bool SystemProviderImpl::GetBatteryState(BatteryState* state) {
-  // TODO(xiaohuic): implement battery state
-  return false;
+std::string SystemProviderImpl::GetBoardName() {
+  return board_name_;
+}
+
+std::string SystemProviderImpl::GetBoardRevision() {
+  return "0";
+}
+
+int SystemProviderImpl::GetDebugServerPort() {
+#if DCHECK_IS_ON()
+  return 8007;
+#else   // DCHECK_IS_ON()
+  // -1 disables debug server.
+  return -1;
+#endif  // DCHECK_IS_ON()
+}
+
+std::string SystemProviderImpl::GetOemDeviceId() {
+  return board_name_;
+}
+
+std::string SystemProviderImpl::GetDisplayName() {
+  return board_name_;
 }
 
 }  // namespace assistant
