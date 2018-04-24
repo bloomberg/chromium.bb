@@ -12,6 +12,9 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
+#include "base/optional.h"
+#include "base/values.h"
 #include "components/invalidation/public/invalidation_export.h"
 
 namespace base {
@@ -19,8 +22,8 @@ class DictionaryValue;
 }  // namespace
 
 namespace invalidation {
-class Invalidation;
 class ObjectId;
+class InvalidationObjectId;
 }  // namespace invalidation
 
 namespace syncer {
@@ -33,8 +36,7 @@ struct INVALIDATION_EXPORT ObjectIdLessThan {
 };
 
 struct INVALIDATION_EXPORT InvalidationVersionLessThan {
-  bool operator()(const syncer::Invalidation& a,
-                  const syncer::Invalidation& b) const;
+  bool operator()(const Invalidation& a, const Invalidation& b) const;
 };
 
 typedef std::set<invalidation::ObjectId, ObjectIdLessThan> ObjectIdSet;
@@ -51,6 +53,27 @@ bool ObjectIdFromValue(const base::DictionaryValue& value,
 
 INVALIDATION_EXPORT std::string ObjectIdToString(
     const invalidation::ObjectId& object_id);
+
+// Same set of utils as above but for the InvalidationObjectId.
+
+struct INVALIDATION_EXPORT InvalidationObjectIdLessThan {
+  bool operator()(const invalidation::InvalidationObjectId& lhs,
+                  const invalidation::InvalidationObjectId& rhs) const;
+};
+
+typedef std::set<invalidation::InvalidationObjectId,
+                 InvalidationObjectIdLessThan>
+    InvalidationObjectIdSet;
+
+typedef std::
+    map<invalidation::InvalidationObjectId, int, InvalidationObjectIdLessThan>
+        InvalidationObjectIdCountMap;
+
+std::unique_ptr<base::DictionaryValue> InvalidationObjectIdToValue(
+    const invalidation::InvalidationObjectId& object_id);
+
+INVALIDATION_EXPORT std::string InvalidationObjectIdToString(
+    const invalidation::InvalidationObjectId& object_id);
 
 }  // namespace syncer
 

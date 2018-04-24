@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "components/invalidation/public/invalidation.h"
+#include "components/invalidation/public/invalidation_object_id.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
 
@@ -63,6 +64,28 @@ bool ObjectIdFromValue(const base::DictionaryValue& value,
 std::string ObjectIdToString(const invalidation::ObjectId& object_id) {
   std::string str;
   base::JSONWriter::Write(*ObjectIdToValue(object_id), &str);
+  return str;
+}
+
+bool InvalidationObjectIdLessThan::operator()(
+    const invalidation::InvalidationObjectId& lhs,
+    const invalidation::InvalidationObjectId& rhs) const {
+  return (lhs.source() < rhs.source()) ||
+         (lhs.source() == rhs.source() && lhs.name() < rhs.name());
+}
+
+std::unique_ptr<base::DictionaryValue> InvalidationObjectIdToValue(
+    const invalidation::InvalidationObjectId& object_id) {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  value->SetInteger("source", object_id.source());
+  value->SetString("name", object_id.name());
+  return value;
+}
+
+std::string InvalidationObjectIdToString(
+    const invalidation::InvalidationObjectId& object_id) {
+  std::string str;
+  base::JSONWriter::Write(*InvalidationObjectIdToValue(object_id), &str);
   return str;
 }
 
