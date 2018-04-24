@@ -143,7 +143,13 @@ base::FilePath HeadlessSurfaceFactory::GetPathForWidget(
     return base_path_;
 
   // Disambiguate multiple window output files with the window id.
+#if defined(OS_WIN)
+  std::string path = base::IntToString(reinterpret_cast<int>(widget)) + ".png";
+  std::wstring wpath(path.begin(), path.end());
+  return base_path_.Append(wpath);
+#else
   return base_path_.Append(base::IntToString(widget) + ".png");
+#endif
 }
 
 std::vector<gl::GLImplementation>
