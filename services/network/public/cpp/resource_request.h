@@ -214,11 +214,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // about this.
   int previews_state = 0;
 
-  // PlzNavigate: the stream url associated with a navigation. Used to get
-  // access to the body of the response that has already been fetched by the
-  // browser.
-  GURL resource_body_stream_url;
-
   // Wether or not the initiator of this request is a secure context.
   bool initiated_in_secure_context = false;
 };

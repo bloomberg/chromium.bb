@@ -100,7 +100,6 @@ class TestResourceDispatcher : public ResourceDispatcher {
       EXPECT_TRUE(is_sync);
     peer_ = std::move(peer);
     url_ = request->url;
-    stream_url_ = request->resource_body_stream_url;
     navigation_response_override_params_ =
         std::move(navigation_response_override_params);
     return 1;

@@ -64,9 +64,8 @@ class URLLoaderInterceptor::Interceptor
     params.url_request = std::move(url_request);
     params.client = std::move(client);
     params.traffic_annotation = traffic_annotation;
-    // We don't intercept the blob URL for plznavigate requests.
-    if (params.url_request.resource_body_stream_url.is_empty() &&
-        parent_->callback_.Run(&params))
+
+    if (parent_->callback_.Run(&params))
       return;
 
     // mock.failed.request is a special request whereby the query indicates what
