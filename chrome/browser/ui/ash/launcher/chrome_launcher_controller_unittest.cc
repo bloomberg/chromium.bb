@@ -104,7 +104,6 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -387,10 +386,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
 
-    // TODO(devlin): Remove this. See https://crbug.com/816679.
-    command_line->AppendSwitch(
-        extensions::switches::kAllowLegacyExtensionManifests);
-
     app_list::AppListSyncableServiceFactory::SetUseInTesting();
 
     BrowserWithTestWindowTest::SetUp();
@@ -403,6 +398,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     manifest.SetString(extensions::manifest_keys::kName,
                        "launcher controller test extension");
     manifest.SetString(extensions::manifest_keys::kVersion, "1");
+    manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
     manifest.SetString(extensions::manifest_keys::kDescription,
                        "for testing pinned apps");
 
@@ -455,6 +451,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     manifest_gmail.SetString(extensions::manifest_keys::kName,
                              "Gmail launcher controller test extension");
     manifest_gmail.SetString(extensions::manifest_keys::kVersion, "1");
+    manifest_gmail.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
     manifest_gmail.SetString(extensions::manifest_keys::kDescription,
                              "for testing pinned Gmail");
     manifest_gmail.SetString(extensions::manifest_keys::kLaunchWebURL,
