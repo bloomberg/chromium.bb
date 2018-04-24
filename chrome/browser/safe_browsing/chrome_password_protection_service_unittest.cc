@@ -359,18 +359,24 @@ TEST_F(ChromePasswordProtectionServiceTest,
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountType) {
+  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN,
+            service_->GetSyncAccountType());
+  EXPECT_TRUE(service_->GetOrganizationName().empty());
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
   signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
   SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                   std::string(kTestAccountID), std::string(kTestEmail));
+                   std::string(kTestAccountID),
+                   std::string(kTestEmail /*foo@example.com*/));
   EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GMAIL,
             service_->GetSyncAccountType());
+  EXPECT_EQ("example.com", service_->GetOrganizationName());
 
   SetUpSyncAccount("example.edu", std::string(kTestAccountID),
-                   std::string(kTestEmail));
+                   std::string(kTestEmail /*foo@example.com*/));
   EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GSUITE,
             service_->GetSyncAccountType());
+  EXPECT_EQ("example.com", service_->GetOrganizationName());
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
