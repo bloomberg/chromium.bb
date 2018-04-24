@@ -19,6 +19,7 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace constants = tts_extension_api_constants;
@@ -195,7 +196,7 @@ bool TtsSpeakFunction::RunAsync() {
     return false;
   }
 
-  double rate = 1.0;
+  double rate = blink::SpeechSynthesisConstants::kDoublePrefNotSet;
   if (options->HasKey(constants::kRateKey)) {
     EXTENSION_FUNCTION_VALIDATE(
         options->GetDouble(constants::kRateKey, &rate));
@@ -205,7 +206,7 @@ bool TtsSpeakFunction::RunAsync() {
     }
   }
 
-  double pitch = 1.0;
+  double pitch = blink::SpeechSynthesisConstants::kDoublePrefNotSet;
   if (options->HasKey(constants::kPitchKey)) {
     EXTENSION_FUNCTION_VALIDATE(
         options->GetDouble(constants::kPitchKey, &pitch));
@@ -215,7 +216,7 @@ bool TtsSpeakFunction::RunAsync() {
     }
   }
 
-  double volume = 1.0;
+  double volume = blink::SpeechSynthesisConstants::kDoublePrefNotSet;
   if (options->HasKey(constants::kVolumeKey)) {
     EXTENSION_FUNCTION_VALIDATE(
         options->GetDouble(constants::kVolumeKey, &volume));
