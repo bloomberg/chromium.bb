@@ -36270,6 +36270,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Touch to dismiss"/>
 </enum>
 
+<enum name="PowerButtonPressType">
+  <int value="0"
+      label="Tap when there is no menu shown will have nothing happen if in
+             laptop mode. Otherwise, turn screen off if in tablet mode."/>
+  <int value="1"
+      label="Tap when menu is already shown will dismiss the menu if in
+             laptop mode. Otherwise, turn screen of if in tablet mode."/>
+  <int value="2" label="Long press to show menu"/>
+  <int value="3" label="Long press to shut down"/>
+  <int value="4" label="Long press when menu is already shown to shut down"/>
+</enum>
+
 <enum name="PowerChargerType">
   <obsolete>
     Deprecated 11/2014 in issue 427057.

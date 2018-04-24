@@ -11,9 +11,22 @@ namespace ash {
 constexpr char kPowerButtonMenuActionHistogram[] =
     "Power.PowerButtonMenuAction";
 
+constexpr char kPressInLaptopModeHistogram[] =
+    "Power.PowerButtonPressInLaptopMode";
+
+constexpr char kPressInTabletModeHistogram[] =
+    "Power.PowerButtonPressInTabletMode";
+
 void RecordMenuActionHistogram(PowerButtonMenuActionType type) {
-  UMA_HISTOGRAM_ENUMERATION(kPowerButtonMenuActionHistogram, type,
-                            PowerButtonMenuActionType::kPowerMenuActionCount);
+  UMA_HISTOGRAM_ENUMERATION(kPowerButtonMenuActionHistogram, type);
+}
+
+void RecordPressInLaptopModeHistogram(PowerButtonPressType type) {
+  UMA_HISTOGRAM_ENUMERATION(kPressInLaptopModeHistogram, type);
+}
+
+void RecordPressInTabletModeHistogram(PowerButtonPressType type) {
+  UMA_HISTOGRAM_ENUMERATION(kPressInTabletModeHistogram, type);
 }
 
 }  // namespace ash
