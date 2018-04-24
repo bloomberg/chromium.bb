@@ -47,6 +47,7 @@ size_t CompositedLayerRasterInvalidator::MatchNewChunkToOldChunk(
 
 PaintInvalidationReason
 CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
+    const RefCountedPropertyTreeState& new_chunk_state,
     const PaintChunkInfo& new_chunk,
     const PaintChunkInfo& old_chunk,
     const PropertyTreeState& layer_state) const {
@@ -60,9 +61,7 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
   // Treat the chunk property as changed if the effect node pointer is
   // different, or the effect node's value changed between the layer state and
   // the chunk state.
-  const auto& new_chunk_state = new_chunk.property_tree_state;
-  const auto& old_chunk_state = old_chunk.property_tree_state;
-  if (new_chunk_state.Effect() != old_chunk_state.Effect() ||
+  if (new_chunk_state.Effect() != old_chunk.effect_state ||
       new_chunk_state.Effect()->Changed(*layer_state.Effect()))
     return PaintInvalidationReason::kPaintProperty;
 
@@ -81,7 +80,7 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
   // Otherwise treat the chunk property as changed if the clip node pointer is
   // different, or the clip node's value changed between the layer state and the
   // chunk state.
-  if (new_chunk_state.Clip() != old_chunk_state.Clip() ||
+  if (new_chunk_state.Clip() != old_chunk.clip_state ||
       new_chunk_state.Clip()->Changed(*layer_state.Clip()))
     return PaintInvalidationReason::kPaintProperty;
 
@@ -138,8 +137,8 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
     PaintInvalidationReason reason =
         matched_old_index < max_matched_old_index
             ? PaintInvalidationReason::kChunkReordered
-            : ChunkPropertiesChanged(new_chunk_info, old_chunk_info,
-                                     layer_state);
+            : ChunkPropertiesChanged(new_chunk.properties, new_chunk_info,
+                                     old_chunk_info, layer_state);
 
     if (IsFullPaintInvalidationReason(reason)) {
       // Invalidate both old and new bounds of the chunk if the chunk's paint
