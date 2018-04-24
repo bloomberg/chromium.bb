@@ -1695,8 +1695,6 @@ crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-inline-tabl
 crbug.com/626703 external/wpt/html/form-elements/the-textarea-element/multiline-placeholder-cr.html [ Failure ]
 crbug.com/626703 external/wpt/svg/path/bearing/zero.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/path/bearing/relative.svg [ Failure ]
-crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.html [ Skip ]
-crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-module.html [ Skip ]
 crbug.com/626703 external/wpt/svg/path/bearing/absolute.svg [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/css-color/t425-hsla-onscreen-b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-color/t32-opacity-offscreen-b.xht [ Failure ]
