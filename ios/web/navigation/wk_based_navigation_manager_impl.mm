@@ -681,8 +681,14 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetNavigationItemImplAtIndex(
     GURL virtual_url;
     bool success = wk_navigation_util::ExtractTargetURL(url, &virtual_url);
     DCHECK(success);
-    if (success)
-      new_item->SetVirtualURL(virtual_url);
+    if (success) {
+      if (wk_navigation_util::IsPlaceholderUrl(virtual_url)) {
+        new_item->SetVirtualURL(
+            wk_navigation_util::ExtractUrlFromPlaceholderUrl(virtual_url));
+      } else {
+        new_item->SetVirtualURL(virtual_url);
+      }
+    }
   }
 
   SetNavigationItemInWKItem(wk_item, std::move(new_item));

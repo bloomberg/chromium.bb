@@ -22,8 +22,8 @@
 namespace web {
 namespace wk_navigation_util {
 
-const char kRestoreSessionSessionQueryKey[] = "session";
-const char kRestoreSessionTargetUrlQueryKey[] = "targetUrl";
+const char kRestoreSessionSessionHashPrefix[] = "session=";
+const char kRestoreSessionTargetUrlHashPrefix[] = "targetUrl=";
 const char kOriginalUrlKey[] = "for";
 
 bool IsWKInternalUrl(const GURL& url) {
@@ -70,8 +70,12 @@ GURL CreateRestoreSessionUrl(
 
   std::string session_json;
   base::JSONWriter::Write(session, &session_json);
-  return net::AppendQueryParameter(
-      GetRestoreSessionBaseUrl(), kRestoreSessionSessionQueryKey, session_json);
+  std::string ref =
+      kRestoreSessionSessionHashPrefix +
+      net::EscapeQueryParamValue(session_json, false /* use_plus */);
+  GURL::Replacements replacements;
+  replacements.SetRefStr(ref);
+  return GetRestoreSessionBaseUrl().ReplaceComponents(replacements);
 }
 
 bool IsRestoreSessionUrl(const GURL& url) {
@@ -79,9 +83,12 @@ bool IsRestoreSessionUrl(const GURL& url) {
 }
 
 GURL CreateRedirectUrl(const GURL& target_url) {
-  return net::AppendQueryParameter(GetRestoreSessionBaseUrl(),
-                                   kRestoreSessionTargetUrlQueryKey,
-                                   target_url.spec());
+  GURL::Replacements replacements;
+  std::string ref =
+      kRestoreSessionTargetUrlHashPrefix +
+      net::EscapeQueryParamValue(target_url.spec(), false /* use_plus */);
+  replacements.SetRefStr(ref);
+  return GetRestoreSessionBaseUrl().ReplaceComponents(replacements);
 }
 
 bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url) {
@@ -89,10 +96,17 @@ bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url) {
       << restore_session_url.possibly_invalid_spec()
       << " is not a restore session URL";
   std::string target_url_spec;
-  bool success = net::GetValueForKeyInQuery(
-      restore_session_url, kRestoreSessionTargetUrlQueryKey, &target_url_spec);
-  if (success)
-    *target_url = GURL(target_url_spec);
+  bool success =
+      restore_session_url.ref().find(kRestoreSessionTargetUrlHashPrefix) == 0;
+  if (success) {
+    std::string encoded_target_url = restore_session_url.ref().substr(
+        strlen(kRestoreSessionTargetUrlHashPrefix));
+    net::UnescapeRule::Type unescape_rules =
+        net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+        net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS;
+    *target_url =
+        GURL(net::UnescapeURLComponent(encoded_target_url, unescape_rules));
+  }
 
   return success;
 }
