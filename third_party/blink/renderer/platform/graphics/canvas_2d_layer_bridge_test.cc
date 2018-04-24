@@ -39,7 +39,6 @@
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "skia/ext/texture_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -206,13 +205,13 @@ class Canvas2DLayerBridgeTest : public Test {
         IntSize(300, 150), 0, Canvas2DLayerBridge::kDisableAcceleration,
         CanvasColorParams()));
 
-    const GrGLTextureInfo* texture_info =
-        skia::GrBackendObjectToGrGLTextureInfo(
-            bridge->NewImageSnapshot(kPreferAcceleration)
-                ->PaintImageForCurrentFrame()
-                .GetSkImage()
-                ->getTextureHandle(true));
-    EXPECT_EQ(texture_info, nullptr);
+    GrBackendTexture backend_texture =
+        bridge->NewImageSnapshot(kPreferAcceleration)
+            ->PaintImageForCurrentFrame()
+            .GetSkImage()
+            ->getBackendTexture(true);
+
+    EXPECT_FALSE(backend_texture.isValid());
     bridge.Clear();
   }
 
