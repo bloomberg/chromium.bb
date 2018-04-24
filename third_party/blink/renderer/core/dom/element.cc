@@ -681,7 +681,7 @@ void Element::NativeApplyScroll(ScrollState& scroll_state) {
 
   LayoutBox* box_to_scroll = nullptr;
 
-  if (GetDocument().GetRootScrollerController().ScrollsViewport(*this))
+  if (this == GetDocument().documentElement())
     box_to_scroll = GetDocument().GetLayoutView();
   else if (GetLayoutObject())
     box_to_scroll = ToLayoutBox(GetLayoutObject());
@@ -689,7 +689,13 @@ void Element::NativeApplyScroll(ScrollState& scroll_state) {
   if (!box_to_scroll)
     return;
 
-  ScrollResult result = box_to_scroll->EnclosingBox()->Scroll(
+  ScrollableArea* scrollable_area =
+      box_to_scroll->EnclosingBox()->GetScrollableArea();
+
+  if (!scrollable_area)
+    return;
+
+  ScrollResult result = scrollable_area->UserScroll(
       ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
       delta);
 
