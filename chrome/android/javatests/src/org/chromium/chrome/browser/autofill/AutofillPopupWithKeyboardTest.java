@@ -81,25 +81,22 @@ public class AutofillPopupWithKeyboardTest {
         final AtomicReference<WebContents> webContentsRef = new AtomicReference<WebContents>();
         final AtomicReference<ViewGroup> viewRef = new AtomicReference<ViewGroup>();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            viewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
-            webContentsRef.set(viewCoreRef.get().getWebContents());
-            viewRef.set(viewCoreRef.get().getContainerView());
+            webContentsRef.set(mActivityTestRule.getActivity().getCurrentWebContents());
+            viewRef.set(mActivityTestRule.getActivity().getActivityTab().getContentView());
         });
         DOMUtils.waitForNonZeroNodeBounds(webContentsRef.get(), "fn");
 
         // Click on the unfocused input element for the first time to focus on it. This brings up
         // the autofill popup and shows the keyboard at the same time. Showing the keyboard should
         // not hide the autofill popup.
-        DOMUtils.clickNode(viewCoreRef.get(), "fn");
+        DOMUtils.clickNode(webContentsRef.get(), "fn");
 
         // Wait until the keyboard is showing.
         CriteriaHelper.pollUiThread(new Criteria("Keyboard was never shown.") {
             @Override
             public boolean isSatisfied() {
                 return UiUtils.isKeyboardShowing(mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity()
-                                .getCurrentContentViewCore()
-                                .getContainerView());
+                        mActivityTestRule.getActivity().getActivityTab().getContentView());
             }
         });
 

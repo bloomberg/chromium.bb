@@ -26,12 +26,12 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 
@@ -51,8 +51,6 @@ public class AutofillKeyboardAccessoryTest {
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
-    private final AtomicReference<ContentViewCore> mViewCoreRef =
-            new AtomicReference<ContentViewCore>();
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<WebContents>();
     private final AtomicReference<ViewGroup> mContainerRef = new AtomicReference<ViewGroup>();
     private final AtomicReference<ViewGroup> mKeyboardAccessoryRef =
@@ -92,9 +90,9 @@ public class AutofillKeyboardAccessoryTest {
                 "94102", "", "US", "(415) 999-0000", "marc@acme.inc", "en"));
         setRtlForTesting(isRtl);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mViewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
-            mWebContentsRef.set(mViewCoreRef.get().getWebContents());
-            mContainerRef.set(mViewCoreRef.get().getContainerView());
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
+            mWebContentsRef.set(tab.getWebContents());
+            mContainerRef.set(tab.getContentView());
             mKeyboardAccessoryRef.set(mActivityTestRule.getActivity()
                     .getWindowAndroid()
                     .getKeyboardAccessoryView());
@@ -127,7 +125,7 @@ public class AutofillKeyboardAccessoryTest {
     public void testTapInputFieldShowsKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
-        DOMUtils.clickNode(mViewCoreRef.get(), "fn");
+        DOMUtils.clickNode(mWebContentsRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
@@ -151,7 +149,7 @@ public class AutofillKeyboardAccessoryTest {
     public void testSwitchFieldsRescrollsKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
-        DOMUtils.clickNode(mViewCoreRef.get(), "fn");
+        DOMUtils.clickNode(mWebContentsRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
@@ -174,7 +172,7 @@ public class AutofillKeyboardAccessoryTest {
                         }
                     }
                 });
-        DOMUtils.clickNode(mViewCoreRef.get(), "ln");
+        DOMUtils.clickNode(mWebContentsRef.get(), "ln");
         CriteriaHelper.pollUiThread(
                 new Criteria("First suggestion should be on the screen after switching fields.") {
                     @Override
@@ -199,7 +197,7 @@ public class AutofillKeyboardAccessoryTest {
     public void testSwitchFieldsRescrollsKeyboardAccessoryRtl()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(true);
-        DOMUtils.clickNode(mViewCoreRef.get(), "fn");
+        DOMUtils.clickNode(mWebContentsRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
@@ -224,9 +222,9 @@ public class AutofillKeyboardAccessoryTest {
                 });
         // Simulates two clicks. Keyboard delay can often drops the first and doesn't set it again.
         // TODO(fhorschig): Remove safety net as soon as Accessory is decoupled from suggestions.
-        DOMUtils.clickNode(mViewCoreRef.get(), "ln");
+        DOMUtils.clickNode(mWebContentsRef.get(), "ln");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        DOMUtils.clickNode(mViewCoreRef.get(), "ln");
+        DOMUtils.clickNode(mWebContentsRef.get(), "ln");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         CriteriaHelper.pollUiThread(
                 new Criteria("Last suggestion should be off the screen after switching fields.") {
@@ -254,7 +252,7 @@ public class AutofillKeyboardAccessoryTest {
     public void testSelectSuggestionHidesKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
-        DOMUtils.clickNode(mViewCoreRef.get(), "fn");
+        DOMUtils.clickNode(mWebContentsRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {

@@ -421,8 +421,7 @@ public class WebappNavigationTest {
     }
 
     private void clickNodeWithId(String id) throws Exception {
-        DOMUtils.clickNode(
-                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), id);
+        DOMUtils.clickNode(mActivityTestRule.getActivity().getActivityTab().getWebContents(), id);
     }
 
     private void addAnchorAndClick(String url, String target) throws Exception {

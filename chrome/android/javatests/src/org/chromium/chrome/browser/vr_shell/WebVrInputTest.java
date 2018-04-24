@@ -167,7 +167,7 @@ public class WebVrInputTest {
                 VrTestFramework.getFileUrlForHtmlTestFile("test_gamepad_button"),
                 PAGE_LOAD_TIMEOUT_S);
         // Wait to enter VR
-        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
+        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabWebContents());
         // The Gamepad API can flakily fail to detect the gamepad from a single button press, so
         // spam it with button presses
         boolean controllerConnected = false;
@@ -271,7 +271,7 @@ public class WebVrInputTest {
         VrTestFramework.runJavaScriptOrFail("canStartTest = true;", POLL_TIMEOUT_SHORT_MS,
                 mVrTestFramework.getFirstTabWebContents());
         // Wait to enter VR
-        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
+        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabWebContents());
         int x = mVrTestFramework.getFirstTabContentView().getWidth() / 2;
         int y = mVrTestFramework.getFirstTabContentView().getHeight() / 2;
         // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
@@ -580,7 +580,7 @@ public class WebVrInputTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mTestRule.getActivity().getCurrentContentViewCore().onPause();
+                mTestRule.getActivity().getActivityTab().getContentViewCore().onPause();
 
                 Assert.assertFalse(
                         VrShellDelegateUtils.getDelegateInstance().isListeningForWebVrActivate());

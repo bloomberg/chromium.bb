@@ -298,7 +298,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
         DOMUtils.clickNode(
-                mDownloadTestRule.getActivity().getCurrentContentViewCore(), "videoDOMElement");
+                mDownloadTestRule.getActivity().getCurrentWebContents(), "videoDOMElement");
         saveMediaFromContextMenu("videoDOMElement", R.id.contextmenu_save_video, FILENAME_WEBM);
     }
 
@@ -430,7 +430,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
             throws TimeoutException, InterruptedException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         DOMUtils.clickNode(
-                mDownloadTestRule.getActivity().getCurrentContentViewCore(), "videoDOMElement");
+                mDownloadTestRule.getActivity().getCurrentWebContents(), "videoDOMElement");
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "videoDOMElement");
 
         Integer[] expectedItems = {R.id.contextmenu_save_video};

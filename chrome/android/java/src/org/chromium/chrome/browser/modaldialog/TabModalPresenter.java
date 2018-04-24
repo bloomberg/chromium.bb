@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
@@ -245,7 +244,7 @@ public class TabModalPresenter
                 SelectionPopupController controller =
                         SelectionPopupController.fromWebContents(webContents);
                 controller.setPreserveSelectionOnNextLossOfFocus(true);
-                ContentViewCore.fromWebContents(webContents).getContainerView().clearFocus();
+                mActiveTab.getContentView().clearFocus();
                 controller.updateTextSelectionUI(false);
                 mDidClearTextControls = true;
             }

@@ -24,7 +24,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 
@@ -83,9 +82,7 @@ public class OSKOverscrollTest {
             @Override
             public boolean isSatisfied() {
                 return UiUtils.isKeyboardShowing(mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity()
-                                .getCurrentContentViewCore()
-                                .getContainerView());
+                        mActivityTestRule.getActivity().getActivityTab().getContentView());
             }
         });
     }
@@ -122,11 +119,9 @@ public class OSKOverscrollTest {
             throws InterruptedException, TimeoutException, ExecutionException {
         mActivityTestRule.startMainActivityWithURL(FIXED_FOOTER_PAGE);
 
-        final AtomicReference<ContentViewCore> viewCoreRef = new AtomicReference<ContentViewCore>();
         final AtomicReference<WebContents> webContentsRef = new AtomicReference<WebContents>();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            viewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
-            webContentsRef.set(viewCoreRef.get().getWebContents());
+            webContentsRef.set(mActivityTestRule.getActivity().getActivityTab().getWebContents());
         });
 
         DOMUtils.waitForNonZeroNodeBounds(webContentsRef.get(), "fn");
@@ -140,7 +135,7 @@ public class OSKOverscrollTest {
 
         // Click on the unfocused input element for the first time to focus on it. This brings up
         // the OSK.
-        DOMUtils.clickNode(viewCoreRef.get(), "fn");
+        DOMUtils.clickNode(webContentsRef.get(), "fn");
 
         waitForKeyboard();
 

@@ -96,7 +96,7 @@ public class FocusedEditableTextFieldZoomTest {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         float initialZoomLevel = mCoordinates.getPageScaleFactor();
 
-        DOMUtils.clickNode(tab.getContentViewCore(), TEXTFIELD_DOM_ID);
+        DOMUtils.clickNode(tab.getWebContents(), TEXTFIELD_DOM_ID);
 
         // Wait for the zoom in to complete.
         waitForZoomIn(initialZoomLevel);
@@ -113,7 +113,7 @@ public class FocusedEditableTextFieldZoomTest {
         final float initialZoomLevel = mCoordinates.getPageScaleFactor();
 
         // This should focus the text field and initiate a zoom in.
-        DOMUtils.clickNode(tab.getContentViewCore(), TEXTFIELD_DOM_ID);
+        DOMUtils.clickNode(tab.getWebContents(), TEXTFIELD_DOM_ID);
 
         // Wait for the zoom in to complete.
         waitForZoomIn(initialZoomLevel);

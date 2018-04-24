@@ -30,9 +30,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
@@ -298,7 +298,7 @@ public class VisualStateTest {
                 mActivityTestRule.createAwTestContainerViewOnMainSync(awContentsClient);
         final AwContents awContents = testView.getAwContents();
         awContentsRef.set(awContents);
-        final ContentViewCore contentViewCore = testView.getContentViewCore();
+        final WebContents webContents = testView.getWebContents();
         AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         // JS will notify this observer once it has changed the background color of the page.
@@ -311,7 +311,7 @@ public class VisualStateTest {
 
         Assert.assertTrue(readyToUpdateColor.await(
                 AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        DOMUtils.clickNode(contentViewCore, UPDATE_COLOR_CONTROL_ID);
+        DOMUtils.clickNode(webContents, UPDATE_COLOR_CONTROL_ID);
         Assert.assertTrue(jsObserver.waitForEvent(WAIT_TIMEOUT_MS));
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
@@ -365,7 +365,7 @@ public class VisualStateTest {
                 mActivityTestRule.createAwTestContainerViewOnMainSync(awContentsClient);
         final AwContents awContents = testView.getAwContents();
         awContentsRef.set(awContents);
-        final ContentViewCore contentViewCore = testView.getContentViewCore();
+        final WebContents webContents = testView.getWebContents();
         AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         awContents.getSettings().setFullscreenSupported(true);
 
@@ -379,7 +379,7 @@ public class VisualStateTest {
 
         Assert.assertTrue(readyToEnterFullscreenSignal.await(
                 AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        DOMUtils.clickNode(contentViewCore, ENTER_FULLSCREEN_CONTROL_ID);
+        DOMUtils.clickNode(webContents, ENTER_FULLSCREEN_CONTROL_ID);
         Assert.assertTrue(jsObserver.waitForEvent(WAIT_TIMEOUT_MS));
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(

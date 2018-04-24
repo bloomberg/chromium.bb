@@ -244,7 +244,7 @@ public class ModalDialogTest {
 
     private GestureListenerManager getGestureListenerManager() {
         return GestureListenerManager.fromWebContents(
-                mActivityTestRule.getActivity().getCurrentContentViewCore().getWebContents());
+                mActivityTestRule.getActivity().getCurrentWebContents());
     }
 
     /**
@@ -279,10 +279,7 @@ public class ModalDialogTest {
         clickCancel(jsDialog);
 
         Assert.assertEquals(BEFORE_UNLOAD_URL,
-                mActivityTestRule.getActivity()
-                        .getCurrentContentViewCore()
-                        .getWebContents()
-                        .getLastCommittedUrl());
+                mActivityTestRule.getActivity().getCurrentWebContents().getLastCommittedUrl());
         executeJavaScriptAndWaitForDialog("history.back();");
 
         jsDialog = getCurrentDialog();
@@ -295,10 +292,7 @@ public class ModalDialogTest {
         clickOk(jsDialog);
         onPageLoaded.waitForCallback(callCount);
         Assert.assertEquals(EMPTY_PAGE,
-                mActivityTestRule.getActivity()
-                        .getCurrentContentViewCore()
-                        .getWebContents()
-                        .getLastCommittedUrl());
+                mActivityTestRule.getActivity().getCurrentWebContents().getLastCommittedUrl());
     }
 
     /**
@@ -361,8 +355,7 @@ public class ModalDialogTest {
         scriptEvent.waitUntilHasValue();
 
         scriptEvent.evaluateJavaScriptForTests(
-                mActivityTestRule.getActivity().getCurrentContentViewCore().getWebContents(),
-                "alert('Android');");
+                mActivityTestRule.getActivity().getCurrentWebContents(), "alert('Android');");
         Assert.assertTrue(
                 "No further dialog boxes should be shown.", scriptEvent.waitUntilHasValue());
     }
@@ -403,8 +396,7 @@ public class ModalDialogTest {
     private OnEvaluateJavaScriptResultHelper executeJavaScriptAndWaitForDialog(
             final OnEvaluateJavaScriptResultHelper helper, String script) {
         helper.evaluateJavaScriptForTests(
-                mActivityTestRule.getActivity().getCurrentContentViewCore().getWebContents(),
-                script);
+                mActivityTestRule.getActivity().getCurrentWebContents(), script);
         CriteriaHelper.pollInstrumentationThread(new JavascriptAppModalDialogShownCriteria(
                 "Could not spawn or locate a modal dialog.", true));
         return helper;
@@ -490,6 +482,6 @@ public class ModalDialogTest {
 
     private TestCallbackHelperContainer getActiveTabTestCallbackHelperContainer() {
         return new TestCallbackHelperContainer(
-                mActivityTestRule.getActivity().getCurrentContentViewCore());
+                mActivityTestRule.getActivity().getActivityTab().getWebContents());
     }
 }

@@ -23,8 +23,8 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.util.concurrent.TimeUnit;
@@ -48,16 +48,14 @@ public class GestureDetectorResetTest {
             + "</body></html>");
 
     private static class NodeContentsIsEqualToCriteria extends Criteria {
-        private final ContentViewCore mViewCore;
+        private final WebContents mWebContents;
         private final String mNodeId;
         private final String mExpectedContents;
 
-        public NodeContentsIsEqualToCriteria(
-                String failureReason,
-                ContentViewCore viewCore,
+        public NodeContentsIsEqualToCriteria(String failureReason, WebContents webContents,
                 String nodeId, String expectedContents) {
             super(failureReason);
-            mViewCore = viewCore;
+            mWebContents = webContents;
             mNodeId = nodeId;
             mExpectedContents = expectedContents;
             assert mExpectedContents != null;
@@ -66,7 +64,7 @@ public class GestureDetectorResetTest {
         @Override
         public boolean isSatisfied() {
             try {
-                String contents = DOMUtils.getNodeContents(mViewCore.getWebContents(), mNodeId);
+                String contents = DOMUtils.getNodeContents(mWebContents, mNodeId);
                 return mExpectedContents.equals(contents);
             } catch (Throwable e) {
                 Assert.fail("Failed to retrieve node contents: " + e);
@@ -78,22 +76,20 @@ public class GestureDetectorResetTest {
     public GestureDetectorResetTest() {
     }
 
-    private void verifyClicksAreRegistered(
-            String disambiguation,
-            ContentViewCore contentViewCore)
-                    throws InterruptedException, Exception, Throwable {
+    private void verifyClicksAreRegistered(String disambiguation, WebContents webContents)
+            throws InterruptedException, Exception, Throwable {
         // Initially the text on the page should say "not clicked".
-        CriteriaHelper.pollInstrumentationThread(new NodeContentsIsEqualToCriteria(
-                "The page contents is invalid " + disambiguation, contentViewCore,
-                "test", "not clicked"));
+        CriteriaHelper.pollInstrumentationThread(
+                new NodeContentsIsEqualToCriteria("The page contents is invalid " + disambiguation,
+                        webContents, "test", "not clicked"));
 
         // Click the button.
-        DOMUtils.clickNode(contentViewCore, "button");
+        DOMUtils.clickNode(webContents, "button");
 
         // After the click, the text on the page should say "clicked".
         CriteriaHelper.pollInstrumentationThread(new NodeContentsIsEqualToCriteria(
-                "The page contents didn't change after a click " + disambiguation,
-                contentViewCore, "test", "clicked"));
+                "The page contents didn't change after a click " + disambiguation, webContents,
+                "test", "clicked"));
     }
 
     /**
@@ -110,14 +106,13 @@ public class GestureDetectorResetTest {
         mActivityTestRule.launchContentShellWithUrl(CLICK_TEST_URL);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        final ContentViewCore viewCore = mActivityTestRule.getContentViewCore();
-        final TestCallbackHelperContainer viewClient =
-                new TestCallbackHelperContainer(viewCore);
+        final WebContents webContents = mActivityTestRule.getWebContents();
+        final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(webContents);
         final OnPageFinishedHelper onPageFinishedHelper =
                 viewClient.getOnPageFinishedHelper();
 
         // Test that the button click works.
-        verifyClicksAreRegistered("on initial load", viewCore);
+        verifyClicksAreRegistered("on initial load", webContents);
 
         // Reload the test page.
         int currentCallCount = onPageFinishedHelper.getCallCount();
@@ -131,7 +126,7 @@ public class GestureDetectorResetTest {
                 WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
         // Test that the button click still works.
-        verifyClicksAreRegistered("after reload", viewCore);
+        verifyClicksAreRegistered("after reload", webContents);
 
         // Directly navigate to the test page.
         currentCallCount = onPageFinishedHelper.getCallCount();
@@ -140,7 +135,6 @@ public class GestureDetectorResetTest {
             public void run() {
                 mActivityTestRule.getActivity()
                         .getActiveShell()
-                        .getContentViewCore()
                         .getWebContents()
                         .getNavigationController()
                         .loadUrl(new LoadUrlParams(CLICK_TEST_URL));
@@ -150,6 +144,6 @@ public class GestureDetectorResetTest {
                 WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
         // Test that the button click still works.
-        verifyClicksAreRegistered("after direct navigation", viewCore);
+        verifyClicksAreRegistered("after direct navigation", webContents);
     }
 }

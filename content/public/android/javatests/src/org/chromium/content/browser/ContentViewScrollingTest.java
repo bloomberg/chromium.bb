@@ -130,7 +130,7 @@ public class ContentViewScrollingTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().getContainerView().scrollTo(x, y);
+                mActivityTestRule.getContainerView().scrollTo(x, y);
             }
         });
     }
@@ -139,7 +139,7 @@ public class ContentViewScrollingTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().getContainerView().scrollBy(dx, dy);
+                mActivityTestRule.getContainerView().scrollBy(dx, dy);
             }
         });
     }
@@ -155,8 +155,7 @@ public class ContentViewScrollingTest {
                                 deltaAxisX, deltaAxisY, 0);
                 leftJoystickMotionEvent.setSource(
                         leftJoystickMotionEvent.getSource() | InputDevice.SOURCE_CLASS_JOYSTICK);
-                mActivityTestRule.getContentViewCore().getContainerView().onGenericMotionEvent(
-                        leftJoystickMotionEvent);
+                mActivityTestRule.getContainerView().onGenericMotionEvent(leftJoystickMotionEvent);
             }
         });
     }

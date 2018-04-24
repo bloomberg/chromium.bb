@@ -944,7 +944,7 @@ public class AwContents implements SmartClipProvider {
      * Called when the app has requested to exit fullscreen.
      */
     void requestExitFullscreen() {
-        if (!isDestroyedOrNoOperation(NO_WARN)) mContentViewCore.getWebContents().exitFullscreen();
+        if (!isDestroyedOrNoOperation(NO_WARN)) mWebContents.exitFullscreen();
     }
 
     /**
@@ -1143,16 +1143,15 @@ public class AwContents implements SmartClipProvider {
         // each other, we should update |mBrowserContext| according to the newly received native
         // WebContent's browser context.
 
-        WebContents webContents = nativeGetWebContents(mNativeAwContents);
+        mWebContents = nativeGetWebContents(mNativeAwContents);
 
         mWindowAndroid = getWindowAndroid(mContext);
         mViewAndroidDelegate =
                 new AwViewAndroidDelegate(mContainerView, mContentsClient, mScrollOffsetManager);
-        createContentViewCore(mViewAndroidDelegate, mInternalAccessAdapter, webContents,
+        createContentViewCore(mViewAndroidDelegate, mInternalAccessAdapter, mWebContents,
                 mWindowAndroid.getWindowAndroid());
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
-        mWebContents = mContentViewCore.getWebContents();
         mWebContentsInternalsHolder = new WebContentsInternalsHolder(this);
         mWebContents.setInternalsHolder(mWebContentsInternalsHolder);
         GestureListenerManager.fromWebContents(mWebContents)
@@ -1160,8 +1159,8 @@ public class AwContents implements SmartClipProvider {
 
         mNavigationController = mWebContents.getNavigationController();
         installWebContentsObserver();
-        mSettings.setWebContents(webContents);
-        if (mAutofillProvider != null) mAutofillProvider.setWebContents(webContents);
+        mSettings.setWebContents(mWebContents);
+        if (mAutofillProvider != null) mAutofillProvider.setWebContents(mWebContents);
 
         mDisplayObserver.onDIPScaleChanged(getDeviceScaleFactor());
 

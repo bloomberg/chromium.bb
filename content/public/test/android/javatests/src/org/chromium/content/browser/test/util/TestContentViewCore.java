@@ -8,11 +8,9 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.ViewGroup;
 
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -21,16 +19,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class TestContentViewCore implements ContentViewCore {
     public TestContentViewCore(Context context, String productVersion) {}
-
-    @Override
-    public ViewGroup getContainerView() {
-        return null;
-    }
-
-    @Override
-    public WebContents getWebContents() {
-        return null;
-    }
 
     @Override
     public void updateWindowAndroid(WindowAndroid windowAndroid) {}

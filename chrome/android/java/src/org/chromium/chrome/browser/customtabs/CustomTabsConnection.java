@@ -1344,8 +1344,7 @@ public class CustomTabsConnection {
         tab.addObserver(observer);
 
         // Updating post message as soon as we have a valid WebContents.
-        mClientManager.resetPostMessageHandlerForSession(
-                session, tab.getContentViewCore().getWebContents());
+        mClientManager.resetPostMessageHandlerForSession(session, tab.getWebContents());
 
         LoadUrlParams loadParams = new LoadUrlParams(url);
         String referrer = getReferrer(session, extrasIntent);

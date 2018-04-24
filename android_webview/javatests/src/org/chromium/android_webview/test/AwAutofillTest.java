@@ -561,7 +561,7 @@ public class AwAutofillTest {
             DOMUtils.waitForNonZeroNodeBounds(mAwContents.getWebContents(), "text1");
             // Note that we currently depend on keyboard app's behavior.
             // TODO(changwan): mock out IME interaction.
-            Assert.assertTrue(DOMUtils.clickNode(mTestContainerView.getContentViewCore(), "text1"));
+            Assert.assertTrue(DOMUtils.clickNode(mTestContainerView.getWebContents(), "text1"));
             cnt += waitForCallbackAndVerifyTypes(
                     cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED});
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
@@ -997,7 +997,7 @@ public class AwAutofillTest {
             // Note that we currently depend on keyboard app's behavior.
             // TODO(changwan): mock out IME interaction.
             Assert.assertTrue(
-                    DOMUtils.clickNode(mTestContainerView.getContentViewCore(), "passwordid"));
+                    DOMUtils.clickNode(mTestContainerView.getWebContents(), "passwordid"));
             cnt += waitForCallbackAndVerifyTypes(
                     cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED});
         }

@@ -19,7 +19,6 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
@@ -141,10 +140,9 @@ public class ContentShellActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        ContentViewCore contentViewCore = getActiveContentViewCore();
-        if (contentViewCore != null) {
-            outState.putString(
-                    ACTIVE_SHELL_URL_KEY, contentViewCore.getWebContents().getLastCommittedUrl());
+        WebContents webContents = getActiveWebContents();
+        if (webContents != null) {
+            outState.putString(ACTIVE_SHELL_URL_KEY, webContents.getLastCommittedUrl());
         }
 
         mWindowAndroid.saveInstanceState(outState);
@@ -153,10 +151,9 @@ public class ContentShellActivity extends Activity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            ContentViewCore contentViewCore = getActiveContentViewCore();
-            if (contentViewCore != null && contentViewCore.getWebContents()
-                    .getNavigationController().canGoBack()) {
-                contentViewCore.getWebContents().getNavigationController().goBack();
+            WebContents webContents = getActiveWebContents();
+            if (webContents != null && webContents.getNavigationController().canGoBack()) {
+                webContents.getNavigationController().goBack();
                 return true;
             }
         }
@@ -232,15 +229,6 @@ public class ContentShellActivity extends Activity {
      */
     public Shell getActiveShell() {
         return mShellManager != null ? mShellManager.getActiveShell() : null;
-    }
-
-    /**
-     * @return The {@link ContentViewCore} owned by the currently visible {@link Shell} or null if
-     *         one is not showing.
-     */
-    public ContentViewCore getActiveContentViewCore() {
-        Shell shell = getActiveShell();
-        return shell != null ? shell.getContentViewCore() : null;
     }
 
     /**

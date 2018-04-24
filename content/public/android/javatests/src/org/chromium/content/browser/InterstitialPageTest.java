@@ -126,8 +126,7 @@ public class InterstitialPageTest {
         waitForInterstitial(true);
         Assert.assertTrue("WebContentsObserver not notified of interstitial showing",
                 observer.isInterstitialShowing());
-        TouchCommon.singleClickView(
-                mActivityTestRule.getContentViewCore().getContainerView(), 10, 10);
+        TouchCommon.singleClickView(mActivityTestRule.getContainerView(), 10, 10);
         waitForInterstitial(false);
         Assert.assertTrue("WebContentsObserver not notified of interstitial hiding",
                 !observer.isInterstitialShowing());

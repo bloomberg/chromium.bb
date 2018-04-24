@@ -17,10 +17,10 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
@@ -69,11 +69,10 @@ public class NavigationTest {
     public void testDirectedNavigationHistory() throws Throwable {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
-        ContentViewCore contentViewCore = activity.getActiveContentViewCore();
-        NavigationController navigationController = contentViewCore.getWebContents()
-                .getNavigationController();
+        WebContents webContents = mActivityTestRule.getWebContents();
+        NavigationController navigationController = webContents.getNavigationController();
         TestCallbackHelperContainer testCallbackHelperContainer =
-                new TestCallbackHelperContainer(contentViewCore);
+                new TestCallbackHelperContainer(webContents);
 
         mActivityTestRule.loadUrl(
                 navigationController, testCallbackHelperContainer, new LoadUrlParams(URL_2));
@@ -130,23 +129,20 @@ public class NavigationTest {
 
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(urlLoadTime);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
-        ContentViewCore contentViewCore = activity.getActiveContentViewCore();
+        WebContents webContents = mActivityTestRule.getWebContents();
         TestCallbackHelperContainer testCallbackHelperContainer =
-                new TestCallbackHelperContainer(contentViewCore);
+                new TestCallbackHelperContainer(webContents);
         OnEvaluateJavaScriptResultHelper javascriptHelper = new OnEvaluateJavaScriptResultHelper();
 
         // Grab the first timestamp.
-        javascriptHelper.evaluateJavaScriptForTests(
-                contentViewCore.getWebContents(), "getLoadtime();");
+        javascriptHelper.evaluateJavaScriptForTests(webContents, "getLoadtime();");
         javascriptHelper.waitUntilHasValue();
         String firstTimestamp = javascriptHelper.getJsonResultAndClear();
         Assert.assertNotNull("Timestamp was null.", firstTimestamp);
 
         // Grab the timestamp after a reload and make sure they don't match.
-        reload(contentViewCore.getWebContents().getNavigationController(),
-                testCallbackHelperContainer);
-        javascriptHelper.evaluateJavaScriptForTests(
-                contentViewCore.getWebContents(), "getLoadtime();");
+        reload(webContents.getNavigationController(), testCallbackHelperContainer);
+        javascriptHelper.evaluateJavaScriptForTests(webContents, "getLoadtime();");
         javascriptHelper.waitUntilHasValue();
         String secondTimestamp = javascriptHelper.getJsonResultAndClear();
         Assert.assertNotNull("Timestamp was null.", secondTimestamp);

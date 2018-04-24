@@ -114,13 +114,13 @@ public class FullscreenVideoTest {
         tab.addObserver(observer);
 
         // Start playback to guarantee it's properly loaded.
-        WebContents webContents = mActivity.getCurrentContentViewCore().getWebContents();
+        WebContents webContents = mActivity.getCurrentWebContents();
         Assert.assertTrue(DOMUtils.isMediaPaused(webContents, video));
         DOMUtils.playMedia(webContents, video);
         DOMUtils.waitForMediaPlay(webContents, video);
 
         // Trigger requestFullscreen() via a click on a button.
-        Assert.assertTrue(DOMUtils.clickNode(mActivity.getCurrentContentViewCore(), "fullscreen"));
+        Assert.assertTrue(DOMUtils.clickNode(webContents, "fullscreen"));
 
         waitForVideoToEnterFullscreen();
 

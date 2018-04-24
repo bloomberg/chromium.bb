@@ -186,8 +186,7 @@ public class SadTabTest {
      *         doesn't exist.
      */
     private Button getSadTabButton(Tab tab) {
-        return (Button) tab.getContentViewCore().getContainerView().findViewById(
-                R.id.sad_tab_button);
+        return (Button) tab.getContentView().findViewById(R.id.sad_tab_button);
     }
 
 }

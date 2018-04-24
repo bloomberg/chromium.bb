@@ -2614,8 +2614,8 @@ public class Tab
         webContents.setSize(originalWidth, originalHeight);
 
         if (!bounds.isEmpty()) {
-            nativeOnPhysicalBackingSizeChanged(mNativeTabAndroid, contentViewCore.getWebContents(),
-                    bounds.right, bounds.bottom);
+            nativeOnPhysicalBackingSizeChanged(
+                    mNativeTabAndroid, webContents, bounds.right, bounds.bottom);
         }
         webContents.onShow();
         setContentViewCore(webContents, contentViewCore);

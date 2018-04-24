@@ -21,7 +21,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.util.concurrent.TimeoutException;
@@ -103,14 +103,14 @@ public class ContentViewPopupZoomerTest {
         mActivityTestRule.launchContentShellWithUrl(generateTestUrl());
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        final ContentViewCore viewCore = mActivityTestRule.getContentViewCore();
-        final ViewGroup view = viewCore.getContainerView();
+        final WebContents webContents = mActivityTestRule.getWebContents();
+        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
 
         // The popup should be hidden before the click.
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, false));
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(viewCore, TARGET_NODE_ID);
+        DOMUtils.clickNode(webContents, TARGET_NODE_ID);
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, true));
 
         // The shown popup should have valid dimensions eventually.
@@ -128,11 +128,11 @@ public class ContentViewPopupZoomerTest {
         mActivityTestRule.launchContentShellWithUrl(generateTestUrl());
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        final ContentViewCore viewCore = mActivityTestRule.getContentViewCore();
-        final ViewGroup view = viewCore.getContainerView();
+        final WebContents webContents = mActivityTestRule.getWebContents();
+        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
 
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, false));
-        DOMUtils.clickNode(viewCore, TARGET_NODE_ID);
+        DOMUtils.clickNode(webContents, TARGET_NODE_ID);
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, true));
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
         // When device key is pressed, popup zoomer should hide if already showing.

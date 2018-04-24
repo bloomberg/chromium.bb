@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.vr_shell.VrTestFramework;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.Callable;
@@ -99,9 +98,9 @@ public class TransitionUtils {
      * Only meant to be used alongside the test framework from VrTestFramework.
      * @param cvc The ContentViewCore for the tab the canvas is in.
      */
-    public static void enterPresentation(ContentViewCore cvc) {
+    public static void enterPresentation(WebContents webContents) {
         try {
-            DOMUtils.clickNode(cvc, "webgl-canvas", false /* goThroughRootAndroidView */);
+            DOMUtils.clickNode(webContents, "webgl-canvas", false /* goThroughRootAndroidView */);
         } catch (InterruptedException | TimeoutException e) {
             Assert.fail("Failed to click canvas to enter presentation: " + e.toString());
         }
@@ -115,8 +114,8 @@ public class TransitionUtils {
      * @param cvc The ContentViewCore for the tab the canvas is in.
      * @param webContents The WebContents for the tab the JavaScript step is in.
      */
-    public static void enterPresentationAndWait(ContentViewCore cvc, WebContents webContents) {
-        enterPresentation(cvc);
+    public static void enterPresentationAndWait(WebContents webContents) {
+        enterPresentation(webContents);
         TestFramework.waitOnJavaScriptStep(webContents);
     }
 
@@ -126,9 +125,9 @@ public class TransitionUtils {
      */
     public static void enterPresentationOrFail(TestFramework framework) {
         if (framework instanceof VrTestFramework) {
-            VrTransitionUtils.enterPresentationOrFail(framework.getFirstTabCvc());
+            VrTransitionUtils.enterPresentationOrFail(framework.getFirstTabWebContents());
         } else {
-            XrTransitionUtils.enterPresentationOrFail(framework.getFirstTabCvc());
+            XrTransitionUtils.enterPresentationOrFail(framework.getFirstTabWebContents());
         }
     }
 

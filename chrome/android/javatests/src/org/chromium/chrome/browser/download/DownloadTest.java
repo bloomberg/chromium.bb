@@ -436,7 +436,7 @@ public class DownloadTest implements CustomMainActivityStart {
                     + "  }"
                     + "</script>"
                     + "<body id='body' onclick='download()'></body>"));
-            DOMUtils.clickNode(mDownloadTestRule.getActivity().getCurrentContentViewCore(), "body");
+            DOMUtils.clickNode(mDownloadTestRule.getActivity().getCurrentWebContents(), "body");
             CriteriaHelper.pollUiThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {

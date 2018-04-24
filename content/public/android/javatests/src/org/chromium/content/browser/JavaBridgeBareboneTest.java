@@ -36,7 +36,7 @@ public class JavaBridgeBareboneTest {
                 UrlUtils.encodeHtmlDataUri("<html><head></head><body>test</body></html>"));
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         mTestCallbackHelperContainer =
-                new TestCallbackHelperContainer(mActivityTestRule.getContentViewCore());
+                new TestCallbackHelperContainer(mActivityTestRule.getWebContents());
     }
 
     private void injectDummyObject(final String name) throws Throwable {

@@ -10,7 +10,7 @@ import org.junit.Assert;
 
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.VrTestFramework;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Class containing utility functions for transitioning between different
@@ -28,10 +28,10 @@ public class VrTransitionUtils extends TransitionUtils {
      *
      * @param cvc The ContentViewCore for the tab the canvas is in.
      */
-    public static void enterPresentationOrFail(ContentViewCore cvc) {
-        enterPresentation(cvc);
+    public static void enterPresentationOrFail(WebContents webContents) {
+        enterPresentation(webContents);
         Assert.assertTrue(VrTestFramework.pollJavaScriptBoolean(
-                "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, cvc.getWebContents()));
+                "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, webContents));
         Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 }

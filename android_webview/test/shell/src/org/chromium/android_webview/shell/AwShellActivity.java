@@ -84,7 +84,7 @@ public class AwShellActivity extends Activity {
 
         mAwTestContainerView = createAwTestContainerView();
 
-        mWebContents = mAwTestContainerView.getContentViewCore().getWebContents();
+        mWebContents = mAwTestContainerView.getWebContents();
         mNavigationController = mWebContents.getNavigationController();
         LinearLayout contentContainer = (LinearLayout) findViewById(R.id.content_container);
         mAwTestContainerView.setLayoutParams(new LinearLayout.LayoutParams(

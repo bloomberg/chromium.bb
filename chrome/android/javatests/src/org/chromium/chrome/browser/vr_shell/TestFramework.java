@@ -92,10 +92,6 @@ public class TestFramework {
         return mFirstTabWebContents;
     }
 
-    public ContentViewCore getFirstTabCvc() {
-        return mFirstTabCvc;
-    }
-
     public View getFirstTabContentView() {
         return mFirstTabContentView;
     }

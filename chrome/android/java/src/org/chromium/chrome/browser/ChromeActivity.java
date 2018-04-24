@@ -1573,11 +1573,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
-     * @return The current ContentViewCore, or null if the tab does not exist or is not showing a
-     *         ContentViewCore.
+     * @return The current WebContents, or null if the tab does not exist or is not showing a
+     *         WebContents.
      */
-    public ContentViewCore getCurrentContentViewCore() {
-        return TabModelUtils.getCurrentContentViewCore(getCurrentTabModel());
+    public WebContents getCurrentWebContents() {
+        return TabModelUtils.getCurrentWebContents(getCurrentTabModel());
     }
 
     /**
@@ -1849,20 +1849,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
     }
 
-    private ContentViewCore getContentViewCore() {
-        Tab tab = getActivityTab();
-        if (tab == null) return null;
-        return tab.getContentViewCore();
-    }
-
-    private WebContents getWebContents() {
-        Tab tab = getActivityTab();
-        if (tab == null) return null;
-        return tab.getWebContents();
-    }
-
     private SelectionPopupController getSelectionPopupController() {
-        WebContents webContents = getWebContents();
+        WebContents webContents = getCurrentWebContents();
         return webContents != null ? SelectionPopupController.fromWebContents(webContents) : null;
     }
 

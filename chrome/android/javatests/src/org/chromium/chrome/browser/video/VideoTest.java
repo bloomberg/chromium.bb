@@ -55,7 +55,7 @@ public class VideoTest {
             Assert.assertEquals("ready_to_play", tab.getTitle());
 
             titleObserver = new TabTitleObserver(tab, "ended");
-            DOMUtils.clickNode(tab.getContentViewCore(), "button1");
+            DOMUtils.clickNode(tab.getWebContents(), "button1");
             // Now the video will play for 5 secs.
             // Makes sure that the video ends and title was changed.
             titleObserver.waitForTitleUpdate(15);

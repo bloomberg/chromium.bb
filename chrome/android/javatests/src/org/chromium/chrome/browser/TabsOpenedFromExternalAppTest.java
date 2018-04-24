@@ -666,7 +666,7 @@ public class TabsOpenedFromExternalAppTest {
 
         // Focus the text-field and type something.
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
-        DOMUtils.focusNode(tab.getContentViewCore().getWebContents(), "textField");
+        DOMUtils.focusNode(tab.getWebContents(), "textField");
 
         // Some processing needs to happen before the test-field has the focus.
         CriteriaHelper.pollInstrumentationThread(
@@ -752,10 +752,8 @@ public class TabsOpenedFromExternalAppTest {
         mActivityTestRule.getActivity().getActivityTab().addObserver(observer);
         Assert.assertNull(observer.mContextMenu);
         final View view = ThreadUtils.runOnUiThreadBlocking(
-                (Callable<View>) () -> mActivityTestRule.getActivity()
-                        .getActivityTab()
-                        .getContentViewCore()
-                        .getContainerView());
+                (Callable<View>) ()
+                        -> mActivityTestRule.getActivity().getActivityTab().getContentView());
         TouchCommon.longPressView(view);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override

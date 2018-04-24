@@ -55,8 +55,7 @@ public class UkmTest {
     public String getElementContent(Tab normalTab, String elementId) throws Exception {
         mActivityTestRule.loadUrlInTab(
                 DEBUG_PAGE, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, normalTab);
-        return JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                normalTab.getContentViewCore().getWebContents(),
+        return JavaScriptUtils.executeJavaScriptAndWaitForResult(normalTab.getWebContents(),
                 "document.getElementById('" + elementId + "').textContent");
     }
 

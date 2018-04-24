@@ -863,7 +863,7 @@ public class CustomTabActivityTest {
             }
         });
         DOMUtils.clickNode(
-                mCustomTabActivityTestRule.getActivity().getActivityTab().getContentViewCore(),
+                mCustomTabActivityTestRule.getActivity().getActivityTab().getWebContents(),
                 "select");
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -1213,7 +1213,7 @@ public class CustomTabActivityTest {
             });
         });
         DOMUtils.clickNode(
-                mCustomTabActivityTestRule.getActivity().getActivityTab().getContentViewCore(),
+                mCustomTabActivityTestRule.getActivity().getActivityTab().getWebContents(),
                 "new_window");
 
         openTabHelper.waitForCallback(0, 1);

@@ -23,7 +23,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule.RerunWithUpdatedContainerView;
 
@@ -94,12 +94,12 @@ public class SelectPopupTest {
         // The popup should be hidden before the click.
         CriteriaHelper.pollInstrumentationThread(new PopupHiddenCriteria());
 
-        final ContentViewCore viewCore = mActivityTestRule.getContentViewCore();
-        final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(viewCore);
+        final WebContents webContents = mActivityTestRule.getWebContents();
+        final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(webContents);
         final OnPageFinishedHelper onPageFinishedHelper = viewClient.getOnPageFinishedHelper();
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(viewCore, "select");
+        DOMUtils.clickNode(webContents, "select");
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria());
 
         // Reload the test page.
@@ -108,10 +108,7 @@ public class SelectPopupTest {
             @Override
             public void run() {
                 // Now reload the page while the popup is showing, it gets hidden.
-                mActivityTestRule.getContentViewCore()
-                        .getWebContents()
-                        .getNavigationController()
-                        .reload(true);
+                mActivityTestRule.getWebContents().getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1,
@@ -121,7 +118,7 @@ public class SelectPopupTest {
         CriteriaHelper.pollInstrumentationThread(new PopupHiddenCriteria());
 
         // Click the select and wait for the popup to show.
-        DOMUtils.clickNode(viewCore, "select");
+        DOMUtils.clickNode(webContents, "select");
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria());
     }
 }

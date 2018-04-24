@@ -229,8 +229,7 @@ public class WebVrTransitionTest {
                 VrTestFramework.getFileUrlForHtmlTestFile(
                         "test_presentation_promise_unresolved_during_don"),
                 PAGE_LOAD_TIMEOUT_S);
-        VrTransitionUtils.enterPresentationAndWait(
-                mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
+        VrTransitionUtils.enterPresentationAndWait(mVrTestFramework.getFirstTabWebContents());
         VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
@@ -255,8 +254,7 @@ public class WebVrTransitionTest {
     private void presentationPromiseUnresolvedDuringDonImpl(String url, TestFramework framework)
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        TransitionUtils.enterPresentationAndWait(
-                framework.getFirstTabCvc(), framework.getFirstTabWebContents());
+        TransitionUtils.enterPresentationAndWait(framework.getFirstTabWebContents());
         TestFramework.endTest(framework.getFirstTabWebContents());
     }
 
@@ -296,7 +294,7 @@ public class WebVrTransitionTest {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         final UiDevice uiDevice =
                 UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        TransitionUtils.enterPresentation(framework.getFirstTabCvc());
+        TransitionUtils.enterPresentation(framework.getFirstTabWebContents());
         // Wait until the DON flow appears to be triggered
         // TODO(bsheedy): Make this less hacky if there's ever an explicit way to check if the
         // DON flow is currently active https://crbug.com/758296

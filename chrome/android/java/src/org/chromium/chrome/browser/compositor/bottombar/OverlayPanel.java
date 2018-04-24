@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.RectF;
+import android.view.ViewGroup;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -26,7 +27,6 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -312,7 +312,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         SelectionPopupController spc = SelectionPopupController.fromWebContents(baseWebContents);
         if (!visible) {
             spc.setPreserveSelectionOnNextLossOfFocus(true);
-            ContentViewCore.fromWebContents(baseWebContents).getContainerView().clearFocus();
+            if (baseWebContents.getViewAndroidDelegate() != null) {
+                baseWebContents.getViewAndroidDelegate().getContainerView().clearFocus();
+            }
         }
 
         spc.updateTextSelectionUI(visible);
@@ -354,11 +356,17 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     /**
-     * @return The ContentViewCore that this panel currently holds.
+     * @return The WebContents that this panel currently holds.
      */
-    public ContentViewCore getContentViewCore() {
-        // Expose OverlayPanelContent method.
-        return mContent != null ? mContent.getContentViewCore() : null;
+    public WebContents getWebContents() {
+        return mContent != null ? mContent.getWebContents() : null;
+    }
+
+    /**
+     * @return The container view that this panel currently holds.
+     */
+    public ViewGroup getContainerView() {
+        return mContent != null ? mContent.getContainerView() : null;
     }
 
     /**

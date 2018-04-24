@@ -110,7 +110,7 @@ public class ChildProcessLauncherIntegrationTest {
         NavigationController navigationController =
                 mActivityTestRule.getWebContents().getNavigationController();
         TestCallbackHelperContainer testCallbackHelperContainer =
-                new TestCallbackHelperContainer(activity.getActiveContentViewCore());
+                new TestCallbackHelperContainer(activity.getActiveWebContents());
 
         mActivityTestRule.loadUrl(navigationController, testCallbackHelperContainer,
                 new LoadUrlParams(UrlUtils.getIsolatedTestFileUrl(
