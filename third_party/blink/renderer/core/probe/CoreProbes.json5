@@ -1,17 +1,17 @@
 {
   settings: {
-    export_header: "core/core_export.h",
+    export_header: "third_party/blink/renderer/core/core_export.h",
     export_symbol: "CORE_EXPORT",
-    include_path: "core/inspector",
+    include_path: "third_party/blink/renderer/core/inspector",
     includes: [
-      "core/CoreProbeSink.h",
-      "core/probe/core_probes.h",
+      "third_party/blink/renderer/core/CoreProbeSink.h",
+      "third_party/blink/renderer/core/probe/core_probes.h",
     ],
   },
   observers: {
     AdTracker: {
       class: "AdTracker",
-      include_path: "core/frame",
+      include_path: "third_party/blink/renderer/core/frame",
       probes: [
         "CallFunction",
         "ExecuteScript",
@@ -168,7 +168,7 @@
     },
     Performance: {
       class: "PerformanceMonitor",
-      include_path: "core/frame",
+      include_path: "third_party/blink/renderer/core/frame",
       probes: [
         "CallFunction",
         "ExecuteScript",

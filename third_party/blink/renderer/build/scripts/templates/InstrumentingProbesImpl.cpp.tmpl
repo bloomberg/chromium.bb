@@ -5,16 +5,15 @@
 {% from 'macros.tmpl' import source_files_for_generated_file %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
-
 {% set sink_class = (name | to_singular) + "Sink" %}
 {% for file in files %}
-#include "{{file.name}}Inl.h"
+#include "{{output_path_in_gen_dir}}{{file.name}}Inl.h"
 {% endfor %}
-#include "{{sink_class}}.h"
+#include "{{output_path_in_gen_dir}}{{sink_class}}.h"
 {% for agent in agents %}
 #include "{{agent | agent_name_to_include}}"
 {% endfor %}
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 

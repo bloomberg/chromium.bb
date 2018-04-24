@@ -1,11 +1,11 @@
 {
   settings: {
-    export_header: "platform/platform_export.h",
+    export_header: "third_party/blink/renderer/platform/platform_export.h",
     export_symbol: "PLATFORM_EXPORT",
-    include_path: "platform/probe",
+    include_path: "third_party/blink/renderer/platform/probe",
     includes: [
-      "platform/PlatformProbeSink.h",
-      "platform/probe/platform_probes.h",
+      "third_party/blink/renderer/platform/PlatformProbeSink.h",
+      "third_party/blink/renderer/platform/probe/platform_probes.h",
     ]
   },
   observers: {
