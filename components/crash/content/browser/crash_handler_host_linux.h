@@ -14,6 +14,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
@@ -34,8 +35,9 @@ struct BreakpadInfo;
 // Processes signal that they need to be dumped by sending a datagram over a
 // UNIX domain socket. All processes of the same type share the client end of
 // this socket which is installed in their descriptor table before exec.
-class CrashHandlerHostLinux : public base::MessagePumpForIO::FdWatcher,
-                              public base::MessageLoop::DestructionObserver {
+class CrashHandlerHostLinux
+    : public base::MessagePumpForIO::FdWatcher,
+      public base::MessageLoopCurrent::DestructionObserver {
  public:
   CrashHandlerHostLinux(const std::string& process_type,
                         const base::FilePath& dumps_path,
@@ -56,7 +58,7 @@ class CrashHandlerHostLinux : public base::MessagePumpForIO::FdWatcher,
   void OnFileCanWriteWithoutBlocking(int fd) override;
   void OnFileCanReadWithoutBlocking(int fd) override;
 
-  // MessageLoop::DestructionObserver impl:
+  // MessageLoopCurrent::DestructionObserver impl:
   void WillDestroyCurrentMessageLoop() override;
 
   // Whether we are shutting down or not.
@@ -113,7 +115,7 @@ class CrashHandlerHostLinux : public base::MessagePumpForIO::FdWatcher,
 namespace crashpad {
 
 class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
-                         public base::MessageLoop::DestructionObserver {
+                         public base::MessageLoopCurrent::DestructionObserver {
  public:
   CrashHandlerHost();
   ~CrashHandlerHost() override;
@@ -130,7 +132,7 @@ class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
   void OnFileCanWriteWithoutBlocking(int fd) override;
   void OnFileCanReadWithoutBlocking(int fd) override;
 
-  // MessageLoop::DestructionObserver impl:
+  // MessageLoopCurrent::DestructionObserver impl:
   void WillDestroyCurrentMessageLoop() override;
 
   base::MessagePumpForIO::FdWatchController file_descriptor_watcher_;
