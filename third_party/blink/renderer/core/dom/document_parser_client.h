@@ -14,7 +14,7 @@ class DocumentParserClient : public GarbageCollectedMixin {
   // This callback is called when all data pushed to parser has been consumed.
   virtual void NotifyParserStopped() = 0;
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 
  protected:
   DocumentParserClient() = default;

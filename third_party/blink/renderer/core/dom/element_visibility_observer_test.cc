@@ -28,7 +28,7 @@ class DOMStubLocalFrameClient final : public EmptyLocalFrameClient {
 
   void SetParent(Frame* frame) { parent_ = frame; }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(parent_);
     EmptyLocalFrameClient::Trace(visitor);
   }

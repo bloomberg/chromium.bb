@@ -50,7 +50,7 @@ class HTMLSourceElement::Listener final : public MediaQueryListListener {
   }
 
   void ClearElement() { element_ = nullptr; }
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(element_);
     MediaQueryListListener::Trace(visitor);
   }

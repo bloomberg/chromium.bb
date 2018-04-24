@@ -38,7 +38,7 @@ class TestWebFrameClientImpl : public FrameTestHelpers::TestWebFrameClient {
                                     WebMediaPlayerEncryptedMediaClient*,
                                     WebContentDecryptionModule*,
                                     const WebString& sink_id,
-                                    WebLayerTreeView*) {
+                                    WebLayerTreeView*) override {
     return new MockWebMediaPlayerForContextMenu();
   }
 
@@ -54,7 +54,7 @@ class TestWebFrameClientImpl : public FrameTestHelpers::TestWebFrameClient {
 
 class ContextMenuControllerTest : public testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     web_view_helper_.Initialize(&web_frame_client_);
 
     WebLocalFrameImpl* local_main_frame = web_view_helper_.LocalMainFrame();

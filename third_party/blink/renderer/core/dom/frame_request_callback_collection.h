@@ -61,7 +61,7 @@ class CORE_EXPORT FrameRequestCallbackCollection final
     static V8FrameCallback* Create(V8FrameRequestCallback* callback) {
       return new V8FrameCallback(callback);
     }
-    void Trace(blink::Visitor*);
+    void Trace(blink::Visitor*) override;
     void TraceWrappers(const ScriptWrappableVisitor*) const override;
     const char* NameInHeapSnapshot() const override {
       return "V8FrameCallback";

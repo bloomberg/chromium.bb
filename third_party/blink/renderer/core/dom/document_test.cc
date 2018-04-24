@@ -154,7 +154,7 @@ class TestSynchronousMutationObserver
     return updated_character_data_records_;
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
@@ -255,7 +255,7 @@ class TestDocumentShutdownObserver
     return context_destroyed_called_counter_;
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   // Implement |DocumentShutdownObserver| member functions.
@@ -926,7 +926,7 @@ TEST_F(DocumentTest, ViewportPropagationNoRecalc) {
 
 class InvalidatorObserver : public InterfaceInvalidator::Observer {
  public:
-  void OnInvalidate() { ++invalidate_called_counter_; }
+  void OnInvalidate() override { ++invalidate_called_counter_; }
 
   int CountInvalidateCalled() const { return invalidate_called_counter_; }
 

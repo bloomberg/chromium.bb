@@ -88,7 +88,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   TouchEvent();

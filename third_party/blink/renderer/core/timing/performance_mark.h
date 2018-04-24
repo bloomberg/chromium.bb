@@ -48,9 +48,9 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
 
   ScriptValue detail(ScriptState*) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   PerformanceMark(ScriptState*,

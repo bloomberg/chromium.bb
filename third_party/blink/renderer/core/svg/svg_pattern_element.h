@@ -74,7 +74,7 @@ class SVGPatternElement final : public SVGElement,
     return pattern_content_units_.Get();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGPatternElement(Document&);

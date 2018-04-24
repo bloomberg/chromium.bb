@@ -14,7 +14,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~AnimationTimeline() = default;
+  ~AnimationTimeline() override = default;
 
   virtual double currentTime(bool&) = 0;
 

@@ -59,7 +59,7 @@ class SecurityPolicyViolationEvent final : public Event {
     return EventNames::SecurityPolicyViolationEvent;
   }
 
-  virtual void Trace(blink::Visitor* visitor) { Event::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
   SecurityPolicyViolationEvent(

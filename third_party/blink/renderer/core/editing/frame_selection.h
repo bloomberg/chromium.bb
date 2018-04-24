@@ -223,7 +223,7 @@ class CORE_EXPORT FrameSelection final
   std::pair<unsigned, unsigned> LayoutSelectionStartEndForNG(
       const NGPhysicalTextFragment&) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class CaretDisplayItemClientTest;

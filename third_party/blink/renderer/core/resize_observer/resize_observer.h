@@ -61,8 +61,8 @@ class CORE_EXPORT ResizeObserver final
   // ScriptWrappable override:
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   ResizeObserver(V8ResizeObserverCallback*, Document&);

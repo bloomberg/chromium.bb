@@ -28,8 +28,8 @@ class DummyModulator : public Modulator {
 
  public:
   DummyModulator();
-  virtual ~DummyModulator();
-  void Trace(blink::Visitor*);
+  ~DummyModulator() override;
+  void Trace(blink::Visitor*) override;
 
   ScriptModuleResolver* GetScriptModuleResolver() override;
   base::SingleThreadTaskRunner* TaskRunner() override;

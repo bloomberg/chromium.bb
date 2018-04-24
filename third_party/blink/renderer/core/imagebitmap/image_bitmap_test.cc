@@ -61,7 +61,7 @@ class ExceptionState;
 
 class ImageBitmapTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
     surface->getCanvas()->clear(0xFFFFFFFF);
     image_ = surface->makeImageSnapshot();
@@ -73,7 +73,7 @@ class ImageBitmapTest : public testing::Test {
     // Save the global memory cache to restore it upon teardown.
     global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
   }
-  virtual void TearDown() {
+  void TearDown() override {
     // Garbage collection is required prior to switching out the
     // test's memory cache; image resources are released, evicting
     // them from the cache.

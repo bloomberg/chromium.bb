@@ -23,7 +23,7 @@ class RuleFeatureSetTest : public testing::Test {
  public:
   RuleFeatureSetTest() = default;
 
-  void SetUp() {
+  void SetUp() override {
     document_ = HTMLDocument::CreateForTest();
     HTMLHtmlElement* html = HTMLHtmlElement::Create(*document_);
     html->AppendChild(HTMLBodyElement::Create(*document_));

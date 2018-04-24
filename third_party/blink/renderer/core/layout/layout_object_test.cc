@@ -487,7 +487,7 @@ TEST_F(LayoutObjectTest, VisualRect) {
     MOCK_CONST_METHOD0(VisualRectRespectsVisibility, bool());
 
    private:
-    LayoutRect LocalVisualRectIgnoringVisibility() const {
+    LayoutRect LocalVisualRectIgnoringVisibility() const override {
       return LayoutRect(10, 10, 20, 20);
     }
     const char* GetName() const final { return "MockLayoutObject"; }

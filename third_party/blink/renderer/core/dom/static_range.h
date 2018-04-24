@@ -61,7 +61,7 @@ class CORE_EXPORT StaticRange final : public ScriptWrappable {
 
   Range* toRange(ExceptionState& = ASSERT_NO_EXCEPTION) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit StaticRange(Document&);

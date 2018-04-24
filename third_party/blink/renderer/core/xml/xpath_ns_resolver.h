@@ -36,7 +36,7 @@ class XPathNSResolver : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~XPathNSResolver() = default;
+  ~XPathNSResolver() override = default;
   virtual AtomicString lookupNamespaceURI(const String& prefix) = 0;
 
  protected:

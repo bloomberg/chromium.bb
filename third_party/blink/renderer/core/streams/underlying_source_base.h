@@ -29,7 +29,7 @@ class CORE_EXPORT UnderlyingSourceBase
 
  public:
   void Trace(blink::Visitor*) override;
-  virtual ~UnderlyingSourceBase() = default;
+  ~UnderlyingSourceBase() override = default;
 
   ScriptPromise startWrapper(ScriptState*, ScriptValue stream);
   virtual ScriptPromise Start(ScriptState*);
@@ -45,7 +45,7 @@ class CORE_EXPORT UnderlyingSourceBase
   void notifyLockReleased();
 
   // ScriptWrappable
-  bool HasPendingActivity() const;
+  bool HasPendingActivity() const override;
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;

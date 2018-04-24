@@ -19,7 +19,7 @@ class WorkerInternals final : public ScriptWrappable {
 
  public:
   static WorkerInternals* Create() { return new WorkerInternals(); }
-  virtual ~WorkerInternals();
+  ~WorkerInternals() override;
 
   OriginTrialsTest* originTrialsTest() const;
   void countFeature(ScriptState*, uint32_t feature, ExceptionState&);

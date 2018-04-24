@@ -24,9 +24,9 @@ namespace {
 class TestSingleModuleClient final : public SingleModuleClient {
  public:
   TestSingleModuleClient() = default;
-  virtual ~TestSingleModuleClient() {}
+  ~TestSingleModuleClient() override {}
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(module_script_);
     SingleModuleClient::Trace(visitor);
   }
@@ -81,9 +81,9 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
 class ModuleMapTestModulator final : public DummyModulator {
  public:
   ModuleMapTestModulator();
-  virtual ~ModuleMapTestModulator() {}
+  ~ModuleMapTestModulator() override {}
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   TestScriptModuleResolver* GetTestScriptModuleResolver() {
     return resolver_.Get();

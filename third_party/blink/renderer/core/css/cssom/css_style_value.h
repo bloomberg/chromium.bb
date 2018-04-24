@@ -57,7 +57,7 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
                                       const String& value,
                                       ExceptionState&);
 
-  virtual ~CSSStyleValue() = default;
+  ~CSSStyleValue() override = default;
 
   virtual StyleValueType GetType() const = 0;
   bool IsNumericValue() const {

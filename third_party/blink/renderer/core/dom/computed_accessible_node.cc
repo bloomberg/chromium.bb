@@ -31,7 +31,7 @@ class ComputedAccessibleNodePromiseResolver::RequestAnimationFrameCallback final
     resolver_->UpdateTreeAndResolve();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(resolver_);
     FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
   }

@@ -20,7 +20,7 @@ class V0CustomElementSyncMicrotaskQueue
 
  private:
   V0CustomElementSyncMicrotaskQueue() = default;
-  virtual void DoDispatch();
+  void DoDispatch() override;
 };
 
 }  // namespace blink

@@ -164,8 +164,8 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
     style_sheet_list_ = style_sheet_list;
   }
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   ShadowRoot(Document&, ShadowRootType);

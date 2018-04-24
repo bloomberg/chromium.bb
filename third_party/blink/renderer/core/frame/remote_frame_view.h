@@ -62,7 +62,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
   uint32_t Print(const IntRect&, WebCanvas*) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit RemoteFrameView(RemoteFrame*);

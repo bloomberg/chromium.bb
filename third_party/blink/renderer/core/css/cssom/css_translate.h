@@ -54,7 +54,7 @@ class CORE_EXPORT CSSTranslate final : public CSSTransformComponent {
   TransformComponentType GetType() const final { return kTranslationType; }
   const CSSFunctionValue* ToCSSValue() const final;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(x_);
     visitor->Trace(y_);
     visitor->Trace(z_);

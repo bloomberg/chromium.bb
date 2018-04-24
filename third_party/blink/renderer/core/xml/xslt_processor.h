@@ -47,7 +47,7 @@ class XSLTProcessor final : public ScriptWrappable {
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     return new XSLTProcessor(document);
   }
-  ~XSLTProcessor();
+  ~XSLTProcessor() override;
 
   void SetXSLStyleSheet(XSLStyleSheet* style_sheet) {
     stylesheet_ = style_sheet;
@@ -85,7 +85,7 @@ class XSLTProcessor final : public ScriptWrappable {
 
   typedef HashMap<String, String> ParameterMap;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   XSLTProcessor(Document& document) : document_(&document) {}

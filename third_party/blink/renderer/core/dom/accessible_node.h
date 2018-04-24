@@ -112,7 +112,7 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
  public:
   explicit AccessibleNode(Document&);
   explicit AccessibleNode(Element*);
-  virtual ~AccessibleNode();
+  ~AccessibleNode() override;
 
   static AccessibleNode* Create(Document&);
 
@@ -354,7 +354,7 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibleincrement);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblescrollintoview);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   friend class AccessibleNodeList;

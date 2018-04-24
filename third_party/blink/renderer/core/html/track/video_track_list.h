@@ -25,7 +25,7 @@ class CORE_EXPORT VideoTrackList final : public TrackListBase<VideoTrack> {
 
   void TrackSelected(WebMediaPlayer::TrackId selected_track_id);
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     TrackListBase<VideoTrack>::Trace(visitor);
   }
 

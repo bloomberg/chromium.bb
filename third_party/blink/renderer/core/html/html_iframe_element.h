@@ -41,7 +41,7 @@ class CORE_EXPORT HTMLIFrameElement final
 
  public:
   DECLARE_NODE_FACTORY(HTMLIFrameElement);
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   ~HTMLIFrameElement() override;
   DOMTokenList* sandbox() const;
   // Support JS introspection of frame policy (e.g. feature policy)

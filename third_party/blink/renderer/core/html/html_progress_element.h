@@ -47,7 +47,7 @@ class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
 
   bool CanContainRangeEndPoint() const override { return false; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit HTMLProgressElement(Document&);

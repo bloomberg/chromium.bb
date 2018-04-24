@@ -20,7 +20,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~CSSStyleImageValue() = default;
+  ~CSSStyleImageValue() override = default;
 
   // IDL
   double intrinsicWidth(bool& is_null) const;

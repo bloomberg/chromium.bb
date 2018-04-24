@@ -28,7 +28,7 @@ namespace blink {
 
 class KeyframeEffectTest : public PageTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     PageTestBase::SetUp(IntSize());
     element = GetDocument().CreateElementForBinding("foo");
 

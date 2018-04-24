@@ -54,7 +54,7 @@ class RepeatEvent final : public Event {
 
   int Repeat() const { return repeat_; }
 
-  virtual void Trace(blink::Visitor* visitor) { Event::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  protected:
   RepeatEvent(const AtomicString& type,
@@ -92,7 +92,7 @@ class ConditionEventListener final : public EventListener {
 
   void DisconnectAnimation() { animation_ = nullptr; }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(animation_);
     visitor->Trace(condition_);
     EventListener::Trace(visitor);

@@ -27,7 +27,7 @@ class ExecutionContextWorkerRegistry final
   void RemoveWorkerInspectorProxy(WorkerInspectorProxy* proxy);
   const HeapHashSet<Member<WorkerInspectorProxy>>& GetWorkerInspectorProxies();
 
-  virtual void Trace(Visitor* visitor);
+  void Trace(Visitor* visitor) override;
 
  private:
   explicit ExecutionContextWorkerRegistry(ExecutionContext& context);

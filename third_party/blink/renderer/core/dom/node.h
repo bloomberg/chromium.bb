@@ -806,9 +806,9 @@ class CORE_EXPORT Node : public EventTarget {
   // If the node is a plugin, then this returns its WebPluginContainer.
   WebPluginContainerImpl* GetWebPluginContainer() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   enum NodeFlags {

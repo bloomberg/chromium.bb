@@ -25,7 +25,7 @@ class TestPerformance : public Performance {
       : Performance(TimeTicks(),
                     ExecutionContext::From(script_state)
                         ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
-  ~TestPerformance() = default;
+  ~TestPerformance() override = default;
 
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
 
@@ -37,7 +37,7 @@ class TestPerformance : public Performance {
     return HasObserverFor(entry_type);
   }
 
-  void Trace(blink::Visitor* visitor) { Performance::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override { Performance::Trace(visitor); }
 };
 
 class PerformanceTest : public PageTestBase {

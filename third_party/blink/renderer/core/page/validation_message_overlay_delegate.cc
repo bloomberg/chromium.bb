@@ -31,7 +31,7 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
         anchor_view_(anchor_view),
         overlay_(overlay) {}
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(main_chrome_client_);
     visitor->Trace(anchor_view_);
     EmptyChromeClient::Trace(visitor);

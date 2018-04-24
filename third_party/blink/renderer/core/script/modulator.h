@@ -85,7 +85,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   static void SetModulator(ScriptState*, Modulator*);
   static void ClearModulator(ScriptState*);
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
   void TraceWrappers(const ScriptWrappableVisitor*) const override {}
   const char* NameInHeapSnapshot() const override { return "Modulator"; }
 

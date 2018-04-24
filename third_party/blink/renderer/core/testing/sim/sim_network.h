@@ -22,7 +22,7 @@ class WebURLResponse;
 class SimNetwork final : public WebURLLoaderTestDelegate {
  public:
   SimNetwork();
-  ~SimNetwork();
+  ~SimNetwork() override;
 
  private:
   friend class SimRequest;

@@ -46,7 +46,7 @@ class ScrollStateCallbackV8Impl : public ScrollStateCallback {
         callback, ParseNativeScrollBehavior(native_scroll_behavior));
   }
 
-  ~ScrollStateCallbackV8Impl() = default;
+  ~ScrollStateCallbackV8Impl() override = default;
 
   void Trace(blink::Visitor*) override;
 

@@ -99,7 +99,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   class ThrottlingController;

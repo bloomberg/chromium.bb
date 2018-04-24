@@ -43,7 +43,7 @@ class SVGFEColorMatrixElement final
   SVGAnimatedString* in1() { return in1_.Get(); }
   SVGAnimatedEnumeration<ColorMatrixType>* type() { return type_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGFEColorMatrixElement(Document&);

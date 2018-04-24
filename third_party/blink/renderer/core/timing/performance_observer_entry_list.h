@@ -20,14 +20,14 @@ class PerformanceObserverEntryList : public ScriptWrappable {
  public:
   PerformanceObserverEntryList(const PerformanceEntryVector&);
 
-  virtual ~PerformanceObserverEntryList();
+  ~PerformanceObserverEntryList() override;
 
   PerformanceEntryVector getEntries() const;
   PerformanceEntryVector getEntriesByType(const String& entry_type);
   PerformanceEntryVector getEntriesByName(const String& name,
                                           const String& entry_type);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   PerformanceEntryVector performance_entries_;

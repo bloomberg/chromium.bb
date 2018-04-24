@@ -33,7 +33,7 @@ class SVGSymbolElement final : public SVGElement, public SVGFitToViewBox {
  public:
   DECLARE_NODE_FACTORY(SVGSymbolElement);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGSymbolElement(Document&);

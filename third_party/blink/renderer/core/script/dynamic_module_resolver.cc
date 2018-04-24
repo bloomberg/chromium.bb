@@ -26,7 +26,7 @@ class DynamicImportTreeClient final : public ModuleTreeClient {
     return new DynamicImportTreeClient(url, modulator, promise_resolver);
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DynamicImportTreeClient(const KURL& url,

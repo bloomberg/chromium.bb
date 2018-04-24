@@ -45,7 +45,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
  public:
   static HTMLObjectElement* Create(Document&, const CreateElementFlags);
   ~HTMLObjectElement() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   const String& ClassId() const { return class_id_; }
 
@@ -63,7 +63,9 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   bool IsEnumeratable() const override { return true; }
   bool IsInteractiveContent() const override;
 
-  bool ChildrenCanHaveStyle() const { return WillUseFallbackContentAtLayout(); }
+  bool ChildrenCanHaveStyle() const override {
+    return WillUseFallbackContentAtLayout();
+  }
 
   // Implementations of constraint validation API.
   // Note that the object elements are always barred from constraint validation.

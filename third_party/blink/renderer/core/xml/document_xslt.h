@@ -44,7 +44,7 @@ class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
   static bool SheetLoaded(Document&, ProcessingInstruction*);
   static bool HasTransformSourceDocument(Document&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit DocumentXSLT(Document&);

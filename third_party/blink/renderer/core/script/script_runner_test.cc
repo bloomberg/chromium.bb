@@ -74,7 +74,7 @@ class MockScriptLoader final : public ScriptLoader {
   MockScriptLoader* SetupForStreaming(base::OnceClosure& finished_callback);
   MockScriptLoader* SetupForNonStreaming();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit MockScriptLoader()

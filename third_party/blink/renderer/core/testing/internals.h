@@ -484,7 +484,7 @@ class Internals final : public ScriptWrappable {
   ScriptPromise promiseCheckOverload(ScriptState*, Document*);
   ScriptPromise promiseCheckOverload(ScriptState*, Location*, long, long);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void setValueForUser(HTMLInputElement*, const String&);
 

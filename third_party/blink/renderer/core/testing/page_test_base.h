@@ -18,7 +18,7 @@ class PageTestBase : public testing::Test {
 
  public:
   PageTestBase();
-  ~PageTestBase();
+  ~PageTestBase() override;
 
   void SetUp() override;
   void TearDown() override;

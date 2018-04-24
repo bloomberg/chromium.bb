@@ -102,7 +102,7 @@ class LinkLoaderPreloadTestBase : public testing::Test {
     dummy_page_holder_ = DummyPageHolder::Create(IntSize(500, 500));
   }
 
-  ~LinkLoaderPreloadTestBase() {
+  ~LinkLoaderPreloadTestBase() override {
     Platform::Current()
         ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();

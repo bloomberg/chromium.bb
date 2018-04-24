@@ -27,14 +27,14 @@ class XMLParserScriptRunner final
   static XMLParserScriptRunner* Create(XMLParserScriptRunnerHost* host) {
     return new XMLParserScriptRunner(host);
   }
-  ~XMLParserScriptRunner();
+  ~XMLParserScriptRunner() override;
 
   bool HasParserBlockingScript() const { return parser_blocking_script_; }
 
   void ProcessScriptElement(Document&, Element*, TextPosition);
   void Detach();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) override;
 
  private:
   explicit XMLParserScriptRunner(XMLParserScriptRunnerHost*);

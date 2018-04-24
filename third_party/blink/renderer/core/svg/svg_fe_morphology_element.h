@@ -46,7 +46,7 @@ class SVGFEMorphologyElement final
     return svg_operator_.Get();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGFEMorphologyElement(Document&);

@@ -26,7 +26,7 @@ class RemoteFrameClient : public FrameClient {
   virtual void Navigate(const ResourceRequest&,
                         bool should_replace_current_entry) = 0;
   virtual void Reload(FrameLoadType, ClientRedirectPolicy) = 0;
-  virtual unsigned BackForwardLength() = 0;
+  unsigned BackForwardLength() override = 0;
 
   // Notifies the remote frame to check whether it is done loading, after one
   // of its children finishes loading.

@@ -66,7 +66,7 @@ class CORE_EXPORT DOMImplementation final : public ScriptWrappable {
   static bool IsTextMIMEType(const String&);
   static bool IsJSONMIMEType(const String&);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit DOMImplementation(Document&);

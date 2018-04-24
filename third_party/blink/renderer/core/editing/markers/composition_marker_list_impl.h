@@ -39,7 +39,7 @@ class CORE_EXPORT CompositionMarkerListImpl final : public DocumentMarkerList {
                     unsigned old_length,
                     unsigned new_length) final;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   HeapVector<Member<DocumentMarker>> markers_;

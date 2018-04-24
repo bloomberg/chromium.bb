@@ -38,7 +38,7 @@ class InlineCSSStyleDeclaration final
   explicit InlineCSSStyleDeclaration(Element* parent_element)
       : parent_element_(parent_element) {}
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   MutableCSSPropertyValueSet& PropertySet() const override;

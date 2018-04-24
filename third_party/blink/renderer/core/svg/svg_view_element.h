@@ -36,7 +36,7 @@ class SVGViewElement final : public SVGElement,
 
  public:
   DECLARE_NODE_FACTORY(SVGViewElement);
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGViewElement(Document&);

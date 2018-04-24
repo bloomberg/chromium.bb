@@ -58,7 +58,7 @@ class LocalFrameViewTest
         .Times(AnyNumber());
   }
 
-  ~LocalFrameViewTest() {
+  ~LocalFrameViewTest() override {
     testing::Mock::VerifyAndClearExpectations(&GetAnimationMockChromeClient());
   }
 

@@ -51,7 +51,7 @@ class MockPlatformTiming : public DocumentTimeline::PlatformTiming {
   MOCK_METHOD1(WakeAfter, void(double));
   MOCK_METHOD0(ServiceOnNextFrame, void());
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     DocumentTimeline::PlatformTiming::Trace(visitor);
   }
 };

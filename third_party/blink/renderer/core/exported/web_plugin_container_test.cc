@@ -160,7 +160,7 @@ class TestPluginWithEditableText : public FakeWebPlugin {
 
   bool HasSelection() const override { return true; }
   bool CanEditText() const override { return true; }
-  bool ExecuteEditCommand(const WebString& name) {
+  bool ExecuteEditCommand(const WebString& name) override {
     return ExecuteEditCommand(name, WebString());
   }
   bool ExecuteEditCommand(const WebString& name,
@@ -197,7 +197,7 @@ class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
                                   const WebString& fallback_name,
                                   WebSandboxFlags sandbox_flags,
                                   const ParsedFeaturePolicy& container_policy,
-                                  const WebFrameOwnerProperties&) {
+                                  const WebFrameOwnerProperties&) override {
     return CreateLocalChild(*parent, scope,
                             std::make_unique<TestPluginWebFrameClient>());
   }

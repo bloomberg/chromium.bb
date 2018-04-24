@@ -23,7 +23,7 @@ class CustomLayoutFragmentRequest : public ScriptWrappable {
  public:
   CustomLayoutFragmentRequest(CustomLayoutChild*,
                               const CustomLayoutConstraintsOptions&);
-  virtual ~CustomLayoutFragmentRequest() = default;
+  ~CustomLayoutFragmentRequest() override = default;
 
   // Produces a CustomLayoutFragment from this CustomLayoutFragmentRequest. This
   // may fail if the underlying LayoutBox represented by the CustomLayoutChild

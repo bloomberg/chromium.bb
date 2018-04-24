@@ -20,11 +20,11 @@ class CORE_EXPORT DeviceSingleWindowEventController
       public PlatformEventController,
       public LocalDOMWindow::EventListenerObserver {
  public:
-  virtual ~DeviceSingleWindowEventController();
+  ~DeviceSingleWindowEventController() override;
 
   // Inherited from DeviceEventControllerBase.
   void DidUpdateData() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // Inherited from LocalDOMWindow::EventListenerObserver.
   void DidAddEventListener(LocalDOMWindow*, const AtomicString&) override;

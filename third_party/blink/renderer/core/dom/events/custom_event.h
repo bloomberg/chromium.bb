@@ -58,9 +58,9 @@ class CORE_EXPORT CustomEvent final : public Event {
 
   ScriptValue detail(ScriptState*) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   CustomEvent();

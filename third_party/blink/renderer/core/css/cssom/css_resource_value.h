@@ -13,7 +13,7 @@ namespace blink {
 
 class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
  public:
-  virtual ~CSSResourceValue() = default;
+  ~CSSResourceValue() override = default;
 
   const String state() const {
     switch (Status()) {
@@ -32,7 +32,9 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
     }
   }
 
-  virtual void Trace(blink::Visitor* visitor) { CSSStyleValue::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override {
+    CSSStyleValue::Trace(visitor);
+  }
 
  protected:
   CSSResourceValue() = default;

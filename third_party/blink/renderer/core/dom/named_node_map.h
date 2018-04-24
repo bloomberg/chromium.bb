@@ -64,7 +64,7 @@ class NamedNodeMap final : public ScriptWrappable {
   void NamedPropertyEnumerator(Vector<String>& names, ExceptionState&) const;
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit NamedNodeMap(Element* element) : element_(element) {

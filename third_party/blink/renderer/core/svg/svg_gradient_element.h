@@ -66,7 +66,7 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
   const SVGGradientElement* ReferencedElement() const;
   void CollectCommonAttributes(GradientAttributes&) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   SVGGradientElement(const QualifiedName&, Document&);
@@ -85,7 +85,7 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
   void RemovedFrom(ContainerNode*) final;
   void ChildrenChanged(const ChildrenChange&) final;
 
-  void BuildPendingResource();
+  void BuildPendingResource() override;
   void ClearResourceReferences();
 
   Vector<Gradient::ColorStop> BuildStops() const;

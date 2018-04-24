@@ -93,7 +93,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
 
   static WebNavigationType ToWebNavigationType(NavigationType);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   WebDocumentLoaderImpl(

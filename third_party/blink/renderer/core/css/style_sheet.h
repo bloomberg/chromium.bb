@@ -39,7 +39,7 @@ class CORE_EXPORT StyleSheet : public ScriptWrappable {
 
  public:
   StyleSheet() = default;
-  virtual ~StyleSheet();
+  ~StyleSheet() override;
 
   virtual bool disabled() const = 0;
   virtual void setDisabled(bool) = 0;

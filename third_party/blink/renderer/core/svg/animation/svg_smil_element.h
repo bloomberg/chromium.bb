@@ -125,7 +125,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   virtual bool IsSVGDiscardElement() const { return false; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   enum BeginOrEnd { kBegin, kEnd };

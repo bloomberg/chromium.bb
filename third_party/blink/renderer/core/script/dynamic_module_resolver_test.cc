@@ -47,7 +47,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   }
   bool fetch_tree_was_called() const { return fetch_tree_was_called_; }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   // Implements Modulator:

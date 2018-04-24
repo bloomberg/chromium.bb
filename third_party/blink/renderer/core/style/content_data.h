@@ -96,7 +96,7 @@ class ImageContentData final : public ContentData {
            *GetImage();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   ImageContentData(StyleImage* image) : image_(image) { DCHECK(image_); }

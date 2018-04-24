@@ -47,7 +47,7 @@ class CollectionItemsCache : public CollectionIndexCache<Collection, NodeType> {
   CollectionItemsCache();
   ~CollectionItemsCache();
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(cached_list_);
     Base::Trace(visitor);
   }

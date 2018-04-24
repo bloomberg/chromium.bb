@@ -51,7 +51,7 @@ class SVGStyleElement final : public SVGElement, public StyleElement {
 
   void DispatchPendingEvent();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   SVGStyleElement(Document&, const CreateElementFlags);

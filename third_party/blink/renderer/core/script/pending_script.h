@@ -51,7 +51,7 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
   // streaming finishes.
   virtual void PendingScriptFinished(PendingScript*) = 0;
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 };
 
 // A container for an script after "prepare a script" until it is executed.

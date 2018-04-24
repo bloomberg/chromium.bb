@@ -44,7 +44,7 @@ class CORE_EXPORT MediaElementEventQueue final : public EventQueue {
   ~MediaElementEventQueue() override;
 
   // EventQueue
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   bool EnqueueEvent(const base::Location&, Event*) override;
   bool CancelEvent(Event*) override;
   void Close() override;

@@ -37,7 +37,7 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
   DECLARE_NODE_FACTORY(SVGAElement);
   SVGAnimatedString* svgTarget() { return svg_target_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGAElement(Document&);

@@ -42,7 +42,7 @@ class CORE_EXPORT ReportingContext final
   // Returns whether there is at least one active ReportingObserver.
   bool ObserverExists();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   HeapListHashSet<Member<ReportingObserver>> observers_;

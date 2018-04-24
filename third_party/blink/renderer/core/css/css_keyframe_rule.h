@@ -50,7 +50,7 @@ class CSSKeyframeRule final : public CSSRule {
 
   CSSStyleDeclaration* style() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   CSSKeyframeRule(StyleRuleKeyframe*, CSSKeyframesRule* parent);

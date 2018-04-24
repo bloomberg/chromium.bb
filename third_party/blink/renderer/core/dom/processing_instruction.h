@@ -42,7 +42,7 @@ class ProcessingInstruction final : public CharacterData,
                                        const String& target,
                                        const String& data);
   ~ProcessingInstruction() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   const String& target() const { return target_; }
   const String& LocalHref() const { return local_href_; }
@@ -62,7 +62,7 @@ class ProcessingInstruction final : public CharacterData,
     // Detach event listener from its processing instruction.
     virtual void Detach() = 0;
 
-    virtual void Trace(blink::Visitor* visitor) {}
+    void Trace(blink::Visitor* visitor) override {}
   };
 
   void SetEventListenerForXSLT(DetachableEventListener* listener) {

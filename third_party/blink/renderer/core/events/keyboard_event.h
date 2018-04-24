@@ -87,7 +87,7 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   unsigned which() const override;
   bool isComposing() const { return is_composing_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   KeyboardEvent();

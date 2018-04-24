@@ -112,7 +112,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
       return new FontResourceHelper(resource, task_runner);
     }
 
-    virtual void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       FontResourceClient::Trace(visitor);
     }
 

@@ -53,7 +53,7 @@ class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
   const CSSSelectorList& SelectorList() const;
   bool IsSelectValid() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   HTMLContentElement(Document&);

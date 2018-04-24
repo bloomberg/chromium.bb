@@ -22,7 +22,7 @@ class RecordTest final : public ScriptWrappable {
 
  public:
   static RecordTest* Create() { return new RecordTest; }
-  ~RecordTest();
+  ~RecordTest() override;
 
   void setStringLongRecord(const Vector<std::pair<String, int32_t>>& arg);
   Vector<std::pair<String, int32_t>> getStringLongRecord();
@@ -51,7 +51,7 @@ class RecordTest final : public ScriptWrappable {
 
   void setFloatOrStringElementRecord(const FloatOrStringElementRecord&){};
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   RecordTest();

@@ -38,7 +38,7 @@ class CORE_EXPORT SplitTextNodeCommand final : public SimpleEditCommand {
     return new SplitTextNodeCommand(node, offset);
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   SplitTextNodeCommand(Text*, int offset);

@@ -109,7 +109,7 @@ class InputEvent final : public UIEvent {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   InputEvent(const AtomicString&, const InputEventInit&);

@@ -52,7 +52,7 @@ class CSSGroupingRule : public CSSRule {
   unsigned length() const;
   CSSRule* Item(unsigned index) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   CSSGroupingRule(StyleRuleGroup* group_rule, CSSStyleSheet* parent);

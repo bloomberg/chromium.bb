@@ -73,8 +73,8 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   static void DidLayout(Document&);
   static size_t ApproximateBlankCharacterCount(Document&);
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  protected:
   bool InActiveContext() const override;

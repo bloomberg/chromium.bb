@@ -73,11 +73,11 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
 
   bool HasNonInBodyInsertionMode() const override { return true; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit HTMLTableElement(Document&);
-  ~HTMLTableElement();
+  ~HTMLTableElement() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;

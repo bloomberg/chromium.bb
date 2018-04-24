@@ -23,7 +23,7 @@ class OriginTrialsTest : public ScriptWrappable {
 
  public:
   static OriginTrialsTest* Create() { return new OriginTrialsTest(); }
-  virtual ~OriginTrialsTest() = default;
+  ~OriginTrialsTest() override = default;
 
   bool normalAttribute() { return true; }
   static bool staticAttribute() { return true; }

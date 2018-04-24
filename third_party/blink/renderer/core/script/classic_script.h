@@ -24,7 +24,7 @@ class CORE_EXPORT ClassicScript final : public Script {
                              access_control_status);
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   const ScriptSourceCode& GetScriptSourceCode() const {
     return script_source_code_;

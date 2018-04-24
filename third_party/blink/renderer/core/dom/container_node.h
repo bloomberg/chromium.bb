@@ -365,9 +365,9 @@ class CORE_EXPORT ContainerNode : public Node {
   // CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.
   virtual void ChildrenChanged(const ChildrenChange&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  protected:
   ContainerNode(TreeScope*, ConstructionType = kCreateContainer);

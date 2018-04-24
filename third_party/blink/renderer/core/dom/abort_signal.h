@@ -22,7 +22,7 @@ class CORE_EXPORT AbortSignal final : public EventTargetWithInlineData {
 
  public:
   explicit AbortSignal(ExecutionContext*);
-  virtual ~AbortSignal();
+  ~AbortSignal() override;
 
   // AbortSignal.idl
   bool aborted() const { return aborted_flag_; }
@@ -59,7 +59,7 @@ class CORE_EXPORT AbortSignal final : public EventTargetWithInlineData {
   // |this| is the followingSignal described in the standard.
   void Follow(AbortSignal* parentSignal);
 
-  virtual void Trace(Visitor*);
+  void Trace(Visitor*) override;
 
  private:
   bool aborted_flag_ = false;

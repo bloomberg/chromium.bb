@@ -159,7 +159,7 @@ class LinkSelectionTest : public LinkSelectionTestBase {
     right_point_in_link_.Move(-2, 0);
   }
 
-  void TearDown() {
+  void TearDown() override {
     // Manually reset since |test_frame_client_| won't outlive |helper_|.
     helper_.Reset();
   }

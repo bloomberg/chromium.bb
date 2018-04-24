@@ -77,7 +77,7 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
   };
 
   static HTMLCollection* Create(ContainerNode& base, CollectionType);
-  virtual ~HTMLCollection();
+  ~HTMLCollection() override;
   void InvalidateCache(Document* old_document = nullptr) const override;
   void InvalidateCacheForAttribute(const QualifiedName*) const;
 
@@ -111,7 +111,7 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
   Iterator begin() const { return Iterator(this); }
   Iterator end() const { return Iterator::CreateEnd(this); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   HTMLCollection(ContainerNode& base, CollectionType, ItemAfterOverrideType);

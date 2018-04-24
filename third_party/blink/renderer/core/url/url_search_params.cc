@@ -34,7 +34,7 @@ class URLSearchParamsIterationSource final
     return true;
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(params_);
     PairIterable<String, String>::IterationSource::Trace(visitor);
   }

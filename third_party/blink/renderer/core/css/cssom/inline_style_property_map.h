@@ -16,7 +16,7 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
   explicit InlineStylePropertyMap(Element* owner_element)
       : owner_element_(owner_element) {}
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(owner_element_);
     StylePropertyMap::Trace(visitor);
   }
@@ -33,7 +33,7 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
                             SecureContextMode) override;
   void SetCustomProperty(const AtomicString&, const CSSValue&) override;
   void RemoveProperty(CSSPropertyID) override;
-  void RemoveCustomProperty(const AtomicString&);
+  void RemoveCustomProperty(const AtomicString&) override;
   void RemoveAllProperties() final;
 
   String SerializationForShorthand(const CSSProperty&) final;

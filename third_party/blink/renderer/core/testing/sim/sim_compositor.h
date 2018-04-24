@@ -24,7 +24,7 @@ class WebViewImpl;
 class SimCompositor final : public WebLayerTreeView {
  public:
   explicit SimCompositor();
-  ~SimCompositor();
+  ~SimCompositor() override;
 
   void SetWebView(WebViewImpl&);
 

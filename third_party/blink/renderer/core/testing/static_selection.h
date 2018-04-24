@@ -24,7 +24,7 @@ class StaticSelection final : public ScriptWrappable {
   Node* focusNode() const { return focus_node_; }
   unsigned focusOffset() const { return focus_offset_; }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit StaticSelection(const SelectionInFlatTree&);

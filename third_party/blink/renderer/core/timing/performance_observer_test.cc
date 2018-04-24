@@ -23,7 +23,7 @@ class MockPerformance : public Performance {
       : Performance(TimeTicks(),
                     ExecutionContext::From(script_state)
                         ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
-  ~MockPerformance() = default;
+  ~MockPerformance() override = default;
 
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
 };

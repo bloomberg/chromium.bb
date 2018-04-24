@@ -55,7 +55,7 @@ class CORE_EXPORT AXObjectCache
   static AXObjectCache* Create(Document&);
 
   virtual ~AXObjectCache();
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   virtual void Dispose() = 0;
 

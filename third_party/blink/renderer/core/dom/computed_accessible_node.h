@@ -46,9 +46,9 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
  public:
   static ComputedAccessibleNode* Create(AXID, WebComputedAXTree*, LocalFrame*);
-  virtual ~ComputedAccessibleNode();
+  ~ComputedAccessibleNode() override;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) override;
 
   // TODO(meredithl): add accessors for state properties.
   bool atomic(bool& is_null) const;

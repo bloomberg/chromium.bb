@@ -81,7 +81,7 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
     return scrollbar_theme_;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     ScrollableArea::Trace(visitor);
   }
 
@@ -205,7 +205,7 @@ class RootFrameViewportTest : public testing::Test {
   RootFrameViewportTest() = default;
 
  protected:
-  virtual void SetUp() {}
+  void SetUp() override {}
 };
 
 // Tests that scrolling the viewport when the layout viewport is

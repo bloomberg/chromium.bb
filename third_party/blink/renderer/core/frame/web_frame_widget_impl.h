@@ -71,7 +71,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
  public:
   static WebFrameWidgetImpl* Create(WebWidgetClient&);
 
-  ~WebFrameWidgetImpl();
+  ~WebFrameWidgetImpl() override;
 
   // WebWidget functions:
   void Close() override;
@@ -160,7 +160,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   Color BaseBackgroundColor() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class WebFrameWidget;  // For WebFrameWidget::create.

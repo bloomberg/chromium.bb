@@ -61,7 +61,7 @@ class MutationRecord : public ScriptWrappable {
 
   MutationRecord() = default;
 
-  virtual ~MutationRecord();
+  ~MutationRecord() override;
 
   virtual const AtomicString& type() = 0;
   virtual Node* target() = 0;

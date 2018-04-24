@@ -90,7 +90,7 @@ class HTMLMarqueeElement::RequestAnimationFrameCallback final
     marquee_->ContinueAnimation();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(marquee_);
     FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
   }
@@ -115,7 +115,7 @@ class HTMLMarqueeElement::AnimationFinished final : public EventListener {
     marquee_->start();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(marquee_);
     EventListener::Trace(visitor);
   }

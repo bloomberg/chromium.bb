@@ -256,7 +256,7 @@ class HTMLTextDecorationEquivalent final : public HTMLElementEquivalent {
   bool PropertyExistsInStyle(const CSSPropertyValueSet*) const override;
   bool ValueIsPresentInStyle(HTMLElement*, CSSPropertyValueSet*) const override;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     HTMLElementEquivalent::Trace(visitor);
   }
 
@@ -313,7 +313,7 @@ class HTMLAttributeEquivalent : public HTMLElementEquivalent {
   virtual const CSSValue* AttributeValueAsCSSValue(Element*) const;
   inline const QualifiedName& AttributeName() const { return attr_name_; }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     HTMLElementEquivalent::Trace(visitor);
   }
 
@@ -374,7 +374,7 @@ class HTMLFontSizeEquivalent final : public HTMLAttributeEquivalent {
   }
   const CSSValue* AttributeValueAsCSSValue(Element*) const override;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     HTMLAttributeEquivalent::Trace(visitor);
   }
 

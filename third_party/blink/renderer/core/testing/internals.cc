@@ -190,7 +190,7 @@ class UseCounterObserverImpl final : public UseCounter::Observer {
     return true;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     UseCounter::Observer::Trace(visitor);
     visitor->Trace(resolver_);
   }

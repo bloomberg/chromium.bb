@@ -41,7 +41,7 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
   int CallCount() const { return call_count_; }
   FloatRect LastIntersectionRect() const { return last_intersection_rect_; }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     IntersectionObserverDelegate::Trace(visitor);
     visitor->Trace(document_);
   }

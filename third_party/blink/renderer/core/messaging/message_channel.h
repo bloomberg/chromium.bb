@@ -47,7 +47,7 @@ class CORE_EXPORT MessageChannel final : public ScriptWrappable {
   MessagePort* port1() const { return port1_; }
   MessagePort* port2() const { return port2_; }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit MessageChannel(ExecutionContext*);

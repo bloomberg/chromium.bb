@@ -66,7 +66,7 @@ class CORE_EXPORT PerformanceMonitor final
                                         const String& text,
                                         double time,
                                         SourceLocation*) {}
-    virtual void Trace(blink::Visitor* visitor) {}
+    void Trace(blink::Visitor* visitor) override {}
   };
 
   static void ReportGenericViolation(ExecutionContext*,
@@ -107,7 +107,7 @@ class CORE_EXPORT PerformanceMonitor final
   void Shutdown();
 
   explicit PerformanceMonitor(LocalFrame*);
-  ~PerformanceMonitor();
+  ~PerformanceMonitor() override;
 
   virtual void Trace(blink::Visitor*);
 

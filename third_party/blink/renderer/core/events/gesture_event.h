@@ -44,7 +44,7 @@ class CORE_EXPORT GestureEvent final : public UIEventWithKeyState {
 
   const WebGestureEvent& NativeEvent() const { return native_event_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   GestureEvent(const AtomicString&, AbstractView*, const WebGestureEvent&);

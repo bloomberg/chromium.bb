@@ -33,10 +33,10 @@ class MockWebPrerenderingSupport : public WebPrerenderingSupport {
  public:
   MockWebPrerenderingSupport() { Initialize(this); }
 
-  virtual void Add(const WebPrerender&) {}
-  virtual void Cancel(const WebPrerender&) {}
-  virtual void Abandon(const WebPrerender&) {}
-  virtual void PrefetchFinished() { prefetch_finished_ = true; }
+  void Add(const WebPrerender&) override {}
+  void Cancel(const WebPrerender&) override {}
+  void Abandon(const WebPrerender&) override {}
+  void PrefetchFinished() override { prefetch_finished_ = true; }
 
   bool IsPrefetchFinished() const { return prefetch_finished_; }
 

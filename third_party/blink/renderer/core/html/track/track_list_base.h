@@ -79,13 +79,13 @@ class TrackListBase : public EventTargetWithInlineData {
     ScheduleEvent(Event::Create(EventTypeNames::change));
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(tracks_);
     visitor->Trace(media_element_);
     EventTargetWithInlineData::Trace(visitor);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     for (auto track : tracks_) {
       visitor->TraceWrappers(track);
     }

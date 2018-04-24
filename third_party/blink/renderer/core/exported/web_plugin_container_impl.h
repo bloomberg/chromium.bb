@@ -186,7 +186,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   void DidFinishLoading();
   void DidFailLoading(const ResourceError&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   // USING_PRE_FINALIZER does not allow for virtual dispatch from the finalizer
   // method. Here we call Dispose() which does the correct virtual dispatch.
   void PreFinalize() { Dispose(); }

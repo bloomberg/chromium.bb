@@ -20,7 +20,7 @@ class SequenceTest final : public ScriptWrappable {
 
  public:
   static SequenceTest* create() { return new SequenceTest; }
-  ~SequenceTest();
+  ~SequenceTest() override;
 
   Vector<Vector<String>> identityByteStringSequenceSequence(
       const Vector<Vector<String>>& arg) const;
@@ -35,7 +35,7 @@ class SequenceTest final : public ScriptWrappable {
 
   bool unionReceivedSequence(const DoubleOrDoubleSequence& arg);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   SequenceTest();

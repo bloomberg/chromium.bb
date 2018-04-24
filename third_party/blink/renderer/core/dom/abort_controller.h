@@ -21,7 +21,7 @@ class AbortController final : public ScriptWrappable {
 
  public:
   static AbortController* Create(ExecutionContext*);
-  virtual ~AbortController();
+  ~AbortController() override;
 
   // AbortController.idl
 
@@ -31,7 +31,7 @@ class AbortController final : public ScriptWrappable {
   // https://dom.spec.whatwg.org/#dom-abortcontroller-abort
   void abort();
 
-  virtual void Trace(Visitor*);
+  void Trace(Visitor*) override;
 
  private:
   explicit AbortController(ExecutionContext*);

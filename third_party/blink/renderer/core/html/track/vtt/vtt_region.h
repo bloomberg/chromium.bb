@@ -51,7 +51,7 @@ class VTTRegion final : public ScriptWrappable {
  public:
   static VTTRegion* Create() { return new VTTRegion; }
 
-  virtual ~VTTRegion();
+  ~VTTRegion() override;
 
   const String& id() const { return id_; }
   void setId(const String&);
@@ -87,7 +87,7 @@ class VTTRegion final : public ScriptWrappable {
   void DisplayLastVTTCueBox();
   void WillRemoveVTTCueBox(VTTCueBox*);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   VTTRegion();

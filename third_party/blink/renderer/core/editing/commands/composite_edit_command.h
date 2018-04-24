@@ -81,7 +81,7 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
 
   virtual void AppliedEditing();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit CompositeEditCommand(Document&);

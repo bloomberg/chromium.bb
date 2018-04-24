@@ -57,9 +57,9 @@ class NodeIterator final : public ScriptWrappable, public NodeIteratorBase {
   // This function is called before any node is removed from the document tree.
   void NodeWillBeRemoved(Node&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   NodeIterator(Node*, unsigned what_to_show, V8NodeFilterCondition*);

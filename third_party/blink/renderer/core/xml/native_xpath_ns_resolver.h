@@ -41,7 +41,7 @@ class NativeXPathNSResolver final : public XPathNSResolver {
 
   AtomicString lookupNamespaceURI(const String& prefix) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit NativeXPathNSResolver(Node*);

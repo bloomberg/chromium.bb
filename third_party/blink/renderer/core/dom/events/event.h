@@ -107,7 +107,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
     return new Event(type, initializer);
   }
 
-  virtual ~Event();
+  ~Event() override;
 
   void initEvent(const AtomicString& type, bool bubbles, bool cancelable);
   void initEvent(const AtomicString& event_type_arg,
@@ -252,7 +252,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   virtual DispatchEventResult DispatchEvent(EventDispatcher&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   Event();

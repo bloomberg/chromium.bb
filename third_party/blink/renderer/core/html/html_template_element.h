@@ -48,11 +48,11 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
 
   bool HasNonInBodyInsertionMode() const override { return true; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   DocumentFragment* content() const;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   void CloneNonAttributePropertiesFrom(const Element&,

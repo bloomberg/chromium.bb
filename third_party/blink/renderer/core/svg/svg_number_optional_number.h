@@ -73,7 +73,7 @@ class SVGNumberOptionalNumber final : public SVGPropertyBase {
   SVGNumber* FirstNumber() const { return first_number_; }
   SVGNumber* SecondNumber() const { return second_number_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   SVGNumberOptionalNumber(SVGNumber* first_number, SVGNumber* second_number);

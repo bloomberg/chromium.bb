@@ -50,7 +50,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
             this,
             &FontFaceSet::HandlePendingEventsAndPromises,
             context.GetTaskRunner(TaskType::kUnthrottled))) {}
-  ~FontFaceSet() = default;
+  ~FontFaceSet() override = default;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);
@@ -60,11 +60,11 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   ScriptPromise load(ScriptState*, const String& font, const String& text);
   virtual ScriptPromise ready(ScriptState*) = 0;
 
-  ExecutionContext* GetExecutionContext() const {
+  ExecutionContext* GetExecutionContext() const override {
     return PausableObject::GetExecutionContext();
   }
 
-  const AtomicString& InterfaceName() const {
+  const AtomicString& InterfaceName() const override {
     return EventTargetNames::FontFaceSet;
   }
 
@@ -83,7 +83,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   size_t size() const;
   virtual AtomicString status() const = 0;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   static const int kDefaultFontSize;
@@ -129,7 +129,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
               Member<FontFace>&,
               ExceptionState&) override;
 
-    virtual void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       visitor->Trace(font_faces_);
       FontFaceSetIterable::IterationSource::Trace(visitor);
     }
@@ -156,7 +156,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
     void NotifyLoaded(FontFace*) override;
     void NotifyError(FontFace*) override;
 
-    void Trace(blink::Visitor*);
+    void Trace(blink::Visitor*) override;
 
    private:
     LoadFontPromiseResolver(FontFaceArray faces, ScriptState* script_state)

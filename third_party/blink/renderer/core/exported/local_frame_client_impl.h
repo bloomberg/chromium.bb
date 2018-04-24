@@ -56,7 +56,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   ~LocalFrameClientImpl() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   WebLocalFrameImpl* GetWebFrame() const override;
 
@@ -166,7 +166,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void TransitionToCommittedForNewPage() override;
   LocalFrame* CreateFrame(const WTF::AtomicString& name,
                           HTMLFrameOwnerElement*) override;
-  virtual bool CanCreatePluginWithoutRenderer(const String& mime_type) const;
+  bool CanCreatePluginWithoutRenderer(const String& mime_type) const override;
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,
                                        const Vector<WTF::String>&,

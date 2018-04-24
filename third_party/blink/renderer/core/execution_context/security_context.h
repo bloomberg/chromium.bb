@@ -49,7 +49,7 @@ class ContentSecurityPolicy;
 
 class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
  public:
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
   static std::vector<unsigned> SerializeInsecureNavigationSet(

@@ -13,7 +13,7 @@ namespace blink {
 
 class StyleSheetListTest : public PageTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     PageTestBase::SetUp();
     RuntimeEnabledFeatures::SetConstructableStylesheetsEnabled(true);
   }

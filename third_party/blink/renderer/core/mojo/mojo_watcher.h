@@ -29,12 +29,12 @@ class MojoWatcher final : public ScriptWrappable,
                              const MojoHandleSignals&,
                              V8MojoWatchCallback*,
                              ExecutionContext*);
-  ~MojoWatcher();
+  ~MojoWatcher() override;
 
   MojoResult cancel();
 
-  void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;

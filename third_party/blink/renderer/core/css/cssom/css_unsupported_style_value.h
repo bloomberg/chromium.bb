@@ -29,7 +29,7 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
     return StyleValueType::kUnknownType;
   }
   CSSPropertyID GetProperty() const { return property_; }
-  const CSSValue* ToCSSValue() const {
+  const CSSValue* ToCSSValue() const override {
     NOTREACHED();
     return nullptr;
   }

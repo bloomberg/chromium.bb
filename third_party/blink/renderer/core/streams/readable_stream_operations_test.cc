@@ -87,7 +87,7 @@ class ReaderFunction : public ScriptFunction {
     return self->BindToV8Function();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(iteration_);
     ScriptFunction::Trace(visitor);
   }

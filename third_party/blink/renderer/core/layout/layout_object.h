@@ -1953,7 +1953,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutRect SelectionVisualRect() const {
     return fragment_.SelectionVisualRect();
   }
-  LayoutRect PartialInvalidationRect() const {
+  LayoutRect PartialInvalidationRect() const override {
     return fragment_.PartialInvalidationRect();
   }
 

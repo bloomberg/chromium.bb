@@ -47,7 +47,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   TransformComponentType GetType() const override { return kSkewType; }
   const CSSFunctionValue* ToCSSValue() const override;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(ax_);
     visitor->Trace(ay_);
     CSSTransformComponent::Trace(visitor);

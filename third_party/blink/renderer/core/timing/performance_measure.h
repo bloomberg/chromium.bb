@@ -43,7 +43,7 @@ class PerformanceMeasure final : public PerformanceEntry {
     return new PerformanceMeasure(name, start_time, end_time);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     PerformanceEntry::Trace(visitor);
   }
 

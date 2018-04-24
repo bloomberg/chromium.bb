@@ -23,7 +23,7 @@ class ResizeObserverEntry final : public ScriptWrappable {
   Element* target() const { return target_; }
   DOMRectReadOnly* contentRect() const { return content_rect_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<Element> target_;

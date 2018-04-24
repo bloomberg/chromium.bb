@@ -62,7 +62,7 @@ class CORE_EXPORT HTMLImageElement final
                                                   unsigned height);
 
   ~HTMLImageElement() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   unsigned width();
   unsigned height();

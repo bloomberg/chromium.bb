@@ -43,7 +43,7 @@ class CORE_EXPORT WorkletModuleResponsesMap
   // Fetches a module script. If the script is already fetched, synchronously
   // calls Client::OnFetched(). Otherwise, it's called on the completion of the
   // fetch. See also the class-level comment.
-  void Fetch(FetchParameters&, Client*);
+  void Fetch(FetchParameters&, Client*) override;
 
   // Invalidates an inflight module script fetch, and calls OnFailed() for
   // waiting clients.
@@ -53,7 +53,7 @@ class CORE_EXPORT WorkletModuleResponsesMap
   // clients and clears the map. Following Fetch() calls are simply ignored.
   void Dispose();
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   class Entry;

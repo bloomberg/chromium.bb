@@ -330,7 +330,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void DispatchDidChangeManifest() {}
 
-  virtual unsigned BackForwardLength() { return 0; }
+  unsigned BackForwardLength() override { return 0; }
 
   virtual bool IsLocalFrameClientImpl() const { return false; }
 

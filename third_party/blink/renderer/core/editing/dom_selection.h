@@ -102,7 +102,7 @@ class CORE_EXPORT DOMSelection final : public ScriptWrappable,
   // Microsoft Selection Object API
   void empty();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit DOMSelection(const TreeScope*);

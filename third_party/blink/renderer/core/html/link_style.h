@@ -37,7 +37,7 @@ class LinkStyle final : public LinkResource, ResourceClient {
   void Process() override;
   void OwnerRemoved() override;
   bool HasLoaded() const override { return loaded_sheet_; }
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void StartLoadingDynamicSheet();
   void NotifyLoadedSheetAndAllCriticalSubresources(

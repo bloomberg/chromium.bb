@@ -38,7 +38,7 @@ class CORE_EXPORT WebFrameWidgetBase
       public WebGestureCurveTarget {
  public:
   explicit WebFrameWidgetBase(WebWidgetClient&);
-  virtual ~WebFrameWidgetBase();
+  ~WebFrameWidgetBase() override;
 
   WebWidgetClient* Client() const { return client_; }
   WebLocalFrameImpl* LocalRootImpl() const { return local_root_; }

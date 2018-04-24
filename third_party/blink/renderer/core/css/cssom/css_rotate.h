@@ -54,7 +54,7 @@ class CORE_EXPORT CSSRotate final : public CSSTransformComponent {
   TransformComponentType GetType() const final { return kRotationType; }
   const CSSFunctionValue* ToCSSValue() const final;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(angle_);
     visitor->Trace(x_);
     visitor->Trace(y_);

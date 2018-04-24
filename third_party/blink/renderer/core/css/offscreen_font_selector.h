@@ -61,7 +61,7 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
     return execution_context_;
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit OffscreenFontSelector(ExecutionContext*);

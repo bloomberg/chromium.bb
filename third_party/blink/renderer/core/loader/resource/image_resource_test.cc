@@ -512,7 +512,7 @@ class MockFinishObserver : public GarbageCollectedFinalized<MockFinishObserver>,
   MOCK_METHOD0(NotifyFinished, void());
   String DebugName() const override { return "MockFinishObserver"; }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     blink::ResourceFinishObserver::Trace(visitor);
   }
 
@@ -1935,7 +1935,7 @@ TEST(ImageResourceTest, DeferredInvalidation) {
 class ImageResourceCounterTest : public testing::Test {
  public:
   ImageResourceCounterTest() = default;
-  ~ImageResourceCounterTest() = default;
+  ~ImageResourceCounterTest() override = default;
 
   void CreateImageResource(const char* url_part, bool ua_resource) {
     // Create a unique fake data url.

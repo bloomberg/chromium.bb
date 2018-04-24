@@ -75,7 +75,7 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
   void setSkewX(float, ExceptionState&);
   void setSkewY(float, ExceptionState&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   SVGTransformTearOff(SVGTransform*,

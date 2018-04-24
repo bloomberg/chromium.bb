@@ -37,9 +37,9 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
   // observed across different worlds.
   bool CanBeDispatchedInWorld(const DOMWrapperWorld&) const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   PromiseRejectionEvent(ScriptState*,

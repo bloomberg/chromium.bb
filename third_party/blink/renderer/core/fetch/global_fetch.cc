@@ -61,7 +61,7 @@ class GlobalFetchImpl final
                                  r->signal());
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(fetch_manager_);
     ScopedFetcher::Trace(visitor);
     Supplement<T>::Trace(visitor);

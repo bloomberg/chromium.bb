@@ -49,7 +49,7 @@ class CORE_EXPORT PausableScriptExecutor final
   void RunAsync(BlockingOption);
   void ContextDestroyed(ExecutionContext*) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   class Executor : public GarbageCollectedFinalized<Executor> {
    public:

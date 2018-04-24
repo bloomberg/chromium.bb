@@ -71,7 +71,7 @@ class CORE_EXPORT LiveNodeList : public NodeList, public LiveNodeListBase {
                                     Element& current_node,
                                     unsigned& current_offset) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Node* VirtualOwnerNode() const final;

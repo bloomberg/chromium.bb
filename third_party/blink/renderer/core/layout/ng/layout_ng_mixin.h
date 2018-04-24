@@ -68,7 +68,7 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
     return paint_fragment_.get();
   }
   void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>) override;
-  void ClearPaintFragment() { paint_fragment_ = nullptr; }
+  void ClearPaintFragment() override { paint_fragment_ = nullptr; }
   Vector<NGPaintFragment*> GetPaintFragments(
       const LayoutObject&) const override;
 

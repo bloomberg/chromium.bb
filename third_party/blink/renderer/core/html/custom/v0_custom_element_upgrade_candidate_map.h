@@ -53,7 +53,7 @@ class V0CustomElementUpgradeCandidateMap final
   void Add(const V0CustomElementDescriptor&, Element*);
   ElementSet* TakeUpgradeCandidatesFor(const V0CustomElementDescriptor&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   V0CustomElementUpgradeCandidateMap() = default;

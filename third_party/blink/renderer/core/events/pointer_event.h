@@ -59,7 +59,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   PointerEvent(const AtomicString&,

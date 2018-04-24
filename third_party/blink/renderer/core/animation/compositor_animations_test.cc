@@ -347,7 +347,9 @@ class LayoutObjectProxy : public LayoutObject {
 
   const char* GetName() const override { return nullptr; }
   void UpdateLayout() override {}
-  FloatRect LocalBoundingBoxRectForAccessibility() const { return FloatRect(); }
+  FloatRect LocalBoundingBoxRectForAccessibility() const override {
+    return FloatRect();
+  }
 
  private:
   explicit LayoutObjectProxy(Node* node) : LayoutObject(node) {}

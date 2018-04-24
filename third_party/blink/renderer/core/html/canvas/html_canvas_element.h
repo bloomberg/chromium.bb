@@ -148,8 +148,8 @@ class CORE_EXPORT HTMLCanvasElement final
   scoped_refptr<Image> CopiedImage(SourceDrawingBuffer, AccelerationHint);
   void ClearCopiedImage();
 
-  bool OriginClean() const;
-  void SetOriginTainted() { origin_clean_ = false; }
+  bool OriginClean() const override;
+  void SetOriginTainted() override { origin_clean_ = false; }
 
   bool Is3d() const;
   bool Is2d() const;
@@ -221,9 +221,9 @@ class CORE_EXPORT HTMLCanvasElement final
                            base::WeakPtr<OffscreenCanvasFrameDispatcher>,
                            scoped_refptr<base::SingleThreadTaskRunner>,
                            unsigned resource_id) override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   void CreateCanvas2DLayerBridgeForTesting(std::unique_ptr<Canvas2DLayerBridge>,
                                            const IntSize&);

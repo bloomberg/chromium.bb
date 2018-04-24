@@ -31,7 +31,7 @@ class WebScriptExecutor : public PausableScriptExecutor::Executor {
 
   Vector<v8::Local<v8::Value>> Execute(LocalFrame*) override;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(sources_);
     PausableScriptExecutor::Executor::Trace(visitor);
   }

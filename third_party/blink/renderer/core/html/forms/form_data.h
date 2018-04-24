@@ -61,7 +61,7 @@ class CORE_EXPORT FormData final
   static FormData* Create(const WTF::TextEncoding& encoding) {
     return new FormData(encoding);
   }
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // FormData IDL interface.
   void append(const String& name, const String& value);

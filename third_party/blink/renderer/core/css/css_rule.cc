@@ -30,7 +30,7 @@ namespace blink {
 
 struct SameSizeAsCSSRule : public GarbageCollectedFinalized<SameSizeAsCSSRule>,
                            public ScriptWrappable {
-  virtual ~SameSizeAsCSSRule();
+  ~SameSizeAsCSSRule() override;
   unsigned char bitfields;
   void* pointer_union;
 };

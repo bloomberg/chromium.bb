@@ -33,7 +33,7 @@ class TestResizeObserverDelegate : public ResizeObserver::Delegate {
   ExecutionContext* GetExecutionContext() const { return document_; }
   int CallCount() const { return call_count_; }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     ResizeObserver::Delegate::Trace(visitor);
     visitor->Trace(document_);
   }

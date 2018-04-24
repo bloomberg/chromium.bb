@@ -137,7 +137,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   ScriptPromise finished(ScriptState*);
   ScriptPromise ready(ScriptState*);
 
-  bool Playing() const {
+  bool Playing() const override {
     return !(PlayStateInternal() == kIdle || Limited() || paused_ ||
              is_paused_for_testing_);
   }
@@ -209,7 +209,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                  bool start_on_compositor);
   void PostCommit(double timeline_time);
 
-  unsigned SequenceNumber() const { return sequence_number_; }
+  unsigned SequenceNumber() const override { return sequence_number_; }
   int CompositorGroup() const { return compositor_group_; }
 
   static bool HasLowerPriority(const Animation* animation1,

@@ -53,7 +53,7 @@ class WorkerPerformance final : public Performance {
     return execution_context_;
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit WorkerPerformance(WorkerGlobalScope*);
