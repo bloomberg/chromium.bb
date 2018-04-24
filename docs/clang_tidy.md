@@ -53,7 +53,7 @@ ninja -C out/Release chrome
 ```
 2.  Generate the compilation database
 ```
-tools/clang/scripts/generate_compdb.py -p out/Release > compile_commands.json
+tools/clang/scripts/generate_compdb.py -p out/Release > out/Release/compile_commands.json
 ```
 3.  Enter the build directory.
 ```
@@ -62,7 +62,7 @@ cd out/Release
 4.  Run clang-tidy.
 ```
 <PATH_TO_LLVM_SRC>/tools/clang/tools/extra/clang-tidy/tool/run-clang-tidy.py \
-    -p ../.. \# Set the root project directory, where compile_commands.json is.
+    -p . \# Set the root project directory, where compile_commands.json is.
     # Set the clang-tidy binary path, if it's not in your $PATH.
     -clang-tidy-binary <PATH_TO_LLVM_BUILD>/bin/clang-tidy \
     # Set the clang-apply-replacements binary path, if it's not in your $PATH
@@ -77,7 +77,7 @@ cd out/Release
 
 Copy-Paste Friendly (though you'll still need to stub in the variables):
 <PATH_TO_LLVM_SRC>/tools/clang/tools/extra/clang-tidy/tool/run-clang-tidy.py \
-    -p ../.. \
+    -p . \
     -clang-tidy-binary <PATH_TO_LLVM_BUILD>/bin/clang-tidy \
     -clang-apply-replacements-binary \
         <PATH_TO_LLVM_BUILD>/bin/clang-apply-replacements \
