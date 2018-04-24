@@ -165,9 +165,8 @@ void DeviceSyncImpl::ForceSyncNow(ForceSyncNowCallback callback) {
 void DeviceSyncImpl::GetSyncedDevices(GetSyncedDevicesCallback callback) {
   if (status_ != Status::READY) {
     PA_LOG(WARNING) << "DeviceSyncImpl::GetSyncedDevices() invoked before "
-                    << "initialization was complete. Returning empty list of "
-                    << "synced devices.";
-    std::move(callback).Run(std::vector<cryptauth::RemoteDevice>());
+                    << "initialization was complete. Cannot return devices.";
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
