@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
@@ -331,8 +332,14 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 }
 
+// Disabled due to https://crbug.com/836215
+#if defined(OS_WIN)
+#define MAYBE_NoFeature_NoMessages DISABLED_NoFeature_NoMessages
+#else
+#define MAYBE_NoFeature_NoMessages NoFeature_NoMessages
+#endif
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
-                       NoFeature_NoMessages) {
+                       MAYBE_NoFeature_NoMessages) {
   // Disable Abusive enforcement, but keep the notifications coming from the
   // SubresourceFilter.
   base::test::ScopedFeatureList scoped_feature_list;
