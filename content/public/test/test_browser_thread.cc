@@ -38,8 +38,8 @@ TestBrowserThread::~TestBrowserThread() {
   // |BrowserThreadImpl::GetTaskRunnerForThread(identifier_)| will no longer
   // recognize their BrowserThreadImpl for RunsTasksInCurrentSequence(). This
   // happens most often when such verifications are made from
-  // MessageLoop::DestructionObservers. Callers that care to work around that
-  // should instead use this shutdown sequence:
+  // MessageLoopCurrent::DestructionObservers. Callers that care to work around
+  // that should instead use this shutdown sequence:
   //   1) TestBrowserThread::Stop()
   //   2) ~MessageLoop()
   //   3) ~TestBrowserThread()
