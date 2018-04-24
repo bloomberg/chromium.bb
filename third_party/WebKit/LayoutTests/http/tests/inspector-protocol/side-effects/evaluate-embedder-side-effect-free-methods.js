@@ -22,7 +22,14 @@
 
     var textNode = document.createTextNode('footext');
     var divNoAttrs = document.createElement('div');
+
+    var htmlCollection = document.getElementsByTagName('div');
+    var nodeList = document.getElementsByName('div-name');
+    var domTokenList = spanWithClass.classList;
+    var bodyStyle = document.body.style;
+    var namedNodeMap = div.attributes;
   `);
+  await dp.Runtime.evaluate({expression: `var $$result = $$('div')`, includeCommandLineAPI: true});
 
   // Sanity check: test that setters are not allowed on whitelisted methods.
   await checkHasSideEffect(`document.querySelector('div').x = "foo"`);
@@ -73,6 +80,19 @@
 
   // Window
   await checkHasNoSideEffect(`global_performance.now()`);
+
+  // Collection getters (e.g. HTMLCollection, NodeList)
+  var indexedCollections = [
+    'htmlCollection', 'nodeList', '$$result', 'domTokenList', 'bodyStyle', 'namedNodeMap'
+  ];
+  for (var collection of indexedCollections) {
+    await checkHasNoSideEffect(`${collection}[0]`);
+    await checkHasNoSideEffect(`${collection}.item(0)`);
+    await checkHasNoSideEffect(`${collection}.length`);
+  }
+
+  // Named getters (e.g. CSSStyleDeclaration)
+  await checkHasNoSideEffect(`namedNodeMap.attr1`);
 
   testRunner.completeTest();
 

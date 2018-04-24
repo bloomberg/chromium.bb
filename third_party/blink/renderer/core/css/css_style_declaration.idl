@@ -24,8 +24,8 @@
     Exposed=Window
 ] interface CSSStyleDeclaration {
     [CEReactions, RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString cssText;
-    readonly attribute unsigned long length;
-    getter DOMString item(unsigned long index);
+    [Affects=Nothing] readonly attribute unsigned long length;
+    [Affects=Nothing] getter DOMString item(unsigned long index);
     DOMString getPropertyValue(DOMString property);
     DOMString getPropertyPriority(DOMString property);
     [CEReactions, RaisesException, CallWith=ExecutionContext] void setProperty(DOMString property, [TreatNullAs=EmptyString] DOMString value, [TreatNullAs=EmptyString] optional DOMString priority = "");

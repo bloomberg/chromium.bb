@@ -1400,6 +1400,7 @@ def property_getter(getter, cpp_arguments):
         return ''
 
     extended_attributes = getter.extended_attributes
+    has_no_side_effect = v8_utilities.has_extended_attribute_value(getter, 'Affects', 'Nothing')
     idl_type = getter.idl_type
     idl_type.add_includes_for_type(extended_attributes)
     is_call_with_script_state = v8_utilities.has_extended_attribute_value(getter, 'CallWith', 'ScriptState')
@@ -1421,6 +1422,7 @@ def property_getter(getter, cpp_arguments):
     return {
         'cpp_type': idl_type.cpp_type,
         'cpp_value': cpp_value,
+        'has_no_side_effect': has_no_side_effect,
         'is_call_with_script_state': is_call_with_script_state,
         'is_cross_origin': 'CrossOrigin' in extended_attributes,
         'is_custom':

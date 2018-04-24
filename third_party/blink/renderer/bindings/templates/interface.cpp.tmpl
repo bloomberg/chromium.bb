@@ -910,7 +910,8 @@ for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfigurati
        '%s::indexedPropertyDefinerCallback' % v8_class_or_partial
        if indexed_property_getter else 'nullptr' %}
 {% set property_handler_flags =
-       'v8::PropertyHandlerFlags::kNone' %}
+       'v8::PropertyHandlerFlags::kHasNoSideEffect'
+       if indexed_property_getter.has_no_side_effect else 'v8::PropertyHandlerFlags::kNone' %}
 v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
     {{indexed_property_getter_callback}},
     {{indexed_property_setter_callback}},
@@ -945,6 +946,10 @@ v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
 {% if not is_override_builtins %}
 {% set property_handler_flags_list =
        property_handler_flags_list + ['int(v8::PropertyHandlerFlags::kNonMasking)'] %}
+{% endif %}
+{% if named_property_getter.has_no_side_effect %}
+{% set property_handler_flags_list =
+       property_handler_flags_list + ['int(v8::PropertyHandlerFlags::kHasNoSideEffect)'] %}
 {% endif %}
 {% set property_handler_flags =
        'static_cast<v8::PropertyHandlerFlags>(%s)' %
