@@ -84,7 +84,6 @@ cast_source_set("unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//chromecast/device/bluetooth:test_support",
     "//chromecast/device/bluetooth:util",
     "//chromecast/device/bluetooth/shlib:mock_shlib",
     "//chromecast/public",

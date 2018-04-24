@@ -16,7 +16,6 @@
 #include "chromecast/device/bluetooth/le/remote_device.h"
 #include "chromecast/device/bluetooth/le/remote_service.h"
 #include "chromecast/device/bluetooth/shlib/mock_gatt_client.h"
-#include "chromecast/device/bluetooth/test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

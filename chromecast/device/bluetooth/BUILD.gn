@@ -32,17 +32,3 @@ test("cast_bluetooth_unittests") {
     "//testing/gtest:gtest",
   ]
 }
-
-cast_source_set("test_support") {
-  testonly = true
-
-  sources = [
-    "test_util.cc",
-    "test_util.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromecast/public",
-  ]
-}

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/device/bluetooth/bluetooth_util.h"
 #include "chromecast/device/bluetooth/le/remote_characteristic.h"
@@ -14,7 +15,6 @@
 #include "chromecast/device/bluetooth/le/remote_device.h"
 #include "chromecast/device/bluetooth/le/remote_service.h"
 #include "chromecast/device/bluetooth/shlib/mock_gatt_client.h"
-#include "chromecast/device/bluetooth/test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,6 +23,8 @@ using ::testing::Return;
 
 namespace chromecast {
 namespace bluetooth {
+
+using MockStatusCallback = base::MockCallback<RemoteDevice::StatusCallback>;
 
 namespace {
 
@@ -159,17 +161,15 @@ class GattClientManagerTest : public ::testing::Test {
   void Connect(const bluetooth_v2_shlib::Addr& addr) {
     EXPECT_CALL(*gatt_client_, Connect(addr)).WillOnce(Return(true));
     scoped_refptr<RemoteDevice> device = GetDevice(addr);
-    cb_checker_.Reset();
-    device->Connect(cb_checker_.CreateCallback());
+    EXPECT_CALL(cb_, Run(true));
+    device->Connect(cb_.Get());
     bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
         gatt_client_->delegate();
     delegate->OnConnectChanged(addr, true /* status */, true /* connected */);
-    ASSERT_TRUE(cb_checker_.called());
-    ASSERT_TRUE(cb_checker_.status());
     ASSERT_TRUE(device->IsConnected());
   }
 
-  StatusCallbackChecker cb_checker_;
+  MockStatusCallback cb_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<GattClientManagerImpl> gatt_client_manager_;
   std::unique_ptr<bluetooth_v2_shlib::MockGattClient> gatt_client_;
@@ -187,59 +187,29 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   EXPECT_EQ(kTestAddr1, device->addr());
 
   // These should fail if we're not connected.
-  cb_checker_.Reset();
-  device->Disconnect(cb_checker_.CreateCallback());
-  EXPECT_TRUE(cb_checker_.called());
-  EXPECT_FALSE(cb_checker_.status());
+  EXPECT_CALL(cb_, Run(false));
+  device->Disconnect(cb_.Get());
 
-  {
-    bool called = false;
-    bool status = false;
-    device->ReadRemoteRssi(base::BindOnce(
-        [](bool* pcalled, bool* pstatus, bool status, int rssi) {
-          *pcalled = true;
-          *pstatus = status;
-        },
-        &called, &status));
-    EXPECT_TRUE(called);
-    EXPECT_FALSE(status);
-  }
+  base::MockCallback<RemoteDevice::RssiCallback> rssi_cb;
+  EXPECT_CALL(rssi_cb, Run(false, _));
+  device->ReadRemoteRssi(rssi_cb.Get());
 
-  cb_checker_.Reset();
-  device->RequestMtu(512, cb_checker_.CreateCallback());
-  EXPECT_TRUE(cb_checker_.called());
-  EXPECT_FALSE(cb_checker_.status());
+  EXPECT_CALL(cb_, Run(false));
+  device->RequestMtu(512, cb_.Get());
 
-  cb_checker_.Reset();
-  device->ConnectionParameterUpdate(10, 10, 50, 100,
-                                    cb_checker_.CreateCallback());
-  EXPECT_TRUE(cb_checker_.called());
-  EXPECT_FALSE(cb_checker_.status());
+  EXPECT_CALL(cb_, Run(false));
+  device->ConnectionParameterUpdate(10, 10, 50, 100, cb_.Get());
 
-  {
-    bool called = false;
-    bool status = false;
-    device->DiscoverServices(base::BindOnce(
-        [](bool* pstatus, bool* pcalled, bool status,
-           std::vector<scoped_refptr<RemoteService>> services) {
-          *pcalled = true;
-          *pstatus = status;
-        },
-        &status, &called));
-    EXPECT_TRUE(called);
-    EXPECT_FALSE(status);
-  }
+  base::MockCallback<RemoteDevice::DiscoverServicesCb> discover_cb;
+  EXPECT_CALL(discover_cb, Run(false, _));
+  device->DiscoverServices(discover_cb.Get());
 
   EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
 
-  cb_checker_.Reset();
-  device->Connect(cb_checker_.CreateCallback());
-  EXPECT_FALSE(device->IsConnected());
-  EXPECT_CALL(*observer_, OnConnectChanged(device, true));
+  EXPECT_CALL(cb_, Run(true));
+  device->Connect(cb_.Get());
   delegate->OnConnectChanged(kTestAddr1, true /* status */,
                              true /* connected */);
-  EXPECT_TRUE(cb_checker_.called());
-  EXPECT_TRUE(cb_checker_.status());
 
   EXPECT_TRUE(device->IsConnected());
   base::RunLoop().RunUntilIdle();
@@ -264,18 +234,12 @@ TEST_F(GattClientManagerTest, RemoteDeviceReadRssi) {
 
   Connect(kTestAddr1);
 
-  bool rssi_cb_called = false;
-  auto rssi_cb = [](bool* cb_called, bool status, int rssi) {
-    *cb_called = true;
-    EXPECT_TRUE(status);
-    EXPECT_EQ(kRssi, rssi);
-  };
-
+  base::MockCallback<RemoteDevice::RssiCallback> rssi_cb;
   EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr1)).WillOnce(Return(true));
-  device->ReadRemoteRssi(base::BindOnce(rssi_cb, &rssi_cb_called));
+  EXPECT_CALL(rssi_cb, Run(true, kRssi));
+  device->ReadRemoteRssi(rssi_cb.Get());
 
   delegate->OnReadRemoteRssi(kTestAddr1, true /* status */, kRssi);
-  EXPECT_TRUE(rssi_cb_called);
 }
 
 TEST_F(GattClientManagerTest, RemoteDeviceRequestMtu) {
@@ -288,12 +252,10 @@ TEST_F(GattClientManagerTest, RemoteDeviceRequestMtu) {
   EXPECT_EQ(RemoteDevice::kDefaultMtu, device->GetMtu());
   EXPECT_CALL(*gatt_client_, RequestMtu(kTestAddr1, kMtu))
       .WillOnce(Return(true));
-  cb_checker_.Reset();
-  device->RequestMtu(kMtu, cb_checker_.CreateCallback());
+  EXPECT_CALL(cb_, Run(true));
+  device->RequestMtu(kMtu, cb_.Get());
   EXPECT_CALL(*observer_, OnMtuChanged(device, kMtu));
   delegate->OnMtuChanged(kTestAddr1, true, kMtu);
-  EXPECT_TRUE(cb_checker_.called());
-  EXPECT_TRUE(cb_checker_.status());
   EXPECT_EQ(kMtu, device->GetMtu());
   base::RunLoop().RunUntilIdle();
 }
@@ -311,11 +273,9 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnectionParameterUpdate) {
               ConnectionParameterUpdate(kTestAddr1, kMinInterval, kMaxInterval,
                                         kLatency, kTimeout))
       .WillOnce(Return(true));
-  cb_checker_.Reset();
+  EXPECT_CALL(cb_, Run(true));
   device->ConnectionParameterUpdate(kMinInterval, kMaxInterval, kLatency,
-                                    kTimeout, cb_checker_.CreateCallback());
-  EXPECT_TRUE(cb_checker_.called());
-  EXPECT_TRUE(cb_checker_.status());
+                                    kTimeout, cb_.Get());
 }
 
 TEST_F(GattClientManagerTest, RemoteDeviceServices) {
@@ -406,47 +366,29 @@ TEST_F(GattClientManagerTest, RemoteDeviceCharacteristic) {
                                   kAuthReq, kWriteType, kTestData1))
       .WillOnce(Return(true));
 
-  bool write_cb_called = false;
-  auto write_cb = base::BindOnce(
-      [](bool* cb_called, bool status) {
-        *cb_called = true;
-        DCHECK(status);
-      },
-      &write_cb_called);
-
-  characteristic->WriteAuth(kAuthReq, kWriteType, kTestData1,
-                            std::move(write_cb));
+  EXPECT_CALL(cb_, Run(true));
+  characteristic->WriteAuth(kAuthReq, kWriteType, kTestData1, cb_.Get());
   delegate->OnCharacteristicWriteResponse(kTestAddr1, true,
                                           characteristic->handle());
-  EXPECT_TRUE(write_cb_called);
 
   EXPECT_CALL(*gatt_client_,
               ReadCharacteristic(kTestAddr1, characteristic->characteristic(),
                                  kAuthReq))
       .WillOnce(Return(true));
 
-  bool cb_called = false;
-  auto read_cb = [](bool* cb_called, const std::vector<uint8_t>& expected,
-                    bool success, const std::vector<uint8_t>& value) {
-    *cb_called = true;
-    EXPECT_TRUE(success);
-    EXPECT_EQ(expected, value);
-  };
-  characteristic->ReadAuth(kAuthReq,
-                           base::BindOnce(read_cb, &cb_called, kTestData2));
+  base::MockCallback<RemoteCharacteristic::ReadCallback> read_cb;
+  EXPECT_CALL(read_cb, Run(true, kTestData2));
+  characteristic->ReadAuth(kAuthReq, read_cb.Get());
   delegate->OnCharacteristicReadResponse(kTestAddr1, true,
                                          characteristic->handle(), kTestData2);
-  EXPECT_TRUE(cb_called);
 
   EXPECT_CALL(*gatt_client_,
               SetCharacteristicNotification(
                   kTestAddr1, characteristic->characteristic(), true))
       .WillOnce(Return(true));
 
-  cb_checker_.Reset();
-  characteristic->SetNotification(true, cb_checker_.CreateCallback());
-  EXPECT_TRUE(cb_checker_.called());
-  EXPECT_TRUE(cb_checker_.status());
+  EXPECT_CALL(cb_, Run(true));
+  characteristic->SetNotification(true, cb_.Get());
 
   EXPECT_CALL(*observer_,
               OnCharacteristicNotification(device, characteristic, kTestData3));
@@ -488,11 +430,9 @@ TEST_F(GattClientManagerTest,
                                              cccd_enable_notification))
       .WillOnce(Return(true));
 
-  StatusCallbackChecker cb_checker;
-  characteristic->SetRegisterNotification(true, cb_checker.CreateCallback());
+  characteristic->SetRegisterNotification(true, cb_.Get());
+  EXPECT_CALL(cb_, Run(true));
   delegate->OnDescriptorWriteResponse(kTestAddr1, true, cccd->handle());
-  EXPECT_TRUE(cb_checker.called());
-  EXPECT_TRUE(cb_checker.status());
 
   EXPECT_CALL(*observer_,
               OnCharacteristicNotification(device, characteristic, kTestData1));
@@ -530,33 +470,20 @@ TEST_F(GattClientManagerTest, RemoteDeviceDescriptor) {
               WriteDescriptor(kTestAddr1, descriptor->descriptor(), kAuthReq,
                               kTestData1))
       .WillOnce(Return(true));
-  bool write_cb_called = false;
-  auto write_cb = base::BindOnce(
-      [](bool* cb_called, bool status) {
-        *cb_called = true;
-        DCHECK(status);
-      },
-      &write_cb_called);
-  descriptor->WriteAuth(kAuthReq, kTestData1, std::move(write_cb));
+
+  EXPECT_CALL(cb_, Run(true));
+  descriptor->WriteAuth(kAuthReq, kTestData1, cb_.Get());
   delegate->OnDescriptorWriteResponse(kTestAddr1, true, descriptor->handle());
-  EXPECT_TRUE(write_cb_called);
 
   EXPECT_CALL(*gatt_client_,
               ReadDescriptor(kTestAddr1, descriptor->descriptor(), kAuthReq))
       .WillOnce(Return(true));
 
-  bool cb_called = false;
-  auto read_cb = [](bool* cb_called, const std::vector<uint8_t>& expected,
-                    bool success, const std::vector<uint8_t>& value) {
-    *cb_called = true;
-    EXPECT_TRUE(success);
-    EXPECT_EQ(expected, value);
-  };
-  descriptor->ReadAuth(kAuthReq,
-                       base::BindOnce(read_cb, &cb_called, kTestData2));
+  base::MockCallback<RemoteDescriptor::ReadCallback> read_cb;
+  EXPECT_CALL(read_cb, Run(true, kTestData2));
+  descriptor->ReadAuth(kAuthReq, read_cb.Get());
   delegate->OnDescriptorReadResponse(kTestAddr1, true, descriptor->handle(),
                                      kTestData2);
-  EXPECT_TRUE(cb_called);
 }
 
 TEST_F(GattClientManagerTest, FakeCccd) {
