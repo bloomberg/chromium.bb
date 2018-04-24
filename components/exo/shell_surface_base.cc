@@ -36,6 +36,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/class_property.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -1351,6 +1352,11 @@ void ShellSurfaceBase::UpdateSurfaceBounds() {
       root_surface_origin().OffsetFromOrigin(), 1.f / GetScale()));
 
   host_window()->SetBounds(gfx::Rect(origin, host_window()->bounds().size()));
+  // The host window might have not been added to the widget yet.
+  if (host_window()->parent()) {
+    ui::SnapLayerToPhysicalPixelBoundary(widget_->GetNativeWindow()->layer(),
+                                         host_window()->layer());
+  }
 }
 
 void ShellSurfaceBase::UpdateShadow() {
