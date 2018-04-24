@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
@@ -28,6 +29,12 @@ int main(int argc, char** argv) {
 
   // Initialize logging so we can enable VLOG messages.
   logging::LoggingSettings settings;
+
+// Logs to system debug by default on POSIX.
+#if defined(OS_WIN)
+  settings.log_file = FILE_PATH_LITERAL("ozone_demo.log");
+#endif
+
   logging::InitLogging(settings);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kHelp)) {
