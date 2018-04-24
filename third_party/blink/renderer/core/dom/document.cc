@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
-#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
@@ -694,7 +693,6 @@ Document::Document(const DocumentInit& initializer,
     fetcher_ = FrameFetchContext::CreateFetcherFromDocument(this);
   } else {
     fetcher_ = ResourceFetcher::Create(nullptr);
-    CoreInitializer::GetInstance().RegisterResourceFetcher(fetcher_);
   }
   DCHECK(fetcher_);
 

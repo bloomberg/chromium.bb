@@ -131,7 +131,7 @@ void BlinkInitializer::RegisterInterfaces(
       ConvertToBaseCallback(CrossThreadBind(&OomInterventionImpl::Create)),
       main_thread->GetTaskRunner());
   registry.AddInterface(
-      ConvertToBaseCallback(CrossThreadBind(&BlinkLeakDetector::Bind)),
+      ConvertToBaseCallback(CrossThreadBind(&BlinkLeakDetector::Create)),
       main_thread->GetTaskRunner());
 }
 
@@ -149,10 +149,6 @@ void BlinkInitializer::OnClearWindowObjectInMainWorld(
     devtools_frontend->DidClearWindowObject();
   }
   ModulesInitializer::OnClearWindowObjectInMainWorld(document, settings);
-}
-
-void BlinkInitializer::RegisterResourceFetcher(ResourceFetcher* fetcher) const {
-  BlinkLeakDetector::Instance().RegisterResourceFetcher(fetcher);
 }
 
 }  // namespace blink

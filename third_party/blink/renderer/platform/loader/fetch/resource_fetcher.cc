@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 using blink::WebURLRequest;
 
@@ -160,6 +161,11 @@ bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
   if (IsRawResource(*resource))
     return false;
   return true;
+}
+
+static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {
+  DEFINE_STATIC_LOCAL(ResourceFetcher::ResourceFetcherSet, fetchers, ());
+  return fetchers;
 }
 
 }  // namespace
@@ -297,6 +303,8 @@ ResourceFetcher::ResourceFetcher(FetchContext* new_context)
       allow_stale_resources_(false),
       image_fetched_(false) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
+  if (IsMainThread())
+    MainThreadFetchersSet().insert(this);
 }
 
 ResourceFetcher::~ResourceFetcher() {
@@ -1695,6 +1703,12 @@ void ResourceFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(preloads_);
   visitor->Trace(matched_preloads_);
   visitor->Trace(resource_timing_info_map_);
+}
+
+// static
+const ResourceFetcher::ResourceFetcherSet&
+ResourceFetcher::MainThreadFetchers() {
+  return MainThreadFetchersSet();
 }
 
 }  // namespace blink

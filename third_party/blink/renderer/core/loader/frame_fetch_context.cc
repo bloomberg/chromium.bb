@@ -47,7 +47,6 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/content_settings_client.h"
@@ -255,7 +254,6 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
                                                   Document* document) {
   FrameFetchContext* context = new FrameFetchContext(loader, document);
   ResourceFetcher* fetcher = ResourceFetcher::Create(context);
-  CoreInitializer::GetInstance().RegisterResourceFetcher(fetcher);
 
   if (loader && context->GetSettings()->GetSavePreviousDocumentResources() !=
                     SavePreviousDocumentResources::kNever) {

@@ -176,6 +176,9 @@ class PLATFORM_EXPORT ResourceFetcher
   // counting.
   void PrepareForLeakDetection();
 
+  using ResourceFetcherSet = PersistentHeapHashSet<WeakMember<ResourceFetcher>>;
+  static const ResourceFetcherSet& MainThreadFetchers();
+
  private:
   friend class ResourceCacheValidationSuppressor;
   enum class StopFetchingTarget {
