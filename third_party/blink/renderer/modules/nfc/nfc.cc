@@ -175,8 +175,8 @@ struct TypeConverter<NFCMessagePtr, String> {
 };
 
 template <>
-struct TypeConverter<Optional<Vector<uint8_t>>, blink::ScriptValue> {
-  static Optional<Vector<uint8_t>> Convert(
+struct TypeConverter<base::Optional<Vector<uint8_t>>, blink::ScriptValue> {
+  static base::Optional<Vector<uint8_t>> Convert(
       const blink::ScriptValue& scriptValue) {
     v8::Local<v8::Value> value = scriptValue.V8Value();
 
@@ -202,7 +202,7 @@ struct TypeConverter<Optional<Vector<uint8_t>>, blink::ScriptValue> {
       if (!v8::JSON::Stringify(scriptValue.GetContext(), value.As<v8::Object>())
                .ToLocal(&jsonString) ||
           try_catch.HasCaught()) {
-        return WTF::nullopt;
+        return base::nullopt;
       }
 
       String string = blink::V8StringToWebCoreString<String>(
@@ -215,7 +215,7 @@ struct TypeConverter<Optional<Vector<uint8_t>>, blink::ScriptValue> {
           blink::V8ArrayBuffer::ToImpl(value.As<v8::Object>()));
     }
 
-    return WTF::nullopt;
+    return base::nullopt;
   }
 };
 
@@ -251,7 +251,8 @@ struct TypeConverter<NFCRecordPtr, blink::NFCRecord> {
         break;
     }
 
-    auto recordData = mojo::ConvertTo<Optional<Vector<uint8_t>>>(record.data());
+    auto recordData =
+        mojo::ConvertTo<base::Optional<Vector<uint8_t>>>(record.data());
     // If JS object cannot be converted to uint8_t array, return null,
     // interrupt NFCMessage conversion algorithm and reject promise with
     // SyntaxError exception.

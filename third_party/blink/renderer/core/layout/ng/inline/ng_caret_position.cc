@@ -126,7 +126,7 @@ unsigned GetTextOffsetBefore(const NGPhysicalFragment& fragment) {
   const Node* node = fragment.GetNode();
   DCHECK(node);
   const Position before_node = Position::BeforeNode(*node);
-  Optional<unsigned> maybe_offset_before =
+  base::Optional<unsigned> maybe_offset_before =
       NGOffsetMapping::GetFor(before_node)->GetTextContentOffset(before_node);
   // We should have offset mapping for atomic inline boxes.
   DCHECK(maybe_offset_before.has_value());
@@ -151,7 +151,7 @@ CaretPositionResolution TryResolveCaretPositionByBoxFragmentSide(
   const NGCaretPositionType position_type =
       offset == offset_before ? NGCaretPositionType::kBeforeBox
                               : NGCaretPositionType::kAfterBox;
-  NGCaretPosition candidate{&fragment, position_type, WTF::nullopt};
+  NGCaretPosition candidate{&fragment, position_type, base::nullopt};
 
   if (offset == offset_before &&
       CanResolveCaretPositionBeforeFragment(fragment, affinity)) {
@@ -226,7 +226,7 @@ NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity& position) {
 
   const NGOffsetMapping* mapping = NGOffsetMapping::GetFor(context);
   DCHECK(mapping);
-  const Optional<unsigned> maybe_offset =
+  const base::Optional<unsigned> maybe_offset =
       mapping->GetTextContentOffset(position.GetPosition());
   if (!maybe_offset.has_value()) {
     // TODO(xiaochengh): Investigate if we reach here.

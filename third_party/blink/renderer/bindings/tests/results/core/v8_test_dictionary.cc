@@ -283,7 +283,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (doubleOrNullRecordMemberValue.IsEmpty() || doubleOrNullRecordMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<std::pair<String, Optional<double>>> doubleOrNullRecordMemberCppValue = NativeValueTraits<IDLRecord<IDLString, IDLNullable<IDLDouble>>>::NativeValue(isolate, doubleOrNullRecordMemberValue, exceptionState);
+    Vector<std::pair<String, base::Optional<double>>> doubleOrNullRecordMemberCppValue = NativeValueTraits<IDLRecord<IDLString, IDLNullable<IDLDouble>>>::NativeValue(isolate, doubleOrNullRecordMemberValue, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setDoubleOrNullRecordMember(doubleOrNullRecordMemberCppValue);
@@ -297,7 +297,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (doubleOrNullSequenceMemberValue.IsEmpty() || doubleOrNullSequenceMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<Optional<double>> doubleOrNullSequenceMemberCppValue = NativeValueTraits<IDLSequence<IDLNullable<IDLDouble>>>::NativeValue(isolate, doubleOrNullSequenceMemberValue, exceptionState);
+    Vector<base::Optional<double>> doubleOrNullSequenceMemberCppValue = NativeValueTraits<IDLSequence<IDLNullable<IDLDouble>>>::NativeValue(isolate, doubleOrNullSequenceMemberValue, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setDoubleOrNullSequenceMember(doubleOrNullSequenceMemberCppValue);

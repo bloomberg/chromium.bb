@@ -17,9 +17,9 @@ class FakeCSSStyleImageValue : public CSSStyleImageValue {
       : cache_pending_(cache_pending), size_(size) {}
 
   // CSSStyleImageValue
-  WTF::Optional<IntSize> IntrinsicSize() const final {
+  base::Optional<IntSize> IntrinsicSize() const final {
     if (cache_pending_)
-      return WTF::nullopt;
+      return base::nullopt;
     return size_;
   }
 

@@ -329,7 +329,7 @@ TEST_P(SnapCoordinatorTest, StartAlignmentCalculation) {
   GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -373,7 +373,7 @@ TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculation) {
   area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -440,7 +440,7 @@ TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculationOnViewport) {
   area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*GetDocument().GetLayoutView());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -475,7 +475,7 @@ TEST_P(SnapCoordinatorTest, StartAlignmentCalculationWithBoxModel) {
       styleAttr, "margin: 3px; border: 10px solid; padding: 4px;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -519,7 +519,7 @@ TEST_P(SnapCoordinatorTest, NegativeMarginStartAlignmentCalculation) {
   GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -559,7 +559,7 @@ TEST_P(SnapCoordinatorTest, CenterAlignmentCalculation) {
   GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -613,7 +613,7 @@ TEST_P(SnapCoordinatorTest, AsymmetricalCenterAlignmentCalculation) {
       )HTML");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -662,7 +662,7 @@ TEST_P(SnapCoordinatorTest, EndAlignmentCalculation) {
   GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -709,7 +709,7 @@ TEST_P(SnapCoordinatorTest, EndAlignmentCalculationWithBoxModel) {
       styleAttr, "margin: 3px; border: 10px solid; padding: 4px;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -756,7 +756,7 @@ TEST_P(SnapCoordinatorTest, ScaledEndAlignmentCalculation) {
   GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -803,7 +803,7 @@ TEST_P(SnapCoordinatorTest, VerticalRlStartAlignmentCalculation) {
   scroller_element->setAttribute(styleAttr, "writing-mode: vertical-rl;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
@@ -849,7 +849,7 @@ TEST_P(SnapCoordinatorTest, OverflowedSnapPositionCalculation) {
   GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  Optional<SnapContainerData> data =
+  base::Optional<SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();

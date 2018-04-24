@@ -238,7 +238,7 @@ CSSBasicShapeCircleValue* ConsumeBasicShapeCircle(
     CSSValue* center_y = nullptr;
     if (!ConsumePosition(args, context,
                          CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
-                         Optional<WebFeature>(), center_x, center_y))
+                         base::Optional<WebFeature>(), center_x, center_y))
       return nullptr;
     shape->SetCenterX(center_x);
     shape->SetCenterY(center_y);
@@ -266,7 +266,7 @@ CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
     CSSValue* center_y = nullptr;
     if (!ConsumePosition(args, context,
                          CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
-                         Optional<WebFeature>(), center_x, center_y))
+                         base::Optional<WebFeature>(), center_x, center_y))
       return nullptr;
     shape->SetCenterX(center_x);
     shape->SetCenterY(center_y);
@@ -746,7 +746,7 @@ CSSValue* ConsumeMaskSourceType(CSSParserTokenRange& range) {
 CSSPrimitiveValue* ConsumeLengthOrPercentCountNegative(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    WTF::Optional<WebFeature> negativeSize) {
+    base::Optional<WebFeature> negativeSize) {
   CSSPrimitiveValue* result =
       ConsumeLengthOrPercent(range, context.Mode(), kValueRangeNonNegative,
                              CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
@@ -764,7 +764,7 @@ CSSPrimitiveValue* ConsumeLengthOrPercentCountNegative(
 
 CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
                                 const CSSParserContext& context,
-                                WTF::Optional<WebFeature> negativeSize,
+                                base::Optional<WebFeature> negativeSize,
                                 ParsingStyle parsing_style) {
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueContain, CSSValueCover>(
           range.Peek().Id())) {
@@ -843,7 +843,7 @@ CSSValue* ParseBackgroundBox(CSSParserTokenRange& range,
 CSSValue* ParseBackgroundOrMaskSize(CSSParserTokenRange& range,
                                     const CSSParserContext& context,
                                     const CSSParserLocalContext& local_context,
-                                    WTF::Optional<WebFeature> negativeSize) {
+                                    base::Optional<WebFeature> negativeSize) {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       ConsumeBackgroundSize, range, context, negativeSize,
       local_context.UseAliasParsing() ? ParsingStyle::kLegacy
@@ -1481,7 +1481,7 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
       CSSPropertyParserHelpers::ConsumeIdent<CSSValueOblique>(range);
 
   CSSPrimitiveValue* start_angle =
-      CSSPropertyParserHelpers::ConsumeAngle(range, nullptr, WTF::nullopt);
+      CSSPropertyParserHelpers::ConsumeAngle(range, nullptr, base::nullopt);
   if (!start_angle)
     return oblique_identifier;
   if (!IsAngleWithinLimits(start_angle))
@@ -1494,7 +1494,7 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
   }
 
   CSSPrimitiveValue* end_angle =
-      CSSPropertyParserHelpers::ConsumeAngle(range, nullptr, WTF::nullopt);
+      CSSPropertyParserHelpers::ConsumeAngle(range, nullptr, base::nullopt);
   if (!end_angle || !IsAngleWithinLimits(end_angle))
     return nullptr;
 
@@ -2268,7 +2268,7 @@ CSSValue* ConsumeRay(CSSParserTokenRange& range,
   while (!function_args.AtEnd()) {
     if (!angle) {
       angle = CSSPropertyParserHelpers::ConsumeAngle(
-          function_args, &context, WTF::Optional<WebFeature>());
+          function_args, &context, base::Optional<WebFeature>());
       if (angle)
         continue;
     }
@@ -2351,7 +2351,7 @@ CSSValue* ConsumePathOrNone(CSSParserTokenRange& range) {
 CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
                               const CSSParserContext& context) {
   CSSValue* angle = CSSPropertyParserHelpers::ConsumeAngle(
-      range, &context, Optional<WebFeature>());
+      range, &context, base::Optional<WebFeature>());
   CSSValue* keyword =
       CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto, CSSValueReverse>(
           range);
@@ -2359,8 +2359,8 @@ CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
     return nullptr;
 
   if (!angle) {
-    angle = CSSPropertyParserHelpers::ConsumeAngle(range, &context,
-                                                   Optional<WebFeature>());
+    angle = CSSPropertyParserHelpers::ConsumeAngle(
+        range, &context, base::Optional<WebFeature>());
   }
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();

@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace v8_inspector {
 struct V8StackTraceId;
@@ -68,7 +68,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
  private:
   friend class DedicatedWorkerMessagingProxyForTest;
 
-  WTF::Optional<WorkerBackingThreadStartupData> CreateBackingThreadStartupData(
+  base::Optional<WorkerBackingThreadStartupData> CreateBackingThreadStartupData(
       v8::Isolate*);
 
   std::unique_ptr<WorkerThread> CreateWorkerThread() override;

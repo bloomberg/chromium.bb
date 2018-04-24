@@ -823,7 +823,7 @@ String HTMLCanvasElement::ToDataURLInternal(
   String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
       mime_type, ImageEncoderUtils::kEncodeReasonToDataURL);
 
-  Optional<ScopedUsHistogramTimer> timer;
+  base::Optional<ScopedUsHistogramTimer> timer;
   if (encoding_mime_type == "image/png") {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, scoped_us_counter_png,
@@ -1356,7 +1356,7 @@ IntSize HTMLCanvasElement::BitmapSourceSize() const {
 ScriptPromise HTMLCanvasElement::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
-    Optional<IntRect> crop_rect,
+    base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions& options) {
   DCHECK(event_target.ToLocalDOMWindow());
 

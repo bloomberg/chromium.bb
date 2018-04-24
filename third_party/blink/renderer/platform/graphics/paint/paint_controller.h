@@ -74,8 +74,9 @@ class PLATFORM_EXPORT PaintController {
 
   // Provide a new set of paint chunk properties to apply to recorded display
   // items, for Slimming Paint v175+.
-  void UpdateCurrentPaintChunkProperties(const Optional<PaintChunk::Id>& id,
-                                         const PropertyTreeState& properties) {
+  void UpdateCurrentPaintChunkProperties(
+      const base::Optional<PaintChunk::Id>& id,
+      const PropertyTreeState& properties) {
     if (id) {
       PaintChunk::Id id_with_fragment(*id, current_fragment_);
       UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(id_with_fragment,
@@ -84,7 +85,7 @@ class PLATFORM_EXPORT PaintController {
       CheckDuplicatePaintChunkId(id_with_fragment);
 #endif
     } else {
-      new_paint_chunks_.UpdateCurrentPaintChunkProperties(WTF::nullopt,
+      new_paint_chunks_.UpdateCurrentPaintChunkProperties(base::nullopt,
                                                           properties);
     }
   }

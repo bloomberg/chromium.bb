@@ -55,7 +55,7 @@ CSSMathProduct* CSSMathProduct::Create(CSSNumericValueVector values) {
                                     final_type);
 }
 
-WTF::Optional<CSSNumericSumValue> CSSMathProduct::SumValue() const {
+base::Optional<CSSNumericSumValue> CSSMathProduct::SumValue() const {
   CSSNumericSumValue sum;
   // Start with the number '1', which is the multiplicative identity.
   sum.terms.push_back(CSSNumericSumValue::Term{1, {}});
@@ -63,7 +63,7 @@ WTF::Optional<CSSNumericSumValue> CSSMathProduct::SumValue() const {
   for (const auto& value : NumericValues()) {
     const auto child_sum = value->SumValue();
     if (!child_sum)
-      return WTF::nullopt;
+      return base::nullopt;
 
     CSSNumericSumValue new_sum;
     for (const auto& a : sum.terms) {

@@ -296,7 +296,7 @@ bool ResourceLoader::WillFollowRedirect(
       scoped_refptr<const SecurityOrigin> source_origin = GetSourceOrigin();
       WebSecurityOrigin source_web_origin(source_origin.get());
       WrappedResourceRequest new_request_wrapper(*new_request);
-      WTF::Optional<network::mojom::CORSError> cors_error =
+      base::Optional<network::mojom::CORSError> cors_error =
           WebCORS::HandleRedirect(
               source_web_origin, new_request_wrapper, redirect_response.Url(),
               redirect_response.HttpStatusCode(),
@@ -733,7 +733,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
 
   WrappedResourceRequest request_in(request);
   WebURLResponse response_out;
-  WTF::Optional<WebURLError> error_out;
+  base::Optional<WebURLError> error_out;
   WebData data_out;
   int64_t encoded_data_length = WebURLLoaderClient::kUnknownEncodedDataLength;
   int64_t encoded_body_length = 0;

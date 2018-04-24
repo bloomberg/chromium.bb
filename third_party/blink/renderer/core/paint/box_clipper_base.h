@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_CLIPPER_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_CLIPPER_BASE_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -23,7 +23,7 @@ class BoxClipperBase {
                                     const DisplayItemClient&,
                                     const PaintInfo&);
 
-  Optional<ScopedPaintChunkProperties> scoped_clip_property_;
+  base::Optional<ScopedPaintChunkProperties> scoped_clip_property_;
 };
 
 }  // namespace blink

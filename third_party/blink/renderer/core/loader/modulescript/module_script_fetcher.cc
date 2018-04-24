@@ -11,7 +11,7 @@ void ModuleScriptFetcher::Trace(blink::Visitor* visitor) {
 }
 
 void ModuleScriptFetcher::NotifyFetchFinished(
-    const WTF::Optional<ModuleScriptCreationParams>& params,
+    const base::Optional<ModuleScriptCreationParams>& params,
     const HeapVector<Member<ConsoleMessage>>& error_messages) {
   client_->NotifyFetchFinished(params, error_messages);
 }

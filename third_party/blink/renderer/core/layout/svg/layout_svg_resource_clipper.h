@@ -49,7 +49,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
         ->EnumValue();
   }
 
-  Optional<Path> AsPath();
+  base::Optional<Path> AsPath();
   sk_sp<const PaintRecord> CreatePaintRecord();
 
   bool HasCycle() { return in_clip_expansion_; }

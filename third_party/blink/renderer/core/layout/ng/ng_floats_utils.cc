@@ -37,7 +37,7 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
     LayoutUnit inline_size) {
   NGBfcOffset adjusted_origin_point =
       AdjustToTopEdgeAlignmentRule(exclusion_space, origin_offset);
-  WTF::Optional<LayoutUnit> clearance_offset =
+  base::Optional<LayoutUnit> clearance_offset =
       exclusion_space.ClearanceOffset(unpositioned_float.ClearType());
 
   AdjustToClearance(clearance_offset, &adjusted_origin_point);
@@ -148,7 +148,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   // because NG cannot figure out the size of such objects on its own,
   // especially not for tables.
   if (is_same_writing_mode && unpositioned_float->node.CanUseNewLayout()) {
-    WTF::Optional<MinMaxSize> min_max_size;
+    base::Optional<MinMaxSize> min_max_size;
     if (NeedMinMaxSize(*space.get(), style)) {
       MinMaxSizeInput zero_input;  // Floats do not intrude into floats.
       min_max_size = unpositioned_float->node.ComputeMinMaxSize(zero_input);

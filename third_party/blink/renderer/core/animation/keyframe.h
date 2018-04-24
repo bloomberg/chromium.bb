@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/effect_model.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
@@ -67,8 +67,8 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   virtual ~Keyframe() = default;
 
   // TODO(smcgruer): The keyframe offset should be immutable.
-  void SetOffset(WTF::Optional<double> offset) { offset_ = offset; }
-  WTF::Optional<double> Offset() const { return offset_; }
+  void SetOffset(base::Optional<double> offset) { offset_ = offset; }
+  base::Optional<double> Offset() const { return offset_; }
   double CheckedOffset() const { return offset_.value(); }
 
   // TODO(smcgruer): The keyframe composite operation should be immutable.
@@ -189,16 +189,16 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
  protected:
   Keyframe()
       : offset_(), composite_(), easing_(LinearTimingFunction::Shared()) {}
-  Keyframe(WTF::Optional<double> offset,
-           WTF::Optional<EffectModel::CompositeOperation> composite,
+  Keyframe(base::Optional<double> offset,
+           base::Optional<EffectModel::CompositeOperation> composite,
            scoped_refptr<TimingFunction> easing)
       : offset_(offset), composite_(composite), easing_(std::move(easing)) {
     if (!easing_)
       easing_ = LinearTimingFunction::Shared();
   }
 
-  WTF::Optional<double> offset_;
-  WTF::Optional<EffectModel::CompositeOperation> composite_;
+  base::Optional<double> offset_;
+  base::Optional<EffectModel::CompositeOperation> composite_;
   scoped_refptr<TimingFunction> easing_;
   DISALLOW_COPY_AND_ASSIGN(Keyframe);
 };

@@ -35,6 +35,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -52,7 +53,6 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -161,8 +161,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   DocumentTimeline* TimelineInternal() { return timeline_; }
 
   double startTime(bool& is_null) const;
-  WTF::Optional<double> startTime() const;
-  WTF::Optional<double> StartTimeInternal() const { return start_time_; }
+  base::Optional<double> startTime() const;
+  base::Optional<double> StartTimeInternal() const { return start_time_; }
   void setStartTime(double, bool is_null);
 
   const AnimationEffect* effect() const { return content_.Get(); }
@@ -184,9 +184,10 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool Outdated() { return outdated_; }
 
   CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositor(
-      const Optional<CompositorElementIdSet>& composited_element_ids) const;
+      const base::Optional<CompositorElementIdSet>& composited_element_ids)
+      const;
   void StartAnimationOnCompositor(
-      const Optional<CompositorElementIdSet>& composited_element_ids);
+      const base::Optional<CompositorElementIdSet>& composited_element_ids);
   void CancelAnimationOnCompositor();
   void RestartAnimationOnCompositor();
   void CancelIncompatibleAnimationsOnCompositor();
@@ -205,7 +206,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   // Returns whether we should continue with the commit for this animation or
   // wait until next commit.
   bool PreCommit(int compositor_group,
-                 const Optional<CompositorElementIdSet>&,
+                 const base::Optional<CompositorElementIdSet>&,
                  bool start_on_compositor);
   void PostCommit(double timeline_time);
 
@@ -245,19 +246,19 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool Limited(double current_time) const;
 
   AnimationPlayState CalculatePlayState() const;
-  WTF::Optional<double> CalculateStartTime(double current_time) const;
+  base::Optional<double> CalculateStartTime(double current_time) const;
   double CalculateCurrentTime() const;
 
   void UnpauseInternal();
   void SetPlaybackRateInternal(double);
-  void SetStartTimeInternal(WTF::Optional<double>);
+  void SetStartTimeInternal(base::Optional<double>);
   void UpdateCurrentTimingState(TimingUpdateReason);
 
   void BeginUpdatingState();
   void EndUpdatingState();
 
   CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositorInternal(
-      const Optional<CompositorElementIdSet>&) const;
+      const base::Optional<CompositorElementIdSet>&) const;
   void CreateCompositorAnimation();
   void DestroyCompositorAnimation();
   void AttachCompositorTimeline();
@@ -280,8 +281,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   AnimationPlayState play_state_;
   double playback_rate_;
-  WTF::Optional<double> start_time_;
-  WTF::Optional<double> hold_time_;
+  base::Optional<double> start_time_;
+  base::Optional<double> hold_time_;
 
   unsigned sequence_number_;
 
@@ -320,8 +321,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
           playback_rate(animation.playback_rate_),
           effect_changed(false),
           pending_action(kStart) {}
-    WTF::Optional<double> start_time;
-    WTF::Optional<double> hold_time;
+    base::Optional<double> start_time;
+    base::Optional<double> hold_time;
     double playback_rate;
     bool effect_changed;
     CompositorAction pending_action;

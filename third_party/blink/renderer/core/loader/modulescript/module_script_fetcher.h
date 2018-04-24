@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_SCRIPT_FETCHER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_SCRIPT_FETCHER_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -24,7 +24,7 @@ class CORE_EXPORT ModuleScriptFetcher
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual void NotifyFetchFinished(
-        const WTF::Optional<ModuleScriptCreationParams>&,
+        const base::Optional<ModuleScriptCreationParams>&,
         const HeapVector<Member<ConsoleMessage>>& error_messages) = 0;
   };
 
@@ -38,7 +38,7 @@ class CORE_EXPORT ModuleScriptFetcher
   virtual void Trace(blink::Visitor*);
 
  protected:
-  void NotifyFetchFinished(const WTF::Optional<ModuleScriptCreationParams>&,
+  void NotifyFetchFinished(const base::Optional<ModuleScriptCreationParams>&,
                            const HeapVector<Member<ConsoleMessage>>&);
 
   void SetClient(Client*);

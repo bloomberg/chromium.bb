@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/svg_container_painter.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_container.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_viewport_container.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -45,8 +45,8 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
       paint_info_before_filtering, layout_svg_container_,
       layout_svg_container_.LocalToSVGParentTransform());
   {
-    Optional<FloatClipRecorder> clip_recorder;
-    Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+    base::Optional<FloatClipRecorder> clip_recorder;
+    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (layout_svg_container_.IsSVGViewportContainer() &&
         SVGLayoutSupport::IsOverflowHidden(layout_svg_container_)) {
       if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {

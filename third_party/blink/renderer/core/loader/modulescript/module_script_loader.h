@@ -58,7 +58,7 @@ class CORE_EXPORT ModuleScriptLoader final
 
   // Implements ModuleScriptFetcher::Client.
   void NotifyFetchFinished(
-      const WTF::Optional<ModuleScriptCreationParams>&,
+      const base::Optional<ModuleScriptCreationParams>&,
       const HeapVector<Member<ConsoleMessage>>& error_messages) override;
 
   bool IsInitialState() const { return state_ == State::kInitial; }

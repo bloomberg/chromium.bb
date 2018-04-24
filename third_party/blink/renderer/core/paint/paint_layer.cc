@@ -993,7 +993,7 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
 
   // This is a universal approach to find containing layer, but is slower than
   // the earlier code.
-  Optional<LayoutObject::AncestorSkipInfo> skip_info;
+  base::Optional<LayoutObject::AncestorSkipInfo> skip_info;
   if (skipped_ancestor)
     skip_info.emplace(&ancestor->GetLayoutObject());
   auto* object = &layout_object;

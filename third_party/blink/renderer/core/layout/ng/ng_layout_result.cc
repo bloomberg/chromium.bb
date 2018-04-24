@@ -20,7 +20,7 @@ NGLayoutResult::NGLayoutResult(
     Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
     const NGUnpositionedListMarker& unpositioned_list_marker,
     std::unique_ptr<const NGExclusionSpace> exclusion_space,
-    const WTF::Optional<NGBfcOffset> bfc_offset,
+    const base::Optional<NGBfcOffset> bfc_offset,
     const NGMarginStrut end_margin_strut,
     const LayoutUnit intrinsic_block_size,
     LayoutUnit minimal_space_shortage,

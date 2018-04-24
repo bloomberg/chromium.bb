@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -47,7 +48,6 @@
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -201,7 +201,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
       LayoutRect& rect_to_scroll,
       WebScrollIntoViewParams& params);
 
-  WTF::Optional<WebSize> size_;
+  base::Optional<WebSize> size_;
 
   // If set, the (plugin) node which has mouse capture.
   Member<Node> mouse_capture_node_;

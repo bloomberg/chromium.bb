@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/platform/waitable_event.h"
 
 #include <vector>
+#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/platform/heap/safe_point.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

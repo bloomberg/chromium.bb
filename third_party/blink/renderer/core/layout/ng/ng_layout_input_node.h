@@ -5,9 +5,9 @@
 #ifndef NGLayoutInputNode_h
 #define NGLayoutInputNode_h
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -79,8 +79,8 @@ class CORE_EXPORT NGLayoutInputNode {
   // computations: LayoutReplaced::IntrinsicSizingInfo,
   // and LayoutReplaced::IntrinsicSize.
   void IntrinsicSize(NGLogicalSize* default_intrinsic_size,
-                     Optional<LayoutUnit>* computed_inline_size,
-                     Optional<LayoutUnit>* computed_block_size,
+                     base::Optional<LayoutUnit>* computed_inline_size,
+                     base::Optional<LayoutUnit>* computed_block_size,
                      NGLogicalSize* aspect_ratio) const;
 
   // Returns the next sibling.

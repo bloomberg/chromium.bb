@@ -35,7 +35,7 @@ class WorkerModuleFetchCoordinator::Request final
   }
 
   void NotifyFetchFinished(
-      const WTF::Optional<ModuleScriptCreationParams>& params,
+      const base::Optional<ModuleScriptCreationParams>& params,
       const HeapVector<Member<ConsoleMessage>>& error_messages) override {
     DCHECK(IsMainThread());
     // The request can be aborted during the resource fetch.

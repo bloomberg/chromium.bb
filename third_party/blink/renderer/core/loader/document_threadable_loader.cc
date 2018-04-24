@@ -651,7 +651,7 @@ bool DocumentThreadableLoader::RedirectReceived(
           : nullptr,
       redirect_response, resource);
 
-  WTF::Optional<network::mojom::CORSError> redirect_error =
+  base::Optional<network::mojom::CORSError> redirect_error =
       CORS::CheckRedirectLocation(new_url);
   if (redirect_error) {
     DispatchDidFailAccessControlCheck(
@@ -665,7 +665,7 @@ bool DocumentThreadableLoader::RedirectReceived(
   if (cors_flag_) {
     // The redirect response must pass the access control check if the CORS
     // flag is set.
-    WTF::Optional<network::mojom::CORSError> access_error = CORS::CheckAccess(
+    base::Optional<network::mojom::CORSError> access_error = CORS::CheckAccess(
         original_url, redirect_response.HttpStatusCode(),
         redirect_response.HttpHeaderFields(),
         new_request.GetFetchCredentialsMode(), *GetSecurityOrigin());
@@ -804,7 +804,7 @@ void DocumentThreadableLoader::ResponseReceived(
 
 void DocumentThreadableLoader::HandlePreflightResponse(
     const ResourceResponse& response) {
-  WTF::Optional<network::mojom::CORSError> cors_error = CORS::CheckAccess(
+  base::Optional<network::mojom::CORSError> cors_error = CORS::CheckAccess(
       response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
       actual_request_.GetFetchCredentialsMode(), *GetSecurityOrigin());
   if (cors_error) {
@@ -821,7 +821,7 @@ void DocumentThreadableLoader::HandlePreflightResponse(
     return;
   }
 
-  WTF::Optional<network::mojom::CORSError> preflight_error =
+  base::Optional<network::mojom::CORSError> preflight_error =
       CORS::CheckPreflight(response.HttpStatusCode());
   if (preflight_error) {
     HandlePreflightFailure(
@@ -832,7 +832,7 @@ void DocumentThreadableLoader::HandlePreflightResponse(
   }
 
   if (actual_request_.IsExternalRequest()) {
-    WTF::Optional<network::mojom::CORSError> external_preflight_status =
+    base::Optional<network::mojom::CORSError> external_preflight_status =
         CORS::CheckExternalPreflight(response.HttpHeaderFields());
     if (external_preflight_status) {
       HandlePreflightFailure(
@@ -937,7 +937,7 @@ void DocumentThreadableLoader::HandleResponse(
   fallback_request_for_service_worker_ = ResourceRequest();
 
   if (CORS::IsCORSEnabledRequestMode(request_mode) && cors_flag_) {
-    WTF::Optional<network::mojom::CORSError> access_error = CORS::CheckAccess(
+    base::Optional<network::mojom::CORSError> access_error = CORS::CheckAccess(
         response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
         credentials_mode, *GetSecurityOrigin());
     if (access_error) {
@@ -1223,7 +1223,7 @@ void DocumentThreadableLoader::LoadRequestSync(
   if (!client_)
     return;
 
-  WTF::Optional<int64_t> downloaded_file_length =
+  base::Optional<int64_t> downloaded_file_length =
       resource->DownloadedFileLength();
   if (downloaded_file_length) {
     client_->DidDownloadData(*downloaded_file_length);

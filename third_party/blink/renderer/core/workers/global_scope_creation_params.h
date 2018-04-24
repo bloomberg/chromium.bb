@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
@@ -22,7 +23,6 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -62,7 +62,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // when |content_security_policy_raw_headers| is set.
   std::unique_ptr<Vector<CSPHeaderAndType>>
       content_security_policy_parsed_headers;
-  WTF::Optional<ContentSecurityPolicyResponseHeaders>
+  base::Optional<ContentSecurityPolicyResponseHeaders>
       content_security_policy_raw_headers;
 
   ReferrerPolicy referrer_policy;

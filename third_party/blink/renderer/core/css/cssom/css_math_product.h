@@ -35,7 +35,7 @@ class CORE_EXPORT CSSMathProduct final : public CSSMathVariadic {
 
   void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 
-  WTF::Optional<CSSNumericSumValue> SumValue() const final;
+  base::Optional<CSSNumericSumValue> SumValue() const final;
   DISALLOW_COPY_AND_ASSIGN(CSSMathProduct);
 };
 

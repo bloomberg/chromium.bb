@@ -35,7 +35,7 @@ IDBVersionChangeEvent::IDBVersionChangeEvent()
 IDBVersionChangeEvent::IDBVersionChangeEvent(
     const AtomicString& event_type,
     unsigned long long old_version,
-    const Optional<unsigned long long>& new_version,
+    const base::Optional<unsigned long long>& new_version,
     WebIDBDataLoss data_loss,
     const String& data_loss_message)
     : Event(event_type, Bubbles::kNo, Cancelable::kNo),

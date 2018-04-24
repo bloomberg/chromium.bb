@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_path.h"
@@ -49,7 +50,6 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/atomics.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 #include <limits>
 #include <memory>
@@ -492,7 +492,7 @@ void IDBDatabase::OnVersionChange(int64_t old_version, int64_t new_version) {
     return;
   }
 
-  Optional<unsigned long long> new_version_nullable;
+  base::Optional<unsigned long long> new_version_nullable;
   if (new_version != IDBDatabaseMetadata::kNoVersion) {
     new_version_nullable = new_version;
   }

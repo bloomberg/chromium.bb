@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_INTERACTIVE_DETECTOR_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/platform/pod_interval.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -58,8 +58,8 @@ class CORE_EXPORT InteractiveDetector
   // Calls to CurrentTimeTicksInSeconds is expensive, so we try not to call it
   // unless we really have to. If we already have the event time available, we
   // pass it in as an argument.
-  void OnResourceLoadBegin(WTF::Optional<TimeTicks> load_begin_time);
-  void OnResourceLoadEnd(WTF::Optional<TimeTicks> load_finish_time);
+  void OnResourceLoadBegin(base::Optional<TimeTicks> load_begin_time);
+  void OnResourceLoadEnd(base::Optional<TimeTicks> load_finish_time);
 
   void SetNavigationStartTime(TimeTicks navigation_start_time);
   void OnFirstMeaningfulPaintDetected(
@@ -138,7 +138,7 @@ class CORE_EXPORT InteractiveDetector
   // Updates current network quietness tracking information. Opens and closes
   // network quiet windows as necessary.
   void UpdateNetworkQuietState(double request_count,
-                               WTF::Optional<TimeTicks> current_time);
+                               base::Optional<TimeTicks> current_time);
 
   TaskRunnerTimer<InteractiveDetector> time_to_interactive_timer_;
   TimeTicks time_to_interactive_timer_fire_time_;

@@ -24,7 +24,7 @@ const CSSValue* OffsetPosition::ParseSingleValue(
   if (id == CSSValueAuto)
     return ConsumeIdent(range);
   CSSValue* value = ConsumePosition(range, context, UnitlessQuirk::kForbid,
-                                    Optional<WebFeature>());
+                                    base::Optional<WebFeature>());
 
   // Count when we receive a valid position other than 'auto'.
   if (value && value->IsValuePair())

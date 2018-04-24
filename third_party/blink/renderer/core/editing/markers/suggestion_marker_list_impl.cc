@@ -18,7 +18,7 @@ UChar32 GetCodePointAt(const String& text, size_t index) {
   return c;
 }
 
-Optional<DocumentMarker::MarkerOffsets>
+base::Optional<DocumentMarker::MarkerOffsets>
 ComputeOffsetsAfterNonSuggestionEditingOperating(const DocumentMarker& marker,
                                                  const String& node_text,
                                                  unsigned offset,
@@ -137,9 +137,9 @@ bool SuggestionMarkerListImpl::ShiftMarkersForSuggestionReplacement(
       continue;
     }
 
-    Optional<DocumentMarker::MarkerOffsets> result =
+    base::Optional<DocumentMarker::MarkerOffsets> result =
         marker->ComputeOffsetsAfterShift(offset, old_length, new_length);
-    if (result == WTF::nullopt) {
+    if (result == base::nullopt) {
       did_shift_marker = true;
       continue;
     }
@@ -169,7 +169,7 @@ bool SuggestionMarkerListImpl::ShiftMarkersForNonSuggestionEditingOperation(
   bool did_shift_marker = false;
   HeapVector<Member<DocumentMarker>> unremoved_markers;
   for (const Member<DocumentMarker>& marker : markers_) {
-    Optional<DocumentMarker::MarkerOffsets> result =
+    base::Optional<DocumentMarker::MarkerOffsets> result =
         ComputeOffsetsAfterNonSuggestionEditingOperating(
             *marker, node_text, offset, old_length, new_length);
     if (!result) {

@@ -154,7 +154,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   IntSize BitmapSourceSize() const override { return size_; }
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
-                                  Optional<IntRect> crop_rect,
+                                  base::Optional<IntRect> crop_rect,
                                   const ImageBitmapOptions&) override;
 
   void Trace(blink::Visitor*) override;

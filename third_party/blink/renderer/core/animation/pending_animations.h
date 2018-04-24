@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_PENDING_ANIMATIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_PENDING_ANIMATIONS_H_
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -68,7 +68,7 @@ class CORE_EXPORT PendingAnimations final
   void Add(Animation*);
   // Returns whether we are waiting for an animation to start and should
   // service again on the next frame.
-  bool Update(const Optional<CompositorElementIdSet>&,
+  bool Update(const base::Optional<CompositorElementIdSet>&,
               bool start_on_compositor = true);
   void NotifyCompositorAnimationStarted(double monotonic_animation_start_time,
                                         int compositor_group = 0);
@@ -77,7 +77,7 @@ class CORE_EXPORT PendingAnimations final
 
  private:
   void TimerFired(TimerBase*) {
-    Update(Optional<CompositorElementIdSet>(), false);
+    Update(base::Optional<CompositorElementIdSet>(), false);
   }
 
   HeapVector<Member<Animation>> pending_;

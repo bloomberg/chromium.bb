@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
@@ -81,7 +82,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/wtf/auto_reset.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 namespace {
@@ -843,7 +843,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
   DCHECK(Client());
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
   bool event_cancelled = false;
-  WTF::Optional<ContextMenuAllowedScope> maybe_context_menu_scope;
+  base::Optional<ContextMenuAllowedScope> maybe_context_menu_scope;
 
   WebViewImpl* view_impl = View();
   switch (event.GetType()) {

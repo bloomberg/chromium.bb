@@ -25,6 +25,7 @@
 
 #include <memory>
 #include "base/gtest_prod_util.h"
+#include "base/optional.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_event_listener_properties.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow
@@ -190,8 +190,8 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) = 0;
 
   // Returns a custom visible content rect if a viewport override is active.
-  virtual WTF::Optional<IntRect> VisibleContentRectForPainting() const {
-    return WTF::nullopt;
+  virtual base::Optional<IntRect> VisibleContentRectForPainting() const {
+    return base::nullopt;
   }
 
   virtual void DispatchViewportPropertiesDidChange(

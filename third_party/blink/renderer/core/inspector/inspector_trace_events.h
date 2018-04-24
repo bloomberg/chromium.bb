@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -17,7 +18,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "v8/include/v8.h"
 
 namespace v8 {
@@ -411,10 +411,10 @@ struct V8CacheResult {
     bool rejected;
   };
   V8CacheResult() = default;
-  V8CacheResult(Optional<ProduceResult>, Optional<ConsumeResult>);
+  V8CacheResult(base::Optional<ProduceResult>, base::Optional<ConsumeResult>);
 
-  Optional<ProduceResult> produce_result;
-  Optional<ConsumeResult> consume_result;
+  base::Optional<ProduceResult> produce_result;
+  base::Optional<ConsumeResult> consume_result;
 };
 
 std::unique_ptr<TracedValue> Data(const String& url,

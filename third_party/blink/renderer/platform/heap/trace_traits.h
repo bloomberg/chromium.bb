@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_TRACE_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_TRACE_TRAITS_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -18,7 +19,6 @@
 #include "third_party/blink/renderer/platform/wtf/hash_table.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
@@ -289,17 +289,18 @@ class TraceTrait<std::pair<T, U>> {
   }
 };
 
-// While using Optional<T> with garbage-collected types is generally disallowed
-// by the OptionalGarbageCollected check in blink_gc_plugin, garbage-collected
-// containers such as HeapVector are allowed and need to be traced.
+// While using base::Optional<T> with garbage-collected types is generally
+// disallowed by the OptionalGarbageCollected check in blink_gc_plugin,
+// garbage-collected containers such as HeapVector are allowed and need to be
+// traced.
 template <typename T>
-class TraceTrait<WTF::Optional<T>> {
+class TraceTrait<base::Optional<T>> {
   STATIC_ONLY(TraceTrait);
 
  public:
   template <typename VisitorDispatcher>
-  static void Trace(VisitorDispatcher visitor, WTF::Optional<T>* optional) {
-    if (*optional != WTF::nullopt) {
+  static void Trace(VisitorDispatcher visitor, base::Optional<T>* optional) {
+    if (*optional != base::nullopt) {
       TraceIfEnabled<T, WTF::IsTraceable<T>::value>::Trace(visitor,
                                                            optional->value());
     }

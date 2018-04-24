@@ -28,8 +28,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LIST_ITEM_ORDINAL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LIST_ITEM_ORDINAL_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -56,7 +56,7 @@ class ListItemOrdinal {
 
   // Get/set/clear the explicit value; i.e., the 'value' attribute of an <li>
   // element.
-  Optional<int> ExplicitValue() const;
+  base::Optional<int> ExplicitValue() const;
   void SetExplicitValue(int, const Node&);
   void ClearExplicitValue(const Node&);
 

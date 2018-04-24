@@ -34,11 +34,11 @@ void WorkerOrWorkletModuleScriptFetcher::OnFetched(
 
 void WorkerOrWorkletModuleScriptFetcher::OnFailed() {
   HeapVector<Member<ConsoleMessage>> error_messages;
-  Finalize(WTF::nullopt, error_messages);
+  Finalize(base::nullopt, error_messages);
 }
 
 void WorkerOrWorkletModuleScriptFetcher::Finalize(
-    const WTF::Optional<ModuleScriptCreationParams>& params,
+    const base::Optional<ModuleScriptCreationParams>& params,
     const HeapVector<Member<ConsoleMessage>>& error_messages) {
   NotifyFetchFinished(params, error_messages);
 }

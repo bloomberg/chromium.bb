@@ -49,7 +49,7 @@ static inline IntRect NormalizeRect(const IntRect& rect) {
 }
 
 ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
-                                        Optional<IntRect> crop_rect,
+                                        base::Optional<IntRect> crop_rect,
                                         IntSize source_size) {
   ImageBitmap::ParsedOptions parsed_options;
   if (options.imageOrientation() == kImageOrientationFlipY) {
@@ -513,7 +513,7 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
 }
 
 ImageBitmap::ImageBitmap(ImageElementBase* image,
-                         Optional<IntRect> crop_rect,
+                         base::Optional<IntRect> crop_rect,
                          Document* document,
                          const ImageBitmapOptions& options) {
   scoped_refptr<Image> input = image->CachedImage()->GetImage();
@@ -535,7 +535,7 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video,
-                         Optional<IntRect> crop_rect,
+                         base::Optional<IntRect> crop_rect,
                          Document* document,
                          const ImageBitmapOptions& options) {
   ParsedOptions parsed_options =
@@ -564,7 +564,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
-                         Optional<IntRect> crop_rect,
+                         base::Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
   SourceImageStatus status;
   scoped_refptr<Image> image_input = canvas->GetSourceImageForCanvas(
@@ -589,7 +589,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
 }
 
 ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
-                         Optional<IntRect> crop_rect,
+                         base::Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
   SourceImageStatus status;
   scoped_refptr<Image> raw_input = offscreen_canvas->GetSourceImageForCanvas(
@@ -636,7 +636,7 @@ ImageBitmap::ImageBitmap(const void* pixel_data,
 }
 
 ImageBitmap::ImageBitmap(ImageData* data,
-                         Optional<IntRect> crop_rect,
+                         base::Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, data->BitmapSourceSize());
@@ -711,7 +711,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
-                         Optional<IntRect> crop_rect,
+                         base::Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
   scoped_refptr<StaticBitmapImage> input = bitmap->BitmapImage();
   if (!input)
@@ -733,7 +733,7 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
 }
 
 ImageBitmap::ImageBitmap(scoped_refptr<StaticBitmapImage> image,
-                         Optional<IntRect> crop_rect,
+                         base::Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
   bool origin_clean = image->OriginClean();
   ParsedOptions parsed_options =
@@ -766,45 +766,45 @@ scoped_refptr<StaticBitmapImage> ImageBitmap::Transfer() {
 ImageBitmap::~ImageBitmap() = default;
 
 ImageBitmap* ImageBitmap::Create(ImageElementBase* image,
-                                 Optional<IntRect> crop_rect,
+                                 base::Optional<IntRect> crop_rect,
                                  Document* document,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(image, crop_rect, document, options);
 }
 
 ImageBitmap* ImageBitmap::Create(HTMLVideoElement* video,
-                                 Optional<IntRect> crop_rect,
+                                 base::Optional<IntRect> crop_rect,
                                  Document* document,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(video, crop_rect, document, options);
 }
 
 ImageBitmap* ImageBitmap::Create(HTMLCanvasElement* canvas,
-                                 Optional<IntRect> crop_rect,
+                                 base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(canvas, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(OffscreenCanvas* offscreen_canvas,
-                                 Optional<IntRect> crop_rect,
+                                 base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(offscreen_canvas, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(ImageData* data,
-                                 Optional<IntRect> crop_rect,
+                                 base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(data, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(ImageBitmap* bitmap,
-                                 Optional<IntRect> crop_rect,
+                                 base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(bitmap, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(scoped_refptr<StaticBitmapImage> image,
-                                 Optional<IntRect> crop_rect,
+                                 base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(std::move(image), crop_rect, options);
 }
@@ -889,7 +889,7 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
 }
 
 ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
-                                       Optional<IntRect> crop_rect,
+                                       base::Optional<IntRect> crop_rect,
                                        Document* document,
                                        ScriptState* script_state,
                                        const ImageBitmapOptions& options) {
@@ -1009,7 +1009,7 @@ IntSize ImageBitmap::Size() const {
 ScriptPromise ImageBitmap::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
-    Optional<IntRect> crop_rect,
+    base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions& options) {
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, Create(this, crop_rect, options));

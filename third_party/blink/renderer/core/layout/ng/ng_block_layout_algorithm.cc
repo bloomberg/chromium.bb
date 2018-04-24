@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 namespace {
@@ -112,7 +112,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
       is_resuming_(break_token && !break_token->IsBreakBefore()),
       exclusion_space_(new NGExclusionSpace(space.ExclusionSpace())) {}
 
-Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
+base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
   MinMaxSize sizes;
 
@@ -166,7 +166,7 @@ Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       // following inline siblings and descendants.
       child_sizes = child.ComputeMinMaxSize(child_input);
     } else {
-      Optional<MinMaxSize> child_minmax;
+      base::Optional<MinMaxSize> child_minmax;
       if (NeedMinMaxSizeForContentContribution(child_style))
         child_minmax = child.ComputeMinMaxSize(child_input);
 
@@ -244,7 +244,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
     NGLayoutInputNode child,
     const NGFragment& fragment,
     const NGBoxStrut& child_margins,
-    const WTF::Optional<NGBfcOffset>& known_fragment_offset) {
+    const base::Optional<NGBfcOffset>& known_fragment_offset) {
   if (known_fragment_offset) {
     return LogicalFromBfcOffsets(
         fragment, known_fragment_offset.value(), ContainerBfcOffset(),
@@ -271,7 +271,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 }
 
 scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
-  WTF::Optional<MinMaxSize> min_max_size;
+  base::Optional<MinMaxSize> min_max_size;
   if (NeedMinMaxSize(ConstraintSpace(), Style())) {
     MinMaxSizeInput zero_input;
     min_max_size = ComputeMinMaxSize(zero_input);
@@ -424,7 +424,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     // We can use the BFC coordinates, as we are a new formatting context.
     DCHECK_EQ(container_builder_.BfcOffset().value(), NGBfcOffset());
 
-    WTF::Optional<LayoutUnit> float_end_offset =
+    base::Optional<LayoutUnit> float_end_offset =
         exclusion_space_->ClearanceOffset(EClear::kBoth);
 
     // We only update the size of this fragment if we need to grow to
@@ -964,7 +964,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   // We try and position the child within the block formatting context. This
   // may cause our BFC offset to be resolved, in which case we should abort our
   // layout if needed.
-  WTF::Optional<NGBfcOffset> child_bfc_offset = layout_result->BfcOffset();
+  base::Optional<NGBfcOffset> child_bfc_offset = layout_result->BfcOffset();
   if (child_bfc_offset) {
     // A child with a known BFC offset shouldn't leave behind pending floats.
     DCHECK(unpositioned_floats_.IsEmpty());
@@ -1121,7 +1121,7 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
     const NGPreviousInflowPosition& previous_inflow_position,
     const NGLayoutInputNode child,
     const NGInflowChildData& child_data,
-    const WTF::Optional<NGBfcOffset>& child_bfc_offset,
+    const base::Optional<NGBfcOffset>& child_bfc_offset,
     const NGLogicalOffset& logical_offset,
     const NGLayoutResult& layout_result,
     const NGFragment& fragment,
@@ -1536,7 +1536,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   // TODO(ikilpatrick): Move the auto margins calculation for different writing
   // modes to post-layout.
   if (!child.IsFloating() && !child.CreatesNewFormattingContext()) {
-    WTF::Optional<MinMaxSize> sizes;
+    base::Optional<MinMaxSize> sizes;
     if (NeedMinMaxSize(*space, child_style)) {
       // We only want to guess the child's size here, so preceding floats are of
       // no interest.
@@ -1560,7 +1560,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     const NGLayoutInputNode child,
     const NGInflowChildData& child_data,
     const NGLogicalSize child_available_size,
-    const WTF::Optional<NGBfcOffset> floats_bfc_offset) {
+    const base::Optional<NGBfcOffset> floats_bfc_offset) {
   NGConstraintSpaceBuilder space_builder(ConstraintSpace());
 
   NGLogicalSize available_size(child_available_size);
@@ -1602,7 +1602,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   }
 
   WritingMode writing_mode;
-  Optional<LayoutUnit> clearance_offset;
+  base::Optional<LayoutUnit> clearance_offset;
   if (!constraint_space_.IsNewFormattingContext())
     clearance_offset = ConstraintSpace().ClearanceOffset();
   if (child.IsInline()) {

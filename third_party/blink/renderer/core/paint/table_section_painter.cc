@@ -209,7 +209,7 @@ void TableSectionPainter::PaintSection(const PaintInfo& paint_info,
   auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
 
   if (local_paint_info.phase != PaintPhase::kSelfOutlineOnly) {
-    Optional<BoxClipper> box_clipper;
+    base::Optional<BoxClipper> box_clipper;
     if (local_paint_info.phase != PaintPhase::kSelfBlockBackgroundOnly) {
       box_clipper.emplace(layout_table_section_, local_paint_info,
                           adjusted_paint_offset, kForceContentsClip);

@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/platform/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mock.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme_overlay_mock.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 #if !defined(OS_MACOSX)
 #include "third_party/blink/public/platform/web_theme_engine.h"
@@ -138,7 +138,7 @@ bool ScrollbarTheme::Paint(const Scrollbar& scrollbar,
 
   // Paint the thumb.
   if (scroll_mask & kThumbPart) {
-    Optional<CompositingRecorder> compositing_recorder;
+    base::Optional<CompositingRecorder> compositing_recorder;
     float opacity = ThumbOpacity(scrollbar);
     if (opacity != 1.0f) {
       FloatRect float_thumb_rect(thumb_rect);

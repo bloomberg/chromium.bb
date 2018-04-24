@@ -1083,8 +1083,8 @@ InspectorCompileScriptEvent::V8CacheResult::ConsumeResult::ConsumeResult(
 }
 
 InspectorCompileScriptEvent::V8CacheResult::V8CacheResult(
-    Optional<ProduceResult> produce_result,
-    Optional<ConsumeResult> consume_result)
+    base::Optional<ProduceResult> produce_result,
+    base::Optional<ConsumeResult> consume_result)
     : produce_result(std::move(produce_result)),
       consume_result(std::move(consume_result)) {}
 

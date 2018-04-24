@@ -263,7 +263,7 @@ void LayoutText::DeleteTextBoxes() {
   text_boxes_.DeleteLineBoxes();
 }
 
-Optional<FloatPoint> LayoutText::GetUpperLeftCorner() const {
+base::Optional<FloatPoint> LayoutText::GetUpperLeftCorner() const {
   DCHECK(!IsBR());
   if (HasLegacyTextBoxes()) {
     if (StyleRef().IsHorizontalWritingMode()) {
@@ -284,7 +284,7 @@ Optional<FloatPoint> LayoutText::GetUpperLeftCorner() const {
     return FloatPoint(line_box->InlineOffsetToContainerBox().left.ToFloat(),
                       LinesBoundingBox().Y());
   }
-  return WTF::nullopt;
+  return base::nullopt;
 }
 
 bool LayoutText::HasTextBoxes() const {
@@ -2066,7 +2066,7 @@ Position LayoutText::PositionForCaretOffset(unsigned offset) const {
   return Position(node, offset);
 }
 
-Optional<unsigned> LayoutText::CaretOffsetForPosition(
+base::Optional<unsigned> LayoutText::CaretOffsetForPosition(
     const Position& position) const {
   // ::first-letter handling should be done by LayoutTextFragment override.
   DCHECK(!IsTextFragment());
@@ -2075,7 +2075,7 @@ Optional<unsigned> LayoutText::CaretOffsetForPosition(
   // WBR handling should be done by LayoutWordBreak override.
   DCHECK(!IsWordBreak());
   if (position.IsNull() || position.AnchorNode() != GetNode())
-    return WTF::nullopt;
+    return base::nullopt;
   DCHECK(GetNode()->IsTextNode());
   if (position.IsBeforeAnchor())
     return 0;
@@ -2095,7 +2095,7 @@ int LayoutText::CaretMinOffset() const {
     const Position first_position = PositionForCaretOffset(0);
     if (first_position.IsNull())
       return 0;
-    Optional<unsigned> candidate = CaretOffsetForPosition(
+    base::Optional<unsigned> candidate = CaretOffsetForPosition(
         mapping->StartOfNextNonCollapsedContent(first_position));
     // Align with the legacy behavior that 0 is returned if the entire node
     // contains only collapsed whitespaces.
@@ -2119,7 +2119,7 @@ int LayoutText::CaretMaxOffset() const {
     const Position last_position = PositionForCaretOffset(TextLength());
     if (last_position.IsNull())
       return TextLength();
-    Optional<unsigned> candidate = CaretOffsetForPosition(
+    base::Optional<unsigned> candidate = CaretOffsetForPosition(
         mapping->EndOfLastNonCollapsedContent(last_position));
     // Align with the legacy behavior that |TextLenght()| is returned if the
     // entire node contains only collapsed whitespaces.
@@ -2146,8 +2146,9 @@ unsigned LayoutText::ResolvedTextLength() const {
       return 0;
     }
     DCHECK(end_position.IsNotNull()) << start_position;
-    Optional<unsigned> start = mapping->GetTextContentOffset(start_position);
-    Optional<unsigned> end = mapping->GetTextContentOffset(end_position);
+    base::Optional<unsigned> start =
+        mapping->GetTextContentOffset(start_position);
+    base::Optional<unsigned> end = mapping->GetTextContentOffset(end_position);
     if (!start.has_value() || !end.has_value()) {
       DCHECK(!start.has_value()) << this;
       DCHECK(!end.has_value()) << this;

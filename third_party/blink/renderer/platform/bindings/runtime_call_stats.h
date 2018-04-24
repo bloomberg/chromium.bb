@@ -8,13 +8,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_RUNTIME_CALL_STATS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_RUNTIME_CALL_STATS_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats_count_everything_buildflags.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
@@ -114,7 +114,7 @@ class PLATFORM_EXPORT RuntimeCallTimer {
   }
 
 #define RUNTIME_CALL_TIMER_SCOPE_WITH_RCS(runtime_call_stats, counterId)  \
-  Optional<RuntimeCallTimerScope> rcs_scope;                              \
+  base::Optional<RuntimeCallTimerScope> rcs_scope;                        \
   if (UNLIKELY(RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled())) { \
     rcs_scope.emplace(runtime_call_stats, counterId);                     \
   }
@@ -139,7 +139,7 @@ class PLATFORM_EXPORT RuntimeCallTimer {
   RUNTIME_CALL_TIMER_SCOPE_WITH_RCS(RuntimeCallStats::From(isolate), counterId)
 
 #define RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(isolate, counterId) \
-  Optional<RuntimeCallTimerScope> rcs_scope;                           \
+  base::Optional<RuntimeCallTimerScope> rcs_scope;                     \
   if (isolate) {                                                       \
     RUNTIME_CALL_TIMER_SCOPE_WITH_OPTIONAL_RCS(                        \
         rcs_scope, RuntimeCallStats::From(isolate), counterId)         \

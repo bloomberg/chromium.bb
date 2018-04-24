@@ -83,13 +83,14 @@ class ImageBitmapFactories final
   static ScriptPromise createImageBitmap(ScriptState*,
                                          EventTarget&,
                                          ImageBitmapSource*,
-                                         Optional<IntRect> crop_rect,
+                                         base::Optional<IntRect> crop_rect,
                                          const ImageBitmapOptions&);
-  static ScriptPromise CreateImageBitmapFromBlob(ScriptState*,
-                                                 EventTarget&,
-                                                 ImageBitmapSource*,
-                                                 Optional<IntRect> crop_rect,
-                                                 const ImageBitmapOptions&);
+  static ScriptPromise CreateImageBitmapFromBlob(
+      ScriptState*,
+      EventTarget&,
+      ImageBitmapSource*,
+      base::Optional<IntRect> crop_rect,
+      const ImageBitmapOptions&);
 
   virtual ~ImageBitmapFactories() = default;
 
@@ -105,7 +106,7 @@ class ImageBitmapFactories final
         public FileReaderLoaderClient {
    public:
     static ImageBitmapLoader* Create(ImageBitmapFactories& factory,
-                                     Optional<IntRect> crop_rect,
+                                     base::Optional<IntRect> crop_rect,
                                      const ImageBitmapOptions& options,
                                      ScriptState* script_state) {
       return new ImageBitmapLoader(factory, crop_rect, script_state, options);
@@ -120,7 +121,7 @@ class ImageBitmapFactories final
 
    private:
     ImageBitmapLoader(ImageBitmapFactories&,
-                      Optional<IntRect> crop_rect,
+                      base::Optional<IntRect> crop_rect,
                       ScriptState*,
                       const ImageBitmapOptions&);
 
@@ -148,7 +149,7 @@ class ImageBitmapFactories final
     std::unique_ptr<FileReaderLoader> loader_;
     Member<ImageBitmapFactories> factory_;
     Member<ScriptPromiseResolver> resolver_;
-    Optional<IntRect> crop_rect_;
+    base::Optional<IntRect> crop_rect_;
     ImageBitmapOptions options_;
   };
 

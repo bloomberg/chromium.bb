@@ -153,7 +153,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
       StringKeyframeEffectModel& effect,
       Vector<std::unique_ptr<CompositorKeyframeModel>>& keyframe_models,
       double animation_playback_rate) {
-    CompositorAnimations::GetAnimationOnCompositor(timing, 0, WTF::nullopt, 0,
+    CompositorAnimations::GetAnimationOnCompositor(timing, 0, base::nullopt, 0,
                                                    effect, keyframe_models,
                                                    animation_playback_rate);
   }
@@ -277,7 +277,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
 
   void SimulateFrame(double time) {
     GetAnimationClock().UpdateTime(time);
-    GetPendingAnimations().Update(Optional<CompositorElementIdSet>(), false);
+    GetPendingAnimations().Update(base::Optional<CompositorElementIdSet>(),
+                                  false);
     timeline_->ServiceAnimations(kTimingUpdateForAnimationFrame);
   }
 

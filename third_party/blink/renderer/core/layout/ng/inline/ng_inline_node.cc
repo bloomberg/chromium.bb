@@ -490,7 +490,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
       NGBlockNode float_node = unpositioned_float->node;
       const ComputedStyle& float_style = float_node.Style();
 
-      Optional<MinMaxSize> child_minmax;
+      base::Optional<MinMaxSize> child_minmax;
       if (NeedMinMaxSizeForContentContribution(float_style)) {
         MinMaxSizeInput zero_input;  // Floats don't intrude into floats.
         child_minmax = float_node.ComputeMinMaxSize(zero_input);

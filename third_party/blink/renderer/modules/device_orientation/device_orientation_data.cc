@@ -35,18 +35,18 @@ DeviceOrientationData* DeviceOrientationData::Create() {
 }
 
 DeviceOrientationData* DeviceOrientationData::Create(
-    const Optional<double>& alpha,
-    const Optional<double>& beta,
-    const Optional<double>& gamma,
+    const base::Optional<double>& alpha,
+    const base::Optional<double>& beta,
+    const base::Optional<double>& gamma,
     bool absolute) {
   return new DeviceOrientationData(alpha, beta, gamma, absolute);
 }
 
 DeviceOrientationData* DeviceOrientationData::Create(
     const DeviceOrientationEventInit& init) {
-  Optional<double> alpha;
-  Optional<double> beta;
-  Optional<double> gamma;
+  base::Optional<double> alpha;
+  base::Optional<double> beta;
+  base::Optional<double> gamma;
   if (init.hasAlpha())
     alpha = init.alpha();
   if (init.hasBeta())
@@ -58,9 +58,9 @@ DeviceOrientationData* DeviceOrientationData::Create(
 
 DeviceOrientationData* DeviceOrientationData::Create(
     const device::OrientationData& data) {
-  Optional<double> alpha;
-  Optional<double> beta;
-  Optional<double> gamma;
+  base::Optional<double> alpha;
+  base::Optional<double> beta;
+  base::Optional<double> gamma;
   if (data.has_alpha)
     alpha = data.alpha;
   if (data.has_beta)
@@ -72,10 +72,11 @@ DeviceOrientationData* DeviceOrientationData::Create(
 
 DeviceOrientationData::DeviceOrientationData() : absolute_(false) {}
 
-DeviceOrientationData::DeviceOrientationData(const Optional<double>& alpha,
-                                             const Optional<double>& beta,
-                                             const Optional<double>& gamma,
-                                             bool absolute)
+DeviceOrientationData::DeviceOrientationData(
+    const base::Optional<double>& alpha,
+    const base::Optional<double>& beta,
+    const base::Optional<double>& gamma,
+    bool absolute)
     : alpha_(alpha), beta_(beta), gamma_(gamma), absolute_(absolute) {}
 
 double DeviceOrientationData::Alpha() const {

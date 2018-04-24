@@ -142,15 +142,15 @@ static_assert(
 static_assert(std::is_base_of<IDLBase, IDLNullable<IDLDouble>>::value,
               "IDLNullable should have IDLBase as a base class");
 static_assert(std::is_same<IDLNullable<IDLDouble>::ResultType,
-                           WTF::Optional<double>>::value,
-              "double? corresponds to Optional<double>");
+                           base::Optional<double>>::value,
+              "double? corresponds to base::Optional<double>");
 static_assert(std::is_same<IDLNullable<Element>::ResultType, Element*>::value,
-              "Element? doesn't require an Optional<> wrapper");
+              "Element? doesn't require a base::Optional<> wrapper");
 static_assert(std::is_same<IDLNullable<IDLString>::ResultType, String>::value,
-              "DOMString? doesn't require an Optional<> wrapper");
+              "DOMString? doesn't require a base::Optional<> wrapper");
 static_assert(std::is_same<IDLNullable<StringOrStringSequence>::ResultType,
                            StringOrStringSequence>::value,
-              "(union type)? doesn't require an Optional<> wrapper");
+              "(union type)? doesn't require a base::Optional<> wrapper");
 
 }  // namespace
 

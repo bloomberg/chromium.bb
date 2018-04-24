@@ -227,20 +227,20 @@ String DictionaryTest::stringFromIterable(
 }
 
 void DictionaryTest::Reset() {
-  long_member_ = WTF::nullopt;
-  long_member_with_clamp_ = WTF::nullopt;
-  long_member_with_enforce_range_ = WTF::nullopt;
+  long_member_ = base::nullopt;
+  long_member_with_clamp_ = base::nullopt;
+  long_member_with_enforce_range_ = base::nullopt;
   long_member_with_default_ = -1;  // This value should not be returned.
-  long_or_null_member_ = WTF::nullopt;
-  long_or_null_member_with_default_ = WTF::nullopt;
-  boolean_member_ = WTF::nullopt;
-  double_member_ = WTF::nullopt;
-  unrestricted_double_member_ = WTF::nullopt;
+  long_or_null_member_ = base::nullopt;
+  long_or_null_member_with_default_ = base::nullopt;
+  boolean_member_ = base::nullopt;
+  double_member_ = base::nullopt;
+  unrestricted_double_member_ = base::nullopt;
   string_member_ = String();
   string_member_with_default_ = String("Should not be returned");
-  string_sequence_member_ = WTF::nullopt;
+  string_sequence_member_ = base::nullopt;
   string_sequence_member_with_default_.Fill("Should not be returned", 1);
-  string_sequence_or_null_member_ = WTF::nullopt;
+  string_sequence_or_null_member_ = base::nullopt;
   enum_member_ = String();
   enum_member_with_default_ = String();
   enum_or_null_member_ = String();
@@ -253,7 +253,7 @@ void DictionaryTest::Reset() {
   derived_string_member_ = String();
   derived_string_member_with_default_ = String();
   required_boolean_member_ = false;
-  dictionary_member_properties_ = WTF::nullopt;
+  dictionary_member_properties_ = base::nullopt;
   internal_enum_or_internal_enum_sequence_ =
       InternalEnumOrInternalEnumSequence();
   any_member_ = ScriptValue();

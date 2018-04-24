@@ -28,7 +28,7 @@ PaintRecordBuilder::PaintRecordBuilder(SkMetaData* meta_data,
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     paint_controller_->UpdateCurrentPaintChunkProperties(
-        WTF::nullopt, PropertyTreeState::Root());
+        base::nullopt, PropertyTreeState::Root());
   }
 
   const HighContrastSettings* high_contrast_settings =

@@ -569,7 +569,7 @@ ImageData* ImageData::CropRect(const IntRect& crop_rect, bool flip_y) {
 
 ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
                                            EventTarget& event_target,
-                                           Optional<IntRect> crop_rect,
+                                           base::Optional<IntRect> crop_rect,
                                            const ImageBitmapOptions& options) {
   if (BufferBase()->IsNeutered()) {
     return ScriptPromise::RejectWithDOMException(

@@ -5,6 +5,7 @@
 #ifndef NGLengthUtils_h
 #define NGLengthUtils_h
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 class ComputedStyle;
@@ -39,7 +39,7 @@ CORE_EXPORT bool NeedMinMaxSizeForContentContribution(const ComputedStyle&);
 // space.
 CORE_EXPORT LayoutUnit ResolveInlineLength(const NGConstraintSpace&,
                                            const ComputedStyle&,
-                                           const WTF::Optional<MinMaxSize>&,
+                                           const base::Optional<MinMaxSize>&,
                                            const Length&,
                                            LengthResolveType);
 
@@ -65,7 +65,7 @@ CORE_EXPORT LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace&,
 // Also, the min/max contribution does include the inline margins as well.
 CORE_EXPORT MinMaxSize
 ComputeMinAndMaxContentContribution(const ComputedStyle&,
-                                    const WTF::Optional<MinMaxSize>&);
+                                    const base::Optional<MinMaxSize>&);
 
 // Resolves the given length to a layout unit, constraining it by the min
 // logical width and max logical width properties from the ComputedStyle
@@ -73,7 +73,7 @@ ComputeMinAndMaxContentContribution(const ComputedStyle&,
 CORE_EXPORT LayoutUnit
 ComputeInlineSizeForFragment(const NGConstraintSpace&,
                              const ComputedStyle&,
-                             const WTF::Optional<MinMaxSize>&);
+                             const base::Optional<MinMaxSize>&);
 
 // Resolves the given length to a layout unit, constraining it by the min
 // logical height and max logical height properties from the ComputedStyle
@@ -83,9 +83,10 @@ CORE_EXPORT LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace&,
                                                    LayoutUnit content_size);
 
 // Computes intrinsic size for replaced elements.
-CORE_EXPORT NGLogicalSize ComputeReplacedSize(const NGLayoutInputNode&,
-                                              const NGConstraintSpace&,
-                                              const Optional<MinMaxSize>&);
+CORE_EXPORT NGLogicalSize
+ComputeReplacedSize(const NGLayoutInputNode&,
+                    const NGConstraintSpace&,
+                    const base::Optional<MinMaxSize>&);
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-count.
@@ -153,8 +154,8 @@ CORE_EXPORT LayoutUnit LineOffsetForTextAlign(ETextAlign,
                                               LayoutUnit space_left);
 
 CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
-                                         Optional<LayoutUnit> min,
-                                         Optional<LayoutUnit> max);
+                                         base::Optional<LayoutUnit> min,
+                                         base::Optional<LayoutUnit> max);
 
 NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
@@ -163,7 +164,7 @@ NGBoxStrut CalculateBorderScrollbarPadding(
 inline NGLogicalSize CalculateBorderBoxSize(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
-    const Optional<MinMaxSize>& min_and_max,
+    const base::Optional<MinMaxSize>& min_and_max,
     LayoutUnit block_content_size = NGSizeIndefinite) {
   return NGLogicalSize(
       ComputeInlineSizeForFragment(constraint_space, style, min_and_max),

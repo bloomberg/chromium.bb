@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -68,7 +69,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -253,7 +253,7 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   if (target_state == DocumentLifecycle::kCompositingInputsClean)
     return;
 
-  Optional<CompositorElementIdSet> composited_element_ids;
+  base::Optional<CompositorElementIdSet> composited_element_ids;
   DocumentAnimations::UpdateAnimations(layout_view_.GetDocument(),
                                        DocumentLifecycle::kCompositingClean,
                                        composited_element_ids);

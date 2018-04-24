@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEV_TOOLS_EMULATOR_H_
 
 #include <memory>
+#include "base/optional.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_viewport_style.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -62,7 +62,7 @@ class CORE_EXPORT DevToolsEmulator final
 
   // Returns a custom visible content rect if a viewport override is active.
   // This ensures that all content inside the forced viewport is painted.
-  WTF::Optional<IntRect> VisibleContentRectForPainting() const;
+  base::Optional<IntRect> VisibleContentRectForPainting() const;
 
  private:
   explicit DevToolsEmulator(WebViewImpl*);
@@ -89,7 +89,7 @@ class CORE_EXPORT DevToolsEmulator final
     double scale;
     bool original_visual_viewport_masking;
   };
-  WTF::Optional<ViewportOverride> viewport_override_;
+  base::Optional<ViewportOverride> viewport_override_;
 
   bool is_overlay_scrollbars_enabled_;
   bool is_orientation_event_enabled_;

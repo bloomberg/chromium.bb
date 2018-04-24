@@ -1211,7 +1211,7 @@ bool LayoutObject::GetUpperLeftCorner(ExpandScrollMargin expand,
     }
 
     if (runner->IsText() && !runner->IsBR()) {
-      const Optional<FloatPoint> maybe_point =
+      const base::Optional<FloatPoint> maybe_point =
           ToLayoutText(runner)->GetUpperLeftCorner();
       if (maybe_point.has_value()) {
         point = runner->LocalToAbsolute(maybe_point.value(), kUseTransforms);

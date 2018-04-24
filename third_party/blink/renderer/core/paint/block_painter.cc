@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
@@ -24,7 +25,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -59,7 +59,7 @@ void BlockPainter::Paint(const PaintInfo& paint_info,
 
   if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       original_phase != PaintPhase::kSelfOutlineOnly) {
-    Optional<BoxClipper> clipper;
+    base::Optional<BoxClipper> clipper;
     // We have already applied clip in SVGForeignObjectClipper.
     if (!layout_block_.IsSVGForeignObject() ||
         RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
@@ -88,7 +88,7 @@ void BlockPainter::PaintOverflowControlsIfNeeded(
       layout_block_.Style()->Visibility() == EVisibility::kVisible &&
       ShouldPaintSelfBlockBackground(paint_info.phase) &&
       !paint_info.PaintRootBackgroundOnly()) {
-    Optional<ClipRecorder> clip_recorder;
+    base::Optional<ClipRecorder> clip_recorder;
     if (!layout_block_.Layer()->IsSelfPaintingLayer()) {
       LayoutRect clip_rect = layout_block_.BorderBoxRect();
       clip_rect.MoveBy(paint_offset);
@@ -268,9 +268,9 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
         .AddPDFURLRectIfNeeded(paint_info, paint_offset);
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly) {
-    Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-    Optional<ScrollRecorder> scroll_recorder;
-    Optional<PaintInfo> scrolled_paint_info;
+    base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
+    base::Optional<ScrollRecorder> scroll_recorder;
+    base::Optional<PaintInfo> scrolled_paint_info;
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       if (const auto* fragment = paint_info.FragmentToPaint(layout_block_)) {
         const auto* object_properties = fragment->PaintProperties();

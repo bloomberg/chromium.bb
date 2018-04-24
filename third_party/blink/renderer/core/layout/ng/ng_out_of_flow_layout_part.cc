@@ -299,8 +299,8 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
           .SetAvailableSize(container_info.content_size)
           .SetPercentageResolutionSize(container_info.content_size)
           .ToConstraintSpace(descendant_writing_mode);
-  Optional<MinMaxSize> min_max_size;
-  Optional<LayoutUnit> block_estimate;
+  base::Optional<MinMaxSize> min_max_size;
+  base::Optional<LayoutUnit> block_estimate;
 
   scoped_refptr<NGLayoutResult> layout_result = nullptr;
 
@@ -315,7 +315,7 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
         node.ComputeMinMaxSize(zero_input, descendant_constraint_space.get());
   }
 
-  Optional<NGLogicalSize> replaced_size;
+  base::Optional<NGLogicalSize> replaced_size;
   if (descendant.node.IsReplaced()) {
     replaced_size = ComputeReplacedSize(
         descendant.node, *descendant_constraint_space, min_max_size);
@@ -396,7 +396,7 @@ bool NGOutOfFlowLayoutPart::IsContainingBlockForDescendant(
 scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     NGBlockNode descendant,
     const ContainingBlockInfo& container_info,
-    const Optional<LayoutUnit>& block_estimate,
+    const base::Optional<LayoutUnit>& block_estimate,
     const NGAbsolutePhysicalPosition node_position) {
   // As the block_estimate is always in the descendant's writing mode, we build
   // the constraint space in the descendant's writing mode.

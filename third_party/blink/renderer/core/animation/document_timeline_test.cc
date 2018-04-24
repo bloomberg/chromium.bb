@@ -78,7 +78,8 @@ class AnimationDocumentTimelineTest : public PageTestBase {
 
   void UpdateClockAndService(double time) {
     GetAnimationClock().UpdateTime(time);
-    GetPendingAnimations().Update(Optional<CompositorElementIdSet>(), false);
+    GetPendingAnimations().Update(base::Optional<CompositorElementIdSet>(),
+                                  false);
     timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
     timeline->ScheduleNextService();
   }

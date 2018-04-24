@@ -12,11 +12,11 @@
 
 namespace blink {
 
-Optional<IntRect> CSSMaskPainter::MaskBoundingBox(
+base::Optional<IntRect> CSSMaskPainter::MaskBoundingBox(
     const LayoutObject& object,
     const LayoutPoint& paint_offset) {
   if (!object.IsBoxModelObject() && !object.IsSVGChild())
-    return WTF::nullopt;
+    return base::nullopt;
 
   if (object.IsSVG()) {
     SVGResources* resources =
@@ -27,11 +27,11 @@ Optional<IntRect> CSSMaskPainter::MaskBoundingBox(
   }
 
   if (object.IsSVGChild() && !object.IsSVGForeignObject())
-    return WTF::nullopt;
+    return base::nullopt;
 
   const ComputedStyle& style = object.StyleRef();
   if (!style.HasMask())
-    return WTF::nullopt;
+    return base::nullopt;
 
   LayoutRect maximum_mask_region;
   // For HTML/CSS objects, the extent of the mask is known as "mask

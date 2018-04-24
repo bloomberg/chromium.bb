@@ -2353,7 +2353,7 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
   play_promise_resolvers_.push_back(resolver);
 
-  Optional<ExceptionCode> code = Play();
+  base::Optional<ExceptionCode> code = Play();
   if (code) {
     DCHECK(!play_promise_resolvers_.IsEmpty());
     play_promise_resolvers_.pop_back();
@@ -2379,17 +2379,18 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
   return promise;
 }
 
-Optional<ExceptionCode> HTMLMediaElement::Play() {
+base::Optional<ExceptionCode> HTMLMediaElement::Play() {
   BLINK_MEDIA_LOG << "play(" << (void*)this << ")";
 
-  Optional<ExceptionCode> exception_code = autoplay_policy_->RequestPlay();
+  base::Optional<ExceptionCode> exception_code =
+      autoplay_policy_->RequestPlay();
 
   if (exception_code == kNotAllowedError) {
     // If we're already playing, then this play would do nothing anyway.
     // Call playInternal to handle scheduling the promise resolution.
     if (!paused_) {
       PlayInternal();
-      return WTF::nullopt;
+      return base::nullopt;
     }
     return exception_code;
   }
@@ -2403,7 +2404,7 @@ Optional<ExceptionCode> HTMLMediaElement::Play() {
 
   PlayInternal();
 
-  return WTF::nullopt;
+  return base::nullopt;
 }
 
 void HTMLMediaElement::PlayInternal() {

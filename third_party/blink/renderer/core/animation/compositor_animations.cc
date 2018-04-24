@@ -379,7 +379,7 @@ void CompositorAnimations::CancelIncompatibleAnimationsOnCompositor(
 void CompositorAnimations::StartAnimationOnCompositor(
     const Element& element,
     int group,
-    WTF::Optional<double> start_time,
+    base::Optional<double> start_time,
     double time_offset,
     const Timing& timing,
     const Animation* animation,
@@ -571,7 +571,7 @@ void AddKeyframesToCurve(PlatformAnimationCurveType& curve,
 void CompositorAnimations::GetAnimationOnCompositor(
     const Timing& timing,
     int group,
-    WTF::Optional<double> start_time,
+    base::Optional<double> start_time,
     double time_offset,
     const KeyframeEffectModelBase& effect,
     Vector<std::unique_ptr<CompositorKeyframeModel>>& keyframe_models,

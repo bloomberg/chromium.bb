@@ -53,7 +53,8 @@ class NGOffsetMappingTest : public NGLayoutTest {
     return GetOffsetMapping().GetMappingUnitForPosition(position);
   }
 
-  Optional<unsigned> GetTextContentOffset(const Position& position) const {
+  base::Optional<unsigned> GetTextContentOffset(
+      const Position& position) const {
     return GetOffsetMapping().GetTextContentOffset(position);
   }
 

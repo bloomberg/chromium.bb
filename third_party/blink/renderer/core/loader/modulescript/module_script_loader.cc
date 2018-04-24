@@ -175,7 +175,7 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
 }
 
 void ModuleScriptLoader::NotifyFetchFinished(
-    const WTF::Optional<ModuleScriptCreationParams>& params,
+    const base::Optional<ModuleScriptCreationParams>& params,
     const HeapVector<Member<ConsoleMessage>>& error_messages) {
   // [nospec] Abort the steps if the browsing context is discarded.
   if (!modulator_->HasValidContext()) {

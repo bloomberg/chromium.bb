@@ -326,11 +326,12 @@ class FragmentPaintPropertyTreeBuilder {
 
  private:
   ALWAYS_INLINE void UpdatePaintOffset();
-  ALWAYS_INLINE void UpdateForPaintOffsetTranslation(Optional<IntPoint>&);
-  ALWAYS_INLINE void UpdatePaintOffsetTranslation(const Optional<IntPoint>&);
+  ALWAYS_INLINE void UpdateForPaintOffsetTranslation(base::Optional<IntPoint>&);
+  ALWAYS_INLINE void UpdatePaintOffsetTranslation(
+      const base::Optional<IntPoint>&);
   ALWAYS_INLINE void SetNeedsPaintPropertyUpdateIfNeeded();
   ALWAYS_INLINE void UpdateForObjectLocationAndSize(
-      Optional<IntPoint>& paint_offset_translation);
+      base::Optional<IntPoint>& paint_offset_translation);
   ALWAYS_INLINE void UpdateClipPathCache();
   ALWAYS_INLINE void UpdateTransform();
   ALWAYS_INLINE void UpdateTransformForNonRootSVG();
@@ -507,7 +508,7 @@ IntPoint ApplyPaintOffsetTranslation(const LayoutObject& object,
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
-    Optional<IntPoint>& paint_offset_translation) {
+    base::Optional<IntPoint>& paint_offset_translation) {
   if (!NeedsPaintOffsetTranslation(object_))
     return;
 
@@ -521,7 +522,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
-    const Optional<IntPoint>& paint_offset_translation) {
+    const base::Optional<IntPoint>& paint_offset_translation) {
   DCHECK(properties_);
 
   if (paint_offset_translation) {
@@ -792,7 +793,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
     const auto* output_clip =
         object_.IsSVGChild() ? context_.current.clip : nullptr;
     if (NeedsEffect(object_)) {
-      Optional<IntRect> mask_clip = CSSMaskPainter::MaskBoundingBox(
+      base::Optional<IntRect> mask_clip = CSSMaskPainter::MaskBoundingBox(
           object_, context_.current.paint_offset);
       bool has_clip_path =
           style.ClipPath() && fragment_data_.ClipPathBoundingBox();
@@ -801,7 +802,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           ToLayoutBoxModelObject(object_).Layer()->GetCompositedLayerMapping();
       bool has_mask_based_clip_path =
           has_clip_path && !fragment_data_.ClipPathPath();
-      Optional<IntRect> clip_path_clip;
+      base::Optional<IntRect> clip_path_clip;
       if (has_spv1_composited_clip_path || has_mask_based_clip_path) {
         clip_path_clip = fragment_data_.ClipPathBoundingBox();
       }
@@ -1810,7 +1811,7 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
-    Optional<IntPoint>& paint_offset_translation) {
+    base::Optional<IntPoint>& paint_offset_translation) {
 #if DCHECK_IS_ON()
   FindPaintOffsetNeedingUpdateScope check_scope(
       object_, fragment_data_, full_context_.is_actually_needed);
@@ -1843,16 +1844,16 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathCache() {
   if (!object_.StyleRef().ClipPath())
     return;
 
-  Optional<FloatRect> bounding_box =
+  base::Optional<FloatRect> bounding_box =
       ClipPathClipper::LocalClipPathBoundingBox(object_);
   if (!bounding_box) {
-    fragment_data_.SetClipPathCache(WTF::nullopt, nullptr);
+    fragment_data_.SetClipPathCache(base::nullopt, nullptr);
     return;
   }
   bounding_box->MoveBy(FloatPoint(fragment_data_.PaintOffset()));
 
   bool is_valid = false;
-  Optional<Path> path = ClipPathClipper::PathBasedClip(
+  base::Optional<Path> path = ClipPathClipper::PathBasedClip(
       object_, object_.IsSVGChild(),
       ClipPathClipper::LocalReferenceBox(object_), is_valid);
   DCHECK(is_valid);
@@ -1866,7 +1867,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathCache() {
 void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
   // This is not in FindObjectPropertiesNeedingUpdateScope because paint offset
   // can change without NeedsPaintPropertyUpdate.
-  Optional<IntPoint> paint_offset_translation;
+  base::Optional<IntPoint> paint_offset_translation;
   UpdateForObjectLocationAndSize(paint_offset_translation);
   if (&fragment_data_ == &object_.FirstFragment())
     SetNeedsPaintPropertyUpdateIfNeeded();
@@ -2180,7 +2181,7 @@ static LayoutUnit FragmentLogicalTopInParentFlowThread(
 // to allow for correct property tree parenting of fragments.
 PaintPropertyTreeBuilderFragmentContext
 ObjectPaintPropertyTreeBuilder::ContextForFragment(
-    const Optional<LayoutRect>& fragment_clip,
+    const base::Optional<LayoutRect>& fragment_clip,
     LayoutUnit logical_top_in_flow_thread) const {
   const auto& parent_fragments = context_.fragments;
   if (parent_fragments.IsEmpty())
@@ -2231,7 +2232,7 @@ ObjectPaintPropertyTreeBuilder::ContextForFragment(
           auto context = parent_context;
           // The context inherits fragment clip from parent so we don't need
           // to issue fragment clip again.
-          context.fragment_clip = WTF::nullopt;
+          context.fragment_clip = base::nullopt;
           return context;
         }
       }
@@ -2328,7 +2329,7 @@ void ObjectPaintPropertyTreeBuilder::CreateFragmentContexts(
     auto pagination_offset = ToLayoutPoint(iterator.PaginationOffset());
     auto logical_top_in_flow_thread =
         iterator.FragmentainerLogicalTopInFlowThread();
-    Optional<LayoutRect> fragment_clip;
+    base::Optional<LayoutRect> fragment_clip;
 
     if (object_.HasLayer()) {
       // 1. Compute clip in flow thread space.
@@ -2355,7 +2356,7 @@ void ObjectPaintPropertyTreeBuilder::CreateFragmentContexts(
     new_fragment_contexts.push_back(
         ContextForFragment(fragment_clip, logical_top_in_flow_thread));
 
-    Optional<LayoutUnit> old_logical_top_in_flow_thread;
+    base::Optional<LayoutUnit> old_logical_top_in_flow_thread;
     if (current_fragment_data) {
       if (const auto* old_fragment = current_fragment_data->NextFragment())
         old_logical_top_in_flow_thread = old_fragment->LogicalTopInFlowThread();

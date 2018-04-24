@@ -26,9 +26,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_DATA_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace device {
 class OrientationData;
@@ -42,9 +42,9 @@ class MODULES_EXPORT DeviceOrientationData final
     : public GarbageCollected<DeviceOrientationData> {
  public:
   static DeviceOrientationData* Create();
-  static DeviceOrientationData* Create(const Optional<double>& alpha,
-                                       const Optional<double>& beta,
-                                       const Optional<double>& gamma,
+  static DeviceOrientationData* Create(const base::Optional<double>& alpha,
+                                       const base::Optional<double>& beta,
+                                       const base::Optional<double>& gamma,
                                        bool absolute);
   static DeviceOrientationData* Create(const DeviceOrientationEventInit&);
   static DeviceOrientationData* Create(const device::OrientationData&);
@@ -62,14 +62,14 @@ class MODULES_EXPORT DeviceOrientationData final
 
  private:
   DeviceOrientationData();
-  DeviceOrientationData(const Optional<double>& alpha,
-                        const Optional<double>& beta,
-                        const Optional<double>& gamma,
+  DeviceOrientationData(const base::Optional<double>& alpha,
+                        const base::Optional<double>& beta,
+                        const base::Optional<double>& gamma,
                         bool absolute);
 
-  Optional<double> alpha_;
-  Optional<double> beta_;
-  Optional<double> gamma_;
+  base::Optional<double> alpha_;
+  base::Optional<double> beta_;
+  base::Optional<double> gamma_;
   bool absolute_;
 };
 

@@ -30,8 +30,8 @@ Vector<int32_t> SequenceTest::identityLongSequence(
   return arg;
 }
 
-Optional<Vector<uint8_t>> SequenceTest::identityOctetSequenceOrNull(
-    const Optional<Vector<uint8_t>>& arg) const {
+base::Optional<Vector<uint8_t>> SequenceTest::identityOctetSequenceOrNull(
+    const base::Optional<Vector<uint8_t>>& arg) const {
   return arg;
 }
 

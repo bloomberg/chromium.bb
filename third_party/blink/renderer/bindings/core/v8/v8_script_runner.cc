@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -48,7 +49,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -150,7 +150,7 @@ static v8::MaybeLocal<v8::Script> CompileAndConsumeCache(
   if (cached_data->rejected)
     cache_handler->ClearCachedMetadata(CachedMetadataHandler::kSendToPlatform);
   if (cache_result) {
-    cache_result->consume_result = WTF::make_optional(
+    cache_result->consume_result = base::make_optional(
         InspectorCompileScriptEvent::V8CacheResult::ConsumeResult(
             consume_options, length, cached_data->rejected));
   }
@@ -526,8 +526,8 @@ void V8ScriptRunner::ProduceCache(
               InspectorCompileScriptEvent::V8CacheResult(
                   InspectorCompileScriptEvent::V8CacheResult::ProduceResult(
                       compile_options, cached_data ? cached_data->length : 0),
-                  Optional<InspectorCompileScriptEvent::V8CacheResult::
-                               ConsumeResult>()),
+                  base::Optional<InspectorCompileScriptEvent::V8CacheResult::
+                                     ConsumeResult>()),
               source.Streamer()));
       break;
     }
@@ -801,7 +801,7 @@ scoped_refptr<CachedMetadata> V8ScriptRunner::GenerateFullCodeCache(
               InspectorCompileScriptEvent::V8CacheResult::ProduceResult(
                   v8::ScriptCompiler::kEagerCompile,
                   cached_data ? cached_data->length : 0),
-              Optional<
+              base::Optional<
                   InspectorCompileScriptEvent::V8CacheResult::ConsumeResult>()),
           false));
 

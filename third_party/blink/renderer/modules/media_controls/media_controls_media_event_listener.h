@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_MEDIA_EVENT_LISTENER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_MEDIA_EVENT_LISTENER_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -40,7 +40,7 @@ class MediaControlsMediaEventListener final : public EventListener {
   void OnRemotePlaybackAvailabilityChanged();
 
   Member<MediaControlsImpl> media_controls_;
-  WTF::Optional<int> remote_playback_availability_callback_id_;
+  base::Optional<int> remote_playback_availability_callback_id_;
 };
 
 }  // namespace blink

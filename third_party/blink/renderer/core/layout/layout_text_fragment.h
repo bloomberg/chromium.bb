@@ -52,7 +52,8 @@ class CORE_EXPORT LayoutTextFragment final : public LayoutText {
   bool IsTextFragment() const override { return true; }
 
   Position PositionForCaretOffset(unsigned) const override;
-  Optional<unsigned> CaretOffsetForPosition(const Position&) const override;
+  base::Optional<unsigned> CaretOffsetForPosition(
+      const Position&) const override;
 
   unsigned Start() const { return start_; }
   unsigned FragmentLength() const { return fragment_length_; }

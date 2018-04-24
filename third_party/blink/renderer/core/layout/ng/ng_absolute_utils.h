@@ -5,12 +5,12 @@
 #ifndef NGAbsoluteUtils_h
 #define NGAbsoluteUtils_h
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -54,8 +54,8 @@ ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGStaticPosition&,
-    const Optional<MinMaxSize>& child_minmax,
-    const Optional<NGLogicalSize>& replaced_size,
+    const base::Optional<MinMaxSize>& child_minmax,
+    const base::Optional<NGLogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction);
 
@@ -64,8 +64,8 @@ CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGStaticPosition&,
-    const Optional<LayoutUnit>& child_block_size,
-    const Optional<NGLogicalSize>& replaced_size,
+    const base::Optional<LayoutUnit>& child_block_size,
+    const base::Optional<NGLogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction,
     NGAbsolutePhysicalPosition* position);

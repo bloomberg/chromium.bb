@@ -50,7 +50,7 @@ class CORE_EXPORT PrePaintTreeWalk {
 #endif
     }
 
-    WTF::Optional<PaintPropertyTreeBuilderContext> tree_builder_context;
+    base::Optional<PaintPropertyTreeBuilderContext> tree_builder_context;
     PaintInvalidatorContext paint_invalidator_context;
 
     // The ancestor in the PaintLayer tree which has overflow clip, or

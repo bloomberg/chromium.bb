@@ -21,7 +21,7 @@ bool ShouldShrinkToFit(const ComputedStyle& parent_style,
          !is_in_parallel_flow;
 }
 
-bool AdjustToClearance(const WTF::Optional<LayoutUnit>& clearance_offset,
+bool AdjustToClearance(const base::Optional<LayoutUnit>& clearance_offset,
                        NGBfcOffset* offset) {
   DCHECK(offset);
   if (clearance_offset && clearance_offset.value() > offset->block_offset) {

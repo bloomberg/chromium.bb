@@ -467,7 +467,7 @@ void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
   // container or from existing areas in orphan pool.
 }
 
-Optional<SnapContainerData> SnapCoordinator::GetSnapContainerData(
+base::Optional<SnapContainerData> SnapCoordinator::GetSnapContainerData(
     const LayoutBox& snap_container) const {
   auto iter = snap_container_map_.find(&snap_container);
   if (iter != snap_container_map_.end()) {

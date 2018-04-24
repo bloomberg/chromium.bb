@@ -163,7 +163,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   DCHECK(font_data);
 
   LayoutRect box_rect(box_origin, fragment_.Size().ToLayoutSize());
-  Optional<GraphicsContextStateSaver> state_saver;
+  base::Optional<GraphicsContextStateSaver> state_saver;
   NGLineOrientation orientation = text_fragment.LineOrientation();
   if (orientation != NGLineOrientation::kHorizontal) {
     state_saver.emplace(context);

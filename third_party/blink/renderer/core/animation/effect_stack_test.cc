@@ -171,7 +171,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyFontSize, "2px")), 6);
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyFontSize, "3px")), 4);
   GetDocument().GetPendingAnimations().Update(
-      Optional<CompositorElementIdSet>());
+      base::Optional<CompositorElementIdSet>());
   ActiveInterpolationsMap interpolations;
 
   UpdateTimeline(11);

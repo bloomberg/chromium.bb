@@ -76,8 +76,8 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 
   const DisplayItemClient* display_item_client = &layout_view_;
 
-  Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-  Optional<ScrollRecorder> scroll_recorder;
+  base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
+  base::Optional<ScrollRecorder> scroll_recorder;
   if (BoxModelObjectPainter::
           IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
               &layout_view_, paint_info)) {

@@ -374,7 +374,7 @@ AtomicString Resource::HttpContentType() const {
 
 bool Resource::PassesAccessControlCheck(
     const SecurityOrigin& security_origin) const {
-  WTF::Optional<network::mojom::CORSError> cors_error = CORS::CheckAccess(
+  base::Optional<network::mojom::CORSError> cors_error = CORS::CheckAccess(
       GetResponse().Url(), GetResponse().HttpStatusCode(),
       GetResponse().HttpHeaderFields(),
       LastResourceRequest().GetFetchCredentialsMode(), security_origin);

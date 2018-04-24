@@ -59,7 +59,7 @@ void ThreadedMessagingProxyBase::Trace(blink::Visitor* visitor) {
 
 void ThreadedMessagingProxyBase::InitializeWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
-    const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data) {
+    const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data) {
   DCHECK(IsParentContextThread());
 
   KURL script_url = global_scope_creation_params->script_url.Copy();

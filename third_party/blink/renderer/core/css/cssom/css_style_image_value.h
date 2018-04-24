@@ -6,10 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_STYLE_IMAGE_VALUE_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/cssom/css_resource_value.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -38,7 +38,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
  protected:
   CSSStyleImageValue() = default;
 
-  virtual WTF::Optional<IntSize> IntrinsicSize() const = 0;
+  virtual base::Optional<IntSize> IntrinsicSize() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CSSStyleImageValue);

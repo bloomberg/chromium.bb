@@ -65,8 +65,8 @@ class AdjustPaintOffsetScope {
 
   const PaintInfo& old_paint_info_;
   LayoutPoint adjusted_paint_offset_;
-  Optional<PaintInfo> new_paint_info_;
-  Optional<ScopedPaintChunkProperties> contents_properties_;
+  base::Optional<PaintInfo> new_paint_info_;
+  base::Optional<ScopedPaintChunkProperties> contents_properties_;
 };
 
 }  // namespace blink

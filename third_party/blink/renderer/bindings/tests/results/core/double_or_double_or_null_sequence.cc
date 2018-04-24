@@ -35,18 +35,18 @@ DoubleOrDoubleOrNullSequence DoubleOrDoubleOrNullSequence::FromDouble(double val
   return container;
 }
 
-const Vector<Optional<double>>& DoubleOrDoubleOrNullSequence::GetAsDoubleOrNullSequence() const {
+const Vector<base::Optional<double>>& DoubleOrDoubleOrNullSequence::GetAsDoubleOrNullSequence() const {
   DCHECK(IsDoubleOrNullSequence());
   return double_or_null_sequence_;
 }
 
-void DoubleOrDoubleOrNullSequence::SetDoubleOrNullSequence(const Vector<Optional<double>>& value) {
+void DoubleOrDoubleOrNullSequence::SetDoubleOrNullSequence(const Vector<base::Optional<double>>& value) {
   DCHECK(IsNull());
   double_or_null_sequence_ = value;
   type_ = SpecificType::kDoubleOrNullSequence;
 }
 
-DoubleOrDoubleOrNullSequence DoubleOrDoubleOrNullSequence::FromDoubleOrNullSequence(const Vector<Optional<double>>& value) {
+DoubleOrDoubleOrNullSequence DoubleOrDoubleOrNullSequence::FromDoubleOrNullSequence(const Vector<base::Optional<double>>& value) {
   DoubleOrDoubleOrNullSequence container;
   container.SetDoubleOrNullSequence(value);
   return container;
@@ -67,7 +67,7 @@ void V8DoubleOrDoubleOrNullSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::
     return;
 
   if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    Vector<Optional<double>> cppValue = NativeValueTraits<IDLSequence<IDLNullable<IDLDouble>>>::NativeValue(isolate, v8Value, exceptionState);
+    Vector<base::Optional<double>> cppValue = NativeValueTraits<IDLSequence<IDLNullable<IDLDouble>>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.SetDoubleOrNullSequence(cppValue);

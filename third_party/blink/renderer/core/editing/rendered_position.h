@@ -31,11 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/layout/line/inline_box.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -108,8 +108,8 @@ class CORE_EXPORT RenderedPosition {
   const InlineBox* inline_box_;
   int offset_;
 
-  mutable Optional<const InlineBox*> prev_leaf_child_;
-  mutable Optional<const InlineBox*> next_leaf_child_;
+  mutable base::Optional<const InlineBox*> prev_leaf_child_;
+  mutable base::Optional<const InlineBox*> next_leaf_child_;
 };
 
 inline RenderedPosition::RenderedPosition()

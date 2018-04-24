@@ -112,7 +112,7 @@ class CORE_EXPORT ImageResourceContent final
   const KURL& Url() const;
   bool IsAccessAllowed(const SecurityOrigin*);
   const ResourceResponse& GetResponse() const;
-  Optional<ResourceError> GetResourceError() const;
+  base::Optional<ResourceError> GetResourceError() const;
   // DEPRECATED: ImageResourceContents consumers shouldn't need to worry about
   // whether the underlying Resource is being revalidated.
   bool IsCacheValidator() const;

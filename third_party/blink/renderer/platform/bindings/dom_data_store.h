@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -40,7 +41,6 @@
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "v8/include/v8.h"
@@ -192,7 +192,7 @@ class DOMDataStore {
   }
 
   bool is_main_world_;
-  WTF::Optional<DOMWrapperMap<ScriptWrappable>> wrapper_map_;
+  base::Optional<DOMWrapperMap<ScriptWrappable>> wrapper_map_;
 };
 
 template <>

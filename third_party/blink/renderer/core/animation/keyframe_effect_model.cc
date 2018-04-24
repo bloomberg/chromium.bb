@@ -171,7 +171,7 @@ Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
   result.ReserveCapacity(keyframes.size());
 
   for (const auto& keyframe : keyframes) {
-    WTF::Optional<double> offset = keyframe->Offset();
+    base::Optional<double> offset = keyframe->Offset();
     if (offset) {
       DCHECK_GE(offset.value(), 0);
       DCHECK_LE(offset.value(), 1);

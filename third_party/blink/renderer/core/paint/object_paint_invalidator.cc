@@ -416,7 +416,7 @@ void ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext(
   if (rect.IsEmpty())
     return;
 
-  Optional<ScopedSetNeedsDisplayInRectForTrackingOnly> scope;
+  base::Optional<ScopedSetNeedsDisplayInRectForTrackingOnly> scope;
   // If the parent has fully invalidated and its visual rect covers this object
   // on the same backing, skip the invalidation.
   if (ParentFullyInvalidatedOnSameBacking() &&

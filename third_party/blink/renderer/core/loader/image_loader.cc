@@ -660,7 +660,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   if (resource->ErrorOccurred()) {
     pending_load_event_.Cancel();
 
-    Optional<ResourceError> error = resource->GetResourceError();
+    base::Optional<ResourceError> error = resource->GetResourceError();
     if (error && error->IsAccessCheck())
       CrossSiteOrCSPViolationOccurred(AtomicString(error->FailingURL()));
 

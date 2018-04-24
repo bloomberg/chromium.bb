@@ -1148,7 +1148,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
     return;
 
   double start_time = 0;
-  Optional<CustomCountHistogram> timer;
+  base::Optional<CustomCountHistogram> timer;
   if (!IsPaint2D()) {
     start_time = WTF::CurrentTimeTicksInSeconds();
     if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
@@ -1588,7 +1588,7 @@ ImageData* BaseRenderingContext2D::getImageData(
     return nullptr;
   }
 
-  Optional<ScopedUsHistogramTimer> timer;
+  base::Optional<ScopedUsHistogramTimer> timer;
   if (!IsPaint2D()) {
     if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -1703,7 +1703,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   if (dest_rect.IsEmpty())
     return;
 
-  Optional<ScopedUsHistogramTimer> timer;
+  base::Optional<ScopedUsHistogramTimer> timer;
   if (!IsPaint2D()) {
     if (hasResourceProvider && IsAccelerated()) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(

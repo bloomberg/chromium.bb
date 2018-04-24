@@ -119,7 +119,7 @@ void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {
     pending_loaders_.erase(loader.get());
 
     WebURLResponse response;
-    Optional<WebURLError> error;
+    base::Optional<WebURLError> error;
     WebData data;
     LoadRequest(request.Url(), &response, &error, &data);
     // Follow any redirects while the loader is still active.
@@ -141,7 +141,7 @@ void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {
 }
 
 bool WebURLLoaderMockFactoryImpl::IsMockedURL(const blink::WebURL& url) {
-  Optional<WebURLError> error;
+  base::Optional<WebURLError> error;
   ResponseInfo response_info;
   return LookupURL(url, &error, &response_info);
 }
@@ -153,7 +153,7 @@ void WebURLLoaderMockFactoryImpl::CancelLoad(WebURLLoaderMock* loader) {
 void WebURLLoaderMockFactoryImpl::LoadSynchronously(
     const WebURLRequest& request,
     WebURLResponse* response,
-    Optional<WebURLError>* error,
+    base::Optional<WebURLError>* error,
     WebData* data,
     int64_t* encoded_data_length) {
   LoadRequest(request.Url(), response, error, data);
@@ -174,10 +174,11 @@ void WebURLLoaderMockFactoryImpl::RunUntilIdle() {
     base::RunLoop().RunUntilIdle();
 }
 
-void WebURLLoaderMockFactoryImpl::LoadRequest(const WebURL& url,
-                                              WebURLResponse* response,
-                                              Optional<WebURLError>* error,
-                                              WebData* data) {
+void WebURLLoaderMockFactoryImpl::LoadRequest(
+    const WebURL& url,
+    WebURLResponse* response,
+    base::Optional<WebURLError>* error,
+    WebData* data) {
   ResponseInfo response_info;
   if (!LookupURL(url, error, &response_info)) {
     // Non mocked URLs should not have been passed to the default URLLoader.
@@ -194,7 +195,7 @@ void WebURLLoaderMockFactoryImpl::LoadRequest(const WebURL& url,
 }
 
 bool WebURLLoaderMockFactoryImpl::LookupURL(const WebURL& url,
-                                            Optional<WebURLError>* error,
+                                            base::Optional<WebURLError>* error,
                                             ResponseInfo* response_info) {
   URLToErrorMap::const_iterator error_iter = url_to_error_info_.find(url);
   if (error_iter != url_to_error_info_.end())

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 
 #include <algorithm>
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/length.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 // TODO(layout-ng):
@@ -41,7 +41,7 @@ bool NeedMinMaxSizeForContentContribution(const ComputedStyle& style) {
 
 LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
                                const ComputedStyle& style,
-                               const WTF::Optional<MinMaxSize>& min_and_max,
+                               const base::Optional<MinMaxSize>& min_and_max,
                                const Length& length,
                                LengthResolveType type) {
   DCHECK(!length.IsMaxSizeNone());
@@ -225,7 +225,7 @@ LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace& constraint_space,
 
 MinMaxSize ComputeMinAndMaxContentContribution(
     const ComputedStyle& style,
-    const WTF::Optional<MinMaxSize>& min_and_max) {
+    const base::Optional<MinMaxSize>& min_and_max) {
   // Synthesize a zero-sized constraint space for passing to
   // ResolveInlineLength.
   WritingMode writing_mode = style.GetWritingMode();
@@ -266,7 +266,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
 LayoutUnit ComputeInlineSizeForFragment(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
-    const WTF::Optional<MinMaxSize>& min_and_max) {
+    const base::Optional<MinMaxSize>& min_and_max) {
   if (space.IsFixedSizeInline())
     return space.AvailableSize().inline_size;
 
@@ -278,13 +278,13 @@ LayoutUnit ComputeInlineSizeForFragment(
       ResolveInlineLength(space, style, min_and_max, logical_width,
                           LengthResolveType::kContentSize);
 
-  Optional<LayoutUnit> max_length;
+  base::Optional<LayoutUnit> max_length;
   if (!style.LogicalMaxWidth().IsMaxSizeNone()) {
     max_length =
         ResolveInlineLength(space, style, min_and_max, style.LogicalMaxWidth(),
                             LengthResolveType::kMaxSize);
   }
-  Optional<LayoutUnit> min_length =
+  base::Optional<LayoutUnit> min_length =
       ResolveInlineLength(space, style, min_and_max, style.LogicalMinWidth(),
                           LengthResolveType::kMinSize);
   return ConstrainByMinMax(extent, min_length, max_length);
@@ -308,29 +308,30 @@ LayoutUnit ComputeBlockSizeForFragment(
     DCHECK_EQ(content_size, NGSizeIndefinite);
     return extent;
   }
-  Optional<LayoutUnit> max_length;
+  base::Optional<LayoutUnit> max_length;
   if (!style.LogicalMaxHeight().IsMaxSizeNone()) {
     max_length =
         ResolveBlockLength(constraint_space, style, style.LogicalMaxHeight(),
                            content_size, LengthResolveType::kMaxSize);
   }
-  Optional<LayoutUnit> min_length =
+  base::Optional<LayoutUnit> min_length =
       ResolveBlockLength(constraint_space, style, style.LogicalMinHeight(),
                          content_size, LengthResolveType::kMinSize);
   return ConstrainByMinMax(extent, min_length, max_length);
 }
 
 // Computes size for a replaced element.
-NGLogicalSize ComputeReplacedSize(const NGLayoutInputNode& node,
-                                  const NGConstraintSpace& space,
-                                  const Optional<MinMaxSize>& child_minmax) {
+NGLogicalSize ComputeReplacedSize(
+    const NGLayoutInputNode& node,
+    const NGConstraintSpace& space,
+    const base::Optional<MinMaxSize>& child_minmax) {
   DCHECK(node.IsReplaced());
 
   NGLogicalSize replaced_size;
 
   NGLogicalSize default_intrinsic_size;
-  Optional<LayoutUnit> computed_inline_size;
-  Optional<LayoutUnit> computed_block_size;
+  base::Optional<LayoutUnit> computed_inline_size;
+  base::Optional<LayoutUnit> computed_block_size;
   NGLogicalSize aspect_ratio;
 
   node.IntrinsicSize(&default_intrinsic_size, &computed_inline_size,
@@ -640,8 +641,8 @@ LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
 }
 
 LayoutUnit ConstrainByMinMax(LayoutUnit length,
-                             Optional<LayoutUnit> min,
-                             Optional<LayoutUnit> max) {
+                             base::Optional<LayoutUnit> min,
+                             base::Optional<LayoutUnit> max) {
   if (max && length > max.value())
     length = max.value();
   if (min && length < min.value())

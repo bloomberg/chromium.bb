@@ -634,7 +634,7 @@ void SVGImage::ServiceAnimations(double monotonic_animation_start_time) {
     // animations directly without worrying about including
     // PaintArtifactCompositor analysis of whether animations should be
     // composited.
-    Optional<CompositorElementIdSet> composited_element_ids;
+    base::Optional<CompositorElementIdSet> composited_element_ids;
     DocumentAnimations::UpdateAnimations(
         frame_view->GetLayoutView()->GetDocument(),
         DocumentLifecycle::kLayoutClean, composited_element_ids);

@@ -41,7 +41,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     WebURLLoaderTestDelegate* delegate,
     const WebURLResponse& response,
     const WebData& data,
-    const Optional<WebURLError>& error) {
+    const base::Optional<WebURLError>& error) {
   DCHECK(!using_default_loader_);
   if (!client_)
     return;

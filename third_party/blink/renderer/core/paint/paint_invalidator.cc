@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -23,7 +24,6 @@
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/platform_chrome_client.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -97,7 +97,7 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     // have to wait until pre-paint to ensure clean layout.
     // Note: SVG children don't need this adjustment because their visual
     // overflow rects are already adjusted by clip path.
-    if (Optional<FloatRect> clip_path_bounding_box =
+    if (base::Optional<FloatRect> clip_path_bounding_box =
             ClipPathClipper::LocalClipPathBoundingBox(object)) {
       Rect box(EnclosingIntRect(*clip_path_bounding_box));
       rect.Unite(box);
@@ -499,7 +499,7 @@ void PaintInvalidator::InvalidatePaint(
   }
 
   if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    Optional<ScopedUndoFrameViewContentClipAndScroll> undo;
+    base::Optional<ScopedUndoFrameViewContentClipAndScroll> undo;
     if (tree_builder_context)
       undo.emplace(frame_view, *context.tree_builder_context_);
     frame_view.InvalidatePaintOfScrollControlsIfNeeded(context);

@@ -247,13 +247,13 @@ NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMRange(
   return {result_begin, result_end};
 }
 
-Optional<unsigned> NGOffsetMapping::GetTextContentOffset(
+base::Optional<unsigned> NGOffsetMapping::GetTextContentOffset(
     const Position& position) const {
   DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;
   if (IsNonAtomicInline(*position.AnchorNode())) {
     auto iter = ranges_.find(position.AnchorNode());
     if (iter == ranges_.end())
-      return WTF::nullopt;
+      return base::nullopt;
     DCHECK_NE(iter->value.first, iter->value.second) << position;
     if (position.IsBeforeAnchor())
       return units_[iter->value.first].TextContentStart();
@@ -262,7 +262,7 @@ Optional<unsigned> NGOffsetMapping::GetTextContentOffset(
 
   const NGOffsetMappingUnit* unit = GetMappingUnitForPosition(position);
   if (!unit)
-    return WTF::nullopt;
+    return base::nullopt;
   return unit->ConvertDOMOffsetToTextContent(ToNodeOffsetPair(position).second);
 }
 
@@ -339,13 +339,13 @@ bool NGOffsetMapping::IsAfterNonCollapsedContent(
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
 
-Optional<UChar> NGOffsetMapping::GetCharacterBefore(
+base::Optional<UChar> NGOffsetMapping::GetCharacterBefore(
     const Position& position) const {
   DCHECK(NGOffsetMapping::AcceptsPosition(position));
   DCHECK(!IsNonAtomicInline(*position.AnchorNode())) << position;
-  Optional<unsigned> text_content_offset = GetTextContentOffset(position);
+  base::Optional<unsigned> text_content_offset = GetTextContentOffset(position);
   if (!text_content_offset || !*text_content_offset)
-    return WTF::nullopt;
+    return base::nullopt;
   return text_[*text_content_offset - 1];
 }
 

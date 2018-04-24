@@ -5,12 +5,12 @@
 #ifndef NGConstraintSpaceBuilder_h
 #define NGConstraintSpaceBuilder_h
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_exclusion.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -70,10 +70,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetBfcOffset(const NGBfcOffset& bfc_offset);
   NGConstraintSpaceBuilder& SetFloatsBfcOffset(
-      const WTF::Optional<NGBfcOffset>& floats_bfc_offset);
+      const base::Optional<NGBfcOffset>& floats_bfc_offset);
 
   NGConstraintSpaceBuilder& SetClearanceOffset(
-      const WTF::Optional<LayoutUnit>& clearance_offset);
+      const base::Optional<LayoutUnit>& clearance_offset);
 
   NGConstraintSpaceBuilder& SetExclusionSpace(
       const NGExclusionSpace& exclusion_space);
@@ -96,7 +96,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGLogicalSize available_size_;
   // Relative to parent_writing_mode_.
   NGLogicalSize percentage_resolution_size_;
-  Optional<NGLogicalSize> parent_percentage_resolution_size_;
+  base::Optional<NGLogicalSize> parent_percentage_resolution_size_;
   NGPhysicalSize initial_containing_block_size_;
   LayoutUnit fragmentainer_block_size_;
   LayoutUnit fragmentainer_space_at_bfc_start_;
@@ -116,9 +116,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGMarginStrut margin_strut_;
   NGBfcOffset bfc_offset_;
-  WTF::Optional<NGBfcOffset> floats_bfc_offset_;
+  base::Optional<NGBfcOffset> floats_bfc_offset_;
   const NGExclusionSpace* exclusion_space_;
-  WTF::Optional<LayoutUnit> clearance_offset_;
+  base::Optional<LayoutUnit> clearance_offset_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
   Vector<NGBaselineRequest> baseline_requests_;
 };

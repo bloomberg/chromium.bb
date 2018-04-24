@@ -30,6 +30,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
@@ -49,7 +50,6 @@
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -92,14 +92,14 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   // Starts the underlying thread and creates the global scope. Called on the
   // main thread.
-  // Startup data for WorkerBackingThread is WTF::nullopt if |this| doesn't own
+  // Startup data for WorkerBackingThread is base::nullopt if |this| doesn't own
   // the underlying WorkerBackingThread.
   // TODO(nhiroki): We could separate WorkerBackingThread initialization from
   // GlobalScope initialization sequence, that is, InitializeOnWorkerThread().
   // After that, we could remove this startup data for WorkerBackingThread.
   // (https://crbug.com/710364)
   void Start(std::unique_ptr<GlobalScopeCreationParams>,
-             const WTF::Optional<WorkerBackingThreadStartupData>&,
+             const base::Optional<WorkerBackingThreadStartupData>&,
              WorkerInspectorProxy::PauseOnWorkerStart,
              ParentExecutionContextTaskRunners*);
 
@@ -273,7 +273,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void InitializeSchedulerOnWorkerThread(WaitableEvent*);
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
-      const WTF::Optional<WorkerBackingThreadStartupData>&,
+      const base::Optional<WorkerBackingThreadStartupData>&,
       WorkerInspectorProxy::PauseOnWorkerStart) LOCKS_EXCLUDED(mutex_);
 
   void EvaluateClassicScriptOnWorkerThread(

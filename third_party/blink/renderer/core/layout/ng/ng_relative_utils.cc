@@ -4,11 +4,11 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -21,7 +21,7 @@ NGLogicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
   NGPhysicalSize container_size =
       container_logical_size.ConvertToPhysical(container_writing_mode);
 
-  Optional<LayoutUnit> left, right, top, bottom;
+  base::Optional<LayoutUnit> left, right, top, bottom;
 
   if (!child_style.Left().IsAuto())
     left = ValueForLength(child_style.Left(), container_size.width);

@@ -35,13 +35,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/audio/audio_destination_consumer.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -147,9 +147,9 @@ class PLATFORM_EXPORT MediaStreamSource final
   std::unique_ptr<ExtraData> extra_data_;
   WebMediaConstraints constraints_;
   WebMediaStreamSource::Capabilities capabilities_;
-  Optional<bool> echo_cancellation_;
-  Optional<bool> auto_gain_control_;
-  Optional<bool> noise_supression_;
+  base::Optional<bool> echo_cancellation_;
+  base::Optional<bool> auto_gain_control_;
+  base::Optional<bool> noise_supression_;
 };
 
 typedef HeapVector<Member<MediaStreamSource>> MediaStreamSourceVector;

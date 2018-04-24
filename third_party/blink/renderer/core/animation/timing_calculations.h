@@ -228,7 +228,7 @@ static inline double CalculateDirectedTime(double current_iteration,
                                        : iteration_duration - iteration_time;
 }
 
-static inline WTF::Optional<double> CalculateTransformedTime(
+static inline base::Optional<double> CalculateTransformedTime(
     double current_iteration,
     double iteration_duration,
     double iteration_time,
@@ -241,7 +241,7 @@ static inline WTF::Optional<double> CalculateTransformedTime(
   double directed_time = CalculateDirectedTime(
       current_iteration, iteration_duration, iteration_time, specified);
   if (IsNull(directed_time))
-    return WTF::nullopt;
+    return base::nullopt;
   if (!std::isfinite(iteration_duration))
     return directed_time;
   double time_fraction = directed_time / iteration_duration;

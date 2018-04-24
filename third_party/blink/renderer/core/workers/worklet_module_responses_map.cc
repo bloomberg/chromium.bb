@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -49,7 +49,7 @@ class WorkletModuleResponsesMap::Entry final
   // "fetch a worklet script" algorithm:
   // https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
   void NotifyFetchFinished(
-      const WTF::Optional<ModuleScriptCreationParams>& params,
+      const base::Optional<ModuleScriptCreationParams>& params,
       const HeapVector<Member<ConsoleMessage>>& error_messages) override {
     // The entry can be disposed of during the resource fetch.
     if (state_ == State::kFailed)
@@ -108,7 +108,7 @@ class WorkletModuleResponsesMap::Entry final
 
   Member<DocumentModuleScriptFetcher> module_fetcher_;
 
-  WTF::Optional<ModuleScriptCreationParams> params_;
+  base::Optional<ModuleScriptCreationParams> params_;
   HeapVector<Member<WorkerOrWorkletModuleFetchCoordinator::Client>> clients_;
 };
 

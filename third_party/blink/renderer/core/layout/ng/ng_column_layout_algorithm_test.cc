@@ -1979,7 +1979,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
           WritingMode::kHorizontalTb, TextDirection::kLtr,
           NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   NGColumnLayoutAlgorithm algorithm(node, *space.get());
-  Optional<MinMaxSize> size;
+  base::Optional<MinMaxSize> size;
   MinMaxSizeInput zero_input;
 
   // Both column-count and column-width set.

@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAGMENT_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAGMENT_DATA_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -107,15 +107,15 @@ class CORE_EXPORT FragmentData {
   }
   void InvalidateClipPathCache();
 
-  Optional<IntRect> ClipPathBoundingBox() const {
+  base::Optional<IntRect> ClipPathBoundingBox() const {
     DCHECK(IsClipPathCacheValid());
-    return rare_data_ ? rare_data_->clip_path_bounding_box : WTF::nullopt;
+    return rare_data_ ? rare_data_->clip_path_bounding_box : base::nullopt;
   }
   const RefCountedPath* ClipPathPath() const {
     DCHECK(IsClipPathCacheValid());
     return rare_data_ ? rare_data_->clip_path_path.get() : nullptr;
   }
-  void SetClipPathCache(const Optional<IntRect>& bounding_box,
+  void SetClipPathCache(const base::Optional<IntRect>& bounding_box,
                         scoped_refptr<const RefCountedPath>);
 
   // Holds references to the paint property nodes created by this object.
@@ -228,7 +228,7 @@ class CORE_EXPORT FragmentData {
     std::unique_ptr<ObjectPaintProperties> paint_properties;
     std::unique_ptr<RefCountedPropertyTreeState> local_border_box_properties;
     bool is_clip_path_cache_valid = false;
-    Optional<IntRect> clip_path_bounding_box;
+    base::Optional<IntRect> clip_path_bounding_box;
     scoped_refptr<const RefCountedPath> clip_path_path;
 
     DISALLOW_COPY_AND_ASSIGN(RareData);

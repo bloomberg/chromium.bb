@@ -52,7 +52,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                          const NGConstraintSpace& space,
                          NGBlockBreakToken* break_token = nullptr);
 
-  Optional<MinMaxSize> ComputeMinMaxSize(const MinMaxSizeInput&) const override;
+  base::Optional<MinMaxSize> ComputeMinMaxSize(
+      const MinMaxSizeInput&) const override;
   scoped_refptr<NGLayoutResult> Layout() override;
 
  private:
@@ -64,7 +65,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
       const NGLogicalSize child_available_size,
-      const WTF::Optional<NGBfcOffset> floats_bfc_offset = WTF::nullopt);
+      const base::Optional<NGBfcOffset> floats_bfc_offset = base::nullopt);
 
   // @return Estimated BFC offset for the "to be layout" child.
   NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,
@@ -75,7 +76,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGPreviousInflowPosition& previous_inflow_position,
       const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
-      const WTF::Optional<NGBfcOffset>& child_bfc_offset,
+      const base::Optional<NGBfcOffset>& child_bfc_offset,
       const NGLogicalOffset& logical_offset,
       const NGLayoutResult& layout_result,
       const NGFragment& fragment,
@@ -197,7 +198,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGLayoutInputNode child,
       const NGFragment&,
       const NGBoxStrut& child_margins,
-      const WTF::Optional<NGBfcOffset>& known_fragment_offset);
+      const base::Optional<NGBfcOffset>& known_fragment_offset);
 
   // Computes default content size for HTML and BODY elements in quirks mode.
   // Returns NGSizeIndefinite in all other cases.

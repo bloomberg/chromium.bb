@@ -77,21 +77,21 @@ TEST_F(NGCaretPositionTest, CaretPositionInOneLineOfText) {
 
   // Beginning of line
   TEST_CARET(ComputeNGCaretPosition(0, TextAffinity::kDownstream),
-             text_fragment, kAtTextOffset, Optional<unsigned>(0));
+             text_fragment, kAtTextOffset, base::Optional<unsigned>(0));
   TEST_CARET(ComputeNGCaretPosition(0, TextAffinity::kUpstream), text_fragment,
-             kAtTextOffset, Optional<unsigned>(0));
+             kAtTextOffset, base::Optional<unsigned>(0));
 
   // Middle in the line
   TEST_CARET(ComputeNGCaretPosition(1, TextAffinity::kDownstream),
-             text_fragment, kAtTextOffset, Optional<unsigned>(1));
+             text_fragment, kAtTextOffset, base::Optional<unsigned>(1));
   TEST_CARET(ComputeNGCaretPosition(1, TextAffinity::kUpstream), text_fragment,
-             kAtTextOffset, Optional<unsigned>(1));
+             kAtTextOffset, base::Optional<unsigned>(1));
 
   // End of line
   TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kDownstream),
-             text_fragment, kAtTextOffset, Optional<unsigned>(3));
+             text_fragment, kAtTextOffset, base::Optional<unsigned>(3));
   TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kUpstream), text_fragment,
-             kAtTextOffset, Optional<unsigned>(3));
+             kAtTextOffset, base::Optional<unsigned>(3));
 }
 
 TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrap) {
@@ -103,9 +103,9 @@ TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrap) {
   const NGPhysicalFragment* bar_fragment = text_fragments[1].fragment.get();
 
   TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kDownstream), bar_fragment,
-             kAtTextOffset, Optional<unsigned>(3));
+             kAtTextOffset, base::Optional<unsigned>(3));
   TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kUpstream), foo_fragment,
-             kAtTextOffset, Optional<unsigned>(3));
+             kAtTextOffset, base::Optional<unsigned>(3));
 }
 
 TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapWithSpace) {
@@ -118,15 +118,15 @@ TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapWithSpace) {
 
   // Before the space
   TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kDownstream), foo_fragment,
-             kAtTextOffset, Optional<unsigned>(3));
+             kAtTextOffset, base::Optional<unsigned>(3));
   TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kUpstream), foo_fragment,
-             kAtTextOffset, Optional<unsigned>(3));
+             kAtTextOffset, base::Optional<unsigned>(3));
 
   // After the space
   TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kDownstream), bar_fragment,
-             kAtTextOffset, Optional<unsigned>(4));
+             kAtTextOffset, base::Optional<unsigned>(4));
   TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kUpstream), bar_fragment,
-             kAtTextOffset, Optional<unsigned>(4));
+             kAtTextOffset, base::Optional<unsigned>(4));
 }
 
 TEST_F(NGCaretPositionTest, CaretPositionAtForcedLineBreak) {
@@ -139,15 +139,15 @@ TEST_F(NGCaretPositionTest, CaretPositionAtForcedLineBreak) {
 
   // Before the BR
   TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kDownstream), foo_fragment,
-             kAtTextOffset, Optional<unsigned>(3));
+             kAtTextOffset, base::Optional<unsigned>(3));
   TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kUpstream), foo_fragment,
-             kAtTextOffset, Optional<unsigned>(3));
+             kAtTextOffset, base::Optional<unsigned>(3));
 
   // After the BR
   TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kDownstream), bar_fragment,
-             kAtTextOffset, Optional<unsigned>(4));
+             kAtTextOffset, base::Optional<unsigned>(4));
   TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kUpstream), bar_fragment,
-             kAtTextOffset, Optional<unsigned>(4));
+             kAtTextOffset, base::Optional<unsigned>(4));
 }
 
 TEST_F(NGCaretPositionTest, CaretPositionAtEmptyLine) {
@@ -158,9 +158,9 @@ TEST_F(NGCaretPositionTest, CaretPositionAtEmptyLine) {
   const NGPhysicalFragment* br2_fragment = FragmentOf(br2);
 
   TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kDownstream), br2_fragment,
-             kAtTextOffset, Optional<unsigned>(4));
+             kAtTextOffset, base::Optional<unsigned>(4));
   TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kUpstream), br2_fragment,
-             kAtTextOffset, Optional<unsigned>(4));
+             kAtTextOffset, base::Optional<unsigned>(4));
 }
 
 TEST_F(NGCaretPositionTest, CaretPositionInOneLineOfImage) {
@@ -170,15 +170,15 @@ TEST_F(NGCaretPositionTest, CaretPositionInOneLineOfImage) {
 
   // Before the image
   TEST_CARET(ComputeNGCaretPosition(0, TextAffinity::kDownstream), img_fragment,
-             kBeforeBox, WTF::nullopt);
+             kBeforeBox, base::nullopt);
   TEST_CARET(ComputeNGCaretPosition(0, TextAffinity::kUpstream), img_fragment,
-             kBeforeBox, WTF::nullopt);
+             kBeforeBox, base::nullopt);
 
   // After the image
   TEST_CARET(ComputeNGCaretPosition(1, TextAffinity::kDownstream), img_fragment,
-             kAfterBox, WTF::nullopt);
+             kAfterBox, base::nullopt);
   TEST_CARET(ComputeNGCaretPosition(1, TextAffinity::kUpstream), img_fragment,
-             kAfterBox, WTF::nullopt);
+             kAfterBox, base::nullopt);
 }
 
 TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapBetweenImages) {
@@ -192,9 +192,9 @@ TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapBetweenImages) {
   const NGPhysicalFragment* img2_fragment = FragmentOf(img2);
 
   TEST_CARET(ComputeNGCaretPosition(1, TextAffinity::kDownstream),
-             img2_fragment, kBeforeBox, WTF::nullopt);
+             img2_fragment, kBeforeBox, base::nullopt);
   TEST_CARET(ComputeNGCaretPosition(1, TextAffinity::kUpstream), img1_fragment,
-             kAfterBox, WTF::nullopt);
+             kAfterBox, base::nullopt);
 }
 
 TEST_F(NGCaretPositionTest,
@@ -218,9 +218,9 @@ TEST_F(NGCaretPositionTest,
       mapping.GetTextContentOffset(wrap_position).value();
 
   TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kUpstream),
-             fragment_c, kAtTextOffset, Optional<unsigned>(wrap_offset));
+             fragment_c, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
   TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kDownstream),
-             fragment_d, kAtTextOffset, Optional<unsigned>(wrap_offset));
+             fragment_d, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
 }
 
 TEST_F(NGCaretPositionTest,
@@ -244,9 +244,9 @@ TEST_F(NGCaretPositionTest,
       mapping.GetTextContentOffset(wrap_position).value();
 
   TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kUpstream),
-             fragment_c, kAtTextOffset, Optional<unsigned>(wrap_offset));
+             fragment_c, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
   TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kDownstream),
-             fragment_d, kAtTextOffset, Optional<unsigned>(wrap_offset));
+             fragment_d, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
 }
 
 TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapBetweenDeepTextNodes) {
@@ -271,9 +271,9 @@ TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapBetweenDeepTextNodes) {
       mapping.GetTextContentOffset(wrap_position).value();
 
   TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kUpstream),
-             fragment_c, kAtTextOffset, Optional<unsigned>(wrap_offset));
+             fragment_c, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
   TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kDownstream),
-             fragment_d, kAtTextOffset, Optional<unsigned>(wrap_offset));
+             fragment_d, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
 }
 
 }  // namespace blink

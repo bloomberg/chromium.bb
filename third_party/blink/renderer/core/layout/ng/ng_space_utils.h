@@ -5,9 +5,9 @@
 #ifndef NGSpaceUtils_h
 #define NGSpaceUtils_h
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -22,7 +22,7 @@ bool ShouldShrinkToFit(const ComputedStyle& parent_style,
 
 // Adjusts {@code offset} to the clearance line.
 CORE_EXPORT bool AdjustToClearance(
-    const WTF::Optional<LayoutUnit>& clearance_offset,
+    const base::Optional<LayoutUnit>& clearance_offset,
     NGBfcOffset* offset);
 
 }  // namespace blink

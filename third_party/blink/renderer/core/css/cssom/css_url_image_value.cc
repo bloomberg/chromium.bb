@@ -37,9 +37,9 @@ const String& CSSURLImageValue::url() const {
   return value_->RelativeUrl();
 }
 
-WTF::Optional<IntSize> CSSURLImageValue::IntrinsicSize() const {
+base::Optional<IntSize> CSSURLImageValue::IntrinsicSize() const {
   if (Status() != ResourceStatus::kCached)
-    return WTF::nullopt;
+    return base::nullopt;
 
   DCHECK(!value_->IsCachePending());
   ImageResourceContent* resource_content = value_->CachedImage()->CachedImage();

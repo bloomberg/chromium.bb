@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
@@ -27,7 +28,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/subsequence_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_3d_display_item.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -375,7 +375,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   bool should_create_subsequence = ShouldCreateSubsequence(
       paint_layer_, context, painting_info_arg, paint_flags);
 
-  Optional<SubsequenceRecorder> subsequence_recorder;
+  base::Optional<SubsequenceRecorder> subsequence_recorder;
   bool should_clear_empty_paint_phase_flags = false;
   if (should_create_subsequence) {
     if (!ShouldRepaintSubsequence(paint_layer_, painting_info,
@@ -407,7 +407,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   // These helpers output clip and compositing operations using a RAII pattern.
   // Stack-allocated-varibles are destructed in the reverse order of
   // construction, so they are nested properly.
-  Optional<ClipPathClipper> clip_path_clipper;
+  base::Optional<ClipPathClipper> clip_path_clipper;
   bool should_paint_clip_path =
       is_painting_mask && paint_layer_.GetLayoutObject().HasClipPath();
   if (should_paint_clip_path) {
@@ -420,7 +420,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                               visual_offset_from_root);
   }
 
-  Optional<CompositingRecorder> compositing_recorder;
+  base::Optional<CompositingRecorder> compositing_recorder;
   // FIXME: this should be unified further into
   // PaintLayer::paintsWithTransparency().
   bool compositing_already_applied =
@@ -573,7 +573,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     size_t display_item_list_size_before_painting =
         context.GetPaintController().NewDisplayItemList().size();
 
-    Optional<FilterPainter> filter_painter;
+    base::Optional<FilterPainter> filter_painter;
     if (image_filter) {
       DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
       // Compute clips outside the filter (#3, see above for discussion).
@@ -666,7 +666,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     // paint a fully filled mask (which will subsequently clipped by the
     // clip-path), otherwise the mask layer will be empty.
 
-    Optional<ScopedPaintChunkProperties> path_based_clip_path_scope;
+    base::Optional<ScopedPaintChunkProperties> path_based_clip_path_scope;
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       const auto& fragment_data =
           paint_layer_.GetLayoutObject().FirstFragment();
@@ -691,7 +691,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     FillMaskingFragment(context, layer_rect, *mask_layer);
   }
 
-  clip_path_clipper = WTF::nullopt;
+  clip_path_clipper = base::nullopt;
 
   if (should_paint_content && !selection_only) {
     // Paint the border radius mask for the fragments.
@@ -803,7 +803,7 @@ static void ForAllFragments(GraphicsContext& context,
                             const PaintLayerFragments& fragments,
                             const Function& function) {
   for (size_t i = 0; i < fragments.size(); ++i) {
-    Optional<ScopedDisplayItemFragment> scoped_display_item_fragment;
+    base::Optional<ScopedDisplayItemFragment> scoped_display_item_fragment;
     if (i)
       scoped_display_item_fragment.emplace(context, i);
     function(fragments[i]);
@@ -871,13 +871,13 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
   // all the fragments of sublayers in each fragment like the following:
   //  fragment 0 { sub-layer fragment 0; sub-layer fragment 1 }
   //  fragment 1 { sub-layer fragment 0; sub-layer fragment 1 }
-  Optional<DisplayItemCacheSkipper> cache_skipper;
+  base::Optional<DisplayItemCacheSkipper> cache_skipper;
   if (layer_fragments.size() > 1)
     cache_skipper.emplace(context);
 
   ForAllFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        Optional<LayerClipRecorder> clip_recorder;
+        base::Optional<LayerClipRecorder> clip_recorder;
         if (parent_layer &&
             !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
           if (NeedsToClip(painting_info, fragment.background_rect, paint_flags,
@@ -1016,7 +1016,8 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
 
   ForAllFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
+        base::Optional<ScopedPaintChunkProperties>
+            fragment_paint_chunk_properties;
         if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
           fragment_paint_chunk_properties.emplace(
               context.GetPaintController(),
@@ -1028,7 +1029,7 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
         // paintFragmentWithPhase would have.
         LayoutRect cull_rect = fragment.background_rect.Rect();
 
-        Optional<LayerClipRecorder> clip_recorder;
+        base::Optional<LayerClipRecorder> clip_recorder;
         if (NeedsToClip(painting_info, fragment.background_rect, paint_flags,
                         paint_layer_.GetLayoutObject())) {
           clip_recorder.emplace(
@@ -1038,7 +1039,7 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
               paint_layer_.GetLayoutObject());
         }
 
-        Optional<ScrollRecorder> scroll_recorder;
+        base::Optional<ScrollRecorder> scroll_recorder;
         if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
             !painting_info.scroll_offset_accumulation.IsZero()) {
           cull_rect.Move(painting_info.scroll_offset_accumulation);
@@ -1074,7 +1075,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
     ClipState clip_state) {
   DCHECK(paint_layer_.IsSelfPaintingLayer());
 
-  Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
+  base::Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(phase != PaintPhase::kClippingMask);
     auto chunk_properties = fragment.fragment_data->LocalBorderBoxProperties();
@@ -1096,7 +1097,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   }
 
   DisplayItemClient* client = &paint_layer_.GetLayoutObject();
-  Optional<LayerClipRecorder> clip_recorder;
+  base::Optional<LayerClipRecorder> clip_recorder;
   if (clip_state != kHasClipped &&
       NeedsToClip(painting_info, clip_rect, paint_flags,
                   paint_layer_.GetLayoutObject())) {
@@ -1142,7 +1143,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   }
 
   LayoutRect new_cull_rect(clip_rect.Rect());
-  Optional<ScrollRecorder> scroll_recorder;
+  base::Optional<ScrollRecorder> scroll_recorder;
   LayoutPoint paint_offset = -paint_layer_.LayoutBoxLocation();
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     if (paint_layer_.GetLayoutObject().IsFixedPositionObjectInPagedMedia()) {
@@ -1216,7 +1217,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
   bool should_clip = layer_fragments.size() == 1 &&
                      !layer_fragments[0].foreground_rect.IsEmpty();
   ClipState clip_state = kHasNotClipped;
-  Optional<LayerClipRecorder> clip_recorder;
+  base::Optional<LayerClipRecorder> clip_recorder;
   if (should_clip &&
       NeedsToClip(local_painting_info, layer_fragments[0].foreground_rect,
                   paint_flags, paint_layer_.GetLayoutObject())) {

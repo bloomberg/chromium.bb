@@ -21,7 +21,7 @@ NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(NGBlockNode node,
     : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {}
 
 scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
-  Optional<MinMaxSize> min_max_size;
+  base::Optional<MinMaxSize> min_max_size;
   if (NeedMinMaxSize(ConstraintSpace(), Style()))
     min_max_size = ComputeMinMaxSize(MinMaxSizeInput());
   NGBoxStrut border_scrollbar_padding =
@@ -84,7 +84,7 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-Optional<MinMaxSize> NGPageLayoutAlgorithm::ComputeMinMaxSize(
+base::Optional<MinMaxSize> NGPageLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
   NGBlockLayoutAlgorithm algorithm(Node(), ConstraintSpace());
   return algorithm.ComputeMinMaxSize(input);

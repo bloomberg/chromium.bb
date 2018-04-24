@@ -24,7 +24,7 @@ const CSSValue* OffsetAnchor::ParseSingleValue(
   if (id == CSSValueAuto)
     return ConsumeIdent(range);
   return ConsumePosition(range, context, UnitlessQuirk::kForbid,
-                         Optional<WebFeature>());
+                         base::Optional<WebFeature>());
 }
 
 const CSSValue* OffsetAnchor::CSSValueFromComputedStyleInternal(

@@ -260,7 +260,7 @@ void InspectorEmulationAgent::ApplyVirtualTimePolicy(
 void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*, FrameLoadType) {
   if (pending_virtual_time_policy_) {
     ApplyVirtualTimePolicy(*pending_virtual_time_policy_);
-    pending_virtual_time_policy_ = WTF::nullopt;
+    pending_virtual_time_policy_ = base::nullopt;
   }
 }
 

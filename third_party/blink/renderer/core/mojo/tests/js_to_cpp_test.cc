@@ -167,7 +167,8 @@ void CheckCorruptedString(const String& arg) {
     g_waste_accumulator += arg[i];
 }
 
-void CheckCorruptedStringArray(const Optional<Vector<String>>& string_array) {
+void CheckCorruptedStringArray(
+    const base::Optional<Vector<String>>& string_array) {
   if (!string_array)
     return;
   for (size_t i = 0; i < string_array->size(); ++i)

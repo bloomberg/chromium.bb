@@ -67,7 +67,7 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   PaintController* paint_controller_;
   std::unique_ptr<PaintController> own_paint_controller_;
   std::unique_ptr<GraphicsContext> context_;
-  Optional<DisplayItemCacheSkipper> cache_skipper_;
+  base::Optional<DisplayItemCacheSkipper> cache_skipper_;
 };
 
 }  // namespace blink

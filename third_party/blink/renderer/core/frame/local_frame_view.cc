@@ -3301,7 +3301,7 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
         PaintTree();
 
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        Optional<CompositorElementIdSet> composited_element_ids =
+        base::Optional<CompositorElementIdSet> composited_element_ids =
             CompositorElementIdSet();
         PushPaintArtifactToCompositor(composited_element_ids.value());
         // TODO(wkorman): Add a call to UpdateCompositorScrollAnimations here.

@@ -25,7 +25,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
 
   scoped_refptr<NGLayoutResult> Layout() override;
 
-  Optional<MinMaxSize> ComputeMinMaxSize(const MinMaxSizeInput&) const override;
+  base::Optional<MinMaxSize> ComputeMinMaxSize(
+      const MinMaxSizeInput&) const override;
 };
 
 }  // namespace blink

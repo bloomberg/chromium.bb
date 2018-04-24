@@ -373,7 +373,7 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     # [CallWith=ScriptState], [RaisesException]
     if use_local_result(method):
         if idl_type.is_explicit_nullable:
-            # result is of type WTF::Optional<T>
+            # result is of type base::Optional<T>
             cpp_value = 'result.value()'
         else:
             cpp_value = 'result'

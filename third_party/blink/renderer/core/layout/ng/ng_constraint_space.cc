@@ -49,10 +49,10 @@ NGConstraintSpace::NGConstraintSpace(
     bool use_first_line_style,
     const NGMarginStrut& margin_strut,
     const NGBfcOffset& bfc_offset,
-    const WTF::Optional<NGBfcOffset>& floats_bfc_offset,
+    const base::Optional<NGBfcOffset>& floats_bfc_offset,
     const NGExclusionSpace& exclusion_space,
     Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
-    const WTF::Optional<LayoutUnit>& clearance_offset,
+    const base::Optional<LayoutUnit>& clearance_offset,
     Vector<NGBaselineRequest>& baseline_requests)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),

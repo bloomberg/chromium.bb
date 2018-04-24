@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/svg_root_painter.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/paint/box_clipper.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -52,7 +52,7 @@ void SVGRootPainter::PaintReplaced(const PaintInfo& paint_info,
     return;
 
   // Apply initial viewport clip.
-  Optional<BoxClipper> box_clipper;
+  base::Optional<BoxClipper> box_clipper;
   if (layout_svg_root_.ShouldApplyViewportClip()) {
     // TODO(pdr): Clip the paint info cull rect here.
     box_clipper.emplace(layout_svg_root_, paint_info, paint_offset,
