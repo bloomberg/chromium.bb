@@ -194,7 +194,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
       const bool stops_in_first_letter = end_offset_ <= first_letter.length();
       const unsigned run_end =
           stops_in_first_letter ? end_offset_ : first_letter.length();
-      EmitText(text_node_, first_letter_text_, run_start, run_end);
+      EmitText(first_letter_text_, run_start, run_end);
       first_letter_text_ = nullptr;
       text_box_ = nullptr;
       offset_ = run_end;
@@ -219,7 +219,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
   if (run_start >= run_end)
     return;
 
-  EmitText(text_node_, text_node_->GetLayoutObject(), run_start, run_end);
+  EmitText(text_node_->GetLayoutObject(), run_start, run_end);
 }
 
 void TextIteratorTextNodeHandler::HandleTextNodeInRange(const Text* node,
@@ -375,8 +375,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
           unsigned space_run_start = run_start - 1;
           while (space_run_start > 0 && str[space_run_start - 1] == ' ')
             --space_run_start;
-          EmitText(text_node_, layout_object, space_run_start,
-                   space_run_start + 1);
+          EmitText(layout_object, space_run_start, space_run_start + 1);
         } else {
           SpliceBuffer(kSpaceCharacter, text_node_, nullptr, run_start,
                        run_start);
@@ -432,7 +431,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
           }
 
           offset_ = text_start_offset + subrun_end;
-          EmitText(text_node_, layout_object, run_start, subrun_end);
+          EmitText(layout_object, run_start, subrun_end);
         }
 
         // If we are doing a subrun that doesn't go to the end of the text box,
@@ -562,15 +561,14 @@ void TextIteratorTextNodeHandler::SpliceBuffer(UChar c,
   ResetCollapsedWhiteSpaceFixup();
 }
 
-void TextIteratorTextNodeHandler::EmitText(const Node* text_node,
-                                           const LayoutText* layout_object,
+void TextIteratorTextNodeHandler::EmitText(const LayoutText* layout_object,
                                            unsigned text_start_offset,
                                            unsigned text_end_offset) {
   String string = behavior_.EmitsOriginalText() ? layout_object->OriginalText()
                                                 : layout_object->GetText();
   if (behavior_.EmitsSpaceForNbsp())
     string.Replace(kNoBreakSpaceCharacter, kSpaceCharacter);
-  text_state_.EmitText(text_node,
+  text_state_.EmitText(text_node_,
                        text_start_offset + layout_object->TextStartOffset(),
                        text_end_offset + layout_object->TextStartOffset(),
                        string, text_start_offset, text_end_offset);

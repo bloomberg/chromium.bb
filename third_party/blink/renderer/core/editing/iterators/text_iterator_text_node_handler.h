@@ -68,8 +68,7 @@ class TextIteratorTextNodeHandler {
                     const Node* offset_base_node,
                     unsigned text_start_offset,
                     unsigned text_end_offset);
-  void EmitText(const Node* text_node,
-                const LayoutText* layout_object,
+  void EmitText(const LayoutText* layout_object,
                 unsigned text_start_offset,
                 unsigned text_end_offset);
 
