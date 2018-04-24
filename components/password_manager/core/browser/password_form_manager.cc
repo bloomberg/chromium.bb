@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <utility>
@@ -574,60 +575,6 @@ void PasswordFormManager::SaveSubmittedFormTypeForMetrics(
   metrics_recorder_->SetSubmittedFormType(type);
 }
 
-void PasswordFormManager::ScoreMatches(
-    const std::vector<const PasswordForm*>& matches) {
-  DCHECK(std::all_of(
-      matches.begin(), matches.end(),
-      [](const PasswordForm* match) { return !match->blacklisted_by_user; }));
-
-  preferred_match_ = nullptr;
-  best_matches_.clear();
-  not_best_matches_.clear();
-
-  if (matches.empty())
-    return;
-
-  // Compute scores.
-  std::vector<uint32_t> credential_scores(matches.size());
-  for (size_t i = 0; i < matches.size(); ++i)
-    credential_scores[i] = ScoreResult(*matches[i]);
-
-  const uint32_t best_score =
-      *std::max_element(credential_scores.begin(), credential_scores.end());
-
-  // Compute best score for each username.
-  std::map<base::string16, uint32_t> best_scores;
-  for (size_t i = 0; i < matches.size(); ++i) {
-    uint32_t& score = best_scores[matches[i]->username_value];
-    score = std::max(score, credential_scores[i]);
-  }
-
-  // Find the best match for each username, move the rest to
-  // |non_best_matches_|. Also assign the overall best match to
-  // |preferred_match_|.
-  not_best_matches_.reserve(matches.size() - best_scores.size());
-  // Fill |best_matches_| with the best-scoring credentials for each username.
-  for (size_t i = 0; i < matches.size(); ++i) {
-    const PasswordForm* const match = matches[i];
-    const base::string16& username = match->username_value;
-
-    if (credential_scores[i] < best_scores[username]) {
-      not_best_matches_.push_back(match);
-      continue;
-    }
-
-    if (!preferred_match_ && credential_scores[i] == best_score)
-      preferred_match_ = match;
-
-    // If there is already another best-score match for the same username, leave
-    // it and add the current form to |not_best_matches_|.
-    if (best_matches_.find(username) != best_matches_.end())
-      not_best_matches_.push_back(match);
-    else
-      best_matches_.insert(std::make_pair(username, match));
-  }
-}
-
 void PasswordFormManager::ProcessMatches(
     const std::vector<const PasswordForm*>& non_federated,
     size_t filtered_count) {
@@ -642,19 +589,19 @@ void PasswordFormManager::ProcessMatches(
   }
 
   // Copy out and score non-blacklisted matches.
-  std::vector<const PasswordForm*> matches(std::count_if(
-      non_federated.begin(), non_federated.end(),
-      [this](const PasswordForm* form) { return IsMatch(*form); }));
-  std::copy_if(non_federated.begin(), non_federated.end(), matches.begin(),
+  std::vector<const PasswordForm*> matches;
+  std::copy_if(non_federated.begin(), non_federated.end(),
+               std::back_inserter(matches),
                [this](const PasswordForm* form) { return IsMatch(*form); });
-  ScoreMatches(matches);
+
+  password_manager_util::FindBestMatches(std::move(matches), &best_matches_,
+                                         &not_best_matches_, &preferred_match_);
 
   // Copy out blacklisted matches.
-  blacklisted_matches_.resize(std::count_if(
-      non_federated.begin(), non_federated.end(),
-      [this](const PasswordForm* form) { return IsBlacklistMatch(*form); }));
+  blacklisted_matches_.clear();
   std::copy_if(
-      non_federated.begin(), non_federated.end(), blacklisted_matches_.begin(),
+      non_federated.begin(), non_federated.end(),
+      std::back_inserter(blacklisted_matches_),
       [this](const PasswordForm* form) { return IsBlacklistMatch(*form); });
 
   UMA_HISTOGRAM_COUNTS(
@@ -1213,72 +1160,6 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   if (has_generated_password_)
     pending_credentials_.type = PasswordForm::TYPE_GENERATED;
-}
-
-uint32_t PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
-  DCHECK(!candidate.blacklisted_by_user);
-  // For scoring of candidate login data:
-  // The most important element that should match is the signon_realm followed
-  // by the origin, the action, the password name, the submit button name, and
-  // finally the username input field name.
-  // If public suffix origin match was not used, it gives an addition of
-  // 128 (1 << 7).
-  // Exact origin match gives an addition of 64 (1 << 6) + # of matching url
-  // dirs.
-  // Partial match gives an addition of 32 (1 << 5) + # matching url dirs
-  // That way, a partial match cannot trump an exact match even if
-  // the partial one matches all other attributes (action, elements) (and
-  // regardless of the matching depth in the URL path).
-
-  // When comparing path segments, only consider at most 63 of them, so that the
-  // potential gain from shared path prefix is not more than from an exact
-  // origin match.
-  const size_t kSegmentCountCap = 63;
-  const size_t capped_form_path_segment_count =
-      std::min(form_path_segments_.size(), kSegmentCountCap);
-
-  uint32_t score = 0u;
-  if (!candidate.is_public_suffix_match) {
-    score += 1u << 8;
-  }
-
-  if (candidate.preferred)
-    score += 1u << 7;
-
-  if (candidate.origin == observed_form_.origin) {
-    // This check is here for the most common case which
-    // is we have a single match in the db for the given host,
-    // so we don't generally need to walk the entire URL path (the else
-    // clause).
-    score += (1u << 6) + static_cast<uint32_t>(capped_form_path_segment_count);
-  } else {
-    // Walk the origin URL paths one directory at a time to see how
-    // deep the two match.
-    std::vector<std::string> candidate_path_segments =
-        SplitPathToSegments(candidate.origin.path());
-    size_t depth = 0u;
-    const size_t max_dirs = std::min(capped_form_path_segment_count,
-                                     candidate_path_segments.size());
-    while ((depth < max_dirs) &&
-           (form_path_segments_[depth] == candidate_path_segments[depth])) {
-      depth++;
-      score++;
-    }
-    // do we have a partial match?
-    score += (depth > 0u) ? 1u << 5 : 0u;
-  }
-  if (observed_form_.scheme == PasswordForm::SCHEME_HTML) {
-    if (candidate.action == observed_form_.action)
-      score += 1u << 3;
-    if (candidate.password_element == observed_form_.password_element)
-      score += 1u << 2;
-    if (candidate.submit_element == observed_form_.submit_element)
-      score += 1u << 1;
-    if (candidate.username_element == observed_form_.username_element)
-      score += 1u << 0;
-  }
-
-  return score;
 }
 
 bool PasswordFormManager::IsMatch(const autofill::PasswordForm& form) const {

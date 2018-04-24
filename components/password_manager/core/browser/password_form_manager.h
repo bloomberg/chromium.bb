@@ -329,19 +329,11 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Trigger filling of HTTP auth dialog and update |manager_action_|.
   void ProcessLoginPrompt();
 
-  // Given all non-blacklisted |matches|, computes their score and populates
-  // |best_matches_|, |preferred_match_| and |non_best_matches_| accordingly.
-  void ScoreMatches(const std::vector<const autofill::PasswordForm*>& matches);
-
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user
   // has opted to 'Save Password'. The previously preferred login from
   // |best_matches_| will be reset.
   void SaveAsNewLogin();
-
-  // Helper for OnGetPasswordStoreResults to score an individual result
-  // against the observed_form_.
-  uint32_t ScoreResult(const autofill::PasswordForm& candidate) const;
 
   // Returns true iff |form| is a non-blacklisted match for |observed_form_|.
   bool IsMatch(const autofill::PasswordForm& form) const;

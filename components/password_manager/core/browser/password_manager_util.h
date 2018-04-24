@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -80,6 +82,18 @@ void CleanUserDataInBlacklistedCredentials(
     password_manager::PasswordStore* store,
     PrefService* prefs,
     int delay_in_seconds);
+
+// Given all non-blacklisted |matches|, finds and populates
+// |best_matches_|, |preferred_match_| and |non_best_matches_| accordingly.
+// For comparing credentials the following rule is used: non-psl match is better
+// than psl match, preferred match is better than non-preferred match. In case
+// of tie, an arbitrary credential from the tied ones is chosen for
+// |best_matches| and preferred_match.
+void FindBestMatches(
+    std::vector<const autofill::PasswordForm*> matches,
+    std::map<base::string16, const autofill::PasswordForm*>* best_matches,
+    std::vector<const autofill::PasswordForm*>* not_best_matches,
+    const autofill::PasswordForm** preferred_match);
 
 }  // namespace password_manager_util
 
