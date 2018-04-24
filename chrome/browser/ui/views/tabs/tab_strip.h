@@ -172,11 +172,12 @@ class TabStrip : public views::View,
   void SetTabNeedsAttention(int model_index, bool attention);
 
   // Retrieves the ideal bounds for the Tab at the specified index.
-  const gfx::Rect& ideal_bounds(int tab_data_index) {
+  const gfx::Rect& ideal_bounds(int tab_data_index) const {
     return tabs_.ideal_bounds(tab_data_index);
   }
 
   // Returns the Tab at |index|.
+  // TODO(pkasting): Make const correct
   Tab* tab_at(int index) const { return tabs_.view_at(index); }
 
   // Returns the NewTabButton.
@@ -386,6 +387,13 @@ class TabStrip : public views::View,
   // |bounds|.
   void CalculateBoundsForDraggedTabs(const Tabs& tabs,
                                      std::vector<gfx::Rect>* bounds);
+
+  // Returns the X coordinate the first tab should start at.
+  int TabStartX() const;
+
+  // Returns the X coordinate the new tab button should be placed at.  Requires
+  // |tabs_| to have correct ideal bounds.
+  int NewTabButtonX() const;
 
   // Returns the size needed for the specified tabs. This is invoked during drag
   // and drop to calculate offsets and positioning.

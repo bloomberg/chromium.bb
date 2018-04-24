@@ -35,13 +35,13 @@ struct TabSizeInfo {
 };
 
 // Calculates the bounds of the pinned tabs. This assumes |tabs_bounds| is the
-// same size as |num_tabs|. In addition to setting the bounds of the pinned
-// tabs this sets the x-coordinate of the first normal tab (as long as there is
-// a normal tab).
-void CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
-                                  int num_pinned_tabs,
-                                  int num_tabs,
-                                  std::vector<gfx::Rect>* tabs_bounds);
+// same size as |num_tabs|. Returns the x-coordinate to use for the first
+// non-pinned tab, if any.
+int CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
+                                 int num_pinned_tabs,
+                                 int num_tabs,
+                                 int start_x,
+                                 std::vector<gfx::Rect>* tabs_bounds);
 
 // Calculates and returns the bounds of the tabs. |width| is the available
 // width to use for tab layout. This never sizes the tabs smaller then the
@@ -51,6 +51,7 @@ std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
                                        int num_pinned_tabs,
                                        int num_tabs,
                                        int active_index,
+                                       int start_x,
                                        int width,
                                        int* active_width,
                                        int* inactive_width);
