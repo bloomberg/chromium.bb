@@ -11,7 +11,6 @@ static_library("cpp") {
     "controller.cc",
     "controller.h",
     "sender_pipe.h",
-    "sender_pipe_posix.cc",
     "sender_pipe_win.cc",
     "settings.cc",
     "settings.h",
@@ -31,6 +30,10 @@ static_library("cpp") {
     "//services/resource_coordinator/public/mojom:",
     "//services/service_manager/public/cpp",
   ]
+
+  if (is_posix) {
+    sources += [ "sender_pipe_posix.cc" ]
+  }
 }
 
 source_set("unit_tests") {

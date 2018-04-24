@@ -77,7 +77,6 @@ static_library("browser") {
     "login_database.h",
     "login_database_ios.cc",
     "login_database_mac.cc",
-    "login_database_posix.cc",
     "login_database_win.cc",
     "login_model.cc",
     "login_model.h",
@@ -212,8 +211,8 @@ static_library("browser") {
     ]
   }
 
-  if (is_mac || is_ios) {
-    sources -= [ "login_database_posix.cc" ]
+  if (is_posix && !is_mac && !is_ios) {
+    sources += [ "login_database_posix.cc" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

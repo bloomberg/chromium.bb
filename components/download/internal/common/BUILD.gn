@@ -14,7 +14,6 @@ source_set("internal") {
 
   sources = [
     "base_file.cc",
-    "base_file_posix.cc",
     "base_file_win.cc",
     "download_create_info.cc",
     "download_file_factory.cc",
@@ -63,6 +62,10 @@ source_set("internal") {
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/cpp",
   ]
+
+  if (is_posix || is_fuchsia) {
+    sources += [ "base_file_posix.cc" ]
+  }
 }
 
 # tests need to access both public and internal sources. So in the component
