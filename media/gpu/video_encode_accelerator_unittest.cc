@@ -30,6 +30,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -143,8 +146,22 @@ const base::FilePath::CharType* g_default_in_parameters =
     FILE_PATH_LITERAL(",320,192,0,out.h264,200000");
 #endif  // defined(OS_CHROMEOS)
 
-// Enabled by including a --fake_encoder flag to the command line invoking the
-// test.
+// Default params that can be overriden via command line.
+std::unique_ptr<base::FilePath::StringType> g_test_stream_data(
+    new base::FilePath::StringType(
+        media::GetTestDataFilePath(media::g_default_in_filename).value() +
+        media::g_default_in_parameters));
+
+base::FilePath g_log_path;
+
+base::FilePath g_frame_stats_path;
+
+bool g_run_at_fps = false;
+
+bool g_needs_encode_latency = false;
+
+bool g_verify_all_output = false;
+
 bool g_fake_encoder = false;
 
 // Skip checking the flush functionality. Currently only Chrome OS devices
@@ -2524,20 +2541,37 @@ INSTANTIATE_TEST_CASE_P(
 // - multiple encoders + decoders
 // - mid-stream encoder_->Destroy()
 
+class VEATestSuite : public base::TestSuite {
+ public:
+  VEATestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+
+  int Run() {
+    base::test::ScopedTaskEnvironment scoped_task_environment;
+    media::g_env =
+        reinterpret_cast<media::VideoEncodeAcceleratorTestEnvironment*>(
+            testing::AddGlobalTestEnvironment(
+                new media::VideoEncodeAcceleratorTestEnvironment(
+                    std::move(media::g_test_stream_data), media::g_log_path,
+                    media::g_frame_stats_path, media::g_run_at_fps,
+                    media::g_needs_encode_latency,
+                    media::g_verify_all_output)));
+
+#if BUILDFLAG(USE_VAAPI)
+    media::VaapiWrapper::PreSandboxInitialization();
+#elif defined(OS_WIN)
+    media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
+#endif
+    return base::TestSuite::Run();
+  }
+};
+
 }  // namespace
 }  // namespace media
 
 int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
-  base::CommandLine::Init(argc, argv);
+  media::VEATestSuite test_suite(argc, argv);
 
   base::ShadowingAtExitManager at_exit_manager;
-  base::MessageLoop main_loop;
-
-  std::unique_ptr<base::FilePath::StringType> test_stream_data(
-      new base::FilePath::StringType(
-          media::GetTestDataFilePath(media::g_default_in_filename).value()));
-  test_stream_data->append(media::g_default_in_parameters);
 
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
@@ -2547,28 +2581,23 @@ int main(int argc, char** argv) {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   DCHECK(cmd_line);
 
-  bool run_at_fps = false;
 #if defined(OS_CHROMEOS)
   // Currently only ARC++ uses flush function, we only verify it on Chrome OS.
   media::g_disable_flush = false;
 #else
   media::g_disable_flush = true;
 #endif
-  bool needs_encode_latency = false;
-  bool verify_all_output = false;
-  base::FilePath log_path;
-  base::FilePath frame_stats_path;
 
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
     if (it->first == "test_stream_data") {
-      test_stream_data->assign(it->second.c_str());
+      media::g_test_stream_data->assign(it->second.c_str());
       continue;
     }
     // Output machine-readable logs with fixed formats to a file.
     if (it->first == "output_log") {
-      log_path = base::FilePath(
+      media::g_log_path = base::FilePath(
           base::FilePath::StringType(it->second.begin(), it->second.end()));
       continue;
     }
@@ -2578,7 +2607,7 @@ int main(int argc, char** argv) {
       continue;
     }
     if (it->first == "measure_latency") {
-      needs_encode_latency = true;
+      media::g_needs_encode_latency = true;
       continue;
     }
     if (it->first == "fake_encoder") {
@@ -2586,7 +2615,7 @@ int main(int argc, char** argv) {
       continue;
     }
     if (it->first == "run_at_fps") {
-      run_at_fps = true;
+      media::g_run_at_fps = true;
       continue;
     }
     if (it->first == "disable_flush") {
@@ -2594,7 +2623,7 @@ int main(int argc, char** argv) {
       continue;
     }
     if (it->first == "verify_all_output") {
-      verify_all_output = true;
+      media::g_verify_all_output = true;
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")
@@ -2604,32 +2633,20 @@ int main(int argc, char** argv) {
 
     // Output per-frame metrics to a csv file.
     if (it->first == "frame_stats") {
-      frame_stats_path = base::FilePath(
+      media::g_frame_stats_path = base::FilePath(
           base::FilePath::StringType(it->second.begin(), it->second.end()));
       continue;
     }
-    LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
 
-  if (needs_encode_latency && !run_at_fps) {
+  if (media::g_needs_encode_latency && !media::g_run_at_fps) {
     // Encode latency can only be measured with --run_at_fps. Otherwise, we get
     // skewed results since it may queue too many frames at once with the same
     // encode start time.
     LOG(FATAL) << "--measure_latency requires --run_at_fps enabled to work.";
   }
 
-#if BUILDFLAG(USE_VAAPI)
-  media::VaapiWrapper::PreSandboxInitialization();
-#elif defined(OS_WIN)
-  media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
-#endif
-
-  media::g_env =
-      reinterpret_cast<media::VideoEncodeAcceleratorTestEnvironment*>(
-          testing::AddGlobalTestEnvironment(
-              new media::VideoEncodeAcceleratorTestEnvironment(
-                  std::move(test_stream_data), log_path, frame_stats_path,
-                  run_at_fps, needs_encode_latency, verify_all_output)));
-
-  return RUN_ALL_TESTS();
+  return base::LaunchUnitTestsSerially(
+      argc, argv,
+      base::BindOnce(&media::VEATestSuite::Run, base::Unretained(&test_suite)));
 }
