@@ -109,6 +109,7 @@
 ./tools/wptserve/README.md
 ./tools/wptserve/wptserve
 ./tools/wptserve/wptserve/__init__.py
+./tools/wptserve/wptserve/config.py
 ./tools/wptserve/wptserve/constants.py
 ./tools/wptserve/wptserve/handlers.py
 ./tools/wptserve/wptserve/logger.py
