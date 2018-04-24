@@ -148,7 +148,7 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
   }
 
   if (object_path.value() == heart_rate_control_point_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorReadNotPermitted,
+    error_callback.Run(bluetooth_gatt_service::kErrorNotPermitted,
                        "Reads of this value are not allowed");
     return;
   }
@@ -226,7 +226,7 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
   }
 
   if (object_path.value() != heart_rate_control_point_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorWriteNotPermitted,
+    error_callback.Run(bluetooth_gatt_service::kErrorNotPermitted,
                        "Writes of this value are not allowed");
     return;
   }
