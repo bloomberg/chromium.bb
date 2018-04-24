@@ -42,22 +42,22 @@ void FaceDetectionImplMac::Detect(const SkBitmap& bitmap,
     if (f.hasLeftEyePosition) {
       auto landmark = shape_detection::mojom::Landmark::New();
       landmark->type = shape_detection::mojom::LandmarkType::EYE;
-      landmark->location =
-          gfx::PointF(f.leftEyePosition.x, height - f.leftEyePosition.y);
+      landmark->locations.emplace_back(f.leftEyePosition.x,
+                                       height - f.leftEyePosition.y);
       face->landmarks.push_back(std::move(landmark));
     }
     if (f.hasRightEyePosition) {
       auto landmark = shape_detection::mojom::Landmark::New();
       landmark->type = shape_detection::mojom::LandmarkType::EYE;
-      landmark->location =
-          gfx::PointF(f.rightEyePosition.x, height - f.rightEyePosition.y);
+      landmark->locations.emplace_back(f.rightEyePosition.x,
+                                       height - f.rightEyePosition.y);
       face->landmarks.push_back(std::move(landmark));
     }
     if (f.hasMouthPosition) {
       auto landmark = shape_detection::mojom::Landmark::New();
       landmark->type = shape_detection::mojom::LandmarkType::MOUTH;
-      landmark->location =
-          gfx::PointF(f.mouthPosition.x, height - f.mouthPosition.y);
+      landmark->locations.emplace_back(f.mouthPosition.x,
+                                       height - f.mouthPosition.y);
       face->landmarks.push_back(std::move(landmark));
     }
 
