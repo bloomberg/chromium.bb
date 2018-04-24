@@ -52,27 +52,29 @@ void CalculateNormalTabWidths(const TabSizeInfo& tab_size_info,
 
 }  // namespace
 
-void CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
-                                  int num_pinned_tabs,
-                                  int num_tabs,
-                                  std::vector<gfx::Rect>* tabs_bounds) {
+int CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
+                                 int num_pinned_tabs,
+                                 int num_tabs,
+                                 int start_x,
+                                 std::vector<gfx::Rect>* tabs_bounds) {
   DCHECK_EQ(static_cast<size_t>(num_tabs), tabs_bounds->size());
   int index = 0;
-  int next_x = 0;
+  int next_x = start_x;
   for (; index < num_pinned_tabs; ++index) {
     (*tabs_bounds)[index].SetRect(next_x, 0, tab_size_info.pinned_tab_width,
                                   tab_size_info.max_size.height());
     next_x += tab_size_info.pinned_tab_width - tab_size_info.tab_overlap;
   }
-  if (index > 0 && index < num_tabs) {
-    (*tabs_bounds)[index].set_x(next_x + tab_size_info.pinned_to_normal_offset);
-  }
+  if (num_pinned_tabs)
+    next_x += tab_size_info.pinned_to_normal_offset;
+  return next_x;
 }
 
 std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
                                        int num_pinned_tabs,
                                        int num_tabs,
                                        int active_index,
+                                       int start_x,
                                        int width,
                                        int* active_width,
                                        int* inactive_width) {
@@ -82,18 +84,11 @@ std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
 
   *active_width = *inactive_width = tab_size_info.max_size.width();
 
-  int next_x = 0;
-  if (num_pinned_tabs) {
-    CalculateBoundsForPinnedTabs(tab_size_info, num_pinned_tabs, num_tabs,
-                                 &tabs_bounds);
-    if (num_pinned_tabs == num_tabs)
-      return tabs_bounds;
-
-    // CalculateBoundsForPinnedTabs() sets the x location of the first normal
-    // tab.
-    width -= tabs_bounds[num_pinned_tabs].x();
-    next_x = tabs_bounds[num_pinned_tabs].x();
-  }
+  int next_x = CalculateBoundsForPinnedTabs(tab_size_info, num_pinned_tabs,
+                                            num_tabs, start_x, &tabs_bounds);
+  if (num_pinned_tabs == num_tabs)
+    return tabs_bounds;
+  width -= next_x - start_x;
 
   const bool is_active_tab_normal = active_index >= num_pinned_tabs;
   const int num_normal_tabs = num_tabs - num_pinned_tabs;
