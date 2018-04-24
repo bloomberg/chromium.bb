@@ -8,6 +8,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.params.ParameterizedRunner.ParameterizedTestInstantiationException;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public final class BaseJUnit4RunnerDelegate
     }
 
     @Override
-    public Object createTest() {
+    public Object createTest() throws ParameterizedTestInstantiationException {
         return mDelegateCommon.createTest();
     }
 }

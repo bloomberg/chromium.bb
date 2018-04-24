@@ -9,7 +9,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.TestClass;
 
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
-import org.chromium.base.test.params.ParameterizedRunner.ParameterizedTestInstantiationException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -29,16 +28,13 @@ public class ParameterizedRunnerDelegateFactory {
      *                                         through {@code @UseRunnerDelegate}
      */
     <T extends ParameterizedRunnerDelegate> T createRunner(TestClass testClass,
-            ParameterSet classParameterSet,
-            Class<T> parameterizedRunnerDelegateClass)
-            throws ParameterizedTestInstantiationException,
-                   ParameterizedRunnerDelegateInstantiationException {
+            ParameterSet classParameterSet, Class<T> parameterizedRunnerDelegateClass)
+            throws ParameterizedRunnerDelegateInstantiationException {
         String testMethodPostfix = classParameterSet == null ? null : classParameterSet.getName();
         List<FrameworkMethod> unmodifiableFrameworkMethodList =
                 generateUnmodifiableFrameworkMethodList(testClass, testMethodPostfix);
-        Object test = createTest(testClass, classParameterSet);
-        ParameterizedRunnerDelegateCommon delegateCommon =
-                new ParameterizedRunnerDelegateCommon(test, unmodifiableFrameworkMethodList);
+        ParameterizedRunnerDelegateCommon delegateCommon = new ParameterizedRunnerDelegateCommon(
+                testClass, classParameterSet, unmodifiableFrameworkMethodList);
         try {
             return parameterizedRunnerDelegateClass
                     .getDeclaredConstructor(Class.class, ParameterizedRunnerDelegateCommon.class)
@@ -75,27 +71,6 @@ public class ParameterizedRunnerDelegateFactory {
         }
 
         return Collections.unmodifiableList(returnList);
-    }
-
-    /**
-     * Create a test object using the list of class parameter set
-     *
-     * @param testClass the {@link TestClass} object for current test class
-     * @param classParameterSet the parameter set needed for the test class constructor
-     */
-    static Object createTest(TestClass testClass, ParameterSet classParameterSet)
-            throws ParameterizedTestInstantiationException {
-        try {
-            if (classParameterSet == null) {
-                return testClass.getOnlyConstructor().newInstance();
-            }
-            return testClass.getOnlyConstructor().newInstance(
-                    classParameterSet.getValues().toArray());
-        } catch (Exception e) {
-            String parameterSetString =
-                    classParameterSet == null ? "null" : classParameterSet.toString();
-            throw new ParameterizedTestInstantiationException(testClass, parameterSetString, e);
-        }
     }
 
     /**
