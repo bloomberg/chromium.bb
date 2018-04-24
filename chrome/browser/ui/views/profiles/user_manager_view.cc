@@ -252,7 +252,7 @@ void UserManager::AddOnUserManagerShownCallbackForTesting(
 base::FilePath UserManager::GetSigninProfilePath() {
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa()) {
-    return UserManager::GetSigninProfilePath();
+    return UserManager::GetSigninProfilePathCocoa();
   }
 #endif
 
@@ -341,7 +341,7 @@ void UserManagerProfileDialog::ShowDialogAndDisplayErrorMessage(
 void UserManagerProfileDialog::DisplayErrorMessage() {
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa()) {
-    return UserManagerProfileDialog::DisplayErrorMessage();
+    return UserManagerProfileDialog::DisplayErrorMessageCocoa();
   }
 #endif
 
