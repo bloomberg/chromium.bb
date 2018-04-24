@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_H_
-#define NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_H_
+#ifndef NET_HTTP_HTTP_STREAM_FACTORY_JOB_H_
+#define NET_HTTP_HTTP_STREAM_FACTORY_JOB_H_
 
 #include <memory>
 #include <utility>
@@ -20,7 +20,7 @@
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_request_info.h"
-#include "net/http/http_stream_factory_impl.h"
+#include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_request.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -50,11 +50,11 @@ struct SSLConfig;
 
 // An HttpStreamRequest exists for each stream which is in progress of being
 // created for the HttpStreamFactory.
-class HttpStreamFactoryImpl::Job {
+class HttpStreamFactory::Job {
  public:
   // For jobs issued simultaneously to an HTTP/2 supported server, a delay is
   // applied to avoid unnecessary socket connection establishments.
-  // crbug.com/718576
+  // https://crbug.com/718576
   static const int kHTTP2ThrottleMs = 300;
 
   // Delegate to report Job's status to HttpStreamRequest and HttpStreamFactory.
@@ -524,15 +524,15 @@ class HttpStreamFactoryImpl::Job {
 };
 
 // Factory for creating Jobs.
-class HttpStreamFactoryImpl::JobFactory {
+class HttpStreamFactory::JobFactory {
  public:
   JobFactory();
 
   virtual ~JobFactory();
 
-  virtual std::unique_ptr<HttpStreamFactoryImpl::Job> CreateMainJob(
-      HttpStreamFactoryImpl::Job::Delegate* delegate,
-      HttpStreamFactoryImpl::JobType job_type,
+  virtual std::unique_ptr<HttpStreamFactory::Job> CreateMainJob(
+      HttpStreamFactory::Job::Delegate* delegate,
+      HttpStreamFactory::JobType job_type,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
@@ -545,9 +545,9 @@ class HttpStreamFactoryImpl::JobFactory {
       bool enable_ip_based_pooling,
       NetLog* net_log);
 
-  virtual std::unique_ptr<HttpStreamFactoryImpl::Job> CreateAltSvcJob(
-      HttpStreamFactoryImpl::Job::Delegate* delegate,
-      HttpStreamFactoryImpl::JobType job_type,
+  virtual std::unique_ptr<HttpStreamFactory::Job> CreateAltSvcJob(
+      HttpStreamFactory::Job::Delegate* delegate,
+      HttpStreamFactory::JobType job_type,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
@@ -562,9 +562,9 @@ class HttpStreamFactoryImpl::JobFactory {
       bool enable_ip_based_pooling,
       NetLog* net_log);
 
-  virtual std::unique_ptr<HttpStreamFactoryImpl::Job> CreateAltProxyJob(
-      HttpStreamFactoryImpl::Job::Delegate* delegate,
-      HttpStreamFactoryImpl::JobType job_type,
+  virtual std::unique_ptr<HttpStreamFactory::Job> CreateAltProxyJob(
+      HttpStreamFactory::Job::Delegate* delegate,
+      HttpStreamFactory::JobType job_type,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
@@ -581,4 +581,4 @@ class HttpStreamFactoryImpl::JobFactory {
 
 }  // namespace net
 
-#endif  // NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_H_
+#endif  // NET_HTTP_HTTP_STREAM_FACTORY_JOB_H_

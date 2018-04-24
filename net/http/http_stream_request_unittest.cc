@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "net/http/http_stream_factory_impl.h"
-#include "net/http/http_stream_factory_impl_job.h"
-#include "net/http/http_stream_factory_impl_job_controller.h"
+#include "net/http/http_stream_factory.h"
+#include "net/http/http_stream_factory_job.h"
+#include "net/http/http_stream_factory_job_controller.h"
 #include "net/http/http_stream_factory_test_util.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
@@ -30,19 +30,19 @@ TEST(HttpStreamRequestTest, SetPriority) {
 
   std::unique_ptr<HttpNetworkSession> session =
       SpdySessionDependencies::SpdyCreateSession(&session_deps);
-  HttpStreamFactoryImpl* factory =
-      static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory());
+  HttpStreamFactory* factory =
+      static_cast<HttpStreamFactory*>(session->http_stream_factory());
   MockHttpStreamRequestDelegate request_delegate;
   TestJobFactory job_factory;
   HttpRequestInfo request_info;
   request_info.url = GURL("http://www.example.com/");
-  auto job_controller = std::make_unique<HttpStreamFactoryImpl::JobController>(
+  auto job_controller = std::make_unique<HttpStreamFactory::JobController>(
       factory, &request_delegate, session.get(), &job_factory, request_info,
       /* is_preconnect = */ false,
       /* is_websocket = */ false,
       /* enable_ip_based_pooling = */ true,
       /* enable_alternative_services = */ true, SSLConfig(), SSLConfig());
-  HttpStreamFactoryImpl::JobController* job_controller_raw_ptr =
+  HttpStreamFactory::JobController* job_controller_raw_ptr =
       job_controller.get();
   factory->job_controller_set_.insert(std::move(job_controller));
 
