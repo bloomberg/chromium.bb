@@ -540,6 +540,9 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -999,6 +1002,9 @@
         "test": "blink_platform_unittests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
