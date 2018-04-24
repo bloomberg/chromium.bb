@@ -55,6 +55,7 @@ class ValueStoreCache;
 class ValueStoreFactory;
 class VirtualKeyboardDelegate;
 class WebRequestEventRouterDelegate;
+struct WebRequestInfo;
 class WebViewGuest;
 class WebViewGuestDelegate;
 class WebViewPermissionHelper;
@@ -94,9 +95,10 @@ class ExtensionsAPIClient {
   virtual bool ShouldHideResponseHeader(const GURL& url,
                                         const std::string& header_name) const;
 
-  // Returns true if a request from the given URL from the browser context
-  // should be hidden from extensions.
-  virtual bool ShouldHideBrowserNetworkRequest(const GURL& url) const;
+  // Returns true if the given |request| should be hidden from extensions. This
+  // should be invoked on the IO thread.
+  virtual bool ShouldHideBrowserNetworkRequest(
+      const WebRequestInfo& request) const;
 
   // Creates the AppViewGuestDelegate.
   virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const;

@@ -256,6 +256,7 @@ WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
     type = info->GetResourceType();
     web_request_type = ToWebRequestResourceType(type.value());
     is_async = info->IsAsync();
+    resource_context = info->GetContext();
   } else {
     // There may be basic process and frame info associated with the request
     // even when |info| is null. Attempt to grab it as a last ditch effort. If

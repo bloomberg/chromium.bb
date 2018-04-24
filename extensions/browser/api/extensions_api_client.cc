@@ -44,7 +44,7 @@ bool ExtensionsAPIClient::ShouldHideResponseHeader(
 }
 
 bool ExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
-    const GURL& url) const {
+    const WebRequestInfo& request) const {
   return false;
 }
 

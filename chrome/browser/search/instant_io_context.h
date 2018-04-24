@@ -50,6 +50,11 @@ class InstantIOContext : public base::RefCountedThreadSafe<InstantIOContext> {
                                    content::ResourceContext* resource_context,
                                    int render_process_id);
 
+  // Returns true if the given |render_process_id| represents an Instant
+  // renderer.
+  static bool IsInstantProcess(content::ResourceContext* resource_context,
+                               int render_process_id);
+
  protected:
    virtual ~InstantIOContext();
 

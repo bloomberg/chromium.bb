@@ -17,6 +17,10 @@ namespace {
 InstantIOContext* GetDataForResourceContext(
     content::ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!context)
+    return nullptr;
+
   return base::UserDataAdapter<InstantIOContext>::Get(
       context, InstantIOContext::kInstantIOContextKeyName);
 }
@@ -71,8 +75,7 @@ bool InstantIOContext::ShouldServiceRequest(
     const GURL& url,
     content::ResourceContext* resource_context,
     int render_process_id) {
-  if (!resource_context)
-    return false;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   InstantIOContext* instant_io_context =
       GetDataForResourceContext(resource_context);
@@ -83,6 +86,20 @@ bool InstantIOContext::ShouldServiceRequest(
   // so, allow this request since it's not going to another renderer.
   return render_process_id == -1 ||
          instant_io_context->IsInstantProcess(render_process_id);
+}
+
+// static
+bool InstantIOContext::IsInstantProcess(
+    content::ResourceContext* resource_context,
+    int render_process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  InstantIOContext* instant_io_context =
+      GetDataForResourceContext(resource_context);
+  if (!instant_io_context)
+    return false;
+
+  return instant_io_context->IsInstantProcess(render_process_id);
 }
 
 bool InstantIOContext::IsInstantProcess(int process_id) const {
