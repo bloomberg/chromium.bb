@@ -187,7 +187,14 @@ bool StoreDMTokenInRegistry(const std::string& token) {
 
 }  // namespace
 
+// static
+BrowserDMTokenStorage* BrowserDMTokenStorage::storage_for_testing_ = nullptr;
+
+// static
 BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
+  if (storage_for_testing_)
+    return storage_for_testing_;
+
   static base::NoDestructor<BrowserDMTokenStorageWin> storage;
   return storage.get();
 }
