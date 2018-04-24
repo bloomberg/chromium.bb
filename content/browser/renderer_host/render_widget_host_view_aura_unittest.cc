@@ -3070,31 +3070,31 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateCursorIfOverSelf) {
 
   // Cursor is in the middle of the window.
   cursor_client.reset_calls_to_set_cursor();
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(110, 110));
+  aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(110, 110));
   view_->UpdateCursorIfOverSelf();
   EXPECT_EQ(1, cursor_client.calls_to_set_cursor());
 
   // Cursor is near the top of the window.
   cursor_client.reset_calls_to_set_cursor();
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(80, 65));
+  aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(80, 65));
   view_->UpdateCursorIfOverSelf();
   EXPECT_EQ(1, cursor_client.calls_to_set_cursor());
 
   // Cursor is near the bottom of the window.
   cursor_client.reset_calls_to_set_cursor();
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(159, 159));
+  aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(159, 159));
   view_->UpdateCursorIfOverSelf();
   EXPECT_EQ(1, cursor_client.calls_to_set_cursor());
 
   // Cursor is above the window.
   cursor_client.reset_calls_to_set_cursor();
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(67, 59));
+  aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(67, 59));
   view_->UpdateCursorIfOverSelf();
   EXPECT_EQ(0, cursor_client.calls_to_set_cursor());
 
   // Cursor is below the window.
   cursor_client.reset_calls_to_set_cursor();
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(161, 161));
+  aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(161, 161));
   view_->UpdateCursorIfOverSelf();
   EXPECT_EQ(0, cursor_client.calls_to_set_cursor());
 }

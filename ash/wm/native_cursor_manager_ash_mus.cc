@@ -154,8 +154,7 @@ void NativeCursorManagerAshMus::SetMouseEventsEnabled(
   delegate->CommitMouseEventsEnabled(enabled);
 
   if (enabled) {
-    aura::Env::GetInstance()->set_last_mouse_location(
-        disabled_cursor_location_);
+    aura::Env::GetInstance()->SetLastMouseLocation(disabled_cursor_location_);
   } else {
     disabled_cursor_location_ = aura::Env::GetInstance()->last_mouse_location();
   }

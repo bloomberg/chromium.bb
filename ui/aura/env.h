@@ -95,9 +95,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // Gets/sets the last mouse location seen in a mouse event in the screen
   // coordinates.
   const gfx::Point& last_mouse_location() const;
-  void set_last_mouse_location(const gfx::Point& last_mouse_location) {
-    last_mouse_location_ = last_mouse_location;
-  }
+  void SetLastMouseLocation(const gfx::Point& last_mouse_location);
 
   // Whether any touch device is currently down.
   bool is_touch_down() const { return is_touch_down_; }
