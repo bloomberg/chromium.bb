@@ -54,6 +54,9 @@ DynamicsCompressorHandler::DynamicsCompressorHandler(
       release_(&release) {
   AddInput();
   AddOutput(defaultNumberOfOutputChannels);
+
+  SetInternalChannelCountMode(kClampedMax);
+
   Initialize();
 }
 

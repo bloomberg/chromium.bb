@@ -34,7 +34,7 @@
               numberOfInputs: 1,
               numberOfOutputs: 1,
               channelCount: 2,
-              channelCountMode: 'max',
+              channelCountMode: 'clamped-max',
               channelInterpretation: 'speakers'
             });
 
@@ -160,7 +160,7 @@
 
         should(node.channelCount, 'node1.channelCount').beEqualTo(2);
         should(node.channelCountMode, 'node1.channelCountMode')
-            .beEqualTo('max');
+            .beEqualTo('clamped-max');
         should(node.channelInterpretation, 'node1.channelInterpretation')
             .beEqualTo('speakers');
 
