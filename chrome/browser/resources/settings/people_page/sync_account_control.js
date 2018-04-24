@@ -85,6 +85,27 @@ Polymer({
   },
 
   /**
+   * Records the following user actions:
+   * - Signin_Impression_FromSettings and
+   * - Signin_ImpressionWithAccount_FromSettings
+   * - Signin_ImpressionWithNoAccount_FromSettings
+   * @private
+   */
+  recordImpressionUserActions_: function() {
+    assert(!this.syncStatus.signedIn);
+    assert(this.shownAccount_ !== undefined);
+
+    chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
+    if (this.shownAccount_) {
+      chrome.metricsPrivate.recordUserAction(
+          'Signin_ImpressionWithAccount_FromSettings');
+    } else {
+      chrome.metricsPrivate.recordUserAction(
+          'Signin_ImpressionWithNoAccount_FromSettings');
+    }
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -108,6 +129,8 @@ Polymer({
       // Turn off the promo if the user is signed in.
       this.showingPromo = false;
     }
+    if (!this.syncStatus.signedIn && this.shownAccount_ !== undefined)
+      this.recordImpressionUserActions_();
   },
 
   /**
@@ -257,8 +280,23 @@ Polymer({
         }
       }
     } else {
-      this.shownAccount_ =
-          this.storedAccounts_ ? this.storedAccounts_[0] : null;
+      const firstStoredAccount =
+          (this.storedAccounts_.length > 0) ? this.storedAccounts_[0] : null;
+
+      // Sign-in impressions should be recorded in the following cases:
+      // 1. When the promo is first shown, i.e. when |shownAccount_| is
+      //   initialized;
+      // 2. When the impression account state changes, i.e. promo impression
+      //   state changes (WithAccount -> WithNoAccount) or
+      //   (WithNoAccount -> WithAccount).
+      const shouldRecordImpression = (this.shownAccount_ === undefined) ||
+          (!this.shownAccount_ && firstStoredAccount) ||
+          (this.shownAccount_ && !firstStoredAccount);
+
+      this.shownAccount_ = firstStoredAccount;
+
+      if (shouldRecordImpression)
+        this.recordImpressionUserActions_();
     }
   }
 });
