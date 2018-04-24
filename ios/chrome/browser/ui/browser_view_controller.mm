@@ -1813,6 +1813,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.secondaryToolbarNoFullscreenHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
   [self updateFootersForFullscreenProgress:self.footerFullscreenProgress];
+  if (self.currentWebState) {
+    UIEdgeInsets contentPadding =
+        self.currentWebState->GetWebViewProxy().contentInset;
+    contentPadding.bottom = AlignValueToPixel(
+        self.footerFullscreenProgress * [self secondaryToolbarHeightWithInset]);
+    self.currentWebState->GetWebViewProxy().contentInset = contentPadding;
+  }
 
   // Update the toolbar visibility.
   [self updateToolbar];
