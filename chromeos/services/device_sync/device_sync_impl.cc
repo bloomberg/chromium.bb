@@ -216,6 +216,25 @@ void DeviceSyncImpl::FindEligibleDevices(
                  weak_ptr_factory_.GetWeakPtr(), callback_holder));
 }
 
+void DeviceSyncImpl::GetDebugInfo(GetDebugInfoCallback callback) {
+  if (status_ != Status::READY) {
+    PA_LOG(WARNING) << "DeviceSyncImpl::GetDebugInfo() invoked before "
+                    << "initialization was complete. Cannot provide info.";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  std::move(callback).Run(mojom::DebugInfo::New(
+      cryptauth_enrollment_manager_->GetLastEnrollmentTime(),
+      cryptauth_enrollment_manager_->GetTimeToNextAttempt(),
+      cryptauth_enrollment_manager_->IsRecoveringFromFailure(),
+      cryptauth_enrollment_manager_->IsEnrollmentInProgress(),
+      cryptauth_device_manager_->GetLastSyncTime(),
+      cryptauth_device_manager_->GetTimeToNextAttempt(),
+      cryptauth_device_manager_->IsRecoveringFromFailure(),
+      cryptauth_device_manager_->IsSyncInProgress()));
+}
+
 void DeviceSyncImpl::OnEnrollmentFinished(bool success) {
   PA_LOG(INFO) << "DeviceSyncImpl: Enrollment finished; success = " << success;
 

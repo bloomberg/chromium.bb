@@ -15,7 +15,7 @@ FakeCryptAuthDeviceManager::~FakeCryptAuthDeviceManager() = default;
 void FakeCryptAuthDeviceManager::FinishActiveSync(
     SyncResult sync_result,
     DeviceChangeResult device_change_result,
-    const base::Time& sync_finish_time) {
+    base::Time sync_finish_time) {
   DCHECK(is_sync_in_progress_);
   is_sync_in_progress_ = false;
 

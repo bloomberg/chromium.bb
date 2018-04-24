@@ -650,6 +650,15 @@ class DeviceSyncServiceTest : public testing::Test {
     return fake_pref_connection_delegate_;
   }
 
+  cryptauth::FakeCryptAuthEnrollmentManager*
+  fake_cryptauth_enrollment_manager() {
+    return fake_cryptauth_enrollment_manager_factory_->instance();
+  }
+
+  cryptauth::FakeCryptAuthDeviceManager* fake_cryptauth_device_manager() {
+    return fake_cryptauth_device_manager_factory_->instance();
+  }
+
   cryptauth::FakeSoftwareFeatureManager* fake_software_feature_manager() {
     return fake_software_feature_manager_factory_->instance();
   }
@@ -690,6 +699,9 @@ class DeviceSyncServiceTest : public testing::Test {
     auto last_find_response = GetLastFindEligibleDevicesResponseAndReset();
     EXPECT_EQ(mojom::kErrorNotInitialized, last_find_response->first);
     EXPECT_FALSE(last_find_response->second /* response */);
+
+    // GetDebugInfo() returns a null DebugInfo before initialization.
+    EXPECT_FALSE(CallGetDebugInfo());
   }
 
   void CallAddObserver() {
@@ -807,6 +819,15 @@ class DeviceSyncServiceTest : public testing::Test {
     fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
   }
 
+  const base::Optional<mojom::DebugInfo>& CallGetDebugInfo() {
+    base::RunLoop run_loop;
+    device_sync_->GetDebugInfo(
+        base::BindOnce(&DeviceSyncServiceTest::OnGetDebugInfoCompleted,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    return last_debug_info_result_;
+  }
+
  private:
   void OnAddObserverCompleted(base::OnceClosure quit_closure) {
     std::move(quit_closure).Run();
@@ -862,6 +883,16 @@ class DeviceSyncServiceTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
+  void OnGetDebugInfoCompleted(base::OnceClosure quit_closure,
+                               mojom::DebugInfoPtr debug_info) {
+    EXPECT_FALSE(last_debug_info_result_);
+    if (debug_info)
+      last_debug_info_result_ = *debug_info;
+    else
+      last_debug_info_result_.reset();
+    std::move(quit_closure).Run();
+  }
+
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const cryptauth::RemoteDeviceList test_devices_;
   const std::vector<cryptauth::ExternalDeviceInfo> test_device_infos_;
@@ -900,6 +931,7 @@ class DeviceSyncServiceTest : public testing::Test {
   std::unique_ptr<std::pair<base::Optional<std::string>,
                             mojom::FindEligibleDevicesResponsePtr>>
       last_find_eligible_devices_response_;
+  base::Optional<mojom::DebugInfo> last_debug_info_result_;
 
   std::unique_ptr<FakeDeviceSyncObserver> fake_device_sync_observer_;
   mojom::DeviceSyncPtr device_sync_;
@@ -1144,6 +1176,51 @@ TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
   EXPECT_TRUE(last_response);
   EXPECT_EQ("error", last_response->first /* error_code */);
   EXPECT_FALSE(last_response->second /* response */);
+}
+
+TEST_F(DeviceSyncServiceTest, GetDebugInfo) {
+  static const base::TimeDelta kTimeBetweenEpochAndLastEnrollment =
+      base::TimeDelta::FromDays(365 * 50);  // 50 years
+  static const base::TimeDelta kTimeUntilNextEnrollment =
+      base::TimeDelta::FromDays(10);
+
+  static const base::TimeDelta kTimeBetweenEpochAndLastSync =
+      base::TimeDelta::FromDays(366 * 50);  // 50 years and 1 day
+  static const base::TimeDelta kTimeUntilNextSync =
+      base::TimeDelta::FromDays(11);
+
+  InitializeServiceSuccessfully();
+
+  fake_cryptauth_enrollment_manager()->set_last_enrollment_time(
+      base::Time::FromDeltaSinceWindowsEpoch(
+          kTimeBetweenEpochAndLastEnrollment));
+  fake_cryptauth_enrollment_manager()->set_time_to_next_attempt(
+      kTimeUntilNextEnrollment);
+  fake_cryptauth_enrollment_manager()->set_is_recovering_from_failure(false);
+  fake_cryptauth_enrollment_manager()->set_is_enrollment_in_progress(true);
+
+  fake_cryptauth_device_manager()->set_last_sync_time(
+      base::Time::FromDeltaSinceWindowsEpoch(kTimeBetweenEpochAndLastSync));
+  fake_cryptauth_device_manager()->set_time_to_next_attempt(kTimeUntilNextSync);
+  fake_cryptauth_device_manager()->set_is_recovering_from_failure(true);
+  fake_cryptauth_device_manager()->set_is_sync_in_progress(false);
+
+  const auto& result = CallGetDebugInfo();
+  EXPECT_TRUE(result);
+  EXPECT_EQ(base::Time::FromDeltaSinceWindowsEpoch(
+                kTimeBetweenEpochAndLastEnrollment),
+            result->last_enrollment_time);
+  EXPECT_EQ(base::TimeDelta(kTimeUntilNextEnrollment),
+            result->time_to_next_enrollment_attempt);
+  EXPECT_FALSE(result->is_recovering_from_enrollment_failure);
+  EXPECT_TRUE(result->is_enrollment_in_progress);
+  EXPECT_EQ(
+      base::Time::FromDeltaSinceWindowsEpoch(kTimeBetweenEpochAndLastSync),
+      result->last_sync_time);
+  EXPECT_EQ(base::TimeDelta(kTimeUntilNextSync),
+            result->time_to_next_sync_attempt);
+  EXPECT_TRUE(result->is_recovering_from_sync_failure);
+  EXPECT_FALSE(result->is_sync_in_progress);
 }
 
 }  // namespace device_sync

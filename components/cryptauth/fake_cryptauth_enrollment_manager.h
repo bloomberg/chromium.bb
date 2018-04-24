@@ -21,7 +21,11 @@ class FakeCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
   FakeCryptAuthEnrollmentManager();
   ~FakeCryptAuthEnrollmentManager() override;
 
-  void set_time_to_next_attempt(const base::TimeDelta& time_to_next_attempt) {
+  void set_last_enrollment_time(base::Time last_enrollment_time) {
+    last_enrollment_time_ = last_enrollment_time;
+  }
+
+  void set_time_to_next_attempt(base::TimeDelta time_to_next_attempt) {
     time_to_next_attempt_ = time_to_next_attempt;
   }
 
@@ -39,6 +43,14 @@ class FakeCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
 
   bool has_started() { return has_started_; }
 
+  void set_is_recovering_from_failure(bool is_recovering_from_failure) {
+    is_recovering_from_failure_ = is_recovering_from_failure;
+  }
+
+  void set_is_enrollment_in_progress(bool is_enrollment_in_progress) {
+    is_enrollment_in_progress_ = is_enrollment_in_progress;
+  }
+
   base::Optional<InvocationReason> last_invocation_reason() {
     return last_invocation_reason_;
   }
@@ -47,9 +59,8 @@ class FakeCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
   // progress due to a previous call to ForceEnrollmentNow(). If |success| is
   // true, |enrollment_finish_time| will be stored as the last enrollment time
   // and will be returned by future calls to GetLastEnrollmentTime().
-  void FinishActiveEnrollment(
-      bool success,
-      const base::Time& enrollment_finish_time = base::Time());
+  void FinishActiveEnrollment(bool success,
+                              base::Time enrollment_finish_time = base::Time());
 
   // Make these functions public for testing.
   using CryptAuthEnrollmentManager::NotifyEnrollmentStarted;
