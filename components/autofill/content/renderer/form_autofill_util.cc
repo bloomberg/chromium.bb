@@ -1421,12 +1421,12 @@ const base::string16 GetFormIdentifier(const WebFormElement& form) {
 }
 
 bool IsWebElementVisible(const blink::WebElement& element) {
-  // hasNonEmptyLayoutSize might trigger layout, but it didn't cause problems so
-  // far. If the layout is prohibited, hasNonEmptyLayoutSize is still used. See
-  // details in crbug.com/595078.
-  bool res = g_prevent_layout ? element.HasNonEmptyLayoutSize()
-                              : element.IsFocusable();
-  return res;
+  // Testing anything related to visibility is likely to trigger layout. If that
+  // should not happen, all elements are suspected of being visible. This is
+  // consistent with the default value of FormFieldData::is_focusable.
+  if (g_prevent_layout)
+    return true;
+  return element.IsFocusable();
 }
 
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
