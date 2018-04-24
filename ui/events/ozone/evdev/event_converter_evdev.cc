@@ -163,7 +163,7 @@ void EventConverterEvdev::SetTouchEventLoggingEnabled(bool enabled) {
 }
 
 void EventConverterEvdev::SetPalmSuppressionCallback(
-    const base::Callback<void(bool)>& callback) {}
+    const base::RepeatingCallback<void(bool)>& callback) {}
 
 base::TimeTicks EventConverterEvdev::TimeTicksFromInputEvent(
     const input_event& event) {

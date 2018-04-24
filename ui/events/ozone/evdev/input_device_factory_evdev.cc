@@ -220,8 +220,8 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
     if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
         converter->HasPen()) {
       converter->SetPalmSuppressionCallback(
-          base::Bind(&InputDeviceFactoryEvdev::EnablePalmSuppression,
-                     base::Unretained(this)));
+          base::BindRepeating(&InputDeviceFactoryEvdev::EnablePalmSuppression,
+                              base::Unretained(this)));
     }
 
     // Add initialized device to map.

@@ -20,7 +20,7 @@ class CursorDelegateEvdev;
 class DeviceEventDispatcherEvdev;
 class InputDeviceFactoryEvdevProxy;
 
-typedef base::Callback<void(std::unique_ptr<InputDeviceFactoryEvdevProxy>)>
+typedef base::OnceCallback<void(std::unique_ptr<InputDeviceFactoryEvdevProxy>)>
     EventThreadStartCallback;
 
 // Wrapper for events thread.
@@ -34,7 +34,7 @@ class EventThreadEvdev {
   // must be synchronized accordingly.
   void Start(std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,
              CursorDelegateEvdev* cursor,
-             const EventThreadStartCallback& callback);
+             EventThreadStartCallback callback);
 
  private:
   std::unique_ptr<base::Thread> thread_;

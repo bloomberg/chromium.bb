@@ -338,7 +338,7 @@ void TouchEventConverterEvdev::SetTouchEventLoggingEnabled(bool enabled) {
 }
 
 void TouchEventConverterEvdev::SetPalmSuppressionCallback(
-    const base::Callback<void(bool)>& callback) {
+    const base::RepeatingCallback<void(bool)>& callback) {
   enable_palm_suppression_callback_ = callback;
 }
 

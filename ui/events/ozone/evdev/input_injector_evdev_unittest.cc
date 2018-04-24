@@ -126,8 +126,9 @@ class InputInjectorEvdevTest : public testing::Test {
 };
 
 InputInjectorEvdevTest::InputInjectorEvdevTest()
-    : dispatch_callback_(base::Bind(&EventObserver::EventDispatchCallback,
-                                    base::Unretained(&event_observer_))),
+    : dispatch_callback_(
+          base::BindRepeating(&EventObserver::EventDispatchCallback,
+                              base::Unretained(&event_observer_))),
       device_manager_(CreateDeviceManagerForTest()),
       event_factory_(CreateEventFactoryEvdevForTest(
           &cursor_,
@@ -135,8 +136,7 @@ InputInjectorEvdevTest::InputInjectorEvdevTest()
           ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
           dispatch_callback_)),
       injector_(CreateDeviceEventDispatcherEvdevForTest(event_factory_.get()),
-                &cursor_) {
-}
+                &cursor_) {}
 
 void InputInjectorEvdevTest::SimulateMouseClick(int x,
                                                 int y,

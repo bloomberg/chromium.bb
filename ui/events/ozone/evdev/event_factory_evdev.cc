@@ -180,8 +180,8 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
       gamepad_provider_(GamepadProviderOzone::GetInstance()),
       keyboard_(&modifiers_,
                 keyboard_layout,
-                base::Bind(&EventFactoryEvdev::DispatchUiEvent,
-                           base::Unretained(this))),
+                base::BindRepeating(&EventFactoryEvdev::DispatchUiEvent,
+                                    base::Unretained(this))),
       cursor_(cursor),
       input_controller_(&keyboard_, &button_map_),
       touch_id_generator_(0),
@@ -467,8 +467,8 @@ void EventFactoryEvdev::StartThread() {
       new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
                                      weak_ptr_factory_.GetWeakPtr()));
   thread_.Start(std::move(proxy_dispatcher), cursor_,
-                base::Bind(&EventFactoryEvdev::OnThreadStarted,
-                           weak_ptr_factory_.GetWeakPtr()));
+                base::BindOnce(&EventFactoryEvdev::OnThreadStarted,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EventFactoryEvdev::OnThreadStarted(

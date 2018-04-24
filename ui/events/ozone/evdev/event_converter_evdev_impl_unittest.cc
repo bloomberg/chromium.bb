@@ -104,8 +104,8 @@ class EventConverterEvdevImplTest : public testing::Test {
     event_factory_ = ui::CreateEventFactoryEvdevForTest(
         cursor_.get(), device_manager_.get(),
         ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
-        base::Bind(&EventConverterEvdevImplTest::DispatchEventForTest,
-                   base::Unretained(this)));
+        base::BindRepeating(&EventConverterEvdevImplTest::DispatchEventForTest,
+                            base::Unretained(this)));
     dispatcher_ =
         ui::CreateDeviceEventDispatcherEvdevForTest(event_factory_.get());
     device_.reset(new ui::MockEventConverterEvdevImpl(
