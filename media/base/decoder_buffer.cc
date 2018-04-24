@@ -44,6 +44,13 @@ DecoderBuffer::DecoderBuffer(const uint8_t* data,
   memcpy(side_data_.get(), side_data, side_data_size_);
 }
 
+DecoderBuffer::DecoderBuffer(std::unique_ptr<UnalignedSharedMemory> shm,
+                             size_t size)
+    : size_(size),
+      side_data_size_(0),
+      shm_(std::move(shm)),
+      is_key_frame_(false) {}
+
 DecoderBuffer::~DecoderBuffer() = default;
 
 void DecoderBuffer::Initialize() {
@@ -70,6 +77,17 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8_t* data,
   CHECK(side_data);
   return base::WrapRefCounted(
       new DecoderBuffer(data, data_size, side_data, side_data_size));
+}
+
+// static
+scoped_refptr<DecoderBuffer> DecoderBuffer::FromSharedMemoryHandle(
+    const base::SharedMemoryHandle& handle,
+    off_t offset,
+    size_t size) {
+  auto shm = std::make_unique<UnalignedSharedMemory>(handle, true);
+  if (size == 0 || !shm->MapAt(offset, size))
+    return nullptr;
+  return base::WrapRefCounted(new DecoderBuffer(std::move(shm), size));
 }
 
 // static
