@@ -1042,7 +1042,7 @@ void av1_loop_restoration_filter_unit(
     const RestorationStripeBoundaries *rsb, RestorationLineBuffers *rlbs,
     const AV1PixelRect *tile_rect, int tile_stripe0, int ss_x, int ss_y,
     int highbd, int bit_depth, uint8_t *data8, int stride, uint8_t *dst8,
-    int dst_stride, int32_t *tmpbuf, int opt) {
+    int dst_stride, int32_t *tmpbuf, int optimized_lr) {
   RestorationType unit_rtype = rui->restoration_type;
 
   int unit_h = limits->v_end - limits->v_start;
@@ -1092,14 +1092,14 @@ void av1_loop_restoration_filter_unit(
 
     setup_processing_stripe_boundary(&remaining_stripes, rsb, rsb_row, highbd,
                                      h, data8, stride, rlbs, copy_above,
-                                     copy_below, opt);
+                                     copy_below, optimized_lr);
 
     stripe_filter(rui, unit_w, h, procunit_width, data8_tl + i * stride, stride,
                   dst8_tl + i * dst_stride, dst_stride, tmpbuf, bit_depth);
 
     restore_processing_stripe_boundary(&remaining_stripes, rlbs, highbd, h,
                                        data8, stride, copy_above, copy_below,
-                                       opt);
+                                       optimized_lr);
 
     i += h;
   }
@@ -1134,11 +1134,11 @@ static void filter_frame_on_unit(const RestorationTileLimits *limits,
       limits, &rsi->unit_info[rest_unit_idx], &rsi->boundaries, ctxt->rlbs,
       tile_rect, ctxt->tile_stripe0, ctxt->ss_x, ctxt->ss_y, ctxt->highbd,
       ctxt->bit_depth, ctxt->data8, ctxt->data_stride, ctxt->dst8,
-      ctxt->dst_stride, ctxt->tmpbuf, rsi->opt);
+      ctxt->dst_stride, ctxt->tmpbuf, rsi->optimized_lr);
 }
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
-                                       AV1_COMMON *cm, int opt) {
+                                       AV1_COMMON *cm, int optimized_lr) {
   assert(!cm->all_lossless);
   const int num_planes = av1_num_planes(cm);
   typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src,
@@ -1164,7 +1164,7 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
   for (int plane = 0; plane < num_planes; ++plane) {
     RestorationInfo *rsi = &cm->rst_info[plane];
     RestorationType rtype = rsi->frame_restoration_type;
-    rsi->opt = opt;
+    rsi->optimized_lr = optimized_lr;
 
     if (rtype == RESTORE_NONE) {
       continue;

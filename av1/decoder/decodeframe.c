@@ -3545,7 +3545,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     const int do_superres = !av1_superres_unscaled(cm);
     const int optimized_loop_restoration = !do_cdef && !do_superres;
 
-    if (do_cdef || do_superres) {
+    if (!optimized_loop_restoration) {
       if (do_loop_restoration)
         av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 0);
 
