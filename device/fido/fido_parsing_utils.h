@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <algorithm>
 #include <array>
+#include <utility>
 #include <vector>
 
 #include "base/component_export.h"
@@ -17,6 +18,19 @@
 
 namespace device {
 namespace fido_parsing_utils {
+
+// Comparator object that calls base::make_span on its arguments before
+// comparing them with operator<. Useful when comparing sequence containers that
+// are of different types, but have similar semantics.
+struct SpanLess {
+  template <typename T, typename U>
+  constexpr bool operator()(T&& lhs, U&& rhs) const {
+    return base::make_span(std::forward<T>(lhs)) <
+           base::make_span(std::forward<U>(rhs));
+  }
+
+  using is_transparent = void;
+};
 
 // U2FResponse offsets. The format of a U2F response is defined in
 // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-response-message-success

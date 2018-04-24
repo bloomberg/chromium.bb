@@ -19,6 +19,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "device/fido/fido_device.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "net/cert/x509_util.h"
 
 namespace crypto {
@@ -64,7 +65,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     std::string individual_attestation_cert_common_name;
 
     // Registered keys. Keyed on key handle (a.k.a. "credential ID").
-    std::map<std::vector<uint8_t>, RegistrationData> registrations;
+    std::map<std::vector<uint8_t>,
+             RegistrationData,
+             fido_parsing_utils::SpanLess>
+        registrations;
 
     // Adds a registration for the specified credential ID with the application
     // parameter set to be valid for the given relying party ID (which would
