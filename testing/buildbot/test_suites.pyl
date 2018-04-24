@@ -558,6 +558,7 @@
         ],
         'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
       },
+      'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
       'swarming': {
         'shards': 12,
@@ -839,6 +840,7 @@
         ],
         'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
       },
+      'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
       'swarming': {
         'shards': 12,
@@ -1112,6 +1114,7 @@
         ],
         'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
       },
+      'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
       'swarming': {
         'dimension_sets': [
@@ -1791,6 +1794,7 @@
         ],
         'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
       },
+      'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
     },
   },
