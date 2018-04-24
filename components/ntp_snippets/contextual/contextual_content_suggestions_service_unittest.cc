@@ -169,4 +169,22 @@ TEST_F(ContextualContentSuggestionsServiceTest,
   EXPECT_TRUE(mock_callback.has_run);
 }
 
+TEST_F(ContextualContentSuggestionsServiceTest, ShouldRejectInvalidUrls) {
+  std::vector<Cluster> clusters;
+  for (GURL invalid_url :
+       {GURL("htp:/"), GURL("www.foobar"), GURL("http://127.0.0.1/"),
+        GURL("file://some.file"), GURL("chrome://settings"), GURL("")}) {
+    MockClustersCallback mock_callback;
+    source()->FetchContextualSuggestionClusters(
+        invalid_url,
+        base::BindOnce(&MockClustersCallback::Done,
+                       base::Unretained(&mock_callback)),
+        base::DoNothing());
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(mock_callback.has_run);
+    EXPECT_EQ(mock_callback.response_peek_text, "");
+    EXPECT_EQ(mock_callback.response_clusters.size(), 0u);
+  }
+}
+
 }  // namespace ntp_snippets

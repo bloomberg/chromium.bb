@@ -24,6 +24,13 @@ using contextual_suggestions::Cluster;
 using contextual_suggestions::ContextualSuggestionsMetricsReporterProvider;
 using contextual_suggestions::FetchClustersCallback;
 
+namespace {
+bool IsEligibleURL(const GURL& url) {
+  return url.is_valid() && url.SchemeIsHTTPOrHTTPS() && !url.HostIsIPAddress();
+}
+
+}  // namespace
+
 ContextualContentSuggestionsService::ContextualContentSuggestionsService(
     std::unique_ptr<ContextualSuggestionsFetcher>
         contextual_suggestions_fetcher,
@@ -45,8 +52,13 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
     const GURL& url,
     FetchClustersCallback callback,
     ReportFetchMetricsCallback metrics_callback) {
-  contextual_suggestions_fetcher_->FetchContextualSuggestionsClusters(
-      url, std::move(callback), std::move(metrics_callback));
+  // TODO(pnoland): Also check that the url is safe.
+  if (IsEligibleURL(url)) {
+    contextual_suggestions_fetcher_->FetchContextualSuggestionsClusters(
+        url, std::move(callback), std::move(metrics_callback));
+  } else {
+    std::move(callback).Run("", {});
+  }
 }
 
 void ContextualContentSuggestionsService::FetchContextualSuggestionImage(
