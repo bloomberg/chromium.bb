@@ -44,6 +44,13 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    // This property should be set by the parent only and should not change
+    // after the element is created.
+    alwaysShowPromo: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
     promoLabel: String,
 
     promoSecondaryLabel: String,
@@ -87,6 +94,11 @@ Polymer({
 
   /** @private */
   onSignedInChanged_: function() {
+    if (this.alwaysShowPromo) {
+      this.showingPromo = true;
+      return;
+    }
+
     if (!this.showingPromo && !this.syncStatus.signedIn &&
         this.syncBrowserProxy_.getPromoImpressionCount() <
             settings.MAX_SIGNIN_PROMO_IMPRESSION) {

@@ -95,9 +95,8 @@
       }
 
       #banner {
-        background-image: -webkit-image-set(
-            url(../images/sync_banner.png) 1x,
-            url(../images/sync_banner_2x.png) 2x);
+        background-color: rgb(248, 249, 250);
+        background-image: url(../images/sync_banner.svg);
         background-repeat: no-repeat;
         background-size: 100% auto;
         display: none;
@@ -108,34 +107,38 @@
         display: block;
       }
 
-      :host([showing-promo]) #promo-headers {
-        line-height: 1.625rem;
+      :host([showing-promo]) #promo-header {
         padding-bottom: 10px;
         padding-top: 10px;
       }
 
-      :host([showing-promo]) #promo-headers #promo-title {
-        font-size: 1.1rem;
+      :host([showing-promo]) #promo-title {
+        @apply --promo-title;
       }
 
-      :host([showing-promo]) #promo-headers .secondary {
-        font-size: 0.9rem;
+      :host([showing-promo]) #promo-description {
+        @apply --promo-description;
       }
 
-      :host([showing-promo]) #promo-headers .separator {
+      :host([showing-promo]) #promo-separator {
+        @apply --promo-separator;
+      }
+
+      :host([always-show-promo]) #turn-off {
         display: none;
       }
     </style>
-    <div id="banner"></div>
-    <div class="settings-box first two-line" id="promo-headers"
+    <div id="banner" hidden="[[syncStatus.signedIn]]"></div>
+    <div class="settings-box first two-line" id="promo-header"
         hidden="[[syncStatus.signedIn]]">
       <div class="start">
         <div id="promo-title">[[promoLabel]]</div>
-        <div class="secondary">
+        <div id="promo-description" class="secondary">
           [[promoSecondaryLabel]]
         </div>
       </div>
-      <div class="separator" hidden="[[shouldShowAvatarRow_]]"></div>
+      <div id="promo-separator" class="separator"
+          hidden="[[shouldShowAvatarRow_]]"></div>
       <paper-button class="action-button" on-click="onSigninTap_"
           disabled="[[syncStatus.setupInProgress]]" id="sign-in"
           hidden="[[shouldShowAvatarRow_]]">
@@ -185,7 +188,7 @@
               '$i18nPolymer{syncAsName}', shownAccount_.givenName)]]
         </paper-button>
         <paper-button class="secondary-button" on-click="onTurnOffButtonTap_"
-            hidden="[[!syncStatus.signedIn]]"
+            hidden="[[!syncStatus.signedIn]]" id="turn-off"
             disabled="[[syncStatus.setupInProgress]]">
           $i18n{turnOffSync}
         </paper-button>

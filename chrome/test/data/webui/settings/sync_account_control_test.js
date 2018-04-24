@@ -91,7 +91,7 @@ cr.define('settings_sync_account_control', function() {
       testElement.syncStatus = {signedIn: false, signedInUsername: ''};
       sync_test_util.simulateStoredAccounts([]);
 
-      assertVisible(testElement.$$('#promo-headers'), true);
+      assertVisible(testElement.$$('#promo-header'), true);
       assertVisible(testElement.$$('#avatar-row'), false);
       assertVisible(testElement.$$('#menu'), false);
       assertVisible(testElement.$$('#sign-in'), true);
@@ -124,7 +124,7 @@ cr.define('settings_sync_account_control', function() {
       const syncButton = testElement.$$('#avatar-row .action-button');
 
       // Avatar row shows the right account.
-      assertVisible(testElement.$$('#promo-headers'), true);
+      assertVisible(testElement.$$('#promo-header'), true);
       assertVisible(testElement.$$('#avatar-row'), true);
       assertTrue(userInfo.textContent.includes('fooName'));
       assertTrue(userInfo.textContent.includes('foo@foo.com'));
@@ -216,7 +216,7 @@ cr.define('settings_sync_account_control', function() {
 
       assertVisible(testElement.$$('#avatar-row'), true);
       assertVisible(testElement.$$('paper-icon-button-light'), false);
-      assertVisible(testElement.$$('#promo-headers'), false);
+      assertVisible(testElement.$$('#promo-header'), false);
       assertFalse(testElement.$$('#sync-icon-container').hidden);
 
       assertFalse(!!testElement.$$('#menu'));
@@ -263,6 +263,22 @@ cr.define('settings_sync_account_control', function() {
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync is paused'));
+    });
+
+    test('embedded in another page', function() {
+      testElement.alwaysShowPromo = true;
+      forcePromoResetWithCount(100, false);
+      const banner = testElement.$$('#banner');
+      assertVisible(banner, true);
+
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        statusAction: settings.StatusAction.NO_ACTION,
+        hasError: false,
+      };
+
+      assertVisible(testElement.$$('#turn-off'), false);
     });
   });
 });
