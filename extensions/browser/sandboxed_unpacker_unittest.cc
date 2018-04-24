@@ -124,9 +124,6 @@ class SandboxedUnpackerTest : public ExtensionsTest {
       : ExtensionsTest(options) {}
 
   void SetUp() override {
-    // TODO(devlin): Remove this. See https://crbug.com/816679.
-    allow_legacy_extensions_ = Extension::allow_legacy_extensions_for_testing();
-
     ExtensionsTest::SetUp();
     ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
     in_process_utility_thread_helper_.reset(
@@ -167,7 +164,6 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     base::RunLoop().RunUntilIdle();
     ExtensionsTest::TearDown();
     in_process_utility_thread_helper_.reset();
-    allow_legacy_extensions_.reset();
   }
 
   base::FilePath GetCrxFullPath(const std::string& crx_name) {
@@ -243,7 +239,6 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   std::unique_ptr<service_manager::TestConnectorFactory>
       test_connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
-  Extension::ScopedAllowLegacyExtensions allow_legacy_extensions_;
 };
 
 TEST_F(SandboxedUnpackerTest, EmptyDefaultLocale) {
@@ -358,7 +353,7 @@ TEST_F(SandboxedUnpackerTest, PassHashCheck) {
       extensions::switches::kEnableCrxHashCheck);
   SetupUnpacker(
       "good_l10n.crx",
-      "6fa171c726373785aa4fcd2df448c3db0420a95d5044fbee831f089b979c4068");
+      "614AE3D608F4C2185E9173293AB3F93EE7C7C79C9A2C3CF71F633386A3296A6C");
   // Check that there is no error message.
   EXPECT_EQ(base::string16(), GetInstallError());
 }
