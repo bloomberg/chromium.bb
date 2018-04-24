@@ -84,8 +84,7 @@ HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
       context_options_(std::move(context_options)),
       resource_context_(std::make_unique<HeadlessResourceContext>()),
       should_remove_headers_(true),
-      permission_manager_(std::make_unique<HeadlessPermissionManager>(this)),
-      id_(base::GenerateGUID()) {
+      permission_manager_(std::make_unique<HeadlessPermissionManager>(this)) {
   InitWhileIOAllowed();
 }
 
@@ -372,7 +371,7 @@ bool HeadlessBrowserContextImpl::ShouldRemoveHeaders() const {
 }
 
 const std::string& HeadlessBrowserContextImpl::Id() const {
-  return id_;
+  return UniqueId();
 }
 
 void HeadlessBrowserContextImpl::AddObserver(Observer* obs) {

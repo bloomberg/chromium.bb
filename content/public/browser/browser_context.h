@@ -301,6 +301,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // by the Service Manager.
   virtual void RegisterInProcessServices(StaticServiceMap* services) {}
 
+  // Returns a unique string associated with this browser context.
+  virtual const std::string& UniqueId() const;
+
   // Returns a random salt string that is used for creating media device IDs.
   // Returns a random string by default.
   virtual std::string GetMediaDeviceIDSalt();
@@ -317,7 +320,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual media::VideoDecodePerfHistory* GetVideoDecodePerfHistory();
 
  private:
-  const std::string media_device_id_salt_;
+  const std::string unique_id_;
   bool was_notify_will_be_destroyed_called_ = false;
 };
 

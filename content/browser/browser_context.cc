@@ -24,6 +24,7 @@
 #include "base/rand_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browsing_data/browsing_data_remover_impl.h"
@@ -583,7 +584,7 @@ ServiceManagerConnection* BrowserContext::GetServiceManagerConnectionFor(
 }
 
 BrowserContext::BrowserContext()
-    : media_device_id_salt_(CreateRandomMediaDeviceIDSalt()) {}
+    : unique_id_(base::UnguessableToken::Create().ToString()) {}
 
 BrowserContext::~BrowserContext() {
   CHECK(GetUserData(kMojoWasInitialized))
@@ -614,15 +615,16 @@ void BrowserContext::ShutdownStoragePartitions() {
 }
 
 std::string BrowserContext::GetMediaDeviceIDSalt() {
-  return media_device_id_salt_;
+  return unique_id_;
 }
 
 // static
 std::string BrowserContext::CreateRandomMediaDeviceIDSalt() {
-  std::string salt;
-  base::Base64Encode(base::RandBytesAsString(16), &salt);
-  DCHECK(!salt.empty());
-  return salt;
+  return base::UnguessableToken::Create().ToString();
+}
+
+const std::string& BrowserContext::UniqueId() const {
+  return unique_id_;
 }
 
 media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
