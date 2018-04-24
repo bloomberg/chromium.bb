@@ -189,13 +189,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, RotateImageOnDownloads) {
   StartTest();
 }
 
-// http://crbug.com/690983 (Chrome OS debug build)
-#if (defined(OS_CHROMEOS) && !defined(NDEBUG))
-#define MAYBE_RotateImageOnDrive DISABLED_RotateImageOnDrive
-#else
-#define MAYBE_RotateImageOnDrive RotateImageOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_RotateImageOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDrive) {
   set_test_case_name("rotateImageOnDrive");
   StartTest();
 }
