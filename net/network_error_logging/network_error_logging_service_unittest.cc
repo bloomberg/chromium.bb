@@ -161,7 +161,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
 
   const std::string kHeader_ = "{\"report-to\":\"group\",\"max-age\":86400}";
   const std::string kHeaderIncludeSubdomains_ =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"includeSubdomains\":true}";
+      "{\"report-to\":\"group\",\"max-age\":86400,\"include-subdomains\":true}";
   const std::string kHeaderMaxAge0_ = "{\"max-age\":0}";
   const std::string kHeaderTooLong_ =
       "{\"report-to\":\"group\",\"max-age\":86400,\"junk\":\"" +
