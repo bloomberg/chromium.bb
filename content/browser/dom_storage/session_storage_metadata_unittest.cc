@@ -179,7 +179,7 @@ TEST_F(SessionStorageMetadataTest, SaveNewMap) {
 
   std::vector<leveldb::mojom::BatchedOperationPtr> operations;
   auto ns1_entry = metadata.GetOrCreateNamespaceEntry(test_namespace1_id_);
-  auto* map_data =
+  auto map_data =
       metadata.RegisterNewMap(ns1_entry, test_origin1_, &operations);
   ASSERT_TRUE(map_data);
 

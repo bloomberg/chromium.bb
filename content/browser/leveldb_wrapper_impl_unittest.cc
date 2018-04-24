@@ -17,6 +17,7 @@
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
+#include "content/test/leveldb_wrapper_test_util.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -24,8 +25,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-
 namespace {
+using test::MakeSuccessCallback;
+using test::MakeGetAllCallback;
+using test::GetAllCallback;
 using CacheMode = LevelDBWrapperImpl::CacheMode;
 using DatabaseError = leveldb::mojom::DatabaseError;
 
@@ -87,32 +90,6 @@ class IncrementalBarrier {
   DISALLOW_COPY_AND_ASSIGN(IncrementalBarrier);
 };
 
-class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
- public:
-  static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo CreateAndBind(
-      bool* result,
-      base::OnceClosure callback) {
-    mojom::LevelDBWrapperGetAllCallbackAssociatedPtr ptr;
-    auto request = mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr);
-    mojo::MakeStrongAssociatedBinding(
-        base::WrapUnique(new GetAllCallback(result, std::move(callback))),
-        std::move(request));
-    return ptr.PassInterface();
-  }
-
- private:
-  GetAllCallback(bool* result, base::OnceClosure callback)
-      : result_(result), callback_(std::move(callback)) {}
-  void Complete(bool success) override {
-    *result_ = success;
-    if (callback_)
-      std::move(callback_).Run();
-  }
-
-  bool* result_;
-  base::OnceClosure callback_;
-};
-
 class MockDelegate : public LevelDBWrapperImpl::Delegate {
  public:
   MockDelegate() {}
@@ -165,33 +142,6 @@ base::OnceCallback<void(bool, const std::vector<uint8_t>&)> MakeGetCallback(
     std::vector<uint8_t>* value_out) {
   return base::BindOnce(&GetCallback, std::move(callback), success_out,
                         value_out);
-}
-
-void GetAllDataCallback(leveldb::mojom::DatabaseError* status_out,
-                        std::vector<mojom::KeyValuePtr>* data_out,
-                        leveldb::mojom::DatabaseError status,
-                        std::vector<mojom::KeyValuePtr> data) {
-  *status_out = status;
-  *data_out = std::move(data);
-}
-
-base::OnceCallback<void(leveldb::mojom::DatabaseError status,
-                        std::vector<mojom::KeyValuePtr> data)>
-MakeGetAllCallback(leveldb::mojom::DatabaseError* status_out,
-                   std::vector<mojom::KeyValuePtr>* data_out) {
-  return base::BindOnce(&GetAllDataCallback, status_out, data_out);
-}
-
-void SuccessCallback(base::OnceClosure callback,
-                     bool* success_out,
-                     bool success) {
-  *success_out = success;
-  std::move(callback).Run();
-}
-
-base::OnceCallback<void(bool)> MakeSuccessCallback(base::OnceClosure callback,
-                                                   bool* success_out) {
-  return base::BindOnce(&SuccessCallback, std::move(callback), success_out);
 }
 
 LevelDBWrapperImpl::Options GetDefaultTestingOptions(CacheMode cache_mode) {
@@ -271,38 +221,15 @@ class LevelDBWrapperImplTest : public testing::Test,
     return success;
   }
 
-  bool PutSync(mojom::LevelDBWrapper* wrapper,
-               const std::vector<uint8_t>& key,
-               const std::vector<uint8_t>& value,
-               const base::Optional<std::vector<uint8_t>>& client_old_value,
-               std::string source = kTestSource) {
-    bool success = false;
-    base::RunLoop loop;
-    wrapper->Put(key, value, client_old_value, source,
-                 MakeSuccessCallback(loop.QuitClosure(), &success));
-    loop.Run();
-    return success;
-  }
-
   bool DeleteSync(
       mojom::LevelDBWrapper* wrapper,
       const std::vector<uint8_t>& key,
       const base::Optional<std::vector<uint8_t>>& client_old_value) {
-    bool success = false;
-    base::RunLoop loop;
-    wrapper->Delete(key, client_old_value, test_source_,
-                    MakeSuccessCallback(loop.QuitClosure(), &success));
-    loop.Run();
-    return success;
+    return test::DeleteSync(wrapper, key, client_old_value, test_source_);
   }
 
   bool DeleteAllSync(mojom::LevelDBWrapper* wrapper) {
-    bool success = false;
-    base::RunLoop loop;
-    wrapper->DeleteAll(test_source_,
-                       MakeSuccessCallback(loop.QuitClosure(), &success));
-    loop.Run();
-    return success;
+    return test::DeleteAllSync(wrapper, test_source_);
   }
 
   bool GetSync(const std::vector<uint8_t>& key, std::vector<uint8_t>* result) {
@@ -313,7 +240,7 @@ class LevelDBWrapperImplTest : public testing::Test,
                const std::vector<uint8_t>& value,
                const base::Optional<std::vector<uint8_t>>& client_old_value,
                std::string source = kTestSource) {
-    return PutSync(wrapper(), key, value, client_old_value, source);
+    return test::PutSync(wrapper(), key, value, client_old_value, source);
   }
 
   bool DeleteSync(
@@ -326,20 +253,9 @@ class LevelDBWrapperImplTest : public testing::Test,
 
   std::string GetSyncStrUsingGetAll(LevelDBWrapperImpl* wrapper_impl,
                                     const std::string& key) {
-    leveldb::mojom::DatabaseError status;
     std::vector<mojom::KeyValuePtr> data;
-    bool done = false;
-
-    base::RunLoop loop;
-    // Testing the 'Sync' mojo version is a big headache involving 3 threads, so
-    // just test the async version.
-    wrapper_impl->GetAll(
-        GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
-        MakeGetAllCallback(&status, &data));
-    loop.Run();
-
-    if (!done)
-      return "";
+    leveldb::mojom::DatabaseError status =
+        test::GetAllSync(wrapper_impl, &data);
 
     if (status != leveldb::mojom::DatabaseError::OK)
       return "";
@@ -516,20 +432,13 @@ TEST_F(LevelDBWrapperImplTest, PutLoadsValuesAfterCacheModeUpgrade) {
 
 TEST_P(LevelDBWrapperImplParamTest, GetAll) {
   wrapper_impl()->SetCacheModeForTesting(GetParam());
-  DatabaseError status;
-  std::vector<mojom::KeyValuePtr> data;
-  bool result = false;
 
-  base::RunLoop loop;
-  // Testing the 'Sync' mojo version is a big headache involving 3 threads, so
-  // just test the async version.
-  wrapper_impl()->GetAll(
-      GetAllCallback::CreateAndBind(&result, loop.QuitClosure()),
-      MakeGetAllCallback(&status, &data));
-  loop.Run();
+  std::vector<mojom::KeyValuePtr> data;
+  leveldb::mojom::DatabaseError status =
+      test::GetAllSync(wrapper_impl(), &data);
+
   EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
   EXPECT_EQ(2u, data.size());
-  EXPECT_TRUE(result);
 }
 
 TEST_P(LevelDBWrapperImplParamTest, CommitPutToDB) {
@@ -829,17 +738,9 @@ TEST_P(LevelDBWrapperImplParamTest, FixUpData) {
   changes.push_back(std::make_pair(test_prefix_bytes_, ToBytes("bla")));
   delegate()->set_mock_changes(std::move(changes));
 
-  leveldb::mojom::DatabaseError status;
   std::vector<mojom::KeyValuePtr> data;
-  bool result = false;
-
-  base::RunLoop loop;
-  // Testing the 'Sync' mojo version is a big headache involving 3 threads, so
-  // just test the async version.
-  wrapper_impl()->GetAll(
-      GetAllCallback::CreateAndBind(&result, loop.QuitClosure()),
-      MakeGetAllCallback(&status, &data));
-  loop.Run();
+  leveldb::mojom::DatabaseError status =
+      test::GetAllSync(wrapper_impl(), &data);
 
   EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
   ASSERT_EQ(2u, data.size());
