@@ -41,6 +41,8 @@ jumbo_source_set("utility") {
     "//mojo/public/cpp/bindings",
     "//net:net_with_v8",
     "//sandbox",
+    "//services/audio:lib",
+    "//services/audio/public/mojom:constants",
     "//services/data_decoder:lib",
     "//services/data_decoder/public/cpp",
     "//services/network:network_service",
