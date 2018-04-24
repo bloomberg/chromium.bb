@@ -81,9 +81,6 @@ class ShellSurfaceWidget : public views::Widget {
     if (GetFocusManager()->ProcessAccelerator(ui::Accelerator(*event)))
       event->SetHandled();
   }
-  gfx::Size GetMinimumSize() const override {
-    return shell_surface_->GetMinimumSize();
-  }
 
  private:
   ShellSurfaceBase* const shell_surface_;
@@ -96,9 +93,11 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
   using ShapeRects = std::vector<gfx::Rect>;
 
   CustomFrameView(views::Widget* widget,
+                  ShellSurfaceBase* shell_surface,
                   bool enabled,
                   bool client_controlled_move_resize)
       : CustomFrameViewAsh(widget),
+        shell_surface_(shell_surface),
         client_controlled_move_resize_(client_controlled_move_resize) {
     SetEnabled(enabled);
     SetVisible(enabled);
@@ -195,11 +194,17 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
       return ash::CustomFrameViewAsh::SizeConstraintsChanged();
   }
   gfx::Size GetMinimumSize() const override {
-    return static_cast<const ShellSurfaceWidget*>(GetWidget())
-        ->GetMinimumSize();
+    gfx::Size minimum_size = shell_surface_->GetMinimumSize();
+    if (visible()) {
+      return ash::CustomFrameViewAsh::GetWindowBoundsForClientBounds(
+                 gfx::Rect(minimum_size))
+          .size();
+    }
+    return minimum_size;
   }
 
  private:
+  ShellSurfaceBase* const shell_surface_;
   // TODO(oshima): Remove this once the transition to new drag/resize
   // is complete. https://crbug.com/801666.
   const bool client_controlled_move_resize_;
@@ -939,7 +944,7 @@ views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameView(
     window_state->SetDelegate(std::make_unique<CustomWindowStateDelegate>());
   }
   CustomFrameView* frame_view = new CustomFrameView(
-      widget, frame_enabled(), client_controlled_move_resize_);
+      widget, this, frame_enabled(), client_controlled_move_resize_);
   if (has_frame_colors_)
     frame_view->SetFrameColors(active_frame_color_, inactive_frame_color_);
   return frame_view;
