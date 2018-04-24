@@ -84,6 +84,15 @@ undefined
 
 Nothing here yet.
 ==== ANNOTATION ENDS ====
+==== NEW ANNOTATION ====
+test-actual.cc
+TestMacroExpansion
+123
+Definition
+undefined
+
+Nothing here yet.
+==== ANNOTATION ENDS ====
 ==== NEW CALL ====
 test-actual.cc
 TestURLFetcherCreate
