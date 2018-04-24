@@ -575,15 +575,6 @@ enum IntListAttribute {
   kMarkerStarts,
   kMarkerEnds,
 
-   // For a table, the cell ids in row-major order, with duplicate entries
-   // when there's a rowspan or colspan, and with -1 for missing cells.
-   // There are always exactly rows * columns entries.
-  kCellIds,
-
-   // For a table, the unique cell ids in row-major order of their first
-   // occurrence.
-  kUniqueCellIds,
-
    // For inline text. This is the pixel position of the end of this
    // character within the bounding rectangle of this object, in the
    // direction given by StringAttribute::kTextDirection. For example,

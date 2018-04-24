@@ -3129,19 +3129,12 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
 
   // Expose table cell index.
   if (IsCellOrTableHeaderRole(GetData().role)) {
-    AXPlatformNodeBase* table = FromNativeViewAccessible(GetParent());
-
-    while (table && !IsTableLikeRole(table->GetData().role))
-      table = FromNativeViewAccessible(table->GetParent());
-
+    AXPlatformNodeBase* table = GetTable();
     if (table) {
-      const std::vector<int32_t>& unique_cell_ids = table->GetIntListAttribute(
-          ax::mojom::IntListAttribute::kUniqueCellIds);
-      for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
-        if (unique_cell_ids[i] == GetData().id) {
-          result.push_back(base::string16(L"table-cell-index:") +
-                           base::IntToString16(static_cast<int>(i)));
-        }
+      int32_t index = table->delegate_->CellIdToIndex(GetData().id);
+      if (index >= 0) {
+        result.push_back(base::string16(L"table-cell-index:") +
+                         base::IntToString16(index));
       }
     }
   }

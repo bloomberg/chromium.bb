@@ -106,6 +106,19 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual const AXUniqueId& GetUniqueId() const = 0;
 
   //
+  // Tables. All of these should be called on a node that's a table-like
+  // role.
+  //
+
+  virtual int GetTableRowCount() const = 0;
+  virtual int GetTableColCount() const = 0;
+  virtual std::vector<int32_t> GetColHeaderNodeIds(int32_t col_index) const = 0;
+  virtual std::vector<int32_t> GetRowHeaderNodeIds(int32_t row_index) const = 0;
+  virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
+  virtual int32_t CellIdToIndex(int32_t cell_id) const = 0;
+  virtual int32_t CellIndexToId(int32_t cell_index) const = 0;
+
+  //
   // Events.
   //
 

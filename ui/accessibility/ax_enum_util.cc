@@ -1494,10 +1494,6 @@ const char* ToString(ax::mojom::IntListAttribute int_list_attribute) {
       return "markerStarts";
     case ax::mojom::IntListAttribute::kMarkerEnds:
       return "markerEnds";
-    case ax::mojom::IntListAttribute::kCellIds:
-      return "cellIds";
-    case ax::mojom::IntListAttribute::kUniqueCellIds:
-      return "uniqueCellIds";
     case ax::mojom::IntListAttribute::kCharacterOffsets:
       return "characterOffsets";
     case ax::mojom::IntListAttribute::kCachedLineStarts:
@@ -1537,10 +1533,6 @@ ax::mojom::IntListAttribute ParseIntListAttribute(
     return ax::mojom::IntListAttribute::kMarkerStarts;
   if (0 == strcmp(int_list_attribute, "markerEnds"))
     return ax::mojom::IntListAttribute::kMarkerEnds;
-  if (0 == strcmp(int_list_attribute, "cellIds"))
-    return ax::mojom::IntListAttribute::kCellIds;
-  if (0 == strcmp(int_list_attribute, "uniqueCellIds"))
-    return ax::mojom::IntListAttribute::kUniqueCellIds;
   if (0 == strcmp(int_list_attribute, "characterOffsets"))
     return ax::mojom::IntListAttribute::kCharacterOffsets;
   if (0 == strcmp(int_list_attribute, "cachedLineStarts"))

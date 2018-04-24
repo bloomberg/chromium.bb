@@ -772,9 +772,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       int column_count = src.ColumnCount();
       int row_count = src.RowCount();
       if (column_count > 0 && row_count > 0) {
-        std::set<int32_t> unique_cell_id_set;
-        std::vector<int32_t> cell_ids;
-        std::vector<int32_t> unique_cell_ids;
         dst->AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount,
                              column_count);
         dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount,
@@ -783,23 +780,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
         if (!header.IsDetached())
           dst->AddIntAttribute(ax::mojom::IntAttribute::kTableHeaderId,
                                header.AxID());
-        for (int i = 0; i < column_count * row_count; ++i) {
-          WebAXObject cell =
-              src.CellForColumnAndRow(i % column_count, i / column_count);
-          int cell_id = -1;
-          if (!cell.IsDetached()) {
-            cell_id = cell.AxID();
-            if (unique_cell_id_set.find(cell_id) == unique_cell_id_set.end()) {
-              unique_cell_id_set.insert(cell_id);
-              unique_cell_ids.push_back(cell_id);
-            }
-          }
-          cell_ids.push_back(cell_id);
-        }
-        dst->AddIntListAttribute(ax::mojom::IntListAttribute::kCellIds,
-                                 cell_ids);
-        dst->AddIntListAttribute(ax::mojom::IntListAttribute::kUniqueCellIds,
-                                 unique_cell_ids);
       }
 
       int aria_colcount = src.AriaColumnCount();

@@ -54,6 +54,13 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   int GetIndexInParent() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
+  int GetTableRowCount() const override;
+  int GetTableColCount() const override;
+  std::vector<int32_t> GetColHeaderNodeIds(int32_t col_index) const override;
+  std::vector<int32_t> GetRowHeaderNodeIds(int32_t row_index) const override;
+  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
+  int32_t CellIdToIndex(int32_t cell_id) const override;
+  int32_t CellIndexToId(int32_t cell_index) const override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;

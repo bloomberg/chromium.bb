@@ -1177,7 +1177,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetColumnIndex) {
   ASSERT_NE(nullptr, result.Get());
 
   long index;
-  EXPECT_EQ(S_OK, result->get_columnIndex(1, &index));
+  EXPECT_EQ(S_OK, result->get_columnIndex(2, &index));
+  EXPECT_EQ(index, 2);
+  EXPECT_EQ(S_OK, result->get_columnIndex(3, &index));
   EXPECT_EQ(index, 0);
 
   EXPECT_EQ(E_INVALIDARG, result->get_columnIndex(-1, &index));
@@ -1265,8 +1267,10 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetRowIndex) {
   ASSERT_NE(nullptr, result.Get());
 
   long index;
-  EXPECT_EQ(S_OK, result->get_rowIndex(1, &index));
+  EXPECT_EQ(S_OK, result->get_rowIndex(2, &index));
   EXPECT_EQ(index, 0);
+  EXPECT_EQ(S_OK, result->get_rowIndex(3, &index));
+  EXPECT_EQ(index, 1);
 
   EXPECT_EQ(E_INVALIDARG, result->get_rowIndex(-1, &index));
 }
@@ -1350,7 +1354,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetColumnIndex) {
 
   long index;
   EXPECT_EQ(S_OK, cell->get_columnIndex(&index));
-  EXPECT_EQ(index, 0);
+  EXPECT_EQ(index, 1);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetRowExtent) {
@@ -1374,10 +1378,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetRowHeaderCells) {
 
   long number_cells;
   EXPECT_EQ(S_OK, cell->get_rowHeaderCells(&cell_accessibles, &number_cells));
-
-  // Since we do not have ax::mojom::IntAttribute::kTableCellRowIndex set, the
-  // evaluated row will be 0.  In this case, we do not expect any row headers.
-  EXPECT_EQ(number_cells, 0);
+  EXPECT_EQ(number_cells, 1);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetRowIndex) {
@@ -1388,7 +1389,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetRowIndex) {
 
   long index;
   EXPECT_EQ(S_OK, cell->get_rowIndex(&index));
-  EXPECT_EQ(index, 0);
+  EXPECT_EQ(index, 1);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetRowColumnExtent) {
@@ -1401,8 +1402,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetRowColumnExtent) {
   boolean is_selected;
   EXPECT_EQ(S_OK, cell->get_rowColumnExtents(&row, &column, &row_extents,
                                              &column_extents, &is_selected));
-  EXPECT_EQ(row, 0);
-  EXPECT_EQ(column, 0);
+  EXPECT_EQ(row, 1);
+  EXPECT_EQ(column, 1);
   EXPECT_EQ(row_extents, 1);
   EXPECT_EQ(column_extents, 1);
 }

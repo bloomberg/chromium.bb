@@ -119,9 +119,6 @@ TEST(CombineAXTreesTest, MapAllIdAttributes) {
                                     ids);
   tree.nodes[0].AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
                                     ids);
-  tree.nodes[0].AddIntListAttribute(ax::mojom::IntListAttribute::kCellIds, ids);
-  tree.nodes[0].AddIntListAttribute(ax::mojom::IntListAttribute::kUniqueCellIds,
-                                    ids);
   tree.nodes[1].id = 22;
 
   AXTreeCombiner combiner;
@@ -155,10 +152,6 @@ TEST(CombineAXTreesTest, MapAllIdAttributes) {
                    ax::mojom::IntListAttribute::kFlowtoIds)[0]);
   EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
                    ax::mojom::IntListAttribute::kLabelledbyIds)[0]);
-  EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
-                   ax::mojom::IntListAttribute::kCellIds)[0]);
-  EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
-                   ax::mojom::IntListAttribute::kUniqueCellIds)[0]);
 }
 
 TEST(CombineAXTreesTest, FocusedTree) {

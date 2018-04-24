@@ -147,14 +147,6 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   table.AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount, 3);
   table.AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount, 3);
 
-  // Ordering in this list matters.  It is used in the calculation
-  // of where cells are by the following:
-  // int position = row * GetTableColumnCount() + column;
-
-  std::vector<int32_t> ids{51, 52, 53, 2, 3, 4, 11, 12, 13};
-  table.AddIntListAttribute(ax::mojom::IntListAttribute::kCellIds, ids);
-  table.AddIntListAttribute(ax::mojom::IntListAttribute::kUniqueCellIds, ids);
-
   table.child_ids.push_back(50);  // Header
   table.child_ids.push_back(1);   // Row 1
   table.child_ids.push_back(10);  // Row 2
@@ -170,11 +162,19 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   AXNodeData table_column_header_1;
   table_column_header_1.id = 51;
   table_column_header_1.role = ax::mojom::Role::kColumnHeader;
+  table_column_header_1.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellRowIndex, 0);
+  table_column_header_1.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellColumnIndex, 0);
 
   AXNodeData table_column_header_2;
   table_column_header_2.id = 52;
   table_column_header_2.role = ax::mojom::Role::kColumnHeader;
   table_column_header_2.SetName("column header 1");
+  table_column_header_2.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellRowIndex, 0);
+  table_column_header_2.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellColumnIndex, 1);
 
   AXNodeData table_column_header_3;
   table_column_header_3.id = 53;
@@ -183,6 +183,10 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   // ax::mojom::StringAttribute::kDescription is acceptable for a description
   table_column_header_3.AddStringAttribute(
       ax::mojom::StringAttribute::kDescription, "column header 2");
+  table_column_header_3.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellRowIndex, 0);
+  table_column_header_3.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellColumnIndex, 2);
 
   // Row 1
   AXNodeData table_row_1;
@@ -196,16 +200,26 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   table_row_header_1.id = 2;
   table_row_header_1.role = ax::mojom::Role::kRowHeader;
   table_row_header_1.SetName("row header 1");
+  table_row_header_1.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellRowIndex, 1);
+  table_row_header_1.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellColumnIndex, 0);
 
   AXNodeData table_cell_1;
   table_cell_1.id = 3;
   table_cell_1.role = ax::mojom::Role::kCell;
   table_cell_1.SetName("1");
+  table_cell_1.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, 1);
+  table_cell_1.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
+                               1);
 
   AXNodeData table_cell_2;
   table_cell_2.id = 4;
   table_cell_2.role = ax::mojom::Role::kCell;
   table_cell_2.SetName("2");
+  table_cell_2.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, 1);
+  table_cell_2.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
+                               2);
 
   // Row 2
   AXNodeData table_row_2;
@@ -222,16 +236,26 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   // ax::mojom::StringAttribute::kDescription is acceptable for a description
   table_row_header_2.AddStringAttribute(
       ax::mojom::StringAttribute::kDescription, "row header 2");
+  table_row_header_2.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellRowIndex, 2);
+  table_row_header_2.AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellColumnIndex, 0);
 
   AXNodeData table_cell_3;
   table_cell_3.id = 12;
   table_cell_3.role = ax::mojom::Role::kCell;
   table_cell_3.SetName("3");
+  table_cell_3.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, 2);
+  table_cell_3.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
+                               1);
 
   AXNodeData table_cell_4;
   table_cell_4.id = 13;
   table_cell_4.role = ax::mojom::Role::kCell;
   table_cell_4.SetName("4");
+  table_cell_4.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, 2);
+  table_cell_4.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
+                               2);
 
   AXTreeUpdate update;
   update.root_id = table.id;

@@ -1,5 +1,5 @@
 rootWebArea
-++grid ariaColumnCount=4 tableRowCount=3 tableColumnCount=3 cellIds=columnHeader,columnHeader,columnHeader,cell,cell,cell,cell,cell,cell
+++grid ariaColumnCount=4 tableRowCount=3 tableColumnCount=3
 ++++row selected=false
 ++++++columnHeader name='Month' ariaCellColumnIndex=1 ariaCellRowIndex=1 selected=false
 ++++++++staticText name='Month'

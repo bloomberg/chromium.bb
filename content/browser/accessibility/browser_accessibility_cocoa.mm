@@ -29,6 +29,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_table_info.h"
 
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 
@@ -866,19 +867,36 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
 
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  const std::vector<int32_t>& uniqueCellIds =
-      table->GetIntListAttribute(ax::mojom::IntListAttribute::kUniqueCellIds);
-  for (size_t i = 0; i < uniqueCellIds.size(); ++i) {
-    int id = uniqueCellIds[i];
-    BrowserAccessibility* cell =
-        browserAccessibility_->manager()->GetFromID(id);
-    if (cell && cell->GetRole() == ax::mojom::Role::kColumnHeader) {
-      // Expose all column headers on table object.
-      // Expose only relevant column headers on cell object.
-      if (is_table_like || [self isColumnHeaderForCurrentCell:cell])
+
+  if (is_table_like) {
+    // If this is a table, return all column headers.
+    std::set<int32_t> headerIds;
+    for (int i = 0; i < table->GetTableColCount(); i++) {
+      std::vector<int32_t> colHeaderIds = table->GetColHeaderNodeIds(i);
+      std::copy(colHeaderIds.begin(), colHeaderIds.end(),
+                std::inserter(headerIds, headerIds.end()));
+    }
+    for (int32_t id : headerIds) {
+      BrowserAccessibility* cell =
+          browserAccessibility_->manager()->GetFromID(id);
+      if (cell)
+        [ret addObject:ToBrowserAccessibilityCocoa(cell)];
+    }
+  } else {
+    // Otherwise this is a cell, return the column headers for this cell.
+    int column = -1;
+    browserAccessibility_->GetIntAttribute(
+        ax::mojom::IntAttribute::kTableCellColumnIndex, &column);
+
+    std::vector<int32_t> colHeaderIds = table->GetColHeaderNodeIds(column);
+    for (int32_t id : colHeaderIds) {
+      BrowserAccessibility* cell =
+          browserAccessibility_->manager()->GetFromID(id);
+      if (cell)
         [ret addObject:ToBrowserAccessibilityCocoa(cell)];
     }
   }
+
   return [ret count] ? ret : nil;
 }
 
@@ -1768,6 +1786,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSArray*)rowHeaders {
   if (![self instanceActive])
     return nil;
+
   bool is_cell_or_table_header =
       ui::IsCellOrTableHeaderRole(browserAccessibility_->GetRole());
   bool is_table_like = ui::IsTableLikeRole(browserAccessibility_->GetRole());
@@ -1778,17 +1797,36 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
 
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  const std::vector<int32_t>& uniqueCellIds =
-      table->GetIntListAttribute(ax::mojom::IntListAttribute::kUniqueCellIds);
-  for (size_t i = 0; i < uniqueCellIds.size(); ++i) {
-    int id = uniqueCellIds[i];
-    BrowserAccessibility* cell =
-        browserAccessibility_->manager()->GetFromID(id);
-    if (cell && cell->GetRole() == ax::mojom::Role::kRowHeader) {
-      if (is_table_like || [self isRowHeaderForCurrentCell:cell])
+
+  if (is_table_like) {
+    // If this is a table, return all row headers.
+    std::set<int32_t> headerIds;
+    for (int i = 0; i < table->GetTableRowCount(); i++) {
+      std::vector<int32_t> rowHeaderIds = table->GetRowHeaderNodeIds(i);
+      for (int32_t id : rowHeaderIds)
+        headerIds.insert(id);
+    }
+    for (int32_t id : headerIds) {
+      BrowserAccessibility* cell =
+          browserAccessibility_->manager()->GetFromID(id);
+      if (cell)
+        [ret addObject:ToBrowserAccessibilityCocoa(cell)];
+    }
+  } else {
+    // Otherwise this is a cell, return the row headers for this cell.
+    int row = -1;
+    browserAccessibility_->GetIntAttribute(
+        ax::mojom::IntAttribute::kTableCellRowIndex, &row);
+
+    std::vector<int32_t> rowHeaderIds = table->GetRowHeaderNodeIds(row);
+    for (int32_t id : rowHeaderIds) {
+      BrowserAccessibility* cell =
+          browserAccessibility_->manager()->GetFromID(id);
+      if (cell)
         [ret addObject:ToBrowserAccessibilityCocoa(cell)];
     }
   }
+
   return [ret count] ? ret : nil;
 }
 
@@ -2208,12 +2246,16 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSArray*)visibleCells {
   if (![self instanceActive])
     return nil;
+
+  ui::AXTableInfo* table_info =
+      browserAccessibility_->manager()->ax_tree()->GetTableInfo(
+          browserAccessibility_->node());
+  if (!table_info)
+    return nil;
+
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  const std::vector<int32_t>& uniqueCellIds =
-      browserAccessibility_->GetIntListAttribute(
-          ax::mojom::IntListAttribute::kUniqueCellIds);
-  for (size_t i = 0; i < uniqueCellIds.size(); ++i) {
-    int id = uniqueCellIds[i];
+  for (size_t i = 0; i < table_info->unique_cell_ids.size(); ++i) {
+    int id = table_info->unique_cell_ids[i];
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromID(id);
     if (cell)

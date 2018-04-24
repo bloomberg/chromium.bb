@@ -430,18 +430,6 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const ui::AXNode* cell3 = table->ChildAtIndex(1)->ChildAtIndex(0);
   const ui::AXNode* cell4 = table->ChildAtIndex(1)->ChildAtIndex(1);
 
-  ASSERT_EQ(ax::mojom::IntListAttribute::kCellIds,
-            table->data().intlist_attributes[0].first);
-  const std::vector<int32_t>& table_cell_ids =
-      table->data().intlist_attributes[0].second;
-  ASSERT_EQ(6U, table_cell_ids.size());
-  EXPECT_EQ(cell1->id(), table_cell_ids[0]);
-  EXPECT_EQ(cell1->id(), table_cell_ids[1]);
-  EXPECT_EQ(cell2->id(), table_cell_ids[2]);
-  EXPECT_EQ(cell3->id(), table_cell_ids[3]);
-  EXPECT_EQ(cell4->id(), table_cell_ids[4]);
-  EXPECT_EQ(cell4->id(), table_cell_ids[5]);
-
   EXPECT_EQ(0,
             GetIntAttr(cell1, ax::mojom::IntAttribute::kTableCellColumnIndex));
   EXPECT_EQ(0, GetIntAttr(cell1, ax::mojom::IntAttribute::kTableCellRowIndex));

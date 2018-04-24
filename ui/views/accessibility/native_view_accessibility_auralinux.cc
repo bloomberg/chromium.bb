@@ -123,6 +123,26 @@ class AuraLinuxApplication
     return gfx::kNullAcceleratedWidget;
   }
 
+  int GetTableRowCount() const override { return 0; }
+
+  int GetTableColCount() const override { return 0; }
+
+  std::vector<int32_t> GetColHeaderNodeIds(int32_t col_index) const override {
+    return std::vector<int32_t>();
+  }
+
+  std::vector<int32_t> GetRowHeaderNodeIds(int32_t row_index) const override {
+    return std::vector<int32_t>();
+  }
+
+  int32_t GetCellId(int32_t row_index, int32_t col_index) const override {
+    return -1;
+  }
+
+  int32_t CellIdToIndex(int32_t cell_id) const override { return -1; }
+
+  int32_t CellIndexToId(int32_t cell_index) const override { return -1; }
+
   bool AccessibilityPerformAction(const ui::AXActionData& data) override {
     return false;
   }
