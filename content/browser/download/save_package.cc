@@ -34,6 +34,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/download/download_utils.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_item.h"
@@ -71,16 +72,6 @@ namespace {
 SavePackageId GetNextSavePackageId() {
   static int g_save_package_id = 0;
   return SavePackageId::FromUnsafeValue(g_save_package_id++);
-}
-
-// Gets the unique download id for ukm reporting.
-uint64_t GetUniqueDownloadId() {
-  // Get a new UKM download_id that is not 0.
-  uint64_t download_id = 0;
-  do {
-    download_id = base::RandUint64();
-  } while (download_id == 0);
-  return download_id;
 }
 
 // Default name which will be used when we can not get proper name from

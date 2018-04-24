@@ -138,15 +138,6 @@ void CreateInterruptedDownload(
 
 // Helper functions for DownloadItem -> DownloadEntry for InProgressCache.
 
-uint64_t GetUniqueDownloadId() {
-  // Get a new UKM download_id that is not 0.
-  uint64_t download_id = 0;
-  do {
-    download_id = base::RandUint64();
-  } while (download_id == 0);
-  return download_id;
-}
-
 download::DownloadEntry CreateDownloadEntryFromItem(
     const download::DownloadItem& item,
     const std::string& request_origin,
