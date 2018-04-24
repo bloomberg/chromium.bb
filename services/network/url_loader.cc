@@ -587,8 +587,7 @@ void URLLoader::ReadMore() {
         &response_body_stream_, &pending_write_, &pending_write_buffer_size_);
     if (result != MOJO_RESULT_OK && result != MOJO_RESULT_SHOULD_WAIT) {
       // The response body stream is in a bad state. Bail.
-      // TODO: How should this be communicated to our client?
-      DeleteSelf();
+      NotifyCompleted(net::ERR_FAILED);
       return;
     }
 
@@ -728,7 +727,7 @@ void URLLoader::NotifyCompleted(int error_code) {
 }
 
 void URLLoader::OnConnectionError() {
-  DeleteSelf();
+  NotifyCompleted(net::ERR_FAILED);
 }
 
 void URLLoader::OnResponseBodyStreamConsumerClosed(MojoResult result) {
@@ -737,7 +736,7 @@ void URLLoader::OnResponseBodyStreamConsumerClosed(MojoResult result) {
 
 void URLLoader::OnResponseBodyStreamReady(MojoResult result) {
   if (result != MOJO_RESULT_OK) {
-    DeleteSelf();
+    NotifyCompleted(net::ERR_FAILED);
     return;
   }
 
