@@ -106,6 +106,13 @@ initWithCollectionController:
   // Add gesture recognizer to collection view when the omnibox is focused.
   [self.collectionView addGestureRecognizer:self.tapGestureRecognizer];
 
+  if (self.collectionView.decelerating) {
+    // Stop the scrolling if the scroll view is decelerating to prevent the
+    // focus to be immediately lost.
+    [self.collectionView setContentOffset:self.collectionView.contentOffset
+                                 animated:NO];
+  }
+
   CGFloat pinnedOffsetY = [self.headerController pinnedOffsetY];
   self.collectionShiftingOffset =
       MAX(0, pinnedOffsetY - self.collectionView.contentOffset.y);

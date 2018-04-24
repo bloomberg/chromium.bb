@@ -470,7 +470,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   return [self.logoVendor logoAnimationControllerOwner];
 }
 
-#pragma mark - GoogleLandingConsumer
+#pragma mark - NTPHomeConsumer
 
 - (void)setLogoIsShowing:(BOOL)logoIsShowing {
   _logoIsShowing = logoIsShowing;
