@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">দুঃখিত, আপনার পাসওয়ার্ড এখনও পর্যন্ত যাচাই করা যায়নি। দ্রষ্টব্য: আপনি যদি সম্প্রতি আপনার পাসওয়ার্ড পরিবর্তন করে থাকেন, তাহলে আপনি সাইন-আউট করার পর আপনার নতুন পাসওয়ার্ড প্রয়োগ করা হবে, অনুগ্রহ করে এখানে পুরানো পাসওয়ার্ড ব্যবহার করুন।</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> বাকি আছে</translation>
 <translation id="1698760176351776263">IPv6 ঠিকানা: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">ডিভাইসের অ্যাডমিন আপনার অ্যাক্টিভিটি নিরীক্ষণ করতে পারেন।</translation>
 <translation id="1734367976349034509">এই ডিভাইসটি এন্টারপ্রাইজ পরিচালিত</translation>
 <translation id="1746730358044914197">আপনার প্রশাসক ইনপুটের পদ্ধতিগুলি কনফিগার করে।</translation>
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">ওভারফ্লো বোতাম</translation>
 <translation id="1951012854035635156">সহায়ক</translation>
 <translation id="1957803754585243749">০°</translation>
+<translation id="1957958912175573503">আপনার ভাষা সেট করুন</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">পাওয়ার বন্ধ করুন</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">জমা দিন</translation>
 <translation id="2675319268637823299">একজন প্রশাসক <ph name="USER_EMAIL" /> এর জন্য একাধিক সাইন-ইন বাতিল করেছেন।
     চালিয়ে যাওয়ার জন্য, সব ব্যবহারকারীকে অবশ্যই সাইন-আউট করতে হবে।</translation>
+<translation id="2696763960464195425">আপনি সাইন-আউট করলে আপনার তথ্য সরিয়ে দেওয়া হবে। <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">আপনার কীবোর্ড সেট করুন</translation>
 <translation id="2718395828230677721">নাইট লাইট</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
 <translation id="2761704814324807722">স্থিতি ট্রে, সময় <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -330,6 +334,7 @@
 <translation id="8673028979667498656">২৭০°</translation>
 <translation id="8676770494376880701">নিম্ন শক্তির চার্জার সংযুক্ত করা হয়েছে</translation>
 <translation id="8734991477317290293">এটি আপনার পাসওয়ার্ড চুরি করার চেষ্টা করতে পারে</translation>
+<translation id="8809737090443522491">একটি অ্যাপ বা ডকুমেন্টের নাম টাইপ করুন</translation>
 <translation id="8814190375133053267">ওয়াই-ফাই</translation>
 <translation id="8814715559352963456">অন্য ডেস্কটপে উইন্ডোগুলি সরানো হলে অপ্রত্যাশিত আচরণ সৃষ্টি হতে পারে।
 

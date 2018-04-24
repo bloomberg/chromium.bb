@@ -145,6 +145,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="4207623512727273241">Devam etmeden önce lütfen yükleyiciyi çalıştırın.</translation>
 <translation id="4227991223508142681">Ana Makine Temel Hazırlık Yardımcı Programı</translation>
 <translation id="4240294130679914010">Chromoting Ana Makine Yüklemesini Kaldırma Programı</translation>
+<translation id="4249741460382919890">Genel düzeltmeler ve kararlılıkla ilgili iyileştirmeler</translation>
 <translation id="4277463233460010382">Bu bilgisayar PIN girmeden bir veya daha fazla istemcinin bağlanmasına izin verecek şekilde yapılandırılmıştır.</translation>
 <translation id="4277736576214464567">Erişim kodu geçersiz. Lütfen tekrar deneyin.</translation>
 <translation id="4361728918881830843">Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü'nü o bilgisayara yükleyin ve “<ph name="BUTTON_NAME" />” düğmesini tıklayın.</translation>
@@ -190,6 +191,7 @@ PC</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (çevrimdışı)</translation>
 <translation id="5070121137485264635">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chrome Uzaktan Masaüstü'ne ek izinler vermelisiniz:</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> adlı ana bilgisayara uzaktan bağlantıları devre dışı bırakmak istediğinizden emin misiniz?</translation>
+<translation id="5081343395220691640">Sunucuyla iletişim kurulamadı: <ph name="ERROR" /></translation>
 <translation id="5156271271724754543">Lütfen her iki kutuya da aynı PIN'i girin.</translation>
 <translation id="5170982930780719864">Ana makine kimliği geçersiz.</translation>
 <translation id="518094545883702183">Bu bilgi yalnızca bildirdiğiniz sorunun teşhisi için kullanılır, yalnızca raporunuzu araştıran kişi tarafından görülebilir ve en fazla 30 gün tutulur.</translation>
