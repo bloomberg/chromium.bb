@@ -33,8 +33,8 @@ const SpdyStreamId kNoPushedStreamFound = 0;
 // of PUSH_PROMISE frame until they are matched to a request.
 // Each SpdySessionPool owns one instance of this class.
 // SpdySession uses this class to register, unregister and query pushed streams.
-// HttpStreamFactory::Job uses this class to find a SpdySession with a pushed
-// stream matching the request, if such exists.
+// HttpStreamFactoryImpl::Job uses this class to find a SpdySession with a
+// pushed stream matching the request, if such exists.
 class NET_EXPORT Http2PushPromiseIndex {
  public:
   // Interface for validating pushed streams, signaling when a pushed stream is

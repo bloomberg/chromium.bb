@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http/http_stream_factory_job_controller.h"
+#include "net/http/http_stream_factory_impl_job_controller.h"
 
 #include <string>
 #include <utility>
@@ -57,8 +57,8 @@ std::unique_ptr<base::Value> NetLogJobControllerCallback(
   return std::move(dict);
 }
 
-HttpStreamFactory::JobController::JobController(
-    HttpStreamFactory* factory,
+HttpStreamFactoryImpl::JobController::JobController(
+    HttpStreamFactoryImpl* factory,
     HttpStreamRequest::Delegate* delegate,
     HttpNetworkSession* session,
     JobFactory* job_factory,
@@ -103,7 +103,7 @@ HttpStreamFactory::JobController::JobController(
                                  &request_info.url, is_preconnect));
 }
 
-HttpStreamFactory::JobController::~JobController() {
+HttpStreamFactoryImpl::JobController::~JobController() {
   main_job_.reset();
   alternative_job_.reset();
   bound_job_ = nullptr;
@@ -114,7 +114,7 @@ HttpStreamFactory::JobController::~JobController() {
   net_log_.EndEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER);
 }
 
-std::unique_ptr<HttpStreamRequest> HttpStreamFactory::JobController::Start(
+std::unique_ptr<HttpStreamRequest> HttpStreamFactoryImpl::JobController::Start(
     HttpStreamRequest::Delegate* delegate,
     WebSocketHandshakeStreamBase::CreateHelper*
         websocket_handshake_stream_create_helper,
@@ -143,7 +143,7 @@ std::unique_ptr<HttpStreamRequest> HttpStreamFactory::JobController::Start(
   return request;
 }
 
-void HttpStreamFactory::JobController::Preconnect(int num_streams) {
+void HttpStreamFactoryImpl::JobController::Preconnect(int num_streams) {
   DCHECK(!main_job_);
   DCHECK(!alternative_job_);
   DCHECK(is_preconnect_);
@@ -154,11 +154,11 @@ void HttpStreamFactory::JobController::Preconnect(int num_streams) {
   RunLoop(OK);
 }
 
-LoadState HttpStreamFactory::JobController::GetLoadState() const {
+LoadState HttpStreamFactoryImpl::JobController::GetLoadState() const {
   DCHECK(request_);
   if (next_state_ == STATE_RESOLVE_PROXY_COMPLETE)
-    return session_->proxy_resolution_service()->GetLoadState(
-        proxy_resolve_request_);
+    return session_->proxy_resolution_service()
+                   ->GetLoadState(proxy_resolve_request_);
   if (bound_job_)
     return bound_job_->GetLoadState();
   if (main_job_)
@@ -170,7 +170,7 @@ LoadState HttpStreamFactory::JobController::GetLoadState() const {
   return LOAD_STATE_IDLE;
 }
 
-void HttpStreamFactory::JobController::OnRequestComplete() {
+void HttpStreamFactoryImpl::JobController::OnRequestComplete() {
   DCHECK(request_);
 
   RemoveRequestFromSpdySessionRequestMap();
@@ -188,12 +188,13 @@ void HttpStreamFactory::JobController::OnRequestComplete() {
   MaybeNotifyFactoryOfCompletion();
 }
 
-int HttpStreamFactory::JobController::RestartTunnelWithProxyAuth() {
+int HttpStreamFactoryImpl::JobController::RestartTunnelWithProxyAuth() {
   DCHECK(bound_job_);
   return bound_job_->RestartTunnelWithProxyAuth();
 }
 
-void HttpStreamFactory::JobController::SetPriority(RequestPriority priority) {
+void HttpStreamFactoryImpl::JobController::SetPriority(
+    RequestPriority priority) {
   if (main_job_) {
     main_job_->SetPriority(priority);
   }
@@ -202,7 +203,7 @@ void HttpStreamFactory::JobController::SetPriority(RequestPriority priority) {
   }
 }
 
-void HttpStreamFactory::JobController::OnStreamReadyOnPooledConnection(
+void HttpStreamFactoryImpl::JobController::OnStreamReadyOnPooledConnection(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& proxy_info,
     std::unique_ptr<HttpStream> stream) {
@@ -218,7 +219,7 @@ void HttpStreamFactory::JobController::OnStreamReadyOnPooledConnection(
   delegate_->OnStreamReady(used_ssl_config, proxy_info, std::move(stream));
 }
 
-void HttpStreamFactory::JobController::
+void HttpStreamFactoryImpl::JobController::
     OnBidirectionalStreamImplReadyOnPooledConnection(
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
@@ -234,7 +235,7 @@ void HttpStreamFactory::JobController::
                                             std::move(stream));
 }
 
-void HttpStreamFactory::JobController::OnStreamReady(
+void HttpStreamFactoryImpl::JobController::OnStreamReady(
     Job* job,
     const SSLConfig& used_ssl_config) {
   DCHECK(job);
@@ -263,7 +264,7 @@ void HttpStreamFactory::JobController::OnStreamReady(
                            std::move(stream));
 }
 
-void HttpStreamFactory::JobController::OnBidirectionalStreamImplReady(
+void HttpStreamFactoryImpl::JobController::OnBidirectionalStreamImplReady(
     Job* job,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info) {
@@ -293,7 +294,7 @@ void HttpStreamFactory::JobController::OnBidirectionalStreamImplReady(
                                             std::move(stream));
 }
 
-void HttpStreamFactory::JobController::OnWebSocketHandshakeStreamReady(
+void HttpStreamFactoryImpl::JobController::OnWebSocketHandshakeStreamReady(
     Job* job,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
@@ -314,7 +315,7 @@ void HttpStreamFactory::JobController::OnWebSocketHandshakeStreamReady(
                                              std::move(stream));
 }
 
-void HttpStreamFactory::JobController::OnStreamFailed(
+void HttpStreamFactoryImpl::JobController::OnStreamFailed(
     Job* job,
     int status,
     const SSLConfig& used_ssl_config) {
@@ -368,7 +369,7 @@ void HttpStreamFactory::JobController::OnStreamFailed(
   delegate_->OnStreamFailed(status, *job->net_error_details(), used_ssl_config);
 }
 
-void HttpStreamFactory::JobController::OnCertificateError(
+void HttpStreamFactoryImpl::JobController::OnCertificateError(
     Job* job,
     int status,
     const SSLConfig& used_ssl_config,
@@ -391,7 +392,7 @@ void HttpStreamFactory::JobController::OnCertificateError(
   delegate_->OnCertificateError(status, used_ssl_config, ssl_info);
 }
 
-void HttpStreamFactory::JobController::OnHttpsProxyTunnelResponse(
+void HttpStreamFactoryImpl::JobController::OnHttpsProxyTunnelResponse(
     Job* job,
     const HttpResponseInfo& response_info,
     const SSLConfig& used_ssl_config,
@@ -414,7 +415,7 @@ void HttpStreamFactory::JobController::OnHttpsProxyTunnelResponse(
                                         used_proxy_info, std::move(stream));
 }
 
-void HttpStreamFactory::JobController::OnNeedsClientAuth(
+void HttpStreamFactoryImpl::JobController::OnNeedsClientAuth(
     Job* job,
     const SSLConfig& used_ssl_config,
     SSLCertRequestInfo* cert_info) {
@@ -434,7 +435,7 @@ void HttpStreamFactory::JobController::OnNeedsClientAuth(
   delegate_->OnNeedsClientAuth(used_ssl_config, cert_info);
 }
 
-void HttpStreamFactory::JobController::OnNeedsProxyAuth(
+void HttpStreamFactoryImpl::JobController::OnNeedsProxyAuth(
     Job* job,
     const HttpResponseInfo& proxy_response,
     const SSLConfig& used_ssl_config,
@@ -457,13 +458,13 @@ void HttpStreamFactory::JobController::OnNeedsProxyAuth(
                               auth_controller);
 }
 
-bool HttpStreamFactory::JobController::OnInitConnection(
+bool HttpStreamFactoryImpl::JobController::OnInitConnection(
     const ProxyInfo& proxy_info) {
   return factory_->OnInitConnection(*this, proxy_info,
                                     request_info_.privacy_mode);
 }
 
-void HttpStreamFactory::JobController::OnNewSpdySessionReady(
+void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
     Job* job,
     const base::WeakPtr<SpdySession>& spdy_session) {
   DCHECK(job);
@@ -528,14 +529,15 @@ void HttpStreamFactory::JobController::OnNewSpdySessionReady(
   }
 }
 
-void HttpStreamFactory::JobController::OnPreconnectsComplete(Job* job) {
+void HttpStreamFactoryImpl::JobController::OnPreconnectsComplete(Job* job) {
   DCHECK_EQ(main_job_.get(), job);
   main_job_.reset();
   factory_->OnPreconnectsCompleteInternal();
   MaybeNotifyFactoryOfCompletion();
 }
 
-void HttpStreamFactory::JobController::OnOrphanedJobComplete(const Job* job) {
+void HttpStreamFactoryImpl::JobController::OnOrphanedJobComplete(
+    const Job* job) {
   if (job->job_type() == MAIN) {
     DCHECK_EQ(main_job_.get(), job);
     main_job_.reset();
@@ -547,7 +549,7 @@ void HttpStreamFactory::JobController::OnOrphanedJobComplete(const Job* job) {
   MaybeNotifyFactoryOfCompletion();
 }
 
-void HttpStreamFactory::JobController::AddConnectionAttemptsToRequest(
+void HttpStreamFactoryImpl::JobController::AddConnectionAttemptsToRequest(
     Job* job,
     const ConnectionAttempts& attempts) {
   if (is_preconnect_ || IsJobOrphaned(job))
@@ -556,18 +558,18 @@ void HttpStreamFactory::JobController::AddConnectionAttemptsToRequest(
   request_->AddConnectionAttempts(attempts);
 }
 
-void HttpStreamFactory::JobController::ResumeMainJobLater(
+void HttpStreamFactoryImpl::JobController::ResumeMainJobLater(
     const base::TimeDelta& delay) {
   net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_DELAYED,
                     NetLog::Int64Callback("delay", delay.InMilliseconds()));
   resume_main_job_callback_.Reset(
-      base::BindOnce(&HttpStreamFactory::JobController::ResumeMainJob,
+      base::BindOnce(&HttpStreamFactoryImpl::JobController::ResumeMainJob,
                      ptr_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, resume_main_job_callback_.callback(), delay);
 }
 
-void HttpStreamFactory::JobController::ResumeMainJob() {
+void HttpStreamFactoryImpl::JobController::ResumeMainJob() {
   DCHECK(main_job_);
 
   if (main_job_is_resumed_) {
@@ -582,7 +584,7 @@ void HttpStreamFactory::JobController::ResumeMainJob() {
   main_job_wait_time_ = base::TimeDelta();
 }
 
-void HttpStreamFactory::JobController::MaybeResumeMainJob(
+void HttpStreamFactoryImpl::JobController::MaybeResumeMainJob(
     Job* job,
     const base::TimeDelta& delay) {
   DCHECK(delay == base::TimeDelta() || delay == main_job_wait_time_);
@@ -607,8 +609,8 @@ void HttpStreamFactory::JobController::MaybeResumeMainJob(
   ResumeMainJobLater(main_job_wait_time_);
 }
 
-void HttpStreamFactory::JobController::OnConnectionInitialized(Job* job,
-                                                               int rv) {
+void HttpStreamFactoryImpl::JobController::OnConnectionInitialized(Job* job,
+                                                                   int rv) {
   if (rv != OK) {
     // Resume the main job as there's an error raised in connection
     // initiation.
@@ -616,7 +618,7 @@ void HttpStreamFactory::JobController::OnConnectionInitialized(Job* job,
   }
 }
 
-bool HttpStreamFactory::JobController::ShouldWait(Job* job) {
+bool HttpStreamFactoryImpl::JobController::ShouldWait(Job* job) {
   // The alternative job never waits.
   if (job == alternative_job_.get())
     return false;
@@ -631,7 +633,7 @@ bool HttpStreamFactory::JobController::ShouldWait(Job* job) {
   return true;
 }
 
-void HttpStreamFactory::JobController::SetSpdySessionKey(
+void HttpStreamFactoryImpl::JobController::SetSpdySessionKey(
     Job* job,
     const SpdySessionKey& spdy_session_key) {
   DCHECK(!job->using_quic());
@@ -643,7 +645,7 @@ void HttpStreamFactory::JobController::SetSpdySessionKey(
       spdy_session_key, request_);
 }
 
-void HttpStreamFactory::JobController::
+void HttpStreamFactoryImpl::JobController::
     RemoveRequestFromSpdySessionRequestMapForJob(Job* job) {
   DCHECK(!job->using_quic());
 
@@ -653,18 +655,19 @@ void HttpStreamFactory::JobController::
   RemoveRequestFromSpdySessionRequestMap();
 }
 
-void HttpStreamFactory::JobController::
+void HttpStreamFactoryImpl::JobController::
     RemoveRequestFromSpdySessionRequestMap() {
   DCHECK(request_);
   session_->spdy_session_pool()->RemoveRequestFromSpdySessionRequestMap(
       request_);
 }
 
-const NetLogWithSource* HttpStreamFactory::JobController::GetNetLog() const {
+const NetLogWithSource* HttpStreamFactoryImpl::JobController::GetNetLog()
+    const {
   return &net_log_;
 }
 
-void HttpStreamFactory::JobController::MaybeSetWaitTimeForMainJob(
+void HttpStreamFactoryImpl::JobController::MaybeSetWaitTimeForMainJob(
     const base::TimeDelta& delay) {
   if (main_job_is_blocked_) {
     main_job_wait_time_ = std::min(
@@ -672,30 +675,30 @@ void HttpStreamFactory::JobController::MaybeSetWaitTimeForMainJob(
   }
 }
 
-bool HttpStreamFactory::JobController::HasPendingMainJob() const {
+bool HttpStreamFactoryImpl::JobController::HasPendingMainJob() const {
   return main_job_.get() != nullptr;
 }
 
-bool HttpStreamFactory::JobController::HasPendingAltJob() const {
+bool HttpStreamFactoryImpl::JobController::HasPendingAltJob() const {
   return alternative_job_.get() != nullptr;
 }
 
-size_t HttpStreamFactory::JobController::EstimateMemoryUsage() const {
+size_t HttpStreamFactoryImpl::JobController::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(main_job_) +
          base::trace_event::EstimateMemoryUsage(alternative_job_);
 }
 
-WebSocketHandshakeStreamBase::CreateHelper*
-HttpStreamFactory::JobController::websocket_handshake_stream_create_helper() {
+WebSocketHandshakeStreamBase::CreateHelper* HttpStreamFactoryImpl::
+    JobController::websocket_handshake_stream_create_helper() {
   DCHECK(request_);
   return request_->websocket_handshake_stream_create_helper();
 }
 
-void HttpStreamFactory::JobController::OnIOComplete(int result) {
+void HttpStreamFactoryImpl::JobController::OnIOComplete(int result) {
   RunLoop(result);
 }
 
-void HttpStreamFactory::JobController::RunLoop(int result) {
+void HttpStreamFactoryImpl::JobController::RunLoop(int result) {
   int rv = DoLoop(result);
   if (rv == ERR_IO_PENDING)
     return;
@@ -707,12 +710,12 @@ void HttpStreamFactory::JobController::RunLoop(int result) {
     DCHECK(!alternative_job_);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&HttpStreamFactory::JobController::NotifyRequestFailed,
+        base::Bind(&HttpStreamFactoryImpl::JobController::NotifyRequestFailed,
                    ptr_factory_.GetWeakPtr(), rv));
   }
 }
 
-int HttpStreamFactory::JobController::DoLoop(int rv) {
+int HttpStreamFactoryImpl::JobController::DoLoop(int rv) {
   DCHECK_NE(next_state_, STATE_NONE);
   do {
     State state = next_state_;
@@ -737,7 +740,7 @@ int HttpStreamFactory::JobController::DoLoop(int rv) {
   return rv;
 }
 
-int HttpStreamFactory::JobController::DoResolveProxy() {
+int HttpStreamFactoryImpl::JobController::DoResolveProxy() {
   DCHECK(!proxy_resolve_request_);
   DCHECK(session_);
 
@@ -756,7 +759,7 @@ int HttpStreamFactory::JobController::DoResolveProxy() {
       &proxy_resolve_request_, session_->context().proxy_delegate, net_log_);
 }
 
-int HttpStreamFactory::JobController::DoResolveProxyComplete(int rv) {
+int HttpStreamFactoryImpl::JobController::DoResolveProxyComplete(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
 
   proxy_resolve_request_ = nullptr;
@@ -786,7 +789,7 @@ int HttpStreamFactory::JobController::DoResolveProxyComplete(int rv) {
   return rv;
 }
 
-int HttpStreamFactory::JobController::DoCreateJobs() {
+int HttpStreamFactoryImpl::JobController::DoCreateJobs() {
   DCHECK(!main_job_);
   DCHECK(!alternative_job_);
 
@@ -876,7 +879,7 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
   return OK;
 }
 
-void HttpStreamFactory::JobController::BindJob(Job* job) {
+void HttpStreamFactoryImpl::JobController::BindJob(Job* job) {
   DCHECK(request_);
   DCHECK(job);
   DCHECK(job == alternative_job_.get() || job == main_job_.get());
@@ -896,7 +899,7 @@ void HttpStreamFactory::JobController::BindJob(Job* job) {
   OrphanUnboundJob();
 }
 
-void HttpStreamFactory::JobController::CancelJobs() {
+void HttpStreamFactoryImpl::JobController::CancelJobs() {
   DCHECK(request_);
   if (job_bound_)
     return;
@@ -906,7 +909,7 @@ void HttpStreamFactory::JobController::CancelJobs() {
     main_job_.reset();
 }
 
-void HttpStreamFactory::JobController::OrphanUnboundJob() {
+void HttpStreamFactoryImpl::JobController::OrphanUnboundJob() {
   DCHECK(request_);
   DCHECK(bound_job_);
   RemoveRequestFromSpdySessionRequestMap();
@@ -923,13 +926,12 @@ void HttpStreamFactory::JobController::OrphanUnboundJob() {
   if (bound_job_->job_type() == ALTERNATIVE && main_job_) {
     // |request_| is bound to the alternative job. This means that the main job
     // is no longer needed, so cancel it now. Pending ConnectJobs will return
-    // established sockets to socket pools if applicable.
-    // https://crbug.com/757548.
+    // established sockets to socket pools if applicable. crbug.com/757548.
     main_job_.reset();
   }
 }
 
-void HttpStreamFactory::JobController::OnJobSucceeded(Job* job) {
+void HttpStreamFactoryImpl::JobController::OnJobSucceeded(Job* job) {
   DCHECK(job);
 
   if (job->job_type() == MAIN && alternative_job_net_error_ != OK)
@@ -944,7 +946,7 @@ void HttpStreamFactory::JobController::OnJobSucceeded(Job* job) {
   DCHECK(bound_job_);
 }
 
-void HttpStreamFactory::JobController::MarkRequestComplete(
+void HttpStreamFactoryImpl::JobController::MarkRequestComplete(
     bool was_alpn_negotiated,
     NextProto negotiated_protocol,
     bool using_spdy) {
@@ -952,7 +954,7 @@ void HttpStreamFactory::JobController::MarkRequestComplete(
     request_->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
 }
 
-void HttpStreamFactory::JobController::OnAlternativeServiceJobFailed(
+void HttpStreamFactoryImpl::JobController::OnAlternativeServiceJobFailed(
     int net_error) {
   DCHECK_EQ(alternative_job_->job_type(), ALTERNATIVE);
   DCHECK_NE(OK, net_error);
@@ -969,7 +971,7 @@ void HttpStreamFactory::JobController::OnAlternativeServiceJobFailed(
   }
 }
 
-void HttpStreamFactory::JobController::OnAlternativeProxyJobFailed(
+void HttpStreamFactoryImpl::JobController::OnAlternativeProxyJobFailed(
     int net_error) {
   DCHECK_EQ(alternative_job_->job_type(), ALTERNATIVE);
   DCHECK_NE(OK, net_error);
@@ -989,7 +991,7 @@ void HttpStreamFactory::JobController::OnAlternativeProxyJobFailed(
   }
 }
 
-void HttpStreamFactory::JobController::ReportBrokenAlternativeService() {
+void HttpStreamFactoryImpl::JobController::ReportBrokenAlternativeService() {
   DCHECK(alternative_service_info_.protocol() != kProtoUnknown);
   DCHECK_NE(OK, alternative_job_net_error_);
 
@@ -1004,25 +1006,25 @@ void HttpStreamFactory::JobController::ReportBrokenAlternativeService() {
   }
 
   HistogramBrokenAlternateProtocolLocation(
-      BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_JOB_ALT);
+      BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_ALT);
   session_->http_server_properties()->MarkAlternativeServiceBroken(
       alternative_service_info_.alternative_service());
 }
 
-void HttpStreamFactory::JobController::MaybeNotifyFactoryOfCompletion() {
+void HttpStreamFactoryImpl::JobController::MaybeNotifyFactoryOfCompletion() {
   if (!request_ && !main_job_ && !alternative_job_) {
     DCHECK(!bound_job_);
     factory_->OnJobControllerComplete(this);
   }
 }
 
-void HttpStreamFactory::JobController::NotifyRequestFailed(int rv) {
+void HttpStreamFactoryImpl::JobController::NotifyRequestFailed(int rv) {
   if (!request_)
     return;
   delegate_->OnStreamFailed(rv, NetErrorDetails(), server_ssl_config_);
 }
 
-GURL HttpStreamFactory::JobController::ApplyHostMappingRules(
+GURL HttpStreamFactoryImpl::JobController::ApplyHostMappingRules(
     const GURL& url,
     HostPortPair* endpoint) {
   if (session_->params().host_mapping_rules.RewriteHost(endpoint)) {
@@ -1037,7 +1039,7 @@ GURL HttpStreamFactory::JobController::ApplyHostMappingRules(
 }
 
 AlternativeServiceInfo
-HttpStreamFactory::JobController::GetAlternativeServiceInfoFor(
+HttpStreamFactoryImpl::JobController::GetAlternativeServiceInfoFor(
     const HttpRequestInfo& request_info,
     HttpStreamRequest::Delegate* delegate,
     HttpStreamRequest::StreamType stream_type) {
@@ -1070,7 +1072,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoFor(
 }
 
 AlternativeServiceInfo
-HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
+HttpStreamFactoryImpl::JobController::GetAlternativeServiceInfoInternal(
     const HttpRequestInfo& request_info,
     HttpStreamRequest::Delegate* delegate,
     HttpStreamRequest::StreamType stream_type) {
@@ -1178,7 +1180,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
   return first_alternative_service_info;
 }
 
-QuicTransportVersion HttpStreamFactory::JobController::SelectQuicVersion(
+QuicTransportVersion HttpStreamFactoryImpl::JobController::SelectQuicVersion(
     const QuicTransportVersionVector& advertised_versions) {
   const QuicTransportVersionVector& supported_versions =
       session_->params().quic_supported_versions;
@@ -1197,10 +1199,11 @@ QuicTransportVersion HttpStreamFactory::JobController::SelectQuicVersion(
   return QUIC_VERSION_UNSUPPORTED;
 }
 
-bool HttpStreamFactory::JobController::ShouldCreateAlternativeProxyServerJob(
-    const ProxyInfo& proxy_info,
-    const GURL& url,
-    ProxyInfo* alternative_proxy_info) const {
+bool HttpStreamFactoryImpl::JobController::
+    ShouldCreateAlternativeProxyServerJob(
+        const ProxyInfo& proxy_info,
+        const GURL& url,
+        ProxyInfo* alternative_proxy_info) const {
   DCHECK(alternative_proxy_info->is_empty());
 
   if (!enable_alternative_services_)
@@ -1246,7 +1249,7 @@ bool HttpStreamFactory::JobController::ShouldCreateAlternativeProxyServerJob(
   return true;
 }
 
-void HttpStreamFactory::JobController::ReportAlternateProtocolUsage(
+void HttpStreamFactoryImpl::JobController::ReportAlternateProtocolUsage(
     Job* job) const {
   DCHECK(main_job_ && alternative_job_);
 
@@ -1270,12 +1273,12 @@ void HttpStreamFactory::JobController::ReportAlternateProtocolUsage(
                                   proxy_server_used);
 }
 
-bool HttpStreamFactory::JobController::IsJobOrphaned(Job* job) const {
+bool HttpStreamFactoryImpl::JobController::IsJobOrphaned(Job* job) const {
   return !request_ || (job_bound_ && bound_job_ != job);
 }
 
-int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
-                                                                int error) {
+int HttpStreamFactoryImpl::JobController::ReconsiderProxyAfterError(Job* job,
+                                                                    int error) {
   // ReconsiderProxyAfterError() should only be called when the last job fails.
   DCHECK(!(alternative_job_ && main_job_));
   DCHECK(!proxy_resolve_request_);
@@ -1322,7 +1325,7 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
   return OK;
 }
 
-bool HttpStreamFactory::JobController::IsQuicWhitelistedForHost(
+bool HttpStreamFactoryImpl::JobController::IsQuicWhitelistedForHost(
     const std::string& host) {
   const base::flat_set<std::string>& host_whitelist =
       session_->params().quic_host_whitelist;
