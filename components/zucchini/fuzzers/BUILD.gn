@@ -1,0 +1,30 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/libfuzzer/fuzzer_test.gni")
+
+# To download the corpus for local fuzzing use:
+# gsutil -m rsync \
+#   gs://clusterfuzz-corpus/libfuzzer/zucchini_disassembler_win32_fuzzer \
+#   components/zucchini/fuzzing/testdata/disassembler_win32_fuzzer
+fuzzer_test("zucchini_disassembler_win32_fuzzer") {
+  sources = [
+    "disassembler_win32_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//components/zucchini:zucchini_lib",
+  ]
+}
+
+fuzzer_test("zucchini_patch_fuzzer") {
+  sources = [
+    "patch_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//components/zucchini:zucchini_lib",
+  ]
+  seed_corpus = "testdata/patch_fuzzer"
+}
