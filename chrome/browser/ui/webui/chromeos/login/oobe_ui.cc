@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_display_chooser.h"
+#include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
@@ -294,6 +295,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   AddScreenHandler(std::make_unique<ArcTermsOfServiceScreenHandler>());
 
+  AddScreenHandler(std::make_unique<RecommendAppsScreenHandler>());
+
   AddScreenHandler(std::make_unique<UserImageScreenHandler>());
 
   AddScreenHandler(std::make_unique<UserBoardScreenHandler>());
@@ -438,6 +441,10 @@ SyncConsentScreenView* OobeUI::GetSyncConsentScreenView() {
 
 ArcTermsOfServiceScreenView* OobeUI::GetArcTermsOfServiceScreenView() {
   return GetView<ArcTermsOfServiceScreenHandler>();
+}
+
+RecommendAppsScreenView* OobeUI::GetRecommendAppsScreenView() {
+  return GetView<RecommendAppsScreenHandler>();
 }
 
 WrongHWIDScreenView* OobeUI::GetWrongHWIDScreenView() {

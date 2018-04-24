@@ -45,6 +45,7 @@ cr.define('cr.ui.Oobe', function() {
       login.TermsOfServiceScreen.register();
       login.SyncConsentScreen.register();
       login.ArcTermsOfServiceScreen.register();
+      login.RecommendAppsScreen.register();
       login.AppLaunchSplashScreen.register();
       login.ArcKioskSplashScreen.register();
       login.ConfirmPasswordScreen.register();

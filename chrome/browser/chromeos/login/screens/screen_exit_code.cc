@@ -74,6 +74,10 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "SYNC_CONSENT_FINISHED";
     case ScreenExitCode::DEMO_MODE_SETUP_CLOSED:
       return "DEMO_MODE_SETUP_CLOSED";
+    case ScreenExitCode::RECOMMEND_APPS_SKIPPED:
+      return "RECOMMEND_APPS_SKIPPED";
+    case ScreenExitCode::RECOMMEND_APPS_SELECTED:
+      return "RECOMMEND_APPS_SELECTED";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

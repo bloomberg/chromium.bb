@@ -45,3 +45,4 @@
 // <include src="enrollment_license_card.js">
 // <include src="sync_consent.js">
 // <include src="demo_setup.js">
+// <include src="recommend_apps.js">

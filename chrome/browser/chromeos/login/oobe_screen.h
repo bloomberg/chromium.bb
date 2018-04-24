@@ -60,6 +60,8 @@ enum class OobeScreen : unsigned int {
   SCREEN_SYNC_CONSENT,
   SCREEN_OOBE_DEMO_SETUP,
 
+  SCREEN_RECOMMEND_APPS,
+
   SCREEN_UNKNOWN  // This must always be the last element.
 };
 
