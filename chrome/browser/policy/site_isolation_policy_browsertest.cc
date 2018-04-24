@@ -186,7 +186,13 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPolicyBrowserTest, Simple) {
   CheckExpectations(expectations, arraysize(expectations));
 }
 
-IN_PROC_BROWSER_TEST_F(WebDriverSitePerProcessPolicyBrowserTest, Simple) {
+// Doesn't pass in official builds, see https://crbug.com/836261
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_Simple DISABLED_Simple
+#else
+#define MAYBE_Simple Simple
+#endif
+IN_PROC_BROWSER_TEST_F(WebDriverSitePerProcessPolicyBrowserTest, MAYBE_Simple) {
   Expectations expectations[] = {
       {"https://foo.com/noodles.html", are_sites_isolated_for_testing_},
       {"http://example.org/pumpkins.html", are_sites_isolated_for_testing_},
