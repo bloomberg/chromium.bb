@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/ozone/device/device_event.h"
@@ -94,7 +94,7 @@ void DeviceManagerUdev::CreateMonitor() {
   if (monitor_) {
     int fd = device::udev_monitor_get_fd(monitor_.get());
     CHECK_GT(fd, 0);
-    base::MessageLoopForUI::current()->WatchFileDescriptor(
+    base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
         fd, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
   }
 }
