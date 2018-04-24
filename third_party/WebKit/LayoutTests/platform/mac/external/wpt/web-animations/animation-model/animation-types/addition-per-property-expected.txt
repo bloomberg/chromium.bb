@@ -528,7 +528,7 @@ PASS transform: non-invertible matrices
 PASS transform: non-invertible matrices in matched transform lists
 PASS transform: non-invertible matrices in mismatched transform lists
 PASS transform-box (type: discrete) has testAddition function
-FAIL transform-box: "border-box" onto "fill-box" assert_equals: The value should be border-box at 0ms expected "border-box" but got "view-box"
+FAIL transform-box: "border-box" onto "fill-box" assert_equals: The value should be border-box at 0ms expected "border-box" but got "fill-box"
 PASS transform-box: "fill-box" onto "border-box"
 PASS transform-style (type: discrete) has testAddition function
 PASS transform-style: "preserve-3d" onto "flat"
