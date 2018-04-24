@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/clock.h"
@@ -108,7 +108,7 @@ void SAMLOfflineSigninLimiterTest::SetUpUserManager() {
 }
 
 void SAMLOfflineSigninLimiterTest::SetUp() {
-  base::MessageLoop::current()->SetTaskRunner(runner_);
+  base::MessageLoopCurrent::Get()->SetTaskRunner(runner_);
   profile_.reset(new TestingProfile);
 
   SAMLOfflineSigninLimiterFactory::SetClockForTesting(&clock_);
