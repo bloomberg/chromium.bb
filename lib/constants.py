@@ -523,14 +523,11 @@ VALID_ANDROID_REVISIONS = [ANDROID_REV_LATEST]
 BAREMETAL_BUILD_SLAVE_TYPE = 'baremetal'
 GCE_BEEFY_BUILD_SLAVE_TYPE = 'gce_beefy'
 GCE_BUILD_SLAVE_TYPE = 'gce'
-# A wimpy GCE instance well suited to run cbuildbot's master build-types.
-GCE_WIMPY_BUILD_SLAVE_TYPE = 'gce_wimpy'
 
 VALID_BUILD_SLAVE_TYPES = (
     BAREMETAL_BUILD_SLAVE_TYPE,
     GCE_BEEFY_BUILD_SLAVE_TYPE,
     GCE_BUILD_SLAVE_TYPE,
-    GCE_WIMPY_BUILD_SLAVE_TYPE,
 )
 
 # Build types supported.
