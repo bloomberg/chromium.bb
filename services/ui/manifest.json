@@ -81,7 +81,7 @@
       "requires": {
         "*": [ "app" ],
         "catalog": [ "directory" ],
-        "service_manager": [ "service_manager:all_users" ],
+        "service_manager": [ "service_manager:singleton" ],
         "ui": [ "ozone" ],
         "viz": [ "viz_host" ]
       }
