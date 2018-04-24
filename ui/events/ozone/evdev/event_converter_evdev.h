@@ -110,7 +110,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   // Sets callback to enable/disable palm suppression.
   virtual void SetPalmSuppressionCallback(
-      const base::Callback<void(bool)>& callback);
+      const base::RepeatingCallback<void(bool)>& callback);
 
   // Helper to generate a base::TimeTicks from an input_event's time
   static base::TimeTicks TimeTicksFromInputEvent(const input_event& event);

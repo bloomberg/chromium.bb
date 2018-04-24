@@ -237,7 +237,8 @@ void DumpTouchEventLog(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&CompressDumpedLog, base::Passed(&log_paths_to_be_compressed)),
+      base::BindOnce(&CompressDumpedLog,
+                     base::Passed(&log_paths_to_be_compressed)),
       base::BindOnce(std::move(reply), log_paths));
 }
 

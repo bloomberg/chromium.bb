@@ -71,8 +71,9 @@ class GamepadEventConverterEvdevTest : public testing::Test {
     event_factory_ = ui::CreateEventFactoryEvdevForTest(
         nullptr, device_manager_.get(),
         ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
-        base::Bind(&GamepadEventConverterEvdevTest::DispatchEventForTest,
-                   base::Unretained(this)));
+        base::BindRepeating(
+            &GamepadEventConverterEvdevTest::DispatchEventForTest,
+            base::Unretained(this)));
     dispatcher_ =
         ui::CreateDeviceEventDispatcherEvdevForTest(event_factory_.get());
   }

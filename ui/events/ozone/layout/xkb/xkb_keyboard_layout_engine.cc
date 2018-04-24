@@ -30,8 +30,8 @@ namespace ui {
 
 namespace {
 
-typedef base::Callback<void(const std::string&,
-                            std::unique_ptr<char, base::FreeDeleter>)>
+typedef base::OnceCallback<void(const std::string&,
+                                std::unique_ptr<char, base::FreeDeleter>)>
     LoadKeymapCallback;
 
 KeyboardCode AlphanumericKeyboardCode(xkb_keysym_t xkb_keysym,
@@ -611,7 +611,7 @@ const PrintableSimpleEntry kSimpleMap[] = {
 #if defined(OS_CHROMEOS)
 void LoadKeymap(const std::string& layout_name,
                 scoped_refptr<base::SingleThreadTaskRunner> reply_runner,
-                const LoadKeymapCallback& reply_callback) {
+                LoadKeymapCallback reply_callback) {
   std::string layout_id;
   std::string layout_variant;
   XkbKeyboardLayoutEngine::ParseLayoutName(layout_name, &layout_id,
@@ -630,8 +630,9 @@ void LoadKeymap(const std::string& layout_name,
   if (keymap) {
     std::unique_ptr<char, base::FreeDeleter> keymap_str(
         xkb_keymap_get_as_string(keymap.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
-    reply_runner->PostTask(FROM_HERE, base::Bind(reply_callback, layout_name,
-                                                 base::Passed(&keymap_str)));
+    reply_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(reply_callback), layout_name,
+                                  base::Passed(&keymap_str)));
   } else {
     LOG(FATAL) << "Keymap file failed to load: " << layout_name;
   }
@@ -683,13 +684,14 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
       return true;
     }
   }
-  LoadKeymapCallback reply_callback = base::Bind(
+  LoadKeymapCallback reply_callback = base::BindOnce(
       &XkbKeyboardLayoutEngine::OnKeymapLoaded, weak_ptr_factory_.GetWeakPtr());
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&LoadKeymap, layout_name, base::ThreadTaskRunnerHandle::Get(),
-                 reply_callback));
+      base::BindOnce(&LoadKeymap, layout_name,
+                     base::ThreadTaskRunnerHandle::Get(),
+                     std::move(reply_callback)));
 #else
   NOTIMPLEMENTED();
 #endif  // defined(OS_CHROMEOS)
