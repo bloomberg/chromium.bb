@@ -89,7 +89,10 @@ bool DoesViewHaveAccessibilityErrors(views::View* view,
       "The following view violates DoesViewHaveAccessibilityErrors() when its "
       "widget becomes " +
       std::string(view->GetWidget()->IsVisible() ? "visible:\n" : "hidden:\n") +
-      GetViewDebugString(view) + violations;
+      GetViewDebugString(view) + violations +
+      "\n\nNote: for a more useful error message that includes a stack of how "
+      "this view was constructed, use git cl patch 963284. Please leave a note "
+      "on that CL if you find it useful.";
   return true;
 }
 
