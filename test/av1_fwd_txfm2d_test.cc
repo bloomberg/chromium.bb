@@ -286,6 +286,18 @@ void AV1FwdTxfm2dMatchTest(TX_SIZE tx_size, lowbd_fwd_txfm_func target_func) {
   }
 }
 
+typedef ::testing::tuple<TX_SIZE, lowbd_fwd_txfm_func> LbdFwdTxfm2dParam;
+
+class AV1FwdTxfm2dTest : public ::testing::TestWithParam<LbdFwdTxfm2dParam> {};
+
+TEST_P(AV1FwdTxfm2dTest, match) {
+  AV1FwdTxfm2dMatchTest(GET_PARAM(0), GET_PARAM(1));
+}
+
+using ::testing::Combine;
+using ::testing::Values;
+using ::testing::ValuesIn;
+
 #if HAVE_SSE2
 static TX_SIZE fwd_txfm_for_sse2[] = {
   TX_4X4,
@@ -308,12 +320,10 @@ static TX_SIZE fwd_txfm_for_sse2[] = {
   TX_16X64,
   TX_64X16,
 };
-TEST(av1_fwd_txfm2d_sse2, match) {
-  const int cnt = sizeof(fwd_txfm_for_sse2) / sizeof(TX_SIZE);
-  for (int i = 0; i < cnt; ++i) {
-    AV1FwdTxfm2dMatchTest(fwd_txfm_for_sse2[i], av1_lowbd_fwd_txfm_sse2);
-  }
-}
+
+INSTANTIATE_TEST_CASE_P(SSE2, AV1FwdTxfm2dTest,
+                        Combine(ValuesIn(fwd_txfm_for_sse2),
+                                Values(av1_lowbd_fwd_txfm_sse2)));
 #endif  // HAVE_SSE2
 
 #if HAVE_SSE4_1
@@ -323,11 +333,9 @@ static TX_SIZE fwd_txfm_for_sse41[] = {
   TX_32X64,
   TX_64X32,
 };
-TEST(av1_fwd_txfm2d_sse4_1, match) {
-  const int cnt = sizeof(fwd_txfm_for_sse41) / sizeof(TX_SIZE);
-  for (int i = 0; i < cnt; ++i) {
-    AV1FwdTxfm2dMatchTest(fwd_txfm_for_sse41[i], av1_lowbd_fwd_txfm_sse4_1);
-  }
-}
+
+INSTANTIATE_TEST_CASE_P(SSE4_1, AV1FwdTxfm2dTest,
+                        Combine(ValuesIn(fwd_txfm_for_sse41),
+                                Values(av1_lowbd_fwd_txfm_sse4_1)));
 #endif  // HAVE_SSE4_1
 }  // namespace
