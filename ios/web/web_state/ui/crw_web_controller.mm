@@ -4767,6 +4767,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
         case web::ErrorRetryState::kRetryFailedNavigationItem:
           item->SetErrorRetryState(web::ErrorRetryState::kNoNavigationError);
           break;
+        case web::ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
+          NOTREACHED();
+          break;
         case web::ErrorRetryState::kNoNavigationError:
         case web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
           break;

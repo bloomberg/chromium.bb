@@ -26,10 +26,11 @@ enum class NavigationInitiationType;
 // back/forward navigation to a native error view automatically triggers a
 // reload of the original URL. This is achieved in four steps:
 // 1) A NavigationItem is put into
-//    kDisplayingNativeErrorForFailedNavigationState when it first failed to
-//    load and a native error view displayed. If the failure occurred during
-//    provisional navigation, a placeholder entry is inserted into
-//    WKBackForwardList for this item.
+//    kDisplaying(Native|Web)ErrorForFailedNavigation when it first failed to
+//    load and a native error view displayed (base::Feature kWebErrorPages flag
+//    is off) or a web error is displayed (base::Feature kWebErrorPages flag is
+//    on) If the failure occurred during provisional navigation, a placeholder
+//    entry is inserted into WKBackForwardList for this item.
 // 2) Upon navigation to this item, use |loadHTMLString:| to modify the URL of
 //    the placeholder entry to the original URL and change the item state to
 //    kNavigatingToFailedNavigationItem.
@@ -46,6 +47,8 @@ enum class ErrorRetryState {
   kReadyToDisplayErrorForFailedNavigation,
   // This navigation item failed to load and a native error is displayed.
   kDisplayingNativeErrorForFailedNavigation,
+  // This navigation item failed to load and a web error is displayed.
+  kDisplayingWebErrorForFailedNavigation,
   // This navigation item is reactivated due to back/forward navigation and
   // needs to try reloading.
   kNavigatingToFailedNavigationItem,
